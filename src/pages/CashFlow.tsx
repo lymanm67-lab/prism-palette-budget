@@ -14,8 +14,8 @@ import {
 } from 'date-fns';
 import { Loader2, CalendarIcon, X, ArrowLeft } from 'lucide-react';
 import {
-  ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, ReferenceLine, Cell,
+  ComposedChart, Bar, BarChart, Line, XAxis, YAxis, CartesianGrid,
+  Tooltip, ResponsiveContainer, ReferenceLine, Cell, Legend,
 } from 'recharts';
 import { cn } from '@/lib/utils';
 
@@ -162,6 +162,79 @@ const CashFlow = () => {
 
   const totalIncomeBreakdown = incomeBreakdown.reduce((s, i) => s + i.amount, 0);
   const totalExpenseBreakdown = expenseBreakdown.reduce((s, i) => s + i.amount, 0);
+
+  // Stacked bar data: category composition within each group (only for group view)
+  const groupStackedData = useMemo(() => {
+    if (groupBy !== 'group' || !categories || !categoryGroups) return { expense: [], income: [], allCatKeys: [] as string[], catColorMap: {} as Record<string, string> };
+
+    const catMap = new Map<string, { name: string; color: string; group_id: string }>();
+    for (const c of categories) catMap.set(c.id, { name: c.name, color: c.color, group_id: c.group_id });
+    const groupMap = new Map<string, string>();
+    for (const g of categoryGroups) groupMap.set(g.id, g.name);
+
+    const catColorMap: Record<string, string> = {};
+    const buildData = (txns: typeof selectedPeriodTxns, sign: 'pos' | 'neg') => {
+      const grouped: Record<string, Record<string, number>> = {};
+      for (const t of txns) {
+        if (sign === 'pos' && t.amount <= 0) continue;
+        if (sign === 'neg' && t.amount >= 0) continue;
+        const cat = t.category_id ? catMap.get(t.category_id) : null;
+        const grpId = cat?.group_id || 'uncategorized';
+        const grpName = grpId !== 'uncategorized' ? groupMap.get(grpId) || 'Uncategorized' : 'Uncategorized';
+        const catName = cat?.name || 'Uncategorized';
+        if (cat) catColorMap[catName] = cat.color;
+        if (!grouped[grpName]) grouped[grpName] = {};
+        grouped[grpName][catName] = (grouped[grpName][catName] || 0) + Math.abs(Number(t.amount));
+      }
+      return Object.entries(grouped)
+        .map(([name, cats]) => ({ group: name, ...cats, _total: Object.values(cats).reduce((s, v) => s + v, 0) }))
+        .sort((a, b) => b._total - a._total);
+    };
+
+    const expense = buildData(selectedPeriodTxns, 'neg');
+    const income = buildData(selectedPeriodTxns, 'pos');
+    const allCatKeys = [...new Set([
+      ...expense.flatMap(d => Object.keys(d).filter(k => k !== 'group' && k !== '_total')),
+      ...income.flatMap(d => Object.keys(d).filter(k => k !== 'group' && k !== '_total')),
+    ])];
+
+    return { expense, income, allCatKeys, catColorMap };
+  }, [groupBy, categories, categoryGroups, selectedPeriodTxns]);
+
+  const renderStackedGroupChart = (data: any[], title: string) => {
+    if (data.length === 0) return null;
+    const { allCatKeys, catColorMap } = groupStackedData;
+    const palette = ['#6366f1', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#06b6d4', '#84cc16'];
+
+    return (
+      <Card className="mt-4">
+        <CardContent className="p-4">
+          <h4 className="text-sm font-semibold text-muted-foreground mb-3">{title} — Category Composition by Group</h4>
+          <ResponsiveContainer width="100%" height={Math.max(200, data.length * 48 + 60)}>
+            <BarChart data={data} layout="vertical" margin={{ left: 8, right: 16 }}>
+              <CartesianGrid strokeDasharray="3 3" className="stroke-border" horizontal={false} />
+              <XAxis type="number" tick={{ fontSize: 11 }} tickFormatter={(v) => `$${(v / 1000).toFixed(v >= 1000 ? 0 : 1)}K`} />
+              <YAxis type="category" dataKey="group" tick={{ fontSize: 12 }} width={120} />
+              <Tooltip
+                formatter={(value: number, name: string) => [fmt(value), name]}
+                contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }}
+              />
+              <Legend wrapperStyle={{ fontSize: '11px' }} />
+              {allCatKeys.map((catKey, i) => (
+                <Bar
+                  key={catKey}
+                  dataKey={catKey}
+                  stackId="cats"
+                  fill={catColorMap[catKey] || palette[i % palette.length]}
+                  radius={i === allCatKeys.length - 1 ? [0, 3, 3, 0] : [0, 0, 0, 0]}
+                />
+              ))}
+            </BarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+    );
+  };
 
   const handleBarClick = useCallback((data: any) => {
     if (data?.activePayload?.[0]?.payload) {
@@ -391,7 +464,9 @@ const CashFlow = () => {
 
       {/* Breakdowns */}
       {renderBreakdown('Income', incomeBreakdown, totalIncomeBreakdown, 'bg-emerald-500/5 hover:bg-emerald-500/10')}
+      {groupBy === 'group' && renderStackedGroupChart(groupStackedData.income, 'Income')}
       {renderBreakdown('Expenses', expenseBreakdown, totalExpenseBreakdown, 'bg-rose-500/5 hover:bg-rose-500/10')}
+      {groupBy === 'group' && renderStackedGroupChart(groupStackedData.expense, 'Expenses')}
     </motion.div>
   );
 };
