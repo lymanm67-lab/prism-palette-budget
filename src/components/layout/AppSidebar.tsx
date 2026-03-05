@@ -7,6 +7,7 @@ import {
   BarChart3,
   Tags,
   Settings,
+  Bot,
   LogOut,
   ChevronLeft,
   ChevronRight,
@@ -23,6 +24,7 @@ const NAV_ITEMS = [
   { to: '/budgets', icon: PiggyBank, label: 'Budgets' },
   { to: '/categories', icon: Tags, label: 'Categories' },
   { to: '/reports', icon: BarChart3, label: 'Reports' },
+  { to: '/tax-assistant', icon: Bot, label: 'Tax Assistant' },
   { to: '/settings', icon: Settings, label: 'Settings' },
 ];
 
