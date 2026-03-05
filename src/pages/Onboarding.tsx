@@ -110,9 +110,14 @@ const Onboarding = () => {
     stepId === 'plan' ||
     (stepId === 'journey' && selectedJourney !== null);
 
+  const journeyLabel = selectedJourney !== null ? JOURNEY_OPTIONS[selectedJourney].label : undefined;
+
   const next = () => {
     if (currentStep < STEPS.length - 1) setCurrentStep((s) => s + 1);
-    else navigate('/auth');
+    else {
+      const params = journeyLabel ? `?journey=${encodeURIComponent(journeyLabel)}` : '';
+      navigate(`/auth${params}`);
+    }
   };
   const prev = () => {
     if (currentStep > 0) setCurrentStep((s) => s - 1);
