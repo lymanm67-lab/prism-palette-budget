@@ -6,8 +6,11 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { useSpendingByCategory, useTransactionsByDateRange, useBudgets, useCategories, useAccounts } from '@/hooks/use-finance-data';
 import { formatCurrency } from '@/lib/seed-data';
-import { CalendarIcon, Loader2 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { CalendarIcon, Download, FileText, Loader2 } from 'lucide-react';
+import { useMemo, useRef, useState, useCallback } from 'react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { exportToPdf, exportToCsv } from '@/lib/export-utils';
+import { toast } from 'sonner';
 import { format, startOfMonth, endOfMonth, subMonths, startOfYear, endOfYear, subDays, startOfWeek, endOfWeek } from 'date-fns';
 import { cn } from '@/lib/utils';
 import {
@@ -42,6 +45,8 @@ const Reports = () => {
     to: endOfMonth(new Date()),
   }));
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('spending');
+  const reportRef = useRef<HTMLDivElement>(null);
 
   const startDate = format(dateRange.from, 'yyyy-MM-dd');
   const endDate = format(dateRange.to, 'yyyy-MM-dd');
@@ -197,6 +202,64 @@ const Reports = () => {
 
   const dateLabel = `${format(dateRange.from, 'MMM d, yyyy')} — ${format(dateRange.to, 'MMM d, yyyy')}`;
 
+  const handleExportPdf = useCallback(async () => {
+    if (!reportRef.current) return;
+    toast.info('Generating PDF...');
+    try {
+      await exportToPdf(reportRef.current, `report-${activeTab}-${startDate}-to-${endDate}`);
+      toast.success('PDF downloaded!');
+    } catch (e) {
+      console.error(e);
+      toast.error('Failed to generate PDF');
+    }
+  }, [activeTab, startDate, endDate]);
+
+  const handleExportCsv = useCallback(() => {
+    const filename = `report-${activeTab}-${startDate}-to-${endDate}`;
+    try {
+      switch (activeTab) {
+        case 'spending':
+          if (spendingData && spendingData.length > 0) {
+            exportToCsv(['Category', 'Color', 'Amount'], spendingData.map(s => [s.name, s.color, s.value]), filename);
+          }
+          break;
+        case 'budget':
+          if (budgetVsActual.length > 0) {
+            exportToCsv(['Category', 'Budget', 'Actual', 'Difference', '% Used'], budgetVsActual.map(b => [b.name, b.budget, b.actual, b.budget - b.actual, b.budget > 0 ? Math.round((b.actual / b.budget) * 100) : 0]), filename);
+          }
+          break;
+        case 'cashflow':
+          if (monthlyCashflow.length > 0) {
+            exportToCsv(['Month', 'Income', 'Expenses', 'Savings'], monthlyCashflow.map(m => [m.month, m.income, m.expenses, m.savings]), filename);
+          }
+          break;
+        case 'networth':
+          if (netWorthTrend.length > 0) {
+            exportToCsv(['Month', 'Net Worth'], netWorthTrend.map(n => [n.month, n.netWorth]), filename);
+          }
+          break;
+        case 'trends':
+          if (transactions && transactions.length > 0) {
+            exportToCsv(
+              ['Date', 'Merchant', 'Category', 'Amount'],
+              transactions.filter(t => t.amount < 0).map(t => [t.date, t.merchant || '', t.categories?.name || 'Uncategorized', Math.abs(t.amount)]),
+              filename
+            );
+          }
+          break;
+        case 'merchants':
+          if (topMerchants.length > 0) {
+            exportToCsv(['Merchant', 'Total Spent', 'Transaction Count'], topMerchants.map(m => [m.name, m.total, m.count]), filename);
+          }
+          break;
+      }
+      toast.success('CSV downloaded!');
+    } catch (e) {
+      console.error(e);
+      toast.error('Failed to generate CSV');
+    }
+  }, [activeTab, startDate, endDate, spendingData, budgetVsActual, monthlyCashflow, netWorthTrend, transactions, topMerchants]);
+
   if (isLoading) return <div className="flex items-center justify-center p-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
 
   return (
@@ -255,9 +318,29 @@ const Reports = () => {
             </div>
           </PopoverContent>
         </Popover>
+
+        {/* Export Dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="gap-2">
+              <Download className="h-4 w-4" />
+              Export
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={handleExportCsv} className="gap-2">
+              <FileText className="h-4 w-4" />
+              Download CSV
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleExportPdf} className="gap-2">
+              <Download className="h-4 w-4" />
+              Download PDF
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
-      <Tabs defaultValue="spending" className="space-y-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="flex-wrap h-auto gap-1">
           <TabsTrigger value="spending">Spending</TabsTrigger>
           <TabsTrigger value="budget">Budget vs Actual</TabsTrigger>
@@ -267,6 +350,7 @@ const Reports = () => {
           <TabsTrigger value="merchants">Top Merchants</TabsTrigger>
         </TabsList>
 
+        <div ref={reportRef}>
         {/* ==================== SPENDING ==================== */}
         <TabsContent value="spending">
           <div className="grid gap-6 lg:grid-cols-2">
@@ -592,6 +676,7 @@ const Reports = () => {
             </CardContent>
           </Card>
         </TabsContent>
+        </div>
       </Tabs>
     </motion.div>
   );
