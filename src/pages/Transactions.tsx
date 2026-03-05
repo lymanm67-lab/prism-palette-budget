@@ -511,6 +511,16 @@ const Transactions = () => {
                     ref={receiptInputRef}
                     type="file"
                     accept="image/*"
+                    className="hidden"
+                    onChange={e => {
+                      const file = e.target.files?.[0];
+                      if (file) handleScanReceipt(file);
+                    }}
+                  />
+                  <input
+                    id="receipt-camera-input"
+                    type="file"
+                    accept="image/*"
                     capture="environment"
                     className="hidden"
                     onChange={e => {
@@ -522,12 +532,23 @@ const Transactions = () => {
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="gap-2 w-full"
+                    className="gap-2 flex-1"
                     disabled={scanLoading}
                     onClick={() => receiptInputRef.current?.click()}
                   >
-                    {scanLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
-                    {scanLoading ? 'Scanning receipt...' : 'Scan Receipt'}
+                    {scanLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                    {scanLoading ? 'Scanning...' : 'Upload Receipt'}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="gap-2 flex-1"
+                    disabled={scanLoading}
+                    onClick={() => document.getElementById('receipt-camera-input')?.click()}
+                  >
+                    <Camera className="h-4 w-4" />
+                    Camera
                   </Button>
                 </div>
 
