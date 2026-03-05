@@ -164,10 +164,10 @@ const Categories = () => {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-3xl font-bold">Categories</h1>
+          <h1 className="font-display text-3xl font-bold prism-gradient-text">Categories</h1>
           <p className="text-muted-foreground">Organize your transactions with groups and categories.</p>
         </div>
-        <Button className="gap-2" onClick={openCreateGroup}>
+        <Button className="gap-2 prism-gradient text-primary-foreground hover:opacity-90" onClick={openCreateGroup}>
           <Plus className="h-4 w-4" /> Add Group
         </Button>
       </div>
@@ -185,7 +185,7 @@ const Categories = () => {
 
           return (
             <motion.div key={group.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-              <Card>
+              <Card className="prism-card-shine hover-border-glow">
                 <CardHeader className="p-4 pb-2">
                   <div className="flex items-center justify-between">
                     <button onClick={() => toggleCollapse(group.id)} className="flex items-center gap-2 text-left">

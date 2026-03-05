@@ -126,7 +126,7 @@ const Budgets = () => {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-3xl font-bold">Budgets</h1>
+          <h1 className="font-display text-3xl font-bold prism-gradient-text">Budgets</h1>
           <div className="flex items-center gap-4 mt-2">
             <Tabs value={budgetType} onValueChange={(v) => setBudgetType(v as 'personal' | 'business')}>
               <TabsList>
@@ -158,13 +158,13 @@ const Budgets = () => {
             </div>
           </div>
         </div>
-        <Button className="gap-2" onClick={openCreate} disabled={unbudgetedCategories.length === 0}>
+        <Button className="gap-2 prism-gradient text-primary-foreground hover:opacity-90" onClick={openCreate} disabled={unbudgetedCategories.length === 0}>
           <Plus className="h-4 w-4" /> Add Budget
         </Button>
       </div>
 
       {budgetItems.length > 0 && (
-        <Card>
+        <Card className="prism-card-shine hover-border-glow">
           <CardContent className="flex items-center gap-6 p-5">
             <div className="flex-1">
               <p className="text-sm text-muted-foreground">Total Budget</p>
@@ -194,7 +194,7 @@ const Budgets = () => {
           const overBudget = remaining < 0;
           return (
             <motion.div key={budget.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-              <Card className="transition-shadow hover:shadow-md group">
+              <Card className="transition-shadow hover:shadow-md group prism-card-shine hover-border-glow">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
