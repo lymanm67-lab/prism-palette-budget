@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import AiSpendingInsights from '@/components/AiSpendingInsights';
 import PageOverview from '@/components/PageOverview';
 import WeeklyRecap from '@/components/WeeklyRecap';
+import GettingStartedWidget from '@/components/GettingStartedWidget';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAccounts, useTransactions, useSpendingByCategory, useCategoryGroups, useCategories } from '@/hooks/use-finance-data';
@@ -241,6 +242,11 @@ const Dashboard = () => {
             View Reports <ChevronRight className="h-4 w-4" />
           </button>
         </div>
+      </motion.div>
+
+      {/* Getting Started Widget */}
+      <motion.div variants={item}>
+        <GettingStartedWidget />
       </motion.div>
 
       {/* Weekly Recap Card */}
