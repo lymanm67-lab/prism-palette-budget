@@ -9,7 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useTransactions, useCreateTransaction, useAccounts, useCategories } from '@/hooks/use-finance-data';
 import { formatCurrency, formatDate } from '@/lib/seed-data';
-import { Search, ArrowUpRight, ArrowDownRight, Plus, Loader2 } from 'lucide-react';
+import { Search, ArrowUpRight, ArrowDownRight, Plus, Loader2, Upload } from 'lucide-react';
+import CsvImportDialog from '@/components/CsvImportDialog';
 
 const Transactions = () => {
   const { data: transactions, isLoading } = useTransactions();
@@ -18,6 +19,7 @@ const Transactions = () => {
   const createTransaction = useCreateTransaction();
   const [search, setSearch] = useState('');
   const [open, setOpen] = useState(false);
+  const [csvOpen, setCsvOpen] = useState(false);
   const [form, setForm] = useState({ date: new Date().toISOString().split('T')[0], merchant: '', amount: '', account_id: '', category_id: '', notes: '' });
 
   const filtered = useMemo(() => {
@@ -51,10 +53,14 @@ const Transactions = () => {
           <h1 className="font-display text-3xl font-bold">Transactions</h1>
           <p className="text-muted-foreground">All your recent transactions in one place.</p>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button className="gap-2"><Plus className="h-4 w-4" /> Add Transaction</Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <Button variant="outline" className="gap-2" onClick={() => setCsvOpen(true)}>
+            <Upload className="h-4 w-4" /> Import CSV
+          </Button>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button className="gap-2"><Plus className="h-4 w-4" /> Add Transaction</Button>
+            </DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle className="font-display">Add Transaction</DialogTitle></DialogHeader>
             <div className="space-y-4">
@@ -100,6 +106,7 @@ const Transactions = () => {
             </div>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       <div className="relative max-w-sm">
@@ -138,6 +145,7 @@ const Transactions = () => {
           </div>
         </CardContent>
       </Card>
+      <CsvImportDialog open={csvOpen} onOpenChange={setCsvOpen} />
     </motion.div>
   );
 };
