@@ -459,6 +459,44 @@ export type Database = {
           },
         ]
       }
+      homebuyer_checklist: {
+        Row: {
+          created_at: string
+          household_id: string
+          id: string
+          is_checked: boolean
+          notes: string | null
+          question_number: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          household_id: string
+          id?: string
+          is_checked?: boolean
+          notes?: string | null
+          question_number: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          household_id?: string
+          id?: string
+          is_checked?: boolean
+          notes?: string | null
+          question_number?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "homebuyer_checklist_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       household_members: {
         Row: {
           created_at: string

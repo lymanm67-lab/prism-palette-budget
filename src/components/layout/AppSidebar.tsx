@@ -20,6 +20,7 @@ import {
   Scale,
   Map,
   Heart,
+  Home,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
@@ -54,6 +55,7 @@ const NAV_SECTIONS = [
     label: 'Plan & Analyze',
     items: [
       { to: '/roadmap', icon: Map, label: 'Prism Roadmap', color: 'text-prism-teal' },
+      { to: '/home-buying', icon: Home, label: 'Home Buying', color: 'text-prism-amber' },
       { to: '/calculators', icon: Calculator, label: 'Calculators', color: 'text-prism-indigo' },
       { to: '/reports', icon: BarChart3, label: 'Reports', color: 'text-prism-orange' },
       { to: '/tax-assistant', icon: Bot, label: 'Tax Assistant', color: 'text-prism-indigo' },

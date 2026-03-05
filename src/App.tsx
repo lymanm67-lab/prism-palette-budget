@@ -22,6 +22,7 @@ import DebtPayoff from "@/pages/DebtPayoff";
 import Calculators from "@/pages/Calculators";
 import PrismRoadmap from "@/pages/PrismRoadmap";
 import About from "@/pages/About";
+import HomeBuyingChecklist from "@/pages/HomeBuyingChecklist";
 import NotFound from "./pages/NotFound";
 import Onboarding from "@/pages/Onboarding";
 import LandingPage from "@/pages/LandingPage";
@@ -74,6 +75,7 @@ const App = () => (
               <Route path="/calculators" element={<Calculators />} />
               <Route path="/roadmap" element={<PrismRoadmap />} />
               <Route path="/about" element={<About />} />
+              <Route path="/home-buying" element={<HomeBuyingChecklist />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/tax-assistant" element={<TaxAssistant />} />
               <Route path="/legal" element={<Legal />} />
