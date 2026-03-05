@@ -5,6 +5,7 @@ import {
   ArrowLeftRight,
   PiggyBank,
   BarChart3,
+  Tags,
   LogOut,
   ChevronLeft,
   ChevronRight,
@@ -19,6 +20,7 @@ const NAV_ITEMS = [
   { to: '/accounts', icon: Landmark, label: 'Accounts' },
   { to: '/transactions', icon: ArrowLeftRight, label: 'Transactions' },
   { to: '/budgets', icon: PiggyBank, label: 'Budgets' },
+  { to: '/categories', icon: Tags, label: 'Categories' },
   { to: '/reports', icon: BarChart3, label: 'Reports' },
 ];
 
