@@ -18,9 +18,10 @@ import { toast } from 'sonner';
 import {
   Search, Plus, Loader2, Upload, Receipt, Trash2, Tags,
   ArrowRightLeft, SlidersHorizontal, CalendarIcon, ChevronRight,
-  ArrowUpDown, X, Pencil,
+  ArrowUpDown, X, Pencil, Sparkles, Landmark,
 } from 'lucide-react';
 import CsvImportDialog from '@/components/CsvImportDialog';
+
 import { cn } from '@/lib/utils';
 import { format, parseISO } from 'date-fns';
 
@@ -56,8 +57,10 @@ const Transactions = () => {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [editMultiple, setEditMultiple] = useState(false);
   const [bulkCategory, setBulkCategory] = useState('');
+  const [bulkAccount, setBulkAccount] = useState('');
   const [sortKey, setSortKey] = useState<SortKey>('date');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
+  const [autoCatLoading, setAutoCatLoading] = useState(false);
 
   const [form, setForm] = useState({ date: new Date().toISOString().split('T')[0], merchant: '', amount: '', account_id: '', category_id: '', notes: '' });
   const [transferForm, setTransferForm] = useState({ date: new Date().toISOString().split('T')[0], amount: '', from_account: '', to_account: '', notes: '' });
@@ -159,11 +162,47 @@ const Transactions = () => {
     toast.success(`Categorized ${selected.size} transactions`);
   };
 
-  const cycleSortKey = () => {
-    const keys: SortKey[] = ['date', 'amount', 'merchant'];
-    const idx = keys.indexOf(sortKey);
-    const nextIdx = (idx + 1) % keys.length;
-    setSortKey(keys[nextIdx]);
+  const bulkChangeAccount = async () => {
+    if (!bulkAccount) return;
+    for (const id of selected) { await supabase.from('transactions').update({ account_id: bulkAccount }).eq('id', id); }
+    qc.invalidateQueries({ queryKey: ['transactions'] });
+    setSelected(new Set());
+    setBulkAccount('');
+    toast.success(`Moved ${selected.size} transactions to new account`);
+  };
+
+  const handleAutoCategorize = async () => {
+    if (!household) return;
+    const targetIds = selected.size > 0
+      ? Array.from(selected)
+      : (transactions || []).filter(t => !t.category_id).map(t => t.id);
+
+    if (targetIds.length === 0) {
+      toast.info('No uncategorized transactions to process');
+      return;
+    }
+
+    setAutoCatLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('auto-categorize', {
+        body: { transaction_ids: targetIds, household_id: household.id },
+      });
+      if (error) throw error;
+      if (data?.error) {
+        toast.error(data.error);
+        return;
+      }
+      qc.invalidateQueries({ queryKey: ['transactions'] });
+      setSelected(new Set());
+      const msg = [];
+      if (data.rule_matched > 0) msg.push(`${data.rule_matched} by rules`);
+      if (data.ai_categorized > 0) msg.push(`${data.ai_categorized} by AI`);
+      toast.success(`Auto-categorized ${data.categorized} transactions${msg.length ? ` (${msg.join(', ')})` : ''}`);
+    } catch (e: any) {
+      toast.error(e.message || 'Auto-categorize failed');
+    } finally {
+      setAutoCatLoading(false);
+    }
   };
 
   if (isLoading) return (
@@ -334,6 +373,18 @@ const Transactions = () => {
           </Select>
         </div>
         <div className="flex items-center gap-2">
+          {/* Auto-categorize button */}
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={handleAutoCategorize}
+            disabled={autoCatLoading}
+          >
+            {autoCatLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+            {autoCatLoading ? 'Categorizing…' : 'Auto-categorize'}
+          </Button>
+
           <Button
             variant={editMultiple ? 'default' : 'outline'}
             size="sm"
@@ -380,6 +431,19 @@ const Transactions = () => {
               <Tags className="h-3.5 w-3.5" /> Apply
             </Button>
           </div>
+          <div className="flex items-center gap-2">
+            <Select value={bulkAccount} onValueChange={setBulkAccount}>
+              <SelectTrigger className="h-8 w-[160px] text-xs"><SelectValue placeholder="Move to account…" /></SelectTrigger>
+              <SelectContent>{(accounts || []).map(a => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}</SelectContent>
+            </Select>
+            <Button size="sm" variant="outline" onClick={bulkChangeAccount} disabled={!bulkAccount} className="gap-1 h-8">
+              <Landmark className="h-3.5 w-3.5" /> Move
+            </Button>
+          </div>
+          <Button size="sm" variant="outline" onClick={handleAutoCategorize} disabled={autoCatLoading} className="gap-1 h-8">
+            {autoCatLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+            AI Categorize
+          </Button>
           <Button size="sm" variant="destructive" onClick={bulkDelete} className="gap-1 h-8">
             <Trash2 className="h-3.5 w-3.5" /> Delete
           </Button>
