@@ -14,6 +14,7 @@ import { useCurrency } from '@/hooks/use-currency';
 import { Plus, RefreshCw, Landmark, CreditCard, TrendingUp, PiggyBank, Car, Loader2, Trash2 } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 import PlaidLinkButton from '@/components/PlaidLinkButton';
+import PageOverview from '@/components/PageOverview';
 
 type AccountType = Database['public']['Enums']['account_type'];
 
@@ -71,6 +72,25 @@ const Accounts = () => {
           </h1>
           <p className="text-muted-foreground mt-1">All your connected financial accounts.</p>
         </div>
+        <PageOverview
+          title="Accounts Overview"
+          description="Add and manage your bank accounts, credit cards, investment accounts, and loans. Connect via Plaid for auto-sync."
+          icon={Landmark}
+          iconColor="text-prism-sky"
+          ttsScript="Welcome to the Accounts page. Here you can see all your financial accounts in one place. Click Add Account to manually add a checking, savings, credit card, investment, or loan account. You can also connect your bank automatically using Plaid for real-time transaction syncing. Each account shows its current balance, type, and institution. Accounts are grouped by institution for easy viewing. You can delete accounts you no longer need."
+          features={[
+            'Add checking, savings, credit, investment, and loan accounts',
+            'Auto-sync with Plaid bank connection',
+            'View balances grouped by institution',
+            'Track account types with color-coded icons',
+          ]}
+          demoData={[
+            { label: 'Chase Checking', value: '$4,250.00', badge: 'Checking', color: '#7c3aed' },
+            { label: 'Amex Platinum', value: '-$1,234.56', badge: 'Credit', color: '#f43f5e' },
+            { label: 'Vanguard 401k', value: '$45,000.00', badge: 'Investment', color: '#0ea5e9' },
+            { label: 'Marcus Savings', value: '$12,500.00', badge: 'Savings', color: '#14b8a6' },
+          ]}
+        />
         <div className="flex gap-2">
           <PlaidLinkButton />
           <Dialog open={open} onOpenChange={setOpen}>

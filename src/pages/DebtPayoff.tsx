@@ -22,6 +22,7 @@ import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
 import { supabase } from '@/integrations/supabase/client';
 import { useTTS } from '@/hooks/use-tts';
+import PageOverview from '@/components/PageOverview';
 
 // ─── Types ───
 interface Debt {
@@ -248,6 +249,7 @@ const DebtPayoff = () => {
             <span className="prism-gradient-text">Debt Payoff Planner</span>
           </h1>
           <p className="text-muted-foreground mt-1">Choose a strategy and crush your debt faster.</p>
+          <PageOverview title="Debt Payoff Planner" description="Plan your debt-free journey with avalanche, snowball, or hybrid strategies." icon={TrendingDown} iconColor="text-prism-rose" ttsScript="The Debt Payoff Planner helps you create a strategy to eliminate debt. Add debts with balances, interest rates, and minimum payments. Choose Avalanche, Snowball, or Hybrid strategies. Set extra payments to accelerate payoff." features={['Avalanche, Snowball, and Hybrid strategies','Projected payoff timeline','AI debt advisor','Multiple debt plans']} demoData={[{label:'Credit Card',value:'$5,200 @ 22.99%',badge:'High',color:'#ef4444'},{label:'Student Loan',value:'$18,000 @ 5.5%',badge:'Medium',color:'#f59e0b'}]} />
         </div>
         <div className="flex gap-2">
           {/* Plan selector */}

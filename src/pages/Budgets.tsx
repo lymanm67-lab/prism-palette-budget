@@ -12,9 +12,10 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useBudgets, useCategories, useCategoryGroups, useTransactions, useUpsertBudget, useDeleteBudget } from '@/hooks/use-finance-data';
 import { useCurrency } from '@/hooks/use-currency';
-import { Loader2, Plus, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Eye, Settings2, TrendingUp, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { Loader2, Plus, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Eye, Settings2, TrendingUp, AlertTriangle, CheckCircle2, PiggyBank } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getDaysInMonth } from 'date-fns';
+import PageOverview from '@/components/PageOverview';
 
 const getMonth = (offset: number) => {
   const d = new Date();
@@ -346,6 +347,27 @@ const Budgets = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl font-bold">{formatMonth(month)}</h1>
+          <PageOverview
+            title="Budgets Overview"
+            description="Set monthly spending limits per category and track actual spending vs planned amounts in real time."
+            icon={PiggyBank}
+            iconColor="text-prism-amber"
+            ttsScript="Welcome to Budgets. Here you can create monthly spending plans for each category. Set planned amounts for your income, fixed expenses like rent and utilities, flexible expenses like groceries and dining, and non-monthly expenses. The progress bars show how much you have spent versus your budget in real time. Toggle between Personal and Business budgets. Use the Forecast tab to see spending projections. Navigate months with the arrow buttons to plan ahead or review past months."
+            features={[
+              'Set planned amounts for each category',
+              'Real-time spending vs budget tracking',
+              'Personal and Business budget views',
+              'Spending forecast projections',
+              'Income, fixed, flexible, and non-monthly grouping',
+              'Rollover unused budgets to next month',
+            ]}
+            demoData={[
+              { label: 'Groceries', value: '$420/$600', badge: '70%', color: '#22c55e' },
+              { label: 'Dining Out', value: '$180/$200', badge: '90%', color: '#f59e0b' },
+              { label: 'Rent/Mortgage', value: '$1,800/$1,800', badge: '100%', color: '#3b82f6' },
+              { label: 'Subscriptions', value: '$45/$75', badge: '60%', color: '#8b5cf6' },
+            ]}
+          />
         <div className="flex items-center gap-3 mt-2">
             <Tabs value={budgetType} onValueChange={(v) => setBudgetType(v as 'personal' | 'business')}>
               <TabsList>

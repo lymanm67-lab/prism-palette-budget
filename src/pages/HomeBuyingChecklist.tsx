@@ -14,6 +14,7 @@ import { useHousehold } from '@/contexts/HouseholdContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import PageOverview from '@/components/PageOverview';
 
 const CHECKLIST_ITEMS = [
   {
@@ -208,6 +209,25 @@ const HomeBuyingChecklist = () => {
           <p className="text-muted-foreground mt-1">
             Answer these 8 critical questions before you buy a home.
           </p>
+          <PageOverview
+            title="Home-Buying Readiness"
+            description="An 8-question checklist to evaluate your readiness to buy a home, with expert guidance and tips."
+            icon={Home}
+            iconColor="text-prism-amber"
+            ttsScript="The Home-Buying Readiness checklist helps you evaluate whether you are ready to buy a home. It covers 8 critical questions: What is your time horizon for staying in the home? What is your current debt-to-income ratio? How much have you saved for a down payment? Have you been pre-approved for a mortgage? Do you understand all the costs beyond the mortgage? Is your emergency fund fully funded? Do you have stable cash flow? And what is your credit score? Each question includes expert guidance, practical tips, and space for your personal notes."
+            features={[
+              '8 critical readiness questions',
+              'Expert guidance for each question',
+              'Personal notes for each item',
+              'Visual readiness score',
+            ]}
+            demoData={[
+              { label: 'Time Horizon', value: '7+ years', badge: 'Ready', color: '#22c55e' },
+              { label: 'Down Payment', value: '$40,000', badge: '15%', color: '#3b82f6' },
+              { label: 'Credit Score', value: '760', badge: 'Excellent', color: '#14b8a6' },
+              { label: 'DTI Ratio', value: '28%', badge: 'Good', color: '#f59e0b' },
+            ]}
+          />
         </div>
         <Badge variant="secondary" className="text-sm gap-1.5 px-3 py-1.5 self-start sm:self-auto">
           <Home className="h-3.5 w-3.5 text-prism-teal" />

@@ -10,6 +10,7 @@ import {
   Home, Car, CreditCard, TrendingUp, Calculator, DollarSign, Percent, CalendarDays, PiggyBank, Sparkles,
 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import PageOverview from '@/components/PageOverview';
 
 // ─── Calculation helpers ───
 
@@ -229,6 +230,27 @@ const Calculators = () => {
           <span className="prism-gradient-text">Financial Calculators</span>
         </h1>
         <p className="text-muted-foreground mt-1">Mortgage, auto, credit card, investment, and debt calculators.</p>
+        <PageOverview
+          title="Financial Calculators"
+          description="Six powerful calculators for mortgage, auto loans, credit cards, investments, general debt, and wealth projection."
+          icon={Calculator}
+          iconColor="text-prism-indigo"
+          ttsScript="The Calculators page offers six financial calculators to help you plan. The Mortgage calculator shows monthly payments, total interest, and amortization schedules. The Auto Loan calculator factors in down payment and trade-in value. The Credit Card calculator shows how long it takes to pay off a balance. The Investment calculator projects compound growth over time. The General Debt calculator handles any loan type. The Wealth Multiplier shows how much each dollar invested today will grow by retirement."
+          features={[
+            'Mortgage payment and amortization calculator',
+            'Auto loan with trade-in value',
+            'Credit card payoff timeline',
+            'Investment compound growth projections',
+            'General debt calculator',
+            'Wealth multiplier by age',
+          ]}
+          demoData={[
+            { label: 'Mortgage Payment', value: '$1,896/mo', badge: '$350k @ 6.5%' },
+            { label: 'Auto Payment', value: '$575/mo', badge: '$30k @ 5.9%' },
+            { label: 'CC Payoff', value: '42 months', badge: '$8k @ 22.99%' },
+            { label: 'Wealth Multiplier', value: '23x', badge: 'Age 30' },
+          ]}
+        />
       </div>
 
       {/* Calculator tabs */}

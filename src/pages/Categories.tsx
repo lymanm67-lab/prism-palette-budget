@@ -15,6 +15,7 @@ import {
 } from '@/hooks/use-finance-data';
 import { useBusinessProfiles } from '@/hooks/use-business-data';
 import { Loader2, Plus, Pencil, Trash2, GripVertical, ChevronDown, ChevronRight, FolderOpen, Building2 } from 'lucide-react';
+import PageOverview from '@/components/PageOverview';
 
 const PRESET_COLORS = [
   '#7c3aed', '#2563eb', '#0891b2', '#059669', '#65a30d',
@@ -167,6 +168,26 @@ const Categories = () => {
           <h1 className="font-display text-3xl font-bold prism-gradient-text">Categories</h1>
           <p className="text-muted-foreground">Organize your transactions with groups and categories.</p>
         </div>
+        <PageOverview
+          title="Categories Overview"
+          description="Create category groups and categories to classify spending and income. Assign colors and expense types for budgeting."
+          icon={FolderOpen}
+          iconColor="text-prism-lime"
+          ttsScript="The Categories page lets you organize all your transactions. Categories are arranged in groups like Housing, Food, Transportation, and Income. Each group contains individual categories. For example, Food might include Groceries, Dining Out, and Coffee. You can create new groups, add categories within them, assign colors for visual identification, and set expense types like fixed, flexible, or discretionary. Categories are used throughout the app in budgets, reports, and auto-categorization rules."
+          features={[
+            'Organize categories into groups',
+            'Color-code for visual identification',
+            'Set expense types (fixed, flexible, discretionary)',
+            'Link groups to business profiles',
+            'Drag to reorder groups and categories',
+          ]}
+          demoData={[
+            { label: 'Housing', value: '3 categories', badge: 'Fixed', color: '#3b82f6' },
+            { label: 'Food & Dining', value: '4 categories', badge: 'Flexible', color: '#22c55e' },
+            { label: 'Transportation', value: '2 categories', badge: 'Flexible', color: '#f59e0b' },
+            { label: 'Income', value: '3 categories', badge: 'Income', color: '#8b5cf6' },
+          ]}
+        />
         <Button className="gap-2 prism-gradient text-primary-foreground hover:opacity-90" onClick={openCreateGroup}>
           <Plus className="h-4 w-4" /> Add Group
         </Button>
