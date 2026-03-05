@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useHousehold } from '@/contexts/HouseholdContext';
 
@@ -20,6 +20,51 @@ export function useBusinessProfiles() {
       if (error) throw error;
       return data;
     },
+  });
+}
+
+export function useCreateBusinessProfile() {
+  const qc = useQueryClient();
+  const { household } = useHousehold();
+  return useMutation({
+    mutationFn: async (profile: { business_name: string; entity_type: string; ein?: string | null; industry?: string | null }) => {
+      const { data, error } = await supabase
+        .from('business_profiles')
+        .insert({ ...profile, household_id: household!.id })
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['business_profiles'] }),
+  });
+}
+
+export function useUpdateBusinessProfile() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: { id: string; business_name?: string; entity_type?: string; ein?: string | null; industry?: string | null }) => {
+      const { data, error } = await supabase
+        .from('business_profiles')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['business_profiles'] }),
+  });
+}
+
+export function useDeleteBusinessProfile() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('business_profiles').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['business_profiles'] }),
   });
 }
 

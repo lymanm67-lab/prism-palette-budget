@@ -6,8 +6,10 @@ import { useBusinessProfiles } from '@/hooks/use-business-data';
 import { useCurrency } from '@/hooks/use-currency';
 import {
   TrendingUp, Wallet, CreditCard, ArrowUpRight, Loader2,
-  Sparkles, ChevronRight, Building2, PiggyBank, User, LayoutGrid
+  Sparkles, ChevronRight, Building2, PiggyBank, User, LayoutGrid, Settings2
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import BusinessProfileManager from '@/components/BusinessProfileManager';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, PieChart, Pie, Cell,
@@ -40,6 +42,7 @@ const Dashboard = () => {
 
   const [mode, setMode] = useState<DashboardMode>('personal');
   const [selectedBusiness, setSelectedBusiness] = useState<string>('all');
+  const [manageOpen, setManageOpen] = useState(false);
 
   const now = new Date();
   const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
@@ -184,19 +187,26 @@ const Dashboard = () => {
             </button>
           </div>
 
-          {/* Business selector */}
-          {mode === 'business' && businessProfiles && businessProfiles.length > 0 && (
-            <Select value={selectedBusiness} onValueChange={setSelectedBusiness}>
-              <SelectTrigger className="w-[180px] h-9 text-sm">
-                <SelectValue placeholder="All Businesses" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Businesses</SelectItem>
-                {businessProfiles.map(bp => (
-                  <SelectItem key={bp.id} value={bp.id}>{bp.business_name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          {/* Business selector + manage */}
+          {mode === 'business' && (
+            <div className="flex items-center gap-1.5">
+              {businessProfiles && businessProfiles.length > 0 && (
+                <Select value={selectedBusiness} onValueChange={setSelectedBusiness}>
+                  <SelectTrigger className="w-[180px] h-9 text-sm">
+                    <SelectValue placeholder="All Businesses" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Businesses</SelectItem>
+                    {businessProfiles.map(bp => (
+                      <SelectItem key={bp.id} value={bp.id}>{bp.business_name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => setManageOpen(true)} title="Manage businesses">
+                <Settings2 className="h-4 w-4" />
+              </Button>
+            </div>
           )}
 
           <button
@@ -354,6 +364,8 @@ const Dashboard = () => {
           )}
         </>
       )}
+
+      <BusinessProfileManager open={manageOpen} onOpenChange={setManageOpen} />
     </motion.div>
   );
 };
