@@ -668,6 +668,47 @@ export type Database = {
           },
         ]
       }
+      roadmap_progress: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          household_id: string
+          id: string
+          is_completed: boolean
+          notes: string | null
+          step_number: number
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          household_id: string
+          id?: string
+          is_completed?: boolean
+          notes?: string | null
+          step_number: number
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          household_id?: string
+          id?: string
+          is_completed?: boolean
+          notes?: string | null
+          step_number?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roadmap_progress_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       saved_tax_responses: {
         Row: {
           created_at: string
