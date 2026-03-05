@@ -1,0 +1,1 @@
+ALTER TABLE public.category_groups ADD COLUMN IF NOT EXISTS expense_type text NOT NULL DEFAULT 'flexible' CHECK (expense_type IN ('fixed', 'flexible', 'non_monthly', 'income'));
