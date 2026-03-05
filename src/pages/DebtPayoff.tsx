@@ -1,21 +1,24 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useCurrency } from '@/hooks/use-currency';
 import { useAccounts } from '@/hooks/use-finance-data';
 import {
+  useDebtPlans, useCreateDebtPlan, useUpdateDebtPlan, useDeleteDebtPlan,
+  useDebtItems, useCreateDebtItem, useUpdateDebtItem, useDeleteDebtItem,
+} from '@/hooks/use-debt-plans';
+import {
   Plus, Trash2, Pencil, CreditCard, TrendingDown, Snowflake, Flame,
-  ArrowDownUp, CalendarDays, DollarSign, Loader2, Info, CheckCircle2
+  ArrowDownUp, CalendarDays, DollarSign, Loader2, Info, CheckCircle2,
+  Save, FolderOpen,
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { toast } from 'sonner';
 
 // ─── Types ───
 interface Debt {
@@ -23,7 +26,7 @@ interface Debt {
   name: string;
   balance: number;
   minimum_payment: number;
-  interest_rate: number; // APR %
+  interest_rate: number;
   account_id?: string;
 }
 
@@ -39,15 +42,12 @@ interface PayoffStep {
 // ─── Payoff calculator ───
 function calculatePayoff(debts: Debt[], extraPayment: number, strategy: Strategy): PayoffStep[] {
   if (debts.length === 0) return [];
-
-  // Sort debts based on strategy
   let sorted = [...debts];
   if (strategy === 'snowball') {
-    sorted.sort((a, b) => a.balance - b.balance); // smallest balance first
+    sorted.sort((a, b) => a.balance - b.balance);
   } else if (strategy === 'avalanche') {
-    sorted.sort((a, b) => b.interest_rate - a.interest_rate); // highest rate first
+    sorted.sort((a, b) => b.interest_rate - a.interest_rate);
   } else {
-    // hybrid: weight of rate * 0.6 + inverse-balance * 0.4
     const maxBal = Math.max(...sorted.map(d => d.balance));
     sorted.sort((a, b) => {
       const scoreA = a.interest_rate * 0.6 + ((maxBal - a.balance) / maxBal) * 100 * 0.4;
@@ -55,117 +55,118 @@ function calculatePayoff(debts: Debt[], extraPayment: number, strategy: Strategy
       return scoreB - scoreA;
     });
   }
-
   const balances = new Map(sorted.map(d => [d.id, d.balance]));
   const steps: PayoffStep[] = [];
   let month = 0;
-  const MAX_MONTHS = 600; // 50 years safety cap
-
+  const MAX_MONTHS = 600;
   while (Array.from(balances.values()).some(b => b > 0.01) && month < MAX_MONTHS) {
     month++;
     let availableExtra = extraPayment;
     const monthDebts: PayoffStep['debts'] = [];
-
-    // Apply interest first
-    for (const d of sorted) {
-      const bal = balances.get(d.id)!;
-      if (bal <= 0) continue;
-      const monthlyRate = d.interest_rate / 100 / 12;
-      balances.set(d.id, bal * (1 + monthlyRate));
-    }
-
-    // Pay minimums
-    for (const d of sorted) {
-      const bal = balances.get(d.id)!;
-      if (bal <= 0) continue;
-      const payment = Math.min(d.minimum_payment, bal);
-      balances.set(d.id, bal - payment);
-    }
-
-    // Apply extra payment to priority debt
-    for (const d of sorted) {
-      if (availableExtra <= 0) break;
-      const bal = balances.get(d.id)!;
-      if (bal <= 0) continue;
-      const extra = Math.min(availableExtra, bal);
-      balances.set(d.id, bal - extra);
-      availableExtra -= extra;
-    }
-
-    // Build month snapshot
-    for (const d of sorted) {
-      const bal = Math.max(0, balances.get(d.id)!);
-      const wasPaidOff = bal < 0.01;
-      monthDebts.push({
-        name: d.name,
-        payment: d.minimum_payment, // simplified
-        balance: bal,
-        paid_off: wasPaidOff,
-      });
-    }
-
-    steps.push({
-      month,
-      debts: monthDebts,
-      total_payment: sorted.reduce((s, d) => s + d.minimum_payment, 0) + extraPayment - availableExtra,
-      total_balance: Array.from(balances.values()).reduce((s, b) => s + Math.max(0, b), 0),
-    });
-
+    for (const d of sorted) { const bal = balances.get(d.id)!; if (bal <= 0) continue; balances.set(d.id, bal * (1 + d.interest_rate / 100 / 12)); }
+    for (const d of sorted) { const bal = balances.get(d.id)!; if (bal <= 0) continue; const payment = Math.min(d.minimum_payment, bal); balances.set(d.id, bal - payment); }
+    for (const d of sorted) { if (availableExtra <= 0) break; const bal = balances.get(d.id)!; if (bal <= 0) continue; const extra = Math.min(availableExtra, bal); balances.set(d.id, bal - extra); availableExtra -= extra; }
+    for (const d of sorted) { const bal = Math.max(0, balances.get(d.id)!); monthDebts.push({ name: d.name, payment: d.minimum_payment, balance: bal, paid_off: bal < 0.01 }); }
+    steps.push({ month, debts: monthDebts, total_payment: sorted.reduce((s, d) => s + d.minimum_payment, 0) + extraPayment - availableExtra, total_balance: Array.from(balances.values()).reduce((s, b) => s + Math.max(0, b), 0) });
     if (steps[steps.length - 1].total_balance < 0.01) break;
   }
-
   return steps;
 }
 
 function calcTotalInterest(debts: Debt[], extraPayment: number, strategy: Strategy): number {
   const steps = calculatePayoff(debts, extraPayment, strategy);
   const totalPaid = steps.reduce((s, step) => s + step.total_payment, 0);
-  const totalOriginal = debts.reduce((s, d) => s + d.balance, 0);
-  return Math.max(0, totalPaid - totalOriginal);
+  return Math.max(0, totalPaid - debts.reduce((s, d) => s + d.balance, 0));
 }
+
+const STRATEGIES = [
+  { value: 'snowball' as Strategy, label: 'Debt Snowball', icon: Snowflake, color: 'text-prism-sky', bg: 'from-prism-sky/20 to-prism-sky/5', description: 'Pay smallest balances first for quick psychological wins. Popularized by Dave Ramsey.' },
+  { value: 'avalanche' as Strategy, label: 'Debt Avalanche', icon: Flame, color: 'text-prism-rose', bg: 'from-prism-rose/20 to-prism-rose/5', description: 'Pay highest interest rates first to minimize total interest paid. Mathematically optimal.' },
+  { value: 'hybrid' as Strategy, label: 'Hybrid Strategy', icon: ArrowDownUp, color: 'text-prism-amber', bg: 'from-prism-amber/20 to-prism-amber/5', description: 'Balances both approaches: considers rate (60%) and balance size (40%) for prioritization.' },
+];
 
 // ─── Component ───
 const DebtPayoff = () => {
   const { formatCurrency } = useCurrency();
   const { data: accounts, isLoading: accountsLoading } = useAccounts();
-  const [debts, setDebts] = useState<Debt[]>([]);
-  const [strategy, setStrategy] = useState<Strategy>('avalanche');
-  const [extraPayment, setExtraPayment] = useState(100);
+
+  // DB hooks
+  const { data: plans, isLoading: plansLoading } = useDebtPlans();
+  const createPlan = useCreateDebtPlan();
+  const updatePlan = useUpdateDebtPlan();
+  const deletePlan = useDeleteDebtPlan();
+
+  const [activePlanId, setActivePlanId] = useState<string | null>(null);
+  const { data: dbItems, isLoading: itemsLoading } = useDebtItems(activePlanId);
+  const createItem = useCreateDebtItem();
+  const updateItem = useUpdateDebtItem();
+  const deleteItem = useDeleteDebtItem();
+
+  // Auto-select first plan
+  useEffect(() => {
+    if (plans && plans.length > 0 && !activePlanId) {
+      setActivePlanId(plans[0].id);
+    }
+  }, [plans, activePlanId]);
+
+  const activePlan = plans?.find(p => p.id === activePlanId);
+  const strategy: Strategy = (activePlan?.strategy as Strategy) || 'avalanche';
+  const extraPayment = activePlan?.extra_payment ?? 100;
+
+  // Map DB items to local Debt shape
+  const debts: Debt[] = useMemo(() =>
+    (dbItems || []).map(item => ({
+      id: item.id,
+      name: item.name,
+      balance: Number(item.balance),
+      minimum_payment: Number(item.minimum_payment),
+      interest_rate: Number(item.interest_rate),
+      account_id: item.account_id || undefined,
+    })),
+    [dbItems]
+  );
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState({ name: '', balance: '', minimum_payment: '', interest_rate: '', account_id: '' });
+  const [planDialogOpen, setPlanDialogOpen] = useState(false);
+  const [planName, setPlanName] = useState('');
 
-  // Auto-import credit/loan accounts as debts
+  // Import from accounts
   const importableAccounts = useMemo(() => {
     if (!accounts) return [];
     const existingIds = new Set(debts.map(d => d.account_id));
     return accounts.filter(a => (a.account_type === 'credit' || a.account_type === 'loan') && !existingIds.has(a.id));
   }, [accounts, debts]);
 
-  const importAccount = (acc: any) => {
-    setDebts(prev => [...prev, {
-      id: crypto.randomUUID(),
+  const importAccount = async (acc: any) => {
+    if (!activePlanId) return;
+    await createItem.mutateAsync({
+      plan_id: activePlanId,
       name: acc.name,
       balance: Math.abs(acc.balance),
       minimum_payment: Math.round(Math.abs(acc.balance) * 0.02) || 25,
       interest_rate: acc.account_type === 'credit' ? 22.99 : 6.5,
       account_id: acc.id,
-    }]);
+    });
+    toast.success(`Imported ${acc.name}`);
   };
 
-  const handleSave = () => {
-    const debt: Debt = {
-      id: editId || crypto.randomUUID(),
+  const handleSaveDebt = async () => {
+    if (!activePlanId) return;
+    const payload = {
       name: form.name,
       balance: parseFloat(form.balance) || 0,
       minimum_payment: parseFloat(form.minimum_payment) || 0,
       interest_rate: parseFloat(form.interest_rate) || 0,
-      account_id: form.account_id || undefined,
+      account_id: form.account_id || null,
     };
     if (editId) {
-      setDebts(prev => prev.map(d => d.id === editId ? debt : d));
+      await updateItem.mutateAsync({ id: editId, plan_id: activePlanId, ...payload });
+      toast.success('Debt updated');
     } else {
-      setDebts(prev => [...prev, debt]);
+      await createItem.mutateAsync({ plan_id: activePlanId, ...payload });
+      toast.success('Debt added');
     }
     setEditId(null);
     setForm({ name: '', balance: '', minimum_payment: '', interest_rate: '', account_id: '' });
@@ -174,26 +175,48 @@ const DebtPayoff = () => {
 
   const openEdit = (d: Debt) => {
     setEditId(d.id);
-    setForm({
-      name: d.name,
-      balance: String(d.balance),
-      minimum_payment: String(d.minimum_payment),
-      interest_rate: String(d.interest_rate),
-      account_id: d.account_id || '',
-    });
+    setForm({ name: d.name, balance: String(d.balance), minimum_payment: String(d.minimum_payment), interest_rate: String(d.interest_rate), account_id: d.account_id || '' });
     setDialogOpen(true);
   };
 
-  const deleteDbt = (id: string) => setDebts(prev => prev.filter(d => d.id !== id));
+  const handleDeleteDebt = async (id: string) => {
+    if (!activePlanId) return;
+    await deleteItem.mutateAsync({ id, plan_id: activePlanId });
+    toast.success('Debt removed');
+  };
+
+  const handleCreatePlan = async () => {
+    const result = await createPlan.mutateAsync({ name: planName || 'My Debt Plan' });
+    setActivePlanId(result.id);
+    setPlanName('');
+    setPlanDialogOpen(false);
+    toast.success('Plan created');
+  };
+
+  const handleDeletePlan = async () => {
+    if (!activePlanId) return;
+    await deletePlan.mutateAsync(activePlanId);
+    setActivePlanId(null);
+    toast.success('Plan deleted');
+  };
+
+  const setStrategy = (s: Strategy) => {
+    if (!activePlanId) return;
+    updatePlan.mutate({ id: activePlanId, strategy: s });
+  };
+
+  const setExtraPayment = (val: number) => {
+    if (!activePlanId) return;
+    updatePlan.mutate({ id: activePlanId, extra_payment: val });
+  };
 
   const totalDebt = debts.reduce((s, d) => s + d.balance, 0);
   const totalMinPayments = debts.reduce((s, d) => s + d.minimum_payment, 0);
 
-  // Payoff results for each strategy
   const results = useMemo(() => {
     if (debts.length === 0) return null;
-    const strategies: Strategy[] = ['snowball', 'avalanche', 'hybrid'];
-    return Object.fromEntries(strategies.map(s => {
+    const strats: Strategy[] = ['snowball', 'avalanche', 'hybrid'];
+    return Object.fromEntries(strats.map(s => {
       const steps = calculatePayoff(debts, extraPayment, s);
       const interest = calcTotalInterest(debts, extraPayment, s);
       return [s, { months: steps.length, interest, steps }];
@@ -202,36 +225,14 @@ const DebtPayoff = () => {
 
   const activeResult = results?.[strategy];
 
-  const STRATEGIES = [
-    {
-      value: 'snowball' as Strategy,
-      label: 'Debt Snowball',
-      icon: Snowflake,
-      color: 'text-prism-sky',
-      bg: 'from-prism-sky/20 to-prism-sky/5',
-      description: 'Pay smallest balances first for quick psychological wins. Popularized by Dave Ramsey.',
-    },
-    {
-      value: 'avalanche' as Strategy,
-      label: 'Debt Avalanche',
-      icon: Flame,
-      color: 'text-prism-rose',
-      bg: 'from-prism-rose/20 to-prism-rose/5',
-      description: 'Pay highest interest rates first to minimize total interest paid. Mathematically optimal.',
-    },
-    {
-      value: 'hybrid' as Strategy,
-      label: 'Hybrid Strategy',
-      icon: ArrowDownUp,
-      color: 'text-prism-amber',
-      bg: 'from-prism-amber/20 to-prism-amber/5',
-      description: 'Balances both approaches: considers rate (60%) and balance size (40%) for prioritization.',
-    },
-  ];
-
-  if (accountsLoading) return (
+  if (plansLoading || accountsLoading) return (
     <div className="flex items-center justify-center p-20">
-      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex flex-col items-center gap-3">
+        <div className="h-12 w-12 rounded-2xl prism-gradient prism-glow flex items-center justify-center">
+          <Loader2 className="h-6 w-6 animate-spin text-white" />
+        </div>
+        <p className="text-sm text-muted-foreground">Loading debt plans…</p>
+      </div>
     </div>
   );
 
@@ -245,280 +246,269 @@ const DebtPayoff = () => {
           </h1>
           <p className="text-muted-foreground mt-1">Choose a strategy and crush your debt faster.</p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={o => { setDialogOpen(o); if (!o) setEditId(null); }}>
-          <DialogTrigger asChild>
-            <Button className="gap-2 prism-gradient text-white border-0 hover:opacity-90">
-              <Plus className="h-4 w-4" /> Add Debt
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle className="font-display">{editId ? 'Edit Debt' : 'Add Debt'}</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Debt Name</Label>
-                <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. Chase Visa" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Current Balance</Label>
-                  <Input type="number" step="0.01" value={form.balance} onChange={e => setForm(f => ({ ...f, balance: e.target.value }))} placeholder="5000" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Interest Rate (%)</Label>
-                  <Input type="number" step="0.01" value={form.interest_rate} onChange={e => setForm(f => ({ ...f, interest_rate: e.target.value }))} placeholder="22.99" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Minimum Monthly Payment</Label>
-                <Input type="number" step="0.01" value={form.minimum_payment} onChange={e => setForm(f => ({ ...f, minimum_payment: e.target.value }))} placeholder="150" />
-              </div>
-              <Button onClick={handleSave} disabled={!form.name || !form.balance} className="w-full prism-gradient text-white border-0 hover:opacity-90">
-                {editId ? 'Update' : 'Add Debt'}
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      {/* Import from accounts */}
-      {importableAccounts.length > 0 && (
-        <Card className="prism-card-shine border-border/50">
-          <CardContent className="p-4">
-            <p className="text-sm font-medium mb-2 flex items-center gap-2">
-              <CreditCard className="h-4 w-4 text-prism-sky" />
-              Import from your accounts
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {importableAccounts.map(acc => (
-                <Button key={acc.id} variant="outline" size="sm" className="gap-2" onClick={() => importAccount(acc)}>
-                  <Plus className="h-3 w-3" />
-                  {acc.name} ({formatCurrency(Math.abs(acc.balance))})
+        <div className="flex gap-2">
+          {/* Plan selector */}
+          {plans && plans.length > 1 && (
+            <div className="flex items-center gap-1">
+              {plans.map(p => (
+                <Button
+                  key={p.id}
+                  variant={activePlanId === p.id ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setActivePlanId(p.id)}
+                  className={activePlanId === p.id ? 'prism-gradient text-white border-0' : ''}
+                >
+                  <FolderOpen className="h-3.5 w-3.5 mr-1" />
+                  {p.name}
                 </Button>
               ))}
             </div>
-          </CardContent>
-        </Card>
-      )}
+          )}
 
-      {/* Debt list */}
-      {debts.length === 0 ? (
+          <Dialog open={planDialogOpen} onOpenChange={setPlanDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-1">
+                <Plus className="h-3.5 w-3.5" /> New Plan
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader><DialogTitle className="font-display">Create Debt Plan</DialogTitle></DialogHeader>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Plan Name</Label>
+                  <Input value={planName} onChange={e => setPlanName(e.target.value)} placeholder="e.g. 2026 Debt Freedom" />
+                </div>
+                <Button onClick={handleCreatePlan} disabled={createPlan.isPending} className="w-full prism-gradient text-white border-0 hover:opacity-90">
+                  {createPlan.isPending ? 'Creating…' : 'Create Plan'}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+
+      {/* No plan state */}
+      {(!plans || plans.length === 0) ? (
         <Card className="prism-card-shine border-border/50">
           <CardContent className="flex flex-col items-center justify-center p-12 text-center">
             <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-prism-rose to-prism-orange flex items-center justify-center mb-4">
               <TrendingDown className="h-8 w-8 text-white" />
             </div>
-            <h3 className="font-display text-lg font-bold mb-1">No debts added yet</h3>
-            <p className="text-muted-foreground text-sm max-w-sm">Add your debts to see how different payoff strategies can save you money and time.</p>
+            <h3 className="font-display text-lg font-bold mb-1">No debt plans yet</h3>
+            <p className="text-muted-foreground text-sm max-w-sm mb-4">Create a plan to start tracking your debt payoff journey.</p>
+            <Button className="prism-gradient text-white border-0 hover:opacity-90 gap-2" onClick={() => setPlanDialogOpen(true)}>
+              <Plus className="h-4 w-4" /> Create Your First Plan
+            </Button>
           </CardContent>
         </Card>
       ) : (
         <>
-          {/* Summary cards */}
-          <div className="grid gap-4 sm:grid-cols-3">
-            <Card className="prism-card-shine border-border/50">
-              <CardContent className="p-4">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider">Total Debt</p>
-                <p className="font-display text-2xl font-bold mt-1">{formatCurrency(totalDebt)}</p>
-              </CardContent>
-            </Card>
-            <Card className="prism-card-shine border-border/50">
-              <CardContent className="p-4">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider">Min. Payments</p>
-                <p className="font-display text-2xl font-bold mt-1">{formatCurrency(totalMinPayments)}<span className="text-sm text-muted-foreground font-normal">/mo</span></p>
-              </CardContent>
-            </Card>
-            <Card className="prism-card-shine border-border/50">
-              <CardContent className="p-4">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider">Extra Payment</p>
-                <div className="flex items-center gap-2 mt-1">
-                  <DollarSign className="h-4 w-4 text-muted-foreground" />
-                  <Input
-                    type="number"
-                    value={extraPayment}
-                    onChange={e => setExtraPayment(Math.max(0, parseInt(e.target.value) || 0))}
-                    className="h-9 font-display text-lg font-bold w-24"
-                  />
-                  <span className="text-sm text-muted-foreground">/mo</span>
+          {/* Active plan header */}
+          {activePlan && (
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50 text-sm">
+                <Save className="h-4 w-4 text-prism-teal" />
+                <span className="font-medium">{activePlan.name}</span>
+                <span className="text-muted-foreground">• Auto-saved</span>
+              </div>
+              <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive h-8" onClick={handleDeletePlan}>
+                <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete Plan
+              </Button>
+            </div>
+          )}
+
+          {/* Add debt button + import */}
+          <div className="flex flex-wrap gap-3 items-center">
+            <Dialog open={dialogOpen} onOpenChange={o => { setDialogOpen(o); if (!o) setEditId(null); }}>
+              <DialogTrigger asChild>
+                <Button className="gap-2 prism-gradient text-white border-0 hover:opacity-90">
+                  <Plus className="h-4 w-4" /> Add Debt
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader><DialogTitle className="font-display">{editId ? 'Edit Debt' : 'Add Debt'}</DialogTitle></DialogHeader>
+                <div className="space-y-4">
+                  <div className="space-y-2"><Label>Debt Name</Label><Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. Chase Visa" /></div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2"><Label>Current Balance</Label><Input type="number" step="0.01" value={form.balance} onChange={e => setForm(f => ({ ...f, balance: e.target.value }))} placeholder="5000" /></div>
+                    <div className="space-y-2"><Label>Interest Rate (%)</Label><Input type="number" step="0.01" value={form.interest_rate} onChange={e => setForm(f => ({ ...f, interest_rate: e.target.value }))} placeholder="22.99" /></div>
+                  </div>
+                  <div className="space-y-2"><Label>Minimum Monthly Payment</Label><Input type="number" step="0.01" value={form.minimum_payment} onChange={e => setForm(f => ({ ...f, minimum_payment: e.target.value }))} placeholder="150" /></div>
+                  <Button onClick={handleSaveDebt} disabled={!form.name || !form.balance || createItem.isPending || updateItem.isPending} className="w-full prism-gradient text-white border-0 hover:opacity-90">
+                    {(createItem.isPending || updateItem.isPending) ? 'Saving…' : editId ? 'Update' : 'Add Debt'}
+                  </Button>
                 </div>
-              </CardContent>
-            </Card>
+              </DialogContent>
+            </Dialog>
+
+            {importableAccounts.length > 0 && (
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs text-muted-foreground flex items-center gap-1"><CreditCard className="h-3.5 w-3.5" /> Import:</span>
+                {importableAccounts.map(acc => (
+                  <Button key={acc.id} variant="outline" size="sm" className="gap-1 h-8 text-xs" onClick={() => importAccount(acc)}>
+                    <Plus className="h-3 w-3" /> {acc.name}
+                  </Button>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Debt items */}
-          <div className="grid gap-3 sm:grid-cols-2">
-            {debts.map((d) => {
-              const pctPaid = totalDebt > 0 ? ((totalDebt - d.balance) / totalDebt) * 100 : 0;
-              return (
-                <Card key={d.id} className="prism-card-shine border-border/50 group hover-lift">
+          {/* Loading items */}
+          {itemsLoading && <div className="flex justify-center p-8"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>}
+
+          {/* Debt list */}
+          {!itemsLoading && debts.length === 0 && (
+            <Card className="prism-card-shine border-border/50">
+              <CardContent className="p-8 text-center text-muted-foreground">
+                No debts in this plan yet. Add debts or import from your accounts.
+              </CardContent>
+            </Card>
+          )}
+
+          {debts.length > 0 && (
+            <>
+              {/* Summary */}
+              <div className="grid gap-4 sm:grid-cols-3">
+                <Card className="prism-card-shine border-border/50">
                   <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <CreditCard className="h-4 w-4 text-prism-rose" />
-                        <span className="font-medium text-sm">{d.name}</span>
-                      </div>
-                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(d)} aria-label="Edit debt">
-                          <Pencil className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => deleteDbt(d.id)} aria-label="Delete debt">
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="mt-2 grid grid-cols-3 gap-2 text-xs text-muted-foreground">
-                      <div>
-                        <p className="font-display text-base font-bold text-foreground">{formatCurrency(d.balance)}</p>
-                        <p>Balance</p>
-                      </div>
-                      <div>
-                        <p className="font-display text-base font-bold text-foreground">{d.interest_rate}%</p>
-                        <p>APR</p>
-                      </div>
-                      <div>
-                        <p className="font-display text-base font-bold text-foreground">{formatCurrency(d.minimum_payment)}</p>
-                        <p>Min. Payment</p>
-                      </div>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider">Total Debt</p>
+                    <p className="font-display text-2xl font-bold mt-1">{formatCurrency(totalDebt)}</p>
+                  </CardContent>
+                </Card>
+                <Card className="prism-card-shine border-border/50">
+                  <CardContent className="p-4">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider">Min. Payments</p>
+                    <p className="font-display text-2xl font-bold mt-1">{formatCurrency(totalMinPayments)}<span className="text-sm text-muted-foreground font-normal">/mo</span></p>
+                  </CardContent>
+                </Card>
+                <Card className="prism-card-shine border-border/50">
+                  <CardContent className="p-4">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider">Extra Payment</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <DollarSign className="h-4 w-4 text-muted-foreground" />
+                      <Input type="number" value={extraPayment} onChange={e => setExtraPayment(Math.max(0, parseInt(e.target.value) || 0))} className="h-9 font-display text-lg font-bold w-24" />
+                      <span className="text-sm text-muted-foreground">/mo</span>
                     </div>
                   </CardContent>
                 </Card>
-              );
-            })}
-          </div>
+              </div>
 
-          {/* Strategy selector */}
-          <div>
-            <h2 className="font-display text-xl font-bold mb-4">Choose Your Strategy</h2>
-            <div className="grid gap-4 sm:grid-cols-3">
-              {STRATEGIES.map((s) => {
-                const isActive = strategy === s.value;
-                const result = results?.[s.value];
-                return (
-                  <motion.div key={s.value} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
-                    <Card
-                      className={`cursor-pointer transition-all duration-200 prism-card-shine ${isActive ? 'ring-2 ring-primary shadow-lg' : 'border-border/50 hover:border-primary/30'}`}
-                      onClick={() => setStrategy(s.value)}
-                    >
-                      <CardContent className="p-5">
-                        <div className={`h-10 w-10 rounded-xl bg-gradient-to-br ${s.bg} flex items-center justify-center mb-3`}>
-                          <s.icon className={`h-5 w-5 ${s.color}`} />
+              {/* Debt cards */}
+              <div className="grid gap-3 sm:grid-cols-2">
+                {debts.map((d) => (
+                  <Card key={d.id} className="prism-card-shine border-border/50 group hover-lift">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <CreditCard className="h-4 w-4 text-prism-rose" />
+                          <span className="font-medium text-sm">{d.name}</span>
                         </div>
-                        <h3 className="font-display font-bold text-sm">{s.label}</h3>
-                        <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{s.description}</p>
-                        {result && (
-                          <div className="mt-3 pt-3 border-t border-border/50 grid grid-cols-2 gap-2 text-xs">
-                            <div>
-                              <p className="text-muted-foreground">Debt-free in</p>
-                              <p className="font-display font-bold text-foreground">
-                                {Math.floor(result.months / 12)}y {result.months % 12}m
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-muted-foreground">Interest paid</p>
-                              <p className="font-display font-bold text-prism-rose">{formatCurrency(result.interest)}</p>
-                            </div>
-                          </div>
-                        )}
-                        {isActive && (
-                          <div className="mt-2 flex items-center gap-1 text-xs text-primary font-medium">
-                            <CheckCircle2 className="h-3.5 w-3.5" /> Selected
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Payoff timeline */}
-          {activeResult && activeResult.steps.length > 0 && (
-            <Card className="prism-card-shine border-border/50">
-              <CardHeader>
-                <CardTitle className="font-display flex items-center gap-2">
-                  <CalendarDays className="h-5 w-5 text-prism-teal" />
-                  Payoff Timeline
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <Info className="h-4 w-4 text-muted-foreground" />
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-xs">
-                      <p>This shows your projected debt balance each month. Extra payments go toward the priority debt based on your chosen strategy.</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {/* Show milestones — every debt payoff + final */}
-                  {(() => {
-                    const milestones: { month: number; event: string; balance: number }[] = [];
-                    const paidOff = new Set<string>();
-
-                    for (const step of activeResult.steps) {
-                      for (const d of step.debts) {
-                        if (d.paid_off && !paidOff.has(d.name)) {
-                          paidOff.add(d.name);
-                          milestones.push({ month: step.month, event: `${d.name} paid off!`, balance: step.total_balance });
-                        }
-                      }
-                    }
-
-                    const lastStep = activeResult.steps[activeResult.steps.length - 1];
-                    if (lastStep.total_balance < 0.01) {
-                      milestones.push({ month: lastStep.month, event: '🎉 Debt Free!', balance: 0 });
-                    }
-
-                    return milestones.map((m, i) => (
-                      <motion.div
-                        key={i}
-                        initial={{ opacity: 0, x: -12 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: i * 0.1 }}
-                        className="flex items-center gap-4 p-3 rounded-xl bg-muted/50"
-                      >
-                        <div className="flex items-center justify-center h-8 w-8 rounded-full bg-prism-teal/20 text-prism-teal text-xs font-bold shrink-0">
-                          {m.month}
+                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(d)} aria-label="Edit debt"><Pencil className="h-3.5 w-3.5" /></Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDeleteDebt(d.id)} aria-label="Delete debt"><Trash2 className="h-3.5 w-3.5" /></Button>
                         </div>
-                        <div className="flex-1">
-                          <p className="text-sm font-medium">{m.event}</p>
-                          <p className="text-xs text-muted-foreground">
-                            Month {m.month} • Remaining: {formatCurrency(m.balance)}
-                          </p>
-                        </div>
-                        <Progress
-                          value={totalDebt > 0 ? ((totalDebt - m.balance) / totalDebt) * 100 : 100}
-                          className="w-24 h-2"
-                        />
+                      </div>
+                      <div className="mt-2 grid grid-cols-3 gap-2 text-xs text-muted-foreground">
+                        <div><p className="font-display text-base font-bold text-foreground">{formatCurrency(d.balance)}</p><p>Balance</p></div>
+                        <div><p className="font-display text-base font-bold text-foreground">{d.interest_rate}%</p><p>APR</p></div>
+                        <div><p className="font-display text-base font-bold text-foreground">{formatCurrency(d.minimum_payment)}</p><p>Min. Payment</p></div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Strategy selector */}
+              <div>
+                <h2 className="font-display text-xl font-bold mb-4">Choose Your Strategy</h2>
+                <div className="grid gap-4 sm:grid-cols-3">
+                  {STRATEGIES.map((s) => {
+                    const isActive = strategy === s.value;
+                    const result = results?.[s.value];
+                    return (
+                      <motion.div key={s.value} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
+                        <Card className={`cursor-pointer transition-all duration-200 prism-card-shine ${isActive ? 'ring-2 ring-primary shadow-lg' : 'border-border/50 hover:border-primary/30'}`} onClick={() => setStrategy(s.value)}>
+                          <CardContent className="p-5">
+                            <div className={`h-10 w-10 rounded-xl bg-gradient-to-br ${s.bg} flex items-center justify-center mb-3`}><s.icon className={`h-5 w-5 ${s.color}`} /></div>
+                            <h3 className="font-display font-bold text-sm">{s.label}</h3>
+                            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{s.description}</p>
+                            {result && (
+                              <div className="mt-3 pt-3 border-t border-border/50 grid grid-cols-2 gap-2 text-xs">
+                                <div><p className="text-muted-foreground">Debt-free in</p><p className="font-display font-bold text-foreground">{Math.floor(result.months / 12)}y {result.months % 12}m</p></div>
+                                <div><p className="text-muted-foreground">Interest paid</p><p className="font-display font-bold text-prism-rose">{formatCurrency(result.interest)}</p></div>
+                              </div>
+                            )}
+                            {isActive && <div className="mt-2 flex items-center gap-1 text-xs text-primary font-medium"><CheckCircle2 className="h-3.5 w-3.5" /> Selected</div>}
+                          </CardContent>
+                        </Card>
                       </motion.div>
-                    ));
-                  })()}
+                    );
+                  })}
                 </div>
+              </div>
 
-                {/* Comparison summary */}
-                {results && (
-                  <div className="mt-6 p-4 rounded-xl bg-muted/30 border border-border/50">
-                    <h4 className="font-display font-bold text-sm mb-3">Strategy Comparison</h4>
-                    <div className="grid grid-cols-3 gap-4 text-center text-xs">
-                      {STRATEGIES.map(s => {
-                        const r = results[s.value];
-                        const isActive = strategy === s.value;
-                        return (
-                          <div key={s.value} className={`p-3 rounded-lg ${isActive ? 'bg-primary/10 ring-1 ring-primary/30' : ''}`}>
-                            <s.icon className={`h-4 w-4 mx-auto mb-1 ${s.color}`} />
-                            <p className="font-medium">{s.label}</p>
-                            <p className="font-display font-bold text-lg">{r.months} mo</p>
-                            <p className="text-muted-foreground">Interest: {formatCurrency(r.interest)}</p>
-                          </div>
-                        );
-                      })}
+              {/* Timeline */}
+              {activeResult && activeResult.steps.length > 0 && (
+                <Card className="prism-card-shine border-border/50">
+                  <CardHeader>
+                    <CardTitle className="font-display flex items-center gap-2">
+                      <CalendarDays className="h-5 w-5 text-prism-teal" /> Payoff Timeline
+                      <Tooltip><TooltipTrigger><Info className="h-4 w-4 text-muted-foreground" /></TooltipTrigger>
+                        <TooltipContent className="max-w-xs"><p>Projected debt balance each month. Extra payments go toward the priority debt based on your chosen strategy.</p></TooltipContent>
+                      </Tooltip>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      {(() => {
+                        const milestones: { month: number; event: string; balance: number }[] = [];
+                        const paidOff = new Set<string>();
+                        for (const step of activeResult.steps) {
+                          for (const d of step.debts) {
+                            if (d.paid_off && !paidOff.has(d.name)) {
+                              paidOff.add(d.name);
+                              milestones.push({ month: step.month, event: `${d.name} paid off!`, balance: step.total_balance });
+                            }
+                          }
+                        }
+                        const lastStep = activeResult.steps[activeResult.steps.length - 1];
+                        if (lastStep.total_balance < 0.01) milestones.push({ month: lastStep.month, event: '🎉 Debt Free!', balance: 0 });
+                        return milestones.map((m, i) => (
+                          <motion.div key={i} initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 }} className="flex items-center gap-4 p-3 rounded-xl bg-muted/50">
+                            <div className="flex items-center justify-center h-8 w-8 rounded-full bg-prism-teal/20 text-prism-teal text-xs font-bold shrink-0">{m.month}</div>
+                            <div className="flex-1">
+                              <p className="text-sm font-medium">{m.event}</p>
+                              <p className="text-xs text-muted-foreground">Month {m.month} • Remaining: {formatCurrency(m.balance)}</p>
+                            </div>
+                            <Progress value={totalDebt > 0 ? ((totalDebt - m.balance) / totalDebt) * 100 : 100} className="w-24 h-2" />
+                          </motion.div>
+                        ));
+                      })()}
                     </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+
+                    {results && (
+                      <div className="mt-6 p-4 rounded-xl bg-muted/30 border border-border/50">
+                        <h4 className="font-display font-bold text-sm mb-3">Strategy Comparison</h4>
+                        <div className="grid grid-cols-3 gap-4 text-center text-xs">
+                          {STRATEGIES.map(s => {
+                            const r = results[s.value];
+                            const isAct = strategy === s.value;
+                            return (
+                              <div key={s.value} className={`p-3 rounded-lg ${isAct ? 'bg-primary/10 ring-1 ring-primary/30' : ''}`}>
+                                <s.icon className={`h-4 w-4 mx-auto mb-1 ${s.color}`} />
+                                <p className="font-medium">{s.label}</p>
+                                <p className="font-display font-bold text-lg">{r.months} mo</p>
+                                <p className="text-muted-foreground">Interest: {formatCurrency(r.interest)}</p>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+            </>
           )}
         </>
       )}

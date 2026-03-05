@@ -311,6 +311,98 @@ export type Database = {
           },
         ]
       }
+      debt_items: {
+        Row: {
+          account_id: string | null
+          balance: number
+          created_at: string
+          id: string
+          interest_rate: number
+          minimum_payment: number
+          name: string
+          plan_id: string
+          sort_order: number
+        }
+        Insert: {
+          account_id?: string | null
+          balance?: number
+          created_at?: string
+          id?: string
+          interest_rate?: number
+          minimum_payment?: number
+          name: string
+          plan_id: string
+          sort_order?: number
+        }
+        Update: {
+          account_id?: string | null
+          balance?: number
+          created_at?: string
+          id?: string
+          interest_rate?: number
+          minimum_payment?: number
+          name?: string
+          plan_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "debt_items_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "debt_items_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "debt_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      debt_plans: {
+        Row: {
+          created_at: string
+          extra_payment: number
+          household_id: string
+          id: string
+          is_active: boolean
+          name: string
+          strategy: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          extra_payment?: number
+          household_id: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          strategy?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          extra_payment?: number
+          household_id?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          strategy?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "debt_plans_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       financial_goals: {
         Row: {
           color: string | null
