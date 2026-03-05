@@ -23,9 +23,9 @@ const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transiti
 const tooltipStyle = { background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '12px', boxShadow: '0 8px 32px -8px rgba(0,0,0,0.15)' };
 
 const STAT_CARDS = [
-  { key: 'netWorth', label: 'Net Worth', icon: TrendingUp, gradient: 'from-prism-violet to-prism-indigo', glow: 'prism-glow' },
+  { key: 'netWorth', label: 'Net Worth', icon: TrendingUp, gradient: 'from-prism-navy to-prism-teal', glow: 'prism-glow' },
   { key: 'totalAssets', label: 'Total Assets', icon: Wallet, gradient: 'from-prism-teal to-prism-lime', glow: 'prism-glow-teal' },
-  { key: 'totalLiabilities', label: 'Liabilities', icon: CreditCard, gradient: 'from-prism-rose to-prism-orange', glow: 'prism-glow-warm' },
+  { key: 'totalLiabilities', label: 'Liabilities', icon: CreditCard, gradient: 'from-prism-orange to-prism-rose', glow: 'prism-glow-warm' },
   { key: 'monthlyIncome', label: 'Income (this month)', icon: ArrowUpRight, gradient: 'from-prism-sky to-prism-teal', glow: 'prism-glow-teal' },
 ];
 
