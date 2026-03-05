@@ -18,6 +18,7 @@ import ResetPassword from "@/pages/ResetPassword";
 import Settings from "@/pages/Settings";
 import TaxAssistant from "@/pages/TaxAssistant";
 import Goals from "@/pages/Goals";
+import DebtPayoff from "@/pages/DebtPayoff";
 import NotFound from "./pages/NotFound";
 import Onboarding from "@/pages/Onboarding";
 import LandingPage from "@/pages/LandingPage";
@@ -65,6 +66,7 @@ const App = () => (
               <Route path="/categories" element={<Categories />} />
               <Route path="/reports" element={<Reports />} />
               <Route path="/goals" element={<Goals />} />
+              <Route path="/debt-payoff" element={<DebtPayoff />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/tax-assistant" element={<TaxAssistant />} />
             </Route>

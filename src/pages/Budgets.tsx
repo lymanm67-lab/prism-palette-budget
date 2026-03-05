@@ -93,6 +93,17 @@ const Budgets = () => {
   const totalSpent = budgetItems.reduce((s, b) => s + b.spent, 0);
   const totalPct = totalPlanned > 0 ? Math.round((totalSpent / totalPlanned) * 100) : 0;
 
+  // Zero-sum budget: income for the month minus all budgeted amounts
+  const monthlyIncome = useMemo(() => {
+    if (!transactions) return 0;
+    const monthPrefix = month.substring(0, 7);
+    return transactions
+      .filter(t => t.date.startsWith(monthPrefix) && t.amount > 0)
+      .reduce((s, t) => s + t.amount, 0);
+  }, [transactions, month]);
+
+  const unallocated = monthlyIncome - totalPlanned;
+
   // Categories not yet budgeted this month (filtered by budget type)
   const budgetedCategoryIds = new Set(budgetItems.map(b => b.category_id));
   const unbudgetedCategories = (categories || []).filter(c => filteredCategoryIds.has(c.id) && !budgetedCategoryIds.has(c.id));
@@ -163,22 +174,38 @@ const Budgets = () => {
         </Button>
       </div>
 
-      {budgetItems.length > 0 && (
+      {/* Zero-Sum Budget Summary */}
+      <div className="grid gap-4 sm:grid-cols-3">
         <Card className="prism-card-shine hover-border-glow">
-          <CardContent className="flex items-center gap-6 p-5">
-            <div className="flex-1">
-              <p className="text-sm text-muted-foreground">Total Budget</p>
-              <p className="font-display text-2xl font-bold">
-                {formatCurrency(totalSpent)} <span className="text-base font-normal text-muted-foreground">/ {formatCurrency(totalPlanned)}</span>
-              </p>
-            </div>
-            <div className="w-40">
-              <Progress value={Math.min(totalPct, 100)} className="h-3" />
-              <p className="mt-1 text-right text-xs text-muted-foreground">{totalPct}% used</p>
+          <CardContent className="p-4">
+            <p className="text-xs text-muted-foreground uppercase tracking-wider">Income</p>
+            <p className="font-display text-2xl font-bold mt-1 text-prism-teal">{formatCurrency(monthlyIncome)}</p>
+          </CardContent>
+        </Card>
+        <Card className="prism-card-shine hover-border-glow">
+          <CardContent className="p-4">
+            <p className="text-xs text-muted-foreground uppercase tracking-wider">Budgeted</p>
+            <p className="font-display text-2xl font-bold mt-1">{formatCurrency(totalPlanned)}</p>
+            <div className="mt-2">
+              <Progress value={Math.min(totalPct, 100)} className="h-2" />
+              <p className="mt-1 text-right text-xs text-muted-foreground">{formatCurrency(totalSpent)} spent ({totalPct}%)</p>
             </div>
           </CardContent>
         </Card>
-      )}
+        <Card className={`prism-card-shine hover-border-glow ${unallocated < 0 ? 'ring-1 ring-prism-rose/50' : unallocated === 0 ? 'ring-1 ring-prism-teal/50' : ''}`}>
+          <CardContent className="p-4">
+            <p className="text-xs text-muted-foreground uppercase tracking-wider">
+              {unallocated === 0 ? '✅ Every Dollar Assigned' : unallocated > 0 ? 'Left to Budget' : 'Over-Budgeted'}
+            </p>
+            <p className={`font-display text-2xl font-bold mt-1 ${unallocated === 0 ? 'text-prism-teal' : unallocated < 0 ? 'text-prism-rose' : 'text-prism-amber'}`}>
+              {formatCurrency(Math.abs(unallocated))}
+            </p>
+            {unallocated === 0 && (
+              <p className="text-xs text-prism-teal mt-1 font-medium">Zero-based budget achieved! 🎯</p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       {budgetItems.length === 0 && (
         <Card><CardContent className="p-10 text-center text-muted-foreground">
