@@ -12,7 +12,8 @@ import {
   parseISO, isWithinInterval, startOfQuarter, endOfQuarter,
   startOfYear, endOfYear, subQuarters, subYears,
 } from 'date-fns';
-import { Loader2, CalendarIcon, X, ArrowLeft } from 'lucide-react';
+import { Loader2, CalendarIcon, X, ArrowLeft, Filter } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import {
   ComposedChart, Bar, BarChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, ReferenceLine, Cell, Legend,
@@ -50,6 +51,9 @@ const CashFlow = () => {
 
   // Drill-down state: selected chart bar index
   const [selectedBarIndex, setSelectedBarIndex] = useState<number | null>(null);
+
+  // Category filter from stacked bar click
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   // Build timeline chart data with start/end dates attached
   const chartData: ChartDatum[] = useMemo(() => {
@@ -201,6 +205,12 @@ const CashFlow = () => {
     return { expense, income, allCatKeys, catColorMap };
   }, [groupBy, categories, categoryGroups, selectedPeriodTxns]);
 
+  const handleStackedBarClick = useCallback((data: any, catKey: string) => {
+    setSelectedCategory(prev => prev === catKey ? null : catKey);
+    // Switch to category view to show the filtered result
+    setGroupBy('category');
+  }, []);
+
   const renderStackedGroupChart = (data: any[], title: string) => {
     if (data.length === 0) return null;
     const { allCatKeys, catColorMap } = groupStackedData;
@@ -209,7 +219,7 @@ const CashFlow = () => {
     return (
       <Card className="mt-4">
         <CardContent className="p-4">
-          <h4 className="text-sm font-semibold text-muted-foreground mb-3">{title} — Category Composition by Group</h4>
+          <h4 className="text-sm font-semibold text-muted-foreground mb-3">{title} — Category Composition by Group <span className="text-xs font-normal">(click a segment to filter)</span></h4>
           <ResponsiveContainer width="100%" height={Math.max(200, data.length * 48 + 60)}>
             <BarChart data={data} layout="vertical" margin={{ left: 8, right: 16 }}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" horizontal={false} />
@@ -227,6 +237,8 @@ const CashFlow = () => {
                   stackId="cats"
                   fill={catColorMap[catKey] || palette[i % palette.length]}
                   radius={i === allCatKeys.length - 1 ? [0, 3, 3, 0] : [0, 0, 0, 0]}
+                  className="cursor-pointer"
+                  onClick={() => handleStackedBarClick(null, catKey)}
                 />
               ))}
             </BarChart>
@@ -270,15 +282,27 @@ const CashFlow = () => {
     items: { name: string; color: string; amount: number }[],
     total: number,
     bgClass: string,
-  ) => (
+  ) => {
+    const filtered = selectedCategory ? items.filter(i => i.name === selectedCategory) : items;
+    const filteredTotal = filtered.reduce((s, i) => s + i.amount, 0);
+    return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="font-display text-lg font-semibold">{title}</h3>
+        <div className="flex items-center gap-2">
+          <h3 className="font-display text-lg font-semibold">{title}</h3>
+          {selectedCategory && (
+            <Badge variant="secondary" className="gap-1 cursor-pointer" onClick={() => setSelectedCategory(null)}>
+              <Filter className="h-3 w-3" />
+              {selectedCategory}
+              <X className="h-3 w-3" />
+            </Badge>
+          )}
+        </div>
         <div className="flex items-center gap-1 border rounded-lg overflow-hidden text-xs">
           {(['category', 'group', 'merchant'] as GroupBy[]).map(g => (
             <button
               key={g}
-              onClick={() => setGroupBy(g)}
+              onClick={() => { setGroupBy(g); if (g !== 'category') setSelectedCategory(null); }}
               className={cn('px-3 py-1.5 capitalize transition-colors', groupBy === g ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}
             >
               {g}
@@ -286,12 +310,12 @@ const CashFlow = () => {
           ))}
         </div>
       </div>
-      {items.length === 0 ? (
+      {filtered.length === 0 ? (
         <p className="text-sm text-muted-foreground py-4">No {title.toLowerCase()} this period.</p>
       ) : (
         <div className="space-y-1.5">
-          {items.map((item, idx) => {
-            const pct = total > 0 ? (item.amount / total) * 100 : 0;
+          {filtered.map((item, idx) => {
+            const pct = filteredTotal > 0 ? (item.amount / filteredTotal) * 100 : 0;
             return (
               <div key={idx} className="relative">
                 <div className={cn('flex items-center justify-between rounded-lg px-3 py-2.5 transition-colors relative overflow-hidden', bgClass)}>
@@ -311,6 +335,7 @@ const CashFlow = () => {
       )}
     </div>
   );
+  };
 
   if (isLoading) {
     return <div className="flex items-center justify-center p-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
