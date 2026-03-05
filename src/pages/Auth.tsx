@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +13,8 @@ import { Sparkles, ArrowRight, Mail, Lock, UserPlus, LogIn } from 'lucide-react'
 type View = 'login' | 'signup' | 'forgot';
 
 const Auth = () => {
+  const [searchParams] = useSearchParams();
+  const journeyFromOnboarding = searchParams.get('journey');
   const [view, setView] = useState<View>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -35,7 +38,10 @@ const Auth = () => {
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: { emailRedirectTo: window.location.origin },
+      options: {
+        emailRedirectTo: window.location.origin,
+        data: journeyFromOnboarding ? { financial_journey: journeyFromOnboarding } : undefined,
+      },
     });
     if (error) {
       toast({ title: 'Sign up failed', description: error.message, variant: 'destructive' });
