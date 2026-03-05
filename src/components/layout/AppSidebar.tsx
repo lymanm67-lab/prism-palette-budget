@@ -12,10 +12,13 @@ import {
   ChevronLeft,
   ChevronRight,
   Sparkles,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 
 const NAV_ITEMS = [
@@ -33,6 +36,8 @@ const AppSidebar = () => {
   const { signOut, user } = useAuth();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const isDark = theme === 'dark';
 
   return (
     <aside
@@ -97,9 +102,18 @@ const AppSidebar = () => {
         })}
       </nav>
 
-      <div className="relative border-t border-sidebar-border p-3">
+      <div className="relative border-t border-sidebar-border p-3 space-y-1">
+        {/* Theme toggle */}
+        <button
+          onClick={() => setTheme(isDark ? 'light' : 'dark')}
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-sidebar-foreground/60 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+        >
+          {isDark ? <Sun className="h-4 w-4 shrink-0 text-prism-amber" /> : <Moon className="h-4 w-4 shrink-0 text-prism-indigo" />}
+          {!collapsed && <span>{isDark ? 'Light Mode' : 'Dark Mode'}</span>}
+        </button>
+
         {!collapsed && user && (
-          <p className="mb-2 truncate text-xs text-sidebar-foreground/40">{user.email}</p>
+          <p className="truncate text-xs text-sidebar-foreground/40 px-3">{user.email}</p>
         )}
         <button
           onClick={signOut}

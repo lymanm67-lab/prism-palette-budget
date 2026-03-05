@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTheme } from 'next-themes';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,7 +16,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Loader2, Save, User, DollarSign, Calendar, Building2, Plus, Pencil, Trash2, Globe, Phone, Mail, MapPin } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Loader2, Save, User, DollarSign, Calendar, Building2, Plus, Pencil, Trash2, Globe, Phone, Mail, MapPin, Sun, Moon, Monitor } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 const CURRENCIES = [
@@ -83,6 +85,44 @@ const emptyBizForm = {
   fiscal_year_end: '12',
   notes: '',
 };
+
+function ThemeCard() {
+  const { theme, setTheme } = useTheme();
+  const options = [
+    { value: 'light', label: 'Light', icon: Sun, desc: 'Clean and bright' },
+    { value: 'dark', label: 'Dark', icon: Moon, desc: 'Easy on the eyes' },
+    { value: 'system', label: 'System', icon: Monitor, desc: 'Match your OS' },
+  ];
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center gap-2">
+          <Sun className="h-5 w-5 text-primary" />
+          <CardTitle className="font-display">Appearance</CardTitle>
+        </div>
+        <CardDescription>Choose your preferred theme.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-3 gap-3">
+          {options.map(opt => (
+            <button
+              key={opt.value}
+              onClick={() => setTheme(opt.value)}
+              className={cn(
+                'flex flex-col items-center gap-2 rounded-xl border-2 p-4 transition-all hover:border-primary/40',
+                theme === opt.value ? 'border-primary bg-primary/5' : 'border-border'
+              )}
+            >
+              <opt.icon className={cn('h-6 w-6', theme === opt.value ? 'text-primary' : 'text-muted-foreground')} />
+              <span className="text-sm font-medium">{opt.label}</span>
+              <span className="text-[10px] text-muted-foreground">{opt.desc}</span>
+            </button>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 const Settings = () => {
   const { user } = useAuth();
@@ -372,6 +412,8 @@ const Settings = () => {
               </div>
             </CardContent>
           </Card>
+
+          <ThemeCard />
 
           <Button onClick={() => updateProfile.mutate()} disabled={updateProfile.isPending} className="gap-2">
             {updateProfile.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
