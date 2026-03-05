@@ -1,12 +1,15 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { useBusinessProfiles, useCreateBusinessProfile, useUpdateBusinessProfile, useDeleteBusinessProfile } from '@/hooks/use-business-data';
-import { Plus, Pencil, Trash2, Building2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Building2, ChevronsUpDown, Check } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const ENTITY_TYPES = [
   { value: 'llc', label: 'LLC' },
@@ -56,6 +59,8 @@ type FormState = {
 const emptyForm: FormState = { business_name: '', entity_type: 'llc', ein: '', industry: '' };
 
 export default function BusinessProfileManager({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
+  const [industryOpen, setIndustryOpen] = useState(false);
+  const [industrySearch, setIndustrySearch] = useState('');
   const { data: profiles } = useBusinessProfiles();
   const createProfile = useCreateBusinessProfile();
   const updateProfile = useUpdateBusinessProfile();
@@ -182,14 +187,61 @@ export default function BusinessProfileManager({ open, onOpenChange }: { open: b
               </div>
               <div className="space-y-2">
                 <Label>Industry (optional)</Label>
-                <Select value={form.industry || ''} onValueChange={v => setForm(f => ({ ...f, industry: v }))}>
-                  <SelectTrigger><SelectValue placeholder="Select industry" /></SelectTrigger>
-                  <SelectContent>
-                    {INDUSTRIES.map(ind => (
-                      <SelectItem key={ind} value={ind}>{ind}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Popover open={industryOpen} onOpenChange={setIndustryOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={industryOpen}
+                      className="w-full justify-between font-normal"
+                    >
+                      {form.industry || 'Select or type industry'}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[220px] p-0" align="start">
+                    <Command>
+                      <CommandInput
+                        placeholder="Search or type custom..."
+                        value={industrySearch}
+                        onValueChange={setIndustrySearch}
+                      />
+                      <CommandList>
+                        <CommandEmpty>
+                          <button
+                            className="w-full px-2 py-1.5 text-sm text-left hover:bg-accent rounded-sm"
+                            onClick={() => {
+                              const trimmed = industrySearch.trim();
+                              if (trimmed) {
+                                setForm(f => ({ ...f, industry: trimmed }));
+                                setIndustrySearch('');
+                                setIndustryOpen(false);
+                              }
+                            }}
+                          >
+                            Use "<span className="font-medium">{industrySearch.trim()}</span>"
+                          </button>
+                        </CommandEmpty>
+                        <CommandGroup>
+                          {INDUSTRIES.map(ind => (
+                            <CommandItem
+                              key={ind}
+                              value={ind}
+                              onSelect={() => {
+                                setForm(f => ({ ...f, industry: ind }));
+                                setIndustrySearch('');
+                                setIndustryOpen(false);
+                              }}
+                            >
+                              <Check className={cn('mr-2 h-4 w-4', form.industry === ind ? 'opacity-100' : 'opacity-0')} />
+                              {ind}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
             <Button onClick={handleSave} disabled={!form.business_name.trim() || isSaving} className="w-full">
