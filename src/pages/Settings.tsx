@@ -17,7 +17,7 @@ import { useHousehold } from '@/contexts/HouseholdContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { Loader2, Save, User, DollarSign, Calendar, Building2, Plus, Pencil, Trash2, Globe, Phone, Mail, MapPin, Sun, Moon, Monitor } from 'lucide-react';
+import { Loader2, Save, User, DollarSign, Calendar, Building2, Plus, Pencil, Trash2, Globe, Phone, Mail, MapPin, Sun, Moon, Monitor, Sparkles, Search, Tag } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 const CURRENCIES = [
@@ -121,6 +121,213 @@ function ThemeCard() {
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function CategorizationRulesSection({ householdId }: { householdId?: string }) {
+  const qc = useQueryClient();
+  const [search, setSearch] = useState('');
+  const [editingRule, setEditingRule] = useState<{ id: string; merchant_pattern: string; category_id: string } | null>(null);
+  const [deleteRuleTarget, setDeleteRuleTarget] = useState<{ id: string; pattern: string } | null>(null);
+
+  const { data: rules, isLoading: rulesLoading } = useQuery({
+    queryKey: ['categorization_rules', householdId],
+    enabled: !!householdId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('categorization_rules')
+        .select('*, categories(name, color)')
+        .eq('household_id', householdId!)
+        .order('match_count', { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: categories } = useQuery({
+    queryKey: ['categories', householdId],
+    enabled: !!householdId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('id, name, color')
+        .eq('household_id', householdId!)
+        .order('name');
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const updateRule = useMutation({
+    mutationFn: async ({ id, merchant_pattern, category_id }: { id: string; merchant_pattern: string; category_id: string }) => {
+      const { error } = await supabase
+        .from('categorization_rules')
+        .update({ merchant_pattern, category_id } as any)
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['categorization_rules'] });
+      toast.success('Rule updated');
+      setEditingRule(null);
+    },
+    onError: (e) => toast.error('Failed: ' + e.message),
+  });
+
+  const deleteRule = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('categorization_rules')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['categorization_rules'] });
+      toast.success('Rule deleted');
+      setDeleteRuleTarget(null);
+    },
+    onError: (e) => toast.error('Failed: ' + e.message),
+  });
+
+  const filteredRules = rules?.filter(r =>
+    r.merchant_pattern.toLowerCase().includes(search.toLowerCase()) ||
+    (r.categories as any)?.name?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="font-display text-xl font-semibold">Categorization Rules</h2>
+          <p className="text-sm text-muted-foreground">Manage merchant-to-category mappings used for auto-categorization.</p>
+        </div>
+        <div className="relative w-56">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search rules..."
+            className="pl-9"
+          />
+        </div>
+      </div>
+
+      {rulesLoading ? (
+        <div className="flex items-center justify-center p-10"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+      ) : (!filteredRules || filteredRules.length === 0) ? (
+        <Card>
+          <CardContent className="p-10 text-center text-muted-foreground">
+            <Tag className="mx-auto h-10 w-10 opacity-30 mb-3" />
+            <p>{search ? 'No rules match your search.' : 'No categorization rules yet. Use "Auto-categorize" on the Transactions page to generate rules.'}</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-2">
+          {filteredRules.map(rule => (
+            <Card key={rule.id} className="group transition-shadow hover:shadow-sm">
+              <CardContent className="p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 shrink-0">
+                    {rule.is_ai_generated ? <Sparkles className="h-4 w-4 text-primary" /> : <Tag className="h-4 w-4 text-primary" />}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium truncate">{rule.merchant_pattern}</span>
+                      {rule.is_ai_generated && <Badge variant="secondary" className="text-[10px] shrink-0">AI</Badge>}
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: (rule.categories as any)?.color || 'hsl(var(--primary))' }} />
+                        {(rule.categories as any)?.name || 'Unknown'}
+                      </span>
+                      <span>·</span>
+                      <span>{rule.match_count} match{rule.match_count !== 1 ? 'es' : ''}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditingRule({ id: rule.id, merchant_pattern: rule.merchant_pattern, category_id: rule.category_id })}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => setDeleteRuleTarget({ id: rule.id, pattern: rule.merchant_pattern })}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+          <p className="text-xs text-muted-foreground text-right pt-1">{filteredRules.length} rule{filteredRules.length !== 1 ? 's' : ''}</p>
+        </div>
+      )}
+
+      {/* Edit Rule Dialog */}
+      <Dialog open={!!editingRule} onOpenChange={open => !open && setEditingRule(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Categorization Rule</DialogTitle>
+          </DialogHeader>
+          {editingRule && (
+            <div className="space-y-4 pt-2">
+              <div className="space-y-2">
+                <Label>Merchant Pattern</Label>
+                <Input
+                  value={editingRule.merchant_pattern}
+                  onChange={e => setEditingRule(r => r ? { ...r, merchant_pattern: e.target.value } : null)}
+                  placeholder="e.g. Netflix, Starbucks"
+                />
+                <p className="text-xs text-muted-foreground">Transactions with merchants containing this text will be auto-categorized.</p>
+              </div>
+              <div className="space-y-2">
+                <Label>Category</Label>
+                <Select value={editingRule.category_id} onValueChange={v => setEditingRule(r => r ? { ...r, category_id: v } : null)}>
+                  <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+                  <SelectContent>
+                    {categories?.map(c => (
+                      <SelectItem key={c.id} value={c.id}>
+                        <span className="flex items-center gap-2">
+                          <span className="h-2 w-2 rounded-full" style={{ backgroundColor: c.color }} />
+                          {c.name}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button
+                onClick={() => editingRule && updateRule.mutate(editingRule)}
+                disabled={updateRule.isPending || !editingRule.merchant_pattern.trim()}
+                className="w-full gap-2"
+              >
+                {updateRule.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                Save Rule
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Rule Confirmation */}
+      <AlertDialog open={!!deleteRuleTarget} onOpenChange={open => !open && setDeleteRuleTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete rule?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Delete the rule for "{deleteRuleTarget?.pattern}"? Future transactions won't be auto-categorized by this pattern.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteRuleTarget && deleteRule.mutate(deleteRuleTarget.id)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
 
@@ -341,6 +548,7 @@ const Settings = () => {
         <TabsList>
           <TabsTrigger value="personal" className="gap-2"><User className="h-4 w-4" /> Personal</TabsTrigger>
           <TabsTrigger value="business" className="gap-2"><Building2 className="h-4 w-4" /> Business</TabsTrigger>
+          <TabsTrigger value="rules" className="gap-2"><Tag className="h-4 w-4" /> Rules</TabsTrigger>
           <TabsTrigger value="recurring" className="gap-2"><Calendar className="h-4 w-4" /> Recurring</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
         </TabsList>
@@ -487,6 +695,11 @@ const Settings = () => {
               ))}
             </div>
           )}
+        </TabsContent>
+
+        {/* ==================== CATEGORIZATION RULES ==================== */}
+        <TabsContent value="rules" className="space-y-6">
+          <CategorizationRulesSection householdId={household?.id} />
         </TabsContent>
 
         {/* ==================== RECURRING ==================== */}
