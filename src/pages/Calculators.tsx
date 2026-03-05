@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useCurrency } from '@/hooks/use-currency';
 import {
-  Home, Car, CreditCard, TrendingUp, Calculator, DollarSign, Percent, CalendarDays, PiggyBank,
+  Home, Car, CreditCard, TrendingUp, Calculator, DollarSign, Percent, CalendarDays, PiggyBank, Sparkles,
 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 
@@ -76,12 +76,49 @@ function calcCreditCardPayoff(balance: number, apr: number, monthlyPayment: numb
 
 // ─── Calculator configs ───
 
+// Wealth multiplier data (based on compound growth assumptions)
+const WEALTH_MULTIPLIER_DATA = [
+  { age: 20, multiplier: 88.35 }, { age: 25, multiplier: 44.04 },
+  { age: 30, multiplier: 23.06 }, { age: 35, multiplier: 12.25 },
+  { age: 40, multiplier: 7.34 }, { age: 45, multiplier: 4.46 },
+  { age: 50, multiplier: 2.85 }, { age: 55, multiplier: 1.91 },
+  { age: 60, multiplier: 1.35 },
+];
+
+function calcWealthMultiplier(currentAge: number): number {
+  // Assumed lifetime rate of return starts at 10% for age 20, decreasing 0.1% per year, terminal 5.5% at 65
+  const retirementAge = 65;
+  const years = retirementAge - currentAge;
+  if (years <= 0) return 1;
+  let multiplier = 1;
+  for (let y = 0; y < years; y++) {
+    const age = currentAge + y;
+    const rate = Math.max(0.055, 0.10 - (age - 20) * 0.001);
+    multiplier *= (1 + rate);
+  }
+  return multiplier;
+}
+
+function calcMonthlyToMillion(currentAge: number, target: number = 1000000): number {
+  const retirementAge = 65;
+  const years = retirementAge - currentAge;
+  if (years <= 0) return target;
+  const months = years * 12;
+  // Use average rate for simplification
+  const avgRate = Math.max(0.055, 0.10 - ((currentAge + 65) / 2 - 20) * 0.001);
+  const r = avgRate / 12;
+  // FV of annuity: target = pmt * ((1+r)^n - 1) / r
+  const fvFactor = (Math.pow(1 + r, months) - 1) / r;
+  return target / fvFactor;
+}
+
 const CALCULATORS = [
   { id: 'mortgage', label: 'Mortgage', icon: Home, color: 'text-prism-teal', bg: 'from-prism-teal/20 to-prism-teal/5' },
   { id: 'auto', label: 'Auto Loan', icon: Car, color: 'text-prism-sky', bg: 'from-prism-sky/20 to-prism-sky/5' },
   { id: 'credit', label: 'Credit Card', icon: CreditCard, color: 'text-prism-rose', bg: 'from-prism-rose/20 to-prism-rose/5' },
   { id: 'investment', label: 'Investment', icon: TrendingUp, color: 'text-prism-lime', bg: 'from-prism-lime/20 to-prism-lime/5' },
   { id: 'debt', label: 'General Debt', icon: DollarSign, color: 'text-prism-amber', bg: 'from-prism-amber/20 to-prism-amber/5' },
+  { id: 'wealth', label: 'Wealth Multiplier', icon: PiggyBank, color: 'text-prism-indigo', bg: 'from-prism-indigo/20 to-prism-indigo/5' },
 ];
 
 // ─── Shared result card ───
@@ -152,6 +189,16 @@ const Calculators = () => {
     }
     return { months, totalInterest, totalPaid: balance + totalInterest };
   }, [debtForm]);
+
+  // Wealth multiplier
+  const [wealthAge, setWealthAge] = useState('30');
+  const wealthResult = useMemo(() => {
+    const age = parseInt(wealthAge) || 30;
+    const multiplier = calcWealthMultiplier(age);
+    const monthlyTo1M = calcMonthlyToMillion(age, 1000000);
+    const monthlyTo2M = calcMonthlyToMillion(age, 2000000);
+    return { multiplier, monthlyTo1M, monthlyTo2M, age };
+  }, [wealthAge]);
 
   const InputField = ({ label, value, onChange, icon: Icon, suffix }: { label: string; value: string; onChange: (v: string) => void; icon?: any; suffix?: string }) => (
     <div className="space-y-1.5">
@@ -413,6 +460,80 @@ const Calculators = () => {
                     <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-prism-amber inline-block" /> Principal</span>
                     <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-prism-rose inline-block" /> Interest</span>
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* ─── WEALTH MULTIPLIER ─── */}
+        <TabsContent value="wealth" className="mt-6">
+          <div className="grid gap-6 lg:grid-cols-2">
+            <Card className="prism-card-shine border-border/50">
+              <CardHeader>
+                <CardTitle className="font-display flex items-center gap-2 text-lg">
+                  <PiggyBank className="h-5 w-5 text-prism-indigo" /> Wealth Multiplier
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  See how powerful your dollars are when invested early. Every dollar invested today can multiply many times over by age 65.
+                </p>
+                <InputField label="Your Current Age" value={wealthAge} onChange={v => setWealthAge(v)} icon={CalendarDays} suffix="years" />
+                <div className="p-4 rounded-xl bg-gradient-to-br from-prism-indigo/10 to-prism-violet/10 border border-prism-indigo/20">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Sparkles className="h-4 w-4 text-prism-indigo" />
+                    <span className="text-sm font-bold">Your Wealth Multiplier</span>
+                  </div>
+                  <p className="font-display text-4xl font-extrabold text-prism-indigo">
+                    {wealthResult.multiplier.toFixed(1)}x
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Every $1 invested today could be worth ${wealthResult.multiplier.toFixed(2)} by age 65
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="prism-card-shine border-border/50">
+              <CardHeader><CardTitle className="font-display text-lg">Path to Millionaire</CardTitle></CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <ResultCard label="Monthly to $1M" value={formatCurrency(wealthResult.monthlyTo1M)} accent sub="invested monthly to age 65" />
+                  <ResultCard label="Monthly to $2M" value={formatCurrency(wealthResult.monthlyTo2M)} sub="invested monthly to age 65" />
+                  <ResultCard label="Multiplier" value={`${wealthResult.multiplier.toFixed(1)}x`} sub={`at age ${wealthResult.age}`} />
+                  <ResultCard label="Years to 65" value={`${Math.max(0, 65 - wealthResult.age)} yrs`} sub="of compounding" />
+                </div>
+
+                {/* Multiplier by age chart */}
+                <div>
+                  <p className="text-xs text-muted-foreground font-medium mb-3">Multiplier by Starting Age</p>
+                  <div className="space-y-2">
+                    {WEALTH_MULTIPLIER_DATA.map((d) => {
+                      const maxMultiplier = WEALTH_MULTIPLIER_DATA[0].multiplier;
+                      const isCurrentAge = Math.abs(d.age - wealthResult.age) < 3;
+                      return (
+                        <div key={d.age} className="flex items-center gap-3 text-xs">
+                          <span className={`w-8 text-right font-mono ${isCurrentAge ? 'font-bold text-prism-indigo' : 'text-muted-foreground'}`}>
+                            {d.age}
+                          </span>
+                          <div className="flex-1 h-5 bg-muted/30 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all ${isCurrentAge ? 'bg-prism-indigo' : 'bg-prism-indigo/40'}`}
+                              style={{ width: `${(d.multiplier / maxMultiplier) * 100}%` }}
+                            />
+                          </div>
+                          <span className={`w-16 text-right font-display font-bold ${isCurrentAge ? 'text-prism-indigo' : ''}`}>
+                            {d.multiplier.toFixed(1)}x
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-xl bg-muted/50 text-xs space-y-1">
+                  <p className="font-medium">💡 The earlier you start, the harder your money works.</p>
+                  <p className="text-muted-foreground">Assumes 10% return at age 20, declining 0.1% per year to 5.5% at age 65.</p>
                 </div>
               </CardContent>
             </Card>
