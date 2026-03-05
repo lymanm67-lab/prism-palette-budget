@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
+import Confetti from '@/components/Confetti';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,6 +29,30 @@ const Goals = () => {
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState({ name: '', target_amount: '', current_amount: '', goal_type: 'savings', target_date: '', notes: '' });
+  const [confettiTrigger, setConfettiTrigger] = useState(false);
+  const prevGoalsRef = useRef<any[]>([]);
+
+  // Detect when a goal newly reaches 100%
+  useEffect(() => {
+    if (!goals || goals.length === 0) {
+      prevGoalsRef.current = goals || [];
+      return;
+    }
+    const prev = prevGoalsRef.current;
+    if (prev.length > 0) {
+      const newlyCompleted = goals.some((g: any) => {
+        const old = prev.find((p: any) => p.id === g.id);
+        const wasIncomplete = !old || old.current_amount < old.target_amount;
+        const isNowComplete = g.target_amount > 0 && g.current_amount >= g.target_amount;
+        return wasIncomplete && isNowComplete;
+      });
+      if (newlyCompleted) {
+        setConfettiTrigger(false);
+        requestAnimationFrame(() => setConfettiTrigger(true));
+      }
+    }
+    prevGoalsRef.current = goals;
+  }, [goals]);
 
   const handleSave = async () => {
     const payload = {
@@ -74,6 +99,7 @@ const Goals = () => {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+      <Confetti trigger={confettiTrigger} />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-display text-3xl font-extrabold tracking-tight">
