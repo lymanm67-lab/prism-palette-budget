@@ -39,6 +39,7 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState({ success: 0, failed: 0 });
+  const [ruleMatchCount, setRuleMatchCount] = useState(0);
 
   const reset = () => {
     setStep('upload');
@@ -49,6 +50,7 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
     setSelectedRows(new Set());
     setImporting(false);
     setImportResult({ success: 0, failed: 0 });
+    setRuleMatchCount(0);
   };
 
   const handleClose = (open: boolean) => {
@@ -124,18 +126,42 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
     let success = 0;
     let failed = 0;
 
+    // Fetch saved categorization rules for auto-matching
+    const { data: rules } = await supabase
+      .from('categorization_rules')
+      .select('merchant_pattern, category_id')
+      .eq('household_id', household.id);
+
+    const ruleMap = new Map<string, string>();
+    for (const r of (rules || [])) {
+      ruleMap.set(r.merchant_pattern.toLowerCase(), r.category_id);
+    }
+
+    let ruleApplied = 0;
+
     // Batch insert in chunks of 50
     const chunkSize = 50;
     for (let i = 0; i < toImport.length; i += chunkSize) {
-      const chunk = toImport.slice(i, i + chunkSize).map(row => ({
-        household_id: household.id,
-        account_id: targetAccountId,
-        date: row.date,
-        merchant: row.merchant || null,
-        amount: row.amount,
-        category_id: categoryLookup.get(row.category.toLowerCase()) || null,
-        notes: row.notes || null,
-      }));
+      const chunk = toImport.slice(i, i + chunkSize).map(row => {
+        // Priority: 1) CSV category name match, 2) merchant rule match
+        let categoryId = categoryLookup.get(row.category.toLowerCase()) || null;
+        if (!categoryId && row.merchant) {
+          const ruleMatch = ruleMap.get(row.merchant.toLowerCase().trim());
+          if (ruleMatch) {
+            categoryId = ruleMatch;
+            ruleApplied++;
+          }
+        }
+        return {
+          household_id: household.id,
+          account_id: targetAccountId,
+          date: row.date,
+          merchant: row.merchant || null,
+          amount: row.amount,
+          category_id: categoryId,
+          notes: row.notes || null,
+        };
+      });
 
       const { error } = await supabase.from('transactions').insert(chunk);
       if (error) {
@@ -146,6 +172,7 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
     }
 
     setImportResult({ success, failed });
+    setRuleMatchCount(ruleApplied);
     setImporting(false);
     setStep('done');
     qc.invalidateQueries({ queryKey: ['transactions'] });
@@ -312,6 +339,7 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
               <p className="font-display text-xl font-bold">Import Complete</p>
               <p className="text-muted-foreground">
                 {importResult.success} transactions imported successfully
+                {ruleMatchCount > 0 && <>, <span className="text-primary">{ruleMatchCount} auto-categorized by rules</span></>}
                 {importResult.failed > 0 && <>, <span className="text-prism-rose">{importResult.failed} failed</span></>}
               </p>
               <Button onClick={() => handleClose(false)}>Done</Button>
