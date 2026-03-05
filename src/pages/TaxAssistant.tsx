@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,7 +10,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import {
   Send, Volume2, VolumeX, Pause, Play, Bot, User,
   BookOpen, Route, Loader2, AlertTriangle, Lightbulb, ShieldAlert,
-  Bookmark, BookmarkCheck, Trash2, Star, Wrench, FileWarning, Theater
+  Bookmark, BookmarkCheck, Trash2, Star, Wrench, FileWarning, Theater,
+  Sparkles, Zap, MessageSquare, ArrowRight
 } from 'lucide-react';
 import { useTTS } from '@/hooks/use-tts';
 import { useAuth } from '@/contexts/AuthContext';
@@ -24,13 +26,16 @@ type Msg = { role: 'user' | 'assistant'; content: string };
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/tax-assistant`;
 
 const QUICK_QUESTIONS = [
-  "What are the top 10 business tax deductions I should know about?",
-  "How do I deduct home office expenses for multiple businesses?",
-  "What are common pitfalls that trigger an IRS audit?",
-  "How should I allocate shared expenses across my 3 businesses?",
-  "Can I deduct vehicle expenses if I use my car for multiple businesses?",
-  "What records do I need to keep for meal deductions?",
+  { q: "What are the top 10 business tax deductions I should know about?", icon: Lightbulb, color: 'from-prism-teal to-prism-lime' },
+  { q: "How do I deduct home office expenses for multiple businesses?", icon: BookOpen, color: 'from-prism-navy to-prism-sky' },
+  { q: "What are common pitfalls that trigger an IRS audit?", icon: ShieldAlert, color: 'from-prism-orange to-prism-amber' },
+  { q: "How should I allocate shared expenses across my 3 businesses?", icon: Zap, color: 'from-prism-indigo to-prism-teal' },
+  { q: "Can I deduct vehicle expenses if I use my car for multiple businesses?", icon: Route, color: 'from-prism-sky to-prism-teal' },
+  { q: "What records do I need to keep for meal deductions?", icon: Wrench, color: 'from-prism-orange to-prism-rose' },
 ];
+
+const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.06 } } };
+const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.35 } } };
 
 async function streamChat(
   messages: Msg[],
@@ -216,206 +221,278 @@ const TaxAssistant = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-3xl font-bold prism-gradient-text">AI Tax Assistant</h1>
-        <p className="text-muted-foreground">Business tax deductions, scenarios & pitfalls — with voice walkthroughs</p>
-      </div>
+    <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
+      {/* Hero Header */}
+      <motion.div variants={item} className="relative overflow-hidden rounded-2xl p-6 sm:p-8">
+        <div className="absolute inset-0 bg-gradient-to-br from-prism-navy via-[hsl(220,60%,20%)] to-prism-teal opacity-95 rounded-2xl" />
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-4 right-8 h-32 w-32 rounded-full bg-prism-orange blur-[60px]" />
+          <div className="absolute bottom-0 left-12 h-40 w-40 rounded-full bg-prism-teal blur-[80px]" />
+        </div>
+        <div className="relative z-10 flex items-start gap-4">
+          <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-prism-teal to-prism-orange flex items-center justify-center shrink-0 shadow-lg shadow-prism-teal/20">
+            <Bot className="h-7 w-7 text-white" />
+          </div>
+          <div>
+            <h1 className="font-display text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+              AI Tax Assistant
+            </h1>
+            <p className="text-white/70 text-sm mt-1 max-w-lg">
+              Expert guidance on business deductions, audit prevention, and multi-entity tax strategies — powered by AI with voice walkthroughs.
+            </p>
+          </div>
+        </div>
+      </motion.div>
 
       <Tabs defaultValue="chat" className="space-y-4">
-        <TabsList className="flex flex-wrap h-auto gap-1">
-          <TabsTrigger value="chat" className="gap-1.5 text-xs"><Bot className="h-3.5 w-3.5" /> Chat</TabsTrigger>
-          <TabsTrigger value="scenarios" className="gap-1.5 text-xs"><Theater className="h-3.5 w-3.5" /> Scenarios</TabsTrigger>
-          <TabsTrigger value="tools" className="gap-1.5 text-xs"><Wrench className="h-3.5 w-3.5" /> Tools</TabsTrigger>
-          <TabsTrigger value="pitfalls" className="gap-1.5 text-xs"><FileWarning className="h-3.5 w-3.5" /> Pitfalls</TabsTrigger>
-          <TabsTrigger value="saved" className="gap-1.5 text-xs">
-            <Star className="h-3.5 w-3.5" /> Saved
-            {savedResponses && savedResponses.length > 0 && (
-              <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-[10px]">{savedResponses.length}</Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="overview" className="gap-1.5 text-xs"><BookOpen className="h-3.5 w-3.5" /> TTS Overview</TabsTrigger>
-          <TabsTrigger value="walkthrough" className="gap-1.5 text-xs"><Route className="h-3.5 w-3.5" /> TTS Walkthrough</TabsTrigger>
-        </TabsList>
+        <motion.div variants={item}>
+          <TabsList className="flex flex-wrap h-auto gap-1.5 bg-card/80 backdrop-blur-sm p-1.5 rounded-xl border border-border/50">
+            <TabsTrigger value="chat" className="gap-1.5 text-xs rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-prism-navy data-[state=active]:to-prism-teal data-[state=active]:text-white">
+              <MessageSquare className="h-3.5 w-3.5" /> Chat
+            </TabsTrigger>
+            <TabsTrigger value="scenarios" className="gap-1.5 text-xs rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-prism-indigo data-[state=active]:to-prism-teal data-[state=active]:text-white">
+              <Theater className="h-3.5 w-3.5" /> Scenarios
+            </TabsTrigger>
+            <TabsTrigger value="tools" className="gap-1.5 text-xs rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-prism-teal data-[state=active]:to-prism-lime data-[state=active]:text-white">
+              <Wrench className="h-3.5 w-3.5" /> Tools
+            </TabsTrigger>
+            <TabsTrigger value="pitfalls" className="gap-1.5 text-xs rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-prism-orange data-[state=active]:to-prism-rose data-[state=active]:text-white">
+              <FileWarning className="h-3.5 w-3.5" /> Pitfalls
+            </TabsTrigger>
+            <TabsTrigger value="saved" className="gap-1.5 text-xs rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-prism-amber data-[state=active]:to-prism-orange data-[state=active]:text-white">
+              <Star className="h-3.5 w-3.5" /> Saved
+              {savedResponses && savedResponses.length > 0 && (
+                <Badge className="ml-1 h-5 px-1.5 text-[10px] bg-white/20 text-current border-0">{savedResponses.length}</Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="overview" className="gap-1.5 text-xs rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-prism-navy data-[state=active]:to-prism-indigo data-[state=active]:text-white">
+              <BookOpen className="h-3.5 w-3.5" /> Overview
+            </TabsTrigger>
+            <TabsTrigger value="walkthrough" className="gap-1.5 text-xs rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-prism-sky data-[state=active]:to-prism-teal data-[state=active]:text-white">
+              <Route className="h-3.5 w-3.5" /> Walkthrough
+            </TabsTrigger>
+          </TabsList>
+        </motion.div>
 
         {/* Chat Tab */}
-        <TabsContent value="chat" className="space-y-4">
-          <div className="flex flex-wrap gap-2">
-            {QUICK_QUESTIONS.map((q, i) => (
-              <Badge
-                key={i}
-                variant="secondary"
-                className="cursor-pointer hover:bg-primary/10 transition-colors text-xs"
-                onClick={() => send(q)}
-              >
-                {q.length > 50 ? q.slice(0, 50) + '…' : q}
-              </Badge>
-            ))}
-          </div>
-
-          <Card className="border-border prism-card-shine hover-border-glow">
-            <CardContent className="p-0">
-              <ScrollArea className="h-[400px] p-4" ref={scrollRef}>
-                {messages.length === 0 && (
-                  <div className="flex flex-col items-center justify-center h-full text-muted-foreground space-y-4">
-                    <Bot className="h-12 w-12 opacity-30" />
-                    <p className="text-sm">Ask me about business tax deductions, scenarios, or pitfalls to avoid.</p>
+        <TabsContent value="chat" className="space-y-5">
+          {/* Quick Questions as styled cards */}
+          <motion.div variants={item} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {QUICK_QUESTIONS.map((q, i) => {
+              const Icon = q.icon;
+              return (
+                <button
+                  key={i}
+                  onClick={() => send(q.q)}
+                  className="group flex items-start gap-3 rounded-xl border border-border/50 bg-card p-3.5 text-left transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 hover:border-prism-teal/30"
+                >
+                  <div className={`h-9 w-9 rounded-lg bg-gradient-to-br ${q.color} flex items-center justify-center shrink-0 shadow-sm`}>
+                    <Icon className="h-4 w-4 text-white" />
                   </div>
-                )}
-                <div className="space-y-4">
-                  {messages.map((m, i) => (
-                    <div key={i} className={`flex gap-3 ${m.role === 'user' ? 'justify-end' : ''}`}>
-                      {m.role === 'assistant' && (
-                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                          <Bot className="h-4 w-4 text-primary" />
+                  <p className="text-xs font-medium text-foreground/80 leading-snug group-hover:text-foreground transition-colors line-clamp-2">
+                    {q.q}
+                  </p>
+                </button>
+              );
+            })}
+          </motion.div>
+
+          {/* Chat Card */}
+          <motion.div variants={item}>
+            <Card className="prism-card-shine border-border/50 overflow-hidden">
+              <CardContent className="p-0">
+                <ScrollArea className="h-[420px] p-5" ref={scrollRef}>
+                  {messages.length === 0 && (
+                    <div className="flex flex-col items-center justify-center h-full text-muted-foreground space-y-4">
+                      <div className="relative">
+                        <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-prism-navy to-prism-teal flex items-center justify-center shadow-xl shadow-prism-teal/15">
+                          <Bot className="h-10 w-10 text-white" />
                         </div>
-                      )}
-                      <div className="flex flex-col gap-1 max-w-[80%]">
-                        <div className={`rounded-xl px-4 py-3 text-sm ${
-                          m.role === 'user'
-                            ? 'bg-primary text-primary-foreground whitespace-pre-wrap'
-                            : 'bg-muted text-foreground'
-                        }`}>
-                          {m.role === 'assistant' ? (
-                            <div className="prose prose-sm dark:prose-invert max-w-none">
-                              <ReactMarkdown>{m.content}</ReactMarkdown>
-                            </div>
-                          ) : m.content}
+                        <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-gradient-to-br from-prism-orange to-prism-amber flex items-center justify-center shadow-md">
+                          <Sparkles className="h-3 w-3 text-white" />
                         </div>
-                        {m.role === 'assistant' && !loading && m.content.length > 20 && (
-                          <div className="flex gap-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-6 px-2 text-[10px] text-muted-foreground hover:text-primary gap-1"
-                              onClick={() => saveResponse.mutate({
-                                question: getQuestionForIndex(i),
-                                response: m.content,
-                              })}
-                              disabled={saveResponse.isPending}
-                            >
-                              <Bookmark className="h-3 w-3" /> Save
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-6 px-2 text-[10px] text-muted-foreground hover:text-primary gap-1"
-                              onClick={() => {
-                                if (tts.isSpeaking) tts.stop();
-                                else tts.speak(m.content);
-                              }}
-                            >
-                              {tts.isSpeaking ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}
-                              {tts.isSpeaking ? 'Stop' : 'Listen'}
-                            </Button>
-                          </div>
-                        )}
                       </div>
-                      {m.role === 'user' && (
-                        <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center shrink-0">
-                          <User className="h-4 w-4 text-secondary-foreground" />
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                  {loading && messages[messages.length - 1]?.role === 'user' && (
-                    <div className="flex gap-3">
-                      <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                        <Bot className="h-4 w-4 text-primary" />
-                      </div>
-                      <div className="bg-muted rounded-xl px-4 py-3">
-                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                      <div className="text-center">
+                        <p className="font-display font-bold text-foreground">Ready to help with taxes</p>
+                        <p className="text-sm text-muted-foreground mt-1 max-w-xs">Ask about deductions, scenarios, pitfalls, or click a quick question above.</p>
                       </div>
                     </div>
                   )}
+                  <div className="space-y-4">
+                    {messages.map((m, i) => (
+                      <div key={i} className={`flex gap-3 ${m.role === 'user' ? 'justify-end' : ''}`}>
+                        {m.role === 'assistant' && (
+                          <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-prism-navy to-prism-teal flex items-center justify-center shrink-0 shadow-sm">
+                            <Bot className="h-4 w-4 text-white" />
+                          </div>
+                        )}
+                        <div className="flex flex-col gap-1.5 max-w-[80%]">
+                          <div className={`rounded-2xl px-4 py-3 text-sm ${
+                            m.role === 'user'
+                              ? 'bg-gradient-to-r from-prism-navy to-[hsl(220,60%,32%)] text-white shadow-md shadow-prism-navy/20'
+                              : 'bg-card border border-border/50 text-foreground shadow-sm'
+                          }`}>
+                            {m.role === 'assistant' ? (
+                              <div className="prose prose-sm dark:prose-invert max-w-none">
+                                <ReactMarkdown>{m.content}</ReactMarkdown>
+                              </div>
+                            ) : m.content}
+                          </div>
+                          {m.role === 'assistant' && !loading && m.content.length > 20 && (
+                            <div className="flex gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 px-2.5 text-[11px] text-muted-foreground hover:text-prism-teal gap-1 rounded-lg"
+                                onClick={() => saveResponse.mutate({
+                                  question: getQuestionForIndex(i),
+                                  response: m.content,
+                                })}
+                                disabled={saveResponse.isPending}
+                              >
+                                <Bookmark className="h-3 w-3" /> Save
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 px-2.5 text-[11px] text-muted-foreground hover:text-prism-orange gap-1 rounded-lg"
+                                onClick={() => {
+                                  if (tts.isSpeaking) tts.stop();
+                                  else tts.speak(m.content);
+                                }}
+                              >
+                                {tts.isSpeaking ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}
+                                {tts.isSpeaking ? 'Stop' : 'Listen'}
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                        {m.role === 'user' && (
+                          <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-prism-orange to-prism-amber flex items-center justify-center shrink-0 shadow-sm">
+                            <User className="h-4 w-4 text-white" />
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                    {loading && messages[messages.length - 1]?.role === 'user' && (
+                      <div className="flex gap-3">
+                        <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-prism-navy to-prism-teal flex items-center justify-center shrink-0 shadow-sm">
+                          <Bot className="h-4 w-4 text-white" />
+                        </div>
+                        <div className="bg-card border border-border/50 rounded-2xl px-4 py-3 shadow-sm">
+                          <div className="flex items-center gap-2">
+                            <Loader2 className="h-4 w-4 animate-spin text-prism-teal" />
+                            <span className="text-xs text-muted-foreground">Thinking…</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </ScrollArea>
+
+                <div className="border-t border-border/50 p-4 bg-card/50 backdrop-blur-sm">
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Ask about tax deductions, scenarios, pitfalls…"
+                      value={input}
+                      onChange={e => setInput(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && !e.shiftKey && send(input)}
+                      disabled={loading}
+                      className="flex-1 rounded-xl border-border/50 bg-background"
+                    />
+                    <Button
+                      onClick={() => send(input)}
+                      disabled={loading || !input.trim()}
+                      className="rounded-xl bg-gradient-to-r from-prism-navy to-prism-teal hover:opacity-90 text-white shadow-md shadow-prism-teal/15 px-4"
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-              </ScrollArea>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-              <div className="border-t border-border p-3 flex gap-2">
-                <Input
-                  placeholder="Ask about tax deductions, scenarios, pitfalls…"
-                  value={input}
-                  onChange={e => setInput(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && !e.shiftKey && send(input)}
-                  disabled={loading}
-                  className="flex-1"
-                />
-                <Button onClick={() => send(input)} disabled={loading || !input.trim()} size="icon">
-                  <Send className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Info cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="border-border prism-card-shine hover-border-glow">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm flex items-center gap-2"><Lightbulb className="h-4 w-4 text-[hsl(var(--prism-amber))]" /> Scenarios</CardTitle>
-              </CardHeader>
-              <CardContent><p className="text-xs text-muted-foreground">Ask about real-world tax scenarios for your multiple businesses — expense allocation, entity structures, and more.</p></CardContent>
+          {/* Feature cards */}
+          <motion.div variants={item} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card className="prism-card-shine border-border/50 hover-lift group">
+              <CardContent className="p-5">
+                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-prism-teal to-prism-lime flex items-center justify-center mb-3 shadow-sm group-hover:scale-110 transition-transform">
+                  <Lightbulb className="h-5 w-5 text-white" />
+                </div>
+                <h3 className="font-display font-bold text-sm mb-1">Real-World Scenarios</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">Ask about tax scenarios for your multiple businesses — expense allocation, entity structures, and more.</p>
+              </CardContent>
             </Card>
-            <Card className="border-border prism-card-shine hover-border-glow">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm flex items-center gap-2"><ShieldAlert className="h-4 w-4 text-destructive" /> Pitfalls</CardTitle>
-              </CardHeader>
-              <CardContent><p className="text-xs text-muted-foreground">Learn about common mistakes that trigger audits — mixing expenses, hobby loss rules, and documentation gaps.</p></CardContent>
+            <Card className="prism-card-shine border-border/50 hover-lift group">
+              <CardContent className="p-5">
+                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-prism-orange to-prism-rose flex items-center justify-center mb-3 shadow-sm group-hover:scale-110 transition-transform">
+                  <ShieldAlert className="h-5 w-5 text-white" />
+                </div>
+                <h3 className="font-display font-bold text-sm mb-1">Audit Prevention</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">Learn about common mistakes that trigger audits — mixing expenses, hobby loss rules, and documentation gaps.</p>
+              </CardContent>
             </Card>
-            <Card className="border-border prism-card-shine hover-border-glow">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm flex items-center gap-2"><AlertTriangle className="h-4 w-4 text-[hsl(var(--prism-orange))]" /> Disclaimer</CardTitle>
-              </CardHeader>
-              <CardContent><p className="text-xs text-muted-foreground">This AI provides general educational information only. Always consult a CPA or tax professional for your specific situation.</p></CardContent>
+            <Card className="prism-card-shine border-border/50 hover-lift group">
+              <CardContent className="p-5">
+                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-prism-navy to-prism-indigo flex items-center justify-center mb-3 shadow-sm group-hover:scale-110 transition-transform">
+                  <AlertTriangle className="h-5 w-5 text-white" />
+                </div>
+                <h3 className="font-display font-bold text-sm mb-1">Important Disclaimer</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">This AI provides general educational information only. Always consult a CPA or tax professional for your specific situation.</p>
+              </CardContent>
             </Card>
-          </div>
+          </motion.div>
         </TabsContent>
 
         {/* Saved Tab */}
         <TabsContent value="saved" className="space-y-4">
           {savedLoading ? (
-            <div className="flex items-center justify-center p-10"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+            <div className="flex items-center justify-center p-10"><Loader2 className="h-6 w-6 animate-spin text-prism-teal" /></div>
           ) : (!savedResponses || savedResponses.length === 0) ? (
-            <Card>
-              <CardContent className="p-10 text-center text-muted-foreground">
-                <BookmarkCheck className="mx-auto h-10 w-10 opacity-30 mb-3" />
-                <p className="text-sm">No saved responses yet.</p>
-                <p className="text-xs mt-1">Click the "Save" button on any AI response to bookmark it here.</p>
+            <Card className="prism-card-shine border-border/50">
+              <CardContent className="p-12 text-center">
+                <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-prism-amber to-prism-orange flex items-center justify-center mx-auto mb-4 shadow-lg shadow-prism-orange/15">
+                  <BookmarkCheck className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="font-display font-bold mb-1">No saved responses yet</h3>
+                <p className="text-sm text-muted-foreground max-w-xs mx-auto">Click the "Save" button on any AI response to bookmark it here for quick reference.</p>
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {savedResponses.map(saved => (
-                <Card key={saved.id} className="group border-border transition-shadow hover:shadow-md">
+                <Card key={saved.id} className="group border-border/50 prism-card-shine transition-all hover:shadow-md">
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-2">
-                          <Badge variant="outline" className="text-[10px] shrink-0">
+                          <Badge variant="outline" className="text-[10px] shrink-0 border-prism-teal/30 text-prism-teal">
                             {format(new Date(saved.created_at), 'MMM d, yyyy')}
                           </Badge>
-                          <p className="text-sm font-medium text-primary truncate">{saved.question}</p>
+                          <p className="text-sm font-display font-semibold text-foreground truncate">{saved.question}</p>
                         </div>
                         <ScrollArea className="max-h-[200px]">
-                          <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">{saved.response}</p>
+                          <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">{saved.response}</p>
                         </ScrollArea>
                       </div>
                       <div className="flex flex-col gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-7 w-7"
+                          className="h-8 w-8 rounded-lg hover:bg-prism-teal/10 hover:text-prism-teal"
                           onClick={() => tts.isSpeaking ? tts.stop() : tts.speak(saved.response)}
                           title={tts.isSpeaking ? 'Stop' : 'Listen'}
                         >
-                          {tts.isSpeaking ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+                          {tts.isSpeaking ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-7 w-7 text-destructive hover:text-destructive"
+                          className="h-8 w-8 rounded-lg hover:bg-destructive/10 text-destructive hover:text-destructive"
                           onClick={() => setDeleteTarget({ id: saved.id, question: saved.question })}
                         >
-                          <Trash2 className="h-3.5 w-3.5" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
@@ -429,9 +506,10 @@ const TaxAssistant = () => {
         {/* Scenarios Tab */}
         <TabsContent value="scenarios">
           <ContentSection
-            title="Real-World Tax Scenarios & Examples"
+            title="Real-World Tax Scenarios"
             description="Explore detailed, realistic tax scenarios for small business owners with multiple businesses — complete with calculations and IRS form references."
-            icon={<Theater className="h-5 w-5 text-primary" />}
+            icon={<Theater className="h-6 w-6 text-white" />}
+            iconGradient="from-prism-indigo to-prism-teal"
             content={ttsContent.scenarios}
             isLoading={ttsLoading.scenarios}
             tts={tts}
@@ -444,9 +522,10 @@ const TaxAssistant = () => {
         {/* Tools Tab */}
         <TabsContent value="tools">
           <ContentSection
-            title="Tax Tools, Software & Resources"
+            title="Tax Tools & Resources"
             description="Comprehensive guide to accounting software, expense trackers, tax prep tools, and IRS resources for multi-business owners."
-            icon={<Wrench className="h-5 w-5 text-primary" />}
+            icon={<Wrench className="h-6 w-6 text-white" />}
+            iconGradient="from-prism-teal to-prism-lime"
             content={ttsContent.tools}
             isLoading={ttsLoading.tools}
             tts={tts}
@@ -460,8 +539,9 @@ const TaxAssistant = () => {
         <TabsContent value="pitfalls">
           <ContentSection
             title="Tax Pitfalls & Audit Triggers"
-            description="Learn about dangerous mistakes, IRS red flags, and common errors that small business owners must avoid — with penalties and how to protect yourself."
-            icon={<FileWarning className="h-5 w-5 text-destructive" />}
+            description="Learn about dangerous mistakes, IRS red flags, and common errors that small business owners must avoid."
+            icon={<FileWarning className="h-6 w-6 text-white" />}
+            iconGradient="from-prism-orange to-prism-rose"
             content={ttsContent.pitfalls}
             isLoading={ttsLoading.pitfalls}
             tts={tts}
@@ -476,7 +556,8 @@ const TaxAssistant = () => {
           <ContentSection
             title="Tax Deductions Overview"
             description="Listen to a comprehensive overview of business tax deductions, key strategies, and what every multi-business owner should know."
-            icon={<BookOpen className="h-5 w-5 text-primary" />}
+            icon={<BookOpen className="h-6 w-6 text-white" />}
+            iconGradient="from-prism-navy to-prism-indigo"
             content={ttsContent.overview}
             isLoading={ttsLoading.overview}
             tts={tts}
@@ -490,7 +571,8 @@ const TaxAssistant = () => {
           <ContentSection
             title="Step-by-Step Walkthrough"
             description="Follow along as the AI walks you through claiming business tax deductions — from categorizing expenses to preparing for audits."
-            icon={<Route className="h-5 w-5 text-primary" />}
+            icon={<Route className="h-6 w-6 text-white" />}
+            iconGradient="from-prism-sky to-prism-teal"
             content={ttsContent.walkthrough}
             isLoading={ttsLoading.walkthrough}
             tts={tts}
@@ -504,7 +586,7 @@ const TaxAssistant = () => {
       <AlertDialog open={!!deleteTarget} onOpenChange={open => !open && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Remove saved response?</AlertDialogTitle>
+            <AlertDialogTitle className="font-display">Remove saved response?</AlertDialogTitle>
             <AlertDialogDescription>
               This will remove "{deleteTarget?.question}" from your saved favorites.
             </AlertDialogDescription>
@@ -520,36 +602,38 @@ const TaxAssistant = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </motion.div>
   );
 };
 
-function ContentSection({ title, description, icon, content, isLoading, tts, onGenerate, onSave, useMarkdown }: {
-  title: string; description: string; icon: React.ReactNode; content: string;
+function ContentSection({ title, description, icon, iconGradient, content, isLoading, tts, onGenerate, onSave, useMarkdown }: {
+  title: string; description: string; icon: React.ReactNode; iconGradient?: string; content: string;
   isLoading: boolean; tts: ReturnType<typeof useTTS>; onGenerate: () => void; onSave?: () => void; useMarkdown?: boolean;
 }) {
   return (
-    <Card className="border-border">
-      <CardHeader>
-        <div className="flex items-center gap-3">
-          {icon}
+    <Card className="prism-card-shine border-border/50 overflow-hidden">
+      <CardHeader className="pb-4">
+        <div className="flex items-center gap-4">
+          <div className={`h-12 w-12 rounded-xl bg-gradient-to-br ${iconGradient || 'from-prism-navy to-prism-teal'} flex items-center justify-center shadow-lg`}>
+            {icon}
+          </div>
           <div>
-            <CardTitle className="text-lg">{title}</CardTitle>
-            <p className="text-sm text-muted-foreground mt-1">{description}</p>
+            <CardTitle className="font-display text-lg font-bold">{title}</CardTitle>
+            <p className="text-sm text-muted-foreground mt-0.5">{description}</p>
           </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
         {!content && !isLoading && (
-          <Button onClick={onGenerate} className="gap-2">
-            <Lightbulb className="h-4 w-4" /> Generate Content
+          <Button onClick={onGenerate} className="gap-2 rounded-xl bg-gradient-to-r from-prism-navy to-prism-teal text-white hover:opacity-90 shadow-md shadow-prism-teal/15">
+            <Sparkles className="h-4 w-4" /> Generate Content
           </Button>
         )}
 
         {isLoading && (
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            <span className="text-sm">Generating content…</span>
+          <div className="flex items-center gap-3 p-4 rounded-xl bg-muted/50 border border-border/30">
+            <Loader2 className="h-5 w-5 animate-spin text-prism-teal" />
+            <span className="text-sm text-muted-foreground">Generating content…</span>
           </div>
         )}
 
@@ -557,26 +641,26 @@ function ContentSection({ title, description, icon, content, isLoading, tts, onG
           <>
             <div className="flex flex-wrap gap-2">
               {!tts.isSpeaking ? (
-                <Button onClick={() => tts.speak(content)} variant="outline" size="sm" className="gap-2">
+                <Button onClick={() => tts.speak(content)} variant="outline" size="sm" className="gap-2 rounded-xl border-prism-teal/30 hover:bg-prism-teal/10 hover:text-prism-teal">
                   <Play className="h-4 w-4" /> Listen
                 </Button>
               ) : (
                 <>
-                  <Button onClick={tts.isPaused ? tts.resume : tts.pause} variant="outline" size="sm" className="gap-2">
+                  <Button onClick={tts.isPaused ? tts.resume : tts.pause} variant="outline" size="sm" className="gap-2 rounded-xl">
                     {tts.isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
                     {tts.isPaused ? 'Resume' : 'Pause'}
                   </Button>
-                  <Button onClick={tts.stop} variant="outline" size="sm" className="gap-2">
+                  <Button onClick={tts.stop} variant="outline" size="sm" className="gap-2 rounded-xl">
                     <VolumeX className="h-4 w-4" /> Stop
                   </Button>
                 </>
               )}
               {onSave && (
-                <Button onClick={onSave} variant="outline" size="sm" className="gap-2">
+                <Button onClick={onSave} variant="outline" size="sm" className="gap-2 rounded-xl border-prism-orange/30 hover:bg-prism-orange/10 hover:text-prism-orange">
                   <Bookmark className="h-4 w-4" /> Save
                 </Button>
               )}
-              <Button onClick={onGenerate} variant="ghost" size="sm" className="text-xs">
+              <Button onClick={onGenerate} variant="ghost" size="sm" className="text-xs rounded-xl">
                 Regenerate
               </Button>
             </div>
