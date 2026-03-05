@@ -400,7 +400,7 @@ const Transactions = () => {
             <DialogTrigger asChild>
               <Button size="sm" className="gap-2"><Plus className="h-4 w-4" /> Add transaction</Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-h-[90vh] overflow-y-auto">
               <DialogHeader><DialogTitle className="font-display">Add Transaction</DialogTitle></DialogHeader>
               <div className="space-y-4">
                 {/* Debit / Credit Toggle */}
