@@ -339,8 +339,9 @@ const Settings = () => {
 
       <Tabs defaultValue="personal" className="space-y-6">
         <TabsList>
-          <TabsTrigger value="personal" className="gap-2"><User className="h-4 w-4" /> Personal Profile</TabsTrigger>
-          <TabsTrigger value="business" className="gap-2"><Building2 className="h-4 w-4" /> Business Profiles</TabsTrigger>
+          <TabsTrigger value="personal" className="gap-2"><User className="h-4 w-4" /> Personal</TabsTrigger>
+          <TabsTrigger value="business" className="gap-2"><Building2 className="h-4 w-4" /> Business</TabsTrigger>
+          <TabsTrigger value="recurring" className="gap-2"><Calendar className="h-4 w-4" /> Recurring</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
         </TabsList>
 
@@ -486,6 +487,28 @@ const Settings = () => {
               ))}
             </div>
           )}
+        </TabsContent>
+
+        {/* ==================== RECURRING ==================== */}
+        <TabsContent value="recurring" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Calendar className="h-5 w-5 text-primary" />
+                <CardTitle className="font-display">Manage Recurring</CardTitle>
+              </div>
+              <CardDescription>View and manage all your recurring expenses and income from one place.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Your recurring transactions are managed on the dedicated Recurring page where you can add, edit, and view them in list or calendar format.
+              </p>
+              <Button variant="outline" className="gap-2" onClick={() => window.location.href = '/recurring'}>
+                <Calendar className="h-4 w-4" />
+                Go to Recurring Transactions
+              </Button>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* ==================== SECURITY ==================== */}
