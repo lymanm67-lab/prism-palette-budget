@@ -17,6 +17,7 @@ import {
   Moon,
   TrendingDown,
   Calculator,
+  Scale,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
@@ -35,6 +36,7 @@ const NAV_ITEMS = [
   { to: '/calculators', icon: Calculator, label: 'Calculators', color: 'text-prism-indigo' },
   { to: '/reports', icon: BarChart3, label: 'Reports', color: 'text-prism-orange' },
   { to: '/tax-assistant', icon: Bot, label: 'Tax Assistant', color: 'text-prism-indigo' },
+  { to: '/legal', icon: Scale, label: 'Legal', color: 'text-muted-foreground' },
   { to: '/settings', icon: Settings, label: 'Settings', color: 'text-muted-foreground' },
 ];
 
