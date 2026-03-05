@@ -1,8 +1,9 @@
+import { useEffect, useRef } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { HouseholdProvider } from "@/contexts/HouseholdContext";
@@ -35,7 +36,23 @@ import GettingStarted from "@/pages/GettingStarted";
 const queryClient = new QueryClient();
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { session, loading } = useAuth();
+  const { session, user, loading } = useAuth();
+  const navigate = useNavigate();
+  const redirected = useRef(false);
+
+  useEffect(() => {
+    if (loading || !user || redirected.current) return;
+    // Redirect brand-new users (account created within the last 60 seconds) to Getting Started
+    const createdAt = new Date(user.created_at).getTime();
+    const isNew = Date.now() - createdAt < 60_000;
+    const alreadySeen = localStorage.getItem(`prism_gs_seen_${user.id}`);
+    if (isNew && !alreadySeen) {
+      redirected.current = true;
+      localStorage.setItem(`prism_gs_seen_${user.id}`, '1');
+      navigate('/getting-started', { replace: true });
+    }
+  }, [loading, user, navigate]);
+
   if (loading) return <div className="flex min-h-screen items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>;
   if (!session) return <Navigate to="/" replace />;
   return <>{children}</>;
