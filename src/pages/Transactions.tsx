@@ -8,16 +8,35 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useTransactions, useCreateTransaction, useAccounts, useCategories } from '@/hooks/use-finance-data';
-import { formatDate } from '@/lib/seed-data';
 import { useCurrency } from '@/hooks/use-currency';
 import { supabase } from '@/integrations/supabase/client';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Search, ArrowUpRight, ArrowDownRight, Plus, Loader2, Upload, Receipt, Trash2, Tags, ArrowRightLeft } from 'lucide-react';
+import {
+  Search, Plus, Loader2, Upload, Receipt, Trash2, Tags,
+  ArrowRightLeft, SlidersHorizontal, CalendarIcon, ChevronRight,
+  ArrowUpDown, X, Pencil,
+} from 'lucide-react';
 import CsvImportDialog from '@/components/CsvImportDialog';
-import TransactionFilters, { emptyFilters, type TransactionFiltersState } from '@/components/TransactionFilters';
+import { cn } from '@/lib/utils';
+import { format, parseISO } from 'date-fns';
+
+type SortKey = 'date' | 'amount' | 'merchant';
+type SortDir = 'asc' | 'desc';
+
+interface FilterState {
+  dateFrom: string;
+  dateTo: string;
+  amountMin: string;
+  amountMax: string;
+  accountId: string;
+  categoryId: string;
+}
+
+const EMPTY_FILTERS: FilterState = { dateFrom: '', dateTo: '', amountMin: '', amountMax: '', accountId: '', categoryId: '' };
 
 const Transactions = () => {
   const { formatCurrency } = useCurrency();
@@ -27,20 +46,29 @@ const Transactions = () => {
   const createTransaction = useCreateTransaction();
   const { household } = useHousehold();
   const qc = useQueryClient();
+
   const [search, setSearch] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
   const [open, setOpen] = useState(false);
   const [csvOpen, setCsvOpen] = useState(false);
   const [transferOpen, setTransferOpen] = useState(false);
-  const [filters, setFilters] = useState<TransactionFiltersState>(emptyFilters);
+  const [filters, setFilters] = useState<FilterState>(EMPTY_FILTERS);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [editMultiple, setEditMultiple] = useState(false);
   const [bulkCategory, setBulkCategory] = useState('');
+  const [sortKey, setSortKey] = useState<SortKey>('date');
+  const [sortDir, setSortDir] = useState<SortDir>('desc');
+
   const [form, setForm] = useState({ date: new Date().toISOString().split('T')[0], merchant: '', amount: '', account_id: '', category_id: '', notes: '' });
   const [transferForm, setTransferForm] = useState({ date: new Date().toISOString().split('T')[0], amount: '', from_account: '', to_account: '', notes: '' });
 
+  const activeFilterCount = Object.values(filters).filter(Boolean).length;
+
+  // Filter + sort
   const filtered = useMemo(() => {
     if (!transactions) return [];
     const q = search.toLowerCase();
-    return transactions.filter(t => {
+    let result = transactions.filter(t => {
       if (q && !(t.merchant?.toLowerCase().includes(q)) && !((t as any).categories?.name?.toLowerCase().includes(q))) return false;
       if (filters.dateFrom && t.date < filters.dateFrom) return false;
       if (filters.dateTo && t.date > filters.dateTo) return false;
@@ -50,16 +78,42 @@ const Transactions = () => {
       if (filters.categoryId && t.category_id !== filters.categoryId) return false;
       return true;
     });
-  }, [search, transactions, filters]);
+
+    result.sort((a, b) => {
+      let cmp = 0;
+      if (sortKey === 'date') cmp = a.date.localeCompare(b.date);
+      else if (sortKey === 'amount') cmp = Math.abs(a.amount) - Math.abs(b.amount);
+      else if (sortKey === 'merchant') cmp = (a.merchant || '').localeCompare(b.merchant || '');
+      return sortDir === 'desc' ? -cmp : cmp;
+    });
+
+    return result;
+  }, [search, transactions, filters, sortKey, sortDir]);
+
+  // Group by date
+  const grouped = useMemo(() => {
+    const groups: { date: string; label: string; transactions: typeof filtered; total: number }[] = [];
+    const map = new Map<string, typeof filtered>();
+    for (const t of filtered) {
+      if (!map.has(t.date)) map.set(t.date, []);
+      map.get(t.date)!.push(t);
+    }
+    for (const [date, txns] of map) {
+      const total = txns.reduce((s, t) => s + Number(t.amount), 0);
+      groups.push({
+        date,
+        label: format(parseISO(date), 'MMMM d, yyyy'),
+        transactions: txns,
+        total,
+      });
+    }
+    return groups;
+  }, [filtered]);
 
   const handleCreate = async () => {
     await createTransaction.mutateAsync({
-      date: form.date,
-      merchant: form.merchant || null,
-      amount: parseFloat(form.amount),
-      account_id: form.account_id,
-      category_id: form.category_id || null,
-      notes: form.notes || null,
+      date: form.date, merchant: form.merchant || null, amount: parseFloat(form.amount),
+      account_id: form.account_id, category_id: form.category_id || null, notes: form.notes || null,
     });
     setForm({ date: new Date().toISOString().split('T')[0], merchant: '', amount: '', account_id: '', category_id: '', notes: '' });
     setOpen(false);
@@ -78,7 +132,6 @@ const Transactions = () => {
       date: transferForm.date, merchant: 'Transfer In', is_transfer: true,
       transfer_pair_id: outTxn.id, notes: transferForm.notes || null,
     } as any);
-    // Link pair
     await supabase.from('transactions').update({ transfer_pair_id: outTxn.id } as any).eq('id', outTxn.id);
     qc.invalidateQueries({ queryKey: ['transactions'] });
     toast.success('Transfer recorded');
@@ -87,22 +140,11 @@ const Transactions = () => {
   };
 
   const toggleSelect = (id: string) => {
-    setSelected(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
-      return next;
-    });
-  };
-
-  const toggleAll = () => {
-    if (selected.size === filtered.length) setSelected(new Set());
-    else setSelected(new Set(filtered.map(t => t.id)));
+    setSelected(prev => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
   };
 
   const bulkDelete = async () => {
-    for (const id of selected) {
-      await supabase.from('transactions').delete().eq('id', id);
-    }
+    for (const id of selected) { await supabase.from('transactions').delete().eq('id', id); }
     qc.invalidateQueries({ queryKey: ['transactions'] });
     setSelected(new Set());
     toast.success(`Deleted ${selected.size} transactions`);
@@ -110,83 +152,120 @@ const Transactions = () => {
 
   const bulkCategorize = async () => {
     if (!bulkCategory) return;
-    for (const id of selected) {
-      await supabase.from('transactions').update({ category_id: bulkCategory }).eq('id', id);
-    }
+    for (const id of selected) { await supabase.from('transactions').update({ category_id: bulkCategory }).eq('id', id); }
     qc.invalidateQueries({ queryKey: ['transactions'] });
     setSelected(new Set());
     setBulkCategory('');
     toast.success(`Categorized ${selected.size} transactions`);
   };
 
+  const cycleSortKey = () => {
+    const keys: SortKey[] = ['date', 'amount', 'merchant'];
+    const idx = keys.indexOf(sortKey);
+    const nextIdx = (idx + 1) % keys.length;
+    setSortKey(keys[nextIdx]);
+  };
+
   if (isLoading) return (
     <div className="flex items-center justify-center p-20">
-      <div className="flex flex-col items-center gap-3">
-        <div className="h-12 w-12 rounded-2xl prism-gradient prism-glow flex items-center justify-center">
-          <Loader2 className="h-6 w-6 animate-spin text-white" />
-        </div>
-        <p className="text-sm text-muted-foreground">Loading transactions…</p>
-      </div>
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
     </div>
   );
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="font-display text-3xl font-extrabold tracking-tight">
-            <span className="prism-gradient-text">Transactions</span>
-          </h1>
-          <p className="text-muted-foreground mt-1">All your recent transactions in one place.</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" className="gap-2 hover-border-glow" onClick={() => setCsvOpen(true)} aria-label="Import CSV">
-            <Upload className="h-4 w-4" /> <span className="hidden sm:inline">Import CSV</span>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h1 className="font-display text-2xl font-bold">Transactions</h1>
+        <div className="flex items-center gap-2">
+          {/* Search button */}
+          <Button variant="outline" size="sm" className="gap-2" onClick={() => setSearchOpen(!searchOpen)}>
+            <Search className="h-4 w-4" /> Search
           </Button>
-          <Dialog open={transferOpen} onOpenChange={setTransferOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" className="gap-2 hover-border-glow" aria-label="Record transfer">
-                <ArrowRightLeft className="h-4 w-4" /> <span className="hidden sm:inline">Transfer</span>
+
+          {/* Date filter button */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2">
+                <CalendarIcon className="h-4 w-4" /> Date
               </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader><DialogTitle className="font-display">Record Transfer</DialogTitle></DialogHeader>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Date</Label>
-                  <Input type="date" value={transferForm.date} onChange={e => setTransferForm(f => ({ ...f, date: e.target.value }))} />
+            </PopoverTrigger>
+            <PopoverContent className="w-64 space-y-3" align="end">
+              <h4 className="font-semibold text-sm">Date Range</h4>
+              <div className="space-y-2">
+                <div className="space-y-1">
+                  <Label className="text-xs">From</Label>
+                  <Input type="date" value={filters.dateFrom} onChange={e => setFilters(f => ({ ...f, dateFrom: e.target.value }))} className="h-8 text-xs" />
                 </div>
-                <div className="space-y-2">
-                  <Label>Amount</Label>
-                  <Input type="number" step="0.01" value={transferForm.amount} onChange={e => setTransferForm(f => ({ ...f, amount: e.target.value }))} placeholder="100.00" />
+                <div className="space-y-1">
+                  <Label className="text-xs">To</Label>
+                  <Input type="date" value={filters.dateTo} onChange={e => setFilters(f => ({ ...f, dateTo: e.target.value }))} className="h-8 text-xs" />
                 </div>
-                <div className="space-y-2">
-                  <Label>From Account</Label>
-                  <Select value={transferForm.from_account} onValueChange={v => setTransferForm(f => ({ ...f, from_account: v }))}>
-                    <SelectTrigger><SelectValue placeholder="Source" /></SelectTrigger>
-                    <SelectContent>{(accounts || []).map(a => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>To Account</Label>
-                  <Select value={transferForm.to_account} onValueChange={v => setTransferForm(f => ({ ...f, to_account: v }))}>
-                    <SelectTrigger><SelectValue placeholder="Destination" /></SelectTrigger>
-                    <SelectContent>{(accounts || []).filter(a => a.id !== transferForm.from_account).map(a => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Notes</Label>
-                  <Input value={transferForm.notes} onChange={e => setTransferForm(f => ({ ...f, notes: e.target.value }))} placeholder="Optional" />
-                </div>
-                <Button onClick={handleTransfer} disabled={!transferForm.amount || !transferForm.from_account || !transferForm.to_account} className="w-full prism-gradient text-white border-0 hover:opacity-90">
-                  Record Transfer
-                </Button>
               </div>
-            </DialogContent>
-          </Dialog>
+              {(filters.dateFrom || filters.dateTo) && (
+                <Button variant="ghost" size="sm" className="w-full h-7 text-xs" onClick={() => setFilters(f => ({ ...f, dateFrom: '', dateTo: '' }))}>
+                  Clear dates
+                </Button>
+              )}
+            </PopoverContent>
+          </Popover>
+
+          {/* Filters button */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2 relative">
+                <SlidersHorizontal className="h-4 w-4" /> Filters
+                {activeFilterCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-primary text-primary-foreground text-[10px] flex items-center justify-center font-bold">
+                    {activeFilterCount}
+                  </span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-72 space-y-3" align="end">
+              <div className="flex items-center justify-between">
+                <h4 className="font-semibold text-sm">Filters</h4>
+                {activeFilterCount > 0 && (
+                  <Button variant="ghost" size="sm" onClick={() => setFilters(EMPTY_FILTERS)} className="h-7 text-xs gap-1"><X className="h-3 w-3" /> Clear</Button>
+                )}
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs">Min Amount</Label>
+                  <Input type="number" step="0.01" value={filters.amountMin} onChange={e => setFilters(f => ({ ...f, amountMin: e.target.value }))} placeholder="0" className="h-8 text-xs" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Max Amount</Label>
+                  <Input type="number" step="0.01" value={filters.amountMax} onChange={e => setFilters(f => ({ ...f, amountMax: e.target.value }))} placeholder="∞" className="h-8 text-xs" />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Account</Label>
+                <Select value={filters.accountId} onValueChange={v => setFilters(f => ({ ...f, accountId: v === '_all' ? '' : v }))}>
+                  <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="All accounts" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="_all">All accounts</SelectItem>
+                    {(accounts || []).map(a => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Category</Label>
+                <Select value={filters.categoryId} onValueChange={v => setFilters(f => ({ ...f, categoryId: v === '_all' ? '' : v }))}>
+                  <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="All categories" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="_all">All categories</SelectItem>
+                    {(categories || []).map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          {/* Add transaction button */}
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button className="gap-2 prism-gradient text-white border-0 hover:opacity-90" aria-label="Add transaction"><Plus className="h-4 w-4" /> Add</Button>
+              <Button size="sm" className="gap-2"><Plus className="h-4 w-4" /> Add transaction</Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader><DialogTitle className="font-display">Add Transaction</DialogTitle></DialogHeader>
@@ -211,7 +290,7 @@ const Transactions = () => {
                   </Select>
                 </div>
                 <div className="space-y-2"><Label>Notes</Label><Input value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="Optional" /></div>
-                <Button onClick={handleCreate} disabled={!form.amount || !form.account_id || createTransaction.isPending} className="w-full prism-gradient text-white border-0 hover:opacity-90">
+                <Button onClick={handleCreate} disabled={!form.amount || !form.account_id || createTransaction.isPending} className="w-full">
                   {createTransaction.isPending ? 'Adding...' : 'Add Transaction'}
                 </Button>
               </div>
@@ -220,22 +299,75 @@ const Transactions = () => {
         </div>
       </div>
 
-      {/* Search + Filters row */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder="Search transactions..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 hover-border-glow" aria-label="Search transactions" />
+      {/* Search bar (expandable) */}
+      {searchOpen && (
+        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Search by merchant or category..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-10"
+              autoFocus
+            />
+            {search && (
+              <Button variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7" onClick={() => { setSearch(''); setSearchOpen(false); }}>
+                <X className="h-3.5 w-3.5" />
+              </Button>
+            )}
+          </div>
+        </motion.div>
+      )}
+
+      {/* Secondary toolbar */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Select defaultValue="all">
+            <SelectTrigger className="w-[170px] h-8 text-sm"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All transactions</SelectItem>
+              <SelectItem value="income">Income only</SelectItem>
+              <SelectItem value="expenses">Expenses only</SelectItem>
+              <SelectItem value="transfers">Transfers only</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-        <TransactionFilters
-          filters={filters}
-          onChange={setFilters}
-          accounts={(accounts || []).map(a => ({ id: a.id, name: a.name }))}
-          categories={(categories || []).map(c => ({ id: c.id, name: c.name }))}
-        />
+        <div className="flex items-center gap-2">
+          <Button
+            variant={editMultiple ? 'default' : 'outline'}
+            size="sm"
+            className="gap-2"
+            onClick={() => { setEditMultiple(!editMultiple); if (editMultiple) setSelected(new Set()); }}
+          >
+            <Pencil className="h-3.5 w-3.5" /> Edit multiple
+          </Button>
+
+          {/* Sort dropdown */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2">
+                Sort <ArrowUpDown className="h-3.5 w-3.5" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-48 p-2" align="end">
+              {(['date', 'amount', 'merchant'] as SortKey[]).map(key => (
+                <button
+                  key={key}
+                  onClick={() => { if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc'); else { setSortKey(key); setSortDir('desc'); } }}
+                  className={cn('w-full flex items-center justify-between rounded-md px-3 py-2 text-sm hover:bg-muted transition-colors capitalize', sortKey === key && 'bg-muted font-medium')}
+                >
+                  {key}
+                  {sortKey === key && <span className="text-xs text-muted-foreground">{sortDir === 'desc' ? '↓' : '↑'}</span>}
+                </button>
+              ))}
+            </PopoverContent>
+          </Popover>
+        </div>
       </div>
 
-      {/* Bulk actions */}
-      {selected.size > 0 && (
+      {/* Bulk actions bar */}
+      {editMultiple && selected.size > 0 && (
         <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
           className="flex flex-wrap items-center gap-3 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3">
           <span className="text-sm font-medium">{selected.size} selected</span>
@@ -244,65 +376,138 @@ const Transactions = () => {
               <SelectTrigger className="h-8 w-[160px] text-xs"><SelectValue placeholder="Categorize as…" /></SelectTrigger>
               <SelectContent>{(categories || []).map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
             </Select>
-            <Button size="sm" variant="outline" onClick={bulkCategorize} disabled={!bulkCategory} className="gap-1 h-8" aria-label="Apply category">
+            <Button size="sm" variant="outline" onClick={bulkCategorize} disabled={!bulkCategory} className="gap-1 h-8">
               <Tags className="h-3.5 w-3.5" /> Apply
             </Button>
           </div>
-          <Button size="sm" variant="destructive" onClick={bulkDelete} className="gap-1 h-8" aria-label="Delete selected">
+          <Button size="sm" variant="destructive" onClick={bulkDelete} className="gap-1 h-8">
             <Trash2 className="h-3.5 w-3.5" /> Delete
           </Button>
           <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())} className="h-8 text-xs">Cancel</Button>
         </motion.div>
       )}
 
-      <Card className="prism-card-shine border-border/50">
-        <CardContent className="p-0">
-          <div className="divide-y divide-border/50">
-            {/* Select all header */}
-            {filtered.length > 0 && (
-              <div className="flex items-center gap-3 px-5 py-2.5 bg-muted/30">
-                <Checkbox checked={selected.size === filtered.length && filtered.length > 0} onCheckedChange={toggleAll} aria-label="Select all transactions" />
-                <span className="text-xs text-muted-foreground">{filtered.length} transaction{filtered.length !== 1 ? 's' : ''}</span>
+      {/* Transaction list grouped by date */}
+      {grouped.length === 0 ? (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center p-12 text-center">
+            <Receipt className="h-10 w-10 text-muted-foreground/30 mb-3" />
+            <h3 className="font-display text-lg font-bold mb-1">No transactions found</h3>
+            <p className="text-muted-foreground text-sm">Add your first transaction or adjust your filters.</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-1">
+          {grouped.map(group => (
+            <div key={group.date}>
+              {/* Date header */}
+              <div className="flex items-center justify-between px-3 py-2">
+                <span className="text-sm font-semibold text-muted-foreground">{group.label}</span>
+                <span className={cn('text-sm font-semibold tabular-nums', group.total < 0 ? 'text-foreground' : 'text-emerald-600 dark:text-emerald-400')}>
+                  {group.total >= 0 ? '+' : ''}{formatCurrency(group.total)}
+                </span>
               </div>
-            )}
-            {filtered.map((txn) => {
-              const isIncome = txn.amount > 0;
-              const isTransfer = (txn as any).is_transfer;
-              return (
-                <div key={txn.id} className="flex items-center gap-3 px-5 py-3.5 interactive-row group" role="row">
-                  <Checkbox checked={selected.has(txn.id)} onCheckedChange={() => toggleSelect(txn.id)} aria-label={`Select ${txn.merchant || 'transaction'}`} />
-                  <div className={`flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br shrink-0 transition-transform duration-300 group-hover:scale-110 ${
-                    isTransfer ? 'from-prism-indigo to-prism-violet' : isIncome ? 'from-prism-teal to-prism-lime' : 'from-prism-rose to-prism-orange'
-                  }`}>
-                    {isTransfer ? <ArrowRightLeft className="h-4 w-4 text-white" /> : isIncome ? <ArrowUpRight className="h-4 w-4 text-white" /> : <ArrowDownRight className="h-4 w-4 text-white" />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{txn.merchant || 'No merchant'}</p>
-                    <p className="text-xs text-muted-foreground">{formatDate(txn.date)} · {(txn as any).accounts?.name}</p>
-                  </div>
-                  {(txn as any).categories && (
-                    <Badge variant="outline" className="text-xs hidden sm:inline-flex" style={{ borderColor: (txn as any).categories.color, color: (txn as any).categories.color }}>
-                      {(txn as any).categories.name}
-                    </Badge>
-                  )}
-                  <span className={`font-display font-semibold whitespace-nowrap ${isIncome ? 'text-prism-teal' : 'text-foreground'}`}>
-                    {isIncome ? '+' : ''}{formatCurrency(txn.amount)}
-                  </span>
-                </div>
-              );
-            })}
-            {filtered.length === 0 && (
-              <div className="flex flex-col items-center justify-center p-12 text-center">
-                <div className="h-14 w-14 rounded-2xl prism-gradient-warm prism-glow-warm flex items-center justify-center mb-4">
-                  <Receipt className="h-7 w-7 text-white" />
-                </div>
-                <h3 className="font-display text-lg font-bold mb-1">No transactions found</h3>
-                <p className="text-muted-foreground text-sm max-w-sm">Add your first transaction or adjust your filters.</p>
-              </div>
-            )}
+
+              {/* Transactions */}
+              <Card className="overflow-hidden">
+                <CardContent className="p-0 divide-y">
+                  {group.transactions.map(txn => {
+                    const isIncome = txn.amount > 0;
+                    const isTransfer = (txn as any).is_transfer;
+                    const cat = (txn as any).categories;
+                    const acct = (txn as any).accounts;
+
+                    return (
+                      <div
+                        key={txn.id}
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-muted/30 transition-colors group cursor-pointer"
+                      >
+                        {/* Checkbox (edit multiple mode) */}
+                        {editMultiple && (
+                          <Checkbox
+                            checked={selected.has(txn.id)}
+                            onCheckedChange={() => toggleSelect(txn.id)}
+                            className="shrink-0"
+                          />
+                        )}
+
+                        {/* Merchant icon placeholder */}
+                        <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center shrink-0">
+                          <span className="text-xs font-bold text-muted-foreground">
+                            {(txn.merchant || '?')[0].toUpperCase()}
+                          </span>
+                        </div>
+
+                        {/* Merchant name */}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{txn.merchant || 'No merchant'}</p>
+                          {isTransfer && <p className="text-[10px] text-muted-foreground">Transfer</p>}
+                        </div>
+
+                        {/* Category */}
+                        <div className="hidden sm:flex items-center gap-1.5 w-[160px] shrink-0">
+                          {cat && (
+                            <>
+                              <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
+                              <span className="text-sm text-muted-foreground truncate">{cat.name}</span>
+                            </>
+                          )}
+                        </div>
+
+                        {/* Account */}
+                        <div className="hidden md:flex items-center gap-1.5 w-[200px] shrink-0">
+                          {acct && (
+                            <span className="text-sm text-muted-foreground truncate">{acct.name}</span>
+                          )}
+                        </div>
+
+                        {/* Amount */}
+                        <span className={cn(
+                          'text-sm font-semibold tabular-nums whitespace-nowrap',
+                          isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground'
+                        )}>
+                          {isIncome ? '+' : ''}{formatCurrency(txn.amount)}
+                        </span>
+
+                        {/* Chevron */}
+                        <ChevronRight className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+                      </div>
+                    );
+                  })}
+                </CardContent>
+              </Card>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Transfer Dialog */}
+      <Dialog open={transferOpen} onOpenChange={setTransferOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle className="font-display">Record Transfer</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2"><Label>Date</Label><Input type="date" value={transferForm.date} onChange={e => setTransferForm(f => ({ ...f, date: e.target.value }))} /></div>
+            <div className="space-y-2"><Label>Amount</Label><Input type="number" step="0.01" value={transferForm.amount} onChange={e => setTransferForm(f => ({ ...f, amount: e.target.value }))} placeholder="100.00" /></div>
+            <div className="space-y-2">
+              <Label>From Account</Label>
+              <Select value={transferForm.from_account} onValueChange={v => setTransferForm(f => ({ ...f, from_account: v }))}>
+                <SelectTrigger><SelectValue placeholder="Source" /></SelectTrigger>
+                <SelectContent>{(accounts || []).map(a => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>To Account</Label>
+              <Select value={transferForm.to_account} onValueChange={v => setTransferForm(f => ({ ...f, to_account: v }))}>
+                <SelectTrigger><SelectValue placeholder="Destination" /></SelectTrigger>
+                <SelectContent>{(accounts || []).filter(a => a.id !== transferForm.from_account).map(a => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2"><Label>Notes</Label><Input value={transferForm.notes} onChange={e => setTransferForm(f => ({ ...f, notes: e.target.value }))} placeholder="Optional" /></div>
+            <Button onClick={handleTransfer} disabled={!transferForm.amount || !transferForm.from_account || !transferForm.to_account} className="w-full">Record Transfer</Button>
           </div>
-        </CardContent>
-      </Card>
+        </DialogContent>
+      </Dialog>
+
       <CsvImportDialog open={csvOpen} onOpenChange={setCsvOpen} />
     </motion.div>
   );
