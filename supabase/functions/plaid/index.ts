@@ -74,6 +74,19 @@ Deno.serve(async (req) => {
     if (action === 'exchange-token' && req.method === 'POST') {
       const { public_token, institution, household_id } = await req.json();
 
+      // Verify user is a member of the claimed household
+      const { data: membership } = await supabase
+        .from('household_members')
+        .select('id')
+        .eq('household_id', household_id)
+        .eq('user_id', userId)
+        .single();
+      if (!membership) {
+        return new Response(JSON.stringify({ error: 'Forbidden: not a member of this household' }), {
+          status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
       // Exchange public token for access token
       const exchangeResponse = await fetch(`${PLAID_BASE_URL}/item/public_token/exchange`, {
         method: 'POST',
