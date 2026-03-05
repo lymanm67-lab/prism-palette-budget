@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useTransactions, useCreateTransaction, useAccounts, useCategories } from '@/hooks/use-finance-data';
+import { useGoals } from '@/hooks/use-goals';
 import { useCurrency } from '@/hooks/use-currency';
 import { supabase } from '@/integrations/supabase/client';
 import { useHousehold } from '@/contexts/HouseholdContext';
@@ -46,6 +47,7 @@ const Transactions = () => {
   const { data: accounts } = useAccounts();
   const { data: categories } = useCategories();
   const createTransaction = useCreateTransaction();
+  const { data: goals } = useGoals();
   const { household } = useHousehold();
   const qc = useQueryClient();
 
@@ -63,7 +65,8 @@ const Transactions = () => {
   const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [autoCatLoading, setAutoCatLoading] = useState(false);
 
-  const [form, setForm] = useState({ date: new Date().toISOString().split('T')[0], merchant: '', amount: '', account_id: '', category_id: '', notes: '' });
+  const [form, setForm] = useState({ date: new Date().toISOString().split('T')[0], merchant: '', amount: '', account_id: '', category_id: '', notes: '', tags: '' as string, goal_id: '' });
+  const [formType, setFormType] = useState<'debit' | 'credit'>('debit');
   const [transferForm, setTransferForm] = useState({ date: new Date().toISOString().split('T')[0], amount: '', from_account: '', to_account: '', notes: '' });
 
   const activeFilterCount = Object.values(filters).filter(Boolean).length;
@@ -115,11 +118,16 @@ const Transactions = () => {
   }, [filtered]);
 
   const handleCreate = async () => {
+    const rawAmount = parseFloat(form.amount);
+    const finalAmount = formType === 'debit' ? -Math.abs(rawAmount) : Math.abs(rawAmount);
+    const tags = form.tags ? form.tags.split(',').map(t => t.trim()).filter(Boolean) : null;
     await createTransaction.mutateAsync({
-      date: form.date, merchant: form.merchant || null, amount: parseFloat(form.amount),
+      date: form.date, merchant: form.merchant || null, amount: finalAmount,
       account_id: form.account_id, category_id: form.category_id || null, notes: form.notes || null,
+      tags,
     });
-    setForm({ date: new Date().toISOString().split('T')[0], merchant: '', amount: '', account_id: '', category_id: '', notes: '' });
+    setForm({ date: new Date().toISOString().split('T')[0], merchant: '', amount: '', account_id: '', category_id: '', notes: '', tags: '', goal_id: '' });
+    setFormType('debit');
     setOpen(false);
   };
 
@@ -338,29 +346,77 @@ const Transactions = () => {
             <DialogContent>
               <DialogHeader><DialogTitle className="font-display">Add Transaction</DialogTitle></DialogHeader>
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2"><Label>Date</Label><Input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} /></div>
-                  <div className="space-y-2"><Label>Amount</Label><Input type="number" step="0.01" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} placeholder="-50.00" /></div>
+                {/* Debit / Credit Toggle */}
+                <div className="flex rounded-lg border overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setFormType('debit')}
+                    className={cn(
+                      'flex-1 py-2.5 text-sm font-medium flex items-center justify-center gap-2 transition-colors',
+                      formType === 'debit' ? 'bg-primary text-primary-foreground' : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+                    )}
+                  >
+                    <span className="h-2 w-2 rounded-full bg-current opacity-60" /> DEBIT
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormType('credit')}
+                    className={cn(
+                      'flex-1 py-2.5 text-sm font-medium flex items-center justify-center gap-2 transition-colors',
+                      formType === 'credit' ? 'bg-primary text-primary-foreground' : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+                    )}
+                  >
+                    <span className="h-2 w-2 rounded-full bg-current opacity-60" /> CREDIT
+                  </button>
                 </div>
-                <div className="space-y-2"><Label>Merchant</Label><Input value={form.merchant} onChange={e => setForm(f => ({ ...f, merchant: e.target.value }))} placeholder="e.g. Whole Foods" /></div>
+
+                <div className="space-y-2">
+                  <Label>Amount</Label>
+                  <Input type="number" step="0.01" min="0" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} placeholder="$0.00" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Merchant</Label>
+                  <Input value={form.merchant} onChange={e => setForm(f => ({ ...f, merchant: e.target.value }))} placeholder="Search merchants..." />
+                </div>
+                <div className="space-y-2">
+                  <Label>Date</Label>
+                  <Input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} />
+                </div>
                 <div className="space-y-2">
                   <Label>Account</Label>
                   <Select value={form.account_id} onValueChange={v => setForm(f => ({ ...f, account_id: v }))}>
-                    <SelectTrigger><SelectValue placeholder="Select account" /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder="Select account..." /></SelectTrigger>
                     <SelectContent>{(accounts || []).map(a => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
                   <Label>Category</Label>
                   <Select value={form.category_id} onValueChange={v => setForm(f => ({ ...f, category_id: v }))}>
-                    <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder="Search categories..." /></SelectTrigger>
                     <SelectContent>{(categories || []).map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2"><Label>Notes</Label><Input value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="Optional" /></div>
-                <Button onClick={handleCreate} disabled={!form.amount || !form.account_id || createTransaction.isPending} className="w-full">
-                  {createTransaction.isPending ? 'Adding...' : 'Add Transaction'}
-                </Button>
+                <div className="space-y-2">
+                  <Label>Goal</Label>
+                  <Select value={form.goal_id} onValueChange={v => setForm(f => ({ ...f, goal_id: v }))}>
+                    <SelectTrigger><SelectValue placeholder="Select goal..." /></SelectTrigger>
+                    <SelectContent>{(goals || []).map(g => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Notes</Label>
+                  <Input value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="Add a note..." />
+                </div>
+                <div className="space-y-2">
+                  <Label>Tags</Label>
+                  <Input value={form.tags} onChange={e => setForm(f => ({ ...f, tags: e.target.value }))} placeholder="Comma-separated tags..." />
+                </div>
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+                  <Button onClick={handleCreate} disabled={!form.amount || !form.account_id || createTransaction.isPending}>
+                    {createTransaction.isPending ? 'Adding...' : 'Add transaction'}
+                  </Button>
+                </div>
               </div>
             </DialogContent>
           </Dialog>
