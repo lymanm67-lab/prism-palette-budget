@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { useAccounts, useAllTransactions, useCategories } from '@/hooks/use-finance-data';
+import { useAccounts, useAllTransactions, useCategories, useCategoryGroups } from '@/hooks/use-finance-data';
 import { useCurrency } from '@/hooks/use-currency';
 import {
   format, startOfMonth, endOfMonth, subMonths, addMonths,
@@ -20,7 +20,7 @@ import {
 import { cn } from '@/lib/utils';
 
 type Period = 'monthly' | 'quarterly' | 'yearly';
-type GroupBy = 'category' | 'merchant';
+type GroupBy = 'category' | 'group' | 'merchant';
 
 interface ChartDatum {
   label: string;
@@ -37,6 +37,7 @@ interface ChartDatum {
 const CashFlow = () => {
   const { data: transactions, isLoading } = useAllTransactions();
   const { data: categories } = useCategories();
+  const { data: categoryGroups } = useCategoryGroups();
   const { formatCurrency: fmt } = useCurrency();
 
   const [period, setPeriod] = useState<Period>('monthly');
@@ -122,15 +123,31 @@ const CashFlow = () => {
   const { incomeBreakdown, expenseBreakdown } = useMemo(() => {
     const incMap: Record<string, { name: string; color: string; amount: number }> = {};
     const expMap: Record<string, { name: string; color: string; amount: number }> = {};
-    const catMap = new Map<string, { name: string; color: string }>();
+    const catMap = new Map<string, { name: string; color: string; group_id: string }>();
     if (categories) {
-      for (const c of categories) catMap.set(c.id, { name: c.name, color: c.color });
+      for (const c of categories) catMap.set(c.id, { name: c.name, color: c.color, group_id: c.group_id });
+    }
+    const groupMap = new Map<string, { name: string; color: string }>();
+    if (categoryGroups) {
+      for (const g of categoryGroups) groupMap.set(g.id, { name: g.name, color: g.color });
     }
     for (const t of selectedPeriodTxns) {
       const cat = t.category_id ? catMap.get(t.category_id) : null;
-      const key = groupBy === 'merchant' ? (t.merchant || 'Uncategorized') : (t.category_id || 'uncategorized');
-      const label = groupBy === 'merchant' ? (t.merchant || 'Uncategorized') : (cat?.name || 'Uncategorized');
-      const color = cat?.color || '#94a3b8';
+      let key: string, label: string, color: string;
+      if (groupBy === 'merchant') {
+        key = t.merchant || 'Uncategorized';
+        label = key;
+        color = cat?.color || '#94a3b8';
+      } else if (groupBy === 'group') {
+        const grp = cat ? groupMap.get(cat.group_id) : null;
+        key = cat?.group_id || 'uncategorized';
+        label = grp?.name || 'Uncategorized';
+        color = grp?.color || '#94a3b8';
+      } else {
+        key = t.category_id || 'uncategorized';
+        label = cat?.name || 'Uncategorized';
+        color = cat?.color || '#94a3b8';
+      }
       if (t.amount > 0) {
         if (!incMap[key]) incMap[key] = { name: label, color, amount: 0 };
         incMap[key].amount += Number(t.amount);
@@ -141,7 +158,7 @@ const CashFlow = () => {
     }
     const sortDesc = (a: { amount: number }, b: { amount: number }) => b.amount - a.amount;
     return { incomeBreakdown: Object.values(incMap).sort(sortDesc), expenseBreakdown: Object.values(expMap).sort(sortDesc) };
-  }, [selectedPeriodTxns, categories, groupBy]);
+  }, [selectedPeriodTxns, categories, categoryGroups, groupBy]);
 
   const totalIncomeBreakdown = incomeBreakdown.reduce((s, i) => s + i.amount, 0);
   const totalExpenseBreakdown = expenseBreakdown.reduce((s, i) => s + i.amount, 0);
@@ -185,7 +202,7 @@ const CashFlow = () => {
       <div className="flex items-center justify-between">
         <h3 className="font-display text-lg font-semibold">{title}</h3>
         <div className="flex items-center gap-1 border rounded-lg overflow-hidden text-xs">
-          {(['category', 'merchant'] as GroupBy[]).map(g => (
+          {(['category', 'group', 'merchant'] as GroupBy[]).map(g => (
             <button
               key={g}
               onClick={() => setGroupBy(g)}
