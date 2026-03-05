@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -19,7 +19,7 @@ import { toast } from 'sonner';
 import {
   Search, Plus, Loader2, Upload, Receipt, Trash2, Tags,
   ArrowRightLeft, SlidersHorizontal, CalendarIcon, ChevronRight,
-  ArrowUpDown, X, Pencil, Sparkles, Landmark, Check, Camera,
+  ArrowUpDown, X, Pencil, Sparkles, Landmark, Check, Camera, ImageIcon,
 } from 'lucide-react';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import CsvImportDialog from '@/components/CsvImportDialog';
@@ -27,6 +27,18 @@ import PageOverview from '@/components/PageOverview';
 
 import { cn } from '@/lib/utils';
 import { format, parseISO } from 'date-fns';
+
+// Receipt preview component with signed URL
+const ReceiptPreview = ({ path, getSignedUrl }: { path: string; getSignedUrl: (p: string) => Promise<string | null> }) => {
+  const [url, setUrl] = React.useState<string | null>(null);
+  const [loading, setLoading] = React.useState(true);
+  React.useEffect(() => {
+    getSignedUrl(path).then(u => { setUrl(u); setLoading(false); });
+  }, [path, getSignedUrl]);
+  if (loading) return <div className="flex items-center justify-center h-32 rounded-lg bg-muted"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>;
+  if (!url) return <p className="text-sm text-muted-foreground">Could not load receipt.</p>;
+  return <img src={url} alt="Receipt" className="w-full max-h-48 object-contain rounded-lg border border-border" />;
+};
 
 type SortKey = 'date' | 'amount' | 'merchant';
 type SortDir = 'asc' | 'desc';
@@ -69,6 +81,10 @@ const Transactions = () => {
   const [editTxn, setEditTxn] = useState<any>(null);
   const [editForm, setEditForm] = useState({ merchant: '', amount: '', date: '', account_id: '', category_id: '', notes: '', tags: '', goal_id: '' });
   const [editType, setEditType] = useState<'debit' | 'credit'>('debit');
+  const [editReceiptUrl, setEditReceiptUrl] = useState<string | null>(null);
+  const [pendingReceiptFile, setPendingReceiptFile] = useState<File | null>(null);
+  const [receiptUploading, setReceiptUploading] = useState(false);
+  const editReceiptInputRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({ date: new Date().toISOString().split('T')[0], merchant: '', amount: '', account_id: '', category_id: '', notes: '', tags: '', goal_id: '' });
   const [formType, setFormType] = useState<'debit' | 'credit'>('debit');
   const [transferForm, setTransferForm] = useState({ date: new Date().toISOString().split('T')[0], amount: '', from_account: '', to_account: '', notes: '' });
@@ -108,6 +124,9 @@ const Transactions = () => {
         category_id: matchedCat?.id || f.category_id,
       }));
       if (data.amount && data.amount > 0) setFormType('debit');
+
+      // Store file for upload after transaction creation
+      setPendingReceiptFile(file);
 
       toast.success('Receipt scanned! Review the pre-filled details.', { duration: 4000 });
     } catch (e: any) {
@@ -240,11 +259,29 @@ const Transactions = () => {
     const rawAmount = parseFloat(form.amount);
     const finalAmount = formType === 'debit' ? -Math.abs(rawAmount) : Math.abs(rawAmount);
     const tags = form.tags ? form.tags.split(',').map(t => t.trim()).filter(Boolean) : null;
-    await createTransaction.mutateAsync({
+    const result = await createTransaction.mutateAsync({
       date: form.date, merchant: form.merchant || null, amount: finalAmount,
       account_id: form.account_id, category_id: form.category_id || null, notes: form.notes || null,
       tags,
     });
+
+    // Upload receipt if scanned
+    if (pendingReceiptFile && household && result?.id) {
+      try {
+        const ext = pendingReceiptFile.name.split('.').pop() || 'jpg';
+        const path = `${household.id}/${result.id}.${ext}`;
+        const { error: uploadErr } = await supabase.storage.from('receipts').upload(path, pendingReceiptFile, { upsert: true });
+        if (!uploadErr) {
+          const { data: urlData } = supabase.storage.from('receipts').getPublicUrl(path);
+          // Since bucket is private, store the path for signed URL generation
+          await updateTransaction.mutateAsync({ id: result.id, receipt_url: path } as any);
+        }
+      } catch (e) {
+        console.error('Receipt upload error:', e);
+      }
+    }
+
+    setPendingReceiptFile(null);
     setForm({ date: new Date().toISOString().split('T')[0], merchant: '', amount: '', account_id: '', category_id: '', notes: '', tags: '', goal_id: '' });
     setFormType('debit');
     setOpen(false);
@@ -337,6 +374,7 @@ const Transactions = () => {
     setEditTxn(txn);
     const isCredit = txn.amount > 0;
     setEditType(isCredit ? 'credit' : 'debit');
+    setEditReceiptUrl(txn.receipt_url || null);
     setEditForm({
       merchant: txn.merchant || '',
       amount: String(Math.abs(txn.amount)),
@@ -347,6 +385,29 @@ const Transactions = () => {
       tags: (txn.tags || []).join(', '),
       goal_id: '',
     });
+  };
+
+  const handleUploadEditReceipt = async (file: File) => {
+    if (!editTxn || !household) return;
+    setReceiptUploading(true);
+    try {
+      const ext = file.name.split('.').pop() || 'jpg';
+      const path = `${household.id}/${editTxn.id}.${ext}`;
+      const { error: uploadErr } = await supabase.storage.from('receipts').upload(path, file, { upsert: true });
+      if (uploadErr) throw uploadErr;
+      await updateTransaction.mutateAsync({ id: editTxn.id, receipt_url: path } as any);
+      setEditReceiptUrl(path);
+      toast.success('Receipt uploaded');
+    } catch (e: any) {
+      toast.error(e.message || 'Failed to upload receipt');
+    } finally {
+      setReceiptUploading(false);
+    }
+  };
+
+  const getReceiptSignedUrl = async (path: string): Promise<string | null> => {
+    const { data } = await supabase.storage.from('receipts').createSignedUrl(path, 3600);
+    return data?.signedUrl || null;
   };
 
   const handleSaveEdit = async () => {
@@ -914,7 +975,10 @@ const Transactions = () => {
 
                         {/* Merchant name */}
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{txn.merchant || 'No merchant'}</p>
+                          <div className="flex items-center gap-1.5">
+                            <p className="text-sm font-medium truncate">{txn.merchant || 'No merchant'}</p>
+                            {(txn as any).receipt_url && <ImageIcon className="h-3 w-3 text-muted-foreground shrink-0" />}
+                          </div>
                           {isTransfer && <p className="text-[10px] text-muted-foreground">Transfer</p>}
                         </div>
 
@@ -1029,6 +1093,37 @@ const Transactions = () => {
             <div className="space-y-2">
               <Label>Tags</Label>
               <Input value={editForm.tags} onChange={e => setEditForm(f => ({ ...f, tags: e.target.value }))} placeholder="tag1, tag2, ..." />
+            </div>
+            {/* Receipt */}
+            <div className="space-y-2">
+              <Label>Receipt</Label>
+              <input
+                ref={editReceiptInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={e => {
+                  const file = e.target.files?.[0];
+                  if (file) handleUploadEditReceipt(file);
+                  if (editReceiptInputRef.current) editReceiptInputRef.current.value = '';
+                }}
+              />
+              {editReceiptUrl ? (
+                <ReceiptPreview path={editReceiptUrl} getSignedUrl={getReceiptSignedUrl} />
+              ) : (
+                <p className="text-sm text-muted-foreground">No receipt attached.</p>
+              )}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="gap-2 w-full"
+                disabled={receiptUploading}
+                onClick={() => editReceiptInputRef.current?.click()}
+              >
+                {receiptUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
+                {receiptUploading ? 'Uploading...' : editReceiptUrl ? 'Replace Receipt' : 'Attach Receipt'}
+              </Button>
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="outline" onClick={() => setEditTxn(null)}>Cancel</Button>
