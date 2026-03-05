@@ -185,9 +185,54 @@
   }
 
   .stat-card-icon {
-    @apply flex h-12 w-12 items-center justify-center rounded-2xl;
+    @apply flex h-12 w-12 items-center justify-center rounded-2xl transition-transform duration-300 ease-out;
     backdrop-filter: blur(8px);
   }
+
+  /* Micro-interaction utilities */
+  .hover-lift {
+    @apply transition-all duration-300 ease-out;
+  }
+  .hover-lift:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 24px -8px hsl(var(--prism-violet) / 0.15),
+                0 4px 8px -4px hsl(var(--foreground) / 0.06);
+  }
+
+  .hover-glow-violet:hover {
+    box-shadow: 0 0 20px -5px hsl(var(--prism-violet) / 0.35),
+                0 0 40px -10px hsl(var(--prism-sky) / 0.2);
+  }
+
+  .hover-glow-teal:hover {
+    box-shadow: 0 0 20px -5px hsl(var(--prism-teal) / 0.35),
+                0 0 40px -10px hsl(var(--prism-lime) / 0.2);
+  }
+
+  .hover-icon-bounce:hover .icon-target {
+    animation: icon-bounce 0.4s ease-out;
+  }
+
+  .hover-border-glow {
+    @apply transition-all duration-300;
+  }
+  .hover-border-glow:hover {
+    border-color: hsl(var(--prism-violet) / 0.4);
+  }
+
+  .interactive-row {
+    @apply transition-all duration-200 ease-out;
+  }
+  .interactive-row:hover {
+    transform: translateX(4px);
+    background: hsl(var(--muted) / 0.5);
+  }
+}
+
+@keyframes icon-bounce {
+  0%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-4px); }
+  60% { transform: translateY(-2px); }
 }
 
 /* Animated gradient background for auth */

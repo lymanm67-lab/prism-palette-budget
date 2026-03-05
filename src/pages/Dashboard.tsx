@@ -97,9 +97,9 @@ const Dashboard = () => {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {STAT_CARDS.map((stat) => (
           <motion.div key={stat.key} variants={item}>
-            <Card className={`prism-card-shine border-border/50 transition-all duration-300 hover:scale-[1.02] hover:${stat.glow}`}>
+            <Card className={`prism-card-shine border-border/50 hover-lift hover-glow-violet hover-icon-bounce`}>
               <CardContent className="flex items-center gap-4 p-5">
-                <div className={`stat-card-icon bg-gradient-to-br ${stat.gradient}`}>
+                <div className={`stat-card-icon icon-target bg-gradient-to-br ${stat.gradient}`}>
                   <stat.icon className="h-6 w-6 text-white" />
                 </div>
                 <div>
@@ -194,7 +194,7 @@ const Dashboard = () => {
             <CardContent>
               <div className="space-y-2">
                 {accounts.map((acc) => (
-                  <div key={acc.id} className="flex items-center justify-between rounded-xl border border-border/30 p-3.5 transition-all duration-200 hover:bg-muted/50 hover:border-border group cursor-pointer"
+                  <div key={acc.id} className="flex items-center justify-between rounded-xl border border-border/30 p-3.5 interactive-row hover-border-glow cursor-pointer"
                     onClick={() => navigate('/accounts')}>
                     <div className="flex items-center gap-3">
                       <div className={`h-9 w-9 rounded-lg flex items-center justify-center text-xs font-bold ${
