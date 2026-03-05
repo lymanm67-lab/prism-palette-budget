@@ -1,12 +1,13 @@
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { useSpendingByCategory, useTransactionsByDateRange, useBudgets, useCategories, useAccounts } from '@/hooks/use-finance-data';
 import { useCurrency } from '@/hooks/use-currency';
-import { CalendarIcon, Download, FileText, Loader2 } from 'lucide-react';
+import { CalendarIcon, Download, FileText, Loader2, Building2, User } from 'lucide-react';
 import { useMemo, useRef, useState, useCallback } from 'react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { exportToPdf, exportToCsv } from '@/lib/export-utils';
@@ -18,7 +19,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend,
   AreaChart, Area, LineChart, Line,
 } from 'recharts';
-
+import BusinessReports from '@/components/BusinessReports';
 const tooltipStyle = { background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' };
 
 const TREND_COLORS = [
@@ -47,6 +48,7 @@ const Reports = () => {
   }));
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('spending');
+  const [reportMode, setReportMode] = useState<'personal' | 'business'>('personal');
   const reportRef = useRef<HTMLDivElement>(null);
 
   const startDate = format(dateRange.from, 'yyyy-MM-dd');
@@ -270,6 +272,25 @@ const Reports = () => {
           <h1 className="font-display text-3xl font-bold">Reports</h1>
           <p className="text-muted-foreground">Comprehensive financial insights and analytics.</p>
         </div>
+        <div className="flex items-center gap-2">
+          <div className="flex rounded-lg border border-border p-0.5">
+            <button
+              onClick={() => setReportMode('personal')}
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                reportMode === 'personal' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <User className="h-3.5 w-3.5" /> Personal
+            </button>
+            <button
+              onClick={() => setReportMode('business')}
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                reportMode === 'business' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Building2 className="h-3.5 w-3.5" /> Business
+            </button>
+          </div>
 
         {/* Date Range Picker */}
         <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
@@ -339,8 +360,12 @@ const Reports = () => {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        </div>
       </div>
 
+      {reportMode === 'business' ? (
+        <BusinessReports startDate={startDate} endDate={endDate} budgetMonth={budgetMonth} />
+      ) : (
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="flex-wrap h-auto gap-1">
           <TabsTrigger value="spending">Spending</TabsTrigger>
@@ -679,6 +704,7 @@ const Reports = () => {
         </TabsContent>
         </div>
       </Tabs>
+      )}
     </motion.div>
   );
 };
