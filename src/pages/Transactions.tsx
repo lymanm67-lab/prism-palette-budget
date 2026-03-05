@@ -9,7 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { useTransactions, useCreateTransaction, useAccounts, useCategories } from '@/hooks/use-finance-data';
+import { useTransactions, useCreateTransaction, useUpdateTransaction, useAccounts, useCategories } from '@/hooks/use-finance-data';
 import { useGoals } from '@/hooks/use-goals';
 import { useCurrency } from '@/hooks/use-currency';
 import { supabase } from '@/integrations/supabase/client';
@@ -48,6 +48,7 @@ const Transactions = () => {
   const { data: accounts } = useAccounts();
   const { data: categories } = useCategories();
   const createTransaction = useCreateTransaction();
+  const updateTransaction = useUpdateTransaction();
   const { data: goals } = useGoals();
   const { household } = useHousehold();
   const qc = useQueryClient();
@@ -65,7 +66,9 @@ const Transactions = () => {
   const [sortKey, setSortKey] = useState<SortKey>('date');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [autoCatLoading, setAutoCatLoading] = useState(false);
-
+  const [editTxn, setEditTxn] = useState<any>(null);
+  const [editForm, setEditForm] = useState({ merchant: '', amount: '', date: '', account_id: '', category_id: '', notes: '', tags: '', goal_id: '' });
+  const [editType, setEditType] = useState<'debit' | 'credit'>('debit');
   const [form, setForm] = useState({ date: new Date().toISOString().split('T')[0], merchant: '', amount: '', account_id: '', category_id: '', notes: '', tags: '', goal_id: '' });
   const [formType, setFormType] = useState<'debit' | 'credit'>('debit');
   const [transferForm, setTransferForm] = useState({ date: new Date().toISOString().split('T')[0], amount: '', from_account: '', to_account: '', notes: '' });
@@ -327,6 +330,46 @@ const Transactions = () => {
       toast.error(e.message || 'Auto-categorize failed');
     } finally {
       setAutoCatLoading(false);
+    }
+  };
+
+  const openEditTxn = (txn: any) => {
+    setEditTxn(txn);
+    const isCredit = txn.amount > 0;
+    setEditType(isCredit ? 'credit' : 'debit');
+    setEditForm({
+      merchant: txn.merchant || '',
+      amount: String(Math.abs(txn.amount)),
+      date: txn.date,
+      account_id: txn.account_id,
+      category_id: txn.category_id || '',
+      notes: txn.notes || '',
+      tags: (txn.tags || []).join(', '),
+      goal_id: '',
+    });
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editTxn) return;
+    const amt = parseFloat(editForm.amount);
+    if (isNaN(amt)) return;
+    const finalAmount = editType === 'debit' ? -Math.abs(amt) : Math.abs(amt);
+    const tags = editForm.tags ? editForm.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
+    try {
+      await updateTransaction.mutateAsync({
+        id: editTxn.id,
+        merchant: editForm.merchant || null,
+        amount: finalAmount,
+        date: editForm.date,
+        account_id: editForm.account_id,
+        category_id: editForm.category_id || null,
+        notes: editForm.notes || null,
+        tags,
+      });
+      toast.success('Transaction updated');
+      setEditTxn(null);
+    } catch (e: any) {
+      toast.error(e.message || 'Failed to update');
     }
   };
 
@@ -830,6 +873,7 @@ const Transactions = () => {
                       <div
                         key={txn.id}
                         className="flex items-center gap-3 px-4 py-3 hover:bg-muted/30 transition-colors group cursor-pointer"
+                        onClick={() => !editMultiple && openEditTxn(txn)}
                       >
                         {/* Checkbox (edit multiple mode) */}
                         {editMultiple && (
@@ -913,6 +957,64 @@ const Transactions = () => {
             </div>
             <div className="space-y-2"><Label>Notes</Label><Input value={transferForm.notes} onChange={e => setTransferForm(f => ({ ...f, notes: e.target.value }))} placeholder="Optional" /></div>
             <Button onClick={handleTransfer} disabled={!transferForm.amount || !transferForm.from_account || !transferForm.to_account} className="w-full">Record Transfer</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Transaction Dialog */}
+      <Dialog open={!!editTxn} onOpenChange={v => !v && setEditTxn(null)}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
+          <DialogHeader><DialogTitle className="font-display">Edit Transaction</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            {/* Debit / Credit Toggle */}
+            <div className="flex rounded-lg border overflow-hidden">
+              <button type="button" onClick={() => setEditType('debit')} className={cn('flex-1 py-2.5 text-sm font-medium flex items-center justify-center gap-2 transition-colors', editType === 'debit' ? 'bg-primary text-primary-foreground' : 'bg-muted/50 text-muted-foreground hover:bg-muted')}>
+                <span className="h-2 w-2 rounded-full bg-current opacity-60" /> DEBIT
+              </button>
+              <button type="button" onClick={() => setEditType('credit')} className={cn('flex-1 py-2.5 text-sm font-medium flex items-center justify-center gap-2 transition-colors', editType === 'credit' ? 'bg-primary text-primary-foreground' : 'bg-muted/50 text-muted-foreground hover:bg-muted')}>
+                <span className="h-2 w-2 rounded-full bg-current opacity-60" /> CREDIT
+              </button>
+            </div>
+            <div className="space-y-2">
+              <Label>Amount</Label>
+              <Input type="number" step="0.01" min="0" value={editForm.amount} onChange={e => setEditForm(f => ({ ...f, amount: e.target.value }))} placeholder="$0.00" />
+            </div>
+            <div className="space-y-2">
+              <Label>Merchant</Label>
+              <Input value={editForm.merchant} onChange={e => setEditForm(f => ({ ...f, merchant: e.target.value }))} placeholder="Merchant name" />
+            </div>
+            <div className="space-y-2">
+              <Label>Date</Label>
+              <Input type="date" value={editForm.date} onChange={e => setEditForm(f => ({ ...f, date: e.target.value }))} />
+            </div>
+            <div className="space-y-2">
+              <Label>Account</Label>
+              <Select value={editForm.account_id} onValueChange={v => setEditForm(f => ({ ...f, account_id: v }))}>
+                <SelectTrigger><SelectValue placeholder="Select account..." /></SelectTrigger>
+                <SelectContent>{(accounts || []).map(a => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Category</Label>
+              <Select value={editForm.category_id} onValueChange={v => setEditForm(f => ({ ...f, category_id: v }))}>
+                <SelectTrigger><SelectValue placeholder="Select category..." /></SelectTrigger>
+                <SelectContent>{(categories || []).map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Notes</Label>
+              <Input value={editForm.notes} onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))} placeholder="Add a note..." />
+            </div>
+            <div className="space-y-2">
+              <Label>Tags</Label>
+              <Input value={editForm.tags} onChange={e => setEditForm(f => ({ ...f, tags: e.target.value }))} placeholder="tag1, tag2, ..." />
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={() => setEditTxn(null)}>Cancel</Button>
+              <Button onClick={handleSaveEdit} disabled={!editForm.amount || !editForm.account_id || updateTransaction.isPending}>
+                {updateTransaction.isPending ? 'Saving...' : 'Save Changes'}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
