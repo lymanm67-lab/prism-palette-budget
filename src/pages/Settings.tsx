@@ -17,8 +17,9 @@ import { useHousehold } from '@/contexts/HouseholdContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { Loader2, Save, User, DollarSign, Calendar, Building2, Plus, Pencil, Trash2, Globe, Phone, Mail, MapPin, Sun, Moon, Monitor, Sparkles, Search, Tag } from 'lucide-react';
+import { Loader2, Save, User, DollarSign, Calendar, Building2, Plus, Pencil, Trash2, Globe, Phone, Mail, MapPin, Sun, Moon, Monitor, Sparkles, Search, Tag, Volume2, Pause, Square, Play, BookOpen } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTTS } from '@/hooks/use-tts';
 
 const CURRENCIES = [
   { code: 'USD', name: 'US Dollar', symbol: '$' },
@@ -124,11 +125,36 @@ function ThemeCard() {
   );
 }
 
+const DEMO_RULES = [
+  { merchant: 'netflix', category: 'Subscriptions', matches: 12 },
+  { merchant: 'whole foods', category: 'Groceries', matches: 28 },
+  { merchant: 'shell gas', category: 'Gas', matches: 8 },
+  { merchant: 'starbucks', category: 'Dining Out', matches: 15 },
+  { merchant: 'amazon', category: 'Shopping', matches: 34 },
+];
+
+const WALKTHROUGH_TEXT = `Welcome to Categorization Rules! Here's how to set up automatic transaction categorization.
+
+Step 1: Create a rule by clicking the "Add Rule" button. Enter a merchant pattern — this is the text that appears in your transaction's merchant name. For example, type "netflix" to match all Netflix charges.
+
+Step 2: Choose a category to assign. Every time a new transaction comes in with a matching merchant name, it will automatically be categorized for you.
+
+Step 3: Rules are case-insensitive, so "Netflix", "NETFLIX", and "netflix" all match the same rule.
+
+Tips: Rules also apply automatically when you import transactions via CSV. AI-generated rules are created when you use the Auto-categorize feature on the Transactions page. You can edit or delete any rule at any time.
+
+That's it! Set up a few rules for your most common merchants and watch your transactions categorize themselves.`;
+
 function CategorizationRulesSection({ householdId }: { householdId?: string }) {
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
   const [editingRule, setEditingRule] = useState<{ id: string; merchant_pattern: string; category_id: string } | null>(null);
   const [deleteRuleTarget, setDeleteRuleTarget] = useState<{ id: string; pattern: string } | null>(null);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [newMerchant, setNewMerchant] = useState('');
+  const [newCategoryId, setNewCategoryId] = useState('');
+  const [showDemo, setShowDemo] = useState(false);
+  const tts = useTTS();
 
   const { data: rules, isLoading: rulesLoading } = useQuery({
     queryKey: ['categorization_rules', householdId],
@@ -156,6 +182,29 @@ function CategorizationRulesSection({ householdId }: { householdId?: string }) {
       if (error) throw error;
       return data;
     },
+  });
+
+  const createRule = useMutation({
+    mutationFn: async ({ merchant_pattern, category_id }: { merchant_pattern: string; category_id: string }) => {
+      const { error } = await supabase
+        .from('categorization_rules')
+        .insert({
+          household_id: householdId!,
+          merchant_pattern: merchant_pattern.toLowerCase().trim(),
+          category_id,
+          is_ai_generated: false,
+          match_count: 0,
+        });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['categorization_rules'] });
+      toast.success('Rule created');
+      setCreateDialogOpen(false);
+      setNewMerchant('');
+      setNewCategoryId('');
+    },
+    onError: (e) => toast.error('Failed: ' + e.message),
   });
 
   const updateRule = useMutation({
@@ -195,21 +244,104 @@ function CategorizationRulesSection({ householdId }: { householdId?: string }) {
     (r.categories as any)?.name?.toLowerCase().includes(search.toLowerCase())
   );
 
+  const handleTTSToggle = () => {
+    if (tts.isSpeaking && !tts.isPaused) {
+      tts.pause();
+    } else if (tts.isPaused) {
+      tts.resume();
+    } else {
+      tts.speak(WALKTHROUGH_TEXT);
+    }
+  };
+
   return (
     <>
+      {/* TTS Walkthrough Card */}
+      <Card className="border-primary/20 bg-primary/5">
+        <CardContent className="p-5">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 shrink-0">
+                <BookOpen className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-display font-semibold">How Categorization Rules Work</h3>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  Rules auto-categorize transactions by matching merchant names. They apply during CSV imports and AI categorization.
+                  Listen to the full walkthrough or view demo data below.
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-2 shrink-0">
+              <Button
+                variant={tts.isSpeaking ? 'default' : 'outline'}
+                size="sm"
+                className="gap-1.5"
+                onClick={handleTTSToggle}
+              >
+                {tts.isSpeaking && !tts.isPaused ? (
+                  <><Pause className="h-3.5 w-3.5" /> Pause</>
+                ) : tts.isPaused ? (
+                  <><Play className="h-3.5 w-3.5" /> Resume</>
+                ) : (
+                  <><Volume2 className="h-3.5 w-3.5" /> Listen</>
+                )}
+              </Button>
+              {tts.isSpeaking && (
+                <Button variant="ghost" size="sm" onClick={tts.stop}>
+                  <Square className="h-3.5 w-3.5" />
+                </Button>
+              )}
+              <Button variant="outline" size="sm" onClick={() => setShowDemo(!showDemo)} className="gap-1.5">
+                <Sparkles className="h-3.5 w-3.5" /> {showDemo ? 'Hide' : 'Show'} Demo
+              </Button>
+            </div>
+          </div>
+
+          {/* Demo Data */}
+          {showDemo && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mt-4 space-y-2">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Example Rules</p>
+              <div className="grid gap-2">
+                {DEMO_RULES.map((demo, i) => (
+                  <div key={i} className="flex items-center justify-between rounded-lg border bg-background p-3">
+                    <div className="flex items-center gap-3">
+                      <Tag className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium text-sm">{demo.merchant}</span>
+                      <span className="text-xs text-muted-foreground">→</span>
+                      <Badge variant="secondary" className="text-xs">{demo.category}</Badge>
+                    </div>
+                    <span className="text-xs text-muted-foreground">{demo.matches} matches</span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground italic">
+                These are example rules. Create your own below to start auto-categorizing your transactions!
+              </p>
+            </motion.div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Header with search & add button */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="font-display text-xl font-semibold">Categorization Rules</h2>
           <p className="text-sm text-muted-foreground">Manage merchant-to-category mappings used for auto-categorization.</p>
         </div>
-        <div className="relative w-56">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Search rules..."
-            className="pl-9"
-          />
+        <div className="flex items-center gap-2">
+          <div className="relative w-48">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search rules..."
+              className="pl-9"
+            />
+          </div>
+          <Button onClick={() => setCreateDialogOpen(true)} className="gap-2" size="sm">
+            <Plus className="h-4 w-4" /> Add Rule
+          </Button>
         </div>
       </div>
 
@@ -219,7 +351,7 @@ function CategorizationRulesSection({ householdId }: { householdId?: string }) {
         <Card>
           <CardContent className="p-10 text-center text-muted-foreground">
             <Tag className="mx-auto h-10 w-10 opacity-30 mb-3" />
-            <p>{search ? 'No rules match your search.' : 'No categorization rules yet. Use "Auto-categorize" on the Transactions page to generate rules.'}</p>
+            <p>{search ? 'No rules match your search.' : 'No categorization rules yet. Click "Add Rule" to create one, or use "Auto-categorize" on the Transactions page.'}</p>
           </CardContent>
         </Card>
       ) : (
@@ -260,6 +392,50 @@ function CategorizationRulesSection({ householdId }: { householdId?: string }) {
           <p className="text-xs text-muted-foreground text-right pt-1">{filteredRules.length} rule{filteredRules.length !== 1 ? 's' : ''}</p>
         </div>
       )}
+
+      {/* Create Rule Dialog */}
+      <Dialog open={createDialogOpen} onOpenChange={open => { if (!open) { setNewMerchant(''); setNewCategoryId(''); } setCreateDialogOpen(open); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create Categorization Rule</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div className="space-y-2">
+              <Label>Merchant Pattern</Label>
+              <Input
+                value={newMerchant}
+                onChange={e => setNewMerchant(e.target.value)}
+                placeholder="e.g. netflix, starbucks, whole foods"
+              />
+              <p className="text-xs text-muted-foreground">Transactions with this merchant name will be auto-categorized. Case-insensitive.</p>
+            </div>
+            <div className="space-y-2">
+              <Label>Category</Label>
+              <Select value={newCategoryId} onValueChange={setNewCategoryId}>
+                <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+                <SelectContent>
+                  {categories?.map(c => (
+                    <SelectItem key={c.id} value={c.id}>
+                      <span className="flex items-center gap-2">
+                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: c.color }} />
+                        {c.name}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button
+              onClick={() => createRule.mutate({ merchant_pattern: newMerchant, category_id: newCategoryId })}
+              disabled={createRule.isPending || !newMerchant.trim() || !newCategoryId}
+              className="w-full gap-2"
+            >
+              {createRule.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+              Create Rule
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Rule Dialog */}
       <Dialog open={!!editingRule} onOpenChange={open => !open && setEditingRule(null)}>
