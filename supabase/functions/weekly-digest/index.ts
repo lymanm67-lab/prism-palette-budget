@@ -141,9 +141,12 @@ serve(async (req) => {
         for (const userId of userIds) {
           const { data: profile } = await supabase
             .from("profiles")
-            .select("display_name")
+            .select("display_name, weekly_digest_enabled")
             .eq("user_id", userId)
             .single();
+
+          // Skip users who have opted out
+          if (profile?.weekly_digest_enabled === false) continue;
 
           // Get user email from auth
           const { data: { user } } = await supabase.auth.admin.getUserById(userId);

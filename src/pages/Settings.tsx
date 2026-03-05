@@ -17,7 +17,8 @@ import { useHousehold } from '@/contexts/HouseholdContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { Loader2, Save, User, DollarSign, Calendar, Building2, Plus, Pencil, Trash2, Globe, Phone, Mail, MapPin, Sun, Moon, Monitor, Sparkles, Search, Tag, Volume2, Pause, Square, Play, BookOpen } from 'lucide-react';
+import { Loader2, Save, User, DollarSign, Calendar, Building2, Plus, Pencil, Trash2, Globe, Phone, Mail, MapPin, Sun, Moon, Monitor, Sparkles, Search, Tag, Volume2, Pause, Square, Play, BookOpen, BellRing } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTTS } from '@/hooks/use-tts';
 
@@ -545,6 +546,7 @@ const Settings = () => {
   const [displayName, setDisplayName] = useState('');
   const [currency, setCurrency] = useState('USD');
   const [fiscalDay, setFiscalDay] = useState('1');
+  const [weeklyDigestEnabled, setWeeklyDigestEnabled] = useState(true);
 
   const [bizDialogOpen, setBizDialogOpen] = useState(false);
   const [editingBiz, setEditingBiz] = useState<string | null>(null);
@@ -556,6 +558,7 @@ const Settings = () => {
       setDisplayName(profile.display_name || '');
       setCurrency(profile.currency || 'USD');
       setFiscalDay(String(profile.fiscal_month_start_day || 1));
+      setWeeklyDigestEnabled((profile as any).weekly_digest_enabled !== false);
     }
   }, [profile]);
 
@@ -567,7 +570,8 @@ const Settings = () => {
           display_name: displayName.trim() || null,
           currency,
           fiscal_month_start_day: parseInt(fiscalDay),
-        })
+          weekly_digest_enabled: weeklyDigestEnabled,
+        } as any)
         .eq('user_id', user!.id);
       if (error) throw error;
     },
@@ -799,6 +803,30 @@ const Settings = () => {
           </Card>
 
           <ThemeCard />
+
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <BellRing className="h-5 w-5 text-primary" />
+                <CardTitle className="font-display">Notifications</CardTitle>
+              </div>
+              <CardDescription>Manage email notifications and digests.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label className="text-sm font-medium">Weekly Financial Digest</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Receive a weekly email summary of your spending, budget status, and upcoming bills every Monday.
+                  </p>
+                </div>
+                <Switch
+                  checked={weeklyDigestEnabled}
+                  onCheckedChange={setWeeklyDigestEnabled}
+                />
+              </div>
+            </CardContent>
+          </Card>
 
           <Button onClick={() => updateProfile.mutate()} disabled={updateProfile.isPending} className="gap-2">
             {updateProfile.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
