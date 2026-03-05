@@ -7,10 +7,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { useAccounts, useCreateAccount } from '@/hooks/use-finance-data';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { useAccounts, useCreateAccount, useDeleteAccount } from '@/hooks/use-finance-data';
 import { formatDate } from '@/lib/seed-data';
 import { useCurrency } from '@/hooks/use-currency';
-import { Plus, RefreshCw, Landmark, CreditCard, TrendingUp, PiggyBank, Car, Loader2 } from 'lucide-react';
+import { Plus, RefreshCw, Landmark, CreditCard, TrendingUp, PiggyBank, Car, Loader2, Trash2 } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 import PlaidLinkButton from '@/components/PlaidLinkButton';
 
@@ -29,6 +30,7 @@ const Accounts = () => {
   const { formatCurrency } = useCurrency();
   const { data: accounts, isLoading } = useAccounts();
   const createAccount = useCreateAccount();
+  const deleteAccount = useDeleteAccount();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ name: '', institution: '', account_type: 'checking' as AccountType, balance: '' });
 
@@ -126,6 +128,30 @@ const Accounts = () => {
                   <span className={`font-display text-lg font-semibold ${acc.balance >= 0 ? 'text-prism-teal' : 'text-prism-rose'}`}>
                     {formatCurrency(acc.balance)}
                   </span>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete "{acc.name}"?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will permanently delete this account and all its transactions. This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => deleteAccount.mutate(acc.id)}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               );
             })}
