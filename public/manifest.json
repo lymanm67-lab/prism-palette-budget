@@ -1,0 +1,29 @@
+{
+  "name": "PrismBudget",
+  "short_name": "PrismBudget",
+  "description": "Zero-based budgeting app with AI-powered insights for personal and business finance.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0d1321",
+  "theme_color": "#1a9988",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

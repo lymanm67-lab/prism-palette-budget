@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import {
   Sparkles, Target, BarChart3, ShieldCheck, Bot,
-  Wallet, ArrowRight, CheckCircle2, Zap, Star
+  Wallet, ArrowRight, CheckCircle2, Zap, Star, Quote
 } from 'lucide-react';
 
 const FEATURES = [
@@ -19,6 +19,19 @@ const PRICING = [
   { name: 'Free', price: '$0', period: '/forever', features: ['5 accounts', 'Basic budgeting', 'Transaction tracking', 'Monthly reports'], cta: 'Get Started', popular: false },
   { name: 'Pro', price: '$9', period: '/month', features: ['Unlimited accounts', 'AI Tax Assistant', 'Business profiles', 'CSV import', 'Advanced reports', 'Financial goals'], cta: 'Start Free Trial', popular: true },
   { name: 'Business', price: '$19', period: '/month', features: ['Everything in Pro', 'Multiple businesses', 'Team collaboration', 'Priority support', 'API access'], cta: 'Contact Sales', popular: false },
+];
+
+const TESTIMONIALS = [
+  { name: 'Sarah M.', role: 'Freelance Designer', quote: 'PrismBudget finally made budgeting click for me. The zero-based approach keeps every dollar accountable.', avatar: 'SM' },
+  { name: 'James K.', role: 'Small Business Owner', quote: 'Separating business and personal finances in one app is a game-changer. The AI tax assistant saves me hours.', avatar: 'JK' },
+  { name: 'Priya R.', role: 'Software Engineer', quote: 'I paid off $18k in debt using the debt payoff planner. The visualizations kept me motivated every step.', avatar: 'PR' },
+];
+
+const TRUST_STATS = [
+  { value: '10,000+', label: 'Active Users' },
+  { value: '4.9/5', label: 'User Rating' },
+  { value: '$2M+', label: 'Debt Paid Off' },
+  { value: '99.9%', label: 'Uptime' },
 ];
 
 const LandingPage = () => {
@@ -66,6 +79,16 @@ const LandingPage = () => {
                 See Features
               </Button>
             </div>
+
+            {/* Trust stats bar */}
+            <div className="mt-16 flex flex-wrap justify-center gap-8 sm:gap-12">
+              {TRUST_STATS.map((stat, i) => (
+                <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 + i * 0.1 }} className="text-center">
+                  <p className="font-display text-2xl font-bold text-white">{stat.value}</p>
+                  <p className="text-xs text-white/30 mt-0.5">{stat.label}</p>
+                </motion.div>
+              ))}
+            </div>
           </motion.div>
         </div>
       </header>
@@ -90,6 +113,36 @@ const LandingPage = () => {
                 </div>
                 <h3 className="font-display text-lg font-bold">{feat.title}</h3>
                 <p className="mt-2 text-sm text-muted-foreground">{feat.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Social Proof / Testimonials */}
+      <section className="py-20 sm:py-28 bg-muted/20">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="text-center mb-16">
+            <h2 className="font-display text-4xl sm:text-5xl font-extrabold tracking-tight">
+              Loved by <span className="prism-gradient-text">real people</span>
+            </h2>
+            <p className="mt-4 text-muted-foreground text-lg">See what our users have to say.</p>
+          </div>
+          <div className="grid gap-6 sm:grid-cols-3 max-w-5xl mx-auto">
+            {TESTIMONIALS.map((t, i) => (
+              <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
+                className="rounded-2xl border border-border bg-card p-6 space-y-4 relative">
+                <Quote className="h-8 w-8 text-prism-teal/20 absolute top-4 right-4" />
+                <p className="text-sm text-muted-foreground leading-relaxed italic">"{t.quote}"</p>
+                <div className="flex items-center gap-3 pt-2">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-prism-teal to-prism-sky text-xs font-bold text-white">
+                    {t.avatar}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold">{t.name}</p>
+                    <p className="text-xs text-muted-foreground">{t.role}</p>
+                  </div>
+                </div>
               </motion.div>
             ))}
           </div>
@@ -159,10 +212,16 @@ const LandingPage = () => {
             </div>
             <span className="font-display font-bold">PrismBudget</span>
           </div>
-          <div className="flex items-center gap-4">
-            <button onClick={() => navigate('/legal')} className="text-xs text-muted-foreground hover:text-foreground transition-colors">Legal & Compliance</button>
-            <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} PrismBudget. All rights reserved.</p>
+          <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-muted-foreground">
+            <button onClick={() => navigate('/legal')} className="hover:text-foreground transition-colors">Privacy Policy</button>
+            <span className="hidden sm:inline text-border">·</span>
+            <button onClick={() => navigate('/legal')} className="hover:text-foreground transition-colors">Terms of Service</button>
+            <span className="hidden sm:inline text-border">·</span>
+            <button onClick={() => navigate('/legal')} className="hover:text-foreground transition-colors">Cookie Policy</button>
+            <span className="hidden sm:inline text-border">·</span>
+            <button onClick={() => navigate('/legal')} className="hover:text-foreground transition-colors">Legal & Compliance</button>
           </div>
+          <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} PrismBudget. All rights reserved.</p>
         </div>
       </footer>
     </div>
