@@ -1,16 +1,22 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useTTS } from '@/hooks/use-tts';
+import { useAccounts, useTransactions, useCategories, useBudgets, useCategoryGroups } from '@/hooks/use-finance-data';
+import { useGoals } from '@/hooks/use-goals';
+import { useDebtPlans } from '@/hooks/use-debt-plans';
+import { useRecurringTransactions } from '@/hooks/use-recurring';
 import {
   Landmark, ArrowLeftRight, PiggyBank, Tags, Target, TrendingDown,
   TrendingUp, Calculator, Map, Bot, Home, Wallet, RepeatIcon,
-  Volume2, Pause, Play, Square, ChevronDown, ChevronRight,
+  Volume2, Pause, Play, Square, ChevronDown, ChevronRight, ChevronLeft,
   CheckCircle2, Circle, Sparkles, BookOpen, Rocket, BarChart3,
+  Zap, Eye, X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
@@ -267,10 +273,11 @@ const TRAINING_STEPS: TrainingStep[] = [
 
 const WELCOME_TTS = `Welcome to Prism Budget! This Getting Started guide will walk you through every feature of the app, step by step. Each section includes a voice walkthrough you can listen to, detailed setup steps, and helpful tips. Start from the top with Accounts and work your way down, or jump to any section you need. Let's get your finances organized!`;
 
-function StepCard({ step, index, isCompleted, onToggleComplete }: {
+function StepCard({ step, index, isCompleted, isAutoDetected, onToggleComplete }: {
   step: TrainingStep;
   index: number;
   isCompleted: boolean;
+  isAutoDetected?: boolean;
   onToggleComplete: () => void;
 }) {
   const [expanded, setExpanded] = useState(false);
@@ -314,6 +321,7 @@ function StepCard({ step, index, isCompleted, onToggleComplete }: {
             <div className="flex items-center gap-2">
               <h3 className="font-display font-semibold">{step.title}</h3>
               {isCompleted && <CheckCircle2 className="h-4 w-4 text-prism-teal shrink-0" />}
+              {isAutoDetected && <Badge variant="secondary" className="text-[10px] bg-prism-teal/10 text-prism-teal border-prism-teal/20">Auto</Badge>}
             </div>
             <p className="text-sm text-muted-foreground truncate">{step.summary}</p>
           </div>
@@ -417,6 +425,150 @@ function StepCard({ step, index, isCompleted, onToggleComplete }: {
   );
 }
 
+// ──────────────── Guided Tour Component ────────────────
+const TOUR_SLIDES = [
+  {
+    title: 'Welcome to PrismBudget! 🎉',
+    desc: 'This guided tour walks you through the key steps to get your finances organized. It takes about 5 minutes.',
+    icon: Rocket,
+    gradient: 'from-prism-navy to-prism-teal',
+    tip: 'You can revisit this tour anytime from this page.',
+  },
+  {
+    title: '1. Add Your Accounts',
+    desc: 'Start by adding your bank accounts, credit cards, and investment accounts. This gives you a complete picture of your finances in one place.',
+    icon: Landmark,
+    gradient: 'from-prism-sky to-prism-teal',
+    tip: 'Use Plaid to automatically connect your bank for real-time transaction syncing.',
+    route: '/accounts',
+  },
+  {
+    title: '2. Set Up Categories',
+    desc: 'Categories organize your transactions into groups like "Housing," "Food," and "Income." They power your budgets and reports.',
+    icon: Tags,
+    gradient: 'from-prism-lime to-prism-teal',
+    tip: 'Default categories are created automatically — customize them to match your lifestyle.',
+    route: '/categories',
+  },
+  {
+    title: '3. Add Transactions',
+    desc: 'Import bank statements via CSV, add transactions manually, or connect via Plaid. The app auto-categorizes them using your rules.',
+    icon: ArrowLeftRight,
+    gradient: 'from-prism-orange to-prism-amber',
+    tip: 'Supports Chase, Bank of America, Wells Fargo, Capital One, QuickBooks, and more.',
+    route: '/transactions',
+  },
+  {
+    title: '4. Create Your Budget',
+    desc: 'Set planned spending amounts for each category. Track spending vs. budget in real time with visual progress bars.',
+    icon: PiggyBank,
+    gradient: 'from-prism-amber to-prism-orange',
+    tip: 'Start with the 50/30/20 rule: 50% needs, 30% wants, 20% savings & debt payoff.',
+    route: '/budgets',
+  },
+  {
+    title: '5. Set Goals & Crush Debt',
+    desc: 'Create savings goals, plan debt payoff strategies (avalanche or snowball), and track your progress over time.',
+    icon: Target,
+    gradient: 'from-prism-rose to-prism-orange',
+    tip: 'Even small extra payments on debt make a huge difference over time.',
+    route: '/goals',
+  },
+  {
+    title: "You're All Set!",
+    desc: 'Explore Reports, Cash Flow, Tax Assistant, and more as you go. Each step below has a detailed voice walkthrough.',
+    icon: Sparkles,
+    gradient: 'from-prism-violet to-prism-indigo',
+    tip: 'Steps auto-complete as you add real data. No need to manually check them off!',
+  },
+];
+
+function GuidedTour({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [slideIdx, setSlideIdx] = useState(0);
+  const navigate = useNavigate();
+  const slide = TOUR_SLIDES[slideIdx];
+  const isLast = slideIdx === TOUR_SLIDES.length - 1;
+  const isFirst = slideIdx === 0;
+  const Icon = slide.icon;
+
+  const handleNext = () => isLast ? onClose() : setSlideIdx(s => s + 1);
+  const handlePrev = () => !isFirst && setSlideIdx(s => s - 1);
+  const handleGoTo = () => { if (slide.route) { onClose(); navigate(slide.route); } };
+
+  // Reset slide on open
+  useEffect(() => { if (open) setSlideIdx(0); }, [open]);
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-lg p-0 overflow-hidden border-0">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={slideIdx}
+            initial={{ opacity: 0, x: 40 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -40 }}
+            transition={{ duration: 0.25 }}
+          >
+            {/* Hero area */}
+            <div className={cn('p-8 pb-6 bg-gradient-to-br text-white', slide.gradient)}>
+              <div className="flex items-start justify-between mb-6">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm">
+                  <Icon className="h-7 w-7" />
+                </div>
+                <button onClick={onClose} className="text-white/60 hover:text-white transition-colors">
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <h2 className="font-display text-2xl font-bold">{slide.title}</h2>
+              <p className="mt-2 text-white/80 text-sm leading-relaxed">{slide.desc}</p>
+            </div>
+
+            {/* Content area */}
+            <div className="p-6 space-y-4">
+              <div className="flex items-start gap-3 rounded-lg bg-primary/5 p-3">
+                <Zap className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                <p className="text-sm text-muted-foreground"><span className="font-medium text-foreground">Tip:</span> {slide.tip}</p>
+              </div>
+
+              {/* Progress dots */}
+              <div className="flex items-center justify-center gap-1.5">
+                {TOUR_SLIDES.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setSlideIdx(i)}
+                    className={cn(
+                      'h-2 rounded-full transition-all',
+                      i === slideIdx ? 'w-6 bg-primary' : 'w-2 bg-muted-foreground/30 hover:bg-muted-foreground/50'
+                    )}
+                  />
+                ))}
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center justify-between">
+                <Button variant="ghost" size="sm" onClick={handlePrev} disabled={isFirst} className="gap-1">
+                  <ChevronLeft className="h-4 w-4" /> Back
+                </Button>
+                <div className="flex gap-2">
+                  {slide.route && (
+                    <Button variant="outline" size="sm" onClick={handleGoTo} className="gap-1">
+                      <Rocket className="h-3.5 w-3.5" /> Go There
+                    </Button>
+                  )}
+                  <Button size="sm" onClick={handleNext} className="gap-1">
+                    {isLast ? 'Get Started' : 'Next'} {!isLast && <ChevronRight className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </AnimatePresence>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ──────────────── Main Page Component ────────────────
 const GettingStarted = () => {
   const [completedSteps, setCompletedSteps] = useState<Set<string>>(() => {
     try {
@@ -425,6 +577,48 @@ const GettingStarted = () => {
     } catch { return new Set<string>(); }
   });
   const tts = useTTS();
+  const [tourOpen, setTourOpen] = useState(() => {
+    return !localStorage.getItem('prism-gs-tour-seen');
+  });
+
+  // Data hooks for auto-detection
+  const { data: accounts } = useAccounts();
+  const { data: categories } = useCategories();
+  const { data: transactions } = useTransactions();
+  const currentMonth = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-01`;
+  const { data: budgets } = useBudgets(currentMonth);
+  const { data: recurring } = useRecurringTransactions();
+  const { data: goals } = useGoals();
+  const { data: debtPlans } = useDebtPlans();
+
+  // Auto-detect completed steps based on real data
+  const autoDetected = useMemo(() => {
+    const auto = new Set<string>();
+    if (accounts && accounts.length > 0) auto.add('accounts');
+    if (categories && categories.length > 0) auto.add('categories');
+    if (transactions && transactions.length > 0) auto.add('transactions');
+    if (budgets && budgets.length > 0) auto.add('budgets');
+    if (recurring && recurring.length > 0) auto.add('recurring');
+    if (goals && goals.length > 0) auto.add('goals');
+    if (debtPlans && debtPlans.length > 0) auto.add('debt');
+    return auto;
+  }, [accounts, categories, transactions, budgets, recurring, goals, debtPlans]);
+
+  // Merge manual + auto-detected
+  const mergedCompleted = useMemo(() => {
+    return new Set([...completedSteps, ...autoDetected]);
+  }, [completedSteps, autoDetected]);
+
+  // Persist auto-detections to localStorage
+  useEffect(() => {
+    if (autoDetected.size > 0) {
+      const merged = new Set([...completedSteps, ...autoDetected]);
+      if (merged.size > completedSteps.size) {
+        setCompletedSteps(merged);
+        localStorage.setItem('prism-getting-started-progress', JSON.stringify([...merged]));
+      }
+    }
+  }, [autoDetected]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggleComplete = (id: string) => {
     setCompletedSteps(prev => {
@@ -435,7 +629,7 @@ const GettingStarted = () => {
     });
   };
 
-  const progress = (completedSteps.size / TRAINING_STEPS.length) * 100;
+  const progress = (mergedCompleted.size / TRAINING_STEPS.length) * 100;
 
   const handleWelcomeTTS = () => {
     if (tts.isSpeaking && !tts.isPaused) tts.pause();
@@ -443,8 +637,19 @@ const GettingStarted = () => {
     else tts.speak(WELCOME_TTS);
   };
 
+  const closeTour = useCallback(() => {
+    setTourOpen(false);
+    localStorage.setItem('prism-gs-tour-seen', '1');
+  }, []);
+
+  // Count how many were auto-detected
+  const autoCount = [...autoDetected].filter(id => !completedSteps.has(id) || autoDetected.has(id)).length;
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 max-w-3xl">
+      {/* Guided Tour */}
+      <GuidedTour open={tourOpen} onClose={closeTour} />
+
       {/* Header */}
       <div>
         <h1 className="font-display text-3xl font-bold">Getting Started</h1>
@@ -465,15 +670,30 @@ const GettingStarted = () => {
                   Follow these {TRAINING_STEPS.length} steps to get your finances fully set up. 
                   Each section includes a voice walkthrough, step-by-step instructions, and pro tips.
                 </p>
+                {autoCount > 0 && (
+                  <div className="flex items-center gap-1.5 mt-2">
+                    <Badge variant="secondary" className="gap-1 text-xs bg-prism-teal/10 text-prism-teal border-prism-teal/20">
+                      <Zap className="h-3 w-3" /> {autoCount} auto-detected from your data
+                    </Badge>
+                  </div>
+                )}
                 <div className="flex items-center gap-3 mt-3">
                   <Progress value={progress} className="flex-1 h-2" />
                   <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">
-                    {completedSteps.size}/{TRAINING_STEPS.length} complete
+                    {mergedCompleted.size}/{TRAINING_STEPS.length} complete
                   </span>
                 </div>
               </div>
             </div>
             <div className="flex gap-2 shrink-0">
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5"
+                onClick={() => setTourOpen(true)}
+              >
+                <Eye className="h-3.5 w-3.5" /> Tour
+              </Button>
               <Button
                 variant={tts.isSpeaking ? 'default' : 'outline'}
                 size="sm"
@@ -505,14 +725,15 @@ const GettingStarted = () => {
             key={step.id}
             step={step}
             index={i}
-            isCompleted={completedSteps.has(step.id)}
+            isCompleted={mergedCompleted.has(step.id)}
+            isAutoDetected={autoDetected.has(step.id)}
             onToggleComplete={() => toggleComplete(step.id)}
           />
         ))}
       </div>
 
       {/* Completion message */}
-      {completedSteps.size === TRAINING_STEPS.length && (
+      {mergedCompleted.size === TRAINING_STEPS.length && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
           <Card className="border-prism-teal/30 bg-prism-teal/5">
             <CardContent className="p-6 text-center">
