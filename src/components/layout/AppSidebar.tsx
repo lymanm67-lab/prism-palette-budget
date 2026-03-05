@@ -147,10 +147,17 @@ const AppSidebar = () => {
                         : 'text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground'
                     )}
                   >
-                    <item.icon className={cn(
-                      'h-5 w-5 shrink-0 transition-colors duration-200',
-                      item.color
-                    )} />
+                    <span className={cn(
+                      'flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-200',
+                      isActive
+                        ? 'bg-sidebar-accent/80'
+                        : 'bg-sidebar-accent/0 group-hover:bg-sidebar-accent/40'
+                    )}>
+                      <item.icon className={cn(
+                        'h-[18px] w-[18px] shrink-0 transition-colors duration-200',
+                        item.color
+                      )} />
+                    </span>
                     {!collapsed && <span>{item.label}</span>}
                     {isActive && !collapsed && (
                       <div className="ml-auto h-2 w-2 rounded-full bg-prism-teal animate-pulse" />
