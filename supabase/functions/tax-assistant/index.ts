@@ -32,7 +32,21 @@ serve(async (req) => {
       });
     }
 
-    const { messages, mode } = await req.json();
+    const body = await req.json();
+    let { messages: rawMessages, mode } = body;
+
+    // Validate mode against allowlist
+    const validModes = ['chat', 'overview', 'walkthrough', 'scenarios', 'tools', 'pitfalls'];
+    if (!validModes.includes(mode)) mode = 'chat';
+
+    // Sanitize messages: strip system role, limit count and length
+    const MAX_MESSAGES = 20;
+    const MAX_MESSAGE_LENGTH = 2000;
+    const messages = (Array.isArray(rawMessages) ? rawMessages : [])
+      .filter((m: any) => m && typeof m.role === 'string' && m.role !== 'system' && typeof m.content === 'string')
+      .slice(-MAX_MESSAGES)
+      .map((m: any) => ({ role: m.role, content: String(m.content).slice(0, MAX_MESSAGE_LENGTH) }));
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -198,7 +212,7 @@ Use markdown formatting with ## headings, **bold** for critical warnings, and âš
     });
   } catch (e) {
     console.error("tax-assistant error:", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
+    return new Response(JSON.stringify({ error: "An unexpected error occurred. Please try again." }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
