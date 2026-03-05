@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -13,9 +13,19 @@ import { useAccounts, useCategories } from '@/hooks/use-finance-data';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
-import { parseCsvText, getDefaultMapping, applyMapping, type ColumnMapping, type ParsedRow, type CsvParseResult } from '@/lib/csv-parser';
+import {
+  parseCsvText,
+  getDefaultMapping,
+  applyMapping,
+  FORMAT_LABELS,
+  type ColumnMapping,
+  type ParsedRow,
+  type CsvParseResult,
+  type DetectedFormat,
+} from '@/lib/csv-parser';
 import { formatCurrency } from '@/lib/seed-data';
-import { Upload, FileSpreadsheet, ArrowRight, ArrowLeft, Check, AlertCircle, Loader2 } from 'lucide-react';
+import { Upload, FileSpreadsheet, ArrowRight, ArrowLeft, Check, AlertCircle, Loader2, Info } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 type Step = 'upload' | 'map' | 'preview' | 'importing' | 'done';
 
@@ -23,6 +33,19 @@ interface CsvImportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
+
+const SUPPORTED_FORMATS: { name: string; columns: string }[] = [
+  { name: 'Chase Bank', columns: 'Transaction Date, Post Date, Description, Amount, Category' },
+  { name: 'Bank of America', columns: 'Date, Description, Amount, Running Bal.' },
+  { name: 'Wells Fargo', columns: 'Date, Amount, Description, Check #' },
+  { name: 'Capital One', columns: 'Transaction Date, Description, Category, Debit, Credit' },
+  { name: 'Citi Bank', columns: 'Status, Date, Description, Debit, Credit' },
+  { name: 'QuickBooks', columns: 'Date, Transaction Type, Name, Memo, Amount, Balance' },
+  { name: 'YNAB', columns: 'Date, Payee, Category, Memo, Outflow, Inflow' },
+  { name: 'Mint', columns: 'Date, Description, Amount, Transaction Type, Category' },
+  { name: 'Monarch Money', columns: 'Date, Merchant, Category, Account, Amount, Notes' },
+  { name: 'Generic CSV', columns: 'Any CSV with date, amount, and description columns' },
+];
 
 const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
   const { toast } = useToast();
@@ -40,6 +63,9 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState({ success: 0, failed: 0 });
   const [ruleMatchCount, setRuleMatchCount] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const [showFormats, setShowFormats] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const reset = () => {
     setStep('upload');
@@ -51,6 +77,8 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
     setImporting(false);
     setImportResult({ success: 0, failed: 0 });
     setRuleMatchCount(0);
+    setDragging(false);
+    setShowFormats(false);
   };
 
   const handleClose = (open: boolean) => {
@@ -58,11 +86,9 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
     onOpenChange(open);
   };
 
-  const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.name.endsWith('.csv')) {
-      toast({ title: 'Invalid file', description: 'Please upload a .csv file.', variant: 'destructive' });
+  const processFile = useCallback((file: File) => {
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+      toast({ title: 'Invalid file type', description: 'Please upload a .csv file. Export your transactions from your bank or accounting software as CSV.', variant: 'destructive' });
       return;
     }
     const reader = new FileReader();
@@ -74,7 +100,8 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
         const defaultMap = getDefaultMapping(result.headers, result.detectedFormat);
         setMapping(defaultMap);
         setStep('map');
-        toast({ title: `Detected ${result.detectedFormat} format`, description: `${result.rows.length} rows found.` });
+        const label = FORMAT_LABELS[result.detectedFormat];
+        toast({ title: `Detected: ${label}`, description: `${result.rows.length} rows found. Verify column mapping.` });
       } catch (err: any) {
         toast({ title: 'Parse error', description: err.message, variant: 'destructive' });
       }
@@ -82,10 +109,30 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
     reader.readAsText(file);
   }, [toast]);
 
+  const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) processFile(file);
+  }, [processFile]);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file) processFile(file);
+  }, [processFile]);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback(() => setDragging(false), []);
+
+  const hasDebitCredit = !!(mapping.debit || mapping.credit);
+
   const handleProceedToPreview = () => {
     if (!csvResult) return;
-    const isMint = csvResult.detectedFormat === 'mint';
-    const rows = applyMapping(csvResult.rows, mapping, isMint);
+    const rows = applyMapping(csvResult.rows, mapping, csvResult.detectedFormat);
     setParsedRows(rows);
     setSelectedRows(new Set(rows.map((_, i) => i)));
     setStep('preview');
@@ -184,7 +231,7 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
         <DialogHeader>
           <DialogTitle className="font-display text-xl flex items-center gap-2">
             <FileSpreadsheet className="h-5 w-5 text-primary" />
-            Import Transactions from CSV
+            Import Bank Transactions
           </DialogTitle>
         </DialogHeader>
 
@@ -198,7 +245,10 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
             return (
               <div key={label} className="flex items-center gap-1.5">
                 {i > 0 && <div className="w-6 h-px bg-border" />}
-                <div className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${isDone ? 'bg-prism-teal text-white' : isActive ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+                <div className={cn(
+                  'flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium',
+                  isDone ? 'bg-prism-teal text-white' : isActive ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                )}>
                   {isDone ? <Check className="h-3 w-3" /> : i + 1}
                 </div>
                 <span className={isActive || isDone ? 'text-foreground font-medium' : ''}>{label}</span>
@@ -211,17 +261,72 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
           {/* STEP 1: Upload */}
           {step === 'upload' && (
             <motion.div key="upload" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
-              <div className="rounded-xl border-2 border-dashed border-border p-10 text-center hover:border-primary/50 transition-colors">
-                <Upload className="mx-auto h-10 w-10 text-muted-foreground mb-3" />
-                <p className="font-medium mb-1">Drop your CSV file here or click to browse</p>
-                <p className="text-sm text-muted-foreground mb-4">Supports Mint, Monarch Money, and generic CSV formats</p>
-                <input type="file" accept=".csv" onChange={handleFileUpload} className="hidden" id="csv-upload" />
-                <Button asChild variant="outline"><label htmlFor="csv-upload" className="cursor-pointer">Choose File</label></Button>
+              <div
+                className={cn(
+                  'rounded-xl border-2 border-dashed p-10 text-center transition-colors cursor-pointer',
+                  dragging ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+                )}
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Upload className={cn('mx-auto h-10 w-10 mb-3', dragging ? 'text-primary' : 'text-muted-foreground')} />
+                <p className="font-medium mb-1">
+                  {dragging ? 'Drop your file here' : 'Drag & drop your CSV file or click to browse'}
+                </p>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Supports bank statements, QuickBooks, Mint, Monarch, YNAB, and more
+                </p>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".csv,.CSV"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+                <Button
+                  variant="outline"
+                  onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
+                >
+                  Choose File
+                </Button>
               </div>
-              <div className="text-xs text-muted-foreground space-y-1">
-                <p><strong>Mint:</strong> Date, Description, Amount, Transaction Type, Category, Account Name...</p>
-                <p><strong>Monarch:</strong> Date, Merchant, Category, Account, Amount, Tags, Notes...</p>
-                <p><strong>Generic:</strong> Any CSV with date, amount, and description/merchant columns</p>
+
+              {/* Supported formats */}
+              <div>
+                <button
+                  className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  onClick={() => setShowFormats(!showFormats)}
+                >
+                  <Info className="h-3.5 w-3.5" />
+                  {showFormats ? 'Hide' : 'Show'} supported formats ({SUPPORTED_FORMATS.length})
+                </button>
+                <AnimatePresence>
+                  {showFormats && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="mt-2 grid gap-1.5">
+                        {SUPPORTED_FORMATS.map(f => (
+                          <div key={f.name} className="flex items-start gap-2 text-xs">
+                            <Badge variant="secondary" className="text-[10px] shrink-0 mt-0.5">{f.name}</Badge>
+                            <span className="text-muted-foreground font-mono">{f.columns}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              <div className="rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground space-y-1">
+                <p className="font-medium text-foreground">💡 How to export from your bank:</p>
+                <p>Most banks offer CSV export under "Download Transactions" or "Export Statements" in their online banking portal.</p>
+                <p>QuickBooks: Reports → Transaction Detail → Export to CSV/Excel.</p>
               </div>
             </motion.div>
           )}
@@ -229,16 +334,67 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
           {/* STEP 2: Column Mapping */}
           {step === 'map' && csvResult && (
             <motion.div key="map" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary">{csvResult.detectedFormat}</Badge>
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge className="bg-primary/10 text-primary border-primary/20">
+                  {FORMAT_LABELS[csvResult.detectedFormat]}
+                </Badge>
                 <span className="text-sm text-muted-foreground">{csvResult.rows.length} rows detected</span>
+                {hasDebitCredit && (
+                  <Badge variant="outline" className="text-xs">Debit/Credit columns detected</Badge>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                {(['date', 'merchant', 'amount', 'category', 'notes'] as const).map(field => (
-                  <div key={field} className="space-y-1.5">
-                    <Label className="capitalize">{field} Column</Label>
-                    <Select value={mapping[field]} onValueChange={v => setMapping(m => ({ ...m, [field]: v }))}>
+                {/* Date & Merchant — always shown */}
+                <div className="space-y-1.5">
+                  <Label>Date Column <span className="text-destructive">*</span></Label>
+                  <Select value={mapping.date} onValueChange={v => setMapping(m => ({ ...m, date: v }))}>
+                    <SelectTrigger><SelectValue placeholder="Select column" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">— None —</SelectItem>
+                      {csvResult.headers.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Merchant / Description Column</Label>
+                  <Select value={mapping.merchant} onValueChange={v => setMapping(m => ({ ...m, merchant: v }))}>
+                    <SelectTrigger><SelectValue placeholder="Select column" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">— None —</SelectItem>
+                      {csvResult.headers.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Amount or Debit/Credit */}
+                {hasDebitCredit ? (
+                  <>
+                    <div className="space-y-1.5">
+                      <Label>Debit / Withdrawal Column</Label>
+                      <Select value={mapping.debit || ''} onValueChange={v => setMapping(m => ({ ...m, debit: v === '__none__' ? '' : v }))}>
+                        <SelectTrigger><SelectValue placeholder="Select column" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="__none__">— None —</SelectItem>
+                          {csvResult.headers.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label>Credit / Deposit Column</Label>
+                      <Select value={mapping.credit || ''} onValueChange={v => setMapping(m => ({ ...m, credit: v === '__none__' ? '' : v }))}>
+                        <SelectTrigger><SelectValue placeholder="Select column" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="__none__">— None —</SelectItem>
+                          {csvResult.headers.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </>
+                ) : (
+                  <div className="space-y-1.5">
+                    <Label>Amount Column <span className="text-destructive">*</span></Label>
+                    <Select value={mapping.amount} onValueChange={v => setMapping(m => ({ ...m, amount: v }))}>
                       <SelectTrigger><SelectValue placeholder="Select column" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="__none__">— None —</SelectItem>
@@ -246,9 +402,35 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
                       </SelectContent>
                     </Select>
                   </div>
-                ))}
+                )}
+
+                {/* Category */}
                 <div className="space-y-1.5">
-                  <Label>Import into Account</Label>
+                  <Label>Category Column <span className="text-xs text-muted-foreground">(optional)</span></Label>
+                  <Select value={mapping.category || '__none__'} onValueChange={v => setMapping(m => ({ ...m, category: v === '__none__' ? '' : v }))}>
+                    <SelectTrigger><SelectValue placeholder="Select column" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">— None —</SelectItem>
+                      {csvResult.headers.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Notes */}
+                <div className="space-y-1.5">
+                  <Label>Notes / Memo Column <span className="text-xs text-muted-foreground">(optional)</span></Label>
+                  <Select value={mapping.notes || '__none__'} onValueChange={v => setMapping(m => ({ ...m, notes: v === '__none__' ? '' : v }))}>
+                    <SelectTrigger><SelectValue placeholder="Select column" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">— None —</SelectItem>
+                      {csvResult.headers.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Target Account */}
+                <div className="space-y-1.5">
+                  <Label>Import into Account <span className="text-destructive">*</span></Label>
                   <Select value={targetAccountId} onValueChange={setTargetAccountId}>
                     <SelectTrigger><SelectValue placeholder="Select account" /></SelectTrigger>
                     <SelectContent>
@@ -256,11 +438,52 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
                     </SelectContent>
                   </Select>
                 </div>
+
+                {/* Toggle: switch to single amount or debit/credit */}
+                {!hasDebitCredit && (
+                  <div className="col-span-2">
+                    <button
+                      className="text-xs text-primary hover:underline"
+                      onClick={() => setMapping(m => ({ ...m, amount: '', debit: '__detect__', credit: '__detect__' }))}
+                    >
+                      My CSV uses separate Debit/Credit columns instead of a single Amount →
+                    </button>
+                  </div>
+                )}
+                {hasDebitCredit && (
+                  <div className="col-span-2">
+                    <button
+                      className="text-xs text-primary hover:underline"
+                      onClick={() => setMapping(m => ({ ...m, debit: undefined, credit: undefined, amount: '' }))}
+                    >
+                      ← My CSV uses a single Amount column instead
+                    </button>
+                  </div>
+                )}
               </div>
+
+              {/* Sample data preview */}
+              {csvResult.rows.length > 0 && (
+                <div className="rounded-lg border bg-muted/30 p-3">
+                  <p className="text-xs font-medium mb-2 text-muted-foreground">Sample row (first record):</p>
+                  <div className="flex flex-wrap gap-2">
+                    {csvResult.headers.map(h => (
+                      <div key={h} className="text-xs">
+                        <span className="font-medium text-foreground">{h}:</span>{' '}
+                        <span className="text-muted-foreground font-mono">{csvResult.rows[0][h] || '(empty)'}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="flex justify-between">
                 <Button variant="outline" onClick={() => setStep('upload')} className="gap-1.5"><ArrowLeft className="h-4 w-4" /> Back</Button>
-                <Button onClick={handleProceedToPreview} disabled={!mapping.date || !mapping.amount || !targetAccountId} className="gap-1.5">
+                <Button
+                  onClick={handleProceedToPreview}
+                  disabled={!mapping.date || (!mapping.amount && !hasDebitCredit) || !targetAccountId}
+                  className="gap-1.5"
+                >
                   Preview <ArrowRight className="h-4 w-4" />
                 </Button>
               </div>
@@ -296,8 +519,8 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
                         <TableRow key={i} className={!selectedRows.has(i) ? 'opacity-40' : ''}>
                           <TableCell><Checkbox checked={selectedRows.has(i)} onCheckedChange={() => handleToggleRow(i)} /></TableCell>
                           <TableCell className="text-sm">{row.date}</TableCell>
-                          <TableCell className="text-sm font-medium max-w-[200px] truncate">{row.merchant}</TableCell>
-                          <TableCell className={`text-sm text-right font-medium ${row.amount > 0 ? 'text-prism-teal' : ''}`}>{formatCurrency(row.amount)}</TableCell>
+                          <TableCell className="text-sm font-medium max-w-[200px] truncate">{row.merchant || '—'}</TableCell>
+                          <TableCell className={cn('text-sm text-right font-medium', row.amount > 0 && 'text-prism-teal')}>{formatCurrency(row.amount)}</TableCell>
                           <TableCell>
                             {row.category ? (
                               <Badge variant={matched ? 'secondary' : 'outline'} className="text-xs">
@@ -337,10 +560,10 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
                 <Check className="h-8 w-8 text-prism-teal" />
               </div>
               <p className="font-display text-xl font-bold">Import Complete</p>
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground text-center">
                 {importResult.success} transactions imported successfully
-                {ruleMatchCount > 0 && <>, <span className="text-primary">{ruleMatchCount} auto-categorized by rules</span></>}
-                {importResult.failed > 0 && <>, <span className="text-prism-rose">{importResult.failed} failed</span></>}
+                {ruleMatchCount > 0 && <><br /><span className="text-primary">{ruleMatchCount} auto-categorized by saved rules</span></>}
+                {importResult.failed > 0 && <><br /><span className="text-prism-rose">{importResult.failed} failed</span></>}
               </p>
               <Button onClick={() => handleClose(false)}>Done</Button>
             </motion.div>
