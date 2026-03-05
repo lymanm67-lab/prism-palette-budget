@@ -6,117 +6,128 @@
 
 @layer base {
   :root {
-    --background: 220 20% 97%;
-    --foreground: 222 47% 11%;
+    --background: 216 28% 95%;
+    --foreground: 220 40% 13%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card: 210 30% 99%;
+    --card-foreground: 220 40% 13%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover: 210 30% 99%;
+    --popover-foreground: 220 40% 13%;
 
-    --primary: 262 83% 58%;
+    --primary: 220 70% 35%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 94%;
-    --secondary-foreground: 222 47% 11%;
+    --secondary: 210 30% 92%;
+    --secondary-foreground: 220 40% 13%;
 
-    --muted: 210 35% 95%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 210 25% 93%;
+    --muted-foreground: 215 18% 48%;
 
-    --accent: 160 84% 39%;
+    --accent: 174 72% 40%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 78% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 262 83% 58%;
+    --border: 214 28% 88%;
+    --input: 214 28% 88%;
+    --ring: 220 70% 35%;
 
     --radius: 0.75rem;
 
-    /* Vibrant Prism palette */
-    --prism-violet: 262 83% 58%;
-    --prism-teal: 160 84% 39%;
-    --prism-amber: 36 100% 57%;
-    --prism-rose: 340 82% 52%;
-    --prism-sky: 199 89% 48%;
-    --prism-lime: 142 71% 45%;
+    /* Bold Confidence palette */
+    --prism-navy: 220 70% 25%;
+    --prism-navy-light: 220 60% 35%;
+    --prism-teal: 174 72% 40%;
+    --prism-teal-light: 174 60% 50%;
     --prism-orange: 24 95% 53%;
-    --prism-indigo: 239 84% 67%;
+    --prism-orange-light: 30 92% 60%;
+    --prism-amber: 36 100% 57%;
+    --prism-rose: 350 78% 52%;
+    --prism-sky: 199 80% 48%;
+    --prism-lime: 152 68% 42%;
+    --prism-indigo: 230 72% 58%;
+    --prism-violet: 255 65% 55%;
 
-    --prism-gradient-start: 262 83% 58%;
-    --prism-gradient-end: 199 89% 48%;
+    --prism-gradient-start: 220 70% 25%;
+    --prism-gradient-end: 174 72% 40%;
 
-    --prism-positive: 160 84% 39%;
-    --prism-negative: 340 82% 52%;
+    --prism-positive: 174 72% 40%;
+    --prism-negative: 350 78% 52%;
 
-    --sidebar-background: 240 25% 8%;
+    --sidebar-background: 222 47% 11%;
     --sidebar-foreground: 213 31% 91%;
-    --sidebar-primary: 262 83% 65%;
+    --sidebar-primary: 174 72% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 20% 14%;
+    --sidebar-accent: 222 40% 16%;
     --sidebar-accent-foreground: 213 31% 91%;
-    --sidebar-border: 240 20% 14%;
-    --sidebar-ring: 262 83% 58%;
+    --sidebar-border: 222 35% 16%;
+    --sidebar-ring: 174 72% 40%;
 
-    --chart-1: 262 83% 58%;
-    --chart-2: 160 84% 39%;
-    --chart-3: 36 100% 57%;
-    --chart-4: 340 82% 52%;
-    --chart-5: 199 89% 48%;
-    --chart-6: 142 71% 45%;
-    --chart-7: 24 95% 53%;
-    --chart-8: 239 84% 67%;
+    --chart-1: 220 70% 35%;
+    --chart-2: 174 72% 40%;
+    --chart-3: 24 95% 53%;
+    --chart-4: 350 78% 52%;
+    --chart-5: 199 80% 48%;
+    --chart-6: 152 68% 42%;
+    --chart-7: 36 100% 57%;
+    --chart-8: 230 72% 58%;
   }
 
   .dark {
-    --background: 240 20% 4%;
+    --background: 222 47% 6%;
     --foreground: 210 40% 96%;
 
-    --card: 240 20% 7%;
+    --card: 222 42% 10%;
     --card-foreground: 210 40% 96%;
 
-    --popover: 240 20% 7%;
+    --popover: 222 42% 10%;
     --popover-foreground: 210 40% 96%;
 
-    --primary: 262 83% 65%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 174 72% 48%;
+    --primary-foreground: 222 47% 6%;
 
-    --secondary: 240 15% 15%;
+    --secondary: 222 30% 16%;
     --secondary-foreground: 210 40% 96%;
 
-    --muted: 240 15% 13%;
+    --muted: 222 30% 14%;
     --muted-foreground: 215 20% 55%;
 
-    --accent: 160 84% 39%;
+    --accent: 24 95% 55%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 240 15% 15%;
-    --input: 240 15% 15%;
-    --ring: 262 83% 65%;
+    --border: 222 30% 16%;
+    --input: 222 30% 16%;
+    --ring: 174 72% 48%;
 
-    --sidebar-background: 240 25% 3%;
+    --prism-navy: 220 65% 30%;
+    --prism-navy-light: 220 55% 42%;
+    --prism-teal: 174 68% 48%;
+    --prism-teal-light: 174 58% 55%;
+    --prism-orange: 24 92% 58%;
+    --prism-orange-light: 30 88% 64%;
+
+    --sidebar-background: 222 50% 5%;
     --sidebar-foreground: 215 20% 75%;
-    --sidebar-primary: 262 83% 70%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 20% 10%;
+    --sidebar-primary: 174 72% 55%;
+    --sidebar-primary-foreground: 222 47% 6%;
+    --sidebar-accent: 222 42% 12%;
     --sidebar-accent-foreground: 215 20% 85%;
-    --sidebar-border: 240 20% 10%;
-    --sidebar-ring: 262 83% 65%;
+    --sidebar-border: 222 42% 12%;
+    --sidebar-ring: 174 72% 48%;
 
-    --chart-1: 262 83% 68%;
-    --chart-2: 160 80% 48%;
-    --chart-3: 36 95% 62%;
-    --chart-4: 340 78% 58%;
-    --chart-5: 199 85% 55%;
-    --chart-6: 142 65% 52%;
-    --chart-7: 24 90% 58%;
-    --chart-8: 239 80% 72%;
+    --chart-1: 220 65% 50%;
+    --chart-2: 174 68% 50%;
+    --chart-3: 24 92% 58%;
+    --chart-4: 350 74% 58%;
+    --chart-5: 199 76% 55%;
+    --chart-6: 152 60% 50%;
+    --chart-7: 36 95% 62%;
+    --chart-8: 230 68% 65%;
   }
 }
 
@@ -137,7 +148,7 @@
 
 @layer utilities {
   .prism-gradient {
-    background: linear-gradient(135deg, hsl(var(--prism-violet)), hsl(var(--prism-sky)));
+    background: linear-gradient(135deg, hsl(var(--prism-navy)), hsl(var(--prism-teal)));
   }
 
   .prism-gradient-warm {
@@ -148,26 +159,37 @@
     background: linear-gradient(135deg, hsl(var(--prism-teal)), hsl(var(--prism-sky)));
   }
 
+  .prism-gradient-bold {
+    background: linear-gradient(135deg, hsl(var(--prism-navy)), hsl(var(--prism-orange)));
+  }
+
   .prism-gradient-text {
-    background: linear-gradient(135deg, hsl(var(--prism-violet)), hsl(var(--prism-sky)));
+    background: linear-gradient(135deg, hsl(var(--prism-navy)), hsl(var(--prism-teal)), hsl(var(--prism-orange)));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .dark .prism-gradient-text {
+    background: linear-gradient(135deg, hsl(var(--prism-teal-light)), hsl(var(--prism-orange-light)));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
   .prism-glow {
-    box-shadow: 0 0 20px -5px hsl(var(--prism-violet) / 0.3),
-                0 0 40px -10px hsl(var(--prism-sky) / 0.2);
+    box-shadow: 0 0 24px -6px hsl(var(--prism-navy) / 0.35),
+                0 0 48px -12px hsl(var(--prism-teal) / 0.2);
   }
 
   .prism-glow-teal {
-    box-shadow: 0 0 20px -5px hsl(var(--prism-teal) / 0.3),
-                0 0 40px -10px hsl(var(--prism-lime) / 0.2);
+    box-shadow: 0 0 24px -6px hsl(var(--prism-teal) / 0.4),
+                0 0 48px -12px hsl(var(--prism-lime) / 0.2);
   }
 
   .prism-glow-warm {
-    box-shadow: 0 0 20px -5px hsl(var(--prism-orange) / 0.3),
-                0 0 40px -10px hsl(var(--prism-amber) / 0.2);
+    box-shadow: 0 0 24px -6px hsl(var(--prism-orange) / 0.4),
+                0 0 48px -12px hsl(var(--prism-amber) / 0.2);
   }
 
   .prism-card-shine {
@@ -180,8 +202,8 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, hsl(var(--prism-violet) / 0.4), hsl(var(--prism-sky) / 0.4), transparent);
+    height: 2px;
+    background: linear-gradient(90deg, transparent, hsl(var(--prism-teal) / 0.5), hsl(var(--prism-orange) / 0.5), transparent);
   }
 
   .stat-card-icon {
@@ -194,19 +216,19 @@
     @apply transition-all duration-300 ease-out;
   }
   .hover-lift:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 24px -8px hsl(var(--prism-violet) / 0.15),
-                0 4px 8px -4px hsl(var(--foreground) / 0.06);
+    transform: translateY(-4px);
+    box-shadow: 0 16px 32px -8px hsl(var(--prism-navy) / 0.18),
+                0 6px 12px -6px hsl(var(--foreground) / 0.06);
   }
 
   .hover-glow-violet:hover {
-    box-shadow: 0 0 20px -5px hsl(var(--prism-violet) / 0.35),
-                0 0 40px -10px hsl(var(--prism-sky) / 0.2);
+    box-shadow: 0 0 24px -6px hsl(var(--prism-navy) / 0.4),
+                0 0 48px -12px hsl(var(--prism-teal) / 0.25);
   }
 
   .hover-glow-teal:hover {
-    box-shadow: 0 0 20px -5px hsl(var(--prism-teal) / 0.35),
-                0 0 40px -10px hsl(var(--prism-lime) / 0.2);
+    box-shadow: 0 0 24px -6px hsl(var(--prism-teal) / 0.4),
+                0 0 48px -12px hsl(var(--prism-lime) / 0.25);
   }
 
   .hover-icon-bounce:hover .icon-target {
@@ -217,7 +239,7 @@
     @apply transition-all duration-300;
   }
   .hover-border-glow:hover {
-    border-color: hsl(var(--prism-violet) / 0.4);
+    border-color: hsl(var(--prism-teal) / 0.5);
   }
 
   .interactive-row {
@@ -226,6 +248,21 @@
   .interactive-row:hover {
     transform: translateX(4px);
     background: hsl(var(--muted) / 0.5);
+  }
+
+  /* Background mesh gradient for main content */
+  .bg-mesh {
+    background-image:
+      radial-gradient(at 0% 0%, hsl(var(--prism-navy) / 0.06) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, hsl(var(--prism-teal) / 0.06) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, hsl(var(--prism-orange) / 0.04) 0px, transparent 50%);
+  }
+
+  .dark .bg-mesh {
+    background-image:
+      radial-gradient(at 0% 0%, hsl(var(--prism-navy) / 0.15) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, hsl(var(--prism-teal) / 0.1) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, hsl(var(--prism-orange) / 0.08) 0px, transparent 50%);
   }
 }
 
@@ -243,11 +280,11 @@
 
 .auth-gradient-bg {
   background: linear-gradient(-45deg,
-    hsl(262, 83%, 12%),
-    hsl(240, 25%, 8%),
-    hsl(199, 89%, 12%),
-    hsl(160, 84%, 10%),
-    hsl(262, 83%, 15%)
+    hsl(222, 47%, 8%),
+    hsl(220, 70%, 15%),
+    hsl(174, 72%, 12%),
+    hsl(24, 95%, 14%),
+    hsl(222, 47%, 10%)
   );
   background-size: 400% 400%;
   animation: gradient-shift 15s ease infinite;
@@ -281,7 +318,7 @@
   bottom: 0;
   width: 3px;
   border-radius: 0 4px 4px 0;
-  background: linear-gradient(180deg, hsl(var(--prism-violet)), hsl(var(--prism-sky)));
+  background: linear-gradient(180deg, hsl(var(--prism-teal)), hsl(var(--prism-orange)));
 }
 
 /* Pulse animation for live indicators */
