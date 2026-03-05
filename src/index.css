@@ -2,121 +2,121 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 @layer base {
   :root {
-    --background: 220 20% 97%;
-    --foreground: 230 25% 10%;
+    --background: 210 40% 98%;
+    --foreground: 222 47% 11%;
 
     --card: 0 0% 100%;
-    --card-foreground: 230 25% 10%;
+    --card-foreground: 222 47% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 230 25% 10%;
+    --popover-foreground: 222 47% 11%;
 
-    --primary: 255 70% 55%;
+    --primary: 262 83% 58%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 15% 92%;
-    --secondary-foreground: 230 25% 10%;
+    --secondary: 210 40% 94%;
+    --secondary-foreground: 222 47% 11%;
 
-    --muted: 220 15% 94%;
-    --muted-foreground: 220 10% 45%;
+    --muted: 210 35% 95%;
+    --muted-foreground: 215 16% 47%;
 
-    --accent: 170 65% 45%;
+    --accent: 160 84% 39%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 72% 55%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 15% 90%;
-    --input: 220 15% 90%;
-    --ring: 255 70% 55%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 262 83% 58%;
 
     --radius: 0.75rem;
 
-    /* PrismBudget custom tokens */
-    --prism-violet: 255 70% 55%;
-    --prism-teal: 170 65% 45%;
-    --prism-amber: 38 92% 55%;
-    --prism-rose: 350 75% 58%;
-    --prism-sky: 200 80% 55%;
-    --prism-lime: 85 60% 48%;
-    --prism-orange: 25 90% 55%;
-    --prism-indigo: 235 65% 55%;
+    /* Vibrant palette inspired by Wave/Monarch */
+    --prism-violet: 262 83% 58%;
+    --prism-teal: 160 84% 39%;
+    --prism-amber: 36 100% 57%;
+    --prism-rose: 340 82% 52%;
+    --prism-sky: 199 89% 48%;
+    --prism-lime: 142 71% 45%;
+    --prism-orange: 24 95% 53%;
+    --prism-indigo: 239 84% 67%;
 
-    --prism-gradient-start: 255 70% 55%;
-    --prism-gradient-end: 200 80% 55%;
+    --prism-gradient-start: 262 83% 58%;
+    --prism-gradient-end: 199 89% 48%;
 
-    --prism-positive: 150 60% 40%;
-    --prism-negative: 0 72% 55%;
+    --prism-positive: 160 84% 39%;
+    --prism-negative: 340 82% 52%;
 
-    --sidebar-background: 230 25% 10%;
-    --sidebar-foreground: 220 15% 85%;
-    --sidebar-primary: 255 70% 60%;
+    --sidebar-background: 222 47% 11%;
+    --sidebar-foreground: 213 31% 91%;
+    --sidebar-primary: 262 83% 65%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 230 20% 16%;
-    --sidebar-accent-foreground: 220 15% 90%;
-    --sidebar-border: 230 20% 18%;
-    --sidebar-ring: 255 70% 55%;
+    --sidebar-accent: 217 33% 17%;
+    --sidebar-accent-foreground: 213 31% 91%;
+    --sidebar-border: 217 33% 17%;
+    --sidebar-ring: 262 83% 58%;
 
-    --chart-1: 255 70% 55%;
-    --chart-2: 170 65% 45%;
-    --chart-3: 38 92% 55%;
-    --chart-4: 350 75% 58%;
-    --chart-5: 200 80% 55%;
-    --chart-6: 85 60% 48%;
-    --chart-7: 25 90% 55%;
-    --chart-8: 235 65% 55%;
+    --chart-1: 262 83% 58%;
+    --chart-2: 160 84% 39%;
+    --chart-3: 36 100% 57%;
+    --chart-4: 340 82% 52%;
+    --chart-5: 199 89% 48%;
+    --chart-6: 142 71% 45%;
+    --chart-7: 24 95% 53%;
+    --chart-8: 239 84% 67%;
   }
 
   .dark {
-    --background: 230 25% 7%;
-    --foreground: 220 15% 92%;
+    --background: 222 47% 6%;
+    --foreground: 210 40% 96%;
 
-    --card: 230 22% 11%;
-    --card-foreground: 220 15% 92%;
+    --card: 222 47% 10%;
+    --card-foreground: 210 40% 96%;
 
-    --popover: 230 22% 11%;
-    --popover-foreground: 220 15% 92%;
+    --popover: 222 47% 10%;
+    --popover-foreground: 210 40% 96%;
 
-    --primary: 255 70% 62%;
+    --primary: 262 83% 65%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 230 20% 16%;
-    --secondary-foreground: 220 15% 92%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 96%;
 
-    --muted: 230 18% 16%;
-    --muted-foreground: 220 10% 55%;
+    --muted: 217 33% 15%;
+    --muted-foreground: 215 20% 55%;
 
-    --accent: 170 60% 42%;
+    --accent: 160 84% 39%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 65% 48%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 230 18% 18%;
-    --input: 230 18% 18%;
-    --ring: 255 70% 62%;
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 262 83% 65%;
 
-    --sidebar-background: 230 28% 5%;
-    --sidebar-foreground: 220 15% 80%;
-    --sidebar-primary: 255 70% 65%;
+    --sidebar-background: 222 50% 4%;
+    --sidebar-foreground: 215 20% 75%;
+    --sidebar-primary: 262 83% 70%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 230 22% 12%;
-    --sidebar-accent-foreground: 220 15% 85%;
-    --sidebar-border: 230 22% 12%;
-    --sidebar-ring: 255 70% 62%;
+    --sidebar-accent: 222 47% 12%;
+    --sidebar-accent-foreground: 215 20% 85%;
+    --sidebar-border: 222 47% 12%;
+    --sidebar-ring: 262 83% 65%;
 
-    --chart-1: 255 75% 65%;
-    --chart-2: 170 60% 50%;
-    --chart-3: 38 90% 60%;
-    --chart-4: 350 70% 62%;
-    --chart-5: 200 75% 60%;
-    --chart-6: 85 55% 55%;
-    --chart-7: 25 85% 60%;
-    --chart-8: 235 60% 62%;
+    --chart-1: 262 83% 68%;
+    --chart-2: 160 80% 48%;
+    --chart-3: 36 95% 62%;
+    --chart-4: 340 78% 58%;
+    --chart-5: 199 85% 55%;
+    --chart-6: 142 65% 52%;
+    --chart-7: 24 90% 58%;
+    --chart-8: 239 80% 72%;
   }
 }
 
@@ -127,11 +127,11 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: 'DM Sans', system-ui, sans-serif;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   }
 }
 

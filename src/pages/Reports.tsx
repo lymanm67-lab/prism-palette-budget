@@ -113,8 +113,8 @@ const Reports = () => {
                     <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={v => `$${(v / 1000).toFixed(0)}k`} />
                     <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} />
                     <Legend />
-                    <Bar dataKey="income" fill="#2eb88a" radius={[6, 6, 0, 0]} name="Income" />
-                    <Bar dataKey="expenses" fill="#e5547a" radius={[6, 6, 0, 0]} name="Expenses" />
+                    <Bar dataKey="income" fill="hsl(160, 84%, 39%)" radius={[6, 6, 0, 0]} name="Income" />
+                    <Bar dataKey="expenses" fill="hsl(340, 82%, 52%)" radius={[6, 6, 0, 0]} name="Expenses" />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
