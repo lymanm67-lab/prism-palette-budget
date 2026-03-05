@@ -2,8 +2,9 @@ import { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Sparkles, Loader2, RefreshCw } from 'lucide-react';
+import { Sparkles, Loader2, RefreshCw, Volume2, VolumeX, Pause, Play } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import { useTTS } from '@/hooks/use-tts';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -17,6 +18,7 @@ interface AiSpendingInsightsProps {
 
 export default function AiSpendingInsights({ transactions, accounts, monthlyIncome, monthlyExpenses }: AiSpendingInsightsProps) {
   const { user } = useAuth();
+  const { speak, pause, resume, stop, isSpeaking, isPaused } = useTTS();
   const [financialJourney, setFinancialJourney] = useState<string | null>(null);
   const [insights, setInsights] = useState('');
   const [loading, setLoading] = useState(false);
@@ -124,16 +126,44 @@ export default function AiSpendingInsights({ transactions, accounts, monthlyInco
               AI Spending Insights
             </CardTitle>
             {hasGenerated && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={generateInsights}
-                disabled={loading}
-                className="text-xs gap-1"
-              >
-                <RefreshCw className={`h-3 w-3 ${loading ? 'animate-spin' : ''}`} />
-                Refresh
-              </Button>
+              <div className="flex items-center gap-1">
+                {insights && !loading && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      if (isSpeaking && !isPaused) pause();
+                      else if (isSpeaking && isPaused) resume();
+                      else speak(insights);
+                    }}
+                    className="text-xs gap-1"
+                    title={isSpeaking ? (isPaused ? 'Resume' : 'Pause') : 'Listen'}
+                  >
+                    {isSpeaking ? (
+                      isPaused ? <Play className="h-3 w-3" /> : <Pause className="h-3 w-3" />
+                    ) : (
+                      <Volume2 className="h-3 w-3" />
+                    )}
+                    {isSpeaking ? (isPaused ? 'Resume' : 'Pause') : 'Listen'}
+                  </Button>
+                )}
+                {isSpeaking && (
+                  <Button variant="ghost" size="sm" onClick={stop} className="text-xs gap-1">
+                    <VolumeX className="h-3 w-3" />
+                    Stop
+                  </Button>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => { stop(); generateInsights(); }}
+                  disabled={loading}
+                  className="text-xs gap-1"
+                >
+                  <RefreshCw className={`h-3 w-3 ${loading ? 'animate-spin' : ''}`} />
+                  Refresh
+                </Button>
+              </div>
             )}
           </div>
         </CardHeader>
