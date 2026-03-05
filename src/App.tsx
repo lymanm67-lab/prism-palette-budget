@@ -18,20 +18,21 @@ import ResetPassword from "@/pages/ResetPassword";
 import Settings from "@/pages/Settings";
 import TaxAssistant from "@/pages/TaxAssistant";
 import NotFound from "./pages/NotFound";
+import Onboarding from "@/pages/Onboarding";
 
 const queryClient = new QueryClient();
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { session, loading } = useAuth();
   if (loading) return <div className="flex min-h-screen items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>;
-  if (!session) return <Navigate to="/auth" replace />;
+  if (!session) return <Navigate to="/" replace />;
   return <>{children}</>;
 };
 
 const AuthRoute = ({ children }: { children: React.ReactNode }) => {
   const { session, loading } = useAuth();
   if (loading) return null;
-  if (session) return <Navigate to="/" replace />;
+  if (session) return <Navigate to="/dashboard" replace />;
   return <>{children}</>;
 };
 
@@ -44,6 +45,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
+            <Route path="/" element={<AuthRoute><Onboarding /></AuthRoute>} />
             <Route path="/auth" element={<AuthRoute><Auth /></AuthRoute>} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route element={
@@ -53,7 +55,7 @@ const App = () => (
                 </HouseholdProvider>
               </ProtectedRoute>
             }>
-              <Route path="/" element={<Dashboard />} />
+              <Route index path="/dashboard" element={<Dashboard />} />
               <Route path="/accounts" element={<Accounts />} />
               <Route path="/transactions" element={<Transactions />} />
               <Route path="/budgets" element={<Budgets />} />
