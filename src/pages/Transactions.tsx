@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useTransactions, useCreateTransaction, useAccounts, useCategories } from '@/hooks/use-finance-data';
 import { formatDate } from '@/lib/seed-data';
 import { useCurrency } from '@/hooks/use-currency';
-import { Search, ArrowUpRight, ArrowDownRight, Plus, Loader2, Upload } from 'lucide-react';
+import { Search, ArrowUpRight, ArrowDownRight, Plus, Loader2, Upload, Receipt } from 'lucide-react';
 import CsvImportDialog from '@/components/CsvImportDialog';
 
 const Transactions = () => {
@@ -46,22 +46,33 @@ const Transactions = () => {
     setOpen(false);
   };
 
-  if (isLoading) return <div className="flex items-center justify-center p-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+  if (isLoading) return (
+    <div className="flex items-center justify-center p-20">
+      <div className="flex flex-col items-center gap-3">
+        <div className="h-12 w-12 rounded-2xl prism-gradient prism-glow flex items-center justify-center">
+          <Loader2 className="h-6 w-6 animate-spin text-white" />
+        </div>
+        <p className="text-sm text-muted-foreground">Loading transactions…</p>
+      </div>
+    </div>
+  );
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-3xl font-bold">Transactions</h1>
-          <p className="text-muted-foreground">All your recent transactions in one place.</p>
+          <h1 className="font-display text-3xl font-extrabold tracking-tight">
+            <span className="prism-gradient-text">Transactions</span>
+          </h1>
+          <p className="text-muted-foreground mt-1">All your recent transactions in one place.</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" className="gap-2" onClick={() => setCsvOpen(true)}>
+          <Button variant="outline" className="gap-2 hover-border-glow" onClick={() => setCsvOpen(true)}>
             <Upload className="h-4 w-4" /> Import CSV
           </Button>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button className="gap-2"><Plus className="h-4 w-4" /> Add Transaction</Button>
+              <Button className="gap-2 prism-gradient text-white border-0 hover:opacity-90"><Plus className="h-4 w-4" /> Add Transaction</Button>
             </DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle className="font-display">Add Transaction</DialogTitle></DialogHeader>
@@ -102,7 +113,7 @@ const Transactions = () => {
                 <Label>Notes</Label>
                 <Input value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="Optional notes" />
               </div>
-              <Button onClick={handleCreate} disabled={!form.amount || !form.account_id || createTransaction.isPending} className="w-full">
+              <Button onClick={handleCreate} disabled={!form.amount || !form.account_id || createTransaction.isPending} className="w-full prism-gradient text-white border-0 hover:opacity-90">
                 {createTransaction.isPending ? 'Adding...' : 'Add Transaction'}
               </Button>
             </div>
@@ -113,18 +124,18 @@ const Transactions = () => {
 
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input placeholder="Search transactions..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
+        <Input placeholder="Search transactions..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 hover-border-glow" />
       </div>
 
-      <Card>
+      <Card className="prism-card-shine border-border/50">
         <CardContent className="p-0">
-          <div className="divide-y divide-border">
+          <div className="divide-y divide-border/50">
             {filtered.map((txn) => {
               const isIncome = txn.amount > 0;
               return (
-                <div key={txn.id} className="flex items-center gap-4 px-5 py-3.5 transition-colors hover:bg-muted/30">
-                  <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${isIncome ? 'bg-prism-teal/10' : 'bg-prism-rose/10'}`}>
-                    {isIncome ? <ArrowUpRight className="h-4 w-4 text-prism-teal" /> : <ArrowDownRight className="h-4 w-4 text-prism-rose" />}
+                <div key={txn.id} className="flex items-center gap-4 px-5 py-3.5 interactive-row group">
+                  <div className={`flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br transition-transform duration-300 group-hover:scale-110 ${isIncome ? 'from-prism-teal to-prism-lime' : 'from-prism-rose to-prism-orange'}`}>
+                    {isIncome ? <ArrowUpRight className="h-4 w-4 text-white" /> : <ArrowDownRight className="h-4 w-4 text-white" />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium truncate">{txn.merchant || 'No merchant'}</p>
@@ -142,7 +153,13 @@ const Transactions = () => {
               );
             })}
             {filtered.length === 0 && (
-              <div className="p-10 text-center text-muted-foreground">No transactions yet. Add your first transaction or connect an account.</div>
+              <div className="flex flex-col items-center justify-center p-12 text-center">
+                <div className="h-14 w-14 rounded-2xl prism-gradient-warm prism-glow-warm flex items-center justify-center mb-4">
+                  <Receipt className="h-7 w-7 text-white" />
+                </div>
+                <h3 className="font-display text-lg font-bold mb-1">No transactions yet</h3>
+                <p className="text-muted-foreground text-sm max-w-sm">Add your first transaction or connect an account to get started.</p>
+              </div>
             )}
           </div>
         </CardContent>
