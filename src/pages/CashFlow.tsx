@@ -1,8 +1,10 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useAccounts, useAllTransactions, useCategories } from '@/hooks/use-finance-data';
 import { useCurrency } from '@/hooks/use-currency';
 import {
@@ -10,15 +12,27 @@ import {
   parseISO, isWithinInterval, startOfQuarter, endOfQuarter,
   startOfYear, endOfYear, subQuarters, subYears,
 } from 'date-fns';
-import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Loader2, CalendarIcon, X, ArrowLeft } from 'lucide-react';
 import {
   ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, ReferenceLine,
+  Tooltip, ResponsiveContainer, ReferenceLine, Cell,
 } from 'recharts';
 import { cn } from '@/lib/utils';
 
 type Period = 'monthly' | 'quarterly' | 'yearly';
-type GroupBy = 'category' | 'group' | 'merchant';
+type GroupBy = 'category' | 'merchant';
+
+interface ChartDatum {
+  label: string;
+  yearLabel: string;
+  fullLabel: string;
+  income: number;
+  expenses: number;
+  net: number;
+  start: Date;
+  end: Date;
+  index: number;
+}
 
 const CashFlow = () => {
   const { data: transactions, isLoading } = useAllTransactions();
@@ -29,125 +43,94 @@ const CashFlow = () => {
   const [groupBy, setGroupBy] = useState<GroupBy>('category');
   const [viewType, setViewType] = useState<'bar' | 'area'>('bar');
 
-  // Build the full timeline chart data (up to 24 months / 8 quarters / 3 years)
-  const chartData = useMemo(() => {
+  // Date range filter
+  const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
+  const [dateTo, setDateTo] = useState<Date | undefined>(undefined);
+
+  // Drill-down state: selected chart bar index
+  const [selectedBarIndex, setSelectedBarIndex] = useState<number | null>(null);
+
+  // Build timeline chart data with start/end dates attached
+  const chartData: ChartDatum[] = useMemo(() => {
     if (!transactions) return [];
     const now = new Date();
 
+    const buildPeriods = (count: number, getRange: (i: number) => { start: Date; end: Date; label: string; yearLabel: string; fullLabel: string }) => {
+      return Array.from({ length: count }, (_, i) => {
+        const { start, end, label, yearLabel, fullLabel } = getRange(i);
+        const txns = transactions.filter(t => {
+          const d = parseISO(t.date);
+          return isWithinInterval(d, { start, end }) && !t.is_transfer;
+        });
+        const inc = txns.filter(t => t.amount > 0).reduce((s, t) => s + Number(t.amount), 0);
+        const exp = txns.filter(t => t.amount < 0).reduce((s, t) => s + Math.abs(Number(t.amount)), 0);
+        return { label, yearLabel, fullLabel, income: inc, expenses: -exp, net: inc - exp, start, end, index: i };
+      });
+    };
+
     if (period === 'monthly') {
-      return Array.from({ length: 24 }, (_, i) => {
+      return buildPeriods(24, (i) => {
         const m = subMonths(now, 23 - i);
-        const ms = startOfMonth(m);
-        const me = endOfMonth(m);
-        const txns = transactions.filter(t => {
-          const d = parseISO(t.date);
-          return isWithinInterval(d, { start: ms, end: me }) && !t.is_transfer;
-        });
-        const inc = txns.filter(t => t.amount > 0).reduce((s, t) => s + Number(t.amount), 0);
-        const exp = txns.filter(t => t.amount < 0).reduce((s, t) => s + Math.abs(Number(t.amount)), 0);
-        return {
-          label: format(m, 'MMM'),
-          yearLabel: format(m, 'yyyy'),
-          fullLabel: format(m, 'MMM yyyy'),
-          income: inc,
-          expenses: -exp,
-          net: inc - exp,
-        };
+        return { start: startOfMonth(m), end: endOfMonth(m), label: format(m, 'MMM'), yearLabel: format(m, 'yyyy'), fullLabel: format(m, 'MMM yyyy') };
       });
     }
-
     if (period === 'quarterly') {
-      return Array.from({ length: 8 }, (_, i) => {
+      return buildPeriods(8, (i) => {
         const q = subQuarters(now, 7 - i);
-        const qs = startOfQuarter(q);
-        const qe = endOfQuarter(q);
-        const txns = transactions.filter(t => {
-          const d = parseISO(t.date);
-          return isWithinInterval(d, { start: qs, end: qe }) && !t.is_transfer;
-        });
-        const inc = txns.filter(t => t.amount > 0).reduce((s, t) => s + Number(t.amount), 0);
-        const exp = txns.filter(t => t.amount < 0).reduce((s, t) => s + Math.abs(Number(t.amount)), 0);
-        return {
-          label: `Q${Math.ceil((q.getMonth() + 1) / 3)}`,
-          yearLabel: format(q, 'yyyy'),
-          fullLabel: `Q${Math.ceil((q.getMonth() + 1) / 3)} ${format(q, 'yyyy')}`,
-          income: inc,
-          expenses: -exp,
-          net: inc - exp,
-        };
+        return { start: startOfQuarter(q), end: endOfQuarter(q), label: `Q${Math.ceil((q.getMonth() + 1) / 3)}`, yearLabel: format(q, 'yyyy'), fullLabel: `Q${Math.ceil((q.getMonth() + 1) / 3)} ${format(q, 'yyyy')}` };
       });
     }
-
-    // Yearly
-    return Array.from({ length: 5 }, (_, i) => {
+    return buildPeriods(5, (i) => {
       const y = subYears(now, 4 - i);
-      const ys = startOfYear(y);
-      const ye = endOfYear(y);
-      const txns = transactions.filter(t => {
-        const d = parseISO(t.date);
-        return isWithinInterval(d, { start: ys, end: ye }) && !t.is_transfer;
-      });
-      const inc = txns.filter(t => t.amount > 0).reduce((s, t) => s + Number(t.amount), 0);
-      const exp = txns.filter(t => t.amount < 0).reduce((s, t) => s + Math.abs(Number(t.amount)), 0);
-      return {
-        label: format(y, 'yyyy'),
-        yearLabel: '',
-        fullLabel: format(y, 'yyyy'),
-        income: inc,
-        expenses: -exp,
-        net: inc - exp,
-      };
+      return { start: startOfYear(y), end: endOfYear(y), label: format(y, 'yyyy'), yearLabel: '', fullLabel: format(y, 'yyyy') };
     });
   }, [transactions, period]);
 
-  // Current period's data (last item)
-  const currentPeriod = chartData[chartData.length - 1];
-  const currentIncome = currentPeriod?.income || 0;
-  const currentExpenses = Math.abs(currentPeriod?.expenses || 0);
+  // Filter chart data by date range
+  const filteredChartData = useMemo(() => {
+    if (!dateFrom && !dateTo) return chartData;
+    return chartData.filter(d => {
+      if (dateFrom && d.end < dateFrom) return false;
+      if (dateTo && d.start > dateTo) return false;
+      return true;
+    });
+  }, [chartData, dateFrom, dateTo]);
+
+  // The selected period for breakdown (drill-down or last visible)
+  const selectedPeriod = useMemo(() => {
+    if (selectedBarIndex !== null) {
+      return filteredChartData.find(d => d.index === selectedBarIndex) || filteredChartData[filteredChartData.length - 1];
+    }
+    return filteredChartData[filteredChartData.length - 1];
+  }, [selectedBarIndex, filteredChartData]);
+
+  const currentIncome = selectedPeriod?.income || 0;
+  const currentExpenses = Math.abs(selectedPeriod?.expenses || 0);
   const totalSavings = currentIncome - currentExpenses;
   const savingsRate = currentIncome > 0 ? Math.round((totalSavings / currentIncome) * 100) : 0;
 
-  // Current period transactions for breakdown
-  const currentPeriodTxns = useMemo(() => {
-    if (!transactions) return [];
-    const now = new Date();
-    let start: Date, end: Date;
-    if (period === 'monthly') {
-      start = startOfMonth(now);
-      end = endOfMonth(now);
-    } else if (period === 'quarterly') {
-      start = startOfQuarter(now);
-      end = endOfQuarter(now);
-    } else {
-      start = startOfYear(now);
-      end = endOfYear(now);
-    }
+  // Transactions for the selected period
+  const selectedPeriodTxns = useMemo(() => {
+    if (!transactions || !selectedPeriod) return [];
     return transactions.filter(t => {
       const d = parseISO(t.date);
-      return isWithinInterval(d, { start, end }) && !t.is_transfer;
+      return isWithinInterval(d, { start: selectedPeriod.start, end: selectedPeriod.end }) && !t.is_transfer;
     });
-  }, [transactions, period]);
+  }, [transactions, selectedPeriod]);
 
   // Category breakdowns
   const { incomeBreakdown, expenseBreakdown } = useMemo(() => {
     const incMap: Record<string, { name: string; color: string; amount: number }> = {};
     const expMap: Record<string, { name: string; color: string; amount: number }> = {};
-
     const catMap = new Map<string, { name: string; color: string }>();
     if (categories) {
       for (const c of categories) catMap.set(c.id, { name: c.name, color: c.color });
     }
-
-    for (const t of currentPeriodTxns) {
+    for (const t of selectedPeriodTxns) {
       const cat = t.category_id ? catMap.get(t.category_id) : null;
-      const key = groupBy === 'merchant'
-        ? (t.merchant || 'Uncategorized')
-        : (t.category_id || 'uncategorized');
-      const label = groupBy === 'merchant'
-        ? (t.merchant || 'Uncategorized')
-        : (cat?.name || 'Uncategorized');
+      const key = groupBy === 'merchant' ? (t.merchant || 'Uncategorized') : (t.category_id || 'uncategorized');
+      const label = groupBy === 'merchant' ? (t.merchant || 'Uncategorized') : (cat?.name || 'Uncategorized');
       const color = cat?.color || '#94a3b8';
-
       if (t.amount > 0) {
         if (!incMap[key]) incMap[key] = { name: label, color, amount: 0 };
         incMap[key].amount += Number(t.amount);
@@ -156,16 +139,22 @@ const CashFlow = () => {
         expMap[key].amount += Math.abs(Number(t.amount));
       }
     }
-
     const sortDesc = (a: { amount: number }, b: { amount: number }) => b.amount - a.amount;
-    return {
-      incomeBreakdown: Object.values(incMap).sort(sortDesc),
-      expenseBreakdown: Object.values(expMap).sort(sortDesc),
-    };
-  }, [currentPeriodTxns, categories, groupBy]);
+    return { incomeBreakdown: Object.values(incMap).sort(sortDesc), expenseBreakdown: Object.values(expMap).sort(sortDesc) };
+  }, [selectedPeriodTxns, categories, groupBy]);
 
   const totalIncomeBreakdown = incomeBreakdown.reduce((s, i) => s + i.amount, 0);
   const totalExpenseBreakdown = expenseBreakdown.reduce((s, i) => s + i.amount, 0);
+
+  const handleBarClick = useCallback((data: any) => {
+    if (data?.activePayload?.[0]?.payload) {
+      const clickedItem = data.activePayload[0].payload as ChartDatum;
+      setSelectedBarIndex(prev => prev === clickedItem.index ? null : clickedItem.index);
+    }
+  }, []);
+
+  const clearDateRange = () => { setDateFrom(undefined); setDateTo(undefined); };
+  const hasDateFilter = dateFrom || dateTo;
 
   // Custom tooltip
   const ChartTooltip = ({ active, payload, label }: any) => {
@@ -180,6 +169,7 @@ const CashFlow = () => {
             <span className="font-medium">{fmt(Math.abs(p.value))}</span>
           </div>
         ))}
+        <p className="text-xs text-muted-foreground mt-1">Click to drill in</p>
       </div>
     );
   };
@@ -214,14 +204,8 @@ const CashFlow = () => {
             const pct = total > 0 ? (item.amount / total) * 100 : 0;
             return (
               <div key={idx} className="relative">
-                <div
-                  className={cn('flex items-center justify-between rounded-lg px-3 py-2.5 transition-colors relative overflow-hidden', bgClass)}
-                >
-                  {/* Proportional fill bar */}
-                  <div
-                    className="absolute inset-y-0 left-0 opacity-60 rounded-lg"
-                    style={{ width: `${pct}%`, backgroundColor: item.color }}
-                  />
+                <div className={cn('flex items-center justify-between rounded-lg px-3 py-2.5 transition-colors relative overflow-hidden', bgClass)}>
+                  <div className="absolute inset-y-0 left-0 opacity-60 rounded-lg" style={{ width: `${pct}%`, backgroundColor: item.color }} />
                   <div className="flex items-center gap-2 relative z-10">
                     <span className="h-3 w-3 rounded-full shrink-0 border border-background/50" style={{ backgroundColor: item.color }} />
                     <span className="text-sm font-medium">{item.name}</span>
@@ -245,14 +229,56 @@ const CashFlow = () => {
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <h1 className="font-display text-2xl font-bold">Cash Flow</h1>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Date range filters */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className={cn('gap-2 text-sm', dateFrom && 'border-primary')}>
+                <CalendarIcon className="h-3.5 w-3.5" />
+                {dateFrom ? format(dateFrom, 'MMM d, yyyy') : 'From'}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={dateFrom}
+                onSelect={setDateFrom}
+                initialFocus
+                className="p-3 pointer-events-auto"
+              />
+            </PopoverContent>
+          </Popover>
+          <span className="text-muted-foreground text-sm">→</span>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className={cn('gap-2 text-sm', dateTo && 'border-primary')}>
+                <CalendarIcon className="h-3.5 w-3.5" />
+                {dateTo ? format(dateTo, 'MMM d, yyyy') : 'To'}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={dateTo}
+                onSelect={setDateTo}
+                initialFocus
+                className="p-3 pointer-events-auto"
+              />
+            </PopoverContent>
+          </Popover>
+          {hasDateFilter && (
+            <Button variant="ghost" size="sm" onClick={clearDateRange} className="gap-1 h-8 text-xs">
+              <X className="h-3 w-3" /> Clear
+            </Button>
+          )}
+
           <div className="flex border rounded-lg overflow-hidden text-sm">
             {(['monthly', 'quarterly', 'yearly'] as Period[]).map(p => (
               <button
                 key={p}
-                onClick={() => setPeriod(p)}
+                onClick={() => { setPeriod(p); setSelectedBarIndex(null); }}
                 className={cn('px-4 py-2 capitalize transition-colors', period === p ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}
               >
                 {p}
@@ -262,27 +288,54 @@ const CashFlow = () => {
         </div>
       </div>
 
-      {/* Timeline Chart — Monarch style with income bars up, expense bars down, net line */}
+      {/* Timeline Chart */}
       <Card>
         <CardContent className="p-4">
           <ResponsiveContainer width="100%" height={300}>
-            <ComposedChart data={chartData} stackOffset="sign">
+            <ComposedChart data={filteredChartData} stackOffset="sign" onClick={handleBarClick} className="cursor-pointer">
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
               <XAxis dataKey="label" className="text-xs" tick={{ fontSize: 11 }} />
               <YAxis className="text-xs" tick={{ fontSize: 11 }} tickFormatter={(v) => `${v >= 0 ? '' : '-'}$${Math.abs(v / 1000).toFixed(0)}K`} />
               <Tooltip content={<ChartTooltip />} />
               <ReferenceLine y={0} className="stroke-border" />
-              <Bar dataKey="income" fill="hsl(152, 57%, 58%)" name="Income" radius={[3, 3, 0, 0]} stackId="stack" />
-              <Bar dataKey="expenses" fill="hsl(0, 80%, 80%)" name="Expenses" radius={[0, 0, 3, 3]} stackId="stack" />
+              <Bar dataKey="income" name="Income" radius={[3, 3, 0, 0]} stackId="stack">
+                {filteredChartData.map((entry) => (
+                  <Cell
+                    key={`inc-${entry.index}`}
+                    fill={selectedBarIndex === entry.index ? 'hsl(152, 57%, 45%)' : 'hsl(152, 57%, 58%)'}
+                    stroke={selectedBarIndex === entry.index ? 'hsl(var(--foreground))' : 'none'}
+                    strokeWidth={selectedBarIndex === entry.index ? 2 : 0}
+                  />
+                ))}
+              </Bar>
+              <Bar dataKey="expenses" name="Expenses" radius={[0, 0, 3, 3]} stackId="stack">
+                {filteredChartData.map((entry) => (
+                  <Cell
+                    key={`exp-${entry.index}`}
+                    fill={selectedBarIndex === entry.index ? 'hsl(0, 80%, 65%)' : 'hsl(0, 80%, 80%)'}
+                    stroke={selectedBarIndex === entry.index ? 'hsl(var(--foreground))' : 'none'}
+                    strokeWidth={selectedBarIndex === entry.index ? 2 : 0}
+                  />
+                ))}
+              </Bar>
               <Line type="monotone" dataKey="net" stroke="hsl(var(--foreground))" strokeWidth={2} dot={false} name="Net" />
             </ComposedChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
 
-      {/* Current Period Title */}
+      {/* Selected Period Title */}
       <div className="flex items-center justify-between">
-        <h2 className="font-display text-xl font-bold">{currentPeriod?.fullLabel || ''}</h2>
+        <div className="flex items-center gap-3">
+          {selectedBarIndex !== null && (
+            <Button variant="ghost" size="sm" onClick={() => setSelectedBarIndex(null)} className="gap-1.5 h-8">
+              <ArrowLeft className="h-3.5 w-3.5" /> All
+            </Button>
+          )}
+          <h2 className="font-display text-xl font-bold">
+            {selectedBarIndex !== null ? selectedPeriod?.fullLabel : 'Current Period'}
+          </h2>
+        </div>
         <div className="flex items-center gap-1 text-sm text-muted-foreground">
           <span>View</span>
           <Select value={viewType} onValueChange={(v: any) => setViewType(v)}>
@@ -295,7 +348,7 @@ const CashFlow = () => {
         </div>
       </div>
 
-      {/* Summary Cards — Monarch style */}
+      {/* Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 divide-x border rounded-xl overflow-hidden bg-card">
         <div className="p-4 text-center">
           <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">{fmt(currentIncome)}</p>
@@ -319,10 +372,8 @@ const CashFlow = () => {
         </div>
       </div>
 
-      {/* Income Breakdown */}
+      {/* Breakdowns */}
       {renderBreakdown('Income', incomeBreakdown, totalIncomeBreakdown, 'bg-emerald-500/5 hover:bg-emerald-500/10')}
-
-      {/* Expense Breakdown */}
       {renderBreakdown('Expenses', expenseBreakdown, totalExpenseBreakdown, 'bg-rose-500/5 hover:bg-rose-500/10')}
     </motion.div>
   );
