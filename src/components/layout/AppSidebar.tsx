@@ -149,7 +149,7 @@ const AppSidebar = () => {
                   >
                     <item.icon className={cn(
                       'h-5 w-5 shrink-0 transition-colors duration-200',
-                      isActive ? item.color : 'group-hover:' + item.color
+                      item.color
                     )} />
                     {!collapsed && <span>{item.label}</span>}
                     {isActive && !collapsed && (
