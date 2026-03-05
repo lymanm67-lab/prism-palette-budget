@@ -101,10 +101,10 @@ export function useCreateCategoryGroup() {
   const qc = useQueryClient();
   const { household } = useHousehold();
   return useMutation({
-    mutationFn: async (group: { name: string; color: string; sort_order?: number; budget_type?: string }) => {
+    mutationFn: async (group: { name: string; color: string; sort_order?: number; budget_type?: string; business_profile_id?: string | null }) => {
       const { data, error } = await supabase
         .from('category_groups')
-        .insert({ ...group, household_id: household!.id })
+        .insert({ ...group, household_id: household!.id } as any)
         .select()
         .single();
       if (error) throw error;
@@ -117,10 +117,10 @@ export function useCreateCategoryGroup() {
 export function useUpdateCategoryGroup() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string; name?: string; color?: string; sort_order?: number; budget_type?: string }) => {
+    mutationFn: async ({ id, ...updates }: { id: string; name?: string; color?: string; sort_order?: number; budget_type?: string; business_profile_id?: string | null }) => {
       const { data, error } = await supabase
         .from('category_groups')
-        .update(updates)
+        .update(updates as any)
         .eq('id', id)
         .select()
         .single();

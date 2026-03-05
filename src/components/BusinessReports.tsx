@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCurrency } from '@/hooks/use-currency';
-import { useBusinessTransactions, useBusinessBudgets, useBusinessCategoryGroups } from '@/hooks/use-business-data';
+import { useBusinessTransactions, useBusinessBudgets, useBusinessCategoryGroups, useBusinessProfiles } from '@/hooks/use-business-data';
 import { useAccounts } from '@/hooks/use-finance-data';
 import { format } from 'date-fns';
 import { Loader2, TrendingUp, TrendingDown, DollarSign, AlertTriangle, Receipt, Building2, PieChart as PieChartIcon, BarChart3, Target, Percent, Filter } from 'lucide-react';
@@ -36,46 +36,32 @@ const BusinessReports = ({ startDate, endDate, budgetMonth }: Props) => {
   const { data: transactions, isLoading: txnLoading } = useBusinessTransactions(startDate, endDate);
   const { data: budgets, isLoading: budLoading } = useBusinessBudgets(budgetMonth);
   const { data: groups } = useBusinessCategoryGroups();
+  const { data: businessProfiles } = useBusinessProfiles();
   const { data: accounts } = useAccounts();
   const [selectedBusiness, setSelectedBusiness] = useState<string>('all');
 
-  // Extract business names from groups
-  const businessNames = useMemo(() => {
-    if (!groups) return [];
-    const names = new Set<string>();
-    for (const g of groups) {
-      const match = g.name.match(/^(.+?)\s*-\s*/);
-      if (match) names.add(match[1].trim());
-    }
-    return Array.from(names).sort();
-  }, [groups]);
-
-  // Helper to check if a transaction belongs to the selected business
-  const matchesBusiness = (groupName: string) => {
-    if (selectedBusiness === 'all') return true;
-    const match = groupName.match(/^(.+?)\s*-\s*/);
-    return match ? match[1].trim() === selectedBusiness : false;
-  };
-
-  // Filtered transactions based on selected business
+  // Filtered transactions based on selected business profile
   const filteredTransactions = useMemo(() => {
     if (!transactions) return [];
     if (selectedBusiness === 'all') return transactions;
-    return transactions.filter(t => {
-      const groupName = (t.categories as any)?.category_groups?.name || '';
-      return matchesBusiness(groupName);
-    });
+    return transactions.filter((t: any) => t._business_profile_id === selectedBusiness);
   }, [transactions, selectedBusiness]);
 
-  // Filtered budgets based on selected business
+  // Filtered budgets based on selected business profile
   const filteredBudgets = useMemo(() => {
     if (!budgets) return [];
     if (selectedBusiness === 'all') return budgets;
-    return budgets.filter(b => {
-      const groupName = (b.categories as any)?.category_groups?.name || '';
-      return matchesBusiness(groupName);
-    });
+    return budgets.filter((b: any) => b._business_profile_id === selectedBusiness);
   }, [budgets, selectedBusiness]);
+
+  // Build a lookup from business_profile_id -> business_name
+  const bizProfileNameMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    if (businessProfiles) {
+      for (const bp of businessProfiles) map[bp.id] = bp.business_name;
+    }
+    return map;
+  }, [businessProfiles]);
 
   // 1. P&L Summary
   const pnl = useMemo(() => {
@@ -84,9 +70,8 @@ const BusinessReports = ({ startDate, endDate, budgetMonth }: Props) => {
     let totalRevenue = 0, totalExpenses = 0;
 
     for (const t of filteredTransactions) {
-      const groupName = (t.categories as any)?.category_groups?.name || '';
-      const bizMatch = groupName.match(/^(.+?)\s*-\s*/);
-      const biz = bizMatch ? bizMatch[1].trim() : 'Other';
+      const bpId = (t as any)._business_profile_id;
+      const biz = bpId && bizProfileNameMap[bpId] ? bizProfileNameMap[bpId] : 'Unlinked';
 
       if (!bizMap.has(biz)) bizMap.set(biz, { revenue: 0, expenses: 0 });
       const entry = bizMap.get(biz)!;
@@ -100,7 +85,7 @@ const BusinessReports = ({ startDate, endDate, budgetMonth }: Props) => {
     }));
 
     return { revenue: totalRevenue, expenses: totalExpenses, net: totalRevenue - totalExpenses, byBusiness };
-  }, [filteredTransactions]);
+  }, [filteredTransactions, bizProfileNameMap]);
 
   // 2. Expense Breakdown
   const expenseBreakdown = useMemo(() => {
@@ -228,7 +213,7 @@ const BusinessReports = ({ startDate, endDate, budgetMonth }: Props) => {
 
   return (
     <div className="space-y-4">
-      {businessNames.length > 0 && (
+      {businessProfiles && businessProfiles.length > 0 && (
         <div className="flex items-center gap-2">
           <Filter className="h-4 w-4 text-muted-foreground" />
           <Select value={selectedBusiness} onValueChange={setSelectedBusiness}>
@@ -237,11 +222,11 @@ const BusinessReports = ({ startDate, endDate, budgetMonth }: Props) => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Businesses</SelectItem>
-              {businessNames.map(name => (
-                <SelectItem key={name} value={name}>
+              {businessProfiles.map(bp => (
+                <SelectItem key={bp.id} value={bp.id}>
                   <span className="flex items-center gap-2">
                     <Building2 className="h-3.5 w-3.5" />
-                    {name}
+                    {bp.business_name}
                   </span>
                 </SelectItem>
               ))}
@@ -249,7 +234,7 @@ const BusinessReports = ({ startDate, endDate, budgetMonth }: Props) => {
           </Select>
           {selectedBusiness !== 'all' && (
             <Badge variant="secondary" className="text-xs">
-              Filtered: {selectedBusiness}
+              Filtered: {businessProfiles.find(bp => bp.id === selectedBusiness)?.business_name}
             </Badge>
           )}
         </div>

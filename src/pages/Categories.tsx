@@ -13,7 +13,8 @@ import {
   useCreateCategoryGroup, useUpdateCategoryGroup, useDeleteCategoryGroup,
   useCreateCategory, useUpdateCategory, useDeleteCategory,
 } from '@/hooks/use-finance-data';
-import { Loader2, Plus, Pencil, Trash2, GripVertical, ChevronDown, ChevronRight, FolderOpen } from 'lucide-react';
+import { useBusinessProfiles } from '@/hooks/use-business-data';
+import { Loader2, Plus, Pencil, Trash2, GripVertical, ChevronDown, ChevronRight, FolderOpen, Building2 } from 'lucide-react';
 
 const PRESET_COLORS = [
   '#7c3aed', '#2563eb', '#0891b2', '#059669', '#65a30d',
@@ -50,6 +51,7 @@ const ColorPicker = ({ value, onChange }: { value: string; onChange: (c: string)
 const Categories = () => {
   const { data: groups, isLoading: groupsLoading } = useCategoryGroups();
   const { data: categories, isLoading: catsLoading } = useCategories();
+  const { data: businessProfiles } = useBusinessProfiles();
 
   const createGroup = useCreateCategoryGroup();
   const updateGroup = useUpdateCategoryGroup();
@@ -61,9 +63,9 @@ const Categories = () => {
   // Dialog state
   const [groupDialogOpen, setGroupDialogOpen] = useState(false);
   const [catDialogOpen, setCatDialogOpen] = useState(false);
-  const [editingGroup, setEditingGroup] = useState<{ id: string; name: string; color: string; budget_type?: string } | null>(null);
+  const [editingGroup, setEditingGroup] = useState<{ id: string; name: string; color: string; budget_type?: string; business_profile_id?: string | null } | null>(null);
   const [editingCat, setEditingCat] = useState<{ id: string; name: string; color: string; group_id: string } | null>(null);
-  const [groupForm, setGroupForm] = useState({ name: '', color: '#7c3aed', budget_type: 'personal' });
+  const [groupForm, setGroupForm] = useState({ name: '', color: '#7c3aed', budget_type: 'personal', business_profile_id: '' as string });
   const [catForm, setCatForm] = useState({ name: '', color: '#7c5cf5', group_id: '' });
 
   // Delete confirmation
@@ -83,20 +85,21 @@ const Categories = () => {
   // Group dialog
   const openCreateGroup = () => {
     setEditingGroup(null);
-    setGroupForm({ name: '', color: '#7c3aed', budget_type: 'personal' });
+    setGroupForm({ name: '', color: '#7c3aed', budget_type: 'personal', business_profile_id: '' });
     setGroupDialogOpen(true);
   };
-  const openEditGroup = (g: { id: string; name: string; color: string; budget_type?: string }) => {
+  const openEditGroup = (g: { id: string; name: string; color: string; budget_type?: string; business_profile_id?: string | null }) => {
     setEditingGroup(g);
-    setGroupForm({ name: g.name, color: g.color, budget_type: g.budget_type || 'personal' });
+    setGroupForm({ name: g.name, color: g.color, budget_type: g.budget_type || 'personal', business_profile_id: g.business_profile_id || '' });
     setGroupDialogOpen(true);
   };
   const handleSaveGroup = async () => {
     if (!groupForm.name.trim()) return;
+    const bpId = groupForm.budget_type === 'business' && groupForm.business_profile_id ? groupForm.business_profile_id : null;
     if (editingGroup) {
-      await updateGroup.mutateAsync({ id: editingGroup.id, name: groupForm.name.trim(), color: groupForm.color, budget_type: groupForm.budget_type });
+      await updateGroup.mutateAsync({ id: editingGroup.id, name: groupForm.name.trim(), color: groupForm.color, budget_type: groupForm.budget_type, business_profile_id: bpId });
     } else {
-      await createGroup.mutateAsync({ name: groupForm.name.trim(), color: groupForm.color, sort_order: (groups?.length || 0), budget_type: groupForm.budget_type });
+      await createGroup.mutateAsync({ name: groupForm.name.trim(), color: groupForm.color, sort_order: (groups?.length || 0), budget_type: groupForm.budget_type, business_profile_id: bpId });
     }
     setGroupDialogOpen(false);
   };
@@ -191,6 +194,12 @@ const Categories = () => {
                       <CardTitle className="font-display text-base">{group.name}</CardTitle>
                       <span className="text-xs text-muted-foreground">({groupCats.length})</span>
                       <Badge variant="outline" className="text-[10px] px-1.5 py-0 capitalize">{(group as any).budget_type || 'personal'}</Badge>
+                      {(group as any).business_profile_id && businessProfiles && (
+                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0 gap-1">
+                          <Building2 className="h-2.5 w-2.5" />
+                          {businessProfiles.find(bp => bp.id === (group as any).business_profile_id)?.business_name || 'Linked'}
+                        </Badge>
+                      )}
                     </button>
                     <div className="flex items-center gap-1">
                       {gIdx > 0 && (
@@ -278,6 +287,26 @@ const Categories = () => {
                 </SelectContent>
               </Select>
             </div>
+            {groupForm.budget_type === 'business' && businessProfiles && businessProfiles.length > 0 && (
+              <div className="space-y-2">
+                <Label>Linked Business Profile</Label>
+                <Select value={groupForm.business_profile_id} onValueChange={v => setGroupForm(f => ({ ...f, business_profile_id: v }))}>
+                  <SelectTrigger><SelectValue placeholder="Select a business profile" /></SelectTrigger>
+                  <SelectContent>
+                    {businessProfiles.map(bp => (
+                      <SelectItem key={bp.id} value={bp.id}>
+                        <span className="flex items-center gap-2">
+                          <Building2 className="h-3.5 w-3.5" />
+                          {bp.business_name}
+                          <span className="text-xs text-muted-foreground capitalize">({bp.entity_type})</span>
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">Link this group to a business for filtering in reports.</p>
+              </div>
+            )}
             <Button onClick={handleSaveGroup} disabled={!groupForm.name.trim() || createGroup.isPending || updateGroup.isPending} className="w-full">
               {(createGroup.isPending || updateGroup.isPending) ? 'Saving...' : editingGroup ? 'Update Group' : 'Create Group'}
             </Button>
