@@ -30,6 +30,7 @@ import Legal from "@/pages/Legal";
 import CashFlow from "@/pages/CashFlow";
 import Investments from "@/pages/Investments";
 import Recurring from "@/pages/Recurring";
+import GettingStarted from "@/pages/GettingStarted";
 
 const queryClient = new QueryClient();
 
@@ -85,6 +86,7 @@ const App = () => (
               <Route path="/settings" element={<Settings />} />
               <Route path="/tax-assistant" element={<TaxAssistant />} />
               <Route path="/legal" element={<Legal />} />
+              <Route path="/getting-started" element={<GettingStarted />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
