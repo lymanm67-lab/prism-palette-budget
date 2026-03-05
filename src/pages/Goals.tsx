@@ -10,6 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { useCurrency } from '@/hooks/use-currency';
 import { useGoals, useCreateGoal, useUpdateGoal, useDeleteGoal } from '@/hooks/use-goals';
 import { Plus, Target, Loader2, Trash2, Pencil, Trophy, Wallet, CreditCard, TrendingUp } from 'lucide-react';
+import PageOverview from '@/components/PageOverview';
 
 const GOAL_TYPES = [
   { value: 'savings', label: 'Savings Goal', icon: Wallet },
@@ -79,6 +80,7 @@ const Goals = () => {
             <span className="prism-gradient-text">Financial Goals</span>
           </h1>
           <p className="text-muted-foreground mt-1">Track your savings goals and debt payoff targets.</p>
+          <PageOverview title="Financial Goals" description="Create savings goals and track progress toward financial milestones." icon={Target} iconColor="text-prism-lime" ttsScript="The Goals page helps you stay motivated with clear financial targets. Create goals like Emergency Fund, Vacation, or Down Payment. Set a target amount and optional deadline. Update your current savings as you make progress." features={['Create savings, debt payoff, and investment goals','Visual progress tracking','Set target amounts and deadlines']} demoData={[{label:'Emergency Fund',value:'$8,500/$15,000',badge:'57%',color:'#14b8a6'},{label:'Vacation',value:'$1,200/$3,000',badge:'40%',color:'#f59e0b'}]} />
         </div>
         <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setEditId(null); }}>
           <DialogTrigger asChild>

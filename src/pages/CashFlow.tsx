@@ -19,6 +19,7 @@ import {
   Tooltip, ResponsiveContainer, ReferenceLine, Cell, Legend,
 } from 'recharts';
 import { cn } from '@/lib/utils';
+import PageOverview from '@/components/PageOverview';
 
 type Period = 'monthly' | 'quarterly' | 'yearly';
 type GroupBy = 'category' | 'group' | 'merchant';

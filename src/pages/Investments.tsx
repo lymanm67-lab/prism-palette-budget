@@ -6,6 +6,7 @@ import { useAccounts } from '@/hooks/use-finance-data';
 import { useCurrency } from '@/hooks/use-currency';
 import { Loader2, TrendingUp, Briefcase, PiggyBank, Landmark, BarChart3 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import PageOverview from '@/components/PageOverview';
 
 const ACCOUNT_ICONS: Record<string, any> = {
   investment: TrendingUp,
@@ -46,6 +47,25 @@ const Investments = () => {
       <div>
         <h1 className="font-display text-3xl font-bold">Investments</h1>
         <p className="text-muted-foreground">Track your investment and retirement accounts.</p>
+        <PageOverview
+          title="Investments Overview"
+          description="Monitor your investment portfolio, track asset allocation, and review account performance."
+          icon={TrendingUp}
+          iconColor="text-prism-indigo"
+          ttsScript="The Investments page gives you a view of your investment and retirement portfolio. See your total portfolio value at the top. Each investment and savings account is listed with its balance and type. The pie chart shows your asset allocation across different accounts. To add investment accounts, go to the Accounts page and create accounts with the investment or savings type. Update balances regularly for an accurate picture of your net worth."
+          features={[
+            'Total portfolio value at a glance',
+            'Asset allocation pie chart',
+            'Track investment and savings accounts',
+            'Monitor individual account balances',
+          ]}
+          demoData={[
+            { label: 'Vanguard 401k', value: '$45,000', badge: 'Investment', color: '#8b5cf6' },
+            { label: 'Roth IRA', value: '$12,500', badge: 'Investment', color: '#3b82f6' },
+            { label: 'Marcus Savings', value: '$8,200', badge: 'Savings', color: '#14b8a6' },
+            { label: 'Brokerage', value: '$22,300', badge: 'Investment', color: '#f59e0b' },
+          ]}
+        />
       </div>
 
       {/* Total Portfolio */}

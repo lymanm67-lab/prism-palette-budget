@@ -20,6 +20,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import ReactMarkdown from 'react-markdown';
+import PageOverview from '@/components/PageOverview';
 
 type Msg = { role: 'user' | 'assistant'; content: string };
 
@@ -241,6 +242,27 @@ const TaxAssistant = () => {
             <p className="text-white/70 text-sm mt-1 max-w-lg">
               Expert guidance on business deductions, audit prevention, and multi-entity tax strategies — powered by AI with voice walkthroughs.
             </p>
+            <PageOverview
+              title="AI Tax Assistant"
+              description="Get AI-powered answers to tax questions, generate voice walkthroughs, and save responses for reference."
+              icon={Bot}
+              iconColor="text-prism-indigo"
+              ttsScript="The AI Tax Assistant provides expert guidance on business tax deductions, audit prevention, and multi-entity strategies. Use the Chat tab to ask any tax question and get detailed AI responses. The Scenarios tab generates real-world tax examples. The Tools tab recommends tax software and resources. The Pitfalls tab covers common mistakes and audit triggers. Save important responses for future reference and tag them for easy searching. Use the voice playback feature to listen to any response."
+              features={[
+                'AI-powered tax Q&A chat',
+                'Real-world tax scenarios and examples',
+                'Tax tools and software recommendations',
+                'Common pitfalls and audit triggers',
+                'Save and tag responses',
+                'Voice playback for all content',
+              ]}
+              demoData={[
+                { label: 'Home Office Deduction', value: 'Simplified: $5/sq ft', badge: 'Deduction' },
+                { label: 'Vehicle Expenses', value: '$0.67/mile (2024)', badge: 'Deduction' },
+                { label: 'QBI Deduction', value: 'Up to 20%', badge: 'Pass-through' },
+                { label: 'SE Tax', value: '15.3% of net', badge: 'Self-Employment' },
+              ]}
+            />
           </div>
         </div>
       </motion.div>

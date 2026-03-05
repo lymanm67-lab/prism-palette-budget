@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import AiSpendingInsights from '@/components/AiSpendingInsights';
+import PageOverview from '@/components/PageOverview';
 import WeeklyRecap from '@/components/WeeklyRecap';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -161,6 +162,29 @@ const Dashboard = () => {
           </h1>
           <p className="text-muted-foreground mt-1">Your financial overview at a glance.</p>
         </div>
+        <PageOverview
+          title="Dashboard Overview"
+          description="Your central hub showing net worth, income, spending patterns, and account balances. Toggle between personal and business views."
+          icon={TrendingUp}
+          iconColor="text-prism-teal"
+          ttsScript="Welcome to your Dashboard. This is the central hub of Prism Budget where you can see your complete financial picture at a glance. At the top, you will find four key metrics: Net Worth, Total Assets, Liabilities, and monthly Income. Below that, a spending breakdown chart shows where your money goes by category. You can toggle between Personal, Business, or All views using the mode selector. The dashboard also features AI spending insights and a weekly financial recap. Use the quick actions to navigate to specific features."
+          features={[
+            'Net worth, assets, and liabilities at a glance',
+            'Monthly income tracking',
+            'Spending breakdown by category with charts',
+            'Personal vs. Business view toggle',
+            'AI-powered spending insights',
+            'Weekly financial recap',
+          ]}
+          demoData={[
+            { label: 'Net Worth', value: '$45,230', color: '#14b8a6' },
+            { label: 'Total Assets', value: '$52,800', color: '#0ea5e9' },
+            { label: 'Liabilities', value: '$7,570', color: '#f43f5e' },
+            { label: 'Monthly Income', value: '$6,500', color: '#8b5cf6' },
+            { label: 'Top Category', value: '$1,200', badge: 'Housing' },
+            { label: 'Savings Rate', value: '22%', color: '#22c55e' },
+          ]}
+        />
         <div className="flex items-center gap-2">
           {/* Mode Toggle */}
           <div className="flex rounded-lg border border-border p-0.5">

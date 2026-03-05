@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import {
   Shield, Briefcase, CreditCard, Landmark, PiggyBank,
   TrendingUp, Rocket, Home, KeyRound,
-  CheckCircle2, Circle, ChevronDown, ChevronUp, Sparkles, Loader2, Save
+  CheckCircle2, Circle, ChevronDown, ChevronUp, Sparkles, Loader2, Save, Compass
 } from 'lucide-react';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { useAccounts } from '@/hooks/use-finance-data';
@@ -16,6 +16,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrency } from '@/hooks/use-currency';
 import { toast } from 'sonner';
+import PageOverview from '@/components/PageOverview';
 
 const PRISM_STEPS = [
   {
@@ -280,6 +281,25 @@ const PrismRoadmap = () => {
           <p className="text-muted-foreground mt-1">
             Your step-by-step path to financial freedom. 9 proven steps, personalized to your data.
           </p>
+          <PageOverview
+            title="Prism Financial Roadmap"
+            description="A 9-step financial freedom plan personalized to your accounts and data. Track progress and add notes."
+            icon={Compass}
+            iconColor="text-prism-teal"
+            ttsScript="The Prism Financial Roadmap is your step-by-step guide to financial freedom. It consists of 9 proven steps: Set your safety net by covering insurance deductibles. Eliminate high-interest debt like credit cards. Build a full emergency fund of 3 to 6 months expenses. Enter hyper-accumulation by maximizing retirement contributions. Pay off low-interest debt like student loans and car loans. Build a bridge account for early retirement access. Invest in real estate or alternative assets. Create legacy wealth. And finally achieve financial independence. Each step is personalized based on your actual account data."
+            features={[
+              '9 proven financial steps',
+              'Auto-detects progress from your accounts',
+              'Add personal notes to each step',
+              'Track completion with progress bar',
+            ]}
+            demoData={[
+              { label: 'Step 1: Safety Net', value: 'Completed', badge: 'Done', color: '#14b8a6' },
+              { label: 'Step 2: High-Interest Debt', value: 'In Progress', badge: '60%', color: '#f59e0b' },
+              { label: 'Step 3: Emergency Fund', value: '$8,500/$15,000', badge: '57%', color: '#3b82f6' },
+              { label: 'Step 4: Hyper-Accumulation', value: 'Not Started', badge: 'Next', color: '#94a3b8' },
+            ]}
+          />
         </div>
         <div className="flex items-center gap-3">
           <Badge variant="secondary" className="text-sm gap-1.5 px-3 py-1.5">

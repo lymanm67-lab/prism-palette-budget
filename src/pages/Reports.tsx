@@ -7,7 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { useSpendingByCategory, useTransactionsByDateRange, useBudgets, useCategories, useAccounts, useAllTransactions } from '@/hooks/use-finance-data';
 import { useCurrency } from '@/hooks/use-currency';
-import { CalendarIcon, Download, FileText, Loader2, Building2, User } from 'lucide-react';
+import { CalendarIcon, Download, FileText, Loader2, Building2, User, BarChart3 } from 'lucide-react';
 import { useMemo, useRef, useState, useCallback } from 'react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { exportToPdf, exportToCsv } from '@/lib/export-utils';
@@ -20,6 +20,7 @@ import {
   AreaChart, Area, LineChart, Line,
 } from 'recharts';
 import BusinessReports from '@/components/BusinessReports';
+import PageOverview from '@/components/PageOverview';
 const tooltipStyle = { background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' };
 
 const TREND_COLORS = [
@@ -276,6 +277,28 @@ const Reports = () => {
         <div>
           <h1 className="font-display text-3xl font-bold prism-gradient-text">Reports</h1>
           <p className="text-muted-foreground">Comprehensive financial insights and analytics.</p>
+          <PageOverview
+            title="Reports Overview"
+            description="Deep financial analytics with spending trends, budget comparisons, net worth tracking, and export capabilities."
+            icon={BarChart3}
+            iconColor="text-prism-orange"
+            ttsScript="The Reports page provides deep insights into your finances. View spending by category with pie charts and trend lines. Compare your budget versus actual spending. Track net worth progression over time. See your top merchants by spending volume. The savings rate chart shows what percentage of income you are keeping each month. Switch between Personal and Business views. Export any report as PDF or CSV for tax preparation or record keeping."
+            features={[
+              'Spending breakdown by category',
+              'Budget vs actual comparison',
+              'Net worth trend over time',
+              'Top merchants analysis',
+              'Savings rate tracking',
+              'Export to PDF and CSV',
+              'Personal and Business report views',
+            ]}
+            demoData={[
+              { label: 'Monthly Spending', value: '$4,230', color: '#ef4444' },
+              { label: 'Monthly Income', value: '$6,500', color: '#22c55e' },
+              { label: 'Savings Rate', value: '35%', color: '#3b82f6' },
+              { label: 'Top Merchant', value: '$340', badge: 'Whole Foods' },
+            ]}
+          />
         </div>
         <div className="flex items-center gap-2">
           <div className="flex rounded-lg border border-border p-0.5">

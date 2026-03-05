@@ -21,6 +21,7 @@ import {
   ArrowUpDown, X, Pencil, Sparkles, Landmark,
 } from 'lucide-react';
 import CsvImportDialog from '@/components/CsvImportDialog';
+import PageOverview from '@/components/PageOverview';
 
 import { cn } from '@/lib/utils';
 import { format, parseISO } from 'date-fns';
@@ -216,6 +217,29 @@ const Transactions = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="font-display text-2xl font-bold">Transactions</h1>
+        <PageOverview
+          title="Transactions Overview"
+          description="Track all your financial transactions. Add manually, import CSV, or auto-sync via Plaid. Auto-categorize with AI."
+          icon={Receipt}
+          iconColor="text-prism-orange"
+          ttsScript="This is the Transactions page where all your financial activity lives. You can add transactions manually by clicking Add Transaction, import in bulk from CSV files supporting Mint and Monarch formats, or auto-sync from your bank via Plaid. Use Auto-categorize to apply AI-powered merchant matching rules. Edit Multiple mode lets you batch-change categories or move transactions between accounts. Use the search, date filters, and sorting to find specific transactions."
+          features={[
+            'Manual entry, CSV import, and Plaid auto-sync',
+            'AI-powered auto-categorization with merchant rules',
+            'Batch edit categories and accounts',
+            'Search, filter by date, and sort transactions',
+            'Split transactions across multiple categories',
+            'Track transfers between accounts',
+          ]}
+          demoTableHeaders={['Date', 'Merchant', 'Category', 'Amount']}
+          demoTableRows={[
+            ['Mar 5', 'Whole Foods Market', 'Groceries', '-$82.34'],
+            ['Mar 4', 'Netflix', 'Subscriptions', '-$15.99'],
+            ['Mar 3', 'Employer Direct Deposit', 'Salary', '+$3,250.00'],
+            ['Mar 2', 'Target', 'Clothing', '-$67.89'],
+            ['Mar 1', 'Rent Payment', 'Rent/Mortgage', '-$1,800.00'],
+          ]}
+        />
         <div className="flex items-center gap-2">
           {/* Search button */}
           <Button variant="outline" size="sm" className="gap-2" onClick={() => setSearchOpen(!searchOpen)}>
