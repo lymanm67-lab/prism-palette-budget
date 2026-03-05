@@ -85,6 +85,46 @@ const Transactions = () => {
       .sort((a, b) => b[1] - a[1])
       .map(([name]) => name);
   }, [transactions]);
+  const [tagOpen, setTagOpen] = useState(false);
+  const [tagSearch, setTagSearch] = useState('');
+
+  // Unique tags from existing transactions for autocomplete
+  const uniqueTags = useMemo(() => {
+    if (!transactions) return [];
+    const counts = new Map<string, number>();
+    for (const t of transactions) {
+      if (t.tags && Array.isArray(t.tags)) {
+        for (const tag of t.tags) {
+          const trimmed = (tag as string).trim();
+          if (trimmed) counts.set(trimmed, (counts.get(trimmed) || 0) + 1);
+        }
+      }
+    }
+    return [...counts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(([name]) => name);
+  }, [transactions]);
+
+  // Parse form.tags into array for multi-select
+  const selectedTags = useMemo(() => 
+    form.tags ? form.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
+    [form.tags]
+  );
+
+  const toggleTag = (tag: string) => {
+    const current = selectedTags;
+    const next = current.includes(tag)
+      ? current.filter(t => t !== tag)
+      : [...current, tag];
+    setForm(f => ({ ...f, tags: next.join(', ') }));
+  };
+
+  const addCustomTag = (tag: string) => {
+    const trimmed = tag.trim();
+    if (!trimmed || selectedTags.includes(trimmed)) return;
+    setForm(f => ({ ...f, tags: [...selectedTags, trimmed].join(', ') }));
+    setTagSearch('');
+  };
 
   const activeFilterCount = Object.values(filters).filter(Boolean).length;
 
@@ -479,7 +519,66 @@ const Transactions = () => {
                 </div>
                 <div className="space-y-2">
                   <Label>Tags</Label>
-                  <Input value={form.tags} onChange={e => setForm(f => ({ ...f, tags: e.target.value }))} placeholder="Comma-separated tags..." />
+                  {selectedTags.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mb-1">
+                      {selectedTags.map(tag => (
+                        <Badge key={tag} variant="secondary" className="gap-1 text-xs">
+                          {tag}
+                          <button onClick={() => toggleTag(tag)} className="ml-0.5 hover:text-destructive">
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                  <Popover open={tagOpen} onOpenChange={setTagOpen}>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" role="combobox" className="w-full justify-between font-normal">
+                        <span className="text-muted-foreground">Search tags...</span>
+                        <Tags className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                      <Command>
+                        <CommandInput
+                          placeholder="Type a tag..."
+                          value={tagSearch}
+                          onValueChange={setTagSearch}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter' && tagSearch.trim()) {
+                              e.preventDefault();
+                              addCustomTag(tagSearch);
+                            }
+                          }}
+                        />
+                        <CommandList>
+                          <CommandEmpty>
+                            {tagSearch.trim() ? (
+                              <button
+                                className="w-full px-4 py-2 text-sm text-left hover:bg-accent"
+                                onClick={() => { addCustomTag(tagSearch); setTagOpen(false); }}
+                              >
+                                Add "{tagSearch.trim()}"
+                              </button>
+                            ) : (
+                              'Type to search or add new'
+                            )}
+                          </CommandEmpty>
+                          <CommandGroup heading="Existing tags">
+                            {uniqueTags
+                              .filter(t => !tagSearch || t.toLowerCase().includes(tagSearch.toLowerCase()))
+                              .slice(0, 15)
+                              .map(t => (
+                                <CommandItem key={t} value={t} onSelect={() => toggleTag(t)}>
+                                  <Check className={cn('mr-2 h-4 w-4', selectedTags.includes(t) ? 'opacity-100' : 'opacity-0')} />
+                                  {t}
+                                </CommandItem>
+                              ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 <div className="flex justify-end gap-2 pt-2">
                   <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
