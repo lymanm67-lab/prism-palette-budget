@@ -23,6 +23,7 @@ import Calculators from "@/pages/Calculators";
 import NotFound from "./pages/NotFound";
 import Onboarding from "@/pages/Onboarding";
 import LandingPage from "@/pages/LandingPage";
+import Legal from "@/pages/Legal";
 
 const queryClient = new QueryClient();
 
@@ -71,6 +72,7 @@ const App = () => (
               <Route path="/calculators" element={<Calculators />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/tax-assistant" element={<TaxAssistant />} />
+              <Route path="/legal" element={<Legal />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
