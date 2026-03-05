@@ -489,8 +489,13 @@ const Transactions = () => {
                                   value={m}
                                   onSelect={() => {
                                     const catId = merchantCategoryMap.get(m);
-                                    setForm(f => ({ ...f, merchant: m, ...(catId && !f.category_id ? { category_id: catId } : {}) }));
+                                    const shouldAutoFill = catId && !form.category_id;
+                                    setForm(f => ({ ...f, merchant: m, ...(shouldAutoFill ? { category_id: catId } : {}) }));
                                     setMerchantOpen(false);
+                                    if (shouldAutoFill) {
+                                      const catName = categories?.find(c => c.id === catId)?.name;
+                                      toast.info(`Category auto-filled: ${catName || 'Unknown'}`, { duration: 3000 });
+                                    }
                                   }}
                                 >
                                   <Check className={cn('mr-2 h-4 w-4', form.merchant === m ? 'opacity-100' : 'opacity-0')} />
