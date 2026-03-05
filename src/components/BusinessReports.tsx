@@ -1,12 +1,13 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCurrency } from '@/hooks/use-currency';
 import { useBusinessTransactions, useBusinessBudgets, useBusinessCategoryGroups } from '@/hooks/use-business-data';
 import { useAccounts } from '@/hooks/use-finance-data';
 import { format } from 'date-fns';
-import { Loader2, TrendingUp, TrendingDown, DollarSign, AlertTriangle, Receipt, Building2, PieChart as PieChartIcon, BarChart3, Target, Percent } from 'lucide-react';
+import { Loader2, TrendingUp, TrendingDown, DollarSign, AlertTriangle, Receipt, Building2, PieChart as PieChartIcon, BarChart3, Target, Percent, Filter } from 'lucide-react';
 import {
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend,
@@ -36,6 +37,7 @@ const BusinessReports = ({ startDate, endDate, budgetMonth }: Props) => {
   const { data: budgets, isLoading: budLoading } = useBusinessBudgets(budgetMonth);
   const { data: groups } = useBusinessCategoryGroups();
   const { data: accounts } = useAccounts();
+  const [selectedBusiness, setSelectedBusiness] = useState<string>('all');
 
   // Extract business names from groups
   const businessNames = useMemo(() => {
@@ -45,16 +47,43 @@ const BusinessReports = ({ startDate, endDate, budgetMonth }: Props) => {
       const match = g.name.match(/^(.+?)\s*-\s*/);
       if (match) names.add(match[1].trim());
     }
-    return Array.from(names);
+    return Array.from(names).sort();
   }, [groups]);
+
+  // Helper to check if a transaction belongs to the selected business
+  const matchesBusiness = (groupName: string) => {
+    if (selectedBusiness === 'all') return true;
+    const match = groupName.match(/^(.+?)\s*-\s*/);
+    return match ? match[1].trim() === selectedBusiness : false;
+  };
+
+  // Filtered transactions based on selected business
+  const filteredTransactions = useMemo(() => {
+    if (!transactions) return [];
+    if (selectedBusiness === 'all') return transactions;
+    return transactions.filter(t => {
+      const groupName = (t.categories as any)?.category_groups?.name || '';
+      return matchesBusiness(groupName);
+    });
+  }, [transactions, selectedBusiness]);
+
+  // Filtered budgets based on selected business
+  const filteredBudgets = useMemo(() => {
+    if (!budgets) return [];
+    if (selectedBusiness === 'all') return budgets;
+    return budgets.filter(b => {
+      const groupName = (b.categories as any)?.category_groups?.name || '';
+      return matchesBusiness(groupName);
+    });
+  }, [budgets, selectedBusiness]);
 
   // 1. P&L Summary
   const pnl = useMemo(() => {
-    if (!transactions) return { revenue: 0, expenses: 0, net: 0, byBusiness: [] as { name: string; revenue: number; expenses: number; net: number }[] };
+    if (!filteredTransactions.length) return { revenue: 0, expenses: 0, net: 0, byBusiness: [] as { name: string; revenue: number; expenses: number; net: number }[] };
     const bizMap = new Map<string, { revenue: number; expenses: number }>();
     let totalRevenue = 0, totalExpenses = 0;
 
-    for (const t of transactions) {
+    for (const t of filteredTransactions) {
       const groupName = (t.categories as any)?.category_groups?.name || '';
       const bizMatch = groupName.match(/^(.+?)\s*-\s*/);
       const biz = bizMatch ? bizMatch[1].trim() : 'Other';
@@ -71,13 +100,13 @@ const BusinessReports = ({ startDate, endDate, budgetMonth }: Props) => {
     }));
 
     return { revenue: totalRevenue, expenses: totalExpenses, net: totalRevenue - totalExpenses, byBusiness };
-  }, [transactions]);
+  }, [filteredTransactions]);
 
   // 2. Expense Breakdown
   const expenseBreakdown = useMemo(() => {
-    if (!transactions) return [];
+    if (!filteredTransactions.length) return [];
     const map = new Map<string, { name: string; color: string; value: number }>();
-    for (const t of transactions) {
+    for (const t of filteredTransactions) {
       if (t.amount >= 0) continue;
       const catName = (t.categories as any)?.name || 'Uncategorized';
       const catColor = (t.categories as any)?.color || '#888';
@@ -86,13 +115,13 @@ const BusinessReports = ({ startDate, endDate, budgetMonth }: Props) => {
       map.set(catName, e);
     }
     return Array.from(map.values()).sort((a, b) => b.value - a.value);
-  }, [transactions]);
+  }, [filteredTransactions]);
 
   // 3. Revenue by Source
   const revenueBySource = useMemo(() => {
-    if (!transactions) return [];
+    if (!filteredTransactions.length) return [];
     const map = new Map<string, { name: string; color: string; value: number }>();
-    for (const t of transactions) {
+    for (const t of filteredTransactions) {
       if (t.amount <= 0) continue;
       const catName = (t.categories as any)?.name || 'Uncategorized';
       const catColor = (t.categories as any)?.color || '#888';
@@ -101,13 +130,13 @@ const BusinessReports = ({ startDate, endDate, budgetMonth }: Props) => {
       map.set(catName, e);
     }
     return Array.from(map.values()).sort((a, b) => b.value - a.value);
-  }, [transactions]);
+  }, [filteredTransactions]);
 
   // 4. Monthly Revenue Trend
   const monthlyRevenue = useMemo(() => {
-    if (!transactions) return [];
+    if (!filteredTransactions.length) return [];
     const map = new Map<string, { month: string; sortKey: string; revenue: number; expenses: number }>();
-    for (const t of transactions) {
+    for (const t of filteredTransactions) {
       const m = t.date.substring(0, 7);
       const label = new Date(t.date).toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
       const e = map.get(m) || { month: label, sortKey: m, revenue: 0, expenses: 0 };
@@ -116,18 +145,18 @@ const BusinessReports = ({ startDate, endDate, budgetMonth }: Props) => {
       map.set(m, e);
     }
     return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b)).map(([, v]) => v);
-  }, [transactions]);
+  }, [filteredTransactions]);
 
   // 5. Budget vs Actual (Business)
   const bizBudgetVsActual = useMemo(() => {
-    if (!budgets || !transactions) return [];
+    if (!filteredBudgets.length || !filteredTransactions.length) return [];
     const spentMap: Record<string, number> = {};
-    for (const t of transactions) {
+    for (const t of filteredTransactions) {
       if (t.amount < 0 && t.category_id) {
         spentMap[t.category_id] = (spentMap[t.category_id] || 0) + Math.abs(t.amount);
       }
     }
-    return budgets.map(b => {
+    return filteredBudgets.map(b => {
       const cat = b.categories as any;
       return {
         name: cat?.name || 'Unknown',
@@ -137,7 +166,7 @@ const BusinessReports = ({ startDate, endDate, budgetMonth }: Props) => {
         color: cat?.color || 'hsl(var(--primary))',
       };
     }).sort((a, b) => b.budget - a.budget);
-  }, [budgets, transactions]);
+  }, [filteredBudgets, filteredTransactions]);
 
   // 6. Expense by Business
   const expenseByBusiness = useMemo(() => {
@@ -147,8 +176,8 @@ const BusinessReports = ({ startDate, endDate, budgetMonth }: Props) => {
 
   // 7. Top Business Expenses (individual transactions)
   const topExpenses = useMemo(() => {
-    if (!transactions) return [];
-    return transactions
+    if (!filteredTransactions.length) return [];
+    return filteredTransactions
       .filter(t => t.amount < 0)
       .sort((a, b) => a.amount - b.amount)
       .slice(0, 15)
@@ -159,7 +188,7 @@ const BusinessReports = ({ startDate, endDate, budgetMonth }: Props) => {
         amount: Math.abs(t.amount),
         account: (t.accounts as any)?.name || '',
       }));
-  }, [transactions]);
+  }, [filteredTransactions]);
 
   // 8. Expense Ratio (ops expense / revenue)
   const expenseRatios = useMemo(() => {
@@ -175,9 +204,9 @@ const BusinessReports = ({ startDate, endDate, budgetMonth }: Props) => {
 
   // 9. Category Group Spending
   const groupSpending = useMemo(() => {
-    if (!transactions) return [];
+    if (!filteredTransactions.length) return [];
     const map = new Map<string, { name: string; value: number }>();
-    for (const t of transactions) {
+    for (const t of filteredTransactions) {
       if (t.amount >= 0) continue;
       const groupName = (t.categories as any)?.category_groups?.name || 'Other';
       const e = map.get(groupName) || { name: groupName, value: 0 };
@@ -185,7 +214,7 @@ const BusinessReports = ({ startDate, endDate, budgetMonth }: Props) => {
       map.set(groupName, e);
     }
     return Array.from(map.values()).sort((a, b) => b.value - a.value);
-  }, [transactions]);
+  }, [filteredTransactions]);
 
   // 10. Tax Deductible Summary
   const taxDeductions = useMemo(() => {
@@ -198,6 +227,33 @@ const BusinessReports = ({ startDate, endDate, budgetMonth }: Props) => {
   if (txnLoading || budLoading) return <div className="flex items-center justify-center p-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
 
   return (
+    <div className="space-y-4">
+      {businessNames.length > 0 && (
+        <div className="flex items-center gap-2">
+          <Filter className="h-4 w-4 text-muted-foreground" />
+          <Select value={selectedBusiness} onValueChange={setSelectedBusiness}>
+            <SelectTrigger className="w-[220px]">
+              <SelectValue placeholder="Filter by business" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Businesses</SelectItem>
+              {businessNames.map(name => (
+                <SelectItem key={name} value={name}>
+                  <span className="flex items-center gap-2">
+                    <Building2 className="h-3.5 w-3.5" />
+                    {name}
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {selectedBusiness !== 'all' && (
+            <Badge variant="secondary" className="text-xs">
+              Filtered: {selectedBusiness}
+            </Badge>
+          )}
+        </div>
+      )}
     <Tabs defaultValue="pnl" className="space-y-4">
       <TabsList className="flex-wrap h-auto gap-1">
         <TabsTrigger value="pnl" className="text-xs">P&L</TabsTrigger>
@@ -566,6 +622,7 @@ const BusinessReports = ({ startDate, endDate, budgetMonth }: Props) => {
         </Card>
       </TabsContent>
     </Tabs>
+    </div>
   );
 };
 
