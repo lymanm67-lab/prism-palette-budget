@@ -64,7 +64,10 @@ Deno.serve(async (req) => {
       });
       const data = await plaidResponse.json();
       if (!plaidResponse.ok) {
-        throw new Error(`Plaid link/token/create failed [${plaidResponse.status}]: ${JSON.stringify(data)}`);
+        console.error('Plaid link/token/create failed:', plaidResponse.status, JSON.stringify(data));
+        return new Response(JSON.stringify({ error: 'Failed to initialize bank connection. Please try again.' }), {
+          status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
       }
       return new Response(JSON.stringify({ link_token: data.link_token }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -99,7 +102,10 @@ Deno.serve(async (req) => {
       });
       const exchangeData = await exchangeResponse.json();
       if (!exchangeResponse.ok) {
-        throw new Error(`Plaid exchange failed [${exchangeResponse.status}]: ${JSON.stringify(exchangeData)}`);
+        console.error('Plaid exchange failed:', exchangeResponse.status, JSON.stringify(exchangeData));
+        return new Response(JSON.stringify({ error: 'Failed to connect bank account. Please try again.' }), {
+          status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
       }
 
       const { access_token, item_id } = exchangeData;
@@ -215,8 +221,7 @@ Deno.serve(async (req) => {
 
   } catch (error: unknown) {
     console.error('Plaid error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    return new Response(JSON.stringify({ error: 'An unexpected error occurred. Please try again.' }), {
       status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
