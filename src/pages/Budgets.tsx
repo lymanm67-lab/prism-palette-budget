@@ -1,26 +1,42 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
-import { useBudgets, useCategories, useTransactions } from '@/hooks/use-finance-data';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useBudgets, useCategories, useTransactions, useUpsertBudget } from '@/hooks/use-finance-data';
 import { formatCurrency } from '@/lib/seed-data';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Plus, Pencil, ChevronLeft, ChevronRight } from 'lucide-react';
 
-const currentMonth = () => {
+const getMonth = (offset: number) => {
   const d = new Date();
+  d.setMonth(d.getMonth() + offset);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`;
 };
 
+const formatMonth = (monthStr: string) => {
+  const [y, m] = monthStr.split('-');
+  return new Date(+y, +m - 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+};
+
 const Budgets = () => {
-  const month = currentMonth();
+  const [monthOffset, setMonthOffset] = useState(0);
+  const month = getMonth(monthOffset);
   const { data: budgets, isLoading: budgetsLoading } = useBudgets(month);
   const { data: transactions } = useTransactions();
   const { data: categories } = useCategories();
+  const upsertBudget = useUpsertBudget();
 
-  // Compute actual spending per category for current month
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingBudget, setEditingBudget] = useState<{ category_id: string; planned_amount: string } | null>(null);
+  const [form, setForm] = useState({ category_id: '', planned_amount: '' });
+
   const spentByCategory = useMemo(() => {
     if (!transactions) return {};
-    const monthPrefix = month.substring(0, 7); // "2026-03"
+    const monthPrefix = month.substring(0, 7);
     const map: Record<string, number> = {};
     for (const t of transactions) {
       if (t.date.startsWith(monthPrefix) && t.amount < 0 && t.category_id) {
@@ -29,8 +45,6 @@ const Budgets = () => {
     }
     return map;
   }, [transactions, month]);
-
-  if (budgetsLoading) return <div className="flex items-center justify-center p-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
 
   const budgetItems = (budgets || []).map(b => ({
     ...b,
@@ -41,13 +55,53 @@ const Budgets = () => {
   const totalSpent = budgetItems.reduce((s, b) => s + b.spent, 0);
   const totalPct = totalPlanned > 0 ? Math.round((totalSpent / totalPlanned) * 100) : 0;
 
+  // Categories not yet budgeted this month
+  const budgetedCategoryIds = new Set(budgetItems.map(b => b.category_id));
+  const unbudgetedCategories = (categories || []).filter(c => !budgetedCategoryIds.has(c.id));
+
+  const openCreate = () => {
+    setEditingBudget(null);
+    setForm({ category_id: unbudgetedCategories[0]?.id || '', planned_amount: '' });
+    setDialogOpen(true);
+  };
+
+  const openEdit = (categoryId: string, currentAmount: number) => {
+    setEditingBudget({ category_id: categoryId, planned_amount: String(currentAmount) });
+    setForm({ category_id: categoryId, planned_amount: String(currentAmount) });
+    setDialogOpen(true);
+  };
+
+  const handleSave = async () => {
+    const amount = parseFloat(form.planned_amount);
+    if (!form.category_id || isNaN(amount) || amount < 0) return;
+    await upsertBudget.mutateAsync({
+      category_id: form.category_id,
+      month,
+      planned_amount: amount,
+    });
+    setDialogOpen(false);
+  };
+
+  if (budgetsLoading) return <div className="flex items-center justify-center p-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-      <div>
-        <h1 className="font-display text-3xl font-bold">Budgets</h1>
-        <p className="text-muted-foreground">
-          {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} budget overview.
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="font-display text-3xl font-bold">Budgets</h1>
+          <div className="flex items-center gap-2 mt-1">
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setMonthOffset(o => o - 1)}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-muted-foreground font-medium min-w-[160px] text-center">{formatMonth(month)}</span>
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setMonthOffset(o => o + 1)}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+        <Button className="gap-2" onClick={openCreate} disabled={unbudgetedCategories.length === 0}>
+          <Plus className="h-4 w-4" /> Add Budget
+        </Button>
       </div>
 
       {budgetItems.length > 0 && (
@@ -69,7 +123,7 @@ const Budgets = () => {
 
       {budgetItems.length === 0 && (
         <Card><CardContent className="p-10 text-center text-muted-foreground">
-          No budgets set for this month. Budgets will appear here once you create them.
+          No budgets set for {formatMonth(month)}. Click "Add Budget" to get started.
         </CardContent></Card>
       )}
 
@@ -81,16 +135,26 @@ const Budgets = () => {
           const overBudget = remaining < 0;
           return (
             <motion.div key={budget.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-              <Card className="transition-shadow hover:shadow-md">
+              <Card className="transition-shadow hover:shadow-md group">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className="inline-block h-3 w-3 rounded-full" style={{ backgroundColor: cat?.color }} />
                       <span className="font-medium">{cat?.name}</span>
                     </div>
-                    <span className={`text-sm font-medium ${overBudget ? 'text-prism-rose' : 'text-muted-foreground'}`}>
-                      {overBudget ? 'Over by ' + formatCurrency(Math.abs(remaining)) : formatCurrency(remaining) + ' left'}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-sm font-medium ${overBudget ? 'text-prism-rose' : 'text-muted-foreground'}`}>
+                        {overBudget ? 'Over by ' + formatCurrency(Math.abs(remaining)) : formatCurrency(remaining) + ' left'}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => openEdit(budget.category_id, budget.planned_amount)}
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
                   </div>
                   <div className="mt-3">
                     <div className="flex justify-between text-sm text-muted-foreground mb-1">
@@ -102,7 +166,7 @@ const Budgets = () => {
                         className="h-full rounded-full transition-all duration-500"
                         style={{
                           width: `${Math.min(pct, 100)}%`,
-                          backgroundColor: overBudget ? 'hsl(var(--prism-negative))' : (cat?.color || '#7c5cf5'),
+                          backgroundColor: overBudget ? 'hsl(var(--prism-negative))' : (cat?.color || 'hsl(var(--primary))'),
                         }}
                       />
                     </div>
@@ -113,6 +177,70 @@ const Budgets = () => {
           );
         })}
       </div>
+
+      {/* Create / Edit Budget Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="font-display">
+              {editingBudget ? 'Edit Budget' : 'Add Budget'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Category</Label>
+              {editingBudget ? (
+                <div className="flex items-center gap-2 rounded-md border border-input bg-muted/50 px-3 py-2 text-sm">
+                  {(() => {
+                    const cat = (categories || []).find(c => c.id === form.category_id);
+                    return cat ? (
+                      <>
+                        <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: cat.color }} />
+                        {cat.name}
+                      </>
+                    ) : 'Category';
+                  })()}
+                </div>
+              ) : (
+                <Select value={form.category_id} onValueChange={v => setForm(f => ({ ...f, category_id: v }))}>
+                  <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+                  <SelectContent>
+                    {unbudgetedCategories.map(c => (
+                      <SelectItem key={c.id} value={c.id}>
+                        <div className="flex items-center gap-2">
+                          <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: c.color }} />
+                          {c.name}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label>Planned Amount</Label>
+              <Input
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="500.00"
+                value={form.planned_amount}
+                onChange={e => setForm(f => ({ ...f, planned_amount: e.target.value }))}
+              />
+            </div>
+            <div className="text-xs text-muted-foreground">
+              Month: {formatMonth(month)}
+            </div>
+            <Button
+              onClick={handleSave}
+              disabled={!form.category_id || !form.planned_amount || upsertBudget.isPending}
+              className="w-full"
+            >
+              {upsertBudget.isPending ? 'Saving...' : editingBudget ? 'Update Budget' : 'Create Budget'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 };
