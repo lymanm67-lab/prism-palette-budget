@@ -17,6 +17,25 @@ const ENTITY_TYPES = [
   { value: 'other', label: 'Other' },
 ];
 
+const INDUSTRIES = [
+  'Coaching',
+  'Compliance',
+  'Construction',
+  'Consulting',
+  'Education',
+  'Finance',
+  'Food & Beverage',
+  'Healthcare',
+  'Legal',
+  'Manufacturing',
+  'Marketing',
+  'Real Estate',
+  'Retail',
+  'Technology',
+  'Transportation',
+  'Other',
+];
+
 type FormState = {
   business_name: string;
   entity_type: string;
@@ -153,7 +172,14 @@ export default function BusinessProfileManager({ open, onOpenChange }: { open: b
               </div>
               <div className="space-y-2">
                 <Label>Industry (optional)</Label>
-                <Input value={form.industry} onChange={e => setForm(f => ({ ...f, industry: e.target.value }))} placeholder="e.g. Technology" />
+                <Select value={form.industry || ''} onValueChange={v => setForm(f => ({ ...f, industry: v }))}>
+                  <SelectTrigger><SelectValue placeholder="Select industry" /></SelectTrigger>
+                  <SelectContent>
+                    {INDUSTRIES.map(ind => (
+                      <SelectItem key={ind} value={ind}>{ind}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <Button onClick={handleSave} disabled={!form.business_name.trim() || isSaving} className="w-full">
