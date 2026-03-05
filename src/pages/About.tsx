@@ -2,8 +2,9 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useNavigate, Link } from 'react-router-dom';
 import {
-  Zap, Heart, Target, Shield, BarChart3, Bot, Sparkles, ArrowRight, Code2, Lightbulb, Users, User
+  Zap, Heart, Target, Shield, BarChart3, Bot, Sparkles, ArrowRight, Code2, Lightbulb, Users
 } from 'lucide-react';
+import designerPhoto from '@/assets/designer-photo.png';
 
 const VALUES = [
   { icon: Heart, title: 'Empathy First', desc: 'Built for real people struggling with real financial challenges — not financial experts.' },
@@ -40,10 +41,12 @@ const About = () => {
       {/* Meet the Designer */}
       <div className="rounded-2xl border border-border p-6 sm:p-8">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-          {/* Placeholder avatar */}
-          <div className="flex h-28 w-28 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-prism-teal/20 to-prism-indigo/20 border-2 border-dashed border-prism-teal/30">
-            <User className="h-12 w-12 text-prism-teal/60" />
-          </div>
+          {/* Designer photo */}
+          <img
+            src={designerPhoto}
+            alt="The designer and creator of PrismBudget"
+            className="h-28 w-28 shrink-0 rounded-2xl object-cover object-top border-2 border-prism-teal/30 shadow-lg"
+          />
           <div className="text-center sm:text-left space-y-2">
             <p className="text-xs font-bold uppercase tracking-wider text-prism-teal">Meet the Designer</p>
             <h2 className="font-display text-2xl font-bold">The Creator of PrismBudget</h2>
@@ -53,7 +56,7 @@ const About = () => {
               accessible to everyone — not just those who can afford a financial advisor.
             </p>
             <p className="text-xs text-muted-foreground/60 italic">
-              Photo coming soon — for now, the work speaks for itself.
+              Designer · Developer · Financial Advocate
             </p>
           </div>
         </div>
