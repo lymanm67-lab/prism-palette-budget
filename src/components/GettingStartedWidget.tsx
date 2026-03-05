@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
@@ -10,6 +10,7 @@ import {
   Wallet, Target, TrendingDown, TrendingUp, BarChart3, Bot,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import Confetti from '@/components/Confetti';
 
 const STEPS = [
   { id: 'accounts', title: 'Set Up Accounts', icon: Landmark, route: '/accounts' },
@@ -42,33 +43,49 @@ const GettingStartedWidget = () => {
 
   // Don't show if all steps completed and user dismissed
   const dismissed = localStorage.getItem('prism-gs-widget-dismissed');
+  
+  // Confetti on completion
+  const [confettiFired, setConfettiFired] = useState(false);
+  useEffect(() => {
+    if (progress === 100 && !confettiFired) {
+      const alreadyCelebrated = localStorage.getItem('prism-gs-confetti-widget');
+      if (!alreadyCelebrated) {
+        setConfettiFired(true);
+        localStorage.setItem('prism-gs-confetti-widget', '1');
+      }
+    }
+  }, [progress, confettiFired]);
+
   if (progress === 100 && dismissed) return null;
 
   // All done state
   if (progress === 100) {
     return (
-      <Card className="border-prism-teal/30 bg-gradient-to-r from-prism-teal/5 to-prism-lime/5">
-        <CardContent className="flex items-center gap-4 p-5">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-prism-teal/10 shrink-0">
-            <CheckCircle2 className="h-5 w-5 text-prism-teal" />
-          </div>
-          <div className="flex-1">
-            <p className="font-display font-bold text-sm">Setup Complete! 🎉</p>
-            <p className="text-xs text-muted-foreground">You've finished all getting started steps.</p>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-xs text-muted-foreground"
-            onClick={() => {
-              localStorage.setItem('prism-gs-widget-dismissed', '1');
-              window.location.reload();
-            }}
-          >
-            Dismiss
-          </Button>
-        </CardContent>
-      </Card>
+      <>
+        <Confetti trigger={confettiFired} />
+        <Card className="border-prism-teal/30 bg-gradient-to-r from-prism-teal/5 to-prism-lime/5">
+          <CardContent className="flex items-center gap-4 p-5">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-prism-teal/10 shrink-0">
+              <CheckCircle2 className="h-5 w-5 text-prism-teal" />
+            </div>
+            <div className="flex-1">
+              <p className="font-display font-bold text-sm">Setup Complete! 🎉</p>
+              <p className="text-xs text-muted-foreground">You've finished all getting started steps.</p>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs text-muted-foreground"
+              onClick={() => {
+                localStorage.setItem('prism-gs-widget-dismissed', '1');
+                window.location.reload();
+              }}
+            >
+              Dismiss
+            </Button>
+          </CardContent>
+        </Card>
+      </>
     );
   }
 
