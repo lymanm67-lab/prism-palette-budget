@@ -27,21 +27,46 @@ import { useState } from 'react';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 
-const NAV_ITEMS = [
-  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', color: 'text-prism-teal' },
-  { to: '/accounts', icon: Landmark, label: 'Accounts', color: 'text-prism-sky' },
-  { to: '/transactions', icon: ArrowLeftRight, label: 'Transactions', color: 'text-prism-orange' },
-  { to: '/budgets', icon: PiggyBank, label: 'Budgets', color: 'text-prism-amber' },
-  { to: '/categories', icon: Tags, label: 'Categories', color: 'text-prism-lime' },
-  { to: '/goals', icon: Target, label: 'Goals', color: 'text-prism-lime' },
-  { to: '/debt-payoff', icon: TrendingDown, label: 'Debt Payoff', color: 'text-prism-rose' },
-  { to: '/roadmap', icon: Map, label: 'Prism Roadmap', color: 'text-prism-teal' },
-  { to: '/calculators', icon: Calculator, label: 'Calculators', color: 'text-prism-indigo' },
-  { to: '/reports', icon: BarChart3, label: 'Reports', color: 'text-prism-orange' },
-  { to: '/tax-assistant', icon: Bot, label: 'Tax Assistant', color: 'text-prism-indigo' },
-  { to: '/about', icon: Heart, label: 'About', color: 'text-prism-rose' },
-  { to: '/legal', icon: Scale, label: 'Legal', color: 'text-muted-foreground' },
-  { to: '/settings', icon: Settings, label: 'Settings', color: 'text-muted-foreground' },
+const NAV_SECTIONS = [
+  {
+    label: 'Overview',
+    items: [
+      { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', color: 'text-prism-teal' },
+    ],
+  },
+  {
+    label: 'Money',
+    items: [
+      { to: '/accounts', icon: Landmark, label: 'Accounts', color: 'text-prism-sky' },
+      { to: '/transactions', icon: ArrowLeftRight, label: 'Transactions', color: 'text-prism-orange' },
+      { to: '/budgets', icon: PiggyBank, label: 'Budgets', color: 'text-prism-amber' },
+      { to: '/categories', icon: Tags, label: 'Categories', color: 'text-prism-lime' },
+    ],
+  },
+  {
+    label: 'Goals & Debt',
+    items: [
+      { to: '/goals', icon: Target, label: 'Goals', color: 'text-prism-lime' },
+      { to: '/debt-payoff', icon: TrendingDown, label: 'Debt Payoff', color: 'text-prism-rose' },
+    ],
+  },
+  {
+    label: 'Plan & Analyze',
+    items: [
+      { to: '/roadmap', icon: Map, label: 'Prism Roadmap', color: 'text-prism-teal' },
+      { to: '/calculators', icon: Calculator, label: 'Calculators', color: 'text-prism-indigo' },
+      { to: '/reports', icon: BarChart3, label: 'Reports', color: 'text-prism-orange' },
+      { to: '/tax-assistant', icon: Bot, label: 'Tax Assistant', color: 'text-prism-indigo' },
+    ],
+  },
+  {
+    label: 'More',
+    items: [
+      { to: '/about', icon: Heart, label: 'About', color: 'text-prism-rose' },
+      { to: '/legal', icon: Scale, label: 'Legal', color: 'text-muted-foreground' },
+      { to: '/settings', icon: Settings, label: 'Settings', color: 'text-muted-foreground' },
+    ],
+  },
 ];
 
 const AppSidebar = () => {
@@ -87,31 +112,47 @@ const AppSidebar = () => {
         </Button>
       </div>
 
-      <nav className="relative flex-1 space-y-1 px-2 py-4">
-        {NAV_ITEMS.map((item) => {
-          const isActive = location.pathname === item.to;
-          return (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={cn(
-                'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 relative group',
-                isActive
-                  ? 'bg-sidebar-accent text-sidebar-primary sidebar-accent-line'
-                  : 'text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground'
-              )}
-            >
-              <item.icon className={cn(
-                'h-5 w-5 shrink-0 transition-colors duration-200',
-                isActive ? item.color : 'group-hover:' + item.color
-              )} />
-              {!collapsed && <span>{item.label}</span>}
-              {isActive && !collapsed && (
-                <div className="ml-auto h-2 w-2 rounded-full bg-prism-teal animate-pulse" />
-              )}
-            </NavLink>
-          );
-        })}
+      <nav className="relative flex-1 overflow-y-auto px-2 py-3 space-y-4">
+        {NAV_SECTIONS.map((section, sIdx) => (
+          <div key={section.label}>
+            {/* Section label */}
+            {!collapsed && (
+              <p className="px-3 pb-1.5 text-[10px] font-bold uppercase tracking-widest text-sidebar-foreground/30">
+                {section.label}
+              </p>
+            )}
+            {collapsed && sIdx > 0 && (
+              <div className="mx-3 mb-2 h-px bg-sidebar-border" />
+            )}
+
+            <div className="space-y-0.5">
+              {section.items.map((item) => {
+                const isActive = location.pathname === item.to;
+                return (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    className={cn(
+                      'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 relative group',
+                      isActive
+                        ? 'bg-sidebar-accent text-sidebar-primary sidebar-accent-line'
+                        : 'text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground'
+                    )}
+                  >
+                    <item.icon className={cn(
+                      'h-5 w-5 shrink-0 transition-colors duration-200',
+                      isActive ? item.color : 'group-hover:' + item.color
+                    )} />
+                    {!collapsed && <span>{item.label}</span>}
+                    {isActive && !collapsed && (
+                      <div className="ml-auto h-2 w-2 rounded-full bg-prism-teal animate-pulse" />
+                    )}
+                  </NavLink>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </nav>
 
       <div className="relative border-t border-sidebar-border p-3 space-y-1">
