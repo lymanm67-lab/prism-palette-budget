@@ -269,6 +269,7 @@ export type Database = {
           business_profile_id: string | null
           color: string
           created_at: string
+          expense_type: string
           household_id: string
           id: string
           name: string
@@ -279,6 +280,7 @@ export type Database = {
           business_profile_id?: string | null
           color?: string
           created_at?: string
+          expense_type?: string
           household_id: string
           id?: string
           name: string
@@ -289,6 +291,7 @@ export type Database = {
           business_profile_id?: string | null
           color?: string
           created_at?: string
+          expense_type?: string
           household_id?: string
           id?: string
           name?: string
