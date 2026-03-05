@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -19,7 +19,7 @@ import { toast } from 'sonner';
 import {
   Search, Plus, Loader2, Upload, Receipt, Trash2, Tags,
   ArrowRightLeft, SlidersHorizontal, CalendarIcon, ChevronRight,
-  ArrowUpDown, X, Pencil, Sparkles, Landmark, Check,
+  ArrowUpDown, X, Pencil, Sparkles, Landmark, Check, Camera,
 } from 'lucide-react';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import CsvImportDialog from '@/components/CsvImportDialog';
@@ -70,6 +70,51 @@ const Transactions = () => {
   const [formType, setFormType] = useState<'debit' | 'credit'>('debit');
   const [transferForm, setTransferForm] = useState({ date: new Date().toISOString().split('T')[0], amount: '', from_account: '', to_account: '', notes: '' });
   const [merchantOpen, setMerchantOpen] = useState(false);
+  const [scanLoading, setScanLoading] = useState(false);
+  const receiptInputRef = useRef<HTMLInputElement>(null);
+
+  const handleScanReceipt = useCallback(async (file: File) => {
+    setScanLoading(true);
+    try {
+      const reader = new FileReader();
+      const base64 = await new Promise<string>((resolve, reject) => {
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const { data, error } = await supabase.functions.invoke('scan-receipt', {
+        body: {
+          image: base64,
+          categories: (categories || []).map(c => ({ name: c.name, id: c.id })),
+        },
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      // Pre-fill the form
+      const matchedCat = (categories || []).find(
+        c => c.name.toLowerCase() === (data.category || '').toLowerCase()
+      );
+      setForm(f => ({
+        ...f,
+        merchant: data.merchant || f.merchant,
+        amount: data.amount ? String(data.amount) : f.amount,
+        date: data.date || f.date,
+        category_id: matchedCat?.id || f.category_id,
+      }));
+      if (data.amount && data.amount > 0) setFormType('debit');
+
+      toast.success('Receipt scanned! Review the pre-filled details.', { duration: 4000 });
+    } catch (e: any) {
+      console.error('Receipt scan error:', e);
+      toast.error(e.message || 'Failed to scan receipt');
+    } finally {
+      setScanLoading(false);
+      if (receiptInputRef.current) receiptInputRef.current.value = '';
+    }
+  }, [categories, supabase]);
 
   // Unique merchants from existing transactions for autocomplete
   const uniqueMerchants = useMemo(() => {
@@ -417,6 +462,32 @@ const Transactions = () => {
             <DialogContent className="max-h-[90vh] overflow-y-auto">
               <DialogHeader><DialogTitle className="font-display">Add Transaction</DialogTitle></DialogHeader>
               <div className="space-y-4">
+                {/* Scan Receipt */}
+                <div className="flex items-center gap-2">
+                  <input
+                    ref={receiptInputRef}
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    className="hidden"
+                    onChange={e => {
+                      const file = e.target.files?.[0];
+                      if (file) handleScanReceipt(file);
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="gap-2 w-full"
+                    disabled={scanLoading}
+                    onClick={() => receiptInputRef.current?.click()}
+                  >
+                    {scanLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
+                    {scanLoading ? 'Scanning receipt...' : 'Scan Receipt'}
+                  </Button>
+                </div>
+
                 {/* Debit / Credit Toggle */}
                 <div className="flex rounded-lg border overflow-hidden">
                   <button
