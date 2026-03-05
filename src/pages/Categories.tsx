@@ -63,9 +63,9 @@ const Categories = () => {
   // Dialog state
   const [groupDialogOpen, setGroupDialogOpen] = useState(false);
   const [catDialogOpen, setCatDialogOpen] = useState(false);
-  const [editingGroup, setEditingGroup] = useState<{ id: string; name: string; color: string; budget_type?: string; business_profile_id?: string | null } | null>(null);
+  const [editingGroup, setEditingGroup] = useState<{ id: string; name: string; color: string; budget_type?: string; business_profile_id?: string | null; expense_type?: string } | null>(null);
   const [editingCat, setEditingCat] = useState<{ id: string; name: string; color: string; group_id: string } | null>(null);
-  const [groupForm, setGroupForm] = useState({ name: '', color: '#7c3aed', budget_type: 'personal', business_profile_id: '' as string });
+  const [groupForm, setGroupForm] = useState({ name: '', color: '#7c3aed', budget_type: 'personal', business_profile_id: '' as string, expense_type: 'flexible' });
   const [catForm, setCatForm] = useState({ name: '', color: '#7c5cf5', group_id: '' });
 
   // Delete confirmation
@@ -85,21 +85,21 @@ const Categories = () => {
   // Group dialog
   const openCreateGroup = () => {
     setEditingGroup(null);
-    setGroupForm({ name: '', color: '#7c3aed', budget_type: 'personal', business_profile_id: '' });
+    setGroupForm({ name: '', color: '#7c3aed', budget_type: 'personal', business_profile_id: '', expense_type: 'flexible' });
     setGroupDialogOpen(true);
   };
-  const openEditGroup = (g: { id: string; name: string; color: string; budget_type?: string; business_profile_id?: string | null }) => {
+  const openEditGroup = (g: { id: string; name: string; color: string; budget_type?: string; business_profile_id?: string | null; expense_type?: string }) => {
     setEditingGroup(g);
-    setGroupForm({ name: g.name, color: g.color, budget_type: g.budget_type || 'personal', business_profile_id: g.business_profile_id || '' });
+    setGroupForm({ name: g.name, color: g.color, budget_type: g.budget_type || 'personal', business_profile_id: g.business_profile_id || '', expense_type: g.expense_type || 'flexible' });
     setGroupDialogOpen(true);
   };
   const handleSaveGroup = async () => {
     if (!groupForm.name.trim()) return;
     const bpId = groupForm.budget_type === 'business' && groupForm.business_profile_id ? groupForm.business_profile_id : null;
     if (editingGroup) {
-      await updateGroup.mutateAsync({ id: editingGroup.id, name: groupForm.name.trim(), color: groupForm.color, budget_type: groupForm.budget_type, business_profile_id: bpId });
+      await updateGroup.mutateAsync({ id: editingGroup.id, name: groupForm.name.trim(), color: groupForm.color, budget_type: groupForm.budget_type, business_profile_id: bpId, expense_type: groupForm.expense_type });
     } else {
-      await createGroup.mutateAsync({ name: groupForm.name.trim(), color: groupForm.color, sort_order: (groups?.length || 0), budget_type: groupForm.budget_type, business_profile_id: bpId });
+      await createGroup.mutateAsync({ name: groupForm.name.trim(), color: groupForm.color, sort_order: (groups?.length || 0), budget_type: groupForm.budget_type, business_profile_id: bpId, expense_type: groupForm.expense_type });
     }
     setGroupDialogOpen(false);
   };
@@ -194,6 +194,7 @@ const Categories = () => {
                       <CardTitle className="font-display text-base">{group.name}</CardTitle>
                       <span className="text-xs text-muted-foreground">({groupCats.length})</span>
                       <Badge variant="outline" className="text-[10px] px-1.5 py-0 capitalize">{(group as any).budget_type || 'personal'}</Badge>
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 capitalize">{((group as any).expense_type || 'flexible').replace('_', '-')}</Badge>
                       {(group as any).business_profile_id && businessProfiles && (
                         <Badge variant="secondary" className="text-[10px] px-1.5 py-0 gap-1">
                           <Building2 className="h-2.5 w-2.5" />
@@ -286,6 +287,19 @@ const Categories = () => {
                   <SelectItem value="business">Business</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Expense Type</Label>
+              <Select value={groupForm.expense_type} onValueChange={v => setGroupForm(f => ({ ...f, expense_type: v }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="income">Income</SelectItem>
+                  <SelectItem value="fixed">Fixed</SelectItem>
+                  <SelectItem value="flexible">Flexible</SelectItem>
+                  <SelectItem value="non_monthly">Non-Monthly</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">Controls how this group appears on the Budgets page.</p>
             </div>
             {groupForm.budget_type === 'business' && businessProfiles && businessProfiles.length > 0 && (
               <div className="space-y-2">
