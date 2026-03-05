@@ -5,12 +5,18 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import {
   Send, Volume2, VolumeX, Pause, Play, Bot, User,
-  BookOpen, Route, Loader2, AlertTriangle, Lightbulb, ShieldAlert
+  BookOpen, Route, Loader2, AlertTriangle, Lightbulb, ShieldAlert,
+  Bookmark, BookmarkCheck, Trash2, Star
 } from 'lucide-react';
 import { useTTS } from '@/hooks/use-tts';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { format } from 'date-fns';
 
 type Msg = { role: 'user' | 'assistant'; content: string };
 
@@ -78,18 +84,74 @@ async function streamChat(
 }
 
 const TaxAssistant = () => {
+  const { user } = useAuth();
+  const qc = useQueryClient();
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [ttsContent, setTtsContent] = useState<{ overview: string; walkthrough: string }>({ overview: '', walkthrough: '' });
   const [ttsLoading, setTtsLoading] = useState<{ overview: boolean; walkthrough: boolean }>({ overview: false, walkthrough: false });
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; question: string } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const tts = useTTS();
 
+  // Fetch saved responses
+  const { data: savedResponses, isLoading: savedLoading } = useQuery({
+    queryKey: ['saved_tax_responses', user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('saved_tax_responses')
+        .select('*')
+        .eq('user_id', user!.id)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data as { id: string; question: string; response: string; tags: string[]; created_at: string }[];
+    },
+  });
+
+  const saveResponse = useMutation({
+    mutationFn: async ({ question, response }: { question: string; response: string }) => {
+      const { error } = await supabase
+        .from('saved_tax_responses')
+        .insert({ user_id: user!.id, question, response } as any);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['saved_tax_responses'] });
+      toast.success('Response saved to favorites!');
+    },
+    onError: (e) => toast.error('Failed to save: ' + e.message),
+  });
+
+  const deleteResponse = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('saved_tax_responses')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['saved_tax_responses'] });
+      toast.success('Removed from favorites');
+      setDeleteTarget(null);
+    },
+    onError: (e) => toast.error('Failed: ' + e.message),
+  });
+
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages]);
+
+  // Find the question (user message) before a given assistant message index
+  const getQuestionForIndex = (assistantIndex: number): string => {
+    for (let i = assistantIndex - 1; i >= 0; i--) {
+      if (messages[i].role === 'user') return messages[i].content;
+    }
+    return 'Tax question';
+  };
 
   const send = async (text: string) => {
     if (!text.trim() || loading) return;
@@ -156,8 +218,14 @@ const TaxAssistant = () => {
       </div>
 
       <Tabs defaultValue="chat" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="chat" className="gap-2"><Bot className="h-4 w-4" /> Chat</TabsTrigger>
+          <TabsTrigger value="saved" className="gap-2">
+            <Star className="h-4 w-4" /> Saved
+            {savedResponses && savedResponses.length > 0 && (
+              <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-[10px]">{savedResponses.length}</Badge>
+            )}
+          </TabsTrigger>
           <TabsTrigger value="overview" className="gap-2"><BookOpen className="h-4 w-4" /> TTS Overview</TabsTrigger>
           <TabsTrigger value="walkthrough" className="gap-2"><Route className="h-4 w-4" /> TTS Walkthrough</TabsTrigger>
         </TabsList>
@@ -194,12 +262,42 @@ const TaxAssistant = () => {
                           <Bot className="h-4 w-4 text-primary" />
                         </div>
                       )}
-                      <div className={`max-w-[80%] rounded-xl px-4 py-3 text-sm whitespace-pre-wrap ${
-                        m.role === 'user'
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted text-foreground'
-                      }`}>
-                        {m.content}
+                      <div className="flex flex-col gap-1 max-w-[80%]">
+                        <div className={`rounded-xl px-4 py-3 text-sm whitespace-pre-wrap ${
+                          m.role === 'user'
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-muted text-foreground'
+                        }`}>
+                          {m.content}
+                        </div>
+                        {m.role === 'assistant' && !loading && m.content.length > 20 && (
+                          <div className="flex gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 px-2 text-[10px] text-muted-foreground hover:text-primary gap-1"
+                              onClick={() => saveResponse.mutate({
+                                question: getQuestionForIndex(i),
+                                response: m.content,
+                              })}
+                              disabled={saveResponse.isPending}
+                            >
+                              <Bookmark className="h-3 w-3" /> Save
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 px-2 text-[10px] text-muted-foreground hover:text-primary gap-1"
+                              onClick={() => {
+                                if (tts.isSpeaking) tts.stop();
+                                else tts.speak(m.content);
+                              }}
+                            >
+                              {tts.isSpeaking ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}
+                              {tts.isSpeaking ? 'Stop' : 'Listen'}
+                            </Button>
+                          </div>
+                        )}
                       </div>
                       {m.role === 'user' && (
                         <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center shrink-0">
@@ -233,19 +331,6 @@ const TaxAssistant = () => {
                 <Button onClick={() => send(input)} disabled={loading || !input.trim()} size="icon">
                   <Send className="h-4 w-4" />
                 </Button>
-                {messages.length > 0 && messages[messages.length - 1]?.role === 'assistant' && (
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => {
-                      if (tts.isSpeaking) tts.stop();
-                      else tts.speak(messages[messages.length - 1].content);
-                    }}
-                    title={tts.isSpeaking ? 'Stop reading' : 'Read aloud'}
-                  >
-                    {tts.isSpeaking ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-                  </Button>
-                )}
               </div>
             </CardContent>
           </Card>
@@ -273,6 +358,62 @@ const TaxAssistant = () => {
           </div>
         </TabsContent>
 
+        {/* Saved Tab */}
+        <TabsContent value="saved" className="space-y-4">
+          {savedLoading ? (
+            <div className="flex items-center justify-center p-10"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+          ) : (!savedResponses || savedResponses.length === 0) ? (
+            <Card>
+              <CardContent className="p-10 text-center text-muted-foreground">
+                <BookmarkCheck className="mx-auto h-10 w-10 opacity-30 mb-3" />
+                <p className="text-sm">No saved responses yet.</p>
+                <p className="text-xs mt-1">Click the "Save" button on any AI response to bookmark it here.</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-4">
+              {savedResponses.map(saved => (
+                <Card key={saved.id} className="group border-border transition-shadow hover:shadow-md">
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge variant="outline" className="text-[10px] shrink-0">
+                            {format(new Date(saved.created_at), 'MMM d, yyyy')}
+                          </Badge>
+                          <p className="text-sm font-medium text-primary truncate">{saved.question}</p>
+                        </div>
+                        <ScrollArea className="max-h-[200px]">
+                          <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">{saved.response}</p>
+                        </ScrollArea>
+                      </div>
+                      <div className="flex flex-col gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={() => tts.isSpeaking ? tts.stop() : tts.speak(saved.response)}
+                          title={tts.isSpeaking ? 'Stop' : 'Listen'}
+                        >
+                          {tts.isSpeaking ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-destructive hover:text-destructive"
+                          onClick={() => setDeleteTarget({ id: saved.id, question: saved.question })}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
         {/* TTS Overview Tab */}
         <TabsContent value="overview">
           <TTSSection
@@ -283,6 +424,7 @@ const TaxAssistant = () => {
             isLoading={ttsLoading.overview}
             tts={tts}
             onGenerate={() => generateTTS('overview')}
+            onSave={ttsContent.overview ? () => saveResponse.mutate({ question: 'Tax Deductions Overview (TTS)', response: ttsContent.overview }) : undefined}
           />
         </TabsContent>
 
@@ -296,16 +438,38 @@ const TaxAssistant = () => {
             isLoading={ttsLoading.walkthrough}
             tts={tts}
             onGenerate={() => generateTTS('walkthrough')}
+            onSave={ttsContent.walkthrough ? () => saveResponse.mutate({ question: 'Step-by-Step Walkthrough (TTS)', response: ttsContent.walkthrough }) : undefined}
           />
         </TabsContent>
       </Tabs>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={open => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove saved response?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will remove "{deleteTarget?.question}" from your saved favorites.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteTarget && deleteResponse.mutate(deleteTarget.id)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
 
-function TTSSection({ title, description, icon, content, isLoading, tts, onGenerate }: {
+function TTSSection({ title, description, icon, content, isLoading, tts, onGenerate, onSave }: {
   title: string; description: string; icon: React.ReactNode; content: string;
-  isLoading: boolean; tts: ReturnType<typeof useTTS>; onGenerate: () => void;
+  isLoading: boolean; tts: ReturnType<typeof useTTS>; onGenerate: () => void; onSave?: () => void;
 }) {
   return (
     <Card className="border-border">
@@ -349,6 +513,11 @@ function TTSSection({ title, description, icon, content, isLoading, tts, onGener
                     <VolumeX className="h-4 w-4" /> Stop
                   </Button>
                 </>
+              )}
+              {onSave && (
+                <Button onClick={onSave} variant="outline" className="gap-2">
+                  <Bookmark className="h-4 w-4" /> Save
+                </Button>
               )}
               <Button onClick={onGenerate} variant="ghost" size="sm" className="text-xs">
                 Regenerate

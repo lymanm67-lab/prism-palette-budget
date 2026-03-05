@@ -434,6 +434,33 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_tax_responses: {
+        Row: {
+          created_at: string
+          id: string
+          question: string
+          response: string
+          tags: string[] | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          question: string
+          response: string
+          tags?: string[] | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          question?: string
+          response?: string
+          tags?: string[] | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       transactions: {
         Row: {
           account_id: string
