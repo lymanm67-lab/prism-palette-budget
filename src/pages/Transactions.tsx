@@ -24,6 +24,7 @@ import {
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import CsvImportDialog from '@/components/CsvImportDialog';
 import PageOverview from '@/components/PageOverview';
+import { useDuplicateDetection } from '@/hooks/use-duplicate-detection';
 
 import { cn } from '@/lib/utils';
 import { format, parseISO } from 'date-fns';
@@ -64,6 +65,7 @@ const Transactions = () => {
   const { data: goals } = useGoals();
   const { household } = useHousehold();
   const qc = useQueryClient();
+  const { isDuplicate } = useDuplicateDetection();
 
   const [search, setSearch] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
@@ -255,9 +257,19 @@ const Transactions = () => {
     return groups;
   }, [filtered]);
 
+  const [dupeWarningShown, setDupeWarningShown] = useState(false);
+
   const handleCreate = async () => {
     const rawAmount = parseFloat(form.amount);
     const finalAmount = formType === 'debit' ? -Math.abs(rawAmount) : Math.abs(rawAmount);
+
+    // Check for duplicates (warn once, allow override)
+    if (!dupeWarningShown && isDuplicate(form.date, finalAmount, form.merchant)) {
+      toast.warning('This looks like a duplicate transaction. Click "Add" again to confirm.', { duration: 4000 });
+      setDupeWarningShown(true);
+      return;
+    }
+
     const tags = form.tags ? form.tags.split(',').map(t => t.trim()).filter(Boolean) : null;
     const result = await createTransaction.mutateAsync({
       date: form.date, merchant: form.merchant || null, amount: finalAmount,
@@ -284,6 +296,7 @@ const Transactions = () => {
     setPendingReceiptFile(null);
     setForm({ date: new Date().toISOString().split('T')[0], merchant: '', amount: '', account_id: '', category_id: '', notes: '', tags: '', goal_id: '' });
     setFormType('debit');
+    setDupeWarningShown(false);
     setOpen(false);
   };
 
