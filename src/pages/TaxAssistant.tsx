@@ -9,7 +9,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import {
   Send, Volume2, VolumeX, Pause, Play, Bot, User,
   BookOpen, Route, Loader2, AlertTriangle, Lightbulb, ShieldAlert,
-  Bookmark, BookmarkCheck, Trash2, Star
+  Bookmark, BookmarkCheck, Trash2, Star, Wrench, FileWarning, Theater
 } from 'lucide-react';
 import { useTTS } from '@/hooks/use-tts';
 import { useAuth } from '@/contexts/AuthContext';
@@ -17,6 +17,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import ReactMarkdown from 'react-markdown';
 
 type Msg = { role: 'user' | 'assistant'; content: string };
 
@@ -89,8 +90,8 @@ const TaxAssistant = () => {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [ttsContent, setTtsContent] = useState<{ overview: string; walkthrough: string }>({ overview: '', walkthrough: '' });
-  const [ttsLoading, setTtsLoading] = useState<{ overview: boolean; walkthrough: boolean }>({ overview: false, walkthrough: false });
+  const [ttsContent, setTtsContent] = useState<Record<string, string>>({ overview: '', walkthrough: '', scenarios: '', tools: '', pitfalls: '' });
+  const [ttsLoading, setTtsLoading] = useState<Record<string, boolean>>({ overview: false, walkthrough: false, scenarios: false, tools: false, pitfalls: false });
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; question: string } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -182,18 +183,22 @@ const TaxAssistant = () => {
     }
   };
 
-  const generateTTS = async (mode: 'overview' | 'walkthrough') => {
+  const generateContent = async (mode: string, withTTS = false) => {
     if (ttsLoading[mode]) return;
     setTtsLoading(prev => ({ ...prev, [mode]: true }));
     let content = '';
 
-    try {
-      const prompt = mode === 'overview'
-        ? 'Give me a comprehensive overview of business tax deductions.'
-        : 'Walk me through claiming business tax deductions step by step.';
+    const prompts: Record<string, string> = {
+      overview: 'Give me a comprehensive overview of business tax deductions.',
+      walkthrough: 'Walk me through claiming business tax deductions step by step.',
+      scenarios: 'Give me detailed real-world tax scenarios and examples for small business owners with multiple businesses.',
+      tools: 'What are the best tax tools, software, and resources for small business owners managing multiple businesses?',
+      pitfalls: 'What are the most dangerous tax pitfalls, IRS audit triggers, and common mistakes small business owners with multiple businesses should avoid?',
+    };
 
+    try {
       await streamChat(
-        [{ role: 'user', content: prompt }],
+        [{ role: 'user', content: prompts[mode] || prompts.overview }],
         mode,
         (chunk) => {
           content += chunk;
@@ -201,7 +206,7 @@ const TaxAssistant = () => {
         },
         () => {
           setTtsLoading(prev => ({ ...prev, [mode]: false }));
-          tts.speak(content);
+          if (withTTS) tts.speak(content);
         },
       );
     } catch (e: any) {
@@ -218,16 +223,19 @@ const TaxAssistant = () => {
       </div>
 
       <Tabs defaultValue="chat" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="chat" className="gap-2"><Bot className="h-4 w-4" /> Chat</TabsTrigger>
-          <TabsTrigger value="saved" className="gap-2">
-            <Star className="h-4 w-4" /> Saved
+        <TabsList className="flex flex-wrap h-auto gap-1">
+          <TabsTrigger value="chat" className="gap-1.5 text-xs"><Bot className="h-3.5 w-3.5" /> Chat</TabsTrigger>
+          <TabsTrigger value="scenarios" className="gap-1.5 text-xs"><Theater className="h-3.5 w-3.5" /> Scenarios</TabsTrigger>
+          <TabsTrigger value="tools" className="gap-1.5 text-xs"><Wrench className="h-3.5 w-3.5" /> Tools</TabsTrigger>
+          <TabsTrigger value="pitfalls" className="gap-1.5 text-xs"><FileWarning className="h-3.5 w-3.5" /> Pitfalls</TabsTrigger>
+          <TabsTrigger value="saved" className="gap-1.5 text-xs">
+            <Star className="h-3.5 w-3.5" /> Saved
             {savedResponses && savedResponses.length > 0 && (
               <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-[10px]">{savedResponses.length}</Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="overview" className="gap-2"><BookOpen className="h-4 w-4" /> TTS Overview</TabsTrigger>
-          <TabsTrigger value="walkthrough" className="gap-2"><Route className="h-4 w-4" /> TTS Walkthrough</TabsTrigger>
+          <TabsTrigger value="overview" className="gap-1.5 text-xs"><BookOpen className="h-3.5 w-3.5" /> TTS Overview</TabsTrigger>
+          <TabsTrigger value="walkthrough" className="gap-1.5 text-xs"><Route className="h-3.5 w-3.5" /> TTS Walkthrough</TabsTrigger>
         </TabsList>
 
         {/* Chat Tab */}
@@ -263,12 +271,16 @@ const TaxAssistant = () => {
                         </div>
                       )}
                       <div className="flex flex-col gap-1 max-w-[80%]">
-                        <div className={`rounded-xl px-4 py-3 text-sm whitespace-pre-wrap ${
+                        <div className={`rounded-xl px-4 py-3 text-sm ${
                           m.role === 'user'
-                            ? 'bg-primary text-primary-foreground'
+                            ? 'bg-primary text-primary-foreground whitespace-pre-wrap'
                             : 'bg-muted text-foreground'
                         }`}>
-                          {m.content}
+                          {m.role === 'assistant' ? (
+                            <div className="prose prose-sm dark:prose-invert max-w-none">
+                              <ReactMarkdown>{m.content}</ReactMarkdown>
+                            </div>
+                          ) : m.content}
                         </div>
                         {m.role === 'assistant' && !loading && m.content.length > 20 && (
                           <div className="flex gap-1">
@@ -414,30 +426,75 @@ const TaxAssistant = () => {
           )}
         </TabsContent>
 
+        {/* Scenarios Tab */}
+        <TabsContent value="scenarios">
+          <ContentSection
+            title="Real-World Tax Scenarios & Examples"
+            description="Explore detailed, realistic tax scenarios for small business owners with multiple businesses — complete with calculations and IRS form references."
+            icon={<Theater className="h-5 w-5 text-primary" />}
+            content={ttsContent.scenarios}
+            isLoading={ttsLoading.scenarios}
+            tts={tts}
+            onGenerate={() => generateContent('scenarios')}
+            onSave={ttsContent.scenarios ? () => saveResponse.mutate({ question: 'Tax Scenarios & Examples', response: ttsContent.scenarios }) : undefined}
+            useMarkdown
+          />
+        </TabsContent>
+
+        {/* Tools Tab */}
+        <TabsContent value="tools">
+          <ContentSection
+            title="Tax Tools, Software & Resources"
+            description="Comprehensive guide to accounting software, expense trackers, tax prep tools, and IRS resources for multi-business owners."
+            icon={<Wrench className="h-5 w-5 text-primary" />}
+            content={ttsContent.tools}
+            isLoading={ttsLoading.tools}
+            tts={tts}
+            onGenerate={() => generateContent('tools')}
+            onSave={ttsContent.tools ? () => saveResponse.mutate({ question: 'Tax Tools & Resources', response: ttsContent.tools }) : undefined}
+            useMarkdown
+          />
+        </TabsContent>
+
+        {/* Pitfalls Tab */}
+        <TabsContent value="pitfalls">
+          <ContentSection
+            title="Tax Pitfalls & Audit Triggers"
+            description="Learn about dangerous mistakes, IRS red flags, and common errors that small business owners must avoid — with penalties and how to protect yourself."
+            icon={<FileWarning className="h-5 w-5 text-destructive" />}
+            content={ttsContent.pitfalls}
+            isLoading={ttsLoading.pitfalls}
+            tts={tts}
+            onGenerate={() => generateContent('pitfalls')}
+            onSave={ttsContent.pitfalls ? () => saveResponse.mutate({ question: 'Tax Pitfalls & Audit Triggers', response: ttsContent.pitfalls }) : undefined}
+            useMarkdown
+          />
+        </TabsContent>
+
         {/* TTS Overview Tab */}
         <TabsContent value="overview">
-          <TTSSection
+          <ContentSection
             title="Tax Deductions Overview"
             description="Listen to a comprehensive overview of business tax deductions, key strategies, and what every multi-business owner should know."
             icon={<BookOpen className="h-5 w-5 text-primary" />}
             content={ttsContent.overview}
             isLoading={ttsLoading.overview}
             tts={tts}
-            onGenerate={() => generateTTS('overview')}
+            onGenerate={() => generateContent('overview', true)}
             onSave={ttsContent.overview ? () => saveResponse.mutate({ question: 'Tax Deductions Overview (TTS)', response: ttsContent.overview }) : undefined}
           />
         </TabsContent>
 
         {/* TTS Walkthrough Tab */}
         <TabsContent value="walkthrough">
-          <TTSSection
+          <ContentSection
             title="Step-by-Step Walkthrough"
             description="Follow along as the AI walks you through claiming business tax deductions — from categorizing expenses to preparing for audits."
             icon={<Route className="h-5 w-5 text-primary" />}
             content={ttsContent.walkthrough}
             isLoading={ttsLoading.walkthrough}
             tts={tts}
-            onGenerate={() => generateTTS('walkthrough')}
+            onGenerate={() => generateContent('walkthrough', true)}
             onSave={ttsContent.walkthrough ? () => saveResponse.mutate({ question: 'Step-by-Step Walkthrough (TTS)', response: ttsContent.walkthrough }) : undefined}
           />
         </TabsContent>
@@ -467,9 +524,9 @@ const TaxAssistant = () => {
   );
 };
 
-function TTSSection({ title, description, icon, content, isLoading, tts, onGenerate, onSave }: {
+function ContentSection({ title, description, icon, content, isLoading, tts, onGenerate, onSave, useMarkdown }: {
   title: string; description: string; icon: React.ReactNode; content: string;
-  isLoading: boolean; tts: ReturnType<typeof useTTS>; onGenerate: () => void; onSave?: () => void;
+  isLoading: boolean; tts: ReturnType<typeof useTTS>; onGenerate: () => void; onSave?: () => void; useMarkdown?: boolean;
 }) {
   return (
     <Card className="border-border">
@@ -485,7 +542,7 @@ function TTSSection({ title, description, icon, content, isLoading, tts, onGener
       <CardContent className="space-y-4">
         {!content && !isLoading && (
           <Button onClick={onGenerate} className="gap-2">
-            <Volume2 className="h-4 w-4" /> Generate & Listen
+            <Lightbulb className="h-4 w-4" /> Generate Content
           </Button>
         )}
 
@@ -498,24 +555,24 @@ function TTSSection({ title, description, icon, content, isLoading, tts, onGener
 
         {content && (
           <>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {!tts.isSpeaking ? (
-                <Button onClick={() => tts.speak(content)} variant="outline" className="gap-2">
-                  <Play className="h-4 w-4" /> Play
+                <Button onClick={() => tts.speak(content)} variant="outline" size="sm" className="gap-2">
+                  <Play className="h-4 w-4" /> Listen
                 </Button>
               ) : (
                 <>
-                  <Button onClick={tts.isPaused ? tts.resume : tts.pause} variant="outline" className="gap-2">
+                  <Button onClick={tts.isPaused ? tts.resume : tts.pause} variant="outline" size="sm" className="gap-2">
                     {tts.isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
                     {tts.isPaused ? 'Resume' : 'Pause'}
                   </Button>
-                  <Button onClick={tts.stop} variant="outline" className="gap-2">
+                  <Button onClick={tts.stop} variant="outline" size="sm" className="gap-2">
                     <VolumeX className="h-4 w-4" /> Stop
                   </Button>
                 </>
               )}
               {onSave && (
-                <Button onClick={onSave} variant="outline" className="gap-2">
+                <Button onClick={onSave} variant="outline" size="sm" className="gap-2">
                   <Bookmark className="h-4 w-4" /> Save
                 </Button>
               )}
@@ -523,8 +580,14 @@ function TTSSection({ title, description, icon, content, isLoading, tts, onGener
                 Regenerate
               </Button>
             </div>
-            <ScrollArea className="h-[350px]">
-              <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">{content}</p>
+            <ScrollArea className="h-[500px]">
+              {useMarkdown ? (
+                <div className="prose prose-sm dark:prose-invert max-w-none text-foreground">
+                  <ReactMarkdown>{content}</ReactMarkdown>
+                </div>
+              ) : (
+                <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">{content}</p>
+              )}
             </ScrollArea>
           </>
         )}
