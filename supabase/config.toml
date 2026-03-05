@@ -9,5 +9,8 @@ verify_jwt = false
 [functions.debt-advisor]
 verify_jwt = false
 
+[functions.auto-categorize]
+verify_jwt = false
+
 [functions.spending-insights]
 verify_jwt = false

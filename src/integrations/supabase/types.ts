@@ -263,6 +263,54 @@ export type Database = {
           },
         ]
       }
+      categorization_rules: {
+        Row: {
+          category_id: string
+          created_at: string
+          household_id: string
+          id: string
+          is_ai_generated: boolean
+          match_count: number
+          merchant_pattern: string
+          updated_at: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          household_id: string
+          id?: string
+          is_ai_generated?: boolean
+          match_count?: number
+          merchant_pattern: string
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          household_id?: string
+          id?: string
+          is_ai_generated?: boolean
+          match_count?: number
+          merchant_pattern?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "categorization_rules_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "categorization_rules_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       category_groups: {
         Row: {
           budget_type: string
