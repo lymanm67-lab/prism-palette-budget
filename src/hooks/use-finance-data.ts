@@ -262,7 +262,27 @@ export function useCreateTransaction() {
   });
 }
 
-// ==================== BUDGETS ====================
+export function useUpdateTransaction() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: { id: string } & Partial<TablesInsert<'transactions'>>) => {
+      const { data, error } = await supabase
+        .from('transactions')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['transactions'] });
+      qc.invalidateQueries({ queryKey: ['transactions_all'] });
+      qc.invalidateQueries({ queryKey: ['transactions_range'] });
+    },
+  });
+}
+
 export function useBudgets(month: string) {
   const { household } = useHousehold();
   return useQuery({
