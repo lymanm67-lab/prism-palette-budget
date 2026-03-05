@@ -201,7 +201,7 @@ const Onboarding = () => {
                     variant="ghost"
                     size="lg"
                     onClick={() => navigate('/auth')}
-                    className="text-white/40 hover:text-white hover:bg-white/5 h-14 px-8 rounded-2xl"
+                    className="text-white/40 hover:text-white hover:bg-white/5 h-14 px-8 rounded-2xl" aria-label="Sign in to existing account"
                   >
                     I already have an account
                   </Button>
