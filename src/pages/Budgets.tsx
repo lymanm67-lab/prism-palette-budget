@@ -12,8 +12,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useBudgets, useCategories, useCategoryGroups, useTransactions, useUpsertBudget, useDeleteBudget } from '@/hooks/use-finance-data';
 import { useCurrency } from '@/hooks/use-currency';
-import { Loader2, Plus, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Eye, Settings2 } from 'lucide-react';
+import { Loader2, Plus, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Eye, Settings2, TrendingUp, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getDaysInMonth } from 'date-fns';
 
 const getMonth = (offset: number) => {
   const d = new Date();
@@ -77,6 +78,7 @@ const Budgets = () => {
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const [showUnbudgeted, setShowUnbudgeted] = useState(false);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({ income: true, fixed: true, flexible: true, non_monthly: true });
+  const [viewTab, setViewTab] = useState<'budget' | 'forecast'>('budget');
 
   const toggleSection = (key: string) => setOpenSections(s => ({ ...s, [key]: !s[key] }));
 
@@ -195,6 +197,54 @@ const Budgets = () => {
   // Unbudgeted that have spending
   const unbudgetedWithSpending = unbudgetedCategories.filter(c => (spentByCategory[c.id] || 0) > 0 || (receivedByCategory[c.id] || 0) > 0);
 
+  // Forecast data
+  const forecast = useMemo(() => {
+    const [y, m] = month.split('-').map(Number);
+    const totalDays = getDaysInMonth(new Date(y, m - 1));
+    const today = new Date();
+    const isCurrentMonth = today.getFullYear() === y && today.getMonth() + 1 === m;
+    const daysPassed = isCurrentMonth ? today.getDate() : totalDays;
+    const daysRemaining = totalDays - daysPassed;
+
+    const items: { category_id: string; name: string; color: string; budget: number; spent: number; projected: number; type: ExpenseType }[] = [];
+
+    for (const b of budgetItems) {
+      const type = categoryExpenseType.get(b.category_id) || 'flexible';
+      const isIncome = type === 'income';
+      const actual = isIncome ? b.received : b.spent;
+      const dailyRate = daysPassed > 0 ? actual / daysPassed : 0;
+      const projected = actual + dailyRate * daysRemaining;
+
+      items.push({
+        category_id: b.category_id,
+        name: b.categories?.name || 'Unknown',
+        color: b.categories?.color || 'hsl(var(--primary))',
+        budget: b.planned_amount,
+        spent: actual,
+        projected,
+        type,
+      });
+    }
+
+    const totals = {
+      income: { budget: 0, actual: 0, projected: 0 },
+      expenses: { budget: 0, actual: 0, projected: 0 },
+    };
+    for (const item of items) {
+      if (item.type === 'income') {
+        totals.income.budget += item.budget;
+        totals.income.actual += item.spent;
+        totals.income.projected += item.projected;
+      } else {
+        totals.expenses.budget += item.budget;
+        totals.expenses.actual += item.spent;
+        totals.expenses.projected += item.projected;
+      }
+    }
+
+    return { items, totals, daysPassed, daysRemaining, totalDays, isCurrentMonth };
+  }, [budgetItems, categoryExpenseType, month]);
+
   const openCreate = () => {
     setEditingBudget(null);
     setForm({ category_id: unbudgetedCategories[0]?.id || '', planned_amount: '' });
@@ -296,11 +346,17 @@ const Budgets = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl font-bold">{formatMonth(month)}</h1>
-          <div className="flex items-center gap-3 mt-2">
+        <div className="flex items-center gap-3 mt-2">
             <Tabs value={budgetType} onValueChange={(v) => setBudgetType(v as 'personal' | 'business')}>
               <TabsList>
                 <TabsTrigger value="personal">Personal</TabsTrigger>
                 <TabsTrigger value="business">Business</TabsTrigger>
+              </TabsList>
+            </Tabs>
+            <Tabs value={viewTab} onValueChange={(v) => setViewTab(v as 'budget' | 'forecast')}>
+              <TabsList>
+                <TabsTrigger value="budget">Budget</TabsTrigger>
+                <TabsTrigger value="forecast" className="gap-1.5"><TrendingUp className="h-3.5 w-3.5" /> Forecast</TabsTrigger>
               </TabsList>
             </Tabs>
             {budgetType === 'business' && businessNames.length > 0 && (
@@ -330,6 +386,7 @@ const Budgets = () => {
         </div>
       </div>
 
+      {viewTab === 'budget' ? (
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6">
         {/* Main budget table */}
         <div className="space-y-2">
@@ -365,7 +422,6 @@ const Budgets = () => {
           {/* Expenses Section */}
           <Card className="overflow-hidden">
             <CardContent className="p-2 space-y-1">
-              {/* Column headers for expenses */}
               <div className="flex items-center gap-3 px-3 py-1.5 text-xs font-medium text-muted-foreground border-b">
                 <ChevronDown className="h-4 w-4 invisible" />
                 <span className="flex-1">Expenses</span>
@@ -393,7 +449,7 @@ const Budgets = () => {
             <div className="w-[62px]" />
           </div>
 
-          {/* Unbudgeted categories (collapsed accordion) */}
+          {/* Unbudgeted categories */}
           {unbudgetedCategories.length > 0 && (
             <Collapsible open={showUnbudgeted} onOpenChange={setShowUnbudgeted}>
               <CollapsibleTrigger asChild>
@@ -435,7 +491,6 @@ const Budgets = () => {
 
         {/* Right sidebar - Budget Summary */}
         <div className="space-y-4">
-          {/* Left to budget card */}
           <Card className={cn('border-2', leftToBudget < 0 ? 'border-rose-500/30 bg-rose-500/5' : leftToBudget === 0 ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-primary/20')}>
             <CardContent className="p-5 text-center">
               <p className={cn('text-3xl font-bold font-display', leftToBudget < 0 ? 'text-rose-600 dark:text-rose-400' : leftToBudget === 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-primary')}>
@@ -447,12 +502,9 @@ const Budgets = () => {
             </CardContent>
           </Card>
 
-          {/* Summary breakdown tabs */}
           <Card>
             <CardContent className="p-4 space-y-4">
               <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Summary</p>
-
-              {/* Income summary */}
               <div>
                 <div className="flex justify-between text-sm">
                   <span className="font-medium">Income</span>
@@ -466,8 +518,6 @@ const Budgets = () => {
                   <span className="text-emerald-600 dark:text-emerald-400">{formatCurrency(Math.abs(totalIncomeRemaining))} remaining</span>
                 </div>
               </div>
-
-              {/* Expense sections */}
               {(['fixed', 'flexible', 'non_monthly'] as ExpenseType[]).map(type => {
                 const t = sectionTotals[type];
                 const pct = t.budget > 0 ? Math.min((t.actual / t.budget) * 100, 100) : 0;
@@ -494,6 +544,183 @@ const Budgets = () => {
           </Card>
         </div>
       </div>
+      ) : (
+      /* ============ FORECAST TAB ============ */
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6">
+        <div className="space-y-4">
+          {/* Progress through month */}
+          <Card>
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-display font-semibold">Month Progress</h3>
+                <span className="text-sm text-muted-foreground">Day {forecast.daysPassed} of {forecast.totalDays}</span>
+              </div>
+              <Progress value={(forecast.daysPassed / forecast.totalDays) * 100} className="h-2" />
+              <p className="text-xs text-muted-foreground mt-2">
+                {forecast.isCurrentMonth
+                  ? `${forecast.daysRemaining} days remaining — projections based on daily spending rate`
+                  : 'This is not the current month — showing full actuals'}
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Forecast table */}
+          <div className="flex items-center gap-3 px-3 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <span className="flex-1">Category</span>
+            <span className="w-[90px] text-right">Budget</span>
+            <span className="w-[90px] text-right">Spent</span>
+            <span className="w-[100px] text-right">Projected</span>
+            <span className="w-[80px] text-right">Status</span>
+          </div>
+
+          {/* Expense forecast items */}
+          <Card className="overflow-hidden">
+            <CardContent className="p-0 divide-y">
+              {forecast.items.filter(i => i.type !== 'income').sort((a, b) => (b.projected - b.budget) - (a.projected - a.budget)).map(item => {
+                const overBudget = item.projected > item.budget && item.budget > 0;
+                const pct = item.budget > 0 ? (item.projected / item.budget) * 100 : 0;
+                return (
+                  <div key={item.category_id} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/30 transition-colors">
+                    <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
+                    <span className="flex-1 text-sm font-medium truncate">{item.name}</span>
+                    <span className="w-[90px] text-right text-sm tabular-nums">{formatCurrency(item.budget)}</span>
+                    <span className="w-[90px] text-right text-sm tabular-nums text-muted-foreground">{formatCurrency(item.spent)}</span>
+                    <span className={cn('w-[100px] text-right text-sm font-semibold tabular-nums', overBudget ? 'text-rose-600 dark:text-rose-400' : 'text-foreground')}>
+                      {formatCurrency(item.projected)}
+                    </span>
+                    <div className="w-[80px] flex justify-end">
+                      {item.budget === 0 ? (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      ) : overBudget ? (
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-rose-600 dark:text-rose-400">
+                          <AlertTriangle className="h-3 w-3" /> {Math.round(pct)}%
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                          <CheckCircle2 className="h-3 w-3" /> {Math.round(pct)}%
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+              {forecast.items.filter(i => i.type !== 'income').length === 0 && (
+                <div className="p-8 text-center text-muted-foreground text-sm">No budgeted expenses to forecast.</div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Income forecast */}
+          {forecast.items.filter(i => i.type === 'income').length > 0 && (
+            <>
+              <h3 className="font-display font-semibold text-sm text-muted-foreground uppercase tracking-wider px-3 pt-2">Income Forecast</h3>
+              <Card className="overflow-hidden">
+                <CardContent className="p-0 divide-y">
+                  {forecast.items.filter(i => i.type === 'income').map(item => {
+                    const onTrack = item.projected >= item.budget;
+                    const pct = item.budget > 0 ? (item.projected / item.budget) * 100 : 0;
+                    return (
+                      <div key={item.category_id} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/30 transition-colors">
+                        <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
+                        <span className="flex-1 text-sm font-medium truncate">{item.name}</span>
+                        <span className="w-[90px] text-right text-sm tabular-nums">{formatCurrency(item.budget)}</span>
+                        <span className="w-[90px] text-right text-sm tabular-nums text-muted-foreground">{formatCurrency(item.spent)}</span>
+                        <span className={cn('w-[100px] text-right text-sm font-semibold tabular-nums', onTrack ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400')}>
+                          {formatCurrency(item.projected)}
+                        </span>
+                        <div className="w-[80px] flex justify-end">
+                          <span className={cn('text-xs font-medium', onTrack ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400')}>
+                            {Math.round(pct)}%
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </CardContent>
+              </Card>
+            </>
+          )}
+        </div>
+
+        {/* Forecast sidebar */}
+        <div className="space-y-4">
+          {/* Projected savings */}
+          {(() => {
+            const projectedSavings = forecast.totals.income.projected - forecast.totals.expenses.projected;
+            const isPositive = projectedSavings >= 0;
+            return (
+              <Card className={cn('border-2', isPositive ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-rose-500/30 bg-rose-500/5')}>
+                <CardContent className="p-5 text-center">
+                  <p className={cn('text-3xl font-bold font-display', isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400')}>
+                    {projectedSavings < 0 ? '-' : ''}{formatCurrency(Math.abs(projectedSavings))}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">Projected Savings</p>
+                </CardContent>
+              </Card>
+            );
+          })()}
+
+          <Card>
+            <CardContent className="p-4 space-y-4">
+              <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Forecast Summary</p>
+
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span>Projected Income</span>
+                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">{formatCurrency(forecast.totals.income.projected)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>Projected Expenses</span>
+                  <span className="font-semibold">{formatCurrency(forecast.totals.expenses.projected)}</span>
+                </div>
+                <div className="border-t pt-3 flex justify-between text-sm">
+                  <span>Budget (Expenses)</span>
+                  <span className="font-semibold">{formatCurrency(forecast.totals.expenses.budget)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>Variance</span>
+                  {(() => {
+                    const variance = forecast.totals.expenses.budget - forecast.totals.expenses.projected;
+                    return (
+                      <span className={cn('font-semibold', variance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400')}>
+                        {variance >= 0 ? '+' : '-'}{formatCurrency(Math.abs(variance))}
+                      </span>
+                    );
+                  })()}
+                </div>
+              </div>
+
+              {/* At-risk categories */}
+              {(() => {
+                const atRisk = forecast.items.filter(i => i.type !== 'income' && i.budget > 0 && i.projected > i.budget);
+                if (atRisk.length === 0) return (
+                  <div className="flex items-center gap-2 p-3 rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+                    <CheckCircle2 className="h-4 w-4 shrink-0" />
+                    <span className="text-sm font-medium">All categories on track!</span>
+                  </div>
+                );
+                return (
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold text-rose-600 dark:text-rose-400 uppercase tracking-wider flex items-center gap-1">
+                      <AlertTriangle className="h-3 w-3" /> At Risk ({atRisk.length})
+                    </p>
+                    {atRisk.map(item => (
+                      <div key={item.category_id} className="flex items-center gap-2 text-sm">
+                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: item.color }} />
+                        <span className="flex-1 truncate">{item.name}</span>
+                        <span className="text-xs text-rose-600 dark:text-rose-400 font-medium">
+                          +{formatCurrency(item.projected - item.budget)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+      )}
 
       {/* Create / Edit Budget Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
