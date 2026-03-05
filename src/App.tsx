@@ -17,8 +17,10 @@ import Categories from "@/pages/Categories";
 import ResetPassword from "@/pages/ResetPassword";
 import Settings from "@/pages/Settings";
 import TaxAssistant from "@/pages/TaxAssistant";
+import Goals from "@/pages/Goals";
 import NotFound from "./pages/NotFound";
 import Onboarding from "@/pages/Onboarding";
+import LandingPage from "@/pages/LandingPage";
 
 const queryClient = new QueryClient();
 
@@ -45,7 +47,8 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            <Route path="/" element={<AuthRoute><Onboarding /></AuthRoute>} />
+            <Route path="/" element={<AuthRoute><LandingPage /></AuthRoute>} />
+            <Route path="/onboarding" element={<AuthRoute><Onboarding /></AuthRoute>} />
             <Route path="/auth" element={<AuthRoute><Auth /></AuthRoute>} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route element={
@@ -61,6 +64,7 @@ const App = () => (
               <Route path="/budgets" element={<Budgets />} />
               <Route path="/categories" element={<Categories />} />
               <Route path="/reports" element={<Reports />} />
+              <Route path="/goals" element={<Goals />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/tax-assistant" element={<TaxAssistant />} />
             </Route>

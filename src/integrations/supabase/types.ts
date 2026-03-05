@@ -311,6 +311,62 @@ export type Database = {
           },
         ]
       }
+      financial_goals: {
+        Row: {
+          color: string | null
+          created_at: string
+          current_amount: number
+          goal_type: string
+          household_id: string
+          icon: string | null
+          id: string
+          is_completed: boolean
+          name: string
+          notes: string | null
+          target_amount: number
+          target_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          current_amount?: number
+          goal_type?: string
+          household_id: string
+          icon?: string | null
+          id?: string
+          is_completed?: boolean
+          name: string
+          notes?: string | null
+          target_amount?: number
+          target_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          current_amount?: number
+          goal_type?: string
+          household_id?: string
+          icon?: string | null
+          id?: string
+          is_completed?: boolean
+          name?: string
+          notes?: string | null
+          target_amount?: number
+          target_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_goals_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       household_members: {
         Row: {
           created_at: string
@@ -447,6 +503,79 @@ export type Database = {
         }
         Relationships: []
       }
+      recurring_transactions: {
+        Row: {
+          account_id: string
+          amount: number
+          category_id: string | null
+          created_at: string
+          end_date: string | null
+          frequency: string
+          household_id: string
+          id: string
+          is_active: boolean
+          merchant: string | null
+          next_due_date: string
+          notes: string | null
+          start_date: string
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          amount: number
+          category_id?: string | null
+          created_at?: string
+          end_date?: string | null
+          frequency?: string
+          household_id: string
+          id?: string
+          is_active?: boolean
+          merchant?: string | null
+          next_due_date: string
+          notes?: string | null
+          start_date: string
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          amount?: number
+          category_id?: string | null
+          created_at?: string
+          end_date?: string | null
+          frequency?: string
+          household_id?: string
+          id?: string
+          is_active?: boolean
+          merchant?: string | null
+          next_due_date?: string
+          notes?: string | null
+          start_date?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recurring_transactions_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recurring_transactions_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recurring_transactions_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       saved_tax_responses: {
         Row: {
           created_at: string
@@ -474,6 +603,48 @@ export type Database = {
         }
         Relationships: []
       }
+      transaction_splits: {
+        Row: {
+          amount: number
+          category_id: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          transaction_id: string
+        }
+        Insert: {
+          amount: number
+          category_id?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          transaction_id: string
+        }
+        Update: {
+          amount?: number
+          category_id?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          transaction_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transaction_splits_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transaction_splits_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       transactions: {
         Row: {
           account_id: string
@@ -483,11 +654,13 @@ export type Database = {
           date: string
           household_id: string
           id: string
+          is_transfer: boolean
           merchant: string | null
           needs_review: boolean
           notes: string | null
           provider_transaction_id: string | null
           tags: string[] | null
+          transfer_pair_id: string | null
           updated_at: string
         }
         Insert: {
@@ -498,11 +671,13 @@ export type Database = {
           date: string
           household_id: string
           id?: string
+          is_transfer?: boolean
           merchant?: string | null
           needs_review?: boolean
           notes?: string | null
           provider_transaction_id?: string | null
           tags?: string[] | null
+          transfer_pair_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -513,11 +688,13 @@ export type Database = {
           date?: string
           household_id?: string
           id?: string
+          is_transfer?: boolean
           merchant?: string | null
           needs_review?: boolean
           notes?: string | null
           provider_transaction_id?: string | null
           tags?: string[] | null
+          transfer_pair_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -540,6 +717,13 @@ export type Database = {
             columns: ["household_id"]
             isOneToOne: false
             referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_transfer_pair_id_fkey"
+            columns: ["transfer_pair_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
             referencedColumns: ["id"]
           },
         ]
