@@ -159,7 +159,10 @@ const LandingPage = () => {
             </div>
             <span className="font-display font-bold">PrismBudget</span>
           </div>
-          <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} PrismBudget. All rights reserved.</p>
+          <div className="flex items-center gap-4">
+            <button onClick={() => navigate('/legal')} className="text-xs text-muted-foreground hover:text-foreground transition-colors">Legal & Compliance</button>
+            <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} PrismBudget. All rights reserved.</p>
+          </div>
         </div>
       </footer>
     </div>
