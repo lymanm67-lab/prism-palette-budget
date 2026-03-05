@@ -280,6 +280,53 @@ export type Database = {
         }
         Relationships: []
       }
+      plaid_items: {
+        Row: {
+          consent_expiration: string | null
+          created_at: string
+          household_id: string
+          id: string
+          institution_id: string | null
+          institution_name: string | null
+          plaid_access_token: string
+          plaid_item_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          consent_expiration?: string | null
+          created_at?: string
+          household_id: string
+          id?: string
+          institution_id?: string | null
+          institution_name?: string | null
+          plaid_access_token: string
+          plaid_item_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          consent_expiration?: string | null
+          created_at?: string
+          household_id?: string
+          id?: string
+          institution_id?: string | null
+          institution_name?: string | null
+          plaid_access_token?: string
+          plaid_item_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plaid_items_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null

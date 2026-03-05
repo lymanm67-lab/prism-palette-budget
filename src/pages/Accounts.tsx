@@ -11,6 +11,7 @@ import { useAccounts, useCreateAccount } from '@/hooks/use-finance-data';
 import { formatCurrency, formatDate } from '@/lib/seed-data';
 import { Plus, RefreshCw, Landmark, CreditCard, TrendingUp, PiggyBank, Car, Loader2 } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
+import PlaidLinkButton from '@/components/PlaidLinkButton';
 
 type AccountType = Database['public']['Enums']['account_type'];
 
@@ -55,7 +56,9 @@ const Accounts = () => {
           <h1 className="font-display text-3xl font-bold">Accounts</h1>
           <p className="text-muted-foreground">All your connected financial accounts.</p>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
+        <div className="flex gap-2">
+          <PlaidLinkButton />
+          <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button className="gap-2"><Plus className="h-4 w-4" /> Add Account</Button>
           </DialogTrigger>
@@ -91,6 +94,7 @@ const Accounts = () => {
             </div>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {Object.keys(grouped).length === 0 && (
