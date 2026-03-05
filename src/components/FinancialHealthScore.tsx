@@ -1,10 +1,10 @@
-import { useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { useMemo, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { useGoals } from '@/hooks/use-goals';
 import { useDebtPlans, useDebtItems } from '@/hooks/use-debt-plans';
 import { cn } from '@/lib/utils';
-import { Shield, TrendingUp, PiggyBank, CreditCard, Landmark, ChevronRight } from 'lucide-react';
+import { Shield, TrendingUp, PiggyBank, CreditCard, Landmark, ChevronRight, ChevronDown, Lightbulb } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface FinancialHealthScoreProps {
@@ -69,19 +69,50 @@ const FinancialHealthScore = ({ monthlyIncome, monthlyExpenses, totalAssets, tot
 
     const total = savingsScore + dtiScore + emergencyScore + netWorthScore;
 
+    // Generate tips for each component
+    const savingsTips: string[] = [];
+    if (savingsRate < 0.05) savingsTips.push('Start by saving even 5% of your income — automate a transfer on payday.');
+    else if (savingsRate < 0.10) savingsTips.push('You\'re saving, but try to reach 10% — cut one subscription or dining-out expense.');
+    else if (savingsRate < 0.20) savingsTips.push('Great start! Boost to 20% by redirecting bonuses or raises to savings.');
+    if (savingsRate < 0.20) savingsTips.push('Review your spending trends to find categories where you can cut back.');
+
+    const debtTips: string[] = [];
+    if (dti > 0.50) debtTips.push('Your DTI is very high — consider debt consolidation or negotiating lower rates.');
+    else if (dti > 0.36) debtTips.push('Aim to get DTI below 36% — focus extra payments on your highest-interest debt.');
+    if (dti > 0.20) debtTips.push('Use the Debt Payoff tool to create an avalanche or snowball plan.');
+    if (dti > 0 && dti <= 0.20) debtTips.push('Your debt is manageable — keep making consistent payments to eliminate it.');
+
+    const emergencyTips: string[] = [];
+    if (!emergencyGoal) emergencyTips.push('Create an Emergency Fund goal targeting 3–6 months of expenses.');
+    else if (emergencyGoal.current_amount < emergencyGoal.target_amount * 0.25) emergencyTips.push('Start small — aim for $1,000 first, then build toward your full target.');
+    else if (emergencyGoal.current_amount < emergencyGoal.target_amount) emergencyTips.push('Keep going! Set up automatic deposits to reach your emergency fund target.');
+
+    const netWorthTips: string[] = [];
+    if (netWorth < 0) netWorthTips.push('Focus on paying down debt to move your net worth positive.');
+    else if (netWorthScore < 10) netWorthTips.push('Grow net worth by maximizing retirement contributions and reducing liabilities.');
+    else if (netWorthScore < 20) netWorthTips.push('Consider diversifying into investments for long-term growth.');
+
     return {
       score: total,
       components: [
-        { label: 'Savings Rate', points: savingsScore, max: 30, value: `${Math.round(savingsRate * 100)}%`, icon: PiggyBank },
-        { label: 'Debt Ratio', points: dtiScore, max: 25, value: `${Math.round(dti * 100)}% DTI`, icon: CreditCard },
-        { label: 'Emergency Fund', points: emergencyScore, max: 25, value: emergencyGoal ? `${Math.round((emergencyGoal.current_amount / Math.max(1, emergencyGoal.target_amount)) * 100)}%` : 'No goal set', icon: Shield },
-        { label: 'Net Worth', points: netWorthScore, max: 20, value: netWorth >= 0 ? 'Positive' : 'Negative', icon: Landmark },
+        { label: 'Savings Rate', points: savingsScore, max: 30, value: `${Math.round(savingsRate * 100)}%`, icon: PiggyBank, tips: savingsTips, link: '/spending-trends' },
+        { label: 'Debt Ratio', points: dtiScore, max: 25, value: `${Math.round(dti * 100)}% DTI`, icon: CreditCard, tips: debtTips, link: '/debt-payoff' },
+        { label: 'Emergency Fund', points: emergencyScore, max: 25, value: emergencyGoal ? `${Math.round((emergencyGoal.current_amount / Math.max(1, emergencyGoal.target_amount)) * 100)}%` : 'No goal set', icon: Shield, tips: emergencyTips, link: '/goals' },
+        { label: 'Net Worth', points: netWorthScore, max: 20, value: netWorth >= 0 ? 'Positive' : 'Negative', icon: Landmark, tips: netWorthTips, link: '/net-worth' },
       ],
     };
   }, [monthlyIncome, monthlyExpenses, totalAssets, totalLiabilities, goals, debtItems]);
 
   const tier = getTier(score);
+  const [showTips, setShowTips] = useState(false);
 
+  // Get the top tips sorted by weakest component first
+  const topTips = useMemo(() => {
+    return [...components]
+      .sort((a, b) => (a.points / a.max) - (b.points / b.max))
+      .filter(c => c.tips.length > 0)
+      .slice(0, 3);
+  }, [components]);
   // SVG donut chart
   const circumference = 2 * Math.PI * 54;
   const offset = circumference - (score / 100) * circumference;
@@ -155,13 +186,49 @@ const FinancialHealthScore = ({ monthlyIncome, monthlyExpenses, totalAssets, tot
             </div>
 
             <button
-              onClick={() => navigate('/goals')}
+              onClick={() => setShowTips(!showTips)}
               className="flex items-center gap-1 text-xs text-primary font-medium mt-3 hover:gap-2 transition-all"
             >
-              Improve your score <ChevronRight className="h-3 w-3" />
+              <Lightbulb className="h-3 w-3" />
+              {showTips ? 'Hide tips' : 'Tips to improve'}
+              <ChevronDown className={cn('h-3 w-3 transition-transform', showTips && 'rotate-180')} />
             </button>
           </div>
         </div>
+
+        {/* Tips Section */}
+        <AnimatePresence>
+          {showTips && topTips.length > 0 && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="overflow-hidden"
+            >
+              <div className="mt-4 pt-4 border-t border-border/50 space-y-3">
+                {topTips.map(comp => (
+                  <div key={comp.label} className="space-y-1.5">
+                    <button
+                      onClick={() => navigate(comp.link)}
+                      className="flex items-center gap-1.5 text-xs font-semibold text-foreground hover:text-primary transition-colors"
+                    >
+                      <comp.icon className="h-3.5 w-3.5" />
+                      {comp.label}
+                      <span className="text-muted-foreground font-normal">({comp.points}/{comp.max})</span>
+                      <ChevronRight className="h-3 w-3 text-muted-foreground" />
+                    </button>
+                    {comp.tips.map((tip, i) => (
+                      <p key={i} className="text-[11px] text-muted-foreground pl-5 leading-relaxed">
+                        💡 {tip}
+                      </p>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </CardContent>
     </Card>
   );
