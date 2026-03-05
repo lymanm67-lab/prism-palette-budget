@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { useSpendingByCategory, useTransactionsByDateRange, useBudgets, useCategories, useAccounts } from '@/hooks/use-finance-data';
-import { formatCurrency } from '@/lib/seed-data';
+import { useCurrency } from '@/hooks/use-currency';
 import { CalendarIcon, Download, FileText, Loader2 } from 'lucide-react';
 import { useMemo, useRef, useState, useCallback } from 'react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -40,6 +40,7 @@ const PRESETS: { label: string; range: () => DateRange }[] = [
 ];
 
 const Reports = () => {
+  const { formatCurrency, formatCompact } = useCurrency();
   const [dateRange, setDateRange] = useState<DateRange>(() => ({
     from: startOfMonth(new Date()),
     to: endOfMonth(new Date()),
@@ -413,7 +414,7 @@ const Reports = () => {
                   <AreaChart data={dailySpending}>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" fontSize={11} />
-                    <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickFormatter={v => `$${v}`} />
+                    <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickFormatter={v => formatCompact(v)} />
                     <Tooltip formatter={(v: number, name: string) => [formatCurrency(v), name === 'daily' ? 'Daily' : 'Cumulative']} contentStyle={tooltipStyle} />
                     <Legend />
                     <Area type="monotone" dataKey="cumulative" stroke="hsl(262, 83%, 58%)" fill="hsl(262, 83%, 58%)" fillOpacity={0.15} name="Cumulative" strokeWidth={2} />
@@ -437,7 +438,7 @@ const Reports = () => {
                   <ResponsiveContainer width="100%" height={Math.max(300, budgetVsActual.length * 50 + 60)}>
                     <BarChart data={budgetVsActual} layout="vertical" margin={{ left: 20, right: 20 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
-                      <XAxis type="number" stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={v => `$${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}`} />
+                      <XAxis type="number" stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={v => formatCompact(v)} />
                       <YAxis type="category" dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} width={100} />
                       <Tooltip formatter={(v: number, name: string) => [formatCurrency(v), name === 'budget' ? 'Budget' : 'Actual']} contentStyle={tooltipStyle} />
                       <Legend />
@@ -481,7 +482,7 @@ const Reports = () => {
                     <BarChart data={monthlyCashflow}>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                       <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                      <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={v => `$${(v / 1000).toFixed(0)}k`} />
+                       <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={v => formatCompact(v)} />
                       <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} />
                       <Legend />
                       <Bar dataKey="income" fill="hsl(160, 84%, 39%)" radius={[6, 6, 0, 0]} name="Income" />
@@ -554,7 +555,7 @@ const Reports = () => {
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                       <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                      <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={v => `$${(v / 1000).toFixed(0)}k`} />
+                      <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={v => formatCompact(v)} />
                       <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} />
                       <Area type="monotone" dataKey="netWorth" stroke="hsl(262, 83%, 58%)" fill="url(#netWorthGrad)" strokeWidth={3} name="Net Worth" />
                     </AreaChart>
@@ -596,7 +597,7 @@ const Reports = () => {
                   <LineChart data={spendingTrends.data}>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                    <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={v => `$${v}`} />
+                    <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={v => formatCompact(v)} />
                     <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} />
                     <Legend />
                     {spendingTrends.categoryNames.map((name, i) => (
@@ -618,7 +619,7 @@ const Reports = () => {
                   <BarChart data={monthlyCashflow}>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                    <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={v => `$${(v / 1000).toFixed(1)}k`} />
+                    <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={v => formatCompact(v)} />
                     <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} />
                     <Bar dataKey="savings" name="Net Savings" radius={[6, 6, 0, 0]}>
                       {monthlyCashflow.map((entry, i) => (
@@ -642,7 +643,7 @@ const Reports = () => {
                   <ResponsiveContainer width="100%" height={Math.max(300, topMerchants.length * 40 + 40)}>
                     <BarChart data={topMerchants} layout="vertical" margin={{ left: 10, right: 20 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
-                      <XAxis type="number" stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={v => `$${v}`} />
+                      <XAxis type="number" stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={v => formatCompact(v)} />
                       <YAxis type="category" dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={11} width={120} />
                       <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} />
                       <Bar dataKey="total" name="Total Spent" radius={[0, 6, 6, 0]} barSize={20}>

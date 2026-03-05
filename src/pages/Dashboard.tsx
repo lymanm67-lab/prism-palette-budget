@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAccounts, useTransactions, useSpendingByCategory } from '@/hooks/use-finance-data';
-import { formatCurrency } from '@/lib/seed-data';
+import { useCurrency } from '@/hooks/use-currency';
 import { TrendingUp, Wallet, CreditCard, ArrowUpRight, Loader2 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, Legend } from 'recharts';
 import { useMemo } from 'react';
@@ -10,6 +10,7 @@ const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { st
 const item = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } };
 
 const Dashboard = () => {
+  const { formatCurrency, formatCompact } = useCurrency();
   const { data: accounts, isLoading: accLoading } = useAccounts();
   const { data: transactions } = useTransactions();
 
@@ -88,7 +89,7 @@ const Dashboard = () => {
                   <BarChart data={monthlyCashflow}>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                    <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={v => `$${(v / 1000).toFixed(0)}k`} />
+                    <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={v => formatCompact(v)} />
                     <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} />
                     <Legend />
                     <Bar dataKey="income" fill="hsl(160, 84%, 39%)" radius={[6, 6, 0, 0]} name="Income" />

@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useBudgets, useCategories, useTransactions, useUpsertBudget, useDeleteBudget } from '@/hooks/use-finance-data';
-import { formatCurrency } from '@/lib/seed-data';
+import { useCurrency } from '@/hooks/use-currency';
 import { Loader2, Plus, Pencil, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const getMonth = (offset: number) => {
@@ -24,6 +24,7 @@ const formatMonth = (monthStr: string) => {
 };
 
 const Budgets = () => {
+  const { formatCurrency } = useCurrency();
   const [monthOffset, setMonthOffset] = useState(0);
   const month = getMonth(monthOffset);
   const { data: budgets, isLoading: budgetsLoading } = useBudgets(month);
