@@ -147,6 +147,77 @@ export type Database = {
           },
         ]
       }
+      business_profiles: {
+        Row: {
+          address: string | null
+          business_name: string
+          city: string | null
+          created_at: string
+          ein: string | null
+          email: string | null
+          entity_type: string
+          fiscal_year_end: string | null
+          household_id: string
+          id: string
+          industry: string | null
+          is_active: boolean
+          notes: string | null
+          phone: string | null
+          state: string | null
+          updated_at: string
+          website: string | null
+          zip: string | null
+        }
+        Insert: {
+          address?: string | null
+          business_name: string
+          city?: string | null
+          created_at?: string
+          ein?: string | null
+          email?: string | null
+          entity_type?: string
+          fiscal_year_end?: string | null
+          household_id: string
+          id?: string
+          industry?: string | null
+          is_active?: boolean
+          notes?: string | null
+          phone?: string | null
+          state?: string | null
+          updated_at?: string
+          website?: string | null
+          zip?: string | null
+        }
+        Update: {
+          address?: string | null
+          business_name?: string
+          city?: string | null
+          created_at?: string
+          ein?: string | null
+          email?: string | null
+          entity_type?: string
+          fiscal_year_end?: string | null
+          household_id?: string
+          id?: string
+          industry?: string | null
+          is_active?: boolean
+          notes?: string | null
+          phone?: string | null
+          state?: string | null
+          updated_at?: string
+          website?: string | null
+          zip?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_profiles_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           color: string
