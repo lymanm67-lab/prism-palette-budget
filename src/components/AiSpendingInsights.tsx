@@ -167,7 +167,7 @@ export default function AiSpendingInsights({ transactions, accounts, monthlyInco
             )}
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent aria-live="polite" aria-atomic="false">
           <AnimatePresence mode="wait">
             {!hasGenerated ? (
               <motion.div
