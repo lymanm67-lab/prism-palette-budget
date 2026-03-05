@@ -269,7 +269,7 @@ const Reports = () => {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-display text-3xl font-bold">Reports</h1>
+          <h1 className="font-display text-3xl font-bold prism-gradient-text">Reports</h1>
           <p className="text-muted-foreground">Comprehensive financial insights and analytics.</p>
         </div>
         <div className="flex items-center gap-2">

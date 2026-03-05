@@ -218,7 +218,7 @@ const TaxAssistant = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">AI Tax Assistant</h1>
+        <h1 className="font-display text-3xl font-bold prism-gradient-text">AI Tax Assistant</h1>
         <p className="text-muted-foreground">Business tax deductions, scenarios & pitfalls — with voice walkthroughs</p>
       </div>
 
@@ -253,7 +253,7 @@ const TaxAssistant = () => {
             ))}
           </div>
 
-          <Card className="border-border">
+          <Card className="border-border prism-card-shine hover-border-glow">
             <CardContent className="p-0">
               <ScrollArea className="h-[400px] p-4" ref={scrollRef}>
                 {messages.length === 0 && (
@@ -349,19 +349,19 @@ const TaxAssistant = () => {
 
           {/* Info cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="border-border">
+            <Card className="border-border prism-card-shine hover-border-glow">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center gap-2"><Lightbulb className="h-4 w-4 text-[hsl(var(--prism-amber))]" /> Scenarios</CardTitle>
               </CardHeader>
               <CardContent><p className="text-xs text-muted-foreground">Ask about real-world tax scenarios for your multiple businesses — expense allocation, entity structures, and more.</p></CardContent>
             </Card>
-            <Card className="border-border">
+            <Card className="border-border prism-card-shine hover-border-glow">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center gap-2"><ShieldAlert className="h-4 w-4 text-destructive" /> Pitfalls</CardTitle>
               </CardHeader>
               <CardContent><p className="text-xs text-muted-foreground">Learn about common mistakes that trigger audits — mixing expenses, hobby loss rules, and documentation gaps.</p></CardContent>
             </Card>
-            <Card className="border-border">
+            <Card className="border-border prism-card-shine hover-border-glow">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center gap-2"><AlertTriangle className="h-4 w-4 text-[hsl(var(--prism-orange))]" /> Disclaimer</CardTitle>
               </CardHeader>
