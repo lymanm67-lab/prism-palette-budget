@@ -65,7 +65,7 @@ const Transactions = () => {
   const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [autoCatLoading, setAutoCatLoading] = useState(false);
 
-  const [form, setForm] = useState({ date: new Date().toISOString().split('T')[0], merchant: '', amount: '', account_id: '', category_id: '', notes: '', tags: '' as string, goal_id: '' });
+  const [form, setForm] = useState({ date: new Date().toISOString().split('T')[0], merchant: '', amount: '', account_id: '', category_id: '', notes: '', tags: '', goal_id: '' });
   const [formType, setFormType] = useState<'debit' | 'credit'>('debit');
   const [transferForm, setTransferForm] = useState({ date: new Date().toISOString().split('T')[0], amount: '', from_account: '', to_account: '', notes: '' });
 
