@@ -15,12 +15,13 @@ import {
 import {
   Plus, Trash2, Pencil, CreditCard, TrendingDown, Snowflake, Flame,
   ArrowDownUp, CalendarDays, DollarSign, Loader2, Info, CheckCircle2,
-  Save, FolderOpen, Sparkles, Bot,
+  Save, FolderOpen, Sparkles, Bot, Volume2, VolumeX, Pause, Play,
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
 import { supabase } from '@/integrations/supabase/client';
+import { useTTS } from '@/hooks/use-tts';
 
 // ─── Types ───
 interface Debt {
@@ -526,6 +527,7 @@ function AiDebtAdvisor({ debts, extraPayment }: { debts: Debt[]; extraPayment: n
   const [aiResponse, setAiResponse] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [hasAnalyzed, setHasAnalyzed] = useState(false);
+  const { speak, pause, resume, stop, isSpeaking, isPaused } = useTTS();
 
   const getRecommendation = useCallback(async () => {
     if (debts.length === 0) return;
@@ -656,6 +658,24 @@ function AiDebtAdvisor({ debts, extraPayment }: { debts: Debt[]; extraPayment: n
                 <Button variant="outline" size="sm" onClick={getRecommendation} className="gap-1">
                   <Sparkles className="h-3.5 w-3.5" /> Re-analyze
                 </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (isSpeaking && !isPaused) pause();
+                    else if (isSpeaking && isPaused) resume();
+                    else speak(aiResponse);
+                  }}
+                  className="gap-1"
+                >
+                  {isSpeaking ? (isPaused ? <Play className="h-3.5 w-3.5" /> : <Pause className="h-3.5 w-3.5" />) : <Volume2 className="h-3.5 w-3.5" />}
+                  {isSpeaking ? (isPaused ? 'Resume' : 'Pause') : 'Listen'}
+                </Button>
+                {isSpeaking && (
+                  <Button variant="outline" size="sm" onClick={stop} className="gap-1">
+                    <VolumeX className="h-3.5 w-3.5" /> Stop
+                  </Button>
+                )}
               </div>
             )}
           </div>
