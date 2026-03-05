@@ -1,16 +1,21 @@
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useAccounts, useAllTransactions } from '@/hooks/use-finance-data';
+import { useGoals, useCreateGoal, useUpdateGoal } from '@/hooks/use-goals';
 import { useCurrency } from '@/hooks/use-currency';
-import { Loader2, TrendingUp, TrendingDown, Wallet, Landmark, CreditCard, BarChart3 } from 'lucide-react';
-import { useMemo } from 'react';
+import { Loader2, TrendingUp, TrendingDown, Wallet, Landmark, CreditCard, BarChart3, Target, Pencil, Check, X } from 'lucide-react';
+import { useMemo, useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-  BarChart, Bar, Cell, PieChart, Pie,
+  BarChart, Bar, Cell, PieChart, Pie, ReferenceLine,
 } from 'recharts';
 import PageOverview from '@/components/PageOverview';
+import { toast } from 'sonner';
 
 const tooltipStyle = { background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' };
 
@@ -21,6 +26,13 @@ const NetWorth = () => {
   const { formatCurrency, formatCompact } = useCurrency();
   const { data: accounts, isLoading: accLoading } = useAccounts();
   const { data: allTransactions, isLoading: txnLoading } = useAllTransactions();
+  const { data: goals, isLoading: goalsLoading } = useGoals();
+  const createGoal = useCreateGoal();
+  const updateGoal = useUpdateGoal();
+
+  const [editingGoal, setEditingGoal] = useState(false);
+  const [goalInput, setGoalInput] = useState('');
+  const [goalDateInput, setGoalDateInput] = useState('');
 
   // Current totals
   const { totalAssets, totalLiabilities, netWorth, assetAccounts, liabilityAccounts } = useMemo(() => {
@@ -118,7 +130,41 @@ const NetWorth = () => {
       .sort((a, b) => b.value - a.value);
   }, [accounts]);
 
-  const isLoading = accLoading || txnLoading;
+  // Net worth goal
+  const netWorthGoal = useMemo(() => {
+    if (!goals) return null;
+    return goals.find((g: any) => g.goal_type === 'net_worth' && !g.is_completed) || null;
+  }, [goals]);
+
+  const goalProgress = useMemo(() => {
+    if (!netWorthGoal) return 0;
+    const target = netWorthGoal.target_amount || 1;
+    return Math.min(Math.max((netWorth / target) * 100, 0), 100);
+  }, [netWorthGoal, netWorth]);
+
+  // Pre-fill edit form when goal exists
+  useEffect(() => {
+    if (netWorthGoal && !editingGoal) {
+      setGoalInput(String(netWorthGoal.target_amount));
+      setGoalDateInput(netWorthGoal.target_date || '');
+    }
+  }, [netWorthGoal, editingGoal]);
+
+  const handleSaveGoal = async () => {
+    const amount = parseFloat(goalInput);
+    if (isNaN(amount) || amount <= 0) { toast.error('Enter a valid target amount'); return; }
+    try {
+      if (netWorthGoal) {
+        await updateGoal.mutateAsync({ id: netWorthGoal.id, target_amount: amount, current_amount: netWorth, target_date: goalDateInput || null });
+      } else {
+        await createGoal.mutateAsync({ name: 'Net Worth Goal', target_amount: amount, current_amount: netWorth, goal_type: 'net_worth', target_date: goalDateInput || null });
+      }
+      setEditingGoal(false);
+      toast.success('Net worth goal saved!');
+    } catch { toast.error('Failed to save goal'); }
+  };
+
+  const isLoading = accLoading || txnLoading || goalsLoading;
   if (isLoading) return <div className="flex items-center justify-center p-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
 
   return (
@@ -187,6 +233,68 @@ const NetWorth = () => {
         </Card>
       </div>
 
+      {/* Net Worth Goal */}
+      <Card className="border-primary/20">
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle className="font-display flex items-center gap-2">
+            <Target className="h-5 w-5 text-primary" /> Net Worth Goal
+          </CardTitle>
+          {!editingGoal && (
+            <Button variant="ghost" size="sm" onClick={() => setEditingGoal(true)} className="gap-1.5">
+              <Pencil className="h-3.5 w-3.5" /> {netWorthGoal ? 'Edit' : 'Set Goal'}
+            </Button>
+          )}
+        </CardHeader>
+        <CardContent>
+          {editingGoal ? (
+            <div className="flex flex-wrap items-end gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="nw-goal" className="text-xs">Target Net Worth</Label>
+                <Input id="nw-goal" type="number" min="0" step="1000" value={goalInput} onChange={e => setGoalInput(e.target.value)} placeholder="e.g. 100000" className="w-48" />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="nw-date" className="text-xs">Target Date (optional)</Label>
+                <Input id="nw-date" type="date" value={goalDateInput} onChange={e => setGoalDateInput(e.target.value)} className="w-44" />
+              </div>
+              <Button size="sm" onClick={handleSaveGoal} disabled={createGoal.isPending || updateGoal.isPending} className="gap-1.5">
+                <Check className="h-3.5 w-3.5" /> Save
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setEditingGoal(false)}>
+                <X className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          ) : netWorthGoal ? (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Current: <span className="font-semibold text-foreground">{formatCurrency(netWorth)}</span></span>
+                <span className="text-muted-foreground">Target: <span className="font-semibold text-foreground">{formatCurrency(netWorthGoal.target_amount)}</span></span>
+              </div>
+              <div className="h-4 overflow-hidden rounded-full bg-muted">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${goalProgress}%` }}
+                  transition={{ duration: 1, ease: 'easeOut' }}
+                  className={cn("h-full rounded-full", goalProgress >= 100 ? 'bg-accent' : 'bg-primary')}
+                />
+              </div>
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>{goalProgress.toFixed(1)}% complete</span>
+                <span>
+                  {netWorthGoal.target_amount - netWorth > 0
+                    ? `${formatCurrency(netWorthGoal.target_amount - netWorth)} to go`
+                    : '🎉 Goal reached!'}
+                </span>
+                {netWorthGoal.target_date && (
+                  <span>By {new Date(netWorthGoal.target_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
+                )}
+              </div>
+            </div>
+          ) : (
+            <p className="py-2 text-sm text-muted-foreground">Set a net worth goal to track your progress toward financial independence.</p>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Assets vs Liabilities Area Chart */}
       <Card>
         <CardHeader><CardTitle className="font-display">Assets vs Liabilities Over Time</CardTitle></CardHeader>
@@ -212,6 +320,9 @@ const NetWorth = () => {
                 <Area type="monotone" dataKey="assets" stroke="hsl(160, 84%, 39%)" fill="url(#assetGrad)" strokeWidth={2.5} name="Assets" />
                 <Area type="monotone" dataKey="liabilities" stroke="hsl(340, 82%, 52%)" fill="url(#liabGrad)" strokeWidth={2.5} name="Liabilities" />
                 <Area type="monotone" dataKey="netWorth" stroke="hsl(262, 83%, 58%)" fill="none" strokeWidth={3} strokeDasharray="6 3" name="Net Worth" />
+                {netWorthGoal && (
+                  <ReferenceLine y={netWorthGoal.target_amount} stroke="hsl(var(--primary))" strokeDasharray="8 4" strokeWidth={2} label={{ value: `Goal: ${formatCompact(netWorthGoal.target_amount)}`, position: 'insideTopRight', fill: 'hsl(var(--primary))', fontSize: 12 }} />
+                )}
               </AreaChart>
             </ResponsiveContainer>
           ) : (
