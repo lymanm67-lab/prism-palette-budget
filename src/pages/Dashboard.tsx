@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import AiSpendingInsights from '@/components/AiSpendingInsights';
+import WeeklyRecap from '@/components/WeeklyRecap';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAccounts, useTransactions, useSpendingByCategory, useCategoryGroups, useCategories } from '@/hooks/use-finance-data';
@@ -44,6 +45,7 @@ const Dashboard = () => {
   const [mode, setMode] = useState<DashboardMode>('personal');
   const [selectedBusiness, setSelectedBusiness] = useState<string>('all');
   const [manageOpen, setManageOpen] = useState(false);
+  const [recapOpen, setRecapOpen] = useState(false);
 
   const now = new Date();
   const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
@@ -217,6 +219,24 @@ const Dashboard = () => {
         </div>
       </motion.div>
 
+      {/* Weekly Recap Card */}
+      <motion.div variants={item}>
+        <Card className="prism-card-shine border-primary/20 cursor-pointer hover-lift" onClick={() => setRecapOpen(true)}>
+          <CardContent className="flex items-center gap-4 p-5">
+            <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shrink-0">
+              <Sparkles className="h-6 w-6 text-primary-foreground" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-display text-base font-bold">Your Weekly Recap</h3>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                See how your net worth and spending changed this week →
+              </p>
+            </div>
+            <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
+          </CardContent>
+        </Card>
+      </motion.div>
+
       {/* "All" mode: side-by-side summary */}
       {mode === 'all' ? (
         <>
@@ -381,6 +401,7 @@ const Dashboard = () => {
       )}
 
       <BusinessProfileManager open={manageOpen} onOpenChange={setManageOpen} />
+      <WeeklyRecap open={recapOpen} onOpenChange={setRecapOpen} />
     </motion.div>
   );
 };
