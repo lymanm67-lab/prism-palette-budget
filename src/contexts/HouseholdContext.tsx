@@ -43,20 +43,24 @@ export const HouseholdProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           .single();
         setHousehold(hh);
       } else {
-        // Create default household + membership + seed categories
+        // Use security definer function to atomically create household + membership
+        const { data: householdId, error: rpcError } = await supabase
+          .rpc('create_household_for_user', { _name: 'My Household' });
+
+        if (rpcError || !householdId) {
+          console.error('Failed to create household:', rpcError);
+          setLoading(false);
+          return;
+        }
+
+        // Now fetch the created household (SELECT policy works since membership exists)
         const { data: hh } = await supabase
           .from('households')
-          .insert({ name: 'My Household' })
-          .select()
+          .select('*')
+          .eq('id', householdId)
           .single();
 
         if (hh) {
-          await supabase.from('household_members').insert({
-            household_id: hh.id,
-            user_id: user.id,
-            role: 'owner',
-          });
-
           // Seed default category groups and categories
           const groups = [
             { name: 'Housing', color: '#7c5cf5', sort_order: 0 },
