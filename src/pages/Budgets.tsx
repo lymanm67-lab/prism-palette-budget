@@ -6,10 +6,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { useBudgets, useCategories, useTransactions, useUpsertBudget } from '@/hooks/use-finance-data';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { useBudgets, useCategories, useTransactions, useUpsertBudget, useDeleteBudget } from '@/hooks/use-finance-data';
 import { formatCurrency } from '@/lib/seed-data';
-import { Loader2, Plus, Pencil, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Loader2, Plus, Pencil, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const getMonth = (offset: number) => {
   const d = new Date();
@@ -29,10 +30,12 @@ const Budgets = () => {
   const { data: transactions } = useTransactions();
   const { data: categories } = useCategories();
   const upsertBudget = useUpsertBudget();
+  const deleteBudget = useDeleteBudget();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState<{ category_id: string; planned_amount: string } | null>(null);
   const [form, setForm] = useState({ category_id: '', planned_amount: '' });
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
   const spentByCategory = useMemo(() => {
     if (!transactions) return {};
@@ -154,6 +157,14 @@ const Budgets = () => {
                       >
                         <Pencil className="h-3.5 w-3.5" />
                       </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive"
+                        onClick={() => setDeleteTarget({ id: budget.id, name: cat?.name || 'Budget' })}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
                     </div>
                   </div>
                   <div className="mt-3">
@@ -241,6 +252,26 @@ const Budgets = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={open => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete budget?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete the budget for "{deleteTarget?.name}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => { if (deleteTarget) { await deleteBudget.mutateAsync(deleteTarget.id); setDeleteTarget(null); } }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </motion.div>
   );
 };
