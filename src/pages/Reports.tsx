@@ -1,10 +1,15 @@
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useSpendingByCategory, useTransactions, useBudgets, useCategories, useAccounts } from '@/hooks/use-finance-data';
+import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { useSpendingByCategory, useTransactionsByDateRange, useBudgets, useCategories, useAccounts } from '@/hooks/use-finance-data';
 import { formatCurrency } from '@/lib/seed-data';
-import { Loader2 } from 'lucide-react';
-import { useMemo } from 'react';
+import { CalendarIcon, Loader2 } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { format, startOfMonth, endOfMonth, subMonths, startOfYear, endOfYear, subDays, startOfWeek, endOfWeek } from 'date-fns';
+import { cn } from '@/lib/utils';
 import {
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend,
@@ -19,24 +24,43 @@ const TREND_COLORS = [
   'hsl(24, 95%, 53%)', 'hsl(239, 84%, 67%)',
 ];
 
+type DateRange = { from: Date; to: Date };
+
+const PRESETS: { label: string; range: () => DateRange }[] = [
+  { label: 'This Month', range: () => ({ from: startOfMonth(new Date()), to: endOfMonth(new Date()) }) },
+  { label: 'Last Month', range: () => ({ from: startOfMonth(subMonths(new Date(), 1)), to: endOfMonth(subMonths(new Date(), 1)) }) },
+  { label: 'Last 3 Months', range: () => ({ from: startOfMonth(subMonths(new Date(), 2)), to: endOfMonth(new Date()) }) },
+  { label: 'Last 6 Months', range: () => ({ from: startOfMonth(subMonths(new Date(), 5)), to: endOfMonth(new Date()) }) },
+  { label: 'This Year', range: () => ({ from: startOfYear(new Date()), to: endOfYear(new Date()) }) },
+  { label: 'Last 7 Days', range: () => ({ from: subDays(new Date(), 6), to: new Date() }) },
+  { label: 'Last 30 Days', range: () => ({ from: subDays(new Date(), 29), to: new Date() }) },
+];
+
 const Reports = () => {
-  const now = new Date();
-  const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
-  const monthEnd = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-31`;
-  const { data: spendingData, isLoading } = useSpendingByCategory(monthStart, monthEnd);
-  const { data: transactions } = useTransactions();
-  const { data: budgets } = useBudgets(monthStart);
+  const [dateRange, setDateRange] = useState<DateRange>(() => ({
+    from: startOfMonth(new Date()),
+    to: endOfMonth(new Date()),
+  }));
+  const [calendarOpen, setCalendarOpen] = useState(false);
+
+  const startDate = format(dateRange.from, 'yyyy-MM-dd');
+  const endDate = format(dateRange.to, 'yyyy-MM-dd');
+  const budgetMonth = format(dateRange.from, 'yyyy-MM-01');
+
+  const { data: spendingData, isLoading } = useSpendingByCategory(startDate, endDate);
+  const { data: transactions } = useTransactionsByDateRange(startDate, endDate);
+  const { data: budgets } = useBudgets(budgetMonth);
   const { data: categories } = useCategories();
   const { data: accounts } = useAccounts();
 
   // ==================== CASH FLOW ====================
   const monthlyCashflow = useMemo(() => {
     if (!transactions) return [];
-    const map = new Map<string, { month: string; income: number; expenses: number; savings: number }>();
+    const map = new Map<string, { month: string; sortKey: string; income: number; expenses: number; savings: number }>();
     for (const t of transactions) {
       const m = t.date.substring(0, 7);
-      const label = new Date(t.date).toLocaleDateString('en-US', { month: 'short' });
-      const existing = map.get(m) || { month: label, income: 0, expenses: 0, savings: 0 };
+      const label = new Date(t.date).toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+      const existing = map.get(m) || { month: label, sortKey: m, income: 0, expenses: 0, savings: 0 };
       if (t.amount > 0) existing.income += t.amount;
       else existing.expenses += Math.abs(t.amount);
       map.set(m, existing);
@@ -51,10 +75,9 @@ const Reports = () => {
   // ==================== BUDGET VS ACTUAL ====================
   const budgetVsActual = useMemo(() => {
     if (!budgets || !transactions || !categories) return [];
-    const monthPrefix = monthStart.substring(0, 7);
     const spentMap: Record<string, number> = {};
     for (const t of transactions) {
-      if (t.date.startsWith(monthPrefix) && t.amount < 0 && t.category_id) {
+      if (t.amount < 0 && t.category_id) {
         spentMap[t.category_id] = (spentMap[t.category_id] || 0) + Math.abs(t.amount);
       }
     }
@@ -68,14 +91,12 @@ const Reports = () => {
         color: cat?.color || 'hsl(var(--primary))',
       };
     }).sort((a, b) => b.budget - a.budget);
-  }, [budgets, transactions, categories, monthStart]);
+  }, [budgets, transactions, categories]);
 
   // ==================== NET WORTH OVER TIME ====================
   const netWorthTrend = useMemo(() => {
     if (!transactions || !accounts) return [];
-    // Calculate current net worth from accounts
     const currentNetWorth = (accounts || []).reduce((s, a) => s + a.balance, 0);
-    // Walk backwards through months applying transaction deltas
     const monthlyDeltas = new Map<string, number>();
     for (const t of transactions) {
       const m = t.date.substring(0, 7);
@@ -84,14 +105,11 @@ const Reports = () => {
     const months = Array.from(monthlyDeltas.keys()).sort();
     if (months.length === 0) return [];
 
-    // Build forward from earliest month
     const points: { month: string; netWorth: number }[] = [];
     let runningNetWorth = currentNetWorth;
-    // First subtract all deltas to get starting point
     for (const m of months) {
       runningNetWorth -= monthlyDeltas.get(m) || 0;
     }
-    // Then add them back month by month
     for (const m of months) {
       runningNetWorth += monthlyDeltas.get(m) || 0;
       const label = new Date(m + '-01').toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
@@ -116,7 +134,7 @@ const Reports = () => {
     return Array.from(map.values()).sort((a, b) => b.total - a.total).slice(0, 10);
   }, [transactions]);
 
-  // ==================== SPENDING TRENDS (by category over months) ====================
+  // ==================== SPENDING TRENDS ====================
   const spendingTrends = useMemo(() => {
     if (!transactions || !categories) return { data: [] as Record<string, unknown>[], categoryNames: [] as string[] };
     const monthCatMap = new Map<string, Record<string, number>>();
@@ -134,11 +152,10 @@ const Reports = () => {
 
     const sortedMonths = Array.from(monthCatMap.keys()).sort();
     const data = sortedMonths.map(m => {
-      const label = new Date(m + '-01').toLocaleDateString('en-US', { month: 'short' });
+      const label = new Date(m + '-01').toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
       return { month: label, ...monthCatMap.get(m) };
     });
 
-    // Top 6 categories by total spend
     const catTotals = new Map<string, number>();
     for (const [, monthData] of monthCatMap) {
       for (const [cat, val] of Object.entries(monthData)) {
@@ -150,13 +167,12 @@ const Reports = () => {
     return { data, categoryNames: topCats };
   }, [transactions, categories]);
 
-  // ==================== DAILY SPENDING (current month) ====================
+  // ==================== DAILY SPENDING ====================
   const dailySpending = useMemo(() => {
     if (!transactions) return [];
-    const monthPrefix = monthStart.substring(0, 7);
     const map = new Map<string, number>();
     for (const t of transactions) {
-      if (t.date.startsWith(monthPrefix) && t.amount < 0) {
+      if (t.amount < 0) {
         map.set(t.date, (map.get(t.date) || 0) + Math.abs(t.amount));
       }
     }
@@ -164,10 +180,11 @@ const Reports = () => {
     let cumulative = 0;
     return days.map(([date, amount]) => {
       cumulative += amount;
-      const day = new Date(date).getDate();
-      return { day: `${day}`, daily: amount, cumulative };
+      const d = new Date(date);
+      const label = format(d, 'MMM d');
+      return { day: label, daily: amount, cumulative };
     });
-  }, [transactions, monthStart]);
+  }, [transactions]);
 
   // ==================== SAVINGS RATE ====================
   const savingsRate = useMemo(() => {
@@ -178,13 +195,66 @@ const Reports = () => {
     }));
   }, [monthlyCashflow]);
 
+  const dateLabel = `${format(dateRange.from, 'MMM d, yyyy')} — ${format(dateRange.to, 'MMM d, yyyy')}`;
+
   if (isLoading) return <div className="flex items-center justify-center p-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-      <div>
-        <h1 className="font-display text-3xl font-bold">Reports</h1>
-        <p className="text-muted-foreground">Comprehensive financial insights and analytics.</p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="font-display text-3xl font-bold">Reports</h1>
+          <p className="text-muted-foreground">Comprehensive financial insights and analytics.</p>
+        </div>
+
+        {/* Date Range Picker */}
+        <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+          <PopoverTrigger asChild>
+            <Button variant="outline" className={cn("gap-2 text-left font-normal min-w-[260px]")}>
+              <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm">{dateLabel}</span>
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="end">
+            <div className="flex">
+              {/* Presets */}
+              <div className="border-r border-border p-3 space-y-1 min-w-[140px]">
+                <p className="text-xs font-medium text-muted-foreground mb-2 px-2">Quick Select</p>
+                {PRESETS.map(preset => (
+                  <button
+                    key={preset.label}
+                    className="block w-full text-left rounded-md px-2 py-1.5 text-sm hover:bg-muted transition-colors"
+                    onClick={() => {
+                      setDateRange(preset.range());
+                      setCalendarOpen(false);
+                    }}
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+              {/* Calendar */}
+              <div className="p-3">
+                <Calendar
+                  mode="range"
+                  selected={{ from: dateRange.from, to: dateRange.to }}
+                  onSelect={(range) => {
+                    if (range?.from && range?.to) {
+                      setDateRange({ from: range.from, to: range.to });
+                    } else if (range?.from) {
+                      setDateRange({ from: range.from, to: range.from });
+                    }
+                  }}
+                  numberOfMonths={2}
+                  className={cn("pointer-events-auto")}
+                />
+                <div className="flex justify-end pt-2">
+                  <Button size="sm" onClick={() => setCalendarOpen(false)}>Apply</Button>
+                </div>
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
       </div>
 
       <Tabs defaultValue="spending" className="space-y-4">
@@ -214,7 +284,7 @@ const Reports = () => {
                     </PieChart>
                   </ResponsiveContainer>
                 ) : (
-                  <p className="py-10 text-center text-muted-foreground">Add some transactions to see spending data.</p>
+                  <p className="py-10 text-center text-muted-foreground">No spending data in this period.</p>
                 )}
               </CardContent>
             </Card>
@@ -250,10 +320,10 @@ const Reports = () => {
             </Card>
           </div>
 
-          {/* Daily Spending for current month */}
+          {/* Daily Spending */}
           {dailySpending.length > 0 && (
             <Card className="mt-6">
-              <CardHeader><CardTitle className="font-display">Daily Spending — {now.toLocaleDateString('en-US', { month: 'long' })}</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="font-display">Daily Spending</CardTitle></CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={280}>
                   <AreaChart data={dailySpending}>
@@ -275,7 +345,7 @@ const Reports = () => {
         <TabsContent value="budget">
           <Card>
             <CardHeader>
-              <CardTitle className="font-display">Budget vs Actual — {now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</CardTitle>
+              <CardTitle className="font-display">Budget vs Actual</CardTitle>
             </CardHeader>
             <CardContent>
               {budgetVsActual.length > 0 ? (
@@ -335,12 +405,11 @@ const Reports = () => {
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
-                  <p className="py-10 text-center text-muted-foreground">Add transactions to see cash flow data.</p>
+                  <p className="py-10 text-center text-muted-foreground">No transaction data in this period.</p>
                 )}
               </CardContent>
             </Card>
 
-            {/* Savings Rate */}
             {savingsRate.length > 0 && (
               <Card>
                 <CardHeader><CardTitle className="font-display">Savings Rate</CardTitle></CardHeader>
@@ -407,7 +476,6 @@ const Reports = () => {
                     </AreaChart>
                   </ResponsiveContainer>
 
-                  {/* Account breakdown */}
                   {accounts && accounts.length > 0 && (
                     <div className="mt-6">
                       <h3 className="font-display text-sm font-semibold text-muted-foreground mb-3">Current Balances</h3>
@@ -428,7 +496,7 @@ const Reports = () => {
                   )}
                 </>
               ) : (
-                <p className="py-10 text-center text-muted-foreground">Add accounts and transactions to track your net worth over time.</p>
+                <p className="py-10 text-center text-muted-foreground">No data for this period.</p>
               )}
             </CardContent>
           </Card>
@@ -440,27 +508,24 @@ const Reports = () => {
             <CardHeader><CardTitle className="font-display">Spending Trends by Category</CardTitle></CardHeader>
             <CardContent>
               {spendingTrends.data.length > 0 ? (
-                <>
-                  <ResponsiveContainer width="100%" height={350}>
-                    <LineChart data={spendingTrends.data}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                      <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                      <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={v => `$${v}`} />
-                      <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} />
-                      <Legend />
-                      {spendingTrends.categoryNames.map((name, i) => (
-                        <Line key={name} type="monotone" dataKey={name} stroke={TREND_COLORS[i % TREND_COLORS.length]} strokeWidth={2} dot={{ r: 3 }} />
-                      ))}
-                    </LineChart>
-                  </ResponsiveContainer>
-                </>
+                <ResponsiveContainer width="100%" height={350}>
+                  <LineChart data={spendingTrends.data}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                    <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={v => `$${v}`} />
+                    <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} />
+                    <Legend />
+                    {spendingTrends.categoryNames.map((name, i) => (
+                      <Line key={name} type="monotone" dataKey={name} stroke={TREND_COLORS[i % TREND_COLORS.length]} strokeWidth={2} dot={{ r: 3 }} />
+                    ))}
+                  </LineChart>
+                </ResponsiveContainer>
               ) : (
-                <p className="py-10 text-center text-muted-foreground">Add transactions across multiple months to see spending trends.</p>
+                <p className="py-10 text-center text-muted-foreground">No spending trends for this period.</p>
               )}
             </CardContent>
           </Card>
 
-          {/* Monthly Net Savings Trend */}
           {monthlyCashflow.length > 0 && (
             <Card className="mt-6">
               <CardHeader><CardTitle className="font-display">Monthly Net Savings</CardTitle></CardHeader>
@@ -522,7 +587,7 @@ const Reports = () => {
                   </div>
                 </>
               ) : (
-                <p className="py-10 text-center text-muted-foreground">Add transactions with merchant names to see your top spending destinations.</p>
+                <p className="py-10 text-center text-muted-foreground">No merchant data in this period.</p>
               )}
             </CardContent>
           </Card>
