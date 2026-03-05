@@ -190,19 +190,17 @@ const Dashboard = () => {
           {/* Business selector + manage */}
           {mode === 'business' && (
             <div className="flex items-center gap-1.5">
-              {businessProfiles && businessProfiles.length > 0 && (
-                <Select value={selectedBusiness} onValueChange={setSelectedBusiness}>
-                  <SelectTrigger className="w-[180px] h-9 text-sm">
-                    <SelectValue placeholder="All Businesses" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Businesses</SelectItem>
-                    {businessProfiles.map(bp => (
-                      <SelectItem key={bp.id} value={bp.id}>{bp.business_name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
+              <Select value={selectedBusiness} onValueChange={setSelectedBusiness}>
+                <SelectTrigger className="w-[180px] h-9 text-sm">
+                  <SelectValue placeholder="All Businesses" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Businesses</SelectItem>
+                  {businessProfiles && businessProfiles.map(bp => (
+                    <SelectItem key={bp.id} value={bp.id}>{bp.business_name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => setManageOpen(true)} title="Manage businesses">
                 <Settings2 className="h-4 w-4" />
               </Button>
