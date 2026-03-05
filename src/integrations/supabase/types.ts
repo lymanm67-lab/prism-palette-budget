@@ -881,6 +881,7 @@ export type Database = {
           needs_review: boolean
           notes: string | null
           provider_transaction_id: string | null
+          receipt_url: string | null
           tags: string[] | null
           transfer_pair_id: string | null
           updated_at: string
@@ -898,6 +899,7 @@ export type Database = {
           needs_review?: boolean
           notes?: string | null
           provider_transaction_id?: string | null
+          receipt_url?: string | null
           tags?: string[] | null
           transfer_pair_id?: string | null
           updated_at?: string
@@ -915,6 +917,7 @@ export type Database = {
           needs_review?: boolean
           notes?: string | null
           provider_transaction_id?: string | null
+          receipt_url?: string | null
           tags?: string[] | null
           transfer_pair_id?: string | null
           updated_at?: string
