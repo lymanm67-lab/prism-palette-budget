@@ -17,7 +17,7 @@ import { useHousehold } from '@/contexts/HouseholdContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { Loader2, Save, User, DollarSign, Calendar, Building2, Plus, Pencil, Trash2, Globe, Phone, Mail, MapPin, Sun, Moon, Monitor, Sparkles, Search, Tag, Volume2, Pause, Square, Play, BookOpen, BellRing } from 'lucide-react';
+import { Loader2, Save, User, DollarSign, Calendar, Building2, Plus, Pencil, Trash2, Globe, Phone, Mail, MapPin, Sun, Moon, Monitor, Sparkles, Search, Tag, Volume2, Pause, Square, Play, BookOpen, BellRing, Send } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTTS } from '@/hooks/use-tts';
@@ -543,6 +543,35 @@ const Settings = () => {
     },
   });
 
+  const SendTestDigestButton = () => {
+    const [sending, setSending] = useState(false);
+    return (
+      <Button
+        variant="outline"
+        size="sm"
+        disabled={sending}
+        className="gap-2"
+        onClick={async () => {
+          setSending(true);
+          try {
+            const { error } = await supabase.functions.invoke('weekly-digest', {
+              body: { test: true },
+            });
+            if (error) throw error;
+            toast.success('Test digest sent! Check your inbox.');
+          } catch (err: any) {
+            toast.error(err.message || 'Failed to send test digest');
+          } finally {
+            setSending(false);
+          }
+        }}
+      >
+        {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+        Send Now
+      </Button>
+    );
+  };
+
   const [displayName, setDisplayName] = useState('');
   const [currency, setCurrency] = useState('USD');
   const [fiscalDay, setFiscalDay] = useState('1');
@@ -812,7 +841,7 @@ const Settings = () => {
               </div>
               <CardDescription>Manage email notifications and digests.</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label className="text-sm font-medium">Weekly Financial Digest</Label>
@@ -824,6 +853,16 @@ const Settings = () => {
                   checked={weeklyDigestEnabled}
                   onCheckedChange={setWeeklyDigestEnabled}
                 />
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label className="text-sm font-medium">Send Test Digest</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Send a preview digest email to your inbox right now.
+                  </p>
+                </div>
+                <SendTestDigestButton />
               </div>
             </CardContent>
           </Card>
