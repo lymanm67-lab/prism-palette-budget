@@ -33,6 +33,7 @@ import Investments from "@/pages/Investments";
 import Recurring from "@/pages/Recurring";
 import GettingStarted from "@/pages/GettingStarted";
 import SpendingTrends from "@/pages/SpendingTrends";
+import NetWorth from "@/pages/NetWorth";
 
 const queryClient = new QueryClient();
 
@@ -97,6 +98,7 @@ const App = () => (
               <Route path="/goals" element={<Goals />} />
               <Route path="/debt-payoff" element={<DebtPayoff />} />
               <Route path="/investments" element={<Investments />} />
+              <Route path="/net-worth" element={<NetWorth />} />
               <Route path="/recurring" element={<Recurring />} />
               <Route path="/calculators" element={<Calculators />} />
               <Route path="/roadmap" element={<PrismRoadmap />} />
