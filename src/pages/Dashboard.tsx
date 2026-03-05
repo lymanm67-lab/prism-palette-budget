@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import AiSpendingInsights from '@/components/AiSpendingInsights';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAccounts, useTransactions, useSpendingByCategory, useCategoryGroups, useCategories } from '@/hooks/use-finance-data';
@@ -265,6 +266,14 @@ const Dashboard = () => {
             formatCurrency={formatCurrency}
             formatCompact={formatCompact}
           />
+
+          {/* AI Spending Insights */}
+          <AiSpendingInsights
+            transactions={filteredTransactions}
+            accounts={accounts || []}
+            monthlyIncome={monthlyIncome}
+            monthlyExpenses={monthlyExpenses}
+          />
         </>
       ) : (
         <>
@@ -293,6 +302,14 @@ const Dashboard = () => {
             spendingData={filteredSpending}
             formatCurrency={formatCurrency}
             formatCompact={formatCompact}
+          />
+
+          {/* AI Spending Insights */}
+          <AiSpendingInsights
+            transactions={filteredTransactions}
+            accounts={accounts || []}
+            monthlyIncome={monthlyIncome}
+            monthlyExpenses={monthlyExpenses}
           />
 
           {/* Accounts */}
