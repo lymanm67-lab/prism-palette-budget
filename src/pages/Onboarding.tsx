@@ -358,11 +358,12 @@ const Onboarding = () => {
               )}
             </Button>
           )}
-          {stepId === 'plan' && (
-            <p className="text-xs text-white/25">
-              It only takes a few minutes to get started
-            </p>
-          )}
+          <button
+            onClick={() => navigate('/auth')}
+            className="text-xs text-white/30 hover:text-white/60 transition-colors underline underline-offset-4"
+          >
+            Skip onboarding
+          </button>
         </div>
       </div>
     </div>
