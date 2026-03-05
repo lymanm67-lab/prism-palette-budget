@@ -85,6 +85,20 @@ const Transactions = () => {
       .sort((a, b) => b[1] - a[1])
       .map(([name]) => name);
   }, [transactions]);
+
+  // Map merchant -> most recently used category_id for auto-fill
+  const merchantCategoryMap = useMemo(() => {
+    if (!transactions) return new Map<string, string>();
+    const map = new Map<string, string>();
+    // transactions are ordered by date desc, so first match = most recent
+    for (const t of transactions) {
+      if (t.merchant && t.category_id) {
+        const m = t.merchant.trim();
+        if (m && !map.has(m)) map.set(m, t.category_id);
+      }
+    }
+    return map;
+  }, [transactions]);
   const [tagOpen, setTagOpen] = useState(false);
   const [tagSearch, setTagSearch] = useState('');
 
@@ -474,7 +488,8 @@ const Transactions = () => {
                                   key={m}
                                   value={m}
                                   onSelect={() => {
-                                    setForm(f => ({ ...f, merchant: m }));
+                                    const catId = merchantCategoryMap.get(m);
+                                    setForm(f => ({ ...f, merchant: m, ...(catId && !f.category_id ? { category_id: catId } : {}) }));
                                     setMerchantOpen(false);
                                   }}
                                 >
