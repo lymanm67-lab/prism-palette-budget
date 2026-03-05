@@ -4,8 +4,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAllTransactions, useCategories } from '@/hooks/use-finance-data';
 import { useCurrency } from '@/hooks/use-currency';
-import { Loader2, TrendingUp, TrendingDown, ArrowUpDown, BarChart3 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { Loader2, TrendingUp, TrendingDown, ArrowUpDown, BarChart3, Download, FileText } from 'lucide-react';
+import { useMemo, useRef, useState, useCallback } from 'react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { exportToPdf, exportToCsv } from '@/lib/export-utils';
+import { toast } from 'sonner';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { subMonths, format, startOfMonth } from 'date-fns';
@@ -36,6 +39,18 @@ const SpendingTrends = () => {
   const { data: categories } = useCategories();
   const [monthCount, setMonthCount] = useState(6);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const reportRef = useRef<HTMLDivElement>(null);
+
+  const handleExportPdf = useCallback(async () => {
+    if (!reportRef.current) return;
+    toast.info('Generating PDF...');
+    try {
+      await exportToPdf(reportRef.current, `spending-trends-${monthCount}mo`);
+      toast.success('PDF downloaded!');
+    } catch { toast.error('Failed to generate PDF'); }
+  }, [monthCount]);
+
+
 
   // Build month range
   const monthRange = useMemo(() => {
@@ -89,6 +104,19 @@ const SpendingTrends = () => {
     return { monthlyData: data, categoryNames: topCats, categoryColorMap: colorMap, categoryTotals: catTotals };
   }, [allTransactions, categories, monthRange]);
 
+  const handleExportCsv = useCallback(() => {
+    try {
+      const headers = ['Month', ...categoryNames, 'Total'];
+      const rows = monthlyData.map(d => [
+        d.month as string,
+        ...categoryNames.map(n => (d[n] as number) || 0),
+        (d.total as number) || 0,
+      ]);
+      exportToCsv(headers, rows as (string | number)[][], `spending-trends-${monthCount}mo`);
+      toast.success('CSV downloaded!');
+    } catch { toast.error('Failed to generate CSV'); }
+  }, [monthlyData, categoryNames, monthCount]);
+
   // Month-over-month changes
   const momChanges = useMemo(() => {
     if (monthlyData.length < 2) return [];
@@ -140,19 +168,37 @@ const SpendingTrends = () => {
             ]}
           />
         </div>
-        <Select value={String(monthCount)} onValueChange={v => setMonthCount(Number(v))}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {MONTH_OPTIONS.map(o => (
-              <SelectItem key={o.value} value={String(o.value)}>{o.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-2">
+          <Select value={String(monthCount)} onValueChange={v => setMonthCount(Number(v))}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {MONTH_OPTIONS.map(o => (
+                <SelectItem key={o.value} value={String(o.value)}>{o.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="gap-2">
+                <Download className="h-4 w-4" /> Export
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handleExportCsv} className="gap-2">
+                <FileText className="h-4 w-4" /> Download CSV
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleExportPdf} className="gap-2">
+                <Download className="h-4 w-4" /> Download PDF
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
-      {/* Summary Cards */}
+      {/* Summary Cards — wrap in ref for PDF export */}
+      <div ref={reportRef}>
       <div className="grid gap-4 sm:grid-cols-3">
         <Card>
           <CardContent className="pt-6">
@@ -274,6 +320,7 @@ const SpendingTrends = () => {
           </CardContent>
         </Card>
       )}
+      </div>
     </motion.div>
   );
 };
