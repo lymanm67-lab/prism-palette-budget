@@ -7,6 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useTTS } from '@/hooks/use-tts';
+import { toast } from 'sonner';
 import { useAccounts, useTransactions, useCategories, useBudgets, useCategoryGroups } from '@/hooks/use-finance-data';
 import { useGoals } from '@/hooks/use-goals';
 import { useDebtPlans } from '@/hooks/use-debt-plans';
@@ -16,7 +17,7 @@ import {
   TrendingUp, Calculator, Map, Bot, Home, Wallet, RepeatIcon,
   Volume2, Pause, Play, Square, ChevronDown, ChevronRight, ChevronLeft,
   CheckCircle2, Circle, Sparkles, BookOpen, Rocket, BarChart3,
-  Zap, Eye, X,
+  Zap, Eye, X, RotateCcw,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
@@ -656,6 +657,16 @@ const GettingStarted = () => {
     localStorage.setItem('prism-gs-tour-seen', '1');
   }, []);
 
+  const handleResetProgress = () => {
+    setCompletedSteps(new Set());
+    setConfettiFired(false);
+    localStorage.removeItem('prism-getting-started-progress');
+    localStorage.removeItem('prism-gs-confetti-page');
+    localStorage.removeItem('prism-gs-confetti-widget');
+    localStorage.removeItem('prism-gs-widget-dismissed');
+    toast.success('Progress reset! You can redo all steps.');
+  };
+
   // Count how many were auto-detected
   const autoCount = [...autoDetected].filter(id => !completedSteps.has(id) || autoDetected.has(id)).length;
 
@@ -700,7 +711,17 @@ const GettingStarted = () => {
                 </div>
               </div>
             </div>
-            <div className="flex gap-2 shrink-0">
+            <div className="flex gap-2 shrink-0 flex-wrap">
+              {mergedCompleted.size > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="gap-1.5 text-muted-foreground"
+                  onClick={handleResetProgress}
+                >
+                  <RotateCcw className="h-3.5 w-3.5" /> Reset
+                </Button>
+              )}
               <Button
                 variant="outline"
                 size="sm"
