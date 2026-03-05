@@ -266,6 +266,7 @@ export type Database = {
       category_groups: {
         Row: {
           budget_type: string
+          business_profile_id: string | null
           color: string
           created_at: string
           household_id: string
@@ -275,6 +276,7 @@ export type Database = {
         }
         Insert: {
           budget_type?: string
+          business_profile_id?: string | null
           color?: string
           created_at?: string
           household_id: string
@@ -284,6 +286,7 @@ export type Database = {
         }
         Update: {
           budget_type?: string
+          business_profile_id?: string | null
           color?: string
           created_at?: string
           household_id?: string
@@ -292,6 +295,13 @@ export type Database = {
           sort_order?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "category_groups_business_profile_id_fkey"
+            columns: ["business_profile_id"]
+            isOneToOne: false
+            referencedRelation: "business_profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "category_groups_household_id_fkey"
             columns: ["household_id"]
