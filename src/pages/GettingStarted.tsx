@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
+import Confetti from '@/components/Confetti';
 
 interface TrainingStep {
   id: string;
@@ -630,6 +631,19 @@ const GettingStarted = () => {
   };
 
   const progress = (mergedCompleted.size / TRAINING_STEPS.length) * 100;
+  const allComplete = mergedCompleted.size === TRAINING_STEPS.length;
+
+  // Fire confetti only once when all steps become complete
+  const [confettiFired, setConfettiFired] = useState(false);
+  useEffect(() => {
+    if (allComplete && !confettiFired) {
+      const alreadyCelebrated = localStorage.getItem('prism-gs-confetti-page');
+      if (!alreadyCelebrated) {
+        setConfettiFired(true);
+        localStorage.setItem('prism-gs-confetti-page', '1');
+      }
+    }
+  }, [allComplete, confettiFired]);
 
   const handleWelcomeTTS = () => {
     if (tts.isSpeaking && !tts.isPaused) tts.pause();
@@ -647,6 +661,7 @@ const GettingStarted = () => {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 max-w-3xl">
+      <Confetti trigger={confettiFired} />
       {/* Guided Tour */}
       <GuidedTour open={tourOpen} onClose={closeTour} />
 
