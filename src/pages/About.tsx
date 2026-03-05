@@ -55,10 +55,10 @@ const About = () => {
             </p>
             <p>
               The name "Prism" represents clarity — taking the chaotic white noise of personal finance and 
-              splitting it into a clear, colorful spectrum of actionable steps. Every feature in this app exists 
+              splitting it into a clear, colorful spectrum of actionable layers. Every feature in this app exists 
               because I needed it at some point on my own journey: the debt payoff planner that kept me motivated 
-              when I was $30K in the hole, the Financial Roadmap that gave me a clear order of operations, and the 
-              AI assistant that answered the tax questions I was too embarrassed to ask anyone.
+              when I was $30K in the hole, the Prism Financial Roadmap that gave me a clear sequence of wealth-building 
+              steps, and the AI assistant that answered the tax questions I was too embarrassed to ask anyone.
             </p>
             <p>
               Today, PrismBudget is used by thousands of people to take control of their finances. Some are 
