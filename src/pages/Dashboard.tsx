@@ -3,6 +3,7 @@ import AiSpendingInsights from '@/components/AiSpendingInsights';
 import PageOverview from '@/components/PageOverview';
 import WeeklyRecap from '@/components/WeeklyRecap';
 import GettingStartedWidget from '@/components/GettingStartedWidget';
+import FinancialHealthScore from '@/components/FinancialHealthScore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAccounts, useTransactions, useSpendingByCategory, useCategoryGroups, useCategories } from '@/hooks/use-finance-data';
@@ -289,6 +290,16 @@ const Dashboard = () => {
             ))}
           </div>
 
+          {/* Financial Health Score */}
+          <motion.div variants={item}>
+            <FinancialHealthScore
+              monthlyIncome={monthlyIncome}
+              monthlyExpenses={monthlyExpenses}
+              totalAssets={totalAssets}
+              totalLiabilities={totalLiabilities}
+            />
+          </motion.div>
+
           {/* Split view: Personal vs Business */}
           <div className="grid gap-6 lg:grid-cols-2">
             <AllModePanel
@@ -345,6 +356,16 @@ const Dashboard = () => {
               </motion.div>
             ))}
           </div>
+
+          {/* Financial Health Score */}
+          <motion.div variants={item}>
+            <FinancialHealthScore
+              monthlyIncome={monthlyIncome}
+              monthlyExpenses={monthlyExpenses}
+              totalAssets={totalAssets}
+              totalLiabilities={totalLiabilities}
+            />
+          </motion.div>
 
           {/* Charts */}
           <DashboardCharts
