@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -19,8 +19,9 @@ import { toast } from 'sonner';
 import {
   Search, Plus, Loader2, Upload, Receipt, Trash2, Tags,
   ArrowRightLeft, SlidersHorizontal, CalendarIcon, ChevronRight,
-  ArrowUpDown, X, Pencil, Sparkles, Landmark,
+  ArrowUpDown, X, Pencil, Sparkles, Landmark, Check,
 } from 'lucide-react';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import CsvImportDialog from '@/components/CsvImportDialog';
 import PageOverview from '@/components/PageOverview';
 
@@ -68,6 +69,22 @@ const Transactions = () => {
   const [form, setForm] = useState({ date: new Date().toISOString().split('T')[0], merchant: '', amount: '', account_id: '', category_id: '', notes: '', tags: '', goal_id: '' });
   const [formType, setFormType] = useState<'debit' | 'credit'>('debit');
   const [transferForm, setTransferForm] = useState({ date: new Date().toISOString().split('T')[0], amount: '', from_account: '', to_account: '', notes: '' });
+  const [merchantOpen, setMerchantOpen] = useState(false);
+
+  // Unique merchants from existing transactions for autocomplete
+  const uniqueMerchants = useMemo(() => {
+    if (!transactions) return [];
+    const counts = new Map<string, number>();
+    for (const t of transactions) {
+      if (t.merchant) {
+        const m = t.merchant.trim();
+        if (m) counts.set(m, (counts.get(m) || 0) + 1);
+      }
+    }
+    return [...counts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(([name]) => name);
+  }, [transactions]);
 
   const activeFilterCount = Object.values(filters).filter(Boolean).length;
 
@@ -376,7 +393,60 @@ const Transactions = () => {
                 </div>
                 <div className="space-y-2">
                   <Label>Merchant</Label>
-                  <Input value={form.merchant} onChange={e => setForm(f => ({ ...f, merchant: e.target.value }))} placeholder="Search merchants..." />
+                  <Popover open={merchantOpen} onOpenChange={setMerchantOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={merchantOpen}
+                        className="w-full justify-between font-normal"
+                      >
+                        {form.merchant || <span className="text-muted-foreground">Search merchants...</span>}
+                        <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                      <Command>
+                        <CommandInput
+                          placeholder="Type a merchant..."
+                          value={form.merchant}
+                          onValueChange={v => setForm(f => ({ ...f, merchant: v }))}
+                        />
+                        <CommandList>
+                          <CommandEmpty>
+                            {form.merchant ? (
+                              <button
+                                className="w-full px-4 py-2 text-sm text-left hover:bg-accent"
+                                onClick={() => setMerchantOpen(false)}
+                              >
+                                Use "{form.merchant}"
+                              </button>
+                            ) : (
+                              'Type to search or add new'
+                            )}
+                          </CommandEmpty>
+                          <CommandGroup heading="Recent merchants">
+                            {uniqueMerchants
+                              .filter(m => !form.merchant || m.toLowerCase().includes(form.merchant.toLowerCase()))
+                              .slice(0, 10)
+                              .map(m => (
+                                <CommandItem
+                                  key={m}
+                                  value={m}
+                                  onSelect={() => {
+                                    setForm(f => ({ ...f, merchant: m }));
+                                    setMerchantOpen(false);
+                                  }}
+                                >
+                                  <Check className={cn('mr-2 h-4 w-4', form.merchant === m ? 'opacity-100' : 'opacity-0')} />
+                                  {m}
+                                </CommandItem>
+                              ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 <div className="space-y-2">
                   <Label>Date</Label>
