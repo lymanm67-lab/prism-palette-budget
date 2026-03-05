@@ -24,6 +24,7 @@ import {
   Home,
   Wallet,
   RepeatIcon,
+  GraduationCap,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
@@ -36,6 +37,7 @@ const NAV_SECTIONS = [
     label: 'Overview',
     items: [
       { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', color: 'text-prism-teal' },
+      { to: '/getting-started', icon: GraduationCap, label: 'Getting Started', color: 'text-prism-amber' },
     ],
   },
   {
