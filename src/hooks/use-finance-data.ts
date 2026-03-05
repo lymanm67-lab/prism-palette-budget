@@ -38,6 +38,30 @@ export function useCreateAccount() {
   });
 }
 
+export function useDeleteAccount() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (accountId: string) => {
+      // Delete related transactions first
+      const { error: txnError } = await supabase
+        .from('transactions')
+        .delete()
+        .eq('account_id', accountId);
+      if (txnError) throw txnError;
+
+      const { error } = await supabase
+        .from('accounts')
+        .delete()
+        .eq('id', accountId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['accounts'] });
+      qc.invalidateQueries({ queryKey: ['transactions'] });
+    },
+  });
+}
+
 // ==================== CATEGORIES ====================
 export function useCategoryGroups() {
   const { household } = useHousehold();
