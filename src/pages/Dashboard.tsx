@@ -91,8 +91,8 @@ const Dashboard = () => {
                     <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={v => `$${(v / 1000).toFixed(0)}k`} />
                     <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} />
                     <Legend />
-                    <Bar dataKey="income" fill="#2eb88a" radius={[4, 4, 0, 0]} name="Income" />
-                    <Bar dataKey="expenses" fill="#e5547a" radius={[4, 4, 0, 0]} name="Expenses" />
+                    <Bar dataKey="income" fill="hsl(160, 84%, 39%)" radius={[6, 6, 0, 0]} name="Income" />
+                    <Bar dataKey="expenses" fill="hsl(340, 82%, 52%)" radius={[6, 6, 0, 0]} name="Expenses" />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
