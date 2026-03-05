@@ -27,6 +27,9 @@ import NotFound from "./pages/NotFound";
 import Onboarding from "@/pages/Onboarding";
 import LandingPage from "@/pages/LandingPage";
 import Legal from "@/pages/Legal";
+import CashFlow from "@/pages/CashFlow";
+import Investments from "@/pages/Investments";
+import Recurring from "@/pages/Recurring";
 
 const queryClient = new QueryClient();
 
@@ -67,11 +70,14 @@ const App = () => (
               <Route index path="/dashboard" element={<Dashboard />} />
               <Route path="/accounts" element={<Accounts />} />
               <Route path="/transactions" element={<Transactions />} />
+              <Route path="/cash-flow" element={<CashFlow />} />
               <Route path="/budgets" element={<Budgets />} />
               <Route path="/categories" element={<Categories />} />
               <Route path="/reports" element={<Reports />} />
               <Route path="/goals" element={<Goals />} />
               <Route path="/debt-payoff" element={<DebtPayoff />} />
+              <Route path="/investments" element={<Investments />} />
+              <Route path="/recurring" element={<Recurring />} />
               <Route path="/calculators" element={<Calculators />} />
               <Route path="/roadmap" element={<PrismRoadmap />} />
               <Route path="/about" element={<About />} />

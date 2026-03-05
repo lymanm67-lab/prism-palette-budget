@@ -16,11 +16,14 @@ import {
   Sun,
   Moon,
   TrendingDown,
+  TrendingUp,
   Calculator,
   Scale,
   Map,
   Heart,
   Home,
+  Wallet,
+  RepeatIcon,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
@@ -40,7 +43,9 @@ const NAV_SECTIONS = [
     items: [
       { to: '/accounts', icon: Landmark, label: 'Accounts', color: 'text-prism-sky' },
       { to: '/transactions', icon: ArrowLeftRight, label: 'Transactions', color: 'text-prism-orange' },
+      { to: '/cash-flow', icon: Wallet, label: 'Cash Flow', color: 'text-prism-teal' },
       { to: '/budgets', icon: PiggyBank, label: 'Budgets', color: 'text-prism-amber' },
+      { to: '/recurring', icon: RepeatIcon, label: 'Recurring', color: 'text-prism-sky' },
       { to: '/categories', icon: Tags, label: 'Categories', color: 'text-prism-lime' },
     ],
   },
@@ -49,6 +54,7 @@ const NAV_SECTIONS = [
     items: [
       { to: '/goals', icon: Target, label: 'Goals', color: 'text-prism-lime' },
       { to: '/debt-payoff', icon: TrendingDown, label: 'Debt Payoff', color: 'text-prism-rose' },
+      { to: '/investments', icon: TrendingUp, label: 'Investments', color: 'text-prism-indigo' },
     ],
   },
   {
