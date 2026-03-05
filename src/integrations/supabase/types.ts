@@ -964,41 +964,25 @@ export type Database = {
           status: string | null
           updated_at: string | null
         }
-        Insert: {
-          consent_expiration?: string | null
-          created_at?: string | null
-          household_id?: string | null
-          id?: string | null
-          institution_id?: string | null
-          institution_name?: string | null
-          plaid_item_id?: string | null
-          status?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          consent_expiration?: string | null
-          created_at?: string | null
-          household_id?: string | null
-          id?: string | null
-          institution_id?: string | null
-          institution_name?: string | null
-          plaid_item_id?: string | null
-          status?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "plaid_items_household_id_fkey"
-            columns: ["household_id"]
-            isOneToOne: false
-            referencedRelation: "households"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Functions: {
       create_household_for_user: { Args: { _name?: string }; Returns: string }
+      get_plaid_items_safe: {
+        Args: never
+        Returns: {
+          consent_expiration: string
+          created_at: string
+          household_id: string
+          id: string
+          institution_id: string
+          institution_name: string
+          plaid_item_id: string
+          status: string
+          updated_at: string
+        }[]
+      }
       is_household_member: {
         Args: { _household_id: string; _user_id: string }
         Returns: boolean
