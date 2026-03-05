@@ -57,6 +57,7 @@ const NAV_SECTIONS = [
       { to: '/goals', icon: Target, label: 'Goals', color: 'text-prism-lime' },
       { to: '/debt-payoff', icon: TrendingDown, label: 'Debt Payoff', color: 'text-prism-rose' },
       { to: '/investments', icon: TrendingUp, label: 'Investments', color: 'text-prism-indigo' },
+      { to: '/net-worth', icon: Scale, label: 'Net Worth', color: 'text-prism-teal' },
     ],
   },
   {
