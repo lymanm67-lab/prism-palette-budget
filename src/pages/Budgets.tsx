@@ -2,13 +2,14 @@ import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { useBudgets, useCategories, useTransactions, useUpsertBudget, useDeleteBudget } from '@/hooks/use-finance-data';
+import { useBudgets, useCategories, useCategoryGroups, useTransactions, useUpsertBudget, useDeleteBudget } from '@/hooks/use-finance-data';
 import { useCurrency } from '@/hooks/use-currency';
 import { Loader2, Plus, Pencil, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -26,10 +27,12 @@ const formatMonth = (monthStr: string) => {
 const Budgets = () => {
   const { formatCurrency } = useCurrency();
   const [monthOffset, setMonthOffset] = useState(0);
+  const [budgetType, setBudgetType] = useState<'personal' | 'business'>('personal');
   const month = getMonth(monthOffset);
   const { data: budgets, isLoading: budgetsLoading } = useBudgets(month);
   const { data: transactions } = useTransactions();
   const { data: categories } = useCategories();
+  const { data: categoryGroups } = useCategoryGroups();
   const upsertBudget = useUpsertBudget();
   const deleteBudget = useDeleteBudget();
 
@@ -50,18 +53,27 @@ const Budgets = () => {
     return map;
   }, [transactions, month]);
 
+  // Filter categories by budget type
+  const filteredCategoryIds = useMemo(() => {
+    if (!categories || !categoryGroups) return new Set<string>();
+    const groupIds = new Set(
+      (categoryGroups as any[]).filter((g: any) => (g.budget_type || 'personal') === budgetType).map((g: any) => g.id)
+    );
+    return new Set(categories.filter(c => groupIds.has(c.group_id)).map(c => c.id));
+  }, [categories, categoryGroups, budgetType]);
+
   const budgetItems = (budgets || []).map(b => ({
     ...b,
     spent: spentByCategory[b.category_id] || 0,
-  }));
+  })).filter(b => filteredCategoryIds.has(b.category_id));
 
   const totalPlanned = budgetItems.reduce((s, b) => s + b.planned_amount, 0);
   const totalSpent = budgetItems.reduce((s, b) => s + b.spent, 0);
   const totalPct = totalPlanned > 0 ? Math.round((totalSpent / totalPlanned) * 100) : 0;
 
-  // Categories not yet budgeted this month
+  // Categories not yet budgeted this month (filtered by budget type)
   const budgetedCategoryIds = new Set(budgetItems.map(b => b.category_id));
-  const unbudgetedCategories = (categories || []).filter(c => !budgetedCategoryIds.has(c.id));
+  const unbudgetedCategories = (categories || []).filter(c => filteredCategoryIds.has(c.id) && !budgetedCategoryIds.has(c.id));
 
   const openCreate = () => {
     setEditingBudget(null);
@@ -93,14 +105,22 @@ const Budgets = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-display text-3xl font-bold">Budgets</h1>
-          <div className="flex items-center gap-2 mt-1">
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setMonthOffset(o => o - 1)}>
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <span className="text-muted-foreground font-medium min-w-[160px] text-center">{formatMonth(month)}</span>
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setMonthOffset(o => o + 1)}>
-              <ChevronRight className="h-4 w-4" />
-            </Button>
+          <div className="flex items-center gap-4 mt-2">
+            <Tabs value={budgetType} onValueChange={(v) => setBudgetType(v as 'personal' | 'business')}>
+              <TabsList>
+                <TabsTrigger value="personal">Personal</TabsTrigger>
+                <TabsTrigger value="business">Business</TabsTrigger>
+              </TabsList>
+            </Tabs>
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setMonthOffset(o => o - 1)}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <span className="text-muted-foreground font-medium min-w-[160px] text-center">{formatMonth(month)}</span>
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setMonthOffset(o => o + 1)}>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
         <Button className="gap-2" onClick={openCreate} disabled={unbudgetedCategories.length === 0}>

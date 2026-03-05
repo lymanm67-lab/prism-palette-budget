@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -60,9 +61,9 @@ const Categories = () => {
   // Dialog state
   const [groupDialogOpen, setGroupDialogOpen] = useState(false);
   const [catDialogOpen, setCatDialogOpen] = useState(false);
-  const [editingGroup, setEditingGroup] = useState<{ id: string; name: string; color: string } | null>(null);
+  const [editingGroup, setEditingGroup] = useState<{ id: string; name: string; color: string; budget_type?: string } | null>(null);
   const [editingCat, setEditingCat] = useState<{ id: string; name: string; color: string; group_id: string } | null>(null);
-  const [groupForm, setGroupForm] = useState({ name: '', color: '#7c3aed' });
+  const [groupForm, setGroupForm] = useState({ name: '', color: '#7c3aed', budget_type: 'personal' });
   const [catForm, setCatForm] = useState({ name: '', color: '#7c5cf5', group_id: '' });
 
   // Delete confirmation
@@ -82,20 +83,20 @@ const Categories = () => {
   // Group dialog
   const openCreateGroup = () => {
     setEditingGroup(null);
-    setGroupForm({ name: '', color: '#7c3aed' });
+    setGroupForm({ name: '', color: '#7c3aed', budget_type: 'personal' });
     setGroupDialogOpen(true);
   };
-  const openEditGroup = (g: { id: string; name: string; color: string }) => {
+  const openEditGroup = (g: { id: string; name: string; color: string; budget_type?: string }) => {
     setEditingGroup(g);
-    setGroupForm({ name: g.name, color: g.color });
+    setGroupForm({ name: g.name, color: g.color, budget_type: g.budget_type || 'personal' });
     setGroupDialogOpen(true);
   };
   const handleSaveGroup = async () => {
     if (!groupForm.name.trim()) return;
     if (editingGroup) {
-      await updateGroup.mutateAsync({ id: editingGroup.id, name: groupForm.name.trim(), color: groupForm.color });
+      await updateGroup.mutateAsync({ id: editingGroup.id, name: groupForm.name.trim(), color: groupForm.color, budget_type: groupForm.budget_type });
     } else {
-      await createGroup.mutateAsync({ name: groupForm.name.trim(), color: groupForm.color, sort_order: (groups?.length || 0) });
+      await createGroup.mutateAsync({ name: groupForm.name.trim(), color: groupForm.color, sort_order: (groups?.length || 0), budget_type: groupForm.budget_type });
     }
     setGroupDialogOpen(false);
   };
@@ -189,6 +190,7 @@ const Categories = () => {
                       <span className="h-3.5 w-3.5 rounded-sm" style={{ backgroundColor: group.color }} />
                       <CardTitle className="font-display text-base">{group.name}</CardTitle>
                       <span className="text-xs text-muted-foreground">({groupCats.length})</span>
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 capitalize">{(group as any).budget_type || 'personal'}</Badge>
                     </button>
                     <div className="flex items-center gap-1">
                       {gIdx > 0 && (
@@ -265,6 +267,16 @@ const Categories = () => {
             <div className="space-y-2">
               <Label>Color</Label>
               <ColorPicker value={groupForm.color} onChange={c => setGroupForm(f => ({ ...f, color: c }))} />
+            </div>
+            <div className="space-y-2">
+              <Label>Budget Type</Label>
+              <Select value={groupForm.budget_type} onValueChange={v => setGroupForm(f => ({ ...f, budget_type: v }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="personal">Personal</SelectItem>
+                  <SelectItem value="business">Business</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <Button onClick={handleSaveGroup} disabled={!groupForm.name.trim() || createGroup.isPending || updateGroup.isPending} className="w-full">
               {(createGroup.isPending || updateGroup.isPending) ? 'Saving...' : editingGroup ? 'Update Group' : 'Create Group'}
