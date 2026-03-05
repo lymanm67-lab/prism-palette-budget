@@ -6,7 +6,7 @@
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
+    --background: 220 20% 97%;
     --foreground: 222 47% 11%;
 
     --card: 0 0% 100%;
@@ -36,7 +36,7 @@
 
     --radius: 0.75rem;
 
-    /* Vibrant palette inspired by Wave/Monarch */
+    /* Vibrant Prism palette */
     --prism-violet: 262 83% 58%;
     --prism-teal: 160 84% 39%;
     --prism-amber: 36 100% 57%;
@@ -52,13 +52,13 @@
     --prism-positive: 160 84% 39%;
     --prism-negative: 340 82% 52%;
 
-    --sidebar-background: 222 47% 11%;
+    --sidebar-background: 240 25% 8%;
     --sidebar-foreground: 213 31% 91%;
     --sidebar-primary: 262 83% 65%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 217 33% 17%;
+    --sidebar-accent: 240 20% 14%;
     --sidebar-accent-foreground: 213 31% 91%;
-    --sidebar-border: 217 33% 17%;
+    --sidebar-border: 240 20% 14%;
     --sidebar-ring: 262 83% 58%;
 
     --chart-1: 262 83% 58%;
@@ -72,22 +72,22 @@
   }
 
   .dark {
-    --background: 222 47% 6%;
+    --background: 240 20% 4%;
     --foreground: 210 40% 96%;
 
-    --card: 222 47% 10%;
+    --card: 240 20% 7%;
     --card-foreground: 210 40% 96%;
 
-    --popover: 222 47% 10%;
+    --popover: 240 20% 7%;
     --popover-foreground: 210 40% 96%;
 
     --primary: 262 83% 65%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 217 33% 17%;
+    --secondary: 240 15% 15%;
     --secondary-foreground: 210 40% 96%;
 
-    --muted: 217 33% 15%;
+    --muted: 240 15% 13%;
     --muted-foreground: 215 20% 55%;
 
     --accent: 160 84% 39%;
@@ -96,17 +96,17 @@
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
+    --border: 240 15% 15%;
+    --input: 240 15% 15%;
     --ring: 262 83% 65%;
 
-    --sidebar-background: 222 50% 4%;
+    --sidebar-background: 240 25% 3%;
     --sidebar-foreground: 215 20% 75%;
     --sidebar-primary: 262 83% 70%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 47% 12%;
+    --sidebar-accent: 240 20% 10%;
     --sidebar-accent-foreground: 215 20% 85%;
-    --sidebar-border: 222 47% 12%;
+    --sidebar-border: 240 20% 10%;
     --sidebar-ring: 262 83% 65%;
 
     --chart-1: 262 83% 68%;
@@ -139,10 +139,118 @@
   .prism-gradient {
     background: linear-gradient(135deg, hsl(var(--prism-violet)), hsl(var(--prism-sky)));
   }
+
+  .prism-gradient-warm {
+    background: linear-gradient(135deg, hsl(var(--prism-orange)), hsl(var(--prism-rose)));
+  }
+
+  .prism-gradient-teal {
+    background: linear-gradient(135deg, hsl(var(--prism-teal)), hsl(var(--prism-sky)));
+  }
+
   .prism-gradient-text {
     background: linear-gradient(135deg, hsl(var(--prism-violet)), hsl(var(--prism-sky)));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
+
+  .prism-glow {
+    box-shadow: 0 0 20px -5px hsl(var(--prism-violet) / 0.3),
+                0 0 40px -10px hsl(var(--prism-sky) / 0.2);
+  }
+
+  .prism-glow-teal {
+    box-shadow: 0 0 20px -5px hsl(var(--prism-teal) / 0.3),
+                0 0 40px -10px hsl(var(--prism-lime) / 0.2);
+  }
+
+  .prism-glow-warm {
+    box-shadow: 0 0 20px -5px hsl(var(--prism-orange) / 0.3),
+                0 0 40px -10px hsl(var(--prism-amber) / 0.2);
+  }
+
+  .prism-card-shine {
+    position: relative;
+    overflow: hidden;
+  }
+  .prism-card-shine::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, hsl(var(--prism-violet) / 0.4), hsl(var(--prism-sky) / 0.4), transparent);
+  }
+
+  .stat-card-icon {
+    @apply flex h-12 w-12 items-center justify-center rounded-2xl;
+    backdrop-filter: blur(8px);
+  }
+}
+
+/* Animated gradient background for auth */
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.auth-gradient-bg {
+  background: linear-gradient(-45deg,
+    hsl(262, 83%, 12%),
+    hsl(240, 25%, 8%),
+    hsl(199, 89%, 12%),
+    hsl(160, 84%, 10%),
+    hsl(262, 83%, 15%)
+  );
+  background-size: 400% 400%;
+  animation: gradient-shift 15s ease infinite;
+}
+
+/* Floating orbs for auth background */
+@keyframes float-orb {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(30px, -50px) scale(1.1); }
+  50% { transform: translate(-20px, 20px) scale(0.9); }
+  75% { transform: translate(50px, 30px) scale(1.05); }
+}
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.15;
+  animation: float-orb 20s ease-in-out infinite;
+}
+
+/* Sidebar gradient accent line */
+.sidebar-accent-line {
+  position: relative;
+}
+.sidebar-accent-line::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: 0 4px 4px 0;
+  background: linear-gradient(180deg, hsl(var(--prism-violet)), hsl(var(--prism-sky)));
+}
+
+/* Pulse animation for live indicators */
+@keyframes pulse-ring {
+  0% { transform: scale(0.8); opacity: 1; }
+  100% { transform: scale(2); opacity: 0; }
+}
+
+.pulse-indicator::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulse-ring 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
 }
