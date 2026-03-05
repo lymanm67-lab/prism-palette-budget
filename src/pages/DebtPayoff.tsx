@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,10 +15,12 @@ import {
 import {
   Plus, Trash2, Pencil, CreditCard, TrendingDown, Snowflake, Flame,
   ArrowDownUp, CalendarDays, DollarSign, Loader2, Info, CheckCircle2,
-  Save, FolderOpen,
+  Save, FolderOpen, Sparkles, Bot,
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
+import ReactMarkdown from 'react-markdown';
+import { supabase } from '@/integrations/supabase/client';
 
 // ─── Types ───
 interface Debt {
@@ -508,6 +510,9 @@ const DebtPayoff = () => {
                   </CardContent>
                 </Card>
               )}
+
+              {/* AI Debt Advisor */}
+              <AiDebtAdvisor debts={debts} extraPayment={extraPayment} />
             </>
           )}
         </>
@@ -515,5 +520,149 @@ const DebtPayoff = () => {
     </motion.div>
   );
 };
+
+// ─── AI Debt Advisor Component ───
+function AiDebtAdvisor({ debts, extraPayment }: { debts: Debt[]; extraPayment: number }) {
+  const [aiResponse, setAiResponse] = useState('');
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [hasAnalyzed, setHasAnalyzed] = useState(false);
+
+  const getRecommendation = useCallback(async () => {
+    if (debts.length === 0) return;
+    setIsStreaming(true);
+    setAiResponse('');
+    setHasAnalyzed(true);
+
+    try {
+      // Get user's financial journey from profile
+      const { data: { user } } = await supabase.auth.getUser();
+      let financialJourney = '';
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('financial_journey')
+          .eq('user_id', user.id)
+          .single();
+        financialJourney = profile?.financial_journey || '';
+      }
+
+      const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/debt-advisor`;
+      const resp = await fetch(CHAT_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          debts: debts.map(d => ({
+            name: d.name,
+            balance: d.balance,
+            interest_rate: d.interest_rate,
+            minimum_payment: d.minimum_payment,
+          })),
+          extra_payment: extraPayment,
+          financial_journey: financialJourney,
+        }),
+      });
+
+      if (!resp.ok || !resp.body) {
+        if (resp.status === 429) { toast.error('Rate limit exceeded. Please try again shortly.'); setIsStreaming(false); return; }
+        if (resp.status === 402) { toast.error('AI usage limit reached. Please add credits.'); setIsStreaming(false); return; }
+        throw new Error('Failed to get AI recommendation');
+      }
+
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let textBuffer = '';
+      let fullText = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        textBuffer += decoder.decode(value, { stream: true });
+
+        let newlineIndex: number;
+        while ((newlineIndex = textBuffer.indexOf('\n')) !== -1) {
+          let line = textBuffer.slice(0, newlineIndex);
+          textBuffer = textBuffer.slice(newlineIndex + 1);
+          if (line.endsWith('\r')) line = line.slice(0, -1);
+          if (line.startsWith(':') || line.trim() === '') continue;
+          if (!line.startsWith('data: ')) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === '[DONE]') break;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) {
+              fullText += content;
+              setAiResponse(fullText);
+            }
+          } catch {
+            textBuffer = line + '\n' + textBuffer;
+            break;
+          }
+        }
+      }
+    } catch (e) {
+      console.error('AI advisor error:', e);
+      toast.error('Failed to get AI recommendation. Please try again.');
+    } finally {
+      setIsStreaming(false);
+    }
+  }, [debts, extraPayment]);
+
+  return (
+    <Card className="prism-card-shine border-border/50 overflow-hidden">
+      <CardHeader className="pb-3">
+        <CardTitle className="font-display flex items-center gap-2 text-lg">
+          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-prism-indigo to-prism-sky flex items-center justify-center">
+            <Sparkles className="h-4 w-4 text-white" />
+          </div>
+          AI Debt Advisor
+          <span className="text-xs font-normal text-muted-foreground ml-auto">Powered by AI</span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {!hasAnalyzed ? (
+          <div className="text-center py-6">
+            <Bot className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
+            <p className="text-sm text-muted-foreground mb-4 max-w-sm mx-auto">
+              Get personalized AI recommendations based on your actual debts, interest rates, and financial goals.
+            </p>
+            <Button
+              onClick={getRecommendation}
+              disabled={debts.length === 0}
+              className="gap-2 prism-gradient text-white border-0 hover:opacity-90"
+            >
+              <Sparkles className="h-4 w-4" />
+              Analyze My Debts
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {isStreaming && !aiResponse && (
+              <div className="flex items-center gap-3 py-4">
+                <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                <span className="text-sm text-muted-foreground">Analyzing your debt portfolio…</span>
+              </div>
+            )}
+            {aiResponse && (
+              <div className="prose prose-sm dark:prose-invert max-w-none [&>h2]:font-display [&>h2]:text-base [&>h2]:font-bold [&>h2]:mt-4 [&>h2]:mb-2 [&>ul]:space-y-1 [&>p]:text-sm [&>ul]:text-sm">
+                <ReactMarkdown>{aiResponse}</ReactMarkdown>
+              </div>
+            )}
+            {!isStreaming && aiResponse && (
+              <div className="flex gap-2 pt-2 border-t border-border/50">
+                <Button variant="outline" size="sm" onClick={getRecommendation} className="gap-1">
+                  <Sparkles className="h-3.5 w-3.5" /> Re-analyze
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
 
 export default DebtPayoff;

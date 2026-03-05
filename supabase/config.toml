@@ -2,3 +2,9 @@ project_id = "majwbihhjpjbmjawqqcz"
 
 [functions.plaid]
 verify_jwt = false
+
+[functions.tax-assistant]
+verify_jwt = false
+
+[functions.debt-advisor]
+verify_jwt = false
