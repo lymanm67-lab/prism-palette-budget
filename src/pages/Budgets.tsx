@@ -28,6 +28,7 @@ const Budgets = () => {
   const { formatCurrency } = useCurrency();
   const [monthOffset, setMonthOffset] = useState(0);
   const [budgetType, setBudgetType] = useState<'personal' | 'business'>('personal');
+  const [selectedBusiness, setSelectedBusiness] = useState<string>('all');
   const month = getMonth(monthOffset);
   const { data: budgets, isLoading: budgetsLoading } = useBudgets(month);
   const { data: transactions } = useTransactions();
@@ -41,6 +42,19 @@ const Budgets = () => {
   const [form, setForm] = useState({ category_id: '', planned_amount: '' });
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
+  // Extract business names from category groups
+  const businessNames = useMemo(() => {
+    if (!categoryGroups) return [];
+    const names = new Set<string>();
+    for (const g of (categoryGroups as any[])) {
+      if ((g.budget_type || 'personal') === 'business') {
+        const match = g.name.match(/^(.+?)\s*-\s*/);
+        if (match) names.add(match[1].trim());
+      }
+    }
+    return Array.from(names);
+  }, [categoryGroups]);
+
   const spentByCategory = useMemo(() => {
     if (!transactions) return {};
     const monthPrefix = month.substring(0, 7);
@@ -53,14 +67,22 @@ const Budgets = () => {
     return map;
   }, [transactions, month]);
 
-  // Filter categories by budget type
+  // Filter categories by budget type AND selected business
   const filteredCategoryIds = useMemo(() => {
     if (!categories || !categoryGroups) return new Set<string>();
     const groupIds = new Set(
-      (categoryGroups as any[]).filter((g: any) => (g.budget_type || 'personal') === budgetType).map((g: any) => g.id)
+      (categoryGroups as any[])
+        .filter((g: any) => {
+          if ((g.budget_type || 'personal') !== budgetType) return false;
+          if (budgetType === 'business' && selectedBusiness !== 'all') {
+            return g.name.startsWith(selectedBusiness + ' -') || g.name.startsWith(selectedBusiness + ' –');
+          }
+          return true;
+        })
+        .map((g: any) => g.id)
     );
     return new Set(categories.filter(c => groupIds.has(c.group_id)).map(c => c.id));
-  }, [categories, categoryGroups, budgetType]);
+  }, [categories, categoryGroups, budgetType, selectedBusiness]);
 
   const budgetItems = (budgets || []).map(b => ({
     ...b,
@@ -112,6 +134,19 @@ const Budgets = () => {
                 <TabsTrigger value="business">Business</TabsTrigger>
               </TabsList>
             </Tabs>
+            {budgetType === 'business' && businessNames.length > 0 && (
+              <Select value={selectedBusiness} onValueChange={setSelectedBusiness}>
+                <SelectTrigger className="w-[180px] h-8 text-sm">
+                  <SelectValue placeholder="All Businesses" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Businesses</SelectItem>
+                  {businessNames.map(name => (
+                    <SelectItem key={name} value={name}>{name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
             <div className="flex items-center gap-1">
               <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setMonthOffset(o => o - 1)}>
                 <ChevronLeft className="h-4 w-4" />
