@@ -237,6 +237,17 @@ export function useUpsertBudget() {
   });
 }
 
+export function useDeleteBudget() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('budgets').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['budgets'] }),
+  });
+}
+
 // ==================== SPENDING AGGREGATION ====================
 export function useSpendingByCategory(startDate: string, endDate: string) {
   const { household } = useHousehold();
