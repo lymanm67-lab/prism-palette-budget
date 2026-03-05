@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { useSpendingByCategory, useTransactionsByDateRange, useBudgets, useCategories, useAccounts } from '@/hooks/use-finance-data';
+import { useSpendingByCategory, useTransactionsByDateRange, useBudgets, useCategories, useAccounts, useAllTransactions } from '@/hooks/use-finance-data';
 import { useCurrency } from '@/hooks/use-currency';
 import { CalendarIcon, Download, FileText, Loader2, Building2, User } from 'lucide-react';
 import { useMemo, useRef, useState, useCallback } from 'react';
@@ -60,6 +60,7 @@ const Reports = () => {
   const { data: budgets } = useBudgets(budgetMonth);
   const { data: categories } = useCategories();
   const { data: accounts } = useAccounts();
+  const { data: allTransactions } = useAllTransactions();
 
   // ==================== CASH FLOW ====================
   const monthlyCashflow = useMemo(() => {
@@ -103,15 +104,19 @@ const Reports = () => {
 
   // ==================== NET WORTH OVER TIME ====================
   const netWorthTrend = useMemo(() => {
-    if (!transactions || !accounts) return [];
+    if (!allTransactions || !accounts) return [];
     const currentNetWorth = (accounts || []).reduce((s, a) => s + a.balance, 0);
     const monthlyDeltas = new Map<string, number>();
-    for (const t of transactions) {
+    for (const t of allTransactions) {
       const m = t.date.substring(0, 7);
       monthlyDeltas.set(m, (monthlyDeltas.get(m) || 0) + t.amount);
     }
     const months = Array.from(monthlyDeltas.keys()).sort();
-    if (months.length === 0) return [];
+    if (months.length === 0) {
+      // No transactions yet — show current net worth as a single point
+      const label = new Date().toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+      return [{ month: label, netWorth: currentNetWorth }];
+    }
 
     const points: { month: string; netWorth: number }[] = [];
     let runningNetWorth = currentNetWorth;
@@ -124,7 +129,7 @@ const Reports = () => {
       points.push({ month: label, netWorth: runningNetWorth });
     }
     return points;
-  }, [transactions, accounts]);
+  }, [allTransactions, accounts]);
 
   // ==================== TOP MERCHANTS ====================
   const topMerchants = useMemo(() => {

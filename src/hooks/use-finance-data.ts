@@ -228,6 +228,23 @@ export function useTransactionsByDateRange(startDate: string, endDate: string) {
   });
 }
 
+export function useAllTransactions() {
+  const { household } = useHousehold();
+  return useQuery({
+    queryKey: ['transactions_all', household?.id],
+    enabled: !!household,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('transactions')
+        .select('*, categories(name, color), accounts(name)')
+        .eq('household_id', household!.id)
+        .order('date', { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
 export function useCreateTransaction() {
   const qc = useQueryClient();
   const { household } = useHousehold();
