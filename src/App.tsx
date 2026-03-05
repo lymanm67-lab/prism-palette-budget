@@ -15,6 +15,7 @@ import Reports from "@/pages/Reports";
 import Categories from "@/pages/Categories";
 import ResetPassword from "@/pages/ResetPassword";
 import Settings from "@/pages/Settings";
+import TaxAssistant from "@/pages/TaxAssistant";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -57,6 +58,7 @@ const App = () => (
               <Route path="/categories" element={<Categories />} />
               <Route path="/reports" element={<Reports />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/tax-assistant" element={<TaxAssistant />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
