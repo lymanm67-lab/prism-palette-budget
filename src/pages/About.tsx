@@ -1,8 +1,8 @@
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import {
-  Zap, Heart, Target, Shield, BarChart3, Bot, Sparkles, ArrowRight, Code2, Lightbulb, Users
+  Zap, Heart, Target, Shield, BarChart3, Bot, Sparkles, ArrowRight, Code2, Lightbulb, Users, User
 } from 'lucide-react';
 
 const VALUES = [
@@ -30,8 +30,30 @@ const About = () => {
             <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
               The Story Behind <span className="prism-gradient-text">PrismBudget</span>
             </h1>
-            <p className="mt-3 text-white/50 leading-relaxed max-w-xl">
+            <p className="mt-3 text-white/80 leading-relaxed max-w-xl">
               Built by someone who lived the financial struggle — and decided to build the tool they wished existed.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Meet the Designer */}
+      <div className="rounded-2xl border border-border p-6 sm:p-8">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+          {/* Placeholder avatar */}
+          <div className="flex h-28 w-28 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-prism-teal/20 to-prism-indigo/20 border-2 border-dashed border-prism-teal/30">
+            <User className="h-12 w-12 text-prism-teal/60" />
+          </div>
+          <div className="text-center sm:text-left space-y-2">
+            <p className="text-xs font-bold uppercase tracking-wider text-prism-teal">Meet the Designer</p>
+            <h2 className="font-display text-2xl font-bold">The Creator of PrismBudget</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed max-w-lg">
+              Designer, developer, and someone who understands what it's like to stare at a bank account
+              and feel lost. PrismBudget was born out of a personal mission to make financial clarity
+              accessible to everyone — not just those who can afford a financial advisor.
+            </p>
+            <p className="text-xs text-muted-foreground/60 italic">
+              Photo coming soon — for now, the work speaks for itself.
             </p>
           </div>
         </div>
@@ -57,8 +79,12 @@ const About = () => {
               The name "Prism" represents clarity — taking the chaotic white noise of personal finance and 
               splitting it into a clear, colorful spectrum of actionable layers. Every feature in this app exists 
               because I needed it at some point on my own journey: the debt payoff planner that kept me motivated 
-              when I was $30K in the hole, the Prism Financial Roadmap that gave me a clear sequence of wealth-building 
-              steps, and the AI assistant that answered the tax questions I was too embarrassed to ask anyone.
+              when I was $30K in the hole, the{' '}
+              <Link to="/roadmap" className="text-prism-teal hover:underline font-medium">
+                Prism Financial Roadmap
+              </Link>{' '}
+              that gave me a clear sequence of wealth-building steps, and the AI assistant that answered the 
+              tax questions I was too embarrassed to ask anyone.
             </p>
             <p>
               Today, PrismBudget is used by thousands of people to take control of their finances. Some are 
