@@ -194,6 +194,7 @@ export type Database = {
       }
       category_groups: {
         Row: {
+          budget_type: string
           color: string
           created_at: string
           household_id: string
@@ -202,6 +203,7 @@ export type Database = {
           sort_order: number
         }
         Insert: {
+          budget_type?: string
           color?: string
           created_at?: string
           household_id: string
@@ -210,6 +212,7 @@ export type Database = {
           sort_order?: number
         }
         Update: {
+          budget_type?: string
           color?: string
           created_at?: string
           household_id?: string
