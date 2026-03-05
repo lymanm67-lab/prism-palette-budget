@@ -192,8 +192,13 @@ const Calculators = () => {
 
   // Wealth multiplier
   const [wealthAge, setWealthAge] = useState('30');
+  const handleWealthAgeChange = (v: string) => {
+    const num = parseInt(v);
+    if (v === '') { setWealthAge(''); return; }
+    if (!isNaN(num)) setWealthAge(String(Math.min(64, Math.max(18, num))));
+  };
   const wealthResult = useMemo(() => {
-    const age = parseInt(wealthAge) || 30;
+    const age = Math.min(64, Math.max(18, parseInt(wealthAge) || 30));
     const multiplier = calcWealthMultiplier(age);
     const monthlyTo1M = calcMonthlyToMillion(age, 1000000);
     const monthlyTo2M = calcMonthlyToMillion(age, 2000000);
@@ -479,7 +484,7 @@ const Calculators = () => {
                 <p className="text-sm text-muted-foreground">
                   See how powerful your dollars are when invested early. Every dollar invested today can multiply many times over by age 65.
                 </p>
-                <InputField label="Your Current Age" value={wealthAge} onChange={v => setWealthAge(v)} icon={CalendarDays} suffix="years" />
+                <InputField label="Your Current Age" value={wealthAge} onChange={handleWealthAgeChange} icon={CalendarDays} suffix="years" />
                 <div className="p-4 rounded-xl bg-gradient-to-br from-prism-indigo/10 to-prism-violet/10 border border-prism-indigo/20">
                   <div className="flex items-center gap-2 mb-2">
                     <Sparkles className="h-4 w-4 text-prism-indigo" />
