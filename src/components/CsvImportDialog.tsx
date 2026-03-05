@@ -24,8 +24,9 @@ import {
   type DetectedFormat,
 } from '@/lib/csv-parser';
 import { formatCurrency } from '@/lib/seed-data';
-import { Upload, FileSpreadsheet, ArrowRight, ArrowLeft, Check, AlertCircle, Loader2, Info } from 'lucide-react';
+import { Upload, FileSpreadsheet, ArrowRight, ArrowLeft, Check, AlertCircle, Loader2, Info, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useDuplicateDetection } from '@/hooks/use-duplicate-detection';
 
 type Step = 'upload' | 'map' | 'preview' | 'importing' | 'done';
 
@@ -53,6 +54,7 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
   const { data: accounts } = useAccounts();
   const { data: categories } = useCategories();
   const qc = useQueryClient();
+  const { findDuplicates } = useDuplicateDetection();
 
   const [step, setStep] = useState<Step>('upload');
   const [csvResult, setCsvResult] = useState<CsvParseResult | null>(null);
@@ -61,8 +63,9 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
   const [parsedRows, setParsedRows] = useState<ParsedRow[]>([]);
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
   const [importing, setImporting] = useState(false);
-  const [importResult, setImportResult] = useState({ success: 0, failed: 0 });
+  const [importResult, setImportResult] = useState({ success: 0, failed: 0, skippedDupes: 0 });
   const [ruleMatchCount, setRuleMatchCount] = useState(0);
+  const [duplicateRows, setDuplicateRows] = useState<Set<number>>(new Set());
   const [dragging, setDragging] = useState(false);
   const [showFormats, setShowFormats] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -75,7 +78,7 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
     setParsedRows([]);
     setSelectedRows(new Set());
     setImporting(false);
-    setImportResult({ success: 0, failed: 0 });
+    setImportResult({ success: 0, failed: 0, skippedDupes: 0 });
     setRuleMatchCount(0);
     setDragging(false);
     setShowFormats(false);
@@ -134,7 +137,19 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
     if (!csvResult) return;
     const rows = applyMapping(csvResult.rows, mapping, csvResult.detectedFormat);
     setParsedRows(rows);
-    setSelectedRows(new Set(rows.map((_, i) => i)));
+
+    // Detect duplicates
+    const dupes = findDuplicates(rows.map(r => ({ date: r.date, amount: r.amount, merchant: r.merchant })));
+    setDuplicateRows(dupes);
+
+    // Select all non-duplicate rows by default
+    const selected = new Set(rows.map((_, i) => i).filter(i => !dupes.has(i)));
+    setSelectedRows(selected);
+
+    if (dupes.size > 0) {
+      toast({ title: `${dupes.size} potential duplicate(s) found`, description: 'Duplicates are deselected by default. You can re-select them if needed.' });
+    }
+
     setStep('preview');
   };
 
@@ -218,7 +233,7 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
       }
     }
 
-    setImportResult({ success, failed });
+    setImportResult({ success, failed, skippedDupes: 0 });
     setRuleMatchCount(ruleApplied);
     setImporting(false);
     setStep('done');
@@ -493,8 +508,15 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
           {/* STEP 3: Preview */}
           {step === 'preview' && (
             <motion.div key="preview" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4 flex-1 min-h-0">
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">{selectedRows.size} of {parsedRows.length} transactions selected</p>
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-3">
+                  <p className="text-sm text-muted-foreground">{selectedRows.size} of {parsedRows.length} selected</p>
+                  {duplicateRows.size > 0 && (
+                    <Badge variant="outline" className="gap-1 text-prism-amber border-prism-amber/30">
+                      <AlertTriangle className="h-3 w-3" /> {duplicateRows.size} duplicate{duplicateRows.size > 1 ? 's' : ''} found
+                    </Badge>
+                  )}
+                </div>
                 <div className="flex items-center gap-2">
                   <Checkbox checked={selectedRows.size === parsedRows.length} onCheckedChange={handleToggleAll} />
                   <span className="text-sm">Select all</span>
@@ -515,11 +537,17 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
                   <TableBody>
                     {parsedRows.map((row, i) => {
                       const matched = categoryLookup.has(row.category.toLowerCase());
+                      const isDupe = duplicateRows.has(i);
                       return (
-                        <TableRow key={i} className={!selectedRows.has(i) ? 'opacity-40' : ''}>
+                        <TableRow key={i} className={cn(!selectedRows.has(i) && 'opacity-40', isDupe && 'bg-prism-amber/5')}>
                           <TableCell><Checkbox checked={selectedRows.has(i)} onCheckedChange={() => handleToggleRow(i)} /></TableCell>
                           <TableCell className="text-sm">{row.date}</TableCell>
-                          <TableCell className="text-sm font-medium max-w-[200px] truncate">{row.merchant || '—'}</TableCell>
+                          <TableCell className="text-sm font-medium max-w-[200px] truncate">
+                            <span className="flex items-center gap-1.5">
+                              {row.merchant || '—'}
+                              {isDupe && <span title="Potential duplicate"><AlertTriangle className="h-3 w-3 text-prism-amber shrink-0" /></span>}
+                            </span>
+                          </TableCell>
                           <TableCell className={cn('text-sm text-right font-medium', row.amount > 0 && 'text-prism-teal')}>{formatCurrency(row.amount)}</TableCell>
                           <TableCell>
                             {row.category ? (
