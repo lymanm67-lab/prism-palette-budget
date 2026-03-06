@@ -16,6 +16,7 @@ import { Loader2, Plus, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, 
 import { cn } from '@/lib/utils';
 import { getDaysInMonth } from 'date-fns';
 import PageOverview from '@/components/PageOverview';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 const getMonth = (offset: number) => {
   const d = new Date();
@@ -402,9 +403,20 @@ const Budgets = () => {
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
-          <Button className="gap-2" onClick={openCreate} disabled={unbudgetedCategories.length === 0}>
-            <Plus className="h-4 w-4" /> Add Budget
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span tabIndex={unbudgetedCategories.length === 0 ? 0 : undefined}>
+                <Button className="gap-2" onClick={openCreate} disabled={unbudgetedCategories.length === 0}>
+                  <Plus className="h-4 w-4" /> Add Budget
+                </Button>
+              </span>
+            </TooltipTrigger>
+            {unbudgetedCategories.length === 0 && (
+              <TooltipContent side="bottom" className="max-w-[220px] text-center">
+                All categories already have budgets this month. Create new categories first.
+              </TooltipContent>
+            )}
+          </Tooltip>
         </div>
       </div>
 
