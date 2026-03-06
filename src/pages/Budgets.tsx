@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { useBudgets, useCategories, useCategoryGroups, useTransactions, useUpsertBudget, useDeleteBudget } from '@/hooks/use-finance-data';
+import { useBudgets, useCategories, useCategoryGroups, useTransactions, useUpsertBudget, useDeleteBudget, useCreateCategory } from '@/hooks/use-finance-data';
 import { useCurrency } from '@/hooks/use-currency';
 import { Loader2, Plus, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Eye, Settings2, TrendingUp, AlertTriangle, CheckCircle2, PiggyBank } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -73,6 +73,7 @@ const Budgets = () => {
   const { data: categoryGroups } = useCategoryGroups();
   const upsertBudget = useUpsertBudget();
   const deleteBudget = useDeleteBudget();
+  const createCategory = useCreateCategory();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState<{ category_id: string; planned_amount: string } | null>(null);
@@ -81,6 +82,8 @@ const Budgets = () => {
   const [showUnbudgeted, setShowUnbudgeted] = useState(false);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({ income: true, fixed: true, flexible: true, non_monthly: true });
   const [viewTab, setViewTab] = useState<'budget' | 'forecast'>('budget');
+  const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const [quickAddForm, setQuickAddForm] = useState({ name: '', group_id: '', color: '#7c5cf5' });
 
   const toggleSection = (key: string) => setOpenSections(s => ({ ...s, [key]: !s[key] }));
 
@@ -413,10 +416,13 @@ const Budgets = () => {
             </TooltipTrigger>
             {unbudgetedCategories.length === 0 && (
               <TooltipContent side="bottom" className="max-w-[220px] text-center">
-                All categories already have budgets this month. Create new categories first.
+                All categories already have budgets this month. Create a new category first.
               </TooltipContent>
             )}
           </Tooltip>
+          <Button variant="outline" className="gap-2" onClick={() => { setQuickAddForm({ name: '', group_id: '', color: '#7c5cf5' }); setQuickAddOpen(true); }}>
+            <Plus className="h-4 w-4" /> New Category
+          </Button>
         </div>
       </div>
 
@@ -812,6 +818,57 @@ const Budgets = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Quick Add Category Dialog */}
+      <Dialog open={quickAddOpen} onOpenChange={setQuickAddOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="font-display">Quick Add Category</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Category Name</Label>
+              <Input placeholder="e.g. Groceries" value={quickAddForm.name} onChange={e => setQuickAddForm(f => ({ ...f, name: e.target.value }))} />
+            </div>
+            <div className="space-y-2">
+              <Label>Category Group</Label>
+              <Select value={quickAddForm.group_id} onValueChange={v => setQuickAddForm(f => ({ ...f, group_id: v }))}>
+                <SelectTrigger><SelectValue placeholder="Select group" /></SelectTrigger>
+                <SelectContent>
+                  {(categoryGroups || []).map((g: any) => (
+                    <SelectItem key={g.id} value={g.id}>
+                      <div className="flex items-center gap-2">
+                        <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: g.color }} />
+                        {g.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Color</Label>
+              <Input type="color" value={quickAddForm.color} onChange={e => setQuickAddForm(f => ({ ...f, color: e.target.value }))} className="h-10 w-20 p-1" />
+            </div>
+            <Button
+              onClick={async () => {
+                if (!quickAddForm.name || !quickAddForm.group_id) return;
+                const newCat = await createCategory.mutateAsync({ name: quickAddForm.name, group_id: quickAddForm.group_id, color: quickAddForm.color });
+                setQuickAddOpen(false);
+                setQuickAddForm({ name: '', group_id: '', color: '#7c5cf5' });
+                // Open budget dialog with the new category pre-selected
+                setEditingBudget(null);
+                setForm({ category_id: newCat.id, planned_amount: '' });
+                setDialogOpen(true);
+              }}
+              disabled={!quickAddForm.name || !quickAddForm.group_id || createCategory.isPending}
+              className="w-full"
+            >
+              {createCategory.isPending ? 'Creating...' : 'Create Category & Add Budget'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 };
