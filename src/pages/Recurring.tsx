@@ -90,11 +90,12 @@ const Recurring = () => {
     setEditTarget(r);
     setEditForm({
       merchant: r.merchant || '',
-      amount: String(r.amount),
+      amount: String(Math.abs(Number(r.amount))),
       frequency: r.frequency || 'monthly',
       account_id: r.account_id || '',
       category_id: r.category_id || '',
       next_due_date: r.next_due_date || '',
+      type: Number(r.amount) >= 0 ? 'income' : 'expense',
     });
   };
 
