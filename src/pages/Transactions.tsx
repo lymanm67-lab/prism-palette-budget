@@ -561,7 +561,8 @@ const Transactions = () => {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-      {/* Header */}
+      {/* Header - sticky */}
+      <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 -mt-6 pt-6 pb-4 space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="font-display text-2xl font-bold">Transactions</h1>
         <PageOverview
