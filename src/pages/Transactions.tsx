@@ -507,6 +507,12 @@ const Transactions = () => {
     setEditType(isCredit ? 'credit' : 'debit');
     setEditReceiptUrl(txn.receipt_url || null);
     setAiSuggestion(null);
+    // Find linked transfer account
+    let linkedAccount = '';
+    if ((txn as any).is_transfer && (txn as any).transfer_pair_id) {
+      const pair = (transactions || []).find(t => t.id === (txn as any).transfer_pair_id);
+      if (pair) linkedAccount = pair.account_id;
+    }
     setEditForm({
       merchant: txn.merchant || '',
       amount: String(Math.abs(txn.amount)),
@@ -516,6 +522,8 @@ const Transactions = () => {
       notes: txn.notes || '',
       tags: (txn.tags || []).join(', '),
       goal_id: '',
+      is_transfer: !!(txn as any).is_transfer,
+      transfer_linked_account: linkedAccount,
     });
 
     // Fetch AI suggestion if no category assigned
