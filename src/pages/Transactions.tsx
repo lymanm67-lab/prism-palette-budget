@@ -1228,8 +1228,8 @@ const Transactions = () => {
         </Card>
       ) : (
         <div className="space-y-1">
-          {/* Master select-all */}
-          <div className="flex items-center gap-2 px-3 py-1.5">
+          {/* Column headers */}
+          <div className="flex items-center gap-3 px-4 py-2 border-b border-border">
             <Checkbox
               checked={filtered.length > 0 && filtered.every(t => selected.has(t.id))}
               onCheckedChange={(checked) => {
@@ -1237,9 +1237,14 @@ const Transactions = () => {
               }}
               className="shrink-0"
             />
-            <span className="text-xs font-medium text-muted-foreground">
-              {selected.size === filtered.length && filtered.length > 0 ? `All ${filtered.length} selected` : `Select all (${filtered.length})`}
-            </span>
+            {/* Spacer for merchant icon */}
+            <div className="h-8 w-8 shrink-0" />
+            <span className="flex-1 min-w-0 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Merchant</span>
+            <span className="hidden sm:block w-[180px] shrink-0 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Category</span>
+            <span className="hidden md:block w-[180px] shrink-0 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Account</span>
+            <span className="w-[90px] text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">Amount</span>
+            {/* Spacer for action icons */}
+            <div className="w-[68px] shrink-0" />
           </div>
           {grouped.map(group => (
             <div key={group.date}>
