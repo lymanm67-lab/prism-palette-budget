@@ -1035,16 +1035,15 @@ const Transactions = () => {
                           "flex items-center gap-3 px-4 py-3 hover:bg-muted/30 transition-colors group cursor-pointer",
                           isDupe && "bg-amber-50/50 dark:bg-amber-950/10"
                         )}
-                        onClick={() => !editMultiple && openEditTxn(txn)}
+                        onClick={() => selected.size === 0 && openEditTxn(txn)}
                       >
-                        {/* Checkbox (edit multiple mode) */}
-                        {editMultiple && (
-                          <Checkbox
-                            checked={selected.has(txn.id)}
-                            onCheckedChange={() => toggleSelect(txn.id)}
-                            className="shrink-0"
-                          />
-                        )}
+                        {/* Checkbox for multi-select */}
+                        <Checkbox
+                          checked={selected.has(txn.id)}
+                          onCheckedChange={() => toggleSelect(txn.id)}
+                          onClick={(e) => e.stopPropagation()}
+                          className="shrink-0"
+                        />
 
                         {/* Merchant icon placeholder */}
                         <div className={cn(
