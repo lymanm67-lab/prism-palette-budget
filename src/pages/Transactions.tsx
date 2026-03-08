@@ -814,9 +814,12 @@ const Transactions = () => {
                                   onSelect={() => {
                                     const catId = merchantCategoryMap.get(m);
                                     const shouldAutoFill = catId && !form.category_id;
-                                    setForm(f => ({ ...f, merchant: m, ...(shouldAutoFill ? { category_id: catId } : {}) }));
+                                    const detected = isTransferMerchant(m);
+                                    setForm(f => ({ ...f, merchant: m, is_transfer: detected, ...(shouldAutoFill ? { category_id: catId } : {}) }));
                                     setMerchantOpen(false);
-                                    if (shouldAutoFill) {
+                                    if (detected) {
+                                      toast.info('Transfer detected — marked as transfer', { duration: 3000 });
+                                    } else if (shouldAutoFill) {
                                       const catName = categories?.find(c => c.id === catId)?.name;
                                       toast.info(`Category auto-filled: ${catName || 'Unknown'}`, { duration: 3000 });
                                     }
