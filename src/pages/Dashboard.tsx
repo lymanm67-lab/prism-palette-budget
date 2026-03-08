@@ -383,6 +383,49 @@ const Dashboard = () => {
             monthlyExpenses={monthlyExpenses}
           />
 
+          {/* Recent Transactions */}
+          {filteredTransactions.length > 0 && (
+            <motion.div variants={item}>
+              <Card className="prism-card-shine border-border/50">
+                <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                  <CardTitle className="font-display text-lg flex items-center gap-2">
+                    <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-prism-orange to-prism-rose flex items-center justify-center">
+                      <CreditCard className="h-3.5 w-3.5 text-white" />
+                    </div>
+                    Recent Transactions
+                  </CardTitle>
+                  <button
+                    onClick={() => navigate('/transactions')}
+                    className="flex items-center gap-1 text-sm text-primary hover:underline"
+                  >
+                    View all <ChevronRight className="h-3.5 w-3.5" />
+                  </button>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-1.5">
+                    {filteredTransactions.slice(0, 8).map(t => (
+                      <div key={t.id} className="flex items-center justify-between rounded-xl border border-border/30 px-3.5 py-2.5 interactive-row hover-border-glow cursor-pointer"
+                        onClick={() => navigate('/transactions')}>
+                        <div className="flex items-center gap-3 min-w-0">
+                          <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: (t.categories as any)?.color || 'hsl(var(--muted-foreground))' }} />
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium truncate">{t.merchant || 'Unknown Merchant'}</p>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {(t.categories as any)?.name || 'Uncategorized'} · {new Date(t.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                            </p>
+                          </div>
+                        </div>
+                        <span className={`font-display text-sm font-semibold shrink-0 ${t.amount >= 0 ? 'text-prism-teal' : 'text-prism-rose'}`}>
+                          {formatCurrency(t.amount)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+
           {/* Accounts */}
           {accounts && accounts.length > 0 && (
             <motion.div variants={item}>
