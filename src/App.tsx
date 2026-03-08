@@ -34,6 +34,8 @@ import Recurring from "@/pages/Recurring";
 import GettingStarted from "@/pages/GettingStarted";
 import SpendingTrends from "@/pages/SpendingTrends";
 import NetWorth from "@/pages/NetWorth";
+import Subscriptions from "@/pages/Subscriptions";
+import Forecast from "@/pages/Forecast";
 
 const queryClient = new QueryClient();
 
