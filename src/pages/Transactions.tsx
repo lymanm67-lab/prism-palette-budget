@@ -894,7 +894,6 @@ const Transactions = () => {
               size="sm"
               className="gap-1.5 h-8 text-xs"
               onClick={() => {
-                setEditMultiple(true);
                 setSelected(new Set(filtered.map(t => t.id)));
               }}
             >
