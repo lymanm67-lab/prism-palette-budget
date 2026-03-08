@@ -29,6 +29,7 @@ import { Upload, FileSpreadsheet, ArrowRight, ArrowLeft, Check, AlertCircle, Loa
 import { cn } from '@/lib/utils';
 import { useDuplicateDetection } from '@/hooks/use-duplicate-detection';
 import { isTransferMerchant } from '@/lib/transfer-detection';
+import { extractSmartMerchant } from '@/lib/merchant-extraction';
 
 type FileMode = 'csv' | 'ofx';
 type Step = 'upload' | 'map' | 'preview' | 'importing' | 'done';
