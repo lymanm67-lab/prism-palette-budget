@@ -97,27 +97,61 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
   };
 
   const processFile = useCallback((file: File) => {
-    if (!file.name.toLowerCase().endsWith('.csv')) {
-      toast({ title: 'Invalid file type', description: 'Please upload a .csv file. Export your transactions from your bank or accounting software as CSV.', variant: 'destructive' });
+    const fileType = detectFinancialFileType(file.name);
+    if (!fileType) {
+      toast({ title: 'Unsupported file type', description: 'Please upload a .csv, .ofx, .qbo, or .qfx file.', variant: 'destructive' });
       return;
     }
     const reader = new FileReader();
     reader.onload = (evt) => {
       try {
         const text = evt.target?.result as string;
-        const result = parseCsvText(text);
-        setCsvResult(result);
-        const defaultMap = getDefaultMapping(result.headers, result.detectedFormat);
-        setMapping(defaultMap);
-        setStep('map');
-        const label = FORMAT_LABELS[result.detectedFormat];
-        toast({ title: `Detected: ${label}`, description: `${result.rows.length} rows found. Verify column mapping.` });
+        if (fileType === 'csv') {
+          setFileMode('csv');
+          const result = parseCsvText(text);
+          setCsvResult(result);
+          const defaultMap = getDefaultMapping(result.headers, result.detectedFormat);
+          setMapping(defaultMap);
+          setStep('map');
+          const label = FORMAT_LABELS[result.detectedFormat];
+          toast({ title: `Detected: ${label}`, description: `${result.rows.length} rows found. Verify column mapping.` });
+        } else {
+          // OFX/QBO/QFX
+          setFileMode('ofx');
+          const result = parseOfxText(text, fileType);
+          setOfxResult(result);
+          // Convert OFX transactions directly to ParsedRows for preview
+          const rows: ParsedRow[] = result.transactions.map(t => ({
+            date: t.date,
+            merchant: t.merchant,
+            amount: t.amount,
+            category: '',
+            notes: t.memo,
+            originalRow: { date: t.date, merchant: t.merchant, amount: String(t.amount), memo: t.memo, fitId: t.fitId, type: t.type },
+          }));
+          setParsedRows(rows);
+          // Detect duplicates
+          const dupes = findDuplicates(rows.map(r => ({ date: r.date, amount: r.amount, merchant: r.merchant })));
+          setDuplicateRows(dupes);
+          const selected = new Set(rows.map((_, i) => i).filter(i => !dupes.has(i)));
+          setSelectedRows(selected);
+          // Skip mapping step — go straight to preview, but need account selection
+          setStep('map');
+          const typeLabel = fileType.toUpperCase();
+          toast({ 
+            title: `${typeLabel} file loaded`, 
+            description: `${result.transactions.length} transactions found${result.accountId ? ` from account ${result.accountId}` : ''}. Select target account.` 
+          });
+          if (dupes.size > 0) {
+            toast({ title: `${dupes.size} potential duplicate(s) found`, description: 'Duplicates are deselected by default.' });
+          }
+        }
       } catch (err: any) {
         toast({ title: 'Parse error', description: err.message, variant: 'destructive' });
       }
     };
     reader.readAsText(file);
-  }, [toast]);
+  }, [toast, findDuplicates]);
 
   const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
