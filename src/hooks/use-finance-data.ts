@@ -377,6 +377,7 @@ export function useSpendingByCategory(startDate: string, endDate: string) {
         .from('transactions')
         .select('amount, category_id, categories(name, color)')
         .eq('household_id', household!.id)
+        .is('deleted_at', null)
         .gte('date', startDate)
         .lte('date', endDate)
         .lt('amount', 0); // expenses only
