@@ -510,6 +510,47 @@ export type Database = {
           },
         ]
       }
+      financial_insights: {
+        Row: {
+          created_at: string
+          household_id: string
+          id: string
+          insight_type: string
+          is_read: boolean
+          message: string
+          metadata: Json | null
+          severity: string
+        }
+        Insert: {
+          created_at?: string
+          household_id: string
+          id?: string
+          insight_type?: string
+          is_read?: boolean
+          message: string
+          metadata?: Json | null
+          severity?: string
+        }
+        Update: {
+          created_at?: string
+          household_id?: string
+          id?: string
+          insight_type?: string
+          is_read?: boolean
+          message?: string
+          metadata?: Json | null
+          severity?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_insights_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       homebuyer_checklist: {
         Row: {
           created_at: string
@@ -601,6 +642,41 @@ export type Database = {
         }
         Relationships: []
       }
+      merchant_normalizations: {
+        Row: {
+          created_at: string
+          household_id: string | null
+          id: string
+          is_global: boolean
+          normalized_name: string
+          raw_pattern: string
+        }
+        Insert: {
+          created_at?: string
+          household_id?: string | null
+          id?: string
+          is_global?: boolean
+          normalized_name: string
+          raw_pattern: string
+        }
+        Update: {
+          created_at?: string
+          household_id?: string | null
+          id?: string
+          is_global?: boolean
+          normalized_name?: string
+          raw_pattern?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "merchant_normalizations_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       plaid_items: {
         Row: {
           consent_expiration: string | null
@@ -611,6 +687,7 @@ export type Database = {
           institution_name: string | null
           plaid_access_token: string
           plaid_item_id: string
+          provider_type: string
           status: string
           updated_at: string
         }
@@ -623,6 +700,7 @@ export type Database = {
           institution_name?: string | null
           plaid_access_token: string
           plaid_item_id: string
+          provider_type?: string
           status?: string
           updated_at?: string
         }
@@ -635,6 +713,7 @@ export type Database = {
           institution_name?: string | null
           plaid_access_token?: string
           plaid_item_id?: string
+          provider_type?: string
           status?: string
           updated_at?: string
         }
@@ -828,6 +907,75 @@ export type Database = {
         }
         Relationships: []
       }
+      subscriptions: {
+        Row: {
+          average_amount: number
+          cancel_reminder_date: string | null
+          category_id: string | null
+          created_at: string
+          frequency: string
+          household_id: string
+          id: string
+          is_active: boolean
+          is_cancelled: boolean
+          last_charge_date: string | null
+          merchant: string
+          next_expected_date: string | null
+          normalized_merchant: string | null
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          average_amount?: number
+          cancel_reminder_date?: string | null
+          category_id?: string | null
+          created_at?: string
+          frequency?: string
+          household_id: string
+          id?: string
+          is_active?: boolean
+          is_cancelled?: boolean
+          last_charge_date?: string | null
+          merchant: string
+          next_expected_date?: string | null
+          normalized_merchant?: string | null
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          average_amount?: number
+          cancel_reminder_date?: string | null
+          category_id?: string | null
+          created_at?: string
+          frequency?: string
+          household_id?: string
+          id?: string
+          is_active?: boolean
+          is_cancelled?: boolean
+          last_charge_date?: string | null
+          merchant?: string
+          next_expected_date?: string | null
+          normalized_merchant?: string | null
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscriptions_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       transaction_splits: {
         Row: {
           amount: number
@@ -882,6 +1030,7 @@ export type Database = {
           is_transfer: boolean
           merchant: string | null
           needs_review: boolean
+          normalized_merchant: string | null
           notes: string | null
           provider_transaction_id: string | null
           receipt_url: string | null
@@ -900,6 +1049,7 @@ export type Database = {
           is_transfer?: boolean
           merchant?: string | null
           needs_review?: boolean
+          normalized_merchant?: string | null
           notes?: string | null
           provider_transaction_id?: string | null
           receipt_url?: string | null
@@ -918,6 +1068,7 @@ export type Database = {
           is_transfer?: boolean
           merchant?: string | null
           needs_review?: boolean
+          normalized_merchant?: string | null
           notes?: string | null
           provider_transaction_id?: string | null
           receipt_url?: string | null
