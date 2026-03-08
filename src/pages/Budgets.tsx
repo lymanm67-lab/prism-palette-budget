@@ -86,6 +86,9 @@ const Budgets = () => {
   const [viewTab, setViewTab] = useState<'budget' | 'forecast'>('budget');
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [quickAddForm, setQuickAddForm] = useState({ name: '', group_id: '', color: '#7c5cf5' });
+  const [smartBudgetOpen, setSmartBudgetOpen] = useState(false);
+  const [smartSuggestions, setSmartSuggestions] = useState<{ category_id: string; category_name: string; monthly_average: number; suggested_budget: number; selected: boolean }[]>([]);
+  const smartBudget = useSmartBudget();
 
   const toggleSection = (key: string) => setOpenSections(s => ({ ...s, [key]: !s[key] }));
 
