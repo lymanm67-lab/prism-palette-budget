@@ -1332,6 +1332,8 @@ const Transactions = () => {
                               <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
                               <span className="truncate">{cat.name}</span>
                             </span>
+                          ) : isTransfer ? (
+                            <span className="text-xs text-muted-foreground italic">Transfer</span>
                           ) : (
                             <span className="text-xs text-muted-foreground italic">Uncategorized</span>
                           )}
