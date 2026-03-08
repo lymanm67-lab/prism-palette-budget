@@ -96,7 +96,7 @@ const Transactions = () => {
   const [pendingReceiptFile, setPendingReceiptFile] = useState<File | null>(null);
   const [receiptUploading, setReceiptUploading] = useState(false);
   const editReceiptInputRef = useRef<HTMLInputElement>(null);
-  const [form, setForm] = useState({ date: new Date().toISOString().split('T')[0], merchant: '', amount: '', account_id: '', category_id: '', notes: '', tags: '', goal_id: '' });
+  const [form, setForm] = useState({ date: new Date().toISOString().split('T')[0], merchant: '', amount: '', account_id: '', category_id: '', notes: '', tags: '', goal_id: '', is_transfer: false });
   const [formType, setFormType] = useState<'debit' | 'credit'>('debit');
   const [transferForm, setTransferForm] = useState({ date: new Date().toISOString().split('T')[0], amount: '', from_account: '', to_account: '', notes: '' });
   const [merchantOpen, setMerchantOpen] = useState(false);
