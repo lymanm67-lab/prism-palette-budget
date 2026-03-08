@@ -1482,6 +1482,7 @@ const Transactions = () => {
                                 <TooltipContent side="top"><p>Not a duplicate</p></TooltipContent>
                               </Tooltip>
                             )}
+                            {isNeedsReview && (
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <Button
