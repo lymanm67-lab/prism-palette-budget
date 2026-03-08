@@ -35,3 +35,6 @@ verify_jwt = false
 
 [functions.subscription-insights]
 verify_jwt = false
+
+[functions.mx]
+verify_jwt = false
