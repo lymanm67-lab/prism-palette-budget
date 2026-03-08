@@ -1033,10 +1033,7 @@ const Transactions = () => {
           ) : (
             <>
               <div className="flex items-center gap-2">
-                <Select value={bulkCategory} onValueChange={setBulkCategory}>
-                  <SelectTrigger className="h-8 w-[160px] text-xs"><SelectValue placeholder="Categorize as…" /></SelectTrigger>
-                  <SelectContent>{(categories || []).map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
-                </Select>
+                <CategoryCombobox value={bulkCategory} onValueChange={setBulkCategory} placeholder="Categorize as…" className="h-8 w-[180px] text-xs" />
                 <Button size="sm" variant="outline" onClick={bulkCategorize} disabled={!bulkCategory} className="gap-1 h-8">
                   <Tags className="h-3.5 w-3.5" /> Apply
                 </Button>
