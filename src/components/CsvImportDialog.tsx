@@ -177,7 +177,7 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
           const result = parseOfxText(text, fileType);
           const rows: ParsedRow[] = result.transactions.map(t => ({
             date: t.date,
-            merchant: t.merchant,
+            merchant: extractSmartMerchant(t.merchant, t.memo),
             amount: t.amount,
             category: '',
             notes: t.memo,
