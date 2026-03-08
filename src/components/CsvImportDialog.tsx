@@ -251,7 +251,7 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
       // Multiple files or all OFX: go to account assignment / preview
       // For OFX files, compute rule matches
       for (const pf of newParsedFiles) {
-        if (pf.fileMode === 'ofx' && pf.parsedRows.length > 0) {
+        if ((pf.fileMode === 'ofx' || pf.fileMode === 'qif') && pf.parsedRows.length > 0) {
           await computeRuleMatchesForFile(pf);
         }
       }
