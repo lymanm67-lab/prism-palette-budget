@@ -354,11 +354,46 @@ const Transactions = () => {
     setSelected(prev => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
   };
 
-  const bulkDelete = async () => {
-    for (const id of selected) { await supabase.from('transactions').delete().eq('id', id); }
+  const softDelete = async (ids: string[]) => {
+    const now = new Date().toISOString();
+    for (const id of ids) {
+      await supabase.from('transactions').update({ deleted_at: now } as any).eq('id', id);
+    }
     qc.invalidateQueries({ queryKey: ['transactions'] });
+    qc.invalidateQueries({ queryKey: ['transactions_deleted'] });
+    return ids;
+  };
+
+  const restoreTransactions = async (ids: string[]) => {
+    for (const id of ids) {
+      await supabase.from('transactions').update({ deleted_at: null } as any).eq('id', id);
+    }
+    qc.invalidateQueries({ queryKey: ['transactions'] });
+    qc.invalidateQueries({ queryKey: ['transactions_deleted'] });
+  };
+
+  const permanentDelete = async (ids: string[]) => {
+    for (const id of ids) {
+      await supabase.from('transactions').delete().eq('id', id);
+    }
+    qc.invalidateQueries({ queryKey: ['transactions'] });
+    qc.invalidateQueries({ queryKey: ['transactions_deleted'] });
+  };
+
+  const bulkDelete = async () => {
+    const ids = Array.from(selected);
+    await softDelete(ids);
     setSelected(new Set());
-    toast.success(`Deleted ${selected.size} transactions`);
+    toast.success(`Moved ${ids.length} transactions to trash`, {
+      action: {
+        label: 'Undo',
+        onClick: async () => {
+          await restoreTransactions(ids);
+          toast.success(`Restored ${ids.length} transactions`);
+        },
+      },
+      duration: 10000,
+    });
   };
 
   const bulkCategorize = async () => {
