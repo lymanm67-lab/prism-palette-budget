@@ -36,6 +36,23 @@ export function useCreateRecurring() {
   });
 }
 
+export function useUpdateRecurring() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: { id: string; [key: string]: any }) => {
+      const { data, error } = await supabase
+        .from('recurring_transactions' as any)
+        .update(updates as any)
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['recurring_transactions'] }),
+  });
+}
+
 export function useDeleteRecurring() {
   const qc = useQueryClient();
   return useMutation({
