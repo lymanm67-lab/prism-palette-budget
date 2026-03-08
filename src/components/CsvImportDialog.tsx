@@ -32,7 +32,7 @@ import { useDuplicateDetection } from '@/hooks/use-duplicate-detection';
 import { isTransferMerchant } from '@/lib/transfer-detection';
 import { extractSmartMerchant } from '@/lib/merchant-extraction';
 
-type FileMode = 'csv' | 'ofx';
+type FileMode = 'csv' | 'ofx' | 'qif';
 type Step = 'upload' | 'map' | 'preview' | 'importing' | 'done';
 
 interface CsvImportDialogProps {
