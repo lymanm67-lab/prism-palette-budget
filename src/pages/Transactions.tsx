@@ -1341,7 +1341,7 @@ const Transactions = () => {
       ) : (
         <div className="space-y-1">
           {/* Column headers */}
-          <div className="flex items-center gap-3 px-4 py-2 border-b border-border">
+          <div className="flex items-center gap-3 px-4 py-2 border-b border-border sticky top-0 z-10 bg-background">
             <Checkbox
               checked={filtered.length > 0 && filtered.every(t => selected.has(t.id))}
               onCheckedChange={(checked) => {
