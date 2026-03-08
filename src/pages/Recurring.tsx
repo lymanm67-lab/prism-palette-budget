@@ -306,10 +306,11 @@ const Recurring = () => {
               </div>
               <div className="space-y-2">
                 <Label>Category</Label>
-                <Select value={form.category_id} onValueChange={v => setForm(f => ({ ...f, category_id: v }))}>
-                  <SelectTrigger><SelectValue placeholder="Optional" /></SelectTrigger>
-                  <SelectContent>{categories?.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
-                </Select>
+                <CategoryCombobox
+                  value={form.category_id}
+                  onValueChange={v => setForm(f => ({ ...f, category_id: v }))}
+                  placeholder="Search categories..."
+                />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
