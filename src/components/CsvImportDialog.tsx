@@ -290,7 +290,9 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
   const handleCsvProceedToPreview = async () => {
     const pf = parsedFiles[0];
     if (!pf?.csvResult) return;
-    const rows = applyMapping(pf.csvResult.rows, csvMapping, pf.csvResult.detectedFormat);
+    const rawRows = applyMapping(pf.csvResult.rows, csvMapping, pf.csvResult.detectedFormat);
+    // Smart merchant extraction for generic bank descriptions
+    const rows = rawRows.map(r => ({ ...r, merchant: extractSmartMerchant(r.merchant, r.notes) }));
     const dupes = findDuplicates(rows.map(r => ({ date: r.date, amount: r.amount, merchant: r.merchant })));
     const selected = new Set(rows.map((_, i) => i).filter(i => !dupes.has(i)));
 
