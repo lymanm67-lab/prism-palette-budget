@@ -25,7 +25,7 @@ import {
 } from '@/lib/csv-parser';
 import { parseOfxText, detectFinancialFileType, type OfxParseResult, type OfxTransaction } from '@/lib/ofx-parser';
 import { formatCurrency } from '@/lib/seed-data';
-import { Upload, FileSpreadsheet, ArrowRight, ArrowLeft, Check, AlertCircle, Loader2, Info, AlertTriangle, Sparkles } from 'lucide-react';
+import { Upload, FileSpreadsheet, ArrowRight, ArrowLeft, Check, AlertCircle, Loader2, Info, AlertTriangle, Sparkles, File, X, Brain } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDuplicateDetection } from '@/hooks/use-duplicate-detection';
 
@@ -51,6 +51,21 @@ const SUPPORTED_FORMATS: { name: string; columns: string }[] = [
   { name: 'Generic CSV', columns: 'Any CSV with date, amount, and description columns' },
 ];
 
+// Represents a single parsed file awaiting import
+interface ParsedFile {
+  fileName: string;
+  fileMode: FileMode;
+  csvResult: CsvParseResult | null;
+  ofxResult: OfxParseResult | null;
+  mapping: ColumnMapping;
+  parsedRows: ParsedRow[];
+  selectedRows: Set<number>;
+  duplicateRows: Set<number>;
+  targetAccountId: string;
+  autoDetectedAccountId: string | null; // auto-matched account id
+  previewRuleMatches: Map<number, { categoryId: string; categoryName: string }>;
+}
+
 const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
   const { toast } = useToast();
   const { household } = useHousehold();
@@ -60,37 +75,28 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
   const { findDuplicates } = useDuplicateDetection();
 
   const [step, setStep] = useState<Step>('upload');
-  const [fileMode, setFileMode] = useState<FileMode>('csv');
-  const [csvResult, setCsvResult] = useState<CsvParseResult | null>(null);
-  const [ofxResult, setOfxResult] = useState<OfxParseResult | null>(null);
-  const [mapping, setMapping] = useState<ColumnMapping>({ date: '', merchant: '', amount: '', category: '', notes: '' });
-  const [targetAccountId, setTargetAccountId] = useState('');
-  const [parsedRows, setParsedRows] = useState<ParsedRow[]>([]);
-  const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
+  const [parsedFiles, setParsedFiles] = useState<ParsedFile[]>([]);
+  const [activeFileIdx, setActiveFileIdx] = useState(0);
   const [importing, setImporting] = useState(false);
-  const [importResult, setImportResult] = useState({ success: 0, failed: 0, skippedDupes: 0 });
-  const [ruleMatchCount, setRuleMatchCount] = useState(0);
-  const [duplicateRows, setDuplicateRows] = useState<Set<number>>(new Set());
+  const [importResult, setImportResult] = useState({ success: 0, failed: 0, ruleMatched: 0, aiCategorized: 0 });
   const [dragging, setDragging] = useState(false);
   const [showFormats, setShowFormats] = useState(false);
-  const [previewRuleMatches, setPreviewRuleMatches] = useState<Map<number, { categoryId: string; categoryName: string }>>(new Map());
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // For single-CSV mapping step
+  const [csvMapping, setCsvMapping] = useState<ColumnMapping>({ date: '', merchant: '', amount: '', category: '', notes: '' });
+  const [csvTargetAccountId, setCsvTargetAccountId] = useState('');
 
   const reset = () => {
     setStep('upload');
-    setFileMode('csv');
-    setCsvResult(null);
-    setOfxResult(null);
-    setMapping({ date: '', merchant: '', amount: '', category: '', notes: '' });
-    setTargetAccountId('');
-    setParsedRows([]);
-    setSelectedRows(new Set());
+    setParsedFiles([]);
+    setActiveFileIdx(0);
     setImporting(false);
-    setImportResult({ success: 0, failed: 0, skippedDupes: 0 });
-    setRuleMatchCount(0);
+    setImportResult({ success: 0, failed: 0, ruleMatched: 0, aiCategorized: 0 });
     setDragging(false);
     setShowFormats(false);
-    setPreviewRuleMatches(new Map());
+    setCsvMapping({ date: '', merchant: '', amount: '', category: '', notes: '' });
+    setCsvTargetAccountId('');
   };
 
   const handleClose = (open: boolean) => {
@@ -98,31 +104,75 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
     onOpenChange(open);
   };
 
-  const processFile = useCallback((file: File) => {
-    const fileType = detectFinancialFileType(file.name);
-    if (!fileType) {
-      toast({ title: 'Unsupported file type', description: 'Please upload a .csv, .ofx, .qbo, or .qfx file.', variant: 'destructive' });
-      return;
+  // Auto-detect account from OFX metadata or filename
+  const autoDetectAccount = useCallback((fileName: string, ofxResult: OfxParseResult | null): string | null => {
+    if (!accounts?.length) return null;
+    
+    // Try matching by OFX account ID
+    if (ofxResult?.accountId) {
+      const match = accounts.find(a => 
+        a.name.toLowerCase().includes(ofxResult.accountId.toLowerCase()) ||
+        ofxResult.accountId.includes(a.name.replace(/\D/g, ''))
+      );
+      if (match) return match.id;
     }
-    const reader = new FileReader();
-    reader.onload = (evt) => {
+
+    // Try matching by institution name in OFX
+    if (ofxResult?.bankId) {
+      const match = accounts.find(a => 
+        a.institution?.toLowerCase().includes(ofxResult.bankId.toLowerCase())
+      );
+      if (match) return match.id;
+    }
+
+    // Try matching by filename
+    const nameLower = fileName.toLowerCase().replace(/\.[^.]+$/, '').replace(/[_\-]/g, ' ');
+    for (const acc of accounts) {
+      const accWords = acc.name.toLowerCase().split(/\s+/);
+      const instWords = (acc.institution || '').toLowerCase().split(/\s+/).filter(Boolean);
+      const allWords = [...accWords, ...instWords];
+      // If any 2+ char word from account name appears in filename
+      if (allWords.some(w => w.length >= 3 && nameLower.includes(w))) {
+        return acc.id;
+      }
+    }
+    return null;
+  }, [accounts]);
+
+  const processFiles = useCallback(async (files: FileList | File[]) => {
+    const fileArray = Array.from(files);
+    const newParsedFiles: ParsedFile[] = [];
+
+    for (const file of fileArray) {
+      const fileType = detectFinancialFileType(file.name);
+      if (!fileType) {
+        toast({ title: `Unsupported: ${file.name}`, description: 'Only .csv, .ofx, .qbo, .qfx files supported.', variant: 'destructive' });
+        continue;
+      }
+
       try {
-        const text = evt.target?.result as string;
+        const text = await file.text();
+
         if (fileType === 'csv') {
-          setFileMode('csv');
           const result = parseCsvText(text);
-          setCsvResult(result);
           const defaultMap = getDefaultMapping(result.headers, result.detectedFormat);
-          setMapping(defaultMap);
-          setStep('map');
-          const label = FORMAT_LABELS[result.detectedFormat];
-          toast({ title: `Detected: ${label}`, description: `${result.rows.length} rows found. Verify column mapping.` });
+          const autoAccount = autoDetectAccount(file.name, null);
+
+          newParsedFiles.push({
+            fileName: file.name,
+            fileMode: 'csv',
+            csvResult: result,
+            ofxResult: null,
+            mapping: defaultMap,
+            parsedRows: [],
+            selectedRows: new Set(),
+            duplicateRows: new Set(),
+            targetAccountId: autoAccount || '',
+            autoDetectedAccountId: autoAccount,
+            previewRuleMatches: new Map(),
+          });
         } else {
-          // OFX/QBO/QFX
-          setFileMode('ofx');
           const result = parseOfxText(text, fileType);
-          setOfxResult(result);
-          // Convert OFX transactions directly to ParsedRows for preview
           const rows: ParsedRow[] = result.transactions.map(t => ({
             date: t.date,
             merchant: t.merchant,
@@ -131,120 +181,76 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
             notes: t.memo,
             originalRow: { date: t.date, merchant: t.merchant, amount: String(t.amount), memo: t.memo, fitId: t.fitId, type: t.type },
           }));
-          setParsedRows(rows);
-          // Detect duplicates
           const dupes = findDuplicates(rows.map(r => ({ date: r.date, amount: r.amount, merchant: r.merchant })));
-          setDuplicateRows(dupes);
           const selected = new Set(rows.map((_, i) => i).filter(i => !dupes.has(i)));
-          setSelectedRows(selected);
-          // Skip mapping step — go straight to preview, but need account selection
-          setStep('map');
-          const typeLabel = fileType.toUpperCase();
-          toast({ 
-            title: `${typeLabel} file loaded`, 
-            description: `${result.transactions.length} transactions found${result.accountId ? ` from account ${result.accountId}` : ''}. Select target account.` 
+          const autoAccount = autoDetectAccount(file.name, result);
+
+          newParsedFiles.push({
+            fileName: file.name,
+            fileMode: 'ofx',
+            csvResult: null,
+            ofxResult: result,
+            mapping: { date: '', merchant: '', amount: '', category: '', notes: '' },
+            parsedRows: rows,
+            selectedRows: selected,
+            duplicateRows: dupes,
+            targetAccountId: autoAccount || '',
+            autoDetectedAccountId: autoAccount,
+            previewRuleMatches: new Map(),
           });
-          if (dupes.size > 0) {
-            toast({ title: `${dupes.size} potential duplicate(s) found`, description: 'Duplicates are deselected by default.' });
-          }
         }
       } catch (err: any) {
-        toast({ title: 'Parse error', description: err.message, variant: 'destructive' });
+        toast({ title: `Error: ${file.name}`, description: err.message, variant: 'destructive' });
       }
-    };
-    reader.readAsText(file);
-  }, [toast, findDuplicates]);
-
-  const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) processFile(file);
-  }, [processFile]);
-
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setDragging(false);
-    const file = e.dataTransfer.files[0];
-    if (file) processFile(file);
-  }, [processFile]);
-
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setDragging(true);
-  }, []);
-
-  const handleDragLeave = useCallback(() => setDragging(false), []);
-
-  const hasDebitCredit = !!(mapping.debit || mapping.credit);
-
-  const handleProceedToPreview = () => {
-    if (!csvResult) return;
-    const rows = applyMapping(csvResult.rows, mapping, csvResult.detectedFormat);
-    setParsedRows(rows);
-
-    // Detect duplicates
-    const dupes = findDuplicates(rows.map(r => ({ date: r.date, amount: r.amount, merchant: r.merchant })));
-    setDuplicateRows(dupes);
-
-    // Select all non-duplicate rows by default
-    const selected = new Set(rows.map((_, i) => i).filter(i => !dupes.has(i)));
-    setSelectedRows(selected);
-
-    if (dupes.size > 0) {
-      toast({ title: `${dupes.size} potential duplicate(s) found`, description: 'Duplicates are deselected by default. You can re-select them if needed.' });
     }
 
-    computePreviewRuleMatches(rows);
-    setStep('preview');
-  };
+    if (newParsedFiles.length === 0) return;
 
-  const handleToggleRow = (idx: number) => {
-    setSelectedRows(prev => {
-      const next = new Set(prev);
-      next.has(idx) ? next.delete(idx) : next.add(idx);
-      return next;
-    });
-  };
+    setParsedFiles(newParsedFiles);
+    setActiveFileIdx(0);
 
-  const handleToggleAll = () => {
-    if (selectedRows.size === parsedRows.length) {
-      setSelectedRows(new Set());
+    // Determine next step
+    const hasAnyCsv = newParsedFiles.some(f => f.fileMode === 'csv');
+    if (hasAnyCsv && newParsedFiles.length === 1) {
+      // Single CSV: go to mapping step
+      setCsvMapping(newParsedFiles[0].mapping);
+      setCsvTargetAccountId(newParsedFiles[0].targetAccountId);
+      setStep('map');
     } else {
-      setSelectedRows(new Set(parsedRows.map((_, i) => i)));
+      // Multiple files or all OFX: go to account assignment / preview
+      // For OFX files, compute rule matches
+      for (const pf of newParsedFiles) {
+        if (pf.fileMode === 'ofx' && pf.parsedRows.length > 0) {
+          await computeRuleMatchesForFile(pf);
+        }
+      }
+      setParsedFiles([...newParsedFiles]);
+      setStep('map');
     }
-  };
 
-  // Match CSV category names to DB categories
-  const categoryLookup = useMemo(() => {
-    if (!categories) return new Map<string, string>();
-    const map = new Map<string, string>();
-    for (const c of categories) {
-      map.set(c.name.toLowerCase(), c.id);
-    }
-    return map;
-  }, [categories]);
+    const totalTxns = newParsedFiles.reduce((sum, f) => sum + (f.parsedRows.length || f.csvResult?.rows.length || 0), 0);
+    const totalDupes = newParsedFiles.reduce((sum, f) => sum + f.duplicateRows.size, 0);
+    toast({
+      title: `${newParsedFiles.length} file${newParsedFiles.length > 1 ? 's' : ''} loaded`,
+      description: `${totalTxns} transactions found${totalDupes > 0 ? `, ${totalDupes} potential duplicates` : ''}`,
+    });
+  }, [toast, findDuplicates, autoDetectAccount]);
 
-  // Fetch categorization rules and pre-compute matches for preview
-  const computePreviewRuleMatches = useCallback(async (rows: ParsedRow[]) => {
+  const computeRuleMatchesForFile = async (pf: ParsedFile) => {
     if (!household) return;
     const { data: rules } = await supabase
       .from('categorization_rules')
       .select('merchant_pattern, category_id')
       .eq('household_id', household.id);
 
-    if (!rules || rules.length === 0) {
-      setPreviewRuleMatches(new Map());
-      return;
-    }
+    if (!rules || rules.length === 0) return;
 
     const ruleMap = new Map<string, string>();
-    for (const r of rules) {
-      ruleMap.set(r.merchant_pattern.toLowerCase(), r.category_id);
-    }
+    for (const r of rules) ruleMap.set(r.merchant_pattern.toLowerCase(), r.category_id);
 
     const matches = new Map<number, { categoryId: string; categoryName: string }>();
-    for (let i = 0; i < rows.length; i++) {
-      const row = rows[i];
-      // Only match if no CSV category already assigned
+    for (let i = 0; i < pf.parsedRows.length; i++) {
+      const row = pf.parsedRows[i];
       if (!row.category && row.merchant) {
         const ruleMatch = ruleMap.get(row.merchant.toLowerCase().trim());
         if (ruleMatch) {
@@ -253,69 +259,197 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
         }
       }
     }
-    setPreviewRuleMatches(matches);
-  }, [household, categories]);
+    pf.previewRuleMatches = matches;
+  };
+
+  const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files?.length) processFiles(files);
+  }, [processFiles]);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragging(false);
+    if (e.dataTransfer.files.length) processFiles(e.dataTransfer.files);
+  }, [processFiles]);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => { e.preventDefault(); setDragging(true); }, []);
+  const handleDragLeave = useCallback(() => setDragging(false), []);
+
+  // Category lookup
+  const categoryLookup = useMemo(() => {
+    if (!categories) return new Map<string, string>();
+    const map = new Map<string, string>();
+    for (const c of categories) map.set(c.name.toLowerCase(), c.id);
+    return map;
+  }, [categories]);
+
+  // Handle single-CSV mapping proceed
+  const handleCsvProceedToPreview = async () => {
+    const pf = parsedFiles[0];
+    if (!pf?.csvResult) return;
+    const rows = applyMapping(pf.csvResult.rows, csvMapping, pf.csvResult.detectedFormat);
+    const dupes = findDuplicates(rows.map(r => ({ date: r.date, amount: r.amount, merchant: r.merchant })));
+    const selected = new Set(rows.map((_, i) => i).filter(i => !dupes.has(i)));
+
+    pf.parsedRows = rows;
+    pf.duplicateRows = dupes;
+    pf.selectedRows = selected;
+    pf.mapping = csvMapping;
+    pf.targetAccountId = csvTargetAccountId;
+    await computeRuleMatchesForFile(pf);
+    setParsedFiles([...parsedFiles]);
+
+    if (dupes.size > 0) {
+      toast({ title: `${dupes.size} potential duplicate(s) found`, description: 'Duplicates are deselected by default.' });
+    }
+    setStep('preview');
+  };
+
+  const updateFileAccount = (idx: number, accountId: string) => {
+    const updated = [...parsedFiles];
+    updated[idx] = { ...updated[idx], targetAccountId: accountId };
+    setParsedFiles(updated);
+  };
+
+  const removeFile = (idx: number) => {
+    const updated = parsedFiles.filter((_, i) => i !== idx);
+    if (updated.length === 0) {
+      reset();
+      return;
+    }
+    setParsedFiles(updated);
+    if (activeFileIdx >= updated.length) setActiveFileIdx(updated.length - 1);
+  };
+
+  const handleToggleRow = (fileIdx: number, rowIdx: number) => {
+    const updated = [...parsedFiles];
+    const next = new Set(updated[fileIdx].selectedRows);
+    next.has(rowIdx) ? next.delete(rowIdx) : next.add(rowIdx);
+    updated[fileIdx] = { ...updated[fileIdx], selectedRows: next };
+    setParsedFiles(updated);
+  };
+
+  const handleToggleAllForFile = (fileIdx: number) => {
+    const updated = [...parsedFiles];
+    const pf = updated[fileIdx];
+    if (pf.selectedRows.size === pf.parsedRows.length) {
+      updated[fileIdx] = { ...pf, selectedRows: new Set() };
+    } else {
+      updated[fileIdx] = { ...pf, selectedRows: new Set(pf.parsedRows.map((_, i) => i)) };
+    }
+    setParsedFiles(updated);
+  };
+
+  // Check if all files have accounts assigned
+  const allFilesReady = parsedFiles.every(f => f.targetAccountId);
+  const totalSelected = parsedFiles.reduce((sum, f) => sum + f.selectedRows.size, 0);
+
+  // For multi-file or OFX: can go to preview when all accounts assigned
+  const canProceedToPreview = allFilesReady && parsedFiles.every(f => f.parsedRows.length > 0);
+
+  // Multi-file proceed: for CSVs that haven't been mapped yet, apply default mapping
+  const handleMultiFileProceed = async () => {
+    const updated = [...parsedFiles];
+    for (const pf of updated) {
+      if (pf.fileMode === 'csv' && pf.parsedRows.length === 0 && pf.csvResult) {
+        const rows = applyMapping(pf.csvResult.rows, pf.mapping, pf.csvResult.detectedFormat);
+        const dupes = findDuplicates(rows.map(r => ({ date: r.date, amount: r.amount, merchant: r.merchant })));
+        const selected = new Set(rows.map((_, i) => i).filter(i => !dupes.has(i)));
+        pf.parsedRows = rows;
+        pf.duplicateRows = dupes;
+        pf.selectedRows = selected;
+        await computeRuleMatchesForFile(pf);
+      }
+    }
+    setParsedFiles([...updated]);
+    setStep('preview');
+  };
 
   const handleImport = async () => {
-    if (!household || !targetAccountId) return;
+    if (!household) return;
     setImporting(true);
     setStep('importing');
 
-    const toImport = parsedRows.filter((_, i) => selectedRows.has(i));
-    let success = 0;
-    let failed = 0;
+    let totalSuccess = 0;
+    let totalFailed = 0;
+    let totalRuleMatched = 0;
+    const allInsertedIds: string[] = [];
+    const uncategorizedIds: string[] = [];
 
-    // Fetch saved categorization rules for auto-matching
+    // Fetch saved categorization rules
     const { data: rules } = await supabase
       .from('categorization_rules')
       .select('merchant_pattern, category_id')
       .eq('household_id', household.id);
 
     const ruleMap = new Map<string, string>();
-    for (const r of (rules || [])) {
-      ruleMap.set(r.merchant_pattern.toLowerCase(), r.category_id);
-    }
+    for (const r of (rules || [])) ruleMap.set(r.merchant_pattern.toLowerCase(), r.category_id);
 
-    let ruleApplied = 0;
+    for (const pf of parsedFiles) {
+      if (!pf.targetAccountId) continue;
+      const toImport = pf.parsedRows.filter((_, i) => pf.selectedRows.has(i));
 
-    // Batch insert in chunks of 50
-    const chunkSize = 50;
-    for (let i = 0; i < toImport.length; i += chunkSize) {
-      const chunk = toImport.slice(i, i + chunkSize).map(row => {
-        // Priority: 1) CSV category name match, 2) merchant rule match
-        let categoryId = categoryLookup.get(row.category.toLowerCase()) || null;
-        if (!categoryId && row.merchant) {
-          const ruleMatch = ruleMap.get(row.merchant.toLowerCase().trim());
-          if (ruleMatch) {
-            categoryId = ruleMatch;
-            ruleApplied++;
+      const chunkSize = 50;
+      for (let i = 0; i < toImport.length; i += chunkSize) {
+        const chunk = toImport.slice(i, i + chunkSize).map(row => {
+          let categoryId = categoryLookup.get(row.category.toLowerCase()) || null;
+          if (!categoryId && row.merchant) {
+            const ruleMatch = ruleMap.get(row.merchant.toLowerCase().trim());
+            if (ruleMatch) {
+              categoryId = ruleMatch;
+              totalRuleMatched++;
+            }
+          }
+          return {
+            household_id: household.id,
+            account_id: pf.targetAccountId,
+            date: row.date,
+            merchant: row.merchant || null,
+            amount: row.amount,
+            category_id: categoryId,
+            notes: row.notes || null,
+          };
+        });
+
+        const { data: inserted, error } = await supabase.from('transactions').insert(chunk).select('id, category_id');
+        if (error) {
+          totalFailed += chunk.length;
+        } else {
+          totalSuccess += (inserted?.length || 0);
+          for (const row of (inserted || [])) {
+            allInsertedIds.push(row.id);
+            if (!row.category_id) uncategorizedIds.push(row.id);
           }
         }
-        return {
-          household_id: household.id,
-          account_id: targetAccountId,
-          date: row.date,
-          merchant: row.merchant || null,
-          amount: row.amount,
-          category_id: categoryId,
-          notes: row.notes || null,
-        };
-      });
-
-      const { error } = await supabase.from('transactions').insert(chunk);
-      if (error) {
-        failed += chunk.length;
-      } else {
-        success += chunk.length;
       }
     }
 
-    setImportResult({ success, failed, skippedDupes: 0 });
-    setRuleMatchCount(ruleApplied);
+    // AI categorization for uncategorized transactions
+    let aiCategorized = 0;
+    if (uncategorizedIds.length > 0) {
+      try {
+        const { data: aiResult, error: aiError } = await supabase.functions.invoke('auto-categorize', {
+          body: { transaction_ids: uncategorizedIds, household_id: household.id },
+        });
+        if (!aiError && aiResult) {
+          aiCategorized = aiResult.ai_categorized || 0;
+        }
+      } catch (err) {
+        console.error('AI categorization failed:', err);
+      }
+    }
+
+    setImportResult({ success: totalSuccess, failed: totalFailed, ruleMatched: totalRuleMatched, aiCategorized });
     setImporting(false);
     setStep('done');
     qc.invalidateQueries({ queryKey: ['transactions'] });
+    qc.invalidateQueries({ queryKey: ['accounts'] });
   };
+
+  const isSingleCsv = parsedFiles.length === 1 && parsedFiles[0]?.fileMode === 'csv';
+  const activePf = parsedFiles[activeFileIdx];
+  const hasDebitCredit = !!(csvMapping.debit || csvMapping.credit);
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -329,7 +463,7 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
 
         {/* Step indicators */}
         <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-          {['Upload', fileMode === 'ofx' ? 'Select Account' : 'Map Columns', 'Preview & Import'].map((label, i) => {
+          {['Upload', isSingleCsv ? 'Map Columns' : 'Assign Accounts', 'Preview & Import'].map((label, i) => {
             const stepIdx = ['upload', 'map', 'preview', 'importing', 'done'].indexOf(step);
             const thisIdx = i;
             const isActive = (thisIdx === 0 && stepIdx === 0) || (thisIdx === 1 && stepIdx === 1) || (thisIdx === 2 && stepIdx >= 2);
@@ -365,15 +499,16 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
               >
                 <Upload className={cn('mx-auto h-10 w-10 mb-3', dragging ? 'text-primary' : 'text-muted-foreground')} />
                 <p className="font-medium mb-1">
-                  {dragging ? 'Drop your file here' : 'Drag & drop your file or click to browse'}
+                  {dragging ? 'Drop your files here' : 'Drag & drop files or click to browse'}
                 </p>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Supports CSV, OFX, QBO, and QFX files from banks and financial software
+                  Supports <strong>multiple files</strong> — CSV, OFX, QBO, QFX. Accounts auto-detected per file.
                 </p>
                 <input
                   ref={fileInputRef}
                   type="file"
                   accept=".csv,.CSV,.ofx,.OFX,.qbo,.QBO,.qfx,.QFX"
+                  multiple
                   onChange={handleFileUpload}
                   className="hidden"
                 />
@@ -381,7 +516,7 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
                   variant="outline"
                   onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
                 >
-                  Choose File
+                  Choose Files
                 </Button>
               </div>
 
@@ -433,52 +568,129 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
             </motion.div>
           )}
 
-          {/* STEP 2: Column Mapping (CSV) or Account Selection (OFX) */}
-          {step === 'map' && fileMode === 'ofx' && ofxResult && (
-            <motion.div key="map-ofx" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
+          {/* STEP 2: Map/Assign — Single CSV */}
+          {step === 'map' && isSingleCsv && parsedFiles[0]?.csvResult && (
+            <motion.div key="map-csv" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
               <div className="flex items-center gap-2 flex-wrap">
                 <Badge className="bg-primary/10 text-primary border-primary/20">
-                  {ofxResult.fileType.toUpperCase()} File
+                  {FORMAT_LABELS[parsedFiles[0].csvResult.detectedFormat]}
                 </Badge>
-                <span className="text-sm text-muted-foreground">{ofxResult.transactions.length} transactions found</span>
-                {ofxResult.accountId && (
-                  <Badge variant="outline" className="text-xs">Account: {ofxResult.accountId}</Badge>
-                )}
-                {duplicateRows.size > 0 && (
-                  <Badge variant="outline" className="gap-1 text-prism-amber border-prism-amber/30">
-                    <AlertTriangle className="h-3 w-3" /> {duplicateRows.size} duplicate{duplicateRows.size > 1 ? 's' : ''}
-                  </Badge>
+                <span className="text-sm text-muted-foreground">{parsedFiles[0].csvResult.rows.length} rows detected</span>
+                {hasDebitCredit && (
+                  <Badge variant="outline" className="text-xs">Debit/Credit columns detected</Badge>
                 )}
               </div>
 
-              <div className="space-y-1.5">
-                <Label>Import into Account <span className="text-destructive">*</span></Label>
-                <Select value={targetAccountId} onValueChange={setTargetAccountId}>
-                  <SelectTrigger><SelectValue placeholder="Select account" /></SelectTrigger>
-                  <SelectContent>
-                    {(accounts || []).map(a => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Sample data preview */}
-              {parsedRows.length > 0 && (
-                <div className="rounded-lg border bg-muted/30 p-3">
-                  <p className="text-xs font-medium mb-2 text-muted-foreground">Sample transaction:</p>
-                  <div className="flex flex-wrap gap-3 text-xs">
-                    <span><span className="font-medium text-foreground">Date:</span> {parsedRows[0].date}</span>
-                    <span><span className="font-medium text-foreground">Merchant:</span> {parsedRows[0].merchant || '—'}</span>
-                    <span><span className="font-medium text-foreground">Amount:</span> {formatCurrency(parsedRows[0].amount)}</span>
-                    {parsedRows[0].notes && <span><span className="font-medium text-foreground">Memo:</span> {parsedRows[0].notes}</span>}
-                  </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label>Date Column <span className="text-destructive">*</span></Label>
+                  <Select value={csvMapping.date} onValueChange={v => setCsvMapping(m => ({ ...m, date: v }))}>
+                    <SelectTrigger><SelectValue placeholder="Select column" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">— None —</SelectItem>
+                      {parsedFiles[0].csvResult.headers.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
                 </div>
-              )}
+                <div className="space-y-1.5">
+                  <Label>Merchant / Description Column</Label>
+                  <Select value={csvMapping.merchant} onValueChange={v => setCsvMapping(m => ({ ...m, merchant: v }))}>
+                    <SelectTrigger><SelectValue placeholder="Select column" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">— None —</SelectItem>
+                      {parsedFiles[0].csvResult.headers.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {hasDebitCredit ? (
+                  <>
+                    <div className="space-y-1.5">
+                      <Label>Debit / Withdrawal Column</Label>
+                      <Select value={csvMapping.debit || ''} onValueChange={v => setCsvMapping(m => ({ ...m, debit: v === '__none__' ? '' : v }))}>
+                        <SelectTrigger><SelectValue placeholder="Select column" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="__none__">— None —</SelectItem>
+                          {parsedFiles[0].csvResult.headers.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label>Credit / Deposit Column</Label>
+                      <Select value={csvMapping.credit || ''} onValueChange={v => setCsvMapping(m => ({ ...m, credit: v === '__none__' ? '' : v }))}>
+                        <SelectTrigger><SelectValue placeholder="Select column" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="__none__">— None —</SelectItem>
+                          {parsedFiles[0].csvResult.headers.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </>
+                ) : (
+                  <div className="space-y-1.5">
+                    <Label>Amount Column <span className="text-destructive">*</span></Label>
+                    <Select value={csvMapping.amount} onValueChange={v => setCsvMapping(m => ({ ...m, amount: v }))}>
+                      <SelectTrigger><SelectValue placeholder="Select column" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">— None —</SelectItem>
+                        {parsedFiles[0].csvResult.headers.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                <div className="space-y-1.5">
+                  <Label>Category Column <span className="text-xs text-muted-foreground">(optional)</span></Label>
+                  <Select value={csvMapping.category || '__none__'} onValueChange={v => setCsvMapping(m => ({ ...m, category: v === '__none__' ? '' : v }))}>
+                    <SelectTrigger><SelectValue placeholder="Select column" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">— None —</SelectItem>
+                      {parsedFiles[0].csvResult.headers.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Notes / Memo Column <span className="text-xs text-muted-foreground">(optional)</span></Label>
+                  <Select value={csvMapping.notes || '__none__'} onValueChange={v => setCsvMapping(m => ({ ...m, notes: v === '__none__' ? '' : v }))}>
+                    <SelectTrigger><SelectValue placeholder="Select column" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">— None —</SelectItem>
+                      {parsedFiles[0].csvResult.headers.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label>Import into Account <span className="text-destructive">*</span></Label>
+                  <Select value={csvTargetAccountId} onValueChange={setCsvTargetAccountId}>
+                    <SelectTrigger><SelectValue placeholder="Select account" /></SelectTrigger>
+                    <SelectContent>
+                      {(accounts || []).map(a => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {!hasDebitCredit && (
+                  <div className="col-span-2">
+                    <button className="text-xs text-primary hover:underline" onClick={() => setCsvMapping(m => ({ ...m, amount: '', debit: '__detect__', credit: '__detect__' }))}>
+                      My CSV uses separate Debit/Credit columns instead of a single Amount →
+                    </button>
+                  </div>
+                )}
+                {hasDebitCredit && (
+                  <div className="col-span-2">
+                    <button className="text-xs text-primary hover:underline" onClick={() => setCsvMapping(m => ({ ...m, debit: undefined, credit: undefined, amount: '' }))}>
+                      ← My CSV uses a single Amount column instead
+                    </button>
+                  </div>
+                )}
+              </div>
 
               <div className="flex justify-between">
-                <Button variant="outline" onClick={() => { reset(); setStep('upload'); }} className="gap-1.5"><ArrowLeft className="h-4 w-4" /> Back</Button>
+                <Button variant="outline" onClick={() => { reset(); }} className="gap-1.5"><ArrowLeft className="h-4 w-4" /> Back</Button>
                 <Button
-                  onClick={() => { computePreviewRuleMatches(parsedRows); setStep('preview'); }}
-                  disabled={!targetAccountId}
+                  onClick={handleCsvProceedToPreview}
+                  disabled={!csvMapping.date || (!csvMapping.amount && !hasDebitCredit) || !csvTargetAccountId}
                   className="gap-1.5"
                 >
                   Preview <ArrowRight className="h-4 w-4" />
@@ -487,156 +699,59 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
             </motion.div>
           )}
 
-          {step === 'map' && fileMode === 'csv' && csvResult && (
-            <motion.div key="map" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
-              <div className="flex items-center gap-2 flex-wrap">
-                <Badge className="bg-primary/10 text-primary border-primary/20">
-                  {FORMAT_LABELS[csvResult.detectedFormat]}
-                </Badge>
-                <span className="text-sm text-muted-foreground">{csvResult.rows.length} rows detected</span>
-                {hasDebitCredit && (
-                  <Badge variant="outline" className="text-xs">Debit/Credit columns detected</Badge>
-                )}
-              </div>
+          {/* STEP 2: Multi-file account assignment */}
+          {step === 'map' && !isSingleCsv && parsedFiles.length > 0 && (
+            <motion.div key="map-multi" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
+              <p className="text-sm text-muted-foreground">Assign each file to a target account. Auto-detected accounts are pre-selected.</p>
 
-              <div className="grid grid-cols-2 gap-4">
-                {/* Date & Merchant — always shown */}
-                <div className="space-y-1.5">
-                  <Label>Date Column <span className="text-destructive">*</span></Label>
-                  <Select value={mapping.date} onValueChange={v => setMapping(m => ({ ...m, date: v }))}>
-                    <SelectTrigger><SelectValue placeholder="Select column" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="__none__">— None —</SelectItem>
-                      {csvResult.headers.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Merchant / Description Column</Label>
-                  <Select value={mapping.merchant} onValueChange={v => setMapping(m => ({ ...m, merchant: v }))}>
-                    <SelectTrigger><SelectValue placeholder="Select column" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="__none__">— None —</SelectItem>
-                      {csvResult.headers.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Amount or Debit/Credit */}
-                {hasDebitCredit ? (
-                  <>
-                    <div className="space-y-1.5">
-                      <Label>Debit / Withdrawal Column</Label>
-                      <Select value={mapping.debit || ''} onValueChange={v => setMapping(m => ({ ...m, debit: v === '__none__' ? '' : v }))}>
-                        <SelectTrigger><SelectValue placeholder="Select column" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="__none__">— None —</SelectItem>
-                          {csvResult.headers.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label>Credit / Deposit Column</Label>
-                      <Select value={mapping.credit || ''} onValueChange={v => setMapping(m => ({ ...m, credit: v === '__none__' ? '' : v }))}>
-                        <SelectTrigger><SelectValue placeholder="Select column" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="__none__">— None —</SelectItem>
-                          {csvResult.headers.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </>
-                ) : (
-                  <div className="space-y-1.5">
-                    <Label>Amount Column <span className="text-destructive">*</span></Label>
-                    <Select value={mapping.amount} onValueChange={v => setMapping(m => ({ ...m, amount: v }))}>
-                      <SelectTrigger><SelectValue placeholder="Select column" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="__none__">— None —</SelectItem>
-                        {csvResult.headers.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-
-                {/* Category */}
-                <div className="space-y-1.5">
-                  <Label>Category Column <span className="text-xs text-muted-foreground">(optional)</span></Label>
-                  <Select value={mapping.category || '__none__'} onValueChange={v => setMapping(m => ({ ...m, category: v === '__none__' ? '' : v }))}>
-                    <SelectTrigger><SelectValue placeholder="Select column" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="__none__">— None —</SelectItem>
-                      {csvResult.headers.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Notes */}
-                <div className="space-y-1.5">
-                  <Label>Notes / Memo Column <span className="text-xs text-muted-foreground">(optional)</span></Label>
-                  <Select value={mapping.notes || '__none__'} onValueChange={v => setMapping(m => ({ ...m, notes: v === '__none__' ? '' : v }))}>
-                    <SelectTrigger><SelectValue placeholder="Select column" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="__none__">— None —</SelectItem>
-                      {csvResult.headers.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Target Account */}
-                <div className="space-y-1.5">
-                  <Label>Import into Account <span className="text-destructive">*</span></Label>
-                  <Select value={targetAccountId} onValueChange={setTargetAccountId}>
-                    <SelectTrigger><SelectValue placeholder="Select account" /></SelectTrigger>
-                    <SelectContent>
-                      {(accounts || []).map(a => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Toggle: switch to single amount or debit/credit */}
-                {!hasDebitCredit && (
-                  <div className="col-span-2">
-                    <button
-                      className="text-xs text-primary hover:underline"
-                      onClick={() => setMapping(m => ({ ...m, amount: '', debit: '__detect__', credit: '__detect__' }))}
-                    >
-                      My CSV uses separate Debit/Credit columns instead of a single Amount →
-                    </button>
-                  </div>
-                )}
-                {hasDebitCredit && (
-                  <div className="col-span-2">
-                    <button
-                      className="text-xs text-primary hover:underline"
-                      onClick={() => setMapping(m => ({ ...m, debit: undefined, credit: undefined, amount: '' }))}
-                    >
-                      ← My CSV uses a single Amount column instead
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* Sample data preview */}
-              {csvResult.rows.length > 0 && (
-                <div className="rounded-lg border bg-muted/30 p-3">
-                  <p className="text-xs font-medium mb-2 text-muted-foreground">Sample row (first record):</p>
-                  <div className="flex flex-wrap gap-2">
-                    {csvResult.headers.map(h => (
-                      <div key={h} className="text-xs">
-                        <span className="font-medium text-foreground">{h}:</span>{' '}
-                        <span className="text-muted-foreground font-mono">{csvResult.rows[0][h] || '(empty)'}</span>
+              <ScrollArea className="max-h-[340px]">
+                <div className="space-y-3">
+                  {parsedFiles.map((pf, idx) => {
+                    const txnCount = pf.parsedRows.length || pf.csvResult?.rows.length || 0;
+                    const dupeCount = pf.duplicateRows.size;
+                    return (
+                      <div key={idx} className="rounded-lg border border-border/50 p-3 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <File className="h-4 w-4 text-muted-foreground shrink-0" />
+                            <span className="text-sm font-medium truncate">{pf.fileName}</span>
+                            <Badge variant="secondary" className="text-[10px]">{pf.fileMode.toUpperCase()}</Badge>
+                            <span className="text-xs text-muted-foreground">{txnCount} txns</span>
+                            {dupeCount > 0 && (
+                              <Badge variant="outline" className="text-[10px] text-prism-amber border-prism-amber/30 gap-0.5">
+                                <AlertTriangle className="h-2.5 w-2.5" /> {dupeCount}
+                              </Badge>
+                            )}
+                          </div>
+                          <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-destructive" onClick={() => removeFile(idx)}>
+                            <X className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Label className="text-xs shrink-0">Account:</Label>
+                          <Select value={pf.targetAccountId} onValueChange={v => updateFileAccount(idx, v)}>
+                            <SelectTrigger className="h-8 text-xs">
+                              <SelectValue placeholder="Select account" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {(accounts || []).map(a => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                          {pf.autoDetectedAccountId && pf.targetAccountId === pf.autoDetectedAccountId && (
+                            <Badge className="text-[9px] bg-prism-teal/10 text-prism-teal border-prism-teal/20 shrink-0">Auto</Badge>
+                          )}
+                        </div>
                       </div>
-                    ))}
-                  </div>
+                    );
+                  })}
                 </div>
-              )}
+              </ScrollArea>
 
               <div className="flex justify-between">
-                <Button variant="outline" onClick={() => setStep('upload')} className="gap-1.5"><ArrowLeft className="h-4 w-4" /> Back</Button>
+                <Button variant="outline" onClick={reset} className="gap-1.5"><ArrowLeft className="h-4 w-4" /> Back</Button>
                 <Button
-                  onClick={handleProceedToPreview}
-                  disabled={!mapping.date || (!mapping.amount && !hasDebitCredit) || !targetAccountId}
+                  onClick={handleMultiFileProceed}
+                  disabled={!allFilesReady}
                   className="gap-1.5"
                 >
                   Preview <ArrowRight className="h-4 w-4" />
@@ -648,76 +763,108 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
           {/* STEP 3: Preview */}
           {step === 'preview' && (
             <motion.div key="preview" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4 flex-1 min-h-0">
-              <div className="flex items-center justify-between flex-wrap gap-2">
-                <div className="flex items-center gap-3 flex-wrap">
-                  <p className="text-sm text-muted-foreground">{selectedRows.size} of {parsedRows.length} selected</p>
-                  {duplicateRows.size > 0 && (
-                    <Badge variant="outline" className="gap-1 text-prism-amber border-prism-amber/30">
-                      <AlertTriangle className="h-3 w-3" /> {duplicateRows.size} duplicate{duplicateRows.size > 1 ? 's' : ''} found
-                    </Badge>
-                  )}
-                  {previewRuleMatches.size > 0 && (
-                    <Badge variant="outline" className="gap-1 text-primary border-primary/30 bg-primary/5">
-                      <Sparkles className="h-3 w-3" /> {previewRuleMatches.size} auto-categorized by rules
-                    </Badge>
-                  )}
+              {/* File tabs for multi-file */}
+              {parsedFiles.length > 1 && (
+                <div className="flex gap-1.5 flex-wrap">
+                  {parsedFiles.map((pf, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setActiveFileIdx(idx)}
+                      className={cn(
+                        'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border',
+                        idx === activeFileIdx
+                          ? 'bg-primary/10 text-primary border-primary/30'
+                          : 'bg-muted/50 text-muted-foreground border-transparent hover:bg-muted'
+                      )}
+                    >
+                      {pf.fileName.length > 20 ? pf.fileName.slice(0, 17) + '…' : pf.fileName}
+                      <span className="ml-1 opacity-60">({pf.selectedRows.size})</span>
+                    </button>
+                  ))}
                 </div>
-                <div className="flex items-center gap-2">
-                  <Checkbox checked={selectedRows.size === parsedRows.length} onCheckedChange={handleToggleAll} />
-                  <span className="text-sm">Select all</span>
-                </div>
-              </div>
+              )}
 
-              <ScrollArea className="h-[340px] rounded-lg border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-10" />
-                      <TableHead>Date</TableHead>
-                      <TableHead>Merchant</TableHead>
-                      <TableHead className="text-right">Amount</TableHead>
-                      <TableHead>Category</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {parsedRows.map((row, i) => {
-                      const matched = categoryLookup.has(row.category.toLowerCase());
-                      const isDupe = duplicateRows.has(i);
-                      const ruleMatch = previewRuleMatches.get(i);
-                      return (
-                        <TableRow key={i} className={cn(!selectedRows.has(i) && 'opacity-40', isDupe && 'bg-prism-amber/5')}>
-                          <TableCell><Checkbox checked={selectedRows.has(i)} onCheckedChange={() => handleToggleRow(i)} /></TableCell>
-                          <TableCell className="text-sm">{row.date}</TableCell>
-                          <TableCell className="text-sm font-medium max-w-[200px] truncate">
-                            <span className="flex items-center gap-1.5">
-                              {row.merchant || '—'}
-                              {isDupe && <span title="Potential duplicate"><AlertTriangle className="h-3 w-3 text-prism-amber shrink-0" /></span>}
-                            </span>
-                          </TableCell>
-                          <TableCell className={cn('text-sm text-right font-medium', row.amount > 0 && 'text-prism-teal')}>{formatCurrency(row.amount)}</TableCell>
-                          <TableCell>
-                            {row.category ? (
-                              <Badge variant={matched ? 'secondary' : 'outline'} className="text-xs">
-                                {row.category}
-                                {!matched && <AlertCircle className="ml-1 h-3 w-3 text-prism-amber" />}
-                              </Badge>
-                            ) : ruleMatch ? (
-                              <Badge variant="secondary" className="text-xs gap-1 bg-primary/10 text-primary border-primary/20">
-                                <Sparkles className="h-2.5 w-2.5" /> {ruleMatch.categoryName}
-                              </Badge>
-                            ) : <span className="text-xs text-muted-foreground">—</span>}
-                          </TableCell>
+              {activePf && (
+                <>
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <p className="text-sm text-muted-foreground">{activePf.selectedRows.size} of {activePf.parsedRows.length} selected</p>
+                      {activePf.duplicateRows.size > 0 && (
+                        <Badge variant="outline" className="gap-1 text-prism-amber border-prism-amber/30">
+                          <AlertTriangle className="h-3 w-3" /> {activePf.duplicateRows.size} duplicate{activePf.duplicateRows.size > 1 ? 's' : ''}
+                        </Badge>
+                      )}
+                      {activePf.previewRuleMatches.size > 0 && (
+                        <Badge variant="outline" className="gap-1 text-primary border-primary/30 bg-primary/5">
+                          <Sparkles className="h-3 w-3" /> {activePf.previewRuleMatches.size} auto-categorized
+                        </Badge>
+                      )}
+                      <Badge variant="outline" className="gap-1 text-muted-foreground text-[10px]">
+                        → {accounts?.find(a => a.id === activePf.targetAccountId)?.name || 'Unknown'}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Checkbox checked={activePf.selectedRows.size === activePf.parsedRows.length} onCheckedChange={() => handleToggleAllForFile(activeFileIdx)} />
+                      <span className="text-sm">Select all</span>
+                    </div>
+                  </div>
+
+                  <ScrollArea className="h-[300px] rounded-lg border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-10" />
+                          <TableHead>Date</TableHead>
+                          <TableHead>Merchant</TableHead>
+                          <TableHead className="text-right">Amount</TableHead>
+                          <TableHead>Category</TableHead>
                         </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </ScrollArea>
+                      </TableHeader>
+                      <TableBody>
+                        {activePf.parsedRows.map((row, i) => {
+                          const matched = categoryLookup.has(row.category.toLowerCase());
+                          const isDupe = activePf.duplicateRows.has(i);
+                          const ruleMatch = activePf.previewRuleMatches.get(i);
+                          return (
+                            <TableRow key={i} className={cn(!activePf.selectedRows.has(i) && 'opacity-40', isDupe && 'bg-prism-amber/5')}>
+                              <TableCell><Checkbox checked={activePf.selectedRows.has(i)} onCheckedChange={() => handleToggleRow(activeFileIdx, i)} /></TableCell>
+                              <TableCell className="text-sm">{row.date}</TableCell>
+                              <TableCell className="text-sm font-medium max-w-[200px] truncate">
+                                <span className="flex items-center gap-1.5">
+                                  {row.merchant || '—'}
+                                  {isDupe && <span title="Potential duplicate"><AlertTriangle className="h-3 w-3 text-prism-amber shrink-0" /></span>}
+                                </span>
+                              </TableCell>
+                              <TableCell className={cn('text-sm text-right font-medium', row.amount > 0 && 'text-prism-teal')}>{formatCurrency(row.amount)}</TableCell>
+                              <TableCell>
+                                {row.category ? (
+                                  <Badge variant={matched ? 'secondary' : 'outline'} className="text-xs">
+                                    {row.category}
+                                    {!matched && <AlertCircle className="ml-1 h-3 w-3 text-prism-amber" />}
+                                  </Badge>
+                                ) : ruleMatch ? (
+                                  <Badge variant="secondary" className="text-xs gap-1 bg-primary/10 text-primary border-primary/20">
+                                    <Sparkles className="h-2.5 w-2.5" /> {ruleMatch.categoryName}
+                                  </Badge>
+                                ) : (
+                                  <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                    <Brain className="h-2.5 w-2.5" /> AI will categorize
+                                  </span>
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </ScrollArea>
+                </>
+              )}
 
               <div className="flex justify-between">
                 <Button variant="outline" onClick={() => setStep('map')} className="gap-1.5"><ArrowLeft className="h-4 w-4" /> Back</Button>
-                <Button onClick={handleImport} disabled={selectedRows.size === 0} className="gap-1.5">
-                  Import {selectedRows.size} Transactions <Check className="h-4 w-4" />
+                <Button onClick={handleImport} disabled={totalSelected === 0} className="gap-1.5">
+                  Import {totalSelected} Transaction{totalSelected !== 1 ? 's' : ''} <Check className="h-4 w-4" />
                 </Button>
               </div>
             </motion.div>
@@ -727,7 +874,8 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
           {step === 'importing' && (
             <motion.div key="importing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-16 gap-4">
               <Loader2 className="h-10 w-10 animate-spin text-primary" />
-              <p className="font-medium">Importing transactions...</p>
+              <p className="font-medium">Importing & categorizing transactions...</p>
+              <p className="text-xs text-muted-foreground">Applying rules, then AI for unmatched</p>
             </motion.div>
           )}
 
@@ -738,11 +886,22 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
                 <Check className="h-8 w-8 text-prism-teal" />
               </div>
               <p className="font-display text-xl font-bold">Import Complete</p>
-              <p className="text-muted-foreground text-center">
-                {importResult.success} transactions imported successfully
-                {ruleMatchCount > 0 && <><br /><span className="text-primary">{ruleMatchCount} auto-categorized by saved rules</span></>}
-                {importResult.failed > 0 && <><br /><span className="text-prism-rose">{importResult.failed} failed</span></>}
-              </p>
+              <div className="text-muted-foreground text-center text-sm space-y-1">
+                <p>{importResult.success} transactions imported successfully</p>
+                {importResult.ruleMatched > 0 && (
+                  <p className="text-primary flex items-center justify-center gap-1">
+                    <Sparkles className="h-3.5 w-3.5" /> {importResult.ruleMatched} auto-categorized by rules
+                  </p>
+                )}
+                {importResult.aiCategorized > 0 && (
+                  <p className="text-prism-sky flex items-center justify-center gap-1">
+                    <Brain className="h-3.5 w-3.5" /> {importResult.aiCategorized} categorized by AI
+                  </p>
+                )}
+                {importResult.failed > 0 && (
+                  <p className="text-prism-rose">{importResult.failed} failed</p>
+                )}
+              </div>
               <Button onClick={() => handleClose(false)}>Done</Button>
             </motion.div>
           )}
