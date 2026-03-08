@@ -1269,7 +1269,7 @@ const Transactions = () => {
                   }}
                   className="shrink-0"
                 />
-                <span className="text-sm font-semibold text-muted-foreground flex-1">{group.label}</span>
+                <span className="text-sm font-bold text-foreground flex-1">{group.label}</span>
                 <span className={cn('text-sm font-semibold tabular-nums', group.total < 0 ? 'text-foreground' : 'text-emerald-600 dark:text-emerald-400')}>
                   {group.total >= 0 ? '+' : ''}{formatCurrency(group.total)}
                 </span>
