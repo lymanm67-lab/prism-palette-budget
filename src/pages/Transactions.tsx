@@ -834,6 +834,20 @@ const Transactions = () => {
                       </Command>
                     </PopoverContent>
                   </Popover>
+                  {/* Transfer auto-detect indicator */}
+                  {form.is_transfer && (
+                    <div className="flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2">
+                      <ArrowRightLeft className="h-4 w-4 text-primary shrink-0" />
+                      <span className="text-sm font-medium">Transfer detected</span>
+                      <button
+                        type="button"
+                        onClick={() => setForm(f => ({ ...f, is_transfer: false }))}
+                        className="ml-auto text-xs text-muted-foreground hover:text-foreground"
+                      >
+                        Not a transfer
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label>Date</Label>
