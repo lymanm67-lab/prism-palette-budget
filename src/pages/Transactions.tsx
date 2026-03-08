@@ -1009,11 +1009,15 @@ const Transactions = () => {
                     const isTransfer = (txn as any).is_transfer;
                     const cat = (txn as any).categories;
                     const acct = (txn as any).accounts;
+                    const isDupe = duplicateIds.has(txn.id);
 
                     return (
                       <div
                         key={txn.id}
-                        className="flex items-center gap-3 px-4 py-3 hover:bg-muted/30 transition-colors group cursor-pointer"
+                        className={cn(
+                          "flex items-center gap-3 px-4 py-3 hover:bg-muted/30 transition-colors group cursor-pointer",
+                          isDupe && "bg-amber-50/50 dark:bg-amber-950/10"
+                        )}
                         onClick={() => !editMultiple && openEditTxn(txn)}
                       >
                         {/* Checkbox (edit multiple mode) */}
@@ -1026,17 +1030,28 @@ const Transactions = () => {
                         )}
 
                         {/* Merchant icon placeholder */}
-                        <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center shrink-0">
-                          <span className="text-xs font-bold text-muted-foreground">
+                        <div className={cn(
+                          "h-8 w-8 rounded-full flex items-center justify-center shrink-0",
+                          isDupe ? "bg-amber-100 dark:bg-amber-900/30" : "bg-muted"
+                        )}>
+                          <span className={cn(
+                            "text-xs font-bold",
+                            isDupe ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"
+                          )}>
                             {(txn.merchant || '?')[0].toUpperCase()}
                           </span>
                         </div>
 
-                        {/* Merchant name */}
+                        {/* Merchant name + duplicate badge */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5">
                             <p className="text-sm font-medium truncate">{txn.merchant || 'No merchant'}</p>
                             {(txn as any).receipt_url && <ImageIcon className="h-3 w-3 text-muted-foreground shrink-0" />}
+                            {isDupe && (
+                              <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-amber-300 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 shrink-0">
+                                <Copy className="h-2.5 w-2.5 mr-0.5" /> Duplicate
+                              </Badge>
+                            )}
                           </div>
                           {isTransfer && <p className="text-[10px] text-muted-foreground">Transfer</p>}
                         </div>
@@ -1065,6 +1080,43 @@ const Transactions = () => {
                         )}>
                           {isIncome ? '+' : ''}{formatCurrency(txn.amount)}
                         </span>
+
+                        {/* Inline action icons */}
+                        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                          <TooltipProvider delayDuration={200}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                                  onClick={(e) => { e.stopPropagation(); openEditTxn(txn); }}
+                                >
+                                  <Pencil className="h-3.5 w-3.5" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent side="top"><p>Edit</p></TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                                  onClick={async (e) => {
+                                    e.stopPropagation();
+                                    await supabase.from('transactions').delete().eq('id', txn.id);
+                                    qc.invalidateQueries({ queryKey: ['transactions'] });
+                                    toast.success('Transaction deleted');
+                                  }}
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent side="top"><p>Delete</p></TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
 
                         {/* Chevron */}
                         <ChevronRight className="h-4 w-4 text-muted-foreground/40 shrink-0" />
