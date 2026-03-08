@@ -1,6 +1,5 @@
 import { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
@@ -9,8 +8,11 @@ import {
   Landmark, Tags, ArrowLeftRight, PiggyBank, RepeatIcon,
   Wallet, Target, TrendingDown, TrendingUp, BarChart3, Bot,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import Confetti from '@/components/Confetti';
+import { useAccounts, useTransactions, useCategories, useBudgets } from '@/hooks/use-finance-data';
+import { useGoals } from '@/hooks/use-goals';
+import { useDebtPlans } from '@/hooks/use-debt-plans';
+import { useRecurringTransactions } from '@/hooks/use-recurring';
 
 const STEPS = [
   { id: 'accounts', title: 'Set Up Accounts', icon: Landmark, route: '/accounts' },
@@ -29,17 +31,55 @@ const STEPS = [
 const GettingStartedWidget = () => {
   const navigate = useNavigate();
 
+  // Fetch real data for auto-detection
+  const { data: accounts } = useAccounts();
+  const { data: categories } = useCategories();
+  const { data: transactions } = useTransactions();
+  const currentMonth = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-01`;
+  const { data: budgets } = useBudgets(currentMonth);
+  const { data: recurring } = useRecurringTransactions();
+  const { data: goals } = useGoals();
+  const { data: debtPlans } = useDebtPlans();
+
+  // Auto-detect completed steps from real data
+  const autoDetected = useMemo(() => {
+    const auto = new Set<string>();
+    if (accounts && accounts.length > 0) auto.add('accounts');
+    if (categories && categories.length > 0) auto.add('categories');
+    if (transactions && transactions.length > 0) auto.add('transactions');
+    if (budgets && budgets.length > 0) auto.add('budgets');
+    if (recurring && recurring.length > 0) auto.add('recurring');
+    if (goals && goals.length > 0) auto.add('goals');
+    if (debtPlans && debtPlans.length > 0) auto.add('debt');
+    return auto;
+  }, [accounts, categories, transactions, budgets, recurring, goals, debtPlans]);
+
   const { completedSet, progress, nextSteps } = useMemo(() => {
-    let completed = new Set<string>();
+    let manual = new Set<string>();
     try {
       const saved = localStorage.getItem('prism-getting-started-progress');
-      if (saved) completed = new Set(JSON.parse(saved));
+      if (saved) manual = new Set(JSON.parse(saved));
     } catch {}
-
+    const completed = new Set([...manual, ...autoDetected]);
     const pct = Math.round((completed.size / STEPS.length) * 100);
     const remaining = STEPS.filter(s => !completed.has(s.id)).slice(0, 3);
     return { completedSet: completed, progress: pct, nextSteps: remaining };
-  }, []);
+  }, [autoDetected]);
+
+  // Persist auto-detections to localStorage
+  useEffect(() => {
+    if (autoDetected.size > 0) {
+      let manual = new Set<string>();
+      try {
+        const saved = localStorage.getItem('prism-getting-started-progress');
+        if (saved) manual = new Set(JSON.parse(saved));
+      } catch {}
+      const merged = new Set([...manual, ...autoDetected]);
+      if (merged.size > manual.size) {
+        localStorage.setItem('prism-getting-started-progress', JSON.stringify([...merged]));
+      }
+    }
+  }, [autoDetected]);
 
   // Don't show if all steps completed and user dismissed
   const dismissed = localStorage.getItem('prism-gs-widget-dismissed');
