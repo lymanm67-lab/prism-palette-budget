@@ -324,11 +324,22 @@ const Transactions = () => {
 
     const tags = form.tags ? form.tags.split(',').map(t => t.trim()).filter(Boolean) : null;
     const isXfer = form.is_transfer || isTransferMerchant(form.merchant);
+    // Auto-apply category from merchant history if user didn't pick one
+    let categoryId = form.category_id || null;
+    let needsReview = false;
+    if (!categoryId && form.merchant && merchantCategoryMap.has(form.merchant.trim())) {
+      categoryId = merchantCategoryMap.get(form.merchant.trim())!;
+      needsReview = true; // Mark for user review
+    }
     const result = await createTransaction.mutateAsync({
       date: form.date, merchant: form.merchant || null, amount: finalAmount,
-      account_id: form.account_id, category_id: form.category_id || null, notes: form.notes || null,
-      tags, is_transfer: isXfer,
+      account_id: form.account_id, category_id: categoryId, notes: form.notes || null,
+      tags, is_transfer: isXfer, needs_review: needsReview,
     } as any);
+    if (needsReview) {
+      const catName = categories?.find(c => c.id === categoryId)?.name;
+      toast.info(`Auto-categorized as "${catName}" — review to approve`, { duration: 4000 });
+    }
 
     // Upload receipt if scanned
     if (pendingReceiptFile && household && result?.id) {
