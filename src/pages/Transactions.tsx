@@ -63,6 +63,7 @@ type TxnViewFilter = 'all' | 'income' | 'expenses' | 'transfers' | 'duplicates' 
 const Transactions = () => {
   const { formatCurrency } = useCurrency();
   const { data: transactions, isLoading } = useTransactions();
+  const { data: deletedTransactions } = useDeletedTransactions();
   const { data: accounts } = useAccounts();
   const { data: categories } = useCategories();
   const createTransaction = useCreateTransaction();
