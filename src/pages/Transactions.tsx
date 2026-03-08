@@ -20,7 +20,9 @@ import {
   Search, Plus, Loader2, Upload, Receipt, Trash2, Tags,
   ArrowRightLeft, SlidersHorizontal, CalendarIcon, ChevronRight,
   ArrowUpDown, X, Pencil, Sparkles, Landmark, Check, Camera, ImageIcon,
+  Copy, AlertTriangle,
 } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import CsvImportDialog from '@/components/CsvImportDialog';
 import PageOverview from '@/components/PageOverview';
@@ -54,6 +56,8 @@ interface FilterState {
 }
 
 const EMPTY_FILTERS: FilterState = { dateFrom: '', dateTo: '', amountMin: '', amountMax: '', accountId: '', categoryId: '' };
+
+type TxnViewFilter = 'all' | 'income' | 'expenses' | 'transfers' | 'duplicates';
 
 const Transactions = () => {
   const { formatCurrency } = useCurrency();
@@ -93,7 +97,7 @@ const Transactions = () => {
   const [merchantOpen, setMerchantOpen] = useState(false);
   const [scanLoading, setScanLoading] = useState(false);
   const receiptInputRef = useRef<HTMLInputElement>(null);
-
+  const [viewFilter, setViewFilter] = useState<TxnViewFilter>('all');
   const handleScanReceipt = useCallback(async (file: File) => {
     setScanLoading(true);
     try {
@@ -209,6 +213,25 @@ const Transactions = () => {
     setTagSearch('');
   };
 
+  // Compute duplicate transaction IDs (same date+amount+normalized merchant, more than 1 match)
+  const duplicateIds = useMemo(() => {
+    if (!transactions) return new Set<string>();
+    const groups = new Map<string, string[]>();
+    for (const t of transactions) {
+      const merchant = (t.merchant || '').toLowerCase().trim().replace(/\s+/g, ' ');
+      const key = `${t.date}|${Math.round(t.amount * 100)}|${merchant}`;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key)!.push(t.id);
+    }
+    const dupeSet = new Set<string>();
+    for (const ids of groups.values()) {
+      if (ids.length > 1) ids.forEach(id => dupeSet.add(id));
+    }
+    return dupeSet;
+  }, [transactions]);
+
+  const duplicateCount = duplicateIds.size;
+
   const activeFilterCount = Object.values(filters).filter(Boolean).length;
 
   // Filter + sort
@@ -223,6 +246,11 @@ const Transactions = () => {
       if (filters.amountMax && Math.abs(t.amount) > parseFloat(filters.amountMax)) return false;
       if (filters.accountId && t.account_id !== filters.accountId) return false;
       if (filters.categoryId && t.category_id !== filters.categoryId) return false;
+      // View filter
+      if (viewFilter === 'income' && t.amount <= 0) return false;
+      if (viewFilter === 'expenses' && t.amount >= 0) return false;
+      if (viewFilter === 'transfers' && !(t as any).is_transfer) return false;
+      if (viewFilter === 'duplicates' && !duplicateIds.has(t.id)) return false;
       return true;
     });
 
@@ -235,7 +263,7 @@ const Transactions = () => {
     });
 
     return result;
-  }, [search, transactions, filters, sortKey, sortDir]);
+  }, [search, transactions, filters, sortKey, sortDir, viewFilter, duplicateIds]);
 
   // Group by date
   const grouped = useMemo(() => {
@@ -845,15 +873,33 @@ const Transactions = () => {
       {/* Secondary toolbar */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Select defaultValue="all">
+          <Select value={viewFilter} onValueChange={(v: TxnViewFilter) => setViewFilter(v)}>
             <SelectTrigger className="w-[170px] h-8 text-sm"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All transactions</SelectItem>
               <SelectItem value="income">Income only</SelectItem>
               <SelectItem value="expenses">Expenses only</SelectItem>
               <SelectItem value="transfers">Transfers only</SelectItem>
+              <SelectItem value="duplicates">
+                <span className="flex items-center gap-1.5">
+                  <Copy className="h-3.5 w-3.5 text-amber-500" /> Duplicates {duplicateCount > 0 && `(${duplicateCount})`}
+                </span>
+              </SelectItem>
             </SelectContent>
           </Select>
+          {viewFilter === 'duplicates' && duplicateCount > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5 h-8 text-xs"
+              onClick={() => {
+                setEditMultiple(true);
+                setSelected(new Set(filtered.map(t => t.id)));
+              }}
+            >
+              <Check className="h-3 w-3" /> Select all duplicates
+            </Button>
+          )}
         </div>
         <div className="flex items-center gap-2">
           {/* Auto-categorize button */}
@@ -934,6 +980,22 @@ const Transactions = () => {
         </motion.div>
       )}
 
+      {/* Duplicates banner */}
+      {viewFilter === 'duplicates' && duplicateCount > 0 && (
+        <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-3 rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50/80 dark:bg-amber-950/20 px-4 py-3">
+          <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+              {duplicateCount} potential duplicate transactions found
+            </p>
+            <p className="text-xs text-amber-600 dark:text-amber-400">
+              Transactions with the same date, amount, and merchant are flagged. Use "Select all duplicates" to batch delete.
+            </p>
+          </div>
+        </motion.div>
+      )}
+
       {/* Transaction list grouped by date */}
       {grouped.length === 0 ? (
         <Card>
@@ -963,11 +1025,15 @@ const Transactions = () => {
                     const isTransfer = (txn as any).is_transfer;
                     const cat = (txn as any).categories;
                     const acct = (txn as any).accounts;
+                    const isDupe = duplicateIds.has(txn.id);
 
                     return (
                       <div
                         key={txn.id}
-                        className="flex items-center gap-3 px-4 py-3 hover:bg-muted/30 transition-colors group cursor-pointer"
+                        className={cn(
+                          "flex items-center gap-3 px-4 py-3 hover:bg-muted/30 transition-colors group cursor-pointer",
+                          isDupe && "bg-amber-50/50 dark:bg-amber-950/10"
+                        )}
                         onClick={() => !editMultiple && openEditTxn(txn)}
                       >
                         {/* Checkbox (edit multiple mode) */}
@@ -980,17 +1046,28 @@ const Transactions = () => {
                         )}
 
                         {/* Merchant icon placeholder */}
-                        <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center shrink-0">
-                          <span className="text-xs font-bold text-muted-foreground">
+                        <div className={cn(
+                          "h-8 w-8 rounded-full flex items-center justify-center shrink-0",
+                          isDupe ? "bg-amber-100 dark:bg-amber-900/30" : "bg-muted"
+                        )}>
+                          <span className={cn(
+                            "text-xs font-bold",
+                            isDupe ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"
+                          )}>
                             {(txn.merchant || '?')[0].toUpperCase()}
                           </span>
                         </div>
 
-                        {/* Merchant name */}
+                        {/* Merchant name + duplicate badge */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5">
                             <p className="text-sm font-medium truncate">{txn.merchant || 'No merchant'}</p>
                             {(txn as any).receipt_url && <ImageIcon className="h-3 w-3 text-muted-foreground shrink-0" />}
+                            {isDupe && (
+                              <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-amber-300 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 shrink-0">
+                                <Copy className="h-2.5 w-2.5 mr-0.5" /> Duplicate
+                              </Badge>
+                            )}
                           </div>
                           {isTransfer && <p className="text-[10px] text-muted-foreground">Transfer</p>}
                         </div>
@@ -1019,6 +1096,43 @@ const Transactions = () => {
                         )}>
                           {isIncome ? '+' : ''}{formatCurrency(txn.amount)}
                         </span>
+
+                        {/* Inline action icons */}
+                        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                          <TooltipProvider delayDuration={200}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                                  onClick={(e) => { e.stopPropagation(); openEditTxn(txn); }}
+                                >
+                                  <Pencil className="h-3.5 w-3.5" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent side="top"><p>Edit</p></TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                                  onClick={async (e) => {
+                                    e.stopPropagation();
+                                    await supabase.from('transactions').delete().eq('id', txn.id);
+                                    qc.invalidateQueries({ queryKey: ['transactions'] });
+                                    toast.success('Transaction deleted');
+                                  }}
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent side="top"><p>Delete</p></TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
 
                         {/* Chevron */}
                         <ChevronRight className="h-4 w-4 text-muted-foreground/40 shrink-0" />
