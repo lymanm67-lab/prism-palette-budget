@@ -897,6 +897,56 @@ const Budgets = () => {
           </div>
         </DialogContent>
       </Dialog>
+      {/* Smart Budget Suggestions Dialog */}
+      <Dialog open={smartBudgetOpen} onOpenChange={setSmartBudgetOpen}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary" /> Smart Budget Suggestions</DialogTitle>
+          </DialogHeader>
+          {smartSuggestions.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4">Not enough spending history to generate suggestions. Add more transactions first.</p>
+          ) : (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">Based on your last 90 days of spending. Select which categories to apply:</p>
+              <div className="space-y-2">
+                {smartSuggestions.map((s, i) => (
+                  <div key={s.category_id} className="flex items-center gap-3 py-2 px-3 rounded-lg border border-border hover:bg-muted/30 transition-colors">
+                    <Checkbox
+                      checked={s.selected}
+                      onCheckedChange={(checked) => {
+                        setSmartSuggestions(prev => prev.map((item, idx) => idx === i ? { ...item, selected: !!checked } : item));
+                      }}
+                    />
+                    <span className="flex-1 text-sm font-medium">{s.category_name}</span>
+                    <div className="text-right">
+                      <div className="text-sm font-semibold tabular-nums">{formatCurrency(s.suggested_budget)}</div>
+                      <div className="text-xs text-muted-foreground">avg {formatCurrency(s.monthly_average)}/mo</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="flex items-center justify-between pt-2 border-t border-border">
+                <div className="text-sm text-muted-foreground">
+                  {smartSuggestions.filter(s => s.selected).length} of {smartSuggestions.length} selected
+                </div>
+                <Button
+                  disabled={upsertBudget.isPending || smartSuggestions.filter(s => s.selected).length === 0}
+                  onClick={async () => {
+                    const selected = smartSuggestions.filter(s => s.selected);
+                    for (const s of selected) {
+                      await upsertBudget.mutateAsync({ category_id: s.category_id, month, planned_amount: s.suggested_budget });
+                    }
+                    setSmartBudgetOpen(false);
+                  }}
+                >
+                  {upsertBudget.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                  Apply {smartSuggestions.filter(s => s.selected).length} Budgets
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 };
