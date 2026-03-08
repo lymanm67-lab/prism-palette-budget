@@ -873,15 +873,34 @@ const Transactions = () => {
       {/* Secondary toolbar */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Select defaultValue="all">
+          <Select value={viewFilter} onValueChange={(v: TxnViewFilter) => setViewFilter(v)}>
             <SelectTrigger className="w-[170px] h-8 text-sm"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All transactions</SelectItem>
               <SelectItem value="income">Income only</SelectItem>
               <SelectItem value="expenses">Expenses only</SelectItem>
               <SelectItem value="transfers">Transfers only</SelectItem>
+              <SelectItem value="duplicates">
+                <span className="flex items-center gap-1.5">
+                  <Copy className="h-3.5 w-3.5 text-amber-500" /> Duplicates {duplicateCount > 0 && `(${duplicateCount})`}
+                </span>
+              </SelectItem>
             </SelectContent>
           </Select>
+          {viewFilter === 'duplicates' && duplicateCount > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5 h-8 text-xs"
+              onClick={() => {
+                setEditMultiple(true);
+                setSelected(new Set(filtered.map(t => t.id)));
+              }}
+            >
+              <Check className="h-3 w-3" /> Select all duplicates
+            </Button>
+          )}
+        </div>
         </div>
         <div className="flex items-center gap-2">
           {/* Auto-categorize button */}
