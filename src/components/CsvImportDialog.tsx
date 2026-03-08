@@ -29,6 +29,7 @@ import { Upload, FileSpreadsheet, ArrowRight, ArrowLeft, Check, AlertCircle, Loa
 import { cn } from '@/lib/utils';
 import { useDuplicateDetection } from '@/hooks/use-duplicate-detection';
 import { isTransferMerchant } from '@/lib/transfer-detection';
+import { extractSmartMerchant } from '@/lib/merchant-extraction';
 
 type FileMode = 'csv' | 'ofx';
 type Step = 'upload' | 'map' | 'preview' | 'importing' | 'done';
@@ -176,7 +177,7 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
           const result = parseOfxText(text, fileType);
           const rows: ParsedRow[] = result.transactions.map(t => ({
             date: t.date,
-            merchant: t.merchant,
+            merchant: extractSmartMerchant(t.merchant, t.memo),
             amount: t.amount,
             category: '',
             notes: t.memo,
@@ -289,7 +290,9 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
   const handleCsvProceedToPreview = async () => {
     const pf = parsedFiles[0];
     if (!pf?.csvResult) return;
-    const rows = applyMapping(pf.csvResult.rows, csvMapping, pf.csvResult.detectedFormat);
+    const rawRows = applyMapping(pf.csvResult.rows, csvMapping, pf.csvResult.detectedFormat);
+    // Smart merchant extraction for generic bank descriptions
+    const rows = rawRows.map(r => ({ ...r, merchant: extractSmartMerchant(r.merchant, r.notes) }));
     const dupes = findDuplicates(rows.map(r => ({ date: r.date, amount: r.amount, merchant: r.merchant })));
     const selected = new Set(rows.map((_, i) => i).filter(i => !dupes.has(i)));
 
