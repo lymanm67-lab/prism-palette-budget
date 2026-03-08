@@ -997,49 +997,88 @@ const Transactions = () => {
           <Button size="sm" variant="outline" onClick={() => { const allIds = new Set(filtered.map(t => t.id)); setSelected(allIds); }} className="gap-1 h-8 text-xs">
             <Check className="h-3 w-3" /> Select all ({filtered.length})
           </Button>
-          <div className="flex items-center gap-2">
-            <Select value={bulkCategory} onValueChange={setBulkCategory}>
-              <SelectTrigger className="h-8 w-[160px] text-xs"><SelectValue placeholder="Categorize as…" /></SelectTrigger>
-              <SelectContent>{(categories || []).map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
-            </Select>
-            <Button size="sm" variant="outline" onClick={bulkCategorize} disabled={!bulkCategory} className="gap-1 h-8">
-              <Tags className="h-3.5 w-3.5" /> Apply
-            </Button>
-          </div>
-          <div className="flex items-center gap-2">
-            <Select value={bulkAccount} onValueChange={setBulkAccount}>
-              <SelectTrigger className="h-8 w-[160px] text-xs"><SelectValue placeholder="Move to account…" /></SelectTrigger>
-              <SelectContent>{(accounts || []).map(a => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}</SelectContent>
-            </Select>
-            <Button size="sm" variant="outline" onClick={bulkChangeAccount} disabled={!bulkAccount} className="gap-1 h-8">
-              <Landmark className="h-3.5 w-3.5" /> Move
-            </Button>
-          </div>
-          <Button size="sm" variant="outline" onClick={handleAutoCategorize} disabled={autoCatLoading} className="gap-1 h-8">
-            {autoCatLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-            AI Categorize
-          </Button>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button size="sm" variant="destructive" className="gap-1 h-8">
-                <Trash2 className="h-3.5 w-3.5" /> Delete ({selected.size})
+          {viewFilter === 'trash' ? (
+            <>
+              <Button size="sm" variant="outline" className="gap-1 h-8" onClick={async () => {
+                const ids = Array.from(selected);
+                await restoreTransactions(ids);
+                setSelected(new Set());
+                toast.success(`Restored ${ids.length} transactions`);
+              }}>
+                <RotateCcw className="h-3.5 w-3.5" /> Restore selected
               </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete {selected.size} transaction{selected.size > 1 ? 's' : ''}?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This will permanently remove {selected.size} selected transaction{selected.size > 1 ? 's' : ''}. This action cannot be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={bulkDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                  Delete {selected.size} transaction{selected.size > 1 ? 's' : ''}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button size="sm" variant="destructive" className="gap-1 h-8">
+                    <Trash2 className="h-3.5 w-3.5" /> Delete permanently ({selected.size})
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Permanently delete {selected.size} transaction{selected.size > 1 ? 's' : ''}?</AlertDialogTitle>
+                    <AlertDialogDescription>This cannot be undone.</AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={async () => {
+                      const ids = Array.from(selected);
+                      await permanentDelete(ids);
+                      setSelected(new Set());
+                      toast.success(`Permanently deleted ${ids.length} transactions`);
+                    }}>
+                      Delete permanently
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </>
+          ) : (
+            <>
+              <div className="flex items-center gap-2">
+                <Select value={bulkCategory} onValueChange={setBulkCategory}>
+                  <SelectTrigger className="h-8 w-[160px] text-xs"><SelectValue placeholder="Categorize as…" /></SelectTrigger>
+                  <SelectContent>{(categories || []).map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
+                </Select>
+                <Button size="sm" variant="outline" onClick={bulkCategorize} disabled={!bulkCategory} className="gap-1 h-8">
+                  <Tags className="h-3.5 w-3.5" /> Apply
+                </Button>
+              </div>
+              <div className="flex items-center gap-2">
+                <Select value={bulkAccount} onValueChange={setBulkAccount}>
+                  <SelectTrigger className="h-8 w-[160px] text-xs"><SelectValue placeholder="Move to account…" /></SelectTrigger>
+                  <SelectContent>{(accounts || []).map(a => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}</SelectContent>
+                </Select>
+                <Button size="sm" variant="outline" onClick={bulkChangeAccount} disabled={!bulkAccount} className="gap-1 h-8">
+                  <Landmark className="h-3.5 w-3.5" /> Move
+                </Button>
+              </div>
+              <Button size="sm" variant="outline" onClick={handleAutoCategorize} disabled={autoCatLoading} className="gap-1 h-8">
+                {autoCatLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                AI Categorize
+              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button size="sm" variant="destructive" className="gap-1 h-8">
+                    <Trash2 className="h-3.5 w-3.5" /> Delete ({selected.size})
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete {selected.size} transaction{selected.size > 1 ? 's' : ''}?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Transactions will be moved to trash. You can restore them later.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={bulkDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                      Move to trash
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </>
+          )}
           <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())} className="h-8 text-xs">Clear selection</Button>
         </motion.div>
       )}
