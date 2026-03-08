@@ -1389,6 +1389,7 @@ const Transactions = () => {
                     const cat = (txn as any).categories;
                     const acct = (txn as any).accounts;
                     const isDupe = duplicateIds.has(txn.id);
+                    const isUncategorized = !cat && !isTransfer;
 
                     return (
                       <div
@@ -1396,9 +1397,10 @@ const Transactions = () => {
                         className={cn(
                           "flex items-center gap-3 px-4 py-3 hover:bg-muted/30 transition-colors group cursor-pointer",
                           isDupe && "bg-amber-50/50 dark:bg-amber-950/10",
-                          !isDupe && isTransfer && "bg-blue-50/50 dark:bg-blue-950/10",
-                          !isDupe && !isTransfer && isIncome && "bg-emerald-50/40 dark:bg-emerald-950/10",
-                          !isDupe && !isIncome && !isTransfer && "bg-background"
+                          !isDupe && isUncategorized && "bg-rose-50/60 dark:bg-rose-950/15 border-l-2 border-l-rose-400 dark:border-l-rose-500",
+                          !isDupe && !isUncategorized && isTransfer && "bg-blue-50/50 dark:bg-blue-950/10",
+                          !isDupe && !isUncategorized && !isTransfer && isIncome && "bg-emerald-50/40 dark:bg-emerald-950/10",
+                          !isDupe && !isUncategorized && !isIncome && !isTransfer && "bg-background"
                         )}
                         onClick={() => selected.size === 0 && openEditTxn(txn)}
                       >
@@ -1458,7 +1460,10 @@ const Transactions = () => {
                               <span className="truncate">{cat.name}</span>
                             </span>
                           ) : (
-                            <span className="text-xs text-muted-foreground italic">Uncategorized</span>
+                            <span className="flex items-center gap-1.5 text-xs font-medium text-rose-500 dark:text-rose-400">
+                              <span className="h-2.5 w-2.5 rounded-full bg-rose-400/60 dark:bg-rose-500/60 animate-pulse shrink-0" />
+                              Uncategorized
+                            </span>
                           )}
                         </div>
 
