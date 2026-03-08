@@ -41,7 +41,7 @@ const Recurring = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [editTarget, setEditTarget] = useState<any | null>(null);
-  const [editForm, setEditForm] = useState({ merchant: '', amount: '', frequency: 'monthly', account_id: '', category_id: '', next_due_date: '' });
+  const [editForm, setEditForm] = useState({ merchant: '', amount: '', frequency: 'monthly', account_id: '', category_id: '', next_due_date: '', type: 'expense' as 'income' | 'expense' });
 
   const [form, setForm] = useState({
     merchant: '',
@@ -51,6 +51,7 @@ const Recurring = () => {
     category_id: '',
     start_date: format(new Date(), 'yyyy-MM-dd'),
     next_due_date: format(new Date(), 'yyyy-MM-dd'),
+    type: 'expense' as 'income' | 'expense',
   });
 
   const totalIncome = useMemo(() => {
@@ -68,9 +69,10 @@ const Recurring = () => {
       toast.error('Fill in merchant, amount, and account');
       return;
     }
+    const amt = Math.abs(parseFloat(form.amount));
     createRecurring.mutate({
       merchant: form.merchant,
-      amount: parseFloat(form.amount),
+      amount: form.type === 'expense' ? -amt : amt,
       frequency: form.frequency,
       account_id: form.account_id,
       category_id: form.category_id || null,
@@ -79,7 +81,7 @@ const Recurring = () => {
     }, {
       onSuccess: () => {
         setDialogOpen(false);
-        setForm({ merchant: '', amount: '', frequency: 'monthly', account_id: '', category_id: '', start_date: format(new Date(), 'yyyy-MM-dd'), next_due_date: format(new Date(), 'yyyy-MM-dd') });
+        setForm({ merchant: '', amount: '', frequency: 'monthly', account_id: '', category_id: '', start_date: format(new Date(), 'yyyy-MM-dd'), next_due_date: format(new Date(), 'yyyy-MM-dd'), type: 'expense' });
       }
     });
   };
@@ -88,20 +90,22 @@ const Recurring = () => {
     setEditTarget(r);
     setEditForm({
       merchant: r.merchant || '',
-      amount: String(r.amount),
+      amount: String(Math.abs(Number(r.amount))),
       frequency: r.frequency || 'monthly',
       account_id: r.account_id || '',
       category_id: r.category_id || '',
       next_due_date: r.next_due_date || '',
+      type: Number(r.amount) >= 0 ? 'income' : 'expense',
     });
   };
 
   const handleEdit = () => {
     if (!editTarget) return;
+    const amt = Math.abs(parseFloat(editForm.amount));
     updateRecurring.mutate({
       id: editTarget.id,
       merchant: editForm.merchant,
-      amount: parseFloat(editForm.amount),
+      amount: editForm.type === 'expense' ? -amt : amt,
       frequency: editForm.frequency,
       account_id: editForm.account_id,
       category_id: editForm.category_id || null,
@@ -219,7 +223,7 @@ const Recurring = () => {
       {/* List View */}
       {view === 'list' && (
         <Card>
-          <CardHeader><CardTitle className="font-display">Upcoming</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="font-display">Upcoming Expenses</CardTitle></CardHeader>
           <CardContent>
             {!recurring || recurring.length === 0 ? (
               <p className="text-center text-muted-foreground py-10">No recurring transactions yet.</p>
@@ -312,14 +316,21 @@ const Recurring = () => {
           <DialogHeader><DialogTitle className="font-display">Add Recurring Transaction</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
+              <Label>Type</Label>
+              <div className="flex border rounded-lg overflow-hidden">
+                <button type="button" onClick={() => setForm(f => ({ ...f, type: 'expense' }))} className={cn('flex-1 px-3 py-2 text-sm font-medium transition-colors', form.type === 'expense' ? 'bg-destructive text-destructive-foreground' : 'hover:bg-muted')}>Expense</button>
+                <button type="button" onClick={() => setForm(f => ({ ...f, type: 'income' }))} className={cn('flex-1 px-3 py-2 text-sm font-medium transition-colors', form.type === 'income' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}>Income</button>
+              </div>
+            </div>
+            <div className="space-y-2">
               <Label>Merchant / Name *</Label>
               <Input value={form.merchant} onChange={e => setForm(f => ({ ...f, merchant: e.target.value }))} placeholder="Netflix, Rent, etc." />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Amount *</Label>
-                <Input type="number" step="0.01" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} placeholder="-15.99 or 3000" />
-                <p className="text-[10px] text-muted-foreground">Negative = expense, positive = income</p>
+                <Input type="number" step="0.01" min="0" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} placeholder="15.99" />
+                
               </div>
               <div className="space-y-2">
                 <Label>Frequency</Label>
@@ -384,13 +395,20 @@ const Recurring = () => {
           <DialogHeader><DialogTitle className="font-display">Edit Recurring Transaction</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
+              <Label>Type</Label>
+              <div className="flex border rounded-lg overflow-hidden">
+                <button type="button" onClick={() => setEditForm(f => ({ ...f, type: 'expense' }))} className={cn('flex-1 px-3 py-2 text-sm font-medium transition-colors', editForm.type === 'expense' ? 'bg-destructive text-destructive-foreground' : 'hover:bg-muted')}>Expense</button>
+                <button type="button" onClick={() => setEditForm(f => ({ ...f, type: 'income' }))} className={cn('flex-1 px-3 py-2 text-sm font-medium transition-colors', editForm.type === 'income' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}>Income</button>
+              </div>
+            </div>
+            <div className="space-y-2">
               <Label>Merchant / Name</Label>
               <Input value={editForm.merchant} onChange={e => setEditForm(f => ({ ...f, merchant: e.target.value }))} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Amount</Label>
-                <Input type="number" step="0.01" value={editForm.amount} onChange={e => setEditForm(f => ({ ...f, amount: e.target.value }))} />
+                <Input type="number" step="0.01" min="0" value={editForm.amount} onChange={e => setEditForm(f => ({ ...f, amount: e.target.value }))} />
               </div>
               <div className="space-y-2">
                 <Label>Frequency</Label>
