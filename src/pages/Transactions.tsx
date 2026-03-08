@@ -97,7 +97,7 @@ const Transactions = () => {
   const [merchantOpen, setMerchantOpen] = useState(false);
   const [scanLoading, setScanLoading] = useState(false);
   const receiptInputRef = useRef<HTMLInputElement>(null);
-
+  const [viewFilter, setViewFilter] = useState<TxnViewFilter>('all');
   const handleScanReceipt = useCallback(async (file: File) => {
     setScanLoading(true);
     try {
