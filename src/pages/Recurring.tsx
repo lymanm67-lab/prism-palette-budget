@@ -316,13 +316,20 @@ const Recurring = () => {
           <DialogHeader><DialogTitle className="font-display">Add Recurring Transaction</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
+              <Label>Type</Label>
+              <div className="flex border rounded-lg overflow-hidden">
+                <button type="button" onClick={() => setForm(f => ({ ...f, type: 'expense' }))} className={cn('flex-1 px-3 py-2 text-sm font-medium transition-colors', form.type === 'expense' ? 'bg-destructive text-destructive-foreground' : 'hover:bg-muted')}>Expense</button>
+                <button type="button" onClick={() => setForm(f => ({ ...f, type: 'income' }))} className={cn('flex-1 px-3 py-2 text-sm font-medium transition-colors', form.type === 'income' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}>Income</button>
+              </div>
+            </div>
+            <div className="space-y-2">
               <Label>Merchant / Name *</Label>
               <Input value={form.merchant} onChange={e => setForm(f => ({ ...f, merchant: e.target.value }))} placeholder="Netflix, Rent, etc." />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Amount *</Label>
-                <Input type="number" step="0.01" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} placeholder="-15.99 or 3000" />
+                <Input type="number" step="0.01" min="0" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} placeholder="15.99" />
                 <p className="text-[10px] text-muted-foreground">Negative = expense, positive = income</p>
               </div>
               <div className="space-y-2">
