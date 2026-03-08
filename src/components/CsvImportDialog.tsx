@@ -542,7 +542,7 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept=".csv,.CSV,.ofx,.OFX,.qbo,.QBO,.qfx,.QFX"
+                  accept=".csv,.CSV,.ofx,.OFX,.qbo,.QBO,.qfx,.QFX,.qif,.QIF"
                   multiple
                   onChange={handleFileUpload}
                   className="hidden"
