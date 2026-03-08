@@ -907,6 +907,51 @@ export type Database = {
         }
         Relationships: []
       }
+      subcategories: {
+        Row: {
+          category_id: string
+          color: string
+          created_at: string
+          household_id: string
+          id: string
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          category_id: string
+          color?: string
+          created_at?: string
+          household_id: string
+          id?: string
+          name: string
+          sort_order?: number
+        }
+        Update: {
+          category_id?: string
+          color?: string
+          created_at?: string
+          household_id?: string
+          id?: string
+          name?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subcategories_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subcategories_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscriptions: {
         Row: {
           average_amount: number

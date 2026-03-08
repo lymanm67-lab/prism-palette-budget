@@ -207,6 +207,69 @@ export function useDeleteCategory() {
   });
 }
 
+// ==================== SUBCATEGORIES ====================
+export function useSubcategories() {
+  const { household } = useHousehold();
+  return useQuery({
+    queryKey: ['subcategories', household?.id],
+    enabled: !!household,
+    queryFn: async () => {
+      const { data, error } = await (supabase
+        .from('subcategories') as any)
+        .select('*')
+        .eq('household_id', household!.id)
+        .order('sort_order');
+      if (error) throw error;
+      return data as { id: string; category_id: string; household_id: string; name: string; color: string; sort_order: number; created_at: string }[];
+    },
+  });
+}
+
+export function useCreateSubcategory() {
+  const qc = useQueryClient();
+  const { household } = useHousehold();
+  return useMutation({
+    mutationFn: async (sub: { name: string; color: string; category_id: string; sort_order?: number }) => {
+      const { data, error } = await (supabase
+        .from('subcategories') as any)
+        .insert({ ...sub, household_id: household!.id })
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['subcategories'] }),
+  });
+}
+
+export function useUpdateSubcategory() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: { id: string; name?: string; color?: string; category_id?: string; sort_order?: number }) => {
+      const { data, error } = await (supabase
+        .from('subcategories') as any)
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['subcategories'] }),
+  });
+}
+
+export function useDeleteSubcategory() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await (supabase.from('subcategories') as any).delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['subcategories'] }),
+  });
+}
+
 // ==================== TRANSACTIONS ====================
 export function useTransactions() {
   const { household } = useHousehold();
