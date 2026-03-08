@@ -102,6 +102,8 @@ const App = () => (
               <Route path="/investments" element={<Investments />} />
               <Route path="/net-worth" element={<NetWorth />} />
               <Route path="/recurring" element={<Recurring />} />
+              <Route path="/subscriptions" element={<Subscriptions />} />
+              <Route path="/forecast" element={<Forecast />} />
               <Route path="/calculators" element={<Calculators />} />
               <Route path="/roadmap" element={<PrismRoadmap />} />
               <Route path="/about" element={<About />} />
