@@ -1256,9 +1256,12 @@ const Transactions = () => {
                                   <AlertDialogAction
                                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                     onClick={async () => {
-                                      await supabase.from('transactions').delete().eq('id', txn.id);
-                                      qc.invalidateQueries({ queryKey: ['transactions'] });
-                                      toast.success('Transaction deleted');
+                                      const txnId = txn.id;
+                                      await softDelete([txnId]);
+                                      toast.success('Moved to trash', {
+                                        action: { label: 'Undo', onClick: async () => { await restoreTransactions([txnId]); toast.success('Transaction restored'); } },
+                                        duration: 10000,
+                                      });
                                     }}
                                   >
                                     Delete
