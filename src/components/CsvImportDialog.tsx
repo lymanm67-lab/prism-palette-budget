@@ -150,7 +150,7 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
     for (const file of fileArray) {
       const fileType = detectFinancialFileType(file.name);
       if (!fileType) {
-        toast({ title: `Unsupported: ${file.name}`, description: 'Only .csv, .ofx, .qbo, .qfx files supported.', variant: 'destructive' });
+        toast({ title: `Unsupported: ${file.name}`, description: 'Only .csv, .ofx, .qbo, .qfx, .qif files supported.', variant: 'destructive' });
         continue;
       }
 
@@ -175,8 +175,35 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
             autoDetectedAccountId: autoAccount,
             previewRuleMatches: new Map(),
           });
+        } else if (fileType === 'qif') {
+          const result = parseQifText(text);
+          const rows: ParsedRow[] = result.transactions.map(t => ({
+            date: t.date,
+            merchant: extractSmartMerchant(t.merchant, t.memo),
+            amount: t.amount,
+            category: t.category,
+            notes: t.memo,
+            originalRow: { date: t.date, merchant: t.merchant, amount: String(t.amount), memo: t.memo, category: t.category, checkNum: t.checkNum },
+          }));
+          const dupes = findDuplicates(rows.map(r => ({ date: r.date, amount: r.amount, merchant: r.merchant })));
+          const selected = new Set(rows.map((_, i) => i).filter(i => !dupes.has(i)));
+          const autoAccount = autoDetectAccount(file.name, null);
+
+          newParsedFiles.push({
+            fileName: file.name,
+            fileMode: 'qif',
+            csvResult: null,
+            ofxResult: null,
+            mapping: { date: '', merchant: '', amount: '', category: '', notes: '' },
+            parsedRows: rows,
+            selectedRows: selected,
+            duplicateRows: dupes,
+            targetAccountId: autoAccount || '',
+            autoDetectedAccountId: autoAccount,
+            previewRuleMatches: new Map(),
+          });
         } else {
-          const result = parseOfxText(text, fileType);
+          const result = parseOfxText(text, fileType as 'ofx' | 'qbo' | 'qfx');
           const rows: ParsedRow[] = result.transactions.map(t => ({
             date: t.date,
             merchant: extractSmartMerchant(t.merchant, t.memo),
