@@ -11,8 +11,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useBudgets, useCategories, useCategoryGroups, useTransactions, useUpsertBudget, useDeleteBudget, useCreateCategory } from '@/hooks/use-finance-data';
+import { useSmartBudget } from '@/hooks/use-financial-intelligence';
 import { useCurrency } from '@/hooks/use-currency';
-import { Loader2, Plus, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Eye, Settings2, TrendingUp, AlertTriangle, CheckCircle2, PiggyBank } from 'lucide-react';
+import { Loader2, Plus, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Eye, Settings2, TrendingUp, AlertTriangle, CheckCircle2, PiggyBank, Sparkles } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 import { getDaysInMonth } from 'date-fns';
 import PageOverview from '@/components/PageOverview';
@@ -84,6 +86,9 @@ const Budgets = () => {
   const [viewTab, setViewTab] = useState<'budget' | 'forecast'>('budget');
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [quickAddForm, setQuickAddForm] = useState({ name: '', group_id: '', color: '#7c5cf5' });
+  const [smartBudgetOpen, setSmartBudgetOpen] = useState(false);
+  const [smartSuggestions, setSmartSuggestions] = useState<{ category_id: string; category_name: string; monthly_average: number; suggested_budget: number; selected: boolean }[]>([]);
+  const smartBudget = useSmartBudget();
 
   const toggleSection = (key: string) => setOpenSections(s => ({ ...s, [key]: !s[key] }));
 
@@ -422,6 +427,29 @@ const Budgets = () => {
           </Tooltip>
           <Button variant="outline" className="gap-2" onClick={() => { setQuickAddForm({ name: '', group_id: '', color: '#7c5cf5' }); setQuickAddOpen(true); }}>
             <Plus className="h-4 w-4" /> New Category
+          </Button>
+          <Button
+            variant="outline"
+            className="gap-2"
+            disabled={smartBudget.isPending}
+            onClick={async () => {
+              try {
+                const result = await smartBudget.mutateAsync();
+                if (result.suggestions?.length) {
+                  setSmartSuggestions(result.suggestions.map((s: any) => ({ ...s, selected: true })));
+                  setSmartBudgetOpen(true);
+                } else {
+                  // No suggestions
+                  setSmartSuggestions([]);
+                  setSmartBudgetOpen(true);
+                }
+              } catch (e) {
+                console.error('Smart budget error:', e);
+              }
+            }}
+          >
+            {smartBudget.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+            Smart Budget
           </Button>
         </div>
       </div>
@@ -867,6 +895,56 @@ const Budgets = () => {
               {createCategory.isPending ? 'Creating...' : 'Create Category & Add Budget'}
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+      {/* Smart Budget Suggestions Dialog */}
+      <Dialog open={smartBudgetOpen} onOpenChange={setSmartBudgetOpen}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary" /> Smart Budget Suggestions</DialogTitle>
+          </DialogHeader>
+          {smartSuggestions.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4">Not enough spending history to generate suggestions. Add more transactions first.</p>
+          ) : (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">Based on your last 90 days of spending. Select which categories to apply:</p>
+              <div className="space-y-2">
+                {smartSuggestions.map((s, i) => (
+                  <div key={s.category_id} className="flex items-center gap-3 py-2 px-3 rounded-lg border border-border hover:bg-muted/30 transition-colors">
+                    <Checkbox
+                      checked={s.selected}
+                      onCheckedChange={(checked) => {
+                        setSmartSuggestions(prev => prev.map((item, idx) => idx === i ? { ...item, selected: !!checked } : item));
+                      }}
+                    />
+                    <span className="flex-1 text-sm font-medium">{s.category_name}</span>
+                    <div className="text-right">
+                      <div className="text-sm font-semibold tabular-nums">{formatCurrency(s.suggested_budget)}</div>
+                      <div className="text-xs text-muted-foreground">avg {formatCurrency(s.monthly_average)}/mo</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="flex items-center justify-between pt-2 border-t border-border">
+                <div className="text-sm text-muted-foreground">
+                  {smartSuggestions.filter(s => s.selected).length} of {smartSuggestions.length} selected
+                </div>
+                <Button
+                  disabled={upsertBudget.isPending || smartSuggestions.filter(s => s.selected).length === 0}
+                  onClick={async () => {
+                    const selected = smartSuggestions.filter(s => s.selected);
+                    for (const s of selected) {
+                      await upsertBudget.mutateAsync({ category_id: s.category_id, month, planned_amount: s.suggested_budget });
+                    }
+                    setSmartBudgetOpen(false);
+                  }}
+                >
+                  {upsertBudget.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                  Apply {smartSuggestions.filter(s => s.selected).length} Budgets
+                </Button>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </motion.div>
