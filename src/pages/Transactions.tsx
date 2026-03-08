@@ -1021,6 +1021,19 @@ const Transactions = () => {
         </Card>
       ) : (
         <div className="space-y-1">
+          {/* Master select-all */}
+          <div className="flex items-center gap-2 px-3 py-1.5">
+            <Checkbox
+              checked={filtered.length > 0 && filtered.every(t => selected.has(t.id))}
+              onCheckedChange={(checked) => {
+                setSelected(checked ? new Set(filtered.map(t => t.id)) : new Set());
+              }}
+              className="shrink-0"
+            />
+            <span className="text-xs font-medium text-muted-foreground">
+              {selected.size === filtered.length && filtered.length > 0 ? `All ${filtered.length} selected` : `Select all (${filtered.length})`}
+            </span>
+          </div>
           {grouped.map(group => (
             <div key={group.date}>
               {/* Date header */}
