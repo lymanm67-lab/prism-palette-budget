@@ -383,6 +383,16 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
                 <p className="font-medium text-foreground">💡 How to export from your bank:</p>
                 <p>Most banks offer CSV or OFX/QFX download under "Download Transactions" or "Export Statements".</p>
                 <p>Quicken/QuickBooks: File → Export → QFX/QBO. Many banks also support direct QFX download.</p>
+                <p className="pt-1">
+                  <a
+                    href="/samples/sample-transactions.ofx"
+                    download="sample-transactions.ofx"
+                    className="text-primary underline hover:text-primary/80 font-medium"
+                  >
+                    ↓ Download sample OFX file
+                  </a>
+                  {' '}to test the import flow (10 transactions, checking account).
+                </p>
               </div>
             </motion.div>
           )}
