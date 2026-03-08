@@ -345,10 +345,9 @@ const Transactions = () => {
     const isXfer = form.is_transfer || isTransferMerchant(form.merchant);
     // Auto-apply category from merchant history if user didn't pick one
     let categoryId = form.category_id || null;
-    let needsReview = false;
+    let needsReview = true; // All new transactions need review/approval
     if (!categoryId && form.merchant && merchantCategoryMap.has(form.merchant.trim())) {
       categoryId = merchantCategoryMap.get(form.merchant.trim())!;
-      needsReview = true; // Mark for user review
     }
     const result = await createTransaction.mutateAsync({
       date: form.date, merchant: form.merchant || null, amount: finalAmount,
