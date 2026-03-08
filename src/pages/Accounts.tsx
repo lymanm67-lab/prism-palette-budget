@@ -219,6 +219,7 @@ const Accounts = () => {
           </Card>
         </motion.div>
       ))}
+      <CsvImportDialog open={importOpen} onOpenChange={setImportOpen} />
     </motion.div>
   );
 };
