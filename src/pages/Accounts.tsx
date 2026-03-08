@@ -11,11 +11,12 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useAccounts, useCreateAccount, useDeleteAccount } from '@/hooks/use-finance-data';
 import { formatDate } from '@/lib/seed-data';
 import { useCurrency } from '@/hooks/use-currency';
-import { Plus, RefreshCw, Landmark, CreditCard, TrendingUp, PiggyBank, Car, Loader2, Trash2 } from 'lucide-react';
+import { Plus, RefreshCw, Landmark, CreditCard, TrendingUp, PiggyBank, Car, Loader2, Trash2, Upload } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 import PlaidLinkButton from '@/components/PlaidLinkButton';
 import MxConnectButton from '@/components/MxConnectButton';
 import PageOverview from '@/components/PageOverview';
+import CsvImportDialog from '@/components/CsvImportDialog';
 
 type AccountType = Database['public']['Enums']['account_type'];
 
@@ -34,6 +35,7 @@ const Accounts = () => {
   const createAccount = useCreateAccount();
   const deleteAccount = useDeleteAccount();
   const [open, setOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [form, setForm] = useState({ name: '', institution: '', account_type: 'checking' as AccountType, balance: '' });
 
   const grouped = (accounts || []).reduce((acc, acct) => {
@@ -93,6 +95,9 @@ const Accounts = () => {
           ]}
         />
         <div className="flex flex-wrap gap-2">
+          <Button variant="outline" className="gap-2" onClick={() => setImportOpen(true)}>
+            <Upload className="h-4 w-4" /> Import Transactions
+          </Button>
           <PlaidLinkButton />
           <MxConnectButton />
           <Dialog open={open} onOpenChange={setOpen}>
@@ -214,6 +219,7 @@ const Accounts = () => {
           </Card>
         </motion.div>
       ))}
+      <CsvImportDialog open={importOpen} onOpenChange={setImportOpen} />
     </motion.div>
   );
 };

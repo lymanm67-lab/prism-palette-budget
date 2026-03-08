@@ -23,11 +23,13 @@ import {
   type CsvParseResult,
   type DetectedFormat,
 } from '@/lib/csv-parser';
+import { parseOfxText, detectFinancialFileType, type OfxParseResult, type OfxTransaction } from '@/lib/ofx-parser';
 import { formatCurrency } from '@/lib/seed-data';
 import { Upload, FileSpreadsheet, ArrowRight, ArrowLeft, Check, AlertCircle, Loader2, Info, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDuplicateDetection } from '@/hooks/use-duplicate-detection';
 
+type FileMode = 'csv' | 'ofx';
 type Step = 'upload' | 'map' | 'preview' | 'importing' | 'done';
 
 interface CsvImportDialogProps {
@@ -36,6 +38,7 @@ interface CsvImportDialogProps {
 }
 
 const SUPPORTED_FORMATS: { name: string; columns: string }[] = [
+  { name: 'OFX / QFX / QBO', columns: 'Open Financial Exchange — Quicken, QuickBooks, most banks' },
   { name: 'Chase Bank', columns: 'Transaction Date, Post Date, Description, Amount, Category' },
   { name: 'Bank of America', columns: 'Date, Description, Amount, Running Bal.' },
   { name: 'Wells Fargo', columns: 'Date, Amount, Description, Check #' },
@@ -57,7 +60,9 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
   const { findDuplicates } = useDuplicateDetection();
 
   const [step, setStep] = useState<Step>('upload');
+  const [fileMode, setFileMode] = useState<FileMode>('csv');
   const [csvResult, setCsvResult] = useState<CsvParseResult | null>(null);
+  const [ofxResult, setOfxResult] = useState<OfxParseResult | null>(null);
   const [mapping, setMapping] = useState<ColumnMapping>({ date: '', merchant: '', amount: '', category: '', notes: '' });
   const [targetAccountId, setTargetAccountId] = useState('');
   const [parsedRows, setParsedRows] = useState<ParsedRow[]>([]);
@@ -72,7 +77,9 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
 
   const reset = () => {
     setStep('upload');
+    setFileMode('csv');
     setCsvResult(null);
+    setOfxResult(null);
     setMapping({ date: '', merchant: '', amount: '', category: '', notes: '' });
     setTargetAccountId('');
     setParsedRows([]);
@@ -90,27 +97,61 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
   };
 
   const processFile = useCallback((file: File) => {
-    if (!file.name.toLowerCase().endsWith('.csv')) {
-      toast({ title: 'Invalid file type', description: 'Please upload a .csv file. Export your transactions from your bank or accounting software as CSV.', variant: 'destructive' });
+    const fileType = detectFinancialFileType(file.name);
+    if (!fileType) {
+      toast({ title: 'Unsupported file type', description: 'Please upload a .csv, .ofx, .qbo, or .qfx file.', variant: 'destructive' });
       return;
     }
     const reader = new FileReader();
     reader.onload = (evt) => {
       try {
         const text = evt.target?.result as string;
-        const result = parseCsvText(text);
-        setCsvResult(result);
-        const defaultMap = getDefaultMapping(result.headers, result.detectedFormat);
-        setMapping(defaultMap);
-        setStep('map');
-        const label = FORMAT_LABELS[result.detectedFormat];
-        toast({ title: `Detected: ${label}`, description: `${result.rows.length} rows found. Verify column mapping.` });
+        if (fileType === 'csv') {
+          setFileMode('csv');
+          const result = parseCsvText(text);
+          setCsvResult(result);
+          const defaultMap = getDefaultMapping(result.headers, result.detectedFormat);
+          setMapping(defaultMap);
+          setStep('map');
+          const label = FORMAT_LABELS[result.detectedFormat];
+          toast({ title: `Detected: ${label}`, description: `${result.rows.length} rows found. Verify column mapping.` });
+        } else {
+          // OFX/QBO/QFX
+          setFileMode('ofx');
+          const result = parseOfxText(text, fileType);
+          setOfxResult(result);
+          // Convert OFX transactions directly to ParsedRows for preview
+          const rows: ParsedRow[] = result.transactions.map(t => ({
+            date: t.date,
+            merchant: t.merchant,
+            amount: t.amount,
+            category: '',
+            notes: t.memo,
+            originalRow: { date: t.date, merchant: t.merchant, amount: String(t.amount), memo: t.memo, fitId: t.fitId, type: t.type },
+          }));
+          setParsedRows(rows);
+          // Detect duplicates
+          const dupes = findDuplicates(rows.map(r => ({ date: r.date, amount: r.amount, merchant: r.merchant })));
+          setDuplicateRows(dupes);
+          const selected = new Set(rows.map((_, i) => i).filter(i => !dupes.has(i)));
+          setSelectedRows(selected);
+          // Skip mapping step — go straight to preview, but need account selection
+          setStep('map');
+          const typeLabel = fileType.toUpperCase();
+          toast({ 
+            title: `${typeLabel} file loaded`, 
+            description: `${result.transactions.length} transactions found${result.accountId ? ` from account ${result.accountId}` : ''}. Select target account.` 
+          });
+          if (dupes.size > 0) {
+            toast({ title: `${dupes.size} potential duplicate(s) found`, description: 'Duplicates are deselected by default.' });
+          }
+        }
       } catch (err: any) {
         toast({ title: 'Parse error', description: err.message, variant: 'destructive' });
       }
     };
     reader.readAsText(file);
-  }, [toast]);
+  }, [toast, findDuplicates]);
 
   const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -252,7 +293,7 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
 
         {/* Step indicators */}
         <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-          {['Upload', 'Map Columns', 'Preview & Import'].map((label, i) => {
+          {['Upload', fileMode === 'ofx' ? 'Select Account' : 'Map Columns', 'Preview & Import'].map((label, i) => {
             const stepIdx = ['upload', 'map', 'preview', 'importing', 'done'].indexOf(step);
             const thisIdx = i;
             const isActive = (thisIdx === 0 && stepIdx === 0) || (thisIdx === 1 && stepIdx === 1) || (thisIdx === 2 && stepIdx >= 2);
@@ -288,15 +329,15 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
               >
                 <Upload className={cn('mx-auto h-10 w-10 mb-3', dragging ? 'text-primary' : 'text-muted-foreground')} />
                 <p className="font-medium mb-1">
-                  {dragging ? 'Drop your file here' : 'Drag & drop your CSV file or click to browse'}
+                  {dragging ? 'Drop your file here' : 'Drag & drop your file or click to browse'}
                 </p>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Supports bank statements, QuickBooks, Mint, Monarch, YNAB, and more
+                  Supports CSV, OFX, QBO, and QFX files from banks and financial software
                 </p>
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept=".csv,.CSV"
+                  accept=".csv,.CSV,.ofx,.OFX,.qbo,.QBO,.qfx,.QFX"
                   onChange={handleFileUpload}
                   className="hidden"
                 />
@@ -340,14 +381,67 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
 
               <div className="rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground space-y-1">
                 <p className="font-medium text-foreground">💡 How to export from your bank:</p>
-                <p>Most banks offer CSV export under "Download Transactions" or "Export Statements" in their online banking portal.</p>
-                <p>QuickBooks: Reports → Transaction Detail → Export to CSV/Excel.</p>
+                <p>Most banks offer CSV or OFX/QFX download under "Download Transactions" or "Export Statements".</p>
+                <p>Quicken/QuickBooks: File → Export → QFX/QBO. Many banks also support direct QFX download.</p>
               </div>
             </motion.div>
           )}
 
-          {/* STEP 2: Column Mapping */}
-          {step === 'map' && csvResult && (
+          {/* STEP 2: Column Mapping (CSV) or Account Selection (OFX) */}
+          {step === 'map' && fileMode === 'ofx' && ofxResult && (
+            <motion.div key="map-ofx" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge className="bg-primary/10 text-primary border-primary/20">
+                  {ofxResult.fileType.toUpperCase()} File
+                </Badge>
+                <span className="text-sm text-muted-foreground">{ofxResult.transactions.length} transactions found</span>
+                {ofxResult.accountId && (
+                  <Badge variant="outline" className="text-xs">Account: {ofxResult.accountId}</Badge>
+                )}
+                {duplicateRows.size > 0 && (
+                  <Badge variant="outline" className="gap-1 text-prism-amber border-prism-amber/30">
+                    <AlertTriangle className="h-3 w-3" /> {duplicateRows.size} duplicate{duplicateRows.size > 1 ? 's' : ''}
+                  </Badge>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                <Label>Import into Account <span className="text-destructive">*</span></Label>
+                <Select value={targetAccountId} onValueChange={setTargetAccountId}>
+                  <SelectTrigger><SelectValue placeholder="Select account" /></SelectTrigger>
+                  <SelectContent>
+                    {(accounts || []).map(a => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Sample data preview */}
+              {parsedRows.length > 0 && (
+                <div className="rounded-lg border bg-muted/30 p-3">
+                  <p className="text-xs font-medium mb-2 text-muted-foreground">Sample transaction:</p>
+                  <div className="flex flex-wrap gap-3 text-xs">
+                    <span><span className="font-medium text-foreground">Date:</span> {parsedRows[0].date}</span>
+                    <span><span className="font-medium text-foreground">Merchant:</span> {parsedRows[0].merchant || '—'}</span>
+                    <span><span className="font-medium text-foreground">Amount:</span> {formatCurrency(parsedRows[0].amount)}</span>
+                    {parsedRows[0].notes && <span><span className="font-medium text-foreground">Memo:</span> {parsedRows[0].notes}</span>}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex justify-between">
+                <Button variant="outline" onClick={() => { reset(); setStep('upload'); }} className="gap-1.5"><ArrowLeft className="h-4 w-4" /> Back</Button>
+                <Button
+                  onClick={() => setStep('preview')}
+                  disabled={!targetAccountId}
+                  className="gap-1.5"
+                >
+                  Preview <ArrowRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </motion.div>
+          )}
+
+          {step === 'map' && fileMode === 'csv' && csvResult && (
             <motion.div key="map" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
               <div className="flex items-center gap-2 flex-wrap">
                 <Badge className="bg-primary/10 text-primary border-primary/20">
