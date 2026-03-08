@@ -28,6 +28,7 @@ import { formatCurrency } from '@/lib/seed-data';
 import { Upload, FileSpreadsheet, ArrowRight, ArrowLeft, Check, AlertCircle, Loader2, Info, AlertTriangle, Sparkles, File, X, Brain } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDuplicateDetection } from '@/hooks/use-duplicate-detection';
+import { isTransferMerchant } from '@/lib/transfer-detection';
 
 type FileMode = 'csv' | 'ofx';
 type Step = 'upload' | 'map' | 'preview' | 'importing' | 'done';

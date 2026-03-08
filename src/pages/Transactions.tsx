@@ -151,9 +151,6 @@ const Transactions = () => {
   }, [categories, supabase]);
 
   // Transfer detection — use shared utility
-  const isTransferMerchantFn = useCallback((merchant: string) => {
-    return isTransferMerchant(merchant);
-  }, []);
 
   // Unique merchants from existing transactions for autocomplete
   const uniqueMerchants = useMemo(() => {
