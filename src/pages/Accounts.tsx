@@ -95,6 +95,9 @@ const Accounts = () => {
           ]}
         />
         <div className="flex flex-wrap gap-2">
+          <Button variant="outline" className="gap-2" onClick={() => setImportOpen(true)}>
+            <Upload className="h-4 w-4" /> Import Transactions
+          </Button>
           <PlaidLinkButton />
           <MxConnectButton />
           <Dialog open={open} onOpenChange={setOpen}>
