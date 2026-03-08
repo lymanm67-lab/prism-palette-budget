@@ -50,10 +50,14 @@ export default function CategoryCombobox({ value, onValueChange, placeholder = '
   const handleAddNew = async () => {
     if (!search.trim() || !groups?.length) return;
     try {
+      // Pick a sensible default group — prefer "Shopping" or first flexible personal group, never Housing
+      const defaultGroup = groups.find(g => g.name === 'Shopping')
+        || groups.find(g => (g as any).expense_type === 'flexible' && (g as any).budget_type === 'personal')
+        || groups[groups.length - 1];
       const result = await createCategory.mutateAsync({
         name: search.trim(),
         color: '#7c5cf5',
-        group_id: groups[0].id,
+        group_id: defaultGroup.id,
       });
       onValueChange(result.id);
       setSearch('');
