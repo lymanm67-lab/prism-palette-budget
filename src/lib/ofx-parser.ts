@@ -129,13 +129,14 @@ function parseOfxDate(dateStr: string): string | null {
 /**
  * Detect file type from extension
  */
-export function detectFinancialFileType(filename: string): 'csv' | 'ofx' | 'qbo' | 'qfx' | null {
+export function detectFinancialFileType(filename: string): 'csv' | 'ofx' | 'qbo' | 'qfx' | 'qif' | null {
   const ext = filename.toLowerCase().split('.').pop();
   switch (ext) {
     case 'csv': return 'csv';
     case 'ofx': return 'ofx';
     case 'qbo': return 'qbo';
     case 'qfx': return 'qfx';
+    case 'qif': return 'qif';
     default: return null;
   }
 }

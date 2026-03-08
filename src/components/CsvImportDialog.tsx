@@ -24,6 +24,7 @@ import {
   type DetectedFormat,
 } from '@/lib/csv-parser';
 import { parseOfxText, detectFinancialFileType, type OfxParseResult, type OfxTransaction } from '@/lib/ofx-parser';
+import { parseQifText, type QifParseResult } from '@/lib/qif-parser';
 import { formatCurrency } from '@/lib/seed-data';
 import { Upload, FileSpreadsheet, ArrowRight, ArrowLeft, Check, AlertCircle, Loader2, Info, AlertTriangle, Sparkles, File, X, Brain } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -31,7 +32,7 @@ import { useDuplicateDetection } from '@/hooks/use-duplicate-detection';
 import { isTransferMerchant } from '@/lib/transfer-detection';
 import { extractSmartMerchant } from '@/lib/merchant-extraction';
 
-type FileMode = 'csv' | 'ofx';
+type FileMode = 'csv' | 'ofx' | 'qif';
 type Step = 'upload' | 'map' | 'preview' | 'importing' | 'done';
 
 interface CsvImportDialogProps {
@@ -40,6 +41,7 @@ interface CsvImportDialogProps {
 }
 
 const SUPPORTED_FORMATS: { name: string; columns: string }[] = [
+  { name: 'QIF', columns: 'Quicken Interchange Format — Quicken, many banks' },
   { name: 'OFX / QFX / QBO', columns: 'Open Financial Exchange — Quicken, QuickBooks, most banks' },
   { name: 'Chase Bank', columns: 'Transaction Date, Post Date, Description, Amount, Category' },
   { name: 'Bank of America', columns: 'Date, Description, Amount, Running Bal.' },
@@ -148,7 +150,7 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
     for (const file of fileArray) {
       const fileType = detectFinancialFileType(file.name);
       if (!fileType) {
-        toast({ title: `Unsupported: ${file.name}`, description: 'Only .csv, .ofx, .qbo, .qfx files supported.', variant: 'destructive' });
+        toast({ title: `Unsupported: ${file.name}`, description: 'Only .csv, .ofx, .qbo, .qfx, .qif files supported.', variant: 'destructive' });
         continue;
       }
 
@@ -173,8 +175,35 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
             autoDetectedAccountId: autoAccount,
             previewRuleMatches: new Map(),
           });
+        } else if (fileType === 'qif') {
+          const result = parseQifText(text);
+          const rows: ParsedRow[] = result.transactions.map(t => ({
+            date: t.date,
+            merchant: extractSmartMerchant(t.merchant, t.memo),
+            amount: t.amount,
+            category: t.category,
+            notes: t.memo,
+            originalRow: { date: t.date, merchant: t.merchant, amount: String(t.amount), memo: t.memo, category: t.category, checkNum: t.checkNum },
+          }));
+          const dupes = findDuplicates(rows.map(r => ({ date: r.date, amount: r.amount, merchant: r.merchant })));
+          const selected = new Set(rows.map((_, i) => i).filter(i => !dupes.has(i)));
+          const autoAccount = autoDetectAccount(file.name, null);
+
+          newParsedFiles.push({
+            fileName: file.name,
+            fileMode: 'qif',
+            csvResult: null,
+            ofxResult: null,
+            mapping: { date: '', merchant: '', amount: '', category: '', notes: '' },
+            parsedRows: rows,
+            selectedRows: selected,
+            duplicateRows: dupes,
+            targetAccountId: autoAccount || '',
+            autoDetectedAccountId: autoAccount,
+            previewRuleMatches: new Map(),
+          });
         } else {
-          const result = parseOfxText(text, fileType);
+          const result = parseOfxText(text, fileType as 'ofx' | 'qbo' | 'qfx');
           const rows: ParsedRow[] = result.transactions.map(t => ({
             date: t.date,
             merchant: extractSmartMerchant(t.merchant, t.memo),
@@ -222,7 +251,7 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
       // Multiple files or all OFX: go to account assignment / preview
       // For OFX files, compute rule matches
       for (const pf of newParsedFiles) {
-        if (pf.fileMode === 'ofx' && pf.parsedRows.length > 0) {
+        if ((pf.fileMode === 'ofx' || pf.fileMode === 'qif') && pf.parsedRows.length > 0) {
           await computeRuleMatchesForFile(pf);
         }
       }
@@ -513,7 +542,7 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept=".csv,.CSV,.ofx,.OFX,.qbo,.QBO,.qfx,.QFX"
+                  accept=".csv,.CSV,.ofx,.OFX,.qbo,.QBO,.qfx,.QFX,.qif,.QIF"
                   multiple
                   onChange={handleFileUpload}
                   className="hidden"
