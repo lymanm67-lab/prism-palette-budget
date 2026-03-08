@@ -27,6 +27,7 @@ const NAV_SECTIONS = [
       { to: '/cash-flow', icon: Wallet, label: 'Cash Flow', color: 'text-prism-teal' },
       { to: '/budgets', icon: PiggyBank, label: 'Budgets', color: 'text-prism-amber' },
       { to: '/recurring', icon: RepeatIcon, label: 'Recurring', color: 'text-prism-sky' },
+      { to: '/subscriptions', icon: CreditCard, label: 'Subscriptions', color: 'text-prism-violet' },
       { to: '/categories', icon: Tags, label: 'Categories', color: 'text-prism-lime' },
     ],
   },
