@@ -568,7 +568,7 @@ const Transactions = () => {
 
           {/* Import CSV button */}
           <Button variant="outline" size="sm" className="gap-2" onClick={() => setCsvOpen(true)}>
-            <Upload className="h-4 w-4" /> Import CSV
+            <Upload className="h-4 w-4" /> Import Transactions
           </Button>
 
           {/* Add transaction button */}
