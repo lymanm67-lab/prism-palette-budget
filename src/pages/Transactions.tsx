@@ -240,8 +240,25 @@ const Transactions = () => {
   }, [transactions]);
 
   const duplicateCount = duplicateIds.size;
+  const needsReviewCount = useMemo(() => (transactions || []).filter(t => (t as any).needs_review).length, [transactions]);
 
   const activeFilterCount = Object.values(filters).filter(Boolean).length;
+
+  const approveTransaction = async (id: string) => {
+    await supabase.from('transactions').update({ needs_review: false } as any).eq('id', id);
+    qc.invalidateQueries({ queryKey: ['transactions'] });
+    toast.success('Transaction approved');
+  };
+
+  const approveAllReviewed = async () => {
+    const reviewIds = (transactions || []).filter(t => (t as any).needs_review).map(t => t.id);
+    if (!reviewIds.length) return;
+    for (const id of reviewIds) {
+      await supabase.from('transactions').update({ needs_review: false } as any).eq('id', id);
+    }
+    qc.invalidateQueries({ queryKey: ['transactions'] });
+    toast.success(`Approved ${reviewIds.length} transactions`);
+  };
 
   // Filter + sort
   const filtered = useMemo(() => {
