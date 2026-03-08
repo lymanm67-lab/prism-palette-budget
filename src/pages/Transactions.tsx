@@ -31,6 +31,7 @@ import PageOverview from '@/components/PageOverview';
 import { useDuplicateDetection } from '@/hooks/use-duplicate-detection';
 
 import { cn } from '@/lib/utils';
+import { isTransferMerchant } from '@/lib/transfer-detection';
 import { format, parseISO } from 'date-fns';
 
 // Receipt preview component with signed URL
