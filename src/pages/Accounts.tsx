@@ -14,6 +14,7 @@ import { useCurrency } from '@/hooks/use-currency';
 import { Plus, RefreshCw, Landmark, CreditCard, TrendingUp, PiggyBank, Car, Loader2, Trash2 } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 import PlaidLinkButton from '@/components/PlaidLinkButton';
+import MxConnectButton from '@/components/MxConnectButton';
 import PageOverview from '@/components/PageOverview';
 
 type AccountType = Database['public']['Enums']['account_type'];
@@ -91,8 +92,9 @@ const Accounts = () => {
             { label: 'Marcus Savings', value: '$12,500.00', badge: 'Savings', color: '#14b8a6' },
           ]}
         />
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <PlaidLinkButton />
+          <MxConnectButton />
           <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button className="gap-2 prism-gradient text-white border-0 hover:opacity-90"><Plus className="h-4 w-4" /> Add Account</Button>
