@@ -21,7 +21,7 @@ import {
   Search, Plus, Loader2, Upload, Receipt, Trash2, Tags,
   ArrowRightLeft, SlidersHorizontal, CalendarIcon, ChevronRight,
   ArrowUpDown, X, Pencil, Sparkles, Landmark, Check, Camera, ImageIcon,
-  Copy, AlertTriangle, Undo2, RotateCcw,
+  Copy, AlertTriangle, Undo2, RotateCcw, CheckCircle2,
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
