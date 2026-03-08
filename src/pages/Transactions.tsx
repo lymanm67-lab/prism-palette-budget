@@ -1216,6 +1216,25 @@ const Transactions = () => {
         </motion.div>
       )}
 
+      {/* Needs Review banner */}
+      {viewFilter === 'needs_review' && needsReviewCount > 0 && (
+        <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-3 rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50/80 dark:bg-amber-950/20 px-4 py-3">
+          <Sparkles className="h-4 w-4 text-amber-500 shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+              {needsReviewCount} auto-categorized transaction{needsReviewCount !== 1 ? 's' : ''} awaiting review
+            </p>
+            <p className="text-xs text-amber-600 dark:text-amber-400">
+              These were automatically categorized based on merchant history. Approve or edit to confirm.
+            </p>
+          </div>
+          <Button size="sm" variant="outline" className="gap-1.5 shrink-0 border-amber-300 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-950/40" onClick={approveAllReviewed}>
+            <CheckCircle2 className="h-3.5 w-3.5" /> Approve all
+          </Button>
+        </motion.div>
+      )}
+
       {/* Trash banner */}
       {viewFilter === 'trash' && (
         <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
