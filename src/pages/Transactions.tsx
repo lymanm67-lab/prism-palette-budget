@@ -1599,6 +1599,31 @@ const Transactions = () => {
                 <SelectContent>{(accounts || []).map(a => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
+            {/* Transfer Toggle */}
+            <div className="flex items-center justify-between rounded-lg border border-border px-4 py-3">
+              <div className="flex items-center gap-2">
+                <ArrowRightLeft className="h-4 w-4 text-muted-foreground" />
+                <div>
+                  <Label className="text-sm font-medium">Transfer</Label>
+                  <p className="text-xs text-muted-foreground">Mark as money moved between accounts</p>
+                </div>
+              </div>
+              <Switch
+                checked={editForm.is_transfer}
+                onCheckedChange={(checked) => setEditForm(f => ({ ...f, is_transfer: checked, ...(checked ? { category_id: '' } : {}) }))}
+              />
+            </div>
+            {editForm.is_transfer && (
+              <div className="space-y-2 rounded-lg border border-primary/20 bg-primary/5 p-3">
+                <Label className="text-xs text-muted-foreground">Linked Account (optional)</Label>
+                <Select value={editForm.transfer_linked_account} onValueChange={v => setEditForm(f => ({ ...f, transfer_linked_account: v }))}>
+                  <SelectTrigger className="h-9"><SelectValue placeholder="Select the other account..." /></SelectTrigger>
+                  <SelectContent>{(accounts || []).filter(a => a.id !== editForm.account_id).map(a => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}</SelectContent>
+                </Select>
+                <p className="text-[11px] text-muted-foreground">The counterpart account for this transfer. Category is excluded for transfers.</p>
+              </div>
+            )}
+            {!editForm.is_transfer && (
             <div className="space-y-2">
               <Label>Category</Label>
               <CategoryCombobox value={editForm.category_id} onValueChange={v => { setEditForm(f => ({ ...f, category_id: v })); setAiSuggestion(null); }} />
