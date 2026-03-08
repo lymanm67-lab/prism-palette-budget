@@ -30,6 +30,7 @@ const FREQUENCIES = [
 const Recurring = () => {
   const { data: recurring, isLoading } = useRecurringTransactions();
   const createRecurring = useCreateRecurring();
+  const updateRecurring = useUpdateRecurring();
   const deleteRecurring = useDeleteRecurring();
   const { data: accounts } = useAccounts();
   const { data: categories } = useCategories();
