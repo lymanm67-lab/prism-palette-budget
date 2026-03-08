@@ -1,0 +1,61 @@
+!Type:Bank
+D03/01/2026
+T-45.99
+PWhole Foods Market
+MGrocery purchase
+LFood:Groceries
+^
+D03/03/2026
+T-12.50
+PNetflix
+MMonthly subscription
+LEntertainment:Streaming
+^
+D03/05/2026
+T3500.00
+PACME Corp Payroll
+MDirect deposit
+LIncome:Salary
+^
+D03/08/2026
+T-89.00
+PComcast
+MInternet bill
+LUtilities:Internet
+^
+D03/10/2026
+T-32.75
+PShell Oil
+MGas station
+LAuto:Gas
+^
+D03/12/2026
+T-67.00
+PTarget
+MGeneral merchandise
+LShopping
+^
+D03/15/2026
+T-150.00
+PState Farm Insurance
+MAuto insurance premium
+LInsurance:Auto
+^
+D03/18/2026
+T-8.99
+PSpotify
+MMusic subscription
+LEntertainment:Streaming
+^
+D03/19/2026
+T3500.00
+PACME Corp Payroll
+MDirect deposit
+LIncome:Salary
+^
+D03/22/2026
+T-1200.00
+PChase Mortgage
+MMonthly mortgage payment
+LHousing:Mortgage
+^
