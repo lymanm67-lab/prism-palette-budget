@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useRecurringTransactions, useCreateRecurring, useDeleteRecurring } from '@/hooks/use-recurring';
 import { useAccounts, useCategories } from '@/hooks/use-finance-data';
+import CategoryCombobox from '@/components/CategoryCombobox';
 import { useCurrency } from '@/hooks/use-currency';
 import { format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, addMonths, subMonths } from 'date-fns';
 import { Loader2, Plus, Trash2, CalendarIcon, List, ChevronLeft, ChevronRight, RepeatIcon, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
@@ -305,10 +306,11 @@ const Recurring = () => {
               </div>
               <div className="space-y-2">
                 <Label>Category</Label>
-                <Select value={form.category_id} onValueChange={v => setForm(f => ({ ...f, category_id: v }))}>
-                  <SelectTrigger><SelectValue placeholder="Optional" /></SelectTrigger>
-                  <SelectContent>{categories?.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
-                </Select>
+                <CategoryCombobox
+                  value={form.category_id}
+                  onValueChange={v => setForm(f => ({ ...f, category_id: v }))}
+                  placeholder="Search categories..."
+                />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
