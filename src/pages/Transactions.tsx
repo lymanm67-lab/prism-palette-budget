@@ -1167,6 +1167,12 @@ const Transactions = () => {
                   <Landmark className="h-3.5 w-3.5" /> Move
                 </Button>
               </div>
+              <Button size="sm" variant="outline" onClick={bulkMarkTransfer} className="gap-1 h-8">
+                <ArrowRightLeft className="h-3.5 w-3.5" /> Mark Transfer
+              </Button>
+              <Button size="sm" variant="outline" onClick={bulkUnmarkTransfer} className="gap-1 h-8">
+                <X className="h-3.5 w-3.5" /> Unmark Transfer
+              </Button>
               <Button size="sm" variant="outline" onClick={handleAutoCategorize} disabled={autoCatLoading} className="gap-1 h-8">
                 {autoCatLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
                 AI Categorize
