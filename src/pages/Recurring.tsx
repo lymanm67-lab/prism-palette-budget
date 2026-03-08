@@ -395,13 +395,20 @@ const Recurring = () => {
           <DialogHeader><DialogTitle className="font-display">Edit Recurring Transaction</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
+              <Label>Type</Label>
+              <div className="flex border rounded-lg overflow-hidden">
+                <button type="button" onClick={() => setEditForm(f => ({ ...f, type: 'expense' }))} className={cn('flex-1 px-3 py-2 text-sm font-medium transition-colors', editForm.type === 'expense' ? 'bg-destructive text-destructive-foreground' : 'hover:bg-muted')}>Expense</button>
+                <button type="button" onClick={() => setEditForm(f => ({ ...f, type: 'income' }))} className={cn('flex-1 px-3 py-2 text-sm font-medium transition-colors', editForm.type === 'income' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}>Income</button>
+              </div>
+            </div>
+            <div className="space-y-2">
               <Label>Merchant / Name</Label>
               <Input value={editForm.merchant} onChange={e => setEditForm(f => ({ ...f, merchant: e.target.value }))} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Amount</Label>
-                <Input type="number" step="0.01" value={editForm.amount} onChange={e => setEditForm(f => ({ ...f, amount: e.target.value }))} />
+                <Input type="number" step="0.01" min="0" value={editForm.amount} onChange={e => setEditForm(f => ({ ...f, amount: e.target.value }))} />
               </div>
               <div className="space-y-2">
                 <Label>Frequency</Label>
