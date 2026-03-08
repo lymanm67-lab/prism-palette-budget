@@ -247,6 +247,9 @@ const Recurring = () => {
                           {r.next_due_date ? format(parseISO(r.next_due_date), 'MMM d, yyyy') : '—'}
                         </p>
                       </div>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100" onClick={() => openEdit(r)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
                       <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 text-destructive" onClick={() => setDeleteTarget(r.id)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
