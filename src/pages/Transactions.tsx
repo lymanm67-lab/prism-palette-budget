@@ -29,6 +29,7 @@ import CsvImportDialog from '@/components/CsvImportDialog';
 import CategoryCombobox from '@/components/CategoryCombobox';
 import PageOverview from '@/components/PageOverview';
 import { useDuplicateDetection } from '@/hooks/use-duplicate-detection';
+import MerchantIcon from '@/components/MerchantIcon';
 
 import { cn } from '@/lib/utils';
 import { isTransferMerchant } from '@/lib/transfer-detection';
@@ -1298,22 +1299,8 @@ const Transactions = () => {
                           className="shrink-0"
                         />
 
-                        {/* Merchant icon placeholder */}
-                        <div className={cn(
-                          "h-8 w-8 rounded-full flex items-center justify-center shrink-0",
-                          isDupe ? "bg-amber-100 dark:bg-amber-900/30" :
-                          isIncome ? "bg-emerald-100 dark:bg-emerald-900/30" :
-                          "bg-muted"
-                        )}>
-                          <span className={cn(
-                            "text-xs font-bold",
-                            isDupe ? "text-amber-600 dark:text-amber-400" :
-                            isIncome ? "text-emerald-600 dark:text-emerald-400" :
-                            "text-muted-foreground"
-                          )}>
-                            {(txn.merchant || '?')[0].toUpperCase()}
-                          </span>
-                        </div>
+                        {/* Merchant logo */}
+                        <MerchantIcon merchant={txn.merchant} isIncome={isIncome} isDuplicate={isDupe} />
 
                         {/* Merchant name + badges */}
                         <div className="flex-1 min-w-0">
