@@ -1153,7 +1153,7 @@ const Transactions = () => {
           <Trash2 className="h-4 w-4 text-muted-foreground shrink-0" />
           <div className="flex-1">
             <p className="text-sm font-medium">{filtered.length} transaction{filtered.length !== 1 ? 's' : ''} in trash</p>
-            <p className="text-xs text-muted-foreground">Select items to restore or permanently delete them.</p>
+            <p className="text-xs text-muted-foreground">Items are auto-deleted after 30 days. Select items to restore or permanently delete them.</p>
           </div>
           {filtered.length > 0 && (
             <div className="flex items-center gap-2">
