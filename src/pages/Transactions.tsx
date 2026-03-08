@@ -224,10 +224,12 @@ const Transactions = () => {
   };
 
   // Compute duplicate transaction IDs (same date+amount+normalized merchant, more than 1 match)
+  // Excludes transactions tagged with 'not_duplicate'
   const duplicateIds = useMemo(() => {
     if (!transactions) return new Set<string>();
     const groups = new Map<string, string[]>();
     for (const t of transactions) {
+      if ((t.tags || []).includes('not_duplicate')) continue;
       const merchant = (t.merchant || '').toLowerCase().trim().replace(/\s+/g, ' ');
       const key = `${t.date}|${Math.round(t.amount * 100)}|${merchant}`;
       if (!groups.has(key)) groups.set(key, []);
@@ -239,6 +241,17 @@ const Transactions = () => {
     }
     return dupeSet;
   }, [transactions]);
+
+  const dismissDuplicate = async (id: string) => {
+    const txn = transactions?.find(t => t.id === id);
+    if (!txn) return;
+    const currentTags = txn.tags || [];
+    if (!currentTags.includes('not_duplicate')) {
+      await supabase.from('transactions').update({ tags: [...currentTags, 'not_duplicate'] } as any).eq('id', id);
+      qc.invalidateQueries({ queryKey: ['transactions'] });
+      toast.success('Marked as not a duplicate');
+    }
+  };
 
   const duplicateCount = duplicateIds.size;
   const needsReviewCount = useMemo(() => (transactions || []).filter(t => (t as any).needs_review).length, [transactions]);
@@ -1452,8 +1465,23 @@ const Transactions = () => {
                         </span>
 
                         {/* Inline action icons */}
-                        <div className={cn("flex items-center gap-0.5 shrink-0 transition-opacity", isNeedsReview ? "opacity-100" : "opacity-0 group-hover:opacity-100")}>
+                        <div className={cn("flex items-center gap-0.5 shrink-0 transition-opacity", (isNeedsReview || isDupe) ? "opacity-100" : "opacity-0 group-hover:opacity-100")}>
                           <TooltipProvider delayDuration={200}>
+                            {isDupe && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7 text-amber-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
+                                    onClick={(e) => { e.stopPropagation(); dismissDuplicate(txn.id); }}
+                                  >
+                                    <Check className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent side="top"><p>Not a duplicate</p></TooltipContent>
+                              </Tooltip>
+                            )}
                             {isNeedsReview && (
                               <Tooltip>
                                 <TooltipTrigger asChild>
