@@ -20,3 +20,18 @@ verify_jwt = false
 
 [functions.weekly-digest]
 verify_jwt = false
+
+[functions.detect-subscriptions]
+verify_jwt = false
+
+[functions.normalize-merchants]
+verify_jwt = false
+
+[functions.smart-budget]
+verify_jwt = false
+
+[functions.cash-flow-forecast]
+verify_jwt = false
+
+[functions.subscription-insights]
+verify_jwt = false
