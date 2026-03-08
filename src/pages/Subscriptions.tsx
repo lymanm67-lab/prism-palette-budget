@@ -133,6 +133,7 @@ const Subscriptions = () => {
           description="AI-powered subscription detection and management. Track recurring payments, get cancellation insights, and find savings."
           icon={CreditCard}
           iconColor="text-prism-violet"
+          ttsScript="Welcome to Subscriptions. This page detects recurring payments from your transactions using AI. You can see your active subscriptions, monthly and yearly costs, and get AI-powered insights on potential savings. Mark subscriptions as cancelled or set reminders before renewal dates."
           features={['Auto-detect subscriptions from transactions', 'AI savings recommendations', 'Cancellation tracking & reminders', 'Monthly/yearly cost summary']}
         />
         <div className="flex gap-2">

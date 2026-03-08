@@ -75,6 +75,7 @@ const Forecast = () => {
           description="AI-powered predictive cash flow analysis with what-if simulation. Project your balance 30-90 days ahead."
           icon={TrendingUp}
           iconColor="text-prism-teal"
+          ttsScript="Welcome to Cash Flow Forecast. This tool analyzes your transaction patterns to predict your future balance. You can simulate spending reductions, additional savings, and subscription cancellations to see their impact. The forecast shows a 30 or 90 day projection with insights about potential low balance warnings."
           features={['30 & 90 day balance projections', 'Spending reduction simulation', 'Subscription cancellation impact', 'Low balance warnings']}
         />
         <Button onClick={handleForecast} disabled={forecast.isPending}>
