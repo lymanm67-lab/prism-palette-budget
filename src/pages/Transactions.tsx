@@ -398,17 +398,19 @@ const Transactions = () => {
   const handleTransfer = async () => {
     if (!household) return;
     const amt = parseFloat(transferForm.amount);
+    const fromAcct = (accounts || []).find(a => a.id === transferForm.from_account);
+    const toAcct = (accounts || []).find(a => a.id === transferForm.to_account);
     const { data: outTxn, error: e1 } = await supabase.from('transactions').insert({
       household_id: household.id, account_id: transferForm.from_account, amount: -amt,
-      date: transferForm.date, merchant: 'Transfer Out', is_transfer: true, notes: transferForm.notes || null,
+      date: transferForm.date, merchant: `Transfer to ${toAcct?.name || 'Account'}`, is_transfer: true, notes: transferForm.notes || null,
     } as any).select().single();
     if (e1) { toast.error(e1.message); return; }
-    await supabase.from('transactions').insert({
+    const { data: inTxn } = await supabase.from('transactions').insert({
       household_id: household.id, account_id: transferForm.to_account, amount: amt,
-      date: transferForm.date, merchant: 'Transfer In', is_transfer: true,
+      date: transferForm.date, merchant: `Transfer from ${fromAcct?.name || 'Account'}`, is_transfer: true,
       transfer_pair_id: outTxn.id, notes: transferForm.notes || null,
-    } as any);
-    await supabase.from('transactions').update({ transfer_pair_id: outTxn.id } as any).eq('id', outTxn.id);
+    } as any).select().single();
+    await supabase.from('transactions').update({ transfer_pair_id: inTxn?.id } as any).eq('id', outTxn.id);
     qc.invalidateQueries({ queryKey: ['transactions'] });
     toast.success('Transfer recorded');
     setTransferForm({ date: new Date().toISOString().split('T')[0], amount: '', from_account: '', to_account: '', notes: '' });
@@ -1394,7 +1396,8 @@ const Transactions = () => {
                         className={cn(
                           "flex items-center gap-3 px-4 py-3 hover:bg-muted/30 transition-colors group cursor-pointer",
                           isDupe && "bg-amber-50/50 dark:bg-amber-950/10",
-                          !isDupe && isIncome && "bg-emerald-50/40 dark:bg-emerald-950/10",
+                          !isDupe && isTransfer && "bg-blue-50/50 dark:bg-blue-950/10",
+                          !isDupe && !isTransfer && isIncome && "bg-emerald-50/40 dark:bg-emerald-950/10",
                           !isDupe && !isIncome && !isTransfer && "bg-background"
                         )}
                         onClick={() => selected.size === 0 && openEditTxn(txn)}
@@ -1435,13 +1438,25 @@ const Transactions = () => {
 
                         {/* Category */}
                         <div className="hidden sm:flex items-center gap-1.5 w-[180px] shrink-0">
-                          {cat ? (
+                          {isTransfer ? (() => {
+                            const pairId = (txn as any).transfer_pair_id;
+                            const pairTxn = pairId ? (transactions || []).find(t => t.id === pairId) : null;
+                            const pairAcct = pairTxn ? (accounts || []).find(a => a.id === pairTxn.account_id) : null;
+                            const direction = txn.amount < 0 ? 'to' : 'from';
+                            const linkedName = pairAcct?.name;
+                            return (
+                              <span className="flex items-center gap-1.5 text-sm text-muted-foreground truncate">
+                                <ArrowRightLeft className="h-3 w-3 shrink-0 text-primary/60" />
+                                <span className="truncate">
+                                  {linkedName ? `Transfer ${direction} ${linkedName}` : 'Transfer'}
+                                </span>
+                              </span>
+                            );
+                          })() : cat ? (
                             <span className="flex items-center gap-1.5 text-sm text-muted-foreground truncate">
                               <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
                               <span className="truncate">{cat.name}</span>
                             </span>
-                          ) : isTransfer ? (
-                            <span className="text-xs text-muted-foreground italic">Transfer</span>
                           ) : (
                             <span className="text-xs text-muted-foreground italic">Uncategorized</span>
                           )}
