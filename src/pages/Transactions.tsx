@@ -398,17 +398,19 @@ const Transactions = () => {
   const handleTransfer = async () => {
     if (!household) return;
     const amt = parseFloat(transferForm.amount);
+    const fromAcct = (accounts || []).find(a => a.id === transferForm.from_account);
+    const toAcct = (accounts || []).find(a => a.id === transferForm.to_account);
     const { data: outTxn, error: e1 } = await supabase.from('transactions').insert({
       household_id: household.id, account_id: transferForm.from_account, amount: -amt,
-      date: transferForm.date, merchant: 'Transfer Out', is_transfer: true, notes: transferForm.notes || null,
+      date: transferForm.date, merchant: `Transfer to ${toAcct?.name || 'Account'}`, is_transfer: true, notes: transferForm.notes || null,
     } as any).select().single();
     if (e1) { toast.error(e1.message); return; }
-    await supabase.from('transactions').insert({
+    const { data: inTxn } = await supabase.from('transactions').insert({
       household_id: household.id, account_id: transferForm.to_account, amount: amt,
-      date: transferForm.date, merchant: 'Transfer In', is_transfer: true,
+      date: transferForm.date, merchant: `Transfer from ${fromAcct?.name || 'Account'}`, is_transfer: true,
       transfer_pair_id: outTxn.id, notes: transferForm.notes || null,
-    } as any);
-    await supabase.from('transactions').update({ transfer_pair_id: outTxn.id } as any).eq('id', outTxn.id);
+    } as any).select().single();
+    await supabase.from('transactions').update({ transfer_pair_id: inTxn?.id } as any).eq('id', outTxn.id);
     qc.invalidateQueries({ queryKey: ['transactions'] });
     toast.success('Transfer recorded');
     setTransferForm({ date: new Date().toISOString().split('T')[0], amount: '', from_account: '', to_account: '', notes: '' });
