@@ -188,17 +188,18 @@ serve(async (req) => {
         });
       }
 
-      const widgetData = await mxFetch(`/users/${mx_user_guid}/connect_widget_url`, "POST", {
+      const widgetData = await mxFetch(`/users/${mx_user_guid}/widget_urls`, "POST", {
         widget_url: {
           widget_type: "connect_widget",
           mode: "aggregation",
           ui_message_version: 4,
-          use_cases: ["PFM"],
         },
       });
 
+      console.log("MX widget response:", JSON.stringify(widgetData));
+
       return new Response(JSON.stringify({
-        widget_url: widgetData.widget_url.url,
+        widget_url: widgetData.widget_url?.url,
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
