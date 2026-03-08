@@ -1062,10 +1062,12 @@ const Transactions = () => {
                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                   onClick={async () => {
                     const ids = Array.from(duplicateIds);
-                    for (const id of ids) { await supabase.from('transactions').delete().eq('id', id); }
-                    qc.invalidateQueries({ queryKey: ['transactions'] });
+                    await softDelete(ids);
                     setSelected(new Set());
-                    toast.success(`Deleted ${ids.length} duplicate transactions`);
+                    toast.success(`Moved ${ids.length} duplicates to trash`, {
+                      action: { label: 'Undo', onClick: async () => { await restoreTransactions(ids); toast.success(`Restored ${ids.length} transactions`); } },
+                      duration: 10000,
+                    });
                   }}
                 >
                   Delete {duplicateCount} duplicates
