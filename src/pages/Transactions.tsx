@@ -275,6 +275,7 @@ const Transactions = () => {
       if (viewFilter === 'transfers' && !(t as any).is_transfer) return false;
       if (viewFilter === 'duplicates' && !duplicateIds.has(t.id)) return false;
       if (viewFilter === 'uncategorized' && t.category_id !== null) return false;
+      if (viewFilter === 'needs_review' && !(t as any).needs_review) return false;
       return true;
     });
 
