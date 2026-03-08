@@ -326,11 +326,12 @@ const Transactions = () => {
     }
 
     const tags = form.tags ? form.tags.split(',').map(t => t.trim()).filter(Boolean) : null;
+    const isXfer = form.is_transfer || isTransferMerchant(form.merchant);
     const result = await createTransaction.mutateAsync({
       date: form.date, merchant: form.merchant || null, amount: finalAmount,
       account_id: form.account_id, category_id: form.category_id || null, notes: form.notes || null,
-      tags,
-    });
+      tags, is_transfer: isXfer,
+    } as any);
 
     // Upload receipt if scanned
     if (pendingReceiptFile && household && result?.id) {
