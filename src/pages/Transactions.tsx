@@ -224,10 +224,12 @@ const Transactions = () => {
   };
 
   // Compute duplicate transaction IDs (same date+amount+normalized merchant, more than 1 match)
+  // Excludes transactions tagged with 'not_duplicate'
   const duplicateIds = useMemo(() => {
     if (!transactions) return new Set<string>();
     const groups = new Map<string, string[]>();
     for (const t of transactions) {
+      if ((t.tags || []).includes('not_duplicate')) continue;
       const merchant = (t.merchant || '').toLowerCase().trim().replace(/\s+/g, ' ');
       const key = `${t.date}|${Math.round(t.amount * 100)}|${merchant}`;
       if (!groups.has(key)) groups.set(key, []);
@@ -239,6 +241,17 @@ const Transactions = () => {
     }
     return dupeSet;
   }, [transactions]);
+
+  const dismissDuplicate = async (id: string) => {
+    const txn = transactions?.find(t => t.id === id);
+    if (!txn) return;
+    const currentTags = txn.tags || [];
+    if (!currentTags.includes('not_duplicate')) {
+      await supabase.from('transactions').update({ tags: [...currentTags, 'not_duplicate'] } as any).eq('id', id);
+      qc.invalidateQueries({ queryKey: ['transactions'] });
+      toast.success('Marked as not a duplicate');
+    }
+  };
 
   const duplicateCount = duplicateIds.size;
   const needsReviewCount = useMemo(() => (transactions || []).filter(t => (t as any).needs_review).length, [transactions]);
