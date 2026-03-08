@@ -805,10 +805,7 @@ const Transactions = () => {
                 </div>
                 <div className="space-y-2">
                   <Label>Category</Label>
-                  <Select value={form.category_id} onValueChange={v => setForm(f => ({ ...f, category_id: v }))}>
-                    <SelectTrigger><SelectValue placeholder="Search categories..." /></SelectTrigger>
-                    <SelectContent>{(categories || []).map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
-                  </Select>
+                  <CategoryCombobox value={form.category_id} onValueChange={v => setForm(f => ({ ...f, category_id: v }))} />
                 </div>
                 <div className="space-y-2">
                   <Label>Goal</Label>
