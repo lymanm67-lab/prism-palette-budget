@@ -409,6 +409,7 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
             amount: row.amount,
             category_id: categoryId,
             notes: row.notes || null,
+            is_transfer: isTransferMerchant(row.merchant || ''),
           };
         });
 
