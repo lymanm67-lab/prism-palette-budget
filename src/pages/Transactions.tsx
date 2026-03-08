@@ -1004,9 +1004,39 @@ const Transactions = () => {
               {duplicateCount} potential duplicate transactions found
             </p>
             <p className="text-xs text-amber-600 dark:text-amber-400">
-              Transactions with the same date, amount, and merchant are flagged. Use "Select all duplicates" to batch delete.
+              Transactions with the same date, amount, and merchant are flagged. Review and delete all at once.
             </p>
           </div>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button size="sm" variant="destructive" className="gap-1.5 shrink-0">
+                <Trash2 className="h-3.5 w-3.5" /> Delete all duplicates
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete all {duplicateCount} duplicate transactions?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will permanently remove all {duplicateCount} flagged duplicate transactions. This action cannot be undone. Make sure you've reviewed them first.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  onClick={async () => {
+                    const ids = Array.from(duplicateIds);
+                    for (const id of ids) { await supabase.from('transactions').delete().eq('id', id); }
+                    qc.invalidateQueries({ queryKey: ['transactions'] });
+                    setSelected(new Set());
+                    toast.success(`Deleted ${ids.length} duplicate transactions`);
+                  }}
+                >
+                  Delete {duplicateCount} duplicates
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </motion.div>
       )}
 
