@@ -82,6 +82,8 @@ const Recurring = () => {
         setForm({ merchant: '', amount: '', frequency: 'monthly', account_id: '', category_id: '', start_date: format(new Date(), 'yyyy-MM-dd'), next_due_date: format(new Date(), 'yyyy-MM-dd') });
       }
     });
+  };
+
   const openEdit = (r: any) => {
     setEditTarget(r);
     setEditForm({
