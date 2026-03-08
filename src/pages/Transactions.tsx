@@ -915,13 +915,6 @@ const Transactions = () => {
             {autoCatLoading ? 'Categorizing…' : 'Auto-categorize'}
           </Button>
 
-          <Button
-            variant={editMultiple ? 'default' : 'outline'}
-            size="sm"
-            className="gap-2"
-            onClick={() => { setEditMultiple(!editMultiple); if (editMultiple) setSelected(new Set()); }}
-          >
-            <Pencil className="h-3.5 w-3.5" /> Edit multiple
           </Button>
 
           {/* Sort dropdown */}
