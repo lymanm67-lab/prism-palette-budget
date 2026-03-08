@@ -11,6 +11,10 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Confetti from '@/components/Confetti';
+import { useAccounts, useTransactions, useCategories, useBudgets } from '@/hooks/use-finance-data';
+import { useGoals } from '@/hooks/use-goals';
+import { useDebtPlans } from '@/hooks/use-debt-plans';
+import { useRecurringTransactions } from '@/hooks/use-recurring';
 
 const STEPS = [
   { id: 'accounts', title: 'Set Up Accounts', icon: Landmark, route: '/accounts' },
