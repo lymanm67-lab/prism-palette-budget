@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -90,7 +91,7 @@ const Transactions = () => {
   const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [autoCatLoading, setAutoCatLoading] = useState(false);
   const [editTxn, setEditTxn] = useState<any>(null);
-  const [editForm, setEditForm] = useState({ merchant: '', amount: '', date: '', account_id: '', category_id: '', notes: '', tags: '', goal_id: '' });
+  const [editForm, setEditForm] = useState({ merchant: '', amount: '', date: '', account_id: '', category_id: '', notes: '', tags: '', goal_id: '', is_transfer: false, transfer_linked_account: '' });
   const [aiSuggestion, setAiSuggestion] = useState<{ id: string; name: string; color: string } | null>(null);
   const [aiSuggestionLoading, setAiSuggestionLoading] = useState(false);
   const [editType, setEditType] = useState<'debit' | 'credit'>('debit');
@@ -506,6 +507,12 @@ const Transactions = () => {
     setEditType(isCredit ? 'credit' : 'debit');
     setEditReceiptUrl(txn.receipt_url || null);
     setAiSuggestion(null);
+    // Find linked transfer account
+    let linkedAccount = '';
+    if ((txn as any).is_transfer && (txn as any).transfer_pair_id) {
+      const pair = (transactions || []).find(t => t.id === (txn as any).transfer_pair_id);
+      if (pair) linkedAccount = pair.account_id;
+    }
     setEditForm({
       merchant: txn.merchant || '',
       amount: String(Math.abs(txn.amount)),
@@ -515,6 +522,8 @@ const Transactions = () => {
       notes: txn.notes || '',
       tags: (txn.tags || []).join(', '),
       goal_id: '',
+      is_transfer: !!(txn as any).is_transfer,
+      transfer_linked_account: linkedAccount,
     });
 
     // Fetch AI suggestion if no category assigned
@@ -571,16 +580,37 @@ const Transactions = () => {
         amount: finalAmount,
         date: editForm.date,
         account_id: editForm.account_id,
-        category_id: editForm.category_id || null,
+        category_id: editForm.is_transfer ? null : (editForm.category_id || null),
         notes: editForm.notes || null,
         tags,
-        needs_review: false, // Approve on edit save
+        needs_review: false,
+        is_transfer: editForm.is_transfer,
       });
       toast.success('Transaction updated');
       setEditTxn(null);
     } catch (e: any) {
       toast.error(e.message || 'Failed to update');
     }
+  };
+
+  const bulkMarkTransfer = async () => {
+    const ids = Array.from(selected);
+    for (const id of ids) {
+      await supabase.from('transactions').update({ is_transfer: true, category_id: null } as any).eq('id', id);
+    }
+    qc.invalidateQueries({ queryKey: ['transactions'] });
+    setSelected(new Set());
+    toast.success(`Marked ${ids.length} transactions as transfers`);
+  };
+
+  const bulkUnmarkTransfer = async () => {
+    const ids = Array.from(selected);
+    for (const id of ids) {
+      await supabase.from('transactions').update({ is_transfer: false } as any).eq('id', id);
+    }
+    qc.invalidateQueries({ queryKey: ['transactions'] });
+    setSelected(new Set());
+    toast.success(`Unmarked ${ids.length} transactions as transfers`);
   };
 
   if (isLoading) return (
@@ -1137,6 +1167,12 @@ const Transactions = () => {
                   <Landmark className="h-3.5 w-3.5" /> Move
                 </Button>
               </div>
+              <Button size="sm" variant="outline" onClick={bulkMarkTransfer} className="gap-1 h-8">
+                <ArrowRightLeft className="h-3.5 w-3.5" /> Mark Transfer
+              </Button>
+              <Button size="sm" variant="outline" onClick={bulkUnmarkTransfer} className="gap-1 h-8">
+                <X className="h-3.5 w-3.5" /> Unmark Transfer
+              </Button>
               <Button size="sm" variant="outline" onClick={handleAutoCategorize} disabled={autoCatLoading} className="gap-1 h-8">
                 {autoCatLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
                 AI Categorize
@@ -1563,6 +1599,31 @@ const Transactions = () => {
                 <SelectContent>{(accounts || []).map(a => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
+            {/* Transfer Toggle */}
+            <div className="flex items-center justify-between rounded-lg border border-border px-4 py-3">
+              <div className="flex items-center gap-2">
+                <ArrowRightLeft className="h-4 w-4 text-muted-foreground" />
+                <div>
+                  <Label className="text-sm font-medium">Transfer</Label>
+                  <p className="text-xs text-muted-foreground">Mark as money moved between accounts</p>
+                </div>
+              </div>
+              <Switch
+                checked={editForm.is_transfer}
+                onCheckedChange={(checked) => setEditForm(f => ({ ...f, is_transfer: checked, ...(checked ? { category_id: '' } : {}) }))}
+              />
+            </div>
+            {editForm.is_transfer && (
+              <div className="space-y-2 rounded-lg border border-primary/20 bg-primary/5 p-3">
+                <Label className="text-xs text-muted-foreground">Linked Account (optional)</Label>
+                <Select value={editForm.transfer_linked_account} onValueChange={v => setEditForm(f => ({ ...f, transfer_linked_account: v }))}>
+                  <SelectTrigger className="h-9"><SelectValue placeholder="Select the other account..." /></SelectTrigger>
+                  <SelectContent>{(accounts || []).filter(a => a.id !== editForm.account_id).map(a => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}</SelectContent>
+                </Select>
+                <p className="text-[11px] text-muted-foreground">The counterpart account for this transfer. Category is excluded for transfers.</p>
+              </div>
+            )}
+            {!editForm.is_transfer && (
             <div className="space-y-2">
               <Label>Category</Label>
               <CategoryCombobox value={editForm.category_id} onValueChange={v => { setEditForm(f => ({ ...f, category_id: v })); setAiSuggestion(null); }} />
@@ -1586,6 +1647,7 @@ const Transactions = () => {
                 </button>
               )}
             </div>
+            )}
             <div className="space-y-2">
               <Label>Notes</Label>
               <Input value={editForm.notes} onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))} placeholder="Add a note..." />
