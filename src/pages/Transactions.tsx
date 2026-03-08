@@ -91,7 +91,7 @@ const Transactions = () => {
   const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [autoCatLoading, setAutoCatLoading] = useState(false);
   const [editTxn, setEditTxn] = useState<any>(null);
-  const [editForm, setEditForm] = useState({ merchant: '', amount: '', date: '', account_id: '', category_id: '', notes: '', tags: '', goal_id: '' });
+  const [editForm, setEditForm] = useState({ merchant: '', amount: '', date: '', account_id: '', category_id: '', notes: '', tags: '', goal_id: '', is_transfer: false, transfer_linked_account: '' });
   const [aiSuggestion, setAiSuggestion] = useState<{ id: string; name: string; color: string } | null>(null);
   const [aiSuggestionLoading, setAiSuggestionLoading] = useState(false);
   const [editType, setEditType] = useState<'debit' | 'credit'>('debit');
