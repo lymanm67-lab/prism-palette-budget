@@ -60,7 +60,7 @@ interface FilterState {
 
 const EMPTY_FILTERS: FilterState = { dateFrom: '', dateTo: '', amountMin: '', amountMax: '', accountId: '', categoryId: '' };
 
-type TxnViewFilter = 'all' | 'income' | 'expenses' | 'transfers' | 'duplicates' | 'trash';
+type TxnViewFilter = 'all' | 'income' | 'expenses' | 'transfers' | 'duplicates' | 'uncategorized' | 'trash';
 
 const Transactions = () => {
   const { formatCurrency } = useCurrency();
@@ -268,6 +268,7 @@ const Transactions = () => {
       if (viewFilter === 'expenses' && t.amount >= 0) return false;
       if (viewFilter === 'transfers' && !(t as any).is_transfer) return false;
       if (viewFilter === 'duplicates' && !duplicateIds.has(t.id)) return false;
+      if (viewFilter === 'uncategorized' && t.category_id !== null) return false;
       return true;
     });
 
@@ -976,6 +977,7 @@ const Transactions = () => {
                   <Copy className="h-3.5 w-3.5 text-amber-500" /> Duplicates {duplicateCount > 0 && `(${duplicateCount})`}
                 </span>
               </SelectItem>
+              <SelectItem value="uncategorized">Uncategorized</SelectItem>
               <SelectItem value="trash">
                 <span className="flex items-center gap-1.5">
                   <Trash2 className="h-3.5 w-3.5 text-muted-foreground" /> Trash {(deletedTransactions?.length || 0) > 0 && `(${deletedTransactions?.length})`}
