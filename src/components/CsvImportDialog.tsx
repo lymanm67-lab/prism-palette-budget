@@ -387,8 +387,61 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
             </motion.div>
           )}
 
-          {/* STEP 2: Column Mapping */}
-          {step === 'map' && csvResult && (
+          {/* STEP 2: Column Mapping (CSV) or Account Selection (OFX) */}
+          {step === 'map' && fileMode === 'ofx' && ofxResult && (
+            <motion.div key="map-ofx" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge className="bg-primary/10 text-primary border-primary/20">
+                  {ofxResult.fileType.toUpperCase()} File
+                </Badge>
+                <span className="text-sm text-muted-foreground">{ofxResult.transactions.length} transactions found</span>
+                {ofxResult.accountId && (
+                  <Badge variant="outline" className="text-xs">Account: {ofxResult.accountId}</Badge>
+                )}
+                {duplicateRows.size > 0 && (
+                  <Badge variant="outline" className="gap-1 text-prism-amber border-prism-amber/30">
+                    <AlertTriangle className="h-3 w-3" /> {duplicateRows.size} duplicate{duplicateRows.size > 1 ? 's' : ''}
+                  </Badge>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                <Label>Import into Account <span className="text-destructive">*</span></Label>
+                <Select value={targetAccountId} onValueChange={setTargetAccountId}>
+                  <SelectTrigger><SelectValue placeholder="Select account" /></SelectTrigger>
+                  <SelectContent>
+                    {(accounts || []).map(a => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Sample data preview */}
+              {parsedRows.length > 0 && (
+                <div className="rounded-lg border bg-muted/30 p-3">
+                  <p className="text-xs font-medium mb-2 text-muted-foreground">Sample transaction:</p>
+                  <div className="flex flex-wrap gap-3 text-xs">
+                    <span><span className="font-medium text-foreground">Date:</span> {parsedRows[0].date}</span>
+                    <span><span className="font-medium text-foreground">Merchant:</span> {parsedRows[0].merchant || '—'}</span>
+                    <span><span className="font-medium text-foreground">Amount:</span> {formatCurrency(parsedRows[0].amount)}</span>
+                    {parsedRows[0].notes && <span><span className="font-medium text-foreground">Memo:</span> {parsedRows[0].notes}</span>}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex justify-between">
+                <Button variant="outline" onClick={() => { reset(); setStep('upload'); }} className="gap-1.5"><ArrowLeft className="h-4 w-4" /> Back</Button>
+                <Button
+                  onClick={() => setStep('preview')}
+                  disabled={!targetAccountId}
+                  className="gap-1.5"
+                >
+                  Preview <ArrowRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </motion.div>
+          )}
+
+          {step === 'map' && fileMode === 'csv' && csvResult && (
             <motion.div key="map" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
               <div className="flex items-center gap-2 flex-wrap">
                 <Badge className="bg-primary/10 text-primary border-primary/20">
