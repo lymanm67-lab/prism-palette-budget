@@ -1247,10 +1247,10 @@ const Transactions = () => {
             />
             {/* Spacer for merchant icon */}
             <div className="h-8 w-8 shrink-0" />
-            <span className="flex-1 min-w-0 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Merchant</span>
-            <span className="hidden sm:block w-[180px] shrink-0 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Category</span>
-            <span className="hidden md:block w-[180px] shrink-0 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Account</span>
-            <span className="w-[90px] text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">Amount</span>
+            <span className="flex-1 min-w-0 text-xs font-bold uppercase tracking-wider text-foreground">Merchant</span>
+            <span className="hidden sm:block w-[180px] shrink-0 text-xs font-bold uppercase tracking-wider text-foreground">Category</span>
+            <span className="hidden md:block w-[180px] shrink-0 text-xs font-bold uppercase tracking-wider text-foreground">Account</span>
+            <span className="w-[90px] text-right text-xs font-bold uppercase tracking-wider text-foreground">Amount</span>
             {/* Spacer for action icons */}
             <div className="w-[68px] shrink-0" />
           </div>
