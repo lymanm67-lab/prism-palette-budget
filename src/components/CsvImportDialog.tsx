@@ -25,7 +25,7 @@ import {
 } from '@/lib/csv-parser';
 import { parseOfxText, detectFinancialFileType, type OfxParseResult, type OfxTransaction } from '@/lib/ofx-parser';
 import { formatCurrency } from '@/lib/seed-data';
-import { Upload, FileSpreadsheet, ArrowRight, ArrowLeft, Check, AlertCircle, Loader2, Info, AlertTriangle } from 'lucide-react';
+import { Upload, FileSpreadsheet, ArrowRight, ArrowLeft, Check, AlertCircle, Loader2, Info, AlertTriangle, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDuplicateDetection } from '@/hooks/use-duplicate-detection';
 
@@ -73,6 +73,7 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
   const [duplicateRows, setDuplicateRows] = useState<Set<number>>(new Set());
   const [dragging, setDragging] = useState(false);
   const [showFormats, setShowFormats] = useState(false);
+  const [previewRuleMatches, setPreviewRuleMatches] = useState<Map<number, { categoryId: string; categoryName: string }>>(new Map());
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const reset = () => {
@@ -89,6 +90,7 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
     setRuleMatchCount(0);
     setDragging(false);
     setShowFormats(false);
+    setPreviewRuleMatches(new Map());
   };
 
   const handleClose = (open: boolean) => {
@@ -191,6 +193,7 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
       toast({ title: `${dupes.size} potential duplicate(s) found`, description: 'Duplicates are deselected by default. You can re-select them if needed.' });
     }
 
+    computePreviewRuleMatches(rows);
     setStep('preview');
   };
 
@@ -219,6 +222,39 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
     }
     return map;
   }, [categories]);
+
+  // Fetch categorization rules and pre-compute matches for preview
+  const computePreviewRuleMatches = useCallback(async (rows: ParsedRow[]) => {
+    if (!household) return;
+    const { data: rules } = await supabase
+      .from('categorization_rules')
+      .select('merchant_pattern, category_id')
+      .eq('household_id', household.id);
+
+    if (!rules || rules.length === 0) {
+      setPreviewRuleMatches(new Map());
+      return;
+    }
+
+    const ruleMap = new Map<string, string>();
+    for (const r of rules) {
+      ruleMap.set(r.merchant_pattern.toLowerCase(), r.category_id);
+    }
+
+    const matches = new Map<number, { categoryId: string; categoryName: string }>();
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      // Only match if no CSV category already assigned
+      if (!row.category && row.merchant) {
+        const ruleMatch = ruleMap.get(row.merchant.toLowerCase().trim());
+        if (ruleMatch) {
+          const catName = categories?.find(c => c.id === ruleMatch)?.name || 'Matched';
+          matches.set(i, { categoryId: ruleMatch, categoryName: catName });
+        }
+      }
+    }
+    setPreviewRuleMatches(matches);
+  }, [household, categories]);
 
   const handleImport = async () => {
     if (!household || !targetAccountId) return;
@@ -441,7 +477,7 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
               <div className="flex justify-between">
                 <Button variant="outline" onClick={() => { reset(); setStep('upload'); }} className="gap-1.5"><ArrowLeft className="h-4 w-4" /> Back</Button>
                 <Button
-                  onClick={() => setStep('preview')}
+                  onClick={() => { computePreviewRuleMatches(parsedRows); setStep('preview'); }}
                   disabled={!targetAccountId}
                   className="gap-1.5"
                 >
@@ -613,11 +649,16 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
           {step === 'preview' && (
             <motion.div key="preview" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4 flex-1 min-h-0">
               <div className="flex items-center justify-between flex-wrap gap-2">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 flex-wrap">
                   <p className="text-sm text-muted-foreground">{selectedRows.size} of {parsedRows.length} selected</p>
                   {duplicateRows.size > 0 && (
                     <Badge variant="outline" className="gap-1 text-prism-amber border-prism-amber/30">
                       <AlertTriangle className="h-3 w-3" /> {duplicateRows.size} duplicate{duplicateRows.size > 1 ? 's' : ''} found
+                    </Badge>
+                  )}
+                  {previewRuleMatches.size > 0 && (
+                    <Badge variant="outline" className="gap-1 text-primary border-primary/30 bg-primary/5">
+                      <Sparkles className="h-3 w-3" /> {previewRuleMatches.size} auto-categorized by rules
                     </Badge>
                   )}
                 </div>
@@ -642,6 +683,7 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
                     {parsedRows.map((row, i) => {
                       const matched = categoryLookup.has(row.category.toLowerCase());
                       const isDupe = duplicateRows.has(i);
+                      const ruleMatch = previewRuleMatches.get(i);
                       return (
                         <TableRow key={i} className={cn(!selectedRows.has(i) && 'opacity-40', isDupe && 'bg-prism-amber/5')}>
                           <TableCell><Checkbox checked={selectedRows.has(i)} onCheckedChange={() => handleToggleRow(i)} /></TableCell>
@@ -658,6 +700,10 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
                               <Badge variant={matched ? 'secondary' : 'outline'} className="text-xs">
                                 {row.category}
                                 {!matched && <AlertCircle className="ml-1 h-3 w-3 text-prism-amber" />}
+                              </Badge>
+                            ) : ruleMatch ? (
+                              <Badge variant="secondary" className="text-xs gap-1 bg-primary/10 text-primary border-primary/20">
+                                <Sparkles className="h-2.5 w-2.5" /> {ruleMatch.categoryName}
                               </Badge>
                             ) : <span className="text-xs text-muted-foreground">—</span>}
                           </TableCell>
