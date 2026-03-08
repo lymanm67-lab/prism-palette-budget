@@ -44,17 +44,67 @@ serve(async (req) => {
     });
   }
 
-  // Authenticate user
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+  const url = new URL(req.url);
+  const action = url.pathname.split("/").pop();
+
+  // ========================
+  // CRON SYNC — service-role only, no user auth
+  // ========================
+  if (action === "cron-sync" && req.method === "POST") {
+    const authHeader = req.headers.get("Authorization");
+    const token = authHeader?.replace("Bearer ", "");
+    if (token !== supabaseAnonKey && token !== serviceRoleKey) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const adminClient = createClient(supabaseUrl, serviceRoleKey);
+
+    // Find all MX-connected households
+    const { data: mxItems, error: itemsErr } = await adminClient
+      .from("plaid_items")
+      .select("household_id, plaid_item_id")
+      .eq("provider_type", "mx")
+      .eq("status", "active");
+
+    if (itemsErr || !mxItems?.length) {
+      return new Response(JSON.stringify({ synced: 0, message: "No MX connections found" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const results: { household_id: string; accounts: number; transactions: number; error?: string }[] = [];
+
+    for (const item of mxItems) {
+      try {
+        const syncResult = await syncHousehold(adminClient, item.household_id, item.plaid_item_id);
+        results.push({ household_id: item.household_id, ...syncResult });
+      } catch (e) {
+        console.error(`Cron sync failed for household ${item.household_id}:`, e);
+        results.push({ household_id: item.household_id, accounts: 0, transactions: 0, error: "Sync failed" });
+      }
+    }
+
+    console.log(`Cron sync complete: ${results.length} households processed`);
+    return new Response(JSON.stringify({ synced: results.length, results }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  // ========================
+  // USER-AUTHENTICATED ENDPOINTS
+  // ========================
   const authHeader = req.headers.get("Authorization");
   if (!authHeader?.startsWith("Bearer ")) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
-
-  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
   const userClient = createClient(supabaseUrl, supabaseAnonKey, {
     global: { headers: { Authorization: authHeader } },
@@ -69,9 +119,6 @@ serve(async (req) => {
   const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
   try {
-    const url = new URL(req.url);
-    const action = url.pathname.split("/").pop();
-
     // ========================
     // CREATE MX USER
     // ========================
@@ -87,7 +134,6 @@ serve(async (req) => {
         });
       }
 
-      // Check if MX user already exists for this user
       const { data: existingItems } = await adminClient
         .from("plaid_items")
         .select("id, plaid_item_id")
@@ -96,13 +142,11 @@ serve(async (req) => {
         .limit(1);
 
       if (existingItems?.length) {
-        // User already has an MX user, return their ID
         return new Response(JSON.stringify({ mx_user_guid: existingItems[0].plaid_item_id }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
-      // Create MX user
       const mxUser = await mxFetch("/users", "POST", {
         user: {
           id: `prism_${user.id}`,
@@ -112,7 +156,6 @@ serve(async (req) => {
 
       const mxUserGuid = mxUser.user.guid;
 
-      // Store reference
       await adminClient.from("plaid_items").insert({
         household_id,
         plaid_item_id: mxUserGuid,
@@ -169,115 +212,13 @@ serve(async (req) => {
         });
       }
 
-      // Fetch MX accounts
-      const accountsData = await mxFetch(`/users/${mx_user_guid}/accounts`, "GET");
-      const mxAccounts = accountsData.accounts || [];
-
-      const typeMap: Record<string, string> = {
-        CHECKING: "checking",
-        SAVINGS: "savings",
-        CREDIT_CARD: "credit",
-        LOAN: "loan",
-        INVESTMENT: "investment",
-        MORTGAGE: "loan",
-        LINE_OF_CREDIT: "credit",
-      };
-
-      // Upsert accounts
-      let syncedAccounts = 0;
-      const accountGuidMap = new Map<string, string>(); // mx_guid -> our_id
-
-      for (const acc of mxAccounts) {
-        // Check if account already exists
-        const { data: existing } = await adminClient
-          .from("accounts")
-          .select("id")
-          .eq("household_id", household_id)
-          .eq("institution", `MX:${acc.guid}`)
-          .limit(1);
-
-        if (existing?.length) {
-          // Update balance
-          await adminClient.from("accounts").update({
-            balance: acc.balance || 0,
-            last_synced_at: new Date().toISOString(),
-          }).eq("id", existing[0].id);
-          accountGuidMap.set(acc.guid, existing[0].id);
-        } else {
-          // Insert new account
-          const { data: newAcc } = await adminClient.from("accounts").insert({
-            household_id,
-            name: acc.name || acc.original_name || "MX Account",
-            institution: `MX:${acc.guid}`,
-            account_type: typeMap[acc.account_type] || "other",
-            balance: acc.balance || 0,
-            currency: acc.currency_code || "USD",
-            last_synced_at: new Date().toISOString(),
-          }).select("id").single();
-
-          if (newAcc) accountGuidMap.set(acc.guid, newAcc.id);
-          syncedAccounts++;
-        }
-      }
-
-      // Fetch MX transactions (last 90 days)
-      const endDate = new Date().toISOString().split("T")[0];
-      const startDate = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
-
-      let page = 1;
-      let totalTxnsSynced = 0;
-      let hasMore = true;
-
-      while (hasMore) {
-        const txnData = await mxFetch(
-          `/users/${mx_user_guid}/transactions?from_date=${startDate}&to_date=${endDate}&page=${page}&records_per_page=100`,
-          "GET"
-        );
-
-        const mxTxns = txnData.transactions || [];
-        if (mxTxns.length === 0) {
-          hasMore = false;
-          break;
-        }
-
-        for (const t of mxTxns) {
-          const accountId = accountGuidMap.get(t.account_guid);
-          if (!accountId) continue;
-
-          // Deduplicate by provider_transaction_id
-          const { data: exists } = await adminClient
-            .from("transactions")
-            .select("id")
-            .eq("provider_transaction_id", t.guid)
-            .limit(1);
-
-          if (exists?.length) continue;
-
-          await adminClient.from("transactions").insert({
-            household_id,
-            account_id: accountId,
-            date: t.transacted_at?.split("T")[0] || t.date || endDate,
-            merchant: t.merchant?.name || t.description || null,
-            normalized_merchant: t.merchant?.name || null,
-            amount: t.type === "DEBIT" ? -(t.amount || 0) : (t.amount || 0),
-            notes: t.description || null,
-            provider_transaction_id: t.guid,
-          });
-          totalTxnsSynced++;
-        }
-
-        if (txnData.pagination && page < txnData.pagination.total_pages) {
-          page++;
-        } else {
-          hasMore = false;
-        }
-      }
+      const result = await syncHousehold(adminClient, household_id, mx_user_guid);
 
       return new Response(JSON.stringify({
         success: true,
-        accounts_synced: syncedAccounts,
-        accounts_updated: mxAccounts.length - syncedAccounts,
-        transactions_synced: totalTxnsSynced,
+        accounts_synced: result.newAccounts,
+        accounts_updated: result.accounts - result.newAccounts,
+        transactions_synced: result.transactions,
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -308,9 +249,104 @@ serve(async (req) => {
     });
   } catch (error: unknown) {
     console.error("MX error:", error);
-    const message = error instanceof Error ? error.message : "An unexpected error occurred.";
-    return new Response(JSON.stringify({ error: message }), {
+    return new Response(JSON.stringify({ error: "An unexpected error occurred." }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
+
+// ========================
+// SHARED SYNC LOGIC
+// ========================
+async function syncHousehold(adminClient: any, household_id: string, mx_user_guid: string) {
+  const typeMap: Record<string, string> = {
+    CHECKING: "checking", SAVINGS: "savings", CREDIT_CARD: "credit",
+    LOAN: "loan", INVESTMENT: "investment", MORTGAGE: "loan", LINE_OF_CREDIT: "credit",
+  };
+
+  // Fetch MX accounts
+  const accountsData = await mxFetch(`/users/${mx_user_guid}/accounts`, "GET");
+  const mxAccounts = accountsData.accounts || [];
+
+  let newAccounts = 0;
+  const accountGuidMap = new Map<string, string>();
+
+  for (const acc of mxAccounts) {
+    const { data: existing } = await adminClient
+      .from("accounts").select("id")
+      .eq("household_id", household_id)
+      .eq("institution", `MX:${acc.guid}`)
+      .limit(1);
+
+    if (existing?.length) {
+      await adminClient.from("accounts").update({
+        balance: acc.balance || 0,
+        last_synced_at: new Date().toISOString(),
+      }).eq("id", existing[0].id);
+      accountGuidMap.set(acc.guid, existing[0].id);
+    } else {
+      const { data: newAcc } = await adminClient.from("accounts").insert({
+        household_id,
+        name: acc.name || acc.original_name || "MX Account",
+        institution: `MX:${acc.guid}`,
+        account_type: typeMap[acc.account_type] || "other",
+        balance: acc.balance || 0,
+        currency: acc.currency_code || "USD",
+        last_synced_at: new Date().toISOString(),
+      }).select("id").single();
+
+      if (newAcc) accountGuidMap.set(acc.guid, newAcc.id);
+      newAccounts++;
+    }
+  }
+
+  // Fetch MX transactions (last 90 days)
+  const endDate = new Date().toISOString().split("T")[0];
+  const startDate = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+
+  let page = 1;
+  let totalTxnsSynced = 0;
+  let hasMore = true;
+
+  while (hasMore) {
+    const txnData = await mxFetch(
+      `/users/${mx_user_guid}/transactions?from_date=${startDate}&to_date=${endDate}&page=${page}&records_per_page=100`,
+      "GET"
+    );
+
+    const mxTxns = txnData.transactions || [];
+    if (mxTxns.length === 0) { hasMore = false; break; }
+
+    for (const t of mxTxns) {
+      const accountId = accountGuidMap.get(t.account_guid);
+      if (!accountId) continue;
+
+      const { data: exists } = await adminClient
+        .from("transactions").select("id")
+        .eq("provider_transaction_id", t.guid)
+        .limit(1);
+
+      if (exists?.length) continue;
+
+      await adminClient.from("transactions").insert({
+        household_id,
+        account_id: accountId,
+        date: t.transacted_at?.split("T")[0] || t.date || endDate,
+        merchant: t.merchant?.name || t.description || null,
+        normalized_merchant: t.merchant?.name || null,
+        amount: t.type === "DEBIT" ? -(t.amount || 0) : (t.amount || 0),
+        notes: t.description || null,
+        provider_transaction_id: t.guid,
+      });
+      totalTxnsSynced++;
+    }
+
+    if (txnData.pagination && page < txnData.pagination.total_pages) {
+      page++;
+    } else {
+      hasMore = false;
+    }
+  }
+
+  return { accounts: mxAccounts.length, newAccounts, transactions: totalTxnsSynced };
+}
