@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Check, Plus, Search } from 'lucide-react';
+import { Check, Plus, Search, ChevronLeft } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,6 +20,8 @@ export default function CategoryCombobox({ value, onValueChange, placeholder = '
   const createCategory = useCreateCategory();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
+  const [pendingName, setPendingName] = useState('');
+  const [pickingGroup, setPickingGroup] = useState(false);
 
   const selectedCat = useMemo(() => categories?.find(c => c.id === value), [categories, value]);
 
@@ -47,31 +49,51 @@ export default function CategoryCombobox({ value, onValueChange, placeholder = '
     return Array.from(map.values()).filter(g => g.cats.length > 0);
   }, [groups, filtered]);
 
-  const handleAddNew = async () => {
-    if (!search.trim() || !groups?.length) return;
+  const startAddNew = () => {
+    setPendingName(search.trim());
+    setPickingGroup(true);
+  };
+
+  const handlePickGroup = async (groupId: string) => {
+    if (!pendingName) return;
     try {
-      // Pick a sensible default group — prefer "Shopping" or first flexible personal group, never Housing
-      const defaultGroup = groups.find(g => g.name === 'Shopping')
-        || groups.find(g => (g as any).expense_type === 'flexible' && (g as any).budget_type === 'personal')
-        || groups[groups.length - 1];
       const result = await createCategory.mutateAsync({
-        name: search.trim(),
+        name: pendingName,
         color: '#7c5cf5',
-        group_id: defaultGroup.id,
+        group_id: groupId,
       });
       onValueChange(result.id);
       setSearch('');
+      setPendingName('');
+      setPickingGroup(false);
       setOpen(false);
-      toast.success(`Created category "${result.name}"`);
+      const groupName = groups?.find(g => g.id === groupId)?.name || 'group';
+      toast.success(`Created "${result.name}" in ${groupName}`);
     } catch (e: any) {
       toast.error(e.message || 'Failed to create category');
     }
   };
 
+  const cancelGroupPick = () => {
+    setPickingGroup(false);
+    setPendingName('');
+  };
+
   const exactMatch = categories?.some(c => c.name.toLowerCase() === search.toLowerCase().trim());
 
+  // Personal groups first for the picker
+  const personalGroups = useMemo(() => {
+    if (!groups) return [];
+    return [...groups].sort((a, b) => {
+      const aPersonal = (a as any).budget_type === 'personal' ? 0 : 1;
+      const bPersonal = (b as any).budget_type === 'personal' ? 0 : 1;
+      if (aPersonal !== bPersonal) return aPersonal - bPersonal;
+      return a.name.localeCompare(b.name);
+    });
+  }, [groups]);
+
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setPickingGroup(false); setPendingName(''); } }}>
       <PopoverTrigger asChild>
         <Button variant="outline" role="combobox" className={cn('w-full justify-between font-normal', !value && 'text-muted-foreground', className)}>
           <span className="flex items-center gap-2 truncate">
@@ -85,65 +107,95 @@ export default function CategoryCombobox({ value, onValueChange, placeholder = '
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-        <div className="p-2 border-b">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-            <Input
-              placeholder="Search categories..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="h-8 pl-8 text-sm"
-              autoFocus
-            />
-          </div>
-        </div>
-        <div className="max-h-[250px] overflow-y-auto p-1">
-          {/* Clear selection option */}
-          {value && (
-            <button
-              className="w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-muted transition-colors"
-              onClick={() => { onValueChange(''); setOpen(false); setSearch(''); }}
-            >
-              <span className="h-4 w-4" /> Clear selection
-            </button>
-          )}
-          {grouped.map(group => (
-            <div key={group.name}>
-              <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full" style={{ backgroundColor: group.color }} />
-                {group.name}
-              </div>
-              {group.cats.map(c => (
+        {pickingGroup ? (
+          <>
+            <div className="p-2 border-b flex items-center gap-2">
+              <button onClick={cancelGroupPick} className="p-1 rounded hover:bg-muted transition-colors">
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <span className="text-sm font-medium truncate">
+                Add "<span className="text-primary">{pendingName}</span>" to group:
+              </span>
+            </div>
+            <div className="max-h-[280px] overflow-y-auto p-1">
+              {personalGroups.map(g => (
                 <button
-                  key={c.id}
-                  className={cn(
-                    'w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted transition-colors',
-                    value === c.id && 'bg-muted font-medium'
-                  )}
-                  onClick={() => { onValueChange(c.id); setOpen(false); setSearch(''); }}
+                  key={g.id}
+                  className="w-full flex items-center gap-2 rounded-md px-2 py-2 text-sm hover:bg-muted transition-colors"
+                  onClick={() => handlePickGroup(g.id)}
+                  disabled={createCategory.isPending}
                 >
-                  <Check className={cn('h-3.5 w-3.5 shrink-0', value === c.id ? 'opacity-100' : 'opacity-0')} />
-                  <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: c.color }} />
-                  <span className="truncate">{c.name}</span>
+                  <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: g.color }} />
+                  <span className="truncate">{g.name}</span>
+                  <span className="ml-auto text-[10px] text-muted-foreground capitalize">
+                    {(g as any).budget_type}
+                  </span>
                 </button>
               ))}
             </div>
-          ))}
-          {filtered.length === 0 && !search.trim() && (
-            <p className="px-2 py-3 text-sm text-center text-muted-foreground">No categories yet</p>
-          )}
-          {/* Add new category option */}
-          {search.trim() && !exactMatch && (
-            <button
-              className="w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-primary hover:bg-muted transition-colors border-t mt-1 pt-2"
-              onClick={handleAddNew}
-              disabled={createCategory.isPending}
-            >
-              <Plus className="h-3.5 w-3.5" />
-              {createCategory.isPending ? 'Creating...' : `Add "${search.trim()}"`}
-            </button>
-          )}
-        </div>
+          </>
+        ) : (
+          <>
+            <div className="p-2 border-b">
+              <div className="relative">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Input
+                  placeholder="Search categories..."
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  className="h-8 pl-8 text-sm"
+                  autoFocus
+                />
+              </div>
+            </div>
+            <div className="max-h-[250px] overflow-y-auto p-1">
+              {/* Clear selection option */}
+              {value && (
+                <button
+                  className="w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-muted transition-colors"
+                  onClick={() => { onValueChange(''); setOpen(false); setSearch(''); }}
+                >
+                  <span className="h-4 w-4" /> Clear selection
+                </button>
+              )}
+              {grouped.map(group => (
+                <div key={group.name}>
+                  <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: group.color }} />
+                    {group.name}
+                  </div>
+                  {group.cats.map(c => (
+                    <button
+                      key={c.id}
+                      className={cn(
+                        'w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted transition-colors',
+                        value === c.id && 'bg-muted font-medium'
+                      )}
+                      onClick={() => { onValueChange(c.id); setOpen(false); setSearch(''); }}
+                    >
+                      <Check className={cn('h-3.5 w-3.5 shrink-0', value === c.id ? 'opacity-100' : 'opacity-0')} />
+                      <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: c.color }} />
+                      <span className="truncate">{c.name}</span>
+                    </button>
+                  ))}
+                </div>
+              ))}
+              {filtered.length === 0 && !search.trim() && (
+                <p className="px-2 py-3 text-sm text-center text-muted-foreground">No categories yet</p>
+              )}
+              {/* Add new category option — now asks for group first */}
+              {search.trim() && !exactMatch && (
+                <button
+                  className="w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-primary hover:bg-muted transition-colors border-t mt-1 pt-2"
+                  onClick={startAddNew}
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  Add "{search.trim()}" — pick group…
+                </button>
+              )}
+            </div>
+          </>
+        )}
       </PopoverContent>
     </Popover>
   );
