@@ -96,7 +96,7 @@ const Transactions = () => {
   const [pendingReceiptFile, setPendingReceiptFile] = useState<File | null>(null);
   const [receiptUploading, setReceiptUploading] = useState(false);
   const editReceiptInputRef = useRef<HTMLInputElement>(null);
-  const [form, setForm] = useState({ date: new Date().toISOString().split('T')[0], merchant: '', amount: '', account_id: '', category_id: '', notes: '', tags: '', goal_id: '' });
+  const [form, setForm] = useState({ date: new Date().toISOString().split('T')[0], merchant: '', amount: '', account_id: '', category_id: '', notes: '', tags: '', goal_id: '', is_transfer: false });
   const [formType, setFormType] = useState<'debit' | 'credit'>('debit');
   const [transferForm, setTransferForm] = useState({ date: new Date().toISOString().split('T')[0], amount: '', from_account: '', to_account: '', notes: '' });
   const [merchantOpen, setMerchantOpen] = useState(false);
@@ -148,6 +148,19 @@ const Transactions = () => {
       if (receiptInputRef.current) receiptInputRef.current.value = '';
     }
   }, [categories, supabase]);
+
+  // Transfer detection patterns
+  const TRANSFER_PATTERNS = useMemo(() => [
+    /transfer/i, /xfer/i, /zelle/i, /venmo/i, /paypal.*transfer/i,
+    /cash\s*app/i, /wire/i, /ach/i, /direct\s*dep/i, /autopay/i,
+    /credit\s*card\s*payment/i, /payment\s*from/i, /payment\s*to/i,
+    /移動|振替/i, /internal/i, /between\s*accounts/i,
+  ], []);
+
+  const isTransferMerchant = useCallback((merchant: string) => {
+    if (!merchant) return false;
+    return TRANSFER_PATTERNS.some(p => p.test(merchant));
+  }, [TRANSFER_PATTERNS]);
 
   // Unique merchants from existing transactions for autocomplete
   const uniqueMerchants = useMemo(() => {
@@ -313,11 +326,12 @@ const Transactions = () => {
     }
 
     const tags = form.tags ? form.tags.split(',').map(t => t.trim()).filter(Boolean) : null;
+    const isXfer = form.is_transfer || isTransferMerchant(form.merchant);
     const result = await createTransaction.mutateAsync({
       date: form.date, merchant: form.merchant || null, amount: finalAmount,
       account_id: form.account_id, category_id: form.category_id || null, notes: form.notes || null,
-      tags,
-    });
+      tags, is_transfer: isXfer,
+    } as any);
 
     // Upload receipt if scanned
     if (pendingReceiptFile && household && result?.id) {
@@ -336,7 +350,7 @@ const Transactions = () => {
     }
 
     setPendingReceiptFile(null);
-    setForm({ date: new Date().toISOString().split('T')[0], merchant: '', amount: '', account_id: '', category_id: '', notes: '', tags: '', goal_id: '' });
+    setForm({ date: new Date().toISOString().split('T')[0], merchant: '', amount: '', account_id: '', category_id: '', notes: '', tags: '', goal_id: '', is_transfer: false });
     setFormType('debit');
     setDupeWarningShown(false);
     setOpen(false);
@@ -768,7 +782,13 @@ const Transactions = () => {
                         <CommandInput
                           placeholder="Type a merchant..."
                           value={form.merchant}
-                          onValueChange={v => setForm(f => ({ ...f, merchant: v }))}
+                          onValueChange={v => {
+                            const detected = isTransferMerchant(v);
+                            setForm(f => ({ ...f, merchant: v, is_transfer: detected }));
+                            if (detected && !form.is_transfer) {
+                              toast.info('Transfer detected — this will be marked as a transfer', { duration: 3000 });
+                            }
+                          }}
                         />
                         <CommandList>
                           <CommandEmpty>
@@ -794,9 +814,12 @@ const Transactions = () => {
                                   onSelect={() => {
                                     const catId = merchantCategoryMap.get(m);
                                     const shouldAutoFill = catId && !form.category_id;
-                                    setForm(f => ({ ...f, merchant: m, ...(shouldAutoFill ? { category_id: catId } : {}) }));
+                                    const detected = isTransferMerchant(m);
+                                    setForm(f => ({ ...f, merchant: m, is_transfer: detected, ...(shouldAutoFill ? { category_id: catId } : {}) }));
                                     setMerchantOpen(false);
-                                    if (shouldAutoFill) {
+                                    if (detected) {
+                                      toast.info('Transfer detected — marked as transfer', { duration: 3000 });
+                                    } else if (shouldAutoFill) {
                                       const catName = categories?.find(c => c.id === catId)?.name;
                                       toast.info(`Category auto-filled: ${catName || 'Unknown'}`, { duration: 3000 });
                                     }
@@ -811,6 +834,20 @@ const Transactions = () => {
                       </Command>
                     </PopoverContent>
                   </Popover>
+                  {/* Transfer auto-detect indicator */}
+                  {form.is_transfer && (
+                    <div className="flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2">
+                      <ArrowRightLeft className="h-4 w-4 text-primary shrink-0" />
+                      <span className="text-sm font-medium">Transfer detected</span>
+                      <button
+                        type="button"
+                        onClick={() => setForm(f => ({ ...f, is_transfer: false }))}
+                        className="ml-auto text-xs text-muted-foreground hover:text-foreground"
+                      >
+                        Not a transfer
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label>Date</Label>
