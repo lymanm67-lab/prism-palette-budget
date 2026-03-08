@@ -1100,7 +1100,9 @@ const Transactions = () => {
                         key={txn.id}
                         className={cn(
                           "flex items-center gap-3 px-4 py-3 hover:bg-muted/30 transition-colors group cursor-pointer",
-                          isDupe && "bg-amber-50/50 dark:bg-amber-950/10"
+                          isDupe && "bg-amber-50/50 dark:bg-amber-950/10",
+                          !isDupe && isIncome && "bg-emerald-50/40 dark:bg-emerald-950/10",
+                          !isDupe && !isIncome && !isTransfer && "bg-background"
                         )}
                         onClick={() => selected.size === 0 && openEditTxn(txn)}
                       >
