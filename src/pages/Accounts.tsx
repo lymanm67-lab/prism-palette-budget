@@ -17,6 +17,7 @@ import PlaidLinkButton from '@/components/PlaidLinkButton';
 import MxConnectButton from '@/components/MxConnectButton';
 import PageOverview from '@/components/PageOverview';
 import CsvImportDialog from '@/components/CsvImportDialog';
+import BankExportGuide from '@/components/BankExportGuide';
 
 type AccountType = Database['public']['Enums']['account_type'];
 
@@ -219,6 +220,7 @@ const Accounts = () => {
           </Card>
         </motion.div>
       ))}
+      <BankExportGuide />
       <CsvImportDialog open={importOpen} onOpenChange={setImportOpen} />
     </motion.div>
   );
