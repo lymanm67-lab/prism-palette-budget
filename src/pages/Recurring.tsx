@@ -9,12 +9,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { useRecurringTransactions, useCreateRecurring, useDeleteRecurring } from '@/hooks/use-recurring';
+import { useRecurringTransactions, useCreateRecurring, useUpdateRecurring, useDeleteRecurring } from '@/hooks/use-recurring';
 import { useAccounts, useCategories } from '@/hooks/use-finance-data';
 import CategoryCombobox from '@/components/CategoryCombobox';
 import { useCurrency } from '@/hooks/use-currency';
 import { format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, addMonths, subMonths } from 'date-fns';
-import { Loader2, Plus, Trash2, CalendarIcon, List, ChevronLeft, ChevronRight, RepeatIcon, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
+import { Loader2, Plus, Trash2, Pencil, CalendarIcon, List, ChevronLeft, ChevronRight, RepeatIcon, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import PageOverview from '@/components/PageOverview';
@@ -30,6 +30,7 @@ const FREQUENCIES = [
 const Recurring = () => {
   const { data: recurring, isLoading } = useRecurringTransactions();
   const createRecurring = useCreateRecurring();
+  const updateRecurring = useUpdateRecurring();
   const deleteRecurring = useDeleteRecurring();
   const { data: accounts } = useAccounts();
   const { data: categories } = useCategories();
@@ -39,6 +40,8 @@ const Recurring = () => {
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [editTarget, setEditTarget] = useState<any | null>(null);
+  const [editForm, setEditForm] = useState({ merchant: '', amount: '', frequency: 'monthly', account_id: '', category_id: '', next_due_date: '' });
 
   const [form, setForm] = useState({
     merchant: '',
@@ -78,6 +81,31 @@ const Recurring = () => {
         setDialogOpen(false);
         setForm({ merchant: '', amount: '', frequency: 'monthly', account_id: '', category_id: '', start_date: format(new Date(), 'yyyy-MM-dd'), next_due_date: format(new Date(), 'yyyy-MM-dd') });
       }
+    });
+  const openEdit = (r: any) => {
+    setEditTarget(r);
+    setEditForm({
+      merchant: r.merchant || '',
+      amount: String(r.amount),
+      frequency: r.frequency || 'monthly',
+      account_id: r.account_id || '',
+      category_id: r.category_id || '',
+      next_due_date: r.next_due_date || '',
+    });
+  };
+
+  const handleEdit = () => {
+    if (!editTarget) return;
+    updateRecurring.mutate({
+      id: editTarget.id,
+      merchant: editForm.merchant,
+      amount: parseFloat(editForm.amount),
+      frequency: editForm.frequency,
+      account_id: editForm.account_id,
+      category_id: editForm.category_id || null,
+      next_due_date: editForm.next_due_date,
+    }, {
+      onSuccess: () => { setEditTarget(null); toast.success('Updated!'); },
     });
   };
 
@@ -219,6 +247,9 @@ const Recurring = () => {
                           {r.next_due_date ? format(parseISO(r.next_due_date), 'MMM d, yyyy') : '—'}
                         </p>
                       </div>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100" onClick={() => openEdit(r)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
                       <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 text-destructive" onClick={() => setDeleteTarget(r.id)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -344,6 +375,57 @@ const Recurring = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Edit Dialog */}
+      <Dialog open={!!editTarget} onOpenChange={o => !o && setEditTarget(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle className="font-display">Edit Recurring Transaction</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Merchant / Name</Label>
+              <Input value={editForm.merchant} onChange={e => setEditForm(f => ({ ...f, merchant: e.target.value }))} />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Amount</Label>
+                <Input type="number" step="0.01" value={editForm.amount} onChange={e => setEditForm(f => ({ ...f, amount: e.target.value }))} />
+              </div>
+              <div className="space-y-2">
+                <Label>Frequency</Label>
+                <Select value={editForm.frequency} onValueChange={v => setEditForm(f => ({ ...f, frequency: v }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{FREQUENCIES.map(f => <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Account</Label>
+                <Select value={editForm.account_id} onValueChange={v => setEditForm(f => ({ ...f, account_id: v }))}>
+                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectContent>{accounts?.map(a => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Category</Label>
+                <CategoryCombobox
+                  value={editForm.category_id}
+                  onValueChange={v => setEditForm(f => ({ ...f, category_id: v }))}
+                  placeholder="Search categories..."
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Next Due Date</Label>
+              <Input type="date" value={editForm.next_due_date} onChange={e => setEditForm(f => ({ ...f, next_due_date: e.target.value }))} />
+            </div>
+            <Button onClick={handleEdit} disabled={updateRecurring.isPending} className="w-full gap-2">
+              {updateRecurring.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Pencil className="h-4 w-4" />}
+              Save Changes
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 };
