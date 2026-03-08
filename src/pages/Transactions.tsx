@@ -1465,9 +1465,23 @@ const Transactions = () => {
                         </span>
 
                         {/* Inline action icons */}
-                        <div className={cn("flex items-center gap-0.5 shrink-0 transition-opacity", isNeedsReview ? "opacity-100" : "opacity-0 group-hover:opacity-100")}>
+                        <div className={cn("flex items-center gap-0.5 shrink-0 transition-opacity", (isNeedsReview || isDupe) ? "opacity-100" : "opacity-0 group-hover:opacity-100")}>
                           <TooltipProvider delayDuration={200}>
-                            {isNeedsReview && (
+                            {isDupe && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7 text-amber-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
+                                    onClick={(e) => { e.stopPropagation(); dismissDuplicate(txn.id); }}
+                                  >
+                                    <Check className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent side="top"><p>Not a duplicate</p></TooltipContent>
+                              </Tooltip>
+                            )}
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <Button
