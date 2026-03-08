@@ -1647,6 +1647,7 @@ const Transactions = () => {
                 </button>
               )}
             </div>
+            )}
             <div className="space-y-2">
               <Label>Notes</Label>
               <Input value={editForm.notes} onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))} placeholder="Add a note..." />
