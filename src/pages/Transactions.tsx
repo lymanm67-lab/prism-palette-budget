@@ -238,6 +238,15 @@ const Transactions = () => {
 
   // Filter + sort
   const filtered = useMemo(() => {
+    // Trash view uses deletedTransactions
+    if (viewFilter === 'trash') {
+      if (!deletedTransactions) return [];
+      const q = search.toLowerCase();
+      return deletedTransactions.filter(t => {
+        if (q && !(t.merchant?.toLowerCase().includes(q))) return false;
+        return true;
+      });
+    }
     if (!transactions) return [];
     const q = search.toLowerCase();
     let result = transactions.filter(t => {
@@ -265,7 +274,7 @@ const Transactions = () => {
     });
 
     return result;
-  }, [search, transactions, filters, sortKey, sortDir, viewFilter, duplicateIds]);
+  }, [search, transactions, deletedTransactions, filters, sortKey, sortDir, viewFilter, duplicateIds]);
 
   // Group by date
   const grouped = useMemo(() => {
