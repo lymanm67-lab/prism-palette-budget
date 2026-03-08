@@ -476,7 +476,7 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
               <div className="flex justify-between">
                 <Button variant="outline" onClick={() => { reset(); setStep('upload'); }} className="gap-1.5"><ArrowLeft className="h-4 w-4" /> Back</Button>
                 <Button
-                  onClick={() => setStep('preview')}
+                  onClick={() => { computePreviewRuleMatches(parsedRows); setStep('preview'); }}
                   disabled={!targetAccountId}
                   className="gap-1.5"
                 >
