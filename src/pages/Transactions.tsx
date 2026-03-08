@@ -1117,11 +1117,15 @@ const Transactions = () => {
                         {/* Merchant icon placeholder */}
                         <div className={cn(
                           "h-8 w-8 rounded-full flex items-center justify-center shrink-0",
-                          isDupe ? "bg-amber-100 dark:bg-amber-900/30" : "bg-muted"
+                          isDupe ? "bg-amber-100 dark:bg-amber-900/30" :
+                          isIncome ? "bg-emerald-100 dark:bg-emerald-900/30" :
+                          "bg-muted"
                         )}>
                           <span className={cn(
                             "text-xs font-bold",
-                            isDupe ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"
+                            isDupe ? "text-amber-600 dark:text-amber-400" :
+                            isIncome ? "text-emerald-600 dark:text-emerald-400" :
+                            "text-muted-foreground"
                           )}>
                             {(txn.merchant || '?')[0].toUpperCase()}
                           </span>
