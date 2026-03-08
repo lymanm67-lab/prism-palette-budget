@@ -60,7 +60,9 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
   const { findDuplicates } = useDuplicateDetection();
 
   const [step, setStep] = useState<Step>('upload');
+  const [fileMode, setFileMode] = useState<FileMode>('csv');
   const [csvResult, setCsvResult] = useState<CsvParseResult | null>(null);
+  const [ofxResult, setOfxResult] = useState<OfxParseResult | null>(null);
   const [mapping, setMapping] = useState<ColumnMapping>({ date: '', merchant: '', amount: '', category: '', notes: '' });
   const [targetAccountId, setTargetAccountId] = useState('');
   const [parsedRows, setParsedRows] = useState<ParsedRow[]>([]);
@@ -75,7 +77,9 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
 
   const reset = () => {
     setStep('upload');
+    setFileMode('csv');
     setCsvResult(null);
+    setOfxResult(null);
     setMapping({ date: '', merchant: '', amount: '', category: '', notes: '' });
     setTargetAccountId('');
     setParsedRows([]);
