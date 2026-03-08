@@ -1024,8 +1024,19 @@ const Transactions = () => {
           {grouped.map(group => (
             <div key={group.date}>
               {/* Date header */}
-              <div className="flex items-center justify-between px-3 py-2">
-                <span className="text-sm font-semibold text-muted-foreground">{group.label}</span>
+              <div className="flex items-center gap-2 px-3 py-2">
+                <Checkbox
+                  checked={group.transactions.every(t => selected.has(t.id))}
+                  onCheckedChange={(checked) => {
+                    setSelected(prev => {
+                      const next = new Set(prev);
+                      group.transactions.forEach(t => checked ? next.add(t.id) : next.delete(t.id));
+                      return next;
+                    });
+                  }}
+                  className="shrink-0"
+                />
+                <span className="text-sm font-semibold text-muted-foreground flex-1">{group.label}</span>
                 <span className={cn('text-sm font-semibold tabular-nums', group.total < 0 ? 'text-foreground' : 'text-emerald-600 dark:text-emerald-400')}>
                   {group.total >= 0 ? '+' : ''}{formatCurrency(group.total)}
                 </span>
