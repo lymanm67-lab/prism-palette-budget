@@ -329,15 +329,15 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
               >
                 <Upload className={cn('mx-auto h-10 w-10 mb-3', dragging ? 'text-primary' : 'text-muted-foreground')} />
                 <p className="font-medium mb-1">
-                  {dragging ? 'Drop your file here' : 'Drag & drop your CSV file or click to browse'}
+                  {dragging ? 'Drop your file here' : 'Drag & drop your file or click to browse'}
                 </p>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Supports bank statements, QuickBooks, Mint, Monarch, YNAB, and more
+                  Supports CSV, OFX, QBO, and QFX files from banks and financial software
                 </p>
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept=".csv,.CSV"
+                  accept=".csv,.CSV,.ofx,.OFX,.qbo,.QBO,.qfx,.QFX"
                   onChange={handleFileUpload}
                   className="hidden"
                 />
