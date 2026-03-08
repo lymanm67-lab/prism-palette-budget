@@ -213,6 +213,25 @@ const Transactions = () => {
     setTagSearch('');
   };
 
+  // Compute duplicate transaction IDs (same date+amount+normalized merchant, more than 1 match)
+  const duplicateIds = useMemo(() => {
+    if (!transactions) return new Set<string>();
+    const groups = new Map<string, string[]>();
+    for (const t of transactions) {
+      const merchant = (t.merchant || '').toLowerCase().trim().replace(/\s+/g, ' ');
+      const key = `${t.date}|${Math.round(t.amount * 100)}|${merchant}`;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key)!.push(t.id);
+    }
+    const dupeSet = new Set<string>();
+    for (const ids of groups.values()) {
+      if (ids.length > 1) ids.forEach(id => dupeSet.add(id));
+    }
+    return dupeSet;
+  }, [transactions]);
+
+  const duplicateCount = duplicateIds.size;
+
   const activeFilterCount = Object.values(filters).filter(Boolean).length;
 
   // Filter + sort
@@ -227,6 +246,11 @@ const Transactions = () => {
       if (filters.amountMax && Math.abs(t.amount) > parseFloat(filters.amountMax)) return false;
       if (filters.accountId && t.account_id !== filters.accountId) return false;
       if (filters.categoryId && t.category_id !== filters.categoryId) return false;
+      // View filter
+      if (viewFilter === 'income' && t.amount <= 0) return false;
+      if (viewFilter === 'expenses' && t.amount >= 0) return false;
+      if (viewFilter === 'transfers' && !(t as any).is_transfer) return false;
+      if (viewFilter === 'duplicates' && !duplicateIds.has(t.id)) return false;
       return true;
     });
 
@@ -239,7 +263,7 @@ const Transactions = () => {
     });
 
     return result;
-  }, [search, transactions, filters, sortKey, sortDir]);
+  }, [search, transactions, filters, sortKey, sortDir, viewFilter, duplicateIds]);
 
   // Group by date
   const grouped = useMemo(() => {
