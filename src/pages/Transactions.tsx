@@ -89,6 +89,8 @@ const Transactions = () => {
   const [autoCatLoading, setAutoCatLoading] = useState(false);
   const [editTxn, setEditTxn] = useState<any>(null);
   const [editForm, setEditForm] = useState({ merchant: '', amount: '', date: '', account_id: '', category_id: '', notes: '', tags: '', goal_id: '' });
+  const [aiSuggestion, setAiSuggestion] = useState<{ id: string; name: string; color: string } | null>(null);
+  const [aiSuggestionLoading, setAiSuggestionLoading] = useState(false);
   const [editType, setEditType] = useState<'debit' | 'credit'>('debit');
   const [editReceiptUrl, setEditReceiptUrl] = useState<string | null>(null);
   const [pendingReceiptFile, setPendingReceiptFile] = useState<File | null>(null);
@@ -458,11 +460,12 @@ const Transactions = () => {
     }
   };
 
-  const openEditTxn = (txn: any) => {
+  const openEditTxn = async (txn: any) => {
     setEditTxn(txn);
     const isCredit = txn.amount > 0;
     setEditType(isCredit ? 'credit' : 'debit');
     setEditReceiptUrl(txn.receipt_url || null);
+    setAiSuggestion(null);
     setEditForm({
       merchant: txn.merchant || '',
       amount: String(Math.abs(txn.amount)),
@@ -473,6 +476,23 @@ const Transactions = () => {
       tags: (txn.tags || []).join(', '),
       goal_id: '',
     });
+
+    // Fetch AI suggestion if no category assigned
+    if (!txn.category_id && household) {
+      setAiSuggestionLoading(true);
+      try {
+        const { data, error } = await supabase.functions.invoke('suggest-category', {
+          body: { merchant: txn.merchant, amount: txn.amount, date: txn.date, household_id: household.id },
+        });
+        if (!error && data?.suggestion) {
+          setAiSuggestion(data.suggestion);
+        }
+      } catch (e) {
+        console.error('AI suggestion error:', e);
+      } finally {
+        setAiSuggestionLoading(false);
+      }
+    }
   };
 
   const handleUploadEditReceipt = async (file: File) => {
@@ -1133,7 +1153,7 @@ const Transactions = () => {
           <Trash2 className="h-4 w-4 text-muted-foreground shrink-0" />
           <div className="flex-1">
             <p className="text-sm font-medium">{filtered.length} transaction{filtered.length !== 1 ? 's' : ''} in trash</p>
-            <p className="text-xs text-muted-foreground">Select items to restore or permanently delete them.</p>
+            <p className="text-xs text-muted-foreground">Items are auto-deleted after 30 days. Select items to restore or permanently delete them.</p>
           </div>
           {filtered.length > 0 && (
             <div className="flex items-center gap-2">
@@ -1433,7 +1453,26 @@ const Transactions = () => {
             </div>
             <div className="space-y-2">
               <Label>Category</Label>
-              <CategoryCombobox value={editForm.category_id} onValueChange={v => setEditForm(f => ({ ...f, category_id: v }))} />
+              <CategoryCombobox value={editForm.category_id} onValueChange={v => { setEditForm(f => ({ ...f, category_id: v })); setAiSuggestion(null); }} />
+              {/* AI Suggestion */}
+              {aiSuggestionLoading && (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground py-1">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  AI suggesting a category...
+                </div>
+              )}
+              {aiSuggestion && !editForm.category_id && (
+                <button
+                  type="button"
+                  onClick={() => { setEditForm(f => ({ ...f, category_id: aiSuggestion.id })); setAiSuggestion(null); toast.info(`Category set to ${aiSuggestion.name}`); }}
+                  className="flex items-center gap-2 w-full rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-sm hover:bg-primary/10 transition-colors"
+                >
+                  <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />
+                  <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: aiSuggestion.color }} />
+                  <span className="font-medium">{aiSuggestion.name}</span>
+                  <span className="text-muted-foreground ml-auto text-xs">AI suggestion — click to apply</span>
+                </button>
+              )}
             </div>
             <div className="space-y-2">
               <Label>Notes</Label>
