@@ -82,6 +82,31 @@ const Recurring = () => {
         setForm({ merchant: '', amount: '', frequency: 'monthly', account_id: '', category_id: '', start_date: format(new Date(), 'yyyy-MM-dd'), next_due_date: format(new Date(), 'yyyy-MM-dd') });
       }
     });
+  const openEdit = (r: any) => {
+    setEditTarget(r);
+    setEditForm({
+      merchant: r.merchant || '',
+      amount: String(r.amount),
+      frequency: r.frequency || 'monthly',
+      account_id: r.account_id || '',
+      category_id: r.category_id || '',
+      next_due_date: r.next_due_date || '',
+    });
+  };
+
+  const handleEdit = () => {
+    if (!editTarget) return;
+    updateRecurring.mutate({
+      id: editTarget.id,
+      merchant: editForm.merchant,
+      amount: parseFloat(editForm.amount),
+      frequency: editForm.frequency,
+      account_id: editForm.account_id,
+      category_id: editForm.category_id || null,
+      next_due_date: editForm.next_due_date,
+    }, {
+      onSuccess: () => { setEditTarget(null); toast.success('Updated!'); },
+    });
   };
 
   // Calendar logic
