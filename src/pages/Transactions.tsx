@@ -1100,7 +1100,9 @@ const Transactions = () => {
                         key={txn.id}
                         className={cn(
                           "flex items-center gap-3 px-4 py-3 hover:bg-muted/30 transition-colors group cursor-pointer",
-                          isDupe && "bg-amber-50/50 dark:bg-amber-950/10"
+                          isDupe && "bg-amber-50/50 dark:bg-amber-950/10",
+                          !isDupe && isIncome && "bg-emerald-50/40 dark:bg-emerald-950/10",
+                          !isDupe && !isIncome && !isTransfer && "bg-background"
                         )}
                         onClick={() => selected.size === 0 && openEditTxn(txn)}
                       >
@@ -1115,11 +1117,15 @@ const Transactions = () => {
                         {/* Merchant icon placeholder */}
                         <div className={cn(
                           "h-8 w-8 rounded-full flex items-center justify-center shrink-0",
-                          isDupe ? "bg-amber-100 dark:bg-amber-900/30" : "bg-muted"
+                          isDupe ? "bg-amber-100 dark:bg-amber-900/30" :
+                          isIncome ? "bg-emerald-100 dark:bg-emerald-900/30" :
+                          "bg-muted"
                         )}>
                           <span className={cn(
                             "text-xs font-bold",
-                            isDupe ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"
+                            isDupe ? "text-amber-600 dark:text-amber-400" :
+                            isIncome ? "text-emerald-600 dark:text-emerald-400" :
+                            "text-muted-foreground"
                           )}>
                             {(txn.merchant || '?')[0].toUpperCase()}
                           </span>
