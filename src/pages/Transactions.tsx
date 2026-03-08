@@ -977,6 +977,7 @@ const Transactions = () => {
                   <Copy className="h-3.5 w-3.5 text-amber-500" /> Duplicates {duplicateCount > 0 && `(${duplicateCount})`}
                 </span>
               </SelectItem>
+              <SelectItem value="uncategorized">Uncategorized</SelectItem>
               <SelectItem value="trash">
                 <span className="flex items-center gap-1.5">
                   <Trash2 className="h-3.5 w-3.5 text-muted-foreground" /> Trash {(deletedTransactions?.length || 0) > 0 && `(${deletedTransactions?.length})`}
