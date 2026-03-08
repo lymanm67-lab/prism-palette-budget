@@ -192,6 +192,7 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
       toast({ title: `${dupes.size} potential duplicate(s) found`, description: 'Duplicates are deselected by default. You can re-select them if needed.' });
     }
 
+    computePreviewRuleMatches(rows);
     setStep('preview');
   };
 
