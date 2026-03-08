@@ -1281,7 +1281,7 @@ const Transactions = () => {
                           </span>
                         </div>
 
-                        {/* Merchant name + duplicate badge */}
+                        {/* Merchant name + category + duplicate badge */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5">
                             <p className="text-sm font-medium truncate">{txn.merchant || 'No merchant'}</p>
@@ -1292,7 +1292,17 @@ const Transactions = () => {
                               </Badge>
                             )}
                           </div>
-                          {isTransfer && <p className="text-[10px] text-muted-foreground">Transfer</p>}
+                          <div className="flex items-center gap-1.5">
+                            {cat ? (
+                              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
+                                <span className="truncate">{cat.name}</span>
+                              </span>
+                            ) : (
+                              !isTransfer && <span className="text-[10px] text-muted-foreground italic">Uncategorized</span>
+                            )}
+                            {isTransfer && <span className="text-[10px] text-muted-foreground">Transfer</span>}
+                          </div>
                         </div>
 
                         {/* Account */}
