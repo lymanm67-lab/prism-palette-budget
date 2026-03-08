@@ -537,7 +537,7 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
                   {dragging ? 'Drop your files here' : 'Drag & drop files or click to browse'}
                 </p>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Supports <strong>multiple files</strong> — CSV, OFX, QBO, QFX. Accounts auto-detected per file.
+                  Supports <strong>multiple files</strong> — CSV, OFX, QBO, QFX, QIF. Accounts auto-detected per file.
                 </p>
                 <input
                   ref={fileInputRef}
