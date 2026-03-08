@@ -1308,7 +1308,7 @@ const Transactions = () => {
                           </span>
                         </div>
 
-                        {/* Merchant name + category + duplicate badge */}
+                        {/* Merchant name + badges */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5">
                             <p className="text-sm font-medium truncate">{txn.merchant || 'No merchant'}</p>
@@ -1318,39 +1318,38 @@ const Transactions = () => {
                                 <Copy className="h-2.5 w-2.5 mr-0.5" /> Duplicate
                               </Badge>
                             )}
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            {cat ? (
-                              <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                                <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
-                                <span className="truncate">{cat.name}</span>
-                              </span>
-                            ) : (
-                              !isTransfer && <span className="text-[10px] text-muted-foreground italic">Uncategorized</span>
+                            {isTransfer && (
+                              <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-border text-muted-foreground shrink-0">
+                                <ArrowRightLeft className="h-2.5 w-2.5 mr-0.5" /> Transfer
+                              </Badge>
                             )}
-                            {isTransfer && <span className="text-[10px] text-muted-foreground">Transfer</span>}
                           </div>
                         </div>
 
-                        {/* Account */}
-                        <div className="hidden sm:flex items-center gap-1.5 w-[140px] shrink-0">
-                          {acct && (
-                            <span className="text-sm text-muted-foreground truncate">{acct.name}</span>
+                        {/* Category */}
+                        <div className="hidden sm:flex items-center gap-1.5 w-[180px] shrink-0">
+                          {cat ? (
+                            <span className="flex items-center gap-1.5 text-sm text-muted-foreground truncate">
+                              <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
+                              <span className="truncate">{cat.name}</span>
+                            </span>
+                          ) : (
+                            <span className="text-xs text-muted-foreground italic">Uncategorized</span>
                           )}
                         </div>
 
-                        {/* Account Balance */}
-                        <div className="hidden md:flex items-center w-[120px] shrink-0 justify-end">
+                        {/* Account */}
+                        <div className="hidden md:flex items-center gap-1.5 w-[180px] shrink-0">
                           {acct && (
-                            <span className="text-xs tabular-nums text-muted-foreground">
-                              bal {formatCurrency(acct.balance)}
+                            <span className="text-sm text-muted-foreground truncate">
+                              {acct.name}
                             </span>
                           )}
                         </div>
 
                         {/* Amount */}
                         <span className={cn(
-                          'text-sm font-semibold tabular-nums whitespace-nowrap',
+                          'text-sm font-semibold tabular-nums whitespace-nowrap w-[90px] text-right',
                           isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground'
                         )}>
                           {isIncome ? '+' : ''}{formatCurrency(txn.amount)}
