@@ -648,11 +648,16 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
           {step === 'preview' && (
             <motion.div key="preview" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4 flex-1 min-h-0">
               <div className="flex items-center justify-between flex-wrap gap-2">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 flex-wrap">
                   <p className="text-sm text-muted-foreground">{selectedRows.size} of {parsedRows.length} selected</p>
                   {duplicateRows.size > 0 && (
                     <Badge variant="outline" className="gap-1 text-prism-amber border-prism-amber/30">
                       <AlertTriangle className="h-3 w-3" /> {duplicateRows.size} duplicate{duplicateRows.size > 1 ? 's' : ''} found
+                    </Badge>
+                  )}
+                  {previewRuleMatches.size > 0 && (
+                    <Badge variant="outline" className="gap-1 text-primary border-primary/30 bg-primary/5">
+                      <Sparkles className="h-3 w-3" /> {previewRuleMatches.size} auto-categorized by rules
                     </Badge>
                   )}
                 </div>
@@ -677,6 +682,7 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
                     {parsedRows.map((row, i) => {
                       const matched = categoryLookup.has(row.category.toLowerCase());
                       const isDupe = duplicateRows.has(i);
+                      const ruleMatch = previewRuleMatches.get(i);
                       return (
                         <TableRow key={i} className={cn(!selectedRows.has(i) && 'opacity-40', isDupe && 'bg-prism-amber/5')}>
                           <TableCell><Checkbox checked={selectedRows.has(i)} onCheckedChange={() => handleToggleRow(i)} /></TableCell>
@@ -693,6 +699,10 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
                               <Badge variant={matched ? 'secondary' : 'outline'} className="text-xs">
                                 {row.category}
                                 {!matched && <AlertCircle className="ml-1 h-3 w-3 text-prism-amber" />}
+                              </Badge>
+                            ) : ruleMatch ? (
+                              <Badge variant="secondary" className="text-xs gap-1 bg-primary/10 text-primary border-primary/20">
+                                <Sparkles className="h-2.5 w-2.5" /> {ruleMatch.categoryName}
                               </Badge>
                             ) : <span className="text-xs text-muted-foreground">—</span>}
                           </TableCell>
