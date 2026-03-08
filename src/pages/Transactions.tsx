@@ -460,11 +460,12 @@ const Transactions = () => {
     }
   };
 
-  const openEditTxn = (txn: any) => {
+  const openEditTxn = async (txn: any) => {
     setEditTxn(txn);
     const isCredit = txn.amount > 0;
     setEditType(isCredit ? 'credit' : 'debit');
     setEditReceiptUrl(txn.receipt_url || null);
+    setAiSuggestion(null);
     setEditForm({
       merchant: txn.merchant || '',
       amount: String(Math.abs(txn.amount)),
@@ -475,6 +476,23 @@ const Transactions = () => {
       tags: (txn.tags || []).join(', '),
       goal_id: '',
     });
+
+    // Fetch AI suggestion if no category assigned
+    if (!txn.category_id && household) {
+      setAiSuggestionLoading(true);
+      try {
+        const { data, error } = await supabase.functions.invoke('suggest-category', {
+          body: { merchant: txn.merchant, amount: txn.amount, date: txn.date, household_id: household.id },
+        });
+        if (!error && data?.suggestion) {
+          setAiSuggestion(data.suggestion);
+        }
+      } catch (e) {
+        console.error('AI suggestion error:', e);
+      } finally {
+        setAiSuggestionLoading(false);
+      }
+    }
   };
 
   const handleUploadEditReceipt = async (file: File) => {
