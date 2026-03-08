@@ -1092,7 +1092,51 @@ const Transactions = () => {
         </motion.div>
       )}
 
-      {/* Transaction list grouped by date */}
+      {/* Trash banner */}
+      {viewFilter === 'trash' && (
+        <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-3 rounded-xl border border-border bg-muted/50 px-4 py-3">
+          <Trash2 className="h-4 w-4 text-muted-foreground shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-medium">{filtered.length} transaction{filtered.length !== 1 ? 's' : ''} in trash</p>
+            <p className="text-xs text-muted-foreground">Select items to restore or permanently delete them.</p>
+          </div>
+          {filtered.length > 0 && (
+            <div className="flex items-center gap-2">
+              <Button size="sm" variant="outline" className="gap-1.5 h-8" onClick={async () => {
+                const ids = filtered.map(t => t.id);
+                await restoreTransactions(ids);
+                toast.success(`Restored ${ids.length} transactions`);
+              }}>
+                <RotateCcw className="h-3.5 w-3.5" /> Restore all
+              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button size="sm" variant="destructive" className="gap-1.5 h-8">
+                    <Trash2 className="h-3.5 w-3.5" /> Empty trash
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Permanently delete all {filtered.length} trashed transactions?</AlertDialogTitle>
+                    <AlertDialogDescription>This cannot be undone. All transactions in trash will be permanently removed.</AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={async () => {
+                      await permanentDelete(filtered.map(t => t.id));
+                      toast.success('Trash emptied');
+                    }}>
+                      Delete permanently
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          )}
+        </motion.div>
+      )}
+
       {grouped.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center p-12 text-center">
