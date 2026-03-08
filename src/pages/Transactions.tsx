@@ -1145,20 +1145,19 @@ const Transactions = () => {
                           {isTransfer && <p className="text-[10px] text-muted-foreground">Transfer</p>}
                         </div>
 
-                        {/* Category */}
-                        <div className="hidden sm:flex items-center gap-1.5 w-[160px] shrink-0">
-                          {cat && (
-                            <>
-                              <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
-                              <span className="text-sm text-muted-foreground truncate">{cat.name}</span>
-                            </>
+                        {/* Account */}
+                        <div className="hidden sm:flex items-center gap-1.5 w-[140px] shrink-0">
+                          {acct && (
+                            <span className="text-sm text-muted-foreground truncate">{acct.name}</span>
                           )}
                         </div>
 
-                        {/* Account */}
-                        <div className="hidden md:flex items-center gap-1.5 w-[200px] shrink-0">
+                        {/* Account Balance */}
+                        <div className="hidden md:flex items-center w-[120px] shrink-0 justify-end">
                           {acct && (
-                            <span className="text-sm text-muted-foreground truncate">{acct.name}</span>
+                            <span className="text-xs tabular-nums text-muted-foreground">
+                              bal {formatCurrency(acct.balance)}
+                            </span>
                           )}
                         </div>
 
