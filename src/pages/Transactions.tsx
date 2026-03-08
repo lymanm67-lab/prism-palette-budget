@@ -1436,10 +1436,7 @@ const Transactions = () => {
             </div>
             <div className="space-y-2">
               <Label>Category</Label>
-              <Select value={editForm.category_id} onValueChange={v => setEditForm(f => ({ ...f, category_id: v }))}>
-                <SelectTrigger><SelectValue placeholder="Select category..." /></SelectTrigger>
-                <SelectContent>{(categories || []).map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
-              </Select>
+              <CategoryCombobox value={editForm.category_id} onValueChange={v => setEditForm(f => ({ ...f, category_id: v }))} />
             </div>
             <div className="space-y-2">
               <Label>Notes</Label>
