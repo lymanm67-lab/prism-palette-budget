@@ -89,6 +89,8 @@ const Transactions = () => {
   const [autoCatLoading, setAutoCatLoading] = useState(false);
   const [editTxn, setEditTxn] = useState<any>(null);
   const [editForm, setEditForm] = useState({ merchant: '', amount: '', date: '', account_id: '', category_id: '', notes: '', tags: '', goal_id: '' });
+  const [aiSuggestion, setAiSuggestion] = useState<{ id: string; name: string; color: string } | null>(null);
+  const [aiSuggestionLoading, setAiSuggestionLoading] = useState(false);
   const [editType, setEditType] = useState<'debit' | 'credit'>('debit');
   const [editReceiptUrl, setEditReceiptUrl] = useState<string | null>(null);
   const [pendingReceiptFile, setPendingReceiptFile] = useState<File | null>(null);
