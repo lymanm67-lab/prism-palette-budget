@@ -330,7 +330,7 @@ const Recurring = () => {
               <div className="space-y-2">
                 <Label>Amount *</Label>
                 <Input type="number" step="0.01" min="0" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} placeholder="15.99" />
-                <p className="text-[10px] text-muted-foreground">Negative = expense, positive = income</p>
+                
               </div>
               <div className="space-y-2">
                 <Label>Frequency</Label>
