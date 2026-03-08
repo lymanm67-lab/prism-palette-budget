@@ -901,6 +901,7 @@ const Transactions = () => {
             </Button>
           )}
         </div>
+        <div className="flex items-center gap-2">
           {/* Auto-categorize button */}
           <Button
             variant="outline"
