@@ -223,7 +223,7 @@ const Recurring = () => {
       {/* List View */}
       {view === 'list' && (
         <Card>
-          <CardHeader><CardTitle className="font-display">Upcoming</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="font-display">Upcoming Expenses</CardTitle></CardHeader>
           <CardContent>
             {!recurring || recurring.length === 0 ? (
               <p className="text-center text-muted-foreground py-10">No recurring transactions yet.</p>
