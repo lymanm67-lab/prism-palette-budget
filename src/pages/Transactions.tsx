@@ -268,6 +268,7 @@ const Transactions = () => {
       if (viewFilter === 'expenses' && t.amount >= 0) return false;
       if (viewFilter === 'transfers' && !(t as any).is_transfer) return false;
       if (viewFilter === 'duplicates' && !duplicateIds.has(t.id)) return false;
+      if (viewFilter === 'uncategorized' && t.category_id !== null) return false;
       return true;
     });
 
