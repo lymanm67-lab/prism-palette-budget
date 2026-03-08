@@ -26,6 +26,7 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import CsvImportDialog from '@/components/CsvImportDialog';
+import CategoryCombobox from '@/components/CategoryCombobox';
 import PageOverview from '@/components/PageOverview';
 import { useDuplicateDetection } from '@/hooks/use-duplicate-detection';
 
@@ -804,10 +805,7 @@ const Transactions = () => {
                 </div>
                 <div className="space-y-2">
                   <Label>Category</Label>
-                  <Select value={form.category_id} onValueChange={v => setForm(f => ({ ...f, category_id: v }))}>
-                    <SelectTrigger><SelectValue placeholder="Search categories..." /></SelectTrigger>
-                    <SelectContent>{(categories || []).map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
-                  </Select>
+                  <CategoryCombobox value={form.category_id} onValueChange={v => setForm(f => ({ ...f, category_id: v }))} />
                 </div>
                 <div className="space-y-2">
                   <Label>Goal</Label>
@@ -1035,10 +1033,7 @@ const Transactions = () => {
           ) : (
             <>
               <div className="flex items-center gap-2">
-                <Select value={bulkCategory} onValueChange={setBulkCategory}>
-                  <SelectTrigger className="h-8 w-[160px] text-xs"><SelectValue placeholder="Categorize as…" /></SelectTrigger>
-                  <SelectContent>{(categories || []).map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
-                </Select>
+                <CategoryCombobox value={bulkCategory} onValueChange={setBulkCategory} placeholder="Categorize as…" className="h-8 w-[180px] text-xs" />
                 <Button size="sm" variant="outline" onClick={bulkCategorize} disabled={!bulkCategory} className="gap-1 h-8">
                   <Tags className="h-3.5 w-3.5" /> Apply
                 </Button>
@@ -1438,10 +1433,7 @@ const Transactions = () => {
             </div>
             <div className="space-y-2">
               <Label>Category</Label>
-              <Select value={editForm.category_id} onValueChange={v => setEditForm(f => ({ ...f, category_id: v }))}>
-                <SelectTrigger><SelectValue placeholder="Select category..." /></SelectTrigger>
-                <SelectContent>{(categories || []).map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
-              </Select>
+              <CategoryCombobox value={editForm.category_id} onValueChange={v => setEditForm(f => ({ ...f, category_id: v }))} />
             </div>
             <div className="space-y-2">
               <Label>Notes</Label>

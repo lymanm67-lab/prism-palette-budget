@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,14 +7,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import {
   useCategoryGroups, useCategories,
   useCreateCategoryGroup, useUpdateCategoryGroup, useDeleteCategoryGroup,
   useCreateCategory, useUpdateCategory, useDeleteCategory,
 } from '@/hooks/use-finance-data';
 import { useBusinessProfiles } from '@/hooks/use-business-data';
-import { Loader2, Plus, Pencil, Trash2, GripVertical, ChevronDown, ChevronRight, FolderOpen, Building2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { Loader2, Plus, Pencil, Trash2, GripVertical, ChevronDown, ChevronRight, FolderOpen, Building2, AlertTriangle, Merge } from 'lucide-react';
 import PageOverview from '@/components/PageOverview';
 
 const PRESET_COLORS = [
@@ -72,7 +75,52 @@ const Categories = () => {
   // Delete confirmation
   const [deleteTarget, setDeleteTarget] = useState<{ type: 'group' | 'category'; id: string; name: string } | null>(null);
 
-  // Collapsed groups
+  const qc = useQueryClient();
+  const [mergingDupes, setMergingDupes] = useState(false);
+
+  // Detect duplicate categories (same name, case-insensitive)
+  const duplicateGroups = useMemo(() => {
+    if (!categories) return [];
+    const map = new Map<string, typeof categories>();
+    for (const c of categories) {
+      const key = c.name.toLowerCase().trim();
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(c);
+    }
+    return Array.from(map.values()).filter(group => group.length > 1);
+  }, [categories]);
+
+  const mergeAllDuplicates = async () => {
+    if (duplicateGroups.length === 0) return;
+    setMergingDupes(true);
+    try {
+      let mergedCount = 0;
+      for (const dupeGroup of duplicateGroups) {
+        // Keep the first one (oldest), reassign transactions from others
+        const [keep, ...remove] = dupeGroup;
+        for (const dup of remove) {
+          // Reassign transactions
+          await supabase.from('transactions').update({ category_id: keep.id }).eq('category_id', dup.id);
+          // Reassign budgets
+          await supabase.from('budgets').update({ category_id: keep.id }).eq('category_id', dup.id);
+          // Reassign categorization rules
+          await supabase.from('categorization_rules').update({ category_id: keep.id }).eq('category_id', dup.id);
+          // Delete the duplicate
+          await supabase.from('categories').delete().eq('id', dup.id);
+          mergedCount++;
+        }
+      }
+      qc.invalidateQueries({ queryKey: ['categories'] });
+      qc.invalidateQueries({ queryKey: ['transactions'] });
+      qc.invalidateQueries({ queryKey: ['budgets'] });
+      toast.success(`Merged ${mergedCount} duplicate categories`);
+    } catch (e: any) {
+      toast.error(e.message || 'Failed to merge duplicates');
+    } finally {
+      setMergingDupes(false);
+    }
+  };
+
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
 
   const toggleCollapse = (id: string) => {
@@ -193,6 +241,41 @@ const Categories = () => {
         </Button>
       </div>
 
+      {/* Duplicate categories banner */}
+      {duplicateGroups.length > 0 && (
+        <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-3 rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50/80 dark:bg-amber-950/20 px-4 py-3">
+          <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+              {duplicateGroups.length} duplicate category name{duplicateGroups.length > 1 ? 's' : ''} found
+            </p>
+            <p className="text-xs text-amber-600 dark:text-amber-400">
+              {duplicateGroups.map(g => `"${g[0].name}" (${g.length}×)`).join(', ')}. Merging will reassign all transactions to one and delete extras.
+            </p>
+          </div>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button size="sm" variant="outline" className="gap-1.5 shrink-0 border-amber-300 hover:bg-amber-100 dark:hover:bg-amber-950/30" disabled={mergingDupes}>
+                {mergingDupes ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Merge className="h-3.5 w-3.5" />}
+                Merge all duplicates
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Merge {duplicateGroups.reduce((s, g) => s + g.length - 1, 0)} duplicate categories?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  For each duplicate name, the oldest category will be kept and all transactions, budgets, and rules will be reassigned to it. The extra duplicates will be deleted.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={mergeAllDuplicates}>Merge duplicates</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </motion.div>
+      )}
       {(!groups || groups.length === 0) && (
         <Card><CardContent className="p-10 text-center text-muted-foreground">
           No category groups yet. Create a group to start organizing your categories.
