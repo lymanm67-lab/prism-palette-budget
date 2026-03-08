@@ -216,10 +216,29 @@ export function useTransactions() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('transactions')
-        .select('*, categories(name, color), accounts(name)')
+        .select('*, categories(name, color), accounts(name, balance)')
         .eq('household_id', household!.id)
+        .is('deleted_at', null)
         .order('date', { ascending: false })
         .limit(100);
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
+export function useDeletedTransactions() {
+  const { household } = useHousehold();
+  return useQuery({
+    queryKey: ['transactions_deleted', household?.id],
+    enabled: !!household,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('transactions')
+        .select('*, categories(name, color), accounts(name, balance)')
+        .eq('household_id', household!.id)
+        .not('deleted_at', 'is', null)
+        .order('deleted_at', { ascending: false });
       if (error) throw error;
       return data;
     },
@@ -234,8 +253,9 @@ export function useTransactionsByDateRange(startDate: string, endDate: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('transactions')
-        .select('*, categories(name, color), accounts(name)')
+        .select('*, categories(name, color), accounts(name, balance)')
         .eq('household_id', household!.id)
+        .is('deleted_at', null)
         .gte('date', startDate)
         .lte('date', endDate)
         .order('date', { ascending: false });
@@ -253,8 +273,9 @@ export function useAllTransactions() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('transactions')
-        .select('*, categories(name, color), accounts(name)')
+        .select('*, categories(name, color), accounts(name, balance)')
         .eq('household_id', household!.id)
+        .is('deleted_at', null)
         .order('date', { ascending: true });
       if (error) throw error;
       return data;
@@ -356,6 +377,7 @@ export function useSpendingByCategory(startDate: string, endDate: string) {
         .from('transactions')
         .select('amount, category_id, categories(name, color)')
         .eq('household_id', household!.id)
+        .is('deleted_at', null)
         .gte('date', startDate)
         .lte('date', endDate)
         .lt('amount', 0); // expenses only

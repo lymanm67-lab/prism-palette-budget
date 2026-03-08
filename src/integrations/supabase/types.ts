@@ -1025,6 +1025,7 @@ export type Database = {
           category_id: string | null
           created_at: string
           date: string
+          deleted_at: string | null
           household_id: string
           id: string
           is_transfer: boolean
@@ -1044,6 +1045,7 @@ export type Database = {
           category_id?: string | null
           created_at?: string
           date: string
+          deleted_at?: string | null
           household_id: string
           id?: string
           is_transfer?: boolean
@@ -1063,6 +1065,7 @@ export type Database = {
           category_id?: string | null
           created_at?: string
           date?: string
+          deleted_at?: string | null
           household_id?: string
           id?: string
           is_transfer?: boolean

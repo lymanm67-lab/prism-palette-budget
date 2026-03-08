@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { useTransactions, useCreateTransaction, useUpdateTransaction, useAccounts, useCategories } from '@/hooks/use-finance-data';
+import { useTransactions, useDeletedTransactions, useCreateTransaction, useUpdateTransaction, useAccounts, useCategories } from '@/hooks/use-finance-data';
 import { useGoals } from '@/hooks/use-goals';
 import { useCurrency } from '@/hooks/use-currency';
 import { supabase } from '@/integrations/supabase/client';
@@ -21,7 +21,7 @@ import {
   Search, Plus, Loader2, Upload, Receipt, Trash2, Tags,
   ArrowRightLeft, SlidersHorizontal, CalendarIcon, ChevronRight,
   ArrowUpDown, X, Pencil, Sparkles, Landmark, Check, Camera, ImageIcon,
-  Copy, AlertTriangle,
+  Copy, AlertTriangle, Undo2, RotateCcw,
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
@@ -58,11 +58,12 @@ interface FilterState {
 
 const EMPTY_FILTERS: FilterState = { dateFrom: '', dateTo: '', amountMin: '', amountMax: '', accountId: '', categoryId: '' };
 
-type TxnViewFilter = 'all' | 'income' | 'expenses' | 'transfers' | 'duplicates';
+type TxnViewFilter = 'all' | 'income' | 'expenses' | 'transfers' | 'duplicates' | 'trash';
 
 const Transactions = () => {
   const { formatCurrency } = useCurrency();
   const { data: transactions, isLoading } = useTransactions();
+  const { data: deletedTransactions } = useDeletedTransactions();
   const { data: accounts } = useAccounts();
   const { data: categories } = useCategories();
   const createTransaction = useCreateTransaction();
@@ -237,6 +238,15 @@ const Transactions = () => {
 
   // Filter + sort
   const filtered = useMemo(() => {
+    // Trash view uses deletedTransactions
+    if (viewFilter === 'trash') {
+      if (!deletedTransactions) return [];
+      const q = search.toLowerCase();
+      return deletedTransactions.filter(t => {
+        if (q && !(t.merchant?.toLowerCase().includes(q))) return false;
+        return true;
+      });
+    }
     if (!transactions) return [];
     const q = search.toLowerCase();
     let result = transactions.filter(t => {
@@ -264,7 +274,7 @@ const Transactions = () => {
     });
 
     return result;
-  }, [search, transactions, filters, sortKey, sortDir, viewFilter, duplicateIds]);
+  }, [search, transactions, deletedTransactions, filters, sortKey, sortDir, viewFilter, duplicateIds]);
 
   // Group by date
   const grouped = useMemo(() => {
@@ -353,11 +363,46 @@ const Transactions = () => {
     setSelected(prev => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
   };
 
-  const bulkDelete = async () => {
-    for (const id of selected) { await supabase.from('transactions').delete().eq('id', id); }
+  const softDelete = async (ids: string[]) => {
+    const now = new Date().toISOString();
+    for (const id of ids) {
+      await supabase.from('transactions').update({ deleted_at: now } as any).eq('id', id);
+    }
     qc.invalidateQueries({ queryKey: ['transactions'] });
+    qc.invalidateQueries({ queryKey: ['transactions_deleted'] });
+    return ids;
+  };
+
+  const restoreTransactions = async (ids: string[]) => {
+    for (const id of ids) {
+      await supabase.from('transactions').update({ deleted_at: null } as any).eq('id', id);
+    }
+    qc.invalidateQueries({ queryKey: ['transactions'] });
+    qc.invalidateQueries({ queryKey: ['transactions_deleted'] });
+  };
+
+  const permanentDelete = async (ids: string[]) => {
+    for (const id of ids) {
+      await supabase.from('transactions').delete().eq('id', id);
+    }
+    qc.invalidateQueries({ queryKey: ['transactions'] });
+    qc.invalidateQueries({ queryKey: ['transactions_deleted'] });
+  };
+
+  const bulkDelete = async () => {
+    const ids = Array.from(selected);
+    await softDelete(ids);
     setSelected(new Set());
-    toast.success(`Deleted ${selected.size} transactions`);
+    toast.success(`Moved ${ids.length} transactions to trash`, {
+      action: {
+        label: 'Undo',
+        onClick: async () => {
+          await restoreTransactions(ids);
+          toast.success(`Restored ${ids.length} transactions`);
+        },
+      },
+      duration: 10000,
+    });
   };
 
   const bulkCategorize = async () => {
@@ -886,6 +931,11 @@ const Transactions = () => {
                   <Copy className="h-3.5 w-3.5 text-amber-500" /> Duplicates {duplicateCount > 0 && `(${duplicateCount})`}
                 </span>
               </SelectItem>
+              <SelectItem value="trash">
+                <span className="flex items-center gap-1.5">
+                  <Trash2 className="h-3.5 w-3.5 text-muted-foreground" /> Trash {(deletedTransactions?.length || 0) > 0 && `(${deletedTransactions?.length})`}
+                </span>
+              </SelectItem>
             </SelectContent>
           </Select>
           {viewFilter === 'duplicates' && duplicateCount > 0 && (
@@ -947,49 +997,88 @@ const Transactions = () => {
           <Button size="sm" variant="outline" onClick={() => { const allIds = new Set(filtered.map(t => t.id)); setSelected(allIds); }} className="gap-1 h-8 text-xs">
             <Check className="h-3 w-3" /> Select all ({filtered.length})
           </Button>
-          <div className="flex items-center gap-2">
-            <Select value={bulkCategory} onValueChange={setBulkCategory}>
-              <SelectTrigger className="h-8 w-[160px] text-xs"><SelectValue placeholder="Categorize as…" /></SelectTrigger>
-              <SelectContent>{(categories || []).map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
-            </Select>
-            <Button size="sm" variant="outline" onClick={bulkCategorize} disabled={!bulkCategory} className="gap-1 h-8">
-              <Tags className="h-3.5 w-3.5" /> Apply
-            </Button>
-          </div>
-          <div className="flex items-center gap-2">
-            <Select value={bulkAccount} onValueChange={setBulkAccount}>
-              <SelectTrigger className="h-8 w-[160px] text-xs"><SelectValue placeholder="Move to account…" /></SelectTrigger>
-              <SelectContent>{(accounts || []).map(a => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}</SelectContent>
-            </Select>
-            <Button size="sm" variant="outline" onClick={bulkChangeAccount} disabled={!bulkAccount} className="gap-1 h-8">
-              <Landmark className="h-3.5 w-3.5" /> Move
-            </Button>
-          </div>
-          <Button size="sm" variant="outline" onClick={handleAutoCategorize} disabled={autoCatLoading} className="gap-1 h-8">
-            {autoCatLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-            AI Categorize
-          </Button>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button size="sm" variant="destructive" className="gap-1 h-8">
-                <Trash2 className="h-3.5 w-3.5" /> Delete ({selected.size})
+          {viewFilter === 'trash' ? (
+            <>
+              <Button size="sm" variant="outline" className="gap-1 h-8" onClick={async () => {
+                const ids = Array.from(selected);
+                await restoreTransactions(ids);
+                setSelected(new Set());
+                toast.success(`Restored ${ids.length} transactions`);
+              }}>
+                <RotateCcw className="h-3.5 w-3.5" /> Restore selected
               </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete {selected.size} transaction{selected.size > 1 ? 's' : ''}?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This will permanently remove {selected.size} selected transaction{selected.size > 1 ? 's' : ''}. This action cannot be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={bulkDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                  Delete {selected.size} transaction{selected.size > 1 ? 's' : ''}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button size="sm" variant="destructive" className="gap-1 h-8">
+                    <Trash2 className="h-3.5 w-3.5" /> Delete permanently ({selected.size})
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Permanently delete {selected.size} transaction{selected.size > 1 ? 's' : ''}?</AlertDialogTitle>
+                    <AlertDialogDescription>This cannot be undone.</AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={async () => {
+                      const ids = Array.from(selected);
+                      await permanentDelete(ids);
+                      setSelected(new Set());
+                      toast.success(`Permanently deleted ${ids.length} transactions`);
+                    }}>
+                      Delete permanently
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </>
+          ) : (
+            <>
+              <div className="flex items-center gap-2">
+                <Select value={bulkCategory} onValueChange={setBulkCategory}>
+                  <SelectTrigger className="h-8 w-[160px] text-xs"><SelectValue placeholder="Categorize as…" /></SelectTrigger>
+                  <SelectContent>{(categories || []).map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
+                </Select>
+                <Button size="sm" variant="outline" onClick={bulkCategorize} disabled={!bulkCategory} className="gap-1 h-8">
+                  <Tags className="h-3.5 w-3.5" /> Apply
+                </Button>
+              </div>
+              <div className="flex items-center gap-2">
+                <Select value={bulkAccount} onValueChange={setBulkAccount}>
+                  <SelectTrigger className="h-8 w-[160px] text-xs"><SelectValue placeholder="Move to account…" /></SelectTrigger>
+                  <SelectContent>{(accounts || []).map(a => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}</SelectContent>
+                </Select>
+                <Button size="sm" variant="outline" onClick={bulkChangeAccount} disabled={!bulkAccount} className="gap-1 h-8">
+                  <Landmark className="h-3.5 w-3.5" /> Move
+                </Button>
+              </div>
+              <Button size="sm" variant="outline" onClick={handleAutoCategorize} disabled={autoCatLoading} className="gap-1 h-8">
+                {autoCatLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                AI Categorize
+              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button size="sm" variant="destructive" className="gap-1 h-8">
+                    <Trash2 className="h-3.5 w-3.5" /> Delete ({selected.size})
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete {selected.size} transaction{selected.size > 1 ? 's' : ''}?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Transactions will be moved to trash. You can restore them later.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={bulkDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                      Move to trash
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </>
+          )}
           <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())} className="h-8 text-xs">Clear selection</Button>
         </motion.div>
       )}
@@ -1026,10 +1115,12 @@ const Transactions = () => {
                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                   onClick={async () => {
                     const ids = Array.from(duplicateIds);
-                    for (const id of ids) { await supabase.from('transactions').delete().eq('id', id); }
-                    qc.invalidateQueries({ queryKey: ['transactions'] });
+                    await softDelete(ids);
                     setSelected(new Set());
-                    toast.success(`Deleted ${ids.length} duplicate transactions`);
+                    toast.success(`Moved ${ids.length} duplicates to trash`, {
+                      action: { label: 'Undo', onClick: async () => { await restoreTransactions(ids); toast.success(`Restored ${ids.length} transactions`); } },
+                      duration: 10000,
+                    });
                   }}
                 >
                   Delete {duplicateCount} duplicates
@@ -1040,7 +1131,51 @@ const Transactions = () => {
         </motion.div>
       )}
 
-      {/* Transaction list grouped by date */}
+      {/* Trash banner */}
+      {viewFilter === 'trash' && (
+        <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-3 rounded-xl border border-border bg-muted/50 px-4 py-3">
+          <Trash2 className="h-4 w-4 text-muted-foreground shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-medium">{filtered.length} transaction{filtered.length !== 1 ? 's' : ''} in trash</p>
+            <p className="text-xs text-muted-foreground">Select items to restore or permanently delete them.</p>
+          </div>
+          {filtered.length > 0 && (
+            <div className="flex items-center gap-2">
+              <Button size="sm" variant="outline" className="gap-1.5 h-8" onClick={async () => {
+                const ids = filtered.map(t => t.id);
+                await restoreTransactions(ids);
+                toast.success(`Restored ${ids.length} transactions`);
+              }}>
+                <RotateCcw className="h-3.5 w-3.5" /> Restore all
+              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button size="sm" variant="destructive" className="gap-1.5 h-8">
+                    <Trash2 className="h-3.5 w-3.5" /> Empty trash
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Permanently delete all {filtered.length} trashed transactions?</AlertDialogTitle>
+                    <AlertDialogDescription>This cannot be undone. All transactions in trash will be permanently removed.</AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={async () => {
+                      await permanentDelete(filtered.map(t => t.id));
+                      toast.success('Trash emptied');
+                    }}>
+                      Delete permanently
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          )}
+        </motion.div>
+      )}
+
       {grouped.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center p-12 text-center">
@@ -1213,9 +1348,12 @@ const Transactions = () => {
                                   <AlertDialogAction
                                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                     onClick={async () => {
-                                      await supabase.from('transactions').delete().eq('id', txn.id);
-                                      qc.invalidateQueries({ queryKey: ['transactions'] });
-                                      toast.success('Transaction deleted');
+                                      const txnId = txn.id;
+                                      await softDelete([txnId]);
+                                      toast.success('Moved to trash', {
+                                        action: { label: 'Undo', onClick: async () => { await restoreTransactions([txnId]); toast.success('Transaction restored'); } },
+                                        duration: 10000,
+                                      });
                                     }}
                                   >
                                     Delete
