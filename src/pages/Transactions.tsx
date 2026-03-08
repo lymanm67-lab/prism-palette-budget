@@ -915,14 +915,7 @@ const Transactions = () => {
             {autoCatLoading ? 'Categorizing…' : 'Auto-categorize'}
           </Button>
 
-          <Button
-            variant={editMultiple ? 'default' : 'outline'}
-            size="sm"
-            className="gap-2"
-            onClick={() => { setEditMultiple(!editMultiple); if (editMultiple) setSelected(new Set()); }}
-          >
-            <Pencil className="h-3.5 w-3.5" /> Edit multiple
-          </Button>
+
 
           {/* Sort dropdown */}
           <Popover>
@@ -948,10 +941,13 @@ const Transactions = () => {
       </div>
 
       {/* Bulk actions bar */}
-      {editMultiple && selected.size > 0 && (
+      {selected.size > 0 && (
         <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
           className="flex flex-wrap items-center gap-3 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3">
           <span className="text-sm font-medium">{selected.size} selected</span>
+          <Button size="sm" variant="outline" onClick={() => { const allIds = new Set(filtered.map(t => t.id)); setSelected(allIds); }} className="gap-1 h-8 text-xs">
+            <Check className="h-3 w-3" /> Select all ({filtered.length})
+          </Button>
           <div className="flex items-center gap-2">
             <Select value={bulkCategory} onValueChange={setBulkCategory}>
               <SelectTrigger className="h-8 w-[160px] text-xs"><SelectValue placeholder="Categorize as…" /></SelectTrigger>
@@ -974,10 +970,28 @@ const Transactions = () => {
             {autoCatLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
             AI Categorize
           </Button>
-          <Button size="sm" variant="destructive" onClick={bulkDelete} className="gap-1 h-8">
-            <Trash2 className="h-3.5 w-3.5" /> Delete
-          </Button>
-          <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())} className="h-8 text-xs">Cancel</Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button size="sm" variant="destructive" className="gap-1 h-8">
+                <Trash2 className="h-3.5 w-3.5" /> Delete ({selected.size})
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete {selected.size} transaction{selected.size > 1 ? 's' : ''}?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will permanently remove {selected.size} selected transaction{selected.size > 1 ? 's' : ''}. This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={bulkDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                  Delete {selected.size} transaction{selected.size > 1 ? 's' : ''}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())} className="h-8 text-xs">Clear selection</Button>
         </motion.div>
       )}
 
@@ -1035,16 +1049,15 @@ const Transactions = () => {
                           "flex items-center gap-3 px-4 py-3 hover:bg-muted/30 transition-colors group cursor-pointer",
                           isDupe && "bg-amber-50/50 dark:bg-amber-950/10"
                         )}
-                        onClick={() => !editMultiple && openEditTxn(txn)}
+                        onClick={() => selected.size === 0 && openEditTxn(txn)}
                       >
-                        {/* Checkbox (edit multiple mode) */}
-                        {editMultiple && (
-                          <Checkbox
-                            checked={selected.has(txn.id)}
-                            onCheckedChange={() => toggleSelect(txn.id)}
-                            className="shrink-0"
-                          />
-                        )}
+                        {/* Checkbox for multi-select */}
+                        <Checkbox
+                          checked={selected.has(txn.id)}
+                          onCheckedChange={() => toggleSelect(txn.id)}
+                          onClick={(e) => e.stopPropagation()}
+                          className="shrink-0"
+                        />
 
                         {/* Merchant icon placeholder */}
                         <div className={cn(
