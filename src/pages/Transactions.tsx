@@ -21,7 +21,7 @@ import {
   Search, Plus, Loader2, Upload, Receipt, Trash2, Tags,
   ArrowRightLeft, SlidersHorizontal, CalendarIcon, ChevronRight,
   ArrowUpDown, X, Pencil, Sparkles, Landmark, Check, Camera, ImageIcon,
-  Copy, AlertTriangle, Undo2, RotateCcw,
+  Copy, AlertTriangle, Undo2, RotateCcw, CheckCircle2,
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
@@ -61,7 +61,7 @@ interface FilterState {
 
 const EMPTY_FILTERS: FilterState = { dateFrom: '', dateTo: '', amountMin: '', amountMax: '', accountId: '', categoryId: '' };
 
-type TxnViewFilter = 'all' | 'income' | 'expenses' | 'transfers' | 'duplicates' | 'uncategorized' | 'trash';
+type TxnViewFilter = 'all' | 'income' | 'expenses' | 'transfers' | 'duplicates' | 'uncategorized' | 'needs_review' | 'trash';
 
 const Transactions = () => {
   const { formatCurrency } = useCurrency();
@@ -240,8 +240,25 @@ const Transactions = () => {
   }, [transactions]);
 
   const duplicateCount = duplicateIds.size;
+  const needsReviewCount = useMemo(() => (transactions || []).filter(t => (t as any).needs_review).length, [transactions]);
 
   const activeFilterCount = Object.values(filters).filter(Boolean).length;
+
+  const approveTransaction = async (id: string) => {
+    await supabase.from('transactions').update({ needs_review: false } as any).eq('id', id);
+    qc.invalidateQueries({ queryKey: ['transactions'] });
+    toast.success('Transaction approved');
+  };
+
+  const approveAllReviewed = async () => {
+    const reviewIds = (transactions || []).filter(t => (t as any).needs_review).map(t => t.id);
+    if (!reviewIds.length) return;
+    for (const id of reviewIds) {
+      await supabase.from('transactions').update({ needs_review: false } as any).eq('id', id);
+    }
+    qc.invalidateQueries({ queryKey: ['transactions'] });
+    toast.success(`Approved ${reviewIds.length} transactions`);
+  };
 
   // Filter + sort
   const filtered = useMemo(() => {
@@ -275,6 +292,7 @@ const Transactions = () => {
       if (viewFilter === 'transfers' && !(t as any).is_transfer) return false;
       if (viewFilter === 'duplicates' && !duplicateIds.has(t.id)) return false;
       if (viewFilter === 'uncategorized' && t.category_id !== null) return false;
+      if (viewFilter === 'needs_review' && !(t as any).needs_review) return false;
       return true;
     });
 
@@ -324,11 +342,22 @@ const Transactions = () => {
 
     const tags = form.tags ? form.tags.split(',').map(t => t.trim()).filter(Boolean) : null;
     const isXfer = form.is_transfer || isTransferMerchant(form.merchant);
+    // Auto-apply category from merchant history if user didn't pick one
+    let categoryId = form.category_id || null;
+    let needsReview = false;
+    if (!categoryId && form.merchant && merchantCategoryMap.has(form.merchant.trim())) {
+      categoryId = merchantCategoryMap.get(form.merchant.trim())!;
+      needsReview = true; // Mark for user review
+    }
     const result = await createTransaction.mutateAsync({
       date: form.date, merchant: form.merchant || null, amount: finalAmount,
-      account_id: form.account_id, category_id: form.category_id || null, notes: form.notes || null,
-      tags, is_transfer: isXfer,
+      account_id: form.account_id, category_id: categoryId, notes: form.notes || null,
+      tags, is_transfer: isXfer, needs_review: needsReview,
     } as any);
+    if (needsReview) {
+      const catName = categories?.find(c => c.id === categoryId)?.name;
+      toast.info(`Auto-categorized as "${catName}" — review to approve`, { duration: 4000 });
+    }
 
     // Upload receipt if scanned
     if (pendingReceiptFile && household && result?.id) {
@@ -545,6 +574,7 @@ const Transactions = () => {
         category_id: editForm.category_id || null,
         notes: editForm.notes || null,
         tags,
+        needs_review: false, // Approve on edit save
       });
       toast.success('Transaction updated');
       setEditTxn(null);
@@ -985,6 +1015,11 @@ const Transactions = () => {
                 </span>
               </SelectItem>
               <SelectItem value="uncategorized">Uncategorized</SelectItem>
+              <SelectItem value="needs_review">
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-amber-500" /> Needs Review {needsReviewCount > 0 && `(${needsReviewCount})`}
+                </span>
+              </SelectItem>
               <SelectItem value="trash">
                 <span className="flex items-center gap-1.5">
                   <Trash2 className="h-3.5 w-3.5 text-muted-foreground" /> Trash {(deletedTransactions?.length || 0) > 0 && `(${deletedTransactions?.length})`}
@@ -1181,6 +1216,25 @@ const Transactions = () => {
         </motion.div>
       )}
 
+      {/* Needs Review banner */}
+      {viewFilter === 'needs_review' && needsReviewCount > 0 && (
+        <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-3 rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50/80 dark:bg-amber-950/20 px-4 py-3">
+          <Sparkles className="h-4 w-4 text-amber-500 shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+              {needsReviewCount} auto-categorized transaction{needsReviewCount !== 1 ? 's' : ''} awaiting review
+            </p>
+            <p className="text-xs text-amber-600 dark:text-amber-400">
+              These were automatically categorized based on merchant history. Approve or edit to confirm.
+            </p>
+          </div>
+          <Button size="sm" variant="outline" className="gap-1.5 shrink-0 border-amber-300 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-950/40" onClick={approveAllReviewed}>
+            <CheckCircle2 className="h-3.5 w-3.5" /> Approve all
+          </Button>
+        </motion.div>
+      )}
+
       {/* Trash banner */}
       {viewFilter === 'trash' && (
         <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
@@ -1281,6 +1335,7 @@ const Transactions = () => {
                   {group.transactions.map(txn => {
                     const isIncome = txn.amount > 0;
                     const isTransfer = (txn as any).is_transfer;
+                    const isNeedsReview = (txn as any).needs_review;
                     const cat = (txn as any).categories;
                     const acct = (txn as any).accounts;
                     const isDupe = duplicateIds.has(txn.id);
@@ -1322,6 +1377,11 @@ const Transactions = () => {
                                 <ArrowRightLeft className="h-2.5 w-2.5 mr-0.5" /> Transfer
                               </Badge>
                             )}
+                            {isNeedsReview && (
+                              <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-amber-400 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 shrink-0">
+                                <Sparkles className="h-2.5 w-2.5 mr-0.5" /> Auto
+                              </Badge>
+                            )}
                           </div>
                         </div>
 
@@ -1357,8 +1417,23 @@ const Transactions = () => {
                         </span>
 
                         {/* Inline action icons */}
-                        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                        <div className={cn("flex items-center gap-0.5 shrink-0 transition-opacity", isNeedsReview ? "opacity-100" : "opacity-0 group-hover:opacity-100")}>
                           <TooltipProvider delayDuration={200}>
+                            {isNeedsReview && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7 text-amber-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
+                                    onClick={(e) => { e.stopPropagation(); approveTransaction(txn.id); }}
+                                  >
+                                    <CheckCircle2 className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent side="top"><p>Approve</p></TooltipContent>
+                              </Tooltip>
+                            )}
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button
