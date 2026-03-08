@@ -428,6 +428,29 @@ const Budgets = () => {
           <Button variant="outline" className="gap-2" onClick={() => { setQuickAddForm({ name: '', group_id: '', color: '#7c5cf5' }); setQuickAddOpen(true); }}>
             <Plus className="h-4 w-4" /> New Category
           </Button>
+          <Button
+            variant="outline"
+            className="gap-2"
+            disabled={smartBudget.isPending}
+            onClick={async () => {
+              try {
+                const result = await smartBudget.mutateAsync();
+                if (result.suggestions?.length) {
+                  setSmartSuggestions(result.suggestions.map((s: any) => ({ ...s, selected: true })));
+                  setSmartBudgetOpen(true);
+                } else {
+                  // No suggestions
+                  setSmartSuggestions([]);
+                  setSmartBudgetOpen(true);
+                }
+              } catch (e) {
+                console.error('Smart budget error:', e);
+              }
+            }}
+          >
+            {smartBudget.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+            Smart Budget
+          </Button>
         </div>
       </div>
 
