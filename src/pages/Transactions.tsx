@@ -556,6 +556,7 @@ const Transactions = () => {
         category_id: editForm.category_id || null,
         notes: editForm.notes || null,
         tags,
+        needs_review: false, // Approve on edit save
       });
       toast.success('Transaction updated');
       setEditTxn(null);
