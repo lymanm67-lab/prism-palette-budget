@@ -1018,9 +1018,7 @@ const Transactions = () => {
             {autoCatLoading ? 'Categorizing…' : 'Auto-categorize'}
           </Button>
 
-      </div>
-
-          {/* Sort dropdown */}
+           {/* Sort dropdown */}
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" size="sm" className="gap-2">
