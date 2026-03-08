@@ -41,6 +41,7 @@ interface CsvImportDialogProps {
 }
 
 const SUPPORTED_FORMATS: { name: string; columns: string }[] = [
+  { name: 'QIF', columns: 'Quicken Interchange Format — Quicken, many banks' },
   { name: 'OFX / QFX / QBO', columns: 'Open Financial Exchange — Quicken, QuickBooks, most banks' },
   { name: 'Chase Bank', columns: 'Transaction Date, Post Date, Description, Amount, Category' },
   { name: 'Bank of America', columns: 'Date, Description, Amount, Running Bal.' },
