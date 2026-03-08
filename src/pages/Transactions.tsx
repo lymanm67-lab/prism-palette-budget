@@ -580,16 +580,37 @@ const Transactions = () => {
         amount: finalAmount,
         date: editForm.date,
         account_id: editForm.account_id,
-        category_id: editForm.category_id || null,
+        category_id: editForm.is_transfer ? null : (editForm.category_id || null),
         notes: editForm.notes || null,
         tags,
-        needs_review: false, // Approve on edit save
+        needs_review: false,
+        is_transfer: editForm.is_transfer,
       });
       toast.success('Transaction updated');
       setEditTxn(null);
     } catch (e: any) {
       toast.error(e.message || 'Failed to update');
     }
+  };
+
+  const bulkMarkTransfer = async () => {
+    const ids = Array.from(selected);
+    for (const id of ids) {
+      await supabase.from('transactions').update({ is_transfer: true, category_id: null } as any).eq('id', id);
+    }
+    qc.invalidateQueries({ queryKey: ['transactions'] });
+    setSelected(new Set());
+    toast.success(`Marked ${ids.length} transactions as transfers`);
+  };
+
+  const bulkUnmarkTransfer = async () => {
+    const ids = Array.from(selected);
+    for (const id of ids) {
+      await supabase.from('transactions').update({ is_transfer: false } as any).eq('id', id);
+    }
+    qc.invalidateQueries({ queryKey: ['transactions'] });
+    setSelected(new Set());
+    toast.success(`Unmarked ${ids.length} transactions as transfers`);
   };
 
   if (isLoading) return (
