@@ -29,6 +29,7 @@ import { Upload, FileSpreadsheet, ArrowRight, ArrowLeft, Check, AlertCircle, Loa
 import { cn } from '@/lib/utils';
 import { useDuplicateDetection } from '@/hooks/use-duplicate-detection';
 
+type FileMode = 'csv' | 'ofx';
 type Step = 'upload' | 'map' | 'preview' | 'importing' | 'done';
 
 interface CsvImportDialogProps {
