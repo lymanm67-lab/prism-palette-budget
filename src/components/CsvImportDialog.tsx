@@ -221,6 +221,39 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
     return map;
   }, [categories]);
 
+  // Fetch categorization rules and pre-compute matches for preview
+  const computePreviewRuleMatches = useCallback(async (rows: ParsedRow[]) => {
+    if (!household) return;
+    const { data: rules } = await supabase
+      .from('categorization_rules')
+      .select('merchant_pattern, category_id')
+      .eq('household_id', household.id);
+
+    if (!rules || rules.length === 0) {
+      setPreviewRuleMatches(new Map());
+      return;
+    }
+
+    const ruleMap = new Map<string, string>();
+    for (const r of rules) {
+      ruleMap.set(r.merchant_pattern.toLowerCase(), r.category_id);
+    }
+
+    const matches = new Map<number, { categoryId: string; categoryName: string }>();
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      // Only match if no CSV category already assigned
+      if (!row.category && row.merchant) {
+        const ruleMatch = ruleMap.get(row.merchant.toLowerCase().trim());
+        if (ruleMatch) {
+          const catName = categories?.find(c => c.id === ruleMatch)?.name || 'Matched';
+          matches.set(i, { categoryId: ruleMatch, categoryName: catName });
+        }
+      }
+    }
+    setPreviewRuleMatches(matches);
+  }, [household, categories]);
+
   const handleImport = async () => {
     if (!household || !targetAccountId) return;
     setImporting(true);
