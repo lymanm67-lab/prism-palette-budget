@@ -1453,7 +1453,26 @@ const Transactions = () => {
             </div>
             <div className="space-y-2">
               <Label>Category</Label>
-              <CategoryCombobox value={editForm.category_id} onValueChange={v => setEditForm(f => ({ ...f, category_id: v }))} />
+              <CategoryCombobox value={editForm.category_id} onValueChange={v => { setEditForm(f => ({ ...f, category_id: v })); setAiSuggestion(null); }} />
+              {/* AI Suggestion */}
+              {aiSuggestionLoading && (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground py-1">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  AI suggesting a category...
+                </div>
+              )}
+              {aiSuggestion && !editForm.category_id && (
+                <button
+                  type="button"
+                  onClick={() => { setEditForm(f => ({ ...f, category_id: aiSuggestion.id })); setAiSuggestion(null); toast.info(`Category set to ${aiSuggestion.name}`); }}
+                  className="flex items-center gap-2 w-full rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-sm hover:bg-primary/10 transition-colors"
+                >
+                  <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />
+                  <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: aiSuggestion.color }} />
+                  <span className="font-medium">{aiSuggestion.name}</span>
+                  <span className="text-muted-foreground ml-auto text-xs">AI suggestion — click to apply</span>
+                </button>
+              )}
             </div>
             <div className="space-y-2">
               <Label>Notes</Label>
