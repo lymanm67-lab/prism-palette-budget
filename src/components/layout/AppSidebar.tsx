@@ -43,6 +43,7 @@ const NAV_SECTIONS = [
   {
     label: 'Plan & Analyze',
     items: [
+      { to: '/forecast', icon: LineChart, label: 'Forecast', color: 'text-prism-sky' },
       { to: '/roadmap', icon: Map, label: 'Prism Roadmap', color: 'text-prism-teal' },
       { to: '/home-buying', icon: Home, label: 'Home Buying', color: 'text-prism-amber' },
       { to: '/calculators', icon: Calculator, label: 'Calculators', color: 'text-prism-indigo' },
