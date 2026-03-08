@@ -349,7 +349,7 @@ const Transactions = () => {
     }
 
     setPendingReceiptFile(null);
-    setForm({ date: new Date().toISOString().split('T')[0], merchant: '', amount: '', account_id: '', category_id: '', notes: '', tags: '', goal_id: '' });
+    setForm({ date: new Date().toISOString().split('T')[0], merchant: '', amount: '', account_id: '', category_id: '', notes: '', tags: '', goal_id: '', is_transfer: false });
     setFormType('debit');
     setDupeWarningShown(false);
     setOpen(false);
