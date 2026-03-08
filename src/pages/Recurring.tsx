@@ -69,9 +69,10 @@ const Recurring = () => {
       toast.error('Fill in merchant, amount, and account');
       return;
     }
+    const amt = Math.abs(parseFloat(form.amount));
     createRecurring.mutate({
       merchant: form.merchant,
-      amount: parseFloat(form.amount),
+      amount: form.type === 'expense' ? -amt : amt,
       frequency: form.frequency,
       account_id: form.account_id,
       category_id: form.category_id || null,
@@ -80,7 +81,7 @@ const Recurring = () => {
     }, {
       onSuccess: () => {
         setDialogOpen(false);
-        setForm({ merchant: '', amount: '', frequency: 'monthly', account_id: '', category_id: '', start_date: format(new Date(), 'yyyy-MM-dd'), next_due_date: format(new Date(), 'yyyy-MM-dd') });
+        setForm({ merchant: '', amount: '', frequency: 'monthly', account_id: '', category_id: '', start_date: format(new Date(), 'yyyy-MM-dd'), next_due_date: format(new Date(), 'yyyy-MM-dd'), type: 'expense' });
       }
     });
   };
