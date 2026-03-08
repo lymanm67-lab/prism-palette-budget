@@ -1316,6 +1316,7 @@ const Transactions = () => {
                   {group.transactions.map(txn => {
                     const isIncome = txn.amount > 0;
                     const isTransfer = (txn as any).is_transfer;
+                    const isNeedsReview = (txn as any).needs_review;
                     const cat = (txn as any).categories;
                     const acct = (txn as any).accounts;
                     const isDupe = duplicateIds.has(txn.id);
