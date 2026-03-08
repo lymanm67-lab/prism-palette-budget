@@ -980,6 +980,22 @@ const Transactions = () => {
         </motion.div>
       )}
 
+      {/* Duplicates banner */}
+      {viewFilter === 'duplicates' && duplicateCount > 0 && (
+        <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-3 rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50/80 dark:bg-amber-950/20 px-4 py-3">
+          <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+              {duplicateCount} potential duplicate transactions found
+            </p>
+            <p className="text-xs text-amber-600 dark:text-amber-400">
+              Transactions with the same date, amount, and merchant are flagged. Use "Select all duplicates" to batch delete.
+            </p>
+          </div>
+        </motion.div>
+      )}
+
       {/* Transaction list grouped by date */}
       {grouped.length === 0 ? (
         <Card>
