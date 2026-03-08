@@ -51,6 +51,7 @@ const Recurring = () => {
     category_id: '',
     start_date: format(new Date(), 'yyyy-MM-dd'),
     next_due_date: format(new Date(), 'yyyy-MM-dd'),
+    type: 'expense' as 'income' | 'expense',
   });
 
   const totalIncome = useMemo(() => {
