@@ -35,6 +35,7 @@ const Accounts = () => {
   const createAccount = useCreateAccount();
   const deleteAccount = useDeleteAccount();
   const [open, setOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [form, setForm] = useState({ name: '', institution: '', account_type: 'checking' as AccountType, balance: '' });
 
   const grouped = (accounts || []).reduce((acc, acct) => {
