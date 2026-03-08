@@ -90,6 +90,7 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
     setRuleMatchCount(0);
     setDragging(false);
     setShowFormats(false);
+    setPreviewRuleMatches(new Map());
   };
 
   const handleClose = (open: boolean) => {
