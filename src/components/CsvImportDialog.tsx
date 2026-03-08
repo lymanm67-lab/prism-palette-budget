@@ -23,6 +23,7 @@ import {
   type CsvParseResult,
   type DetectedFormat,
 } from '@/lib/csv-parser';
+import { parseOfxText, detectFinancialFileType, type OfxParseResult, type OfxTransaction } from '@/lib/ofx-parser';
 import { formatCurrency } from '@/lib/seed-data';
 import { Upload, FileSpreadsheet, ArrowRight, ArrowLeft, Check, AlertCircle, Loader2, Info, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
