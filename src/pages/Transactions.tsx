@@ -1460,7 +1460,10 @@ const Transactions = () => {
                               <span className="truncate">{cat.name}</span>
                             </span>
                           ) : (
-                            <span className="text-xs text-muted-foreground italic">Uncategorized</span>
+                            <span className="flex items-center gap-1.5 text-xs font-medium text-rose-500 dark:text-rose-400">
+                              <span className="h-2.5 w-2.5 rounded-full bg-rose-400/60 dark:bg-rose-500/60 animate-pulse shrink-0" />
+                              Uncategorized
+                            </span>
                           )}
                         </div>
 
