@@ -8,16 +8,18 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   useCategoryGroups, useCategories,
   useCreateCategoryGroup, useUpdateCategoryGroup, useDeleteCategoryGroup,
   useCreateCategory, useUpdateCategory, useDeleteCategory,
+  useSubcategories, useCreateSubcategory, useUpdateSubcategory, useDeleteSubcategory,
 } from '@/hooks/use-finance-data';
 import { useBusinessProfiles } from '@/hooks/use-business-data';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Loader2, Plus, Pencil, Trash2, GripVertical, ChevronDown, ChevronRight, FolderOpen, Building2, AlertTriangle, Merge } from 'lucide-react';
+import { Loader2, Plus, Pencil, Trash2, GripVertical, ChevronDown, ChevronRight, FolderOpen, Building2, AlertTriangle, Merge, Layers } from 'lucide-react';
 import PageOverview from '@/components/PageOverview';
 
 const PRESET_COLORS = [
@@ -55,6 +57,7 @@ const ColorPicker = ({ value, onChange }: { value: string; onChange: (c: string)
 const Categories = () => {
   const { data: groups, isLoading: groupsLoading } = useCategoryGroups();
   const { data: categories, isLoading: catsLoading } = useCategories();
+  const { data: subcategories, isLoading: subsLoading } = useSubcategories();
   const { data: businessProfiles } = useBusinessProfiles();
 
   const createGroup = useCreateCategoryGroup();
@@ -63,22 +66,30 @@ const Categories = () => {
   const createCategory = useCreateCategory();
   const updateCategory = useUpdateCategory();
   const deleteCategory = useDeleteCategory();
+  const createSubcategory = useCreateSubcategory();
+  const updateSubcategory = useUpdateSubcategory();
+  const deleteSubcategory = useDeleteSubcategory();
+
+  const [activeTab, setActiveTab] = useState<string>('personal');
 
   // Dialog state
   const [groupDialogOpen, setGroupDialogOpen] = useState(false);
   const [catDialogOpen, setCatDialogOpen] = useState(false);
+  const [subDialogOpen, setSubDialogOpen] = useState(false);
   const [editingGroup, setEditingGroup] = useState<{ id: string; name: string; color: string; budget_type?: string; business_profile_id?: string | null; expense_type?: string } | null>(null);
   const [editingCat, setEditingCat] = useState<{ id: string; name: string; color: string; group_id: string } | null>(null);
+  const [editingSub, setEditingSub] = useState<{ id: string; name: string; color: string; category_id: string } | null>(null);
   const [groupForm, setGroupForm] = useState({ name: '', color: '#7c3aed', budget_type: 'personal', business_profile_id: '' as string, expense_type: 'flexible' });
   const [catForm, setCatForm] = useState({ name: '', color: '#7c5cf5', group_id: '' });
+  const [subForm, setSubForm] = useState({ name: '', color: '#7c5cf5', category_id: '' });
 
   // Delete confirmation
-  const [deleteTarget, setDeleteTarget] = useState<{ type: 'group' | 'category'; id: string; name: string } | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ type: 'group' | 'category' | 'subcategory'; id: string; name: string } | null>(null);
 
   const qc = useQueryClient();
   const [mergingDupes, setMergingDupes] = useState(false);
 
-  // Detect duplicate categories (same name, case-insensitive)
+  // Detect duplicate categories
   const duplicateGroups = useMemo(() => {
     if (!categories) return [];
     const map = new Map<string, typeof categories>();
@@ -96,16 +107,11 @@ const Categories = () => {
     try {
       let mergedCount = 0;
       for (const dupeGroup of duplicateGroups) {
-        // Keep the first one (oldest), reassign transactions from others
         const [keep, ...remove] = dupeGroup;
         for (const dup of remove) {
-          // Reassign transactions
           await supabase.from('transactions').update({ category_id: keep.id }).eq('category_id', dup.id);
-          // Reassign budgets
           await supabase.from('budgets').update({ category_id: keep.id }).eq('category_id', dup.id);
-          // Reassign categorization rules
           await supabase.from('categorization_rules').update({ category_id: keep.id }).eq('category_id', dup.id);
-          // Delete the duplicate
           await supabase.from('categories').delete().eq('id', dup.id);
           mergedCount++;
         }
@@ -122,6 +128,7 @@ const Categories = () => {
   };
 
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  const [expandedCats, setExpandedCats] = useState<Set<string>>(new Set());
 
   const toggleCollapse = (id: string) => {
     setCollapsed(prev => {
@@ -131,10 +138,24 @@ const Categories = () => {
     });
   };
 
+  const toggleCatExpand = (id: string) => {
+    setExpandedCats(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  // Filter groups by tab
+  const filteredGroups = useMemo(() => {
+    if (!groups) return [];
+    return groups.filter(g => (g as any).budget_type === activeTab || (!((g as any).budget_type) && activeTab === 'personal'));
+  }, [groups, activeTab]);
+
   // Group dialog
   const openCreateGroup = () => {
     setEditingGroup(null);
-    setGroupForm({ name: '', color: '#7c3aed', budget_type: 'personal', business_profile_id: '', expense_type: 'flexible' });
+    setGroupForm({ name: '', color: '#7c3aed', budget_type: activeTab, business_profile_id: '', expense_type: 'flexible' });
     setGroupDialogOpen(true);
   };
   const openEditGroup = (g: { id: string; name: string; color: string; budget_type?: string; business_profile_id?: string | null; expense_type?: string }) => {
@@ -175,30 +196,54 @@ const Categories = () => {
     setCatDialogOpen(false);
   };
 
+  // Subcategory dialog
+  const openCreateSub = (categoryId: string) => {
+    setEditingSub(null);
+    setSubForm({ name: '', color: '#7c5cf5', category_id: categoryId });
+    setSubDialogOpen(true);
+  };
+  const openEditSub = (s: { id: string; name: string; color: string; category_id: string }) => {
+    setEditingSub(s);
+    setSubForm({ name: s.name, color: s.color, category_id: s.category_id });
+    setSubDialogOpen(true);
+  };
+  const handleSaveSub = async () => {
+    if (!subForm.name.trim() || !subForm.category_id) return;
+    if (editingSub) {
+      await updateSubcategory.mutateAsync({ id: editingSub.id, name: subForm.name.trim(), color: subForm.color, category_id: subForm.category_id });
+    } else {
+      const catSubs = (subcategories || []).filter(s => s.category_id === subForm.category_id);
+      await createSubcategory.mutateAsync({ name: subForm.name.trim(), color: subForm.color, category_id: subForm.category_id, sort_order: catSubs.length });
+    }
+    setSubDialogOpen(false);
+  };
+
   // Delete
   const handleDelete = async () => {
     if (!deleteTarget) return;
     if (deleteTarget.type === 'group') {
       await deleteGroup.mutateAsync(deleteTarget.id);
-    } else {
+    } else if (deleteTarget.type === 'category') {
       await deleteCategory.mutateAsync(deleteTarget.id);
+    } else {
+      await deleteSubcategory.mutateAsync(deleteTarget.id);
     }
     setDeleteTarget(null);
   };
 
   // Move group up/down
   const moveGroup = async (idx: number, dir: -1 | 1) => {
-    if (!groups) return;
+    if (!filteredGroups) return;
     const swapIdx = idx + dir;
-    if (swapIdx < 0 || swapIdx >= groups.length) return;
+    if (swapIdx < 0 || swapIdx >= filteredGroups.length) return;
     await Promise.all([
-      updateGroup.mutateAsync({ id: groups[idx].id, sort_order: swapIdx }),
-      updateGroup.mutateAsync({ id: groups[swapIdx].id, sort_order: idx }),
+      updateGroup.mutateAsync({ id: filteredGroups[idx].id, sort_order: swapIdx }),
+      updateGroup.mutateAsync({ id: filteredGroups[swapIdx].id, sort_order: idx }),
     ]);
   };
 
   // Move category up/down within group
-  const moveCat = async (groupCats: typeof categories extends (infer T)[] | undefined ? T[] : never[], idx: number, dir: -1 | 1) => {
+  const moveCat = async (groupCats: any[], idx: number, dir: -1 | 1) => {
     const swapIdx = idx + dir;
     if (swapIdx < 0 || swapIdx >= groupCats.length) return;
     await Promise.all([
@@ -207,27 +252,31 @@ const Categories = () => {
     ]);
   };
 
-  if (groupsLoading || catsLoading) return <div className="flex items-center justify-center p-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+  if (groupsLoading || catsLoading || subsLoading) return <div className="flex items-center justify-center p-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+
+  const personalCount = (groups || []).filter(g => (g as any).budget_type === 'personal' || !(g as any).budget_type).length;
+  const businessCount = (groups || []).filter(g => (g as any).budget_type === 'business').length;
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-display text-3xl font-bold prism-gradient-text">Categories</h1>
-          <p className="text-muted-foreground">Organize your transactions with groups and categories.</p>
+          <p className="text-muted-foreground">Organize your transactions with groups, categories & subcategories.</p>
         </div>
         <PageOverview
           title="Categories Overview"
           description="Create category groups and categories to classify spending and income. Assign colors and expense types for budgeting."
           icon={FolderOpen}
           iconColor="text-prism-lime"
-          ttsScript="The Categories page lets you organize all your transactions. Categories are arranged in groups like Housing, Food, Transportation, and Income. Each group contains individual categories. For example, Food might include Groceries, Dining Out, and Coffee. You can create new groups, add categories within them, assign colors for visual identification, and set expense types like fixed, flexible, or discretionary. Categories are used throughout the app in budgets, reports, and auto-categorization rules."
+          ttsScript="The Categories page lets you organize all your transactions. Categories are arranged in groups like Housing, Food, Transportation, and Income. Each group contains individual categories and subcategories."
           features={[
             'Organize categories into groups',
+            'Add subcategories for granular tracking',
             'Color-code for visual identification',
             'Set expense types (fixed, flexible, discretionary)',
             'Link groups to business profiles',
-            'Drag to reorder groups and categories',
+            'Separate Personal and Business views',
           ]}
           demoData={[
             { label: 'Housing', value: '3 categories', badge: 'Fixed', color: '#3b82f6' },
@@ -265,7 +314,7 @@ const Categories = () => {
               <AlertDialogHeader>
                 <AlertDialogTitle>Merge {duplicateGroups.reduce((s, g) => s + g.length - 1, 0)} duplicate categories?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  For each duplicate name, the oldest category will be kept and all transactions, budgets, and rules will be reassigned to it. The extra duplicates will be deleted.
+                  For each duplicate name, the oldest category will be kept and all transactions, budgets, and rules will be reassigned to it.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -276,96 +325,164 @@ const Categories = () => {
           </AlertDialog>
         </motion.div>
       )}
-      {(!groups || groups.length === 0) && (
-        <Card><CardContent className="p-10 text-center text-muted-foreground">
-          No category groups yet. Create a group to start organizing your categories.
-        </CardContent></Card>
-      )}
 
-      <div className="space-y-4">
-        {(groups || []).map((group, gIdx) => {
-          const groupCats = (categories || []).filter(c => c.group_id === group.id).sort((a, b) => a.sort_order - b.sort_order);
-          const isCollapsed = collapsed.has(group.id);
+      {/* Personal / Business Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsTrigger value="personal" className="gap-2">
+            <FolderOpen className="h-4 w-4" />
+            Personal ({personalCount})
+          </TabsTrigger>
+          <TabsTrigger value="business" className="gap-2">
+            <Building2 className="h-4 w-4" />
+            Business ({businessCount})
+          </TabsTrigger>
+        </TabsList>
 
-          return (
-            <motion.div key={group.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-              <Card className="prism-card-shine hover-border-glow">
-                <CardHeader className="p-4 pb-2">
-                  <div className="flex items-center justify-between">
-                    <button onClick={() => toggleCollapse(group.id)} className="flex items-center gap-2 text-left">
-                      {isCollapsed ? <ChevronRight className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
-                      <span className="h-3.5 w-3.5 rounded-sm" style={{ backgroundColor: group.color }} />
-                      <CardTitle className="font-display text-base">{group.name}</CardTitle>
-                      <span className="text-xs text-muted-foreground">({groupCats.length})</span>
-                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 capitalize">{(group as any).budget_type || 'personal'}</Badge>
-                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 capitalize">{((group as any).expense_type || 'flexible').replace('_', '-')}</Badge>
-                      {(group as any).business_profile_id && businessProfiles && (
-                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0 gap-1">
-                          <Building2 className="h-2.5 w-2.5" />
-                          {businessProfiles.find(bp => bp.id === (group as any).business_profile_id)?.business_name || 'Linked'}
-                        </Badge>
-                      )}
-                    </button>
-                    <div className="flex items-center gap-1">
-                      {gIdx > 0 && (
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveGroup(gIdx, -1)}>
-                          <GripVertical className="h-3.5 w-3.5 rotate-90" />
-                        </Button>
-                      )}
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditGroup(group)}>
-                        <Pencil className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => setDeleteTarget({ type: 'group', id: group.id, name: group.name })}>
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
+        <TabsContent value={activeTab} className="mt-4">
+          {filteredGroups.length === 0 && (
+            <Card><CardContent className="p-10 text-center text-muted-foreground">
+              No {activeTab} category groups yet. Create a group to start organizing.
+            </CardContent></Card>
+          )}
 
-                <AnimatePresence>
-                  {!isCollapsed && (
-                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-                      <CardContent className="p-4 pt-0">
-                        <div className="space-y-1">
-                          {groupCats.map((cat, cIdx) => (
-                            <div key={cat.id} className="flex items-center justify-between rounded-lg px-3 py-2 transition-colors hover:bg-muted/50 group">
-                              <div className="flex items-center gap-3">
-                                <span className="h-3 w-3 rounded-full" style={{ backgroundColor: cat.color }} />
-                                <span className="text-sm font-medium">{cat.name}</span>
-                              </div>
-                              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                {cIdx > 0 && (
-                                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => moveCat(groupCats, cIdx, -1)}>
-                                    <span className="text-xs">↑</span>
-                                  </Button>
-                                )}
-                                {cIdx < groupCats.length - 1 && (
-                                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => moveCat(groupCats, cIdx, 1)}>
-                                    <span className="text-xs">↓</span>
-                                  </Button>
-                                )}
-                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => openEditCat({ id: cat.id, name: cat.name, color: cat.color, group_id: cat.group_id })}>
-                                  <Pencil className="h-3 w-3" />
-                                </Button>
-                                <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:text-destructive" onClick={() => setDeleteTarget({ type: 'category', id: cat.id, name: cat.name })}>
-                                  <Trash2 className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            </div>
-                          ))}
+          <div className="space-y-4">
+            {filteredGroups.map((group, gIdx) => {
+              const groupCats = (categories || []).filter(c => c.group_id === group.id).sort((a, b) => a.sort_order - b.sort_order);
+              const isCollapsed = collapsed.has(group.id);
+
+              return (
+                <motion.div key={group.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+                  <Card className="prism-card-shine hover-border-glow">
+                    <CardHeader className="p-4 pb-2">
+                      <div className="flex items-center justify-between">
+                        <button onClick={() => toggleCollapse(group.id)} className="flex items-center gap-2 text-left flex-wrap">
+                          {isCollapsed ? <ChevronRight className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+                          <span className="h-3.5 w-3.5 rounded-sm" style={{ backgroundColor: group.color }} />
+                          <CardTitle className="font-display text-base">{group.name}</CardTitle>
+                          <span className="text-xs text-muted-foreground">({groupCats.length})</span>
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0 capitalize">{((group as any).expense_type || 'flexible').replace('_', '-')}</Badge>
+                          {(group as any).business_profile_id && businessProfiles && (
+                            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 gap-1">
+                              <Building2 className="h-2.5 w-2.5" />
+                              {businessProfiles.find(bp => bp.id === (group as any).business_profile_id)?.business_name || 'Linked'}
+                            </Badge>
+                          )}
+                        </button>
+                        <div className="flex items-center gap-1">
+                          {gIdx > 0 && (
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveGroup(gIdx, -1)}>
+                              <GripVertical className="h-3.5 w-3.5 rotate-90" />
+                            </Button>
+                          )}
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditGroup(group)}>
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => setDeleteTarget({ type: 'group', id: group.id, name: group.name })}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
                         </div>
-                        <Button variant="ghost" size="sm" className="mt-2 gap-1.5 text-muted-foreground" onClick={() => openCreateCat(group.id)}>
-                          <Plus className="h-3.5 w-3.5" /> Add Category
-                        </Button>
-                      </CardContent>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </Card>
-            </motion.div>
-          );
-        })}
-      </div>
+                      </div>
+                    </CardHeader>
+
+                    <AnimatePresence>
+                      {!isCollapsed && (
+                        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                          <CardContent className="p-4 pt-0">
+                            <div className="space-y-1">
+                              {groupCats.map((cat, cIdx) => {
+                                const catSubs = (subcategories || []).filter(s => s.category_id === cat.id).sort((a, b) => a.sort_order - b.sort_order);
+                                const isExpanded = expandedCats.has(cat.id);
+
+                                return (
+                                  <div key={cat.id}>
+                                    <div className="flex items-center justify-between rounded-lg px-3 py-2 transition-colors hover:bg-muted/50 group">
+                                      <div className="flex items-center gap-3">
+                                        {catSubs.length > 0 ? (
+                                          <button onClick={() => toggleCatExpand(cat.id)} className="flex items-center">
+                                            {isExpanded ? <ChevronDown className="h-3 w-3 text-muted-foreground" /> : <ChevronRight className="h-3 w-3 text-muted-foreground" />}
+                                          </button>
+                                        ) : (
+                                          <span className="w-3" />
+                                        )}
+                                        <span className="h-3 w-3 rounded-full" style={{ backgroundColor: cat.color }} />
+                                        <span className="text-sm font-medium">{cat.name}</span>
+                                        {catSubs.length > 0 && (
+                                          <Badge variant="outline" className="text-[10px] px-1 py-0">
+                                            <Layers className="h-2.5 w-2.5 mr-0.5" />
+                                            {catSubs.length}
+                                          </Badge>
+                                        )}
+                                      </div>
+                                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        {cIdx > 0 && (
+                                          <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => moveCat(groupCats, cIdx, -1)}>
+                                            <span className="text-xs">↑</span>
+                                          </Button>
+                                        )}
+                                        {cIdx < groupCats.length - 1 && (
+                                          <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => moveCat(groupCats, cIdx, 1)}>
+                                            <span className="text-xs">↓</span>
+                                          </Button>
+                                        )}
+                                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => openCreateSub(cat.id)} title="Add subcategory">
+                                          <Layers className="h-3 w-3" />
+                                        </Button>
+                                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => openEditCat({ id: cat.id, name: cat.name, color: cat.color, group_id: cat.group_id })}>
+                                          <Pencil className="h-3 w-3" />
+                                        </Button>
+                                        <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:text-destructive" onClick={() => setDeleteTarget({ type: 'category', id: cat.id, name: cat.name })}>
+                                          <Trash2 className="h-3 w-3" />
+                                        </Button>
+                                      </div>
+                                    </div>
+
+                                    {/* Subcategories */}
+                                    <AnimatePresence>
+                                      {isExpanded && catSubs.length > 0 && (
+                                        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                                          <div className="ml-9 border-l-2 border-muted pl-3 space-y-0.5">
+                                            {catSubs.map(sub => (
+                                              <div key={sub.id} className="flex items-center justify-between rounded-md px-2 py-1.5 transition-colors hover:bg-muted/30 group/sub">
+                                                <div className="flex items-center gap-2">
+                                                  <span className="h-2 w-2 rounded-full" style={{ backgroundColor: sub.color }} />
+                                                  <span className="text-xs font-medium text-muted-foreground">{sub.name}</span>
+                                                </div>
+                                                <div className="flex items-center gap-0.5 opacity-0 group-hover/sub:opacity-100 transition-opacity">
+                                                  <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => openEditSub({ id: sub.id, name: sub.name, color: sub.color, category_id: sub.category_id })}>
+                                                    <Pencil className="h-2.5 w-2.5" />
+                                                  </Button>
+                                                  <Button variant="ghost" size="icon" className="h-5 w-5 text-destructive hover:text-destructive" onClick={() => setDeleteTarget({ type: 'subcategory', id: sub.id, name: sub.name })}>
+                                                    <Trash2 className="h-2.5 w-2.5" />
+                                                  </Button>
+                                                </div>
+                                              </div>
+                                            ))}
+                                            <Button variant="ghost" size="sm" className="h-6 gap-1 text-[11px] text-muted-foreground ml-1" onClick={() => openCreateSub(cat.id)}>
+                                              <Plus className="h-2.5 w-2.5" /> Add Subcategory
+                                            </Button>
+                                          </div>
+                                        </motion.div>
+                                      )}
+                                    </AnimatePresence>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                            <Button variant="ghost" size="sm" className="mt-2 gap-1.5 text-muted-foreground" onClick={() => openCreateCat(group.id)}>
+                              <Plus className="h-3.5 w-3.5" /> Add Category
+                            </Button>
+                          </CardContent>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </Card>
+                </motion.div>
+              );
+            })}
+          </div>
+        </TabsContent>
+      </Tabs>
 
       {/* Group Dialog */}
       <Dialog open={groupDialogOpen} onOpenChange={setGroupDialogOpen}>
@@ -470,14 +587,53 @@ const Categories = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Subcategory Dialog */}
+      <Dialog open={subDialogOpen} onOpenChange={setSubDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="font-display">{editingSub ? 'Edit Subcategory' : 'Add Subcategory'}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Subcategory Name</Label>
+              <Input value={subForm.name} onChange={e => setSubForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. Fast Food, Work Supplies" />
+            </div>
+            <div className="space-y-2">
+              <Label>Parent Category</Label>
+              <Select value={subForm.category_id} onValueChange={v => setSubForm(f => ({ ...f, category_id: v }))}>
+                <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+                <SelectContent>
+                  {(categories || []).map(c => (
+                    <SelectItem key={c.id} value={c.id}>
+                      <div className="flex items-center gap-2">
+                        <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: c.color }} />
+                        {c.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Color</Label>
+              <ColorPicker value={subForm.color} onChange={c => setSubForm(f => ({ ...f, color: c }))} />
+            </div>
+            <Button onClick={handleSaveSub} disabled={!subForm.name.trim() || !subForm.category_id || createSubcategory.isPending || updateSubcategory.isPending} className="w-full">
+              {(createSubcategory.isPending || updateSubcategory.isPending) ? 'Saving...' : editingSub ? 'Update Subcategory' : 'Create Subcategory'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Delete Confirmation */}
       <AlertDialog open={!!deleteTarget} onOpenChange={open => !open && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete {deleteTarget?.type === 'group' ? 'group' : 'category'}?</AlertDialogTitle>
+            <AlertDialogTitle>Delete {deleteTarget?.type}?</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to delete "{deleteTarget?.name}"?
-              {deleteTarget?.type === 'group' && ' This will also delete all categories in this group.'}
+              {deleteTarget?.type === 'group' && ' This will also delete all categories and subcategories in this group.'}
+              {deleteTarget?.type === 'category' && ' This will also delete all subcategories in this category.'}
               {' '}This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
