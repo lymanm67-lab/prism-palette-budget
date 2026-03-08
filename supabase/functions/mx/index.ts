@@ -7,7 +7,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const MX_BASE_URL = "https://api.mx.com";
+const MX_BASE_URL = "https://int-api.mx.com";
 
 async function mxFetch(path: string, method: string, body?: any) {
   const MX_CLIENT_ID = Deno.env.get("MX_CLIENT_ID")!;
