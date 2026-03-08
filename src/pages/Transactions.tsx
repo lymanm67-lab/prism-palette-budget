@@ -1018,7 +1018,7 @@ const Transactions = () => {
             {autoCatLoading ? 'Categorizing…' : 'Auto-categorize'}
           </Button>
 
-
+      </div>
 
           {/* Sort dropdown */}
           <Popover>
