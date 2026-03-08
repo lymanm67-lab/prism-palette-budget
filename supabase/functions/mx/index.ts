@@ -25,10 +25,17 @@ async function mxFetch(path: string, method: string, body?: any) {
   if (body) options.body = JSON.stringify(body);
 
   const res = await fetch(`${MX_BASE_URL}${path}`, options);
-  const data = await res.json();
+  const text = await res.text();
+  let data: any;
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    console.error(`MX API non-JSON response [${res.status}] ${path}:`, text.substring(0, 500));
+    throw new Error(`MX API error: ${res.status} - non-JSON response`);
+  }
   if (!res.ok) {
     console.error(`MX API error [${res.status}] ${path}:`, JSON.stringify(data));
-    throw new Error(`MX API error: ${res.status}`);
+    throw new Error(`MX API error: ${res.status} - ${data?.error?.message || JSON.stringify(data)}`);
   }
   return data;
 }
