@@ -29,6 +29,7 @@ import CsvImportDialog from '@/components/CsvImportDialog';
 import CategoryCombobox from '@/components/CategoryCombobox';
 import PageOverview from '@/components/PageOverview';
 import { useDuplicateDetection } from '@/hooks/use-duplicate-detection';
+import MerchantIcon from '@/components/MerchantIcon';
 
 import { cn } from '@/lib/utils';
 import { isTransferMerchant } from '@/lib/transfer-detection';
