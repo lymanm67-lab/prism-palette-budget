@@ -75,7 +75,52 @@ const Categories = () => {
   // Delete confirmation
   const [deleteTarget, setDeleteTarget] = useState<{ type: 'group' | 'category'; id: string; name: string } | null>(null);
 
-  // Collapsed groups
+  const qc = useQueryClient();
+  const [mergingDupes, setMergingDupes] = useState(false);
+
+  // Detect duplicate categories (same name, case-insensitive)
+  const duplicateGroups = useMemo(() => {
+    if (!categories) return [];
+    const map = new Map<string, typeof categories>();
+    for (const c of categories) {
+      const key = c.name.toLowerCase().trim();
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(c);
+    }
+    return Array.from(map.values()).filter(group => group.length > 1);
+  }, [categories]);
+
+  const mergeAllDuplicates = async () => {
+    if (duplicateGroups.length === 0) return;
+    setMergingDupes(true);
+    try {
+      let mergedCount = 0;
+      for (const dupeGroup of duplicateGroups) {
+        // Keep the first one (oldest), reassign transactions from others
+        const [keep, ...remove] = dupeGroup;
+        for (const dup of remove) {
+          // Reassign transactions
+          await supabase.from('transactions').update({ category_id: keep.id }).eq('category_id', dup.id);
+          // Reassign budgets
+          await supabase.from('budgets').update({ category_id: keep.id }).eq('category_id', dup.id);
+          // Reassign categorization rules
+          await supabase.from('categorization_rules').update({ category_id: keep.id }).eq('category_id', dup.id);
+          // Delete the duplicate
+          await supabase.from('categories').delete().eq('id', dup.id);
+          mergedCount++;
+        }
+      }
+      qc.invalidateQueries({ queryKey: ['categories'] });
+      qc.invalidateQueries({ queryKey: ['transactions'] });
+      qc.invalidateQueries({ queryKey: ['budgets'] });
+      toast.success(`Merged ${mergedCount} duplicate categories`);
+    } catch (e: any) {
+      toast.error(e.message || 'Failed to merge duplicates');
+    } finally {
+      setMergingDupes(false);
+    }
+  };
+
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
 
   const toggleCollapse = (id: string) => {
