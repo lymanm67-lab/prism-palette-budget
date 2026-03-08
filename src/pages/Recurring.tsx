@@ -101,10 +101,11 @@ const Recurring = () => {
 
   const handleEdit = () => {
     if (!editTarget) return;
+    const amt = Math.abs(parseFloat(editForm.amount));
     updateRecurring.mutate({
       id: editTarget.id,
       merchant: editForm.merchant,
-      amount: parseFloat(editForm.amount),
+      amount: editForm.type === 'expense' ? -amt : amt,
       frequency: editForm.frequency,
       account_id: editForm.account_id,
       category_id: editForm.category_id || null,
