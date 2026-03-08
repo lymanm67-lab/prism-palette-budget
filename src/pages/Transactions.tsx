@@ -782,7 +782,13 @@ const Transactions = () => {
                         <CommandInput
                           placeholder="Type a merchant..."
                           value={form.merchant}
-                          onValueChange={v => setForm(f => ({ ...f, merchant: v }))}
+                          onValueChange={v => {
+                            const detected = isTransferMerchant(v);
+                            setForm(f => ({ ...f, merchant: v, is_transfer: detected }));
+                            if (detected && !form.is_transfer) {
+                              toast.info('Transfer detected — this will be marked as a transfer', { duration: 3000 });
+                            }
+                          }}
                         />
                         <CommandList>
                           <CommandEmpty>
