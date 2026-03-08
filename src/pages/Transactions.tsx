@@ -257,7 +257,12 @@ const Transactions = () => {
     if (!transactions) return [];
     const q = search.toLowerCase();
     let result = transactions.filter(t => {
-      if (q && !(t.merchant?.toLowerCase().includes(q)) && !((t as any).categories?.name?.toLowerCase().includes(q))) return false;
+      if (q) {
+        const matchesMerchant = t.merchant?.toLowerCase().includes(q);
+        const matchesCategory = (t as any).categories?.name?.toLowerCase().includes(q);
+        const matchesUncategorized = 'uncategorized'.includes(q) && !t.category_id;
+        if (!matchesMerchant && !matchesCategory && !matchesUncategorized) return false;
+      }
       if (filters.dateFrom && t.date < filters.dateFrom) return false;
       if (filters.dateTo && t.date > filters.dateTo) return false;
       if (filters.amountMin && Math.abs(t.amount) < parseFloat(filters.amountMin)) return false;
