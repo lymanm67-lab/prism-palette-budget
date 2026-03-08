@@ -1435,13 +1435,25 @@ const Transactions = () => {
 
                         {/* Category */}
                         <div className="hidden sm:flex items-center gap-1.5 w-[180px] shrink-0">
-                          {cat ? (
+                          {isTransfer ? (() => {
+                            const pairId = (txn as any).transfer_pair_id;
+                            const pairTxn = pairId ? (transactions || []).find(t => t.id === pairId) : null;
+                            const pairAcct = pairTxn ? (accounts || []).find(a => a.id === pairTxn.account_id) : null;
+                            const direction = txn.amount < 0 ? 'to' : 'from';
+                            const linkedName = pairAcct?.name;
+                            return (
+                              <span className="flex items-center gap-1.5 text-sm text-muted-foreground truncate">
+                                <ArrowRightLeft className="h-3 w-3 shrink-0 text-primary/60" />
+                                <span className="truncate">
+                                  {linkedName ? `Transfer ${direction} ${linkedName}` : 'Transfer'}
+                                </span>
+                              </span>
+                            );
+                          })() : cat ? (
                             <span className="flex items-center gap-1.5 text-sm text-muted-foreground truncate">
                               <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
                               <span className="truncate">{cat.name}</span>
                             </span>
-                          ) : isTransfer ? (
-                            <span className="text-xs text-muted-foreground italic">Transfer</span>
                           ) : (
                             <span className="text-xs text-muted-foreground italic">Uncategorized</span>
                           )}
