@@ -73,6 +73,7 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
   const [duplicateRows, setDuplicateRows] = useState<Set<number>>(new Set());
   const [dragging, setDragging] = useState(false);
   const [showFormats, setShowFormats] = useState(false);
+  const [previewRuleMatches, setPreviewRuleMatches] = useState<Map<number, { categoryId: string; categoryName: string }>>(new Map());
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const reset = () => {
