@@ -149,6 +149,19 @@ const Transactions = () => {
     }
   }, [categories, supabase]);
 
+  // Transfer detection patterns
+  const TRANSFER_PATTERNS = useMemo(() => [
+    /transfer/i, /xfer/i, /zelle/i, /venmo/i, /paypal.*transfer/i,
+    /cash\s*app/i, /wire/i, /ach/i, /direct\s*dep/i, /autopay/i,
+    /credit\s*card\s*payment/i, /payment\s*from/i, /payment\s*to/i,
+    /移動|振替/i, /internal/i, /between\s*accounts/i,
+  ], []);
+
+  const isTransferMerchant = useCallback((merchant: string) => {
+    if (!merchant) return false;
+    return TRANSFER_PATTERNS.some(p => p.test(merchant));
+  }, [TRANSFER_PATTERNS]);
+
   // Unique merchants from existing transactions for autocomplete
   const uniqueMerchants = useMemo(() => {
     if (!transactions) return [];
