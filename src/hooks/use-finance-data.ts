@@ -38,6 +38,23 @@ export function useCreateAccount() {
   });
 }
 
+export function useUpdateAccount() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: { id: string } & Partial<TablesInsert<'accounts'>>) => {
+      const { data, error } = await supabase
+        .from('accounts')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['accounts'] }),
+  });
+}
+
 export function useDeleteAccount() {
   const qc = useQueryClient();
   return useMutation({
