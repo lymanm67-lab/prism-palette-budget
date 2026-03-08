@@ -293,7 +293,7 @@ const CsvImportDialog = ({ open, onOpenChange }: CsvImportDialogProps) => {
 
         {/* Step indicators */}
         <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-          {['Upload', 'Map Columns', 'Preview & Import'].map((label, i) => {
+          {['Upload', fileMode === 'ofx' ? 'Select Account' : 'Map Columns', 'Preview & Import'].map((label, i) => {
             const stepIdx = ['upload', 'map', 'preview', 'importing', 'done'].indexOf(step);
             const thisIdx = i;
             const isActive = (thisIdx === 0 && stepIdx === 0) || (thisIdx === 1 && stepIdx === 1) || (thisIdx === 2 && stepIdx >= 2);
