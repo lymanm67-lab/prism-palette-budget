@@ -1247,10 +1247,10 @@ const Transactions = () => {
             />
             {/* Spacer for merchant icon */}
             <div className="h-8 w-8 shrink-0" />
-            <span className="flex-1 min-w-0 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Merchant</span>
-            <span className="hidden sm:block w-[180px] shrink-0 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Category</span>
-            <span className="hidden md:block w-[180px] shrink-0 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Account</span>
-            <span className="w-[90px] text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">Amount</span>
+            <span className="flex-1 min-w-0 text-xs font-bold uppercase tracking-wider text-foreground">Merchant</span>
+            <span className="hidden sm:block w-[180px] shrink-0 text-xs font-bold uppercase tracking-wider text-foreground">Category</span>
+            <span className="hidden md:block w-[180px] shrink-0 text-xs font-bold uppercase tracking-wider text-foreground">Account</span>
+            <span className="w-[90px] text-right text-xs font-bold uppercase tracking-wider text-foreground">Amount</span>
             {/* Spacer for action icons */}
             <div className="w-[68px] shrink-0" />
           </div>
@@ -1269,7 +1269,7 @@ const Transactions = () => {
                   }}
                   className="shrink-0"
                 />
-                <span className="text-sm font-semibold text-muted-foreground flex-1">{group.label}</span>
+                <span className="text-sm font-bold text-foreground flex-1">{group.label}</span>
                 <span className={cn('text-sm font-semibold tabular-nums', group.total < 0 ? 'text-foreground' : 'text-emerald-600 dark:text-emerald-400')}>
                   {group.total >= 0 ? '+' : ''}{formatCurrency(group.total)}
                 </span>
