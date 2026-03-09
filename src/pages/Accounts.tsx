@@ -46,12 +46,46 @@ const Accounts = () => {
   const createAccount = useCreateAccount();
   const updateAccount = useUpdateAccount();
   const deleteAccount = useDeleteAccount();
+  const { household } = useHousehold();
+  const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [form, setForm] = useState({ name: '', institution: '', account_type: 'checking' as AccountType, balance: '' });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
   const [pageGuideOpen, setPageGuideOpen] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefreshAccounts = async () => {
+    if (!household) return;
+    setRefreshing(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const response = await fetch(
+        `${supabaseUrl}/functions/v1/plaid/sync-transactions`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ household_id: household.id }),
+        }
+      );
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Failed to refresh');
+
+      toast.success(`Refreshed: ${data.accounts_updated} accounts updated, ${data.new_transactions} new transactions`);
+      qc.invalidateQueries({ queryKey: ['accounts'] });
+      qc.invalidateQueries({ queryKey: ['transactions'] });
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to refresh accounts');
+    }
+    setRefreshing(false);
+  };
 
   const grouped = (accounts || []).reduce((acc, acct) => {
     const inst = acct.institution || 'Manual';
