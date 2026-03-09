@@ -515,6 +515,7 @@ const Reports = () => {
                             {formatCurrency(item.actual)}{' '}
                             <span className="text-xs font-normal text-muted-foreground">/ {formatCurrency(item.budget)}</span>
                           </span>
+                        </div>
                       );
                     })}
                   </div>

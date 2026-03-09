@@ -417,19 +417,20 @@ const BusinessReports = ({ startDate, endDate, budgetMonth }: Props) => {
                   {bizBudgetVsActual.map(item => {
                     const pct = item.budget > 0 ? Math.round((item.actual / item.budget) * 100) : 0;
                     const isOver = item.actual > item.budget;
-                    return (
-                      <div key={item.name} className="flex items-center gap-3 text-sm">
-                        <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
-                        <span className="w-32 truncate">{item.name}</span>
-                        <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
-                          <div className="h-full rounded-full" style={{ width: `${Math.min(pct, 100)}%`, backgroundColor: isOver ? 'hsl(var(--destructive))' : item.color }} />
+                      return (
+                        <div key={item.name} className="flex items-center gap-3 text-sm">
+                          <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
+                          <span className="w-32 truncate">{item.name}</span>
+                          <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+                            <div className="h-full rounded-full" style={{ width: `${Math.min(pct, 100)}%`, backgroundColor: isOver ? 'hsl(var(--destructive))' : item.color }} />
+                          </div>
+                          <span className={`text-xs w-10 text-right ${isOver ? 'text-destructive' : 'text-muted-foreground'}`}>{pct}%</span>
+                          <span className="text-sm font-semibold text-foreground w-44 text-right">
+                            {formatCurrency(item.actual)}{' '}
+                            <span className="text-xs font-normal text-muted-foreground">/ {formatCurrency(item.budget)}</span>
+                          </span>
                         </div>
-                        <span className={`text-xs w-10 text-right ${isOver ? 'text-destructive' : 'text-muted-foreground'}`}>{pct}%</span>
-                        <span className="text-sm font-semibold text-foreground w-44 text-right">
-                          {formatCurrency(item.actual)}{' '}
-                          <span className="text-xs font-normal text-muted-foreground">/ {formatCurrency(item.budget)}</span>
-                        </span>
-                    );
+                      );
                   })}
                 </div>
               </>
