@@ -597,6 +597,7 @@ const Calculators = () => {
         </TabsContent>
       </Tabs>
     </motion.div>
+    </TooltipProvider>
   );
 };
 
