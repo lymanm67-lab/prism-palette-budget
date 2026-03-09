@@ -343,7 +343,7 @@ const Transactions = () => {
     });
 
     return result;
-  }, [search, transactions, deletedTransactions, filters, sortKey, sortDir, viewFilter, duplicateIds]);
+  }, [search, transactions, deletedTransactions, filters, sortKey, sortDir, viewFilter, duplicateIds, personalCatIds, businessCatIds]);
 
   // Group by date
   const grouped = useMemo(() => {
