@@ -22,8 +22,9 @@ import {
   Search, Plus, Loader2, Upload, Receipt, Trash2, Tags,
   ArrowRightLeft, SlidersHorizontal, CalendarIcon, ChevronRight,
   ArrowUpDown, X, Pencil, Sparkles, Landmark, Check, Camera, ImageIcon,
-  Copy, AlertTriangle, Undo2, RotateCcw, CheckCircle2,
+  Copy, AlertTriangle, Undo2, RotateCcw, CheckCircle2, Download,
 } from 'lucide-react';
+import { exportTransactionsToCsv } from '@/lib/export-transactions';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import CsvImportDialog from '@/components/CsvImportDialog';
@@ -749,7 +750,21 @@ const Transactions = () => {
 
           {/* Import CSV button */}
           <Button variant="outline" size="sm" className="gap-2" onClick={() => setCsvOpen(true)}>
-            <Upload className="h-4 w-4" /> Import Transactions
+            <Upload className="h-4 w-4" /> Import
+          </Button>
+
+          {/* Export CSV button */}
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="gap-2" 
+            onClick={() => {
+              exportTransactionsToCsv(filtered as any, `transactions-${new Date().toISOString().split('T')[0]}.csv`);
+              toast.success(`Exported ${filtered.length} transactions to CSV`);
+            }}
+            disabled={filtered.length === 0}
+          >
+            <Download className="h-4 w-4" /> Export
           </Button>
 
           {/* Add transaction button */}
@@ -1190,6 +1205,13 @@ const Transactions = () => {
               <Button size="sm" variant="outline" onClick={handleAutoCategorize} disabled={autoCatLoading} className="gap-1 h-8">
                 {autoCatLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
                 AI Categorize
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => {
+                const selectedTxns = filtered.filter(t => selected.has(t.id));
+                exportTransactionsToCsv(selectedTxns as any, `transactions-export-${selected.size}.csv`);
+                toast.success(`Exported ${selected.size} transactions`);
+              }} className="gap-1 h-8">
+                <Download className="h-3.5 w-3.5" /> Export
               </Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
