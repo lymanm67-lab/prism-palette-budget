@@ -556,7 +556,7 @@ function DashboardCharts({ monthlyCashflow, spendingData, formatCurrency, format
                   <Pie data={spendingData} cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={3} dataKey="value">
                     {spendingData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                   </Pie>
-                  <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} />
+                  <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} labelStyle={tooltipLabelStyle} />
                 </PieChart>
               </ResponsiveContainer>
               <div className="mt-3 space-y-2">
