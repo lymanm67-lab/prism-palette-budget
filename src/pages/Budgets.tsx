@@ -212,7 +212,7 @@ const Budgets = () => {
   const totalExpenseActual = sectionTotals.fixed.actual + sectionTotals.flexible.actual + sectionTotals.non_monthly.actual;
   const totalExpenseRemaining = totalExpenseBudget - totalExpenseActual;
 
-  const leftToBudget = totalIncomeActual - totalExpenseBudget;
+  const unallocated = totalIncomeBudget - totalExpenseBudget;
 
   // Unbudgeted categories
   const budgetedCategoryIds = new Set(budgetItems.map(b => b.category_id));
