@@ -256,15 +256,52 @@ const Budgets = () => {
     return { items, totals, daysPassed, daysRemaining, totalDays, isCurrentMonth };
   }, [budgetItems, categoryExpenseType, month]);
 
+  // Compute rollover amounts from previous month
+  const rolloverAmounts = useMemo(() => {
+    // We need previous month's budgets and spending to calculate rollover
+    const prevMonth = getMonth(monthOffset - 1);
+    const prevMonthPrefix = prevMonth.substring(0, 7);
+    const rolloverMap = new Map<string, number>();
+    
+    if (!budgets || !transactions) return rolloverMap;
+    
+    // For each budget with rollover enabled, check previous month
+    for (const b of (budgets as any[])) {
+      if (!b.rollover) continue;
+      const type = categoryExpenseType.get(b.category_id) || 'flexible';
+      const isIncome = type === 'income';
+      
+      // Calculate previous month spending for this category
+      let prevSpent = 0;
+      for (const t of transactions) {
+        if (t.date.startsWith(prevMonthPrefix) && t.category_id === b.category_id) {
+          if (isIncome) {
+            if (t.amount > 0) prevSpent += t.amount;
+          } else {
+            if (t.amount < 0) prevSpent += Math.abs(t.amount);
+          }
+        }
+      }
+      
+      const remaining = b.planned_amount - prevSpent;
+      if (remaining > 0) {
+        rolloverMap.set(b.category_id, remaining);
+      }
+    }
+    return rolloverMap;
+  }, [budgets, transactions, monthOffset, categoryExpenseType]);
+
   const openCreate = () => {
     setEditingBudget(null);
-    setForm({ category_id: unbudgetedCategories[0]?.id || '', planned_amount: '' });
+    setForm({ category_id: unbudgetedCategories[0]?.id || '', planned_amount: '', rollover: false });
     setDialogOpen(true);
   };
 
   const openEdit = (categoryId: string, currentAmount: number) => {
-    setEditingBudget({ category_id: categoryId, planned_amount: String(currentAmount) });
-    setForm({ category_id: categoryId, planned_amount: String(currentAmount) });
+    const budget = budgetItems.find(b => b.category_id === categoryId);
+    const rollover = (budget as any)?.rollover ?? false;
+    setEditingBudget({ category_id: categoryId, planned_amount: String(currentAmount), rollover });
+    setForm({ category_id: categoryId, planned_amount: String(currentAmount), rollover });
     setDialogOpen(true);
   };
 
