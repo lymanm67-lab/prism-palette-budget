@@ -49,6 +49,7 @@ const Accounts = () => {
   const [form, setForm] = useState({ name: '', institution: '', account_type: 'checking' as AccountType, balance: '' });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
+  const [pageGuideOpen, setPageGuideOpen] = useState(false);
 
   const grouped = (accounts || []).reduce((acc, acct) => {
     const inst = acct.institution || 'Manual';
