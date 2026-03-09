@@ -442,7 +442,7 @@ const Reports = () => {
                               <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: cat.color }} />
                               <span>{cat.name}</span>
                             </div>
-                            <span className="font-medium">{formatCurrency(cat.value)}</span>
+                            <span className="font-semibold text-foreground">{formatCurrency(cat.value)}</span>
                           </div>
                           <div className="h-2 overflow-hidden rounded-full bg-muted">
                             <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: cat.color }} />
