@@ -317,6 +317,24 @@ const Budgets = () => {
     setDialogOpen(false);
   };
 
+  const handleCopyForward = async () => {
+    if (!budgetItems.length) return;
+    setCopyingForward(true);
+    const nextMonth = getMonth(monthOffset + 1);
+    try {
+      for (const b of budgetItems) {
+        await upsertBudget.mutateAsync({
+          category_id: b.category_id,
+          month: nextMonth,
+          planned_amount: b.planned_amount,
+          rollover: b.rollover,
+        });
+      }
+    } finally {
+      setCopyingForward(false);
+    }
+  };
+
   // Render a budget row
   const renderBudgetRow = (b: BudgetRow, type: ExpenseType) => {
     const isIncome = type === 'income';
