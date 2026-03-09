@@ -51,6 +51,7 @@ const Reports = () => {
   const [activeTab, setActiveTab] = useState('spending');
   const [reportMode, setReportMode] = useState<'personal' | 'business'>('personal');
   const [spendingChartType, setSpendingChartType] = useState<'pie' | 'bar'>('pie');
+  const [showOtherBreakdown, setShowOtherBreakdown] = useState(false);
   const reportRef = useRef<HTMLDivElement>(null);
 
   const startDate = format(dateRange.from, 'yyyy-MM-dd');
