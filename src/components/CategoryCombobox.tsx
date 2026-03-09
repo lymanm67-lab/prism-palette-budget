@@ -33,20 +33,25 @@ export default function CategoryCombobox({ value, onValueChange, placeholder = '
 
   // Group filtered categories by group
   const grouped = useMemo(() => {
-    if (!groups) return [{ name: 'Categories', color: '#888', cats: filtered }];
-    const map = new Map<string, { name: string; color: string; cats: typeof filtered }>();
+    if (!groups) return [{ name: 'Categories', color: '#888', budgetType: 'personal', cats: filtered }];
+    const map = new Map<string, { name: string; color: string; budgetType: string; cats: typeof filtered }>();
     for (const g of groups) {
-      map.set(g.id, { name: g.name, color: g.color, cats: [] });
+      map.set(g.id, { name: g.name, color: g.color, budgetType: (g as any).budget_type || 'personal', cats: [] });
     }
     for (const c of filtered) {
       const group = map.get(c.group_id);
       if (group) group.cats.push(c);
       else {
-        if (!map.has('_ungrouped')) map.set('_ungrouped', { name: 'Other', color: '#888', cats: [] });
+        if (!map.has('_ungrouped')) map.set('_ungrouped', { name: 'Other', color: '#888', budgetType: 'personal', cats: [] });
         map.get('_ungrouped')!.cats.push(c);
       }
     }
-    return Array.from(map.values()).filter(g => g.cats.length > 0);
+    const all = Array.from(map.values()).filter(g => g.cats.length > 0);
+    // Sort: personal groups first, then business
+    return all.sort((a, b) => {
+      if (a.budgetType === b.budgetType) return 0;
+      return a.budgetType === 'personal' ? -1 : 1;
+    });
   }, [groups, filtered]);
 
   const startAddNew = () => {
