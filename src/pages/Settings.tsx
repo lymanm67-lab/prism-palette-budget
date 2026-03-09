@@ -17,7 +17,8 @@ import { useHousehold } from '@/contexts/HouseholdContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { Loader2, Save, User, DollarSign, Calendar, Building2, Plus, Pencil, Trash2, Globe, Phone, Mail, MapPin, Sun, Moon, Monitor, Sparkles, Search, Tag, Volume2, Pause, Square, Play, BookOpen, BellRing, Send } from 'lucide-react';
+import { Loader2, Save, User, Users, DollarSign, Calendar, Building2, Plus, Pencil, Trash2, Globe, Phone, Mail, MapPin, Sun, Moon, Monitor, Sparkles, Search, Tag, Volume2, Pause, Square, Play, BookOpen, BellRing, Send } from 'lucide-react';
+import HouseholdInvitations from '@/components/HouseholdInvitations';
 import { Switch } from '@/components/ui/switch';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTTS } from '@/hooks/use-tts';
@@ -754,13 +755,19 @@ const Settings = () => {
       </div>
 
       <Tabs defaultValue="personal" className="space-y-6">
-        <TabsList>
+        <TabsList className="flex-wrap">
           <TabsTrigger value="personal" className="gap-2"><User className="h-4 w-4" /> Personal</TabsTrigger>
+          <TabsTrigger value="household" className="gap-2"><Users className="h-4 w-4" /> Household</TabsTrigger>
           <TabsTrigger value="business" className="gap-2"><Building2 className="h-4 w-4" /> Business</TabsTrigger>
           <TabsTrigger value="rules" className="gap-2"><Tag className="h-4 w-4" /> Rules</TabsTrigger>
           <TabsTrigger value="recurring" className="gap-2"><Calendar className="h-4 w-4" /> Recurring</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
         </TabsList>
+
+        {/* ==================== HOUSEHOLD ==================== */}
+        <TabsContent value="household" className="space-y-6">
+          <HouseholdInvitations />
+        </TabsContent>
 
         {/* ==================== PERSONAL PROFILE ==================== */}
         <TabsContent value="personal" className="space-y-6">

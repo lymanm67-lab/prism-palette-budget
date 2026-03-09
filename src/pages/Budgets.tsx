@@ -15,6 +15,7 @@ import { useSmartBudget } from '@/hooks/use-financial-intelligence';
 import { useCurrency } from '@/hooks/use-currency';
 import { Loader2, Plus, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Eye, Settings2, TrendingUp, AlertTriangle, CheckCircle2, PiggyBank, Sparkles } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 import { getDaysInMonth } from 'date-fns';
 import PageOverview from '@/components/PageOverview';
@@ -59,6 +60,7 @@ interface BudgetRow {
   id: string;
   category_id: string;
   planned_amount: number;
+  rollover: boolean;
   spent: number;
   received: number;
   categories: { name: string; color: string } | null;
@@ -79,8 +81,8 @@ const Budgets = () => {
   const createCategory = useCreateCategory();
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingBudget, setEditingBudget] = useState<{ category_id: string; planned_amount: string } | null>(null);
-  const [form, setForm] = useState({ category_id: '', planned_amount: '' });
+  const [editingBudget, setEditingBudget] = useState<{ category_id: string; planned_amount: string; rollover: boolean } | null>(null);
+  const [form, setForm] = useState({ category_id: '', planned_amount: '', rollover: false });
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const [showUnbudgeted, setShowUnbudgeted] = useState(false);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({ income: true, fixed: true, flexible: true, non_monthly: true });
@@ -256,22 +258,59 @@ const Budgets = () => {
     return { items, totals, daysPassed, daysRemaining, totalDays, isCurrentMonth };
   }, [budgetItems, categoryExpenseType, month]);
 
+  // Compute rollover amounts from previous month
+  const rolloverAmounts = useMemo(() => {
+    // We need previous month's budgets and spending to calculate rollover
+    const prevMonth = getMonth(monthOffset - 1);
+    const prevMonthPrefix = prevMonth.substring(0, 7);
+    const rolloverMap = new Map<string, number>();
+    
+    if (!budgets || !transactions) return rolloverMap;
+    
+    // For each budget with rollover enabled, check previous month
+    for (const b of (budgets as any[])) {
+      if (!b.rollover) continue;
+      const type = categoryExpenseType.get(b.category_id) || 'flexible';
+      const isIncome = type === 'income';
+      
+      // Calculate previous month spending for this category
+      let prevSpent = 0;
+      for (const t of transactions) {
+        if (t.date.startsWith(prevMonthPrefix) && t.category_id === b.category_id) {
+          if (isIncome) {
+            if (t.amount > 0) prevSpent += t.amount;
+          } else {
+            if (t.amount < 0) prevSpent += Math.abs(t.amount);
+          }
+        }
+      }
+      
+      const remaining = b.planned_amount - prevSpent;
+      if (remaining > 0) {
+        rolloverMap.set(b.category_id, remaining);
+      }
+    }
+    return rolloverMap;
+  }, [budgets, transactions, monthOffset, categoryExpenseType]);
+
   const openCreate = () => {
     setEditingBudget(null);
-    setForm({ category_id: unbudgetedCategories[0]?.id || '', planned_amount: '' });
+    setForm({ category_id: unbudgetedCategories[0]?.id || '', planned_amount: '', rollover: false });
     setDialogOpen(true);
   };
 
   const openEdit = (categoryId: string, currentAmount: number) => {
-    setEditingBudget({ category_id: categoryId, planned_amount: String(currentAmount) });
-    setForm({ category_id: categoryId, planned_amount: String(currentAmount) });
+    const budget = budgetItems.find(b => b.category_id === categoryId);
+    const rollover = (budget as any)?.rollover ?? false;
+    setEditingBudget({ category_id: categoryId, planned_amount: String(currentAmount), rollover });
+    setForm({ category_id: categoryId, planned_amount: String(currentAmount), rollover });
     setDialogOpen(true);
   };
 
   const handleSave = async () => {
     const amount = parseFloat(form.planned_amount);
     if (!form.category_id || isNaN(amount) || amount < 0) return;
-    await upsertBudget.mutateAsync({ category_id: form.category_id, month, planned_amount: amount });
+    await upsertBudget.mutateAsync({ category_id: form.category_id, month, planned_amount: amount, rollover: form.rollover });
     setDialogOpen(false);
   };
 
@@ -279,14 +318,20 @@ const Budgets = () => {
   const renderBudgetRow = (b: BudgetRow, type: ExpenseType) => {
     const isIncome = type === 'income';
     const actual = isIncome ? b.received : b.spent;
-    const remaining = b.planned_amount - actual;
-    const pct = b.planned_amount > 0 ? Math.min((actual / b.planned_amount) * 100, 100) : 0;
+    const rolloverAmt = rolloverAmounts.get(b.category_id) || 0;
+    const effectiveBudget = b.planned_amount + rolloverAmt;
+    const remaining = effectiveBudget - actual;
+    const pct = effectiveBudget > 0 ? Math.min((actual / effectiveBudget) * 100, 100) : 0;
     const overBudget = remaining < 0;
 
     return (
       <div key={b.id} className="group flex items-center gap-3 py-2.5 px-3 hover:bg-muted/30 rounded-lg transition-colors">
         <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: b.categories?.color || 'hsl(var(--primary))' }} />
-        <span className="flex-1 text-sm font-medium truncate">{b.categories?.name || 'Unknown'}</span>
+        <div className="flex-1 min-w-0 flex items-center gap-1.5">
+          <span className="text-sm font-medium truncate">{b.categories?.name || 'Unknown'}</span>
+          {b.rollover && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium shrink-0">↻</span>}
+          {rolloverAmt > 0 && <span className="text-[10px] text-emerald-600 dark:text-emerald-400 shrink-0">+{formatCurrency(rolloverAmt)}</span>}
+        </div>
         <div className="hidden sm:block w-[200px]">
           <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
             <div
@@ -295,7 +340,7 @@ const Budgets = () => {
             />
           </div>
         </div>
-        <span className="w-[90px] text-right text-sm tabular-nums">{formatCurrency(b.planned_amount)}</span>
+        <span className="w-[90px] text-right text-sm tabular-nums">{formatCurrency(effectiveBudget)}</span>
         <span className="w-[90px] text-right text-sm tabular-nums text-muted-foreground">{formatCurrency(actual)}</span>
         <span className={cn('w-[90px] text-right text-sm font-medium tabular-nums', overBudget ? 'text-rose-600 dark:text-rose-400' : isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground')}>
           {formatCurrency(Math.abs(remaining))}
@@ -582,7 +627,7 @@ const Budgets = () => {
                           <span className="w-[90px] text-right text-sm tabular-nums text-muted-foreground">{spent > 0 ? formatCurrency(spent) : received > 0 ? formatCurrency(received) : '—'}</span>
                           <span className="w-[90px]" />
                           <div className="w-[62px] flex justify-end">
-                            <Button variant="ghost" size="sm" className="h-7 text-xs opacity-0 group-hover:opacity-100" onClick={() => { setForm({ category_id: c.id, planned_amount: '' }); setEditingBudget(null); setDialogOpen(true); }}>
+                            <Button variant="ghost" size="sm" className="h-7 text-xs opacity-0 group-hover:opacity-100" onClick={() => { setForm({ category_id: c.id, planned_amount: '', rollover: false }); setEditingBudget(null); setDialogOpen(true); }}>
                               <Plus className="h-3 w-3 mr-1" /> Budget
                             </Button>
                           </div>
@@ -865,6 +910,18 @@ const Budgets = () => {
               <Label>Planned Amount</Label>
               <Input type="number" step="0.01" min="0" placeholder="500.00" value={form.planned_amount} onChange={e => setForm(f => ({ ...f, planned_amount: e.target.value }))} />
             </div>
+            <div className="flex items-center justify-between rounded-lg border p-3">
+              <div className="space-y-0.5">
+                <Label className="text-sm font-medium">Rollover</Label>
+                <p className="text-xs text-muted-foreground">Carry unspent budget to next month</p>
+              </div>
+              <Switch checked={form.rollover} onCheckedChange={v => setForm(f => ({ ...f, rollover: v }))} />
+            </div>
+            {form.rollover && rolloverAmounts.has(form.category_id) && (
+              <div className="text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 rounded-lg px-3 py-2">
+                +{formatCurrency(rolloverAmounts.get(form.category_id)!)} rolling over from previous month
+              </div>
+            )}
             <div className="text-xs text-muted-foreground">Month: {formatMonth(month)}</div>
             <Button onClick={handleSave} disabled={!form.category_id || !form.planned_amount || upsertBudget.isPending} className="w-full">
               {upsertBudget.isPending ? 'Saving...' : editingBudget ? 'Update Budget' : 'Create Budget'}
@@ -925,7 +982,7 @@ const Budgets = () => {
                 setQuickAddForm({ name: '', group_id: '', color: '#7c5cf5' });
                 // Open budget dialog with the new category pre-selected
                 setEditingBudget(null);
-                setForm({ category_id: newCat.id, planned_amount: '' });
+                setForm({ category_id: newCat.id, planned_amount: '', rollover: false });
                 setDialogOpen(true);
               }}
               disabled={!quickAddForm.name || !quickAddForm.group_id || createCategory.isPending}
