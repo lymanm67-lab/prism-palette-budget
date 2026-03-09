@@ -386,7 +386,7 @@ const BusinessReports = ({ startDate, endDate, budgetMonth }: Props) => {
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={11} />
                   <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickFormatter={v => formatCompact(v)} />
-                  <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} />
+                  <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} labelStyle={tooltipLabelStyle} />
                   <Legend />
                   <Area type="monotone" dataKey="revenue" stroke="hsl(160, 84%, 39%)" fill="hsl(160, 84%, 39%)" fillOpacity={0.15} name="Revenue" strokeWidth={2} />
                   <Area type="monotone" dataKey="expenses" stroke="hsl(340, 82%, 52%)" fill="hsl(340, 82%, 52%)" fillOpacity={0.15} name="Expenses" strokeWidth={2} />
