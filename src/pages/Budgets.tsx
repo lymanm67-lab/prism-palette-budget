@@ -305,7 +305,7 @@ const Budgets = () => {
 
   const openCreate = () => {
     setEditingBudget(null);
-    setForm({ category_id: '', planned_amount: '', rollover: false, budgetKind: 'expense', group_id: '', expense_type: 'flexible', expense_type: 'flexible', expense_type: 'flexible' });
+    setForm({ category_id: '', planned_amount: '', rollover: false, budgetKind: 'expense', group_id: '', expense_type: 'flexible', expense_type: 'flexible', expense_type: 'flexible', expense_type: 'flexible' });
     setDialogOpen(true);
   };
 
@@ -316,7 +316,7 @@ const Budgets = () => {
     const group = cat ? (categoryGroups as any[])?.find((g: any) => g.id === cat.group_id) : null;
     const expType = group?.expense_type || 'flexible';
     setEditingBudget({ category_id: categoryId, planned_amount: String(currentAmount), rollover });
-    setForm({ category_id: categoryId, planned_amount: String(currentAmount), rollover, budgetKind: expType === 'income' ?, expense_type: (expType === 'income' ? 'flexible' : expType) as 'fixed' | 'flexible' | 'non_monthly' 'income' : 'expense', gro, expense_type: (expType === 'income' ? 'flexible' : expType) as 'fixed' | 'flexible' | 'non_monthly'up_id: cat?.group_id || '' });
+    setForm({ category_id: categoryId, planned_amount: String(currentAmount), rollover, budgetKi, expense_type: (expType === 'income' ? 'flexible' : expType) as 'fixed' | 'flexible' | 'non_monthly'nd: expType === 'income' ?, expense_type: (expType === 'income' ? 'flexible' : expType) as 'fixed' | 'flexible' | 'non_monthly' 'income' : 'expense', gro, expense_type: (expType === 'income' ? 'flexible' : expType) as 'fixed' | 'flexible' | 'non_monthly'up_id: cat?.group_id || '' });
     setDialogOpen(true);
   };
 
@@ -766,8 +766,7 @@ const Budgets = () => {
                           <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: c.color }} />
                           <span className="flex-1 text-sm text-muted-foreground truncate">{c.name}</span>
                           <span className="text-xs sm:text-sm text-muted-foreground tabular-nums">
-                            {spent > 0 ? formatCurrency(spent) : received > 0 ? formatCurrency(received) : '—'}
-                          </span>
+                            {spent const grp = (categoryGroups as any[])?.find((g: any) => g.id === c.group_id); setForm({ category_id: c.id, planned_amount: '', rollover: false, budgetKind: 'expense', group_id: c.group_id, expense_type: (grp?.expense_type || 'flexible') as 'fixed' | 'flexible' | 'non_monthly'an>
               const grp = (categoryGroups as any[])?.find((g: any) => g.id === c.group_id); setForm({ category_id: c.id, planned_amount: '', rollover: false, budgetKind: 'expense', group_id: c.group_id, expense_type: (grp?.expense_type || 'flexible') as 'fixed' | 'flexible' | 'non_monthly' onClick={() => { setForm({ category_id: c.id, planned_amount: '', rollover: false, budgetKind: 'expense', group_id: c.group_id }); setEditingBudget(null); setDialogOpen(true); }}>
                             <Plus className="h-3 w-3 mr-1" /> Budget
                           </Button>
@@ -1170,7 +1169,7 @@ const Budgets = () => {
                 if (!quickAddForm.name || !quickAddForm.group_id) return;
                 const newCat = await createCategory.mutateAsync({ name: quickAddForm.name, group_id: quickAddForm.group_id, color: quickAddForm.color });
                 setQuickAddOpen(false);
-                setQuickAddForm({ name: '', group_id: '', color: '#7c5cf5' });
+                setQuickAddForm({ name:, expense_type: 'flexible' '', group_id: '', color: '#7c5cf5' });
                 // Open budget dialog with the new category pre-selected
                 setEditingBudget(null);
                 setForm({ category_id: newCat.id, planned_amount: '', rollover: false, budgetKind: 'expense', group_id: quickAddForm.group_id });
