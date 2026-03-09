@@ -50,6 +50,7 @@ const Reports = () => {
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('spending');
   const [reportMode, setReportMode] = useState<'personal' | 'business'>('personal');
+  const [spendingChartType, setSpendingChartType] = useState<'pie' | 'bar'>('pie');
   const reportRef = useRef<HTMLDivElement>(null);
 
   const startDate = format(dateRange.from, 'yyyy-MM-dd');
