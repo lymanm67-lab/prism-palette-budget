@@ -26,6 +26,8 @@ const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { st
 const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.4 } } };
 
 const tooltipStyle = { background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '12px', boxShadow: '0 8px 32px -8px rgba(0,0,0,0.15)' };
+const tooltipItemStyle = { color: 'hsl(var(--foreground))' };
+const tooltipLabelStyle = { color: 'hsl(var(--foreground))' };
 
 const STAT_CARDS = [
   { key: 'netWorth', label: 'Net Worth', icon: TrendingUp, gradient: 'from-prism-navy to-prism-teal', glow: 'prism-glow' },

@@ -214,6 +214,8 @@ const Forecast = () => {
                         formatter={(v: number) => formatCurrency(v)}
                         contentStyle={tooltipStyle}
                         labelFormatter={(l) => l}
+                        itemStyle={{ color: 'hsl(var(--foreground))' }}
+                        labelStyle={{ color: 'hsl(var(--foreground))' }}
                       />
                       <ReferenceLine y={500} stroke="hsl(350, 78%, 52%)" strokeDasharray="5 5" label={{ value: "$500 threshold", fill: "hsl(350, 78%, 52%)", fontSize: 11 }} />
                       <ReferenceLine y={data.current_balance} stroke="hsl(var(--muted-foreground))" strokeDasharray="3 3" />

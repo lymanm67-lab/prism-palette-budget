@@ -26,6 +26,8 @@ const COLORS = [
 ];
 
 const tooltipStyle = { background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' };
+const tooltipItemStyle = { color: 'hsl(var(--foreground))' };
+const tooltipLabelStyle = { color: 'hsl(var(--foreground))' };
 
 const MONTH_OPTIONS = [
   { label: 'Last 3 Months', value: 3 },
