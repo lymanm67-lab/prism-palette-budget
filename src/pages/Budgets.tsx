@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useCallback } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,7 +14,9 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { useBudgets, useCategories, useCategoryGroups, useTransactions, useUpsertBudget, useDeleteBudget, useCreateCategory } from '@/hooks/use-finance-data';
 import { useSmartBudget } from '@/hooks/use-financial-intelligence';
 import { useCurrency } from '@/hooks/use-currency';
-import { Loader2, Plus, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Eye, EyeOff, Settings2, TrendingUp, AlertTriangle, CheckCircle2, PiggyBank, Sparkles, Copy } from 'lucide-react';
+import { Loader2, Plus, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Eye, EyeOff, Settings2, TrendingUp, AlertTriangle, CheckCircle2, PiggyBank, Sparkles, Copy, ClipboardCheck } from 'lucide-react';
+import { useHousehold } from '@/contexts/HouseholdContext';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
@@ -68,6 +71,7 @@ interface BudgetRow {
 
 const Budgets = () => {
   const { formatCurrency } = useCurrency();
+  const { household } = useHousehold();
   const [monthOffset, setMonthOffset] = useState(0);
   const [budgetType, setBudgetType] = useState<'personal' | 'business'>('personal');
   const [selectedBusiness, setSelectedBusiness] = useState<string>('all');
@@ -82,7 +86,10 @@ const Budgets = () => {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState<{ category_id: string; planned_amount: string; rollover: boolean } | null>(null);
-  const [form, setForm] = useState({ category_id: '', planned_amount: '', rollover: false });
+  const [form, setForm] = useState({ category_id: '', planned_amount: '', rollover: false, budgetKind: 'expense' as 'income' | 'expense', group_id: '' });
+  const [auditOpen, setAuditOpen] = useState(false);
+  const [auditResult, setAuditResult] = useState<string>('');
+  const [auditLoading, setAuditLoading] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const [showUnbudgeted, setShowUnbudgeted] = useState(false);
   const [hideZeroAmounts, setHideZeroAmounts] = useState(false);
@@ -298,15 +305,18 @@ const Budgets = () => {
 
   const openCreate = () => {
     setEditingBudget(null);
-    setForm({ category_id: unbudgetedCategories[0]?.id || '', planned_amount: '', rollover: false });
+    setForm({ category_id: '', planned_amount: '', rollover: false, budgetKind: 'expense', group_id: '' });
     setDialogOpen(true);
   };
 
   const openEdit = (categoryId: string, currentAmount: number) => {
     const budget = budgetItems.find(b => b.category_id === categoryId);
     const rollover = (budget as any)?.rollover ?? false;
+    const cat = (categories || []).find(c => c.id === categoryId);
+    const group = cat ? (categoryGroups as any[])?.find((g: any) => g.id === cat.group_id) : null;
+    const expType = group?.expense_type || 'flexible';
     setEditingBudget({ category_id: categoryId, planned_amount: String(currentAmount), rollover });
-    setForm({ category_id: categoryId, planned_amount: String(currentAmount), rollover });
+    setForm({ category_id: categoryId, planned_amount: String(currentAmount), rollover, budgetKind: expType === 'income' ? 'income' : 'expense', group_id: cat?.group_id || '' });
     setDialogOpen(true);
   };
 
@@ -335,7 +345,66 @@ const Budgets = () => {
     }
   };
 
-  // Render a budget row
+  const handleAuditBudget = useCallback(async () => {
+    if (!household?.id) return;
+    setAuditLoading(true);
+    setAuditResult('');
+    setAuditOpen(true);
+
+    try {
+      const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/budget-audit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({ household_id: household.id, month }),
+      });
+
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({ error: 'Unknown error' }));
+        setAuditResult(`**Error:** ${err.error || 'Failed to audit budget'}`);
+        setAuditLoading(false);
+        return;
+      }
+
+      const reader = resp.body?.getReader();
+      if (!reader) { setAuditLoading(false); return; }
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let fullText = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+
+        let newlineIdx: number;
+        while ((newlineIdx = buffer.indexOf('\n')) !== -1) {
+          let line = buffer.slice(0, newlineIdx);
+          buffer = buffer.slice(newlineIdx + 1);
+          if (line.endsWith('\r')) line = line.slice(0, -1);
+          if (!line.startsWith('data: ')) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === '[DONE]') break;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) {
+              fullText += content;
+              setAuditResult(fullText);
+            }
+          } catch { /* partial json, ignore */ }
+        }
+      }
+    } catch (e) {
+      setAuditResult('**Error:** Failed to connect to AI service.');
+    } finally {
+      setAuditLoading(false);
+    }
+  }, [household?.id, month]);
+
+
   const renderBudgetRow = (b: BudgetRow, type: ExpenseType) => {
     const isIncome = type === 'income';
     const actual = isIncome ? b.received : b.spent;
@@ -600,6 +669,16 @@ const Budgets = () => {
             {hideZeroAmounts ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             <span className="hidden sm:inline">{hideZeroAmounts ? 'Show $0' : 'Hide $0'}</span>
           </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            disabled={auditLoading}
+            onClick={handleAuditBudget}
+          >
+            {auditLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ClipboardCheck className="h-4 w-4" />}
+            <span className="hidden sm:inline">AI Audit</span>
+          </Button>
         </div>
       </div>
 
@@ -689,7 +768,7 @@ const Budgets = () => {
                           <span className="text-xs sm:text-sm text-muted-foreground tabular-nums">
                             {spent > 0 ? formatCurrency(spent) : received > 0 ? formatCurrency(received) : '—'}
                           </span>
-                          <Button variant="ghost" size="sm" className="h-7 text-xs sm:opacity-0 sm:group-hover:opacity-100" onClick={() => { setForm({ category_id: c.id, planned_amount: '', rollover: false }); setEditingBudget(null); setDialogOpen(true); }}>
+                          <Button variant="ghost" size="sm" className="h-7 text-xs sm:opacity-0 sm:group-hover:opacity-100" onClick={() => { setForm({ category_id: c.id, planned_amount: '', rollover: false, budgetKind: 'expense', group_id: c.group_id }); setEditingBudget(null); setDialogOpen(true); }}>
                             <Plus className="h-3 w-3 mr-1" /> Budget
                           </Button>
                         </div>
@@ -942,6 +1021,49 @@ const Budgets = () => {
             <DialogTitle className="font-display">{editingBudget ? 'Edit Budget' : 'Add Budget'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            {/* Income / Expense Toggle */}
+            {!editingBudget && (
+              <div className="space-y-2">
+                <Label>Type</Label>
+                <Tabs value={form.budgetKind} onValueChange={(v) => setForm(f => ({ ...f, budgetKind: v as 'income' | 'expense', group_id: '', category_id: '' }))}>
+                  <TabsList className="w-full">
+                    <TabsTrigger value="income" className="flex-1 gap-1.5">
+                      <TrendingUp className="h-3.5 w-3.5" /> Income
+                    </TabsTrigger>
+                    <TabsTrigger value="expense" className="flex-1 gap-1.5">
+                      <PiggyBank className="h-3.5 w-3.5" /> Expense
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
+            )}
+
+            {/* Group Dropdown */}
+            {!editingBudget && (
+              <div className="space-y-2">
+                <Label>Group</Label>
+                <Select value={form.group_id} onValueChange={v => setForm(f => ({ ...f, group_id: v, category_id: '' }))}>
+                  <SelectTrigger><SelectValue placeholder="Select group" /></SelectTrigger>
+                  <SelectContent>
+                    {(categoryGroups as any[] || [])
+                      .filter((g: any) => {
+                        const isIncome = (g.expense_type || 'flexible') === 'income';
+                        return form.budgetKind === 'income' ? isIncome : !isIncome;
+                      })
+                      .map((g: any) => (
+                        <SelectItem key={g.id} value={g.id}>
+                          <div className="flex items-center gap-2">
+                            <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: g.color }} />
+                            {g.name}
+                          </div>
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {/* Category Dropdown (filtered by group) */}
             <div className="space-y-2">
               <Label>Category</Label>
               {editingBudget ? (
@@ -953,20 +1075,28 @@ const Budgets = () => {
                 </div>
               ) : (
                 <Select value={form.category_id} onValueChange={v => setForm(f => ({ ...f, category_id: v }))}>
-                  <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder={form.group_id ? "Select category" : "Select a group first"} /></SelectTrigger>
                   <SelectContent>
-                    {unbudgetedCategories.map(c => (
-                      <SelectItem key={c.id} value={c.id}>
-                        <div className="flex items-center gap-2">
-                          <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: c.color }} />
-                          {c.name}
-                        </div>
-                      </SelectItem>
-                    ))}
+                    {unbudgetedCategories
+                      .filter(c => !form.group_id || c.group_id === form.group_id)
+                      .map(c => (
+                        <SelectItem key={c.id} value={c.id}>
+                          <div className="flex items-center gap-2">
+                            <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: c.color }} />
+                            {c.name}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    {unbudgetedCategories.filter(c => !form.group_id || c.group_id === form.group_id).length === 0 && (
+                      <div className="px-2 py-3 text-sm text-muted-foreground text-center">
+                        {form.group_id ? 'All categories in this group are budgeted' : 'Select a group first'}
+                      </div>
+                    )}
                   </SelectContent>
                 </Select>
               )}
             </div>
+
             <div className="space-y-2">
               <Label>Planned Amount</Label>
               <Input type="number" step="0.01" min="0" placeholder="500.00" value={form.planned_amount} onChange={e => setForm(f => ({ ...f, planned_amount: e.target.value }))} />
@@ -1043,7 +1173,7 @@ const Budgets = () => {
                 setQuickAddForm({ name: '', group_id: '', color: '#7c5cf5' });
                 // Open budget dialog with the new category pre-selected
                 setEditingBudget(null);
-                setForm({ category_id: newCat.id, planned_amount: '', rollover: false });
+                setForm({ category_id: newCat.id, planned_amount: '', rollover: false, budgetKind: 'expense', group_id: quickAddForm.group_id });
                 setDialogOpen(true);
               }}
               disabled={!quickAddForm.name || !quickAddForm.group_id || createCategory.isPending}
@@ -1102,6 +1232,31 @@ const Budgets = () => {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* AI Budget Audit Dialog */}
+      <Dialog open={auditOpen} onOpenChange={setAuditOpen}>
+        <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 font-display">
+              <ClipboardCheck className="h-5 w-5 text-primary" /> AI Budget Audit
+            </DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="flex-1 pr-4">
+            <div className="prose prose-sm dark:prose-invert max-w-none">
+              {auditLoading && !auditResult && (
+                <div className="flex items-center gap-3 py-8 justify-center text-muted-foreground">
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <span>Analyzing your budget...</span>
+                </div>
+              )}
+              {auditResult && <ReactMarkdown>{auditResult}</ReactMarkdown>}
+              {auditLoading && auditResult && (
+                <span className="inline-block w-2 h-4 bg-primary/60 animate-pulse ml-0.5" />
+              )}
+            </div>
+          </ScrollArea>
         </DialogContent>
       </Dialog>
     </motion.div>
