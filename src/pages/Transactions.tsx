@@ -24,6 +24,7 @@ import {
   ArrowRightLeft, SlidersHorizontal, CalendarIcon, ChevronRight,
   ArrowUpDown, X, Pencil, Sparkles, Landmark, Check, Camera, ImageIcon,
   Copy, AlertTriangle, Undo2, RotateCcw, CheckCircle2, Download,
+  MoreHorizontal, Info, BookOpen, Volume2,
 } from 'lucide-react';
 import { exportTransactionsToCsv } from '@/lib/export-transactions';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
