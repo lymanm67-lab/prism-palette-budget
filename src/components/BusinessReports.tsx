@@ -15,6 +15,8 @@ import {
 } from 'recharts';
 
 const tooltipStyle = { background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))' };
+const tooltipItemStyle = { color: 'hsl(var(--foreground))' };
+const tooltipLabelStyle = { color: 'hsl(var(--foreground))' };
 const COLORS = [
   'hsl(262, 83%, 58%)', 'hsl(160, 84%, 39%)', 'hsl(36, 100%, 57%)',
   'hsl(340, 82%, 52%)', 'hsl(199, 89%, 48%)', 'hsl(142, 71%, 45%)',
@@ -281,7 +283,7 @@ const BusinessReports = ({ startDate, endDate, budgetMonth }: Props) => {
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={11} />
                   <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickFormatter={v => formatCompact(v)} />
-                  <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} />
+                  <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} labelStyle={tooltipLabelStyle} />
                   <Legend />
                   <Bar dataKey="revenue" fill="hsl(160, 84%, 39%)" name="Revenue" radius={[4, 4, 0, 0]} />
                   <Bar dataKey="expenses" fill="hsl(340, 82%, 52%)" name="Expenses" radius={[4, 4, 0, 0]} />
@@ -306,7 +308,7 @@ const BusinessReports = ({ startDate, endDate, budgetMonth }: Props) => {
                       label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false}>
                       {expenseBreakdown.map((e, i) => <Cell key={i} fill={e.color} />)}
                     </Pie>
-                    <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} />
+                    <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} labelStyle={tooltipLabelStyle} />
                   </PieChart>
                 </ResponsiveContainer>
               ) : <EmptyState message="No expense data." />}
@@ -353,7 +355,7 @@ const BusinessReports = ({ startDate, endDate, budgetMonth }: Props) => {
                       label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false}>
                       {revenueBySource.map((e, i) => <Cell key={i} fill={e.color} />)}
                     </Pie>
-                    <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} />
+                    <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} labelStyle={tooltipLabelStyle} />
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="space-y-3">
@@ -384,7 +386,7 @@ const BusinessReports = ({ startDate, endDate, budgetMonth }: Props) => {
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={11} />
                   <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickFormatter={v => formatCompact(v)} />
-                  <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} />
+                  <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} labelStyle={tooltipLabelStyle} />
                   <Legend />
                   <Area type="monotone" dataKey="revenue" stroke="hsl(160, 84%, 39%)" fill="hsl(160, 84%, 39%)" fillOpacity={0.15} name="Revenue" strokeWidth={2} />
                   <Area type="monotone" dataKey="expenses" stroke="hsl(340, 82%, 52%)" fill="hsl(340, 82%, 52%)" fillOpacity={0.15} name="Expenses" strokeWidth={2} />
@@ -407,7 +409,7 @@ const BusinessReports = ({ startDate, endDate, budgetMonth }: Props) => {
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
                     <XAxis type="number" stroke="hsl(var(--muted-foreground))" fontSize={11} tickFormatter={v => formatCompact(v)} />
                     <YAxis type="category" dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={11} width={120} />
-                    <Tooltip cursor={{ fill: 'transparent' }} formatter={(v: number, name: string) => [formatCurrency(v), name === 'budget' ? 'Budget' : 'Actual']} contentStyle={tooltipStyle} />
+                    <Tooltip cursor={{ fill: 'transparent' }} formatter={(v: number, name: string) => [formatCurrency(v), name === 'budget' ? 'Budget' : 'Actual']} contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} labelStyle={tooltipLabelStyle} />
                     <Legend />
                     <Bar dataKey="budget" fill="hsl(262, 83%, 58%)" radius={[0, 4, 4, 0]} name="Budget" barSize={14} />
                     <Bar dataKey="actual" fill="hsl(199, 89%, 48%)" radius={[0, 4, 4, 0]} name="Actual" barSize={14} />
@@ -452,7 +454,7 @@ const BusinessReports = ({ startDate, endDate, budgetMonth }: Props) => {
                       label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false}>
                       {expenseByBusiness.map((e, i) => <Cell key={i} fill={e.color} />)}
                     </Pie>
-                    <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} />
+                    <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} labelStyle={tooltipLabelStyle} />
                   </PieChart>
                 </ResponsiveContainer>
               ) : <EmptyState message="No data." />}
@@ -468,7 +470,7 @@ const BusinessReports = ({ startDate, endDate, budgetMonth }: Props) => {
                       label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false}>
                       {expenseByBusiness.filter(b => b.revenue > 0).map((e, i) => <Cell key={i} fill={e.color} />)}
                     </Pie>
-                    <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} />
+                    <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} labelStyle={tooltipLabelStyle} />
                   </PieChart>
                 </ResponsiveContainer>
               ) : <EmptyState message="No revenue data." />}
@@ -514,7 +516,7 @@ const BusinessReports = ({ startDate, endDate, budgetMonth }: Props) => {
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={11} />
                     <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickFormatter={v => `${v}%`} />
-                    <Tooltip formatter={(v: number) => `${v}%`} contentStyle={tooltipStyle} />
+                    <Tooltip formatter={(v: number) => `${v}%`} contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} labelStyle={tooltipLabelStyle} />
                     <Bar dataKey="ratio" name="Expense Ratio" radius={[6, 6, 0, 0]}>
                       {expenseRatios.map((e, i) => (
                         <Cell key={i} fill={e.ratio > 80 ? 'hsl(340, 82%, 52%)' : e.ratio > 60 ? 'hsl(36, 100%, 57%)' : 'hsl(160, 84%, 39%)'} />
@@ -551,7 +553,7 @@ const BusinessReports = ({ startDate, endDate, budgetMonth }: Props) => {
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
                     <XAxis type="number" stroke="hsl(var(--muted-foreground))" fontSize={11} tickFormatter={v => formatCompact(v)} />
                     <YAxis type="category" dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={10} width={160} />
-                    <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} />
+                    <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} labelStyle={tooltipLabelStyle} />
                     <Bar dataKey="value" name="Spent" radius={[0, 6, 6, 0]} barSize={16}>
                       {groupSpending.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                     </Bar>
