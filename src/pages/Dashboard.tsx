@@ -49,6 +49,7 @@ const Dashboard = () => {
   const { data: categoryGroups } = useCategoryGroups();
   const { data: categories } = useCategories();
   const { data: businessProfiles } = useBusinessProfiles();
+  const momIndicators = useMoMIndicators();
   const navigate = useNavigate();
 
   const [mode, setMode] = useState<DashboardMode>('personal');
