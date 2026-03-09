@@ -1177,7 +1177,6 @@ const Transactions = () => {
           </Popover>
         </div>
       </div>
-      </div>
 
       {/* Bulk actions bar */}
       {selected.size > 0 && (
