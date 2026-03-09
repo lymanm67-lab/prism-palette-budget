@@ -308,7 +308,7 @@ const BusinessReports = ({ startDate, endDate, budgetMonth }: Props) => {
                       label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false}>
                       {expenseBreakdown.map((e, i) => <Cell key={i} fill={e.color} />)}
                     </Pie>
-                    <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} />
+                    <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} labelStyle={tooltipLabelStyle} />
                   </PieChart>
                 </ResponsiveContainer>
               ) : <EmptyState message="No expense data." />}
