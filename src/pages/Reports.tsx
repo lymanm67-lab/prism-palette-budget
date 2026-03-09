@@ -472,8 +472,8 @@ const Reports = () => {
                           <h4 className="text-sm font-medium mb-3 text-muted-foreground">Categories in "Other"</h4>
                           <div className="grid grid-cols-2 gap-x-4 gap-y-2">
                             {rest.map((cat, i) => (
-                              <div key={i} className="flex items-center justify-between text-xs">
-                                <div className="flex items-center gap-1.5 truncate pr-2">
+                              <div key={i} className="flex items-center justify-between text-xs p-1.5 rounded hover:bg-muted/50 transition-colors">
+                                <div className="flex items-center gap-2 truncate pr-2">
                                   <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
                                   <span className="truncate" title={cat.name}>{cat.name}</span>
                                 </div>
