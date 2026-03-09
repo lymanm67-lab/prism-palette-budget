@@ -251,6 +251,7 @@ Deno.serve(async (req) => {
 
       let totalAccountsUpdated = 0;
       let totalNewTransactions = 0;
+      let allNewTransactionIds: string[] = [];
 
       for (const item of plaidItems) {
         // Update account balances
@@ -335,8 +336,9 @@ Deno.serve(async (req) => {
               }));
 
             if (newTxns.length > 0) {
-              await serviceSupabase.from('transactions').insert(newTxns);
+              const { data: inserted } = await serviceSupabase.from('transactions').insert(newTxns).select('id');
               totalNewTransactions += newTxns.length;
+              if (inserted) allNewTransactionIds.push(...inserted.map((r: any) => r.id));
             }
           }
         }
@@ -346,6 +348,7 @@ Deno.serve(async (req) => {
         success: true,
         accounts_updated: totalAccountsUpdated,
         new_transactions: totalNewTransactions,
+        new_transaction_ids: allNewTransactionIds,
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });

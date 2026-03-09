@@ -78,9 +78,31 @@ const Accounts = () => {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Failed to refresh');
 
-      toast.success(`Refreshed: ${data.accounts_updated} accounts updated, ${data.new_transactions} new transactions`);
       qc.invalidateQueries({ queryKey: ['accounts'] });
       qc.invalidateQueries({ queryKey: ['transactions'] });
+
+      // Auto-categorize newly synced uncategorized transactions
+      if (data.new_transactions > 0 && data.new_transaction_ids?.length) {
+        toast.success(`Synced ${data.accounts_updated} accounts, ${data.new_transactions} new transactions. Running auto-categorize…`);
+        try {
+          const { data: catData, error: catError } = await supabase.functions.invoke('auto-categorize', {
+            body: { transaction_ids: data.new_transaction_ids, household_id: household.id },
+          });
+          if (!catError && catData?.categorized > 0) {
+            const parts = [];
+            if (catData.rule_matched > 0) parts.push(`${catData.rule_matched} by rules`);
+            if (catData.ai_categorized > 0) parts.push(`${catData.ai_categorized} by AI`);
+            toast.success(`Auto-categorized ${catData.categorized} transactions${parts.length ? ` (${parts.join(', ')})` : ''}`);
+            qc.invalidateQueries({ queryKey: ['transactions'] });
+          } else if (catData?.categorized === 0) {
+            toast.info('No transactions could be auto-categorized');
+          }
+        } catch {
+          toast.warning('Sync complete but auto-categorize failed');
+        }
+      } else {
+        toast.success(`Refreshed: ${data.accounts_updated} accounts updated, ${data.new_transactions} new transactions`);
+      }
     } catch (err: any) {
       toast.error(err.message || 'Failed to refresh accounts');
     }
