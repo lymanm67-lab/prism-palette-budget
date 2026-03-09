@@ -165,37 +165,37 @@ const Recurring = () => {
       </div>
 
       {/* Summary */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
         <Card>
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-              <ArrowDownLeft className="h-5 w-5 text-emerald-500" />
+          <CardContent className="p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
+            <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-emerald-500/10 flex items-center justify-center shrink-0">
+              <ArrowDownLeft className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-500" />
             </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Recurring Income</p>
-              <p className="text-lg font-bold">{formatAmount(totalIncome)}</p>
+            <div className="min-w-0">
+              <p className="text-[11px] sm:text-xs text-muted-foreground">Recurring Income</p>
+              <p className="text-base sm:text-lg font-bold truncate">{formatAmount(totalIncome)}</p>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-rose-500/10 flex items-center justify-center">
-              <ArrowUpRight className="h-5 w-5 text-rose-500" />
+          <CardContent className="p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
+            <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-rose-500/10 flex items-center justify-center shrink-0">
+              <ArrowUpRight className="h-4 w-4 sm:h-5 sm:w-5 text-rose-500" />
             </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Recurring Expenses</p>
-              <p className="text-lg font-bold">{formatAmount(totalExpenses)}</p>
+            <div className="min-w-0">
+              <p className="text-[11px] sm:text-xs text-muted-foreground">Recurring Expenses</p>
+              <p className="text-base sm:text-lg font-bold truncate">{formatAmount(totalExpenses)}</p>
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-              <RepeatIcon className="h-5 w-5 text-primary" />
+        <Card className="col-span-2 sm:col-span-1">
+          <CardContent className="p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
+            <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+              <RepeatIcon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Total Recurring</p>
-              <p className="text-lg font-bold">{recurring?.length || 0}</p>
+            <div className="min-w-0">
+              <p className="text-[11px] sm:text-xs text-muted-foreground">Total Recurring</p>
+              <p className="text-base sm:text-lg font-bold">{recurring?.length || 0}</p>
             </div>
           </CardContent>
         </Card>
