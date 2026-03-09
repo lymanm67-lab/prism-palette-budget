@@ -962,7 +962,7 @@ const Budgets = () => {
                 setQuickAddForm({ name: '', group_id: '', color: '#7c5cf5' });
                 // Open budget dialog with the new category pre-selected
                 setEditingBudget(null);
-                setForm({ category_id: newCat.id, planned_amount: '' });
+                setForm({ category_id: newCat.id, planned_amount: '', rollover: false });
                 setDialogOpen(true);
               }}
               disabled={!quickAddForm.name || !quickAddForm.group_id || createCategory.isPending}
