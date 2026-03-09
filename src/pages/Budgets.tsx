@@ -629,6 +629,7 @@ const Budgets = () => {
           </Button>
           <Button
             variant="outline"
+            size="sm"
             className="gap-2"
             disabled={smartBudget.isPending}
             onClick={async () => {
@@ -638,7 +639,6 @@ const Budgets = () => {
                   setSmartSuggestions(result.suggestions.map((s: any) => ({ ...s, selected: true })));
                   setSmartBudgetOpen(true);
                 } else {
-                  // No suggestions
                   setSmartSuggestions([]);
                   setSmartBudgetOpen(true);
                 }
@@ -648,7 +648,7 @@ const Budgets = () => {
             }}
           >
             {smartBudget.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-            Smart Budget
+            <span className="hidden sm:inline">Smart Budget</span>
           </Button>
           <Button
             variant="outline"
