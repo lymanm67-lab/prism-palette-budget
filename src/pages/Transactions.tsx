@@ -802,7 +802,22 @@ const Transactions = () => {
                       <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="All categories" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="_all">All categories</SelectItem>
-                        {(categories || []).map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                        {personalCatIds.size > 0 && (
+                          <>
+                            <SelectItem value="_personal_label" disabled className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Personal</SelectItem>
+                            {(categories || []).filter(c => personalCatIds.has(c.id)).map(c => (
+                              <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                            ))}
+                          </>
+                        )}
+                        {businessCatIds.size > 0 && (
+                          <>
+                            <SelectItem value="_business_label" disabled className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Business</SelectItem>
+                            {(categories || []).filter(c => businessCatIds.has(c.id)).map(c => (
+                              <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                            ))}
+                          </>
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
