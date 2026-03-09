@@ -534,8 +534,8 @@ const Budgets = () => {
               </TooltipContent>
             )}
           </Tooltip>
-          <Button variant="outline" className="gap-2" onClick={() => { setQuickAddForm({ name: '', group_id: '', color: '#7c5cf5' }); setQuickAddOpen(true); }}>
-            <Plus className="h-4 w-4" /> New Category
+          <Button variant="outline" size="sm" className="gap-2" onClick={() => { setQuickAddForm({ name: '', group_id: '', color: '#7c5cf5' }); setQuickAddOpen(true); }}>
+            <Plus className="h-4 w-4" /> <span className="hidden sm:inline">New Category</span><span className="sm:hidden">Category</span>
           </Button>
           <Button
             variant="outline"
