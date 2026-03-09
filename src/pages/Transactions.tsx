@@ -37,7 +37,7 @@ import { SkeletonTable } from '@/components/SkeletonCard';
 
 import { cn } from '@/lib/utils';
 import { isTransferMerchant } from '@/lib/transfer-detection';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, subDays, startOfMonth, endOfMonth, subMonths, startOfYear } from 'date-fns';
 
 // Receipt preview component with signed URL
 const ReceiptPreview = ({ path, getSignedUrl }: { path: string; getSignedUrl: (p: string) => Promise<string | null> }) => {
