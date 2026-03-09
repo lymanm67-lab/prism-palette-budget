@@ -585,15 +585,14 @@ const Budgets = () => {
           </Card>
 
           {/* Total Income Row */}
-          <div className="flex items-center gap-3 px-6 py-3 bg-muted/30 rounded-lg font-semibold">
+          <div className="flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-3 bg-muted/30 rounded-lg font-semibold text-sm sm:text-base">
             <span className="flex-1 font-display">Total Income</span>
-            <span className="hidden sm:block w-[200px]" />
-            <span className="w-[90px] text-right tabular-nums">{formatCurrency(totalIncomeBudget)}</span>
-            <span className="w-[90px] text-right tabular-nums text-muted-foreground">{formatCurrency(totalIncomeActual)}</span>
-            <span className={cn('w-[90px] text-right tabular-nums', totalIncomeRemaining >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400')}>
+            <span className="text-right tabular-nums sm:w-[90px]">{formatCurrency(totalIncomeBudget)}</span>
+            <span className="hidden sm:inline-block w-[90px] text-right tabular-nums text-muted-foreground">{formatCurrency(totalIncomeActual)}</span>
+            <span className={cn('text-right tabular-nums sm:w-[90px]', totalIncomeRemaining >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400')}>
               {formatCurrency(Math.abs(totalIncomeRemaining))}
             </span>
-            <div className="w-[62px]" />
+            <div className="hidden sm:block w-[62px]" />
           </div>
 
           {/* Expenses Section */}
