@@ -79,8 +79,8 @@ const Budgets = () => {
   const createCategory = useCreateCategory();
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingBudget, setEditingBudget] = useState<{ category_id: string; planned_amount: string } | null>(null);
-  const [form, setForm] = useState({ category_id: '', planned_amount: '' });
+  const [editingBudget, setEditingBudget] = useState<{ category_id: string; planned_amount: string; rollover: boolean } | null>(null);
+  const [form, setForm] = useState({ category_id: '', planned_amount: '', rollover: false });
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const [showUnbudgeted, setShowUnbudgeted] = useState(false);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({ income: true, fixed: true, flexible: true, non_monthly: true });
