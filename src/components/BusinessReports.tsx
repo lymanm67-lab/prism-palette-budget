@@ -14,7 +14,7 @@ import {
   AreaChart, Area, LineChart, Line,
 } from 'recharts';
 
-const tooltipStyle = { background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' };
+const tooltipStyle = { background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))' };
 const COLORS = [
   'hsl(262, 83%, 58%)', 'hsl(160, 84%, 39%)', 'hsl(36, 100%, 57%)',
   'hsl(340, 82%, 52%)', 'hsl(199, 89%, 48%)', 'hsl(142, 71%, 45%)',
@@ -326,7 +326,7 @@ const BusinessReports = ({ startDate, endDate, budgetMonth }: Props) => {
                           <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: cat.color }} />
                           <span>{cat.name}</span>
                         </div>
-                        <span className="font-medium">{formatCurrency(cat.value)}</span>
+                        <span className="font-semibold text-foreground">{formatCurrency(cat.value)}</span>
                       </div>
                       <div className="h-2 overflow-hidden rounded-full bg-muted">
                         <div className="h-full rounded-full" style={{ width: `${(cat.value / maxVal) * 100}%`, backgroundColor: cat.color }} />
@@ -417,17 +417,20 @@ const BusinessReports = ({ startDate, endDate, budgetMonth }: Props) => {
                   {bizBudgetVsActual.map(item => {
                     const pct = item.budget > 0 ? Math.round((item.actual / item.budget) * 100) : 0;
                     const isOver = item.actual > item.budget;
-                    return (
-                      <div key={item.name} className="flex items-center gap-3 text-sm">
-                        <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
-                        <span className="w-32 truncate">{item.name}</span>
-                        <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
-                          <div className="h-full rounded-full" style={{ width: `${Math.min(pct, 100)}%`, backgroundColor: isOver ? 'hsl(var(--destructive))' : item.color }} />
+                      return (
+                        <div key={item.name} className="flex items-center gap-3 text-sm">
+                          <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
+                          <span className="w-32 truncate">{item.name}</span>
+                          <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+                            <div className="h-full rounded-full" style={{ width: `${Math.min(pct, 100)}%`, backgroundColor: isOver ? 'hsl(var(--destructive))' : item.color }} />
+                          </div>
+                          <span className={`text-xs w-10 text-right ${isOver ? 'text-destructive' : 'text-muted-foreground'}`}>{pct}%</span>
+                          <span className="text-sm font-semibold text-foreground w-44 text-right">
+                            {formatCurrency(item.actual)}{' '}
+                            <span className="text-xs font-normal text-muted-foreground">/ {formatCurrency(item.budget)}</span>
+                          </span>
                         </div>
-                        <span className={`text-xs w-10 text-right ${isOver ? 'text-destructive' : 'text-muted-foreground'}`}>{pct}%</span>
-                        <span className="text-xs text-muted-foreground w-36 text-right">{formatCurrency(item.actual)} / {formatCurrency(item.budget)}</span>
-                      </div>
-                    );
+                      );
                   })}
                 </div>
               </>

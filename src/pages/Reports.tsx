@@ -21,7 +21,7 @@ import {
 } from 'recharts';
 import BusinessReports from '@/components/BusinessReports';
 import PageOverview from '@/components/PageOverview';
-const tooltipStyle = { background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' };
+const tooltipStyle = { background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))' };
 
 const TREND_COLORS = [
   'hsl(262, 83%, 58%)', 'hsl(160, 84%, 39%)', 'hsl(36, 100%, 57%)',
@@ -442,7 +442,7 @@ const Reports = () => {
                               <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: cat.color }} />
                               <span>{cat.name}</span>
                             </div>
-                            <span className="font-medium">{formatCurrency(cat.value)}</span>
+                            <span className="font-semibold text-foreground">{formatCurrency(cat.value)}</span>
                           </div>
                           <div className="h-2 overflow-hidden rounded-full bg-muted">
                             <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: cat.color }} />
@@ -511,7 +511,10 @@ const Reports = () => {
                             <div className="h-full rounded-full transition-all duration-500" style={{ width: `${Math.min(pct, 100)}%`, backgroundColor: isOver ? 'hsl(var(--prism-negative))' : item.color }} />
                           </div>
                           <span className={`text-xs font-medium w-12 text-right ${isOver ? 'text-prism-rose' : 'text-muted-foreground'}`}>{pct}%</span>
-                          <span className="text-xs text-muted-foreground w-32 text-right">{formatCurrency(item.actual)} / {formatCurrency(item.budget)}</span>
+                          <span className="text-sm font-semibold text-foreground w-40 text-right">
+                            {formatCurrency(item.actual)}{' '}
+                            <span className="text-xs font-normal text-muted-foreground">/ {formatCurrency(item.budget)}</span>
+                          </span>
                         </div>
                       );
                     })}
@@ -717,7 +720,7 @@ const Reports = () => {
                           <span className="text-sm font-medium">{m.name}</span>
                         </div>
                         <div className="text-right">
-                          <span className="text-sm font-semibold">{formatCurrency(m.total)}</span>
+                          <span className="text-sm font-bold text-foreground">{formatCurrency(m.total)}</span>
                           <span className="ml-2 text-xs text-muted-foreground">{m.count} txn{m.count !== 1 ? 's' : ''}</span>
                         </div>
                       </div>
