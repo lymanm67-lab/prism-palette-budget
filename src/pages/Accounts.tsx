@@ -87,15 +87,39 @@ const Accounts = () => {
   };
 
   if (isLoading) return (
-    <div className="flex items-center justify-center p-20">
-      <div className="flex flex-col items-center gap-3">
-        <div className="h-12 w-12 rounded-2xl prism-gradient prism-glow flex items-center justify-center">
-          <Loader2 className="h-6 w-6 animate-spin text-white" />
-        </div>
-        <p className="text-sm text-muted-foreground">Loading accounts…</p>
+    <div className="p-8">
+      <div className="mb-6">
+        <div className="h-8 w-48 bg-muted animate-pulse rounded-lg mb-2" />
+        <div className="h-4 w-96 bg-muted/60 animate-pulse rounded" />
+      </div>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="h-32 bg-muted animate-pulse rounded-lg" />
+        ))}
       </div>
     </div>
   );
+
+  if (!accounts?.length) {
+    return (
+      <TooltipProvider>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h1 className="font-display text-3xl font-extrabold tracking-tight">
+              <span className="prism-gradient-text">Accounts</span>
+            </h1>
+          </div>
+          <EmptyState
+            icon={Landmark}
+            title="No accounts yet"
+            description="Start by adding your first account or connect your bank with Plaid for automatic transaction syncing."
+            actionLabel="Add Account"
+            onAction={() => setOpen(true)}
+          />
+        </div>
+      </TooltipProvider>
+    );
+  }
 
   return (
     <TooltipProvider>
