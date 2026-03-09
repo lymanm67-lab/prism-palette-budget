@@ -1420,7 +1420,7 @@ const Transactions = () => {
             <span className="hidden md:block w-[180px] shrink-0 text-xs font-bold uppercase tracking-wider text-foreground">Account</span>
             <span className="w-[90px] text-right text-xs font-bold uppercase tracking-wider text-foreground">Amount</span>
             {/* Spacer for action icons */}
-            <div className="w-[68px] shrink-0" />
+            <div className="hidden sm:block w-[68px] shrink-0" />
           </div>
           {grouped.map(group => (
             <div key={group.date}>
