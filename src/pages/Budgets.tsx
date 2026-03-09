@@ -902,6 +902,18 @@ const Budgets = () => {
               <Label>Planned Amount</Label>
               <Input type="number" step="0.01" min="0" placeholder="500.00" value={form.planned_amount} onChange={e => setForm(f => ({ ...f, planned_amount: e.target.value }))} />
             </div>
+            <div className="flex items-center justify-between rounded-lg border p-3">
+              <div className="space-y-0.5">
+                <Label className="text-sm font-medium">Rollover</Label>
+                <p className="text-xs text-muted-foreground">Carry unspent budget to next month</p>
+              </div>
+              <Switch checked={form.rollover} onCheckedChange={v => setForm(f => ({ ...f, rollover: v }))} />
+            </div>
+            {form.rollover && rolloverAmounts.has(form.category_id) && (
+              <div className="text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 rounded-lg px-3 py-2">
+                +{formatCurrency(rolloverAmounts.get(form.category_id)!)} rolling over from previous month
+              </div>
+            )}
             <div className="text-xs text-muted-foreground">Month: {formatMonth(month)}</div>
             <Button onClick={handleSave} disabled={!form.category_id || !form.planned_amount || upsertBudget.isPending} className="w-full">
               {upsertBudget.isPending ? 'Saving...' : editingBudget ? 'Update Budget' : 'Create Budget'}
