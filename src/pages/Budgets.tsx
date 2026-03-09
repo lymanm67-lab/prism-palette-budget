@@ -169,11 +169,12 @@ const Budgets = () => {
   const groupedBudgets = useMemo(() => {
     const groups: Record<ExpenseType, BudgetRow[]> = { income: [], fixed: [], flexible: [], non_monthly: [] };
     for (const b of budgetItems) {
+      if (hideZeroAmounts && b.planned_amount === 0) continue;
       const type = categoryExpenseType.get(b.category_id) || 'flexible';
       groups[type].push(b);
     }
     return groups;
-  }, [budgetItems, categoryExpenseType]);
+  }, [budgetItems, categoryExpenseType, hideZeroAmounts]);
 
   // Section totals
   const sectionTotals = useMemo(() => {
