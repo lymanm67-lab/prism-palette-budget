@@ -532,7 +532,7 @@ const Reports = () => {
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" fontSize={11} />
                     <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickFormatter={v => formatCompact(v)} />
-                    <Tooltip formatter={(v: number, name: string) => [formatCurrency(v), name === 'daily' ? 'Daily' : 'Cumulative']} contentStyle={tooltipStyle} />
+                    <Tooltip formatter={(v: number, name: string) => [formatCurrency(v), name === 'daily' ? 'Daily' : 'Cumulative']} contentStyle={tooltipStyle} itemStyle={{ color: 'hsl(var(--foreground))' }} />
                     <Legend />
                     <Area type="monotone" dataKey="cumulative" stroke="hsl(262, 83%, 58%)" fill="hsl(262, 83%, 58%)" fillOpacity={0.15} name="Cumulative" strokeWidth={2} />
                     <Area type="monotone" dataKey="daily" stroke="hsl(199, 89%, 48%)" fill="hsl(199, 89%, 48%)" fillOpacity={0.2} name="Daily" strokeWidth={2} />
@@ -557,7 +557,7 @@ const Reports = () => {
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
                       <XAxis type="number" stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={v => formatCompact(v)} />
                       <YAxis type="category" dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} width={100} />
-                      <Tooltip cursor={{ fill: 'transparent' }} formatter={(v: number, name: string) => [formatCurrency(v), name === 'budget' ? 'Budget' : 'Actual']} contentStyle={tooltipStyle} />
+                      <Tooltip cursor={{ fill: 'transparent' }} formatter={(v: number, name: string) => [formatCurrency(v), name === 'budget' ? 'Budget' : 'Actual']} contentStyle={tooltipStyle} itemStyle={{ color: 'hsl(var(--foreground))' }} />
                       <Legend />
                       <Bar dataKey="budget" fill="hsl(262, 83%, 58%)" radius={[0, 4, 4, 0]} name="Budget" barSize={16} />
                       <Bar dataKey="actual" fill="hsl(199, 89%, 48%)" radius={[0, 4, 4, 0]} name="Actual" barSize={16} />
@@ -603,7 +603,7 @@ const Reports = () => {
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                       <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
                        <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={v => formatCompact(v)} />
-                      <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} />
+                      <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} itemStyle={{ color: 'hsl(var(--foreground))' }} />
                       <Legend />
                       <Bar dataKey="income" fill="hsl(160, 84%, 39%)" radius={[6, 6, 0, 0]} name="Income" />
                       <Bar dataKey="expenses" fill="hsl(340, 82%, 52%)" radius={[6, 6, 0, 0]} name="Expenses" />
@@ -624,7 +624,7 @@ const Reports = () => {
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                       <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
                       <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={v => `${v}%`} />
-                      <Tooltip formatter={(v: number, name: string) => [name === 'rate' ? `${v}%` : formatCurrency(v), name === 'rate' ? 'Savings Rate' : 'Net Savings']} contentStyle={tooltipStyle} />
+                      <Tooltip formatter={(v: number, name: string) => [name === 'rate' ? `${v}%` : formatCurrency(v), name === 'rate' ? 'Savings Rate' : 'Net Savings']} contentStyle={tooltipStyle} itemStyle={{ color: 'hsl(var(--foreground))' }} />
                       <Legend />
                       <Area type="monotone" dataKey="rate" stroke="hsl(160, 84%, 39%)" fill="hsl(160, 84%, 39%)" fillOpacity={0.15} name="Savings Rate" strokeWidth={2} />
                     </AreaChart>
@@ -676,7 +676,7 @@ const Reports = () => {
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                       <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
                       <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={v => formatCompact(v)} />
-                      <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} />
+                      <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} itemStyle={{ color: 'hsl(var(--foreground))' }} />
                       <Area type="monotone" dataKey="netWorth" stroke="hsl(262, 83%, 58%)" fill="url(#netWorthGrad)" strokeWidth={3} name="Net Worth" />
                     </AreaChart>
                   </ResponsiveContainer>
@@ -718,7 +718,7 @@ const Reports = () => {
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
                     <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={v => formatCompact(v)} />
-                    <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} />
+                    <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} itemStyle={{ color: 'hsl(var(--foreground))' }} />
                     <Legend />
                     {spendingTrends.categoryNames.map((name, i) => (
                       <Line key={name} type="monotone" dataKey={name} stroke={TREND_COLORS[i % TREND_COLORS.length]} strokeWidth={2} dot={{ r: 3 }} />
@@ -740,7 +740,7 @@ const Reports = () => {
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
                     <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={v => formatCompact(v)} />
-                    <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} />
+                    <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} itemStyle={{ color: 'hsl(var(--foreground))' }} />
                     <Bar dataKey="savings" name="Net Savings" radius={[6, 6, 0, 0]}>
                       {monthlyCashflow.map((entry, i) => (
                         <Cell key={i} fill={entry.savings >= 0 ? 'hsl(160, 84%, 39%)' : 'hsl(340, 82%, 52%)'} />
@@ -765,7 +765,7 @@ const Reports = () => {
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
                       <XAxis type="number" stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={v => formatCompact(v)} />
                       <YAxis type="category" dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={11} width={120} />
-                      <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} />
+                      <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} itemStyle={{ color: 'hsl(var(--foreground))' }} />
                       <Bar dataKey="total" name="Total Spent" radius={[0, 6, 6, 0]} barSize={20}>
                         {topMerchants.map((_, i) => (
                           <Cell key={i} fill={TREND_COLORS[i % TREND_COLORS.length]} />
