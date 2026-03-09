@@ -36,6 +36,7 @@ import SpendingTrends from "@/pages/SpendingTrends";
 import NetWorth from "@/pages/NetWorth";
 import Subscriptions from "@/pages/Subscriptions";
 import Forecast from "@/pages/Forecast";
+import YearInReview from "@/pages/YearInReview";
 
 const queryClient = new QueryClient();
 
