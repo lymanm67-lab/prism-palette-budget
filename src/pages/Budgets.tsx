@@ -576,7 +576,7 @@ const Budgets = () => {
               { label: 'Subscriptions', value: '$45/$75', badge: '60%', color: '#8b5cf6' },
             ]}
           />
-        <div className="flex items-center gap-3 mt-2">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-2">
             <Tabs value={budgetType} onValueChange={(v) => setBudgetType(v as 'personal' | 'business')}>
               <TabsList>
                 <TabsTrigger value="personal">Personal</TabsTrigger>
@@ -629,6 +629,7 @@ const Budgets = () => {
           </Button>
           <Button
             variant="outline"
+            size="sm"
             className="gap-2"
             disabled={smartBudget.isPending}
             onClick={async () => {
@@ -638,7 +639,6 @@ const Budgets = () => {
                   setSmartSuggestions(result.suggestions.map((s: any) => ({ ...s, selected: true })));
                   setSmartBudgetOpen(true);
                 } else {
-                  // No suggestions
                   setSmartSuggestions([]);
                   setSmartBudgetOpen(true);
                 }
@@ -648,7 +648,7 @@ const Budgets = () => {
             }}
           >
             {smartBudget.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-            Smart Budget
+            <span className="hidden sm:inline">Smart Budget</span>
           </Button>
           <Button
             variant="outline"
