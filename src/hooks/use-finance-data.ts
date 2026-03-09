@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import type { Tables, TablesInsert } from '@/integrations/supabase/types';
@@ -283,9 +283,36 @@ export function useTransactions() {
         .eq('household_id', household!.id)
         .is('deleted_at', null)
         .order('date', { ascending: false })
-        .limit(100);
+        .limit(200);
       if (error) throw error;
       return data;
+    },
+  });
+}
+
+const PAGE_SIZE = 50;
+
+export function useInfiniteTransactions() {
+  const { household } = useHousehold();
+  return useInfiniteQuery({
+    queryKey: ['transactions_infinite', household?.id],
+    initialPageParam: 0,
+    enabled: !!household,
+    queryFn: async ({ pageParam }) => {
+      const { data, error } = await supabase
+        .from('transactions')
+        .select('*, categories(name, color), accounts(name, balance)')
+        .eq('household_id', household!.id)
+        .is('deleted_at', null)
+        .order('date', { ascending: false })
+        .order('created_at', { ascending: false })
+        .range(pageParam, pageParam + PAGE_SIZE - 1);
+      if (error) throw error;
+      return data;
+    },
+    getNextPageParam: (lastPage, allPages) => {
+      if (lastPage.length < PAGE_SIZE) return undefined;
+      return allPages.flat().length;
     },
   });
 }

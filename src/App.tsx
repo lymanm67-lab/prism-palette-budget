@@ -36,6 +36,7 @@ import SpendingTrends from "@/pages/SpendingTrends";
 import NetWorth from "@/pages/NetWorth";
 import Subscriptions from "@/pages/Subscriptions";
 import Forecast from "@/pages/Forecast";
+import YearInReview from "@/pages/YearInReview";
 
 const queryClient = new QueryClient();
 
@@ -104,6 +105,7 @@ const App = () => (
               <Route path="/recurring" element={<Recurring />} />
               <Route path="/subscriptions" element={<Subscriptions />} />
               <Route path="/forecast" element={<Forecast />} />
+              <Route path="/year-in-review" element={<YearInReview />} />
               <Route path="/calculators" element={<Calculators />} />
               <Route path="/roadmap" element={<PrismRoadmap />} />
               <Route path="/about" element={<About />} />
