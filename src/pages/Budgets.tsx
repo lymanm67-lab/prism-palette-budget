@@ -568,9 +568,9 @@ const Budgets = () => {
         {/* Main budget table */}
         <div className="space-y-2">
           {/* Column headers */}
-          <div className="flex items-center gap-3 px-3 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          <div className="hidden sm:flex items-center gap-3 px-3 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
             <span className="flex-1" />
-            <span className="hidden sm:block w-[200px]" />
+            <span className="w-[200px]" />
             <span className="w-[90px] text-right">Budget</span>
             <span className="w-[90px] text-right">Actual</span>
             <span className="w-[90px] text-right">Remaining</span>
