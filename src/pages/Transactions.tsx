@@ -75,6 +75,22 @@ const Transactions = () => {
   const { data: deletedTransactions } = useDeletedTransactions();
   const { data: accounts } = useAccounts();
   const { data: categories } = useCategories();
+  const { data: categoryGroups } = useCategoryGroups();
+
+  // Build sets of personal/business category IDs for filtering
+  const { personalCatIds, businessCatIds } = useMemo(() => {
+    const personal = new Set<string>();
+    const business = new Set<string>();
+    if (!categories || !categoryGroups) return { personalCatIds: personal, businessCatIds: business };
+    const groupTypeMap = new Map<string, string>();
+    for (const g of categoryGroups) groupTypeMap.set(g.id, (g as any).budget_type || 'personal');
+    for (const c of categories) {
+      const type = groupTypeMap.get(c.group_id);
+      if (type === 'business') business.add(c.id);
+      else personal.add(c.id);
+    }
+    return { personalCatIds: personal, businessCatIds: business };
+  }, [categories, categoryGroups]);
   const createTransaction = useCreateTransaction();
   const updateTransaction = useUpdateTransaction();
   const { data: goals } = useGoals();
