@@ -124,7 +124,6 @@ const Accounts = () => {
     );
   }
 
-  const [pageGuideOpen, setPageGuideOpen] = useState(false);
 
   return (
     <TooltipProvider delayDuration={300}>
