@@ -163,28 +163,40 @@ export default function CategoryCombobox({ value, onValueChange, placeholder = '
                   <span className="h-4 w-4" /> Clear selection
                 </button>
               )}
-              {grouped.map(group => (
-                <div key={group.name}>
-                  <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: group.color }} />
-                    {group.name}
-                  </div>
-                  {group.cats.map(c => (
-                    <button
-                      key={c.id}
-                      className={cn(
-                        'w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted transition-colors',
-                        value === c.id && 'bg-muted font-medium'
+              {(() => {
+                let lastType = '';
+                return grouped.map(group => {
+                  const showSectionHeader = group.budgetType !== lastType;
+                  lastType = group.budgetType;
+                  return (
+                    <div key={group.name}>
+                      {showSectionHeader && (
+                        <div className="px-2 pt-2 pb-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground border-t first:border-t-0 mt-1 first:mt-0">
+                          {group.budgetType === 'business' ? '💼 Business' : '👤 Personal'}
+                        </div>
                       )}
-                      onClick={() => { onValueChange(c.id); setOpen(false); setSearch(''); }}
-                    >
-                      <Check className={cn('h-3.5 w-3.5 shrink-0', value === c.id ? 'opacity-100' : 'opacity-0')} />
-                      <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: c.color }} />
-                      <span className="truncate">{c.name}</span>
-                    </button>
-                  ))}
-                </div>
-              ))}
+                      <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: group.color }} />
+                        {group.name}
+                      </div>
+                      {group.cats.map(c => (
+                        <button
+                          key={c.id}
+                          className={cn(
+                            'w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted transition-colors',
+                            value === c.id && 'bg-muted font-medium'
+                          )}
+                          onClick={() => { onValueChange(c.id); setOpen(false); setSearch(''); }}
+                        >
+                          <Check className={cn('h-3.5 w-3.5 shrink-0', value === c.id ? 'opacity-100' : 'opacity-0')} />
+                          <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: c.color }} />
+                          <span className="truncate">{c.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  );
+                });
+              })()}
               {filtered.length === 0 && !search.trim() && (
                 <p className="px-2 py-3 text-sm text-center text-muted-foreground">No categories yet</p>
               )}
