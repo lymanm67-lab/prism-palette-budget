@@ -1583,7 +1583,7 @@ const Transactions = () => {
                         </span>
 
                         {/* Inline action icons */}
-                        <div className={cn("flex items-center gap-0.5 shrink-0 transition-opacity", (isNeedsReview || isDupe) ? "opacity-100" : "opacity-0 group-hover:opacity-100")}>
+                        <div className={cn("hidden sm:flex items-center gap-0.5 shrink-0 transition-opacity", (isNeedsReview || isDupe) ? "opacity-100" : "opacity-0 group-hover:opacity-100")}>
                           <TooltipProvider delayDuration={200}>
                             {isDupe && (
                               <Tooltip>
