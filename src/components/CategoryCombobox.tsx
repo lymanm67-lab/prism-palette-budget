@@ -153,7 +153,7 @@ export default function CategoryCombobox({ value, onValueChange, placeholder = '
                 />
               </div>
             </div>
-            <div className="max-h-[250px] overflow-y-auto p-1">
+            <div className="max-h-[320px] overflow-y-auto p-1">
               {/* Clear selection option */}
               {value && (
                 <button
