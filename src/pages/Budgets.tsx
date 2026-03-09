@@ -318,14 +318,20 @@ const Budgets = () => {
   const renderBudgetRow = (b: BudgetRow, type: ExpenseType) => {
     const isIncome = type === 'income';
     const actual = isIncome ? b.received : b.spent;
-    const remaining = b.planned_amount - actual;
-    const pct = b.planned_amount > 0 ? Math.min((actual / b.planned_amount) * 100, 100) : 0;
+    const rolloverAmt = rolloverAmounts.get(b.category_id) || 0;
+    const effectiveBudget = b.planned_amount + rolloverAmt;
+    const remaining = effectiveBudget - actual;
+    const pct = effectiveBudget > 0 ? Math.min((actual / effectiveBudget) * 100, 100) : 0;
     const overBudget = remaining < 0;
 
     return (
       <div key={b.id} className="group flex items-center gap-3 py-2.5 px-3 hover:bg-muted/30 rounded-lg transition-colors">
         <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: b.categories?.color || 'hsl(var(--primary))' }} />
-        <span className="flex-1 text-sm font-medium truncate">{b.categories?.name || 'Unknown'}</span>
+        <div className="flex-1 min-w-0 flex items-center gap-1.5">
+          <span className="text-sm font-medium truncate">{b.categories?.name || 'Unknown'}</span>
+          {b.rollover && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium shrink-0">↻</span>}
+          {rolloverAmt > 0 && <span className="text-[10px] text-emerald-600 dark:text-emerald-400 shrink-0">+{formatCurrency(rolloverAmt)}</span>}
+        </div>
         <div className="hidden sm:block w-[200px]">
           <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
             <div
@@ -334,7 +340,7 @@ const Budgets = () => {
             />
           </div>
         </div>
-        <span className="w-[90px] text-right text-sm tabular-nums">{formatCurrency(b.planned_amount)}</span>
+        <span className="w-[90px] text-right text-sm tabular-nums">{formatCurrency(effectiveBudget)}</span>
         <span className="w-[90px] text-right text-sm tabular-nums text-muted-foreground">{formatCurrency(actual)}</span>
         <span className={cn('w-[90px] text-right text-sm font-medium tabular-nums', overBudget ? 'text-rose-600 dark:text-rose-400' : isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground')}>
           {formatCurrency(Math.abs(remaining))}
