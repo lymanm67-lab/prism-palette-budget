@@ -523,7 +523,7 @@ const Budgets = () => {
           <Tooltip>
             <TooltipTrigger asChild>
               <span tabIndex={unbudgetedCategories.length === 0 ? 0 : undefined}>
-                <Button className="gap-2" onClick={openCreate} disabled={unbudgetedCategories.length === 0}>
+                <Button className="gap-2" size="sm" onClick={openCreate} disabled={unbudgetedCategories.length === 0}>
                   <Plus className="h-4 w-4" /> Add Budget
                 </Button>
               </span>
