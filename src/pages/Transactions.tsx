@@ -1181,6 +1181,8 @@ const Transactions = () => {
             <SelectTrigger className="w-[140px] sm:w-[170px] h-8 text-xs sm:text-sm"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All transactions</SelectItem>
+              <SelectItem value="personal">Personal</SelectItem>
+              <SelectItem value="business">Business</SelectItem>
               <SelectItem value="income">Income only</SelectItem>
               <SelectItem value="expenses">Expenses only</SelectItem>
               <SelectItem value="transfers">Transfers only</SelectItem>
