@@ -251,6 +251,7 @@ Deno.serve(async (req) => {
 
       let totalAccountsUpdated = 0;
       let totalNewTransactions = 0;
+      let allNewTransactionIds: string[] = [];
 
       for (const item of plaidItems) {
         // Update account balances
