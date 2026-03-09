@@ -165,6 +165,22 @@ const NetWorth = () => {
   };
 
   const isLoading = accLoading || txnLoading || goalsLoading;
+  if (isLoading) return (
+    <div className="p-8 space-y-6">
+      <div className="h-32 bg-muted animate-pulse rounded-lg mb-6" />
+      <div className="grid gap-6 md:grid-cols-3">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="h-24 bg-muted animate-pulse rounded-lg" />
+        ))}
+      </div>
+      <div className="h-[400px] bg-muted animate-pulse rounded-lg" />
+      <div className="grid gap-6 md:grid-cols-2">
+        <div className="h-64 bg-muted animate-pulse rounded-lg" />
+        <div className="h-64 bg-muted animate-pulse rounded-lg" />
+      </div>
+    </div>
+  );
+
   if (isLoading) return <div className="flex items-center justify-center p-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
 
   return (

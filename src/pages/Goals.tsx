@@ -12,6 +12,7 @@ import { useCurrency } from '@/hooks/use-currency';
 import { useGoals, useCreateGoal, useUpdateGoal, useDeleteGoal } from '@/hooks/use-goals';
 import { Plus, Target, Loader2, Trash2, Pencil, Trophy, Wallet, CreditCard, TrendingUp } from 'lucide-react';
 import PageOverview from '@/components/PageOverview';
+import { EmptyState } from '@/components/EmptyState';
 
 const GOAL_TYPES = [
   { value: 'savings', label: 'Savings Goal', icon: Wallet },
@@ -87,15 +88,38 @@ const Goals = () => {
   };
 
   if (isLoading) return (
-    <div className="flex items-center justify-center p-20">
-      <div className="flex flex-col items-center gap-3">
-        <div className="h-12 w-12 rounded-2xl prism-gradient prism-glow flex items-center justify-center">
-          <Loader2 className="h-6 w-6 animate-spin text-white" />
-        </div>
-        <p className="text-sm text-muted-foreground">Loading goals…</p>
+    <div className="p-8">
+      <div className="mb-6">
+        <div className="h-8 w-48 bg-muted animate-pulse rounded-lg mb-2" />
+        <div className="h-4 w-96 bg-muted/60 animate-pulse rounded" />
+      </div>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="h-48 bg-muted animate-pulse rounded-lg" />
+        ))}
       </div>
     </div>
   );
+
+  if (!goals?.length) {
+    return (
+      <div className="space-y-4">
+        <Confetti trigger={confettiTrigger} />
+        <div className="flex items-center justify-between">
+          <h1 className="font-display text-3xl font-extrabold tracking-tight">
+            <span className="prism-gradient-text">Financial Goals</span>
+          </h1>
+        </div>
+        <EmptyState
+          icon={Target}
+          title="No goals set yet"
+          description="Create your first financial goal to start tracking progress toward your dreams, whether it's an emergency fund, vacation, or down payment."
+          actionLabel="Create Goal"
+          onAction={() => setOpen(true)}
+        />
+      </div>
+    );
+  }
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
