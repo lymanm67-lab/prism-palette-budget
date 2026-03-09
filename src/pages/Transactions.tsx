@@ -1433,7 +1433,7 @@ const Transactions = () => {
               onCheckedChange={(checked) => {
                 setSelected(checked ? new Set(filtered.map(t => t.id)) : new Set());
               }}
-              className="shrink-0"
+              className="shrink-0 h-4 w-4 hidden sm:flex"
             />
             {/* Spacer for merchant icon */}
             <div className="h-8 w-8 shrink-0" />
