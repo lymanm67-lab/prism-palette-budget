@@ -24,7 +24,7 @@ const AppLayout = () => {
   return (
     <div className="flex h-screen overflow-hidden">
       {/* Desktop sidebar */}
-      {!isMobile && <AppSidebar onOpenCommandPalette={() => setCmdOpen(true)} />}
+      {!isMobile && <AppSidebar />}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Mobile top bar */}
         {isMobile && <MobileNav />}
