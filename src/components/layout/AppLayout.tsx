@@ -60,6 +60,7 @@ const AppLayout = () => {
   return (
     <>
       <CommandPalette />
+      <KeyboardShortcutsModal open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
       <div className="flex h-screen overflow-hidden">
         {/* Desktop sidebar */}
         {!isMobile && <AppSidebar />}
