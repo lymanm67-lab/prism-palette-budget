@@ -676,7 +676,7 @@ const Reports = () => {
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                       <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
                       <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={v => formatCompact(v)} />
-                      <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} />
+                      <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} itemStyle={{ color: 'hsl(var(--foreground))' }} />
                       <Area type="monotone" dataKey="netWorth" stroke="hsl(262, 83%, 58%)" fill="url(#netWorthGrad)" strokeWidth={3} name="Net Worth" />
                     </AreaChart>
                   </ResponsiveContainer>
