@@ -71,6 +71,7 @@ interface BudgetRow {
 
 const Budgets = () => {
   const { formatCurrency } = useCurrency();
+  const { household } = useHousehold();
   const [monthOffset, setMonthOffset] = useState(0);
   const [budgetType, setBudgetType] = useState<'personal' | 'business'>('personal');
   const [selectedBusiness, setSelectedBusiness] = useState<string>('all');
