@@ -615,15 +615,14 @@ const Budgets = () => {
           </Card>
 
           {/* Total Expenses Row */}
-          <div className="flex items-center gap-3 px-6 py-3 bg-muted/30 rounded-lg font-semibold">
+          <div className="flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-3 bg-muted/30 rounded-lg font-semibold text-sm sm:text-base">
             <span className="flex-1 font-display">Total Expenses</span>
-            <span className="hidden sm:block w-[200px]" />
-            <span className="w-[90px] text-right tabular-nums">{formatCurrency(totalExpenseBudget)}</span>
-            <span className="w-[90px] text-right tabular-nums text-muted-foreground">{formatCurrency(totalExpenseActual)}</span>
-            <span className={cn('w-[90px] text-right tabular-nums', totalExpenseRemaining >= 0 ? 'text-foreground' : 'text-rose-600 dark:text-rose-400')}>
+            <span className="text-right tabular-nums sm:w-[90px]">{formatCurrency(totalExpenseBudget)}</span>
+            <span className="hidden sm:inline-block w-[90px] text-right tabular-nums text-muted-foreground">{formatCurrency(totalExpenseActual)}</span>
+            <span className={cn('text-right tabular-nums sm:w-[90px]', totalExpenseRemaining >= 0 ? 'text-foreground' : 'text-rose-600 dark:text-rose-400')}>
               {formatCurrency(Math.abs(totalExpenseRemaining))}
             </span>
-            <div className="w-[62px]" />
+            <div className="hidden sm:block w-[62px]" />
           </div>
 
           {/* Unbudgeted categories */}
