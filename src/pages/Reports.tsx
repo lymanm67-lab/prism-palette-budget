@@ -511,8 +511,10 @@ const Reports = () => {
                             <div className="h-full rounded-full transition-all duration-500" style={{ width: `${Math.min(pct, 100)}%`, backgroundColor: isOver ? 'hsl(var(--prism-negative))' : item.color }} />
                           </div>
                           <span className={`text-xs font-medium w-12 text-right ${isOver ? 'text-prism-rose' : 'text-muted-foreground'}`}>{pct}%</span>
-                          <span className="text-xs text-muted-foreground w-32 text-right">{formatCurrency(item.actual)} / {formatCurrency(item.budget)}</span>
-                        </div>
+                          <span className="text-sm font-semibold text-foreground w-40 text-right">
+                            {formatCurrency(item.actual)}{' '}
+                            <span className="text-xs font-normal text-muted-foreground">/ {formatCurrency(item.budget)}</span>
+                          </span>
                       );
                     })}
                   </div>
