@@ -810,6 +810,7 @@ const Transactions = () => {
           </DropdownMenu>
         </div>
       </div>
+      <Dialog open={open} onOpenChange={setOpen}>
             <DialogContent className="max-h-[90vh] overflow-y-auto">
               <DialogHeader><DialogTitle className="font-display">Add Transaction</DialogTitle></DialogHeader>
               <div className="space-y-4">
