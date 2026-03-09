@@ -271,7 +271,7 @@ const Recurring = () => {
                 const items = recurringByDay[key] || [];
                 const isToday = isSameDay(day, new Date());
                 return (
-                  <div key={key} className={cn('min-h-[80px] border rounded-lg p-1.5 transition-colors', isToday && 'border-primary bg-primary/5')}>
+                  <div key={key} className={cn('min-h-[60px] sm:min-h-[80px] border rounded-lg p-1 sm:p-1.5 transition-colors', isToday && 'border-primary bg-primary/5')}>
                     <span className={cn('text-xs font-medium', isToday ? 'text-primary' : 'text-muted-foreground')}>{format(day, 'd')}</span>
                     <div className="mt-1 space-y-0.5">
                       {items.slice(0, 3).map((r: any) => (
