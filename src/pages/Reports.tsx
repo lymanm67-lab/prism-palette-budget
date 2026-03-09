@@ -740,7 +740,7 @@ const Reports = () => {
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
                     <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={v => formatCompact(v)} />
-                    <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} />
+                    <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} itemStyle={{ color: 'hsl(var(--foreground))' }} />
                     <Bar dataKey="savings" name="Net Savings" radius={[6, 6, 0, 0]}>
                       {monthlyCashflow.map((entry, i) => (
                         <Cell key={i} fill={entry.savings >= 0 ? 'hsl(160, 84%, 39%)' : 'hsl(340, 82%, 52%)'} />
