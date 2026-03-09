@@ -581,6 +581,25 @@ const Budgets = () => {
             {smartBudget.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
             Smart Budget
           </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            disabled={copyingForward || !budgetItems.length}
+            onClick={handleCopyForward}
+          >
+            {copyingForward ? <Loader2 className="h-4 w-4 animate-spin" /> : <Copy className="h-4 w-4" />}
+            <span className="hidden sm:inline">Copy to Next Month</span><span className="sm:hidden">Copy</span>
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-2"
+            onClick={() => setHideZeroAmounts(h => !h)}
+          >
+            {hideZeroAmounts ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            <span className="hidden sm:inline">{hideZeroAmounts ? 'Show $0' : 'Hide $0'}</span>
+          </Button>
         </div>
       </div>
 
