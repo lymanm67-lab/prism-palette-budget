@@ -13,7 +13,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { useAccounts, useCreateAccount, useUpdateAccount, useDeleteAccount } from '@/hooks/use-finance-data';
 import { formatDate } from '@/lib/seed-data';
 import { useCurrency } from '@/hooks/use-currency';
-import { Plus, Landmark, CreditCard, TrendingUp, PiggyBank, Car, Loader2, Trash2, Upload, Pencil, Check, X, MoreHorizontal, BookOpen, Link2 } from 'lucide-react';
+import { Plus, Landmark, CreditCard, TrendingUp, PiggyBank, Car, Loader2, Trash2, Upload, Pencil, Check, X, MoreHorizontal, BookOpen, Link2, RefreshCw } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 import PlaidLinkButton from '@/components/PlaidLinkButton';
 import MxConnectButton from '@/components/MxConnectButton';
@@ -22,7 +22,9 @@ import CsvImportDialog from '@/components/CsvImportDialog';
 import BankExportGuide from '@/components/BankExportGuide';
 import { toast } from 'sonner';
 import { EmptyState } from '@/components/EmptyState';
-
+import { supabase } from '@/integrations/supabase/client';
+import { useHousehold } from '@/contexts/HouseholdContext';
+import { useQueryClient } from '@tanstack/react-query';
 type AccountType = Database['public']['Enums']['account_type'];
 
 const ACCOUNT_ICONS: Record<string, React.ElementType> = {
@@ -44,12 +46,46 @@ const Accounts = () => {
   const createAccount = useCreateAccount();
   const updateAccount = useUpdateAccount();
   const deleteAccount = useDeleteAccount();
+  const { household } = useHousehold();
+  const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [form, setForm] = useState({ name: '', institution: '', account_type: 'checking' as AccountType, balance: '' });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
   const [pageGuideOpen, setPageGuideOpen] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefreshAccounts = async () => {
+    if (!household) return;
+    setRefreshing(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const response = await fetch(
+        `${supabaseUrl}/functions/v1/plaid/sync-transactions`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ household_id: household.id }),
+        }
+      );
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Failed to refresh');
+
+      toast.success(`Refreshed: ${data.accounts_updated} accounts updated, ${data.new_transactions} new transactions`);
+      qc.invalidateQueries({ queryKey: ['accounts'] });
+      qc.invalidateQueries({ queryKey: ['transactions'] });
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to refresh accounts');
+    }
+    setRefreshing(false);
+  };
 
   const grouped = (accounts || []).reduce((acc, acct) => {
     const inst = acct.institution || 'Manual';
@@ -179,6 +215,16 @@ const Accounts = () => {
                 </div>
               </DialogContent>
             </Dialog>
+
+            {/* Refresh — sync connected accounts */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-1.5 h-8" onClick={handleRefreshAccounts} disabled={refreshing}>
+                  <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} /> <span className="hidden sm:inline">{refreshing ? 'Syncing...' : 'Refresh'}</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent><p>Sync bank connections</p></TooltipContent>
+            </Tooltip>
 
             {/* Import — icon on mobile, text on desktop */}
             <Tooltip>
