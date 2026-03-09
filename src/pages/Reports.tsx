@@ -460,9 +460,27 @@ const Reports = () => {
                         <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={20}>
                           {chartData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                         </Bar>
-                      </BarChart>
-                    )}
-                  </ResponsiveContainer>);
+                          </BarChart>
+                        )}
+                      </ResponsiveContainer>
+                      {showOtherBreakdown && rest.length > 0 && spendingChartType === 'pie' && (
+                        <div className="mt-4 border-t pt-4">
+                          <h4 className="text-sm font-medium mb-3 text-muted-foreground">Categories in "Other"</h4>
+                          <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                            {rest.map((cat, i) => (
+                              <div key={i} className="flex items-center justify-between text-xs">
+                                <div className="flex items-center gap-1.5 truncate pr-2">
+                                  <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
+                                  <span className="truncate" title={cat.name}>{cat.name}</span>
+                                </div>
+                                <span className="font-medium text-foreground shrink-0">{formatCurrency(cat.value)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
                 })() : (
                   <p className="py-10 text-center text-muted-foreground">No spending data in this period.</p>
                 )}
