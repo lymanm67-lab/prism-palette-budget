@@ -156,6 +156,7 @@ const Budgets = () => {
     const groupIds = new Set(
       (categoryGroups as any[])
         .filter((g: any) => {
+          if (budgetType === 'all') return true;
           if ((g.budget_type || 'personal') !== budgetType) return false;
           if (budgetType === 'business' && selectedBusiness !== 'all') {
             return g.name.startsWith(selectedBusiness + ' -') || g.name.startsWith(selectedBusiness + ' –');
@@ -166,6 +167,19 @@ const Budgets = () => {
     );
     return new Set(categories.filter(c => groupIds.has(c.group_id)).map(c => c.id));
   }, [categories, categoryGroups, budgetType, selectedBusiness]);
+
+  // For "all" mode, separate personal vs business category IDs
+  const personalCategoryIds = useMemo(() => {
+    if (!categories || !categoryGroups) return new Set<string>();
+    const groupIds = new Set((categoryGroups as any[]).filter((g: any) => (g.budget_type || 'personal') === 'personal').map((g: any) => g.id));
+    return new Set(categories.filter(c => groupIds.has(c.group_id)).map(c => c.id));
+  }, [categories, categoryGroups]);
+
+  const businessCategoryIds = useMemo(() => {
+    if (!categories || !categoryGroups) return new Set<string>();
+    const groupIds = new Set((categoryGroups as any[]).filter((g: any) => (g.budget_type || 'personal') === 'business').map((g: any) => g.id));
+    return new Set(categories.filter(c => groupIds.has(c.group_id)).map(c => c.id));
+  }, [categories, categoryGroups]);
 
   const budgetItems: BudgetRow[] = (budgets || []).map(b => ({
     ...b,
