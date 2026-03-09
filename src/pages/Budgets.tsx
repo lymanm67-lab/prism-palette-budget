@@ -60,6 +60,7 @@ interface BudgetRow {
   id: string;
   category_id: string;
   planned_amount: number;
+  rollover: boolean;
   spent: number;
   received: number;
   categories: { name: string; color: string } | null;
