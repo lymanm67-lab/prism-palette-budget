@@ -719,7 +719,7 @@ const Reports = () => {
                           <span className="text-sm font-medium">{m.name}</span>
                         </div>
                         <div className="text-right">
-                          <span className="text-sm font-semibold">{formatCurrency(m.total)}</span>
+                          <span className="text-sm font-bold text-foreground">{formatCurrency(m.total)}</span>
                           <span className="ml-2 text-xs text-muted-foreground">{m.count} txn{m.count !== 1 ? 's' : ''}</span>
                         </div>
                       </div>

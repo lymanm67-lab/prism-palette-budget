@@ -425,8 +425,10 @@ const BusinessReports = ({ startDate, endDate, budgetMonth }: Props) => {
                           <div className="h-full rounded-full" style={{ width: `${Math.min(pct, 100)}%`, backgroundColor: isOver ? 'hsl(var(--destructive))' : item.color }} />
                         </div>
                         <span className={`text-xs w-10 text-right ${isOver ? 'text-destructive' : 'text-muted-foreground'}`}>{pct}%</span>
-                        <span className="text-xs text-muted-foreground w-36 text-right">{formatCurrency(item.actual)} / {formatCurrency(item.budget)}</span>
-                      </div>
+                        <span className="text-sm font-semibold text-foreground w-44 text-right">
+                          {formatCurrency(item.actual)}{' '}
+                          <span className="text-xs font-normal text-muted-foreground">/ {formatCurrency(item.budget)}</span>
+                        </span>
                     );
                   })}
                 </div>
