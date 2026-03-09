@@ -13,7 +13,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { useBudgets, useCategories, useCategoryGroups, useTransactions, useUpsertBudget, useDeleteBudget, useCreateCategory } from '@/hooks/use-finance-data';
 import { useSmartBudget } from '@/hooks/use-financial-intelligence';
 import { useCurrency } from '@/hooks/use-currency';
-import { Loader2, Plus, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Eye, Settings2, TrendingUp, AlertTriangle, CheckCircle2, PiggyBank, Sparkles } from 'lucide-react';
+import { Loader2, Plus, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Eye, EyeOff, Settings2, TrendingUp, AlertTriangle, CheckCircle2, PiggyBank, Sparkles, Copy } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
@@ -85,6 +85,8 @@ const Budgets = () => {
   const [form, setForm] = useState({ category_id: '', planned_amount: '', rollover: false });
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const [showUnbudgeted, setShowUnbudgeted] = useState(false);
+  const [hideZeroAmounts, setHideZeroAmounts] = useState(false);
+  const [copyingForward, setCopyingForward] = useState(false);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({ income: true, fixed: true, flexible: true, non_monthly: true });
   const [viewTab, setViewTab] = useState<'budget' | 'forecast'>('budget');
   const [quickAddOpen, setQuickAddOpen] = useState(false);
@@ -167,11 +169,12 @@ const Budgets = () => {
   const groupedBudgets = useMemo(() => {
     const groups: Record<ExpenseType, BudgetRow[]> = { income: [], fixed: [], flexible: [], non_monthly: [] };
     for (const b of budgetItems) {
+      if (hideZeroAmounts && b.planned_amount === 0) continue;
       const type = categoryExpenseType.get(b.category_id) || 'flexible';
       groups[type].push(b);
     }
     return groups;
-  }, [budgetItems, categoryExpenseType]);
+  }, [budgetItems, categoryExpenseType, hideZeroAmounts]);
 
   // Section totals
   const sectionTotals = useMemo(() => {
@@ -312,6 +315,24 @@ const Budgets = () => {
     if (!form.category_id || isNaN(amount) || amount < 0) return;
     await upsertBudget.mutateAsync({ category_id: form.category_id, month, planned_amount: amount, rollover: form.rollover });
     setDialogOpen(false);
+  };
+
+  const handleCopyForward = async () => {
+    if (!budgetItems.length) return;
+    setCopyingForward(true);
+    const nextMonth = getMonth(monthOffset + 1);
+    try {
+      for (const b of budgetItems) {
+        await upsertBudget.mutateAsync({
+          category_id: b.category_id,
+          month: nextMonth,
+          planned_amount: b.planned_amount,
+          rollover: b.rollover,
+        });
+      }
+    } finally {
+      setCopyingForward(false);
+    }
   };
 
   // Render a budget row
@@ -559,6 +580,25 @@ const Budgets = () => {
           >
             {smartBudget.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
             Smart Budget
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            disabled={copyingForward || !budgetItems.length}
+            onClick={handleCopyForward}
+          >
+            {copyingForward ? <Loader2 className="h-4 w-4 animate-spin" /> : <Copy className="h-4 w-4" />}
+            <span className="hidden sm:inline">Copy to Next Month</span><span className="sm:hidden">Copy</span>
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-2"
+            onClick={() => setHideZeroAmounts(h => !h)}
+          >
+            {hideZeroAmounts ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            <span className="hidden sm:inline">{hideZeroAmounts ? 'Show $0' : 'Hide $0'}</span>
           </Button>
         </div>
       </div>
