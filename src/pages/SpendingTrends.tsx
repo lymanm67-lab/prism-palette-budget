@@ -290,7 +290,7 @@ const SpendingTrends = () => {
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
                 <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={v => formatCompact(v)} />
-                <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} />
+                <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} labelStyle={tooltipLabelStyle} />
                 <Area type="monotone" dataKey="amount" stroke={categoryColorMap[selectedCategory] || COLORS[0]} fill="url(#catGrad)" strokeWidth={3} name={selectedCategory} />
               </AreaChart>
             </ResponsiveContainer>
