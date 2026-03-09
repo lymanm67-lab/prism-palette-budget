@@ -516,7 +516,7 @@ const BusinessReports = ({ startDate, endDate, budgetMonth }: Props) => {
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={11} />
                     <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickFormatter={v => `${v}%`} />
-                    <Tooltip formatter={(v: number) => `${v}%`} contentStyle={tooltipStyle} />
+                    <Tooltip formatter={(v: number) => `${v}%`} contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} labelStyle={tooltipLabelStyle} />
                     <Bar dataKey="ratio" name="Expense Ratio" radius={[6, 6, 0, 0]}>
                       {expenseRatios.map((e, i) => (
                         <Cell key={i} fill={e.ratio > 80 ? 'hsl(340, 82%, 52%)' : e.ratio > 60 ? 'hsl(36, 100%, 57%)' : 'hsl(160, 84%, 39%)'} />
