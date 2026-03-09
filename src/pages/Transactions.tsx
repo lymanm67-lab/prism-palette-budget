@@ -1073,8 +1073,6 @@ const Transactions = () => {
               </div>
             </DialogContent>
           </Dialog>
-        </div>
-      </div>
 
       {/* Search bar (expandable) */}
       {searchOpen && (
