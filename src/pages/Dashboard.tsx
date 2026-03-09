@@ -285,21 +285,32 @@ const Dashboard = () => {
         <>
           {/* Combined stat cards */}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {STAT_CARDS.map((stat) => (
-              <motion.div key={stat.key} variants={item}>
-                <Card className="prism-card-shine border-border/50 hover-lift hover-glow-violet hover-icon-bounce">
-                  <CardContent className="flex items-center gap-4 p-5">
-                    <div className={`stat-card-icon icon-target bg-gradient-to-br ${stat.gradient}`}>
-                      <stat.icon className="h-6 w-6 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{stat.label}</p>
-                      <p className="font-display text-xl font-bold mt-0.5">{formatCurrency(statValues[stat.key])}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
+            {STAT_CARDS.map((stat) => {
+              const momData = stat.key === 'monthlyIncome' ? momIndicators?.income : null;
+              return (
+                <motion.div key={stat.key} variants={item}>
+                  <Card className="prism-card-shine border-border/50 hover-lift hover-glow-violet hover-icon-bounce">
+                    <CardContent className="flex items-center gap-4 p-5">
+                      <div className={`stat-card-icon icon-target bg-gradient-to-br ${stat.gradient}`}>
+                        <stat.icon className="h-6 w-6 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{stat.label}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-display text-xl font-bold">{formatCurrency(statValues[stat.key])}</p>
+                          {momData && (
+                            <MoMIndicator
+                              percentageChange={momData.percentageChange}
+                              direction={momData.direction}
+                            />
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              );
+            })}
           </div>
 
           {/* Financial Health Score */}
