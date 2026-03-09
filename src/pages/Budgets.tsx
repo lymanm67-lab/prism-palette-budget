@@ -852,13 +852,13 @@ const Budgets = () => {
 
         {/* Right sidebar - Budget Summary */}
         <div className="space-y-4">
-          <Card className={cn('border-2', leftToBudget < 0 ? 'border-rose-500/30 bg-rose-500/5' : leftToBudget === 0 ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-primary/20')}>
+          <Card className={cn('border-2', unallocated < 0 ? 'border-rose-500/30 bg-rose-500/5' : unallocated === 0 ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-primary/20')}>
             <CardContent className="p-5 text-center">
-              <p className={cn('text-3xl font-bold font-display', leftToBudget < 0 ? 'text-rose-600 dark:text-rose-400' : leftToBudget === 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-primary')}>
-                {leftToBudget < 0 ? '-' : ''}{formatCurrency(Math.abs(leftToBudget))}
+              <p className={cn('text-3xl font-bold font-display', unallocated < 0 ? 'text-rose-600 dark:text-rose-400' : unallocated === 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-primary')}>
+                {unallocated < 0 ? '-' : ''}{formatCurrency(Math.abs(unallocated))}
               </p>
               <p className="text-sm text-muted-foreground mt-1">
-                {leftToBudget === 0 ? '✅ Every dollar assigned' : leftToBudget > 0 ? 'Left to budget' : 'Over-budgeted'}
+                {unallocated === 0 ? '✅ Every dollar assigned' : unallocated > 0 ? 'Left to assign' : 'Over-allocated'}
               </p>
             </CardContent>
           </Card>
