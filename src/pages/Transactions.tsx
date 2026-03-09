@@ -1495,7 +1495,7 @@ const Transactions = () => {
                           checked={selected.has(txn.id)}
                           onCheckedChange={() => toggleSelect(txn.id)}
                           onClick={(e) => e.stopPropagation()}
-                          className="shrink-0"
+                          className="shrink-0 h-4 w-4 hidden sm:flex"
                         />
 
                         {/* Merchant logo */}
