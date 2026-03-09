@@ -502,7 +502,7 @@ function GuidedTour({ open, onClose }: { open: boolean; onClose: () => void }) {
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-lg p-0 overflow-hidden border-0">
+      <DialogContent className="max-w-lg p-0 overflow-hidden border-0 w-[calc(100vw-2rem)] sm:w-full">
         <AnimatePresence mode="wait">
           <motion.div
             key={slideIdx}
@@ -512,24 +512,24 @@ function GuidedTour({ open, onClose }: { open: boolean; onClose: () => void }) {
             transition={{ duration: 0.25 }}
           >
             {/* Hero area */}
-            <div className={cn('p-8 pb-6 bg-gradient-to-br text-white', slide.gradient)}>
-              <div className="flex items-start justify-between mb-6">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm">
-                  <Icon className="h-7 w-7" />
+            <div className={cn('p-5 sm:p-8 pb-4 sm:pb-6 bg-gradient-to-br text-white', slide.gradient)}>
+              <div className="flex items-start justify-between mb-4 sm:mb-6">
+                <div className="flex h-11 w-11 sm:h-14 sm:w-14 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm">
+                  <Icon className="h-5 w-5 sm:h-7 sm:w-7" />
                 </div>
                 <button onClick={onClose} className="text-white/60 hover:text-white transition-colors">
                   <X className="h-5 w-5" />
                 </button>
               </div>
-              <h2 className="font-display text-2xl font-bold">{slide.title}</h2>
-              <p className="mt-2 text-white/80 text-sm leading-relaxed">{slide.desc}</p>
+              <h2 className="font-display text-xl sm:text-2xl font-bold">{slide.title}</h2>
+              <p className="mt-2 text-white/80 text-xs sm:text-sm leading-relaxed">{slide.desc}</p>
             </div>
 
             {/* Content area */}
-            <div className="p-6 space-y-4">
-              <div className="flex items-start gap-3 rounded-lg bg-primary/5 p-3">
+            <div className="p-4 sm:p-6 space-y-3 sm:space-y-4">
+              <div className="flex items-start gap-3 rounded-lg bg-primary/5 p-2.5 sm:p-3">
                 <Zap className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                <p className="text-sm text-muted-foreground"><span className="font-medium text-foreground">Tip:</span> {slide.tip}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground"><span className="font-medium text-foreground">Tip:</span> {slide.tip}</p>
               </div>
 
               {/* Progress dots */}
@@ -548,16 +548,16 @@ function GuidedTour({ open, onClose }: { open: boolean; onClose: () => void }) {
 
               {/* Actions */}
               <div className="flex items-center justify-between">
-                <Button variant="ghost" size="sm" onClick={handlePrev} disabled={isFirst} className="gap-1">
+                <Button variant="ghost" size="sm" onClick={handlePrev} disabled={isFirst} className="gap-1 text-xs sm:text-sm h-8">
                   <ChevronLeft className="h-4 w-4" /> Back
                 </Button>
-                <div className="flex gap-2">
+                <div className="flex gap-1.5 sm:gap-2">
                   {slide.route && (
-                    <Button variant="outline" size="sm" onClick={handleGoTo} className="gap-1">
-                      <Rocket className="h-3.5 w-3.5" /> Go There
+                    <Button variant="outline" size="sm" onClick={handleGoTo} className="gap-1 text-xs sm:text-sm h-8">
+                      <Rocket className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Go There</span><span className="sm:hidden">Go</span>
                     </Button>
                   )}
-                  <Button size="sm" onClick={handleNext} className="gap-1">
+                  <Button size="sm" onClick={handleNext} className="gap-1 text-xs sm:text-sm h-8">
                     {isLast ? 'Get Started' : 'Next'} {!isLast && <ChevronRight className="h-4 w-4" />}
                   </Button>
                 </div>
