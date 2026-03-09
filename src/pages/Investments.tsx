@@ -122,15 +122,15 @@ const Investments = () => {
               <CardTitle className="font-display text-base sm:text-lg">Asset Allocation</CardTitle>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={250}>
+              <ResponsiveContainer width="100%" height={320}>
                 <PieChart>
-                  <Pie data={chartData} cx="50%" cy="50%" innerRadius={50} outerRadius={85} dataKey="value" paddingAngle={2}>
+                  <Pie data={chartData} cx="50%" cy="40%" innerRadius={45} outerRadius={80} dataKey="value" paddingAngle={2}>
                     {chartData.map((_, i) => (
                       <Cell key={i} fill={COLORS[i % COLORS.length]} />
                     ))}
                   </Pie>
                   <Tooltip formatter={(value: number) => formatAmount(value)} />
-                  <Legend wrapperStyle={{ fontSize: '12px' }} />
+                  <Legend layout="horizontal" verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: '11px', paddingTop: '12px' }} />
                 </PieChart>
               </ResponsiveContainer>
             </CardContent>
