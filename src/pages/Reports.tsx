@@ -427,18 +427,33 @@ const Reports = () => {
                     ? [...top, { name: 'Other', value: rest.reduce((s, r) => s + r.value, 0), color: 'hsl(var(--muted-foreground))' }]
                     : top;
                   return (
-                  <ResponsiveContainer width="100%" height={340}>
-                    {spendingChartType === 'pie' ? (
-                      <PieChart>
-                        <Pie data={chartData} cx="50%" cy="50%" innerRadius={65} outerRadius={105} paddingAngle={2} dataKey="value">
-                          {chartData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
-                        </Pie>
-                        <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} />
-                        <Legend iconType="circle" iconSize={10} formatter={(value: string) => <span className="text-sm text-foreground">{value}</span>} />
-                      </PieChart>
-                    ) : (
-                      <BarChart data={chartData} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
+                    <div className="space-y-4">
+                      <ResponsiveContainer width="100%" height={340}>
+                        {spendingChartType === 'pie' ? (
+                          <PieChart>
+                            <Pie 
+                              data={chartData} 
+                              cx="50%" 
+                              cy="50%" 
+                              innerRadius={65} 
+                              outerRadius={105} 
+                              paddingAngle={2} 
+                              dataKey="value"
+                              onClick={(entry) => {
+                                if (entry.name === 'Other') {
+                                  setShowOtherBreakdown(!showOtherBreakdown);
+                                }
+                              }}
+                              className={chartData.some(d => d.name === 'Other') ? "[&_.recharts-pie-sector]:cursor-pointer" : ""}
+                            >
+                              {chartData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+                            </Pie>
+                            <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} itemStyle={{ color: 'hsl(var(--foreground))' }} />
+                            <Legend iconType="circle" iconSize={10} formatter={(value: string) => <span className="text-sm text-foreground">{value}</span>} />
+                          </PieChart>
+                        ) : (
+                          <BarChart data={chartData} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
                         <XAxis type="number" stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={v => formatCompact(v)} />
                         <YAxis dataKey="name" type="category" stroke="hsl(var(--muted-foreground))" fontSize={12} width={85} tick={{ fill: 'hsl(var(--foreground))' }} />
                         <Tooltip cursor={{ fill: 'transparent' }} formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} />
