@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils';
 import { getDaysInMonth } from 'date-fns';
 import PageOverview from '@/components/PageOverview';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { EmptyState } from '@/components/EmptyState';
 
 const getMonth = (offset: number) => {
   const d = new Date();
