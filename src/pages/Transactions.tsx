@@ -1525,25 +1525,18 @@ const Transactions = () => {
                     const isUncategorized = !cat && !isTransfer;
 
                     return (
-                      <div
+                      <TransactionRow
                         key={txn.id}
-                        className={cn(
-                          "flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 hover:bg-muted/30 transition-colors group cursor-pointer",
-                          isDupe && "bg-amber-50/50 dark:bg-amber-950/10",
-                          !isDupe && isUncategorized && "bg-rose-50/60 dark:bg-rose-950/15 border-l-2 border-l-rose-400 dark:border-l-rose-500",
-                          !isDupe && !isUncategorized && isTransfer && "bg-blue-50/50 dark:bg-blue-950/10",
-                          !isDupe && !isUncategorized && !isTransfer && isIncome && "bg-emerald-50/40 dark:bg-emerald-950/10",
-                          !isDupe && !isUncategorized && !isIncome && !isTransfer && "bg-background"
-                        )}
-                        onClick={() => selected.size === 0 && openEditTxn(txn)}
+                        txn={txn}
+                        isIncome={isIncome}
+                        isTransfer={isTransfer}
+                        isDupe={isDupe}
+                        isUncategorized={isUncategorized}
+                        isSelected={selected.has(txn.id)}
+                        isMultiSelectMode={selected.size > 0}
+                        onSelect={() => toggleSelect(txn.id)}
+                        onOpen={() => openEditTxn(txn)}
                       >
-                        {/* Checkbox for multi-select */}
-                        <Checkbox
-                          checked={selected.has(txn.id)}
-                          onCheckedChange={() => toggleSelect(txn.id)}
-                          onClick={(e) => e.stopPropagation()}
-                          className="shrink-0 h-4 w-4 hidden sm:flex"
-                        />
 
                         {/* Merchant logo */}
                         <MerchantIcon merchant={txn.merchant} isIncome={isIncome} isDuplicate={isDupe} />
