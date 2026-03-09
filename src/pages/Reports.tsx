@@ -428,8 +428,7 @@ const Reports = () => {
                       <Legend iconType="circle" iconSize={10} formatter={(value: string) => <span className="text-sm text-foreground">{value}</span>} />
                     </PieChart>
                   </ResponsiveContainer>);
-                })()
-                ) : (
+                })() : (
                   <p className="py-10 text-center text-muted-foreground">No spending data in this period.</p>
                 )}
               </CardContent>
