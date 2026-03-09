@@ -86,6 +86,7 @@ const Transactions = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [open, setOpen] = useState(false);
   const [csvOpen, setCsvOpen] = useState(false);
+  const [pageGuideOpen, setPageGuideOpen] = useState(false);
   const [transferOpen, setTransferOpen] = useState(false);
   const [filters, setFilters] = useState<FilterState>(EMPTY_FILTERS);
   const [selected, setSelected] = useState<Set<string>>(new Set());
