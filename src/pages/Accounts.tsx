@@ -12,7 +12,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { useAccounts, useCreateAccount, useUpdateAccount, useDeleteAccount } from '@/hooks/use-finance-data';
 import { formatDate } from '@/lib/seed-data';
 import { useCurrency } from '@/hooks/use-currency';
-import { Plus, Landmark, CreditCard, TrendingUp, PiggyBank, Car, Loader2, Trash2, Upload, Pencil, Check, X } from 'lucide-react';
+import { Plus, Landmark, CreditCard, TrendingUp, PiggyBank, Car, Loader2, Trash2, Upload, Pencil, Check, X, MoreHorizontal, BookOpen, Link2 } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 import PlaidLinkButton from '@/components/PlaidLinkButton';
 import MxConnectButton from '@/components/MxConnectButton';
