@@ -349,6 +349,44 @@ const Budgets = () => {
     );
   };
 
+  if (budgetsLoading) return (
+    <div className="p-8 space-y-6">
+      <div className="mb-6">
+        <div className="h-8 w-48 bg-muted animate-pulse rounded-lg mb-2" />
+        <div className="h-4 w-96 bg-muted/60 animate-pulse rounded" />
+      </div>
+      <div className="grid gap-6 md:grid-cols-3">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="h-24 bg-muted animate-pulse rounded-lg" />
+        ))}
+      </div>
+      <div className="space-y-4">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="h-20 bg-muted animate-pulse rounded-lg" />
+        ))}
+      </div>
+    </div>
+  );
+
+  if (!budgetItems.length && !unbudgetedCategories.length) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h1 className="font-display text-3xl font-extrabold tracking-tight">
+            <span className="prism-gradient-text">Budgets</span>
+          </h1>
+        </div>
+        <EmptyState
+          icon={PiggyBank}
+          title="No budgets set yet"
+          description="Create your first budget to start tracking spending and reaching your financial goals. Use the Smart Budget feature for AI-powered suggestions based on your spending history."
+          actionLabel="Create Budget"
+          onAction={() => setDialogOpen(true)}
+        />
+      </div>
+    );
+  }
+
   if (budgetsLoading) return <div className="flex items-center justify-center p-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
 
   return (
