@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
+import { useSidebarBadges } from '@/hooks/use-sidebar-badges';
 
 const NAV_SECTIONS = [
   {
