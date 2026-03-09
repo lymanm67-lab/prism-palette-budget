@@ -188,15 +188,23 @@ const Budgets = () => {
   })).filter(b => filteredCategoryIds.has(b.category_id));
 
   // Group budgets by expense type
-  const groupedBudgets = useMemo(() => {
+  const groupBudgetsByExpenseType = useCallback((items: BudgetRow[]) => {
     const groups: Record<ExpenseType, BudgetRow[]> = { income: [], fixed: [], flexible: [], non_monthly: [] };
-    for (const b of budgetItems) {
+    for (const b of items) {
       if (hideZeroAmounts && b.planned_amount === 0) continue;
       const type = categoryExpenseType.get(b.category_id) || 'flexible';
       groups[type].push(b);
     }
     return groups;
-  }, [budgetItems, categoryExpenseType, hideZeroAmounts]);
+  }, [categoryExpenseType, hideZeroAmounts]);
+
+  const groupedBudgets = useMemo(() => groupBudgetsByExpenseType(budgetItems), [groupBudgetsByExpenseType, budgetItems]);
+
+  // For "all" mode: split budgets by entity
+  const personalBudgetItems = useMemo(() => budgetItems.filter(b => personalCategoryIds.has(b.category_id)), [budgetItems, personalCategoryIds]);
+  const businessBudgetItems = useMemo(() => budgetItems.filter(b => businessCategoryIds.has(b.category_id)), [budgetItems, businessCategoryIds]);
+  const personalGroupedBudgets = useMemo(() => groupBudgetsByExpenseType(personalBudgetItems), [groupBudgetsByExpenseType, personalBudgetItems]);
+  const businessGroupedBudgets = useMemo(() => groupBudgetsByExpenseType(businessBudgetItems), [groupBudgetsByExpenseType, businessBudgetItems]);
 
   // Section totals
   const sectionTotals = useMemo(() => {
