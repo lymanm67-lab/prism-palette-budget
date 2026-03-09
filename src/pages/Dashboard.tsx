@@ -4,11 +4,15 @@ import PageOverview from '@/components/PageOverview';
 import WeeklyRecap from '@/components/WeeklyRecap';
 import GettingStartedWidget from '@/components/GettingStartedWidget';
 import FinancialHealthScore from '@/components/FinancialHealthScore';
+import GoalTrackerWidget from '@/components/GoalTrackerWidget';
+import SpendingAnomalyAlert from '@/components/SpendingAnomalyAlert';
+import MoMIndicator from '@/components/MoMIndicator';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAccounts, useTransactions, useSpendingByCategory, useCategoryGroups, useCategories } from '@/hooks/use-finance-data';
 import { useBusinessProfiles } from '@/hooks/use-business-data';
 import { useCurrency } from '@/hooks/use-currency';
+import { useMoMIndicators } from '@/hooks/use-mom-indicators';
 import {
   TrendingUp, Wallet, CreditCard, ArrowUpRight, Loader2,
   Sparkles, ChevronRight, Building2, PiggyBank, User, LayoutGrid, Settings2
@@ -45,6 +49,7 @@ const Dashboard = () => {
   const { data: categoryGroups } = useCategoryGroups();
   const { data: categories } = useCategories();
   const { data: businessProfiles } = useBusinessProfiles();
+  const momIndicators = useMoMIndicators();
   const navigate = useNavigate();
 
   const [mode, setMode] = useState<DashboardMode>('personal');
@@ -247,6 +252,11 @@ const Dashboard = () => {
         </div>
       </motion.div>
 
+      {/* Spending Anomaly Alert */}
+      <motion.div variants={item}>
+        <SpendingAnomalyAlert />
+      </motion.div>
+
       {/* Getting Started Widget */}
       <motion.div variants={item}>
         <GettingStartedWidget />
@@ -275,21 +285,32 @@ const Dashboard = () => {
         <>
           {/* Combined stat cards */}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {STAT_CARDS.map((stat) => (
-              <motion.div key={stat.key} variants={item}>
-                <Card className="prism-card-shine border-border/50 hover-lift hover-glow-violet hover-icon-bounce">
-                  <CardContent className="flex items-center gap-4 p-5">
-                    <div className={`stat-card-icon icon-target bg-gradient-to-br ${stat.gradient}`}>
-                      <stat.icon className="h-6 w-6 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{stat.label}</p>
-                      <p className="font-display text-xl font-bold mt-0.5">{formatCurrency(statValues[stat.key])}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
+            {STAT_CARDS.map((stat) => {
+              const momData = stat.key === 'monthlyIncome' ? momIndicators?.income : null;
+              return (
+                <motion.div key={stat.key} variants={item}>
+                  <Card className="prism-card-shine border-border/50 hover-lift hover-glow-violet hover-icon-bounce">
+                    <CardContent className="flex items-center gap-4 p-5">
+                      <div className={`stat-card-icon icon-target bg-gradient-to-br ${stat.gradient}`}>
+                        <stat.icon className="h-6 w-6 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{stat.label}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-display text-xl font-bold">{formatCurrency(statValues[stat.key])}</p>
+                          {momData && (
+                            <MoMIndicator
+                              percentageChange={momData.percentageChange}
+                              direction={momData.direction}
+                            />
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              );
+            })}
           </div>
 
           {/* Financial Health Score */}
@@ -342,21 +363,32 @@ const Dashboard = () => {
         <>
           {/* Stat Cards */}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {STAT_CARDS.map((stat) => (
-              <motion.div key={stat.key} variants={item}>
-                <Card className="prism-card-shine border-border/50 hover-lift hover-glow-violet hover-icon-bounce">
-                  <CardContent className="flex items-center gap-4 p-5">
-                    <div className={`stat-card-icon icon-target bg-gradient-to-br ${stat.gradient}`}>
-                      <stat.icon className="h-6 w-6 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{stat.label}</p>
-                      <p className="font-display text-xl font-bold mt-0.5">{formatCurrency(statValues[stat.key])}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
+            {STAT_CARDS.map((stat) => {
+              const momData = stat.key === 'monthlyIncome' ? momIndicators?.income : null;
+              return (
+                <motion.div key={stat.key} variants={item}>
+                  <Card className="prism-card-shine border-border/50 hover-lift hover-glow-violet hover-icon-bounce">
+                    <CardContent className="flex items-center gap-4 p-5">
+                      <div className={`stat-card-icon icon-target bg-gradient-to-br ${stat.gradient}`}>
+                        <stat.icon className="h-6 w-6 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{stat.label}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-display text-xl font-bold">{formatCurrency(statValues[stat.key])}</p>
+                          {momData && (
+                            <MoMIndicator
+                              percentageChange={momData.percentageChange}
+                              direction={momData.direction}
+                            />
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              );
+            })}
           </div>
 
           {/* Financial Health Score */}
@@ -377,13 +409,20 @@ const Dashboard = () => {
             formatCompact={formatCompact}
           />
 
-          {/* AI Spending Insights */}
-          <AiSpendingInsights
-            transactions={filteredTransactions}
-            accounts={accounts || []}
-            monthlyIncome={monthlyIncome}
-            monthlyExpenses={monthlyExpenses}
-          />
+          {/* Goal Tracker + AI Spending Insights */}
+          <div className="grid gap-6 lg:grid-cols-2">
+            <motion.div variants={item}>
+              <GoalTrackerWidget />
+            </motion.div>
+            <motion.div variants={item}>
+              <AiSpendingInsights
+                transactions={filteredTransactions}
+                accounts={accounts || []}
+                monthlyIncome={monthlyIncome}
+                monthlyExpenses={monthlyExpenses}
+              />
+            </motion.div>
+          </div>
 
           {/* Recent Transactions */}
           {filteredTransactions.length > 0 && (
