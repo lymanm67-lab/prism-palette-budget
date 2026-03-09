@@ -2,24 +2,9 @@ import { Outlet } from 'react-router-dom';
 import AppSidebar from './AppSidebar';
 import MobileNav from './MobileNav';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useEffect, useState } from 'react';
-import CommandPalette from '@/components/CommandPalette';
 
 const AppLayout = () => {
   const isMobile = useIsMobile();
-  const [cmdOpen, setCmdOpen] = useState(false);
-
-  // Cmd+K / Ctrl+K shortcut
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        setCmdOpen(prev => !prev);
-      }
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, []);
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -37,7 +22,6 @@ const AppLayout = () => {
           </div>
         </main>
       </div>
-      <CommandPalette open={cmdOpen} onOpenChange={setCmdOpen} />
     </div>
   );
 };
