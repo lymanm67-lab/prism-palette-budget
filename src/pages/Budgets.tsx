@@ -206,15 +206,15 @@ const Budgets = () => {
   const personalGroupedBudgets = useMemo(() => groupBudgetsByExpenseType(personalBudgetItems), [groupBudgetsByExpenseType, personalBudgetItems]);
   const businessGroupedBudgets = useMemo(() => groupBudgetsByExpenseType(businessBudgetItems), [groupBudgetsByExpenseType, businessBudgetItems]);
 
-  // Section totals
-  const sectionTotals = useMemo(() => {
+  // Section totals helper
+  const calcSectionTotals = useCallback((grouped: Record<ExpenseType, BudgetRow[]>) => {
     const totals: Record<ExpenseType, { budget: number; actual: number; remaining: number }> = {
       income: { budget: 0, actual: 0, remaining: 0 },
       fixed: { budget: 0, actual: 0, remaining: 0 },
       flexible: { budget: 0, actual: 0, remaining: 0 },
       non_monthly: { budget: 0, actual: 0, remaining: 0 },
     };
-    for (const [type, items] of Object.entries(groupedBudgets)) {
+    for (const [type, items] of Object.entries(grouped)) {
       const t = type as ExpenseType;
       for (const b of items) {
         totals[t].budget += b.planned_amount;
@@ -223,7 +223,11 @@ const Budgets = () => {
       }
     }
     return totals;
-  }, [groupedBudgets]);
+  }, []);
+
+  const sectionTotals = useMemo(() => calcSectionTotals(groupedBudgets), [calcSectionTotals, groupedBudgets]);
+  const personalSectionTotals = useMemo(() => calcSectionTotals(personalGroupedBudgets), [calcSectionTotals, personalGroupedBudgets]);
+  const businessSectionTotals = useMemo(() => calcSectionTotals(businessGroupedBudgets), [calcSectionTotals, businessGroupedBudgets]);
 
   // Total income & expenses
   const totalIncomeBudget = sectionTotals.income.budget;
