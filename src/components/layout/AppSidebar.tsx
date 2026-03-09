@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Landmark, ArrowLeftRight, PiggyBank, BarChart3, Tags, Target,
   Settings, Bot, LogOut, ChevronLeft, ChevronRight, Zap, Sun, Moon, TrendingDown,
   TrendingUp, Calculator, Scale, Map, Heart, Home, Wallet, RepeatIcon, GraduationCap,
-  CreditCard, LineChart,
+  CreditCard, LineChart, Sparkles,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
