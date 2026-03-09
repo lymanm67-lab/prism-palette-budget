@@ -195,7 +195,7 @@ serve(async (req) => {
   } catch (e: any) {
     console.error("weekly-digest error:", e);
     return new Response(
-      JSON.stringify({ error: e.message }),
+      JSON.stringify({ error: "An unexpected error occurred. Please try again." }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
