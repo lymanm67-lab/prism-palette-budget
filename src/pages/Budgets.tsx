@@ -305,7 +305,7 @@ const Budgets = () => {
 
   const openCreate = () => {
     setEditingBudget(null);
-    setForm({ category_id: '', planned_amount: '', rollover: false, budgetKind: 'expense', group_id: '', expense_type: 'flexible', expense_type: 'flexible' });
+    setForm({ category_id: '', planned_amount: '', rollover: false, budgetKind: 'expense', group_id: '', expense_type: 'flexible', expense_type: 'flexible', expense_type: 'flexible' });
     setDialogOpen(true);
   };
 
@@ -316,7 +316,7 @@ const Budgets = () => {
     const group = cat ? (categoryGroups as any[])?.find((g: any) => g.id === cat.group_id) : null;
     const expType = group?.expense_type || 'flexible';
     setEditingBudget({ category_id: categoryId, planned_amount: String(currentAmount), rollover });
-    setForm({ category_id: categoryId, planned_amount: String(currentAmount), rollover, budgetKind: expType === 'income' ? 'income' : 'expense', gro, expense_type: (expType === 'income' ? 'flexible' : expType) as 'fixed' | 'flexible' | 'non_monthly'up_id: cat?.group_id || '' });
+    setForm({ category_id: categoryId, planned_amount: String(currentAmount), rollover, budgetKind: expType === 'income' ?, expense_type: (expType === 'income' ? 'flexible' : expType) as 'fixed' | 'flexible' | 'non_monthly' 'income' : 'expense', gro, expense_type: (expType === 'income' ? 'flexible' : expType) as 'fixed' | 'flexible' | 'non_monthly'up_id: cat?.group_id || '' });
     setDialogOpen(true);
   };
 
@@ -768,7 +768,7 @@ const Budgets = () => {
                           <span className="text-xs sm:text-sm text-muted-foreground tabular-nums">
                             {spent > 0 ? formatCurrency(spent) : received > 0 ? formatCurrency(received) : '—'}
                           </span>
-                          <Button variant="ghost" size="sm" className="h-7 text-xs sm:opacity-0 sm:group-hover:opacity-100" onClick={() => { setForm({ category_id: c.id, planned_amount: '', rollover: false, budgetKind: 'expense', group_id: c.group_id }); setEditingBudget(null); setDialogOpen(true); }}>
+              const grp = (categoryGroups as any[])?.find((g: any) => g.id === c.group_id); setForm({ category_id: c.id, planned_amount: '', rollover: false, budgetKind: 'expense', group_id: c.group_id, expense_type: (grp?.expense_type || 'flexible') as 'fixed' | 'flexible' | 'non_monthly' onClick={() => { setForm({ category_id: c.id, planned_amount: '', rollover: false, budgetKind: 'expense', group_id: c.group_id }); setEditingBudget(null); setDialogOpen(true); }}>
                             <Plus className="h-3 w-3 mr-1" /> Budget
                           </Button>
                         </div>
