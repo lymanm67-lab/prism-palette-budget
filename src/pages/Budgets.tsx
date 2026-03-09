@@ -695,7 +695,7 @@ const Budgets = () => {
                           <span className="text-xs sm:text-sm text-muted-foreground tabular-nums">
                             {spent > 0 ? formatCurrency(spent) : received > 0 ? formatCurrency(received) : '—'}
                           </span>
-                          <Button variant="ghost" size="sm" className="h-7 text-xs sm:opacity-0 sm:group-hover:opacity-100" onClick={() => { setForm({ category_id: c.id, planned_amount: '', rollover: false, budgetKind: 'expense', group_id: c.group_id }); setEditingBudget(null); setDialogOpen(true); }}>
+                          <Button variant="ghost" size="sm" className="h-7 text-xs sm:opacity-0 sm:group-hover:opacity-100" onClick={() => { setForm({ category_id: c.id, planned_amount: '', rollover: false, budgetKind: 'expense', group_id: c.group_idue); }}>
                             <Plus className="h-3 w-3 mr-1" /> Budget
                           </Button>
                         </div>
@@ -1049,9 +1049,7 @@ const Budgets = () => {
                 setQuickAddForm({ name: '', group_id: '', color: '#7c5cf5' });
                 // Open budget dialog with the new category pre-selected
                 setEditingBudget(null);
-                setForm({ category_id: n, budgetKind: 'expense', group_id: quickAddForm.group_idewCat.id, planned_amount: '', rollover: false });
-                setDialogOpen(true);
-              }}
+                setForm({ category_id: n, budgetKind: 'expense', group_id: quickAddFoewCat.id, planned_amount: '', rollover: false, budgetKind: 'expense', group_id: quickAddForm.group_id           }}
               disabled={!quickAddForm.name || !quickAddForm.group_id || createCategory.isPending}
               className="w-full"
             >
