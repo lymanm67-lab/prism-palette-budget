@@ -69,6 +69,14 @@ const AppSidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
   const { theme, setTheme } = useTheme();
   const isDark = theme === 'dark';
+  const badges = useSidebarBadges();
+
+  // Map routes to badge counts
+  const badgeMap: Record<string, number> = {
+    '/recurring': badges.recurring,
+    '/transactions': badges.transactions,
+    '/budgets': badges.budgets,
+  };
 
   return (
     <aside
