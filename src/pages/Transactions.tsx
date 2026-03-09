@@ -1525,18 +1525,51 @@ const Transactions = () => {
                     const isUncategorized = !cat && !isTransfer;
 
                     return (
-                      <TransactionRow
+                      <div
                         key={txn.id}
-                        txn={txn}
-                        isIncome={isIncome}
-                        isTransfer={isTransfer}
-                        isDupe={isDupe}
-                        isUncategorized={isUncategorized}
-                        isSelected={selected.has(txn.id)}
-                        isMultiSelectMode={selected.size > 0}
-                        onSelect={() => toggleSelect(txn.id)}
-                        onOpen={() => openEditTxn(txn)}
+                        className={cn(
+                          "flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 hover:bg-muted/30 transition-colors group cursor-pointer",
+                          isDupe && "bg-amber-50/50 dark:bg-amber-950/10",
+                          !isDupe && isUncategorized && "bg-rose-50/60 dark:bg-rose-950/15 border-l-2 border-l-rose-400 dark:border-l-rose-500",
+                          !isDupe && !isUncategorized && isTransfer && "bg-blue-50/50 dark:bg-blue-950/10",
+                          !isDupe && !isUncategorized && !isTransfer && isIncome && "bg-emerald-50/40 dark:bg-emerald-950/10",
+                          !isDupe && !isUncategorized && !isIncome && !isTransfer && "bg-background",
+                          selected.has(txn.id) && "ring-1 ring-inset ring-primary/30 bg-primary/5"
+                        )}
+                        onClick={() => {
+                          if (selected.size > 0) {
+                            toggleSelect(txn.id);
+                          } else {
+                            openEditTxn(txn);
+                          }
+                        }}
+                        onTouchStart={(e) => {
+                          const timer = setTimeout(() => {
+                            e.currentTarget.dataset.longPressed = 'true';
+                            if (selected.size === 0) {
+                              toggleSelect(txn.id);
+                            }
+                          }, 500);
+                          e.currentTarget.dataset.timer = String(timer);
+                          e.currentTarget.dataset.longPressed = 'false';
+                        }}
+                        onTouchEnd={(e) => {
+                          clearTimeout(Number(e.currentTarget.dataset.timer));
+                          if (e.currentTarget.dataset.longPressed === 'true') {
+                            e.preventDefault();
+                          }
+                        }}
+                        onTouchMove={(e) => {
+                          clearTimeout(Number(e.currentTarget.dataset.timer));
+                        }}
                       >
+                        {/* Checkbox — always on desktop, on mobile only in multi-select mode */}
+                        <Checkbox
+                          checked={selected.has(txn.id)}
+                          onCheckedChange={() => toggleSelect(txn.id)}
+                          onClick={(e) => e.stopPropagation()}
+                          className={cn("shrink-0 h-4 w-4", selected.size > 0 ? "flex" : "hidden sm:flex")}
+                        />
 
                         {/* Merchant logo */}
                         <MerchantIcon merchant={txn.merchant} isIncome={isIncome} isDuplicate={isDupe} />
