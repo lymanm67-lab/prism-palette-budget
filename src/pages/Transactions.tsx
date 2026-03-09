@@ -775,10 +775,9 @@ const Transactions = () => {
           </Popover>
 
           {/* Add transaction */}
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm" className="gap-1.5 h-8"><Plus className="h-4 w-4" /> <span className="hidden sm:inline">Add</span></Button>
-            </DialogTrigger>
+          <Button size="sm" className="gap-1.5 h-8" onClick={() => setOpen(true)}>
+            <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Add</span>
+          </Button>
 
           {/* More menu — Import, Export, Page Guide */}
           <DropdownMenu>
