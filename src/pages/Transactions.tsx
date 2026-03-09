@@ -1504,7 +1504,7 @@ const Transactions = () => {
                       return next;
                     });
                   }}
-                  className="shrink-0 h-4 w-4 hidden sm:flex"
+                  className={cn("shrink-0 h-4 w-4", selected.size > 0 ? "flex" : "hidden sm:flex")}
                 />
                 <span className="text-sm font-bold text-foreground flex-1">{group.label}</span>
                 <span className={cn('text-sm font-semibold tabular-nums', group.total < 0 ? 'text-foreground' : 'text-emerald-600 dark:text-emerald-400')}>
