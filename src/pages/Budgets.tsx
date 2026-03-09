@@ -669,6 +669,16 @@ const Budgets = () => {
             {hideZeroAmounts ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             <span className="hidden sm:inline">{hideZeroAmounts ? 'Show $0' : 'Hide $0'}</span>
           </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            disabled={auditLoading}
+            onClick={handleAuditBudget}
+          >
+            {auditLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ClipboardCheck className="h-4 w-4" />}
+            <span className="hidden sm:inline">AI Audit</span>
+          </Button>
         </div>
       </div>
 
