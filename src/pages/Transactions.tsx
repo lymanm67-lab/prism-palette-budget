@@ -323,6 +323,8 @@ const Transactions = () => {
       if (filters.accountId && t.account_id !== filters.accountId) return false;
       if (filters.categoryId && t.category_id !== filters.categoryId) return false;
       // View filter
+      if (viewFilter === 'personal' && (!t.category_id || !personalCatIds.has(t.category_id))) return false;
+      if (viewFilter === 'business' && (!t.category_id || !businessCatIds.has(t.category_id))) return false;
       if (viewFilter === 'income' && t.amount <= 0) return false;
       if (viewFilter === 'expenses' && t.amount >= 0) return false;
       if (viewFilter === 'transfers' && !(t as any).is_transfer) return false;
