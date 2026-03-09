@@ -598,15 +598,16 @@ const Budgets = () => {
           {/* Expenses Section */}
           <Card className="overflow-hidden">
             <CardContent className="p-2 space-y-1">
-              <div className="flex items-center gap-3 px-3 py-1.5 text-xs font-medium text-muted-foreground border-b">
+              <div className="hidden sm:flex items-center gap-3 px-3 py-1.5 text-xs font-medium text-muted-foreground border-b">
                 <ChevronDown className="h-4 w-4 invisible" />
                 <span className="flex-1">Expenses</span>
-                <span className="hidden sm:block w-[200px]" />
+                <span className="w-[200px]" />
                 <span className="w-[90px] text-right">Budget</span>
                 <span className="w-[90px] text-right">Actual</span>
                 <span className="w-[90px] text-right">Remaining</span>
                 <div className="w-[62px]" />
               </div>
+              <div className="sm:hidden px-3 py-1.5 text-xs font-medium text-muted-foreground border-b">Expenses</div>
               {renderSection('fixed', groupedBudgets.fixed)}
               {renderSection('flexible', groupedBudgets.flexible)}
               {renderSection('non_monthly', groupedBudgets.non_monthly)}
