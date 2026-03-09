@@ -305,7 +305,7 @@ const Budgets = () => {
 
   const openCreate = () => {
     setEditingBudget(null);
-    setForm({ category_id: '', planned_amount: '', rollover: false, budgetKind: 'expense', group_id: '', expense_type: 'flexible' });
+    setForm({ category_id: '', planned_amount: '', rollover: false, budgetKind: 'expense', group_id: '', expense_type: 'flexible', expense_type: 'flexible' });
     setDialogOpen(true);
   };
 
@@ -316,7 +316,7 @@ const Budgets = () => {
     const group = cat ? (categoryGroups as any[])?.find((g: any) => g.id === cat.group_id) : null;
     const expType = group?.expense_type || 'flexible';
     setEditingBudget({ category_id: categoryId, planned_amount: String(currentAmount), rollover });
-    setForm({ category_id: categoryId, planned_amount: String(currentAmount), rollover, budgetKind: expType === 'income' ? 'income' : 'expense', group_id: cat?.group_id || '' });
+    setForm({ category_id: categoryId, planned_amount: String(currentAmount), rollover, budgetKind: expType === 'income' ? 'income' : 'expense', gro, expense_type: (expType === 'income' ? 'flexible' : expType) as 'fixed' | 'flexible' | 'non_monthly'up_id: cat?.group_id || '' });
     setDialogOpen(true);
   };
 
