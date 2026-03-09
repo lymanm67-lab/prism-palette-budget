@@ -1,9 +1,11 @@
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import AppSidebar from './AppSidebar';
 import MobileNav from './MobileNav';
 import { useIsMobile } from '@/hooks/use-mobile';
 import CommandPalette from '@/components/CommandPalette';
 import NotificationsPanel from '@/components/NotificationsPanel';
+import KeyboardShortcutsModal from '@/components/KeyboardShortcutsModal';
 
 const AppLayout = () => {
   const isMobile = useIsMobile();
