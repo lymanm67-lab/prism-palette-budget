@@ -456,7 +456,7 @@ const Reports = () => {
                             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
                         <XAxis type="number" stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={v => formatCompact(v)} />
                         <YAxis dataKey="name" type="category" stroke="hsl(var(--muted-foreground))" fontSize={12} width={85} tick={{ fill: 'hsl(var(--foreground))' }} />
-                        <Tooltip cursor={{ fill: 'transparent' }} formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} />
+                        <Tooltip cursor={{ fill: 'transparent' }} formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} itemStyle={itemStyle} />
                         <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={20}>
                           {chartData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                         </Bar>
