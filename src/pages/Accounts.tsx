@@ -311,7 +311,12 @@ const Accounts = () => {
                               <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                                 <AlertDialogAction
-                                  onClick={() => deleteAccount.mutate(acc.id)}
+                                  onClick={() => {
+                                    deleteAccount.mutate(acc.id, {
+                                      onSuccess: () => toast.success(`"${acc.name}" deleted successfully`),
+                                      onError: () => toast.error(`Failed to delete "${acc.name}"`),
+                                    });
+                                  }}
                                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                 >
                                   Delete

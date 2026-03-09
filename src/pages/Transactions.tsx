@@ -696,6 +696,21 @@ const Transactions = () => {
             <Search className="h-4 w-4" /> Search
           </Button>
 
+          {/* Quick Date Filters */}
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {[
+              { label: 'Today', fn: () => { const d = format(new Date(), 'yyyy-MM-dd'); setFilters(f => ({ ...f, dateFrom: d, dateTo: d })); } },
+              { label: '7 days', fn: () => { setFilters(f => ({ ...f, dateFrom: format(subDays(new Date(), 7), 'yyyy-MM-dd'), dateTo: format(new Date(), 'yyyy-MM-dd') })); } },
+              { label: 'This month', fn: () => { setFilters(f => ({ ...f, dateFrom: format(startOfMonth(new Date()), 'yyyy-MM-dd'), dateTo: format(endOfMonth(new Date()), 'yyyy-MM-dd') })); } },
+              { label: 'Last month', fn: () => { const lm = subMonths(new Date(), 1); setFilters(f => ({ ...f, dateFrom: format(startOfMonth(lm), 'yyyy-MM-dd'), dateTo: format(endOfMonth(lm), 'yyyy-MM-dd') })); } },
+              { label: 'This year', fn: () => { setFilters(f => ({ ...f, dateFrom: format(startOfYear(new Date()), 'yyyy-MM-dd'), dateTo: format(new Date(), 'yyyy-MM-dd') })); } },
+            ].map(qf => (
+              <Button key={qf.label} variant="ghost" size="sm" className="h-7 text-xs px-2 text-muted-foreground hover:text-foreground" onClick={qf.fn}>
+                {qf.label}
+              </Button>
+            ))}
+          </div>
+
           {/* Date filter button */}
           <Popover>
             <PopoverTrigger asChild>
