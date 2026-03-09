@@ -67,7 +67,7 @@ interface FilterState {
 
 const EMPTY_FILTERS: FilterState = { dateFrom: '', dateTo: '', amountMin: '', amountMax: '', accountId: '', categoryId: '' };
 
-type TxnViewFilter = 'all' | 'income' | 'expenses' | 'transfers' | 'duplicates' | 'uncategorized' | 'needs_review' | 'trash';
+type TxnViewFilter = 'all' | 'personal' | 'business' | 'income' | 'expenses' | 'transfers' | 'duplicates' | 'uncategorized' | 'needs_review' | 'trash';
 
 const Transactions = () => {
   const { formatCurrency } = useCurrency();
