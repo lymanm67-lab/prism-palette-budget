@@ -86,7 +86,7 @@ const Budgets = () => {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState<{ category_id: string; planned_amount: string; rollover: boolean } | null>(null);
-  const [form, setForm] = useState({ category_id: '', planned_amount: '', rollover: false, budgetKind: 'expense' as 'income' | 'expense', group_id: '' });
+  const [form, setForm] = useState({ category_id: '', planned_amount: '', rollover: false, budgetKind: 'expense' as 'income' | 'expense', group_id: '', expense_type: 'flexible' as 'fixed' | 'flexible' | 'non_monthly' });
   const [auditOpen, setAuditOpen] = useState(false);
   const [auditResult, setAuditResult] = useState<string>('');
   const [auditLoading, setAuditLoading] = useState(false);
@@ -305,7 +305,7 @@ const Budgets = () => {
 
   const openCreate = () => {
     setEditingBudget(null);
-    setForm({ category_id: '', planned_amount: '', rollover: false, budgetKind: 'expense', group_id: '' });
+    setForm({ category_id: '', planned_amount: '', rollover: false, budgetKind: 'expense', group_id: '', expense_type: 'flexible' });
     setDialogOpen(true);
   };
 
@@ -316,7 +316,8 @@ const Budgets = () => {
     const group = cat ? (categoryGroups as any[])?.find((g: any) => g.id === cat.group_id) : null;
     const expType = group?.expense_type || 'flexible';
     setEditingBudget({ category_id: categoryId, planned_amount: String(currentAmount), rollover });
-    setForm({ category_id: categoryId, planned_amount: String(currentAmount), rollover, budgetKind: expType === 'income' ? 'income' : 'expense', group_id: cat?.group_id || '' });
+    const formExpType = (expType === 'income' ? 'flexible' : expType) as 'fixed' | 'flexible' | 'non_monthly';
+    setForm({ category_id: categoryId, planned_amount: String(currentAmount), rollover, budgetKind: expType === 'income' ? 'income' : 'expense', group_id: cat?.group_id || '', expense_type: formExpType });
     setDialogOpen(true);
   };
 
@@ -768,7 +769,7 @@ const Budgets = () => {
                           <span className="text-xs sm:text-sm text-muted-foreground tabular-nums">
                             {spent > 0 ? formatCurrency(spent) : received > 0 ? formatCurrency(received) : '—'}
                           </span>
-                          <Button variant="ghost" size="sm" className="h-7 text-xs sm:opacity-0 sm:group-hover:opacity-100" onClick={() => { setForm({ category_id: c.id, planned_amount: '', rollover: false, budgetKind: 'expense', group_id: c.group_id }); setEditingBudget(null); setDialogOpen(true); }}>
+                          <Button variant="ghost" size="sm" className="h-7 text-xs sm:opacity-0 sm:group-hover:opacity-100" onClick={() => { const grp = (categoryGroups as any[])?.find((g: any) => g.id === c.group_id); const et = (grp?.expense_type || 'flexible') as 'fixed' | 'flexible' | 'non_monthly'; setForm({ category_id: c.id, planned_amount: '', rollover: false, budgetKind: 'expense', group_id: c.group_id, expense_type: et }); setEditingBudget(null); setDialogOpen(true); }}>
                             <Plus className="h-3 w-3 mr-1" /> Budget
                           </Button>
                         </div>
@@ -1038,6 +1039,21 @@ const Budgets = () => {
               </div>
             )}
 
+            {/* Expense Type Dropdown (Fixed / Flexible / Non-Monthly) */}
+            {!editingBudget && form.budgetKind === 'expense' && (
+              <div className="space-y-2">
+                <Label>Expense Type</Label>
+                <Select value={form.expense_type} onValueChange={v => setForm(f => ({ ...f, expense_type: v as 'fixed' | 'flexible' | 'non_monthly', group_id: '', category_id: '' }))}>
+                  <SelectTrigger><SelectValue placeholder="Select expense type" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="fixed">Fixed</SelectItem>
+                    <SelectItem value="flexible">Flexible</SelectItem>
+                    <SelectItem value="non_monthly">Non-Monthly</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
             {/* Group Dropdown */}
             {!editingBudget && (
               <div className="space-y-2">
@@ -1047,8 +1063,9 @@ const Budgets = () => {
                   <SelectContent>
                     {(categoryGroups as any[] || [])
                       .filter((g: any) => {
-                        const isIncome = (g.expense_type || 'flexible') === 'income';
-                        return form.budgetKind === 'income' ? isIncome : !isIncome;
+                        const gExpType = g.expense_type || 'flexible';
+                        if (form.budgetKind === 'income') return gExpType === 'income';
+                        return gExpType === form.expense_type;
                       })
                       .map((g: any) => (
                         <SelectItem key={g.id} value={g.id}>
@@ -1173,7 +1190,7 @@ const Budgets = () => {
                 setQuickAddForm({ name: '', group_id: '', color: '#7c5cf5' });
                 // Open budget dialog with the new category pre-selected
                 setEditingBudget(null);
-                setForm({ category_id: newCat.id, planned_amount: '', rollover: false, budgetKind: 'expense', group_id: quickAddForm.group_id });
+                setForm({ category_id: newCat.id, planned_amount: '', rollover: false, budgetKind: 'expense', group_id: quickAddForm.group_id, expense_type: 'flexible' });
                 setDialogOpen(true);
               }}
               disabled={!quickAddForm.name || !quickAddForm.group_id || createCategory.isPending}
