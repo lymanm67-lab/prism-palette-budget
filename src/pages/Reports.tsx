@@ -760,12 +760,12 @@ const Reports = () => {
             <CardContent>
               {topMerchants.length > 0 ? (
                 <>
-                  <ResponsiveContainer width="100%" height={Math.max(300, topMerchants.length * 40 + 40)}>
+                  <ResponsiveContainer width="100%" height={Math.max(300, topMerchants.length * 40 + 40)} className="[&_.recharts-text]:!bg-transparent [&_text]:!bg-transparent">
                     <BarChart data={topMerchants} layout="vertical" margin={{ left: 10, right: 20 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
-                      <XAxis type="number" stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={v => formatCompact(v)} />
-                      <YAxis type="category" dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={11} width={120} tick={{ fill: 'hsl(var(--foreground))', style: { background: 'transparent' } }} />
-                      <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} itemStyle={{ color: 'hsl(var(--foreground))' }} />
+                      <XAxis type="number" stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={v => formatCompact(v)} tick={{ fill: 'hsl(var(--foreground))' }} />
+                      <YAxis type="category" dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={11} width={120} tick={{ fill: 'hsl(var(--foreground))' }} />
+                      <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} itemStyle={{ color: 'hsl(var(--foreground))' }} labelStyle={{ color: 'hsl(var(--foreground))' }} />
                       <Bar dataKey="total" name="Total Spent" radius={[0, 6, 6, 0]} barSize={20}>
                         {topMerchants.map((_, i) => (
                           <Cell key={i} fill={TREND_COLORS[i % TREND_COLORS.length]} />
