@@ -345,7 +345,66 @@ const Budgets = () => {
     }
   };
 
-  // Render a budget row
+  const handleAuditBudget = useCallback(async () => {
+    if (!household?.id) return;
+    setAuditLoading(true);
+    setAuditResult('');
+    setAuditOpen(true);
+
+    try {
+      const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/budget-audit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({ household_id: household.id, month }),
+      });
+
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({ error: 'Unknown error' }));
+        setAuditResult(`**Error:** ${err.error || 'Failed to audit budget'}`);
+        setAuditLoading(false);
+        return;
+      }
+
+      const reader = resp.body?.getReader();
+      if (!reader) { setAuditLoading(false); return; }
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let fullText = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+
+        let newlineIdx: number;
+        while ((newlineIdx = buffer.indexOf('\n')) !== -1) {
+          let line = buffer.slice(0, newlineIdx);
+          buffer = buffer.slice(newlineIdx + 1);
+          if (line.endsWith('\r')) line = line.slice(0, -1);
+          if (!line.startsWith('data: ')) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === '[DONE]') break;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) {
+              fullText += content;
+              setAuditResult(fullText);
+            }
+          } catch { /* partial json, ignore */ }
+        }
+      }
+    } catch (e) {
+      setAuditResult('**Error:** Failed to connect to AI service.');
+    } finally {
+      setAuditLoading(false);
+    }
+  }, [household?.id, month]);
+
+
   const renderBudgetRow = (b: BudgetRow, type: ExpenseType) => {
     const isIncome = type === 'income';
     const actual = isIncome ? b.received : b.spent;
