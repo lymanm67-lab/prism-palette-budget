@@ -325,34 +325,59 @@ const Budgets = () => {
     const overBudget = remaining < 0;
 
     return (
-      <div key={b.id} className="group flex items-center gap-3 py-2.5 px-3 hover:bg-muted/30 rounded-lg transition-colors">
-        <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: b.categories?.color || 'hsl(var(--primary))' }} />
-        <div className="flex-1 min-w-0 flex items-center gap-1.5">
-          <span className="text-sm font-medium truncate">{b.categories?.name || 'Unknown'}</span>
+      <div key={b.id} className="group py-2.5 px-3 hover:bg-muted/30 rounded-lg transition-colors">
+        {/* Mobile: stacked layout */}
+        <div className="flex items-center gap-2 sm:hidden">
+          <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: b.categories?.color || 'hsl(var(--primary))' }} />
+          <span className="flex-1 text-sm font-medium truncate">{b.categories?.name || 'Unknown'}</span>
           {b.rollover && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium shrink-0">↻</span>}
-          {rolloverAmt > 0 && <span className="text-[10px] text-emerald-600 dark:text-emerald-400 shrink-0">+{formatCurrency(rolloverAmt)}</span>}
-        </div>
-        <div className="hidden sm:block w-[200px]">
-          <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
-            <div
-              className={cn('h-full rounded-full transition-all duration-500', overBudget ? 'bg-rose-500' : BAR_COLORS[type])}
-              style={{ width: `${pct}%` }}
-            />
-          </div>
-        </div>
-        <span className="w-[90px] text-right text-sm tabular-nums">{formatCurrency(effectiveBudget)}</span>
-        <span className="w-[90px] text-right text-sm tabular-nums text-muted-foreground">{formatCurrency(actual)}</span>
-        <span className={cn('w-[90px] text-right text-sm font-medium tabular-nums', overBudget ? 'text-rose-600 dark:text-rose-400' : isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground')}>
-          {formatCurrency(Math.abs(remaining))}
-          {overBudget && <span className="text-[10px] ml-0.5">over</span>}
-        </span>
-        <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(b.category_id, b.planned_amount)}>
             <Pencil className="h-3 w-3" />
           </Button>
           <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => setDeleteTarget({ id: b.id, name: b.categories?.name || 'Budget' })}>
             <Trash2 className="h-3 w-3" />
           </Button>
+        </div>
+        <div className="sm:hidden mt-1.5 ml-5">
+          <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden mb-1.5">
+            <div className={cn('h-full rounded-full transition-all duration-500', overBudget ? 'bg-rose-500' : BAR_COLORS[type])} style={{ width: `${pct}%` }} />
+          </div>
+          <div className="flex justify-between text-xs text-muted-foreground">
+            <span>{formatCurrency(effectiveBudget)} budget</span>
+            <span>{formatCurrency(actual)} actual</span>
+            <span className={cn('font-medium', overBudget ? 'text-rose-600 dark:text-rose-400' : isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground')}>
+              {formatCurrency(Math.abs(remaining))}{overBudget ? ' over' : ' left'}
+            </span>
+          </div>
+        </div>
+
+        {/* Desktop: table row layout */}
+        <div className="hidden sm:flex items-center gap-3">
+          <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: b.categories?.color || 'hsl(var(--primary))' }} />
+          <div className="flex-1 min-w-0 flex items-center gap-1.5">
+            <span className="text-sm font-medium truncate">{b.categories?.name || 'Unknown'}</span>
+            {b.rollover && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium shrink-0">↻</span>}
+            {rolloverAmt > 0 && <span className="text-[10px] text-emerald-600 dark:text-emerald-400 shrink-0">+{formatCurrency(rolloverAmt)}</span>}
+          </div>
+          <div className="w-[200px]">
+            <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+              <div className={cn('h-full rounded-full transition-all duration-500', overBudget ? 'bg-rose-500' : BAR_COLORS[type])} style={{ width: `${pct}%` }} />
+            </div>
+          </div>
+          <span className="w-[90px] text-right text-sm tabular-nums">{formatCurrency(effectiveBudget)}</span>
+          <span className="w-[90px] text-right text-sm tabular-nums text-muted-foreground">{formatCurrency(actual)}</span>
+          <span className={cn('w-[90px] text-right text-sm font-medium tabular-nums', overBudget ? 'text-rose-600 dark:text-rose-400' : isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground')}>
+            {formatCurrency(Math.abs(remaining))}
+            {overBudget && <span className="text-[10px] ml-0.5">over</span>}
+          </span>
+          <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(b.category_id, b.planned_amount)}>
+              <Pencil className="h-3 w-3" />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => setDeleteTarget({ id: b.id, name: b.categories?.name || 'Budget' })}>
+              <Trash2 className="h-3 w-3" />
+            </Button>
+          </div>
         </div>
       </div>
     );
