@@ -1,9 +1,10 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, ArrowLeftRight, PiggyBank, BarChart3, Menu, X } from 'lucide-react';
+import { LayoutDashboard, ArrowLeftRight, PiggyBank, BarChart3, Menu } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import AppSidebar from './AppSidebar';
+import { useSidebarBadges } from '@/hooks/use-sidebar-badges';
 
 const BOTTOM_NAV = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Home' },
@@ -15,6 +16,12 @@ const BOTTOM_NAV = [
 const MobileNav = () => {
   const location = useLocation();
   const [open, setOpen] = useState(false);
+  const badges = useSidebarBadges();
+
+  const badgeMap: Record<string, number> = {
+    '/transactions': badges.transactions,
+    '/budgets': badges.budgets,
+  };
 
   return (
     <>
@@ -41,17 +48,25 @@ const MobileNav = () => {
         <div className="flex items-center justify-around h-16 px-2">
           {BOTTOM_NAV.map((item) => {
             const isActive = location.pathname === item.to;
+            const badgeCount = badgeMap[item.to] ?? 0;
             return (
               <NavLink
                 key={item.to}
                 to={item.to}
                 className={cn(
-                  'flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-medium transition-colors min-w-[60px]',
+                  'relative flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-medium transition-colors min-w-[60px]',
                   isActive ? 'text-primary' : 'text-muted-foreground'
                 )}
                 aria-current={isActive ? 'page' : undefined}
               >
-                <item.icon className={cn('h-5 w-5', isActive && 'text-primary')} />
+                <div className="relative">
+                  <item.icon className={cn('h-5 w-5', isActive && 'text-primary')} />
+                  {badgeCount > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[9px] font-bold text-destructive-foreground">
+                      {badgeCount > 99 ? '99+' : badgeCount}
+                    </span>
+                  )}
+                </div>
                 <span>{item.label}</span>
                 {isActive && <div className="h-1 w-6 rounded-full bg-primary mt-0.5" />}
               </NavLink>
