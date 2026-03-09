@@ -444,7 +444,7 @@ const Reports = () => {
                                   setShowOtherBreakdown(!showOtherBreakdown);
                                 }
                               }}
-                              className={chartData.some(d => d.name === 'Other') ? "[&_.recharts-pie-sector]:cursor-pointer" : ""}
+                              className={chartData.some(d => d.name === 'Other') ? "[&_.recharts-pie-sector:last-child]:cursor-pointer" : ""}
                             >
                               {chartData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                             </Pie>
