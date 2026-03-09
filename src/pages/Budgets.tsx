@@ -212,7 +212,7 @@ const Budgets = () => {
   const totalExpenseActual = sectionTotals.fixed.actual + sectionTotals.flexible.actual + sectionTotals.non_monthly.actual;
   const totalExpenseRemaining = totalExpenseBudget - totalExpenseActual;
 
-  const leftToBudget = totalIncomeActual - totalExpenseBudget;
+  const unallocated = totalIncomeBudget - totalExpenseBudget;
 
   // Unbudgeted categories
   const budgetedCategoryIds = new Set(budgetItems.map(b => b.category_id));
@@ -735,18 +735,18 @@ const Budgets = () => {
             <p className="text-xs text-muted-foreground mt-0.5">{formatCurrency(totalExpenseActual)} spent</p>
           </CardContent>
         </Card>
-        <Card className={cn("border-l-4", totalExpenseRemaining >= 0 ? "border-l-emerald-500" : "border-l-rose-500")}>
+        <Card className={cn("border-l-4", unallocated >= 0 ? "border-l-emerald-500" : "border-l-amber-500")}>
           <CardContent className="p-3 sm:p-4">
-            <p className="text-[11px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">Remaining</p>
-            <p className={cn("text-lg sm:text-xl font-bold font-display tabular-nums mt-1", totalExpenseRemaining < 0 ? "text-rose-600 dark:text-rose-400" : "text-foreground")}>{formatCurrency(Math.abs(totalExpenseRemaining))}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">{totalExpenseRemaining < 0 ? 'over budget' : 'under budget'}</p>
+            <p className="text-[11px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">Unallocated</p>
+            <p className={cn("text-lg sm:text-xl font-bold font-display tabular-nums mt-1", unallocated < 0 ? "text-amber-600 dark:text-amber-400" : unallocated === 0 ? "text-emerald-600 dark:text-emerald-400" : "text-foreground")}>{formatCurrency(Math.abs(unallocated))}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{unallocated < 0 ? 'over-allocated' : unallocated === 0 ? 'fully allocated ✓' : 'to assign'}</p>
           </CardContent>
         </Card>
-        <Card className={cn("border-l-4", leftToBudget >= 0 ? "border-l-emerald-500" : "border-l-amber-500")}>
+        <Card className={cn("border-l-4", totalExpenseRemaining >= 0 ? "border-l-emerald-500" : "border-l-rose-500")}>
           <CardContent className="p-3 sm:p-4">
-            <p className="text-[11px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">Left to Budget</p>
-            <p className={cn("text-lg sm:text-xl font-bold font-display tabular-nums mt-1", leftToBudget < 0 ? "text-amber-600 dark:text-amber-400" : "text-emerald-600 dark:text-emerald-400")}>{formatCurrency(Math.abs(leftToBudget))}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">{leftToBudget < 0 ? 'over-budgeted' : 'available'}</p>
+            <p className="text-[11px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">Under / Over</p>
+            <p className={cn("text-lg sm:text-xl font-bold font-display tabular-nums mt-1", totalExpenseRemaining < 0 ? "text-rose-600 dark:text-rose-400" : "text-foreground")}>{formatCurrency(Math.abs(totalExpenseRemaining))}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{totalExpenseRemaining < 0 ? 'over budget' : 'under budget'}</p>
           </CardContent>
         </Card>
       </div>
@@ -852,13 +852,13 @@ const Budgets = () => {
 
         {/* Right sidebar - Budget Summary */}
         <div className="space-y-4">
-          <Card className={cn('border-2', leftToBudget < 0 ? 'border-rose-500/30 bg-rose-500/5' : leftToBudget === 0 ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-primary/20')}>
+          <Card className={cn('border-2', unallocated < 0 ? 'border-rose-500/30 bg-rose-500/5' : unallocated === 0 ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-primary/20')}>
             <CardContent className="p-5 text-center">
-              <p className={cn('text-3xl font-bold font-display', leftToBudget < 0 ? 'text-rose-600 dark:text-rose-400' : leftToBudget === 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-primary')}>
-                {leftToBudget < 0 ? '-' : ''}{formatCurrency(Math.abs(leftToBudget))}
+              <p className={cn('text-3xl font-bold font-display', unallocated < 0 ? 'text-rose-600 dark:text-rose-400' : unallocated === 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-primary')}>
+                {unallocated < 0 ? '-' : ''}{formatCurrency(Math.abs(unallocated))}
               </p>
               <p className="text-sm text-muted-foreground mt-1">
-                {leftToBudget === 0 ? '✅ Every dollar assigned' : leftToBudget > 0 ? 'Left to budget' : 'Over-budgeted'}
+                {unallocated === 0 ? '✅ Every dollar assigned' : unallocated > 0 ? 'Left to assign' : 'Over-allocated'}
               </p>
             </CardContent>
           </Card>
