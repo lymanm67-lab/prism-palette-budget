@@ -1192,6 +1192,13 @@ const Transactions = () => {
                 {autoCatLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
                 AI Categorize
               </Button>
+              <Button size="sm" variant="outline" onClick={() => {
+                const selectedTxns = filtered.filter(t => selected.has(t.id));
+                exportTransactionsToCsv(selectedTxns as any, `transactions-export-${selected.size}.csv`);
+                toast.success(`Exported ${selected.size} transactions`);
+              }} className="gap-1 h-8">
+                <Download className="h-3.5 w-3.5" /> Export
+              </Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button size="sm" variant="destructive" className="gap-1 h-8">
