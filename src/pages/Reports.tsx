@@ -765,7 +765,7 @@ const Reports = () => {
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
                       <XAxis type="number" stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={v => formatCompact(v)} />
                       <YAxis type="category" dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={11} width={120} />
-                      <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} />
+                      <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} itemStyle={{ color: 'hsl(var(--foreground))' }} />
                       <Bar dataKey="total" name="Total Spent" radius={[0, 6, 6, 0]} barSize={20}>
                         {topMerchants.map((_, i) => (
                           <Cell key={i} fill={TREND_COLORS[i % TREND_COLORS.length]} />
