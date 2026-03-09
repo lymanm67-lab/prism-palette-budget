@@ -631,10 +631,35 @@ const Transactions = () => {
   };
 
   if (isLoading) return (
-    <div className="flex items-center justify-center p-20">
-      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    <div className="p-8">
+      <div className="mb-6 flex items-center justify-between">
+        <div className="h-8 w-48 bg-muted animate-pulse rounded-lg" />
+        <div className="flex gap-2">
+          <div className="h-9 w-24 bg-muted animate-pulse rounded-lg" />
+          <div className="h-9 w-24 bg-muted animate-pulse rounded-lg" />
+          <div className="h-9 w-32 bg-muted animate-pulse rounded-lg" />
+        </div>
+      </div>
+      <SkeletonTable rows={8} />
     </div>
   );
+
+  if (!filtered.length && !search && activeFilterCount === 0 && viewFilter === 'all') {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h1 className="font-display text-2xl font-bold">Transactions</h1>
+        </div>
+        <EmptyState
+          icon={Receipt}
+          title="No transactions yet"
+          description="Start tracking your finances by adding your first transaction, importing a CSV file, or connecting your bank via Plaid."
+          actionLabel="Add Transaction"
+          onAction={() => setOpen(true)}
+        />
+      </div>
+    );
+  }
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">

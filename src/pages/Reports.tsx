@@ -271,6 +271,17 @@ const Reports = () => {
     }
   }, [activeTab, startDate, endDate, spendingData, budgetVsActual, monthlyCashflow, netWorthTrend, transactions, topMerchants]);
 
+  if (isLoading) return (
+    <div className="p-8 space-y-6">
+      <div className="h-10 w-full max-w-md bg-muted animate-pulse rounded-lg mb-6" />
+      <div className="grid gap-6 md:grid-cols-2">
+        <div className="h-96 bg-muted animate-pulse rounded-lg" />
+        <div className="h-96 bg-muted animate-pulse rounded-lg" />
+      </div>
+      <div className="h-96 bg-muted animate-pulse rounded-lg" />
+    </div>
+  );
+
   if (isLoading) return <div className="flex items-center justify-center p-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
 
   return (

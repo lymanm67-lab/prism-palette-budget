@@ -148,6 +148,22 @@ const SpendingTrends = () => {
   const prevMonthTotal = monthlyData.length > 1 ? (monthlyData[monthlyData.length - 2].total as number) || 0 : 0;
   const momTotal = prevMonthTotal > 0 ? ((lastMonthTotal - prevMonthTotal) / prevMonthTotal) * 100 : 0;
 
+  if (isLoading) return (
+    <div className="p-8 space-y-6">
+      <div className="mb-6">
+        <div className="h-8 w-64 bg-muted animate-pulse rounded-lg mb-2" />
+        <div className="h-4 w-96 bg-muted/60 animate-pulse rounded" />
+      </div>
+      <div className="grid gap-6 md:grid-cols-3">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="h-24 bg-muted animate-pulse rounded-lg" />
+        ))}
+      </div>
+      <div className="h-[400px] bg-muted animate-pulse rounded-lg" />
+      <div className="h-[400px] bg-muted animate-pulse rounded-lg" />
+    </div>
+  );
+
   if (isLoading) return <div className="flex items-center justify-center p-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
 
   return (
