@@ -690,14 +690,15 @@ const Transactions = () => {
             ['Mar 1', 'Rent Payment', 'Rent/Mortgage', '-$1,800.00'],
           ]}
         />
-        <div className="flex items-center gap-2">
+      </div>
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
           {/* Search button */}
-          <Button variant="outline" size="sm" className="gap-2" onClick={() => setSearchOpen(!searchOpen)}>
-            <Search className="h-4 w-4" /> Search
+          <Button variant="outline" size="sm" className="gap-1.5 h-8" onClick={() => setSearchOpen(!searchOpen)}>
+            <Search className="h-4 w-4" /> <span className="hidden sm:inline">Search</span>
           </Button>
 
-          {/* Quick Date Filters */}
-          <div className="flex items-center gap-1.5 flex-wrap">
+          {/* Quick Date Filters - hidden on mobile */}
+          <div className="hidden md:flex items-center gap-1 flex-wrap">
             {[
               { label: 'Today', fn: () => { const d = format(new Date(), 'yyyy-MM-dd'); setFilters(f => ({ ...f, dateFrom: d, dateTo: d })); } },
               { label: '7 days', fn: () => { setFilters(f => ({ ...f, dateFrom: format(subDays(new Date(), 7), 'yyyy-MM-dd'), dateTo: format(new Date(), 'yyyy-MM-dd') })); } },
@@ -714,8 +715,8 @@ const Transactions = () => {
           {/* Date filter button */}
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-2">
-                <CalendarIcon className="h-4 w-4" /> Date
+              <Button variant="outline" size="sm" className="gap-1.5 h-8">
+                <CalendarIcon className="h-4 w-4" /> <span className="hidden sm:inline">Date</span>
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-64 space-y-3" align="end">
@@ -741,8 +742,8 @@ const Transactions = () => {
           {/* Filters button */}
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-2 relative">
-                <SlidersHorizontal className="h-4 w-4" /> Filters
+              <Button variant="outline" size="sm" className="gap-1.5 h-8 relative">
+                <SlidersHorizontal className="h-4 w-4" /> <span className="hidden sm:inline">Filters</span>
                 {activeFilterCount > 0 && (
                   <span className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-primary text-primary-foreground text-[10px] flex items-center justify-center font-bold">
                     {activeFilterCount}
@@ -791,28 +792,28 @@ const Transactions = () => {
           </Popover>
 
           {/* Import CSV button */}
-          <Button variant="outline" size="sm" className="gap-2" onClick={() => setCsvOpen(true)}>
-            <Upload className="h-4 w-4" /> Import
+          <Button variant="outline" size="sm" className="gap-1.5 h-8" onClick={() => setCsvOpen(true)}>
+            <Upload className="h-4 w-4" /> <span className="hidden sm:inline">Import</span>
           </Button>
 
           {/* Export CSV button */}
           <Button 
             variant="outline" 
             size="sm" 
-            className="gap-2" 
+            className="gap-1.5 h-8" 
             onClick={() => {
               exportTransactionsToCsv(filtered as any, `transactions-${new Date().toISOString().split('T')[0]}.csv`);
               toast.success(`Exported ${filtered.length} transactions to CSV`);
             }}
             disabled={filtered.length === 0}
           >
-            <Download className="h-4 w-4" /> Export
+            <Download className="h-4 w-4" /> <span className="hidden sm:inline">Export</span>
           </Button>
 
           {/* Add transaction button */}
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button size="sm" className="gap-2"><Plus className="h-4 w-4" /> Add transaction</Button>
+              <Button size="sm" className="gap-1.5 h-8"><Plus className="h-4 w-4" /> <span className="hidden sm:inline">Add transaction</span></Button>
             </DialogTrigger>
             <DialogContent className="max-h-[90vh] overflow-y-auto">
               <DialogHeader><DialogTitle className="font-display">Add Transaction</DialogTitle></DialogHeader>
