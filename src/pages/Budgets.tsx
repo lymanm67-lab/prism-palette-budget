@@ -643,18 +643,15 @@ const Budgets = () => {
                       const spent = spentByCategory[c.id] || 0;
                       const received = receivedByCategory[c.id] || 0;
                       return (
-                        <div key={c.id} className="flex items-center gap-3 py-2 px-3 hover:bg-muted/30 rounded-lg transition-colors group">
+                        <div key={c.id} className="flex items-center gap-2 sm:gap-3 py-2 px-3 hover:bg-muted/30 rounded-lg transition-colors group">
                           <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: c.color }} />
-                          <span className="flex-1 text-sm text-muted-foreground">{c.name}</span>
-                          <span className="hidden sm:block w-[200px]" />
-                          <span className="w-[90px] text-right text-sm text-muted-foreground">—</span>
-                          <span className="w-[90px] text-right text-sm tabular-nums text-muted-foreground">{spent > 0 ? formatCurrency(spent) : received > 0 ? formatCurrency(received) : '—'}</span>
-                          <span className="w-[90px]" />
-                          <div className="w-[62px] flex justify-end">
-                            <Button variant="ghost" size="sm" className="h-7 text-xs opacity-0 group-hover:opacity-100" onClick={() => { setForm({ category_id: c.id, planned_amount: '', rollover: false }); setEditingBudget(null); setDialogOpen(true); }}>
-                              <Plus className="h-3 w-3 mr-1" /> Budget
-                            </Button>
-                          </div>
+                          <span className="flex-1 text-sm text-muted-foreground truncate">{c.name}</span>
+                          <span className="text-xs sm:text-sm text-muted-foreground tabular-nums">
+                            {spent > 0 ? formatCurrency(spent) : received > 0 ? formatCurrency(received) : '—'}
+                          </span>
+                          <Button variant="ghost" size="sm" className="h-7 text-xs sm:opacity-0 sm:group-hover:opacity-100" onClick={() => { setForm({ category_id: c.id, planned_amount: '', rollover: false }); setEditingBudget(null); setDialogOpen(true); }}>
+                            <Plus className="h-3 w-3 mr-1" /> Budget
+                          </Button>
                         </div>
                       );
                     })}
