@@ -50,6 +50,7 @@ const Reports = () => {
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('spending');
   const [reportMode, setReportMode] = useState<'personal' | 'business'>('personal');
+  const [spendingChartType, setSpendingChartType] = useState<'pie' | 'bar'>('pie');
   const reportRef = useRef<HTMLDivElement>(null);
 
   const startDate = format(dateRange.from, 'yyyy-MM-dd');
@@ -409,10 +410,16 @@ const Reports = () => {
         <TabsContent value="spending">
           <div className="grid gap-6 lg:grid-cols-2">
             <Card>
-              <CardHeader><CardTitle className="font-display">Spending by Category</CardTitle></CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="font-display">Spending by Category</CardTitle>
+                <div className="flex items-center gap-1 rounded-md border p-0.5">
+                  <button onClick={() => setSpendingChartType('pie')} className={`px-2 py-1 text-xs rounded-sm transition-colors ${spendingChartType === 'pie' ? 'bg-muted font-medium' : 'text-muted-foreground hover:text-foreground'}`}>Pie</button>
+                  <button onClick={() => setSpendingChartType('bar')} className={`px-2 py-1 text-xs rounded-sm transition-colors ${spendingChartType === 'bar' ? 'bg-muted font-medium' : 'text-muted-foreground hover:text-foreground'}`}>Bar</button>
+                </div>
+              </CardHeader>
               <CardContent>
                 {spendingData && spendingData.length > 0 ? (() => {
-                  const TOP_N = 6;
+                  const TOP_N = spendingChartType === 'pie' ? 6 : 10;
                   const top = spendingData.slice(0, TOP_N);
                   const rest = spendingData.slice(TOP_N);
                   const chartData = rest.length > 0
@@ -420,13 +427,25 @@ const Reports = () => {
                     : top;
                   return (
                   <ResponsiveContainer width="100%" height={340}>
-                    <PieChart>
-                      <Pie data={chartData} cx="50%" cy="50%" innerRadius={65} outerRadius={105} paddingAngle={2} dataKey="value">
-                        {chartData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
-                      </Pie>
-                      <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} />
-                      <Legend iconType="circle" iconSize={10} formatter={(value: string) => <span className="text-sm text-foreground">{value}</span>} />
-                    </PieChart>
+                    {spendingChartType === 'pie' ? (
+                      <PieChart>
+                        <Pie data={chartData} cx="50%" cy="50%" innerRadius={65} outerRadius={105} paddingAngle={2} dataKey="value">
+                          {chartData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+                        </Pie>
+                        <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} />
+                        <Legend iconType="circle" iconSize={10} formatter={(value: string) => <span className="text-sm text-foreground">{value}</span>} />
+                      </PieChart>
+                    ) : (
+                      <BarChart data={chartData} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
+                        <XAxis type="number" stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={v => formatCompact(v)} />
+                        <YAxis dataKey="name" type="category" stroke="hsl(var(--muted-foreground))" fontSize={12} width={85} tick={{ fill: 'hsl(var(--foreground))' }} />
+                        <Tooltip cursor={{ fill: 'transparent' }} formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} />
+                        <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={20}>
+                          {chartData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+                        </Bar>
+                      </BarChart>
+                    )}
                   </ResponsiveContainer>);
                 })() : (
                   <p className="py-10 text-center text-muted-foreground">No spending data in this period.</p>
