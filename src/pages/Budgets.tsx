@@ -767,8 +767,9 @@ const Budgets = () => {
                           <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: c.color }} />
                           <span className="flex-1 text-sm text-muted-foreground truncate">{c.name}</span>
                           <span className="text-xs sm:text-sm text-muted-foreground tabular-nums">
-                            {spent const grp = (categoryGroups as any[])?.find((g: any) => g.id === c.group_id); setForm({ category_id: c.id, planned_amount: '', rollover: false, budgetKind: 'expense', group_id: c.group_id, expense_type: (grp?.expense_type || 'flexible') as 'fixed' | 'flexible' | 'non_monthly'an>
-              const grp = (categoryGroups as any[])?.find((g: any) => g.id === c.group_id); setForm({ category_id: c.id, planned_amount: '', rollover: false, budgetKind: 'expense', group_id: c.group_id, expense_type: (grp?.expense_type || 'flexible') as 'fixed' | 'flexible' | 'non_monthly' onClick={() => { setForm({ category_id: c.id, planned_amount: '', rollover: false, budgetKind: 'expense', group_id: c.group_id }); setEditingBudget(null); setDialogOpen(true); }}>
+                            {spent > 0 ? formatCurrency(spent) : received > 0 ? formatCurrency(received) : '—'}
+                          </span>
+                          <Button variant="ghost" size="sm" className="h-7 text-xs sm:opacity-0 sm:group-hover:opacity-100" onClick={() => { const grp = (categoryGroups as any[])?.find((g: any) => g.id === c.group_id); const et = (grp?.expense_type || 'flexible') as 'fixed' | 'flexible' | 'non_monthly'; setForm({ category_id: c.id, planned_amount: '', rollover: false, budgetKind: 'expense', group_id: c.group_id, expense_type: et }); setEditingBudget(null); setDialogOpen(true); }}>
                             <Plus className="h-3 w-3 mr-1" /> Budget
                           </Button>
                         </div>
