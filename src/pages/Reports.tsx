@@ -411,17 +411,24 @@ const Reports = () => {
             <Card>
               <CardHeader><CardTitle className="font-display">Spending by Category</CardTitle></CardHeader>
               <CardContent>
-                {spendingData && spendingData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={300}>
+                {spendingData && spendingData.length > 0 ? (() => {
+                  const TOP_N = 6;
+                  const top = spendingData.slice(0, TOP_N);
+                  const rest = spendingData.slice(TOP_N);
+                  const chartData = rest.length > 0
+                    ? [...top, { name: 'Other', value: rest.reduce((s, r) => s + r.value, 0), color: 'hsl(var(--muted-foreground))' }]
+                    : top;
+                  return (
+                  <ResponsiveContainer width="100%" height={340}>
                     <PieChart>
-                      <Pie data={spendingData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={3} dataKey="value"
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false}>
-                        {spendingData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+                      <Pie data={chartData} cx="50%" cy="50%" innerRadius={65} outerRadius={105} paddingAngle={2} dataKey="value">
+                        {chartData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                       </Pie>
                       <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} />
+                      <Legend iconType="circle" iconSize={10} formatter={(value: string) => <span className="text-sm text-foreground">{value}</span>} />
                     </PieChart>
-                  </ResponsiveContainer>
-                ) : (
+                  </ResponsiveContainer>);
+                })() : (
                   <p className="py-10 text-center text-muted-foreground">No spending data in this period.</p>
                 )}
               </CardContent>
