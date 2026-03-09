@@ -137,6 +137,7 @@ const ResultCard = ({ label, value, sub, accent }: { label: string; value: strin
 const Calculators = () => {
   const { formatCurrency } = useCurrency();
   const [activeCalc, setActiveCalc] = useState('mortgage');
+  const [pageGuideOpen, setPageGuideOpen] = useState(false);
 
   // Mortgage
   const [mortgageForm, setMortgageForm] = useState({ price: '350000', down: '70000', rate: '6.5', years: '30' });
