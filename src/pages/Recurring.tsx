@@ -143,42 +143,23 @@ const Recurring = () => {
 
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="font-display text-3xl font-bold">Recurring</h1>
-          <p className="text-muted-foreground">Manage recurring expenses and income.</p>
-          <PageOverview
-            title="Recurring Transactions"
-            description="Track bills, subscriptions, and regular income. View in list or calendar format to plan cash flow."
-            icon={RepeatIcon}
-            iconColor="text-prism-sky"
-            ttsScript="The Recurring page helps you stay on top of regular bills and income. Add your recurring transactions like rent, subscriptions, insurance, and paychecks. Set the frequency to weekly, biweekly, monthly, quarterly, or yearly. The list view shows all recurring items with their next due dates and amounts. Switch to the calendar view to visualize payment clusters throughout the month. This helps you plan cash flow and avoid surprises."
-            features={[
-              'Track bills, subscriptions, and regular income',
-              'Weekly, biweekly, monthly, quarterly, yearly frequencies',
-              'List and Calendar views',
-              'Next due date tracking',
-              'Assign accounts and categories',
-            ]}
-            demoData={[
-              { label: 'Rent', value: '-$1,800/mo', badge: 'Monthly', color: '#3b82f6' },
-              { label: 'Netflix', value: '-$15.99/mo', badge: 'Monthly', color: '#ef4444' },
-              { label: 'Car Insurance', value: '-$140/mo', badge: 'Monthly', color: '#f59e0b' },
-              { label: 'Salary', value: '+$3,250/bi-wk', badge: 'Biweekly', color: '#22c55e' },
-            ]}
-          />
+      {/* Header */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="font-display text-2xl font-bold truncate">Recurring</h1>
+          <p className="text-sm text-muted-foreground truncate">Manage recurring expenses and income.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <div className="flex border rounded-lg overflow-hidden">
-            <button onClick={() => setView('list')} className={cn('px-3 py-2 text-sm flex items-center gap-1.5 transition-colors', view === 'list' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}>
-              <List className="h-4 w-4" /> List
+            <button onClick={() => setView('list')} className={cn('px-2.5 py-1.5 text-xs sm:text-sm flex items-center gap-1 sm:gap-1.5 transition-colors', view === 'list' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}>
+              <List className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> <span className="hidden sm:inline">List</span>
             </button>
-            <button onClick={() => setView('calendar')} className={cn('px-3 py-2 text-sm flex items-center gap-1.5 transition-colors', view === 'calendar' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}>
-              <CalendarIcon className="h-4 w-4" /> Calendar
+            <button onClick={() => setView('calendar')} className={cn('px-2.5 py-1.5 text-xs sm:text-sm flex items-center gap-1 sm:gap-1.5 transition-colors', view === 'calendar' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}>
+              <CalendarIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> <span className="hidden sm:inline">Calendar</span>
             </button>
           </div>
-          <Button onClick={() => setDialogOpen(true)} className="gap-2">
-            <Plus className="h-4 w-4" /> Add Recurring
+          <Button onClick={() => setDialogOpen(true)} size="sm" className="gap-1.5 h-8">
+            <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Add Recurring</span>
           </Button>
         </div>
       </div>
