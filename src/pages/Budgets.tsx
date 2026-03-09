@@ -305,7 +305,7 @@ const Budgets = () => {
 
   const openCreate = () => {
     setEditingBudget(null);
-    setForm({ category_id: '', planned_amount: '', rollover: false, budgetKind: 'expense', group_id: '', expense_type: 'flexible', expense_type: 'flexible', expense_type: 'flexible', expense_type: 'flexible' });
+    setForm({ category_id: '', planned_amount: '', rollover: false, budgetKind: 'expense', group_id: '', expense_type: 'flexible' });
     setDialogOpen(true);
   };
 
