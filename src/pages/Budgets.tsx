@@ -74,7 +74,7 @@ const Budgets = () => {
   const { formatCurrency } = useCurrency();
   const { household } = useHousehold();
   const [monthOffset, setMonthOffset] = useState(0);
-  const [budgetType, setBudgetType] = useState<'personal' | 'business'>('personal');
+  const [budgetType, setBudgetType] = useState<'personal' | 'business' | 'all'>('personal');
   const [selectedBusiness, setSelectedBusiness] = useState<string>('all');
   const month = getMonth(monthOffset);
   const { data: budgets, isLoading: budgetsLoading } = useBudgets(month);
