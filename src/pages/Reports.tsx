@@ -448,7 +448,7 @@ const Reports = () => {
                             >
                               {chartData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                             </Pie>
-                            <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} itemStyle={{ color: 'hsl(var(--foreground))' }} />
+                            <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} itemStyle={{ color: 'hsl(var(--foreground))' }} labelStyle={{ color: 'hsl(var(--foreground))' }} />
                             <Legend iconType="circle" iconSize={10} formatter={(value: string) => <span className="text-sm text-foreground">{value}</span>} />
                           </PieChart>
                         ) : (
