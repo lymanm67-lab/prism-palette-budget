@@ -125,12 +125,13 @@ const Accounts = () => {
   return (
     <TooltipProvider>
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="font-display text-3xl font-extrabold tracking-tight">
+        {/* Header */}
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="font-display text-2xl sm:text-3xl font-extrabold tracking-tight">
               <span className="prism-gradient-text">Accounts</span>
             </h1>
-            <p className="text-muted-foreground mt-1">All your connected financial accounts.</p>
+            <p className="text-sm text-muted-foreground mt-1 truncate">All your connected financial accounts.</p>
           </div>
           <PageOverview
             title="Accounts Overview"
@@ -151,49 +152,53 @@ const Accounts = () => {
               { label: 'Marcus Savings', value: '$12,500.00', badge: 'Savings', color: '#14b8a6' },
             ]}
           />
-          <div className="flex flex-wrap gap-2">
-            <Button variant="outline" className="gap-2" onClick={() => setImportOpen(true)}>
-              <Upload className="h-4 w-4" /> Import Transactions
-            </Button>
-            <PlaidLinkButton />
-            <MxConnectButton />
-            <Dialog open={open} onOpenChange={setOpen}>
-              <DialogTrigger asChild>
-                <Button className="gap-2 prism-gradient text-white border-0 hover:opacity-90"><Plus className="h-4 w-4" /> Add Account</Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader><DialogTitle className="font-display">Add Account</DialogTitle></DialogHeader>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Account Name</Label>
-                    <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. Chase Checking" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Institution</Label>
-                    <Input value={form.institution} onChange={e => setForm(f => ({ ...f, institution: e.target.value }))} placeholder="e.g. Chase" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Type</Label>
-                    <Select value={form.account_type} onValueChange={(v: AccountType) => setForm(f => ({ ...f, account_type: v }))}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {['checking', 'savings', 'credit', 'investment', 'loan', 'other'].map(t => (
-                          <SelectItem key={t} value={t} className="capitalize">{t}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Starting Balance</Label>
-                    <Input type="number" step="0.01" value={form.balance} onChange={e => setForm(f => ({ ...f, balance: e.target.value }))} placeholder="0.00" />
-                  </div>
-                  <Button onClick={handleCreate} disabled={!form.name || createAccount.isPending} className="w-full prism-gradient text-white border-0 hover:opacity-90">
-                    {createAccount.isPending ? 'Creating...' : 'Add Account'}
-                  </Button>
+        </div>
+
+        {/* Action buttons — wrapping row */}
+        <div className="flex flex-wrap gap-2">
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="gap-1.5 prism-gradient text-white border-0 hover:opacity-90">
+                <Plus className="h-4 w-4" /> <span>Add Account</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader><DialogTitle className="font-display">Add Account</DialogTitle></DialogHeader>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Account Name</Label>
+                  <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. Chase Checking" />
                 </div>
-              </DialogContent>
-            </Dialog>
-          </div>
+                <div className="space-y-2">
+                  <Label>Institution</Label>
+                  <Input value={form.institution} onChange={e => setForm(f => ({ ...f, institution: e.target.value }))} placeholder="e.g. Chase" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Type</Label>
+                  <Select value={form.account_type} onValueChange={(v: AccountType) => setForm(f => ({ ...f, account_type: v }))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {['checking', 'savings', 'credit', 'investment', 'loan', 'other'].map(t => (
+                        <SelectItem key={t} value={t} className="capitalize">{t}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Starting Balance</Label>
+                  <Input type="number" step="0.01" value={form.balance} onChange={e => setForm(f => ({ ...f, balance: e.target.value }))} placeholder="0.00" />
+                </div>
+                <Button onClick={handleCreate} disabled={!form.name || createAccount.isPending} className="w-full prism-gradient text-white border-0 hover:opacity-90">
+                  {createAccount.isPending ? 'Creating...' : 'Add Account'}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setImportOpen(true)}>
+            <Upload className="h-4 w-4" /> <span className="hidden sm:inline">Import</span><span className="sm:hidden">Import</span>
+          </Button>
+          <PlaidLinkButton />
+          <MxConnectButton />
         </div>
 
         {Object.keys(grouped).length === 0 && (
