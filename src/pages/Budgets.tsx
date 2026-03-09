@@ -948,6 +948,49 @@ const Budgets = () => {
             <DialogTitle className="font-display">{editingBudget ? 'Edit Budget' : 'Add Budget'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            {/* Income / Expense Toggle */}
+            {!editingBudget && (
+              <div className="space-y-2">
+                <Label>Type</Label>
+                <Tabs value={form.budgetKind} onValueChange={(v) => setForm(f => ({ ...f, budgetKind: v as 'income' | 'expense', group_id: '', category_id: '' }))}>
+                  <TabsList className="w-full">
+                    <TabsTrigger value="income" className="flex-1 gap-1.5">
+                      <TrendingUp className="h-3.5 w-3.5" /> Income
+                    </TabsTrigger>
+                    <TabsTrigger value="expense" className="flex-1 gap-1.5">
+                      <PiggyBank className="h-3.5 w-3.5" /> Expense
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
+            )}
+
+            {/* Group Dropdown */}
+            {!editingBudget && (
+              <div className="space-y-2">
+                <Label>Group</Label>
+                <Select value={form.group_id} onValueChange={v => setForm(f => ({ ...f, group_id: v, category_id: '' }))}>
+                  <SelectTrigger><SelectValue placeholder="Select group" /></SelectTrigger>
+                  <SelectContent>
+                    {(categoryGroups as any[] || [])
+                      .filter((g: any) => {
+                        const isIncome = (g.expense_type || 'flexible') === 'income';
+                        return form.budgetKind === 'income' ? isIncome : !isIncome;
+                      })
+                      .map((g: any) => (
+                        <SelectItem key={g.id} value={g.id}>
+                          <div className="flex items-center gap-2">
+                            <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: g.color }} />
+                            {g.name}
+                          </div>
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {/* Category Dropdown (filtered by group) */}
             <div className="space-y-2">
               <Label>Category</Label>
               {editingBudget ? (
@@ -959,20 +1002,28 @@ const Budgets = () => {
                 </div>
               ) : (
                 <Select value={form.category_id} onValueChange={v => setForm(f => ({ ...f, category_id: v }))}>
-                  <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder={form.group_id ? "Select category" : "Select a group first"} /></SelectTrigger>
                   <SelectContent>
-                    {unbudgetedCategories.map(c => (
-                      <SelectItem key={c.id} value={c.id}>
-                        <div className="flex items-center gap-2">
-                          <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: c.color }} />
-                          {c.name}
-                        </div>
-                      </SelectItem>
-                    ))}
+                    {unbudgetedCategories
+                      .filter(c => !form.group_id || c.group_id === form.group_id)
+                      .map(c => (
+                        <SelectItem key={c.id} value={c.id}>
+                          <div className="flex items-center gap-2">
+                            <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: c.color }} />
+                            {c.name}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    {unbudgetedCategories.filter(c => !form.group_id || c.group_id === form.group_id).length === 0 && (
+                      <div className="px-2 py-3 text-sm text-muted-foreground text-center">
+                        {form.group_id ? 'All categories in this group are budgeted' : 'Select a group first'}
+                      </div>
+                    )}
                   </SelectContent>
                 </Select>
               )}
             </div>
+
             <div className="space-y-2">
               <Label>Planned Amount</Label>
               <Input type="number" step="0.01" min="0" placeholder="500.00" value={form.planned_amount} onChange={e => setForm(f => ({ ...f, planned_amount: e.target.value }))} />
