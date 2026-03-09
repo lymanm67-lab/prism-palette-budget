@@ -20,6 +20,7 @@ import PageOverview from '@/components/PageOverview';
 import CsvImportDialog from '@/components/CsvImportDialog';
 import BankExportGuide from '@/components/BankExportGuide';
 import { toast } from 'sonner';
+import { EmptyState } from '@/components/EmptyState';
 
 type AccountType = Database['public']['Enums']['account_type'];
 

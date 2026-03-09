@@ -12,6 +12,7 @@ import { useCurrency } from '@/hooks/use-currency';
 import { useGoals, useCreateGoal, useUpdateGoal, useDeleteGoal } from '@/hooks/use-goals';
 import { Plus, Target, Loader2, Trash2, Pencil, Trophy, Wallet, CreditCard, TrendingUp } from 'lucide-react';
 import PageOverview from '@/components/PageOverview';
+import { EmptyState } from '@/components/EmptyState';
 
 const GOAL_TYPES = [
   { value: 'savings', label: 'Savings Goal', icon: Wallet },
