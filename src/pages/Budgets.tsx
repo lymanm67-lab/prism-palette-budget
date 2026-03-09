@@ -301,15 +301,18 @@ const Budgets = () => {
 
   const openCreate = () => {
     setEditingBudget(null);
-    setForm({ category_id: unbudgetedCategories[0]?.id || '', planned_amount: '', rollover: false });
+    setForm({ category_id: '', planned_amount: '', rollover: false, budgetKind: 'expense', group_id: '' });
     setDialogOpen(true);
   };
 
   const openEdit = (categoryId: string, currentAmount: number) => {
     const budget = budgetItems.find(b => b.category_id === categoryId);
     const rollover = (budget as any)?.rollover ?? false;
+    const cat = (categories || []).find(c => c.id === categoryId);
+    const group = cat ? (categoryGroups as any[])?.find((g: any) => g.id === cat.group_id) : null;
+    const expType = group?.expense_type || 'flexible';
     setEditingBudget({ category_id: categoryId, planned_amount: String(currentAmount), rollover });
-    setForm({ category_id: categoryId, planned_amount: String(currentAmount), rollover });
+    setForm({ category_id: categoryId, planned_amount: String(currentAmount), rollover, budgetKind: expType === 'income' ? 'income' : 'expense', group_id: cat?.group_id || '' });
     setDialogOpen(true);
   };
 
