@@ -750,7 +750,21 @@ const Transactions = () => {
 
           {/* Import CSV button */}
           <Button variant="outline" size="sm" className="gap-2" onClick={() => setCsvOpen(true)}>
-            <Upload className="h-4 w-4" /> Import Transactions
+            <Upload className="h-4 w-4" /> Import
+          </Button>
+
+          {/* Export CSV button */}
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="gap-2" 
+            onClick={() => {
+              exportTransactionsToCsv(filtered as any, `transactions-${new Date().toISOString().split('T')[0]}.csv`);
+              toast.success(`Exported ${filtered.length} transactions to CSV`);
+            }}
+            disabled={filtered.length === 0}
+          >
+            <Download className="h-4 w-4" /> Export
           </Button>
 
           {/* Add transaction button */}
