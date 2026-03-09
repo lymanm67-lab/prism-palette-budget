@@ -670,146 +670,179 @@ const Transactions = () => {
       <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 -mt-6 pt-6 pb-4 space-y-4">
       <div className="flex items-center justify-between gap-3">
         <h1 className="font-display text-2xl font-bold shrink-0">Transactions</h1>
+        <TooltipProvider delayDuration={300}>
         <div className="flex flex-wrap items-center justify-end gap-1.5 sm:gap-2">
           {/* Search */}
-          <Button variant="outline" size="sm" className="gap-1.5 h-8" onClick={() => setSearchOpen(!searchOpen)}>
-            <Search className="h-4 w-4" /> <span className="hidden sm:inline">Search</span>
-          </Button>
-
-          {/* Date dropdown — presets + custom range */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-1.5 h-8 relative">
-                <CalendarIcon className="h-4 w-4" /> <span className="hidden sm:inline">Date</span>
-                {(filters.dateFrom || filters.dateTo) && (
-                  <span className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-primary" />
-                )}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-1.5 h-8" onClick={() => setSearchOpen(!searchOpen)}>
+                <Search className="h-4 w-4" /> <span className="hidden sm:inline">Search</span>
               </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-64 space-y-2 p-3" align="end">
-              <h4 className="font-semibold text-sm mb-1">Quick Range</h4>
-              <div className="grid grid-cols-2 gap-1">
-                {[
-                  { label: 'Today', fn: () => { const d = format(new Date(), 'yyyy-MM-dd'); setFilters(f => ({ ...f, dateFrom: d, dateTo: d })); } },
-                  { label: '7 days', fn: () => { setFilters(f => ({ ...f, dateFrom: format(subDays(new Date(), 7), 'yyyy-MM-dd'), dateTo: format(new Date(), 'yyyy-MM-dd') })); } },
-                  { label: 'This month', fn: () => { setFilters(f => ({ ...f, dateFrom: format(startOfMonth(new Date()), 'yyyy-MM-dd'), dateTo: format(endOfMonth(new Date()), 'yyyy-MM-dd') })); } },
-                  { label: 'Last month', fn: () => { const lm = subMonths(new Date(), 1); setFilters(f => ({ ...f, dateFrom: format(startOfMonth(lm), 'yyyy-MM-dd'), dateTo: format(endOfMonth(lm), 'yyyy-MM-dd') })); } },
-                  { label: 'This year', fn: () => { setFilters(f => ({ ...f, dateFrom: format(startOfYear(new Date()), 'yyyy-MM-dd'), dateTo: format(new Date(), 'yyyy-MM-dd') })); } },
-                  { label: 'All time', fn: () => { setFilters(f => ({ ...f, dateFrom: '', dateTo: '' })); } },
-                ].map(qf => (
-                  <Button key={qf.label} variant="ghost" size="sm" className="h-7 text-xs justify-start" onClick={qf.fn}>
-                    {qf.label}
+            </TooltipTrigger>
+            <TooltipContent><p>Search transactions</p></TooltipContent>
+          </Tooltip>
+
+          {/* Date dropdown */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-1.5 h-8 relative">
+                    <CalendarIcon className="h-4 w-4" /> <span className="hidden sm:inline">Date</span>
+                    {(filters.dateFrom || filters.dateTo) && (
+                      <span className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-primary" />
+                    )}
                   </Button>
-                ))}
-              </div>
-              <div className="border-t border-border pt-2 space-y-2">
-                <h4 className="font-semibold text-xs text-muted-foreground">Custom Range</h4>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="space-y-1">
-                    <Label className="text-xs">From</Label>
-                    <Input type="date" value={filters.dateFrom} onChange={e => setFilters(f => ({ ...f, dateFrom: e.target.value }))} className="h-8 text-xs" />
+                </PopoverTrigger>
+                <PopoverContent className="w-64 space-y-2 p-3" align="end">
+                  <h4 className="font-semibold text-sm mb-1">Quick Range</h4>
+                  <div className="grid grid-cols-2 gap-1">
+                    {[
+                      { label: 'Today', fn: () => { const d = format(new Date(), 'yyyy-MM-dd'); setFilters(f => ({ ...f, dateFrom: d, dateTo: d })); } },
+                      { label: '7 days', fn: () => { setFilters(f => ({ ...f, dateFrom: format(subDays(new Date(), 7), 'yyyy-MM-dd'), dateTo: format(new Date(), 'yyyy-MM-dd') })); } },
+                      { label: 'This month', fn: () => { setFilters(f => ({ ...f, dateFrom: format(startOfMonth(new Date()), 'yyyy-MM-dd'), dateTo: format(endOfMonth(new Date()), 'yyyy-MM-dd') })); } },
+                      { label: 'Last month', fn: () => { const lm = subMonths(new Date(), 1); setFilters(f => ({ ...f, dateFrom: format(startOfMonth(lm), 'yyyy-MM-dd'), dateTo: format(endOfMonth(lm), 'yyyy-MM-dd') })); } },
+                      { label: 'This year', fn: () => { setFilters(f => ({ ...f, dateFrom: format(startOfYear(new Date()), 'yyyy-MM-dd'), dateTo: format(new Date(), 'yyyy-MM-dd') })); } },
+                      { label: 'All time', fn: () => { setFilters(f => ({ ...f, dateFrom: '', dateTo: '' })); } },
+                    ].map(qf => (
+                      <Button key={qf.label} variant="ghost" size="sm" className="h-7 text-xs justify-start" onClick={qf.fn}>
+                        {qf.label}
+                      </Button>
+                    ))}
                   </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs">To</Label>
-                    <Input type="date" value={filters.dateTo} onChange={e => setFilters(f => ({ ...f, dateTo: e.target.value }))} className="h-8 text-xs" />
+                  <div className="border-t border-border pt-2 space-y-2">
+                    <h4 className="font-semibold text-xs text-muted-foreground">Custom Range</h4>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <Label className="text-xs">From</Label>
+                        <Input type="date" value={filters.dateFrom} onChange={e => setFilters(f => ({ ...f, dateFrom: e.target.value }))} className="h-8 text-xs" />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">To</Label>
+                        <Input type="date" value={filters.dateTo} onChange={e => setFilters(f => ({ ...f, dateTo: e.target.value }))} className="h-8 text-xs" />
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-              {(filters.dateFrom || filters.dateTo) && (
-                <Button variant="ghost" size="sm" className="w-full h-7 text-xs" onClick={() => setFilters(f => ({ ...f, dateFrom: '', dateTo: '' }))}>
-                  Clear dates
-                </Button>
-              )}
-            </PopoverContent>
-          </Popover>
+                  {(filters.dateFrom || filters.dateTo) && (
+                    <Button variant="ghost" size="sm" className="w-full h-7 text-xs" onClick={() => setFilters(f => ({ ...f, dateFrom: '', dateTo: '' }))}>
+                      Clear dates
+                    </Button>
+                  )}
+                </PopoverContent>
+              </Popover>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent><p>Filter by date range</p></TooltipContent>
+          </Tooltip>
 
           {/* Filters */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-1.5 h-8 relative">
-                <SlidersHorizontal className="h-4 w-4" /> <span className="hidden sm:inline">Filters</span>
-                {activeFilterCount > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-primary text-primary-foreground text-[10px] flex items-center justify-center font-bold">
-                    {activeFilterCount}
-                  </span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-72 space-y-3" align="end">
-              <div className="flex items-center justify-between">
-                <h4 className="font-semibold text-sm">Filters</h4>
-                {activeFilterCount > 0 && (
-                  <Button variant="ghost" size="sm" onClick={() => setFilters(EMPTY_FILTERS)} className="h-7 text-xs gap-1"><X className="h-3 w-3" /> Clear</Button>
-                )}
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label className="text-xs">Min Amount</Label>
-                  <Input type="number" step="0.01" value={filters.amountMin} onChange={e => setFilters(f => ({ ...f, amountMin: e.target.value }))} placeholder="0" className="h-8 text-xs" />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">Max Amount</Label>
-                  <Input type="number" step="0.01" value={filters.amountMax} onChange={e => setFilters(f => ({ ...f, amountMax: e.target.value }))} placeholder="∞" className="h-8 text-xs" />
-                </div>
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Account</Label>
-                <Select value={filters.accountId} onValueChange={v => setFilters(f => ({ ...f, accountId: v === '_all' ? '' : v }))}>
-                  <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="All accounts" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="_all">All accounts</SelectItem>
-                    {(accounts || []).map(a => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Category</Label>
-                <Select value={filters.categoryId} onValueChange={v => setFilters(f => ({ ...f, categoryId: v === '_all' ? '' : v }))}>
-                  <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="All categories" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="_all">All categories</SelectItem>
-                    {(categories || []).map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-            </PopoverContent>
-          </Popover>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-1.5 h-8 relative">
+                    <SlidersHorizontal className="h-4 w-4" /> <span className="hidden sm:inline">Filters</span>
+                    {activeFilterCount > 0 && (
+                      <span className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-primary text-primary-foreground text-[10px] flex items-center justify-center font-bold">
+                        {activeFilterCount}
+                      </span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-72 space-y-3" align="end">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-semibold text-sm">Filters</h4>
+                    {activeFilterCount > 0 && (
+                      <Button variant="ghost" size="sm" onClick={() => setFilters(EMPTY_FILTERS)} className="h-7 text-xs gap-1"><X className="h-3 w-3" /> Clear</Button>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Min Amount</Label>
+                      <Input type="number" step="0.01" value={filters.amountMin} onChange={e => setFilters(f => ({ ...f, amountMin: e.target.value }))} placeholder="0" className="h-8 text-xs" />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Max Amount</Label>
+                      <Input type="number" step="0.01" value={filters.amountMax} onChange={e => setFilters(f => ({ ...f, amountMax: e.target.value }))} placeholder="∞" className="h-8 text-xs" />
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Account</Label>
+                    <Select value={filters.accountId} onValueChange={v => setFilters(f => ({ ...f, accountId: v === '_all' ? '' : v }))}>
+                      <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="All accounts" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="_all">All accounts</SelectItem>
+                        {(accounts || []).map(a => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Category</Label>
+                    <Select value={filters.categoryId} onValueChange={v => setFilters(f => ({ ...f, categoryId: v === '_all' ? '' : v }))}>
+                      <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="All categories" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="_all">All categories</SelectItem>
+                        {(categories || []).map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </PopoverContent>
+              </Popover>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent><p>Filter by amount, account, or category</p></TooltipContent>
+          </Tooltip>
 
           {/* Add transaction */}
-          <Button size="sm" className="gap-1.5 h-8" onClick={() => setOpen(true)}>
-            <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Add</span>
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button size="sm" className="gap-1.5 h-8" onClick={() => setOpen(true)}>
+                <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Add</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent><p>Add new transaction</p></TooltipContent>
+          </Tooltip>
 
           {/* More menu — Import, Export, Page Guide */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-8 w-8 p-0">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuLabel className="text-xs text-muted-foreground">Data</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => setCsvOpen(true)} className="gap-2">
-                <Upload className="h-4 w-4" /> Import CSV
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => {
-                  exportTransactionsToCsv(filtered as any, `transactions-${new Date().toISOString().split('T')[0]}.csv`);
-                  toast.success(`Exported ${filtered.length} transactions to CSV`);
-                }}
-                disabled={filtered.length === 0}
-                className="gap-2"
-              >
-                <Download className="h-4 w-4" /> Export CSV
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuLabel className="text-xs text-muted-foreground">Help</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => setPageGuideOpen(true)} className="gap-2">
-                <BookOpen className="h-4 w-4" /> Page Guide
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuLabel className="text-xs text-muted-foreground">Data</DropdownMenuLabel>
+                  <DropdownMenuItem onClick={() => setCsvOpen(true)} className="gap-2">
+                    <Upload className="h-4 w-4" /> Import CSV
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      exportTransactionsToCsv(filtered as any, `transactions-${new Date().toISOString().split('T')[0]}.csv`);
+                      toast.success(`Exported ${filtered.length} transactions to CSV`);
+                    }}
+                    disabled={filtered.length === 0}
+                    className="gap-2"
+                  >
+                    <Download className="h-4 w-4" /> Export CSV
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel className="text-xs text-muted-foreground">Help</DropdownMenuLabel>
+                  <DropdownMenuItem onClick={() => setPageGuideOpen(true)} className="gap-2">
+                    <BookOpen className="h-4 w-4" /> Page Guide
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent><p>More options (Import, Export, Guide)</p></TooltipContent>
+          </Tooltip>
         </div>
+        </TooltipProvider>
       </div>
       <Dialog open={open} onOpenChange={setOpen}>
             <DialogContent className="max-h-[90vh] overflow-y-auto">
@@ -1164,40 +1197,54 @@ const Transactions = () => {
             </Button>
           )}
         </div>
+        <TooltipProvider delayDuration={300}>
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {/* Auto-categorize button */}
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-1.5 h-8 text-xs sm:text-sm"
-            onClick={handleAutoCategorize}
-            disabled={autoCatLoading}
-          >
-            {autoCatLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-            <span className="hidden sm:inline">{autoCatLoading ? 'Categorizing…' : 'Auto-categorize'}</span>
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5 h-8 text-xs sm:text-sm"
+                onClick={handleAutoCategorize}
+                disabled={autoCatLoading}
+              >
+                {autoCatLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                <span className="hidden sm:inline">{autoCatLoading ? 'Categorizing…' : 'Auto-categorize'}</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent><p>Auto-categorize transactions using AI rules</p></TooltipContent>
+          </Tooltip>
 
            {/* Sort dropdown */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs sm:text-sm">
-                <ArrowUpDown className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Sort</span>
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-48 p-2" align="end">
-              {(['date', 'amount', 'merchant'] as SortKey[]).map(key => (
-                <button
-                  key={key}
-                  onClick={() => { if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc'); else { setSortKey(key); setSortDir('desc'); } }}
-                  className={cn('w-full flex items-center justify-between rounded-md px-3 py-2 text-sm hover:bg-muted transition-colors capitalize', sortKey === key && 'bg-muted font-medium')}
-                >
-                  {key}
-                  {sortKey === key && <span className="text-xs text-muted-foreground">{sortDir === 'desc' ? '↓' : '↑'}</span>}
-                </button>
-              ))}
-            </PopoverContent>
-          </Popover>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs sm:text-sm">
+                    <ArrowUpDown className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Sort</span>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-48 p-2" align="end">
+                  {(['date', 'amount', 'merchant'] as SortKey[]).map(key => (
+                    <button
+                      key={key}
+                      onClick={() => { if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc'); else { setSortKey(key); setSortDir('desc'); } }}
+                      className={cn('w-full flex items-center justify-between rounded-md px-3 py-2 text-sm hover:bg-muted transition-colors capitalize', sortKey === key && 'bg-muted font-medium')}
+                    >
+                      {key}
+                      {sortKey === key && <span className="text-xs text-muted-foreground">{sortDir === 'desc' ? '↓' : '↑'}</span>}
+                    </button>
+                  ))}
+                </PopoverContent>
+              </Popover>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent><p>Sort transactions by date, amount, or merchant</p></TooltipContent>
+          </Tooltip>
         </div>
+        </TooltipProvider>
       </div>
 
       {/* Bulk actions bar */}
