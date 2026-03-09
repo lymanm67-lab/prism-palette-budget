@@ -216,11 +216,25 @@ const Accounts = () => {
               </DialogContent>
             </Dialog>
 
+            {/* Refresh — sync connected accounts */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-1.5 h-8" onClick={handleRefreshAccounts} disabled={refreshing}>
+                  <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} /> <span className="hidden sm:inline">{refreshing ? 'Syncing...' : 'Refresh'}</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent><p>Sync bank connections</p></TooltipContent>
+            </Tooltip>
+
             {/* Import — icon on mobile, text on desktop */}
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button variant="outline" size="sm" className="gap-1.5 h-8" onClick={() => setImportOpen(true)}>
                   <Upload className="h-4 w-4" /> <span className="hidden sm:inline">Import</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent className="sm:hidden"><p>Import Transactions</p></TooltipContent>
+            </Tooltip>
                 </Button>
               </TooltipTrigger>
               <TooltipContent className="sm:hidden"><p>Import Transactions</p></TooltipContent>
