@@ -1124,10 +1124,10 @@ const Transactions = () => {
       )}
 
       {/* Secondary toolbar */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between gap-2 overflow-x-auto">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <Select value={viewFilter} onValueChange={(v: TxnViewFilter) => setViewFilter(v)}>
-            <SelectTrigger className="w-[170px] h-8 text-sm"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-[140px] sm:w-[170px] h-8 text-xs sm:text-sm"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All transactions</SelectItem>
               <SelectItem value="income">Income only</SelectItem>
@@ -1164,24 +1164,24 @@ const Transactions = () => {
             </Button>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {/* Auto-categorize button */}
           <Button
             variant="outline"
             size="sm"
-            className="gap-2"
+            className="gap-1.5 h-8 text-xs sm:text-sm"
             onClick={handleAutoCategorize}
             disabled={autoCatLoading}
           >
             {autoCatLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-            {autoCatLoading ? 'Categorizing…' : 'Auto-categorize'}
+            <span className="hidden sm:inline">{autoCatLoading ? 'Categorizing…' : 'Auto-categorize'}</span>
           </Button>
 
            {/* Sort dropdown */}
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-2">
-                Sort <ArrowUpDown className="h-3.5 w-3.5" />
+              <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs sm:text-sm">
+                <ArrowUpDown className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Sort</span>
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-48 p-2" align="end">
