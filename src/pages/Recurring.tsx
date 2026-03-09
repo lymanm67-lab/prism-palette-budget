@@ -204,41 +204,39 @@ const Recurring = () => {
       {/* List View */}
       {view === 'list' && (
         <Card>
-          <CardHeader><CardTitle className="font-display">Upcoming Expenses</CardTitle></CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="font-display text-base sm:text-lg">Upcoming Expenses</CardTitle></CardHeader>
           <CardContent>
             {!recurring || recurring.length === 0 ? (
-              <p className="text-center text-muted-foreground py-10">No recurring transactions yet.</p>
+              <p className="text-center text-muted-foreground py-10 text-sm">No recurring transactions yet.</p>
             ) : (
               <div className="divide-y">
                 {recurring.map(r => (
-                  <div key={r.id} className="flex items-center justify-between py-3 group">
-                    <div className="flex items-center gap-3">
-                      <div className={cn('h-10 w-10 rounded-xl flex items-center justify-center', Number(r.amount) > 0 ? 'bg-emerald-500/10' : 'bg-rose-500/10')}>
-                        {Number(r.amount) > 0 ? <ArrowDownLeft className="h-5 w-5 text-emerald-500" /> : <ArrowUpRight className="h-5 w-5 text-rose-500" />}
-                      </div>
-                      <div>
-                        <p className="font-medium">{r.merchant || 'Unnamed'}</p>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <span>{FREQUENCIES.find(f => f.value === r.frequency)?.label || r.frequency}</span>
-                          {r.categories && <Badge variant="secondary" className="text-[10px]">{(r.categories as any).name}</Badge>}
-                          {r.accounts && <span>{(r.accounts as any).name}</span>}
-                        </div>
+                  <div key={r.id} className="flex items-center gap-2 sm:gap-3 py-2.5 sm:py-3 group">
+                    <div className={cn('h-9 w-9 sm:h-10 sm:w-10 rounded-xl flex items-center justify-center shrink-0', Number(r.amount) > 0 ? 'bg-emerald-500/10' : 'bg-rose-500/10')}>
+                      {Number(r.amount) > 0 ? <ArrowDownLeft className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-500" /> : <ArrowUpRight className="h-4 w-4 sm:h-5 sm:w-5 text-rose-500" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm truncate">{r.merchant || 'Unnamed'}</p>
+                      <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-muted-foreground flex-wrap">
+                        <span>{FREQUENCIES.find(f => f.value === r.frequency)?.label || r.frequency}</span>
+                        {r.categories && <Badge variant="secondary" className="text-[10px] px-1 py-0">{(r.categories as any).name}</Badge>}
+                        <span className="hidden sm:inline">{r.accounts && (r.accounts as any).name}</span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <div className="text-right">
-                        <p className={cn('font-semibold', Number(r.amount) > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400')}>
-                          {formatAmount(Math.abs(Number(r.amount)))}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {r.next_due_date ? format(parseISO(r.next_due_date), 'MMM d, yyyy') : '—'}
-                        </p>
-                      </div>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100" onClick={() => openEdit(r)}>
-                        <Pencil className="h-4 w-4" />
+                    <div className="text-right shrink-0">
+                      <p className={cn('font-semibold text-sm tabular-nums', Number(r.amount) > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400')}>
+                        {formatAmount(Math.abs(Number(r.amount)))}
+                      </p>
+                      <p className="text-[11px] sm:text-xs text-muted-foreground">
+                        {r.next_due_date ? format(parseISO(r.next_due_date), 'MMM d') : '—'}
+                      </p>
+                    </div>
+                    <div className="flex gap-0.5 shrink-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(r)}>
+                        <Pencil className="h-3.5 w-3.5" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 text-destructive" onClick={() => setDeleteTarget(r.id)}>
-                        <Trash2 className="h-4 w-4" />
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => setDeleteTarget(r.id)}>
+                        <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </div>
                   </div>
