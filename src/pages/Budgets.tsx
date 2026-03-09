@@ -554,134 +554,180 @@ const Budgets = () => {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="font-display text-3xl font-bold">{formatMonth(month)}</h1>
-          <PageOverview
-            title="Budgets Overview"
-            description="Set monthly spending limits per category and track actual spending vs planned amounts in real time."
-            icon={PiggyBank}
-            iconColor="text-prism-amber"
-            ttsScript="Welcome to Budgets. Here you can create monthly spending plans for each category. Set planned amounts for your income, fixed expenses like rent and utilities, flexible expenses like groceries and dining, and non-monthly expenses. The progress bars show how much you have spent versus your budget in real time. Toggle between Personal and Business budgets. Use the Forecast tab to see spending projections. Navigate months with the arrow buttons to plan ahead or review past months."
-            features={[
-              'Set planned amounts for each category',
-              'Real-time spending vs budget tracking',
-              'Personal and Business budget views',
-              'Spending forecast projections',
-              'Income, fixed, flexible, and non-monthly grouping',
-              'Rollover unused budgets to next month',
-            ]}
-            demoData={[
-              { label: 'Groceries', value: '$420/$600', badge: '70%', color: '#22c55e' },
-              { label: 'Dining Out', value: '$180/$200', badge: '90%', color: '#f59e0b' },
-              { label: 'Rent/Mortgage', value: '$1,800/$1,800', badge: '100%', color: '#3b82f6' },
-              { label: 'Subscriptions', value: '$45/$75', badge: '60%', color: '#8b5cf6' },
-            ]}
-          />
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-2">
-            <Tabs value={budgetType} onValueChange={(v) => setBudgetType(v as 'personal' | 'business')}>
-              <TabsList>
-                <TabsTrigger value="personal">Personal</TabsTrigger>
-                <TabsTrigger value="business">Business</TabsTrigger>
-              </TabsList>
-            </Tabs>
-            <Tabs value={viewTab} onValueChange={(v) => setViewTab(v as 'budget' | 'forecast')}>
-              <TabsList>
-                <TabsTrigger value="budget">Budget</TabsTrigger>
-                <TabsTrigger value="forecast" className="gap-1.5"><TrendingUp className="h-3.5 w-3.5" /> Forecast</TabsTrigger>
-              </TabsList>
-            </Tabs>
-            {budgetType === 'business' && businessNames.length > 0 && (
-              <Select value={selectedBusiness} onValueChange={setSelectedBusiness}>
-                <SelectTrigger className="w-[180px] h-8 text-sm"><SelectValue placeholder="All Businesses" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Businesses</SelectItem>
-                  {businessNames.map(name => <SelectItem key={name} value={name}>{name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            )}
+      <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 -mt-6 pt-6 pb-4 space-y-4">
+        {/* Row 1: Title + Month Nav + Actions */}
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <h1 className="font-display text-2xl font-bold shrink-0">{formatMonth(month)}</h1>
+            <div className="flex items-center gap-0.5">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setMonthOffset(o => o - 1)}>
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent><p>Previous month</p></TooltipContent>
+              </Tooltip>
+              <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => setMonthOffset(0)}>Today</Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setMonthOffset(o => o + 1)}>
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent><p>Next month</p></TooltipContent>
+              </Tooltip>
+            </div>
           </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setMonthOffset(o => o - 1)}>
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => setMonthOffset(0)}>Today</Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setMonthOffset(o => o + 1)}>
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span tabIndex={unbudgetedCategories.length === 0 ? 0 : undefined}>
-                <Button className="gap-2" size="sm" onClick={openCreate} disabled={unbudgetedCategories.length === 0}>
-                  <Plus className="h-4 w-4" /> Add Budget
+
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            {/* Add Budget */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span tabIndex={unbudgetedCategories.length === 0 ? 0 : undefined}>
+                  <Button size="sm" className="gap-1.5 h-8" onClick={openCreate} disabled={unbudgetedCategories.length === 0}>
+                    <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Add Budget</span>
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent><p>{unbudgetedCategories.length === 0 ? 'All categories already budgeted' : 'Add a new budget'}</p></TooltipContent>
+            </Tooltip>
+
+            {/* Smart Budget */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 h-8"
+                  disabled={smartBudget.isPending}
+                  onClick={async () => {
+                    try {
+                      const result = await smartBudget.mutateAsync();
+                      if (result.suggestions?.length) {
+                        setSmartSuggestions(result.suggestions.map((s: any) => ({ ...s, selected: true })));
+                        setSmartBudgetOpen(true);
+                      } else {
+                        setSmartSuggestions([]);
+                        setSmartBudgetOpen(true);
+                      }
+                    } catch (e) {
+                      console.error('Smart budget error:', e);
+                    }
+                  }}
+                >
+                  {smartBudget.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                  <span className="hidden sm:inline">Smart Budget</span>
                 </Button>
-              </span>
-            </TooltipTrigger>
-            {unbudgetedCategories.length === 0 && (
-              <TooltipContent side="bottom" className="max-w-[220px] text-center">
-                All categories already have budgets this month. Create a new category first.
-              </TooltipContent>
-            )}
-          </Tooltip>
-          <Button variant="outline" size="sm" className="gap-2" onClick={() => { setQuickAddForm({ name: '', group_id: '', color: '#7c5cf5' }); setQuickAddOpen(true); }}>
-            <Plus className="h-4 w-4" /> <span className="hidden sm:inline">New Category</span><span className="sm:hidden">Category</span>
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-2"
-            disabled={smartBudget.isPending}
-            onClick={async () => {
-              try {
-                const result = await smartBudget.mutateAsync();
-                if (result.suggestions?.length) {
-                  setSmartSuggestions(result.suggestions.map((s: any) => ({ ...s, selected: true })));
-                  setSmartBudgetOpen(true);
-                } else {
-                  setSmartSuggestions([]);
-                  setSmartBudgetOpen(true);
-                }
-              } catch (e) {
-                console.error('Smart budget error:', e);
-              }
-            }}
-          >
-            {smartBudget.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-            <span className="hidden sm:inline">Smart Budget</span>
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-2"
-            disabled={copyingForward || !budgetItems.length}
-            onClick={handleCopyForward}
-          >
-            {copyingForward ? <Loader2 className="h-4 w-4 animate-spin" /> : <Copy className="h-4 w-4" />}
-            <span className="hidden sm:inline">Copy to Next Month</span><span className="sm:hidden">Copy</span>
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="gap-2"
-            onClick={() => setHideZeroAmounts(h => !h)}
-          >
-            {hideZeroAmounts ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            <span className="hidden sm:inline">{hideZeroAmounts ? 'Show $0' : 'Hide $0'}</span>
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-2"
-            disabled={auditLoading}
-            onClick={handleAuditBudget}
-          >
-            {auditLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ClipboardCheck className="h-4 w-4" />}
-            <span className="hidden sm:inline">AI Audit</span>
-          </Button>
+              </TooltipTrigger>
+              <TooltipContent><p>AI-powered budget suggestions based on spending</p></TooltipContent>
+            </Tooltip>
+
+            {/* More menu */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-52">
+                    <DropdownMenuLabel className="text-xs text-muted-foreground">Actions</DropdownMenuLabel>
+                    <DropdownMenuItem onClick={() => { setQuickAddForm({ name: '', group_id: '', color: '#7c5cf5' }); setQuickAddOpen(true); }} className="gap-2">
+                      <Plus className="h-4 w-4" /> New Category
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={handleCopyForward}
+                      disabled={copyingForward || !budgetItems.length}
+                      className="gap-2"
+                    >
+                      <Copy className="h-4 w-4" /> Copy to Next Month
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={handleAuditBudget}
+                      disabled={auditLoading}
+                      className="gap-2"
+                    >
+                      <ClipboardCheck className="h-4 w-4" /> AI Audit
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuLabel className="text-xs text-muted-foreground">View</DropdownMenuLabel>
+                    <DropdownMenuItem onClick={() => setHideZeroAmounts(h => !h)} className="gap-2">
+                      {hideZeroAmounts ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                      {hideZeroAmounts ? 'Show $0 budgets' : 'Hide $0 budgets'}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuLabel className="text-xs text-muted-foreground">Help</DropdownMenuLabel>
+                    <DropdownMenuItem onClick={() => {}} className="gap-2">
+                      <BookOpen className="h-4 w-4" /> Page Guide
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent><p>More options</p></TooltipContent>
+            </Tooltip>
+          </div>
         </div>
+
+        {/* Row 2: Tabs */}
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+          <Tabs value={budgetType} onValueChange={(v) => setBudgetType(v as 'personal' | 'business')}>
+            <TabsList>
+              <TabsTrigger value="personal">Personal</TabsTrigger>
+              <TabsTrigger value="business">Business</TabsTrigger>
+            </TabsList>
+          </Tabs>
+          <Tabs value={viewTab} onValueChange={(v) => setViewTab(v as 'budget' | 'forecast')}>
+            <TabsList>
+              <TabsTrigger value="budget">Budget</TabsTrigger>
+              <TabsTrigger value="forecast" className="gap-1.5"><TrendingUp className="h-3.5 w-3.5" /> Forecast</TabsTrigger>
+            </TabsList>
+          </Tabs>
+          {budgetType === 'business' && businessNames.length > 0 && (
+            <Select value={selectedBusiness} onValueChange={setSelectedBusiness}>
+              <SelectTrigger className="w-[180px] h-8 text-sm"><SelectValue placeholder="All Businesses" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Businesses</SelectItem>
+                {businessNames.map(name => <SelectItem key={name} value={name}>{name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
+      </div>
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <Card className="border-l-4 border-l-emerald-500">
+          <CardContent className="p-3 sm:p-4">
+            <p className="text-[11px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">Income</p>
+            <p className="text-lg sm:text-xl font-bold font-display tabular-nums mt-1">{formatCurrency(totalIncomeBudget)}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{formatCurrency(totalIncomeActual)} received</p>
+          </CardContent>
+        </Card>
+        <Card className="border-l-4 border-l-primary">
+          <CardContent className="p-3 sm:p-4">
+            <p className="text-[11px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">Expenses</p>
+            <p className="text-lg sm:text-xl font-bold font-display tabular-nums mt-1">{formatCurrency(totalExpenseBudget)}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{formatCurrency(totalExpenseActual)} spent</p>
+          </CardContent>
+        </Card>
+        <Card className={cn("border-l-4", totalExpenseRemaining >= 0 ? "border-l-emerald-500" : "border-l-rose-500")}>
+          <CardContent className="p-3 sm:p-4">
+            <p className="text-[11px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">Remaining</p>
+            <p className={cn("text-lg sm:text-xl font-bold font-display tabular-nums mt-1", totalExpenseRemaining < 0 ? "text-rose-600 dark:text-rose-400" : "text-foreground")}>{formatCurrency(Math.abs(totalExpenseRemaining))}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{totalExpenseRemaining < 0 ? 'over budget' : 'under budget'}</p>
+          </CardContent>
+        </Card>
+        <Card className={cn("border-l-4", leftToBudget >= 0 ? "border-l-emerald-500" : "border-l-amber-500")}>
+          <CardContent className="p-3 sm:p-4">
+            <p className="text-[11px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">Left to Budget</p>
+            <p className={cn("text-lg sm:text-xl font-bold font-display tabular-nums mt-1", leftToBudget < 0 ? "text-amber-600 dark:text-amber-400" : "text-emerald-600 dark:text-emerald-400")}>{formatCurrency(Math.abs(leftToBudget))}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{leftToBudget < 0 ? 'over-budgeted' : 'available'}</p>
+          </CardContent>
+        </Card>
       </div>
 
       {viewTab === 'budget' ? (
