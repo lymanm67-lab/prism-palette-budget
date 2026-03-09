@@ -148,6 +148,24 @@ const Dashboard = () => {
   }, [filteredTransactions]);
 
   if (accLoading) return (
+    <div className="p-8">
+      <div className="mb-8">
+        <div className="h-8 w-64 bg-muted animate-pulse rounded-lg mb-2" />
+        <div className="h-4 w-96 bg-muted/60 animate-pulse rounded" />
+      </div>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="h-32 bg-muted animate-pulse rounded-lg" />
+        ))}
+      </div>
+      <div className="grid gap-6 md:grid-cols-2 mb-8">
+        <div className="h-96 bg-muted animate-pulse rounded-lg" />
+        <div className="h-96 bg-muted animate-pulse rounded-lg" />
+      </div>
+    </div>
+  );
+
+  if (accLoading) return (
     <div className="flex items-center justify-center p-20">
       <div className="flex flex-col items-center gap-3">
         <div className="h-12 w-12 rounded-2xl prism-gradient prism-glow flex items-center justify-center">
