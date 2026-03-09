@@ -74,7 +74,7 @@ const Budgets = () => {
   const { formatCurrency } = useCurrency();
   const { household } = useHousehold();
   const [monthOffset, setMonthOffset] = useState(0);
-  const [budgetType, setBudgetType] = useState<'personal' | 'business'>('personal');
+  const [budgetType, setBudgetType] = useState<'personal' | 'business' | 'all'>('personal');
   const [selectedBusiness, setSelectedBusiness] = useState<string>('all');
   const month = getMonth(monthOffset);
   const { data: budgets, isLoading: budgetsLoading } = useBudgets(month);
@@ -156,6 +156,7 @@ const Budgets = () => {
     const groupIds = new Set(
       (categoryGroups as any[])
         .filter((g: any) => {
+          if (budgetType === 'all') return true;
           if ((g.budget_type || 'personal') !== budgetType) return false;
           if (budgetType === 'business' && selectedBusiness !== 'all') {
             return g.name.startsWith(selectedBusiness + ' -') || g.name.startsWith(selectedBusiness + ' –');
@@ -167,6 +168,19 @@ const Budgets = () => {
     return new Set(categories.filter(c => groupIds.has(c.group_id)).map(c => c.id));
   }, [categories, categoryGroups, budgetType, selectedBusiness]);
 
+  // For "all" mode, separate personal vs business category IDs
+  const personalCategoryIds = useMemo(() => {
+    if (!categories || !categoryGroups) return new Set<string>();
+    const groupIds = new Set((categoryGroups as any[]).filter((g: any) => (g.budget_type || 'personal') === 'personal').map((g: any) => g.id));
+    return new Set(categories.filter(c => groupIds.has(c.group_id)).map(c => c.id));
+  }, [categories, categoryGroups]);
+
+  const businessCategoryIds = useMemo(() => {
+    if (!categories || !categoryGroups) return new Set<string>();
+    const groupIds = new Set((categoryGroups as any[]).filter((g: any) => (g.budget_type || 'personal') === 'business').map((g: any) => g.id));
+    return new Set(categories.filter(c => groupIds.has(c.group_id)).map(c => c.id));
+  }, [categories, categoryGroups]);
+
   const budgetItems: BudgetRow[] = (budgets || []).map(b => ({
     ...b,
     spent: spentByCategory[b.category_id] || 0,
@@ -174,25 +188,33 @@ const Budgets = () => {
   })).filter(b => filteredCategoryIds.has(b.category_id));
 
   // Group budgets by expense type
-  const groupedBudgets = useMemo(() => {
+  const groupBudgetsByExpenseType = useCallback((items: BudgetRow[]) => {
     const groups: Record<ExpenseType, BudgetRow[]> = { income: [], fixed: [], flexible: [], non_monthly: [] };
-    for (const b of budgetItems) {
+    for (const b of items) {
       if (hideZeroAmounts && b.planned_amount === 0) continue;
       const type = categoryExpenseType.get(b.category_id) || 'flexible';
       groups[type].push(b);
     }
     return groups;
-  }, [budgetItems, categoryExpenseType, hideZeroAmounts]);
+  }, [categoryExpenseType, hideZeroAmounts]);
 
-  // Section totals
-  const sectionTotals = useMemo(() => {
+  const groupedBudgets = useMemo(() => groupBudgetsByExpenseType(budgetItems), [groupBudgetsByExpenseType, budgetItems]);
+
+  // For "all" mode: split budgets by entity
+  const personalBudgetItems = useMemo(() => budgetItems.filter(b => personalCategoryIds.has(b.category_id)), [budgetItems, personalCategoryIds]);
+  const businessBudgetItems = useMemo(() => budgetItems.filter(b => businessCategoryIds.has(b.category_id)), [budgetItems, businessCategoryIds]);
+  const personalGroupedBudgets = useMemo(() => groupBudgetsByExpenseType(personalBudgetItems), [groupBudgetsByExpenseType, personalBudgetItems]);
+  const businessGroupedBudgets = useMemo(() => groupBudgetsByExpenseType(businessBudgetItems), [groupBudgetsByExpenseType, businessBudgetItems]);
+
+  // Section totals helper
+  const calcSectionTotals = useCallback((grouped: Record<ExpenseType, BudgetRow[]>) => {
     const totals: Record<ExpenseType, { budget: number; actual: number; remaining: number }> = {
       income: { budget: 0, actual: 0, remaining: 0 },
       fixed: { budget: 0, actual: 0, remaining: 0 },
       flexible: { budget: 0, actual: 0, remaining: 0 },
       non_monthly: { budget: 0, actual: 0, remaining: 0 },
     };
-    for (const [type, items] of Object.entries(groupedBudgets)) {
+    for (const [type, items] of Object.entries(grouped)) {
       const t = type as ExpenseType;
       for (const b of items) {
         totals[t].budget += b.planned_amount;
@@ -201,7 +223,11 @@ const Budgets = () => {
       }
     }
     return totals;
-  }, [groupedBudgets]);
+  }, []);
+
+  const sectionTotals = useMemo(() => calcSectionTotals(groupedBudgets), [calcSectionTotals, groupedBudgets]);
+  const personalSectionTotals = useMemo(() => calcSectionTotals(personalGroupedBudgets), [calcSectionTotals, personalGroupedBudgets]);
+  const businessSectionTotals = useMemo(() => calcSectionTotals(businessGroupedBudgets), [calcSectionTotals, businessGroupedBudgets]);
 
   // Total income & expenses
   const totalIncomeBudget = sectionTotals.income.budget;
@@ -695,10 +721,11 @@ const Budgets = () => {
 
         {/* Row 2: Tabs */}
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-          <Tabs value={budgetType} onValueChange={(v) => setBudgetType(v as 'personal' | 'business')}>
+          <Tabs value={budgetType} onValueChange={(v) => setBudgetType(v as 'personal' | 'business' | 'all')}>
             <TabsList>
               <TabsTrigger value="personal">Personal</TabsTrigger>
               <TabsTrigger value="business">Business</TabsTrigger>
+              <TabsTrigger value="all">All</TabsTrigger>
             </TabsList>
           </Tabs>
           <Tabs value={viewTab} onValueChange={(v) => setViewTab(v as 'budget' | 'forecast')}>
@@ -765,53 +792,130 @@ const Budgets = () => {
             <div className="w-[62px]" />
           </div>
 
-          {/* Income Section */}
-          <Card className="overflow-hidden">
-            <CardContent className="p-2">
-              {renderSection('income', groupedBudgets.income)}
-            </CardContent>
-          </Card>
+          {budgetType === 'all' ? (
+            <>
+              {/* PERSONAL SECTION */}
+              {personalBudgetItems.length > 0 && (
+                <>
+                  <div className="flex items-center gap-2 px-3 pt-2">
+                    <span className="text-xs font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">Personal</span>
+                    <div className="flex-1 h-px bg-emerald-500/20" />
+                  </div>
+                  <Card className="overflow-hidden">
+                    <CardContent className="p-2">
+                      {renderSection('income', personalGroupedBudgets.income)}
+                    </CardContent>
+                  </Card>
+                  <Card className="overflow-hidden">
+                    <CardContent className="p-2 space-y-1">
+                      <div className="sm:hidden px-3 py-1.5 text-xs font-medium text-muted-foreground border-b">Expenses</div>
+                      {renderSection('fixed', personalGroupedBudgets.fixed)}
+                      {renderSection('flexible', personalGroupedBudgets.flexible)}
+                      {renderSection('non_monthly', personalGroupedBudgets.non_monthly)}
+                    </CardContent>
+                  </Card>
+                  {/* Personal subtotals */}
+                  <div className="flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 bg-emerald-500/5 rounded-lg text-sm">
+                    <span className="flex-1 font-medium text-emerald-600 dark:text-emerald-400">Personal Subtotal</span>
+                    <span className="text-right tabular-nums sm:w-[90px] font-medium">
+                      {formatCurrency(personalSectionTotals.income.budget - (personalSectionTotals.fixed.budget + personalSectionTotals.flexible.budget + personalSectionTotals.non_monthly.budget))}
+                    </span>
+                  </div>
+                </>
+              )}
 
-          {/* Total Income Row */}
-          <div className="flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-3 bg-muted/30 rounded-lg font-semibold text-sm sm:text-base">
-            <span className="flex-1 font-display">Total Income</span>
-            <span className="text-right tabular-nums sm:w-[90px]">{formatCurrency(totalIncomeBudget)}</span>
-            <span className="hidden sm:inline-block w-[90px] text-right tabular-nums text-muted-foreground">{formatCurrency(totalIncomeActual)}</span>
-            <span className={cn('text-right tabular-nums sm:w-[90px]', totalIncomeRemaining >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400')}>
-              {formatCurrency(Math.abs(totalIncomeRemaining))}
-            </span>
-            <div className="hidden sm:block w-[62px]" />
-          </div>
+              {/* BUSINESS SECTION */}
+              {businessBudgetItems.length > 0 && (
+                <>
+                  <div className="flex items-center gap-2 px-3 pt-4">
+                    <span className="text-xs font-bold uppercase tracking-widest text-primary">Business</span>
+                    <div className="flex-1 h-px bg-primary/20" />
+                  </div>
+                  <Card className="overflow-hidden">
+                    <CardContent className="p-2">
+                      {renderSection('income', businessGroupedBudgets.income)}
+                    </CardContent>
+                  </Card>
+                  <Card className="overflow-hidden">
+                    <CardContent className="p-2 space-y-1">
+                      <div className="sm:hidden px-3 py-1.5 text-xs font-medium text-muted-foreground border-b">Expenses</div>
+                      {renderSection('fixed', businessGroupedBudgets.fixed)}
+                      {renderSection('flexible', businessGroupedBudgets.flexible)}
+                      {renderSection('non_monthly', businessGroupedBudgets.non_monthly)}
+                    </CardContent>
+                  </Card>
+                  {/* Business subtotals */}
+                  <div className="flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 bg-primary/5 rounded-lg text-sm">
+                    <span className="flex-1 font-medium text-primary">Business Subtotal</span>
+                    <span className="text-right tabular-nums sm:w-[90px] font-medium">
+                      {formatCurrency(businessSectionTotals.income.budget - (businessSectionTotals.fixed.budget + businessSectionTotals.flexible.budget + businessSectionTotals.non_monthly.budget))}
+                    </span>
+                  </div>
+                </>
+              )}
 
-          {/* Expenses Section */}
-          <Card className="overflow-hidden">
-            <CardContent className="p-2 space-y-1">
-              <div className="hidden sm:flex items-center gap-3 px-3 py-1.5 text-xs font-medium text-muted-foreground border-b">
-                <ChevronDown className="h-4 w-4 invisible" />
-                <span className="flex-1">Expenses</span>
-                <span className="w-[200px]" />
-                <span className="w-[90px] text-right">Budget</span>
-                <span className="w-[90px] text-right">Actual</span>
-                <span className="w-[90px] text-right">Remaining</span>
-                <div className="w-[62px]" />
+              {/* Combined Totals */}
+              <div className="flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-3 bg-muted/30 rounded-lg font-semibold text-sm sm:text-base border-t-2 border-muted mt-2">
+                <span className="flex-1 font-display">Combined Total</span>
+                <span className="text-right tabular-nums sm:w-[90px]">{formatCurrency(totalIncomeBudget)}</span>
+                <span className="hidden sm:inline-block w-[90px] text-right tabular-nums text-muted-foreground">{formatCurrency(totalIncomeActual)}</span>
+                <span className={cn('text-right tabular-nums sm:w-[90px]', totalIncomeRemaining >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400')}>
+                  {formatCurrency(Math.abs(totalIncomeRemaining))}
+                </span>
+                <div className="hidden sm:block w-[62px]" />
               </div>
-              <div className="sm:hidden px-3 py-1.5 text-xs font-medium text-muted-foreground border-b">Expenses</div>
-              {renderSection('fixed', groupedBudgets.fixed)}
-              {renderSection('flexible', groupedBudgets.flexible)}
-              {renderSection('non_monthly', groupedBudgets.non_monthly)}
-            </CardContent>
-          </Card>
+            </>
+          ) : (
+            <>
+              {/* Income Section */}
+              <Card className="overflow-hidden">
+                <CardContent className="p-2">
+                  {renderSection('income', groupedBudgets.income)}
+                </CardContent>
+              </Card>
 
-          {/* Total Expenses Row */}
-          <div className="flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-3 bg-muted/30 rounded-lg font-semibold text-sm sm:text-base">
-            <span className="flex-1 font-display">Total Expenses</span>
-            <span className="text-right tabular-nums sm:w-[90px]">{formatCurrency(totalExpenseBudget)}</span>
-            <span className="hidden sm:inline-block w-[90px] text-right tabular-nums text-muted-foreground">{formatCurrency(totalExpenseActual)}</span>
-            <span className={cn('text-right tabular-nums sm:w-[90px]', totalExpenseRemaining >= 0 ? 'text-foreground' : 'text-rose-600 dark:text-rose-400')}>
-              {formatCurrency(Math.abs(totalExpenseRemaining))}
-            </span>
-            <div className="hidden sm:block w-[62px]" />
-          </div>
+              {/* Total Income Row */}
+              <div className="flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-3 bg-muted/30 rounded-lg font-semibold text-sm sm:text-base">
+                <span className="flex-1 font-display">Total Income</span>
+                <span className="text-right tabular-nums sm:w-[90px]">{formatCurrency(totalIncomeBudget)}</span>
+                <span className="hidden sm:inline-block w-[90px] text-right tabular-nums text-muted-foreground">{formatCurrency(totalIncomeActual)}</span>
+                <span className={cn('text-right tabular-nums sm:w-[90px]', totalIncomeRemaining >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400')}>
+                  {formatCurrency(Math.abs(totalIncomeRemaining))}
+                </span>
+                <div className="hidden sm:block w-[62px]" />
+              </div>
+
+              {/* Expenses Section */}
+              <Card className="overflow-hidden">
+                <CardContent className="p-2 space-y-1">
+                  <div className="hidden sm:flex items-center gap-3 px-3 py-1.5 text-xs font-medium text-muted-foreground border-b">
+                    <ChevronDown className="h-4 w-4 invisible" />
+                    <span className="flex-1">Expenses</span>
+                    <span className="w-[200px]" />
+                    <span className="w-[90px] text-right">Budget</span>
+                    <span className="w-[90px] text-right">Actual</span>
+                    <span className="w-[90px] text-right">Remaining</span>
+                    <div className="w-[62px]" />
+                  </div>
+                  <div className="sm:hidden px-3 py-1.5 text-xs font-medium text-muted-foreground border-b">Expenses</div>
+                  {renderSection('fixed', groupedBudgets.fixed)}
+                  {renderSection('flexible', groupedBudgets.flexible)}
+                  {renderSection('non_monthly', groupedBudgets.non_monthly)}
+                </CardContent>
+              </Card>
+
+              {/* Total Expenses Row */}
+              <div className="flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-3 bg-muted/30 rounded-lg font-semibold text-sm sm:text-base">
+                <span className="flex-1 font-display">Total Expenses</span>
+                <span className="text-right tabular-nums sm:w-[90px]">{formatCurrency(totalExpenseBudget)}</span>
+                <span className="hidden sm:inline-block w-[90px] text-right tabular-nums text-muted-foreground">{formatCurrency(totalExpenseActual)}</span>
+                <span className={cn('text-right tabular-nums sm:w-[90px]', totalExpenseRemaining >= 0 ? 'text-foreground' : 'text-rose-600 dark:text-rose-400')}>
+                  {formatCurrency(Math.abs(totalExpenseRemaining))}
+                </span>
+                <div className="hidden sm:block w-[62px]" />
+              </div>
+            </>
+          )}
 
           {/* Unbudgeted categories */}
           {unbudgetedCategories.length > 0 && (
