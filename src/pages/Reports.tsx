@@ -464,7 +464,11 @@ const Reports = () => {
                         )}
                       </ResponsiveContainer>
                       {showOtherBreakdown && rest.length > 0 && spendingChartType === 'pie' && (
-                        <div className="mt-4 border-t border-border pt-4">
+                        <motion.div 
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          className="mt-4 border-t border-border pt-4"
+                        >
                           <h4 className="text-sm font-medium mb-3 text-muted-foreground">Categories in "Other"</h4>
                           <div className="grid grid-cols-2 gap-x-4 gap-y-2">
                             {rest.map((cat, i) => (
@@ -477,7 +481,7 @@ const Reports = () => {
                               </div>
                             ))}
                           </div>
-                        </div>
+                        </motion.div>
                       )}
                     </div>
                   );
