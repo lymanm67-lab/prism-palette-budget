@@ -721,10 +721,11 @@ const Budgets = () => {
 
         {/* Row 2: Tabs */}
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-          <Tabs value={budgetType} onValueChange={(v) => setBudgetType(v as 'personal' | 'business')}>
+          <Tabs value={budgetType} onValueChange={(v) => setBudgetType(v as 'personal' | 'business' | 'all')}>
             <TabsList>
               <TabsTrigger value="personal">Personal</TabsTrigger>
               <TabsTrigger value="business">Business</TabsTrigger>
+              <TabsTrigger value="all">All</TabsTrigger>
             </TabsList>
           </Tabs>
           <Tabs value={viewTab} onValueChange={(v) => setViewTab(v as 'budget' | 'forecast')}>
