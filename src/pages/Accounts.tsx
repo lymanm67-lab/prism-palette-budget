@@ -335,7 +335,7 @@ const Accounts = () => {
                         <span className={`font-display text-sm sm:text-lg font-semibold tabular-nums shrink-0 ${acc.balance >= 0 ? 'text-prism-teal' : 'text-prism-rose'}`}>
                           {formatCurrency(acc.balance)}
                         </span>
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center gap-0.5 shrink-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Button
