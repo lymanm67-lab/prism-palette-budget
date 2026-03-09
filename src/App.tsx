@@ -37,6 +37,7 @@ import NetWorth from "@/pages/NetWorth";
 import Subscriptions from "@/pages/Subscriptions";
 import Forecast from "@/pages/Forecast";
 import YearInReview from "@/pages/YearInReview";
+import ApiDocs from "@/pages/ApiDocs";
 
 const queryClient = new QueryClient();
 
@@ -114,6 +115,7 @@ const App = () => (
               <Route path="/tax-assistant" element={<TaxAssistant />} />
               <Route path="/legal" element={<Legal />} />
               <Route path="/getting-started" element={<GettingStarted />} />
+              <Route path="/api-docs" element={<ApiDocs />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
