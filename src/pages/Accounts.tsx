@@ -286,9 +286,9 @@ const Accounts = () => {
                     const Icon = ACCOUNT_ICONS[acc.account_type] || Landmark;
                     const isEditing = editingId === acc.id;
                     return (
-                      <div key={acc.id} className="flex items-center gap-4 rounded-xl border border-border/30 p-4 interactive-row hover-border-glow group cursor-default">
-                        <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${GRADIENT_MAP[acc.account_type]} transition-transform duration-300 group-hover:scale-110`}>
-                          <Icon className="h-5 w-5 text-white" />
+                      <div key={acc.id} className="flex items-center gap-2 sm:gap-4 rounded-xl border border-border/30 p-3 sm:p-4 interactive-row hover-border-glow group cursor-default">
+                        <div className={`flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-gradient-to-br ${GRADIENT_MAP[acc.account_type]} transition-transform duration-300 group-hover:scale-110 shrink-0`}>
+                          <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                         </div>
                         <div className="flex-1 min-w-0">
                           {isEditing ? (
@@ -322,15 +322,17 @@ const Accounts = () => {
                             </div>
                           ) : (
                             <>
-                              <p className="font-medium truncate">{acc.name}</p>
-                              <p className="text-xs text-muted-foreground">
-                                {acc.last_synced_at ? `Last synced ${formatDate(acc.last_synced_at)}` : 'Manual account'}
-                              </p>
+                              <p className="font-medium text-sm truncate">{acc.name}</p>
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <Badge variant="secondary" className="text-[10px] capitalize">{acc.account_type}</Badge>
+                                <span className="text-[11px] sm:text-xs text-muted-foreground truncate">
+                                  {acc.last_synced_at ? `Synced ${formatDate(acc.last_synced_at)}` : 'Manual'}
+                                </span>
+                              </div>
                             </>
                           )}
                         </div>
-                        <Badge variant="secondary" className="text-xs capitalize">{acc.account_type}</Badge>
-                        <span className={`font-display text-lg font-semibold ${acc.balance >= 0 ? 'text-prism-teal' : 'text-prism-rose'}`}>
+                        <span className={`font-display text-sm sm:text-lg font-semibold tabular-nums shrink-0 ${acc.balance >= 0 ? 'text-prism-teal' : 'text-prism-rose'}`}>
                           {formatCurrency(acc.balance)}
                         </span>
                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
