@@ -1171,10 +1171,10 @@ const Budgets = () => {
                 if (!quickAddForm.name || !quickAddForm.group_id) return;
                 const newCat = await createCategory.mutateAsync({ name: quickAddForm.name, group_id: quickAddForm.group_id, color: quickAddForm.color });
                 setQuickAddOpen(false);
-                setQuickAddForm({ name:, expense_type: 'flexible' '', group_id: '', color: '#7c5cf5' });
+                setQuickAddForm({ name: '', group_id: '', color: '#7c5cf5' });
                 // Open budget dialog with the new category pre-selected
                 setEditingBudget(null);
-                setForm({ category_id: newCat.id, planned_amount: '', rollover: false, budgetKind: 'expense', group_id: quickAddForm.group_id });
+                setForm({ category_id: newCat.id, planned_amount: '', rollover: false, budgetKind: 'expense', group_id: quickAddForm.group_id, expense_type: 'flexible' });
                 setDialogOpen(true);
               }}
               disabled={!quickAddForm.name || !quickAddForm.group_id || createCategory.isPending}
