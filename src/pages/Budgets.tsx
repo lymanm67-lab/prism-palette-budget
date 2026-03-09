@@ -510,7 +510,7 @@ const Budgets = () => {
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center gap-1">
             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setMonthOffset(o => o - 1)}>
               <ChevronLeft className="h-4 w-4" />
