@@ -143,78 +143,59 @@ const Recurring = () => {
 
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="font-display text-3xl font-bold">Recurring</h1>
-          <p className="text-muted-foreground">Manage recurring expenses and income.</p>
-          <PageOverview
-            title="Recurring Transactions"
-            description="Track bills, subscriptions, and regular income. View in list or calendar format to plan cash flow."
-            icon={RepeatIcon}
-            iconColor="text-prism-sky"
-            ttsScript="The Recurring page helps you stay on top of regular bills and income. Add your recurring transactions like rent, subscriptions, insurance, and paychecks. Set the frequency to weekly, biweekly, monthly, quarterly, or yearly. The list view shows all recurring items with their next due dates and amounts. Switch to the calendar view to visualize payment clusters throughout the month. This helps you plan cash flow and avoid surprises."
-            features={[
-              'Track bills, subscriptions, and regular income',
-              'Weekly, biweekly, monthly, quarterly, yearly frequencies',
-              'List and Calendar views',
-              'Next due date tracking',
-              'Assign accounts and categories',
-            ]}
-            demoData={[
-              { label: 'Rent', value: '-$1,800/mo', badge: 'Monthly', color: '#3b82f6' },
-              { label: 'Netflix', value: '-$15.99/mo', badge: 'Monthly', color: '#ef4444' },
-              { label: 'Car Insurance', value: '-$140/mo', badge: 'Monthly', color: '#f59e0b' },
-              { label: 'Salary', value: '+$3,250/bi-wk', badge: 'Biweekly', color: '#22c55e' },
-            ]}
-          />
+      {/* Header */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="font-display text-2xl font-bold truncate">Recurring</h1>
+          <p className="text-sm text-muted-foreground truncate">Manage recurring expenses and income.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <div className="flex border rounded-lg overflow-hidden">
-            <button onClick={() => setView('list')} className={cn('px-3 py-2 text-sm flex items-center gap-1.5 transition-colors', view === 'list' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}>
-              <List className="h-4 w-4" /> List
+            <button onClick={() => setView('list')} className={cn('px-2.5 py-1.5 text-xs sm:text-sm flex items-center gap-1 sm:gap-1.5 transition-colors', view === 'list' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}>
+              <List className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> <span className="hidden sm:inline">List</span>
             </button>
-            <button onClick={() => setView('calendar')} className={cn('px-3 py-2 text-sm flex items-center gap-1.5 transition-colors', view === 'calendar' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}>
-              <CalendarIcon className="h-4 w-4" /> Calendar
+            <button onClick={() => setView('calendar')} className={cn('px-2.5 py-1.5 text-xs sm:text-sm flex items-center gap-1 sm:gap-1.5 transition-colors', view === 'calendar' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}>
+              <CalendarIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> <span className="hidden sm:inline">Calendar</span>
             </button>
           </div>
-          <Button onClick={() => setDialogOpen(true)} className="gap-2">
-            <Plus className="h-4 w-4" /> Add Recurring
+          <Button onClick={() => setDialogOpen(true)} size="sm" className="gap-1.5 h-8">
+            <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Add Recurring</span>
           </Button>
         </div>
       </div>
 
       {/* Summary */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
         <Card>
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-              <ArrowDownLeft className="h-5 w-5 text-emerald-500" />
+          <CardContent className="p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
+            <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-emerald-500/10 flex items-center justify-center shrink-0">
+              <ArrowDownLeft className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-500" />
             </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Recurring Income</p>
-              <p className="text-lg font-bold">{formatAmount(totalIncome)}</p>
+            <div className="min-w-0">
+              <p className="text-[11px] sm:text-xs text-muted-foreground">Recurring Income</p>
+              <p className="text-base sm:text-lg font-bold truncate">{formatAmount(totalIncome)}</p>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-rose-500/10 flex items-center justify-center">
-              <ArrowUpRight className="h-5 w-5 text-rose-500" />
+          <CardContent className="p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
+            <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-rose-500/10 flex items-center justify-center shrink-0">
+              <ArrowUpRight className="h-4 w-4 sm:h-5 sm:w-5 text-rose-500" />
             </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Recurring Expenses</p>
-              <p className="text-lg font-bold">{formatAmount(totalExpenses)}</p>
+            <div className="min-w-0">
+              <p className="text-[11px] sm:text-xs text-muted-foreground">Recurring Expenses</p>
+              <p className="text-base sm:text-lg font-bold truncate">{formatAmount(totalExpenses)}</p>
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-              <RepeatIcon className="h-5 w-5 text-primary" />
+        <Card className="col-span-2 sm:col-span-1">
+          <CardContent className="p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
+            <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+              <RepeatIcon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Total Recurring</p>
-              <p className="text-lg font-bold">{recurring?.length || 0}</p>
+            <div className="min-w-0">
+              <p className="text-[11px] sm:text-xs text-muted-foreground">Total Recurring</p>
+              <p className="text-base sm:text-lg font-bold">{recurring?.length || 0}</p>
             </div>
           </CardContent>
         </Card>
@@ -223,41 +204,39 @@ const Recurring = () => {
       {/* List View */}
       {view === 'list' && (
         <Card>
-          <CardHeader><CardTitle className="font-display">Upcoming Expenses</CardTitle></CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="font-display text-base sm:text-lg">Upcoming Expenses</CardTitle></CardHeader>
           <CardContent>
             {!recurring || recurring.length === 0 ? (
-              <p className="text-center text-muted-foreground py-10">No recurring transactions yet.</p>
+              <p className="text-center text-muted-foreground py-10 text-sm">No recurring transactions yet.</p>
             ) : (
               <div className="divide-y">
                 {recurring.map(r => (
-                  <div key={r.id} className="flex items-center justify-between py-3 group">
-                    <div className="flex items-center gap-3">
-                      <div className={cn('h-10 w-10 rounded-xl flex items-center justify-center', Number(r.amount) > 0 ? 'bg-emerald-500/10' : 'bg-rose-500/10')}>
-                        {Number(r.amount) > 0 ? <ArrowDownLeft className="h-5 w-5 text-emerald-500" /> : <ArrowUpRight className="h-5 w-5 text-rose-500" />}
-                      </div>
-                      <div>
-                        <p className="font-medium">{r.merchant || 'Unnamed'}</p>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <span>{FREQUENCIES.find(f => f.value === r.frequency)?.label || r.frequency}</span>
-                          {r.categories && <Badge variant="secondary" className="text-[10px]">{(r.categories as any).name}</Badge>}
-                          {r.accounts && <span>{(r.accounts as any).name}</span>}
-                        </div>
+                  <div key={r.id} className="flex items-center gap-2 sm:gap-3 py-2.5 sm:py-3 group">
+                    <div className={cn('h-9 w-9 sm:h-10 sm:w-10 rounded-xl flex items-center justify-center shrink-0', Number(r.amount) > 0 ? 'bg-emerald-500/10' : 'bg-rose-500/10')}>
+                      {Number(r.amount) > 0 ? <ArrowDownLeft className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-500" /> : <ArrowUpRight className="h-4 w-4 sm:h-5 sm:w-5 text-rose-500" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm truncate">{r.merchant || 'Unnamed'}</p>
+                      <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-muted-foreground flex-wrap">
+                        <span>{FREQUENCIES.find(f => f.value === r.frequency)?.label || r.frequency}</span>
+                        {r.categories && <Badge variant="secondary" className="text-[10px] px-1 py-0">{(r.categories as any).name}</Badge>}
+                        <span className="hidden sm:inline">{r.accounts && (r.accounts as any).name}</span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <div className="text-right">
-                        <p className={cn('font-semibold', Number(r.amount) > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400')}>
-                          {formatAmount(Math.abs(Number(r.amount)))}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {r.next_due_date ? format(parseISO(r.next_due_date), 'MMM d, yyyy') : '—'}
-                        </p>
-                      </div>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100" onClick={() => openEdit(r)}>
-                        <Pencil className="h-4 w-4" />
+                    <div className="text-right shrink-0">
+                      <p className={cn('font-semibold text-sm tabular-nums', Number(r.amount) > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400')}>
+                        {formatAmount(Math.abs(Number(r.amount)))}
+                      </p>
+                      <p className="text-[11px] sm:text-xs text-muted-foreground">
+                        {r.next_due_date ? format(parseISO(r.next_due_date), 'MMM d') : '—'}
+                      </p>
+                    </div>
+                    <div className="flex gap-0.5 shrink-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(r)}>
+                        <Pencil className="h-3.5 w-3.5" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 text-destructive" onClick={() => setDeleteTarget(r.id)}>
-                        <Trash2 className="h-4 w-4" />
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => setDeleteTarget(r.id)}>
+                        <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </div>
                   </div>
@@ -271,20 +250,20 @@ const Recurring = () => {
       {/* Calendar View */}
       {view === 'calendar' && (
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <CardTitle className="font-display">{format(calendarMonth, 'MMMM yyyy')}</CardTitle>
-              <div className="flex gap-1">
-                <Button variant="ghost" size="icon" onClick={() => setCalendarMonth(m => subMonths(m, 1))}><ChevronLeft className="h-4 w-4" /></Button>
-                <Button variant="ghost" size="sm" onClick={() => setCalendarMonth(new Date())}>Today</Button>
-                <Button variant="ghost" size="icon" onClick={() => setCalendarMonth(m => addMonths(m, 1))}><ChevronRight className="h-4 w-4" /></Button>
+              <CardTitle className="font-display text-base sm:text-lg">{format(calendarMonth, 'MMMM yyyy')}</CardTitle>
+              <div className="flex gap-0.5 sm:gap-1">
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCalendarMonth(m => subMonths(m, 1))}><ChevronLeft className="h-4 w-4" /></Button>
+                <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => setCalendarMonth(new Date())}>Today</Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCalendarMonth(m => addMonths(m, 1))}><ChevronRight className="h-4 w-4" /></Button>
               </div>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-2 sm:px-6">
             <div className="grid grid-cols-7 gap-px">
-              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
-                <div key={d} className="text-center text-xs font-medium text-muted-foreground py-2">{d}</div>
+              {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
+                <div key={i} className="text-center text-[10px] sm:text-xs font-medium text-muted-foreground py-1 sm:py-2">{d}</div>
               ))}
               {Array.from({ length: startDow }).map((_, i) => <div key={`e-${i}`} />)}
               {calDays.map(day => {
@@ -292,7 +271,7 @@ const Recurring = () => {
                 const items = recurringByDay[key] || [];
                 const isToday = isSameDay(day, new Date());
                 return (
-                  <div key={key} className={cn('min-h-[80px] border rounded-lg p-1.5 transition-colors', isToday && 'border-primary bg-primary/5')}>
+                  <div key={key} className={cn('min-h-[60px] sm:min-h-[80px] border rounded-lg p-1 sm:p-1.5 transition-colors', isToday && 'border-primary bg-primary/5')}>
                     <span className={cn('text-xs font-medium', isToday ? 'text-primary' : 'text-muted-foreground')}>{format(day, 'd')}</span>
                     <div className="mt-1 space-y-0.5">
                       {items.slice(0, 3).map((r: any) => (
