@@ -79,16 +79,16 @@ serve(async (req) => {
   const resource = pathParts[1] as AllowedTable | undefined;
   const resourceId = pathParts[2];
 
-  if (version !== "v1") {
-    return err("Use /v1/{resource} path format", 404);
-  }
-
-  if (!resource || !ALLOWED_TABLES.includes(resource)) {
+  if (!version || version !== "v1" || !resource) {
     return json({
       message: "Prism Budget API v1",
       endpoints: ALLOWED_TABLES.map((t) => `/v1/${t}`),
       docs: "Pass Bearer token from your auth session. All data is scoped by RLS.",
     });
+  }
+
+  if (!ALLOWED_TABLES.includes(resource)) {
+    return err(`Unknown resource '${resource}'. See / for available endpoints.`, 404);
   }
 
   const method = req.method;

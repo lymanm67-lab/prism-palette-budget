@@ -37,6 +37,7 @@ import NetWorth from "@/pages/NetWorth";
 import Subscriptions from "@/pages/Subscriptions";
 import Forecast from "@/pages/Forecast";
 import YearInReview from "@/pages/YearInReview";
+import ApiDocs from "@/pages/ApiDocs";
 
 const queryClient = new QueryClient();
 
