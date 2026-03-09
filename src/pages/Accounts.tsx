@@ -235,10 +235,6 @@ const Accounts = () => {
               </TooltipTrigger>
               <TooltipContent className="sm:hidden"><p>Import Transactions</p></TooltipContent>
             </Tooltip>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent className="sm:hidden"><p>Import Transactions</p></TooltipContent>
-            </Tooltip>
 
             {/* More menu — contains Plaid, MX, Page Guide */}
             <DropdownMenu>
