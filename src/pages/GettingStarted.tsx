@@ -307,27 +307,27 @@ function StepCard({ step, index, isCompleted, isAutoDetected, onToggleComplete }
         {/* Header - always visible */}
         <button
           onClick={() => setExpanded(!expanded)}
-          className="flex w-full items-center gap-4 p-5 text-left"
+          className="flex w-full items-center gap-2.5 sm:gap-4 p-3.5 sm:p-5 text-left"
         >
-          <div className="flex items-center gap-3 shrink-0">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-sm font-bold text-muted-foreground">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <span className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-muted text-xs sm:text-sm font-bold text-muted-foreground">
               {index + 1}
             </span>
             <span className={cn(
-              'flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 shrink-0',
+              'flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-primary/10 shrink-0',
             )}>
-              <step.icon className={cn('h-5 w-5', step.color)} />
+              <step.icon className={cn('h-4 w-4 sm:h-5 sm:w-5', step.color)} />
             </span>
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <h3 className="font-display font-semibold">{step.title}</h3>
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+              <h3 className="font-display font-semibold text-sm sm:text-base">{step.title}</h3>
               {isCompleted && <CheckCircle2 className="h-4 w-4 text-prism-teal shrink-0" />}
               {isAutoDetected && <Badge variant="secondary" className="text-[10px] bg-prism-teal/10 text-prism-teal border-prism-teal/20">Auto</Badge>}
             </div>
-            <p className="text-sm text-muted-foreground truncate">{step.summary}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground truncate">{step.summary}</p>
           </div>
-          {expanded ? <ChevronDown className="h-5 w-5 text-muted-foreground shrink-0" /> : <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />}
+          {expanded ? <ChevronDown className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground shrink-0" /> : <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground shrink-0" />}
         </button>
 
         {/* Expanded content */}
