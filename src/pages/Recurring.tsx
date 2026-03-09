@@ -250,20 +250,20 @@ const Recurring = () => {
       {/* Calendar View */}
       {view === 'calendar' && (
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <CardTitle className="font-display">{format(calendarMonth, 'MMMM yyyy')}</CardTitle>
-              <div className="flex gap-1">
-                <Button variant="ghost" size="icon" onClick={() => setCalendarMonth(m => subMonths(m, 1))}><ChevronLeft className="h-4 w-4" /></Button>
-                <Button variant="ghost" size="sm" onClick={() => setCalendarMonth(new Date())}>Today</Button>
-                <Button variant="ghost" size="icon" onClick={() => setCalendarMonth(m => addMonths(m, 1))}><ChevronRight className="h-4 w-4" /></Button>
+              <CardTitle className="font-display text-base sm:text-lg">{format(calendarMonth, 'MMMM yyyy')}</CardTitle>
+              <div className="flex gap-0.5 sm:gap-1">
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCalendarMonth(m => subMonths(m, 1))}><ChevronLeft className="h-4 w-4" /></Button>
+                <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => setCalendarMonth(new Date())}>Today</Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCalendarMonth(m => addMonths(m, 1))}><ChevronRight className="h-4 w-4" /></Button>
               </div>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-2 sm:px-6">
             <div className="grid grid-cols-7 gap-px">
-              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
-                <div key={d} className="text-center text-xs font-medium text-muted-foreground py-2">{d}</div>
+              {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
+                <div key={i} className="text-center text-[10px] sm:text-xs font-medium text-muted-foreground py-1 sm:py-2">{d}</div>
               ))}
               {Array.from({ length: startDow }).map((_, i) => <div key={`e-${i}`} />)}
               {calDays.map(day => {
