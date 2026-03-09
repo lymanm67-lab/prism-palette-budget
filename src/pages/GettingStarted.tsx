@@ -307,27 +307,27 @@ function StepCard({ step, index, isCompleted, isAutoDetected, onToggleComplete }
         {/* Header - always visible */}
         <button
           onClick={() => setExpanded(!expanded)}
-          className="flex w-full items-center gap-4 p-5 text-left"
+          className="flex w-full items-center gap-2.5 sm:gap-4 p-3.5 sm:p-5 text-left"
         >
-          <div className="flex items-center gap-3 shrink-0">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-sm font-bold text-muted-foreground">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <span className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-muted text-xs sm:text-sm font-bold text-muted-foreground">
               {index + 1}
             </span>
             <span className={cn(
-              'flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 shrink-0',
+              'flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-primary/10 shrink-0',
             )}>
-              <step.icon className={cn('h-5 w-5', step.color)} />
+              <step.icon className={cn('h-4 w-4 sm:h-5 sm:w-5', step.color)} />
             </span>
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <h3 className="font-display font-semibold">{step.title}</h3>
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+              <h3 className="font-display font-semibold text-sm sm:text-base">{step.title}</h3>
               {isCompleted && <CheckCircle2 className="h-4 w-4 text-prism-teal shrink-0" />}
               {isAutoDetected && <Badge variant="secondary" className="text-[10px] bg-prism-teal/10 text-prism-teal border-prism-teal/20">Auto</Badge>}
             </div>
-            <p className="text-sm text-muted-foreground truncate">{step.summary}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground truncate">{step.summary}</p>
           </div>
-          {expanded ? <ChevronDown className="h-5 w-5 text-muted-foreground shrink-0" /> : <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />}
+          {expanded ? <ChevronDown className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground shrink-0" /> : <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground shrink-0" />}
         </button>
 
         {/* Expanded content */}
@@ -502,7 +502,7 @@ function GuidedTour({ open, onClose }: { open: boolean; onClose: () => void }) {
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-lg p-0 overflow-hidden border-0">
+      <DialogContent className="max-w-lg p-0 overflow-hidden border-0 w-[calc(100vw-2rem)] sm:w-full">
         <AnimatePresence mode="wait">
           <motion.div
             key={slideIdx}
@@ -512,24 +512,24 @@ function GuidedTour({ open, onClose }: { open: boolean; onClose: () => void }) {
             transition={{ duration: 0.25 }}
           >
             {/* Hero area */}
-            <div className={cn('p-8 pb-6 bg-gradient-to-br text-white', slide.gradient)}>
-              <div className="flex items-start justify-between mb-6">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm">
-                  <Icon className="h-7 w-7" />
+            <div className={cn('p-5 sm:p-8 pb-4 sm:pb-6 bg-gradient-to-br text-white', slide.gradient)}>
+              <div className="flex items-start justify-between mb-4 sm:mb-6">
+                <div className="flex h-11 w-11 sm:h-14 sm:w-14 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm">
+                  <Icon className="h-5 w-5 sm:h-7 sm:w-7" />
                 </div>
                 <button onClick={onClose} className="text-white/60 hover:text-white transition-colors">
                   <X className="h-5 w-5" />
                 </button>
               </div>
-              <h2 className="font-display text-2xl font-bold">{slide.title}</h2>
-              <p className="mt-2 text-white/80 text-sm leading-relaxed">{slide.desc}</p>
+              <h2 className="font-display text-xl sm:text-2xl font-bold">{slide.title}</h2>
+              <p className="mt-2 text-white/80 text-xs sm:text-sm leading-relaxed">{slide.desc}</p>
             </div>
 
             {/* Content area */}
-            <div className="p-6 space-y-4">
-              <div className="flex items-start gap-3 rounded-lg bg-primary/5 p-3">
+            <div className="p-4 sm:p-6 space-y-3 sm:space-y-4">
+              <div className="flex items-start gap-3 rounded-lg bg-primary/5 p-2.5 sm:p-3">
                 <Zap className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                <p className="text-sm text-muted-foreground"><span className="font-medium text-foreground">Tip:</span> {slide.tip}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground"><span className="font-medium text-foreground">Tip:</span> {slide.tip}</p>
               </div>
 
               {/* Progress dots */}
@@ -548,16 +548,16 @@ function GuidedTour({ open, onClose }: { open: boolean; onClose: () => void }) {
 
               {/* Actions */}
               <div className="flex items-center justify-between">
-                <Button variant="ghost" size="sm" onClick={handlePrev} disabled={isFirst} className="gap-1">
+                <Button variant="ghost" size="sm" onClick={handlePrev} disabled={isFirst} className="gap-1 text-xs sm:text-sm h-8">
                   <ChevronLeft className="h-4 w-4" /> Back
                 </Button>
-                <div className="flex gap-2">
+                <div className="flex gap-1.5 sm:gap-2">
                   {slide.route && (
-                    <Button variant="outline" size="sm" onClick={handleGoTo} className="gap-1">
-                      <Rocket className="h-3.5 w-3.5" /> Go There
+                    <Button variant="outline" size="sm" onClick={handleGoTo} className="gap-1 text-xs sm:text-sm h-8">
+                      <Rocket className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Go There</span><span className="sm:hidden">Go</span>
                     </Button>
                   )}
-                  <Button size="sm" onClick={handleNext} className="gap-1">
+                  <Button size="sm" onClick={handleNext} className="gap-1 text-xs sm:text-sm h-8">
                     {isLast ? 'Get Started' : 'Next'} {!isLast && <ChevronRight className="h-4 w-4" />}
                   </Button>
                 </div>
@@ -678,78 +678,77 @@ const GettingStarted = () => {
 
       {/* Header */}
       <div>
-        <h1 className="font-display text-3xl font-bold">Getting Started</h1>
-        <p className="text-muted-foreground">Learn how to set up and use every feature of Prism Budget.</p>
+        <h1 className="font-display text-2xl sm:text-3xl font-bold">Getting Started</h1>
+        <p className="text-sm sm:text-base text-muted-foreground">Learn how to set up and use every feature of Prism Budget.</p>
       </div>
 
       {/* Welcome card with progress */}
       <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-prism-teal/5">
-        <CardContent className="p-6">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl prism-gradient prism-glow shrink-0">
-                <Rocket className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h2 className="font-display text-xl font-bold">Welcome to Prism Budget!</h2>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Follow these {TRAINING_STEPS.length} steps to get your finances fully set up. 
-                  Each section includes a voice walkthrough, step-by-step instructions, and pro tips.
-                </p>
-                {autoCount > 0 && (
-                  <div className="flex items-center gap-1.5 mt-2">
-                    <Badge variant="secondary" className="gap-1 text-xs bg-prism-teal/10 text-prism-teal border-prism-teal/20">
-                      <Zap className="h-3 w-3" /> {autoCount} auto-detected from your data
-                    </Badge>
-                  </div>
-                )}
-                <div className="flex items-center gap-3 mt-3">
-                  <Progress value={progress} className="flex-1 h-2" />
-                  <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">
-                    {mergedCompleted.size}/{TRAINING_STEPS.length} complete
-                  </span>
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex items-start gap-3 sm:gap-4">
+            <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-2xl prism-gradient prism-glow shrink-0">
+              <Rocket className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h2 className="font-display text-lg sm:text-xl font-bold">Welcome to Prism Budget!</h2>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                Follow these {TRAINING_STEPS.length} steps to get your finances fully set up. 
+                Each section includes a voice walkthrough, step-by-step instructions, and pro tips.
+              </p>
+              {autoCount > 0 && (
+                <div className="flex items-center gap-1.5 mt-2">
+                  <Badge variant="secondary" className="gap-1 text-[10px] sm:text-xs bg-prism-teal/10 text-prism-teal border-prism-teal/20">
+                    <Zap className="h-3 w-3" /> {autoCount} auto-detected from your data
+                  </Badge>
                 </div>
+              )}
+              <div className="flex items-center gap-3 mt-3">
+                <Progress value={progress} className="flex-1 h-2" />
+                <span className="text-xs sm:text-sm font-medium text-muted-foreground whitespace-nowrap">
+                  {mergedCompleted.size}/{TRAINING_STEPS.length} complete
+                </span>
               </div>
             </div>
-            <div className="flex gap-2 shrink-0 flex-wrap">
-              {mergedCompleted.size > 0 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="gap-1.5 text-muted-foreground"
-                  onClick={handleResetProgress}
-                >
-                  <RotateCcw className="h-3.5 w-3.5" /> Reset
-                </Button>
-              )}
+          </div>
+          {/* Action buttons — stacked below on mobile */}
+          <div className="flex items-center gap-1.5 sm:gap-2 mt-3 sm:mt-4 flex-wrap">
+            {mergedCompleted.size > 0 && (
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                className="gap-1.5"
-                onClick={() => setTourOpen(true)}
+                className="gap-1.5 text-muted-foreground h-8 text-xs sm:text-sm"
+                onClick={handleResetProgress}
               >
-                <Eye className="h-3.5 w-3.5" /> Tour
+                <RotateCcw className="h-3.5 w-3.5" /> Reset
               </Button>
-              <Button
-                variant={tts.isSpeaking ? 'default' : 'outline'}
-                size="sm"
-                className="gap-1.5"
-                onClick={handleWelcomeTTS}
-              >
-                {tts.isSpeaking && !tts.isPaused ? (
-                  <><Pause className="h-3.5 w-3.5" /> Pause</>
-                ) : tts.isPaused ? (
-                  <><Play className="h-3.5 w-3.5" /> Resume</>
-                ) : (
-                  <><Volume2 className="h-3.5 w-3.5" /> Welcome</>
-                )}
-              </Button>
-              {tts.isSpeaking && (
-                <Button variant="ghost" size="sm" onClick={tts.stop}>
-                  <Square className="h-3.5 w-3.5" />
-                </Button>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5 h-8 text-xs sm:text-sm"
+              onClick={() => setTourOpen(true)}
+            >
+              <Eye className="h-3.5 w-3.5" /> Tour
+            </Button>
+            <Button
+              variant={tts.isSpeaking ? 'default' : 'outline'}
+              size="sm"
+              className="gap-1.5 h-8 text-xs sm:text-sm"
+              onClick={handleWelcomeTTS}
+            >
+              {tts.isSpeaking && !tts.isPaused ? (
+                <><Pause className="h-3.5 w-3.5" /> Pause</>
+              ) : tts.isPaused ? (
+                <><Play className="h-3.5 w-3.5" /> Resume</>
+              ) : (
+                <><Volume2 className="h-3.5 w-3.5" /> Welcome</>
               )}
-            </div>
+            </Button>
+            {tts.isSpeaking && (
+              <Button variant="ghost" size="sm" className="h-8" onClick={tts.stop}>
+                <Square className="h-3.5 w-3.5" />
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
