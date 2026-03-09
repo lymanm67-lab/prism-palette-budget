@@ -9,6 +9,53 @@ import KeyboardShortcutsModal from '@/components/KeyboardShortcutsModal';
 
 const AppLayout = () => {
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [lastKey, setLastKey] = useState<string | null>(null);
+
+  // Global keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if typing in input
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return;
+
+      // ? to open shortcuts
+      if (e.key === '?' && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        setShortcutsOpen(true);
+        return;
+      }
+
+      // G + key navigation
+      if (e.key.toLowerCase() === 'g') {
+        setLastKey('g');
+        setTimeout(() => setLastKey(null), 1000);
+        return;
+      }
+
+      if (lastKey === 'g') {
+        const routes: Record<string, string> = {
+          d: '/dashboard',
+          t: '/transactions',
+          b: '/budgets',
+          a: '/accounts',
+          r: '/reports',
+          s: '/settings',
+          y: '/year-in-review',
+        };
+        const route = routes[e.key.toLowerCase()];
+        if (route) {
+          e.preventDefault();
+          navigate(route);
+        }
+        setLastKey(null);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [lastKey, navigate]);
 
   return (
     <>
