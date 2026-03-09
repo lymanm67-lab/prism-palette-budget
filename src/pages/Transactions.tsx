@@ -1420,7 +1420,7 @@ const Transactions = () => {
             <span className="hidden md:block w-[180px] shrink-0 text-xs font-bold uppercase tracking-wider text-foreground">Account</span>
             <span className="w-[90px] text-right text-xs font-bold uppercase tracking-wider text-foreground">Amount</span>
             {/* Spacer for action icons */}
-            <div className="w-[68px] shrink-0" />
+            <div className="hidden sm:block w-[68px] shrink-0" />
           </div>
           {grouped.map(group => (
             <div key={group.date}>
@@ -1459,7 +1459,7 @@ const Transactions = () => {
                       <div
                         key={txn.id}
                         className={cn(
-                          "flex items-center gap-3 px-4 py-3 hover:bg-muted/30 transition-colors group cursor-pointer",
+                          "flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 hover:bg-muted/30 transition-colors group cursor-pointer",
                           isDupe && "bg-amber-50/50 dark:bg-amber-950/10",
                           !isDupe && isUncategorized && "bg-rose-50/60 dark:bg-rose-950/15 border-l-2 border-l-rose-400 dark:border-l-rose-500",
                           !isDupe && !isUncategorized && isTransfer && "bg-blue-50/50 dark:bg-blue-950/10",
@@ -1479,30 +1479,64 @@ const Transactions = () => {
                         {/* Merchant logo */}
                         <MerchantIcon merchant={txn.merchant} isIncome={isIncome} isDuplicate={isDupe} />
 
-                        {/* Merchant name + badges */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <p className="text-sm font-medium truncate">{txn.merchant || 'No merchant'}</p>
-                            {(txn as any).receipt_url && <ImageIcon className="h-3 w-3 text-muted-foreground shrink-0" />}
+                        {/* Merchant name + category (stacked on mobile) */}
+                        <div className="flex-1 min-w-0 overflow-hidden">
+                          <div className="flex items-center gap-1 sm:gap-1.5">
+                            <p className="text-xs sm:text-sm font-medium truncate">{txn.merchant || 'No merchant'}</p>
+                            {(txn as any).receipt_url && <ImageIcon className="h-3 w-3 text-muted-foreground shrink-0 hidden sm:block" />}
                             {isDupe && (
-                              <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-amber-300 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 shrink-0">
+                              <Badge variant="outline" className="text-[10px] px-1 sm:px-1.5 py-0 h-4 border-amber-300 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 shrink-0 hidden sm:flex">
                                 <Copy className="h-2.5 w-2.5 mr-0.5" /> Duplicate
                               </Badge>
                             )}
                             {isTransfer && (
-                              <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-border text-muted-foreground shrink-0">
+                              <Badge variant="outline" className="text-[10px] px-1 sm:px-1.5 py-0 h-4 border-border text-muted-foreground shrink-0 hidden sm:flex">
                                 <ArrowRightLeft className="h-2.5 w-2.5 mr-0.5" /> Transfer
                               </Badge>
                             )}
                             {isNeedsReview && (
-                              <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-amber-400 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 shrink-0">
+                              <Badge variant="outline" className="text-[10px] px-1 sm:px-1.5 py-0 h-4 border-amber-400 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 shrink-0 hidden sm:flex">
                                 <Sparkles className="h-2.5 w-2.5 mr-0.5" /> New
                               </Badge>
                             )}
                           </div>
+                          {/* Category - visible on mobile as subtitle */}
+                          <div className="flex items-center gap-1 mt-0.5">
+                            {isTransfer ? (() => {
+                              const pairId = (txn as any).transfer_pair_id;
+                              const pairTxn = pairId ? (transactions || []).find(t => t.id === pairId) : null;
+                              const pairAcct = pairTxn ? (accounts || []).find(a => a.id === pairTxn.account_id) : null;
+                              const direction = txn.amount < 0 ? 'to' : 'from';
+                              const linkedName = pairAcct?.name;
+                              return (
+                                <span className="flex items-center gap-1 text-[11px] sm:text-xs text-muted-foreground truncate">
+                                  <ArrowRightLeft className="h-2.5 w-2.5 shrink-0 text-primary/60" />
+                                  <span className="truncate">
+                                    {linkedName ? `Transfer ${direction} ${linkedName}` : 'Transfer'}
+                                  </span>
+                                </span>
+                              );
+                            })() : cat ? (
+                              <span className="flex items-center gap-1 text-[11px] sm:text-xs text-muted-foreground truncate">
+                                <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
+                                <span className="truncate">{cat.name}</span>
+                              </span>
+                            ) : (
+                              <span className="flex items-center gap-1 text-[11px] sm:text-xs font-medium text-rose-500 dark:text-rose-400">
+                                <span className="h-2 w-2 rounded-full bg-rose-400/60 dark:bg-rose-500/60 animate-pulse shrink-0" />
+                                Uncategorized
+                              </span>
+                            )}
+                            {/* Account name on mobile */}
+                            {acct && (
+                              <span className="text-[11px] sm:text-xs text-muted-foreground/60 truncate sm:hidden">
+                                · {acct.name}
+                              </span>
+                            )}
+                          </div>
                         </div>
 
-                        {/* Category */}
+                        {/* Category - desktop only (separate column) */}
                         <div className="hidden sm:flex items-center gap-1.5 w-[180px] shrink-0">
                           {isTransfer ? (() => {
                             const pairId = (txn as any).transfer_pair_id;
@@ -1542,14 +1576,14 @@ const Transactions = () => {
 
                         {/* Amount */}
                         <span className={cn(
-                          'text-sm font-semibold tabular-nums whitespace-nowrap w-[90px] text-right',
+                          'text-xs sm:text-sm font-semibold tabular-nums whitespace-nowrap w-[70px] sm:w-[90px] text-right shrink-0',
                           isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground'
                         )}>
                           {isIncome ? '+' : ''}{formatCurrency(txn.amount)}
                         </span>
 
                         {/* Inline action icons */}
-                        <div className={cn("flex items-center gap-0.5 shrink-0 transition-opacity", (isNeedsReview || isDupe) ? "opacity-100" : "opacity-0 group-hover:opacity-100")}>
+                        <div className={cn("hidden sm:flex items-center gap-0.5 shrink-0 transition-opacity", (isNeedsReview || isDupe) ? "opacity-100" : "opacity-0 group-hover:opacity-100")}>
                           <TooltipProvider delayDuration={200}>
                             {isDupe && (
                               <Tooltip>
