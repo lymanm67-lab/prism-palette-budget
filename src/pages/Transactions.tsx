@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuLabel } from '@/components/ui/dropdown-menu';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { useTransactions, useDeletedTransactions, useCreateTransaction, useUpdateTransaction, useAccounts, useCategories } from '@/hooks/use-finance-data';
+import { useTransactions, useDeletedTransactions, useCreateTransaction, useUpdateTransaction, useAccounts, useCategories, useCategoryGroups } from '@/hooks/use-finance-data';
 import { useGoals } from '@/hooks/use-goals';
 import { useCurrency } from '@/hooks/use-currency';
 import { supabase } from '@/integrations/supabase/client';
