@@ -10,6 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuLabel } from '@/components/ui/dropdown-menu';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useTransactions, useDeletedTransactions, useCreateTransaction, useUpdateTransaction, useAccounts, useCategories } from '@/hooks/use-finance-data';
 import { useGoals } from '@/hooks/use-goals';
@@ -23,6 +24,7 @@ import {
   ArrowRightLeft, SlidersHorizontal, CalendarIcon, ChevronRight,
   ArrowUpDown, X, Pencil, Sparkles, Landmark, Check, Camera, ImageIcon,
   Copy, AlertTriangle, Undo2, RotateCcw, CheckCircle2, Download,
+  MoreHorizontal, Info, BookOpen, Volume2,
 } from 'lucide-react';
 import { exportTransactionsToCsv } from '@/lib/export-transactions';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -84,6 +86,7 @@ const Transactions = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [open, setOpen] = useState(false);
   const [csvOpen, setCsvOpen] = useState(false);
+  const [pageGuideOpen, setPageGuideOpen] = useState(false);
   const [transferOpen, setTransferOpen] = useState(false);
   const [filters, setFilters] = useState<FilterState>(EMPTY_FILTERS);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -665,70 +668,51 @@ const Transactions = () => {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
       {/* Header - sticky */}
       <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 -mt-6 pt-6 pb-4 space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="font-display text-2xl font-bold">Transactions</h1>
-        <PageOverview
-          title="Transactions Overview"
-          description="Track all your financial transactions. Add manually, import CSV, or auto-sync via Plaid. Auto-categorize with AI."
-          icon={Receipt}
-          iconColor="text-prism-orange"
-          ttsScript="This is the Transactions page where all your financial activity lives. You can add transactions manually by clicking Add Transaction, import in bulk from CSV files supporting Mint and Monarch formats, or auto-sync from your bank via Plaid. Use Auto-categorize to apply AI-powered merchant matching rules. Edit Multiple mode lets you batch-change categories or move transactions between accounts. Use the search, date filters, and sorting to find specific transactions."
-          features={[
-            'Manual entry, CSV import, and Plaid auto-sync',
-            'AI-powered auto-categorization with merchant rules',
-            'Batch edit categories and accounts',
-            'Search, filter by date, and sort transactions',
-            'Split transactions across multiple categories',
-            'Track transfers between accounts',
-          ]}
-          demoTableHeaders={['Date', 'Merchant', 'Category', 'Amount']}
-          demoTableRows={[
-            ['Mar 5', 'Whole Foods Market', 'Groceries', '-$82.34'],
-            ['Mar 4', 'Netflix', 'Subscriptions', '-$15.99'],
-            ['Mar 3', 'Employer Direct Deposit', 'Salary', '+$3,250.00'],
-            ['Mar 2', 'Target', 'Clothing', '-$67.89'],
-            ['Mar 1', 'Rent Payment', 'Rent/Mortgage', '-$1,800.00'],
-          ]}
-        />
-      </div>
-        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-          {/* Search button */}
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="font-display text-2xl font-bold shrink-0">Transactions</h1>
+        <div className="flex flex-wrap items-center justify-end gap-1.5 sm:gap-2">
+          {/* Search */}
           <Button variant="outline" size="sm" className="gap-1.5 h-8" onClick={() => setSearchOpen(!searchOpen)}>
             <Search className="h-4 w-4" /> <span className="hidden sm:inline">Search</span>
           </Button>
 
-          {/* Quick Date Filters - hidden on mobile */}
-          <div className="hidden md:flex items-center gap-1 flex-wrap">
-            {[
-              { label: 'Today', fn: () => { const d = format(new Date(), 'yyyy-MM-dd'); setFilters(f => ({ ...f, dateFrom: d, dateTo: d })); } },
-              { label: '7 days', fn: () => { setFilters(f => ({ ...f, dateFrom: format(subDays(new Date(), 7), 'yyyy-MM-dd'), dateTo: format(new Date(), 'yyyy-MM-dd') })); } },
-              { label: 'This month', fn: () => { setFilters(f => ({ ...f, dateFrom: format(startOfMonth(new Date()), 'yyyy-MM-dd'), dateTo: format(endOfMonth(new Date()), 'yyyy-MM-dd') })); } },
-              { label: 'Last month', fn: () => { const lm = subMonths(new Date(), 1); setFilters(f => ({ ...f, dateFrom: format(startOfMonth(lm), 'yyyy-MM-dd'), dateTo: format(endOfMonth(lm), 'yyyy-MM-dd') })); } },
-              { label: 'This year', fn: () => { setFilters(f => ({ ...f, dateFrom: format(startOfYear(new Date()), 'yyyy-MM-dd'), dateTo: format(new Date(), 'yyyy-MM-dd') })); } },
-            ].map(qf => (
-              <Button key={qf.label} variant="ghost" size="sm" className="h-7 text-xs px-2 text-muted-foreground hover:text-foreground" onClick={qf.fn}>
-                {qf.label}
-              </Button>
-            ))}
-          </div>
-
-          {/* Date filter button */}
+          {/* Date dropdown — presets + custom range */}
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-1.5 h-8">
+              <Button variant="outline" size="sm" className="gap-1.5 h-8 relative">
                 <CalendarIcon className="h-4 w-4" /> <span className="hidden sm:inline">Date</span>
+                {(filters.dateFrom || filters.dateTo) && (
+                  <span className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-primary" />
+                )}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-64 space-y-3" align="end">
-              <h4 className="font-semibold text-sm">Date Range</h4>
-              <div className="space-y-2">
-                <div className="space-y-1">
-                  <Label className="text-xs">From</Label>
-                  <Input type="date" value={filters.dateFrom} onChange={e => setFilters(f => ({ ...f, dateFrom: e.target.value }))} className="h-8 text-xs" />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">To</Label>
-                  <Input type="date" value={filters.dateTo} onChange={e => setFilters(f => ({ ...f, dateTo: e.target.value }))} className="h-8 text-xs" />
+            <PopoverContent className="w-64 space-y-2 p-3" align="end">
+              <h4 className="font-semibold text-sm mb-1">Quick Range</h4>
+              <div className="grid grid-cols-2 gap-1">
+                {[
+                  { label: 'Today', fn: () => { const d = format(new Date(), 'yyyy-MM-dd'); setFilters(f => ({ ...f, dateFrom: d, dateTo: d })); } },
+                  { label: '7 days', fn: () => { setFilters(f => ({ ...f, dateFrom: format(subDays(new Date(), 7), 'yyyy-MM-dd'), dateTo: format(new Date(), 'yyyy-MM-dd') })); } },
+                  { label: 'This month', fn: () => { setFilters(f => ({ ...f, dateFrom: format(startOfMonth(new Date()), 'yyyy-MM-dd'), dateTo: format(endOfMonth(new Date()), 'yyyy-MM-dd') })); } },
+                  { label: 'Last month', fn: () => { const lm = subMonths(new Date(), 1); setFilters(f => ({ ...f, dateFrom: format(startOfMonth(lm), 'yyyy-MM-dd'), dateTo: format(endOfMonth(lm), 'yyyy-MM-dd') })); } },
+                  { label: 'This year', fn: () => { setFilters(f => ({ ...f, dateFrom: format(startOfYear(new Date()), 'yyyy-MM-dd'), dateTo: format(new Date(), 'yyyy-MM-dd') })); } },
+                  { label: 'All time', fn: () => { setFilters(f => ({ ...f, dateFrom: '', dateTo: '' })); } },
+                ].map(qf => (
+                  <Button key={qf.label} variant="ghost" size="sm" className="h-7 text-xs justify-start" onClick={qf.fn}>
+                    {qf.label}
+                  </Button>
+                ))}
+              </div>
+              <div className="border-t border-border pt-2 space-y-2">
+                <h4 className="font-semibold text-xs text-muted-foreground">Custom Range</h4>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <Label className="text-xs">From</Label>
+                    <Input type="date" value={filters.dateFrom} onChange={e => setFilters(f => ({ ...f, dateFrom: e.target.value }))} className="h-8 text-xs" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">To</Label>
+                    <Input type="date" value={filters.dateTo} onChange={e => setFilters(f => ({ ...f, dateTo: e.target.value }))} className="h-8 text-xs" />
+                  </div>
                 </div>
               </div>
               {(filters.dateFrom || filters.dateTo) && (
@@ -739,7 +723,7 @@ const Transactions = () => {
             </PopoverContent>
           </Popover>
 
-          {/* Filters button */}
+          {/* Filters */}
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" size="sm" className="gap-1.5 h-8 relative">
@@ -791,30 +775,43 @@ const Transactions = () => {
             </PopoverContent>
           </Popover>
 
-          {/* Import CSV button */}
-          <Button variant="outline" size="sm" className="gap-1.5 h-8" onClick={() => setCsvOpen(true)}>
-            <Upload className="h-4 w-4" /> <span className="hidden sm:inline">Import</span>
+          {/* Add transaction */}
+          <Button size="sm" className="gap-1.5 h-8" onClick={() => setOpen(true)}>
+            <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Add</span>
           </Button>
 
-          {/* Export CSV button */}
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="gap-1.5 h-8" 
-            onClick={() => {
-              exportTransactionsToCsv(filtered as any, `transactions-${new Date().toISOString().split('T')[0]}.csv`);
-              toast.success(`Exported ${filtered.length} transactions to CSV`);
-            }}
-            disabled={filtered.length === 0}
-          >
-            <Download className="h-4 w-4" /> <span className="hidden sm:inline">Export</span>
-          </Button>
-
-          {/* Add transaction button */}
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm" className="gap-1.5 h-8"><Plus className="h-4 w-4" /> <span className="hidden sm:inline">Add transaction</span></Button>
-            </DialogTrigger>
+          {/* More menu — Import, Export, Page Guide */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuLabel className="text-xs text-muted-foreground">Data</DropdownMenuLabel>
+              <DropdownMenuItem onClick={() => setCsvOpen(true)} className="gap-2">
+                <Upload className="h-4 w-4" /> Import CSV
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  exportTransactionsToCsv(filtered as any, `transactions-${new Date().toISOString().split('T')[0]}.csv`);
+                  toast.success(`Exported ${filtered.length} transactions to CSV`);
+                }}
+                disabled={filtered.length === 0}
+                className="gap-2"
+              >
+                <Download className="h-4 w-4" /> Export CSV
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel className="text-xs text-muted-foreground">Help</DropdownMenuLabel>
+              <DropdownMenuItem onClick={() => setPageGuideOpen(true)} className="gap-2">
+                <BookOpen className="h-4 w-4" /> Page Guide
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+      <Dialog open={open} onOpenChange={setOpen}>
             <DialogContent className="max-h-[90vh] overflow-y-auto">
               <DialogHeader><DialogTitle className="font-display">Add Transaction</DialogTitle></DialogHeader>
               <div className="space-y-4">
@@ -1077,8 +1074,33 @@ const Transactions = () => {
               </div>
             </DialogContent>
           </Dialog>
-        </div>
       </div>
+      {/* Page Guide */}
+      {pageGuideOpen && (
+        <PageOverview
+          title="Transactions Overview"
+          description="Track all your financial transactions. Add manually, import CSV, or auto-sync via Plaid. Auto-categorize with AI."
+          icon={Receipt}
+          iconColor="text-prism-orange"
+          ttsScript="This is the Transactions page where all your financial activity lives. You can add transactions manually by clicking Add Transaction, import in bulk from CSV files supporting Mint and Monarch formats, or auto-sync from your bank via Plaid. Use Auto-categorize to apply AI-powered merchant matching rules. Edit Multiple mode lets you batch-change categories or move transactions between accounts. Use the search, date filters, and sorting to find specific transactions."
+          features={[
+            'Manual entry, CSV import, and Plaid auto-sync',
+            'AI-powered auto-categorization with merchant rules',
+            'Batch edit categories and accounts',
+            'Search, filter by date, and sort transactions',
+            'Split transactions across multiple categories',
+            'Track transfers between accounts',
+          ]}
+          demoTableHeaders={['Date', 'Merchant', 'Category', 'Amount']}
+          demoTableRows={[
+            ['Mar 5', 'Whole Foods Market', 'Groceries', '-$82.34'],
+            ['Mar 4', 'Netflix', 'Subscriptions', '-$15.99'],
+            ['Mar 3', 'Employer Direct Deposit', 'Salary', '+$3,250.00'],
+            ['Mar 2', 'Target', 'Clothing', '-$67.89'],
+            ['Mar 1', 'Rent Payment', 'Rent/Mortgage', '-$1,800.00'],
+          ]}
+        />
+      )}
 
       {/* Search bar (expandable) */}
       {searchOpen && (
