@@ -1039,6 +1039,21 @@ const Budgets = () => {
               </div>
             )}
 
+            {/* Expense Type Dropdown (Fixed / Flexible / Non-Monthly) */}
+            {!editingBudget && form.budgetKind === 'expense' && (
+              <div className="space-y-2">
+                <Label>Expense Type</Label>
+                <Select value={form.expense_type} onValueChange={v => setForm(f => ({ ...f, expense_type: v as 'fixed' | 'flexible' | 'non_monthly', group_id: '', category_id: '' }))}>
+                  <SelectTrigger><SelectValue placeholder="Select expense type" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="fixed">Fixed</SelectItem>
+                    <SelectItem value="flexible">Flexible</SelectItem>
+                    <SelectItem value="non_monthly">Non-Monthly</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
             {/* Group Dropdown */}
             {!editingBudget && (
               <div className="space-y-2">
@@ -1048,8 +1063,9 @@ const Budgets = () => {
                   <SelectContent>
                     {(categoryGroups as any[] || [])
                       .filter((g: any) => {
-                        const isIncome = (g.expense_type || 'flexible') === 'income';
-                        return form.budgetKind === 'income' ? isIncome : !isIncome;
+                        const gExpType = g.expense_type || 'flexible';
+                        if (form.budgetKind === 'income') return gExpType === 'income';
+                        return gExpType === form.expense_type;
                       })
                       .map((g: any) => (
                         <SelectItem key={g.id} value={g.id}>
