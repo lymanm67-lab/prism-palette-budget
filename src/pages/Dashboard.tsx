@@ -409,13 +409,20 @@ const Dashboard = () => {
             formatCompact={formatCompact}
           />
 
-          {/* AI Spending Insights */}
-          <AiSpendingInsights
-            transactions={filteredTransactions}
-            accounts={accounts || []}
-            monthlyIncome={monthlyIncome}
-            monthlyExpenses={monthlyExpenses}
-          />
+          {/* Goal Tracker + AI Spending Insights */}
+          <div className="grid gap-6 lg:grid-cols-2">
+            <motion.div variants={item}>
+              <GoalTrackerWidget />
+            </motion.div>
+            <motion.div variants={item}>
+              <AiSpendingInsights
+                transactions={filteredTransactions}
+                accounts={accounts || []}
+                monthlyIncome={monthlyIncome}
+                monthlyExpenses={monthlyExpenses}
+              />
+            </motion.div>
+          </div>
 
           {/* Recent Transactions */}
           {filteredTransactions.length > 0 && (
