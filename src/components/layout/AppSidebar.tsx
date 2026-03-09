@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
+import { useSidebarBadges } from '@/hooks/use-sidebar-badges';
 
 const NAV_SECTIONS = [
   {
@@ -68,6 +69,14 @@ const AppSidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
   const { theme, setTheme } = useTheme();
   const isDark = theme === 'dark';
+  const badges = useSidebarBadges();
+
+  // Map routes to badge counts
+  const badgeMap: Record<string, number> = {
+    '/recurring': badges.recurring,
+    '/transactions': badges.transactions,
+    '/budgets': badges.budgets,
+  };
 
   return (
     <aside
@@ -143,8 +152,18 @@ const AppSidebar = () => {
                         item.color
                       )} />
                     </span>
-                    {!collapsed && <span>{item.label}</span>}
-                    {isActive && !collapsed && (
+                    {!collapsed && <span className="flex-1">{item.label}</span>}
+                    {!collapsed && badgeMap[item.to] > 0 && (
+                      <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-prism-rose/15 px-1.5 text-[10px] font-bold text-prism-rose">
+                        {badgeMap[item.to]}
+                      </span>
+                    )}
+                    {collapsed && badgeMap[item.to] > 0 && (
+                      <span className="absolute -top-0.5 -right-0.5 flex h-3 w-3 items-center justify-center rounded-full bg-prism-rose">
+                        <span className="sr-only">{badgeMap[item.to]}</span>
+                      </span>
+                    )}
+                    {isActive && !collapsed && !badgeMap[item.to] && (
                       <div className="ml-auto h-2 w-2 rounded-full bg-prism-teal animate-pulse" />
                     )}
                   </NavLink>
