@@ -619,7 +619,7 @@ const Budgets = () => {
                           <span className="w-[90px] text-right text-sm tabular-nums text-muted-foreground">{spent > 0 ? formatCurrency(spent) : received > 0 ? formatCurrency(received) : '—'}</span>
                           <span className="w-[90px]" />
                           <div className="w-[62px] flex justify-end">
-                            <Button variant="ghost" size="sm" className="h-7 text-xs opacity-0 group-hover:opacity-100" onClick={() => { setForm({ category_id: c.id, planned_amount: '' }); setEditingBudget(null); setDialogOpen(true); }}>
+                            <Button variant="ghost" size="sm" className="h-7 text-xs opacity-0 group-hover:opacity-100" onClick={() => { setForm({ category_id: c.id, planned_amount: '', rollover: false }); setEditingBudget(null); setDialogOpen(true); }}>
                               <Plus className="h-3 w-3 mr-1" /> Budget
                             </Button>
                           </div>
