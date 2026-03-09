@@ -624,7 +624,7 @@ const Reports = () => {
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                       <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
                       <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={v => `${v}%`} />
-                      <Tooltip formatter={(v: number, name: string) => [name === 'rate' ? `${v}%` : formatCurrency(v), name === 'rate' ? 'Savings Rate' : 'Net Savings']} contentStyle={tooltipStyle} itemStyle={{ color: 'hsl(var(--foreground))' }} />
+                      <Tooltip formatter={(v: number, name: string) => [name === 'rate' ? `${v}%` : formatCurrency(v), name === 'rate' ? 'Savings Rate' : 'Net Savings']} contentStyle={tooltipStyle} itemStyle={{ color: 'hsl(var(--foreground))' }} labelStyle={{ color: 'hsl(var(--foreground))' }} />
                       <Legend />
                       <Area type="monotone" dataKey="rate" stroke="hsl(160, 84%, 39%)" fill="hsl(160, 84%, 39%)" fillOpacity={0.15} name="Savings Rate" strokeWidth={2} />
                     </AreaChart>
