@@ -252,6 +252,11 @@ const Dashboard = () => {
         </div>
       </motion.div>
 
+      {/* Spending Anomaly Alert */}
+      <motion.div variants={item}>
+        <SpendingAnomalyAlert />
+      </motion.div>
+
       {/* Getting Started Widget */}
       <motion.div variants={item}>
         <GettingStartedWidget />
