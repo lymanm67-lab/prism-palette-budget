@@ -393,17 +393,17 @@ const Budgets = () => {
     return (
       <Collapsible key={type} open={isOpen} onOpenChange={() => toggleSection(type)}>
         <CollapsibleTrigger asChild>
-          <button className="w-full flex items-center gap-3 py-3 px-3 hover:bg-muted/30 rounded-lg transition-colors text-left">
+          <button className="w-full flex items-center gap-2 sm:gap-3 py-3 px-3 hover:bg-muted/30 rounded-lg transition-colors text-left">
             {isOpen ? <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" /> : <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0 rotate-180" />}
-            <span className={cn('flex-1 font-display font-semibold', EXPENSE_TYPE_COLORS[type])}>
+            <span className={cn('flex-1 font-display font-semibold text-sm sm:text-base', EXPENSE_TYPE_COLORS[type])}>
               {EXPENSE_TYPE_LABELS[type]}
             </span>
-            <span className="w-[90px] text-right text-sm font-semibold tabular-nums">{formatCurrency(totals.budget)}</span>
-            <span className="w-[90px] text-right text-sm tabular-nums text-muted-foreground">{formatCurrency(totals.actual)}</span>
-            <span className={cn('w-[90px] text-right text-sm font-semibold tabular-nums', totals.remaining < 0 ? 'text-rose-600 dark:text-rose-400' : isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground')}>
+            <span className="text-right text-xs sm:text-sm font-semibold tabular-nums sm:w-[90px]">{formatCurrency(totals.budget)}</span>
+            <span className="hidden sm:inline-block w-[90px] text-right text-sm tabular-nums text-muted-foreground">{formatCurrency(totals.actual)}</span>
+            <span className={cn('text-right text-xs sm:text-sm font-semibold tabular-nums sm:w-[90px]', totals.remaining < 0 ? 'text-rose-600 dark:text-rose-400' : isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground')}>
               {formatCurrency(Math.abs(totals.remaining))}
             </span>
-            <div className="w-[62px]" /> {/* spacer for action buttons */}
+            <div className="hidden sm:block w-[62px]" />
           </button>
         </CollapsibleTrigger>
         <CollapsibleContent>
