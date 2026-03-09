@@ -5,9 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useCurrency } from '@/hooks/use-currency';
 import {
-  Home, Car, CreditCard, TrendingUp, Calculator, DollarSign, Percent, CalendarDays, PiggyBank, Sparkles,
+  Home, Car, CreditCard, TrendingUp, Calculator, DollarSign, Percent, CalendarDays, PiggyBank, Sparkles, BookOpen, MoreHorizontal,
 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import PageOverview from '@/components/PageOverview';
@@ -135,6 +137,7 @@ const ResultCard = ({ label, value, sub, accent }: { label: string; value: strin
 const Calculators = () => {
   const { formatCurrency } = useCurrency();
   const [activeCalc, setActiveCalc] = useState('mortgage');
+  const [pageGuideOpen, setPageGuideOpen] = useState(false);
 
   // Mortgage
   const [mortgageForm, setMortgageForm] = useState({ price: '350000', down: '70000', rate: '6.5', years: '30' });
@@ -224,12 +227,34 @@ const Calculators = () => {
   );
 
   return (
+    <TooltipProvider delayDuration={300}>
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-      <div>
-        <h1 className="font-display text-3xl font-extrabold tracking-tight">
-          <span className="prism-gradient-text">Financial Calculators</span>
-        </h1>
-        <p className="text-muted-foreground mt-1">Mortgage, auto, credit card, investment, and debt calculators.</p>
+      {/* Header */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="font-display text-2xl font-bold truncate">Financial Calculators</h1>
+          <p className="text-sm text-muted-foreground truncate">Mortgage, auto, credit card, investment & debt.</p>
+        </div>
+        <DropdownMenu>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="h-8 w-8 p-0 shrink-0">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+            </TooltipTrigger>
+            <TooltipContent><p>More options</p></TooltipContent>
+          </Tooltip>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem className="gap-2" onSelect={() => setPageGuideOpen(true)}>
+              <BookOpen className="h-4 w-4" /> Page Guide
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      {pageGuideOpen && (
         <PageOverview
           title="Financial Calculators"
           description="Six powerful calculators for mortgage, auto loans, credit cards, investments, general debt, and wealth projection."
@@ -251,20 +276,24 @@ const Calculators = () => {
             { label: 'Wealth Multiplier', value: '23x', badge: 'Age 30' },
           ]}
         />
-      </div>
+      )}
 
-      {/* Calculator tabs */}
+      {/* Calculator tabs — icon-only on mobile with tooltips */}
       <Tabs value={activeCalc} onValueChange={setActiveCalc}>
         <TabsList className="flex flex-wrap h-auto gap-1 bg-transparent p-0">
           {CALCULATORS.map(c => (
-            <TabsTrigger
-              key={c.id}
-              value={c.id}
-              className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl px-4 py-2"
-            >
-              <c.icon className="h-4 w-4" />
-              {c.label}
-            </TabsTrigger>
+            <Tooltip key={c.id}>
+              <TooltipTrigger asChild>
+                <TabsTrigger
+                  value={c.id}
+                  className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl px-2.5 sm:px-4 py-2"
+                >
+                  <c.icon className="h-4 w-4" />
+                  <span className="hidden sm:inline">{c.label}</span>
+                </TabsTrigger>
+              </TooltipTrigger>
+              <TooltipContent className="sm:hidden"><p>{c.label}</p></TooltipContent>
+            </Tooltip>
           ))}
         </TabsList>
 
@@ -568,6 +597,7 @@ const Calculators = () => {
         </TabsContent>
       </Tabs>
     </motion.div>
+    </TooltipProvider>
   );
 };
 
