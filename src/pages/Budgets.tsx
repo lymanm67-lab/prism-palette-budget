@@ -576,7 +576,7 @@ const Budgets = () => {
               { label: 'Subscriptions', value: '$45/$75', badge: '60%', color: '#8b5cf6' },
             ]}
           />
-        <div className="flex items-center gap-3 mt-2">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-2">
             <Tabs value={budgetType} onValueChange={(v) => setBudgetType(v as 'personal' | 'business')}>
               <TabsList>
                 <TabsTrigger value="personal">Personal</TabsTrigger>
