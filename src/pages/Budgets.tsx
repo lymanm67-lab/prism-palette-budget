@@ -1325,6 +1325,7 @@ const Budgets = () => {
         </DialogContent>
       </Dialog>
     </motion.div>
+    </TooltipProvider>
   );
 };
 
