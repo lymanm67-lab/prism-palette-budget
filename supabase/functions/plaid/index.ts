@@ -215,6 +215,142 @@ Deno.serve(async (req) => {
       });
     }
 
+    if (action === 'sync-transactions' && req.method === 'POST') {
+      const { household_id } = await req.json();
+
+      // Verify membership
+      const { data: membership } = await supabase
+        .from('household_members')
+        .select('id')
+        .eq('household_id', household_id)
+        .eq('user_id', userId)
+        .single();
+      if (!membership) {
+        return new Response(JSON.stringify({ error: 'Forbidden' }), {
+          status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      const serviceSupabase = createClient(
+        Deno.env.get('SUPABASE_URL')!,
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+      );
+
+      // Get all plaid items for this household
+      const { data: plaidItems, error: itemsError } = await serviceSupabase
+        .from('plaid_items')
+        .select('id, plaid_access_token, institution_name')
+        .eq('household_id', household_id)
+        .eq('status', 'active');
+
+      if (itemsError || !plaidItems?.length) {
+        return new Response(JSON.stringify({ error: 'No connected bank accounts found.' }), {
+          status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      let totalAccountsUpdated = 0;
+      let totalNewTransactions = 0;
+
+      for (const item of plaidItems) {
+        // Update account balances
+        const accountsResponse = await fetch(`${PLAID_BASE_URL}/accounts/get`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            client_id: PLAID_CLIENT_ID,
+            secret: PLAID_SECRET,
+            access_token: item.plaid_access_token,
+          }),
+        });
+
+        if (accountsResponse.ok) {
+          const accountsData = await accountsResponse.json();
+          for (const acc of accountsData.accounts || []) {
+            const { error: updateErr } = await serviceSupabase
+              .from('accounts')
+              .update({
+                balance: acc.balances?.current || 0,
+                last_synced_at: new Date().toISOString(),
+              })
+              .eq('household_id', household_id)
+              .eq('institution', item.institution_name)
+              .ilike('name', acc.name || acc.official_name || '');
+            if (!updateErr) totalAccountsUpdated++;
+          }
+        }
+
+        // Fetch recent transactions (last 14 days)
+        const endDate = new Date().toISOString().split('T')[0];
+        const startDate = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+        const txnResponse = await fetch(`${PLAID_BASE_URL}/transactions/get`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            client_id: PLAID_CLIENT_ID,
+            secret: PLAID_SECRET,
+            access_token: item.plaid_access_token,
+            start_date: startDate,
+            end_date: endDate,
+          }),
+        });
+
+        if (txnResponse.ok) {
+          const txnData = await txnResponse.json();
+          const transactions = txnData.transactions || [];
+
+          if (transactions.length > 0) {
+            // Get existing provider_transaction_ids to avoid duplicates
+            const providerIds = transactions.map((t: any) => t.transaction_id);
+            const { data: existing } = await serviceSupabase
+              .from('transactions')
+              .select('provider_transaction_id')
+              .eq('household_id', household_id)
+              .in('provider_transaction_id', providerIds);
+
+            const existingIds = new Set((existing || []).map(e => e.provider_transaction_id));
+
+            // Get default account for this institution
+            const { data: dbAccounts } = await serviceSupabase
+              .from('accounts')
+              .select('id')
+              .eq('household_id', household_id)
+              .eq('institution', item.institution_name)
+              .limit(1);
+
+            const accountId = dbAccounts?.[0]?.id;
+            if (!accountId) continue;
+
+            const newTxns = transactions
+              .filter((t: any) => !existingIds.has(t.transaction_id))
+              .map((t: any) => ({
+                household_id,
+                account_id: accountId,
+                date: t.date,
+                merchant: t.merchant_name || t.name || null,
+                amount: -t.amount,
+                notes: t.name || null,
+                provider_transaction_id: t.transaction_id,
+              }));
+
+            if (newTxns.length > 0) {
+              await serviceSupabase.from('transactions').insert(newTxns);
+              totalNewTransactions += newTxns.length;
+            }
+          }
+        }
+      }
+
+      return new Response(JSON.stringify({
+        success: true,
+        accounts_updated: totalAccountsUpdated,
+        new_transactions: totalNewTransactions,
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     return new Response(JSON.stringify({ error: 'Unknown action' }), {
       status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
