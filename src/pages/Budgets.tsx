@@ -1234,6 +1234,31 @@ const Budgets = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* AI Budget Audit Dialog */}
+      <Dialog open={auditOpen} onOpenChange={setAuditOpen}>
+        <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 font-display">
+              <ClipboardCheck className="h-5 w-5 text-primary" /> AI Budget Audit
+            </DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="flex-1 pr-4">
+            <div className="prose prose-sm dark:prose-invert max-w-none">
+              {auditLoading && !auditResult && (
+                <div className="flex items-center gap-3 py-8 justify-center text-muted-foreground">
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <span>Analyzing your budget...</span>
+                </div>
+              )}
+              {auditResult && <ReactMarkdown>{auditResult}</ReactMarkdown>}
+              {auditLoading && auditResult && (
+                <span className="inline-block w-2 h-4 bg-primary/60 animate-pulse ml-0.5" />
+              )}
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 };
