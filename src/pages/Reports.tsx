@@ -532,7 +532,7 @@ const Reports = () => {
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" fontSize={11} />
                     <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickFormatter={v => formatCompact(v)} />
-                    <Tooltip formatter={(v: number, name: string) => [formatCurrency(v), name === 'daily' ? 'Daily' : 'Cumulative']} contentStyle={tooltipStyle} />
+                    <Tooltip formatter={(v: number, name: string) => [formatCurrency(v), name === 'daily' ? 'Daily' : 'Cumulative']} contentStyle={tooltipStyle} itemStyle={{ color: 'hsl(var(--foreground))' }} />
                     <Legend />
                     <Area type="monotone" dataKey="cumulative" stroke="hsl(262, 83%, 58%)" fill="hsl(262, 83%, 58%)" fillOpacity={0.15} name="Cumulative" strokeWidth={2} />
                     <Area type="monotone" dataKey="daily" stroke="hsl(199, 89%, 48%)" fill="hsl(199, 89%, 48%)" fillOpacity={0.2} name="Daily" strokeWidth={2} />
