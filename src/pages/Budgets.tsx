@@ -308,7 +308,7 @@ const Budgets = () => {
   const handleSave = async () => {
     const amount = parseFloat(form.planned_amount);
     if (!form.category_id || isNaN(amount) || amount < 0) return;
-    await upsertBudget.mutateAsync({ category_id: form.category_id, month, planned_amount: amount });
+    await upsertBudget.mutateAsync({ category_id: form.category_id, month, planned_amount: amount, rollover: form.rollover });
     setDialogOpen(false);
   };
 
