@@ -109,7 +109,7 @@ export default function MxConnectButton() {
   return (
     <>
       <div className="flex gap-2">
-        <Button onClick={handleConnect} disabled={loading} variant="outline">
+        <Button onClick={handleConnect} disabled={loading} variant="outline" data-mx-trigger>
           {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Link2 className="h-4 w-4 mr-2" />}
           Connect via MX
         </Button>

@@ -99,7 +99,7 @@ const PlaidLinkButton = () => {
   }
 
   return (
-    <Button onClick={createLinkToken} disabled={loading} className="gap-2">
+    <Button onClick={createLinkToken} disabled={loading} className="gap-2" data-plaid-trigger>
       {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Landmark className="h-4 w-4" />}
       Connect Bank Account
     </Button>
