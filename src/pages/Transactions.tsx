@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuLabel } from '@/components/ui/dropdown-menu';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { useTransactions, useDeletedTransactions, useCreateTransaction, useUpdateTransaction, useAccounts, useCategories } from '@/hooks/use-finance-data';
+import { useTransactions, useDeletedTransactions, useCreateTransaction, useUpdateTransaction, useAccounts, useCategories, useCategoryGroups } from '@/hooks/use-finance-data';
 import { useGoals } from '@/hooks/use-goals';
 import { useCurrency } from '@/hooks/use-currency';
 import { supabase } from '@/integrations/supabase/client';
@@ -67,7 +67,7 @@ interface FilterState {
 
 const EMPTY_FILTERS: FilterState = { dateFrom: '', dateTo: '', amountMin: '', amountMax: '', accountId: '', categoryId: '' };
 
-type TxnViewFilter = 'all' | 'income' | 'expenses' | 'transfers' | 'duplicates' | 'uncategorized' | 'needs_review' | 'trash';
+type TxnViewFilter = 'all' | 'personal' | 'business' | 'income' | 'expenses' | 'transfers' | 'duplicates' | 'uncategorized' | 'needs_review' | 'trash';
 
 const Transactions = () => {
   const { formatCurrency } = useCurrency();
@@ -75,6 +75,22 @@ const Transactions = () => {
   const { data: deletedTransactions } = useDeletedTransactions();
   const { data: accounts } = useAccounts();
   const { data: categories } = useCategories();
+  const { data: categoryGroups } = useCategoryGroups();
+
+  // Build sets of personal/business category IDs for filtering
+  const { personalCatIds, businessCatIds } = useMemo(() => {
+    const personal = new Set<string>();
+    const business = new Set<string>();
+    if (!categories || !categoryGroups) return { personalCatIds: personal, businessCatIds: business };
+    const groupTypeMap = new Map<string, string>();
+    for (const g of categoryGroups) groupTypeMap.set(g.id, (g as any).budget_type || 'personal');
+    for (const c of categories) {
+      const type = groupTypeMap.get(c.group_id);
+      if (type === 'business') business.add(c.id);
+      else personal.add(c.id);
+    }
+    return { personalCatIds: personal, businessCatIds: business };
+  }, [categories, categoryGroups]);
   const createTransaction = useCreateTransaction();
   const updateTransaction = useUpdateTransaction();
   const { data: goals } = useGoals();
@@ -307,6 +323,8 @@ const Transactions = () => {
       if (filters.accountId && t.account_id !== filters.accountId) return false;
       if (filters.categoryId && t.category_id !== filters.categoryId) return false;
       // View filter
+      if (viewFilter === 'personal' && (!t.category_id || !personalCatIds.has(t.category_id))) return false;
+      if (viewFilter === 'business' && (!t.category_id || !businessCatIds.has(t.category_id))) return false;
       if (viewFilter === 'income' && t.amount <= 0) return false;
       if (viewFilter === 'expenses' && t.amount >= 0) return false;
       if (viewFilter === 'transfers' && !(t as any).is_transfer) return false;
@@ -325,7 +343,7 @@ const Transactions = () => {
     });
 
     return result;
-  }, [search, transactions, deletedTransactions, filters, sortKey, sortDir, viewFilter, duplicateIds]);
+  }, [search, transactions, deletedTransactions, filters, sortKey, sortDir, viewFilter, duplicateIds, personalCatIds, businessCatIds]);
 
   // Group by date
   const grouped = useMemo(() => {
@@ -784,7 +802,22 @@ const Transactions = () => {
                       <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="All categories" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="_all">All categories</SelectItem>
-                        {(categories || []).map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                        {personalCatIds.size > 0 && (
+                          <>
+                            <SelectItem value="_personal_label" disabled className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Personal</SelectItem>
+                            {(categories || []).filter(c => personalCatIds.has(c.id)).map(c => (
+                              <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                            ))}
+                          </>
+                        )}
+                        {businessCatIds.size > 0 && (
+                          <>
+                            <SelectItem value="_business_label" disabled className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Business</SelectItem>
+                            {(categories || []).filter(c => businessCatIds.has(c.id)).map(c => (
+                              <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                            ))}
+                          </>
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
@@ -1163,6 +1196,8 @@ const Transactions = () => {
             <SelectTrigger className="w-[140px] sm:w-[170px] h-8 text-xs sm:text-sm"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All transactions</SelectItem>
+              <SelectItem value="personal">Personal</SelectItem>
+              <SelectItem value="business">Business</SelectItem>
               <SelectItem value="income">Income only</SelectItem>
               <SelectItem value="expenses">Expenses only</SelectItem>
               <SelectItem value="transfers">Transfers only</SelectItem>
