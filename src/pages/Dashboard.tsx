@@ -4,11 +4,15 @@ import PageOverview from '@/components/PageOverview';
 import WeeklyRecap from '@/components/WeeklyRecap';
 import GettingStartedWidget from '@/components/GettingStartedWidget';
 import FinancialHealthScore from '@/components/FinancialHealthScore';
+import GoalTrackerWidget from '@/components/GoalTrackerWidget';
+import SpendingAnomalyAlert from '@/components/SpendingAnomalyAlert';
+import MoMIndicator from '@/components/MoMIndicator';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAccounts, useTransactions, useSpendingByCategory, useCategoryGroups, useCategories } from '@/hooks/use-finance-data';
 import { useBusinessProfiles } from '@/hooks/use-business-data';
 import { useCurrency } from '@/hooks/use-currency';
+import { useMoMIndicators } from '@/hooks/use-mom-indicators';
 import {
   TrendingUp, Wallet, CreditCard, ArrowUpRight, Loader2,
   Sparkles, ChevronRight, Building2, PiggyBank, User, LayoutGrid, Settings2
