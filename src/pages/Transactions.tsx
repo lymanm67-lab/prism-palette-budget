@@ -1197,40 +1197,54 @@ const Transactions = () => {
             </Button>
           )}
         </div>
+        <TooltipProvider delayDuration={300}>
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {/* Auto-categorize button */}
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-1.5 h-8 text-xs sm:text-sm"
-            onClick={handleAutoCategorize}
-            disabled={autoCatLoading}
-          >
-            {autoCatLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-            <span className="hidden sm:inline">{autoCatLoading ? 'Categorizing…' : 'Auto-categorize'}</span>
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5 h-8 text-xs sm:text-sm"
+                onClick={handleAutoCategorize}
+                disabled={autoCatLoading}
+              >
+                {autoCatLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                <span className="hidden sm:inline">{autoCatLoading ? 'Categorizing…' : 'Auto-categorize'}</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent><p>Auto-categorize transactions using AI rules</p></TooltipContent>
+          </Tooltip>
 
            {/* Sort dropdown */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs sm:text-sm">
-                <ArrowUpDown className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Sort</span>
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-48 p-2" align="end">
-              {(['date', 'amount', 'merchant'] as SortKey[]).map(key => (
-                <button
-                  key={key}
-                  onClick={() => { if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc'); else { setSortKey(key); setSortDir('desc'); } }}
-                  className={cn('w-full flex items-center justify-between rounded-md px-3 py-2 text-sm hover:bg-muted transition-colors capitalize', sortKey === key && 'bg-muted font-medium')}
-                >
-                  {key}
-                  {sortKey === key && <span className="text-xs text-muted-foreground">{sortDir === 'desc' ? '↓' : '↑'}</span>}
-                </button>
-              ))}
-            </PopoverContent>
-          </Popover>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs sm:text-sm">
+                    <ArrowUpDown className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Sort</span>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-48 p-2" align="end">
+                  {(['date', 'amount', 'merchant'] as SortKey[]).map(key => (
+                    <button
+                      key={key}
+                      onClick={() => { if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc'); else { setSortKey(key); setSortDir('desc'); } }}
+                      className={cn('w-full flex items-center justify-between rounded-md px-3 py-2 text-sm hover:bg-muted transition-colors capitalize', sortKey === key && 'bg-muted font-medium')}
+                    >
+                      {key}
+                      {sortKey === key && <span className="text-xs text-muted-foreground">{sortDir === 'desc' ? '↓' : '↑'}</span>}
+                    </button>
+                  ))}
+                </PopoverContent>
+              </Popover>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent><p>Sort transactions by date, amount, or merchant</p></TooltipContent>
+          </Tooltip>
         </div>
+        </TooltipProvider>
       </div>
 
       {/* Bulk actions bar */}
