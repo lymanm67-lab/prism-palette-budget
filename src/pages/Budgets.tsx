@@ -152,6 +152,61 @@ const Budgets = () => {
     return { spentByCategory: spent, receivedByCategory: received };
   }, [transactions, month]);
 
+  // Previous month spending for MoM comparison
+  const prevMonthSpending = useMemo(() => {
+    if (!transactions) return { totalExpenses: 0, totalIncome: 0, byCategory: {} as Record<string, number> };
+    const [y, m] = month.split('-').map(Number);
+    const prevDate = new Date(y, m - 2, 1);
+    const prevPrefix = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, '0')}`;
+    let totalExpenses = 0;
+    let totalIncome = 0;
+    const byCategory: Record<string, number> = {};
+    for (const t of transactions) {
+      if (t.date.startsWith(prevPrefix) && t.category_id) {
+        if (t.amount < 0) {
+          const abs = Math.abs(t.amount);
+          totalExpenses += abs;
+          byCategory[t.category_id] = (byCategory[t.category_id] || 0) + abs;
+        } else {
+          totalIncome += t.amount;
+        }
+      }
+    }
+    return { totalExpenses, totalIncome, byCategory };
+  }, [transactions, month]);
+
+  // MoM narrative helper
+  const momNarrative = useMemo(() => {
+    const prev = prevMonthSpending;
+    const currExpenses = Object.values(spentByCategory).reduce((s, v) => s + v, 0);
+    const currIncome = Object.values(receivedByCategory).reduce((s, v) => s + v, 0);
+    if (prev.totalExpenses === 0 && prev.totalIncome === 0) return null;
+
+    const expChange = currExpenses - prev.totalExpenses;
+    const expPct = prev.totalExpenses > 0 ? Math.round((expChange / prev.totalExpenses) * 100) : 0;
+    const incChange = currIncome - prev.totalIncome;
+    const incPct = prev.totalIncome > 0 ? Math.round((incChange / prev.totalIncome) * 100) : 0;
+
+    // Find top category changes (biggest increases)
+    const catChanges: { name: string; change: number; pct: number }[] = [];
+    const allCatIds = new Set([...Object.keys(spentByCategory), ...Object.keys(prev.byCategory)]);
+    for (const catId of allCatIds) {
+      const curr = spentByCategory[catId] || 0;
+      const prevAmt = prev.byCategory[catId] || 0;
+      if (prevAmt === 0 && curr === 0) continue;
+      const cat = (categories || []).find(c => c.id === catId);
+      if (!cat) continue;
+      const change = curr - prevAmt;
+      const pct = prevAmt > 0 ? Math.round((change / prevAmt) * 100) : (curr > 0 ? 100 : 0);
+      catChanges.push({ name: cat.name, change, pct });
+    }
+    catChanges.sort((a, b) => b.change - a.change);
+    const topIncreases = catChanges.filter(c => c.change > 0).slice(0, 3);
+    const topDecreases = catChanges.filter(c => c.change < 0).slice(0, 3);
+
+    return { expChange, expPct, incChange, incPct, currExpenses, currIncome, topIncreases, topDecreases };
+  }, [spentByCategory, receivedByCategory, prevMonthSpending, categories]);
+
   // Filter categories by budget type AND selected business
   const filteredCategoryIds = useMemo(() => {
     if (!categories || !categoryGroups) return new Set<string>();
@@ -862,6 +917,42 @@ const Budgets = () => {
             )}
             {unallocated === 0 && <p>✅ Every dollar of income is assigned to a budget category.</p>}
 
+            {/* Month-over-month comparison */}
+            {momNarrative && (
+              <>
+                <p>
+                  <strong>📊 Month-over-Month Trends:</strong> Total spending is{' '}
+                  <strong className={momNarrative.expChange > 0 ? 'text-rose-600' : 'text-emerald-600'}>
+                    {momNarrative.expChange > 0 ? 'up' : 'down'} {Math.abs(momNarrative.expPct)}%
+                  </strong>{' '}
+                  ({formatCurrency(Math.abs(momNarrative.expChange))} {momNarrative.expChange > 0 ? 'more' : 'less'}) compared to last month.
+                  {momNarrative.incPct !== 0 && (
+                    <> Income is <strong className={momNarrative.incChange > 0 ? 'text-emerald-600' : 'text-rose-600'}>
+                      {momNarrative.incChange > 0 ? 'up' : 'down'} {Math.abs(momNarrative.incPct)}%
+                    </strong>.</>
+                  )}
+                </p>
+                {momNarrative.topIncreases.length > 0 && (
+                  <p>
+                    <strong>Biggest spending increases:</strong>{' '}
+                    {momNarrative.topIncreases.map((c, i) => (
+                      <span key={c.name}>{i > 0 ? ', ' : ''}<strong>{c.name}</strong> (+{formatCurrency(c.change)}, {c.pct > 0 ? `+${c.pct}%` : 'new'})</span>
+                    ))}.
+                    {momNarrative.expChange > 0 && ' Consider reviewing these categories for savings opportunities.'}
+                  </p>
+                )}
+                {momNarrative.topDecreases.length > 0 && (
+                  <p>
+                    <strong>✅ Improved categories:</strong>{' '}
+                    {momNarrative.topDecreases.map((c, i) => (
+                      <span key={c.name}>{i > 0 ? ', ' : ''}<strong>{c.name}</strong> ({formatCurrency(c.change)}, {c.pct}%)</span>
+                    ))}.
+                    {' '}Keep up the momentum in these areas.
+                  </p>
+                )}
+              </>
+            )}
+
             {/* Overall improvement tip */}
             {totalExpenseRemaining < 0 && (
               <p>
@@ -1566,6 +1657,38 @@ const Budgets = () => {
             </p>
           )}
           {unallocated === 0 && <p className="mt-1">✅ Every dollar of income is assigned to a budget category.</p>}
+          {momNarrative && (
+            <>
+              <p className="mt-1">
+                <strong>📊 Month-over-Month:</strong> Spending is{' '}
+                <strong style={{ color: momNarrative.expChange > 0 ? '#dc2626' : '#059669' }}>
+                  {momNarrative.expChange > 0 ? 'up' : 'down'} {Math.abs(momNarrative.expPct)}%
+                </strong>{' '}
+                ({formatCurrency(Math.abs(momNarrative.expChange))} {momNarrative.expChange > 0 ? 'more' : 'less'}) vs last month.
+                {momNarrative.incPct !== 0 && (
+                  <> Income is <strong style={{ color: momNarrative.incChange > 0 ? '#059669' : '#dc2626' }}>
+                    {momNarrative.incChange > 0 ? 'up' : 'down'} {Math.abs(momNarrative.incPct)}%
+                  </strong>.</>
+                )}
+              </p>
+              {momNarrative.topIncreases.length > 0 && (
+                <p className="mt-1">
+                  <strong>Biggest increases:</strong>{' '}
+                  {momNarrative.topIncreases.map((c, i) => (
+                    <span key={c.name}>{i > 0 ? ', ' : ''}<strong>{c.name}</strong> (+{formatCurrency(c.change)})</span>
+                  ))}.
+                </p>
+              )}
+              {momNarrative.topDecreases.length > 0 && (
+                <p className="mt-1">
+                  <strong>Improved:</strong>{' '}
+                  {momNarrative.topDecreases.map((c, i) => (
+                    <span key={c.name}>{i > 0 ? ', ' : ''}<strong>{c.name}</strong> ({formatCurrency(c.change)})</span>
+                  ))}.
+                </p>
+              )}
+            </>
+          )}
         </div>
       </div>
 
