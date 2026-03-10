@@ -150,21 +150,36 @@ async function registerUser(req: Request) {
     );
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
-    // If user already exists in SnapTrade but not in our DB, delete and re-register
+
+    // Personal key limit (1012): can only register one user.
+    // Reuse the already-registered user by listing users.
+    if (message.includes("1012") || message.includes("Personal keys")) {
+      try {
+        const users = await snaptradeRequest("GET", "/snapTrade/listUsers");
+        if (Array.isArray(users) && users.length > 0) {
+          const existingUserId = users[0];
+          // Delete the old user and re-register with current userId
+          try {
+            await snaptradeRequest("DELETE", "/snapTrade/deleteUser", undefined, { userId: existingUserId });
+          } catch (_) { /* ignore */ }
+          const data = await snaptradeRequest("POST", "/snapTrade/registerUser", { userId });
+          return new Response(
+            JSON.stringify({ snaptrade_user_id: data.userId, snaptrade_user_secret: data.userSecret }),
+            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+      } catch (_inner) { /* fall through */ }
+    }
+
+    // If user already exists in SnapTrade but not in our DB (1010), delete and re-register
     if (message.includes("already exist") || message.includes("1010")) {
       try {
         await snaptradeRequest("DELETE", "/snapTrade/deleteUser", undefined, { userId });
       } catch (_) { /* ignore delete errors */ }
 
-      const data = await snaptradeRequest("POST", "/snapTrade/registerUser", {
-        userId,
-      });
-
+      const data = await snaptradeRequest("POST", "/snapTrade/registerUser", { userId });
       return new Response(
-        JSON.stringify({
-          snaptrade_user_id: data.userId,
-          snaptrade_user_secret: data.userSecret,
-        }),
+        JSON.stringify({ snaptrade_user_id: data.userId, snaptrade_user_secret: data.userSecret }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
