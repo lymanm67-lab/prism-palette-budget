@@ -254,7 +254,38 @@ const NetWorth = () => {
         </Card>
       </div>
 
-      {/* Net Worth Goal */}
+      {/* Cash / Investments / Debt Breakdown */}
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Card className="border-accent/20">
+          <CardContent className="pt-5 pb-4">
+            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground mb-1">
+              <Banknote className="h-3.5 w-3.5" /> Total Cash
+            </div>
+            <p className="font-display text-xl font-bold text-accent">{formatCurrency(totalCash)}</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Checking, savings & other</p>
+          </CardContent>
+        </Card>
+        <Card className="border-prism-sky/20">
+          <CardContent className="pt-5 pb-4">
+            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground mb-1">
+              <TrendingUp className="h-3.5 w-3.5" /> Total Investments
+            </div>
+            <p className="font-display text-xl font-bold text-prism-sky">{formatCurrency(totalInvestments)}</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Brokerage & retirement</p>
+          </CardContent>
+        </Card>
+        <Card className="border-prism-rose/20">
+          <CardContent className="pt-5 pb-4">
+            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground mb-1">
+              <CreditCard className="h-3.5 w-3.5" /> Total Debt
+            </div>
+            <p className="font-display text-xl font-bold text-prism-rose">{formatCurrency(totalDebt)}</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Credit cards & loans</p>
+          </CardContent>
+        </Card>
+      </div>
+
+
       <Card className="border-primary/20">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="font-display flex items-center gap-2">
