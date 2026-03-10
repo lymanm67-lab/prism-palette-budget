@@ -771,6 +771,7 @@ const Reports = () => {
               </CardContent>
             </Card>
           )}
+          <ReportNarrative tab="trends" monthlyCashflow={monthlyCashflow} savingsRate={savingsRate} dateLabel={dateLabel} />
         </TabsContent>
 
         {/* ==================== TOP MERCHANTS ==================== */}
