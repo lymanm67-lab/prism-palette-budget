@@ -44,6 +44,7 @@ const Subscriptions = () => {
   const getInsights = useSubscriptionInsights();
   const { formatCurrency } = useCurrency();
   const { household } = useHousehold();
+  const qc = useQueryClient();
 
   const [insightsData, setInsightsData] = useState<any>(null);
   const [insightsLoading, setInsightsLoading] = useState(false);
