@@ -258,6 +258,28 @@ serve(async (req) => {
     // ========================
     if (action === "members" && req.method === "POST") {
       const { mx_user_guid } = await req.json();
+
+      // Verify ownership of mx_user_guid
+      const { data: memberItem } = await adminClient
+        .from("plaid_items")
+        .select("household_id")
+        .eq("plaid_item_id", mx_user_guid)
+        .eq("provider_type", "mx")
+        .single();
+      if (!memberItem) {
+        return new Response(JSON.stringify({ error: "Not found" }), {
+          status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const { data: isMembersMember } = await adminClient.rpc("is_household_member", {
+        _user_id: user.id, _household_id: memberItem.household_id,
+      });
+      if (!isMembersMember) {
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
       const membersData = await mxFetch(`/users/${mx_user_guid}/members`, "GET");
 
       return new Response(JSON.stringify({
