@@ -724,6 +724,7 @@ const Reports = () => {
               )}
             </CardContent>
           </Card>
+          <ReportNarrative tab="networth" netWorthTrend={netWorthTrend} dateLabel={dateLabel} />
         </TabsContent>
 
         {/* ==================== TRENDS ==================== */}
