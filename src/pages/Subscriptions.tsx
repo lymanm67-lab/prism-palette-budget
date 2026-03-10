@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,11 +12,15 @@ import {
   useSubscriptions, useDetectSubscriptions, useUpdateSubscription,
   useDeleteSubscription, useSubscriptionInsights,
 } from '@/hooks/use-subscriptions';
+import { useHousehold } from '@/contexts/HouseholdContext';
+import { supabase } from '@/integrations/supabase/client';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useCurrency } from '@/hooks/use-currency';
 import { format, parseISO } from 'date-fns';
 import {
   Loader2, RefreshCw, Sparkles, CreditCard, Calendar, TrendingDown,
-  AlertTriangle, CheckCircle2, XCircle, Bell, Trash2, DollarSign,
+  AlertTriangle, CheckCircle2, XCircle, Bell, Trash2, DollarSign, Plus,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import PageOverview from '@/components/PageOverview';
@@ -38,11 +43,15 @@ const Subscriptions = () => {
   const deleteSub = useDeleteSubscription();
   const getInsights = useSubscriptionInsights();
   const { formatCurrency } = useCurrency();
+  const { household } = useHousehold();
+  const qc = useQueryClient();
 
   const [insightsData, setInsightsData] = useState<any>(null);
   const [insightsLoading, setInsightsLoading] = useState(false);
   const [reminderDialog, setReminderDialog] = useState<string | null>(null);
   const [reminderDate, setReminderDate] = useState('');
+  const [addOpen, setAddOpen] = useState(false);
+  const [newSub, setNewSub] = useState({ merchant: '', average_amount: '', frequency: 'monthly' });
 
   const activeSubs = useMemo(() => (subscriptions || []).filter(s => !s.is_cancelled), [subscriptions]);
   const cancelledSubs = useMemo(() => (subscriptions || []).filter(s => s.is_cancelled), [subscriptions]);
@@ -111,6 +120,27 @@ const Subscriptions = () => {
     }
   };
 
+  const handleAddSubscription = async () => {
+    if (!newSub.merchant || !newSub.average_amount || !household) return;
+    try {
+      const { error } = await supabase.from('subscriptions' as any).insert({
+        household_id: household.id,
+        merchant: newSub.merchant,
+        average_amount: parseFloat(newSub.average_amount),
+        frequency: newSub.frequency,
+        is_active: true,
+        is_cancelled: false,
+      });
+      if (error) throw error;
+      toast.success('Subscription added');
+      setAddOpen(false);
+      setNewSub({ merchant: '', average_amount: '', frequency: 'monthly' });
+      qc.invalidateQueries({ queryKey: ['subscriptions'] });
+    } catch {
+      toast.error('Failed to add subscription');
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-20">
@@ -137,6 +167,16 @@ const Subscriptions = () => {
           features={['Auto-detect subscriptions from transactions', 'AI savings recommendations', 'Cancellation tracking & reminders', 'Monthly/yearly cost summary']}
         />
         <div className="flex gap-2">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline" size="icon" onClick={() => setAddOpen(true)}>
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Add Subscription</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           <Button variant="outline" onClick={handleDetect} disabled={detectSubs.isPending}>
             {detectSubs.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
             Detect
@@ -350,6 +390,54 @@ const Subscriptions = () => {
             </div>
             <Button onClick={handleSetReminder} disabled={!reminderDate} className="w-full">
               Set Reminder
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Subscription Dialog */}
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Subscription</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div>
+              <Label>Merchant / Service Name</Label>
+              <Input
+                placeholder="e.g. Netflix, Spotify"
+                value={newSub.merchant}
+                onChange={e => setNewSub(prev => ({ ...prev, merchant: e.target.value }))}
+              />
+            </div>
+            <div>
+              <Label>Amount</Label>
+              <Input
+                type="number"
+                step="0.01"
+                placeholder="9.99"
+                value={newSub.average_amount}
+                onChange={e => setNewSub(prev => ({ ...prev, average_amount: e.target.value }))}
+              />
+            </div>
+            <div>
+              <Label>Frequency</Label>
+              <Select value={newSub.frequency} onValueChange={v => setNewSub(prev => ({ ...prev, frequency: v }))}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="weekly">Weekly</SelectItem>
+                  <SelectItem value="biweekly">Bi-weekly</SelectItem>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                  <SelectItem value="quarterly">Quarterly</SelectItem>
+                  <SelectItem value="yearly">Yearly</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Button onClick={handleAddSubscription} disabled={!newSub.merchant || !newSub.average_amount} className="w-full">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Subscription
             </Button>
           </div>
         </DialogContent>
