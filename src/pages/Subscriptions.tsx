@@ -119,7 +119,29 @@ const Subscriptions = () => {
     }
   };
 
-  if (isLoading) {
+  const handleAddSubscription = async () => {
+    if (!newSub.merchant || !newSub.average_amount || !household) return;
+    try {
+      const { error } = await supabase.from('subscriptions' as any).insert({
+        household_id: household.id,
+        merchant: newSub.merchant,
+        average_amount: parseFloat(newSub.average_amount),
+        frequency: newSub.frequency,
+        is_active: true,
+        is_cancelled: false,
+      });
+      if (error) throw error;
+      toast.success('Subscription added');
+      setAddOpen(false);
+      setNewSub({ merchant: '', average_amount: '', frequency: 'monthly' });
+      // Refresh subscriptions list - import useQueryClient at top
+      const qc = useQueryClient();
+    } catch {
+      toast.error('Failed to add subscription');
+    }
+  };
+
+
     return (
       <div className="flex items-center justify-center p-20">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
