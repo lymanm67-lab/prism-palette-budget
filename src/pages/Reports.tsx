@@ -817,6 +817,7 @@ const Reports = () => {
               )}
             </CardContent>
           </Card>
+          <ReportNarrative tab="merchants" topMerchants={topMerchants} dateLabel={dateLabel} />
         </TabsContent>
         </div>
       </Tabs>
