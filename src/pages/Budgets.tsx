@@ -820,14 +820,54 @@ const Budgets = () => {
               <strong>Non-Monthly:</strong> {formatCurrency(sectionTotals.non_monthly.actual)} of {formatCurrency(sectionTotals.non_monthly.budget)}
               ({sectionTotals.non_monthly.remaining < 0 ? `${formatCurrency(Math.abs(sectionTotals.non_monthly.remaining))} over` : `${formatCurrency(sectionTotals.non_monthly.remaining)} remaining`}).
             </p>
+
+            {/* Overspent line items */}
+            {(() => {
+              const allExpenseItems = [...groupedBudgets.fixed, ...groupedBudgets.flexible, ...groupedBudgets.non_monthly];
+              const overspent = allExpenseItems
+                .filter(b => b.spent > b.planned_amount && b.planned_amount > 0)
+                .sort((a, b) => (b.spent - b.planned_amount) - (a.spent - a.planned_amount));
+              if (overspent.length === 0) return null;
+              return (
+                <>
+                  <p><strong>⚠️ Overspent categories:</strong></p>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {overspent.map(b => {
+                      const overBy = b.spent - b.planned_amount;
+                      const pct = Math.round((overBy / b.planned_amount) * 100);
+                      const expType = categoryExpenseType.get(b.category_id) || 'flexible';
+                      return (
+                        <li key={b.id}>
+                          <strong>{b.categories?.name}</strong>: spent {formatCurrency(b.spent)} of {formatCurrency(b.planned_amount)} ({formatCurrency(overBy)} over, +{pct}%).
+                          {expType === 'fixed'
+                            ? ' Consider negotiating a lower rate, switching providers, or adjusting the budget to reflect actual costs.'
+                            : expType === 'flexible'
+                            ? ' Try setting a weekly spending limit, using cash envelopes, or finding lower-cost alternatives.'
+                            : ' Review if this expense can be deferred or spread across multiple months.'}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </>
+              );
+            })()}
+
+            {/* Over-allocated budget advice */}
             {unallocated !== 0 && (
               <p>
                 {unallocated > 0
-                  ? `There is ${formatCurrency(unallocated)} of income not yet allocated to expense categories.`
-                  : `Expenses exceed income by ${formatCurrency(Math.abs(unallocated))} — the budget is over-allocated.`}
+                  ? `There is ${formatCurrency(unallocated)} of income not yet allocated to expense categories. Consider directing this toward savings goals, debt payoff, or building an emergency fund.`
+                  : `Expenses exceed income by ${formatCurrency(Math.abs(unallocated))} — the budget is over-allocated. Review flexible spending categories for items to cut or reduce, or look for ways to increase income.`}
               </p>
             )}
             {unallocated === 0 && <p>✅ Every dollar of income is assigned to a budget category.</p>}
+
+            {/* Overall improvement tip */}
+            {totalExpenseRemaining < 0 && (
+              <p>
+                <strong>💡 Tip:</strong> You've overspent by {formatCurrency(Math.abs(totalExpenseRemaining))} overall. Focus on the largest overspent categories first — small reductions in your top 2–3 problem areas can bring you back on track quickly.
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>
