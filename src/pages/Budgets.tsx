@@ -50,7 +50,7 @@ const EXPENSE_TYPE_COLORS: Record<ExpenseType, string> = {
   income: 'text-emerald-600 dark:text-emerald-400',
   fixed: 'text-primary',
   flexible: 'text-amber-600 dark:text-amber-400',
-  non_monthly: 'text-rose-600 dark:text-rose-400',
+  non_monthly: 'text-purple-600 dark:text-purple-400',
 };
 
 const BAR_COLORS: Record<ExpenseType, string> = {
