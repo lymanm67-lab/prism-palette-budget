@@ -9,12 +9,32 @@ const corsHeaders = {
 
 const SNAPTRADE_BASE = "https://api.snaptrade.com/api/v1";
 
-function getSignature(
+function JSONstringifyOrder(obj: unknown): string {
+  const allKeys: string[] = [];
+  const seen: Record<string, null> = {};
+  JSON.stringify(obj, function (key, value) {
+    if (!(key in seen)) {
+      allKeys.push(key);
+      seen[key] = null;
+    }
+    return value;
+  });
+  allKeys.sort();
+  return JSON.stringify(obj, allKeys);
+}
+
+function computeSignature(
+  consumerKey: string,
   requestPath: string,
-  timestamp: number,
-  consumerKey: string
+  requestQuery: string,
+  requestData: unknown | null
 ): string {
-  const sigContent = `/api/v1${requestPath}&clientId=${Deno.env.get("SNAPTRADE_CLIENT_ID")!}&timestamp=${timestamp}`;
+  const sigObject = {
+    content: requestData,
+    path: requestPath,
+    query: requestQuery,
+  };
+  const sigContent = JSONstringifyOrder(sigObject);
   return createHmac("sha256", consumerKey).update(sigContent).digest("base64");
 }
 
@@ -26,22 +46,34 @@ async function snaptradeRequest(
 ) {
   const clientId = Deno.env.get("SNAPTRADE_CLIENT_ID")!;
   const consumerKey = Deno.env.get("SNAPTRADE_CONSUMER_KEY")!;
-  const timestamp = Math.floor(Date.now() / 1000);
-  const signature = getSignature(path, timestamp, consumerKey);
+  const timestamp = Math.round(Date.now() / 1000).toString();
 
-  let url = `${SNAPTRADE_BASE}${path}?clientId=${clientId}&timestamp=${timestamp}&Signature=${encodeURIComponent(signature)}`;
+  // Build query string
+  const qp = new URLSearchParams();
+  qp.set("clientId", clientId);
+  qp.set("timestamp", timestamp);
   if (query) {
     for (const [k, v] of Object.entries(query)) {
-      url += `&${encodeURIComponent(k)}=${encodeURIComponent(v)}`;
+      qp.set(k, v);
     }
   }
 
+  const requestPath = `/api/v1${path}`;
+  const requestQuery = qp.toString();
+  const requestData = body && (method === "POST" || method === "PUT") ? body : null;
+  const signature = computeSignature(consumerKey, requestPath, requestQuery, requestData);
+
+  const url = `${SNAPTRADE_BASE}${path}?${requestQuery}`;
+
   const opts: RequestInit = {
     method,
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "Signature": signature,
+    },
   };
-  if (body && (method === "POST" || method === "PUT")) {
-    opts.body = JSON.stringify(body);
+  if (requestData) {
+    opts.body = JSON.stringify(requestData);
   }
 
   const res = await fetch(url, opts);
