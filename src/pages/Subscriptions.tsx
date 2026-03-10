@@ -394,6 +394,54 @@ const Subscriptions = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Add Subscription Dialog */}
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Subscription</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div>
+              <Label>Merchant / Service Name</Label>
+              <Input
+                placeholder="e.g. Netflix, Spotify"
+                value={newSub.merchant}
+                onChange={e => setNewSub(prev => ({ ...prev, merchant: e.target.value }))}
+              />
+            </div>
+            <div>
+              <Label>Amount</Label>
+              <Input
+                type="number"
+                step="0.01"
+                placeholder="9.99"
+                value={newSub.average_amount}
+                onChange={e => setNewSub(prev => ({ ...prev, average_amount: e.target.value }))}
+              />
+            </div>
+            <div>
+              <Label>Frequency</Label>
+              <Select value={newSub.frequency} onValueChange={v => setNewSub(prev => ({ ...prev, frequency: v }))}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="weekly">Weekly</SelectItem>
+                  <SelectItem value="biweekly">Bi-weekly</SelectItem>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                  <SelectItem value="quarterly">Quarterly</SelectItem>
+                  <SelectItem value="yearly">Yearly</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Button onClick={handleAddSubscription} disabled={!newSub.merchant || !newSub.average_amount} className="w-full">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Subscription
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 };
