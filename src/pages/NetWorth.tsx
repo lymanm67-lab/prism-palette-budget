@@ -35,9 +35,9 @@ const NetWorth = () => {
   const [goalDateInput, setGoalDateInput] = useState('');
 
   // Current totals
-  const { totalAssets, totalLiabilities, netWorth, assetAccounts, liabilityAccounts } = useMemo(() => {
-    if (!accounts) return { totalAssets: 0, totalLiabilities: 0, netWorth: 0, assetAccounts: [] as typeof accounts, liabilityAccounts: [] as typeof accounts };
-    let assets = 0, liabilities = 0;
+  const { totalAssets, totalLiabilities, netWorth, assetAccounts, liabilityAccounts, totalCash, totalInvestments, totalDebt } = useMemo(() => {
+    if (!accounts) return { totalAssets: 0, totalLiabilities: 0, netWorth: 0, assetAccounts: [] as typeof accounts, liabilityAccounts: [] as typeof accounts, totalCash: 0, totalInvestments: 0, totalDebt: 0 };
+    let assets = 0, liabilities = 0, cash = 0, investments = 0;
     const assetAcc: typeof accounts = [];
     const liabAcc: typeof accounts = [];
     for (const a of accounts) {
@@ -47,9 +47,14 @@ const NetWorth = () => {
       } else {
         assets += a.balance;
         assetAcc.push(a);
+        if (a.account_type === 'investment') {
+          investments += a.balance;
+        } else {
+          cash += a.balance;
+        }
       }
     }
-    return { totalAssets: assets, totalLiabilities: liabilities, netWorth: assets - liabilities, assetAccounts: assetAcc, liabilityAccounts: liabAcc };
+    return { totalAssets: assets, totalLiabilities: liabilities, netWorth: assets - liabilities, assetAccounts: assetAcc, liabilityAccounts: liabAcc, totalCash: cash, totalInvestments: investments, totalDebt: liabilities };
   }, [accounts]);
 
   // Net worth over time (assets vs liabilities split)
