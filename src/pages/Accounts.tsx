@@ -52,6 +52,8 @@ const Accounts = () => {
   const { data: snapConnections } = useSnapTradeConnections();
   const revokeSnapTrade = useRevokeSnapTrade();
   const reconnectSnapTrade = useReconnectSnapTrade();
+  const { data: plaidConnections } = usePlaidConnections();
+  const revokePlaid = useRevokePlaid();
   const { household } = useHousehold();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
