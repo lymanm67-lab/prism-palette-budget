@@ -190,16 +190,28 @@ Deno.serve(async (req) => {
 
       const defaultAccountId = dbAccounts?.[0]?.id;
 
-      if (defaultAccountId && txnData.transactions) {
-        const txnInserts = txnData.transactions.map((t: any) => ({
-          household_id,
-          account_id: defaultAccountId,
-          date: t.date,
-          merchant: t.merchant_name || t.name || null,
-          amount: -t.amount, // Plaid uses positive for debits
-          notes: t.name || null,
-          provider_transaction_id: t.transaction_id,
-        }));
+      if (defaultAccountId && txnData.transactions && txnData.transactions.length > 0) {
+        // Check for existing provider_transaction_ids to avoid duplicates
+        const providerIds = txnData.transactions.map((t: any) => t.transaction_id);
+        const { data: existing } = await serviceSupabase
+          .from('transactions')
+          .select('provider_transaction_id')
+          .eq('household_id', household_id)
+          .in('provider_transaction_id', providerIds);
+
+        const existingIds = new Set((existing || []).map((e: any) => e.provider_transaction_id));
+
+        const txnInserts = txnData.transactions
+          .filter((t: any) => !existingIds.has(t.transaction_id))
+          .map((t: any) => ({
+            household_id,
+            account_id: defaultAccountId,
+            date: t.date,
+            merchant: t.merchant_name || t.name || null,
+            amount: -t.amount,
+            notes: t.name || null,
+            provider_transaction_id: t.transaction_id,
+          }));
 
         if (txnInserts.length > 0) {
           await serviceSupabase.from('transactions').insert(txnInserts);
