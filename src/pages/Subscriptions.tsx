@@ -19,7 +19,7 @@ import { useCurrency } from '@/hooks/use-currency';
 import { format, parseISO } from 'date-fns';
 import {
   Loader2, RefreshCw, Sparkles, CreditCard, Calendar, TrendingDown,
-  AlertTriangle, CheckCircle2, XCircle, Bell, Trash2, DollarSign,
+  AlertTriangle, CheckCircle2, XCircle, Bell, Trash2, DollarSign, Plus,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import PageOverview from '@/components/PageOverview';
