@@ -306,10 +306,12 @@ const Accounts = () => {
           </div>
         </div>
 
-        {/* Hidden triggers for Plaid/MX accessed via dropdown */}
+        {/* Hidden triggers for Plaid/MX/SnapTrade accessed via dropdown */}
         <div className="hidden">
           <PlaidLinkButton />
           <MxConnectButton />
+          <SnapTradeConnectButton />
+          <SnapTradeConnectButton broker="FIDELITY" label="Connect Fidelity" className="[&]:hidden" />
         </div>
 
         {pageGuideOpen && (

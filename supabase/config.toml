@@ -41,3 +41,6 @@ verify_jwt = false
 
 [functions.report-narrative]
 verify_jwt = false
+
+[functions.snaptrade]
+verify_jwt = false
