@@ -188,6 +188,27 @@ serve(async (req) => {
         });
       }
 
+      // Verify ownership of mx_user_guid
+      const { data: item } = await adminClient
+        .from("plaid_items")
+        .select("household_id")
+        .eq("plaid_item_id", mx_user_guid)
+        .eq("provider_type", "mx")
+        .single();
+      if (!item) {
+        return new Response(JSON.stringify({ error: "Not found" }), {
+          status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const { data: isWidgetMember } = await adminClient.rpc("is_household_member", {
+        _user_id: user.id, _household_id: item.household_id,
+      });
+      if (!isWidgetMember) {
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
       const widgetData = await mxFetch(`/users/${mx_user_guid}/widget_urls`, "POST", {
         widget_url: {
           widget_type: "connect_widget",
