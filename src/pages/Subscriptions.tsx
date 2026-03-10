@@ -142,7 +142,33 @@ const Subscriptions = () => {
     }
   };
 
-  if (isLoading) {
+  const openEdit = (sub: any) => {
+    setEditSub({
+      id: sub.id,
+      merchant: sub.merchant || '',
+      average_amount: String(sub.average_amount || ''),
+      frequency: sub.frequency || 'monthly',
+      notes: sub.notes || '',
+    });
+  };
+
+  const handleEditSubscription = async () => {
+    if (!editSub) return;
+    try {
+      await updateSub.mutateAsync({
+        id: editSub.id,
+        merchant: editSub.merchant,
+        average_amount: parseFloat(editSub.average_amount),
+        frequency: editSub.frequency,
+        notes: editSub.notes || null,
+      });
+      toast.success('Subscription updated');
+      setEditSub(null);
+    } catch {
+      toast.error('Failed to update subscription');
+    }
+  };
+
     return (
       <div className="flex items-center justify-center p-20">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
