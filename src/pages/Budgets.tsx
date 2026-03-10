@@ -777,7 +777,7 @@ const Budgets = () => {
         </Card>
 
         {/* Narrative */}
-        <Card>
+        <Card style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
           <CardContent className="p-4 space-y-2 text-sm leading-relaxed">
             <h3 className="font-display font-semibold text-base">Budget Narrative</h3>
             <p>
