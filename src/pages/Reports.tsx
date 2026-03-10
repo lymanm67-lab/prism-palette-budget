@@ -399,6 +399,10 @@ const Reports = () => {
               <Download className="h-4 w-4" />
               Download PDF
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => window.print()} className="gap-2">
+              <Printer className="h-4 w-4" />
+              Print Report
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
         </div>

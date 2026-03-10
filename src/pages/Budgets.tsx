@@ -705,6 +705,9 @@ const Budgets = () => {
                       {hideZeroAmounts ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
                       {hideZeroAmounts ? 'Show $0 budgets' : 'Hide $0 budgets'}
                     </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => window.print()} className="gap-2">
+                      <Printer className="h-4 w-4" /> Print Budget
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuLabel className="text-xs text-muted-foreground">Help</DropdownMenuLabel>
                     <DropdownMenuItem onClick={() => {}} className="gap-2">
