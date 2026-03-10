@@ -3,6 +3,58 @@ import { supabase } from '@/integrations/supabase/client';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { toast } from 'sonner';
 
+// ==================== PLAID CONNECTIONS ====================
+export function usePlaidConnections() {
+  const { household } = useHousehold();
+  return useQuery({
+    queryKey: ['plaid_connections', household?.id],
+    enabled: !!household,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_plaid_items_safe');
+      if (error) throw error;
+      return (data || []).filter((item: any) => item.household_id === household!.id && item.status !== 'revoked');
+    },
+  });
+}
+
+export function useRevokePlaid() {
+  const qc = useQueryClient();
+  const { household } = useHousehold();
+
+  return useMutation({
+    mutationFn: async ({ plaidItemId }: { plaidItemId: string }) => {
+      if (!household) throw new Error('No household');
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const res = await fetch(`${supabaseUrl}/functions/v1/plaid/remove-item`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          household_id: household.id,
+          plaid_item_id: plaidItemId,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to revoke');
+      return data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['accounts'] });
+      qc.invalidateQueries({ queryKey: ['transactions'] });
+      qc.invalidateQueries({ queryKey: ['plaid_connections'] });
+      toast.success('Bank connection revoked');
+    },
+    onError: (err: any) => {
+      toast.error(err.message || 'Failed to revoke bank connection');
+    },
+  });
+}
+
 // ==================== INVESTMENT HOLDINGS ====================
 export function useInvestmentHoldings(accountId?: string) {
   const { household } = useHousehold();
