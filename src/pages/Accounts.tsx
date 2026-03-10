@@ -532,8 +532,8 @@ const Accounts = () => {
           );
         })}
 
-        {/* Connected Services — SnapTrade */}
-        {snapConnections && snapConnections.length > 0 && (
+        {/* Connected Services — Plaid + SnapTrade */}
+        {((snapConnections && snapConnections.length > 0) || (plaidConnections && plaidConnections.length > 0)) && (
           <Card className="border-border/50">
             <CardHeader className="pb-3">
               <CardTitle className="font-display text-lg flex items-center gap-2">
@@ -544,7 +544,74 @@ const Accounts = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              {snapConnections.map((conn: any) => {
+              {/* Plaid Connections */}
+              {plaidConnections?.map((item: any) => {
+                const isErrored = item.status === 'error';
+                const isStaleItem = item.updated_at && (Date.now() - new Date(item.updated_at).getTime() > 48 * 60 * 60 * 1000);
+                const needsAttention = isErrored || isStaleItem;
+                const consentExpiring = item.consent_expiration && (new Date(item.consent_expiration).getTime() - Date.now() < 7 * 24 * 60 * 60 * 1000);
+
+                return (
+                  <div key={item.id} className={`flex items-center justify-between gap-3 p-3 rounded-xl border group ${needsAttention || consentExpiring ? 'border-amber-500/40 bg-amber-500/5' : 'border-border/30'}`}>
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className={`h-9 w-9 rounded-xl flex items-center justify-center shrink-0 ${needsAttention ? 'bg-amber-500/10' : 'bg-primary/10'}`}>
+                        {needsAttention ? <AlertTriangle className="h-4 w-4 text-amber-500" /> : <Landmark className="h-4 w-4 text-primary" />}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-medium text-sm truncate">{item.institution_name || 'Bank Connection'}</p>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <Badge variant={item.status === 'active' && !isStaleItem ? 'secondary' : 'destructive'} className="text-[10px] capitalize">
+                            {isStaleItem && item.status === 'active' ? 'stale' : item.status}
+                          </Badge>
+                          <span className="text-[10px] text-muted-foreground">Plaid</span>
+                          {consentExpiring && (
+                            <span className="text-[10px] text-amber-600 font-medium">Consent expiring soon</span>
+                          )}
+                          {!needsAttention && !consentExpiring && (
+                            <span className="text-[10px] text-muted-foreground">
+                              Connected {new Date(item.created_at).toLocaleDateString()}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <AlertDialog>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                                <Unlink className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                          </TooltipTrigger>
+                          <TooltipContent>Revoke connection</TooltipContent>
+                        </Tooltip>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Revoke "{item.institution_name || 'Bank Connection'}"?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This will disconnect the bank and stop syncing transactions. Your existing data will remain but won't be updated.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => revokePlaid.mutate({ plaidItemId: item.plaid_item_id })}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              {revokePlaid.isPending ? 'Revoking...' : 'Revoke Access'}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {/* SnapTrade Connections */}
+              {snapConnections?.map((conn: any) => {
                 const isErrored = conn.status === 'error' || conn.status === 'stale';
                 const isStaleConn = conn.updated_at && (Date.now() - new Date(conn.updated_at).getTime() > 48 * 60 * 60 * 1000);
                 const needsReconnect = isErrored || isStaleConn;
@@ -574,7 +641,7 @@ const Accounts = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
-                    {/* Reconnect button — visible for errored/stale, hover for others */}
+                    {/* Reconnect button */}
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
