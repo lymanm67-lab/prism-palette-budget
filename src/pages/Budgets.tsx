@@ -598,6 +598,210 @@ const Budgets = () => {
 
   if (budgetsLoading) return <div className="flex items-center justify-center p-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
 
+  // ============ PRINT PREVIEW MODE ============
+  if (printPreview) {
+    const printBudgetRows = (type: ExpenseType, items: BudgetRow[]) => {
+      const totals = sectionTotals[type];
+      return (
+        <div key={type} className="mb-3">
+          <div className="flex items-center gap-2 py-1.5 px-2 bg-muted/40 rounded font-semibold text-sm border-b">
+            <span className={cn('flex-1', EXPENSE_TYPE_COLORS[type])}>{EXPENSE_TYPE_LABELS[type]}</span>
+            <span className="w-[90px] text-right tabular-nums">{formatCurrency(totals.budget)}</span>
+            <span className="w-[90px] text-right tabular-nums text-muted-foreground">{formatCurrency(totals.actual)}</span>
+            <span className={cn('w-[90px] text-right tabular-nums', totals.remaining < 0 ? 'text-rose-600' : '')}>{formatCurrency(Math.abs(totals.remaining))}</span>
+          </div>
+          {items.map(b => {
+            const isIncome = type === 'income';
+            const actual = isIncome ? b.received : b.spent;
+            const remaining = isIncome ? b.planned_amount - b.received : b.planned_amount - b.spent;
+            return (
+              <div key={b.id} className="flex items-center gap-2 py-1 px-2 text-sm border-b border-muted/30">
+                <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: b.categories?.color }} />
+                <span className="flex-1 truncate">{b.categories?.name}</span>
+                <span className="w-[90px] text-right tabular-nums">{formatCurrency(b.planned_amount)}</span>
+                <span className="w-[90px] text-right tabular-nums text-muted-foreground">{formatCurrency(actual)}</span>
+                <span className={cn('w-[90px] text-right tabular-nums', remaining < 0 ? 'text-rose-600' : '')}>{formatCurrency(Math.abs(remaining))}</span>
+              </div>
+            );
+          })}
+        </div>
+      );
+    };
+
+    return (
+      <div className="space-y-6 max-w-4xl mx-auto">
+        {/* Print Preview Toolbar */}
+        <div className="flex items-center justify-between bg-card border rounded-xl px-4 py-3 sticky top-0 z-30 shadow-sm no-print">
+          <div className="flex items-center gap-2">
+            <Printer className="h-5 w-5 text-primary" />
+            <span className="font-display font-semibold">Print Preview</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button onClick={() => window.print()} className="gap-2">
+              <Printer className="h-4 w-4" /> Print
+            </Button>
+            <Button variant="outline" onClick={() => setPrintPreview(false)} className="gap-2">
+              <X className="h-4 w-4" /> Close
+            </Button>
+          </div>
+        </div>
+
+        {/* Title */}
+        <div className="border-b pb-3">
+          <h1 className="font-display text-2xl font-bold">{formatMonth(month)} — Budget Report</h1>
+          <p className="text-sm text-muted-foreground mt-1">Generated {new Date().toLocaleDateString()}</p>
+        </div>
+
+        {/* Summary Cards Row */}
+        <div className="grid grid-cols-4 gap-3">
+          <Card className="border-l-4 border-l-emerald-500">
+            <CardContent className="p-3">
+              <p className="text-[10px] font-medium text-muted-foreground uppercase">Income</p>
+              <p className="text-lg font-bold tabular-nums">{formatCurrency(totalIncomeBudget)}</p>
+              <p className="text-xs text-muted-foreground">{formatCurrency(totalIncomeActual)} received</p>
+            </CardContent>
+          </Card>
+          <Card className="border-l-4 border-l-primary">
+            <CardContent className="p-3">
+              <p className="text-[10px] font-medium text-muted-foreground uppercase">Expenses</p>
+              <p className="text-lg font-bold tabular-nums">{formatCurrency(totalExpenseBudget)}</p>
+              <p className="text-xs text-muted-foreground">{formatCurrency(totalExpenseActual)} spent</p>
+            </CardContent>
+          </Card>
+          <Card className={cn("border-l-4", unallocated >= 0 ? "border-l-emerald-500" : "border-l-amber-500")}>
+            <CardContent className="p-3">
+              <p className="text-[10px] font-medium text-muted-foreground uppercase">Unallocated</p>
+              <p className={cn("text-lg font-bold tabular-nums", unallocated < 0 ? "text-amber-600" : unallocated === 0 ? "text-emerald-600" : "")}>{formatCurrency(Math.abs(unallocated))}</p>
+              <p className="text-xs text-muted-foreground">{unallocated < 0 ? 'over-allocated' : unallocated === 0 ? 'fully allocated ✓' : 'to assign'}</p>
+            </CardContent>
+          </Card>
+          <Card className={cn("border-l-4", totalExpenseRemaining >= 0 ? "border-l-emerald-500" : "border-l-rose-500")}>
+            <CardContent className="p-3">
+              <p className="text-[10px] font-medium text-muted-foreground uppercase">Under / Over</p>
+              <p className={cn("text-lg font-bold tabular-nums", totalExpenseRemaining < 0 ? "text-rose-600" : "")}>{formatCurrency(Math.abs(totalExpenseRemaining))}</p>
+              <p className="text-xs text-muted-foreground">{totalExpenseRemaining < 0 ? 'over budget' : 'under budget'}</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Charts */}
+        <div className="grid grid-cols-2 gap-6">
+          <Card>
+            <CardContent className="p-4">
+              <h3 className="text-sm font-semibold mb-3 text-center">Expense Allocation</h3>
+              <ResponsiveContainer width="100%" height={220}>
+                <PieChart>
+                  <Pie
+                    data={[
+                      { name: 'Fixed', value: sectionTotals.fixed.budget, color: '#3b82f6' },
+                      { name: 'Flexible', value: sectionTotals.flexible.budget, color: '#f59e0b' },
+                      { name: 'Non-Monthly', value: sectionTotals.non_monthly.budget, color: '#a855f7' },
+                    ].filter(d => d.value > 0)}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={50}
+                    outerRadius={80}
+                    dataKey="value"
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    labelLine={false}
+                  >
+                    {[
+                      { color: '#3b82f6' },
+                      { color: '#f59e0b' },
+                      { color: '#a855f7' },
+                    ].filter((_, i) => [sectionTotals.fixed.budget, sectionTotals.flexible.budget, sectionTotals.non_monthly.budget][i] > 0)
+                     .map((entry, idx) => (
+                      <Cell key={idx} fill={entry.color} />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <h3 className="text-sm font-semibold mb-3 text-center">Budget vs Actual</h3>
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={[
+                  { name: 'Income', budget: totalIncomeBudget, actual: totalIncomeActual },
+                  { name: 'Fixed', budget: sectionTotals.fixed.budget, actual: sectionTotals.fixed.actual },
+                  { name: 'Flexible', budget: sectionTotals.flexible.budget, actual: sectionTotals.flexible.actual },
+                  { name: 'Non-Monthly', budget: sectionTotals.non_monthly.budget, actual: sectionTotals.non_monthly.actual },
+                ]} barGap={2}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+                  <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
+                  <Bar dataKey="budget" fill="#3b82f6" name="Budget" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="actual" fill="#10b981" name="Actual" radius={[3, 3, 0, 0]} />
+                  <Legend wrapperStyle={{ fontSize: 10 }} />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Full Budget Table */}
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 py-2 px-2 text-xs font-medium text-muted-foreground uppercase tracking-wider border-b">
+              <span className="flex-1">Category</span>
+              <span className="w-[90px] text-right">Budget</span>
+              <span className="w-[90px] text-right">Actual</span>
+              <span className="w-[90px] text-right">Remaining</span>
+            </div>
+            {printBudgetRows('income', groupedBudgets.income)}
+            {printBudgetRows('fixed', groupedBudgets.fixed)}
+            {printBudgetRows('flexible', groupedBudgets.flexible)}
+            {printBudgetRows('non_monthly', groupedBudgets.non_monthly)}
+
+            {/* Totals */}
+            <div className="flex items-center gap-2 py-2 px-2 bg-muted/30 rounded font-semibold text-sm mt-2 border-t-2">
+              <span className="flex-1 font-display">Net (Income − Expenses)</span>
+              <span className="w-[90px] text-right tabular-nums">{formatCurrency(totalIncomeBudget - totalExpenseBudget)}</span>
+              <span className="w-[90px] text-right tabular-nums text-muted-foreground">{formatCurrency(totalIncomeActual - totalExpenseActual)}</span>
+              <span className={cn('w-[90px] text-right tabular-nums', totalIncomeRemaining - totalExpenseRemaining < 0 ? 'text-rose-600' : 'text-emerald-600')}>
+                {formatCurrency(Math.abs((totalIncomeBudget - totalExpenseBudget) - (totalIncomeActual - totalExpenseActual)))}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Narrative */}
+        <Card>
+          <CardContent className="p-4 space-y-2 text-sm leading-relaxed">
+            <h3 className="font-display font-semibold text-base">Budget Narrative</h3>
+            <p>
+              For <strong>{formatMonth(month)}</strong>, total budgeted income is <strong>{formatCurrency(totalIncomeBudget)}</strong> with{' '}
+              <strong>{formatCurrency(totalIncomeActual)}</strong> received so far ({totalIncomeBudget > 0 ? Math.round((totalIncomeActual / totalIncomeBudget) * 100) : 0}%).
+            </p>
+            <p>
+              Total expense budget is <strong>{formatCurrency(totalExpenseBudget)}</strong>, of which <strong>{formatCurrency(totalExpenseActual)}</strong> has been spent.
+              {totalExpenseRemaining >= 0
+                ? ` You are ${formatCurrency(totalExpenseRemaining)} under budget.`
+                : ` You are ${formatCurrency(Math.abs(totalExpenseRemaining))} over budget.`}
+            </p>
+            <p>
+              <strong>Fixed expenses:</strong> {formatCurrency(sectionTotals.fixed.actual)} of {formatCurrency(sectionTotals.fixed.budget)} budgeted
+              ({sectionTotals.fixed.remaining < 0 ? `${formatCurrency(Math.abs(sectionTotals.fixed.remaining))} over` : `${formatCurrency(sectionTotals.fixed.remaining)} remaining`}).{' '}
+              <strong>Flexible:</strong> {formatCurrency(sectionTotals.flexible.actual)} of {formatCurrency(sectionTotals.flexible.budget)}
+              ({sectionTotals.flexible.remaining < 0 ? `${formatCurrency(Math.abs(sectionTotals.flexible.remaining))} over` : `${formatCurrency(sectionTotals.flexible.remaining)} remaining`}).{' '}
+              <strong>Non-Monthly:</strong> {formatCurrency(sectionTotals.non_monthly.actual)} of {formatCurrency(sectionTotals.non_monthly.budget)}
+              ({sectionTotals.non_monthly.remaining < 0 ? `${formatCurrency(Math.abs(sectionTotals.non_monthly.remaining))} over` : `${formatCurrency(sectionTotals.non_monthly.remaining)} remaining`}).
+            </p>
+            {unallocated !== 0 && (
+              <p>
+                {unallocated > 0
+                  ? `There is ${formatCurrency(unallocated)} of income not yet allocated to expense categories.`
+                  : `Expenses exceed income by ${formatCurrency(Math.abs(unallocated))} — the budget is over-allocated.`}
+              </p>
+            )}
+            {unallocated === 0 && <p>✅ Every dollar of income is assigned to a budget category.</p>}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <TooltipProvider delayDuration={300}>
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
