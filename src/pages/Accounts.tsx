@@ -11,9 +11,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAccounts, useCreateAccount, useUpdateAccount, useDeleteAccount } from '@/hooks/use-finance-data';
+import { useSyncSnapTrade } from '@/hooks/use-investment-data';
 import { formatDate } from '@/lib/seed-data';
 import { useCurrency } from '@/hooks/use-currency';
-import { Plus, Landmark, CreditCard, TrendingUp, PiggyBank, Car, Loader2, Trash2, Upload, Pencil, Check, X, MoreHorizontal, BookOpen, Link2, RefreshCw } from 'lucide-react';
+import { Plus, Landmark, CreditCard, TrendingUp, PiggyBank, Car, Loader2, Trash2, Upload, Pencil, Check, X, MoreHorizontal, BookOpen, Link2, RefreshCw, AlertTriangle, Clock } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 import PlaidLinkButton from '@/components/PlaidLinkButton';
 import MxConnectButton from '@/components/MxConnectButton';
@@ -47,6 +48,7 @@ const Accounts = () => {
   const createAccount = useCreateAccount();
   const updateAccount = useUpdateAccount();
   const deleteAccount = useDeleteAccount();
+  const syncSnapTrade = useSyncSnapTrade();
   const { household } = useHousehold();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
@@ -65,44 +67,49 @@ const Accounts = () => {
       if (!session) throw new Error('Not authenticated');
 
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const response = await fetch(
-        `${supabaseUrl}/functions/v1/plaid/sync-transactions`,
-        {
+
+      // Sync Plaid + SnapTrade in parallel
+      const [plaidRes] = await Promise.allSettled([
+        fetch(`${supabaseUrl}/functions/v1/plaid/sync-transactions`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${session.access_token}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({ household_id: household.id }),
-        }
-      );
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Failed to refresh');
+        }).then(async r => {
+          const d = await r.json();
+          if (!r.ok) throw new Error(d.error || 'Plaid sync failed');
+          return d;
+        }),
+        syncSnapTrade.mutateAsync(),
+      ]);
 
       qc.invalidateQueries({ queryKey: ['accounts'] });
       qc.invalidateQueries({ queryKey: ['transactions'] });
+      qc.invalidateQueries({ queryKey: ['investment_holdings'] });
 
-      // Auto-categorize newly synced uncategorized transactions
-      if (data.new_transactions > 0 && data.new_transaction_ids?.length) {
-        toast.success(`Synced ${data.accounts_updated} accounts, ${data.new_transactions} new transactions. Running auto-categorize…`);
-        try {
-          const { data: catData, error: catError } = await supabase.functions.invoke('auto-categorize', {
-            body: { transaction_ids: data.new_transaction_ids, household_id: household.id },
-          });
-          if (!catError && catData?.categorized > 0) {
-            const parts = [];
-            if (catData.rule_matched > 0) parts.push(`${catData.rule_matched} by rules`);
-            if (catData.ai_categorized > 0) parts.push(`${catData.ai_categorized} by AI`);
-            toast.success(`Auto-categorized ${catData.categorized} transactions${parts.length ? ` (${parts.join(', ')})` : ''}`);
-            qc.invalidateQueries({ queryKey: ['transactions'] });
-          } else if (catData?.categorized === 0) {
-            toast.info('No transactions could be auto-categorized');
+      if (plaidRes.status === 'fulfilled') {
+        const data = plaidRes.value;
+        if (data.new_transactions > 0 && data.new_transaction_ids?.length) {
+          toast.success(`Synced ${data.accounts_updated} accounts, ${data.new_transactions} new transactions. Running auto-categorize…`);
+          try {
+            const { data: catData, error: catError } = await supabase.functions.invoke('auto-categorize', {
+              body: { transaction_ids: data.new_transaction_ids, household_id: household.id },
+            });
+            if (!catError && catData?.categorized > 0) {
+              const parts = [];
+              if (catData.rule_matched > 0) parts.push(`${catData.rule_matched} by rules`);
+              if (catData.ai_categorized > 0) parts.push(`${catData.ai_categorized} by AI`);
+              toast.success(`Auto-categorized ${catData.categorized} transactions${parts.length ? ` (${parts.join(', ')})` : ''}`);
+              qc.invalidateQueries({ queryKey: ['transactions'] });
+            }
+          } catch {
+            toast.warning('Sync complete but auto-categorize failed');
           }
-        } catch {
-          toast.warning('Sync complete but auto-categorize failed');
+        } else {
+          toast.success(`Refreshed: ${data.accounts_updated} accounts updated, ${data.new_transactions} new transactions`);
         }
-      } else {
-        toast.success(`Refreshed: ${data.accounts_updated} accounts updated, ${data.new_transactions} new transactions`);
       }
     } catch (err: any) {
       toast.error(err.message || 'Failed to refresh accounts');
@@ -110,11 +117,25 @@ const Accounts = () => {
     setRefreshing(false);
   };
 
-  const grouped = (accounts || []).reduce((acc, acct) => {
-    const inst = acct.institution || 'Manual';
-    (acc[inst] = acc[inst] || []).push(acct);
+  // Group accounts by type category
+  const accountGroups = (accounts || []).reduce((acc, acct) => {
+    let group: string;
+    if (acct.account_type === 'investment') group = 'Investments';
+    else if (acct.account_type === 'credit') group = 'Credit Cards';
+    else if (acct.account_type === 'loan') group = 'Loans';
+    else group = 'Banking';
+    (acc[group] = acc[group] || []).push(acct);
     return acc;
   }, {} as Record<string, typeof accounts>);
+
+  const GROUP_ORDER = ['Banking', 'Credit Cards', 'Investments', 'Loans'];
+  const sortedGroups = GROUP_ORDER.filter(g => accountGroups[g]?.length);
+
+  const isStale = (lastSyncedAt: string | null) => {
+    if (!lastSyncedAt) return false;
+    const diff = Date.now() - new Date(lastSyncedAt).getTime();
+    return diff > 48 * 60 * 60 * 1000; // 48 hours
+  };
 
   const handleCreate = async () => {
     await createAccount.mutateAsync({
@@ -336,7 +357,7 @@ const Accounts = () => {
           />
         )}
 
-        {Object.keys(grouped).length === 0 && (
+        {sortedGroups.length === 0 && (
           <Card className="prism-card-shine border-border/50">
             <CardContent className="flex flex-col items-center justify-center p-12 text-center">
               <div className="h-16 w-16 rounded-2xl prism-gradient prism-glow flex items-center justify-center mb-4">
@@ -348,26 +369,38 @@ const Accounts = () => {
           </Card>
         )}
 
-        {Object.entries(grouped).map(([institution, accts]) => {
-          const institutionTotal = accts!.reduce((sum, a) => sum + a.balance, 0);
+        {sortedGroups.map((groupName) => {
+          const accts = accountGroups[groupName]!;
+          const groupTotal = accts.reduce((sum, a) => sum + a.balance, 0);
+          const GroupIcon = groupName === 'Investments' ? TrendingUp
+            : groupName === 'Credit Cards' ? CreditCard
+            : groupName === 'Loans' ? Car
+            : Landmark;
+          const groupGradient = groupName === 'Investments' ? 'from-prism-sky to-prism-teal'
+            : groupName === 'Credit Cards' ? 'from-prism-rose to-prism-orange'
+            : groupName === 'Loans' ? 'from-prism-amber to-prism-orange'
+            : 'from-prism-violet to-prism-indigo';
+
           return (
-            <motion.div key={institution} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+            <motion.div key={groupName} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
               <Card className="prism-card-shine border-border/50 hover-border-glow">
                 <CardHeader className="flex flex-row items-center justify-between pb-3">
                   <CardTitle className="font-display text-lg flex items-center gap-2.5">
-                    <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-prism-sky to-prism-indigo flex items-center justify-center">
-                      <Landmark className="h-3.5 w-3.5 text-white" />
+                    <div className={`h-7 w-7 rounded-lg bg-gradient-to-br ${groupGradient} flex items-center justify-center`}>
+                      <GroupIcon className="h-3.5 w-3.5 text-white" />
                     </div>
-                    {institution}
+                    {groupName}
+                    <Badge variant="outline" className="text-[10px] ml-1">{accts.length}</Badge>
                   </CardTitle>
-                  <span className={`font-display text-lg font-bold ${institutionTotal >= 0 ? 'text-prism-teal' : 'text-prism-rose'}`}>
-                    {formatCurrency(institutionTotal)}
+                  <span className={`font-display text-lg font-bold ${groupTotal >= 0 ? 'text-prism-teal' : 'text-prism-rose'}`}>
+                    {formatCurrency(groupTotal)}
                   </span>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  {accts!.map((acc) => {
+                  {accts.map((acc) => {
                     const Icon = ACCOUNT_ICONS[acc.account_type] || Landmark;
                     const isEditing = editingId === acc.id;
+                    const stale = isStale(acc.last_synced_at);
                     return (
                       <div key={acc.id} className="flex items-center gap-2 sm:gap-4 rounded-xl border border-border/30 p-3 sm:p-4 interactive-row hover-border-glow group cursor-default">
                         <div className={`flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-gradient-to-br ${GRADIENT_MAP[acc.account_type]} transition-transform duration-300 group-hover:scale-110 shrink-0`}>
@@ -408,9 +441,27 @@ const Accounts = () => {
                               <p className="font-medium text-sm truncate">{acc.name}</p>
                               <div className="flex items-center gap-1.5 flex-wrap">
                                 <Badge variant="secondary" className="text-[10px] capitalize">{acc.account_type}</Badge>
-                                <span className="text-[11px] sm:text-xs text-muted-foreground truncate">
-                                  {acc.last_synced_at ? `Synced ${formatDate(acc.last_synced_at)}` : 'Manual'}
-                                </span>
+                                {acc.institution && (
+                                  <span className="text-[10px] text-muted-foreground truncate">{acc.institution}</span>
+                                )}
+                                {acc.provider_type && acc.provider_type !== 'manual' && (
+                                  <Badge variant="outline" className="text-[9px] capitalize">{acc.provider_type}</Badge>
+                                )}
+                                {acc.last_synced_at ? (
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <span className={`text-[11px] flex items-center gap-0.5 ${stale ? 'text-amber-500' : 'text-muted-foreground'}`}>
+                                        {stale ? <AlertTriangle className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
+                                        {formatDate(acc.last_synced_at)}
+                                      </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      {stale ? 'Data may be stale — try refreshing' : `Last synced ${formatDate(acc.last_synced_at)}`}
+                                    </TooltipContent>
+                                  </Tooltip>
+                                ) : (
+                                  <span className="text-[11px] text-muted-foreground">Manual</span>
+                                )}
                               </div>
                             </>
                           )}
