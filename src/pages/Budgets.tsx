@@ -57,7 +57,7 @@ const BAR_COLORS: Record<ExpenseType, string> = {
   income: 'bg-emerald-500',
   fixed: 'bg-primary',
   flexible: 'bg-amber-500',
-  non_monthly: 'bg-rose-500',
+  non_monthly: 'bg-purple-500',
 };
 
 interface BudgetRow {
