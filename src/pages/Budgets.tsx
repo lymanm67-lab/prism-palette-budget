@@ -747,26 +747,32 @@ const Budgets = () => {
         {/* Full Budget Table */}
         <Card>
           <CardContent className="p-4">
-            <div className="flex items-center gap-2 py-2 px-2 text-xs font-medium text-muted-foreground uppercase tracking-wider border-b">
-              <span className="flex-1">Category</span>
-              <span className="w-[90px] text-right">Budget</span>
-              <span className="w-[90px] text-right">Actual</span>
-              <span className="w-[90px] text-right">Remaining</span>
-            </div>
-            {printBudgetRows('income', groupedBudgets.income)}
-            {printBudgetRows('fixed', groupedBudgets.fixed)}
-            {printBudgetRows('flexible', groupedBudgets.flexible)}
-            {printBudgetRows('non_monthly', groupedBudgets.non_monthly)}
-
-            {/* Totals */}
-            <div className="flex items-center gap-2 py-2 px-2 bg-muted/30 rounded font-semibold text-sm mt-2 border-t-2">
-              <span className="flex-1 font-display">Net (Income − Expenses)</span>
-              <span className="w-[90px] text-right tabular-nums">{formatCurrency(totalIncomeBudget - totalExpenseBudget)}</span>
-              <span className="w-[90px] text-right tabular-nums text-muted-foreground">{formatCurrency(totalIncomeActual - totalExpenseActual)}</span>
-              <span className={cn('w-[90px] text-right tabular-nums', totalIncomeRemaining - totalExpenseRemaining < 0 ? 'text-rose-600' : 'text-emerald-600')}>
-                {formatCurrency(Math.abs((totalIncomeBudget - totalExpenseBudget) - (totalIncomeActual - totalExpenseActual)))}
-              </span>
-            </div>
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="text-xs font-medium text-muted-foreground uppercase tracking-wider border-b">
+                  <th className="py-2 px-2 text-left">Category</th>
+                  <th className="py-2 px-2 text-right w-[90px]">Budget</th>
+                  <th className="py-2 px-2 text-right w-[90px]">Actual</th>
+                  <th className="py-2 px-2 text-right w-[90px]">Remaining</th>
+                </tr>
+              </thead>
+              <tbody>
+                {printBudgetRows('income', groupedBudgets.income)}
+                {printBudgetRows('fixed', groupedBudgets.fixed)}
+                {printBudgetRows('flexible', groupedBudgets.flexible)}
+                {printBudgetRows('non_monthly', groupedBudgets.non_monthly)}
+              </tbody>
+              <tfoot>
+                <tr className="font-semibold text-sm border-t-2 bg-muted/30">
+                  <td className="py-2 px-2 font-display">Net (Income − Expenses)</td>
+                  <td className="py-2 px-2 text-right tabular-nums">{formatCurrency(totalIncomeBudget - totalExpenseBudget)}</td>
+                  <td className="py-2 px-2 text-right tabular-nums text-muted-foreground">{formatCurrency(totalIncomeActual - totalExpenseActual)}</td>
+                  <td className={cn('py-2 px-2 text-right tabular-nums', totalIncomeRemaining - totalExpenseRemaining < 0 ? 'text-rose-600' : 'text-emerald-600')}>
+                    {formatCurrency(Math.abs((totalIncomeBudget - totalExpenseBudget) - (totalIncomeActual - totalExpenseActual)))}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
           </CardContent>
         </Card>
 
