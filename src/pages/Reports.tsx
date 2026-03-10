@@ -674,6 +674,7 @@ const Reports = () => {
               </Card>
             )}
           </div>
+          <ReportNarrative tab="cashflow" monthlyCashflow={monthlyCashflow} savingsRate={savingsRate} dateLabel={dateLabel} />
         </TabsContent>
 
         {/* ==================== NET WORTH ==================== */}
