@@ -49,6 +49,8 @@ const Accounts = () => {
   const updateAccount = useUpdateAccount();
   const deleteAccount = useDeleteAccount();
   const syncSnapTrade = useSyncSnapTrade();
+  const { data: snapConnections } = useSnapTradeConnections();
+  const revokeSnapTrade = useRevokeSnapTrade();
   const { household } = useHousehold();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
