@@ -406,14 +406,14 @@
 
   /* Ensure cards and charts print nicely */
   .recharts-wrapper {
-    page-break-inside: avoid;
+    break-inside: avoid;
   }
 
   [class*="Card"], [class*="card"] {
-    break-inside: avoid;
     border: 1px solid #ddd !important;
     box-shadow: none !important;
     background: white !important;
+    overflow: visible !important;
   }
 
   /* Force backgrounds for progress bars and badges */
@@ -429,13 +429,33 @@
     white-space: normal !important;
   }
 
-  /* Grids should stack on narrow print */
-  .grid {
+  /* Remove all scroll containers for print */
+  [data-radix-scroll-area-viewport],
+  [class*="ScrollArea"],
+  [class*="scroll-area"] {
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  /* Allow content to flow naturally across pages */
+  .grid, [class*="Card"], [class*="card"], [class*="Collapsible"] {
+    break-inside: auto;
+  }
+
+  /* Only avoid breaks on small elements like individual rows */
+  tr, .flex.items-center {
     break-inside: avoid;
   }
 
+  /* Ensure all collapsibles are open for print */
+  [data-state="closed"] > [data-radix-collapsible-content] {
+    display: block !important;
+    height: auto !important;
+  }
+
   @page {
-    margin: 0.5in;
+    margin: 0.4in;
     size: auto;
   }
 }
