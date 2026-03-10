@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { useAccounts, useAllTransactions } from '@/hooks/use-finance-data';
 import { useGoals, useCreateGoal, useUpdateGoal } from '@/hooks/use-goals';
 import { useCurrency } from '@/hooks/use-currency';
-import { Loader2, TrendingUp, TrendingDown, Wallet, Landmark, CreditCard, BarChart3, Target, Pencil, Check, X } from 'lucide-react';
+import { Loader2, TrendingUp, TrendingDown, Wallet, Landmark, CreditCard, BarChart3, Target, Pencil, Check, X, PiggyBank, Banknote } from 'lucide-react';
 import { useMemo, useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import {
