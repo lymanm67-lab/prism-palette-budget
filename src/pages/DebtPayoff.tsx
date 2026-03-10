@@ -166,16 +166,21 @@ const DebtPayoff = () => {
       interest_rate: parseFloat(form.interest_rate) || 0,
       account_id: form.account_id || null,
     };
-    if (editId) {
-      await updateItem.mutateAsync({ id: editId, plan_id: activePlanId, ...payload });
-      toast.success('Debt updated');
-    } else {
-      await createItem.mutateAsync({ plan_id: activePlanId, ...payload });
-      toast.success('Debt added');
+    try {
+      if (editId) {
+        await updateItem.mutateAsync({ id: editId, plan_id: activePlanId, ...payload });
+        toast.success('Debt updated');
+      } else {
+        await createItem.mutateAsync({ plan_id: activePlanId, ...payload });
+        toast.success('Debt added');
+      }
+      setEditId(null);
+      setForm({ name: '', balance: '', minimum_payment: '', interest_rate: '', account_id: '' });
+      setDialogOpen(false);
+    } catch (err: any) {
+      console.error('Save debt error:', err);
+      toast.error(err?.message || 'Failed to save debt');
     }
-    setEditId(null);
-    setForm({ name: '', balance: '', minimum_payment: '', interest_rate: '', account_id: '' });
-    setDialogOpen(false);
   };
 
   const openEdit = (d: Debt) => {
