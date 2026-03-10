@@ -374,12 +374,18 @@
   .no-print,
   [role="tablist"],
   .fixed, .sticky,
-  .border-b.border-border {
+  .border-b.border-border,
+  .border-r.border-sidebar-border,
+  .w-60, .w-16 {
     display: none !important;
     width: 0 !important;
     min-width: 0 !important;
     max-width: 0 !important;
+    height: 0 !important;
     overflow: hidden !important;
+    visibility: hidden !important;
+    position: absolute !important;
+    left: -9999px !important;
   }
 
   /* Kill ALL flex/grid height and overflow constraints */
