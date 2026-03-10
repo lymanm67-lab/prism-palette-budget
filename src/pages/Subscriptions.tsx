@@ -167,6 +167,16 @@ const Subscriptions = () => {
           features={['Auto-detect subscriptions from transactions', 'AI savings recommendations', 'Cancellation tracking & reminders', 'Monthly/yearly cost summary']}
         />
         <div className="flex gap-2">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline" size="icon" onClick={() => setAddOpen(true)}>
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Add Subscription</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           <Button variant="outline" onClick={handleDetect} disabled={detectSubs.isPending}>
             {detectSubs.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
             Detect
