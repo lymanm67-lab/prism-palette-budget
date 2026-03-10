@@ -557,6 +557,7 @@ const Reports = () => {
               </CardContent>
             </Card>
           )}
+          <ReportNarrative tab="spending" spendingData={spendingData || undefined} dateLabel={dateLabel} />
         </TabsContent>
 
         {/* ==================== BUDGET VS ACTUAL ==================== */}
