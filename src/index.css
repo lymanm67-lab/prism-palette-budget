@@ -540,8 +540,19 @@
     display: block !important;
   }
 
+  /* Show sidebar summary in print (was hidden) */
   .lg\:grid-cols-\[1fr_300px\] > *:last-child {
-    display: none !important;
+    display: block !important;
+    margin-top: 0.5rem !important;
+  }
+
+  /* Print-only charts section */
+  .print-budget-charts {
+    page-break-before: always;
+  }
+
+  .print-budget-charts .recharts-wrapper {
+    break-inside: avoid;
   }
 
   /* Reduce spacing globally */
@@ -565,6 +576,11 @@
   /* Ensure print:block works */
   .print\:block {
     display: block !important;
+  }
+
+  /* Ensure print:hidden works */
+  .print\:hidden {
+    display: none !important;
   }
 
   @page {
