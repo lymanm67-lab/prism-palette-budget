@@ -1,4 +1,5 @@
 import { useMemo, useState, useCallback } from 'react';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend, Tooltip as RTooltip } from 'recharts';
 import ReactMarkdown from 'react-markdown';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
