@@ -113,14 +113,14 @@ const SnapTradeConnectButton = ({
 
           try {
             // Get or create the connection record
-            const { data: connections } = await supabase
+            const { data: connections } = await (supabase
               .from('snaptrade_connections' as any)
               .select('id')
               .eq('household_id', household.id)
               .eq('snaptrade_user_id', snaptradeUserId)
-              .limit(1);
+              .limit(1) as any);
 
-            const connectionId = connections?.[0]?.id;
+            const connectionId = (connections as any[])?.[0]?.id;
 
             const syncRes = await fetch(
               `${supabaseUrl}/functions/v1/snaptrade/sync-accounts`,
