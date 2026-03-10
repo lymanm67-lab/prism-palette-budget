@@ -373,18 +373,26 @@
   button:not(.print-visible),
   .no-print,
   [role="tablist"],
-  .fixed, .sticky {
+  .fixed, .sticky,
+  .border-b.border-border {
     display: none !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    max-width: 0 !important;
+    overflow: hidden !important;
   }
 
   /* Kill ALL flex/grid height and overflow constraints */
   .flex.h-screen,
   .flex-1.flex.flex-col,
-  .flex-1 {
+  .flex-1,
+  .overflow-hidden,
+  .overflow-y-auto {
     display: block !important;
     height: auto !important;
     min-height: 0 !important;
     overflow: visible !important;
+    width: 100% !important;
   }
 
   /* Make main content full width */
