@@ -176,6 +176,18 @@ const Investments = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Key Insights */}
+      <InvestmentInsights
+        accounts={investmentAccounts.map(a => ({
+          id: a.id,
+          name: a.name,
+          balance: Number(a.balance),
+          account_type: a.account_type,
+          institution: a.institution,
+        }))}
+        totalBalance={totalBalance}
+      />
     </motion.div>
     </TooltipProvider>
   );

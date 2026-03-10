@@ -515,6 +515,15 @@ const DebtPayoff = () => {
                 </Card>
               )}
 
+              {/* Key Insights */}
+              <DebtInsights
+                debts={debts}
+                extraPayment={extraPayment}
+                strategy={strategy}
+                payoffMonths={activeResult?.months}
+                totalInterest={activeResult?.interest}
+              />
+
               {/* AI Debt Advisor */}
               <AiDebtAdvisor debts={debts} extraPayment={extraPayment} />
             </>
