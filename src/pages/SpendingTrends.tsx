@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAllTransactions, useCategories } from '@/hooks/use-finance-data';
+import { useAccounts } from '@/hooks/use-finance-data';
 import { useCurrency } from '@/hooks/use-currency';
 import { Loader2, TrendingUp, TrendingDown, ArrowUpDown, BarChart3, Download, FileText } from 'lucide-react';
 import { useMemo, useRef, useState, useCallback } from 'react';
@@ -38,6 +39,7 @@ const MONTH_OPTIONS = [
 const SpendingTrends = () => {
   const { formatCurrency, formatCompact } = useCurrency();
   const { data: allTransactions, isLoading } = useAllTransactions();
+  const { data: accounts } = useAccounts();
   const { data: categories } = useCategories();
   const [monthCount, setMonthCount] = useState(6);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -67,6 +69,14 @@ const SpendingTrends = () => {
   const { monthlyData, categoryNames, categoryColorMap, categoryTotals } = useMemo(() => {
     if (!allTransactions || !categories) return { monthlyData: [], categoryNames: [], categoryColorMap: {} as Record<string, string>, categoryTotals: {} as Record<string, number> };
 
+    // Build set of investment account IDs to exclude
+    const investmentAccountIds = new Set<string>();
+    if (accounts) {
+      for (const a of accounts) {
+        if (a.account_type === 'investment') investmentAccountIds.add(a.id);
+      }
+    }
+
     const catMap = new Map(categories.map(c => [c.id, c]));
     const monthCatMap = new Map<string, Record<string, number>>();
     const catTotals: Record<string, number> = {};
@@ -75,6 +85,8 @@ const SpendingTrends = () => {
 
     for (const t of allTransactions) {
       if (t.amount >= 0) continue;
+      // Exclude investment account transactions from spending analysis
+      if (investmentAccountIds.has(t.account_id)) continue;
       const m = t.date.substring(0, 7);
       if (!monthCatMap.has(m)) continue;
       const cat = t.category_id ? catMap.get(t.category_id) : null;
@@ -104,7 +116,7 @@ const SpendingTrends = () => {
     });
 
     return { monthlyData: data, categoryNames: topCats, categoryColorMap: colorMap, categoryTotals: catTotals };
-  }, [allTransactions, categories, monthRange]);
+  }, [allTransactions, accounts, categories, monthRange]);
 
   const handleExportCsv = useCallback(() => {
     try {

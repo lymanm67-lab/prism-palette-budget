@@ -11,10 +11,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAccounts, useCreateAccount, useUpdateAccount, useDeleteAccount } from '@/hooks/use-finance-data';
-import { useSyncSnapTrade } from '@/hooks/use-investment-data';
+import { useSyncSnapTrade, useSnapTradeConnections, useRevokeSnapTrade } from '@/hooks/use-investment-data';
 import { formatDate } from '@/lib/seed-data';
 import { useCurrency } from '@/hooks/use-currency';
-import { Plus, Landmark, CreditCard, TrendingUp, PiggyBank, Car, Loader2, Trash2, Upload, Pencil, Check, X, MoreHorizontal, BookOpen, Link2, RefreshCw, AlertTriangle, Clock } from 'lucide-react';
+import { Plus, Landmark, CreditCard, TrendingUp, PiggyBank, Car, Loader2, Trash2, Upload, Pencil, Check, X, MoreHorizontal, BookOpen, Link2, RefreshCw, AlertTriangle, Clock, Unlink } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 import PlaidLinkButton from '@/components/PlaidLinkButton';
 import MxConnectButton from '@/components/MxConnectButton';
@@ -49,6 +49,8 @@ const Accounts = () => {
   const updateAccount = useUpdateAccount();
   const deleteAccount = useDeleteAccount();
   const syncSnapTrade = useSyncSnapTrade();
+  const { data: snapConnections } = useSnapTradeConnections();
+  const revokeSnapTrade = useRevokeSnapTrade();
   const { household } = useHousehold();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
@@ -526,6 +528,80 @@ const Accounts = () => {
             </motion.div>
           );
         })}
+
+        {/* Connected Services — SnapTrade */}
+        {snapConnections && snapConnections.length > 0 && (
+          <Card className="border-border/50">
+            <CardHeader className="pb-3">
+              <CardTitle className="font-display text-lg flex items-center gap-2">
+                <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-prism-sky to-prism-teal flex items-center justify-center">
+                  <Link2 className="h-3.5 w-3.5 text-white" />
+                </div>
+                Connected Services
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {snapConnections.map((conn: any) => (
+                <div key={conn.id} className="flex items-center justify-between gap-3 p-3 rounded-xl border border-border/30 group">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                      <TrendingUp className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-medium text-sm truncate">{conn.institution_name || 'Investment Connection'}</p>
+                      <div className="flex items-center gap-1.5">
+                        <Badge variant={conn.status === 'active' ? 'secondary' : 'destructive'} className="text-[10px] capitalize">
+                          {conn.status}
+                        </Badge>
+                        <span className="text-[10px] text-muted-foreground">SnapTrade</span>
+                        <span className="text-[10px] text-muted-foreground">
+                          Connected {new Date(conn.created_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <AlertDialog>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                            <Unlink className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent>Revoke connection</TooltipContent>
+                    </Tooltip>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Revoke "{conn.institution_name || 'Investment Connection'}"?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will disconnect the brokerage and stop syncing holdings. Your existing data will remain but won't be updated.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => {
+                            revokeSnapTrade.mutate({
+                              connectionId: conn.id,
+                              snaptradeUserId: conn.snaptrade_user_id,
+                              snaptradeUserSecret: conn.snaptrade_user_secret,
+                              authorizationId: conn.brokerage_authorization_id || undefined,
+                            });
+                          }}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          {revokeSnapTrade.isPending ? 'Revoking...' : 'Revoke Access'}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
+
         <BankExportGuide />
         <CsvImportDialog open={importOpen} onOpenChange={setImportOpen} />
       </motion.div>
