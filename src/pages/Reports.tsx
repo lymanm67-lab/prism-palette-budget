@@ -606,6 +606,7 @@ const Reports = () => {
               )}
             </CardContent>
           </Card>
+          <ReportNarrative tab="budget" budgetVsActual={budgetVsActual} dateLabel={dateLabel} />
         </TabsContent>
 
         {/* ==================== CASH FLOW ==================== */}
