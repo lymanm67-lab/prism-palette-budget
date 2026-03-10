@@ -308,12 +308,7 @@ const Accounts = () => {
                 <DropdownMenuItem className="gap-2" onSelect={() => {
                   snapTradeRef.current?.connect();
                 }}>
-                  <TrendingUp className="h-4 w-4" /> Connect Investment Account
-                </DropdownMenuItem>
-                <DropdownMenuItem className="gap-2" onSelect={() => {
-                  fidelityRef.current?.connect();
-                }}>
-                  <TrendingUp className="h-4 w-4" /> Connect Fidelity
+                  <TrendingUp className="h-4 w-4" /> Connect Investment (SnapTrade)
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="gap-2" onSelect={() => {
