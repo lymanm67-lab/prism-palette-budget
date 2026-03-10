@@ -362,6 +362,7 @@
   body {
     background: white !important;
     color: black !important;
+    font-size: 11px !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
@@ -376,15 +377,17 @@
     display: none !important;
   }
 
-  /* Remove flex/overflow constraints on layout wrappers */
+  /* Kill ALL flex/grid height and overflow constraints */
   .flex.h-screen,
-  .flex-1.flex.flex-col {
+  .flex-1.flex.flex-col,
+  .flex-1 {
     display: block !important;
     height: auto !important;
+    min-height: 0 !important;
     overflow: visible !important;
   }
 
-  /* Make main content full width and remove scroll constraints */
+  /* Make main content full width */
   main {
     margin: 0 !important;
     padding: 0 !important;
@@ -396,7 +399,16 @@
 
   main > * {
     max-width: 100% !important;
-    padding: 0.5rem !important;
+    padding: 0.25rem 0 !important;
+  }
+
+  /* Remove the sticky budget header gap */
+  .sticky {
+    position: static !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    padding-top: 0 !important;
+    margin-top: 0 !important;
   }
 
   /* Desktop top bar */
@@ -404,20 +416,52 @@
     display: none !important;
   }
 
-  /* Ensure cards and charts print nicely */
-  .recharts-wrapper {
-    break-inside: avoid;
+  /* Force single-column layout for print */
+  .grid {
+    display: block !important;
   }
 
+  .grid > * {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-bottom: 0.25rem !important;
+  }
+
+  /* Summary cards: inline row */
+  .grid.grid-cols-2,
+  .grid.sm\:grid-cols-4 {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.25rem !important;
+  }
+
+  .grid.grid-cols-2 > *,
+  .grid.sm\:grid-cols-4 > * {
+    flex: 1 1 22% !important;
+    min-width: 120px !important;
+    margin-bottom: 0.25rem !important;
+  }
+
+  /* Cards: compact, no shadow, no hover effects */
   [class*="Card"], [class*="card"] {
-    border: 1px solid #ddd !important;
+    border: 1px solid #ccc !important;
     box-shadow: none !important;
     background: white !important;
     overflow: visible !important;
+    transform: none !important;
+    transition: none !important;
+    margin-bottom: 0.15rem !important;
+    padding: 0.15rem !important;
+  }
+
+  /* Tighten card content padding */
+  [class*="CardContent"] {
+    padding: 0.25rem 0.5rem !important;
   }
 
   /* Force backgrounds for progress bars and badges */
-  [class*="Progress"], [class*="Badge"], [class*="progress"] {
+  [class*="Progress"], [class*="Badge"], [class*="progress"],
+  .bg-emerald-500, .bg-primary, .bg-amber-500, .bg-purple-500, .bg-rose-500 {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
@@ -429,7 +473,7 @@
     white-space: normal !important;
   }
 
-  /* Remove all scroll containers for print */
+  /* Remove all scroll containers */
   [data-radix-scroll-area-viewport],
   [class*="ScrollArea"],
   [class*="scroll-area"] {
@@ -438,24 +482,83 @@
     max-height: none !important;
   }
 
-  /* Allow content to flow naturally across pages */
+  /* Ensure all collapsibles are open */
+  [data-state="closed"] > [data-radix-collapsible-content],
+  [data-radix-collapsible-content] {
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Compact budget rows for print */
+  .group.py-2\.5 {
+    padding-top: 0.15rem !important;
+    padding-bottom: 0.15rem !important;
+  }
+
+  /* Show desktop layout, hide mobile layout in print */
+  .sm\:hidden {
+    display: none !important;
+  }
+
+  .hidden.sm\:flex {
+    display: flex !important;
+  }
+
+  /* Hide action buttons (edit/delete) in print */
+  .opacity-0.group-hover\:opacity-100 {
+    display: none !important;
+  }
+
+  /* Remove hover backgrounds */
+  .hover\:bg-muted\/30:hover {
+    background: transparent !important;
+  }
+
+  /* Allow natural page breaks */
   .grid, [class*="Card"], [class*="card"], [class*="Collapsible"] {
     break-inside: auto;
   }
 
-  /* Only avoid breaks on small elements like individual rows */
-  tr, .flex.items-center {
+  /* Keep individual budget rows together */
+  tr, .group.py-2\.5 {
     break-inside: avoid;
   }
 
-  /* Ensure all collapsibles are open for print */
-  [data-state="closed"] > [data-radix-collapsible-content] {
+  /* Keep section headers with their content */
+  [class*="CollapsibleTrigger"] {
+    break-after: avoid;
+  }
+
+  /* Recharts */
+  .recharts-wrapper {
+    break-inside: avoid;
+  }
+
+  /* Hide the sidebar panel in budget print */
+  .lg\:grid-cols-\[1fr_300px\] {
     display: block !important;
-    height: auto !important;
+  }
+
+  .lg\:grid-cols-\[1fr_300px\] > *:last-child {
+    display: none !important;
+  }
+
+  /* Reduce spacing globally */
+  .space-y-6 > * + * {
+    margin-top: 0.35rem !important;
+  }
+
+  .space-y-2 > * + * {
+    margin-top: 0.15rem !important;
+  }
+
+  .gap-6, .gap-3 {
+    gap: 0.25rem !important;
   }
 
   @page {
-    margin: 0.4in;
+    margin: 0.35in;
     size: auto;
   }
 }
