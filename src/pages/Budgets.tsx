@@ -103,7 +103,7 @@ const Budgets = () => {
   const [smartBudgetOpen, setSmartBudgetOpen] = useState(false);
   const [smartSuggestions, setSmartSuggestions] = useState<{ category_id: string; category_name: string; monthly_average: number; suggested_budget: number; selected: boolean }[]>([]);
   const smartBudget = useSmartBudget();
-
+  const [printPreview, setPrintPreview] = useState(false);
   const toggleSection = (key: string) => setOpenSections(s => ({ ...s, [key]: !s[key] }));
 
   // Business names from category groups
