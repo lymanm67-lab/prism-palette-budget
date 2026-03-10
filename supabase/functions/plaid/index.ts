@@ -354,6 +354,67 @@ Deno.serve(async (req) => {
       });
     }
 
+    if (action === 'remove-item' && req.method === 'POST') {
+      const { household_id, plaid_item_id } = await req.json();
+
+      // Verify membership
+      const { data: membership } = await supabase
+        .from('household_members')
+        .select('id')
+        .eq('household_id', household_id)
+        .eq('user_id', userId)
+        .single();
+      if (!membership) {
+        return new Response(JSON.stringify({ error: 'Forbidden' }), {
+          status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // Get the plaid item with access token using service role
+      const admin = createClient(
+        Deno.env.get('SUPABASE_URL')!,
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+      );
+      const { data: plaidItem } = await admin
+        .from('plaid_items')
+        .select('plaid_access_token, plaid_item_id')
+        .eq('household_id', household_id)
+        .eq('plaid_item_id', plaid_item_id)
+        .single();
+
+      if (!plaidItem) {
+        return new Response(JSON.stringify({ error: 'Plaid item not found' }), {
+          status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // Remove item from Plaid
+      try {
+        await fetch(`${PLAID_BASE_URL}/item/remove`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            client_id: PLAID_CLIENT_ID,
+            secret: PLAID_SECRET,
+            access_token: plaidItem.plaid_access_token,
+          }),
+        });
+      } catch (e) {
+        console.error('Plaid item/remove error:', e);
+      }
+
+      // Mark item as revoked in DB
+      await admin
+        .from('plaid_items')
+        .update({ status: 'revoked' })
+        .eq('plaid_item_id', plaid_item_id)
+        .eq('household_id', household_id);
+
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     return new Response(JSON.stringify({ error: 'Unknown action' }), {
       status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
