@@ -11,6 +11,10 @@ import {
   useSubscriptions, useDetectSubscriptions, useUpdateSubscription,
   useDeleteSubscription, useSubscriptionInsights,
 } from '@/hooks/use-subscriptions';
+import { useHousehold } from '@/contexts/HouseholdContext';
+import { supabase } from '@/integrations/supabase/client';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useCurrency } from '@/hooks/use-currency';
 import { format, parseISO } from 'date-fns';
 import {
