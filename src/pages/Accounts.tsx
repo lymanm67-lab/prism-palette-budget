@@ -64,7 +64,6 @@ const Accounts = () => {
   const [pageGuideOpen, setPageGuideOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const snapTradeRef = useRef<SnapTradeConnectHandle>(null);
-  const fidelityRef = useRef<SnapTradeConnectHandle>(null);
   const handleRefreshAccounts = async () => {
     if (!household) return;
     setRefreshing(true);
@@ -308,12 +307,7 @@ const Accounts = () => {
                 <DropdownMenuItem className="gap-2" onSelect={() => {
                   snapTradeRef.current?.connect();
                 }}>
-                  <TrendingUp className="h-4 w-4" /> Connect Investment Account
-                </DropdownMenuItem>
-                <DropdownMenuItem className="gap-2" onSelect={() => {
-                  fidelityRef.current?.connect();
-                }}>
-                  <TrendingUp className="h-4 w-4" /> Connect Fidelity
+                  <TrendingUp className="h-4 w-4" /> Connect Investment (SnapTrade)
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="gap-2" onSelect={() => {
@@ -336,7 +330,6 @@ const Accounts = () => {
           <PlaidLinkButton />
           <MxConnectButton />
           <SnapTradeConnectButton ref={snapTradeRef} />
-          <SnapTradeConnectButton ref={fidelityRef} broker="FIDELITY" label="Connect Fidelity" className="[&]:hidden" />
         </div>
 
         {pageGuideOpen && (
