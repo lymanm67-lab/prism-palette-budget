@@ -126,8 +126,9 @@ export function useUpdateDebtItem() {
         .update(updates as any)
         .eq('id', id)
         .select()
-        .single();
+        .maybeSingle();
       if (error) throw error;
+      if (!data) throw new Error('Debt item not found or access denied');
       return { ...data, plan_id };
     },
     onSuccess: (data) => qc.invalidateQueries({ queryKey: ['debt_items', data.plan_id] }),
