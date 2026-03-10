@@ -64,7 +64,6 @@ const Accounts = () => {
   const [pageGuideOpen, setPageGuideOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const snapTradeRef = useRef<SnapTradeConnectHandle>(null);
-  const fidelityRef = useRef<SnapTradeConnectHandle>(null);
   const handleRefreshAccounts = async () => {
     if (!household) return;
     setRefreshing(true);
