@@ -1202,6 +1202,97 @@ const Budgets = () => {
       </div>
       )}
 
+      {/* ============ PRINT-ONLY: Charts & Narrative ============ */}
+      <div className="hidden print:block print-budget-charts break-before-page">
+        <h2 className="font-display text-lg font-bold mb-4 border-b pb-2">Budget Overview — {formatMonth(month)}</h2>
+
+        {/* Two charts side by side */}
+        <div className="print-chart-row" style={{ display: 'flex', gap: '24px', marginBottom: '24px' }}>
+          {/* Pie Chart — Expense Allocation */}
+          <div style={{ flex: 1 }}>
+            <h3 className="text-sm font-semibold mb-2 text-center">Expense Allocation</h3>
+            <ResponsiveContainer width="100%" height={220}>
+              <PieChart>
+                <Pie
+                  data={[
+                    { name: 'Fixed', value: sectionTotals.fixed.budget, color: '#3b82f6' },
+                    { name: 'Flexible', value: sectionTotals.flexible.budget, color: '#f59e0b' },
+                    { name: 'Non-Monthly', value: sectionTotals.non_monthly.budget, color: '#a855f7' },
+                  ].filter(d => d.value > 0)}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={50}
+                  outerRadius={80}
+                  dataKey="value"
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  labelLine={false}
+                >
+                  {[
+                    { color: '#3b82f6' },
+                    { color: '#f59e0b' },
+                    { color: '#a855f7' },
+                  ].filter((_, i) => [sectionTotals.fixed.budget, sectionTotals.flexible.budget, sectionTotals.non_monthly.budget][i] > 0)
+                   .map((entry, idx) => (
+                    <Cell key={idx} fill={entry.color} />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Bar Chart — Budget vs Actual */}
+          <div style={{ flex: 1 }}>
+            <h3 className="text-sm font-semibold mb-2 text-center">Budget vs Actual</h3>
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={[
+                { name: 'Income', budget: totalIncomeBudget, actual: totalIncomeActual },
+                { name: 'Fixed', budget: sectionTotals.fixed.budget, actual: sectionTotals.fixed.actual },
+                { name: 'Flexible', budget: sectionTotals.flexible.budget, actual: sectionTotals.flexible.actual },
+                { name: 'Non-Monthly', budget: sectionTotals.non_monthly.budget, actual: sectionTotals.non_monthly.actual },
+              ]} barGap={2}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+                <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
+                <Bar dataKey="budget" fill="#3b82f6" name="Budget" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="actual" fill="#10b981" name="Actual" radius={[3, 3, 0, 0]} />
+                <Legend wrapperStyle={{ fontSize: 10 }} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Narrative Summary */}
+        <div className="border rounded-lg p-4 bg-white" style={{ fontSize: '11px', lineHeight: '1.6' }}>
+          <h3 className="text-sm font-semibold mb-2">Budget Narrative</h3>
+          <p>
+            For <strong>{formatMonth(month)}</strong>, total budgeted income is <strong>{formatCurrency(totalIncomeBudget)}</strong> with{' '}
+            <strong>{formatCurrency(totalIncomeActual)}</strong> received so far ({totalIncomeBudget > 0 ? Math.round((totalIncomeActual / totalIncomeBudget) * 100) : 0}%).
+          </p>
+          <p className="mt-1">
+            Total expense budget is <strong>{formatCurrency(totalExpenseBudget)}</strong>, of which <strong>{formatCurrency(totalExpenseActual)}</strong> has been spent.
+            {totalExpenseRemaining >= 0
+              ? ` You are ${formatCurrency(totalExpenseRemaining)} under budget.`
+              : ` You are ${formatCurrency(Math.abs(totalExpenseRemaining))} over budget.`}
+          </p>
+          <p className="mt-1">
+            <strong>Fixed expenses:</strong> {formatCurrency(sectionTotals.fixed.actual)} of {formatCurrency(sectionTotals.fixed.budget)} budgeted
+            ({sectionTotals.fixed.remaining < 0 ? `${formatCurrency(Math.abs(sectionTotals.fixed.remaining))} over` : `${formatCurrency(sectionTotals.fixed.remaining)} remaining`}).{' '}
+            <strong>Flexible:</strong> {formatCurrency(sectionTotals.flexible.actual)} of {formatCurrency(sectionTotals.flexible.budget)}
+            ({sectionTotals.flexible.remaining < 0 ? `${formatCurrency(Math.abs(sectionTotals.flexible.remaining))} over` : `${formatCurrency(sectionTotals.flexible.remaining)} remaining`}).{' '}
+            <strong>Non-Monthly:</strong> {formatCurrency(sectionTotals.non_monthly.actual)} of {formatCurrency(sectionTotals.non_monthly.budget)}
+            ({sectionTotals.non_monthly.remaining < 0 ? `${formatCurrency(Math.abs(sectionTotals.non_monthly.remaining))} over` : `${formatCurrency(sectionTotals.non_monthly.remaining)} remaining`}).
+          </p>
+          {unallocated !== 0 && (
+            <p className="mt-1">
+              {unallocated > 0
+                ? `There is ${formatCurrency(unallocated)} of income not yet allocated to expense categories.`
+                : `Expenses exceed income by ${formatCurrency(Math.abs(unallocated))} — the budget is over-allocated.`}
+            </p>
+          )}
+          {unallocated === 0 && <p className="mt-1">✅ Every dollar of income is assigned to a budget category.</p>}
+        </div>
+      </div>
+
       {/* Create / Edit Budget Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
