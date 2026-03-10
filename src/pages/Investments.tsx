@@ -10,6 +10,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recha
 import { Tooltip as UiTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import PageOverview from '@/components/PageOverview';
+import InvestmentInsights from '@/components/InvestmentInsights';
 
 const ACCOUNT_ICONS: Record<string, any> = {
   investment: TrendingUp,
