@@ -23,6 +23,7 @@ import ReactMarkdown from 'react-markdown';
 import { supabase } from '@/integrations/supabase/client';
 import { useTTS } from '@/hooks/use-tts';
 import PageOverview from '@/components/PageOverview';
+import DebtInsights from '@/components/DebtInsights';
 
 // ─── Types ───
 interface Debt {
