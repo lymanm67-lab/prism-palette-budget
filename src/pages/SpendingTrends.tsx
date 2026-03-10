@@ -116,7 +116,7 @@ const SpendingTrends = () => {
     });
 
     return { monthlyData: data, categoryNames: topCats, categoryColorMap: colorMap, categoryTotals: catTotals };
-  }, [allTransactions, categories, monthRange]);
+  }, [allTransactions, accounts, categories, monthRange]);
 
   const handleExportCsv = useCallback(() => {
     try {

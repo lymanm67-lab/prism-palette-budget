@@ -459,13 +459,22 @@ export function useDeleteBudget() {
 // ==================== SPENDING AGGREGATION ====================
 export function useSpendingByCategory(startDate: string, endDate: string) {
   const { household } = useHousehold();
+  const { data: accounts } = useAccounts();
   return useQuery({
     queryKey: ['spending_by_category', household?.id, startDate, endDate],
     enabled: !!household,
     queryFn: async () => {
+      // Build set of investment account IDs to exclude
+      const investmentAccountIds = new Set<string>();
+      if (accounts) {
+        for (const a of accounts) {
+          if (a.account_type === 'investment') investmentAccountIds.add(a.id);
+        }
+      }
+
       const { data, error } = await supabase
         .from('transactions')
-        .select('amount, category_id, categories(name, color)')
+        .select('amount, category_id, account_id, categories(name, color)')
         .eq('household_id', household!.id)
         .is('deleted_at', null)
         .gte('date', startDate)
@@ -473,9 +482,10 @@ export function useSpendingByCategory(startDate: string, endDate: string) {
         .lt('amount', 0); // expenses only
       if (error) throw error;
 
-      // Aggregate by category
+      // Aggregate by category, excluding investment accounts
       const map = new Map<string, { name: string; color: string; value: number }>();
       for (const t of data) {
+        if (investmentAccountIds.has(t.account_id)) continue;
         const catName = t.categories?.name || 'Uncategorized';
         const catColor = t.categories?.color || '#888';
         const existing = map.get(catName) || { name: catName, color: catColor, value: 0 };
