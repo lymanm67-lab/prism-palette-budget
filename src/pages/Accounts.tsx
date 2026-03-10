@@ -357,7 +357,7 @@ const Accounts = () => {
           />
         )}
 
-        {Object.keys(grouped).length === 0 && (
+        {sortedGroups.length === 0 && (
           <Card className="prism-card-shine border-border/50">
             <CardContent className="flex flex-col items-center justify-center p-12 text-center">
               <div className="h-16 w-16 rounded-2xl prism-gradient prism-glow flex items-center justify-center mb-4">
@@ -369,26 +369,38 @@ const Accounts = () => {
           </Card>
         )}
 
-        {Object.entries(grouped).map(([institution, accts]) => {
-          const institutionTotal = accts!.reduce((sum, a) => sum + a.balance, 0);
+        {sortedGroups.map((groupName) => {
+          const accts = accountGroups[groupName]!;
+          const groupTotal = accts.reduce((sum, a) => sum + a.balance, 0);
+          const GroupIcon = groupName === 'Investments' ? TrendingUp
+            : groupName === 'Credit Cards' ? CreditCard
+            : groupName === 'Loans' ? Car
+            : Landmark;
+          const groupGradient = groupName === 'Investments' ? 'from-prism-sky to-prism-teal'
+            : groupName === 'Credit Cards' ? 'from-prism-rose to-prism-orange'
+            : groupName === 'Loans' ? 'from-prism-amber to-prism-orange'
+            : 'from-prism-violet to-prism-indigo';
+
           return (
-            <motion.div key={institution} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+            <motion.div key={groupName} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
               <Card className="prism-card-shine border-border/50 hover-border-glow">
                 <CardHeader className="flex flex-row items-center justify-between pb-3">
                   <CardTitle className="font-display text-lg flex items-center gap-2.5">
-                    <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-prism-sky to-prism-indigo flex items-center justify-center">
-                      <Landmark className="h-3.5 w-3.5 text-white" />
+                    <div className={`h-7 w-7 rounded-lg bg-gradient-to-br ${groupGradient} flex items-center justify-center`}>
+                      <GroupIcon className="h-3.5 w-3.5 text-white" />
                     </div>
-                    {institution}
+                    {groupName}
+                    <Badge variant="outline" className="text-[10px] ml-1">{accts.length}</Badge>
                   </CardTitle>
-                  <span className={`font-display text-lg font-bold ${institutionTotal >= 0 ? 'text-prism-teal' : 'text-prism-rose'}`}>
-                    {formatCurrency(institutionTotal)}
+                  <span className={`font-display text-lg font-bold ${groupTotal >= 0 ? 'text-prism-teal' : 'text-prism-rose'}`}>
+                    {formatCurrency(groupTotal)}
                   </span>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  {accts!.map((acc) => {
+                  {accts.map((acc) => {
                     const Icon = ACCOUNT_ICONS[acc.account_type] || Landmark;
                     const isEditing = editingId === acc.id;
+                    const stale = isStale(acc.last_synced_at);
                     return (
                       <div key={acc.id} className="flex items-center gap-2 sm:gap-4 rounded-xl border border-border/30 p-3 sm:p-4 interactive-row hover-border-glow group cursor-default">
                         <div className={`flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-gradient-to-br ${GRADIENT_MAP[acc.account_type]} transition-transform duration-300 group-hover:scale-110 shrink-0`}>
@@ -429,9 +441,27 @@ const Accounts = () => {
                               <p className="font-medium text-sm truncate">{acc.name}</p>
                               <div className="flex items-center gap-1.5 flex-wrap">
                                 <Badge variant="secondary" className="text-[10px] capitalize">{acc.account_type}</Badge>
-                                <span className="text-[11px] sm:text-xs text-muted-foreground truncate">
-                                  {acc.last_synced_at ? `Synced ${formatDate(acc.last_synced_at)}` : 'Manual'}
-                                </span>
+                                {acc.institution && (
+                                  <span className="text-[10px] text-muted-foreground truncate">{acc.institution}</span>
+                                )}
+                                {acc.provider_type && acc.provider_type !== 'manual' && (
+                                  <Badge variant="outline" className="text-[9px] capitalize">{acc.provider_type}</Badge>
+                                )}
+                                {acc.last_synced_at ? (
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <span className={`text-[11px] flex items-center gap-0.5 ${stale ? 'text-amber-500' : 'text-muted-foreground'}`}>
+                                        {stale ? <AlertTriangle className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
+                                        {formatDate(acc.last_synced_at)}
+                                      </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      {stale ? 'Data may be stale — try refreshing' : `Last synced ${formatDate(acc.last_synced_at)}`}
+                                    </TooltipContent>
+                                  </Tooltip>
+                                ) : (
+                                  <span className="text-[11px] text-muted-foreground">Manual</span>
+                                )}
                               </div>
                             </>
                           )}
