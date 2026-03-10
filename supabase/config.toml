@@ -44,3 +44,6 @@ verify_jwt = false
 
 [functions.snaptrade]
 verify_jwt = false
+
+[functions.daily-sync]
+verify_jwt = false
