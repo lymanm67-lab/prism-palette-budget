@@ -479,6 +479,61 @@ const Subscriptions = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Subscription Dialog */}
+      <Dialog open={!!editSub} onOpenChange={(o) => !o && setEditSub(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Subscription</DialogTitle>
+          </DialogHeader>
+          {editSub && (
+            <div className="space-y-4 pt-2">
+              <div>
+                <Label>Merchant / Service Name</Label>
+                <Input
+                  value={editSub.merchant}
+                  onChange={e => setEditSub((prev: any) => ({ ...prev, merchant: e.target.value }))}
+                />
+              </div>
+              <div>
+                <Label>Amount</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={editSub.average_amount}
+                  onChange={e => setEditSub((prev: any) => ({ ...prev, average_amount: e.target.value }))}
+                />
+              </div>
+              <div>
+                <Label>Frequency</Label>
+                <Select value={editSub.frequency} onValueChange={v => setEditSub((prev: any) => ({ ...prev, frequency: v }))}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="weekly">Weekly</SelectItem>
+                    <SelectItem value="biweekly">Bi-weekly</SelectItem>
+                    <SelectItem value="monthly">Monthly</SelectItem>
+                    <SelectItem value="quarterly">Quarterly</SelectItem>
+                    <SelectItem value="yearly">Yearly</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Notes</Label>
+                <Input
+                  placeholder="Optional notes"
+                  value={editSub.notes}
+                  onChange={e => setEditSub((prev: any) => ({ ...prev, notes: e.target.value }))}
+                />
+              </div>
+              <Button onClick={handleEditSubscription} disabled={!editSub.merchant || !editSub.average_amount} className="w-full">
+                Save Changes
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 };
