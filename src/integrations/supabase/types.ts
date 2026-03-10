@@ -1020,6 +1020,50 @@ export type Database = {
         }
         Relationships: []
       }
+      snaptrade_connections: {
+        Row: {
+          brokerage_authorization_id: string | null
+          created_at: string
+          household_id: string
+          id: string
+          institution_name: string | null
+          snaptrade_user_id: string
+          snaptrade_user_secret: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          brokerage_authorization_id?: string | null
+          created_at?: string
+          household_id: string
+          id?: string
+          institution_name?: string | null
+          snaptrade_user_id: string
+          snaptrade_user_secret: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          brokerage_authorization_id?: string | null
+          created_at?: string
+          household_id?: string
+          id?: string
+          institution_name?: string | null
+          snaptrade_user_id?: string
+          snaptrade_user_secret?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "snaptrade_connections_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subcategories: {
         Row: {
           category_id: string
