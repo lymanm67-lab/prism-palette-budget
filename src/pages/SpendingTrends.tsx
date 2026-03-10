@@ -69,29 +69,24 @@ const SpendingTrends = () => {
   const { monthlyData, categoryNames, categoryColorMap, categoryTotals } = useMemo(() => {
     if (!allTransactions || !categories) return { monthlyData: [], categoryNames: [], categoryColorMap: {} as Record<string, string>, categoryTotals: {} as Record<string, number> };
 
+    // Build set of investment account IDs to exclude
+    const investmentAccountIds = new Set<string>();
+    if (accounts) {
+      for (const a of accounts) {
+        if (a.account_type === 'investment') investmentAccountIds.add(a.id);
+      }
+    }
+
     const catMap = new Map(categories.map(c => [c.id, c]));
     const monthCatMap = new Map<string, Record<string, number>>();
     const catTotals: Record<string, number> = {};
 
     for (const m of monthRange) monthCatMap.set(m, {});
 
-    // Build a set of investment account IDs to exclude from spending
-    const investmentAccountIds = new Set<string>();
-    if (allTransactions.length > 0) {
-      for (const t of allTransactions) {
-        if ((t.accounts as any)?.name && t.account_id) {
-          // We'll check account type below
-        }
-      }
-    }
-
     for (const t of allTransactions) {
       if (t.amount >= 0) continue;
-      // Exclude investment account transactions from spending
-      if ((t as any).accounts && typeof (t as any).accounts === 'object') {
-        // accounts is joined — we need account_type which isn't in the select
-        // Instead, skip if the account has provider_type 'snaptrade'
-      }
+      // Exclude investment account transactions from spending analysis
+      if (investmentAccountIds.has(t.account_id)) continue;
       const m = t.date.substring(0, 7);
       if (!monthCatMap.has(m)) continue;
       const cat = t.category_id ? catMap.get(t.category_id) : null;
