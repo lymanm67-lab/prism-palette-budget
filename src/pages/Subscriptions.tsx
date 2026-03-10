@@ -52,6 +52,7 @@ const Subscriptions = () => {
   const [reminderDate, setReminderDate] = useState('');
   const [addOpen, setAddOpen] = useState(false);
   const [newSub, setNewSub] = useState({ merchant: '', average_amount: '', frequency: 'monthly' });
+  const [editSub, setEditSub] = useState<any>(null);
 
   const activeSubs = useMemo(() => (subscriptions || []).filter(s => !s.is_cancelled), [subscriptions]);
   const cancelledSubs = useMemo(() => (subscriptions || []).filter(s => s.is_cancelled), [subscriptions]);
