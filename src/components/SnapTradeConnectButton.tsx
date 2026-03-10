@@ -173,7 +173,8 @@ const SnapTradeConnectButton = ({
           disabled={loading}
           variant={variant}
           className={`gap-2 ${className}`}
-          data-snaptrade-trigger
+          data-snaptrade-trigger={!broker ? '' : undefined}
+          data-snaptrade-fidelity={broker === 'FIDELITY' ? '' : undefined}
         >
           {loading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
