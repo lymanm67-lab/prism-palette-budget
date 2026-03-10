@@ -61,6 +61,8 @@ export function useSyncSnapTrade() {
   const { household } = useHousehold();
 
   return useMutation({
+    retry: 2,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 5000),
     mutationFn: async () => {
       if (!household) throw new Error('No household');
 
@@ -86,6 +88,7 @@ export function useSyncSnapTrade() {
 
       let totalAccounts = 0;
       let totalHoldings = 0;
+      const errors: string[] = [];
 
       for (const conn of connections) {
         try {
@@ -106,13 +109,19 @@ export function useSyncSnapTrade() {
           if (res.ok) {
             totalAccounts += data.accounts_synced || 0;
             totalHoldings += data.holdings_synced || 0;
+          } else {
+            errors.push(data.error || `Connection ${conn.institution_name || conn.id} failed`);
           }
         } catch (e) {
-          console.error('SnapTrade sync error for connection:', conn.id, e);
+          errors.push(`${conn.institution_name || conn.id}: ${e instanceof Error ? e.message : 'Network error'}`);
         }
       }
 
-      return { accounts_synced: totalAccounts, holdings_synced: totalHoldings };
+      if (errors.length > 0 && totalAccounts === 0) {
+        throw new Error(errors.join('; '));
+      }
+
+      return { accounts_synced: totalAccounts, holdings_synced: totalHoldings, errors };
     },
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: ['accounts'] });
