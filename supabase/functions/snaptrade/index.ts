@@ -10,12 +10,12 @@ const corsHeaders = {
 const SNAPTRADE_BASE = "https://api.snaptrade.com/api/v1";
 
 function getSignature(
-  path: string,
+  requestPath: string,
   timestamp: number,
   consumerKey: string
 ): string {
-  const data = `${path}${timestamp}`;
-  return createHmac("sha256", consumerKey).update(data).digest("hex");
+  const sigContent = `/api/v1${requestPath}&clientId=${Deno.env.get("SNAPTRADE_CLIENT_ID")!}&timestamp=${timestamp}`;
+  return createHmac("sha256", consumerKey).update(sigContent).digest("base64");
 }
 
 async function snaptradeRequest(
