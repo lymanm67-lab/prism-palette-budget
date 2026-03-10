@@ -330,7 +330,6 @@ const Accounts = () => {
           <PlaidLinkButton />
           <MxConnectButton />
           <SnapTradeConnectButton ref={snapTradeRef} />
-          <SnapTradeConnectButton ref={fidelityRef} broker="FIDELITY" label="Connect Fidelity" className="[&]:hidden" />
         </div>
 
         {pageGuideOpen && (
