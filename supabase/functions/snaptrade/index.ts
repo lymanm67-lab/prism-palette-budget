@@ -29,7 +29,7 @@ async function snaptradeRequest(
   const timestamp = Math.floor(Date.now() / 1000);
   const signature = getSignature(path, timestamp, consumerKey);
 
-  let url = `${SNAPTRADE_BASE}${path}?clientId=${clientId}&timestamp=${timestamp}&signature=${signature}`;
+  let url = `${SNAPTRADE_BASE}${path}?clientId=${clientId}&timestamp=${timestamp}&Signature=${encodeURIComponent(signature)}`;
   if (query) {
     for (const [k, v] of Object.entries(query)) {
       url += `&${encodeURIComponent(k)}=${encodeURIComponent(v)}`;
