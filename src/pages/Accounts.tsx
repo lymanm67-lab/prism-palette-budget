@@ -67,44 +67,49 @@ const Accounts = () => {
       if (!session) throw new Error('Not authenticated');
 
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const response = await fetch(
-        `${supabaseUrl}/functions/v1/plaid/sync-transactions`,
-        {
+
+      // Sync Plaid + SnapTrade in parallel
+      const [plaidRes] = await Promise.allSettled([
+        fetch(`${supabaseUrl}/functions/v1/plaid/sync-transactions`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${session.access_token}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({ household_id: household.id }),
-        }
-      );
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Failed to refresh');
+        }).then(async r => {
+          const d = await r.json();
+          if (!r.ok) throw new Error(d.error || 'Plaid sync failed');
+          return d;
+        }),
+        syncSnapTrade.mutateAsync(),
+      ]);
 
       qc.invalidateQueries({ queryKey: ['accounts'] });
       qc.invalidateQueries({ queryKey: ['transactions'] });
+      qc.invalidateQueries({ queryKey: ['investment_holdings'] });
 
-      // Auto-categorize newly synced uncategorized transactions
-      if (data.new_transactions > 0 && data.new_transaction_ids?.length) {
-        toast.success(`Synced ${data.accounts_updated} accounts, ${data.new_transactions} new transactions. Running auto-categorize…`);
-        try {
-          const { data: catData, error: catError } = await supabase.functions.invoke('auto-categorize', {
-            body: { transaction_ids: data.new_transaction_ids, household_id: household.id },
-          });
-          if (!catError && catData?.categorized > 0) {
-            const parts = [];
-            if (catData.rule_matched > 0) parts.push(`${catData.rule_matched} by rules`);
-            if (catData.ai_categorized > 0) parts.push(`${catData.ai_categorized} by AI`);
-            toast.success(`Auto-categorized ${catData.categorized} transactions${parts.length ? ` (${parts.join(', ')})` : ''}`);
-            qc.invalidateQueries({ queryKey: ['transactions'] });
-          } else if (catData?.categorized === 0) {
-            toast.info('No transactions could be auto-categorized');
+      if (plaidRes.status === 'fulfilled') {
+        const data = plaidRes.value;
+        if (data.new_transactions > 0 && data.new_transaction_ids?.length) {
+          toast.success(`Synced ${data.accounts_updated} accounts, ${data.new_transactions} new transactions. Running auto-categorize…`);
+          try {
+            const { data: catData, error: catError } = await supabase.functions.invoke('auto-categorize', {
+              body: { transaction_ids: data.new_transaction_ids, household_id: household.id },
+            });
+            if (!catError && catData?.categorized > 0) {
+              const parts = [];
+              if (catData.rule_matched > 0) parts.push(`${catData.rule_matched} by rules`);
+              if (catData.ai_categorized > 0) parts.push(`${catData.ai_categorized} by AI`);
+              toast.success(`Auto-categorized ${catData.categorized} transactions${parts.length ? ` (${parts.join(', ')})` : ''}`);
+              qc.invalidateQueries({ queryKey: ['transactions'] });
+            }
+          } catch {
+            toast.warning('Sync complete but auto-categorize failed');
           }
-        } catch {
-          toast.warning('Sync complete but auto-categorize failed');
+        } else {
+          toast.success(`Refreshed: ${data.accounts_updated} accounts updated, ${data.new_transactions} new transactions`);
         }
-      } else {
-        toast.success(`Refreshed: ${data.accounts_updated} accounts updated, ${data.new_transactions} new transactions`);
       }
     } catch (err: any) {
       toast.error(err.message || 'Failed to refresh accounts');
@@ -112,11 +117,25 @@ const Accounts = () => {
     setRefreshing(false);
   };
 
-  const grouped = (accounts || []).reduce((acc, acct) => {
-    const inst = acct.institution || 'Manual';
-    (acc[inst] = acc[inst] || []).push(acct);
+  // Group accounts by type category
+  const accountGroups = (accounts || []).reduce((acc, acct) => {
+    let group: string;
+    if (acct.account_type === 'investment') group = 'Investments';
+    else if (acct.account_type === 'credit') group = 'Credit Cards';
+    else if (acct.account_type === 'loan') group = 'Loans';
+    else group = 'Banking';
+    (acc[group] = acc[group] || []).push(acct);
     return acc;
   }, {} as Record<string, typeof accounts>);
+
+  const GROUP_ORDER = ['Banking', 'Credit Cards', 'Investments', 'Loans'];
+  const sortedGroups = GROUP_ORDER.filter(g => accountGroups[g]?.length);
+
+  const isStale = (lastSyncedAt: string | null) => {
+    if (!lastSyncedAt) return false;
+    const diff = Date.now() - new Date(lastSyncedAt).getTime();
+    return diff > 48 * 60 * 60 * 1000; // 48 hours
+  };
 
   const handleCreate = async () => {
     await createAccount.mutateAsync({
