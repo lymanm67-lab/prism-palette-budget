@@ -38,3 +38,6 @@ verify_jwt = false
 
 [functions.mx]
 verify_jwt = false
+
+[functions.report-narrative]
+verify_jwt = false
