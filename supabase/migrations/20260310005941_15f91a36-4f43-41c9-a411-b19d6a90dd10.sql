@@ -1,0 +1,1 @@
+REVOKE SELECT (plaid_access_token) ON public.plaid_items FROM public, authenticated, anon;
