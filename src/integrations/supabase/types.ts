@@ -26,6 +26,8 @@ export type Database = {
           is_active: boolean
           last_synced_at: string | null
           name: string
+          provider_account_id: string | null
+          provider_type: string | null
           updated_at: string
         }
         Insert: {
@@ -39,6 +41,8 @@ export type Database = {
           is_active?: boolean
           last_synced_at?: string | null
           name: string
+          provider_account_id?: string | null
+          provider_type?: string | null
           updated_at?: string
         }
         Update: {
@@ -52,6 +56,8 @@ export type Database = {
           is_active?: boolean
           last_synced_at?: string | null
           name?: string
+          provider_account_id?: string | null
+          provider_type?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -682,6 +688,72 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      investment_holdings: {
+        Row: {
+          account_id: string
+          cost_basis: number | null
+          created_at: string
+          currency: string
+          holding_type: string
+          household_id: string
+          id: string
+          market_value: number
+          name: string
+          price: number
+          provider_holding_id: string | null
+          quantity: number
+          symbol: string | null
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          cost_basis?: number | null
+          created_at?: string
+          currency?: string
+          holding_type?: string
+          household_id: string
+          id?: string
+          market_value?: number
+          name: string
+          price?: number
+          provider_holding_id?: string | null
+          quantity?: number
+          symbol?: string | null
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          cost_basis?: number | null
+          created_at?: string
+          currency?: string
+          holding_type?: string
+          household_id?: string
+          id?: string
+          market_value?: number
+          name?: string
+          price?: number
+          provider_holding_id?: string | null
+          quantity?: number
+          symbol?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investment_holdings_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "investment_holdings_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       merchant_normalizations: {
         Row: {
