@@ -135,8 +135,7 @@ const Subscriptions = () => {
       toast.success('Subscription added');
       setAddOpen(false);
       setNewSub({ merchant: '', average_amount: '', frequency: 'monthly' });
-      // Refresh subscriptions list - import useQueryClient at top
-      const qc = useQueryClient();
+      qc.invalidateQueries({ queryKey: ['subscriptions'] });
     } catch {
       toast.error('Failed to add subscription');
     }
