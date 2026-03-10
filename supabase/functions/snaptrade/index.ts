@@ -117,6 +117,24 @@ async function getUser(req: Request) {
 async function registerUser(req: Request) {
   const { user } = await getUser(req);
   const userId = user.id;
+  const admin = getSupabaseAdmin();
+
+  // Check DB for existing credentials first
+  const { data: existing } = await admin
+    .from("snaptrade_connections")
+    .select("snaptrade_user_id, snaptrade_user_secret")
+    .eq("snaptrade_user_id", userId)
+    .limit(1);
+
+  if (existing && existing.length > 0) {
+    return new Response(
+      JSON.stringify({
+        snaptrade_user_id: existing[0].snaptrade_user_id,
+        snaptrade_user_secret: existing[0].snaptrade_user_secret,
+      }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
 
   try {
     const data = await snaptradeRequest("POST", "/snapTrade/registerUser", {
@@ -132,15 +150,20 @@ async function registerUser(req: Request) {
     );
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
-    // If user already exists, reset their secret and return it
+    // If user already exists in SnapTrade but not in our DB, delete and re-register
     if (message.includes("already exist") || message.includes("1010")) {
-      const resetData = await snaptradeRequest("POST", `/snapTrade/resetUserSecret`, {
+      try {
+        await snaptradeRequest("DELETE", "/snapTrade/deleteUser", undefined, { userId });
+      } catch (_) { /* ignore delete errors */ }
+
+      const data = await snaptradeRequest("POST", "/snapTrade/registerUser", {
         userId,
       });
+
       return new Response(
         JSON.stringify({
-          snaptrade_user_id: resetData.userId || userId,
-          snaptrade_user_secret: resetData.userSecret,
+          snaptrade_user_id: data.userId,
+          snaptrade_user_secret: data.userSecret,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
