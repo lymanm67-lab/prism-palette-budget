@@ -141,19 +141,21 @@ serve(async (req) => {
 
     // Upsert subscriptions
     for (const sub of detected) {
-      await adminClient.from("subscriptions").upsert({
-        household_id,
-        merchant: sub.merchant,
-        normalized_merchant: sub.merchant,
-        frequency: sub.frequency,
-        average_amount: sub.average_amount,
-        last_charge_date: sub.last_charge_date,
-        next_expected_date: sub.next_expected_date,
-        category_id: sub.category_id,
-        is_active: true,
-      }, { onConflict: "household_id,merchant" }).catch(() => {
-        // If unique constraint doesn't exist, insert individually
-      });
+      try {
+        await adminClient.from("subscriptions").upsert({
+          household_id,
+          merchant: sub.merchant,
+          normalized_merchant: sub.merchant,
+          frequency: sub.frequency,
+          average_amount: sub.average_amount,
+          last_charge_date: sub.last_charge_date,
+          next_expected_date: sub.next_expected_date,
+          category_id: sub.category_id,
+          is_active: true,
+        }, { onConflict: "household_id,merchant" });
+      } catch {
+        // ignore upsert errors
+      }
     }
 
     return new Response(JSON.stringify({
