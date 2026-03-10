@@ -21,6 +21,7 @@ import {
 } from 'recharts';
 import BusinessReports from '@/components/BusinessReports';
 import PageOverview from '@/components/PageOverview';
+import ReportNarrative from '@/components/ReportNarrative';
 const tooltipStyle = { background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))' };
 
 const TREND_COLORS = [
@@ -556,6 +557,7 @@ const Reports = () => {
               </CardContent>
             </Card>
           )}
+          <ReportNarrative tab="spending" spendingData={spendingData || undefined} dateLabel={dateLabel} />
         </TabsContent>
 
         {/* ==================== BUDGET VS ACTUAL ==================== */}
@@ -604,6 +606,7 @@ const Reports = () => {
               )}
             </CardContent>
           </Card>
+          <ReportNarrative tab="budget" budgetVsActual={budgetVsActual} dateLabel={dateLabel} />
         </TabsContent>
 
         {/* ==================== CASH FLOW ==================== */}
@@ -671,6 +674,7 @@ const Reports = () => {
               </Card>
             )}
           </div>
+          <ReportNarrative tab="cashflow" monthlyCashflow={monthlyCashflow} savingsRate={savingsRate} dateLabel={dateLabel} />
         </TabsContent>
 
         {/* ==================== NET WORTH ==================== */}
@@ -720,6 +724,7 @@ const Reports = () => {
               )}
             </CardContent>
           </Card>
+          <ReportNarrative tab="networth" netWorthTrend={netWorthTrend} dateLabel={dateLabel} />
         </TabsContent>
 
         {/* ==================== TRENDS ==================== */}
@@ -766,6 +771,7 @@ const Reports = () => {
               </CardContent>
             </Card>
           )}
+          <ReportNarrative tab="trends" monthlyCashflow={monthlyCashflow} savingsRate={savingsRate} dateLabel={dateLabel} />
         </TabsContent>
 
         {/* ==================== TOP MERCHANTS ==================== */}
@@ -811,6 +817,7 @@ const Reports = () => {
               )}
             </CardContent>
           </Card>
+          <ReportNarrative tab="merchants" topMerchants={topMerchants} dateLabel={dateLabel} />
         </TabsContent>
         </div>
       </Tabs>
