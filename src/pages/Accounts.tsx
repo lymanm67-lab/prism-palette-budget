@@ -335,8 +335,8 @@ const Accounts = () => {
         <div className="hidden">
           <PlaidLinkButton />
           <MxConnectButton />
-          <SnapTradeConnectButton />
-          <SnapTradeConnectButton broker="FIDELITY" label="Connect Fidelity" className="[&]:hidden" />
+          <SnapTradeConnectButton ref={snapTradeRef} />
+          <SnapTradeConnectButton ref={fidelityRef} broker="FIDELITY" label="Connect Fidelity" className="[&]:hidden" />
         </div>
 
         {pageGuideOpen && (
