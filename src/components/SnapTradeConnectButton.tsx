@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, forwardRef, useImperativeHandle } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useHousehold } from '@/contexts/HouseholdContext';
@@ -20,12 +20,16 @@ interface SnapTradeConnectButtonProps {
   className?: string;
 }
 
-const SnapTradeConnectButton = ({
+export interface SnapTradeConnectHandle {
+  connect: () => void;
+}
+
+const SnapTradeConnectButton = forwardRef<SnapTradeConnectHandle, SnapTradeConnectButtonProps>(({
   broker,
   label = 'Connect Investment Account',
   variant = 'default',
   className = '',
-}: SnapTradeConnectButtonProps) => {
+}, ref) => {
   const [loading, setLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
@@ -157,6 +161,8 @@ const SnapTradeConnectButton = ({
     }
   }, [household, broker, toast, qc]);
 
+  useImperativeHandle(ref, () => ({ connect: handleConnect }), [handleConnect]);
+
   if (syncing) {
     return (
       <Button disabled className="gap-2">
@@ -173,8 +179,6 @@ const SnapTradeConnectButton = ({
           disabled={loading}
           variant={variant}
           className={`gap-2 ${className}`}
-          data-snaptrade-trigger={!broker ? '' : undefined}
-          data-snaptrade-fidelity={broker === 'FIDELITY' ? '' : undefined}
         >
           {loading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -226,6 +230,8 @@ const SnapTradeConnectButton = ({
       </Dialog>
     </>
   );
-};
+});
+
+SnapTradeConnectButton.displayName = 'SnapTradeConnectButton';
 
 export default SnapTradeConnectButton;

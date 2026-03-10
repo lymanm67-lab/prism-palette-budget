@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -18,7 +18,7 @@ import { Plus, Landmark, CreditCard, TrendingUp, PiggyBank, Car, Loader2, Trash2
 import type { Database } from '@/integrations/supabase/types';
 import PlaidLinkButton from '@/components/PlaidLinkButton';
 import MxConnectButton from '@/components/MxConnectButton';
-import SnapTradeConnectButton from '@/components/SnapTradeConnectButton';
+import SnapTradeConnectButton, { type SnapTradeConnectHandle } from '@/components/SnapTradeConnectButton';
 import PageOverview from '@/components/PageOverview';
 import CsvImportDialog from '@/components/CsvImportDialog';
 import BankExportGuide from '@/components/BankExportGuide';
@@ -63,7 +63,8 @@ const Accounts = () => {
   const [editName, setEditName] = useState('');
   const [pageGuideOpen, setPageGuideOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-
+  const snapTradeRef = useRef<SnapTradeConnectHandle>(null);
+  const fidelityRef = useRef<SnapTradeConnectHandle>(null);
   const handleRefreshAccounts = async () => {
     if (!household) return;
     setRefreshing(true);
@@ -305,14 +306,12 @@ const Accounts = () => {
                   <Landmark className="h-4 w-4" /> Connect Bank (Plaid)
                 </DropdownMenuItem>
                 <DropdownMenuItem className="gap-2" onSelect={() => {
-                  const snapBtn = document.querySelector('[data-snaptrade-trigger]') as HTMLButtonElement;
-                  snapBtn?.click();
+                  snapTradeRef.current?.connect();
                 }}>
                   <TrendingUp className="h-4 w-4" /> Connect Investment Account
                 </DropdownMenuItem>
                 <DropdownMenuItem className="gap-2" onSelect={() => {
-                  const fidelityBtn = document.querySelector('[data-snaptrade-fidelity]') as HTMLButtonElement;
-                  fidelityBtn?.click();
+                  fidelityRef.current?.connect();
                 }}>
                   <TrendingUp className="h-4 w-4" /> Connect Fidelity
                 </DropdownMenuItem>
@@ -336,8 +335,8 @@ const Accounts = () => {
         <div className="hidden">
           <PlaidLinkButton />
           <MxConnectButton />
-          <SnapTradeConnectButton />
-          <SnapTradeConnectButton broker="FIDELITY" label="Connect Fidelity" className="[&]:hidden" />
+          <SnapTradeConnectButton ref={snapTradeRef} />
+          <SnapTradeConnectButton ref={fidelityRef} broker="FIDELITY" label="Connect Fidelity" className="[&]:hidden" />
         </div>
 
         {pageGuideOpen && (
