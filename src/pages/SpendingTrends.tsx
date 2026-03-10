@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAllTransactions, useCategories } from '@/hooks/use-finance-data';
+import { useAccounts } from '@/hooks/use-finance-data';
 import { useCurrency } from '@/hooks/use-currency';
 import { Loader2, TrendingUp, TrendingDown, ArrowUpDown, BarChart3, Download, FileText } from 'lucide-react';
 import { useMemo, useRef, useState, useCallback } from 'react';
