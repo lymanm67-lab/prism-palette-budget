@@ -10,6 +10,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recha
 import { Tooltip as UiTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import PageOverview from '@/components/PageOverview';
+import InvestmentInsights from '@/components/InvestmentInsights';
 
 const ACCOUNT_ICONS: Record<string, any> = {
   investment: TrendingUp,
@@ -175,6 +176,18 @@ const Investments = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Key Insights */}
+      <InvestmentInsights
+        accounts={investmentAccounts.map(a => ({
+          id: a.id,
+          name: a.name,
+          balance: Number(a.balance),
+          account_type: a.account_type,
+          institution: a.institution,
+        }))}
+        totalBalance={totalBalance}
+      />
     </motion.div>
     </TooltipProvider>
   );
