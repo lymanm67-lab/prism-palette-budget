@@ -20,7 +20,7 @@ import { useCurrency } from '@/hooks/use-currency';
 import { format, parseISO } from 'date-fns';
 import {
   Loader2, RefreshCw, Sparkles, CreditCard, Calendar, TrendingDown,
-  AlertTriangle, CheckCircle2, XCircle, Bell, Trash2, DollarSign, Plus,
+  AlertTriangle, CheckCircle2, XCircle, Bell, Trash2, DollarSign, Plus, Pencil,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import PageOverview from '@/components/PageOverview';
@@ -52,6 +52,7 @@ const Subscriptions = () => {
   const [reminderDate, setReminderDate] = useState('');
   const [addOpen, setAddOpen] = useState(false);
   const [newSub, setNewSub] = useState({ merchant: '', average_amount: '', frequency: 'monthly' });
+  const [editSub, setEditSub] = useState<any>(null);
 
   const activeSubs = useMemo(() => (subscriptions || []).filter(s => !s.is_cancelled), [subscriptions]);
   const cancelledSubs = useMemo(() => (subscriptions || []).filter(s => s.is_cancelled), [subscriptions]);
@@ -138,6 +139,33 @@ const Subscriptions = () => {
       qc.invalidateQueries({ queryKey: ['subscriptions'] });
     } catch {
       toast.error('Failed to add subscription');
+    }
+  };
+
+  const openEdit = (sub: any) => {
+    setEditSub({
+      id: sub.id,
+      merchant: sub.merchant || '',
+      average_amount: String(sub.average_amount || ''),
+      frequency: sub.frequency || 'monthly',
+      notes: sub.notes || '',
+    });
+  };
+
+  const handleEditSubscription = async () => {
+    if (!editSub) return;
+    try {
+      await updateSub.mutateAsync({
+        id: editSub.id,
+        merchant: editSub.merchant,
+        average_amount: parseFloat(editSub.average_amount),
+        frequency: editSub.frequency,
+        notes: editSub.notes || null,
+      });
+      toast.success('Subscription updated');
+      setEditSub(null);
+    } catch {
+      toast.error('Failed to update subscription');
     }
   };
 
@@ -327,6 +355,16 @@ const Subscriptions = () => {
                         {formatCurrency(sub.average_amount)}
                       </span>
                       <div className="flex gap-1">
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(sub)}>
+                                <Pencil className="h-3.5 w-3.5" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Edit</TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setReminderDialog(sub.id); setReminderDate(''); }} title="Set reminder">
                           <Bell className="h-3.5 w-3.5" />
                         </Button>
@@ -440,6 +478,61 @@ const Subscriptions = () => {
               Add Subscription
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Subscription Dialog */}
+      <Dialog open={!!editSub} onOpenChange={(o) => !o && setEditSub(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Subscription</DialogTitle>
+          </DialogHeader>
+          {editSub && (
+            <div className="space-y-4 pt-2">
+              <div>
+                <Label>Merchant / Service Name</Label>
+                <Input
+                  value={editSub.merchant}
+                  onChange={e => setEditSub((prev: any) => ({ ...prev, merchant: e.target.value }))}
+                />
+              </div>
+              <div>
+                <Label>Amount</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={editSub.average_amount}
+                  onChange={e => setEditSub((prev: any) => ({ ...prev, average_amount: e.target.value }))}
+                />
+              </div>
+              <div>
+                <Label>Frequency</Label>
+                <Select value={editSub.frequency} onValueChange={v => setEditSub((prev: any) => ({ ...prev, frequency: v }))}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="weekly">Weekly</SelectItem>
+                    <SelectItem value="biweekly">Bi-weekly</SelectItem>
+                    <SelectItem value="monthly">Monthly</SelectItem>
+                    <SelectItem value="quarterly">Quarterly</SelectItem>
+                    <SelectItem value="yearly">Yearly</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Notes</Label>
+                <Input
+                  placeholder="Optional notes"
+                  value={editSub.notes}
+                  onChange={e => setEditSub((prev: any) => ({ ...prev, notes: e.target.value }))}
+                />
+              </div>
+              <Button onClick={handleEditSubscription} disabled={!editSub.merchant || !editSub.average_amount} className="w-full">
+                Save Changes
+              </Button>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </motion.div>
