@@ -917,6 +917,42 @@ const Budgets = () => {
             )}
             {unallocated === 0 && <p>✅ Every dollar of income is assigned to a budget category.</p>}
 
+            {/* Month-over-month comparison */}
+            {momNarrative && (
+              <>
+                <p>
+                  <strong>📊 Month-over-Month Trends:</strong> Total spending is{' '}
+                  <strong className={momNarrative.expChange > 0 ? 'text-rose-600' : 'text-emerald-600'}>
+                    {momNarrative.expChange > 0 ? 'up' : 'down'} {Math.abs(momNarrative.expPct)}%
+                  </strong>{' '}
+                  ({formatCurrency(Math.abs(momNarrative.expChange))} {momNarrative.expChange > 0 ? 'more' : 'less'}) compared to last month.
+                  {momNarrative.incPct !== 0 && (
+                    <> Income is <strong className={momNarrative.incChange > 0 ? 'text-emerald-600' : 'text-rose-600'}>
+                      {momNarrative.incChange > 0 ? 'up' : 'down'} {Math.abs(momNarrative.incPct)}%
+                    </strong>.</>
+                  )}
+                </p>
+                {momNarrative.topIncreases.length > 0 && (
+                  <p>
+                    <strong>Biggest spending increases:</strong>{' '}
+                    {momNarrative.topIncreases.map((c, i) => (
+                      <span key={c.name}>{i > 0 ? ', ' : ''}<strong>{c.name}</strong> (+{formatCurrency(c.change)}, {c.pct > 0 ? `+${c.pct}%` : 'new'})</span>
+                    ))}.
+                    {momNarrative.expChange > 0 && ' Consider reviewing these categories for savings opportunities.'}
+                  </p>
+                )}
+                {momNarrative.topDecreases.length > 0 && (
+                  <p>
+                    <strong>✅ Improved categories:</strong>{' '}
+                    {momNarrative.topDecreases.map((c, i) => (
+                      <span key={c.name}>{i > 0 ? ', ' : ''}<strong>{c.name}</strong> ({formatCurrency(c.change)}, {c.pct}%)</span>
+                    ))}.
+                    {' '}Keep up the momentum in these areas.
+                  </p>
+                )}
+              </>
+            )}
+
             {/* Overall improvement tip */}
             {totalExpenseRemaining < 0 && (
               <p>
