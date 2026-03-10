@@ -39,6 +39,7 @@ const MONTH_OPTIONS = [
 const SpendingTrends = () => {
   const { formatCurrency, formatCompact } = useCurrency();
   const { data: allTransactions, isLoading } = useAllTransactions();
+  const { data: accounts } = useAccounts();
   const { data: categories } = useCategories();
   const [monthCount, setMonthCount] = useState(6);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
