@@ -273,12 +273,24 @@ const Accounts = () => {
               </Tooltip>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem className="gap-2" onSelect={() => {
-                  // Trigger Plaid - we'll use a state flag
                   const plaidBtn = document.querySelector('[data-plaid-trigger]') as HTMLButtonElement;
                   plaidBtn?.click();
                 }}>
                   <Landmark className="h-4 w-4" /> Connect Bank (Plaid)
                 </DropdownMenuItem>
+                <DropdownMenuItem className="gap-2" onSelect={() => {
+                  const snapBtn = document.querySelector('[data-snaptrade-trigger]') as HTMLButtonElement;
+                  snapBtn?.click();
+                }}>
+                  <TrendingUp className="h-4 w-4" /> Connect Investment Account
+                </DropdownMenuItem>
+                <DropdownMenuItem className="gap-2" onSelect={() => {
+                  const fidelityBtn = document.querySelector('[data-snaptrade-fidelity]') as HTMLButtonElement;
+                  fidelityBtn?.click();
+                }}>
+                  <TrendingUp className="h-4 w-4" /> Connect Fidelity
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem className="gap-2" onSelect={() => {
                   const mxBtn = document.querySelector('[data-mx-trigger]') as HTMLButtonElement;
                   mxBtn?.click();
