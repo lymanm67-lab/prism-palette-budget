@@ -603,28 +603,32 @@ const Budgets = () => {
     const printBudgetRows = (type: ExpenseType, items: BudgetRow[]) => {
       const totals = sectionTotals[type];
       return (
-        <div key={type} className="mb-3">
-          <div className="flex items-center gap-2 py-1.5 px-2 bg-muted/40 rounded font-semibold text-sm border-b">
-            <span className={cn('flex-1', EXPENSE_TYPE_COLORS[type])}>{EXPENSE_TYPE_LABELS[type]}</span>
-            <span className="w-[90px] text-right tabular-nums">{formatCurrency(totals.budget)}</span>
-            <span className="w-[90px] text-right tabular-nums text-muted-foreground">{formatCurrency(totals.actual)}</span>
-            <span className={cn('w-[90px] text-right tabular-nums', totals.remaining < 0 ? 'text-rose-600' : '')}>{formatCurrency(Math.abs(totals.remaining))}</span>
-          </div>
+        <>
+          <tr key={type + '-header'} className="bg-muted/40 font-semibold text-sm border-b">
+            <td className={cn('py-1.5 px-2', EXPENSE_TYPE_COLORS[type])}>{EXPENSE_TYPE_LABELS[type]}</td>
+            <td className="py-1.5 px-2 text-right tabular-nums">{formatCurrency(totals.budget)}</td>
+            <td className="py-1.5 px-2 text-right tabular-nums text-muted-foreground">{formatCurrency(totals.actual)}</td>
+            <td className={cn('py-1.5 px-2 text-right tabular-nums', totals.remaining < 0 ? 'text-rose-600' : '')}>{formatCurrency(Math.abs(totals.remaining))}</td>
+          </tr>
           {items.map(b => {
             const isIncome = type === 'income';
             const actual = isIncome ? b.received : b.spent;
             const remaining = isIncome ? b.planned_amount - b.received : b.planned_amount - b.spent;
             return (
-              <div key={b.id} className="flex items-center gap-2 py-1 px-2 text-sm border-b border-muted/30">
-                <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: b.categories?.color }} />
-                <span className="flex-1 truncate">{b.categories?.name}</span>
-                <span className="w-[90px] text-right tabular-nums">{formatCurrency(b.planned_amount)}</span>
-                <span className="w-[90px] text-right tabular-nums text-muted-foreground">{formatCurrency(actual)}</span>
-                <span className={cn('w-[90px] text-right tabular-nums', remaining < 0 ? 'text-rose-600' : '')}>{formatCurrency(Math.abs(remaining))}</span>
-              </div>
+              <tr key={b.id} className="text-sm border-b border-muted/30">
+                <td className="py-1 px-2">
+                  <span className="flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full shrink-0 inline-block" style={{ backgroundColor: b.categories?.color }} />
+                    <span className="truncate">{b.categories?.name}</span>
+                  </span>
+                </td>
+                <td className="py-1 px-2 text-right tabular-nums">{formatCurrency(b.planned_amount)}</td>
+                <td className="py-1 px-2 text-right tabular-nums text-muted-foreground">{formatCurrency(actual)}</td>
+                <td className={cn('py-1 px-2 text-right tabular-nums', remaining < 0 ? 'text-rose-600' : '')}>{formatCurrency(Math.abs(remaining))}</td>
+              </tr>
             );
           })}
-        </div>
+        </>
       );
     };
 
