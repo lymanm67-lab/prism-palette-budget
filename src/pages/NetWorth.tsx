@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { useAccounts, useAllTransactions } from '@/hooks/use-finance-data';
 import { useGoals, useCreateGoal, useUpdateGoal } from '@/hooks/use-goals';
 import { useCurrency } from '@/hooks/use-currency';
-import { Loader2, TrendingUp, TrendingDown, Wallet, Landmark, CreditCard, BarChart3, Target, Pencil, Check, X } from 'lucide-react';
+import { Loader2, TrendingUp, TrendingDown, Wallet, Landmark, CreditCard, BarChart3, Target, Pencil, Check, X, PiggyBank, Banknote } from 'lucide-react';
 import { useMemo, useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import {
@@ -35,9 +35,9 @@ const NetWorth = () => {
   const [goalDateInput, setGoalDateInput] = useState('');
 
   // Current totals
-  const { totalAssets, totalLiabilities, netWorth, assetAccounts, liabilityAccounts } = useMemo(() => {
-    if (!accounts) return { totalAssets: 0, totalLiabilities: 0, netWorth: 0, assetAccounts: [] as typeof accounts, liabilityAccounts: [] as typeof accounts };
-    let assets = 0, liabilities = 0;
+  const { totalAssets, totalLiabilities, netWorth, assetAccounts, liabilityAccounts, totalCash, totalInvestments, totalDebt } = useMemo(() => {
+    if (!accounts) return { totalAssets: 0, totalLiabilities: 0, netWorth: 0, assetAccounts: [] as typeof accounts, liabilityAccounts: [] as typeof accounts, totalCash: 0, totalInvestments: 0, totalDebt: 0 };
+    let assets = 0, liabilities = 0, cash = 0, investments = 0;
     const assetAcc: typeof accounts = [];
     const liabAcc: typeof accounts = [];
     for (const a of accounts) {
@@ -47,9 +47,14 @@ const NetWorth = () => {
       } else {
         assets += a.balance;
         assetAcc.push(a);
+        if (a.account_type === 'investment') {
+          investments += a.balance;
+        } else {
+          cash += a.balance;
+        }
       }
     }
-    return { totalAssets: assets, totalLiabilities: liabilities, netWorth: assets - liabilities, assetAccounts: assetAcc, liabilityAccounts: liabAcc };
+    return { totalAssets: assets, totalLiabilities: liabilities, netWorth: assets - liabilities, assetAccounts: assetAcc, liabilityAccounts: liabAcc, totalCash: cash, totalInvestments: investments, totalDebt: liabilities };
   }, [accounts]);
 
   // Net worth over time (assets vs liabilities split)
@@ -249,7 +254,38 @@ const NetWorth = () => {
         </Card>
       </div>
 
-      {/* Net Worth Goal */}
+      {/* Cash / Investments / Debt Breakdown */}
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Card className="border-accent/20">
+          <CardContent className="pt-5 pb-4">
+            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground mb-1">
+              <Banknote className="h-3.5 w-3.5" /> Total Cash
+            </div>
+            <p className="font-display text-xl font-bold text-accent">{formatCurrency(totalCash)}</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Checking, savings & other</p>
+          </CardContent>
+        </Card>
+        <Card className="border-prism-sky/20">
+          <CardContent className="pt-5 pb-4">
+            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground mb-1">
+              <TrendingUp className="h-3.5 w-3.5" /> Total Investments
+            </div>
+            <p className="font-display text-xl font-bold text-prism-sky">{formatCurrency(totalInvestments)}</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Brokerage & retirement</p>
+          </CardContent>
+        </Card>
+        <Card className="border-prism-rose/20">
+          <CardContent className="pt-5 pb-4">
+            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground mb-1">
+              <CreditCard className="h-3.5 w-3.5" /> Total Debt
+            </div>
+            <p className="font-display text-xl font-bold text-prism-rose">{formatCurrency(totalDebt)}</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Credit cards & loans</p>
+          </CardContent>
+        </Card>
+      </div>
+
+
       <Card className="border-primary/20">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="font-display flex items-center gap-2">
