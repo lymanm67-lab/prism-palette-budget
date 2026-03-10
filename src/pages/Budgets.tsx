@@ -1657,6 +1657,38 @@ const Budgets = () => {
             </p>
           )}
           {unallocated === 0 && <p className="mt-1">✅ Every dollar of income is assigned to a budget category.</p>}
+          {momNarrative && (
+            <>
+              <p className="mt-1">
+                <strong>📊 Month-over-Month:</strong> Spending is{' '}
+                <strong style={{ color: momNarrative.expChange > 0 ? '#dc2626' : '#059669' }}>
+                  {momNarrative.expChange > 0 ? 'up' : 'down'} {Math.abs(momNarrative.expPct)}%
+                </strong>{' '}
+                ({formatCurrency(Math.abs(momNarrative.expChange))} {momNarrative.expChange > 0 ? 'more' : 'less'}) vs last month.
+                {momNarrative.incPct !== 0 && (
+                  <> Income is <strong style={{ color: momNarrative.incChange > 0 ? '#059669' : '#dc2626' }}>
+                    {momNarrative.incChange > 0 ? 'up' : 'down'} {Math.abs(momNarrative.incPct)}%
+                  </strong>.</>
+                )}
+              </p>
+              {momNarrative.topIncreases.length > 0 && (
+                <p className="mt-1">
+                  <strong>Biggest increases:</strong>{' '}
+                  {momNarrative.topIncreases.map((c, i) => (
+                    <span key={c.name}>{i > 0 ? ', ' : ''}<strong>{c.name}</strong> (+{formatCurrency(c.change)})</span>
+                  ))}.
+                </p>
+              )}
+              {momNarrative.topDecreases.length > 0 && (
+                <p className="mt-1">
+                  <strong>Improved:</strong>{' '}
+                  {momNarrative.topDecreases.map((c, i) => (
+                    <span key={c.name}>{i > 0 ? ', ' : ''}<strong>{c.name}</strong> ({formatCurrency(c.change)})</span>
+                  ))}.
+                </p>
+              )}
+            </>
+          )}
         </div>
       </div>
 
