@@ -356,3 +356,53 @@
     min-width: 44px;
   }
 }
+
+/* Print styles */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Hide navigation, sidebar, and interactive controls */
+  nav, aside, header,
+  [data-sidebar], [data-mobile-nav],
+  button:not(.print-visible),
+  .no-print,
+  [role="tablist"],
+  .fixed, .sticky {
+    display: none !important;
+  }
+
+  /* Make main content full width */
+  main {
+    margin: 0 !important;
+    padding: 1rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Ensure cards and charts print nicely */
+  .recharts-wrapper {
+    page-break-inside: avoid;
+  }
+
+  [class*="Card"], [class*="card"] {
+    break-inside: avoid;
+    border: 1px solid #ddd !important;
+    box-shadow: none !important;
+  }
+
+  /* Force backgrounds for progress bars and badges */
+  [class*="Progress"], [class*="Badge"], [class*="progress"] {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  @page {
+    margin: 0.75in;
+    size: auto;
+  }
+}
