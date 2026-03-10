@@ -557,8 +557,18 @@
     gap: 0.25rem !important;
   }
 
+  /* Print-only repeating header needs top margin for the fixed header */
+  body {
+    padding-top: 40px !important;
+  }
+
+  /* Ensure print:block works */
+  .print\:block {
+    display: block !important;
+  }
+
   @page {
-    margin: 0.35in;
-    size: auto;
+    margin: 0.4in 0.35in;
+    size: 8.5in 11in;
   }
 }

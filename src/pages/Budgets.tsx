@@ -600,6 +600,17 @@ const Budgets = () => {
   return (
     <TooltipProvider delayDuration={300}>
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+      {/* Print-only repeating header — position:fixed repeats on every printed page in Chrome */}
+      <div className="hidden print:block fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-300 px-4 py-2">
+        <div className="flex items-center justify-between text-xs font-semibold text-gray-700">
+          <span className="font-display text-sm">{formatMonth(month)} — Budget</span>
+          <div className="flex gap-6">
+            <span className="w-[80px] text-right">Budget</span>
+            <span className="w-[80px] text-right">Actual</span>
+            <span className="w-[80px] text-right">Remaining</span>
+          </div>
+        </div>
+      </div>
       {/* Header */}
       <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 -mt-6 pt-6 pb-4 space-y-4">
         {/* Row 1: Title + Month Nav + Actions */}
