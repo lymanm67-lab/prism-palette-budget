@@ -409,7 +409,7 @@ const DebtPayoff = () => {
                           <CreditCard className="h-4 w-4 text-prism-rose" />
                           <span className="font-medium text-sm">{d.name}</span>
                         </div>
-                        <div className="flex gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                        <div className="flex gap-1">
                           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(d)} aria-label="Edit debt"><Pencil className="h-3.5 w-3.5" /></Button>
                           <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDeleteDebt(d.id)} aria-label="Delete debt"><Trash2 className="h-3.5 w-3.5" /></Button>
                         </div>
