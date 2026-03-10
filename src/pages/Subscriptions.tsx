@@ -354,6 +354,16 @@ const Subscriptions = () => {
                         {formatCurrency(sub.average_amount)}
                       </span>
                       <div className="flex gap-1">
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(sub)}>
+                                <Pencil className="h-3.5 w-3.5" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Edit</TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setReminderDialog(sub.id); setReminderDate(''); }} title="Set reminder">
                           <Bell className="h-3.5 w-3.5" />
                         </Button>
