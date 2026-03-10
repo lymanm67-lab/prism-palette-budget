@@ -42,11 +42,8 @@ const Subscriptions = () => {
   const deleteSub = useDeleteSubscription();
   const getInsights = useSubscriptionInsights();
   const { formatCurrency } = useCurrency();
-
-  const [insightsData, setInsightsData] = useState<any>(null);
-  const [insightsLoading, setInsightsLoading] = useState(false);
-  const [reminderDialog, setReminderDialog] = useState<string | null>(null);
-  const [reminderDate, setReminderDate] = useState('');
+  const { household } = useHousehold();
+  const queryClient = (await import('@tanstack/react-query')).useQueryClient;
 
   const activeSubs = useMemo(() => (subscriptions || []).filter(s => !s.is_cancelled), [subscriptions]);
   const cancelledSubs = useMemo(() => (subscriptions || []).filter(s => s.is_cancelled), [subscriptions]);
