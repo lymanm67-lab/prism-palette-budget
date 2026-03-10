@@ -306,14 +306,12 @@ const Accounts = () => {
                   <Landmark className="h-4 w-4" /> Connect Bank (Plaid)
                 </DropdownMenuItem>
                 <DropdownMenuItem className="gap-2" onSelect={() => {
-                  const snapBtn = document.querySelector('[data-snaptrade-trigger]') as HTMLButtonElement;
-                  snapBtn?.click();
+                  snapTradeRef.current?.connect();
                 }}>
                   <TrendingUp className="h-4 w-4" /> Connect Investment Account
                 </DropdownMenuItem>
                 <DropdownMenuItem className="gap-2" onSelect={() => {
-                  const fidelityBtn = document.querySelector('[data-snaptrade-fidelity]') as HTMLButtonElement;
-                  fidelityBtn?.click();
+                  fidelityRef.current?.connect();
                 }}>
                   <TrendingUp className="h-4 w-4" /> Connect Fidelity
                 </DropdownMenuItem>
