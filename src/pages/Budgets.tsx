@@ -1236,8 +1236,17 @@ const Budgets = () => {
                     {(categoryGroups as any[] || [])
                       .filter((g: any) => {
                         const gExpType = g.expense_type || 'flexible';
-                        if (form.budgetKind === 'income') return gExpType === 'income';
-                        return gExpType === form.expense_type;
+                        if (form.budgetKind === 'income') {
+                          if (gExpType !== 'income') return false;
+                        } else {
+                          if (gExpType !== form.expense_type) return false;
+                        }
+                        // Filter by current budget type tab (personal/business/all)
+                        if (budgetType !== 'all') {
+                          const gBudgetType = g.budget_type || 'personal';
+                          if (gBudgetType !== budgetType) return false;
+                        }
+                        return true;
                       })
                       .map((g: any) => (
                         <SelectItem key={g.id} value={g.id}>
