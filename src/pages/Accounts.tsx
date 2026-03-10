@@ -18,7 +18,7 @@ import { Plus, Landmark, CreditCard, TrendingUp, PiggyBank, Car, Loader2, Trash2
 import type { Database } from '@/integrations/supabase/types';
 import PlaidLinkButton from '@/components/PlaidLinkButton';
 import MxConnectButton from '@/components/MxConnectButton';
-import SnapTradeConnectButton from '@/components/SnapTradeConnectButton';
+import SnapTradeConnectButton, { type SnapTradeConnectHandle } from '@/components/SnapTradeConnectButton';
 import PageOverview from '@/components/PageOverview';
 import CsvImportDialog from '@/components/CsvImportDialog';
 import BankExportGuide from '@/components/BankExportGuide';
