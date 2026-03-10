@@ -104,6 +104,7 @@ const Budgets = () => {
   const [smartSuggestions, setSmartSuggestions] = useState<{ category_id: string; category_name: string; monthly_average: number; suggested_budget: number; selected: boolean }[]>([]);
   const smartBudget = useSmartBudget();
   const [printPreview, setPrintPreview] = useState(false);
+  const [printOrientation, setPrintOrientation] = useState<'portrait' | 'landscape'>('portrait');
   const toggleSection = (key: string) => setOpenSections(s => ({ ...s, [key]: !s[key] }));
 
   // Business names from category groups
@@ -634,6 +635,9 @@ const Budgets = () => {
 
     return (
       <div className="space-y-6 max-w-4xl mx-auto">
+        {/* Dynamic print orientation */}
+        <style>{`@page { size: ${printOrientation}; }`}</style>
+
         {/* Print Preview Toolbar */}
         <div className="flex items-center justify-between bg-card border rounded-xl px-4 py-3 sticky top-0 z-30 shadow-sm no-print">
           <div className="flex items-center gap-2">
@@ -641,6 +645,24 @@ const Budgets = () => {
             <span className="font-display font-semibold">Print Preview</span>
           </div>
           <div className="flex items-center gap-2">
+            <div className="flex border rounded-lg overflow-hidden">
+              <Button
+                variant={printOrientation === 'portrait' ? 'default' : 'ghost'}
+                size="sm"
+                className="rounded-none"
+                onClick={() => setPrintOrientation('portrait')}
+              >
+                Portrait
+              </Button>
+              <Button
+                variant={printOrientation === 'landscape' ? 'default' : 'ghost'}
+                size="sm"
+                className="rounded-none"
+                onClick={() => setPrintOrientation('landscape')}
+              >
+                Landscape
+              </Button>
+            </div>
             <Button onClick={() => window.print()} className="gap-2">
               <Printer className="h-4 w-4" /> Print
             </Button>
