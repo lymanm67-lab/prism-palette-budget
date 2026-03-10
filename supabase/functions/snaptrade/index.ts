@@ -118,17 +118,35 @@ async function registerUser(req: Request) {
   const { user } = await getUser(req);
   const userId = user.id;
 
-  const data = await snaptradeRequest("POST", "/snapTrade/registerUser", {
-    userId,
-  });
+  try {
+    const data = await snaptradeRequest("POST", "/snapTrade/registerUser", {
+      userId,
+    });
 
-  return new Response(
-    JSON.stringify({
-      snaptrade_user_id: data.userId,
-      snaptrade_user_secret: data.userSecret,
-    }),
-    { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-  );
+    return new Response(
+      JSON.stringify({
+        snaptrade_user_id: data.userId,
+        snaptrade_user_secret: data.userSecret,
+      }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    // If user already exists, reset their secret and return it
+    if (message.includes("already exist") || message.includes("1010")) {
+      const resetData = await snaptradeRequest("POST", `/snapTrade/resetUserSecret`, {
+        userId,
+      });
+      return new Response(
+        JSON.stringify({
+          snaptrade_user_id: resetData.userId || userId,
+          snaptrade_user_secret: resetData.userSecret,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    throw err;
+  }
 }
 
 // Route: POST /create-redirect
