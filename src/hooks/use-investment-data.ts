@@ -123,16 +123,19 @@ export function useSyncSnapTrade() {
 
       return { accounts_synced: totalAccounts, holdings_synced: totalHoldings, errors };
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       qc.invalidateQueries({ queryKey: ['accounts'] });
       qc.invalidateQueries({ queryKey: ['investment_holdings'] });
       qc.invalidateQueries({ queryKey: ['snaptrade_connections'] });
       if (data.accounts_synced > 0) {
         toast.success(`Investment sync: ${data.accounts_synced} accounts, ${data.holdings_synced} holdings updated`);
       }
+      if (data.errors?.length > 0) {
+        toast.warning(`Some connections had issues: ${data.errors.join('; ')}`);
+      }
     },
     onError: (err: any) => {
-      toast.error(err.message || 'Failed to sync investment accounts');
+      toast.error(err.message || 'Failed to sync investment accounts. Will retry automatically.');
     },
   });
 }
