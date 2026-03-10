@@ -191,3 +191,100 @@ export function useRevokeSnapTrade() {
     },
   });
 }
+
+// ==================== RECONNECT SNAPTRADE ====================
+export function useReconnectSnapTrade() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      connectionId,
+      snaptradeUserId,
+      snaptradeUserSecret,
+    }: {
+      connectionId: string;
+      snaptradeUserId: string;
+      snaptradeUserSecret: string;
+    }) => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+
+      // Create a new redirect URL for re-authorization
+      const res = await fetch(
+        `${supabaseUrl}/functions/v1/snaptrade/create-redirect`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            snaptrade_user_id: snaptradeUserId,
+            snaptrade_user_secret: snaptradeUserSecret,
+            reconnect: true,
+          }),
+        }
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to create reconnect link');
+
+      // Open in popup
+      const popup = window.open(data.redirect_url, 'snaptrade-reconnect', 'width=600,height=700');
+
+      // Return a promise that resolves when popup closes
+      return new Promise<{ connectionId: string }>((resolve, reject) => {
+        const pollInterval = setInterval(async () => {
+          if (popup?.closed) {
+            clearInterval(pollInterval);
+
+            // Mark connection active again
+            await (supabase
+              .from('snaptrade_connections' as any)
+              .update({ status: 'active', updated_at: new Date().toISOString() })
+              .eq('id', connectionId) as any);
+
+            // Trigger a sync
+            try {
+              await fetch(
+                `${supabaseUrl}/functions/v1/snaptrade/sync-accounts`,
+                {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${session.access_token}`,
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    snaptrade_user_id: snaptradeUserId,
+                    snaptrade_user_secret: snaptradeUserSecret,
+                    connection_id: connectionId,
+                  }),
+                }
+              );
+            } catch (e) {
+              console.error('Post-reconnect sync failed:', e);
+            }
+
+            resolve({ connectionId });
+          }
+        }, 1000);
+
+        // Timeout after 5 minutes
+        setTimeout(() => {
+          clearInterval(pollInterval);
+          reject(new Error('Reconnect timed out'));
+        }, 5 * 60 * 1000);
+      });
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['accounts'] });
+      qc.invalidateQueries({ queryKey: ['investment_holdings'] });
+      qc.invalidateQueries({ queryKey: ['snaptrade_connections'] });
+      toast.success('Connection re-authorized and synced!');
+    },
+    onError: (err: any) => {
+      toast.error(err.message || 'Failed to reconnect');
+    },
+  });
+}
