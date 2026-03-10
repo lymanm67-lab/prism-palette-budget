@@ -7,7 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { useSpendingByCategory, useTransactionsByDateRange, useBudgets, useCategories, useAccounts, useAllTransactions } from '@/hooks/use-finance-data';
 import { useCurrency } from '@/hooks/use-currency';
-import { CalendarIcon, Download, FileText, Loader2, Building2, User, BarChart3 } from 'lucide-react';
+import { CalendarIcon, Download, FileText, Loader2, Building2, User, BarChart3, Printer } from 'lucide-react';
 import { useMemo, useRef, useState, useCallback } from 'react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { exportToPdf, exportToCsv } from '@/lib/export-utils';
@@ -398,6 +398,10 @@ const Reports = () => {
             <DropdownMenuItem onClick={handleExportPdf} className="gap-2">
               <Download className="h-4 w-4" />
               Download PDF
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => window.print()} className="gap-2">
+              <Printer className="h-4 w-4" />
+              Print Report
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
