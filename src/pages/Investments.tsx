@@ -255,6 +255,7 @@ const Investments = () => {
   const totalMarketValue = enrichedHoldings.reduce((s, h) => s + h.market_value, 0);
   const totalCostBasis = enrichedHoldings.reduce((s, h) => s + (h.cost_basis || 0), 0);
   const totalGainLoss = totalCostBasis > 0 ? totalMarketValue - totalCostBasis : null;
+  const totalGainLossPct = totalCostBasis > 0 && totalGainLoss != null ? (totalGainLoss / totalCostBasis) * 100 : null;
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
