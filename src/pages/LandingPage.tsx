@@ -5,6 +5,7 @@ import {
   Sparkles, Target, BarChart3, ShieldCheck, Bot,
   Wallet, ArrowRight, CheckCircle2, Zap, Star, Quote
 } from 'lucide-react';
+import prismLogo from '@/assets/prism-budget-logo.png';
 
 const FEATURES = [
   { icon: Target, title: 'Zero-Based Budgeting', desc: 'Give every dollar a job with intuitive envelope budgeting.' },
@@ -46,9 +47,7 @@ const LandingPage = () => {
 
         <nav className="relative z-10 mx-auto max-w-7xl px-6 py-5 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl prism-gradient prism-glow">
-              <Zap className="h-5 w-5 text-white" />
-            </div>
+            <img src={prismLogo} alt="PrismBudget" className="h-9 w-9 rounded-xl object-contain" />
             <span className="font-display text-xl font-extrabold text-white tracking-tight">PrismBudget</span>
           </div>
           <div className="flex items-center gap-3">
@@ -207,9 +206,7 @@ const LandingPage = () => {
       <footer className="py-8 border-t border-border">
         <div className="mx-auto max-w-7xl px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <div className="h-7 w-7 rounded-lg prism-gradient flex items-center justify-center">
-              <Zap className="h-4 w-4 text-white" />
-            </div>
+            <img src={prismLogo} alt="PrismBudget" className="h-7 w-7 rounded-lg object-contain" />
             <span className="font-display font-bold">PrismBudget</span>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-muted-foreground">

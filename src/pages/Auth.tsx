@@ -11,6 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
 import { Sparkles, ArrowRight, Mail, Lock, UserPlus, LogIn } from 'lucide-react';
+import prismLogo from '@/assets/prism-budget-logo.png';
 
 type View = 'login' | 'signup' | 'forgot';
 
@@ -95,9 +96,9 @@ const Auth = () => {
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-            className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl prism-gradient prism-glow"
+            className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl"
           >
-            <Sparkles className="h-8 w-8 text-white" />
+            <img src={prismLogo} alt="PrismBudget" className="h-16 w-16 rounded-2xl object-contain" />
           </motion.div>
           <h1 className="font-display text-5xl font-extrabold tracking-tight text-white">
             Prism<span className="prism-gradient-text">Budget</span>

@@ -1,10 +1,11 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Landmark, ArrowLeftRight, PiggyBank, BarChart3, Tags, Target,
-  Settings, Bot, LogOut, ChevronLeft, ChevronRight, Zap, Sun, Moon, TrendingDown,
+  Settings, Bot, LogOut, ChevronLeft, ChevronRight, Sun, Moon, TrendingDown,
   TrendingUp, Calculator, Scale, Map, Heart, Home, Wallet, RepeatIcon, GraduationCap,
   CreditCard, LineChart, Sparkles,
 } from 'lucide-react';
+import prismLogo from '@/assets/prism-budget-logo.png';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
@@ -92,18 +93,14 @@ const AppSidebar = () => {
       <div className="relative flex h-16 items-center justify-between px-4">
         {!collapsed && (
           <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl prism-gradient prism-glow">
-              <Zap className="h-5 w-5 text-white" />
-            </div>
+            <img src={prismLogo} alt="PrismBudget" className="h-9 w-9 rounded-xl object-contain" />
             <span className="font-display text-lg font-extrabold tracking-tight prism-gradient-text">
               PrismBudget
             </span>
           </div>
         )}
         {collapsed && (
-          <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-xl prism-gradient prism-glow">
-            <Zap className="h-5 w-5 text-white" />
-          </div>
+          <img src={prismLogo} alt="PrismBudget" className="mx-auto h-9 w-9 rounded-xl object-contain" />
         )}
         <Button
           variant="ghost"
