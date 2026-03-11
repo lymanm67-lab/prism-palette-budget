@@ -289,7 +289,26 @@ const Budgets = () => {
   const personalSectionTotals = useMemo(() => calcSectionTotals(personalGroupedBudgets), [calcSectionTotals, personalGroupedBudgets]);
   const businessSectionTotals = useMemo(() => calcSectionTotals(businessGroupedBudgets), [calcSectionTotals, businessGroupedBudgets]);
 
-  // Total income & expenses
+  // Per-business budget data for the business tab
+  const perBusinessData = useMemo(() => {
+    if (!categories || !categoryGroups || !businessNames.length) return [];
+    return businessNames.map(bizName => {
+      const bizGroupIds = new Set(
+        (categoryGroups as any[])
+          .filter((g: any) => {
+            if ((g.budget_type || 'personal') !== 'business') return false;
+            return g.name.startsWith(bizName + ' -') || g.name.startsWith(bizName + ' –');
+          })
+          .map((g: any) => g.id)
+      );
+      const bizCatIds = new Set(categories.filter(c => bizGroupIds.has(c.group_id)).map(c => c.id));
+      const items = budgetItems.filter(b => bizCatIds.has(b.category_id));
+      const grouped = groupBudgetsByExpenseType(items);
+      const totals = calcSectionTotals(grouped);
+      return { name: bizName, items, grouped, totals, catIds: bizCatIds };
+    }).filter(b => b.items.length > 0);
+  }, [categories, categoryGroups, businessNames, budgetItems, groupBudgetsByExpenseType, calcSectionTotals]);
+
   const totalIncomeBudget = sectionTotals.income.budget;
   const totalIncomeActual = sectionTotals.income.actual;
   const totalIncomeRemaining = sectionTotals.income.remaining;
