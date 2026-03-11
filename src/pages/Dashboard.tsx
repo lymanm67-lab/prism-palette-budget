@@ -191,15 +191,26 @@ const Dashboard = () => {
             </h1>
             <p className="text-muted-foreground mt-1">Your financial overview at a glance.</p>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1.5"
-              onClick={() => navigate('/reports')}
-            >
-              View Reports <ChevronRight className="h-3.5 w-3.5" />
-            </Button>
+          <TooltipProvider delayDuration={300}>
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+              <ShadcnTooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5"
+                    onClick={() => navigate('/reports')}
+                  >
+                    <FileBarChart className="h-4 w-4 text-emerald-500 lg:h-3.5 lg:w-3.5" />
+                    <span className="hidden lg:inline">View Reports</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent className="lg:hidden">
+                  <p>View Reports</p>
+                </TooltipContent>
+              </ShadcnTooltip>
+            </div>
+          </TooltipProvider>
             <PageOverview
               title="Dashboard Overview"
               description="Your central hub showing net worth, income, spending patterns, and account balances. Toggle between personal and business views."
