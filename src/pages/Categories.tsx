@@ -841,6 +841,55 @@ const Categories = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Auto-Create Chart of Accounts Dialog */}
+      <Dialog open={coaDialogOpen} onOpenChange={setCoaDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="font-display flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              Auto-Create Chart of Accounts
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              This will create the 5 standard accounting groups (Assets, Liabilities, Equity, Income/Revenue, Expenses) with common sub-categories for the selected business.
+            </p>
+            <div className="space-y-2">
+              <Label>Business Profile</Label>
+              <Select value={coaProfileId} onValueChange={setCoaProfileId}>
+                <SelectTrigger><SelectValue placeholder="Select a business" /></SelectTrigger>
+                <SelectContent>
+                  {(businessProfiles || []).map(bp => (
+                    <SelectItem key={bp.id} value={bp.id}>{bp.business_name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="rounded-lg border border-border/50 p-3 space-y-1.5">
+              <p className="text-xs font-semibold text-foreground">Groups to be created:</p>
+              {COA_GROUPS.map(g => (
+                <div key={g.name} className="flex items-center gap-2 text-xs">
+                  <span className="h-2.5 w-2.5 rounded-sm shrink-0" style={{ backgroundColor: g.color }} />
+                  <span className="font-medium">{g.name}</span>
+                  <span className="text-muted-foreground">— {g.categories.length} categories</span>
+                </div>
+              ))}
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setCoaDialogOpen(false)}>Cancel</Button>
+              <Button
+                onClick={handleCreateCOA}
+                disabled={!coaProfileId || coaCreating}
+                className="gap-2 bg-gradient-to-r from-prism-navy to-prism-teal text-white hover:opacity-90"
+              >
+                {coaCreating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                {coaCreating ? 'Creating…' : 'Create All Groups'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 };
