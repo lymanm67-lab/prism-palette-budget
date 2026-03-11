@@ -542,9 +542,10 @@ const Budgets = () => {
     const overBudget = remaining < 0;
 
     return (
-      <div key={b.id} className="group py-2.5 px-3 hover:bg-muted/30 rounded-lg transition-colors">
+      <div key={b.id} className={cn("group py-2.5 px-3 hover:bg-muted/30 rounded-lg transition-colors", selectedBudgetIds.has(b.id) && "bg-primary/5")}>
         {/* Mobile: stacked layout */}
         <div className="flex items-center gap-2 sm:hidden">
+          <Checkbox checked={selectedBudgetIds.has(b.id)} onCheckedChange={() => toggleBudgetSelection(b.id)} className="shrink-0" />
           <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: b.categories?.color || 'hsl(var(--primary))' }} />
           <span className="flex-1 text-sm font-medium truncate">{b.categories?.name || 'Unknown'}</span>
           {b.rollover && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium shrink-0">↻</span>}
