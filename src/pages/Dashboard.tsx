@@ -191,8 +191,8 @@ const Dashboard = () => {
             </h1>
             <p className="text-muted-foreground mt-1">Your financial overview at a glance.</p>
           </div>
-          <TooltipProvider delayDuration={300}>
-            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+            <TooltipProvider delayDuration={300}>
               <ShadcnTooltip>
                 <TooltipTrigger asChild>
                   <Button
@@ -209,8 +209,7 @@ const Dashboard = () => {
                   <p>View Reports</p>
                 </TooltipContent>
               </ShadcnTooltip>
-            </div>
-          </TooltipProvider>
+            </TooltipProvider>
             <PageOverview
               title="Dashboard Overview"
               description="Your central hub showing net worth, income, spending patterns, and account balances. Toggle between personal and business views."
