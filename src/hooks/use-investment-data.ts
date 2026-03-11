@@ -389,6 +389,16 @@ export function useDeleteHolding() {
     mutationFn: async (holdingId: string) => {
       if (!household) throw new Error('No household');
 
+      // Fetch holding data before deletion for potential restore
+      const { data: holdingData, error: fetchError } = await supabase
+        .from('investment_holdings')
+        .select('*')
+        .eq('id', holdingId)
+        .eq('household_id', household.id)
+        .single();
+
+      if (fetchError) throw fetchError;
+
       const { error } = await supabase
         .from('investment_holdings')
         .delete()
@@ -396,12 +406,47 @@ export function useDeleteHolding() {
         .eq('household_id', household.id);
 
       if (error) throw error;
-      return { success: true };
+      return { success: true, holdingData };
     },
-    onSuccess: () => {
+    onSuccess: (data: any) => {
       qc.invalidateQueries({ queryKey: ['investment_holdings'] });
       qc.invalidateQueries({ queryKey: ['accounts'] });
-      toast.success('Holding deleted');
+      
+      const holdingName = data.holdingData?.name || data.holdingData?.symbol || 'Holding';
+      
+      toast.success(`${holdingName} deleted`, {
+        action: {
+          label: 'Undo',
+          onClick: async () => {
+            if (!data.holdingData) return;
+            
+            // Restore the holding
+            const { error } = await supabase
+              .from('investment_holdings')
+              .insert({
+                account_id: data.holdingData.account_id,
+                household_id: data.holdingData.household_id,
+                symbol: data.holdingData.symbol,
+                name: data.holdingData.name,
+                quantity: data.holdingData.quantity,
+                price: data.holdingData.price,
+                market_value: data.holdingData.market_value,
+                cost_basis: data.holdingData.cost_basis,
+                holding_type: data.holdingData.holding_type,
+                currency: data.holdingData.currency,
+              });
+            
+            if (error) {
+              toast.error('Failed to restore holding');
+              return;
+            }
+            
+            qc.invalidateQueries({ queryKey: ['investment_holdings'] });
+            qc.invalidateQueries({ queryKey: ['accounts'] });
+            toast.success(`${holdingName} restored`);
+          },
+        },
+      });
     },
     onError: (err: any) => {
       toast.error(err.message || 'Failed to delete holding');

@@ -24,6 +24,7 @@ import SnapTradeConnectButton from '@/components/SnapTradeConnectButton';
 import InvestmentConnectionModal from '@/components/InvestmentConnectionModal';
 import AddHoldingsDialog from '@/components/AddHoldingsDialog';
 import InvestmentWatchlist from '@/components/InvestmentWatchlist';
+import { DeleteHoldingDialog } from '@/components/DeleteHoldingDialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 const COLORS = [
@@ -59,6 +60,8 @@ const Investments = () => {
   const [groupSortDir, setGroupSortDir] = useState<SortDir>('desc');
   const [editingHolding, setEditingHolding] = useState<string | null>(null);
   const [holdingEdit, setHoldingEdit] = useState({ quantity: '', price: '', market_value: '' });
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [holdingToDelete, setHoldingToDelete] = useState<{ id: string; name?: string | null; symbol?: string | null } | null>(null);
 
   const handleSaveCostBasis = useCallback(async (holdingId: string) => {
     const value = parseFloat(costBasisInput);
@@ -592,7 +595,10 @@ const Investments = () => {
                                     variant="ghost"
                                     size="icon"
                                     className="h-6 w-6 opacity-0 group-hover:opacity-100 hover:opacity-100"
-                                    onClick={() => deleteHolding.mutate(h.id)}
+                                    onClick={() => {
+                                      setHoldingToDelete({ id: h.id, name: h.name, symbol: h.symbol });
+                                      setDeleteDialogOpen(true);
+                                    }}
                                     disabled={deleteHolding.isPending}
                                   >
                                     <Trash2 className="h-3.5 w-3.5 text-destructive" />
@@ -613,6 +619,23 @@ const Investments = () => {
           )}
         </CardContent>
       </Card>
+
+      <DeleteHoldingDialog
+        holding={holdingToDelete}
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={() => {
+          if (holdingToDelete) {
+            deleteHolding.mutate(holdingToDelete.id, {
+              onSuccess: () => {
+                setDeleteDialogOpen(false);
+                setHoldingToDelete(null);
+              },
+            });
+          }
+        }}
+        isDeleting={deleteHolding.isPending}
+      />
 
       {/* Watchlist */}
       <InvestmentWatchlist />
