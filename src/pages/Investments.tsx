@@ -595,7 +595,10 @@ const Investments = () => {
                                     variant="ghost"
                                     size="icon"
                                     className="h-6 w-6 opacity-0 group-hover:opacity-100 hover:opacity-100"
-                                    onClick={() => deleteHolding.mutate(h.id)}
+                                    onClick={() => {
+                                      setHoldingToDelete({ id: h.id, name: h.name, symbol: h.symbol });
+                                      setDeleteDialogOpen(true);
+                                    }}
                                     disabled={deleteHolding.isPending}
                                   >
                                     <Trash2 className="h-3.5 w-3.5 text-destructive" />
@@ -616,6 +619,23 @@ const Investments = () => {
           )}
         </CardContent>
       </Card>
+
+      <DeleteHoldingDialog
+        holding={holdingToDelete}
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={() => {
+          if (holdingToDelete) {
+            deleteHolding.mutate(holdingToDelete.id, {
+              onSuccess: () => {
+                setDeleteDialogOpen(false);
+                setHoldingToDelete(null);
+              },
+            });
+          }
+        }}
+        isDeleting={deleteHolding.isPending}
+      />
 
       {/* Watchlist */}
       <InvestmentWatchlist />
