@@ -359,8 +359,46 @@ const Investments = () => {
       {/* Holdings Table — Grouped by Brokerage */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="font-display text-base sm:text-lg">Holdings</CardTitle>
-          <CardDescription className="text-xs sm:text-sm">Positions grouped by brokerage account.</CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="font-display text-base sm:text-lg">Holdings</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">Positions grouped by brokerage account.</CardDescription>
+            </div>
+            <div className="flex items-center gap-1">
+              <Button
+                size="sm"
+                variant={groupSort === 'alpha' ? 'default' : 'outline'}
+                className="h-7 gap-1 text-xs px-2.5"
+                onClick={() => {
+                  if (groupSort === 'alpha') {
+                    setGroupSortDir(d => d === 'asc' ? 'desc' : 'asc');
+                  } else {
+                    setGroupSort('alpha');
+                    setGroupSortDir('asc');
+                  }
+                }}
+              >
+                A–Z
+                {groupSort === 'alpha' && (groupSortDir === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />)}
+              </Button>
+              <Button
+                size="sm"
+                variant={groupSort === 'value' ? 'default' : 'outline'}
+                className="h-7 gap-1 text-xs px-2.5"
+                onClick={() => {
+                  if (groupSort === 'value') {
+                    setGroupSortDir(d => d === 'asc' ? 'desc' : 'asc');
+                  } else {
+                    setGroupSort('value');
+                    setGroupSortDir('desc');
+                  }
+                }}
+              >
+                Amount
+                {groupSort === 'value' && (groupSortDir === 'desc' ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />)}
+              </Button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           {holdingsByAccount.length === 0 ? (
