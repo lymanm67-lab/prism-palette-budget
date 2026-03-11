@@ -69,6 +69,34 @@ const Investments = () => {
     toast.success('Cost basis updated');
   }, [costBasisInput, qc]);
 
+  const handleSaveHolding = useCallback(async (holdingId: string) => {
+    const qty = parseFloat(holdingEdit.quantity);
+    const price = parseFloat(holdingEdit.price);
+    const mv = parseFloat(holdingEdit.market_value);
+    if (isNaN(qty) || isNaN(price) || isNaN(mv)) {
+      toast.error('Please enter valid numbers');
+      return;
+    }
+    const { error } = await supabase.from('investment_holdings').update({
+      quantity: qty,
+      price: price,
+      market_value: mv,
+    }).eq('id', holdingId);
+    if (error) { toast.error('Failed to save'); return; }
+    qc.invalidateQueries({ queryKey: ['investment_holdings'] });
+    setEditingHolding(null);
+    toast.success('Holding updated');
+  }, [holdingEdit, qc]);
+
+  const startEditHolding = (h: any) => {
+    setEditingHolding(h.id);
+    setHoldingEdit({
+      quantity: String(h.quantity),
+      price: String(h.price),
+      market_value: String(h.market_value),
+    });
+  };
+
   const investmentAccounts = useMemo(() => {
     if (!accounts) return [];
     return accounts.filter(a => a.account_type === 'investment' || a.account_type === 'savings');
