@@ -135,6 +135,24 @@ const Budgets = () => {
   const [printOrientation, setPrintOrientation] = useState<'portrait' | 'landscape'>('portrait');
   const toggleSection = (key: string) => setOpenSections(s => ({ ...s, [key]: !s[key] }));
 
+  // Compute all collapsible section keys for expand/collapse all
+  const getAllSectionKeys = useCallback(() => {
+    const keys = ['income', 'fixed', 'flexible', 'non_monthly'];
+    if (budgetType === 'all') {
+      // personal uses default keys; add per-business keys
+      for (const biz of (perBusinessData || [])) {
+        const bizKey = biz.name.replace(/\s+/g, '_');
+        keys.push(`all_${bizKey}_income`, `all_${bizKey}_fixed`, `all_${bizKey}_flexible`, `all_${bizKey}_non_monthly`);
+      }
+    } else if (budgetType === 'business') {
+      for (const biz of (perBusinessData || [])) {
+        const bizKey = biz.name.replace(/\s+/g, '_');
+        keys.push(`${bizKey}_income`, `${bizKey}_fixed`, `${bizKey}_flexible`, `${bizKey}_non_monthly`);
+      }
+    }
+    return keys;
+  }, [budgetType, perBusinessData]);
+
   // Business profiles list for per-business rendering
   const businessList = useMemo(() => {
     if (!businessProfiles) return [];
