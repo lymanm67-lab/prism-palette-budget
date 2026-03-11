@@ -58,8 +58,6 @@ Deno.serve(async (req) => {
             },
             body: JSON.stringify({
               household_id: conn.household_id,
-              snaptrade_user_id: conn.snaptrade_user_id,
-              snaptrade_user_secret: conn.snaptrade_user_secret,
               connection_id: conn.id,
             }),
           }
