@@ -210,12 +210,16 @@ const Budgets = () => {
       (categoryGroups as any[])
         .filter((g: any) => {
           if (budgetType === 'all') return true;
-          return (g.budget_type || 'personal') === budgetType;
+          if ((g.budget_type || 'personal') !== budgetType) return false;
+          if (budgetType === 'business' && selectedBusiness !== 'all') {
+            return g.business_profile_id === selectedBusiness;
+          }
+          return true;
         })
         .map((g: any) => g.id)
     );
     return new Set(categories.filter(c => groupIds.has(c.group_id)).map(c => c.id));
-  }, [categories, categoryGroups, budgetType]);
+  }, [categories, categoryGroups, budgetType, selectedBusiness]);
 
   // For "all" mode, separate personal vs business category IDs
   const personalCategoryIds = useMemo(() => {
@@ -1157,6 +1161,15 @@ const Budgets = () => {
               <TabsTrigger value="forecast" className="gap-1.5"><TrendingUp className="h-3.5 w-3.5" /> Forecast</TabsTrigger>
             </TabsList>
           </Tabs>
+          {budgetType === 'business' && businessList.length > 0 && (
+            <Select value={selectedBusiness} onValueChange={setSelectedBusiness}>
+              <SelectTrigger className="w-[220px] h-8 text-sm"><SelectValue placeholder="All Businesses" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Businesses</SelectItem>
+                {businessList.map(biz => <SelectItem key={biz.id} value={biz.id}>{biz.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          )}
         </div>
       </div>
 
@@ -1281,7 +1294,7 @@ const Budgets = () => {
             </>
           ) : budgetType === 'business' && perBusinessData.length > 0 ? (
             <>
-              {perBusinessData.map((biz, idx) => {
+              {(selectedBusiness === 'all' ? perBusinessData : perBusinessData.filter(b => b.id === selectedBusiness)).map((biz, idx) => {
                 const bizIncomeBudget = biz.totals.income.budget;
                 const bizIncomeActual = biz.totals.income.actual;
                 const bizExpenseBudget = biz.totals.fixed.budget + biz.totals.flexible.budget + biz.totals.non_monthly.budget;
