@@ -1872,14 +1872,22 @@ const Budgets = () => {
                         }
                         return true;
                       })
-                      .map((g: any) => (
-                        <SelectItem key={g.id} value={g.id}>
-                          <div className="flex items-center gap-2">
-                            <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: g.color }} />
-                            {g.name}
-                          </div>
-                        </SelectItem>
-                      ))}
+                      .map((g: any) => {
+                        const bizName = g.business_profile_id
+                          ? businessList.find((b: any) => b.id === g.business_profile_id)?.name
+                          : null;
+                        return (
+                          <SelectItem key={g.id} value={g.id}>
+                            <div className="flex items-center gap-2">
+                              <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: g.color }} />
+                              {g.name}
+                              {bizName && budgetType === 'all' && (
+                                <span className="text-xs text-muted-foreground">({bizName})</span>
+                              )}
+                            </div>
+                          </SelectItem>
+                        );
+                      })}
                   </SelectContent>
                 </Select>
               </div>
