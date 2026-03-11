@@ -1703,13 +1703,16 @@ const Budgets = () => {
             {!editingBudget && (
               <div className="space-y-2">
                 <Label>Type</Label>
-                <Tabs value={form.budgetKind} onValueChange={(v) => setForm(f => ({ ...f, budgetKind: v as 'income' | 'expense', group_id: '', category_id: '' }))}>
+                <Tabs value={form.budgetKind} onValueChange={(v) => setForm(f => ({ ...f, budgetKind: v as 'income' | 'expense' | 'equity', group_id: '', category_id: '' }))}>
                   <TabsList className="w-full">
                     <TabsTrigger value="income" className="flex-1 gap-1.5">
                       <TrendingUp className="h-3.5 w-3.5" /> Income
                     </TabsTrigger>
                     <TabsTrigger value="expense" className="flex-1 gap-1.5">
                       <PiggyBank className="h-3.5 w-3.5" /> Expense
+                    </TabsTrigger>
+                    <TabsTrigger value="equity" className="flex-1 gap-1.5">
+                      <Scale className="h-3.5 w-3.5" /> Equity
                     </TabsTrigger>
                   </TabsList>
                 </Tabs>
