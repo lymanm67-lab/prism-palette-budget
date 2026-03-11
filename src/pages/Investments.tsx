@@ -183,18 +183,26 @@ const Investments = () => {
       accountMap.set(a.id, { name: a.name, institution: a.institution });
     }
 
-    const grouped = new Map<string, { accountName: string; institution: string | null; holdings: typeof enrichedHoldings }>();
+    const grouped = new Map<string, { accountName: string; accountNames: string[]; institution: string | null; holdings: typeof enrichedHoldings }>();
     for (const h of enrichedHoldings) {
       const acct = accountMap.get(h.account_id);
-      const key = h.account_id;
+      const institution = acct?.institution || null;
+      // Group by institution when available, otherwise by account_id
+      const key = institution ? institution.toLowerCase().trim() : h.account_id;
       if (!grouped.has(key)) {
         grouped.set(key, {
           accountName: acct?.name || 'Unknown Account',
-          institution: acct?.institution || null,
+          accountNames: [],
+          institution,
           holdings: [],
         });
       }
-      grouped.get(key)!.holdings.push(h);
+      const group = grouped.get(key)!;
+      const name = acct?.name || 'Unknown Account';
+      if (!group.accountNames.includes(name)) {
+        group.accountNames.push(name);
+      }
+      group.holdings.push(h);
     }
 
     // Sort holdings within each group
@@ -479,8 +487,8 @@ const Investments = () => {
                       <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0 transition-transform [[data-state=closed]>&]:rotate-[-90deg]" />
                       <Landmark className="h-4 w-4 text-primary shrink-0" />
                       <h3 className="font-display font-semibold text-sm">{group.institution || group.accountName}</h3>
-                      {group.institution && group.accountName !== group.institution && (
-                        <span className="text-xs text-muted-foreground">— {group.accountName}</span>
+                      {group.institution && group.accountNames.length > 0 && (
+                        <span className="text-xs text-muted-foreground">— {group.accountNames.join(', ')}</span>
                       )}
                       <span className="text-xs text-muted-foreground ml-1">({group.holdings.length})</span>
                       <Badge variant="outline" className="text-[10px] ml-auto">{formatAmount(group.totalValue)}</Badge>
