@@ -40,7 +40,9 @@ const Investments = () => {
   const { formatCurrency: formatAmount } = useCurrency();
   const [pageGuideOpen, setPageGuideOpen] = useState(false);
   const [connectModalOpen, setConnectModalOpen] = useState(false);
+  const [addHoldingsOpen, setAddHoldingsOpen] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>('market_value');
+  const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
 
   const investmentAccounts = useMemo(() => {
