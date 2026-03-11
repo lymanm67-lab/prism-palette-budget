@@ -35,6 +35,7 @@ const COLORS = [
 
 type SortKey = 'symbol' | 'name' | 'quantity' | 'price' | 'market_value' | 'cost_basis' | 'gain_loss';
 type SortDir = 'asc' | 'desc';
+type GroupSort = 'alpha' | 'value';
 
 const Investments = () => {
   const { data: accounts, isLoading: accLoading } = useAccounts();
