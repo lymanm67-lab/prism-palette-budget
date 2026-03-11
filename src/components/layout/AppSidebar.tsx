@@ -1,10 +1,11 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Landmark, ArrowLeftRight, PiggyBank, BarChart3, Tags, Target,
-  Settings, Bot, LogOut, ChevronLeft, ChevronRight, Zap, Sun, Moon, TrendingDown,
+  Settings, Bot, LogOut, ChevronLeft, ChevronRight, Sun, Moon, TrendingDown,
   TrendingUp, Calculator, Scale, Map, Heart, Home, Wallet, RepeatIcon, GraduationCap,
   CreditCard, LineChart, Sparkles,
 } from 'lucide-react';
+import prismLogo from '@/assets/prism-budget-logo.png';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
