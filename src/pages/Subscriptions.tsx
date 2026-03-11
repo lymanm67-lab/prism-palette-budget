@@ -164,6 +164,7 @@ const Subscriptions = () => {
         average_amount: parseFloat(editSub.average_amount),
         frequency: editSub.frequency,
         notes: editSub.notes || null,
+        category_id: editSub.category_id || null,
       });
       toast.success('Subscription updated');
       setEditSub(null);
