@@ -134,29 +134,55 @@ const Investments = () => {
     });
   }, [holdings]);
 
-  // Sort holdings
-  const sortedHoldings = useMemo(() => {
-    const sorted = [...enrichedHoldings];
-    sorted.sort((a, b) => {
-      let aVal: number, bVal: number;
-      switch (sortKey) {
-        case 'symbol': return sortDir === 'asc'
-          ? (a.symbol || '').localeCompare(b.symbol || '')
-          : (b.symbol || '').localeCompare(a.symbol || '');
-        case 'name': return sortDir === 'asc'
-          ? a.name.localeCompare(b.name)
-          : b.name.localeCompare(a.name);
-        case 'quantity': aVal = a.quantity; bVal = b.quantity; break;
-        case 'price': aVal = a.price; bVal = b.price; break;
-        case 'market_value': aVal = a.market_value; bVal = b.market_value; break;
-        case 'cost_basis': aVal = a.cost_basis || 0; bVal = b.cost_basis || 0; break;
-        case 'gain_loss': aVal = a.gain_loss || 0; bVal = b.gain_loss || 0; break;
-        default: aVal = 0; bVal = 0;
+  // Group holdings by brokerage/account
+  const holdingsByAccount = useMemo(() => {
+    if (!enrichedHoldings.length) return [];
+    const accountMap = new Map<string, { name: string; institution: string | null }>();
+    for (const a of accounts || []) {
+      accountMap.set(a.id, { name: a.name, institution: a.institution });
+    }
+
+    const grouped = new Map<string, { accountName: string; institution: string | null; holdings: typeof enrichedHoldings }>();
+    for (const h of enrichedHoldings) {
+      const acct = accountMap.get(h.account_id);
+      const key = h.account_id;
+      if (!grouped.has(key)) {
+        grouped.set(key, {
+          accountName: acct?.name || 'Unknown Account',
+          institution: acct?.institution || null,
+          holdings: [],
+        });
       }
-      return sortDir === 'asc' ? aVal! - bVal! : bVal! - aVal!;
-    });
-    return sorted;
-  }, [enrichedHoldings, sortKey, sortDir]);
+      grouped.get(key)!.holdings.push(h);
+    }
+
+    // Sort holdings within each group
+    for (const group of grouped.values()) {
+      group.holdings.sort((a, b) => {
+        let aVal: number, bVal: number;
+        switch (sortKey) {
+          case 'symbol': return sortDir === 'asc'
+            ? (a.symbol || '').localeCompare(b.symbol || '')
+            : (b.symbol || '').localeCompare(a.symbol || '');
+          case 'name': return sortDir === 'asc'
+            ? a.name.localeCompare(b.name)
+            : b.name.localeCompare(a.name);
+          case 'quantity': aVal = a.quantity; bVal = b.quantity; break;
+          case 'price': aVal = a.price; bVal = b.price; break;
+          case 'market_value': aVal = a.market_value; bVal = b.market_value; break;
+          case 'cost_basis': aVal = a.cost_basis || 0; bVal = b.cost_basis || 0; break;
+          case 'gain_loss': aVal = a.gain_loss || 0; bVal = b.gain_loss || 0; break;
+          default: aVal = 0; bVal = 0;
+        }
+        return sortDir === 'asc' ? aVal! - bVal! : bVal! - aVal!;
+      });
+    }
+
+    // Sort groups by total market value descending
+    return Array.from(grouped.entries())
+      .map(([id, data]) => ({ id, ...data, totalValue: data.holdings.reduce((s, h) => s + h.market_value, 0) }))
+      .sort((a, b) => b.totalValue - a.totalValue);
+  }, [enrichedHoldings, accounts, sortKey, sortDir]);
 
   // Asset allocation by holding type
   const allocationData = useMemo(() => {
