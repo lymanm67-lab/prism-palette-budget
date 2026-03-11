@@ -581,8 +581,9 @@ const Investments = () => {
                         })}
                       </TableBody>
                     </Table>
-                  </div>
-                </div>
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
               ))}
             </div>
           )}
