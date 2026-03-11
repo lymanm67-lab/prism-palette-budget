@@ -43,6 +43,7 @@ const Investments = () => {
   const { data: holdings, isLoading: holdingsLoading } = useInvestmentHoldings();
   const { data: connections } = useSnapTradeConnections();
   const syncSnapTrade = useSyncSnapTrade();
+  const refreshPrices = useRefreshPrices();
   const { formatCurrency: formatAmount } = useCurrency();
   const qc = useQueryClient();
   const [pageGuideOpen, setPageGuideOpen] = useState(false);
