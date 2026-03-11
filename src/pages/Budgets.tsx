@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useBudgets, useCategories, useCategoryGroups, useTransactions, useUpsertBudget, useDeleteBudget, useCreateCategory } from '@/hooks/use-finance-data';
+import { useBusinessProfiles } from '@/hooks/use-business-data';
 import { useSmartBudget } from '@/hooks/use-financial-intelligence';
 import { useCurrency } from '@/hooks/use-currency';
 import { Loader2, Plus, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Eye, EyeOff, Settings2, TrendingUp, AlertTriangle, CheckCircle2, PiggyBank, Sparkles, Copy, ClipboardCheck, MoreHorizontal, BookOpen, Printer, X, Scale } from 'lucide-react';
