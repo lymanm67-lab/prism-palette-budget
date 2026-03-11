@@ -346,14 +346,14 @@ const Investments = () => {
         </Card>
       </div>
 
-      {/* Holdings Table */}
+      {/* Holdings Table — Grouped by Brokerage */}
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="font-display text-base sm:text-lg">Holdings</CardTitle>
-          <CardDescription className="text-xs sm:text-sm">All positions across your investment accounts.</CardDescription>
+          <CardDescription className="text-xs sm:text-sm">Positions grouped by brokerage account.</CardDescription>
         </CardHeader>
         <CardContent>
-          {sortedHoldings.length === 0 ? (
+          {holdingsByAccount.length === 0 ? (
             <div className="text-center py-10 text-muted-foreground">
               <Briefcase className="mx-auto h-10 w-10 opacity-30 mb-3" />
               <p className="font-medium">No holdings yet</p>
@@ -363,88 +363,102 @@ const Investments = () => {
               </Button>
             </div>
           ) : (
-            <div className="overflow-x-auto -mx-6 px-6">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="cursor-pointer select-none" onClick={() => handleSort('symbol')}>
-                      <span className="flex items-center gap-1">Symbol <SortIcon col="symbol" /></span>
-                    </TableHead>
-                    <TableHead className="cursor-pointer select-none hidden sm:table-cell" onClick={() => handleSort('name')}>
-                      <span className="flex items-center gap-1">Name <SortIcon col="name" /></span>
-                    </TableHead>
-                    <TableHead className="cursor-pointer select-none text-right" onClick={() => handleSort('quantity')}>
-                      <span className="flex items-center gap-1 justify-end">Qty <SortIcon col="quantity" /></span>
-                    </TableHead>
-                    <TableHead className="cursor-pointer select-none text-right hidden md:table-cell" onClick={() => handleSort('price')}>
-                      <span className="flex items-center gap-1 justify-end">Price <SortIcon col="price" /></span>
-                    </TableHead>
-                    <TableHead className="cursor-pointer select-none text-right" onClick={() => handleSort('market_value')}>
-                      <span className="flex items-center gap-1 justify-end">Value <SortIcon col="market_value" /></span>
-                    </TableHead>
-                    <TableHead className="cursor-pointer select-none text-right hidden lg:table-cell" onClick={() => handleSort('cost_basis')}>
-                      <span className="flex items-center gap-1 justify-end">Cost Basis <SortIcon col="cost_basis" /></span>
-                    </TableHead>
-                    <TableHead className="cursor-pointer select-none text-right" onClick={() => handleSort('gain_loss')}>
-                      <span className="flex items-center gap-1 justify-end">Gain/Loss <SortIcon col="gain_loss" /></span>
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {sortedHoldings.map(h => (
-                    <TableRow key={h.id} className="hover:bg-muted/50">
-                      <TableCell className="font-mono font-semibold text-sm">
-                        {h.symbol || '—'}
-                        <Badge variant="outline" className="ml-1.5 text-[9px] capitalize hidden sm:inline-flex">{h.holding_type}</Badge>
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground truncate max-w-[200px] hidden sm:table-cell">{h.name}</TableCell>
-                      <TableCell className="text-right tabular-nums text-sm">{h.quantity.toLocaleString(undefined, { maximumFractionDigits: 4 })}</TableCell>
-                      <TableCell className="text-right tabular-nums text-sm hidden md:table-cell">{formatAmount(h.price)}</TableCell>
-                      <TableCell className="text-right tabular-nums text-sm font-medium">{formatAmount(h.market_value)}</TableCell>
-                      <TableCell className="text-right tabular-nums text-sm text-muted-foreground hidden lg:table-cell">
-                        {editingCostBasis === h.id ? (
-                          <div className="flex items-center gap-1 justify-end">
-                            <Input
-                              type="number"
-                              value={costBasisInput}
-                              onChange={e => setCostBasisInput(e.target.value)}
-                              onKeyDown={e => { if (e.key === 'Enter') handleSaveCostBasis(h.id); if (e.key === 'Escape') setEditingCostBasis(null); }}
-                              className="h-7 w-24 text-right text-xs"
-                              autoFocus
-                            />
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleSaveCostBasis(h.id)}>
-                              <Check className="h-3 w-3 text-accent" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setEditingCostBasis(null)}>
-                              <X className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        ) : (
-                          <button
-                            className="inline-flex items-center gap-1 hover:text-foreground transition-colors group"
-                            onClick={() => { setEditingCostBasis(h.id); setCostBasisInput(h.cost_basis != null ? String(h.cost_basis) : ''); }}
-                          >
-                            {h.cost_basis != null ? formatAmount(h.cost_basis) : <span className="text-muted-foreground/50 italic">Add</span>}
-                            <Pencil className="h-3 w-3 opacity-0 group-hover:opacity-60" />
-                          </button>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums text-sm">
-                        {h.gain_loss != null ? (
-                          <span className={h.gain_loss >= 0 ? 'text-green-500' : 'text-red-500'}>
-                            {h.gain_loss >= 0 ? '+' : ''}{formatAmount(h.gain_loss)}
-                            {h.gain_loss_pct != null && (
-                              <span className="text-[10px] ml-1">({h.gain_loss_pct >= 0 ? '+' : ''}{h.gain_loss_pct.toFixed(1)}%)</span>
-                            )}
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground/50 italic text-xs">Enter cost basis →</span>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+            <div className="space-y-6">
+              {holdingsByAccount.map(group => (
+                <div key={group.id}>
+                  <div className="flex items-center gap-2 mb-2 px-1">
+                    <Landmark className="h-4 w-4 text-primary shrink-0" />
+                    <h3 className="font-display font-semibold text-sm">{group.institution || group.accountName}</h3>
+                    {group.institution && group.accountName !== group.institution && (
+                      <span className="text-xs text-muted-foreground">— {group.accountName}</span>
+                    )}
+                    <Badge variant="outline" className="text-[10px] ml-auto">{formatAmount(group.totalValue)}</Badge>
+                  </div>
+                  <div className="overflow-x-auto -mx-6 px-6">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="cursor-pointer select-none" onClick={() => handleSort('symbol')}>
+                            <span className="flex items-center gap-1">Symbol <SortIcon col="symbol" /></span>
+                          </TableHead>
+                          <TableHead className="cursor-pointer select-none hidden sm:table-cell" onClick={() => handleSort('name')}>
+                            <span className="flex items-center gap-1">Name <SortIcon col="name" /></span>
+                          </TableHead>
+                          <TableHead className="cursor-pointer select-none text-right" onClick={() => handleSort('quantity')}>
+                            <span className="flex items-center gap-1 justify-end">Qty <SortIcon col="quantity" /></span>
+                          </TableHead>
+                          <TableHead className="cursor-pointer select-none text-right hidden md:table-cell" onClick={() => handleSort('price')}>
+                            <span className="flex items-center gap-1 justify-end">Price <SortIcon col="price" /></span>
+                          </TableHead>
+                          <TableHead className="cursor-pointer select-none text-right" onClick={() => handleSort('market_value')}>
+                            <span className="flex items-center gap-1 justify-end">Value <SortIcon col="market_value" /></span>
+                          </TableHead>
+                          <TableHead className="cursor-pointer select-none text-right hidden lg:table-cell" onClick={() => handleSort('cost_basis')}>
+                            <span className="flex items-center gap-1 justify-end">Cost Basis <SortIcon col="cost_basis" /></span>
+                          </TableHead>
+                          <TableHead className="cursor-pointer select-none text-right" onClick={() => handleSort('gain_loss')}>
+                            <span className="flex items-center gap-1 justify-end">Gain/Loss <SortIcon col="gain_loss" /></span>
+                          </TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {group.holdings.map(h => (
+                          <TableRow key={h.id} className="hover:bg-muted/50">
+                            <TableCell className="font-mono font-semibold text-sm">
+                              {h.symbol || '—'}
+                              <Badge variant="outline" className="ml-1.5 text-[9px] capitalize hidden sm:inline-flex">{h.holding_type}</Badge>
+                            </TableCell>
+                            <TableCell className="text-sm text-muted-foreground truncate max-w-[200px] hidden sm:table-cell">{h.name}</TableCell>
+                            <TableCell className="text-right tabular-nums text-sm">{h.quantity.toLocaleString(undefined, { maximumFractionDigits: 4 })}</TableCell>
+                            <TableCell className="text-right tabular-nums text-sm hidden md:table-cell">{formatAmount(h.price)}</TableCell>
+                            <TableCell className="text-right tabular-nums text-sm font-medium">{formatAmount(h.market_value)}</TableCell>
+                            <TableCell className="text-right tabular-nums text-sm text-muted-foreground hidden lg:table-cell">
+                              {editingCostBasis === h.id ? (
+                                <div className="flex items-center gap-1 justify-end">
+                                  <Input
+                                    type="number"
+                                    value={costBasisInput}
+                                    onChange={e => setCostBasisInput(e.target.value)}
+                                    onKeyDown={e => { if (e.key === 'Enter') handleSaveCostBasis(h.id); if (e.key === 'Escape') setEditingCostBasis(null); }}
+                                    className="h-7 w-24 text-right text-xs"
+                                    autoFocus
+                                  />
+                                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleSaveCostBasis(h.id)}>
+                                    <Check className="h-3 w-3 text-accent" />
+                                  </Button>
+                                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setEditingCostBasis(null)}>
+                                    <X className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              ) : (
+                                <button
+                                  className="inline-flex items-center gap-1 hover:text-foreground transition-colors group"
+                                  onClick={() => { setEditingCostBasis(h.id); setCostBasisInput(h.cost_basis != null ? String(h.cost_basis) : ''); }}
+                                >
+                                  {h.cost_basis != null ? formatAmount(h.cost_basis) : <span className="text-muted-foreground/50 italic">Add</span>}
+                                  <Pencil className="h-3 w-3 opacity-0 group-hover:opacity-60" />
+                                </button>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-right tabular-nums text-sm">
+                              {h.gain_loss != null ? (
+                                <span className={h.gain_loss >= 0 ? 'text-green-500' : 'text-red-500'}>
+                                  {h.gain_loss >= 0 ? '+' : ''}{formatAmount(h.gain_loss)}
+                                  {h.gain_loss_pct != null && (
+                                    <span className="text-[10px] ml-1">({h.gain_loss_pct >= 0 ? '+' : ''}{h.gain_loss_pct.toFixed(1)}%)</span>
+                                  )}
+                                </span>
+                              ) : (
+                                <span className="text-muted-foreground/50 italic text-xs">Enter cost basis →</span>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </CardContent>
