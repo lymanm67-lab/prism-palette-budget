@@ -4,8 +4,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useGoals } from '@/hooks/use-goals';
 import { useDebtPlans, useDebtItems } from '@/hooks/use-debt-plans';
 import { cn } from '@/lib/utils';
-import { Shield, TrendingUp, PiggyBank, CreditCard, Landmark, ChevronRight, ChevronDown, Lightbulb } from 'lucide-react';
+import { Shield, TrendingUp, PiggyBank, CreditCard, Landmark, ChevronRight, ChevronDown, Lightbulb, ExternalLink } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface FinancialHealthScoreProps {
   monthlyIncome: number;
