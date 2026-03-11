@@ -25,6 +25,14 @@ function getTier(score: number) {
   return SCORE_TIERS.find(t => score >= t.min) || SCORE_TIERS[SCORE_TIERS.length - 1];
 }
 
+/** Returns a green / yellow / red color class based on component score ratio */
+function getComponentHealth(points: number, max: number) {
+  const ratio = max > 0 ? points / max : 0;
+  if (ratio >= 0.65) return { bar: 'bg-emerald-500', text: 'text-emerald-500', dot: 'bg-emerald-500', label: 'Healthy' };
+  if (ratio >= 0.35) return { bar: 'bg-amber-500', text: 'text-amber-500', dot: 'bg-amber-500', label: 'Caution' };
+  return { bar: 'bg-red-500', text: 'text-red-500', dot: 'bg-red-500', label: 'Urgent' };
+}
+
 const FinancialHealthScore = ({ monthlyIncome, monthlyExpenses, totalAssets, totalLiabilities }: FinancialHealthScoreProps) => {
   const { data: goals } = useGoals();
   const { data: debtPlans } = useDebtPlans();
