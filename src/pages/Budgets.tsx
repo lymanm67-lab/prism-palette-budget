@@ -1092,6 +1092,17 @@ const Budgets = () => {
             <Tooltip>
               <TooltipTrigger asChild>
                 <span>
+                {hiddenBudgetIds.size > 0 && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs" onClick={() => setHiddenBudgetIds(new Set())}>
+                        <Eye className="h-3.5 w-3.5" />
+                        {hiddenBudgetIds.size} hidden
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent><p>Show {hiddenBudgetIds.size} hidden budget{hiddenBudgetIds.size !== 1 ? 's' : ''}</p></TooltipContent>
+                  </Tooltip>
+                )}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="sm" className="h-8 w-8 p-0">
