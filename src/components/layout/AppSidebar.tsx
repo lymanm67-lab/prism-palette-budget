@@ -100,7 +100,7 @@ const AppSidebar = () => {
           </div>
         )}
         {collapsed && (
-          <img src={prismLogo} alt="PrismBudget" className="mx-auto h-9 w-9 rounded-xl object-contain" />
+          <img src={prismLogo} alt="PrismBudget" className="mx-auto h-16 w-16 rounded-xl object-contain" />
         )}
         <Button
           variant="ghost"
