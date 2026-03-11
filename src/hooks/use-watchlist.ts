@@ -10,6 +10,8 @@ export interface WatchlistItem {
   name: string | null;
   notes: string | null;
   target_price: number | null;
+  current_price: number | null;
+  price_updated_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -97,5 +99,44 @@ export function useDeleteWatchlistItem() {
       toast.success('Removed from watchlist');
     },
     onError: (err: any) => toast.error(err.message || 'Failed to delete'),
+  });
+}
+
+export function useRefreshWatchlistPrices() {
+  const qc = useQueryClient();
+  const { household } = useHousehold();
+
+  return useMutation({
+    mutationFn: async () => {
+      if (!household) throw new Error('No household');
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const res = await fetch(`${supabaseUrl}/functions/v1/refresh-prices`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ household_id: household.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to refresh prices');
+      return data;
+    },
+    onSuccess: (data: any) => {
+      qc.invalidateQueries({ queryKey: ['investment_watchlist'] });
+      qc.invalidateQueries({ queryKey: ['investment_holdings'] });
+      const parts: string[] = [];
+      if (data.updated > 0) parts.push(`${data.updated} holdings`);
+      if (data.watchlist_updated > 0) parts.push(`${data.watchlist_updated} watchlist`);
+      if (parts.length) {
+        toast.success(`Prices updated: ${parts.join(', ')}`);
+      } else {
+        toast.info('No symbols to update. Add ticker symbols first.');
+      }
+    },
+    onError: (err: any) => toast.error(err.message || 'Failed to refresh prices'),
   });
 }
