@@ -24,6 +24,7 @@ import SnapTradeConnectButton from '@/components/SnapTradeConnectButton';
 import InvestmentConnectionModal from '@/components/InvestmentConnectionModal';
 import AddHoldingsDialog from '@/components/AddHoldingsDialog';
 import InvestmentWatchlist from '@/components/InvestmentWatchlist';
+import { DeleteHoldingDialog } from '@/components/DeleteHoldingDialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 const COLORS = [
