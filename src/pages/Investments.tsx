@@ -405,7 +405,7 @@ const Investments = () => {
                       </TableCell>
                       <TableCell className="text-right tabular-nums text-sm">
                         {h.gain_loss != null ? (
-                          <span className={h.gain_loss >= 0 ? 'text-accent' : 'text-prism-rose'}>
+                          <span className={h.gain_loss >= 0 ? 'text-green-500' : 'text-red-500'}>
                             {h.gain_loss >= 0 ? '+' : ''}{formatAmount(h.gain_loss)}
                             {h.gain_loss_pct != null && (
                               <span className="text-[10px] ml-1">({h.gain_loss_pct >= 0 ? '+' : ''}{h.gain_loss_pct.toFixed(1)}%)</span>
