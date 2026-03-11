@@ -89,7 +89,16 @@ const SnapTradeConnectButton = forwardRef<SnapTradeConnectHandle, SnapTradeConne
         });
       }
 
-      // Step 2: Create redirect URL
+      // Step 2: Create redirect URL — pass connection_id for server-side secret lookup
+      const { data: connForRedirect } = await supabase
+        .from('snaptrade_connections' as any)
+        .select('id')
+        .eq('household_id', household.id)
+        .eq('snaptrade_user_id', snaptradeUserId)
+        .limit(1);
+
+      const connId = (connForRedirect as any[])?.[0]?.id;
+
       const redirectRes = await fetch(
         `${supabaseUrl}/functions/v1/snaptrade/create-redirect`,
         {
@@ -97,7 +106,9 @@ const SnapTradeConnectButton = forwardRef<SnapTradeConnectHandle, SnapTradeConne
           headers,
           body: JSON.stringify({
             snaptrade_user_id: snaptradeUserId,
-            snaptrade_user_secret: snaptradeUserSecret,
+            snaptrade_user_secret: snaptradeUserSecret || undefined,
+            connection_id: connId,
+            household_id: household.id,
             broker: broker || undefined,
           }),
         }
