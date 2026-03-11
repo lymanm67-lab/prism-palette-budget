@@ -3,8 +3,9 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import {
   Sparkles, Target, BarChart3, ShieldCheck, Bot,
-  Wallet, ArrowRight, CheckCircle2, Zap, Star, Quote
+  Wallet, ArrowRight, CheckCircle2, Star, Quote
 } from 'lucide-react';
+import prismLogo from '@/assets/prism-budget-logo.png';
 
 const FEATURES = [
   { icon: Target, title: 'Zero-Based Budgeting', desc: 'Give every dollar a job with intuitive envelope budgeting.' },
