@@ -428,7 +428,7 @@ const Categories = () => {
                     { name: 'Home Office', desc: 'Dedicated space utilities & insurance' },
                   ].map(item => (
                     <div key={item.name} className="flex items-start gap-2 rounded-lg bg-muted/30 p-2.5 border border-border/20">
-                      <Tags className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
+                      <FolderOpen className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
                       <div>
                         <p className="font-semibold text-foreground">{item.name}</p>
                         <p className="text-muted-foreground">{item.desc}</p>
