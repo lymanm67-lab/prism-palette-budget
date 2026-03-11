@@ -51,6 +51,8 @@ const Investments = () => {
   const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [editingCostBasis, setEditingCostBasis] = useState<string | null>(null);
   const [costBasisInput, setCostBasisInput] = useState('');
+  const [groupSort, setGroupSort] = useState<GroupSort>('value');
+  const [groupSortDir, setGroupSortDir] = useState<SortDir>('desc');
 
   const handleSaveCostBasis = useCallback(async (holdingId: string) => {
     const value = parseFloat(costBasisInput);
