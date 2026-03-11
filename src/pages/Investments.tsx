@@ -53,6 +53,8 @@ const Investments = () => {
   const [costBasisInput, setCostBasisInput] = useState('');
   const [groupSort, setGroupSort] = useState<GroupSort>('value');
   const [groupSortDir, setGroupSortDir] = useState<SortDir>('desc');
+  const [editingHolding, setEditingHolding] = useState<string | null>(null);
+  const [holdingEdit, setHoldingEdit] = useState({ quantity: '', price: '', market_value: '' });
 
   const handleSaveCostBasis = useCallback(async (holdingId: string) => {
     const value = parseFloat(costBasisInput);
