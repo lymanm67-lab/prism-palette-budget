@@ -1,7 +1,7 @@
 import { useMemo, useState, useCallback } from 'react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend, Tooltip as RTooltip } from 'recharts';
 import ReactMarkdown from 'react-markdown';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -98,6 +98,30 @@ const Budgets = () => {
   const [showUnbudgeted, setShowUnbudgeted] = useState(false);
   const [hideZeroAmounts, setHideZeroAmounts] = useState(false);
   const [hiddenBudgetIds, setHiddenBudgetIds] = useState<Set<string>>(new Set());
+  const [selectedBudgetIds, setSelectedBudgetIds] = useState<Set<string>>(new Set());
+
+  const toggleBudgetSelection = useCallback((id: string) => {
+    setSelectedBudgetIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const handleBatchHide = useCallback(() => {
+    setHiddenBudgetIds(prev => {
+      const next = new Set(prev);
+      selectedBudgetIds.forEach(id => next.add(id));
+      return next;
+    });
+    setSelectedBudgetIds(new Set());
+  }, [selectedBudgetIds]);
+
+  const handleBatchDelete = useCallback(() => {
+    const ids = Array.from(selectedBudgetIds);
+    ids.forEach(id => deleteBudget.mutate(id));
+    setSelectedBudgetIds(new Set());
+  }, [selectedBudgetIds, deleteBudget]);
   const [copyingForward, setCopyingForward] = useState(false);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({ income: true, fixed: true, flexible: true, non_monthly: true });
   const [viewTab, setViewTab] = useState<'budget' | 'forecast'>('budget');
@@ -518,9 +542,10 @@ const Budgets = () => {
     const overBudget = remaining < 0;
 
     return (
-      <div key={b.id} className="group py-2.5 px-3 hover:bg-muted/30 rounded-lg transition-colors">
+      <div key={b.id} className={cn("group py-2.5 px-3 hover:bg-muted/30 rounded-lg transition-colors", selectedBudgetIds.has(b.id) && "bg-primary/5")}>
         {/* Mobile: stacked layout */}
         <div className="flex items-center gap-2 sm:hidden">
+          <Checkbox checked={selectedBudgetIds.has(b.id)} onCheckedChange={() => toggleBudgetSelection(b.id)} className="shrink-0" />
           <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: b.categories?.color || 'hsl(var(--primary))' }} />
           <span className="flex-1 text-sm font-medium truncate">{b.categories?.name || 'Unknown'}</span>
           {b.rollover && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium shrink-0">↻</span>}
@@ -566,6 +591,7 @@ const Budgets = () => {
 
         {/* Desktop: table row layout */}
         <div className="hidden sm:flex items-center gap-3">
+          <Checkbox checked={selectedBudgetIds.has(b.id)} onCheckedChange={() => toggleBudgetSelection(b.id)} className="shrink-0" />
           <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: b.categories?.color || 'hsl(var(--primary))' }} />
           <div className="flex-1 min-w-0 flex items-center gap-1.5">
             <span className="text-sm font-medium truncate">{b.categories?.name || 'Unknown'}</span>
@@ -2103,6 +2129,44 @@ const Budgets = () => {
           </ScrollArea>
         </DialogContent>
       </Dialog>
+      {/* Batch Actions Floating Bar */}
+      <AnimatePresence>
+        {selectedBudgetIds.size > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
+          >
+            <div className="flex items-center gap-2 rounded-2xl border border-border bg-background/95 backdrop-blur-xl shadow-2xl px-4 py-3">
+              <span className="text-sm font-semibold tabular-nums">{selectedBudgetIds.size} selected</span>
+              <div className="h-6 w-px bg-border mx-1" />
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="sm" className="gap-1.5" onClick={handleBatchHide}>
+                    <EyeOff className="h-4 w-4" />
+                    <span className="hidden sm:inline">Hide</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent><p>Hide selected budgets</p></TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="sm" className="gap-1.5 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={handleBatchDelete}>
+                    <Trash2 className="h-4 w-4" />
+                    <span className="hidden sm:inline">Delete</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent><p>Delete selected budgets</p></TooltipContent>
+              </Tooltip>
+              <div className="h-6 w-px bg-border mx-1" />
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSelectedBudgetIds(new Set())}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
     </TooltipProvider>
   );
