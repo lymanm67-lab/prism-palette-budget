@@ -182,37 +182,47 @@ const Dashboard = () => {
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
       {/* Header with mode toggle */}
-      <motion.div variants={item} className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="font-display text-3xl font-extrabold tracking-tight">
-            <span className="prism-gradient-text">Dashboard</span>
-          </h1>
-          <p className="text-muted-foreground mt-1">Your financial overview at a glance.</p>
+      <motion.div variants={item} className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="font-display text-3xl font-extrabold tracking-tight">
+              <span className="prism-gradient-text">Dashboard</span>
+            </h1>
+            <p className="text-muted-foreground mt-1">Your financial overview at a glance.</p>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => navigate('/reports')}
+              className="flex items-center gap-1.5 rounded-xl bg-primary/10 px-4 py-2 text-sm font-medium text-primary transition-all hover:bg-primary/20 hover:gap-2.5"
+            >
+              View Reports <ChevronRight className="h-4 w-4" />
+            </button>
+            <PageOverview
+              title="Dashboard Overview"
+              description="Your central hub showing net worth, income, spending patterns, and account balances. Toggle between personal and business views."
+              icon={TrendingUp}
+              iconColor="text-prism-teal"
+              ttsScript="Welcome to your Dashboard. This is the central hub of Prism Budget where you can see your complete financial picture at a glance. At the top, you will find four key metrics: Net Worth, Total Assets, Liabilities, and monthly Income. Below that, a spending breakdown chart shows where your money goes by category. You can toggle between Personal, Business, or All views using the mode selector. The dashboard also features AI spending insights and a weekly financial recap. Use the quick actions to navigate to specific features."
+              features={[
+                'Net worth, assets, and liabilities at a glance',
+                'Monthly income tracking',
+                'Spending breakdown by category with charts',
+                'Personal vs. Business view toggle',
+                'AI-powered spending insights',
+                'Weekly financial recap',
+              ]}
+              demoData={[
+                { label: 'Net Worth', value: '$45,230', color: '#14b8a6' },
+                { label: 'Total Assets', value: '$52,800', color: '#0ea5e9' },
+                { label: 'Liabilities', value: '$7,570', color: '#f43f5e' },
+                { label: 'Monthly Income', value: '$6,500', color: '#8b5cf6' },
+                { label: 'Top Category', value: '$1,200', badge: 'Housing' },
+                { label: 'Savings Rate', value: '22%', color: '#22c55e' },
+              ]}
+            />
+          </div>
         </div>
-        <PageOverview
-          title="Dashboard Overview"
-          description="Your central hub showing net worth, income, spending patterns, and account balances. Toggle between personal and business views."
-          icon={TrendingUp}
-          iconColor="text-prism-teal"
-          ttsScript="Welcome to your Dashboard. This is the central hub of Prism Budget where you can see your complete financial picture at a glance. At the top, you will find four key metrics: Net Worth, Total Assets, Liabilities, and monthly Income. Below that, a spending breakdown chart shows where your money goes by category. You can toggle between Personal, Business, or All views using the mode selector. The dashboard also features AI spending insights and a weekly financial recap. Use the quick actions to navigate to specific features."
-          features={[
-            'Net worth, assets, and liabilities at a glance',
-            'Monthly income tracking',
-            'Spending breakdown by category with charts',
-            'Personal vs. Business view toggle',
-            'AI-powered spending insights',
-            'Weekly financial recap',
-          ]}
-          demoData={[
-            { label: 'Net Worth', value: '$45,230', color: '#14b8a6' },
-            { label: 'Total Assets', value: '$52,800', color: '#0ea5e9' },
-            { label: 'Liabilities', value: '$7,570', color: '#f43f5e' },
-            { label: 'Monthly Income', value: '$6,500', color: '#8b5cf6' },
-            { label: 'Top Category', value: '$1,200', badge: 'Housing' },
-            { label: 'Savings Rate', value: '22%', color: '#22c55e' },
-          ]}
-        />
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {/* Mode Toggle */}
           <div className="flex rounded-lg border border-border p-0.5">
             <button
@@ -260,13 +270,6 @@ const Dashboard = () => {
               </Button>
             </div>
           )}
-
-          <button
-            onClick={() => navigate('/reports')}
-            className="hidden sm:flex items-center gap-1.5 rounded-xl bg-primary/10 px-4 py-2 text-sm font-medium text-primary transition-all hover:bg-primary/20 hover:gap-2.5"
-          >
-            View Reports <ChevronRight className="h-4 w-4" />
-          </button>
         </div>
       </motion.div>
 
