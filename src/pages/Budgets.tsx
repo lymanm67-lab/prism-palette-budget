@@ -591,6 +591,7 @@ const Budgets = () => {
 
         {/* Desktop: table row layout */}
         <div className="hidden sm:flex items-center gap-3">
+          <Checkbox checked={selectedBudgetIds.has(b.id)} onCheckedChange={() => toggleBudgetSelection(b.id)} className="shrink-0" />
           <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: b.categories?.color || 'hsl(var(--primary))' }} />
           <div className="flex-1 min-w-0 flex items-center gap-1.5">
             <span className="text-sm font-medium truncate">{b.categories?.name || 'Unknown'}</span>
