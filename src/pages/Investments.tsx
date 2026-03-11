@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAccounts } from '@/hooks/use-finance-data';
-import { useInvestmentHoldings, useSnapTradeConnections, useSyncSnapTrade } from '@/hooks/use-investment-data';
+import { useInvestmentHoldings, useSnapTradeConnections, useSyncSnapTrade, useRefreshPrices } from '@/hooks/use-investment-data';
 import { useCurrency } from '@/hooks/use-currency';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
