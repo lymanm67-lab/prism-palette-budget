@@ -1288,6 +1288,71 @@ const Budgets = () => {
                 <div className="hidden sm:block w-[62px]" />
               </div>
             </>
+          ) : budgetType === 'business' && perBusinessData.length > 0 ? (
+            <>
+              {perBusinessData.map((biz, idx) => {
+                const bizIncomeBudget = biz.totals.income.budget;
+                const bizIncomeActual = biz.totals.income.actual;
+                const bizExpenseBudget = biz.totals.fixed.budget + biz.totals.flexible.budget + biz.totals.non_monthly.budget;
+                const bizExpenseActual = biz.totals.fixed.actual + biz.totals.flexible.actual + biz.totals.non_monthly.actual;
+                const bizNet = bizIncomeBudget - bizExpenseBudget;
+                const bizKey = biz.name.replace(/\s+/g, '_');
+
+                return (
+                  <div key={biz.name} className={cn(idx > 0 && 'mt-6')}>
+                    {/* Business Header */}
+                    <div className="flex items-center gap-2 px-3 pb-2">
+                      <span className="text-xs font-bold uppercase tracking-widest text-primary">{biz.name}</span>
+                      <div className="flex-1 h-px bg-primary/20" />
+                      <span className={cn('text-xs font-semibold tabular-nums', bizNet >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400')}>
+                        Net: {formatCurrency(Math.abs(bizNet))} {bizNet < 0 ? 'loss' : 'profit'}
+                      </span>
+                    </div>
+
+                    {/* Income */}
+                    <Card className="overflow-hidden">
+                      <CardContent className="p-2">
+                        {renderSection('income', biz.grouped.income, biz.totals.income, `${bizKey}_income`)}
+                      </CardContent>
+                    </Card>
+
+                    {/* Expenses */}
+                    <Card className="overflow-hidden mt-2">
+                      <CardContent className="p-2 space-y-1">
+                        <div className="sm:hidden px-3 py-1.5 text-xs font-medium text-muted-foreground border-b">Expenses</div>
+                        {renderSection('fixed', biz.grouped.fixed, biz.totals.fixed, `${bizKey}_fixed`)}
+                        {renderSection('flexible', biz.grouped.flexible, biz.totals.flexible, `${bizKey}_flexible`)}
+                        {renderSection('non_monthly', biz.grouped.non_monthly, biz.totals.non_monthly, `${bizKey}_non_monthly`)}
+                      </CardContent>
+                    </Card>
+
+                    {/* Business Subtotal */}
+                    <div className="flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 bg-primary/5 rounded-lg text-sm mt-2">
+                      <span className="flex-1 font-medium text-primary">{biz.name} Subtotal</span>
+                      <span className="text-right tabular-nums sm:w-[90px] font-semibold">
+                        {formatCurrency(bizIncomeBudget)} income
+                      </span>
+                      <span className="text-right tabular-nums sm:w-[90px] text-muted-foreground">
+                        {formatCurrency(bizExpenseBudget)} expense
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {/* Combined Business Totals */}
+              {perBusinessData.length > 1 && (
+                <div className="flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-3 bg-muted/30 rounded-lg font-semibold text-sm sm:text-base border-t-2 border-muted mt-4">
+                  <span className="flex-1 font-display">All Businesses Total</span>
+                  <span className="text-right tabular-nums sm:w-[90px]">{formatCurrency(totalIncomeBudget)}</span>
+                  <span className="hidden sm:inline-block w-[90px] text-right tabular-nums text-muted-foreground">{formatCurrency(totalIncomeActual)}</span>
+                  <span className={cn('text-right tabular-nums sm:w-[90px]', totalIncomeRemaining >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400')}>
+                    {formatCurrency(Math.abs(totalIncomeRemaining))}
+                  </span>
+                  <div className="hidden sm:block w-[62px]" />
+                </div>
+              )}
+            </>
           ) : (
             <>
               {/* Income Section */}
