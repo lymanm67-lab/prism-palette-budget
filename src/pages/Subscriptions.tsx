@@ -477,6 +477,14 @@ const Subscriptions = () => {
                 </SelectContent>
               </Select>
             </div>
+            <div>
+              <Label>Category</Label>
+              <CategoryCombobox
+                value={newSub.category_id}
+                onValueChange={v => setNewSub(prev => ({ ...prev, category_id: v }))}
+                placeholder="Select category (optional)"
+              />
+            </div>
             <Button onClick={handleAddSubscription} disabled={!newSub.merchant || !newSub.average_amount} className="w-full">
               <Plus className="h-4 w-4 mr-2" />
               Add Subscription
