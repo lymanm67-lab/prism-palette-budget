@@ -1157,6 +1157,15 @@ const Budgets = () => {
               <TabsTrigger value="forecast" className="gap-1.5"><TrendingUp className="h-3.5 w-3.5" /> Forecast</TabsTrigger>
             </TabsList>
           </Tabs>
+          {budgetType === 'business' && businessList.length > 0 && (
+            <Select value={selectedBusiness} onValueChange={setSelectedBusiness}>
+              <SelectTrigger className="w-[220px] h-8 text-sm"><SelectValue placeholder="All Businesses" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Businesses</SelectItem>
+                {businessList.map(biz => <SelectItem key={biz.id} value={biz.id}>{biz.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          )}
         </div>
       </div>
 
