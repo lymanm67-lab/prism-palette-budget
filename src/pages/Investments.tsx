@@ -42,11 +42,27 @@ const Investments = () => {
   const { data: connections } = useSnapTradeConnections();
   const syncSnapTrade = useSyncSnapTrade();
   const { formatCurrency: formatAmount } = useCurrency();
+  const qc = useQueryClient();
   const [pageGuideOpen, setPageGuideOpen] = useState(false);
   const [connectModalOpen, setConnectModalOpen] = useState(false);
   const [addHoldingsOpen, setAddHoldingsOpen] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>('market_value');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
+  const [editingCostBasis, setEditingCostBasis] = useState<string | null>(null);
+  const [costBasisInput, setCostBasisInput] = useState('');
+
+  const handleSaveCostBasis = useCallback(async (holdingId: string) => {
+    const value = parseFloat(costBasisInput);
+    if (isNaN(value) || value < 0) {
+      toast.error('Please enter a valid cost basis');
+      return;
+    }
+    const { error } = await supabase.from('investment_holdings').update({ cost_basis: value }).eq('id', holdingId);
+    if (error) { toast.error('Failed to save'); return; }
+    qc.invalidateQueries({ queryKey: ['investment_holdings'] });
+    setEditingCostBasis(null);
+    toast.success('Cost basis updated');
+  }, [costBasisInput, qc]);
 
   const investmentAccounts = useMemo(() => {
     if (!accounts) return [];
