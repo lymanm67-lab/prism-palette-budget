@@ -1117,15 +1117,44 @@ const Budgets = () => {
               <TooltipTrigger asChild>
                 <span>
                 {hiddenBudgetIds.size > 0 && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs" onClick={() => setHiddenBudgetIds(new Set())}>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs">
                         <Eye className="h-3.5 w-3.5" />
                         {hiddenBudgetIds.size} hidden
                       </Button>
-                    </TooltipTrigger>
-                    <TooltipContent><p>Show {hiddenBudgetIds.size} hidden budget{hiddenBudgetIds.size !== 1 ? 's' : ''}</p></TooltipContent>
-                  </Tooltip>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-64 p-2" align="end">
+                      <div className="flex items-center justify-between px-2 py-1 mb-1">
+                        <span className="text-xs font-semibold text-muted-foreground">Hidden Budgets</span>
+                        <Button variant="ghost" size="sm" className="h-6 text-xs px-2" onClick={() => setHiddenBudgetIds(new Set())}>
+                          Unhide All
+                        </Button>
+                      </div>
+                      <div className="max-h-48 overflow-y-auto space-y-0.5">
+                        {Array.from(hiddenBudgetIds).map(hid => {
+                          const item = budgetItems.find(b => b.id === hid);
+                          if (!item) return null;
+                          return (
+                            <div key={hid} className="flex items-center justify-between px-2 py-1.5 rounded-md hover:bg-muted/50 group">
+                              <div className="flex items-center gap-2 min-w-0">
+                                <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: item.categories?.color || 'hsl(var(--primary))' }} />
+                                <span className="text-sm truncate">{item.categories?.name || 'Unknown'}</span>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={() => setHiddenBudgetIds(prev => { const next = new Set(prev); next.delete(hid); return next; })}
+                              >
+                                <Eye className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 )}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
