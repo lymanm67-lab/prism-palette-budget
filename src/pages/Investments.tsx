@@ -485,7 +485,7 @@ const Investments = () => {
                           const isManual = !h.provider_holding_id;
                           const isEditing = editingHolding === h.id;
                           return (
-                          <TableRow key={h.id} className="hover:bg-muted/50">
+                          <TableRow key={h.id} className="hover:bg-muted/50 group">
                             <TableCell className="font-mono font-semibold text-sm">
                               {h.symbol || '—'}
                               <Badge variant="outline" className="ml-1.5 text-[9px] capitalize hidden sm:inline-flex">{h.holding_type}</Badge>
