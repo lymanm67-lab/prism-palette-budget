@@ -242,6 +242,7 @@ serve(async (req) => {
     return new Response(JSON.stringify({
       updated,
       watchlist_updated: watchlistUpdated,
+      alerts_triggered: alertsTriggered,
       total: (holdings || []).length,
       symbols_found: priceMap.size,
       symbols_total: uniqueSymbols.length,
