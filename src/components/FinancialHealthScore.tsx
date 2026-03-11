@@ -224,6 +224,7 @@ const FinancialHealthScore = ({ monthlyIncome, monthlyExpenses, totalAssets, tot
             </button>
           </div>
         </div>
+        </TooltipProvider>
 
         {/* Tips Section */}
         <AnimatePresence>
