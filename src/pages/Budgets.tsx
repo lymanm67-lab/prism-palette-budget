@@ -135,7 +135,7 @@ const Budgets = () => {
   const [printOrientation, setPrintOrientation] = useState<'portrait' | 'landscape'>('portrait');
   const toggleSection = (key: string) => setOpenSections(s => ({ ...s, [key]: !s[key] }));
 
-  // placeholder - getAllSectionKeys defined below after perBusinessData
+  
 
   // Business profiles list for per-business rendering
   const businessList = useMemo(() => {
