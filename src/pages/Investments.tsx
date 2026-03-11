@@ -53,6 +53,8 @@ const Investments = () => {
   const [costBasisInput, setCostBasisInput] = useState('');
   const [groupSort, setGroupSort] = useState<GroupSort>('value');
   const [groupSortDir, setGroupSortDir] = useState<SortDir>('desc');
+  const [editingHolding, setEditingHolding] = useState<string | null>(null);
+  const [holdingEdit, setHoldingEdit] = useState({ quantity: '', price: '', market_value: '' });
 
   const handleSaveCostBasis = useCallback(async (holdingId: string) => {
     const value = parseFloat(costBasisInput);
@@ -66,6 +68,34 @@ const Investments = () => {
     setEditingCostBasis(null);
     toast.success('Cost basis updated');
   }, [costBasisInput, qc]);
+
+  const handleSaveHolding = useCallback(async (holdingId: string) => {
+    const qty = parseFloat(holdingEdit.quantity);
+    const price = parseFloat(holdingEdit.price);
+    const mv = parseFloat(holdingEdit.market_value);
+    if (isNaN(qty) || isNaN(price) || isNaN(mv)) {
+      toast.error('Please enter valid numbers');
+      return;
+    }
+    const { error } = await supabase.from('investment_holdings').update({
+      quantity: qty,
+      price: price,
+      market_value: mv,
+    }).eq('id', holdingId);
+    if (error) { toast.error('Failed to save'); return; }
+    qc.invalidateQueries({ queryKey: ['investment_holdings'] });
+    setEditingHolding(null);
+    toast.success('Holding updated');
+  }, [holdingEdit, qc]);
+
+  const startEditHolding = (h: any) => {
+    setEditingHolding(h.id);
+    setHoldingEdit({
+      quantity: String(h.quantity),
+      price: String(h.price),
+      market_value: String(h.market_value),
+    });
+  };
 
   const investmentAccounts = useMemo(() => {
     if (!accounts) return [];
@@ -447,19 +477,41 @@ const Investments = () => {
                           <TableHead className="cursor-pointer select-none text-right" onClick={() => handleSort('gain_loss')}>
                             <span className="flex items-center gap-1 justify-end">Gain/Loss <SortIcon col="gain_loss" /></span>
                           </TableHead>
+                          <TableHead className="w-10" />
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {group.holdings.map(h => (
-                          <TableRow key={h.id} className="hover:bg-muted/50">
+                        {group.holdings.map(h => {
+                          const isManual = !h.provider_holding_id;
+                          const isEditing = editingHolding === h.id;
+                          return (
+                          <TableRow key={h.id} className="hover:bg-muted/50 group">
                             <TableCell className="font-mono font-semibold text-sm">
                               {h.symbol || '—'}
                               <Badge variant="outline" className="ml-1.5 text-[9px] capitalize hidden sm:inline-flex">{h.holding_type}</Badge>
                             </TableCell>
                             <TableCell className="text-sm text-muted-foreground truncate max-w-[200px] hidden sm:table-cell">{h.name}</TableCell>
-                            <TableCell className="text-right tabular-nums text-sm">{h.quantity.toLocaleString(undefined, { maximumFractionDigits: 4 })}</TableCell>
-                            <TableCell className="text-right tabular-nums text-sm hidden md:table-cell">{formatAmount(h.price)}</TableCell>
-                            <TableCell className="text-right tabular-nums text-sm font-medium">{formatAmount(h.market_value)}</TableCell>
+                            <TableCell className="text-right tabular-nums text-sm">
+                              {isEditing ? (
+                                <Input type="number" value={holdingEdit.quantity} onChange={e => setHoldingEdit(prev => ({ ...prev, quantity: e.target.value }))}
+                                  onKeyDown={e => { if (e.key === 'Enter') handleSaveHolding(h.id); if (e.key === 'Escape') setEditingHolding(null); }}
+                                  className="h-7 w-20 text-right text-xs ml-auto" />
+                              ) : h.quantity.toLocaleString(undefined, { maximumFractionDigits: 4 })}
+                            </TableCell>
+                            <TableCell className="text-right tabular-nums text-sm hidden md:table-cell">
+                              {isEditing ? (
+                                <Input type="number" value={holdingEdit.price} onChange={e => setHoldingEdit(prev => ({ ...prev, price: e.target.value }))}
+                                  onKeyDown={e => { if (e.key === 'Enter') handleSaveHolding(h.id); if (e.key === 'Escape') setEditingHolding(null); }}
+                                  className="h-7 w-24 text-right text-xs ml-auto" />
+                              ) : formatAmount(h.price)}
+                            </TableCell>
+                            <TableCell className="text-right tabular-nums text-sm font-medium">
+                              {isEditing ? (
+                                <Input type="number" value={holdingEdit.market_value} onChange={e => setHoldingEdit(prev => ({ ...prev, market_value: e.target.value }))}
+                                  onKeyDown={e => { if (e.key === 'Enter') handleSaveHolding(h.id); if (e.key === 'Escape') setEditingHolding(null); }}
+                                  className="h-7 w-24 text-right text-xs ml-auto" />
+                              ) : formatAmount(h.market_value)}
+                            </TableCell>
                             <TableCell className="text-right tabular-nums text-sm text-muted-foreground hidden lg:table-cell">
                               {editingCostBasis === h.id ? (
                                 <div className="flex items-center gap-1 justify-end">
@@ -500,8 +552,27 @@ const Investments = () => {
                                 <span className="text-muted-foreground/50 italic text-xs">Enter cost basis →</span>
                               )}
                             </TableCell>
+                            <TableCell className="text-right w-10">
+                              {isManual && (
+                                isEditing ? (
+                                  <div className="flex items-center gap-0.5 justify-end">
+                                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleSaveHolding(h.id)}>
+                                      <Check className="h-3.5 w-3.5 text-green-500" />
+                                    </Button>
+                                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setEditingHolding(null)}>
+                                      <X className="h-3.5 w-3.5" />
+                                    </Button>
+                                  </div>
+                                ) : (
+                                  <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 hover:opacity-100" onClick={() => startEditHolding(h)}>
+                                    <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                                  </Button>
+                                )
+                              )}
+                            </TableCell>
                           </TableRow>
-                        ))}
+                          );
+                        })}
                       </TableBody>
                     </Table>
                   </div>
