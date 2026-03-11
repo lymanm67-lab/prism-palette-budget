@@ -490,6 +490,7 @@ const Investments = () => {
 
       {/* Connection Modal */}
       <InvestmentConnectionModal open={connectModalOpen} onOpenChange={setConnectModalOpen} />
+      <AddHoldingsDialog open={addHoldingsOpen} onOpenChange={setAddHoldingsOpen} />
     </motion.div>
     </TooltipProvider>
   );
