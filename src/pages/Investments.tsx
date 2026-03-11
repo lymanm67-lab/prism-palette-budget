@@ -183,18 +183,26 @@ const Investments = () => {
       accountMap.set(a.id, { name: a.name, institution: a.institution });
     }
 
-    const grouped = new Map<string, { accountName: string; institution: string | null; holdings: typeof enrichedHoldings }>();
+    const grouped = new Map<string, { accountName: string; accountNames: string[]; institution: string | null; holdings: typeof enrichedHoldings }>();
     for (const h of enrichedHoldings) {
       const acct = accountMap.get(h.account_id);
-      const key = h.account_id;
+      const institution = acct?.institution || null;
+      // Group by institution when available, otherwise by account_id
+      const key = institution ? institution.toLowerCase().trim() : h.account_id;
       if (!grouped.has(key)) {
         grouped.set(key, {
           accountName: acct?.name || 'Unknown Account',
-          institution: acct?.institution || null,
+          accountNames: [],
+          institution,
           holdings: [],
         });
       }
-      grouped.get(key)!.holdings.push(h);
+      const group = grouped.get(key)!;
+      const name = acct?.name || 'Unknown Account';
+      if (!group.accountNames.includes(name)) {
+        group.accountNames.push(name);
+      }
+      group.holdings.push(h);
     }
 
     // Sort holdings within each group
