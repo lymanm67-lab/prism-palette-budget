@@ -130,6 +130,7 @@ const Subscriptions = () => {
         merchant: newSub.merchant,
         average_amount: parseFloat(newSub.average_amount),
         frequency: newSub.frequency,
+        category_id: newSub.category_id || null,
         is_active: true,
         is_cancelled: false,
       });
