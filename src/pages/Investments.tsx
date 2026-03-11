@@ -134,29 +134,55 @@ const Investments = () => {
     });
   }, [holdings]);
 
-  // Sort holdings
-  const sortedHoldings = useMemo(() => {
-    const sorted = [...enrichedHoldings];
-    sorted.sort((a, b) => {
-      let aVal: number, bVal: number;
-      switch (sortKey) {
-        case 'symbol': return sortDir === 'asc'
-          ? (a.symbol || '').localeCompare(b.symbol || '')
-          : (b.symbol || '').localeCompare(a.symbol || '');
-        case 'name': return sortDir === 'asc'
-          ? a.name.localeCompare(b.name)
-          : b.name.localeCompare(a.name);
-        case 'quantity': aVal = a.quantity; bVal = b.quantity; break;
-        case 'price': aVal = a.price; bVal = b.price; break;
-        case 'market_value': aVal = a.market_value; bVal = b.market_value; break;
-        case 'cost_basis': aVal = a.cost_basis || 0; bVal = b.cost_basis || 0; break;
-        case 'gain_loss': aVal = a.gain_loss || 0; bVal = b.gain_loss || 0; break;
-        default: aVal = 0; bVal = 0;
+  // Group holdings by brokerage/account
+  const holdingsByAccount = useMemo(() => {
+    if (!enrichedHoldings.length) return [];
+    const accountMap = new Map<string, { name: string; institution: string | null }>();
+    for (const a of accounts || []) {
+      accountMap.set(a.id, { name: a.name, institution: a.institution });
+    }
+
+    const grouped = new Map<string, { accountName: string; institution: string | null; holdings: typeof enrichedHoldings }>();
+    for (const h of enrichedHoldings) {
+      const acct = accountMap.get(h.account_id);
+      const key = h.account_id;
+      if (!grouped.has(key)) {
+        grouped.set(key, {
+          accountName: acct?.name || 'Unknown Account',
+          institution: acct?.institution || null,
+          holdings: [],
+        });
       }
-      return sortDir === 'asc' ? aVal! - bVal! : bVal! - aVal!;
-    });
-    return sorted;
-  }, [enrichedHoldings, sortKey, sortDir]);
+      grouped.get(key)!.holdings.push(h);
+    }
+
+    // Sort holdings within each group
+    for (const group of grouped.values()) {
+      group.holdings.sort((a, b) => {
+        let aVal: number, bVal: number;
+        switch (sortKey) {
+          case 'symbol': return sortDir === 'asc'
+            ? (a.symbol || '').localeCompare(b.symbol || '')
+            : (b.symbol || '').localeCompare(a.symbol || '');
+          case 'name': return sortDir === 'asc'
+            ? a.name.localeCompare(b.name)
+            : b.name.localeCompare(a.name);
+          case 'quantity': aVal = a.quantity; bVal = b.quantity; break;
+          case 'price': aVal = a.price; bVal = b.price; break;
+          case 'market_value': aVal = a.market_value; bVal = b.market_value; break;
+          case 'cost_basis': aVal = a.cost_basis || 0; bVal = b.cost_basis || 0; break;
+          case 'gain_loss': aVal = a.gain_loss || 0; bVal = b.gain_loss || 0; break;
+          default: aVal = 0; bVal = 0;
+        }
+        return sortDir === 'asc' ? aVal! - bVal! : bVal! - aVal!;
+      });
+    }
+
+    // Sort groups by total market value descending
+    return Array.from(grouped.entries())
+      .map(([id, data]) => ({ id, ...data, totalValue: data.holdings.reduce((s, h) => s + h.market_value, 0) }))
+      .sort((a, b) => b.totalValue - a.totalValue);
+  }, [enrichedHoldings, accounts, sortKey, sortDir]);
 
   // Asset allocation by holding type
   const allocationData = useMemo(() => {
@@ -320,14 +346,14 @@ const Investments = () => {
         </Card>
       </div>
 
-      {/* Holdings Table */}
+      {/* Holdings Table — Grouped by Brokerage */}
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="font-display text-base sm:text-lg">Holdings</CardTitle>
-          <CardDescription className="text-xs sm:text-sm">All positions across your investment accounts.</CardDescription>
+          <CardDescription className="text-xs sm:text-sm">Positions grouped by brokerage account.</CardDescription>
         </CardHeader>
         <CardContent>
-          {sortedHoldings.length === 0 ? (
+          {holdingsByAccount.length === 0 ? (
             <div className="text-center py-10 text-muted-foreground">
               <Briefcase className="mx-auto h-10 w-10 opacity-30 mb-3" />
               <p className="font-medium">No holdings yet</p>
@@ -337,88 +363,102 @@ const Investments = () => {
               </Button>
             </div>
           ) : (
-            <div className="overflow-x-auto -mx-6 px-6">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="cursor-pointer select-none" onClick={() => handleSort('symbol')}>
-                      <span className="flex items-center gap-1">Symbol <SortIcon col="symbol" /></span>
-                    </TableHead>
-                    <TableHead className="cursor-pointer select-none hidden sm:table-cell" onClick={() => handleSort('name')}>
-                      <span className="flex items-center gap-1">Name <SortIcon col="name" /></span>
-                    </TableHead>
-                    <TableHead className="cursor-pointer select-none text-right" onClick={() => handleSort('quantity')}>
-                      <span className="flex items-center gap-1 justify-end">Qty <SortIcon col="quantity" /></span>
-                    </TableHead>
-                    <TableHead className="cursor-pointer select-none text-right hidden md:table-cell" onClick={() => handleSort('price')}>
-                      <span className="flex items-center gap-1 justify-end">Price <SortIcon col="price" /></span>
-                    </TableHead>
-                    <TableHead className="cursor-pointer select-none text-right" onClick={() => handleSort('market_value')}>
-                      <span className="flex items-center gap-1 justify-end">Value <SortIcon col="market_value" /></span>
-                    </TableHead>
-                    <TableHead className="cursor-pointer select-none text-right hidden lg:table-cell" onClick={() => handleSort('cost_basis')}>
-                      <span className="flex items-center gap-1 justify-end">Cost Basis <SortIcon col="cost_basis" /></span>
-                    </TableHead>
-                    <TableHead className="cursor-pointer select-none text-right" onClick={() => handleSort('gain_loss')}>
-                      <span className="flex items-center gap-1 justify-end">Gain/Loss <SortIcon col="gain_loss" /></span>
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {sortedHoldings.map(h => (
-                    <TableRow key={h.id} className="hover:bg-muted/50">
-                      <TableCell className="font-mono font-semibold text-sm">
-                        {h.symbol || '—'}
-                        <Badge variant="outline" className="ml-1.5 text-[9px] capitalize hidden sm:inline-flex">{h.holding_type}</Badge>
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground truncate max-w-[200px] hidden sm:table-cell">{h.name}</TableCell>
-                      <TableCell className="text-right tabular-nums text-sm">{h.quantity.toLocaleString(undefined, { maximumFractionDigits: 4 })}</TableCell>
-                      <TableCell className="text-right tabular-nums text-sm hidden md:table-cell">{formatAmount(h.price)}</TableCell>
-                      <TableCell className="text-right tabular-nums text-sm font-medium">{formatAmount(h.market_value)}</TableCell>
-                      <TableCell className="text-right tabular-nums text-sm text-muted-foreground hidden lg:table-cell">
-                        {editingCostBasis === h.id ? (
-                          <div className="flex items-center gap-1 justify-end">
-                            <Input
-                              type="number"
-                              value={costBasisInput}
-                              onChange={e => setCostBasisInput(e.target.value)}
-                              onKeyDown={e => { if (e.key === 'Enter') handleSaveCostBasis(h.id); if (e.key === 'Escape') setEditingCostBasis(null); }}
-                              className="h-7 w-24 text-right text-xs"
-                              autoFocus
-                            />
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleSaveCostBasis(h.id)}>
-                              <Check className="h-3 w-3 text-accent" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setEditingCostBasis(null)}>
-                              <X className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        ) : (
-                          <button
-                            className="inline-flex items-center gap-1 hover:text-foreground transition-colors group"
-                            onClick={() => { setEditingCostBasis(h.id); setCostBasisInput(h.cost_basis != null ? String(h.cost_basis) : ''); }}
-                          >
-                            {h.cost_basis != null ? formatAmount(h.cost_basis) : <span className="text-muted-foreground/50 italic">Add</span>}
-                            <Pencil className="h-3 w-3 opacity-0 group-hover:opacity-60" />
-                          </button>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums text-sm">
-                        {h.gain_loss != null ? (
-                          <span className={h.gain_loss >= 0 ? 'text-green-500' : 'text-red-500'}>
-                            {h.gain_loss >= 0 ? '+' : ''}{formatAmount(h.gain_loss)}
-                            {h.gain_loss_pct != null && (
-                              <span className="text-[10px] ml-1">({h.gain_loss_pct >= 0 ? '+' : ''}{h.gain_loss_pct.toFixed(1)}%)</span>
-                            )}
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground/50 italic text-xs">Enter cost basis →</span>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+            <div className="space-y-6">
+              {holdingsByAccount.map(group => (
+                <div key={group.id}>
+                  <div className="flex items-center gap-2 mb-2 px-1">
+                    <Landmark className="h-4 w-4 text-primary shrink-0" />
+                    <h3 className="font-display font-semibold text-sm">{group.institution || group.accountName}</h3>
+                    {group.institution && group.accountName !== group.institution && (
+                      <span className="text-xs text-muted-foreground">— {group.accountName}</span>
+                    )}
+                    <Badge variant="outline" className="text-[10px] ml-auto">{formatAmount(group.totalValue)}</Badge>
+                  </div>
+                  <div className="overflow-x-auto -mx-6 px-6">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="cursor-pointer select-none" onClick={() => handleSort('symbol')}>
+                            <span className="flex items-center gap-1">Symbol <SortIcon col="symbol" /></span>
+                          </TableHead>
+                          <TableHead className="cursor-pointer select-none hidden sm:table-cell" onClick={() => handleSort('name')}>
+                            <span className="flex items-center gap-1">Name <SortIcon col="name" /></span>
+                          </TableHead>
+                          <TableHead className="cursor-pointer select-none text-right" onClick={() => handleSort('quantity')}>
+                            <span className="flex items-center gap-1 justify-end">Qty <SortIcon col="quantity" /></span>
+                          </TableHead>
+                          <TableHead className="cursor-pointer select-none text-right hidden md:table-cell" onClick={() => handleSort('price')}>
+                            <span className="flex items-center gap-1 justify-end">Price <SortIcon col="price" /></span>
+                          </TableHead>
+                          <TableHead className="cursor-pointer select-none text-right" onClick={() => handleSort('market_value')}>
+                            <span className="flex items-center gap-1 justify-end">Value <SortIcon col="market_value" /></span>
+                          </TableHead>
+                          <TableHead className="cursor-pointer select-none text-right hidden lg:table-cell" onClick={() => handleSort('cost_basis')}>
+                            <span className="flex items-center gap-1 justify-end">Cost Basis <SortIcon col="cost_basis" /></span>
+                          </TableHead>
+                          <TableHead className="cursor-pointer select-none text-right" onClick={() => handleSort('gain_loss')}>
+                            <span className="flex items-center gap-1 justify-end">Gain/Loss <SortIcon col="gain_loss" /></span>
+                          </TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {group.holdings.map(h => (
+                          <TableRow key={h.id} className="hover:bg-muted/50">
+                            <TableCell className="font-mono font-semibold text-sm">
+                              {h.symbol || '—'}
+                              <Badge variant="outline" className="ml-1.5 text-[9px] capitalize hidden sm:inline-flex">{h.holding_type}</Badge>
+                            </TableCell>
+                            <TableCell className="text-sm text-muted-foreground truncate max-w-[200px] hidden sm:table-cell">{h.name}</TableCell>
+                            <TableCell className="text-right tabular-nums text-sm">{h.quantity.toLocaleString(undefined, { maximumFractionDigits: 4 })}</TableCell>
+                            <TableCell className="text-right tabular-nums text-sm hidden md:table-cell">{formatAmount(h.price)}</TableCell>
+                            <TableCell className="text-right tabular-nums text-sm font-medium">{formatAmount(h.market_value)}</TableCell>
+                            <TableCell className="text-right tabular-nums text-sm text-muted-foreground hidden lg:table-cell">
+                              {editingCostBasis === h.id ? (
+                                <div className="flex items-center gap-1 justify-end">
+                                  <Input
+                                    type="number"
+                                    value={costBasisInput}
+                                    onChange={e => setCostBasisInput(e.target.value)}
+                                    onKeyDown={e => { if (e.key === 'Enter') handleSaveCostBasis(h.id); if (e.key === 'Escape') setEditingCostBasis(null); }}
+                                    className="h-7 w-24 text-right text-xs"
+                                    autoFocus
+                                  />
+                                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleSaveCostBasis(h.id)}>
+                                    <Check className="h-3 w-3 text-accent" />
+                                  </Button>
+                                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setEditingCostBasis(null)}>
+                                    <X className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              ) : (
+                                <button
+                                  className="inline-flex items-center gap-1 hover:text-foreground transition-colors group"
+                                  onClick={() => { setEditingCostBasis(h.id); setCostBasisInput(h.cost_basis != null ? String(h.cost_basis) : ''); }}
+                                >
+                                  {h.cost_basis != null ? formatAmount(h.cost_basis) : <span className="text-muted-foreground/50 italic">Add</span>}
+                                  <Pencil className="h-3 w-3 opacity-0 group-hover:opacity-60" />
+                                </button>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-right tabular-nums text-sm">
+                              {h.gain_loss != null ? (
+                                <span className={h.gain_loss >= 0 ? 'text-green-500' : 'text-red-500'}>
+                                  {h.gain_loss >= 0 ? '+' : ''}{formatAmount(h.gain_loss)}
+                                  {h.gain_loss_pct != null && (
+                                    <span className="text-[10px] ml-1">({h.gain_loss_pct >= 0 ? '+' : ''}{h.gain_loss_pct.toFixed(1)}%)</span>
+                                  )}
+                                </span>
+                              ) : (
+                                <span className="text-muted-foreground/50 italic text-xs">Enter cost basis →</span>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </CardContent>
