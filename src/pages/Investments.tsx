@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAccounts } from '@/hooks/use-finance-data';
-import { useInvestmentHoldings, useSnapTradeConnections, useSyncSnapTrade } from '@/hooks/use-investment-data';
+import { useInvestmentHoldings, useSnapTradeConnections, useSyncSnapTrade, useRefreshPrices } from '@/hooks/use-investment-data';
 import { useCurrency } from '@/hooks/use-currency';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import {
   Loader2, TrendingUp, TrendingDown, Briefcase, PiggyBank, Landmark, BarChart3,
-  BookOpen, MoreHorizontal, RefreshCw, ArrowUpDown, ChevronDown, ChevronUp, Shield, Plus, Pencil, Check, X,
+  BookOpen, MoreHorizontal, RefreshCw, ArrowUpDown, ChevronDown, ChevronUp, Shield, Plus, Pencil, Check, X, DollarSign,
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { Tooltip as UiTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -43,6 +43,7 @@ const Investments = () => {
   const { data: holdings, isLoading: holdingsLoading } = useInvestmentHoldings();
   const { data: connections } = useSnapTradeConnections();
   const syncSnapTrade = useSyncSnapTrade();
+  const refreshPrices = useRefreshPrices();
   const { formatCurrency: formatAmount } = useCurrency();
   const qc = useQueryClient();
   const [pageGuideOpen, setPageGuideOpen] = useState(false);
@@ -318,6 +319,14 @@ const Investments = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={() => refreshPrices.mutate()}
+                disabled={refreshPrices.isPending}
+                className="gap-2"
+              >
+                {refreshPrices.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <DollarSign className="h-4 w-4" />}
+                {refreshPrices.isPending ? 'Updating prices...' : 'Update Prices'}
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setPageGuideOpen(true)} className="gap-2">
                 <BookOpen className="h-4 w-4" /> Page Guide
               </DropdownMenuItem>

@@ -340,3 +340,42 @@ export function useReconnectSnapTrade() {
     },
   });
 }
+
+// ==================== REFRESH PRICES (Yahoo Finance) ====================
+export function useRefreshPrices() {
+  const qc = useQueryClient();
+  const { household } = useHousehold();
+
+  return useMutation({
+    mutationFn: async () => {
+      if (!household) throw new Error('No household');
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const res = await fetch(`${supabaseUrl}/functions/v1/refresh-prices`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ household_id: household.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to refresh prices');
+      return data;
+    },
+    onSuccess: (data: any) => {
+      qc.invalidateQueries({ queryKey: ['investment_holdings'] });
+      qc.invalidateQueries({ queryKey: ['accounts'] });
+      if (data.updated > 0) {
+        toast.success(`Updated prices for ${data.updated} holding${data.updated > 1 ? 's' : ''} (${data.symbols_found}/${data.symbols_total} symbols found)`);
+      } else {
+        toast.info(data.message || 'No holdings to update. Add ticker symbols to your manual holdings.');
+      }
+    },
+    onError: (err: any) => {
+      toast.error(err.message || 'Failed to refresh prices');
+    },
+  });
+}
