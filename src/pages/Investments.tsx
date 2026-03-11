@@ -319,6 +319,14 @@ const Investments = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={() => refreshPrices.mutate()}
+                disabled={refreshPrices.isPending}
+                className="gap-2"
+              >
+                {refreshPrices.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <DollarSign className="h-4 w-4" />}
+                {refreshPrices.isPending ? 'Updating prices...' : 'Update Prices'}
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setPageGuideOpen(true)} className="gap-2">
                 <BookOpen className="h-4 w-4" /> Page Guide
               </DropdownMenuItem>
