@@ -1916,21 +1916,26 @@ const Budgets = () => {
                 <Select value={form.category_id} onValueChange={v => setForm(f => ({ ...f, category_id: v }))}>
                   <SelectTrigger><SelectValue placeholder={form.group_id ? "Select category" : "Select a group first"} /></SelectTrigger>
                   <SelectContent>
-                    {unbudgetedCategories
-                      .filter(c => !form.group_id || c.group_id === form.group_id)
-                      .map(c => (
+                    {(() => {
+                      const budgetedIds = new Set(budgetItems.map(b => b.category_id));
+                      const available = (categories || []).filter(c => {
+                        if (budgetedIds.has(c.id)) return false;
+                        if (form.group_id && c.group_id !== form.group_id) return false;
+                        return true;
+                      });
+                      return available.length > 0 ? available.map(c => (
                         <SelectItem key={c.id} value={c.id}>
                           <div className="flex items-center gap-2">
                             <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: c.color }} />
                             {c.name}
                           </div>
                         </SelectItem>
-                      ))}
-                    {unbudgetedCategories.filter(c => !form.group_id || c.group_id === form.group_id).length === 0 && (
-                      <div className="px-2 py-3 text-sm text-muted-foreground text-center">
-                        {form.group_id ? 'All categories in this group are budgeted' : 'Select a group first'}
-                      </div>
-                    )}
+                      )) : (
+                        <div className="px-2 py-3 text-sm text-muted-foreground text-center">
+                          {form.group_id ? 'All categories in this group are budgeted' : 'Select a group first'}
+                        </div>
+                      );
+                    })()}
                   </SelectContent>
                 </Select>
               )}
