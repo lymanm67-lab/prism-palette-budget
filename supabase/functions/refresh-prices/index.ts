@@ -104,7 +104,7 @@ serve(async (req) => {
     // Also fetch watchlist items
     let wlQuery = adminClient
       .from("investment_watchlist")
-      .select("id, symbol, household_id")
+      .select("id, symbol, household_id, target_price, alert_sent")
       .not("symbol", "is", null);
 
     if (householdId) {
