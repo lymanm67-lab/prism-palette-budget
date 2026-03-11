@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -6,9 +6,13 @@ import { Button } from '@/components/ui/button';
 import { useAccounts } from '@/hooks/use-finance-data';
 import { useInvestmentHoldings, useSnapTradeConnections, useSyncSnapTrade } from '@/hooks/use-investment-data';
 import { useCurrency } from '@/hooks/use-currency';
+import { useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { Input } from '@/components/ui/input';
 import {
   Loader2, TrendingUp, TrendingDown, Briefcase, PiggyBank, Landmark, BarChart3,
-  BookOpen, MoreHorizontal, RefreshCw, ArrowUpDown, ChevronDown, ChevronUp, Shield, Plus,
+  BookOpen, MoreHorizontal, RefreshCw, ArrowUpDown, ChevronDown, ChevronUp, Shield, Plus, Pencil, Check, X,
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { Tooltip as UiTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -38,11 +42,27 @@ const Investments = () => {
   const { data: connections } = useSnapTradeConnections();
   const syncSnapTrade = useSyncSnapTrade();
   const { formatCurrency: formatAmount } = useCurrency();
+  const qc = useQueryClient();
   const [pageGuideOpen, setPageGuideOpen] = useState(false);
   const [connectModalOpen, setConnectModalOpen] = useState(false);
   const [addHoldingsOpen, setAddHoldingsOpen] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>('market_value');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
+  const [editingCostBasis, setEditingCostBasis] = useState<string | null>(null);
+  const [costBasisInput, setCostBasisInput] = useState('');
+
+  const handleSaveCostBasis = useCallback(async (holdingId: string) => {
+    const value = parseFloat(costBasisInput);
+    if (isNaN(value) || value < 0) {
+      toast.error('Please enter a valid cost basis');
+      return;
+    }
+    const { error } = await supabase.from('investment_holdings').update({ cost_basis: value }).eq('id', holdingId);
+    if (error) { toast.error('Failed to save'); return; }
+    qc.invalidateQueries({ queryKey: ['investment_holdings'] });
+    setEditingCostBasis(null);
+    toast.success('Cost basis updated');
+  }, [costBasisInput, qc]);
 
   const investmentAccounts = useMemo(() => {
     if (!accounts) return [];
@@ -356,7 +376,32 @@ const Investments = () => {
                       <TableCell className="text-right tabular-nums text-sm hidden md:table-cell">{formatAmount(h.price)}</TableCell>
                       <TableCell className="text-right tabular-nums text-sm font-medium">{formatAmount(h.market_value)}</TableCell>
                       <TableCell className="text-right tabular-nums text-sm text-muted-foreground hidden lg:table-cell">
-                        {h.cost_basis != null ? formatAmount(h.cost_basis) : '—'}
+                        {editingCostBasis === h.id ? (
+                          <div className="flex items-center gap-1 justify-end">
+                            <Input
+                              type="number"
+                              value={costBasisInput}
+                              onChange={e => setCostBasisInput(e.target.value)}
+                              onKeyDown={e => { if (e.key === 'Enter') handleSaveCostBasis(h.id); if (e.key === 'Escape') setEditingCostBasis(null); }}
+                              className="h-7 w-24 text-right text-xs"
+                              autoFocus
+                            />
+                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleSaveCostBasis(h.id)}>
+                              <Check className="h-3 w-3 text-accent" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setEditingCostBasis(null)}>
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <button
+                            className="inline-flex items-center gap-1 hover:text-foreground transition-colors group"
+                            onClick={() => { setEditingCostBasis(h.id); setCostBasisInput(h.cost_basis != null ? String(h.cost_basis) : ''); }}
+                          >
+                            {h.cost_basis != null ? formatAmount(h.cost_basis) : <span className="text-muted-foreground/50 italic">Add</span>}
+                            <Pencil className="h-3 w-3 opacity-0 group-hover:opacity-60" />
+                          </button>
+                        )}
                       </TableCell>
                       <TableCell className="text-right tabular-nums text-sm">
                         {h.gain_loss != null ? (
@@ -366,7 +411,9 @@ const Investments = () => {
                               <span className="text-[10px] ml-1">({h.gain_loss_pct >= 0 ? '+' : ''}{h.gain_loss_pct.toFixed(1)}%)</span>
                             )}
                           </span>
-                        ) : '—'}
+                        ) : (
+                          <span className="text-muted-foreground/50 italic text-xs">Enter cost basis →</span>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
