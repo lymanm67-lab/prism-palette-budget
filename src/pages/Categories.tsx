@@ -507,6 +507,15 @@ const Categories = () => {
                   <li className="flex items-start gap-2"><span className="text-accent">•</span> <strong className="text-foreground">Equity Accounts:</strong> Create "Owner Contribution" in each business ledger</li>
                   <li className="flex items-start gap-2"><span className="text-accent">•</span> <strong className="text-foreground">Expense Categories:</strong> Align labels with IRS Schedule C categories for seamless tax filing</li>
                 </ul>
+                {businessProfiles && businessProfiles.length > 0 && (
+                  <Button
+                    size="sm"
+                    className="mt-3 gap-2 bg-gradient-to-r from-prism-navy to-prism-teal text-white hover:opacity-90"
+                    onClick={() => { setCoaProfileId(businessProfiles[0]?.id || ''); setCoaDialogOpen(true); }}
+                  >
+                    <Sparkles className="h-3.5 w-3.5" /> Auto-Create Chart of Accounts
+                  </Button>
+                )}
               </div>
             </CardContent>
           </CollapsibleContent>
