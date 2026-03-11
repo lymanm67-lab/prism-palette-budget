@@ -282,13 +282,13 @@ const Budgets = () => {
 
   // Per-business budget data for the business tab
   const perBusinessData = useMemo(() => {
-    if (!categories || !categoryGroups || !businessNames.length) return [];
-    return businessNames.map(bizName => {
+    if (!categories || !categoryGroups || !businessList.length) return [];
+    return businessList.map(biz => {
       const bizGroupIds = new Set(
         (categoryGroups as any[])
           .filter((g: any) => {
             if ((g.budget_type || 'personal') !== 'business') return false;
-            return g.name.startsWith(bizName + ' -') || g.name.startsWith(bizName + ' –');
+            return g.business_profile_id === biz.id;
           })
           .map((g: any) => g.id)
       );
@@ -296,9 +296,9 @@ const Budgets = () => {
       const items = budgetItems.filter(b => bizCatIds.has(b.category_id));
       const grouped = groupBudgetsByExpenseType(items);
       const totals = calcSectionTotals(grouped);
-      return { name: bizName, items, grouped, totals, catIds: bizCatIds };
+      return { name: biz.name, id: biz.id, items, grouped, totals, catIds: bizCatIds };
     }).filter(b => b.items.length > 0);
-  }, [categories, categoryGroups, businessNames, budgetItems, groupBudgetsByExpenseType, calcSectionTotals]);
+  }, [categories, categoryGroups, businessList, budgetItems, groupBudgetsByExpenseType, calcSectionTotals]);
 
   const totalIncomeBudget = sectionTotals.income.budget;
   const totalIncomeActual = sectionTotals.income.actual;
