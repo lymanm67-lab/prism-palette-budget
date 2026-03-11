@@ -57,6 +57,7 @@ const ColorPicker = ({ value, onChange }: { value: string; onChange: (c: string)
 );
 
 const Categories = () => {
+  const { household } = useHousehold();
   const { data: groups, isLoading: groupsLoading } = useCategoryGroups();
   const { data: categories, isLoading: catsLoading } = useCategories();
   const { data: subcategories, isLoading: subsLoading } = useSubcategories();
@@ -90,6 +91,65 @@ const Categories = () => {
 
   const qc = useQueryClient();
   const [mergingDupes, setMergingDupes] = useState(false);
+
+  // Chart of Accounts auto-create state
+  const [coaDialogOpen, setCoaDialogOpen] = useState(false);
+  const [coaProfileId, setCoaProfileId] = useState('');
+  const [coaCreating, setCoaCreating] = useState(false);
+
+  const COA_GROUPS = [
+    { name: 'Assets', color: '#2563eb', expense_type: 'fixed', categories: ['Business Checking', 'Business Savings', 'Accounts Receivable', 'Equipment', 'Inventory'] },
+    { name: 'Liabilities', color: '#dc2626', expense_type: 'fixed', categories: ['Business Credit Card', 'Business Loans', 'Sales Tax Owed', 'Accounts Payable'] },
+    { name: 'Equity', color: '#7c3aed', expense_type: 'fixed', categories: ['Owner Contribution', 'Owner Draw', 'Retained Earnings'] },
+    { name: 'Income/Revenue', color: '#059669', expense_type: 'flexible', categories: ['Service Fees', 'Product Sales', 'Interest Earned', 'Other Income'] },
+    { name: 'Expenses', color: '#ea580c', expense_type: 'flexible', categories: ['Rent', 'Utilities', 'Marketing', 'Travel', 'Meals', 'Professional Services', 'Dues & Subscriptions', 'Home Office', 'Insurance', 'Office Supplies'] },
+  ];
+
+  const handleCreateCOA = async () => {
+    if (!coaProfileId || !household) return;
+    setCoaCreating(true);
+    try {
+      const startOrder = (groups || []).length;
+      for (let gi = 0; gi < COA_GROUPS.length; gi++) {
+        const g = COA_GROUPS[gi];
+        const { data: cg, error: gErr } = await supabase
+          .from('category_groups')
+          .insert({
+            name: g.name,
+            color: g.color,
+            sort_order: startOrder + gi,
+            household_id: household.id,
+            budget_type: 'business',
+            business_profile_id: coaProfileId,
+            expense_type: g.expense_type,
+          })
+          .select()
+          .single();
+        if (gErr) throw gErr;
+        if (cg) {
+          for (let ci = 0; ci < g.categories.length; ci++) {
+            await supabase.from('categories').insert({
+              group_id: cg.id,
+              household_id: household.id,
+              name: g.categories[ci],
+              color: g.color,
+              sort_order: ci,
+            });
+          }
+        }
+      }
+      qc.invalidateQueries({ queryKey: ['category_groups'] });
+      qc.invalidateQueries({ queryKey: ['categories'] });
+      toast.success('Chart of Accounts created with 5 groups and all sub-categories!');
+      setCoaDialogOpen(false);
+      setCoaProfileId('');
+      setActiveTab('business');
+    } catch (e: any) {
+      toast.error(e.message || 'Failed to create Chart of Accounts');
+    } finally {
+      setCoaCreating(false);
+    }
+  };
 
   // Detect duplicate categories
   const duplicateGroups = useMemo(() => {
