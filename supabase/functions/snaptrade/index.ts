@@ -190,11 +190,31 @@ async function registerUser(req: Request) {
 // Route: POST /create-redirect
 async function createRedirect(req: Request) {
   const { user } = await getUser(req);
-  const { snaptrade_user_id, snaptrade_user_secret, broker } = await req.json();
+  const { snaptrade_user_id, snaptrade_user_secret, broker, connection_id, household_id } = await req.json();
+
+  let userId = snaptrade_user_id;
+  let userSecret = snaptrade_user_secret;
+
+  // If connection_id provided, look up secrets server-side
+  if (connection_id && household_id && (!userId || !userSecret)) {
+    const admin = getSupabaseAdmin();
+    const { data: conn } = await admin
+      .from("snaptrade_connections")
+      .select("snaptrade_user_id, snaptrade_user_secret")
+      .eq("id", connection_id)
+      .eq("household_id", household_id)
+      .single();
+    if (conn) {
+      userId = conn.snaptrade_user_id;
+      userSecret = conn.snaptrade_user_secret;
+    }
+  }
+
+  if (!userId || !userSecret) throw new Error("Missing SnapTrade credentials");
 
   const body: Record<string, unknown> = {
-    userId: snaptrade_user_id,
-    userSecret: snaptrade_user_secret,
+    userId,
+    userSecret,
   };
   if (broker) body.broker = broker;
 
@@ -202,7 +222,7 @@ async function createRedirect(req: Request) {
     "POST",
     "/snapTrade/login",
     body,
-    { userId: snaptrade_user_id, userSecret: snaptrade_user_secret }
+    { userId, userSecret }
   );
 
   return new Response(
@@ -214,10 +234,36 @@ async function createRedirect(req: Request) {
 // Route: POST /sync-accounts
 async function syncAccounts(req: Request) {
   const { user, sb } = await getUser(req);
-  const { household_id, snaptrade_user_id, snaptrade_user_secret, connection_id } =
-    await req.json();
+  const { household_id, connection_id } = await req.json();
 
   const admin = getSupabaseAdmin();
+
+  // Look up SnapTrade credentials server-side
+  let snaptrade_user_id: string;
+  let snaptrade_user_secret: string;
+
+  if (connection_id) {
+    const { data: conn, error: connErr } = await admin
+      .from("snaptrade_connections")
+      .select("snaptrade_user_id, snaptrade_user_secret")
+      .eq("id", connection_id)
+      .eq("household_id", household_id)
+      .single();
+    if (connErr || !conn) throw new Error("Connection not found");
+    snaptrade_user_id = conn.snaptrade_user_id;
+    snaptrade_user_secret = conn.snaptrade_user_secret;
+  } else {
+    const { data: conn, error: connErr } = await admin
+      .from("snaptrade_connections")
+      .select("snaptrade_user_id, snaptrade_user_secret")
+      .eq("household_id", household_id)
+      .eq("status", "active")
+      .limit(1)
+      .single();
+    if (connErr || !conn) throw new Error("No active connection found");
+    snaptrade_user_id = conn.snaptrade_user_id;
+    snaptrade_user_secret = conn.snaptrade_user_secret;
+  }
 
   // 1. Fetch accounts from SnapTrade
   const accounts = await snaptradeRequest(

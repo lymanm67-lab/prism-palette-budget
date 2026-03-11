@@ -1,0 +1,1 @@
+REVOKE SELECT (snaptrade_user_secret) ON public.snaptrade_connections FROM public, authenticated, anon;

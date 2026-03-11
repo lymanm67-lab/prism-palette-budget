@@ -151,8 +151,6 @@ export function useSyncSnapTrade() {
               headers,
               body: JSON.stringify({
                 household_id: household.id,
-                snaptrade_user_id: conn.snaptrade_user_id,
-                snaptrade_user_secret: conn.snaptrade_user_secret,
                 connection_id: conn.id,
               }),
             }
