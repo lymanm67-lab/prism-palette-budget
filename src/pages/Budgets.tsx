@@ -601,15 +601,16 @@ const Budgets = () => {
     );
   };
 
-  // Render a section (accordion)
-  const renderSection = (type: ExpenseType, items: BudgetRow[]) => {
-    const totals = sectionTotals[type];
-    const isOpen = openSections[type] ?? true;
+  // Render a section (accordion) — optionally pass custom totals for per-business rendering
+  const renderSection = (type: ExpenseType, items: BudgetRow[], customTotals?: { budget: number; actual: number; remaining: number }, sectionKey?: string) => {
+    const totals = customTotals || sectionTotals[type];
+    const key = sectionKey || type;
+    const isOpen = openSections[key] ?? true;
     const isIncome = type === 'income';
     const pct = totals.budget > 0 ? Math.min((totals.actual / totals.budget) * 100, 100) : 0;
 
     return (
-      <Collapsible key={type} open={isOpen} onOpenChange={() => toggleSection(type)}>
+      <Collapsible key={key} open={isOpen} onOpenChange={() => toggleSection(key)}>
         <CollapsibleTrigger asChild>
           <button className="w-full flex items-center gap-2 sm:gap-3 py-3 px-3 hover:bg-muted/30 rounded-lg transition-colors text-left">
             {isOpen ? <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" /> : <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0 rotate-180" />}
