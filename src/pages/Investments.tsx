@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import {
   Loader2, TrendingUp, TrendingDown, Briefcase, PiggyBank, Landmark, BarChart3,
-  BookOpen, MoreHorizontal, RefreshCw, ArrowUpDown, ChevronDown, ChevronUp, Shield, Plus, Pencil, Check, X, DollarSign, Trash2,
+  BookOpen, MoreHorizontal, RefreshCw, ArrowUpDown, ChevronDown, ChevronUp, Shield, Plus, Pencil, Check, X, DollarSign, Trash2, Percent,
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { Tooltip as UiTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -62,6 +62,7 @@ const Investments = () => {
   const [holdingEdit, setHoldingEdit] = useState({ quantity: '', price: '', market_value: '' });
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [holdingToDelete, setHoldingToDelete] = useState<{ id: string; name?: string | null; symbol?: string | null } | null>(null);
+  const [showGainLossPercent, setShowGainLossPercent] = useState(false);
 
   const handleSaveCostBasis = useCallback(async (holdingId: string) => {
     const value = parseFloat(costBasisInput);
@@ -254,6 +255,7 @@ const Investments = () => {
   const totalMarketValue = enrichedHoldings.reduce((s, h) => s + h.market_value, 0);
   const totalCostBasis = enrichedHoldings.reduce((s, h) => s + (h.cost_basis || 0), 0);
   const totalGainLoss = totalCostBasis > 0 ? totalMarketValue - totalCostBasis : null;
+  const totalGainLossPct = totalCostBasis > 0 && totalGainLoss != null ? (totalGainLoss / totalCostBasis) * 100 : null;
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -386,16 +388,29 @@ const Investments = () => {
         </Card>
         <Card>
           <CardContent className="p-4">
-            <p className="text-[11px] sm:text-xs text-muted-foreground">Total Gain/Loss</p>
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] sm:text-xs text-muted-foreground">Total Gain/Loss</p>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-5 w-5 -mr-1"
+                onClick={() => setShowGainLossPercent(p => !p)}
+                title={showGainLossPercent ? 'Show dollar amount' : 'Show percentage'}
+              >
+                {showGainLossPercent ? <DollarSign className="h-3 w-3" /> : <Percent className="h-3 w-3" />}
+              </Button>
+            </div>
             {totalGainLoss != null ? (
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 mt-1">
                 {totalGainLoss >= 0 ? <TrendingUp className="h-4 w-4 text-green-500 shrink-0" /> : <TrendingDown className="h-4 w-4 text-red-500 shrink-0" />}
                 <p className={`text-lg sm:text-2xl font-bold truncate ${totalGainLoss >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                  {totalGainLoss >= 0 ? '+' : ''}{formatAmount(totalGainLoss)}
+                  {showGainLossPercent && totalGainLossPct != null
+                    ? `${totalGainLoss >= 0 ? '+' : ''}${totalGainLossPct.toFixed(2)}%`
+                    : `${totalGainLoss >= 0 ? '+' : ''}${formatAmount(totalGainLoss)}`}
                 </p>
               </div>
             ) : (
-              <p className="text-lg sm:text-2xl font-bold text-muted-foreground">—</p>
+              <p className="text-lg sm:text-2xl font-bold text-muted-foreground mt-1">—</p>
             )}
           </CardContent>
         </Card>
@@ -563,8 +578,10 @@ const Investments = () => {
                             <TableCell className="text-right tabular-nums text-sm">
                               {h.gain_loss != null ? (
                                 <span className={h.gain_loss >= 0 ? 'text-green-500' : 'text-red-500'}>
-                                  {h.gain_loss >= 0 ? '+' : ''}{formatAmount(h.gain_loss)}
-                                  {h.gain_loss_pct != null && (
+                                  {showGainLossPercent && h.gain_loss_pct != null
+                                    ? `${h.gain_loss >= 0 ? '+' : ''}${h.gain_loss_pct.toFixed(2)}%`
+                                    : `${h.gain_loss >= 0 ? '+' : ''}${formatAmount(h.gain_loss)}`}
+                                  {!showGainLossPercent && h.gain_loss_pct != null && (
                                     <span className="text-[10px] ml-1">({h.gain_loss_pct >= 0 ? '+' : ''}{h.gain_loss_pct.toFixed(1)}%)</span>
                                   )}
                                 </span>
