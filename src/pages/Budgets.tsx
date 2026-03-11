@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useBudgets, useCategories, useCategoryGroups, useTransactions, useUpsertBudget, useDeleteBudget, useCreateCategory } from '@/hooks/use-finance-data';
+import { useBusinessProfiles } from '@/hooks/use-business-data';
 import { useSmartBudget } from '@/hooks/use-financial-intelligence';
 import { useCurrency } from '@/hooks/use-currency';
 import { Loader2, Plus, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Eye, EyeOff, Settings2, TrendingUp, AlertTriangle, CheckCircle2, PiggyBank, Sparkles, Copy, ClipboardCheck, MoreHorizontal, BookOpen, Printer, X, Scale } from 'lucide-react';
@@ -85,6 +86,7 @@ const Budgets = () => {
   const upsertBudget = useUpsertBudget();
   const deleteBudget = useDeleteBudget();
   const createCategory = useCreateCategory();
+  const { data: businessProfiles } = useBusinessProfiles();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState<{ category_id: string; planned_amount: string; rollover: boolean } | null>(null);
@@ -108,18 +110,11 @@ const Budgets = () => {
   const [printOrientation, setPrintOrientation] = useState<'portrait' | 'landscape'>('portrait');
   const toggleSection = (key: string) => setOpenSections(s => ({ ...s, [key]: !s[key] }));
 
-  // Business names from category groups
-  const businessNames = useMemo(() => {
-    if (!categoryGroups) return [];
-    const names = new Set<string>();
-    for (const g of (categoryGroups as any[])) {
-      if ((g.budget_type || 'personal') === 'business') {
-        const match = g.name.match(/^(.+?)\s*-\s*/);
-        if (match) names.add(match[1].trim());
-      }
-    }
-    return Array.from(names);
-  }, [categoryGroups]);
+  // Business profiles list for per-business rendering
+  const businessList = useMemo(() => {
+    if (!businessProfiles) return [];
+    return businessProfiles.map((bp: any) => ({ id: bp.id, name: bp.business_name }));
+  }, [businessProfiles]);
 
   // Map category -> expense_type via its group
   const categoryExpenseType = useMemo(() => {
@@ -287,13 +282,13 @@ const Budgets = () => {
 
   // Per-business budget data for the business tab
   const perBusinessData = useMemo(() => {
-    if (!categories || !categoryGroups || !businessNames.length) return [];
-    return businessNames.map(bizName => {
+    if (!categories || !categoryGroups || !businessList.length) return [];
+    return businessList.map(biz => {
       const bizGroupIds = new Set(
         (categoryGroups as any[])
           .filter((g: any) => {
             if ((g.budget_type || 'personal') !== 'business') return false;
-            return g.name.startsWith(bizName + ' -') || g.name.startsWith(bizName + ' –');
+            return g.business_profile_id === biz.id;
           })
           .map((g: any) => g.id)
       );
@@ -301,9 +296,9 @@ const Budgets = () => {
       const items = budgetItems.filter(b => bizCatIds.has(b.category_id));
       const grouped = groupBudgetsByExpenseType(items);
       const totals = calcSectionTotals(grouped);
-      return { name: bizName, items, grouped, totals, catIds: bizCatIds };
+      return { name: biz.name, id: biz.id, items, grouped, totals, catIds: bizCatIds };
     }).filter(b => b.items.length > 0);
-  }, [categories, categoryGroups, businessNames, budgetItems, groupBudgetsByExpenseType, calcSectionTotals]);
+  }, [categories, categoryGroups, businessList, budgetItems, groupBudgetsByExpenseType, calcSectionTotals]);
 
   const totalIncomeBudget = sectionTotals.income.budget;
   const totalIncomeActual = sectionTotals.income.actual;
