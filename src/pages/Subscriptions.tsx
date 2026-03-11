@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import PageOverview from '@/components/PageOverview';
+import CategoryCombobox from '@/components/CategoryCombobox';
 
 const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.06 } } };
 const item = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } };
@@ -51,7 +52,7 @@ const Subscriptions = () => {
   const [reminderDialog, setReminderDialog] = useState<string | null>(null);
   const [reminderDate, setReminderDate] = useState('');
   const [addOpen, setAddOpen] = useState(false);
-  const [newSub, setNewSub] = useState({ merchant: '', average_amount: '', frequency: 'monthly' });
+  const [newSub, setNewSub] = useState({ merchant: '', average_amount: '', frequency: 'monthly', category_id: '' });
   const [editSub, setEditSub] = useState<any>(null);
 
   const activeSubs = useMemo(() => (subscriptions || []).filter(s => !s.is_cancelled), [subscriptions]);
@@ -129,13 +130,14 @@ const Subscriptions = () => {
         merchant: newSub.merchant,
         average_amount: parseFloat(newSub.average_amount),
         frequency: newSub.frequency,
+        category_id: newSub.category_id || null,
         is_active: true,
         is_cancelled: false,
       });
       if (error) throw error;
       toast.success('Subscription added');
       setAddOpen(false);
-      setNewSub({ merchant: '', average_amount: '', frequency: 'monthly' });
+      setNewSub({ merchant: '', average_amount: '', frequency: 'monthly', category_id: '' });
       qc.invalidateQueries({ queryKey: ['subscriptions'] });
     } catch {
       toast.error('Failed to add subscription');
@@ -149,6 +151,7 @@ const Subscriptions = () => {
       average_amount: String(sub.average_amount || ''),
       frequency: sub.frequency || 'monthly',
       notes: sub.notes || '',
+      category_id: sub.category_id || '',
     });
   };
 
@@ -161,6 +164,7 @@ const Subscriptions = () => {
         average_amount: parseFloat(editSub.average_amount),
         frequency: editSub.frequency,
         notes: editSub.notes || null,
+        category_id: editSub.category_id || null,
       });
       toast.success('Subscription updated');
       setEditSub(null);
@@ -473,6 +477,14 @@ const Subscriptions = () => {
                 </SelectContent>
               </Select>
             </div>
+            <div>
+              <Label>Category</Label>
+              <CategoryCombobox
+                value={newSub.category_id}
+                onValueChange={v => setNewSub(prev => ({ ...prev, category_id: v }))}
+                placeholder="Select category (optional)"
+              />
+            </div>
             <Button onClick={handleAddSubscription} disabled={!newSub.merchant || !newSub.average_amount} className="w-full">
               <Plus className="h-4 w-4 mr-2" />
               Add Subscription
@@ -519,6 +531,14 @@ const Subscriptions = () => {
                     <SelectItem value="yearly">Yearly</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              <div>
+                <Label>Category</Label>
+                <CategoryCombobox
+                  value={editSub.category_id}
+                  onValueChange={v => setEditSub((prev: any) => ({ ...prev, category_id: v }))}
+                  placeholder="Select category (optional)"
+                />
               </div>
               <div>
                 <Label>Notes</Label>
