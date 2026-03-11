@@ -210,12 +210,16 @@ const Budgets = () => {
       (categoryGroups as any[])
         .filter((g: any) => {
           if (budgetType === 'all') return true;
-          return (g.budget_type || 'personal') === budgetType;
+          if ((g.budget_type || 'personal') !== budgetType) return false;
+          if (budgetType === 'business' && selectedBusiness !== 'all') {
+            return g.business_profile_id === selectedBusiness;
+          }
+          return true;
         })
         .map((g: any) => g.id)
     );
     return new Set(categories.filter(c => groupIds.has(c.group_id)).map(c => c.id));
-  }, [categories, categoryGroups, budgetType]);
+  }, [categories, categoryGroups, budgetType, selectedBusiness]);
 
   // For "all" mode, separate personal vs business category IDs
   const personalCategoryIds = useMemo(() => {
