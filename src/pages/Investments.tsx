@@ -60,6 +60,8 @@ const Investments = () => {
   const [groupSortDir, setGroupSortDir] = useState<SortDir>('desc');
   const [editingHolding, setEditingHolding] = useState<string | null>(null);
   const [holdingEdit, setHoldingEdit] = useState({ quantity: '', price: '', market_value: '' });
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [holdingToDelete, setHoldingToDelete] = useState<{ id: string; name?: string | null; symbol?: string | null } | null>(null);
 
   const handleSaveCostBasis = useCallback(async (holdingId: string) => {
     const value = parseFloat(costBasisInput);
