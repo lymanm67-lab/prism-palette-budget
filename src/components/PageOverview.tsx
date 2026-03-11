@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useTTS } from '@/hooks/use-tts';
 import { Volume2, Pause, Play, Square, Eye, EyeOff, BookOpen, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -54,48 +55,84 @@ const PageOverview = ({
     }
   };
 
+  const ttsLabel = tts.isSpeaking && !tts.isPaused ? 'Pause' : tts.isPaused ? 'Resume' : 'Listen';
+  const TtsIcon = tts.isSpeaking && !tts.isPaused ? Pause : tts.isPaused ? Play : Volume2;
+  const demoLabel = showDemo ? 'Hide Demo' : 'Demo Data';
+  const DemoIcon = showDemo ? EyeOff : Eye;
+
   return (
     <div>
       {/* Compact trigger bar */}
-      <div className="flex items-center gap-2 flex-wrap">
-        <Button
-          variant={showOverview ? 'default' : 'outline'}
-          size="sm"
-          className="gap-1.5"
-          onClick={() => setShowOverview(!showOverview)}
-        >
-          <BookOpen className="h-3.5 w-3.5" />
-          {showOverview ? 'Hide Guide' : 'Page Guide'}
-        </Button>
-        <Button
-          variant={tts.isSpeaking ? 'default' : 'outline'}
-          size="sm"
-          className="gap-1.5"
-          onClick={handleTTSToggle}
-        >
-          {tts.isSpeaking && !tts.isPaused ? (
-            <><Pause className="h-3.5 w-3.5" /> Pause</>
-          ) : tts.isPaused ? (
-            <><Play className="h-3.5 w-3.5" /> Resume</>
-          ) : (
-            <><Volume2 className="h-3.5 w-3.5" /> Listen</>
+      <TooltipProvider delayDuration={300}>
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+          {/* Page Guide */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant={showOverview ? 'default' : 'outline'}
+                size="sm"
+                className="gap-1.5 lg:flex"
+                onClick={() => setShowOverview(!showOverview)}
+              >
+                <BookOpen className="h-4 w-4 text-sky-500 lg:h-3.5 lg:w-3.5" />
+                <span className="hidden lg:inline">{showOverview ? 'Hide Guide' : 'Page Guide'}</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="lg:hidden">
+              <p>{showOverview ? 'Hide Guide' : 'Page Guide'}</p>
+            </TooltipContent>
+          </Tooltip>
+
+          {/* Listen / Pause / Resume */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant={tts.isSpeaking ? 'default' : 'outline'}
+                size="sm"
+                className="gap-1.5"
+                onClick={handleTTSToggle}
+              >
+                <TtsIcon className="h-4 w-4 text-violet-500 lg:h-3.5 lg:w-3.5" />
+                <span className="hidden lg:inline">{ttsLabel}</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="lg:hidden">
+              <p>{ttsLabel}</p>
+            </TooltipContent>
+          </Tooltip>
+
+          {tts.isSpeaking && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="sm" onClick={tts.stop} className="h-8 w-8 p-0">
+                  <Square className="h-4 w-4 text-rose-500" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Stop</p>
+              </TooltipContent>
+            </Tooltip>
           )}
-        </Button>
-        {tts.isSpeaking && (
-          <Button variant="ghost" size="sm" onClick={tts.stop} className="h-8 w-8 p-0">
-            <Square className="h-3.5 w-3.5" />
-          </Button>
-        )}
-        <Button
-          variant={showDemo ? 'secondary' : 'outline'}
-          size="sm"
-          className="gap-1.5"
-          onClick={() => { setShowDemo(!showDemo); if (!showOverview && !showDemo) setShowOverview(true); }}
-        >
-          {showDemo ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-          {showDemo ? 'Hide Demo' : 'Demo Data'}
-        </Button>
-      </div>
+
+          {/* Demo Data */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant={showDemo ? 'secondary' : 'outline'}
+                size="sm"
+                className="gap-1.5"
+                onClick={() => { setShowDemo(!showDemo); if (!showOverview && !showDemo) setShowOverview(true); }}
+              >
+                <DemoIcon className="h-4 w-4 text-amber-500 lg:h-3.5 lg:w-3.5" />
+                <span className="hidden lg:inline">{demoLabel}</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="lg:hidden">
+              <p>{demoLabel}</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+      </TooltipProvider>
 
       {/* Expandable overview panel */}
       <AnimatePresence>
