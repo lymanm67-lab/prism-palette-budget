@@ -23,6 +23,7 @@ import InvestmentInsights from '@/components/InvestmentInsights';
 import SnapTradeConnectButton from '@/components/SnapTradeConnectButton';
 import InvestmentConnectionModal from '@/components/InvestmentConnectionModal';
 import AddHoldingsDialog from '@/components/AddHoldingsDialog';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 const COLORS = [
   'hsl(var(--chart-1))',
@@ -443,15 +444,20 @@ const Investments = () => {
           ) : (
             <div className="space-y-6">
               {holdingsByAccount.map(group => (
-                <div key={group.id}>
-                  <div className="flex items-center gap-2 mb-2 px-1">
-                    <Landmark className="h-4 w-4 text-primary shrink-0" />
-                    <h3 className="font-display font-semibold text-sm">{group.institution || group.accountName}</h3>
-                    {group.institution && group.accountName !== group.institution && (
-                      <span className="text-xs text-muted-foreground">— {group.accountName}</span>
-                    )}
-                    <Badge variant="outline" className="text-[10px] ml-auto">{formatAmount(group.totalValue)}</Badge>
-                  </div>
+                <Collapsible key={group.id} defaultOpen>
+                  <CollapsibleTrigger asChild>
+                    <button className="flex items-center gap-2 mb-2 px-2 w-full text-left hover:bg-muted/30 rounded-lg py-2 transition-colors">
+                      <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0 transition-transform [[data-state=closed]>&]:rotate-[-90deg]" />
+                      <Landmark className="h-4 w-4 text-primary shrink-0" />
+                      <h3 className="font-display font-semibold text-sm">{group.institution || group.accountName}</h3>
+                      {group.institution && group.accountName !== group.institution && (
+                        <span className="text-xs text-muted-foreground">— {group.accountName}</span>
+                      )}
+                      <span className="text-xs text-muted-foreground ml-1">({group.holdings.length})</span>
+                      <Badge variant="outline" className="text-[10px] ml-auto">{formatAmount(group.totalValue)}</Badge>
+                    </button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
                   <div className="overflow-x-auto -mx-6 px-6">
                     <Table>
                       <TableHeader>
@@ -575,8 +581,9 @@ const Investments = () => {
                         })}
                       </TableBody>
                     </Table>
-                  </div>
-                </div>
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
               ))}
             </div>
           )}
