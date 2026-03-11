@@ -308,8 +308,8 @@ const Investments = () => {
             <p className="text-[11px] sm:text-xs text-muted-foreground">Total Gain/Loss</p>
             {totalGainLoss != null ? (
               <div className="flex items-center gap-1.5">
-                {totalGainLoss >= 0 ? <TrendingUp className="h-4 w-4 text-accent shrink-0" /> : <TrendingDown className="h-4 w-4 text-prism-rose shrink-0" />}
-                <p className={`text-lg sm:text-2xl font-bold truncate ${totalGainLoss >= 0 ? 'text-accent' : 'text-prism-rose'}`}>
+                {totalGainLoss >= 0 ? <TrendingUp className="h-4 w-4 text-green-500 shrink-0" /> : <TrendingDown className="h-4 w-4 text-red-500 shrink-0" />}
+                <p className={`text-lg sm:text-2xl font-bold truncate ${totalGainLoss >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                   {totalGainLoss >= 0 ? '+' : ''}{formatAmount(totalGainLoss)}
                 </p>
               </div>
@@ -405,7 +405,7 @@ const Investments = () => {
                       </TableCell>
                       <TableCell className="text-right tabular-nums text-sm">
                         {h.gain_loss != null ? (
-                          <span className={h.gain_loss >= 0 ? 'text-accent' : 'text-prism-rose'}>
+                          <span className={h.gain_loss >= 0 ? 'text-green-500' : 'text-red-500'}>
                             {h.gain_loss >= 0 ? '+' : ''}{formatAmount(h.gain_loss)}
                             {h.gain_loss_pct != null && (
                               <span className="text-[10px] ml-1">({h.gain_loss_pct >= 0 ? '+' : ''}{h.gain_loss_pct.toFixed(1)}%)</span>
