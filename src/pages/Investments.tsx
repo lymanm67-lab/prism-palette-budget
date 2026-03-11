@@ -23,6 +23,7 @@ import InvestmentInsights from '@/components/InvestmentInsights';
 import SnapTradeConnectButton from '@/components/SnapTradeConnectButton';
 import InvestmentConnectionModal from '@/components/InvestmentConnectionModal';
 import AddHoldingsDialog from '@/components/AddHoldingsDialog';
+import InvestmentWatchlist from '@/components/InvestmentWatchlist';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 const COLORS = [
@@ -598,6 +599,9 @@ const Investments = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Watchlist */}
+      <InvestmentWatchlist />
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

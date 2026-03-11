@@ -755,6 +755,47 @@ export type Database = {
           },
         ]
       }
+      investment_watchlist: {
+        Row: {
+          created_at: string
+          household_id: string
+          id: string
+          name: string | null
+          notes: string | null
+          symbol: string
+          target_price: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          household_id: string
+          id?: string
+          name?: string | null
+          notes?: string | null
+          symbol: string
+          target_price?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          household_id?: string
+          id?: string
+          name?: string | null
+          notes?: string | null
+          symbol?: string
+          target_price?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investment_watchlist_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       merchant_normalizations: {
         Row: {
           created_at: string
