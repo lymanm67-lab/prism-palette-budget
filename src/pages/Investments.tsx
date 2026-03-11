@@ -43,7 +43,6 @@ const Investments = () => {
   const [addHoldingsOpen, setAddHoldingsOpen] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>('market_value');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
-  const [sortDir, setSortDir] = useState<SortDir>('desc');
 
   const investmentAccounts = useMemo(() => {
     if (!accounts) return [];
