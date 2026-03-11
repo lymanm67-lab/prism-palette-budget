@@ -331,7 +331,23 @@ const Budgets = () => {
     }).filter(b => b.items.length > 0);
   }, [categories, categoryGroups, businessList, budgetItems, groupBudgetsByExpenseType, calcSectionTotals]);
 
-  const totalIncomeBudget = sectionTotals.income.budget;
+  // Compute all collapsible section keys for expand/collapse all
+  const getAllSectionKeys = useCallback(() => {
+    const keys = ['income', 'fixed', 'flexible', 'non_monthly'];
+    if (budgetType === 'all') {
+      for (const biz of (perBusinessData || [])) {
+        const bizKey = biz.name.replace(/\s+/g, '_');
+        keys.push(`all_${bizKey}_income`, `all_${bizKey}_fixed`, `all_${bizKey}_flexible`, `all_${bizKey}_non_monthly`);
+      }
+    } else if (budgetType === 'business') {
+      for (const biz of (perBusinessData || [])) {
+        const bizKey = biz.name.replace(/\s+/g, '_');
+        keys.push(`${bizKey}_income`, `${bizKey}_fixed`, `${bizKey}_flexible`, `${bizKey}_non_monthly`);
+      }
+    }
+    return keys;
+  }, [budgetType, perBusinessData]);
+
   const totalIncomeActual = sectionTotals.income.actual;
   const totalIncomeRemaining = sectionTotals.income.remaining;
 
