@@ -98,6 +98,30 @@ const Budgets = () => {
   const [showUnbudgeted, setShowUnbudgeted] = useState(false);
   const [hideZeroAmounts, setHideZeroAmounts] = useState(false);
   const [hiddenBudgetIds, setHiddenBudgetIds] = useState<Set<string>>(new Set());
+  const [selectedBudgetIds, setSelectedBudgetIds] = useState<Set<string>>(new Set());
+
+  const toggleBudgetSelection = useCallback((id: string) => {
+    setSelectedBudgetIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const handleBatchHide = useCallback(() => {
+    setHiddenBudgetIds(prev => {
+      const next = new Set(prev);
+      selectedBudgetIds.forEach(id => next.add(id));
+      return next;
+    });
+    setSelectedBudgetIds(new Set());
+  }, [selectedBudgetIds]);
+
+  const handleBatchDelete = useCallback(() => {
+    const ids = Array.from(selectedBudgetIds);
+    ids.forEach(id => deleteBudget.mutate(id));
+    setSelectedBudgetIds(new Set());
+  }, [selectedBudgetIds, deleteBudget]);
   const [copyingForward, setCopyingForward] = useState(false);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({ income: true, fixed: true, flexible: true, non_monthly: true });
   const [viewTab, setViewTab] = useState<'budget' | 'forecast'>('budget');
