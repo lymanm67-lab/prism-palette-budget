@@ -758,30 +758,36 @@ export type Database = {
       investment_watchlist: {
         Row: {
           created_at: string
+          current_price: number | null
           household_id: string
           id: string
           name: string | null
           notes: string | null
+          price_updated_at: string | null
           symbol: string
           target_price: number | null
           updated_at: string
         }
         Insert: {
           created_at?: string
+          current_price?: number | null
           household_id: string
           id?: string
           name?: string | null
           notes?: string | null
+          price_updated_at?: string | null
           symbol: string
           target_price?: number | null
           updated_at?: string
         }
         Update: {
           created_at?: string
+          current_price?: number | null
           household_id?: string
           id?: string
           name?: string | null
           notes?: string | null
+          price_updated_at?: string | null
           symbol?: string
           target_price?: number | null
           updated_at?: string
