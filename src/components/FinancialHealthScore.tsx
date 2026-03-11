@@ -164,14 +164,43 @@ const FinancialHealthScore = ({ monthlyIncome, monthlyExpenses, totalAssets, tot
 
           {/* Details */}
           <div className="flex-1 space-y-1 w-full">
-            <div className="flex items-center gap-2 mb-3">
-              <div className={cn('h-8 w-8 rounded-lg flex items-center justify-center bg-gradient-to-br', tier.gradient)}>
-                <TrendingUp className="h-4 w-4 text-white" />
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className={cn('h-8 w-8 rounded-lg flex items-center justify-center bg-gradient-to-br', tier.gradient)}>
+                  <TrendingUp className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-display text-base font-bold">Financial Health</h3>
+                  <p className={cn('text-sm font-semibold', tier.color)}>{tier.label}</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-display text-base font-bold">Financial Health</h3>
-                <p className={cn('text-sm font-semibold', tier.color)}>{tier.label}</p>
-              </div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => {
+                      if (isSpeaking && !isPaused) { pause(); return; }
+                      if (isPaused) { resume(); return; }
+                      const summaryParts = components.map(c => {
+                        const health = getComponentHealth(c.points, c.max);
+                        const pct = Math.round((c.points / c.max) * 100);
+                        return `${c.label}: ${c.points} out of ${c.max}, which is ${pct}% and rated ${health.label}.`;
+                      });
+                      const explanation = `Your overall Financial Health score is ${score} out of 100, rated ${tier.label}. Here's the breakdown. ${summaryParts.join(' ')} The color bars indicate your status: green means healthy at 65% or above, yellow means caution between 35% and 65%, and red means urgent at below 35%.`;
+                      speak(explanation);
+                    }}
+                    className="shrink-0 p-1.5 rounded-lg hover:bg-muted transition-colors"
+                  >
+                    {isSpeaking && !isPaused ? (
+                      <Pause className="h-4 w-4 text-violet-500" />
+                    ) : (
+                      <Volume2 className="h-4 w-4 text-violet-500" />
+                    )}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-xs">
+                  <p>{isSpeaking && !isPaused ? 'Pause' : isSpeaking ? 'Resume' : 'Listen to health summary'}</p>
+                </TooltipContent>
+              </Tooltip>
             </div>
 
             <div className="space-y-2">
