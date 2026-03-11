@@ -487,8 +487,8 @@ const Investments = () => {
                       <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0 transition-transform [[data-state=closed]>&]:rotate-[-90deg]" />
                       <Landmark className="h-4 w-4 text-primary shrink-0" />
                       <h3 className="font-display font-semibold text-sm">{group.institution || group.accountName}</h3>
-                      {group.institution && group.accountName !== group.institution && (
-                        <span className="text-xs text-muted-foreground">— {group.accountName}</span>
+                      {group.institution && group.accountNames.length > 0 && (
+                        <span className="text-xs text-muted-foreground">— {group.accountNames.join(', ')}</span>
                       )}
                       <span className="text-xs text-muted-foreground ml-1">({group.holdings.length})</span>
                       <Badge variant="outline" className="text-[10px] ml-auto">{formatAmount(group.totalValue)}</Badge>
