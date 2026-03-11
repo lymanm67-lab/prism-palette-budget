@@ -327,6 +327,131 @@ const Categories = () => {
         </motion.div>
       )}
 
+      {/* Chart of Accounts Guide */}
+      <Collapsible>
+        <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+          <CollapsibleTrigger asChild>
+            <button className="w-full p-4 flex items-center gap-3 text-left hover:bg-muted/30 transition-colors rounded-xl">
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-prism-navy to-prism-teal flex items-center justify-center shrink-0">
+                <BookOpen className="h-5 w-5 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-display font-bold text-sm">📘 Chart of Accounts Guide</h3>
+                <p className="text-xs text-muted-foreground">Learn how to set up the 5 major account categories for each business entity</p>
+              </div>
+              <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0 transition-transform [[data-state=open]_&]:rotate-180" />
+            </button>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent className="pt-0 pb-5 space-y-6">
+              {/* Section 1: Five Major Categories */}
+              <div>
+                <h4 className="font-display font-bold text-sm mb-2 flex items-center gap-2">
+                  <span className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary">1</span>
+                  The Five Major Account Categories
+                </h4>
+                <div className="overflow-x-auto rounded-lg border border-border/50">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="bg-muted/50">
+                        <th className="p-2.5 text-left font-semibold">Category</th>
+                        <th className="p-2.5 text-left font-semibold">Description</th>
+                        <th className="p-2.5 text-left font-semibold">Examples</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border/30">
+                      <tr><td className="p-2.5 font-medium">Assets</td><td className="p-2.5 text-muted-foreground">What the business owns</td><td className="p-2.5 text-muted-foreground">Bank accounts, accounts receivable, equipment, inventory</td></tr>
+                      <tr><td className="p-2.5 font-medium">Liabilities</td><td className="p-2.5 text-muted-foreground">What the business owes</td><td className="p-2.5 text-muted-foreground">Business credit cards, loans, sales tax owed</td></tr>
+                      <tr><td className="p-2.5 font-medium">Equity</td><td className="p-2.5 text-muted-foreground">Net value (Assets − Liabilities)</td><td className="p-2.5 text-muted-foreground">Owner's Contributions, Owner's Draws, Retained Earnings</td></tr>
+                      <tr><td className="p-2.5 font-medium">Income/Revenue</td><td className="p-2.5 text-muted-foreground">Money earned from sales</td><td className="p-2.5 text-muted-foreground">Service fees, product sales, interest earned</td></tr>
+                      <tr><td className="p-2.5 font-medium">Expenses</td><td className="p-2.5 text-muted-foreground">Costs to run the business</td><td className="p-2.5 text-muted-foreground">Rent, marketing, travel, meals, software</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Section 2: Multi-Business Allocation */}
+              <div>
+                <h4 className="font-display font-bold text-sm mb-2 flex items-center gap-2">
+                  <span className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary">2</span>
+                  Multi-Business Allocation
+                </h4>
+                <div className="space-y-2 text-xs text-muted-foreground leading-relaxed">
+                  <p>If you run multiple businesses, <strong className="text-foreground">do not mix them</strong> in one Chart of Accounts. Keep a separate set of books for each entity to avoid "commingling" and simplify tax filing (Schedule C or Form 1120-S).</p>
+                  <div className="rounded-lg bg-muted/40 p-3 border border-border/30">
+                    <p className="font-semibold text-foreground mb-1">💰 How to handle "Salary Injections":</p>
+                    <ul className="space-y-1 ml-4 list-disc">
+                      <li><strong className="text-foreground">Asset Account:</strong> Business Checking (goes up)</li>
+                      <li><strong className="text-foreground">Equity Account:</strong> "Owner Contribution" (goes up)</li>
+                    </ul>
+                  </div>
+                  <div className="rounded-lg bg-accent/10 p-3 border border-accent/20">
+                    <p className="font-semibold text-accent mb-1">💡 Pro Tip:</p>
+                    <p>Don't use just one "Equity" account. Create sub-accounts: <strong className="text-foreground">Owner Contribution</strong> (money in) and <strong className="text-foreground">Owner Draw</strong> (money out for personal use).</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 3: Shared Expenses */}
+              <div>
+                <h4 className="font-display font-bold text-sm mb-2 flex items-center gap-2">
+                  <span className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary">3</span>
+                  Shared Expense Accounts
+                </h4>
+                <div className="text-xs text-muted-foreground leading-relaxed space-y-2">
+                  <p>If you have expenses that serve both businesses (e.g., a laptop used for both), don't guess:</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div className="rounded-lg bg-muted/40 p-3 border border-border/30">
+                      <p className="font-semibold text-foreground mb-1">Option A: Primary User</p>
+                      <p>Pay from the business that uses it most.</p>
+                    </div>
+                    <div className="rounded-lg bg-muted/40 p-3 border border-border/30">
+                      <p className="font-semibold text-foreground mb-1">Option B: Intercompany</p>
+                      <p>Business A buys it; Business B reimburses 50%. Shows as "Reduction of Expense" in A's books.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 4: Essential Expense Sub-Categories */}
+              <div>
+                <h4 className="font-display font-bold text-sm mb-2 flex items-center gap-2">
+                  <span className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary">4</span>
+                  Essential Expense Sub-Categories (Tax Deductions)
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                  {[
+                    { name: 'Professional Services', desc: 'Legal, CPA, or bookkeeping fees' },
+                    { name: 'Dues & Subscriptions', desc: 'Software like Zoom, Canva, industry journals' },
+                    { name: 'Travel', desc: 'Airfare, hotels, 100% of business transport' },
+                    { name: 'Meals', desc: 'Business meetings (usually 50% deductible)' },
+                    { name: 'Home Office', desc: 'Dedicated space utilities & insurance' },
+                  ].map(item => (
+                    <div key={item.name} className="flex items-start gap-2 rounded-lg bg-muted/30 p-2.5 border border-border/20">
+                      <Tags className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-semibold text-foreground">{item.name}</p>
+                        <p className="text-muted-foreground">{item.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Summary Checklist */}
+              <div className="rounded-xl bg-gradient-to-br from-prism-navy/10 to-prism-teal/10 p-4 border border-primary/20">
+                <h4 className="font-display font-bold text-sm mb-2">✅ Setup Checklist</h4>
+                <ul className="space-y-1.5 text-xs text-muted-foreground">
+                  <li className="flex items-start gap-2"><span className="text-accent">•</span> <strong className="text-foreground">Separate Bank Accounts:</strong> One for Personal, Business A, and Business B</li>
+                  <li className="flex items-start gap-2"><span className="text-accent">•</span> <strong className="text-foreground">Equity Accounts:</strong> Create "Owner Contribution" in each business ledger</li>
+                  <li className="flex items-start gap-2"><span className="text-accent">•</span> <strong className="text-foreground">Expense Categories:</strong> Align labels with IRS Schedule C categories for seamless tax filing</li>
+                </ul>
+              </div>
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
+
       {/* Personal / Business Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full max-w-md grid-cols-2">
