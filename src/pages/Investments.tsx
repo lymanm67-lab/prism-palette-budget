@@ -194,6 +194,15 @@ const Investments = () => {
         <div className="flex items-center gap-1.5 shrink-0">
           <Button
             size="sm"
+            variant="outline"
+            className="gap-1.5 h-8"
+            onClick={() => setAddHoldingsOpen(true)}
+          >
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">Add</span>
+          </Button>
+          <Button
+            size="sm"
             className="gap-1.5 h-8 prism-gradient text-white border-0 hover:opacity-90"
             onClick={() => setConnectModalOpen(true)}
           >
