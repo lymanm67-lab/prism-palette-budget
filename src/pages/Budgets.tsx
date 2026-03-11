@@ -1049,13 +1049,11 @@ const Budgets = () => {
             {/* Add Budget */}
             <Tooltip>
               <TooltipTrigger asChild>
-                <span tabIndex={unbudgetedCategories.length === 0 ? 0 : undefined}>
-                  <Button size="sm" className="gap-1.5 h-8" onClick={openCreate} disabled={unbudgetedCategories.length === 0}>
-                    <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Add Budget</span>
-                  </Button>
-                </span>
+                <Button size="sm" className="gap-1.5 h-8" onClick={openCreate}>
+                  <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Add Budget</span>
+                </Button>
               </TooltipTrigger>
-              <TooltipContent><p>{unbudgetedCategories.length === 0 ? 'All categories already budgeted' : 'Add a new budget'}</p></TooltipContent>
+              <TooltipContent><p>Add a new budget</p></TooltipContent>
             </Tooltip>
 
             {/* Smart Budget */}
