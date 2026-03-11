@@ -1316,35 +1316,44 @@ const Budgets = () => {
                 </>
               )}
 
-              {/* BUSINESS SECTION */}
-              {businessBudgetItems.length > 0 && (
-                <>
-                  <div className="flex items-center gap-2 px-3 pt-4">
-                    <span className="text-xs font-bold uppercase tracking-widest text-primary">Business</span>
-                    <div className="flex-1 h-px bg-primary/20" />
+              {/* BUSINESS SECTIONS — one per entity */}
+              {perBusinessData.length > 0 && perBusinessData.map((biz, idx) => {
+                const bizIncomeBudget = biz.totals.income.budget;
+                const bizExpenseBudget = biz.totals.fixed.budget + biz.totals.flexible.budget + biz.totals.non_monthly.budget;
+                const bizNet = bizIncomeBudget - bizExpenseBudget;
+                const bizKey = biz.name.replace(/\s+/g, '_');
+
+                return (
+                  <div key={biz.id} className={cn(idx === 0 && 'pt-4')}>
+                    <div className="flex items-center gap-2 px-3 pb-2">
+                      <span className="text-xs font-bold uppercase tracking-widest text-primary">{biz.name}</span>
+                      <div className="flex-1 h-px bg-primary/20" />
+                      <span className={cn('text-xs font-semibold tabular-nums', bizNet >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400')}>
+                        Net: {formatCurrency(Math.abs(bizNet))} {bizNet < 0 ? 'loss' : 'profit'}
+                      </span>
+                    </div>
+                    <Card className="overflow-hidden">
+                      <CardContent className="p-2">
+                        {renderSection('income', biz.grouped.income, biz.totals.income, `all_${bizKey}_income`)}
+                      </CardContent>
+                    </Card>
+                    <Card className="overflow-hidden mt-2">
+                      <CardContent className="p-2 space-y-1">
+                        <div className="sm:hidden px-3 py-1.5 text-xs font-medium text-muted-foreground border-b">Expenses</div>
+                        {renderSection('fixed', biz.grouped.fixed, biz.totals.fixed, `all_${bizKey}_fixed`)}
+                        {renderSection('flexible', biz.grouped.flexible, biz.totals.flexible, `all_${bizKey}_flexible`)}
+                        {renderSection('non_monthly', biz.grouped.non_monthly, biz.totals.non_monthly, `all_${bizKey}_non_monthly`)}
+                      </CardContent>
+                    </Card>
+                    <div className="flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 bg-primary/5 rounded-lg text-sm mt-2 mb-4">
+                      <span className="flex-1 font-medium text-primary">{biz.name} Subtotal</span>
+                      <span className="text-right tabular-nums sm:w-[90px] font-medium">
+                        {formatCurrency(bizNet)}
+                      </span>
+                    </div>
                   </div>
-                  <Card className="overflow-hidden">
-                    <CardContent className="p-2">
-                      {renderSection('income', businessGroupedBudgets.income)}
-                    </CardContent>
-                  </Card>
-                  <Card className="overflow-hidden">
-                    <CardContent className="p-2 space-y-1">
-                      <div className="sm:hidden px-3 py-1.5 text-xs font-medium text-muted-foreground border-b">Expenses</div>
-                      {renderSection('fixed', businessGroupedBudgets.fixed)}
-                      {renderSection('flexible', businessGroupedBudgets.flexible)}
-                      {renderSection('non_monthly', businessGroupedBudgets.non_monthly)}
-                    </CardContent>
-                  </Card>
-                  {/* Business subtotals */}
-                  <div className="flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 bg-primary/5 rounded-lg text-sm">
-                    <span className="flex-1 font-medium text-primary">Business Subtotal</span>
-                    <span className="text-right tabular-nums sm:w-[90px] font-medium">
-                      {formatCurrency(businessSectionTotals.income.budget - (businessSectionTotals.fixed.budget + businessSectionTotals.flexible.budget + businessSectionTotals.non_monthly.budget))}
-                    </span>
-                  </div>
-                </>
-              )}
+                );
+              })}
 
               {/* Combined Totals */}
               <div className="flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-3 bg-muted/30 rounded-lg font-semibold text-sm sm:text-base border-t-2 border-muted mt-2">
