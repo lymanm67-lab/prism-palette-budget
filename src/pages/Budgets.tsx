@@ -215,16 +215,12 @@ const Budgets = () => {
       (categoryGroups as any[])
         .filter((g: any) => {
           if (budgetType === 'all') return true;
-          if ((g.budget_type || 'personal') !== budgetType) return false;
-          if (budgetType === 'business' && selectedBusiness !== 'all') {
-            return g.name.startsWith(selectedBusiness + ' -') || g.name.startsWith(selectedBusiness + ' –');
-          }
-          return true;
+          return (g.budget_type || 'personal') === budgetType;
         })
         .map((g: any) => g.id)
     );
     return new Set(categories.filter(c => groupIds.has(c.group_id)).map(c => c.id));
-  }, [categories, categoryGroups, budgetType, selectedBusiness]);
+  }, [categories, categoryGroups, budgetType]);
 
   // For "all" mode, separate personal vs business category IDs
   const personalCategoryIds = useMemo(() => {
@@ -265,6 +261,7 @@ const Budgets = () => {
   const personalGroupedBudgets = useMemo(() => groupBudgetsByExpenseType(personalBudgetItems), [groupBudgetsByExpenseType, personalBudgetItems]);
   const businessGroupedBudgets = useMemo(() => groupBudgetsByExpenseType(businessBudgetItems), [groupBudgetsByExpenseType, businessBudgetItems]);
 
+
   // Section totals helper
   const calcSectionTotals = useCallback((grouped: Record<ExpenseType, BudgetRow[]>) => {
     const totals: Record<ExpenseType, { budget: number; actual: number; remaining: number }> = {
@@ -288,7 +285,26 @@ const Budgets = () => {
   const personalSectionTotals = useMemo(() => calcSectionTotals(personalGroupedBudgets), [calcSectionTotals, personalGroupedBudgets]);
   const businessSectionTotals = useMemo(() => calcSectionTotals(businessGroupedBudgets), [calcSectionTotals, businessGroupedBudgets]);
 
-  // Total income & expenses
+  // Per-business budget data for the business tab
+  const perBusinessData = useMemo(() => {
+    if (!categories || !categoryGroups || !businessNames.length) return [];
+    return businessNames.map(bizName => {
+      const bizGroupIds = new Set(
+        (categoryGroups as any[])
+          .filter((g: any) => {
+            if ((g.budget_type || 'personal') !== 'business') return false;
+            return g.name.startsWith(bizName + ' -') || g.name.startsWith(bizName + ' –');
+          })
+          .map((g: any) => g.id)
+      );
+      const bizCatIds = new Set(categories.filter(c => bizGroupIds.has(c.group_id)).map(c => c.id));
+      const items = budgetItems.filter(b => bizCatIds.has(b.category_id));
+      const grouped = groupBudgetsByExpenseType(items);
+      const totals = calcSectionTotals(grouped);
+      return { name: bizName, items, grouped, totals, catIds: bizCatIds };
+    }).filter(b => b.items.length > 0);
+  }, [categories, categoryGroups, businessNames, budgetItems, groupBudgetsByExpenseType, calcSectionTotals]);
+
   const totalIncomeBudget = sectionTotals.income.budget;
   const totalIncomeActual = sectionTotals.income.actual;
   const totalIncomeRemaining = sectionTotals.income.remaining;
@@ -601,15 +617,16 @@ const Budgets = () => {
     );
   };
 
-  // Render a section (accordion)
-  const renderSection = (type: ExpenseType, items: BudgetRow[]) => {
-    const totals = sectionTotals[type];
-    const isOpen = openSections[type] ?? true;
+  // Render a section (accordion) — optionally pass custom totals for per-business rendering
+  const renderSection = (type: ExpenseType, items: BudgetRow[], customTotals?: { budget: number; actual: number; remaining: number }, sectionKey?: string) => {
+    const totals = customTotals || sectionTotals[type];
+    const key = sectionKey || type;
+    const isOpen = openSections[key] ?? true;
     const isIncome = type === 'income';
     const pct = totals.budget > 0 ? Math.min((totals.actual / totals.budget) * 100, 100) : 0;
 
     return (
-      <Collapsible key={type} open={isOpen} onOpenChange={() => toggleSection(type)}>
+      <Collapsible key={key} open={isOpen} onOpenChange={() => toggleSection(key)}>
         <CollapsibleTrigger asChild>
           <button className="w-full flex items-center gap-2 sm:gap-3 py-3 px-3 hover:bg-muted/30 rounded-lg transition-colors text-left">
             {isOpen ? <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" /> : <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0 rotate-180" />}
@@ -1145,15 +1162,6 @@ const Budgets = () => {
               <TabsTrigger value="forecast" className="gap-1.5"><TrendingUp className="h-3.5 w-3.5" /> Forecast</TabsTrigger>
             </TabsList>
           </Tabs>
-          {budgetType === 'business' && businessNames.length > 0 && (
-            <Select value={selectedBusiness} onValueChange={setSelectedBusiness}>
-              <SelectTrigger className="w-[180px] h-8 text-sm"><SelectValue placeholder="All Businesses" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Businesses</SelectItem>
-                {businessNames.map(name => <SelectItem key={name} value={name}>{name}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          )}
         </div>
       </div>
 
@@ -1275,6 +1283,71 @@ const Budgets = () => {
                 </span>
                 <div className="hidden sm:block w-[62px]" />
               </div>
+            </>
+          ) : budgetType === 'business' && perBusinessData.length > 0 ? (
+            <>
+              {perBusinessData.map((biz, idx) => {
+                const bizIncomeBudget = biz.totals.income.budget;
+                const bizIncomeActual = biz.totals.income.actual;
+                const bizExpenseBudget = biz.totals.fixed.budget + biz.totals.flexible.budget + biz.totals.non_monthly.budget;
+                const bizExpenseActual = biz.totals.fixed.actual + biz.totals.flexible.actual + biz.totals.non_monthly.actual;
+                const bizNet = bizIncomeBudget - bizExpenseBudget;
+                const bizKey = biz.name.replace(/\s+/g, '_');
+
+                return (
+                  <div key={biz.name} className={cn(idx > 0 && 'mt-6')}>
+                    {/* Business Header */}
+                    <div className="flex items-center gap-2 px-3 pb-2">
+                      <span className="text-xs font-bold uppercase tracking-widest text-primary">{biz.name}</span>
+                      <div className="flex-1 h-px bg-primary/20" />
+                      <span className={cn('text-xs font-semibold tabular-nums', bizNet >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400')}>
+                        Net: {formatCurrency(Math.abs(bizNet))} {bizNet < 0 ? 'loss' : 'profit'}
+                      </span>
+                    </div>
+
+                    {/* Income */}
+                    <Card className="overflow-hidden">
+                      <CardContent className="p-2">
+                        {renderSection('income', biz.grouped.income, biz.totals.income, `${bizKey}_income`)}
+                      </CardContent>
+                    </Card>
+
+                    {/* Expenses */}
+                    <Card className="overflow-hidden mt-2">
+                      <CardContent className="p-2 space-y-1">
+                        <div className="sm:hidden px-3 py-1.5 text-xs font-medium text-muted-foreground border-b">Expenses</div>
+                        {renderSection('fixed', biz.grouped.fixed, biz.totals.fixed, `${bizKey}_fixed`)}
+                        {renderSection('flexible', biz.grouped.flexible, biz.totals.flexible, `${bizKey}_flexible`)}
+                        {renderSection('non_monthly', biz.grouped.non_monthly, biz.totals.non_monthly, `${bizKey}_non_monthly`)}
+                      </CardContent>
+                    </Card>
+
+                    {/* Business Subtotal */}
+                    <div className="flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 bg-primary/5 rounded-lg text-sm mt-2">
+                      <span className="flex-1 font-medium text-primary">{biz.name} Subtotal</span>
+                      <span className="text-right tabular-nums sm:w-[90px] font-semibold">
+                        {formatCurrency(bizIncomeBudget)} income
+                      </span>
+                      <span className="text-right tabular-nums sm:w-[90px] text-muted-foreground">
+                        {formatCurrency(bizExpenseBudget)} expense
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {/* Combined Business Totals */}
+              {perBusinessData.length > 1 && (
+                <div className="flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-3 bg-muted/30 rounded-lg font-semibold text-sm sm:text-base border-t-2 border-muted mt-4">
+                  <span className="flex-1 font-display">All Businesses Total</span>
+                  <span className="text-right tabular-nums sm:w-[90px]">{formatCurrency(totalIncomeBudget)}</span>
+                  <span className="hidden sm:inline-block w-[90px] text-right tabular-nums text-muted-foreground">{formatCurrency(totalIncomeActual)}</span>
+                  <span className={cn('text-right tabular-nums sm:w-[90px]', totalIncomeRemaining >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400')}>
+                    {formatCurrency(Math.abs(totalIncomeRemaining))}
+                  </span>
+                  <div className="hidden sm:block w-[62px]" />
+                </div>
+              )}
             </>
           ) : (
             <>
