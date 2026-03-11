@@ -1747,6 +1747,8 @@ const Budgets = () => {
                         const gExpType = g.expense_type || 'flexible';
                         if (form.budgetKind === 'income') {
                           if (gExpType !== 'income') return false;
+                        } else if (form.budgetKind === 'equity') {
+                          if (gExpType !== 'equity') return false;
                         } else {
                           if (gExpType !== form.expense_type) return false;
                         }
