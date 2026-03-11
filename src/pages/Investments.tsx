@@ -35,6 +35,7 @@ const COLORS = [
 
 type SortKey = 'symbol' | 'name' | 'quantity' | 'price' | 'market_value' | 'cost_basis' | 'gain_loss';
 type SortDir = 'asc' | 'desc';
+type GroupSort = 'alpha' | 'value';
 
 const Investments = () => {
   const { data: accounts, isLoading: accLoading } = useAccounts();
@@ -50,6 +51,8 @@ const Investments = () => {
   const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [editingCostBasis, setEditingCostBasis] = useState<string | null>(null);
   const [costBasisInput, setCostBasisInput] = useState('');
+  const [groupSort, setGroupSort] = useState<GroupSort>('value');
+  const [groupSortDir, setGroupSortDir] = useState<SortDir>('desc');
 
   const handleSaveCostBasis = useCallback(async (holdingId: string) => {
     const value = parseFloat(costBasisInput);
@@ -178,11 +181,18 @@ const Investments = () => {
       });
     }
 
-    // Sort groups by total market value descending
+    // Sort groups by selected criteria
     return Array.from(grouped.entries())
       .map(([id, data]) => ({ id, ...data, totalValue: data.holdings.reduce((s, h) => s + h.market_value, 0) }))
-      .sort((a, b) => b.totalValue - a.totalValue);
-  }, [enrichedHoldings, accounts, sortKey, sortDir]);
+      .sort((a, b) => {
+        if (groupSort === 'alpha') {
+          const aName = (a.institution || a.accountName).toLowerCase();
+          const bName = (b.institution || b.accountName).toLowerCase();
+          return groupSortDir === 'asc' ? aName.localeCompare(bName) : bName.localeCompare(aName);
+        }
+        return groupSortDir === 'desc' ? b.totalValue - a.totalValue : a.totalValue - b.totalValue;
+      });
+  }, [enrichedHoldings, accounts, sortKey, sortDir, groupSort, groupSortDir]);
 
   // Asset allocation by holding type
   const allocationData = useMemo(() => {
@@ -349,8 +359,46 @@ const Investments = () => {
       {/* Holdings Table — Grouped by Brokerage */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="font-display text-base sm:text-lg">Holdings</CardTitle>
-          <CardDescription className="text-xs sm:text-sm">Positions grouped by brokerage account.</CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="font-display text-base sm:text-lg">Holdings</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">Positions grouped by brokerage account.</CardDescription>
+            </div>
+            <div className="flex items-center gap-1">
+              <Button
+                size="sm"
+                variant={groupSort === 'alpha' ? 'default' : 'outline'}
+                className="h-7 gap-1 text-xs px-2.5"
+                onClick={() => {
+                  if (groupSort === 'alpha') {
+                    setGroupSortDir(d => d === 'asc' ? 'desc' : 'asc');
+                  } else {
+                    setGroupSort('alpha');
+                    setGroupSortDir('asc');
+                  }
+                }}
+              >
+                A–Z
+                {groupSort === 'alpha' && (groupSortDir === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />)}
+              </Button>
+              <Button
+                size="sm"
+                variant={groupSort === 'value' ? 'default' : 'outline'}
+                className="h-7 gap-1 text-xs px-2.5"
+                onClick={() => {
+                  if (groupSort === 'value') {
+                    setGroupSortDir(d => d === 'asc' ? 'desc' : 'asc');
+                  } else {
+                    setGroupSort('value');
+                    setGroupSortDir('desc');
+                  }
+                }}
+              >
+                Amount
+                {groupSort === 'value' && (groupSortDir === 'desc' ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />)}
+              </Button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           {holdingsByAccount.length === 0 ? (
