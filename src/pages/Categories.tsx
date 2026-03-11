@@ -91,6 +91,7 @@ const Categories = () => {
 
   const qc = useQueryClient();
   const [mergingDupes, setMergingDupes] = useState(false);
+  const [dupesDismissed, setDupesDismissed] = useState(false);
 
   // Chart of Accounts auto-create state
   const [coaDialogOpen, setCoaDialogOpen] = useState(false);
