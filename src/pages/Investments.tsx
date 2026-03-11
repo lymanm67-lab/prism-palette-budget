@@ -62,6 +62,7 @@ const Investments = () => {
   const [holdingEdit, setHoldingEdit] = useState({ quantity: '', price: '', market_value: '' });
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [holdingToDelete, setHoldingToDelete] = useState<{ id: string; name?: string | null; symbol?: string | null } | null>(null);
+  const [showGainLossPercent, setShowGainLossPercent] = useState(false);
 
   const handleSaveCostBasis = useCallback(async (holdingId: string) => {
     const value = parseFloat(costBasisInput);
