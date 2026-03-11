@@ -67,7 +67,7 @@ const SnapTradeConnectButton = forwardRef<SnapTradeConnectHandle, SnapTradeConne
 
       if (existingConnections && existingConnections.length > 0) {
         snaptradeUserId = (existingConnections[0] as any).snaptrade_user_id;
-        snaptradeUserSecret = (existingConnections[0] as any).snaptrade_user_secret;
+        snaptradeUserSecret = ''; // Secret is now only accessed server-side
       } else {
         // Register new SnapTrade user
         const registerRes = await fetch(
