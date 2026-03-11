@@ -1290,7 +1290,7 @@ const Budgets = () => {
             </>
           ) : budgetType === 'business' && perBusinessData.length > 0 ? (
             <>
-              {perBusinessData.map((biz, idx) => {
+              {(selectedBusiness === 'all' ? perBusinessData : perBusinessData.filter(b => b.id === selectedBusiness)).map((biz, idx) => {
                 const bizIncomeBudget = biz.totals.income.budget;
                 const bizIncomeActual = biz.totals.income.actual;
                 const bizExpenseBudget = biz.totals.fixed.budget + biz.totals.flexible.budget + biz.totals.non_monthly.budget;
