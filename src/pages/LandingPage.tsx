@@ -47,7 +47,7 @@ const LandingPage = () => {
 
         <nav className="relative z-10 mx-auto max-w-7xl px-6 py-5 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <img src={prismLogo} alt="PrismBudget" className="h-9 w-9 rounded-xl object-contain" />
+            <img src={prismLogo} alt="PrismBudget" className="h-16 w-16 rounded-xl object-contain" />
             <span className="font-display text-xl font-extrabold text-white tracking-tight">PrismBudget</span>
           </div>
           <div className="flex items-center gap-3">
@@ -206,7 +206,7 @@ const LandingPage = () => {
       <footer className="py-8 border-t border-border">
         <div className="mx-auto max-w-7xl px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <img src={prismLogo} alt="PrismBudget" className="h-7 w-7 rounded-lg object-contain" />
+            <img src={prismLogo} alt="PrismBudget" className="h-14 w-14 rounded-lg object-contain" />
             <span className="font-display font-bold">PrismBudget</span>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-muted-foreground">
