@@ -7,16 +7,19 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { useWatchlist, useAddWatchlistItem, useUpdateWatchlistItem, useDeleteWatchlistItem, WatchlistItem } from '@/hooks/use-watchlist';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { useWatchlist, useAddWatchlistItem, useUpdateWatchlistItem, useDeleteWatchlistItem, useRefreshWatchlistPrices, WatchlistItem } from '@/hooks/use-watchlist';
 import { useCurrency } from '@/hooks/use-currency';
-import { Plus, Pencil, Trash2, Eye, Star, Loader2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Eye, Star, Loader2, RefreshCw, TrendingUp, TrendingDown } from 'lucide-react';
 import { toast } from 'sonner';
+import { formatDistanceToNow } from 'date-fns';
 
 const InvestmentWatchlist = () => {
   const { data: items, isLoading } = useWatchlist();
   const addItem = useAddWatchlistItem();
   const updateItem = useUpdateWatchlistItem();
   const deleteItem = useDeleteWatchlistItem();
+  const refreshPrices = useRefreshWatchlistPrices();
   const { formatCurrency } = useCurrency();
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -66,22 +69,46 @@ const InvestmentWatchlist = () => {
 
   const isSaving = addItem.isPending || updateItem.isPending;
 
+  const getPriceDiff = (item: WatchlistItem) => {
+    if (item.current_price == null || item.target_price == null) return null;
+    return item.current_price - item.target_price;
+  };
+
   return (
     <>
       <Card>
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Star className="h-4 w-4 text-amber-500" />
+              <Star className="h-4 w-4 text-chart-4" />
               <div>
                 <CardTitle className="font-display text-base sm:text-lg">Watchlist</CardTitle>
                 <CardDescription className="text-xs sm:text-sm">Investments you're interested in tracking.</CardDescription>
               </div>
             </div>
-            <Button size="sm" variant="outline" className="h-8 gap-1.5" onClick={openAdd}>
-              <Plus className="h-4 w-4" />
-              <span className="hidden sm:inline">Add</span>
-            </Button>
+            <div className="flex items-center gap-1.5">
+              {items && items.length > 0 && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-8 gap-1.5"
+                      onClick={() => refreshPrices.mutate()}
+                      disabled={refreshPrices.isPending}
+                    >
+                      <RefreshCw className={`h-3.5 w-3.5 ${refreshPrices.isPending ? 'animate-spin' : ''}`} />
+                      <span className="hidden sm:inline">{refreshPrices.isPending ? 'Updating...' : 'Refresh'}</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Fetch live prices from Yahoo Finance</TooltipContent>
+                </Tooltip>
+              )}
+              <Button size="sm" variant="outline" className="h-8 gap-1.5" onClick={openAdd}>
+                <Plus className="h-4 w-4" />
+                <span className="hidden sm:inline">Add</span>
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -105,44 +132,79 @@ const InvestmentWatchlist = () => {
                   <TableRow>
                     <TableHead>Symbol</TableHead>
                     <TableHead className="hidden sm:table-cell">Name</TableHead>
+                    <TableHead className="text-right">Current Price</TableHead>
                     <TableHead className="text-right hidden md:table-cell">Target Price</TableHead>
+                    <TableHead className="text-right hidden md:table-cell">vs Target</TableHead>
                     <TableHead className="hidden lg:table-cell">Notes</TableHead>
                     <TableHead className="w-20" />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {items.map(item => (
-                    <TableRow key={item.id} className="hover:bg-muted/50 group">
-                      <TableCell className="font-mono font-semibold text-sm">
-                        {item.symbol}
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground truncate max-w-[200px] hidden sm:table-cell">
-                        {item.name || '—'}
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums text-sm hidden md:table-cell">
-                        {item.target_price != null ? formatCurrency(item.target_price) : '—'}
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground truncate max-w-[200px] hidden lg:table-cell">
-                        {item.notes || '—'}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center gap-0.5 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(item)}>
-                            <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7"
-                            onClick={() => handleDelete(item.id)}
-                            disabled={deleteItem.isPending}
-                          >
-                            <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {items.map(item => {
+                    const diff = getPriceDiff(item);
+                    const atOrBelow = diff != null && diff <= 0;
+                    return (
+                      <TableRow key={item.id} className="hover:bg-muted/50 group">
+                        <TableCell className="font-mono font-semibold text-sm">
+                          {item.symbol}
+                          {atOrBelow && (
+                            <Badge className="ml-1.5 text-[9px] bg-green-500/15 text-green-600 border-green-500/30">
+                              Buy Zone
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground truncate max-w-[200px] hidden sm:table-cell">
+                          {item.name || '—'}
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums text-sm font-medium">
+                          {item.current_price != null ? (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span>{formatCurrency(item.current_price)}</span>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                {item.price_updated_at
+                                  ? `Updated ${formatDistanceToNow(new Date(item.price_updated_at), { addSuffix: true })}`
+                                  : 'No update time'}
+                              </TooltipContent>
+                            </Tooltip>
+                          ) : (
+                            <span className="text-muted-foreground/50 italic text-xs">Click refresh</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums text-sm hidden md:table-cell">
+                          {item.target_price != null ? formatCurrency(item.target_price) : '—'}
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums text-sm hidden md:table-cell">
+                          {diff != null ? (
+                            <span className={`inline-flex items-center gap-0.5 ${diff <= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                              {diff <= 0 ? <TrendingDown className="h-3 w-3" /> : <TrendingUp className="h-3 w-3" />}
+                              {diff > 0 ? '+' : ''}{formatCurrency(diff)}
+                            </span>
+                          ) : '—'}
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground truncate max-w-[200px] hidden lg:table-cell">
+                          {item.notes || '—'}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center gap-0.5 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(item)}>
+                              <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7"
+                              onClick={() => handleDelete(item.id)}
+                              disabled={deleteItem.isPending}
+                            >
+                              <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </div>

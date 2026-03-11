@@ -101,14 +101,30 @@ serve(async (req) => {
     const { data: holdings, error: hErr } = await query;
     if (hErr) throw hErr;
 
-    if (!holdings?.length) {
-      return new Response(JSON.stringify({ updated: 0, message: "No manual holdings with symbols found" }), {
+    // Also fetch watchlist items
+    let wlQuery = adminClient
+      .from("investment_watchlist")
+      .select("id, symbol, household_id")
+      .not("symbol", "is", null);
+
+    if (householdId) {
+      wlQuery = wlQuery.eq("household_id", householdId);
+    }
+
+    const { data: watchlistItems, error: wlErr } = await wlQuery;
+    if (wlErr) throw wlErr;
+
+    // Collect all unique symbols from both holdings and watchlist
+    const holdingSymbols = (holdings || []).map(h => (h.symbol || "").toUpperCase()).filter(Boolean);
+    const watchlistSymbols = (watchlistItems || []).map(w => (w.symbol || "").toUpperCase()).filter(Boolean);
+    const uniqueSymbols = [...new Set([...holdingSymbols, ...watchlistSymbols])];
+
+    if (!uniqueSymbols.length) {
+      return new Response(JSON.stringify({ updated: 0, watchlist_updated: 0, message: "No symbols to refresh" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Deduplicate symbols to minimize API calls
-    const uniqueSymbols = [...new Set(holdings.map(h => (h.symbol || "").toUpperCase()).filter(Boolean))];
     console.log(`Fetching prices for ${uniqueSymbols.length} symbols:`, uniqueSymbols);
 
     // Fetch all prices (with a small delay between to avoid rate limiting)
@@ -126,7 +142,7 @@ serve(async (req) => {
     let updated = 0;
     const errors: string[] = [];
 
-    for (const h of holdings) {
+    for (const h of (holdings || [])) {
       const sym = (h.symbol || "").toUpperCase();
       const priceInfo = priceMap.get(sym);
       if (!priceInfo) continue;
@@ -137,9 +153,7 @@ serve(async (req) => {
         market_value: marketValue,
         updated_at: new Date().toISOString(),
       };
-      // Update name if it was "Unknown" or empty
       if (priceInfo.name) {
-        // We'll check existing name and only update if it's generic
         updateData.name = priceInfo.name;
       }
 
@@ -155,23 +169,52 @@ serve(async (req) => {
       }
     }
 
+    // Update watchlist items with current prices
+    let watchlistUpdated = 0;
+    const now = new Date().toISOString();
+
+    for (const w of (watchlistItems || [])) {
+      const sym = (w.symbol || "").toUpperCase();
+      const priceInfo = priceMap.get(sym);
+      if (!priceInfo) continue;
+
+      const updateData: Record<string, any> = {
+        current_price: priceInfo.price,
+        price_updated_at: now,
+        updated_at: now,
+      };
+      // Auto-fill name if empty
+      if (priceInfo.name) {
+        updateData.name = priceInfo.name;
+      }
+
+      const { error: uErr } = await adminClient
+        .from("investment_watchlist")
+        .update(updateData)
+        .eq("id", w.id);
+
+      if (uErr) {
+        errors.push(`watchlist ${sym}: ${uErr.message}`);
+      } else {
+        watchlistUpdated++;
+      }
+    }
+
     // Also update account balances based on holdings
     if (updated > 0) {
-      // Group holdings by account to recalculate account balance
       const accountTotals = new Map<string, number>();
       const { data: allHoldings } = await adminClient
         .from("investment_holdings")
         .select("account_id, market_value")
-        .in("account_id", [...new Set(holdings.map(h => h.id))].length > 0 
-          ? [...new Set(holdings.filter(h => priceMap.has((h.symbol || "").toUpperCase())).map(h => h.id))]
+        .in("account_id", [...new Set((holdings || []).filter(h => priceMap.has((h.symbol || "").toUpperCase())).map(h => h.id))].length > 0 
+          ? [...new Set((holdings || []).filter(h => priceMap.has((h.symbol || "").toUpperCase())).map(h => h.id))]
           : []);
-
-      // We'll skip account balance updates for now to keep it simple
     }
 
     return new Response(JSON.stringify({
       updated,
-      total: holdings.length,
+      watchlist_updated: watchlistUpdated,
+      total: (holdings || []).length,
       symbols_found: priceMap.size,
       symbols_total: uniqueSymbols.length,
       errors: errors.length > 0 ? errors : undefined,
