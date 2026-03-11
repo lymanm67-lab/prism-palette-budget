@@ -379,3 +379,32 @@ export function useRefreshPrices() {
     },
   });
 }
+
+// ==================== DELETE HOLDING ====================
+export function useDeleteHolding() {
+  const qc = useQueryClient();
+  const { household } = useHousehold();
+
+  return useMutation({
+    mutationFn: async (holdingId: string) => {
+      if (!household) throw new Error('No household');
+
+      const { error } = await supabase
+        .from('investment_holdings')
+        .delete()
+        .eq('id', holdingId)
+        .eq('household_id', household.id);
+
+      if (error) throw error;
+      return { success: true };
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['investment_holdings'] });
+      qc.invalidateQueries({ queryKey: ['accounts'] });
+      toast.success('Holding deleted');
+    },
+    onError: (err: any) => {
+      toast.error(err.message || 'Failed to delete holding');
+    },
+  });
+}
