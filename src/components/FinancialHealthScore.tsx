@@ -201,6 +201,21 @@ const FinancialHealthScore = ({ monthlyIncome, monthlyExpenses, totalAssets, tot
                   <p>{isSpeaking && !isPaused ? 'Pause' : isSpeaking ? 'Resume' : 'Listen to health summary'}</p>
                 </TooltipContent>
               </Tooltip>
+              {isSpeaking && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={stop}
+                      className="shrink-0 p-1.5 rounded-lg hover:bg-muted transition-colors"
+                    >
+                      <Square className="h-4 w-4 text-destructive" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="text-xs">
+                    <p>Stop</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
             </div>
 
             <div className="space-y-2">
