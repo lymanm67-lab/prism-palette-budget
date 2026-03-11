@@ -110,18 +110,11 @@ const Budgets = () => {
   const [printOrientation, setPrintOrientation] = useState<'portrait' | 'landscape'>('portrait');
   const toggleSection = (key: string) => setOpenSections(s => ({ ...s, [key]: !s[key] }));
 
-  // Business names from category groups
-  const businessNames = useMemo(() => {
-    if (!categoryGroups) return [];
-    const names = new Set<string>();
-    for (const g of (categoryGroups as any[])) {
-      if ((g.budget_type || 'personal') === 'business') {
-        const match = g.name.match(/^(.+?)\s*-\s*/);
-        if (match) names.add(match[1].trim());
-      }
-    }
-    return Array.from(names);
-  }, [categoryGroups]);
+  // Business profiles list for per-business rendering
+  const businessList = useMemo(() => {
+    if (!businessProfiles) return [];
+    return businessProfiles.map((bp: any) => ({ id: bp.id, name: bp.business_name }));
+  }, [businessProfiles]);
 
   // Map category -> expense_type via its group
   const categoryExpenseType = useMemo(() => {
