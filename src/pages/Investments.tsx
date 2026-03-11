@@ -387,16 +387,29 @@ const Investments = () => {
         </Card>
         <Card>
           <CardContent className="p-4">
-            <p className="text-[11px] sm:text-xs text-muted-foreground">Total Gain/Loss</p>
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] sm:text-xs text-muted-foreground">Total Gain/Loss</p>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-5 w-5 -mr-1"
+                onClick={() => setShowGainLossPercent(p => !p)}
+                title={showGainLossPercent ? 'Show dollar amount' : 'Show percentage'}
+              >
+                {showGainLossPercent ? <DollarSign className="h-3 w-3" /> : <Percent className="h-3 w-3" />}
+              </Button>
+            </div>
             {totalGainLoss != null ? (
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 mt-1">
                 {totalGainLoss >= 0 ? <TrendingUp className="h-4 w-4 text-green-500 shrink-0" /> : <TrendingDown className="h-4 w-4 text-red-500 shrink-0" />}
                 <p className={`text-lg sm:text-2xl font-bold truncate ${totalGainLoss >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                  {totalGainLoss >= 0 ? '+' : ''}{formatAmount(totalGainLoss)}
+                  {showGainLossPercent && totalGainLossPct != null
+                    ? `${totalGainLoss >= 0 ? '+' : ''}${totalGainLossPct.toFixed(2)}%`
+                    : `${totalGainLoss >= 0 ? '+' : ''}${formatAmount(totalGainLoss)}`}
                 </p>
               </div>
             ) : (
-              <p className="text-lg sm:text-2xl font-bold text-muted-foreground">—</p>
+              <p className="text-lg sm:text-2xl font-bold text-muted-foreground mt-1">—</p>
             )}
           </CardContent>
         </Card>
