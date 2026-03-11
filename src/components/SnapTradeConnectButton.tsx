@@ -133,8 +133,6 @@ const SnapTradeConnectButton = forwardRef<SnapTradeConnectHandle, SnapTradeConne
                 headers,
                 body: JSON.stringify({
                   household_id: household.id,
-                  snaptrade_user_id: snaptradeUserId,
-                  snaptrade_user_secret: snaptradeUserSecret,
                   connection_id: connectionId,
                 }),
               }
