@@ -23,6 +23,7 @@ import InvestmentInsights from '@/components/InvestmentInsights';
 import SnapTradeConnectButton from '@/components/SnapTradeConnectButton';
 import InvestmentConnectionModal from '@/components/InvestmentConnectionModal';
 import AddHoldingsDialog from '@/components/AddHoldingsDialog';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 const COLORS = [
   'hsl(var(--chart-1))',
