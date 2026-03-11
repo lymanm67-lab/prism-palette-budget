@@ -181,11 +181,18 @@ const Investments = () => {
       });
     }
 
-    // Sort groups by total market value descending
+    // Sort groups by selected criteria
     return Array.from(grouped.entries())
       .map(([id, data]) => ({ id, ...data, totalValue: data.holdings.reduce((s, h) => s + h.market_value, 0) }))
-      .sort((a, b) => b.totalValue - a.totalValue);
-  }, [enrichedHoldings, accounts, sortKey, sortDir]);
+      .sort((a, b) => {
+        if (groupSort === 'alpha') {
+          const aName = (a.institution || a.accountName).toLowerCase();
+          const bName = (b.institution || b.accountName).toLowerCase();
+          return groupSortDir === 'asc' ? aName.localeCompare(bName) : bName.localeCompare(aName);
+        }
+        return groupSortDir === 'desc' ? b.totalValue - a.totalValue : a.totalValue - b.totalValue;
+      });
+  }, [enrichedHoldings, accounts, sortKey, sortDir, groupSort, groupSortDir]);
 
   // Asset allocation by holding type
   const allocationData = useMemo(() => {
