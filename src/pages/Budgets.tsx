@@ -1866,6 +1866,10 @@ const Budgets = () => {
                           const gBudgetType = g.budget_type || 'personal';
                           if (gBudgetType !== budgetType) return false;
                         }
+                        // Filter by selected business when on business tab
+                        if (budgetType === 'business' && selectedBusiness !== 'all') {
+                          if (g.business_profile_id !== selectedBusiness) return false;
+                        }
                         return true;
                       })
                       .map((g: any) => (
