@@ -250,11 +250,12 @@ const Budgets = () => {
     const groups: Record<ExpenseType, BudgetRow[]> = { income: [], fixed: [], flexible: [], non_monthly: [] };
     for (const b of items) {
       if (hideZeroAmounts && b.planned_amount === 0) continue;
+      if (hiddenBudgetIds.has(b.id)) continue;
       const type = categoryExpenseType.get(b.category_id) || 'flexible';
       groups[type].push(b);
     }
     return groups;
-  }, [categoryExpenseType, hideZeroAmounts]);
+  }, [categoryExpenseType, hideZeroAmounts, hiddenBudgetIds]);
 
   const groupedBudgets = useMemo(() => groupBudgetsByExpenseType(budgetItems), [groupBudgetsByExpenseType, budgetItems]);
 
