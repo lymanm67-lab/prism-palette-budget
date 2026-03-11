@@ -41,6 +41,7 @@ const FinancialHealthScore = ({ monthlyIncome, monthlyExpenses, totalAssets, tot
   const activePlanId = debtPlans?.find(p => p.is_active)?.id || debtPlans?.[0]?.id || null;
   const { data: debtItems } = useDebtItems(activePlanId);
   const navigate = useNavigate();
+  const { speak, pause, resume, stop, isSpeaking, isPaused } = useTTS();
 
   const { score, components } = useMemo(() => {
     // 1. Savings Rate (0-30 points) — target: 20%+ = full score
