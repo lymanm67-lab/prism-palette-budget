@@ -8,7 +8,7 @@ import { useInvestmentHoldings, useSnapTradeConnections, useSyncSnapTrade } from
 import { useCurrency } from '@/hooks/use-currency';
 import {
   Loader2, TrendingUp, TrendingDown, Briefcase, PiggyBank, Landmark, BarChart3,
-  BookOpen, MoreHorizontal, RefreshCw, ArrowUpDown, ChevronDown, ChevronUp, Shield,
+  BookOpen, MoreHorizontal, RefreshCw, ArrowUpDown, ChevronDown, ChevronUp, Shield, Plus,
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { Tooltip as UiTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -18,6 +18,7 @@ import PageOverview from '@/components/PageOverview';
 import InvestmentInsights from '@/components/InvestmentInsights';
 import SnapTradeConnectButton from '@/components/SnapTradeConnectButton';
 import InvestmentConnectionModal from '@/components/InvestmentConnectionModal';
+import AddHoldingsDialog from '@/components/AddHoldingsDialog';
 
 const COLORS = [
   'hsl(var(--chart-1))',
@@ -39,6 +40,7 @@ const Investments = () => {
   const { formatCurrency: formatAmount } = useCurrency();
   const [pageGuideOpen, setPageGuideOpen] = useState(false);
   const [connectModalOpen, setConnectModalOpen] = useState(false);
+  const [addHoldingsOpen, setAddHoldingsOpen] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>('market_value');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
 
@@ -190,6 +192,15 @@ const Investments = () => {
           <p className="text-sm text-muted-foreground truncate">Track your portfolio, holdings, and performance.</p>
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
+          <Button
+            size="sm"
+            variant="outline"
+            className="gap-1.5 h-8"
+            onClick={() => setAddHoldingsOpen(true)}
+          >
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">Add</span>
+          </Button>
           <Button
             size="sm"
             className="gap-1.5 h-8 prism-gradient text-white border-0 hover:opacity-90"
@@ -479,6 +490,7 @@ const Investments = () => {
 
       {/* Connection Modal */}
       <InvestmentConnectionModal open={connectModalOpen} onOpenChange={setConnectModalOpen} />
+      <AddHoldingsDialog open={addHoldingsOpen} onOpenChange={setAddHoldingsOpen} />
     </motion.div>
     </TooltipProvider>
   );
