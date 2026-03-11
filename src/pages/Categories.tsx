@@ -164,6 +164,11 @@ const Categories = () => {
     return Array.from(map.values()).filter(group => group.length > 1);
   }, [categories]);
 
+  // Total count of all duplicate entries (e.g. 3 businesses × 12 names = 36)
+  const totalDuplicateEntries = useMemo(() => {
+    return duplicateGroups.reduce((sum, g) => sum + g.length, 0);
+  }, [duplicateGroups]);
+
   const mergeAllDuplicates = async () => {
     if (duplicateGroups.length === 0) return;
     setMergingDupes(true);
