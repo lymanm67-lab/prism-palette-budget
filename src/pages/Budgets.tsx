@@ -2129,6 +2129,44 @@ const Budgets = () => {
           </ScrollArea>
         </DialogContent>
       </Dialog>
+      {/* Batch Actions Floating Bar */}
+      <AnimatePresence>
+        {selectedBudgetIds.size > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
+          >
+            <div className="flex items-center gap-2 rounded-2xl border border-border bg-background/95 backdrop-blur-xl shadow-2xl px-4 py-3">
+              <span className="text-sm font-semibold tabular-nums">{selectedBudgetIds.size} selected</span>
+              <div className="h-6 w-px bg-border mx-1" />
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="sm" className="gap-1.5" onClick={handleBatchHide}>
+                    <EyeOff className="h-4 w-4" />
+                    <span className="hidden sm:inline">Hide</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent><p>Hide selected budgets</p></TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="sm" className="gap-1.5 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={handleBatchDelete}>
+                    <Trash2 className="h-4 w-4" />
+                    <span className="hidden sm:inline">Delete</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent><p>Delete selected budgets</p></TooltipContent>
+              </Tooltip>
+              <div className="h-6 w-px bg-border mx-1" />
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSelectedBudgetIds(new Set())}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
     </TooltipProvider>
   );
