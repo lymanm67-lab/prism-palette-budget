@@ -27,6 +27,7 @@ import PageOverview from '@/components/PageOverview';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuLabel } from '@/components/ui/dropdown-menu';
 import { EmptyState } from '@/components/EmptyState';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 const getMonth = (offset: number) => {
   const d = new Date();
