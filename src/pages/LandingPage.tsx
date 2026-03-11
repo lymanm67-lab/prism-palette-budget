@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import {
   Sparkles, Target, BarChart3, ShieldCheck, Bot,
-  Wallet, ArrowRight, CheckCircle2, Star, Quote
+  Wallet, ArrowRight, CheckCircle2, Zap, Star, Quote
 } from 'lucide-react';
 import prismLogo from '@/assets/prism-budget-logo.png';
 
