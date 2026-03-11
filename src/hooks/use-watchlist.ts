@@ -128,6 +128,7 @@ export function useRefreshWatchlistPrices() {
     onSuccess: (data: any) => {
       qc.invalidateQueries({ queryKey: ['investment_watchlist'] });
       qc.invalidateQueries({ queryKey: ['investment_holdings'] });
+      qc.invalidateQueries({ queryKey: ['financial_insights'] });
       const parts: string[] = [];
       if (data.updated > 0) parts.push(`${data.updated} holdings`);
       if (data.watchlist_updated > 0) parts.push(`${data.watchlist_updated} watchlist`);
@@ -135,6 +136,9 @@ export function useRefreshWatchlistPrices() {
         toast.success(`Prices updated: ${parts.join(', ')}`);
       } else {
         toast.info('No symbols to update. Add ticker symbols first.');
+      }
+      if (data.alerts_triggered > 0) {
+        toast.info(`🎯 ${data.alerts_triggered} watchlist item${data.alerts_triggered > 1 ? 's' : ''} hit target price! Check notifications.`);
       }
     },
     onError: (err: any) => toast.error(err.message || 'Failed to refresh prices'),

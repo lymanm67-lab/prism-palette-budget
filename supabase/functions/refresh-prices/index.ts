@@ -104,7 +104,7 @@ serve(async (req) => {
     // Also fetch watchlist items
     let wlQuery = adminClient
       .from("investment_watchlist")
-      .select("id, symbol, household_id")
+      .select("id, symbol, household_id, target_price, alert_sent")
       .not("symbol", "is", null);
 
     if (householdId) {
@@ -169,8 +169,9 @@ serve(async (req) => {
       }
     }
 
-    // Update watchlist items with current prices
+    // Update watchlist items with current prices and check for price alerts
     let watchlistUpdated = 0;
+    let alertsTriggered = 0;
     const now = new Date().toISOString();
 
     for (const w of (watchlistItems || [])) {
@@ -178,14 +179,41 @@ serve(async (req) => {
       const priceInfo = priceMap.get(sym);
       if (!priceInfo) continue;
 
+      const hitTarget = w.target_price != null && priceInfo.price <= w.target_price;
+
       const updateData: Record<string, any> = {
         current_price: priceInfo.price,
         price_updated_at: now,
         updated_at: now,
       };
-      // Auto-fill name if empty
       if (priceInfo.name) {
         updateData.name = priceInfo.name;
+      }
+
+      // If price crossed below target and we haven't alerted yet, trigger alert
+      if (hitTarget && !w.alert_sent) {
+        updateData.alert_sent = true;
+
+        // Insert financial insight as notification
+        await adminClient.from("financial_insights").insert({
+          household_id: w.household_id,
+          insight_type: "investment",
+          severity: "success",
+          message: `🎯 ${sym} hit your target! Current price ${priceInfo.price.toFixed(2)} is at or below your target of ${w.target_price.toFixed(2)}.`,
+          metadata: {
+            type: "watchlist_alert",
+            symbol: sym,
+            current_price: priceInfo.price,
+            target_price: w.target_price,
+            watchlist_id: w.id,
+          },
+        });
+        alertsTriggered++;
+      }
+
+      // If price went back above target, reset alert so it can fire again
+      if (!hitTarget && w.alert_sent) {
+        updateData.alert_sent = false;
       }
 
       const { error: uErr } = await adminClient
@@ -214,6 +242,7 @@ serve(async (req) => {
     return new Response(JSON.stringify({
       updated,
       watchlist_updated: watchlistUpdated,
+      alerts_triggered: alertsTriggered,
       total: (holdings || []).length,
       symbols_found: priceMap.size,
       symbols_total: uniqueSymbols.length,
