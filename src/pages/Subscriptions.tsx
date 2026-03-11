@@ -151,6 +151,7 @@ const Subscriptions = () => {
       average_amount: String(sub.average_amount || ''),
       frequency: sub.frequency || 'monthly',
       notes: sub.notes || '',
+      category_id: sub.category_id || '',
     });
   };
 
