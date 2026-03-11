@@ -1274,8 +1274,38 @@ const Budgets = () => {
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6">
         {/* Main budget table */}
         <div className="space-y-2">
-          {/* Column headers */}
+          {/* Column headers + Expand/Collapse All */}
           <div className="hidden sm:flex items-center gap-3 px-3 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <div className="flex items-center gap-1">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={() => {
+                      const allKeys = getAllSectionKeys();
+                      const allOpen = allKeys.every(k => openSections[k] !== false);
+                      const newState: Record<string, boolean> = {};
+                      allKeys.forEach(k => { newState[k] = !allOpen; });
+                      setOpenSections(prev => ({ ...prev, ...newState }));
+                    }}
+                  >
+                    {(() => {
+                      const allKeys = getAllSectionKeys();
+                      const allOpen = allKeys.every(k => openSections[k] !== false);
+                      return allOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />;
+                    })()}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{(() => {
+                    const allKeys = getAllSectionKeys();
+                    return allKeys.every(k => openSections[k] !== false) ? 'Collapse all groups' : 'Expand all groups';
+                  })()}</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
             <span className="flex-1" />
             <span className="w-[200px]" />
             <span className="w-[90px] text-right">Budget</span>
