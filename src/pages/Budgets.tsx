@@ -509,6 +509,16 @@ const Budgets = () => {
           <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: b.categories?.color || 'hsl(var(--primary))' }} />
           <span className="flex-1 text-sm font-medium truncate">{b.categories?.name || 'Unknown'}</span>
           {b.rollover && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium shrink-0">↻</span>}
+          {b.planned_amount === 0 && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-muted-foreground" onClick={() => setHiddenBudgetIds(prev => new Set(prev).add(b.id))}>
+                  <EyeOff className="h-3 w-3" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent><p>Hide from budget</p></TooltipContent>
+            </Tooltip>
+          )}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(b.category_id, b.planned_amount)}>
