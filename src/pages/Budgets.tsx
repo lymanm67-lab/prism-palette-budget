@@ -348,6 +348,7 @@ const Budgets = () => {
     return keys;
   }, [budgetType, perBusinessData]);
 
+  const totalIncomeBudget = sectionTotals.income.budget;
   const totalIncomeActual = sectionTotals.income.actual;
   const totalIncomeRemaining = sectionTotals.income.remaining;
 
