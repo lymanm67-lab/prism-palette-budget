@@ -533,6 +533,14 @@ const Subscriptions = () => {
                 </Select>
               </div>
               <div>
+                <Label>Category</Label>
+                <CategoryCombobox
+                  value={editSub.category_id}
+                  onValueChange={v => setEditSub((prev: any) => ({ ...prev, category_id: v }))}
+                  placeholder="Select category (optional)"
+                />
+              </div>
+              <div>
                 <Label>Notes</Label>
                 <Input
                   placeholder="Optional notes"
