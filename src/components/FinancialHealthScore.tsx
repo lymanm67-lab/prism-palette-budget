@@ -129,6 +129,7 @@ const FinancialHealthScore = ({ monthlyIncome, monthlyExpenses, totalAssets, tot
   return (
     <Card className="prism-card-shine border-border/50 overflow-hidden">
       <CardContent className="p-6">
+        <TooltipProvider delayDuration={200}>
         <div className="flex flex-col sm:flex-row items-center gap-6">
           {/* Score Ring */}
           <div className="relative shrink-0">
@@ -194,7 +195,20 @@ const FinancialHealthScore = ({ monthlyIncome, monthlyExpenses, totalAssets, tot
                         />
                       </div>
                     </div>
-                    <span className="text-[11px] text-muted-foreground w-[70px] text-right shrink-0">{comp.value}</span>
+                    <span className="text-[11px] text-muted-foreground w-[52px] text-right shrink-0">{comp.value}</span>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={() => navigate(comp.link)}
+                          className="shrink-0 p-0.5 rounded hover:bg-accent/10 transition-colors"
+                        >
+                          <ExternalLink className={cn('h-3 w-3', health.text)} />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="text-xs">
+                        <p>Set up {comp.label}</p>
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
                 );
               })}
