@@ -302,17 +302,24 @@ async function syncAccounts(req: Request) {
       const seenIds = new Set<string>();
 
       for (const pos of positions) {
-        // Extract clean symbol string
-        const rawSymbol = pos.symbol?.symbol || pos.symbol?.raw_symbol || pos.ticker || 
+        console.log("Raw position data:", JSON.stringify(pos).substring(0, 500));
+
+        // Extract clean symbol string — handle deeply nested SnapTrade structures
+        const symObj = pos.symbol || {};
+        const rawSymbol = symObj.symbol?.symbol || symObj.symbol || symObj.raw_symbol || 
+          pos.ticker || pos.symbol_id ||
           (typeof pos.symbol === 'string' ? pos.symbol : null);
-        const cleanSymbol = typeof rawSymbol === 'string' ? rawSymbol : null;
+        const cleanSymbol = (typeof rawSymbol === 'string' && rawSymbol.length < 20) ? rawSymbol : 
+          (typeof rawSymbol === 'object' && rawSymbol?.symbol ? String(rawSymbol.symbol) : null);
 
         // Extract clean name string
-        const rawName = pos.symbol?.description || pos.security_name || 
-          (typeof pos.name === 'string' ? pos.name : null);
+        const rawName = symObj.description || symObj.name || pos.security_name || 
+          pos.description || (typeof pos.name === 'string' ? pos.name : null);
         const cleanName = typeof rawName === 'string' ? rawName : (cleanSymbol || 'Unknown');
 
-        const providerId = pos.id || pos.symbol?.id || null;
+        console.log(`Extracted symbol: ${cleanSymbol}, name: ${cleanName}`);
+
+        const providerId = pos.id || symObj.id || null;
         const providerIdStr = typeof providerId === 'object' ? JSON.stringify(providerId) : String(providerId || '');
         const lookupKey = providerIdStr || cleanSymbol;
 
