@@ -8,7 +8,7 @@ import { useInvestmentHoldings, useSnapTradeConnections, useSyncSnapTrade } from
 import { useCurrency } from '@/hooks/use-currency';
 import {
   Loader2, TrendingUp, TrendingDown, Briefcase, PiggyBank, Landmark, BarChart3,
-  BookOpen, MoreHorizontal, RefreshCw, ArrowUpDown, ChevronDown, ChevronUp, Shield,
+  BookOpen, MoreHorizontal, RefreshCw, ArrowUpDown, ChevronDown, ChevronUp, Shield, Plus,
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { Tooltip as UiTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
