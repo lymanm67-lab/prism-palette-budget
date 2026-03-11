@@ -191,12 +191,14 @@ const Dashboard = () => {
             <p className="text-muted-foreground mt-1">Your financial overview at a glance.</p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            <button
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
               onClick={() => navigate('/reports')}
-              className="flex items-center gap-1.5 rounded-xl bg-primary/10 px-4 py-2 text-sm font-medium text-primary transition-all hover:bg-primary/20 hover:gap-2.5"
             >
-              View Reports <ChevronRight className="h-4 w-4" />
-            </button>
+              View Reports <ChevronRight className="h-3.5 w-3.5" />
+            </Button>
             <PageOverview
               title="Dashboard Overview"
               description="Your central hub showing net worth, income, spending patterns, and account balances. Toggle between personal and business views."

@@ -55,7 +55,7 @@ const PageOverview = ({
   };
 
   return (
-    <div className="mb-4">
+    <div>
       {/* Compact trigger bar */}
       <div className="flex items-center gap-2 flex-wrap">
         <Button
