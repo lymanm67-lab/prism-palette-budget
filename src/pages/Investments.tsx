@@ -49,15 +49,66 @@ const Investments = () => {
 
   const totalBalance = investmentAccounts.reduce((s, a) => s + Number(a.balance), 0);
 
-  // Enrich holdings with gain/loss
+  // Helper to safely extract a string value from potentially JSON-stringified data
+  const safeStr = (val: any): string | null => {
+    if (val == null) return null;
+    if (typeof val === 'string') {
+      // Check if it's a JSON object string
+      if (val.startsWith('{') || val.startsWith('[')) {
+        try {
+          const parsed = JSON.parse(val);
+          // If it's an object with a 'symbol' key, extract it
+          if (parsed?.symbol) return parsed.symbol;
+          if (parsed?.name) return parsed.name;
+          if (parsed?.code) return parsed.code;
+          return String(val).slice(0, 20);
+        } catch { /* not JSON, return as-is */ }
+      }
+      return val;
+    }
+    if (typeof val === 'object') {
+      if (val.symbol) return val.symbol;
+      if (val.name) return val.name;
+      if (val.code) return val.code;
+      return JSON.stringify(val).slice(0, 20);
+    }
+    return String(val);
+  };
+
+  const safeNum = (val: any): number => {
+    if (typeof val === 'number') return val;
+    if (typeof val === 'string') {
+      const n = parseFloat(val);
+      return isNaN(n) ? 0 : n;
+    }
+    return 0;
+  };
+
+  // Enrich holdings with gain/loss and normalize potentially malformed data
   const enrichedHoldings = useMemo(() => {
     if (!holdings) return [];
     return holdings.map(h => {
-      const gainLoss = h.cost_basis != null ? h.market_value - h.cost_basis : null;
-      const gainLossPct = h.cost_basis != null && h.cost_basis > 0
-        ? ((h.market_value - h.cost_basis) / h.cost_basis) * 100
+      const symbol = safeStr(h.symbol);
+      const name = typeof h.name === 'string' && !h.name.startsWith('{') ? h.name : (safeStr(h.name) || symbol || 'Unknown');
+      const quantity = safeNum(h.quantity);
+      const price = safeNum(h.price);
+      const marketValue = safeNum(h.market_value);
+      const costBasis = h.cost_basis != null ? safeNum(h.cost_basis) : null;
+      const gainLoss = costBasis != null ? marketValue - costBasis : null;
+      const gainLossPct = costBasis != null && costBasis > 0
+        ? ((marketValue - costBasis) / costBasis) * 100
         : null;
-      return { ...h, gain_loss: gainLoss, gain_loss_pct: gainLossPct };
+      return {
+        ...h,
+        symbol,
+        name,
+        quantity,
+        price,
+        market_value: marketValue,
+        cost_basis: costBasis,
+        gain_loss: gainLoss,
+        gain_loss_pct: gainLossPct,
+      };
     });
   }, [holdings]);
 

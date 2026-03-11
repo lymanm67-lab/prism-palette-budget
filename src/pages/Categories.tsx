@@ -19,7 +19,8 @@ import { useBusinessProfiles } from '@/hooks/use-business-data';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Loader2, Plus, Pencil, Trash2, GripVertical, ChevronDown, ChevronRight, FolderOpen, Building2, AlertTriangle, Merge, Layers } from 'lucide-react';
+import { Loader2, Plus, Pencil, Trash2, GripVertical, ChevronDown, ChevronRight, FolderOpen, Building2, AlertTriangle, Merge, Layers, BookOpen, Info } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import PageOverview from '@/components/PageOverview';
 
 const PRESET_COLORS = [
