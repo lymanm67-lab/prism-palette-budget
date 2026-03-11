@@ -16,7 +16,7 @@ import { useCurrency } from '@/hooks/use-currency';
 import { useMoMIndicators } from '@/hooks/use-mom-indicators';
 import {
   TrendingUp, Wallet, CreditCard, ArrowUpRight, Loader2,
-  Sparkles, ChevronRight, Building2, PiggyBank, User, LayoutGrid, Settings2
+  Sparkles, ChevronRight, Building2, PiggyBank, User, LayoutGrid, Settings2, FileBarChart
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import BusinessProfileManager from '@/components/BusinessProfileManager';
