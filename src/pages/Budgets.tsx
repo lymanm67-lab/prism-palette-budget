@@ -1107,6 +1107,12 @@ const Budgets = () => {
                       {hideZeroAmounts ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
                       {hideZeroAmounts ? 'Show $0 budgets' : 'Hide $0 budgets'}
                     </DropdownMenuItem>
+                    {hiddenBudgetIds.size > 0 && (
+                      <DropdownMenuItem onClick={() => setHiddenBudgetIds(new Set())} className="gap-2">
+                        <Eye className="h-4 w-4" />
+                        Show {hiddenBudgetIds.size} hidden item{hiddenBudgetIds.size !== 1 ? 's' : ''}
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem onClick={() => setPrintPreview(true)} className="gap-2">
                       <Printer className="h-4 w-4" /> Print View
                     </DropdownMenuItem>
