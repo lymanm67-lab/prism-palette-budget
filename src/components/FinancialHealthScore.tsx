@@ -171,26 +171,32 @@ const FinancialHealthScore = ({ monthlyIncome, monthlyExpenses, totalAssets, tot
             </div>
 
             <div className="space-y-2">
-              {components.map(comp => (
-                <div key={comp.label} className="flex items-center gap-3">
-                  <comp.icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between text-xs mb-0.5">
-                      <span className="font-medium truncate">{comp.label}</span>
-                      <span className="text-muted-foreground">{comp.points}/{comp.max}</span>
+              {components.map(comp => {
+                const health = getComponentHealth(comp.points, comp.max);
+                return (
+                  <div key={comp.label} className="flex items-center gap-3">
+                    <comp.icon className={cn('h-3.5 w-3.5 shrink-0', health.text)} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between text-xs mb-0.5">
+                        <span className="font-medium truncate flex items-center gap-1.5">
+                          {comp.label}
+                          <span className={cn('inline-flex h-1.5 w-1.5 rounded-full', health.dot)} title={health.label} />
+                        </span>
+                        <span className={cn('font-semibold', health.text)}>{comp.points}/{comp.max}</span>
+                      </div>
+                      <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+                        <motion.div
+                          className={cn('h-full rounded-full', health.bar)}
+                          initial={{ width: 0 }}
+                          animate={{ width: `${(comp.points / comp.max) * 100}%` }}
+                          transition={{ duration: 0.8, delay: 0.2 }}
+                        />
+                      </div>
                     </div>
-                    <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-                      <motion.div
-                        className={cn('h-full rounded-full', tier.color === 'text-accent' ? 'bg-accent' : tier.color === 'text-prism-teal' ? 'bg-prism-teal' : tier.color === 'text-prism-amber' ? 'bg-prism-amber' : 'bg-prism-rose')}
-                        initial={{ width: 0 }}
-                        animate={{ width: `${(comp.points / comp.max) * 100}%` }}
-                        transition={{ duration: 0.8, delay: 0.2 }}
-                      />
-                    </div>
+                    <span className="text-[11px] text-muted-foreground w-[70px] text-right shrink-0">{comp.value}</span>
                   </div>
-                  <span className="text-[11px] text-muted-foreground w-[70px] text-right shrink-0">{comp.value}</span>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <button
