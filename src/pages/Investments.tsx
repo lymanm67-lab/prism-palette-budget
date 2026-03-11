@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAccounts } from '@/hooks/use-finance-data';
-import { useInvestmentHoldings, useSnapTradeConnections, useSyncSnapTrade, useRefreshPrices } from '@/hooks/use-investment-data';
+import { useInvestmentHoldings, useSnapTradeConnections, useSyncSnapTrade, useRefreshPrices, useDeleteHolding } from '@/hooks/use-investment-data';
 import { useCurrency } from '@/hooks/use-currency';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import {
   Loader2, TrendingUp, TrendingDown, Briefcase, PiggyBank, Landmark, BarChart3,
-  BookOpen, MoreHorizontal, RefreshCw, ArrowUpDown, ChevronDown, ChevronUp, Shield, Plus, Pencil, Check, X, DollarSign,
+  BookOpen, MoreHorizontal, RefreshCw, ArrowUpDown, ChevronDown, ChevronUp, Shield, Plus, Pencil, Check, X, DollarSign, Trash2,
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { Tooltip as UiTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -45,6 +45,7 @@ const Investments = () => {
   const { data: connections } = useSnapTradeConnections();
   const syncSnapTrade = useSyncSnapTrade();
   const refreshPrices = useRefreshPrices();
+  const deleteHolding = useDeleteHolding();
   const { formatCurrency: formatAmount } = useCurrency();
   const qc = useQueryClient();
   const [pageGuideOpen, setPageGuideOpen] = useState(false);
@@ -568,23 +569,36 @@ const Investments = () => {
                                 <span className="text-muted-foreground/50 italic text-xs">Enter cost basis →</span>
                               )}
                             </TableCell>
-                            <TableCell className="text-right w-10">
-                              {isManual && (
-                                isEditing ? (
-                                  <div className="flex items-center gap-0.5 justify-end">
-                                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleSaveHolding(h.id)}>
-                                      <Check className="h-3.5 w-3.5 text-green-500" />
+                            <TableCell className="text-right">
+                              <div className="flex items-center gap-0.5 justify-end">
+                                {isManual && (
+                                  isEditing ? (
+                                    <>
+                                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleSaveHolding(h.id)}>
+                                        <Check className="h-3.5 w-3.5 text-green-500" />
+                                      </Button>
+                                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setEditingHolding(null)}>
+                                        <X className="h-3.5 w-3.5" />
+                                      </Button>
+                                    </>
+                                  ) : (
+                                    <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 hover:opacity-100" onClick={() => startEditHolding(h)}>
+                                      <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
                                     </Button>
-                                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setEditingHolding(null)}>
-                                      <X className="h-3.5 w-3.5" />
-                                    </Button>
-                                  </div>
-                                ) : (
-                                  <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 hover:opacity-100" onClick={() => startEditHolding(h)}>
-                                    <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                                  )
+                                )}
+                                {isManual && (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-6 w-6 opacity-0 group-hover:opacity-100 hover:opacity-100"
+                                    onClick={() => deleteHolding.mutate(h.id)}
+                                    disabled={deleteHolding.isPending}
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5 text-destructive" />
                                   </Button>
-                                )
-                              )}
+                                )}
+                              </div>
                             </TableCell>
                           </TableRow>
                           );
