@@ -95,6 +95,7 @@ const Budgets = () => {
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const [showUnbudgeted, setShowUnbudgeted] = useState(false);
   const [hideZeroAmounts, setHideZeroAmounts] = useState(false);
+  const [hiddenBudgetIds, setHiddenBudgetIds] = useState<Set<string>>(new Set());
   const [copyingForward, setCopyingForward] = useState(false);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({ income: true, fixed: true, flexible: true, non_monthly: true });
   const [viewTab, setViewTab] = useState<'budget' | 'forecast'>('budget');
@@ -249,11 +250,12 @@ const Budgets = () => {
     const groups: Record<ExpenseType, BudgetRow[]> = { income: [], fixed: [], flexible: [], non_monthly: [] };
     for (const b of items) {
       if (hideZeroAmounts && b.planned_amount === 0) continue;
+      if (hiddenBudgetIds.has(b.id)) continue;
       const type = categoryExpenseType.get(b.category_id) || 'flexible';
       groups[type].push(b);
     }
     return groups;
-  }, [categoryExpenseType, hideZeroAmounts]);
+  }, [categoryExpenseType, hideZeroAmounts, hiddenBudgetIds]);
 
   const groupedBudgets = useMemo(() => groupBudgetsByExpenseType(budgetItems), [groupBudgetsByExpenseType, budgetItems]);
 
@@ -507,6 +509,16 @@ const Budgets = () => {
           <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: b.categories?.color || 'hsl(var(--primary))' }} />
           <span className="flex-1 text-sm font-medium truncate">{b.categories?.name || 'Unknown'}</span>
           {b.rollover && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium shrink-0">↻</span>}
+          {b.planned_amount === 0 && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-muted-foreground" onClick={() => setHiddenBudgetIds(prev => new Set(prev).add(b.id))}>
+                  <EyeOff className="h-3 w-3" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent><p>Hide from budget</p></TooltipContent>
+            </Tooltip>
+          )}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(b.category_id, b.planned_amount)}>
@@ -557,6 +569,16 @@ const Budgets = () => {
             {overBudget && <span className="text-[10px] ml-0.5">over</span>}
           </span>
           <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+            {b.planned_amount === 0 && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-muted-foreground" onClick={() => setHiddenBudgetIds(prev => new Set(prev).add(b.id))}>
+                    <EyeOff className="h-3 w-3" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent><p>Hide from budget</p></TooltipContent>
+              </Tooltip>
+            )}
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(b.category_id, b.planned_amount)}>
@@ -1085,6 +1107,12 @@ const Budgets = () => {
                       {hideZeroAmounts ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
                       {hideZeroAmounts ? 'Show $0 budgets' : 'Hide $0 budgets'}
                     </DropdownMenuItem>
+                    {hiddenBudgetIds.size > 0 && (
+                      <DropdownMenuItem onClick={() => setHiddenBudgetIds(new Set())} className="gap-2">
+                        <Eye className="h-4 w-4" />
+                        Show {hiddenBudgetIds.size} hidden item{hiddenBudgetIds.size !== 1 ? 's' : ''}
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem onClick={() => setPrintPreview(true)} className="gap-2">
                       <Printer className="h-4 w-4" /> Print View
                     </DropdownMenuItem>
