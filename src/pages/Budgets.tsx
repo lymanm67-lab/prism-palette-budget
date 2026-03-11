@@ -15,7 +15,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { useBudgets, useCategories, useCategoryGroups, useTransactions, useUpsertBudget, useDeleteBudget, useCreateCategory } from '@/hooks/use-finance-data';
 import { useSmartBudget } from '@/hooks/use-financial-intelligence';
 import { useCurrency } from '@/hooks/use-currency';
-import { Loader2, Plus, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Eye, EyeOff, Settings2, TrendingUp, AlertTriangle, CheckCircle2, PiggyBank, Sparkles, Copy, ClipboardCheck, MoreHorizontal, BookOpen, Printer, X } from 'lucide-react';
+import { Loader2, Plus, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Eye, EyeOff, Settings2, TrendingUp, AlertTriangle, CheckCircle2, PiggyBank, Sparkles, Copy, ClipboardCheck, MoreHorizontal, BookOpen, Printer, X, Scale } from 'lucide-react';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -88,7 +88,7 @@ const Budgets = () => {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState<{ category_id: string; planned_amount: string; rollover: boolean } | null>(null);
-  const [form, setForm] = useState({ category_id: '', planned_amount: '', rollover: false, budgetKind: 'expense' as 'income' | 'expense', group_id: '', expense_type: 'flexible' as 'fixed' | 'flexible' | 'non_monthly' });
+  const [form, setForm] = useState({ category_id: '', planned_amount: '', rollover: false, budgetKind: 'expense' as 'income' | 'expense' | 'equity', group_id: '', expense_type: 'flexible' as 'fixed' | 'flexible' | 'non_monthly' });
   const [auditOpen, setAuditOpen] = useState(false);
   const [auditResult, setAuditResult] = useState<string>('');
   const [auditLoading, setAuditLoading] = useState(false);
@@ -400,8 +400,9 @@ const Budgets = () => {
     const group = cat ? (categoryGroups as any[])?.find((g: any) => g.id === cat.group_id) : null;
     const expType = group?.expense_type || 'flexible';
     setEditingBudget({ category_id: categoryId, planned_amount: String(currentAmount), rollover });
-    const formExpType = (expType === 'income' ? 'flexible' : expType) as 'fixed' | 'flexible' | 'non_monthly';
-    setForm({ category_id: categoryId, planned_amount: String(currentAmount), rollover, budgetKind: expType === 'income' ? 'income' : 'expense', group_id: cat?.group_id || '', expense_type: formExpType });
+    const budgetKind = expType === 'income' ? 'income' : expType === 'equity' ? 'equity' : 'expense';
+    const formExpType = (expType === 'income' || expType === 'equity' ? 'flexible' : expType) as 'fixed' | 'flexible' | 'non_monthly';
+    setForm({ category_id: categoryId, planned_amount: String(currentAmount), rollover, budgetKind, group_id: cat?.group_id || '', expense_type: formExpType });
     setDialogOpen(true);
   };
 
@@ -1703,13 +1704,16 @@ const Budgets = () => {
             {!editingBudget && (
               <div className="space-y-2">
                 <Label>Type</Label>
-                <Tabs value={form.budgetKind} onValueChange={(v) => setForm(f => ({ ...f, budgetKind: v as 'income' | 'expense', group_id: '', category_id: '' }))}>
+                <Tabs value={form.budgetKind} onValueChange={(v) => setForm(f => ({ ...f, budgetKind: v as 'income' | 'expense' | 'equity', group_id: '', category_id: '' }))}>
                   <TabsList className="w-full">
                     <TabsTrigger value="income" className="flex-1 gap-1.5">
                       <TrendingUp className="h-3.5 w-3.5" /> Income
                     </TabsTrigger>
                     <TabsTrigger value="expense" className="flex-1 gap-1.5">
                       <PiggyBank className="h-3.5 w-3.5" /> Expense
+                    </TabsTrigger>
+                    <TabsTrigger value="equity" className="flex-1 gap-1.5">
+                      <Scale className="h-3.5 w-3.5" /> Equity
                     </TabsTrigger>
                   </TabsList>
                 </Tabs>
@@ -1743,6 +1747,8 @@ const Budgets = () => {
                         const gExpType = g.expense_type || 'flexible';
                         if (form.budgetKind === 'income') {
                           if (gExpType !== 'income') return false;
+                        } else if (form.budgetKind === 'equity') {
+                          if (gExpType !== 'equity') return false;
                         } else {
                           if (gExpType !== form.expense_type) return false;
                         }
