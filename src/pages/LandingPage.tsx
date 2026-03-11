@@ -206,9 +206,7 @@ const LandingPage = () => {
       <footer className="py-8 border-t border-border">
         <div className="mx-auto max-w-7xl px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <div className="h-7 w-7 rounded-lg prism-gradient flex items-center justify-center">
-              <Zap className="h-4 w-4 text-white" />
-            </div>
+            <img src={prismLogo} alt="PrismBudget" className="h-7 w-7 rounded-lg object-contain" />
             <span className="font-display font-bold">PrismBudget</span>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-muted-foreground">
