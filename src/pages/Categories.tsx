@@ -19,8 +19,9 @@ import { useBusinessProfiles } from '@/hooks/use-business-data';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Loader2, Plus, Pencil, Trash2, GripVertical, ChevronDown, ChevronRight, FolderOpen, Building2, AlertTriangle, Merge, Layers, BookOpen, Info } from 'lucide-react';
+import { Loader2, Plus, Pencil, Trash2, GripVertical, ChevronDown, ChevronRight, FolderOpen, Building2, AlertTriangle, Merge, Layers, BookOpen, Info, Sparkles } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { useHousehold } from '@/contexts/HouseholdContext';
 import PageOverview from '@/components/PageOverview';
 
 const PRESET_COLORS = [
@@ -56,6 +57,7 @@ const ColorPicker = ({ value, onChange }: { value: string; onChange: (c: string)
 );
 
 const Categories = () => {
+  const { household } = useHousehold();
   const { data: groups, isLoading: groupsLoading } = useCategoryGroups();
   const { data: categories, isLoading: catsLoading } = useCategories();
   const { data: subcategories, isLoading: subsLoading } = useSubcategories();
@@ -89,6 +91,65 @@ const Categories = () => {
 
   const qc = useQueryClient();
   const [mergingDupes, setMergingDupes] = useState(false);
+
+  // Chart of Accounts auto-create state
+  const [coaDialogOpen, setCoaDialogOpen] = useState(false);
+  const [coaProfileId, setCoaProfileId] = useState('');
+  const [coaCreating, setCoaCreating] = useState(false);
+
+  const COA_GROUPS = [
+    { name: 'Assets', color: '#2563eb', expense_type: 'fixed', categories: ['Business Checking', 'Business Savings', 'Accounts Receivable', 'Equipment', 'Inventory'] },
+    { name: 'Liabilities', color: '#dc2626', expense_type: 'fixed', categories: ['Business Credit Card', 'Business Loans', 'Sales Tax Owed', 'Accounts Payable'] },
+    { name: 'Equity', color: '#7c3aed', expense_type: 'fixed', categories: ['Owner Contribution', 'Owner Draw', 'Retained Earnings'] },
+    { name: 'Income/Revenue', color: '#059669', expense_type: 'flexible', categories: ['Service Fees', 'Product Sales', 'Interest Earned', 'Other Income'] },
+    { name: 'Expenses', color: '#ea580c', expense_type: 'flexible', categories: ['Rent', 'Utilities', 'Marketing', 'Travel', 'Meals', 'Professional Services', 'Dues & Subscriptions', 'Home Office', 'Insurance', 'Office Supplies'] },
+  ];
+
+  const handleCreateCOA = async () => {
+    if (!coaProfileId || !household) return;
+    setCoaCreating(true);
+    try {
+      const startOrder = (groups || []).length;
+      for (let gi = 0; gi < COA_GROUPS.length; gi++) {
+        const g = COA_GROUPS[gi];
+        const { data: cg, error: gErr } = await supabase
+          .from('category_groups')
+          .insert({
+            name: g.name,
+            color: g.color,
+            sort_order: startOrder + gi,
+            household_id: household.id,
+            budget_type: 'business',
+            business_profile_id: coaProfileId,
+            expense_type: g.expense_type,
+          })
+          .select()
+          .single();
+        if (gErr) throw gErr;
+        if (cg) {
+          for (let ci = 0; ci < g.categories.length; ci++) {
+            await supabase.from('categories').insert({
+              group_id: cg.id,
+              household_id: household.id,
+              name: g.categories[ci],
+              color: g.color,
+              sort_order: ci,
+            });
+          }
+        }
+      }
+      qc.invalidateQueries({ queryKey: ['category_groups'] });
+      qc.invalidateQueries({ queryKey: ['categories'] });
+      toast.success('Chart of Accounts created with 5 groups and all sub-categories!');
+      setCoaDialogOpen(false);
+      setCoaProfileId('');
+      setActiveTab('business');
+    } catch (e: any) {
+      toast.error(e.message || 'Failed to create Chart of Accounts');
+    } finally {
+      setCoaCreating(false);
+    }
+  };
 
   // Detect duplicate categories
   const duplicateGroups = useMemo(() => {
@@ -446,6 +507,15 @@ const Categories = () => {
                   <li className="flex items-start gap-2"><span className="text-accent">•</span> <strong className="text-foreground">Equity Accounts:</strong> Create "Owner Contribution" in each business ledger</li>
                   <li className="flex items-start gap-2"><span className="text-accent">•</span> <strong className="text-foreground">Expense Categories:</strong> Align labels with IRS Schedule C categories for seamless tax filing</li>
                 </ul>
+                {businessProfiles && businessProfiles.length > 0 && (
+                  <Button
+                    size="sm"
+                    className="mt-3 gap-2 bg-gradient-to-r from-prism-navy to-prism-teal text-white hover:opacity-90"
+                    onClick={() => { setCoaProfileId(businessProfiles[0]?.id || ''); setCoaDialogOpen(true); }}
+                  >
+                    <Sparkles className="h-3.5 w-3.5" /> Auto-Create Chart of Accounts
+                  </Button>
+                )}
               </div>
             </CardContent>
           </CollapsibleContent>
@@ -771,6 +841,55 @@ const Categories = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Auto-Create Chart of Accounts Dialog */}
+      <Dialog open={coaDialogOpen} onOpenChange={setCoaDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="font-display flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              Auto-Create Chart of Accounts
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              This will create the 5 standard accounting groups (Assets, Liabilities, Equity, Income/Revenue, Expenses) with common sub-categories for the selected business.
+            </p>
+            <div className="space-y-2">
+              <Label>Business Profile</Label>
+              <Select value={coaProfileId} onValueChange={setCoaProfileId}>
+                <SelectTrigger><SelectValue placeholder="Select a business" /></SelectTrigger>
+                <SelectContent>
+                  {(businessProfiles || []).map(bp => (
+                    <SelectItem key={bp.id} value={bp.id}>{bp.business_name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="rounded-lg border border-border/50 p-3 space-y-1.5">
+              <p className="text-xs font-semibold text-foreground">Groups to be created:</p>
+              {COA_GROUPS.map(g => (
+                <div key={g.name} className="flex items-center gap-2 text-xs">
+                  <span className="h-2.5 w-2.5 rounded-sm shrink-0" style={{ backgroundColor: g.color }} />
+                  <span className="font-medium">{g.name}</span>
+                  <span className="text-muted-foreground">— {g.categories.length} categories</span>
+                </div>
+              ))}
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setCoaDialogOpen(false)}>Cancel</Button>
+              <Button
+                onClick={handleCreateCOA}
+                disabled={!coaProfileId || coaCreating}
+                className="gap-2 bg-gradient-to-r from-prism-navy to-prism-teal text-white hover:opacity-90"
+              >
+                {coaCreating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                {coaCreating ? 'Creating…' : 'Create All Groups'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 };
