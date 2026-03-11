@@ -86,6 +86,7 @@ const Budgets = () => {
   const upsertBudget = useUpsertBudget();
   const deleteBudget = useDeleteBudget();
   const createCategory = useCreateCategory();
+  const { data: businessProfiles } = useBusinessProfiles();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState<{ category_id: string; planned_amount: string; rollover: boolean } | null>(null);
