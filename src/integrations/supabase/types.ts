@@ -757,6 +757,7 @@ export type Database = {
       }
       investment_watchlist: {
         Row: {
+          alert_sent: boolean
           created_at: string
           current_price: number | null
           household_id: string
@@ -769,6 +770,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          alert_sent?: boolean
           created_at?: string
           current_price?: number | null
           household_id: string
@@ -781,6 +783,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          alert_sent?: boolean
           created_at?: string
           current_price?: number | null
           household_id?: string
