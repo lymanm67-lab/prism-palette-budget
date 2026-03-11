@@ -286,42 +286,80 @@ async function syncAccounts(req: Request) {
 
       const positions = holdings?.positions || holdings || [];
 
-      // Delete old holdings for this account
-      await admin
+      // Get existing holdings to preserve manual cost_basis
+      const { data: existingHoldings } = await admin
         .from("investment_holdings")
-        .delete()
+        .select("id, provider_holding_id, cost_basis, symbol")
         .eq("account_id", accountId)
         .eq("household_id", household_id);
 
+      const existingMap = new Map<string, { id: string; cost_basis: number | null }>();
+      for (const eh of (existingHoldings || [])) {
+        const key = eh.provider_holding_id || eh.symbol;
+        if (key) existingMap.set(key, { id: eh.id, cost_basis: eh.cost_basis });
+      }
+
+      const seenIds = new Set<string>();
+
       for (const pos of positions) {
+        // Extract clean symbol string
+        const rawSymbol = pos.symbol?.symbol || pos.symbol?.raw_symbol || pos.ticker || 
+          (typeof pos.symbol === 'string' ? pos.symbol : null);
+        const cleanSymbol = typeof rawSymbol === 'string' ? rawSymbol : null;
+
+        // Extract clean name string
+        const rawName = pos.symbol?.description || pos.security_name || 
+          (typeof pos.name === 'string' ? pos.name : null);
+        const cleanName = typeof rawName === 'string' ? rawName : (cleanSymbol || 'Unknown');
+
+        const providerId = pos.id || pos.symbol?.id || null;
+        const providerIdStr = typeof providerId === 'object' ? JSON.stringify(providerId) : String(providerId || '');
+        const lookupKey = providerIdStr || cleanSymbol;
+
+        // Compute cost basis from provider, fall back to existing manual entry
+        const existingEntry = lookupKey ? existingMap.get(lookupKey) : null;
+        let costBasis: number | null = null;
+        if (pos.average_purchase_price && (pos.units || pos.quantity)) {
+          costBasis = pos.average_purchase_price * (pos.units || pos.quantity || 0);
+        } else if (existingEntry?.cost_basis != null) {
+          costBasis = existingEntry.cost_basis; // Preserve manual entry
+        }
+
         const holdingData = {
           account_id: accountId,
           household_id,
-          symbol: pos.symbol?.symbol || pos.ticker || pos.symbol || null,
-          name:
-            pos.symbol?.description ||
-            pos.security_name ||
-            pos.symbol?.symbol ||
-            "Unknown",
+          symbol: cleanSymbol,
+          name: cleanName,
           quantity: pos.units || pos.quantity || 0,
           price: pos.price || pos.symbol?.trade?.last_trade_price || 0,
           market_value:
             pos.units && pos.price
               ? pos.units * pos.price
               : pos.market_value || 0,
-          cost_basis: pos.average_purchase_price
-            ? (pos.average_purchase_price * (pos.units || 0))
-            : null,
+          cost_basis: costBasis,
           holding_type:
             pos.symbol?.type?.code?.toLowerCase() || "equity",
-          provider_holding_id:
-            pos.id || pos.symbol?.id || null,
+          provider_holding_id: providerIdStr || null,
           currency:
             pos.symbol?.currency?.code || pos.currency || "USD",
+          updated_at: new Date().toISOString(),
         };
 
-        await admin.from("investment_holdings").insert(holdingData);
+        if (existingEntry) {
+          await admin.from("investment_holdings").update(holdingData).eq("id", existingEntry.id);
+          seenIds.add(existingEntry.id);
+        } else {
+          const { data: inserted } = await admin.from("investment_holdings").insert(holdingData).select("id").single();
+          if (inserted) seenIds.add(inserted.id);
+        }
         holdingsSynced++;
+      }
+
+      // Remove holdings no longer in provider (but not manually added ones without provider_holding_id)
+      for (const eh of (existingHoldings || [])) {
+        if (!seenIds.has(eh.id) && eh.provider_holding_id) {
+          await admin.from("investment_holdings").delete().eq("id", eh.id);
+        }
       }
     } catch (e) {
       console.error("Error syncing holdings for account:", acct.id, e);
