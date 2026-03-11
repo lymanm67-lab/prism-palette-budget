@@ -477,6 +477,7 @@ const Investments = () => {
                           <TableHead className="cursor-pointer select-none text-right" onClick={() => handleSort('gain_loss')}>
                             <span className="flex items-center gap-1 justify-end">Gain/Loss <SortIcon col="gain_loss" /></span>
                           </TableHead>
+                          <TableHead className="w-10" />
                         </TableRow>
                       </TableHeader>
                       <TableBody>
