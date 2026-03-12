@@ -21,7 +21,10 @@ const MORE_ITEMS = [
   { to: '/subscriptions', icon: CreditCard, label: 'Subscriptions' },
   { to: '/net-worth', icon: TrendingUp, label: 'Net Worth' },
   { to: '/calculators', icon: Calculator, label: 'Calculators' },
-  { to: '/capital', icon: CreditCard, label: 'Capital' },
+  { to: '/capital', icon: Shield, label: 'Capital' },
+  { to: '/capital/bankability', icon: BarChart3, label: 'Bankability' },
+  { to: '/capital/loan-readiness', icon: ClipboardCheck, label: 'Loan Ready' },
+  { to: '/capital/banking-intelligence', icon: Landmark, label: 'Banking Intel' },
   { to: '/settings', icon: Settings, label: 'Settings' },
 ];
 
