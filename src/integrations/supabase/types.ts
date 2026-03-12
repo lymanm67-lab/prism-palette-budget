@@ -1198,6 +1198,66 @@ export type Database = {
           },
         ]
       }
+      metro2_findings: {
+        Row: {
+          created_at: string
+          credit_account_id: string
+          explanation: string
+          household_id: string
+          id: string
+          is_resolved: boolean
+          metro2_principle: string | null
+          recommended_action: string | null
+          scan_batch_id: string | null
+          severity: string
+          title: string
+          violation_type: string
+        }
+        Insert: {
+          created_at?: string
+          credit_account_id: string
+          explanation: string
+          household_id: string
+          id?: string
+          is_resolved?: boolean
+          metro2_principle?: string | null
+          recommended_action?: string | null
+          scan_batch_id?: string | null
+          severity?: string
+          title: string
+          violation_type: string
+        }
+        Update: {
+          created_at?: string
+          credit_account_id?: string
+          explanation?: string
+          household_id?: string
+          id?: string
+          is_resolved?: boolean
+          metro2_principle?: string | null
+          recommended_action?: string | null
+          scan_batch_id?: string | null
+          severity?: string
+          title?: string
+          violation_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "metro2_findings_credit_account_id_fkey"
+            columns: ["credit_account_id"]
+            isOneToOne: false
+            referencedRelation: "credit_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "metro2_findings_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       plaid_items: {
         Row: {
           consent_expiration: string | null
