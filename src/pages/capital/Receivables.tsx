@@ -15,6 +15,157 @@ import { useMedicaidClaims, MedicaidClaim } from '@/hooks/use-medicaid-claims';
 import { format, differenceInDays } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell } from 'recharts';
 import { toast } from 'sonner';
+import { addDays } from 'date-fns';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+
+/* ── Payment Predictor Component ── */
+function PaymentPredictor({ claims, avgCycle }: { claims: MedicaidClaim[]; avgCycle: number | null }) {
+  const predictions = useMemo(() => {
+    const paidClaims = claims.filter(c => c.status === 'paid' && c.submission_date && c.payment_date);
+
+    // Compute per-status average days from historical data
+    const statusDurations: Record<string, number[]> = {};
+    paidClaims.forEach(c => {
+      const days = differenceInDays(new Date(c.payment_date!), new Date(c.submission_date!));
+      if (days > 0) {
+        (statusDurations['all'] ??= []).push(days);
+      }
+    });
+
+    const allDurations = statusDurations['all'] ?? [];
+    const mean = allDurations.length > 0 ? allDurations.reduce((a, b) => a + b, 0) / allDurations.length : 45;
+    const stdDev = allDurations.length > 1
+      ? Math.sqrt(allDurations.reduce((s, d) => s + (d - mean) ** 2, 0) / (allDurations.length - 1))
+      : mean * 0.3;
+
+    // Predict for open claims
+    const openClaims = claims.filter(c => ['submitted', 'pending', 'approved', 'appealed'].includes(c.status));
+
+    return openClaims.map(claim => {
+      const refDate = claim.submission_date || claim.service_date;
+      const daysSoFar = differenceInDays(new Date(), new Date(refDate));
+
+      // Status-based adjustment: closer statuses get shorter remaining time
+      const statusMultiplier: Record<string, number> = { submitted: 1, pending: 0.65, approved: 0.25, appealed: 0.85 };
+      const mult = statusMultiplier[claim.status] ?? 1;
+      const expectedTotal = Math.round(mean * mult + (claim.status === 'appealed' ? mean * 0.3 : 0));
+      const remainingDays = Math.max(0, expectedTotal - daysSoFar * (1 - mult));
+      const estPaymentDate = addDays(new Date(), Math.round(remainingDays));
+
+      // Delay probability: chance it exceeds average
+      const zScore = (daysSoFar - mean) / (stdDev || 1);
+      const delayProb = daysSoFar > mean * 0.5
+        ? Math.min(95, Math.max(5, Math.round(50 + zScore * 25)))
+        : Math.max(5, Math.round(15 + daysSoFar / mean * 20));
+
+      // Confidence based on data volume
+      const confidence = allDurations.length >= 10 ? 'high' : allDurations.length >= 3 ? 'medium' : 'low';
+
+      return {
+        claim,
+        estPaymentDate,
+        remainingDays: Math.round(remainingDays),
+        delayProb,
+        daysSoFar,
+        confidence,
+      };
+    }).sort((a, b) => a.remainingDays - b.remainingDays);
+  }, [claims, avgCycle]);
+
+  if (predictions.length === 0) {
+    return (
+      <Card className="p-6">
+        <div className="flex items-center gap-2 mb-2">
+          <CalendarClock className="h-5 w-5 text-primary" />
+          <CardTitle className="text-base">Payment Predictor</CardTitle>
+        </div>
+        <p className="text-sm text-muted-foreground text-center py-6">No open claims to predict. Add claims to see estimated payment dates.</p>
+      </Card>
+    );
+  }
+
+  const highRisk = predictions.filter(p => p.delayProb >= 60);
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <CalendarClock className="h-5 w-5 text-primary" />
+            <CardTitle className="text-base">Payment Predictor</CardTitle>
+            <Badge variant="secondary" className="text-xs">
+              {predictions[0]?.confidence === 'low' ? 'Limited Data' : predictions[0]?.confidence === 'medium' ? 'Moderate Data' : 'Strong Data'}
+            </Badge>
+          </div>
+          {highRisk.length > 0 && (
+            <Badge variant="destructive" className="text-xs gap-1">
+              <AlertTriangle className="h-3 w-3" />
+              {highRisk.length} at risk of delay
+            </Badge>
+          )}
+        </div>
+        <CardDescription>Estimated payment dates based on historical reimbursement patterns</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-2">
+          {predictions.map(p => {
+            const isOverdue = p.delayProb >= 60;
+            const isWarning = p.delayProb >= 40 && p.delayProb < 60;
+            return (
+              <div
+                key={p.claim.id}
+                className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${
+                  isOverdue ? 'border-destructive/30 bg-destructive/5' : isWarning ? 'border-yellow-500/30 bg-yellow-500/5' : 'border-border bg-muted/30'
+                }`}
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-sm truncate">{p.claim.client_name}</span>
+                    <span className="text-xs text-muted-foreground">{p.claim.claim_number || ''}</span>
+                    <Badge variant={statusConfig[p.claim.status]?.badgeVariant || 'outline'} className="text-[10px] capitalize h-5">
+                      {p.claim.status}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-3 mt-1">
+                    <span className="text-xs text-muted-foreground">{fmt(p.claim.amount)}</span>
+                    <span className="text-xs text-muted-foreground">•</span>
+                    <span className="text-xs text-muted-foreground">{p.daysSoFar}d in pipeline</span>
+                  </div>
+                </div>
+
+                <div className="text-right shrink-0">
+                  <div className="flex items-center gap-1.5 justify-end">
+                    <TrendingUp className="h-3.5 w-3.5 text-primary" />
+                    <span className="text-sm font-semibold">
+                      {p.remainingDays === 0 ? 'Due now' : `~${p.remainingDays}d`}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    Est. {format(p.estPaymentDate, 'MMM d, yyyy')}
+                  </p>
+                </div>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className={`flex flex-col items-center justify-center w-12 h-12 rounded-full border-2 shrink-0 ${
+                      isOverdue ? 'border-destructive text-destructive' : isWarning ? 'border-yellow-500 text-yellow-600' : 'border-accent text-accent'
+                    }`}>
+                      <span className="text-xs font-bold leading-none">{p.delayProb}%</span>
+                      <span className="text-[8px] leading-none mt-0.5">delay</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="text-xs">Probability of payment delay beyond average cycle</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 const STATUSES = ['submitted', 'pending', 'approved', 'paid', 'denied', 'appealed'] as const;
 
