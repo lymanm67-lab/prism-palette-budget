@@ -160,13 +160,13 @@ const AppSidebar = () => {
                     )}
                   >
                     <span className={cn(
-                      'flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-200',
+                      'flex h-6 w-6 items-center justify-center rounded-md transition-all duration-200',
                       isActive
                         ? 'bg-sidebar-accent/80'
                         : 'bg-sidebar-accent/0 group-hover:bg-sidebar-accent/40'
                     )}>
                       <item.icon className={cn(
-                        'h-[18px] w-[18px] shrink-0 transition-colors duration-200',
+                        'h-4 w-4 shrink-0 transition-colors duration-200',
                         item.color
                       )} />
                     </span>
