@@ -65,7 +65,8 @@ const STAGES = [
 ];
 
 const CapitalStackPlanner = () => {
-  const { householdId } = useHousehold();
+  const { household } = useHousehold();
+  const householdId = household?.id;
 
   const { data: creditSteps } = useQuery({
     queryKey: ["business-credit-steps", householdId],
