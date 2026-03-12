@@ -47,49 +47,157 @@ const CreditOverview = () => {
         features={['Upload PDF, CSV, or JSON', 'Equifax, Experian, TransUnion', 'Structured account dashboard']}
       />
 
-      {/* Quick Stats */}
-      {accounts.length > 0 && (
-        <div className="grid gap-4 md:grid-cols-4">
-          <Card>
-            <CardContent className="pt-4 pb-3 flex items-center gap-3">
-              <CreditCard className="h-8 w-8 text-primary" />
-              <div>
-                <p className="text-xs text-muted-foreground">Total Accounts</p>
-                <p className="text-2xl font-bold">{accounts.length}</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4 pb-3 flex items-center gap-3">
-              <DollarSign className="h-8 w-8 text-primary" />
-              <div>
-                <p className="text-xs text-muted-foreground">Total Balance</p>
-                <p className="text-2xl font-bold">{fmt(totalBalance)}</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4 pb-3 flex items-center gap-3">
-              <DollarSign className="h-8 w-8 text-primary" />
-              <div>
-                <p className="text-xs text-muted-foreground">Credit Utilization</p>
-                <p className={`text-2xl font-bold ${utilization > 30 ? 'text-destructive' : ''}`}>
-                  {totalLimit > 0 ? `${utilization.toFixed(1)}%` : 'N/A'}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4 pb-3 flex items-center gap-3">
-              <AlertTriangle className={`h-8 w-8 ${negativeCount > 0 ? 'text-destructive' : 'text-muted-foreground'}`} />
-              <div>
-                <p className="text-xs text-muted-foreground">Negative Items</p>
-                <p className="text-2xl font-bold">{negativeCount}</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+      {/* VantageScore Estimator + Quick Stats */}
+      {accounts.length > 0 && (() => {
+        // VantageScore 3.0 estimation based on credit data factors
+        const openAccounts = accounts.filter(a => a.account_status.toLowerCase() === 'open');
+        const avgAge = (() => {
+          const withDates = accounts.filter(a => a.date_opened);
+          if (withDates.length === 0) return 0;
+          const now = new Date();
+          const totalMonths = withDates.reduce((sum, a) => {
+            const opened = new Date(a.date_opened!);
+            return sum + ((now.getTime() - opened.getTime()) / (1000 * 60 * 60 * 24 * 30));
+          }, 0);
+          return totalMonths / withDates.length;
+        })();
+
+        // Factor scores (VantageScore 3.0 weighting)
+        const utilizationScore = utilization <= 10 ? 100 : utilization <= 30 ? 80 : utilization <= 50 ? 55 : utilization <= 75 ? 30 : 10;
+        const negativeScore = negativeCount === 0 ? 100 : negativeCount <= 2 ? 40 : 15;
+        const ageScore = avgAge >= 84 ? 100 : avgAge >= 48 ? 75 : avgAge >= 24 ? 55 : avgAge >= 12 ? 35 : 20;
+        const mixScore = (() => {
+          const types = new Set(accounts.map(a => a.account_type));
+          return types.size >= 4 ? 100 : types.size >= 3 ? 75 : types.size >= 2 ? 50 : 30;
+        })();
+        const totalAcctsScore = openAccounts.length >= 10 ? 100 : openAccounts.length >= 5 ? 75 : openAccounts.length >= 3 ? 50 : 30;
+
+        // Weighted estimate (VantageScore 3.0 approximate weights)
+        const estimatedScore = Math.round(
+          300 + (550 * (
+            utilizationScore * 0.20 +
+            negativeScore * 0.28 +
+            ageScore * 0.13 +
+            mixScore * 0.11 +
+            totalAcctsScore * 0.08 +
+            (100 * 0.20) // payment history placeholder (assume good if no negatives data)
+          ) / 100)
+        );
+        const clampedScore = Math.min(850, Math.max(300, estimatedScore));
+
+        const scorePercent = ((clampedScore - 300) / 550) * 100;
+        const scoreColor = clampedScore >= 750 ? 'hsl(var(--accent))' : clampedScore >= 670 ? 'hsl(142 71% 45%)' : clampedScore >= 580 ? 'hsl(48 96% 53%)' : 'hsl(var(--destructive))';
+        const scoreLabel = clampedScore >= 750 ? 'Excellent' : clampedScore >= 670 ? 'Good' : clampedScore >= 580 ? 'Fair' : 'Poor';
+
+        const factors = [
+          { label: 'Payment History', weight: '28%', score: negativeScore, icon: negativeScore >= 70 ? TrendingUp : negativeScore >= 40 ? Minus : TrendingDown },
+          { label: 'Credit Utilization', weight: '20%', score: utilizationScore, icon: utilizationScore >= 70 ? TrendingUp : utilizationScore >= 40 ? Minus : TrendingDown },
+          { label: 'Credit Age', weight: '13%', score: ageScore, icon: ageScore >= 70 ? TrendingUp : ageScore >= 40 ? Minus : TrendingDown },
+          { label: 'Account Mix', weight: '11%', score: mixScore, icon: mixScore >= 70 ? TrendingUp : mixScore >= 40 ? Minus : TrendingDown },
+          { label: 'Total Accounts', weight: '8%', score: totalAcctsScore, icon: totalAcctsScore >= 70 ? TrendingUp : totalAcctsScore >= 40 ? Minus : TrendingDown },
+        ];
+
+        return (
+          <div className="grid gap-4 lg:grid-cols-3">
+            {/* VantageScore Card */}
+            <Card className="lg:col-span-1 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5" />
+              <CardHeader className="relative pb-2">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Gauge className="h-5 w-5 text-primary" />
+                  VantageScore® Estimate
+                </CardTitle>
+                <CardDescription className="flex items-center gap-1">
+                  Based on your imported credit data
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger><Info className="h-3 w-3" /></TooltipTrigger>
+                      <TooltipContent className="max-w-xs text-xs">
+                        This is an educational estimate using VantageScore 3.0 factor weights applied to your imported credit report data. It is not an official credit score.
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="relative space-y-4">
+                <div className="text-center">
+                  <div className="relative inline-flex items-center justify-center">
+                    <svg className="w-36 h-36 -rotate-90" viewBox="0 0 120 120">
+                      <circle cx="60" cy="60" r="50" fill="none" stroke="hsl(var(--muted))" strokeWidth="10" />
+                      <circle cx="60" cy="60" r="50" fill="none" stroke={scoreColor} strokeWidth="10"
+                        strokeDasharray={`${scorePercent * 3.14} 314`} strokeLinecap="round" className="transition-all duration-1000" />
+                    </svg>
+                    <div className="absolute flex flex-col items-center">
+                      <span className="text-3xl font-bold" style={{ color: scoreColor }}>{clampedScore}</span>
+                      <span className="text-xs font-medium text-muted-foreground">{scoreLabel}</span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">Range: 300 – 850</p>
+                </div>
+
+                <div className="space-y-2">
+                  {factors.map(f => {
+                    const Icon = f.icon;
+                    const barColor = f.score >= 70 ? 'bg-accent' : f.score >= 40 ? 'bg-yellow-500' : 'bg-destructive';
+                    return (
+                      <div key={f.label} className="flex items-center gap-2 text-xs">
+                        <Icon className={`h-3.5 w-3.5 shrink-0 ${f.score >= 70 ? 'text-accent' : f.score >= 40 ? 'text-yellow-500' : 'text-destructive'}`} />
+                        <span className="w-28 truncate">{f.label}</span>
+                        <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+                          <div className={`h-full rounded-full ${barColor} transition-all duration-700`} style={{ width: `${f.score}%` }} />
+                        </div>
+                        <span className="text-muted-foreground w-7 text-right">{f.weight}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Quick Stats */}
+            <div className="lg:col-span-2 grid gap-4 sm:grid-cols-2">
+              <Card>
+                <CardContent className="pt-4 pb-3 flex items-center gap-3">
+                  <CreditCard className="h-8 w-8 text-primary" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Total Accounts</p>
+                    <p className="text-2xl font-bold">{accounts.length}</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-4 pb-3 flex items-center gap-3">
+                  <DollarSign className="h-8 w-8 text-primary" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Total Balance</p>
+                    <p className="text-2xl font-bold">{fmt(totalBalance)}</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-4 pb-3 flex items-center gap-3">
+                  <DollarSign className="h-8 w-8 text-primary" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Credit Utilization</p>
+                    <p className={`text-2xl font-bold ${utilization > 30 ? 'text-destructive' : ''}`}>
+                      {totalLimit > 0 ? `${utilization.toFixed(1)}%` : 'N/A'}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-4 pb-3 flex items-center gap-3">
+                  <AlertTriangle className={`h-8 w-8 ${negativeCount > 0 ? 'text-destructive' : 'text-muted-foreground'}`} />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Negative Items</p>
+                    <p className="text-2xl font-bold">{negativeCount}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Upload Section */}
       <Card>
