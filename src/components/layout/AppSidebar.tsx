@@ -16,48 +16,52 @@ import { useSidebarBadges } from '@/hooks/use-sidebar-badges';
 
 const NAV_SECTIONS = [
   {
-    label: 'Overview',
+    label: 'Home',
     items: [
       { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', color: 'text-prism-teal' },
       { to: '/getting-started', icon: GraduationCap, label: 'Getting Started', color: 'text-prism-amber' },
     ],
   },
   {
-    label: 'Money',
+    label: 'Track',
     items: [
       { to: '/accounts', icon: Landmark, label: 'Accounts', color: 'text-prism-sky' },
       { to: '/transactions', icon: ArrowLeftRight, label: 'Transactions', color: 'text-prism-orange' },
-      { to: '/cash-flow', icon: Wallet, label: 'Cash Flow', color: 'text-prism-teal' },
-      { to: '/budgets', icon: PiggyBank, label: 'Budgets', color: 'text-prism-amber' },
-      { to: '/recurring', icon: RepeatIcon, label: 'Recurring', color: 'text-prism-sky' },
+      { to: '/recurring', icon: RepeatIcon, label: 'Recurring', color: 'text-prism-teal' },
       { to: '/subscriptions', icon: CreditCard, label: 'Subscriptions', color: 'text-prism-violet' },
-      { to: '/categories', icon: Tags, label: 'Categories', color: 'text-prism-lime' },
     ],
   },
   {
-    label: 'Goals & Debt',
+    label: 'Budget & Plan',
+    items: [
+      { to: '/budgets', icon: PiggyBank, label: 'Budgets', color: 'text-prism-amber' },
+      { to: '/cash-flow', icon: Wallet, label: 'Cash Flow', color: 'text-prism-teal' },
+      { to: '/categories', icon: Tags, label: 'Categories', color: 'text-prism-lime' },
+      { to: '/forecast', icon: LineChart, label: 'Forecast', color: 'text-prism-sky' },
+    ],
+  },
+  {
+    label: 'Goals & Wealth',
     items: [
       { to: '/goals', icon: Target, label: 'Goals', color: 'text-prism-lime' },
       { to: '/debt-payoff', icon: TrendingDown, label: 'Debt Payoff', color: 'text-prism-rose' },
-      { to: '/investments', icon: TrendingUp, label: 'Investments', color: 'text-prism-indigo' },
       { to: '/net-worth', icon: Scale, label: 'Net Worth', color: 'text-prism-teal' },
+      { to: '/investments', icon: TrendingUp, label: 'Investments', color: 'text-prism-indigo' },
+      { to: '/home-buying', icon: Home, label: 'Home Buying', color: 'text-prism-amber' },
     ],
   },
   {
-    label: 'Plan & Analyze',
+    label: 'Insights',
     items: [
-      { to: '/forecast', icon: LineChart, label: 'Forecast', color: 'text-prism-sky' },
-      { to: '/roadmap', icon: Map, label: 'Prism Roadmap', color: 'text-prism-teal' },
-      { to: '/home-buying', icon: Home, label: 'Home Buying', color: 'text-prism-amber' },
-      { to: '/calculators', icon: Calculator, label: 'Calculators', color: 'text-prism-indigo' },
       { to: '/reports', icon: BarChart3, label: 'Reports', color: 'text-prism-orange' },
       { to: '/spending-trends', icon: TrendingUp, label: 'Spending Trends', color: 'text-prism-lime' },
       { to: '/year-in-review', icon: Sparkles, label: 'Year in Review', color: 'text-prism-amber' },
       { to: '/tax-assistant', icon: Bot, label: 'Tax Assistant', color: 'text-prism-indigo' },
+      { to: '/calculators', icon: Calculator, label: 'Calculators', color: 'text-prism-sky' },
     ],
   },
   {
-    label: 'FocusOS Capital',
+    label: 'Capital — Credit',
     items: [
       { to: '/capital', icon: Shield, label: 'Capital Dashboard', color: 'text-prism-teal' },
       { to: '/capital/credit-overview', icon: FileSearch, label: 'Credit Overview', color: 'text-prism-sky' },
@@ -65,6 +69,11 @@ const NAV_SECTIONS = [
       { to: '/capital/disputes', icon: FileText, label: 'Dispute Manager', color: 'text-prism-orange' },
       { to: '/capital/funding-readiness', icon: TrendingUp, label: 'Funding Score', color: 'text-prism-lime' },
       { to: '/capital/business-credit', icon: Building2, label: 'Business Credit', color: 'text-prism-indigo' },
+    ],
+  },
+  {
+    label: 'Capital — Operations',
+    items: [
       { to: '/capital/receivables', icon: DollarSign, label: 'Receivables', color: 'text-prism-sky' },
       { to: '/capital/payroll-runway', icon: Clock, label: 'Payroll Runway', color: 'text-prism-rose' },
       { to: '/capital/funding-simulator', icon: BarChart3, label: 'Funding Simulator', color: 'text-prism-violet' },
@@ -76,6 +85,7 @@ const NAV_SECTIONS = [
   {
     label: 'More',
     items: [
+      { to: '/roadmap', icon: Map, label: 'Prism Roadmap', color: 'text-prism-teal' },
       { to: '/about', icon: Heart, label: 'About', color: 'text-prism-rose' },
       { to: '/legal', icon: Scale, label: 'Legal', color: 'text-muted-foreground' },
       { to: '/settings', icon: Settings, label: 'Settings', color: 'text-muted-foreground' },
