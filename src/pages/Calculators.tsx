@@ -338,7 +338,7 @@ const Calculators = () => {
                   value={c.id}
                   className="flex-1 gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg px-2 py-2 sm:px-3"
                 >
-                  <c.icon className="h-4 w-4 shrink-0" />
+                  <c.icon className={`h-4 w-4 shrink-0 ${c.color}`} />
                   <span className="hidden sm:inline text-xs truncate">{c.label}</span>
                 </TabsTrigger>
               </TooltipTrigger>
