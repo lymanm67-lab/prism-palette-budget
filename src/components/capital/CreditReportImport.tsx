@@ -1,5 +1,9 @@
 import { useState, useRef, useCallback } from 'react';
 import { Upload, FileText, Loader2, CheckCircle2, AlertTriangle, FileJson, FileSpreadsheet, ExternalLink, Globe, ChevronDown } from 'lucide-react';
+import * as pdfjsLib from 'pdfjs-dist';
+
+// Set PDF.js worker
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
