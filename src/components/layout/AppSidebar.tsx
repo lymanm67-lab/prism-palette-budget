@@ -133,20 +133,19 @@ const AppSidebar = () => {
         </Button>
       </div>
 
-      <nav className="relative flex-1 overflow-y-auto px-2 py-3 space-y-4">
+      <nav className="relative flex-1 overflow-y-auto px-2 py-2 space-y-2">
         {NAV_SECTIONS.map((section, sIdx) => (
           <div key={section.label}>
-            {/* Section label */}
             {!collapsed && (
-              <p className="px-3 pb-1.5 text-[10px] font-bold uppercase tracking-widest text-sidebar-foreground/30">
+              <p className="px-3 pb-1 text-[10px] font-bold uppercase tracking-widest text-sidebar-foreground/30">
                 {section.label}
               </p>
             )}
             {collapsed && sIdx > 0 && (
-              <div className="mx-3 mb-2 h-px bg-sidebar-border" />
+              <div className="mx-3 mb-1 h-px bg-sidebar-border" />
             )}
 
-            <div className="space-y-0.5">
+            <div className="space-y-px">
               {section.items.map((item) => {
                 const isActive = location.pathname === item.to;
                 return (
@@ -154,20 +153,20 @@ const AppSidebar = () => {
                     key={item.to}
                     to={item.to}
                     className={cn(
-                      'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 relative group',
+                      'flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[13px] font-medium transition-all duration-200 relative group',
                       isActive
                         ? 'bg-sidebar-accent text-sidebar-primary sidebar-accent-line'
                         : 'text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground'
                     )}
                   >
                     <span className={cn(
-                      'flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-200',
+                      'flex h-6 w-6 items-center justify-center rounded-md transition-all duration-200',
                       isActive
                         ? 'bg-sidebar-accent/80'
                         : 'bg-sidebar-accent/0 group-hover:bg-sidebar-accent/40'
                     )}>
                       <item.icon className={cn(
-                        'h-[18px] w-[18px] shrink-0 transition-colors duration-200',
+                        'h-4 w-4 shrink-0 transition-colors duration-200',
                         item.color
                       )} />
                     </span>
