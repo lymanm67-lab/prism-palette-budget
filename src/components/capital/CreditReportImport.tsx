@@ -195,8 +195,10 @@ const CreditReportImport = ({ onSuccess }: { onSuccess: () => void }) => {
     if (!rawText.trim()) { toast.error('Paste or upload credit report text first'); return; }
     setParsing(true);
     try {
+      // Limit text to avoid payload overflow — edge function also slices to 30k
+      const trimmedText = rawText.slice(0, 60000);
       const { data, error } = await supabase.functions.invoke('parse-credit-report', {
-        body: { report_text: rawText, bureau },
+        body: { report_text: trimmedText, bureau },
       });
       if (error) throw error;
       const accounts = (data.accounts || []).map((a: any) => ({ ...a, selected: true }));
