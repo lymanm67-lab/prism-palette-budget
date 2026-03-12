@@ -9,6 +9,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Progress } from '@/components/ui/progress';
 import PageOverview from '@/components/PageOverview';
 import AddCreditAccountDialog from '@/components/capital/AddCreditAccountDialog';
+import CreditReportImport from '@/components/capital/CreditReportImport';
 import { useCreditAccounts, CreditAccount } from '@/hooks/use-credit-accounts';
 import { format } from 'date-fns';
 
