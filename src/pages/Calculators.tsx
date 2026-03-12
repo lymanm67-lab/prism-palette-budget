@@ -281,7 +281,7 @@ const Calculators = () => {
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           <h1 className="font-display text-2xl font-bold truncate">Financial Calculators</h1>
-          <p className="text-sm text-muted-foreground truncate">Mortgage, auto, credit card, investment & debt.</p>
+          <p className="text-sm text-muted-foreground truncate">Mortgage, auto, credit card, investment, debt & revenue planning.</p>
         </div>
         <DropdownMenu>
           <Tooltip>
