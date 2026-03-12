@@ -2,10 +2,9 @@ import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Landmark, ArrowLeftRight, PiggyBank, BarChart3, Tags, Target,
   Settings, Bot, LogOut, ChevronLeft, ChevronRight, Sun, Moon, TrendingDown,
-  TrendingUp, Calculator, Scale, Map, Heart, Home, Wallet, RepeatIcon, GraduationCap,
+  TrendingUp, Calculator, Scale, Heart, Home, Wallet, RepeatIcon,
   CreditCard, LineChart, Sparkles, Shield, FileSearch, FileText, Building2,
-  DollarSign, Clock, Activity, Lock, Scissors, Layers,
-  Radar, ClipboardCheck,
+  DollarSign, Clock, Lock, Scissors, ClipboardCheck,
 } from 'lucide-react';
 import prismLogo from '@/assets/prism-budget-logo.png';
 import { useAuth } from '@/contexts/AuthContext';
