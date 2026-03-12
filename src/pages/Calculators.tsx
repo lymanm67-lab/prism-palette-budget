@@ -328,22 +328,18 @@ const Calculators = () => {
         />
       )}
 
-      {/* Calculator tabs — icon-only on mobile with tooltips */}
+      {/* Calculator tabs — horizontal scroll on mobile */}
       <Tabs value={activeCalc} onValueChange={setActiveCalc}>
-        <TabsList className="flex flex-wrap h-auto gap-1 bg-transparent p-0">
+        <TabsList className="flex h-10 w-full gap-1 bg-muted/50 p-1 overflow-x-auto">
           {CALCULATORS.map(c => (
-            <Tooltip key={c.id}>
-              <TooltipTrigger asChild>
-                <TabsTrigger
-                  value={c.id}
-                  className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl px-2.5 sm:px-4 py-2"
-                >
-                  <c.icon className="h-4 w-4" />
-                  <span className="hidden sm:inline">{c.label}</span>
-                </TabsTrigger>
-              </TooltipTrigger>
-              <TooltipContent className="sm:hidden"><p>{c.label}</p></TooltipContent>
-            </Tooltip>
+            <TabsTrigger
+              key={c.id}
+              value={c.id}
+              className="flex-1 gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg px-2 sm:px-3 text-xs sm:text-sm whitespace-nowrap min-w-0"
+            >
+              <c.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+              <span className="truncate">{c.label}</span>
+            </TabsTrigger>
           ))}
         </TabsList>
 
