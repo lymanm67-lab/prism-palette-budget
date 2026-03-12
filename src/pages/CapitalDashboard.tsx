@@ -154,9 +154,33 @@ const MODULES: ModuleCard[] = [
   },
 ];
 
+const GETTING_STARTED_STEPS = [
+  { key: 'credit_accounts', label: 'Add credit accounts', route: '/capital/credit-overview', icon: Shield },
+  { key: 'metro2_scan', label: 'Run Metro2 compliance scan', route: '/capital/metro2-scanner', icon: FileSearch },
+  { key: 'dispute', label: 'Create your first dispute', route: '/capital/disputes', icon: FileText },
+  { key: 'business_credit', label: 'Start business credit roadmap', route: '/capital/business-credit', icon: Building2 },
+  { key: 'funding_score', label: 'Check funding readiness score', route: '/capital/funding-readiness', icon: TrendingUp },
+];
+
 const CapitalDashboard = () => {
   const navigate = useNavigate();
   const [filter, setFilter] = useState<'all' | 'credit' | 'agency'>('all');
+  const { accounts } = useCreditAccounts();
+  const { findings } = useMetro2Findings();
+  const { disputes } = useDisputes();
+  const { steps: bizSteps } = useBusinessCreditSteps();
+
+  // Compute getting started completion
+  const gsCompletion = {
+    credit_accounts: accounts.length > 0,
+    metro2_scan: findings.length > 0,
+    dispute: disputes.length > 0,
+    business_credit: bizSteps.some(s => s.is_completed),
+    funding_score: accounts.length > 0, // score computes when accounts exist
+  };
+  const gsCompleted = Object.values(gsCompletion).filter(Boolean).length;
+  const gsTotal = GETTING_STARTED_STEPS.length;
+  const gsProgress = Math.round((gsCompleted / gsTotal) * 100);
 
   const filtered = filter === 'all' ? MODULES : MODULES.filter(m => m.category === filter);
 
@@ -169,6 +193,49 @@ const CapitalDashboard = () => {
         ttsScript="Welcome to FocusOS Capital, your Credit Intelligence and Agency Financial Command Center."
         features={CAPITAL_FEATURES}
       />
+
+      {/* Getting Started Card */}
+      {gsCompleted < gsTotal && (
+        <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-transparent overflow-hidden">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Rocket className="h-5 w-5 text-primary" />
+                <CardTitle className="text-base">Get Started with Capital</CardTitle>
+              </div>
+              <Badge variant="outline" className="text-xs">{gsCompleted} / {gsTotal}</Badge>
+            </div>
+            <Progress value={gsProgress} className="h-2 mt-2" />
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="space-y-2">
+              {GETTING_STARTED_STEPS.map(step => {
+                const done = gsCompletion[step.key as keyof typeof gsCompletion];
+                return (
+                  <button
+                    key={step.key}
+                    onClick={() => navigate(step.route)}
+                    className={cn(
+                      'flex items-center gap-3 w-full rounded-lg px-3 py-2 text-sm transition-colors text-left',
+                      done
+                        ? 'text-muted-foreground'
+                        : 'hover:bg-accent text-foreground'
+                    )}
+                  >
+                    {done
+                      ? <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                      : <Circle className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+                    }
+                    <step.icon className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <span className={done ? 'line-through' : ''}>{step.label}</span>
+                    {!done && <ChevronRight className="h-3.5 w-3.5 ml-auto text-muted-foreground" />}
+                  </button>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Compliance Notice */}
       <div className="flex items-start gap-3 rounded-lg border border-prism-amber/30 bg-prism-amber/5 p-4">
