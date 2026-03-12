@@ -56,3 +56,6 @@ verify_jwt = false
 
 [functions.bill-negotiation]
 verify_jwt = false
+
+[functions.parse-credit-report]
+verify_jwt = false

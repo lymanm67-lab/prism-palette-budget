@@ -298,6 +298,22 @@ const DisputeManager = () => {
               </Select>
             </div>
             <div>
+              <Label>eOSCAR Reason Code</Label>
+              <Select onValueChange={v => {
+                const reason = OSCAR_REASON_CODES.find(r => r.code === v);
+                if (reason) setForm(p => ({ ...p, dispute_reason: reason.label }));
+              }}>
+                <SelectTrigger><SelectValue placeholder="Select eOSCAR code (optional)" /></SelectTrigger>
+                <SelectContent>
+                  {OSCAR_REASON_CODES.map(r => (
+                    <SelectItem key={r.code} value={r.code}>
+                      <span className="font-mono text-xs mr-2">{r.code}</span>{r.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
               <Label>Dispute Reason *</Label>
               <Input value={form.dispute_reason} onChange={e => setForm(p => ({ ...p, dispute_reason: e.target.value }))} placeholder="e.g. Incorrect balance reported" />
             </div>
@@ -318,6 +334,17 @@ const DisputeManager = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* eOSCAR Letter Generator */}
+      {letterDispute && (
+        <DisputeLetterGenerator
+          dispute={letterDispute}
+          account={accounts.find(a => a.id === letterDispute.credit_account_id)}
+          onSubmit={handleSubmit}
+          open={!!letterDispute}
+          onOpenChange={(open) => { if (!open) setLetterDispute(null); }}
+        />
+      )}
     </div>
   );
 };
