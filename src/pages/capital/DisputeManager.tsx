@@ -228,7 +228,7 @@ const DisputeManager = () => {
 
   return (
     <div className="space-y-6 pb-8">
-      <PageOverview title="Dispute Manager" description="Prepare eOSCAR-compatible disputes with FCRA compliance tracking" icon={FileText} ttsScript="Prepare eOSCAR-compatible disputes with FCRA compliance tracking." features={['Generate dispute letters with PDF export', 'Track 30-day FCRA investigation timer', 'Auto-populate from Metro2 scanner findings']} />
+      <PageOverview title="Dispute Manager" description="Prepare eOSCAR-compatible disputes with FCRA compliance tracking" icon={FileText} ttsScript="Welcome to the Dispute Manager. This is where you prepare, track, and manage credit report disputes using eOSCAR-compatible reason codes — the same electronic system the bureaus use. Each dispute includes a 30-day FCRA investigation countdown timer. You can auto-populate disputes from Metro2 Scanner findings, or create them manually with one of 21 standardized reason codes. Generate formal dispute letters with PDF export, and use the direct links to file disputes online with Equifax, Experian, or TransUnion. Scenario: The Metro2 Scanner finds a charge-off with a conflicting status code. Click the finding to auto-create a dispute, generate an eOSCAR letter citing the specific violation, export it as PDF, then submit it through the bureau's online portal — all tracked with a 30-day response deadline." features={['eOSCAR-compatible reason codes and letter generation', '30-day FCRA investigation timer per dispute', 'Auto-populate from Metro2 Scanner findings', 'Direct links to bureau online dispute portals', 'Export dispute letters as PDF']} />
 
       {/* Stats */}
       <div className="grid gap-4 md:grid-cols-4">

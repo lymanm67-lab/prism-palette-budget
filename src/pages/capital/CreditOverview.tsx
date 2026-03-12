@@ -45,8 +45,8 @@ const CreditOverview = () => {
         title="Credit Overview"
         description="Import and analyze credit reports from all three major bureaus"
         icon={Shield}
-        ttsScript="Import and analyze credit reports from all three major bureaus."
-        features={['Upload PDF, CSV, or JSON', 'Equifax, Experian, TransUnion', 'Structured account dashboard']}
+        ttsScript="Welcome to Credit Overview. This is your central hub for monitoring credit health across all three bureaus — Equifax, Experian, and TransUnion. You can import credit reports in PDF, CSV, or JSON format, or manually add accounts. The dashboard shows your total balances, credit utilization ratio, and flags negative items like collections or charge-offs. Use the Credit Score Simulator to model how paying down balances or removing negatives could impact your estimated VantageScore. Scenario: Suppose you have three credit cards with a combined 60 percent utilization. Use the simulator to see how paying one card to zero could boost your score by 30 to 50 points, then prioritize that payoff in your budget."
+        features={['Upload PDF, CSV, or JSON credit reports', 'Track balances and utilization across all three bureaus', 'Simulate score changes with the Credit Score Simulator', 'Identify negative items dragging your score down']}
       />
 
       {/* VantageScore Estimator + Quick Stats */}

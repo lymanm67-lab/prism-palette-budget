@@ -99,7 +99,7 @@ const FundingReadiness = () => {
   if (!result) {
     return (
       <div className="space-y-6 pb-8">
-        <PageOverview title="Agency Funding Readiness Score" description="Proprietary scoring model evaluating your readiness for capital acquisition" icon={TrendingUp} ttsScript="Proprietary scoring model evaluating your readiness for capital." features={['Payment history analysis', 'Credit utilization tracking', 'Improvement recommendations']} />
+        <PageOverview title="Agency Funding Readiness Score" description="Proprietary scoring model evaluating your readiness for capital acquisition" icon={TrendingUp} ttsScript="Welcome to the Agency Funding Readiness Score. This proprietary scoring model evaluates six weighted factors to determine how ready your business is for capital acquisition. Payment History accounts for 25 percent, Credit Utilization 20 percent, Negative Items 15 percent, Credit Age 10 percent, Business Readiness 15 percent, and Debt-to-Income 15 percent. Your overall score maps to a letter grade from A-plus to D. Scenario: Your score shows a B-minus with utilization dragging you down at 55 percent. The recommendations suggest paying revolving balances below 30 percent, which could move you to an A-minus — significantly improving your odds of approval for an SBA loan or business line of credit." features={['Six-factor weighted scoring model', 'Letter grade with actionable recommendations', 'Tracks payment history, utilization, and credit age', 'Business readiness and debt-to-income analysis']} />
         <Card className="text-center p-8">
           <Info className="h-12 w-12 mx-auto text-muted-foreground/30 mb-4" />
           <p className="font-semibold text-lg mb-2">No Credit Data Yet</p>
