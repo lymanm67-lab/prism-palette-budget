@@ -4,7 +4,7 @@ import {
   Settings, Bot, LogOut, ChevronLeft, ChevronRight, Sun, Moon, TrendingDown,
   TrendingUp, Calculator, Scale, Map, Heart, Home, Wallet, RepeatIcon, GraduationCap,
   CreditCard, LineChart, Sparkles, Shield, FileSearch, FileText, Building2,
-  DollarSign, Clock, Activity, Lock, Scissors, Layers, Landmark, BarChart3 as ChartBar,
+  DollarSign, Clock, Activity, Lock, Scissors, Layers,
   Radar, ClipboardCheck,
 } from 'lucide-react';
 import prismLogo from '@/assets/prism-budget-logo.png';
