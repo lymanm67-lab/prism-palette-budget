@@ -44,7 +44,7 @@ const BusinessCredit = () => {
 
   return (
     <div className="space-y-6 pb-8">
-      <PageOverview title="Business Credit Builder" description="Step-by-step roadmap to establish strong business credit" icon={Building2} ttsScript="Step-by-step roadmap to establish strong business credit." features={['Entity formation checklist', 'Vendor tradeline suggestions', 'Credit bureau registration']} />
+      <PageOverview title="Business Credit Builder" description="Step-by-step roadmap to establish strong business credit" icon={Building2} ttsScript="Welcome to the Business Credit Builder. This is your step-by-step roadmap for establishing business credit separate from your personal credit. The six phases walk you through entity formation, EIN and tax setup, opening a business bank account, registering with business credit bureaus like Dun and Bradstreet, building vendor tradelines with Net-30 accounts, and graduating to business credit cards. Each step includes a checklist and notes section to track your progress. Scenario: You just formed your LLC. Start by checking off entity formation, then move to getting your EIN from the IRS. Once your business bank account is open, apply for your D-U-N-S number and two to three starter vendor accounts that report to business bureaus — building the foundation for a strong Paydex score." features={['6-phase business credit roadmap', 'Entity formation and EIN setup guides', 'Vendor tradeline and D-U-N-S registration', 'Progress tracking with notes per step']} />
 
       <Card className="p-6">
         <div className="flex items-center justify-between mb-3">
