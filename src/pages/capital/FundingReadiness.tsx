@@ -146,6 +146,37 @@ const FundingReadiness = () => {
           </Card>
         ))}
       </div>
+
+      {/* Funding & Capital Resources */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <ExternalLink className="h-4 w-4 text-primary" />
+            Funding & Capital Resources
+          </CardTitle>
+          <p className="text-xs text-muted-foreground">Explore funding programs, grants, and lending options for your business</p>
+        </CardHeader>
+        <CardContent className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+          {[
+            { name: 'SBA Loan Programs', url: 'https://www.sba.gov/funding-programs/loans', desc: 'sba.gov' },
+            { name: 'SBA Grants', url: 'https://www.sba.gov/funding-programs/grants', desc: 'sba.gov/grants' },
+            { name: 'Grants.gov', url: 'https://www.grants.gov/', desc: 'Federal grant opportunities' },
+            { name: 'CDFI Fund', url: 'https://www.cdfifund.gov/', desc: 'Community development financing' },
+            { name: 'Fundera by NerdWallet', url: 'https://www.fundera.com/', desc: 'Compare business loans' },
+            { name: 'SCORE Mentorship', url: 'https://www.score.org/', desc: 'Free business mentoring' },
+          ].map((link) => (
+            <a key={link.url} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 p-3 rounded-lg border bg-background hover:bg-accent transition-colors group">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20">
+                <ExternalLink className="h-4 w-4 text-primary" />
+              </div>
+              <div className="min-w-0">
+                <p className="font-medium text-sm">{link.name}</p>
+                <p className="text-xs text-muted-foreground truncate">{link.desc}</p>
+              </div>
+            </a>
+          ))}
+        </CardContent>
+      </Card>
     </div>
   );
 };
