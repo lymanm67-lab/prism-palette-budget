@@ -169,7 +169,37 @@ const CreditReportImport = ({ onSuccess }: { onSuccess: () => void }) => {
         }
         
         if (fullText.trim().length < 50) {
-          toast.error('PDF appears to be scanned/image-based. Please copy and paste the text from your credit report instead.');
+          // Scanned/image-based PDF — use OCR via AI Vision
+          toast.info('Scanned PDF detected — running AI Vision OCR...');
+          setParsing(true);
+          try {
+            const pagesToProcess = Math.min(pdf.numPages, 8); // limit to 8 pages
+            const images: string[] = [];
+            for (let i = 1; i <= pagesToProcess; i++) {
+              const page = await pdf.getPage(i);
+              const viewport = page.getViewport({ scale: 1.5 });
+              const canvas = document.createElement('canvas');
+              canvas.width = viewport.width;
+              canvas.height = viewport.height;
+              const ctx = canvas.getContext('2d')!;
+              await page.render({ canvasContext: ctx, viewport }).promise;
+              // Use JPEG at 0.7 quality to keep size manageable
+              const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+              images.push(dataUrl);
+            }
+            const { data, error } = await supabase.functions.invoke('parse-credit-report', {
+              body: { images, bureau, mode: 'ocr' },
+            });
+            if (error) throw error;
+            const accounts = (data.accounts || []).map((a: any) => ({ ...a, selected: true }));
+            setParsedAccounts(accounts);
+            toast.success(`AI Vision extracted ${accounts.length} accounts from scanned PDF`);
+          } catch (ocrErr: any) {
+            console.error('OCR parse error:', ocrErr);
+            toast.error(`OCR failed: ${ocrErr.message}. Try pasting the text manually.`);
+          } finally {
+            setParsing(false);
+          }
           return;
         }
         
