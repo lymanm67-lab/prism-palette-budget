@@ -152,8 +152,36 @@ const CreditReportImport = ({ onSuccess }: { onSuccess: () => void }) => {
       setParsedAccounts(accounts);
       setMode('structured');
       toast.success(`Loaded ${accounts.length} accounts from CSV`);
+    } else if (ext === 'pdf') {
+      // Extract text from PDF using pdf.js
+      toast.info('Extracting text from PDF...');
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        let fullText = '';
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const content = await page.getTextContent();
+          const pageText = content.items
+            .map((item: any) => item.str)
+            .join(' ');
+          fullText += pageText + '\n';
+        }
+        
+        if (fullText.trim().length < 50) {
+          toast.error('PDF appears to be scanned/image-based. Please copy and paste the text from your credit report instead.');
+          return;
+        }
+        
+        setRawText(fullText);
+        setMode('ai');
+        toast.success(`Extracted ${fullText.length} characters from PDF. Click "Parse with AI" to extract accounts.`);
+      } catch (err: any) {
+        console.error('PDF parse error:', err);
+        toast.error('Could not read PDF. Try pasting the text content instead.');
+      }
     } else {
-      // Treat as text (PDF text content pasted, or .txt)
+      // Treat as text (.txt)
       const text = await file.text();
       setRawText(text);
       setMode('ai');
