@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { SlidersHorizontal, TrendingUp, TrendingDown, Minus, Info, RotateCcw, Sparkles } from 'lucide-react';
+import { SlidersHorizontal, TrendingUp, TrendingDown, Minus, Info, RotateCcw, Sparkles, Zap, CreditCard, ShieldX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CreditAccount } from '@/hooks/use-credit-accounts';
 
@@ -19,6 +19,15 @@ interface SimulatedAccount {
   date_opened: string | null;
   simBalance: number;
   removed: boolean;
+}
+
+interface QuickWin {
+  id: string;
+  label: string;
+  action: string;
+  points: number;
+  type: 'paydown' | 'remove';
+  detail: string;
 }
 
 function computeScore(accounts: SimulatedAccount[]) {
@@ -68,6 +77,53 @@ function computeScore(accounts: SimulatedAccount[]) {
   return { score, utilization, negativeCount, factors };
 }
 
+function computeQuickWins(baseAccounts: SimulatedAccount[]): QuickWin[] {
+  const baseScore = computeScore(baseAccounts).score;
+  const wins: QuickWin[] = [];
+  const fmt = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
+
+  // Test paying each revolving account to $0
+  for (const acct of baseAccounts) {
+    if (acct.credit_limit && acct.credit_limit > 0 && acct.balance > 0) {
+      const modified = baseAccounts.map(a => a.id === acct.id ? { ...a, simBalance: 0 } : a);
+      const newScore = computeScore(modified).score;
+      const diff = newScore - baseScore;
+      if (diff > 0) {
+        wins.push({
+          id: acct.id,
+          label: acct.account_name,
+          action: `Pay off ${fmt(acct.balance)}`,
+          points: diff,
+          type: 'paydown',
+          detail: `Paying this balance to $0 could boost your score by ~${diff} points`,
+        });
+      }
+    }
+  }
+
+  // Test removing each negative
+  const negativeStatuses = ['Collection', 'Charge-Off', 'Foreclosure', 'Repossession'];
+  for (const acct of baseAccounts) {
+    if (negativeStatuses.includes(acct.account_status)) {
+      const modified = baseAccounts.map(a => a.id === acct.id ? { ...a, removed: true } : a);
+      const newScore = computeScore(modified).score;
+      const diff = newScore - baseScore;
+      if (diff > 0) {
+        wins.push({
+          id: acct.id,
+          label: acct.account_name,
+          action: `Remove ${acct.account_status.toLowerCase()}`,
+          points: diff,
+          type: 'remove',
+          detail: `Removing this ${acct.account_status.toLowerCase()} could boost your score by ~${diff} points`,
+        });
+      }
+    }
+  }
+
+  return wins.sort((a, b) => b.points - a.points);
+}
+
 const fmt = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
 
 export default function CreditScoreSimulator({ accounts }: { accounts: CreditAccount[] }) {
@@ -91,6 +147,7 @@ export default function CreditScoreSimulator({ accounts }: { accounts: CreditAcc
   const currentResult = useMemo(() => computeScore(initialSim), [initialSim]);
   const simResult = useMemo(() => computeScore(simAccounts), [simAccounts]);
   const scoreDiff = simResult.score - currentResult.score;
+  const quickWins = useMemo(() => computeQuickWins(initialSim), [initialSim]);
 
   const updateBalance = (id: string, val: number) => {
     setSimAccounts(prev => prev.map(a => a.id === id ? { ...a, simBalance: val } : a));
@@ -98,6 +155,14 @@ export default function CreditScoreSimulator({ accounts }: { accounts: CreditAcc
 
   const toggleRemove = (id: string) => {
     setSimAccounts(prev => prev.map(a => a.id === id ? { ...a, removed: !a.removed } : a));
+  };
+
+  const applyQuickWin = (win: QuickWin) => {
+    if (win.type === 'paydown') {
+      setSimAccounts(prev => prev.map(a => a.id === win.id ? { ...a, simBalance: 0 } : a));
+    } else {
+      setSimAccounts(prev => prev.map(a => a.id === win.id ? { ...a, removed: true } : a));
+    }
   };
 
   const reset = () => setSimAccounts(initialSim.map(a => ({ ...a })));
@@ -126,6 +191,44 @@ export default function CreditScoreSimulator({ accounts }: { accounts: CreditAcc
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Quick Wins */}
+        {quickWins.length > 0 && (
+          <div className="space-y-2">
+            <h4 className="text-sm font-semibold flex items-center gap-2">
+              <Zap className="h-4 w-4 text-yellow-500" />
+              Quick Wins
+              <Badge variant="secondary" className="text-[10px]">Top actions ranked by impact</Badge>
+            </h4>
+            <div className="space-y-1.5">
+              {quickWins.slice(0, 5).map((win, i) => (
+                <button
+                  key={win.id + win.type}
+                  onClick={() => applyQuickWin(win)}
+                  className="w-full flex items-center gap-3 rounded-lg border border-border/50 p-2.5 text-left hover:bg-accent/10 transition-colors group"
+                >
+                  <div className="flex items-center justify-center h-7 w-7 rounded-full bg-primary/10 text-primary text-xs font-bold shrink-0">
+                    {i + 1}
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {win.type === 'paydown' ? (
+                      <CreditCard className="h-3.5 w-3.5 text-muted-foreground" />
+                    ) : (
+                      <ShieldX className="h-3.5 w-3.5 text-destructive" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{win.label}</p>
+                    <p className="text-xs text-muted-foreground">{win.action}</p>
+                  </div>
+                  <Badge className="shrink-0 bg-accent/15 text-accent border-accent/30 hover:bg-accent/20">
+                    +{win.points} pts
+                  </Badge>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Score Comparison */}
         <div className="flex items-center justify-center gap-8 flex-wrap">
           <div className="text-center">
