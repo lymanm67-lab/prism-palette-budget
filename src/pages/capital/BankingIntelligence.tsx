@@ -50,6 +50,9 @@ const BankingIntelligence = () => {
       <PageOverview
         title="Banking Intelligence"
         description="Research banks by location, asset size, and commercial lending activity. Identify the best banking partners for your business financing needs."
+        icon={Building2}
+        ttsScript="Banking Intelligence helps you research banks by location, asset size, and commercial lending activity."
+        features={["Bank search and filtering", "SBA lending rankings", "Commercial focus ratings"]}
       />
 
       {/* Filters */}

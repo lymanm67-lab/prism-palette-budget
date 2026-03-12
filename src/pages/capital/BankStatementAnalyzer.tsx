@@ -93,6 +93,9 @@ const BankStatementAnalyzer = () => {
       <PageOverview
         title="Bank Statement Analyzer"
         description="Analyze your bank statement data to generate a Bank Health Score. Lenders review average balances, deposit consistency, and NSF activity when evaluating loan applications."
+        icon={BarChart3}
+        ttsScript="The Bank Statement Analyzer generates a Bank Health Score based on your statement data."
+        features={["Bank Health Score", "NSF tracking", "Revenue stability analysis"]}
       />
 
       <div className="grid gap-6 lg:grid-cols-2">

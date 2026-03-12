@@ -123,6 +123,9 @@ const CapitalStackPlanner = () => {
       <PageOverview
         title="Capital Stack Planner"
         description="A visual roadmap showing the sequence of funding sources your business can access as credit and financial history strengthen over time."
+        icon={Layers}
+        ttsScript="The Capital Stack Planner shows the typical sequence of funding sources businesses can access as they build credit."
+        features={["Visual funding roadmap", "Readiness tracking per stage", "Requirements checklist"]}
       />
 
       <Card>

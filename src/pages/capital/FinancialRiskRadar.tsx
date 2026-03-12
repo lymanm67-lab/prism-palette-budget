@@ -191,6 +191,9 @@ const FinancialRiskRadar = () => {
       <PageOverview
         title="Financial Risk Radar"
         description="Real-time monitoring of emerging financial risks across payroll, revenue, receivables, and operations."
+        icon={Radar}
+        ttsScript="The Financial Risk Radar monitors emerging financial risks across payroll, revenue, receivables, and operations."
+        features={["Payroll risk monitoring", "Revenue volatility alerts", "Claim denial tracking"]}
       />
 
       {/* Summary */}

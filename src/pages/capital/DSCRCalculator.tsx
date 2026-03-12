@@ -75,6 +75,9 @@ const DSCRCalculator = () => {
       <PageOverview
         title="DSCR Calculator"
         description="Calculate your Debt Service Coverage Ratio — a key metric lenders use to evaluate your ability to repay loans from operating income."
+        icon={Calculator}
+        ttsScript="The DSCR Calculator helps you determine your Debt Service Coverage Ratio, a key metric lenders use."
+        features={["Auto-prefill from financial data", "Lender benchmark comparison", "Risk interpretation"]}
       />
 
       <div className="grid gap-6 lg:grid-cols-2">

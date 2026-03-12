@@ -92,6 +92,9 @@ const LoanReadiness = () => {
       <PageOverview
         title="Loan Readiness Checklist"
         description="Track the documents lenders typically request when evaluating loan applications. A complete package accelerates the underwriting process."
+        icon={FileText}
+        ttsScript="The Loan Readiness Checklist tracks documents lenders typically request when evaluating loan applications."
+        features={["18-document checklist", "Readiness score tracking", "Category organization"]}
       />
 
       {/* Score */}

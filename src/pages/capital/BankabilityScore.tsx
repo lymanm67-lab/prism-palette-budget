@@ -159,6 +159,9 @@ const BankabilityScore = () => {
       <PageOverview
         title="Business Bankability Score"
         description="A composite score from 0-100 evaluating how attractive your business is to lenders, based on 8 key financial factors."
+        icon={TrendingUp}
+        ttsScript="The Business Bankability Score evaluates how attractive your business is to lenders across 8 key factors."
+        features={["8-factor weighted scoring", "Score interpretation guide", "Real-time data integration"]}
       />
 
       {/* Score Display */}
