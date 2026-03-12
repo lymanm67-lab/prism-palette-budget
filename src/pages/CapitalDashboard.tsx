@@ -12,6 +12,14 @@ import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import PageOverview from '@/components/PageOverview';
 
+const CAPITAL_FEATURES = [
+  'Credit report import & analysis',
+  'Metro2 compliance scanning',
+  'eOSCAR dispute preparation',
+  'Agency financial command center',
+  'Business credit building roadmap',
+];
+
 interface ModuleCard {
   title: string;
   description: string;
