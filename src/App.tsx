@@ -38,6 +38,18 @@ import Subscriptions from "@/pages/Subscriptions";
 import Forecast from "@/pages/Forecast";
 import YearInReview from "@/pages/YearInReview";
 import ApiDocs from "@/pages/ApiDocs";
+import CapitalDashboard from "@/pages/CapitalDashboard";
+import CreditOverview from "@/pages/capital/CreditOverview";
+import Metro2Scanner from "@/pages/capital/Metro2Scanner";
+import DisputeManager from "@/pages/capital/DisputeManager";
+import FundingReadiness from "@/pages/capital/FundingReadiness";
+import BusinessCredit from "@/pages/capital/BusinessCredit";
+import Receivables from "@/pages/capital/Receivables";
+import PayrollRunway from "@/pages/capital/PayrollRunway";
+import FundingSimulator from "@/pages/capital/FundingSimulator";
+import SurvivalIndex from "@/pages/capital/SurvivalIndex";
+import DocumentVault from "@/pages/capital/DocumentVault";
+import AiCoach from "@/pages/capital/AiCoach";
 
 const queryClient = new QueryClient();
 
