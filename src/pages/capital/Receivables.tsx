@@ -166,7 +166,7 @@ const PaymentPredictor = forwardRef<HTMLDivElement, { claims: MedicaidClaim[]; a
       </CardContent>
     </Card>
   );
-}
+});
 
 const STATUSES = ['submitted', 'pending', 'approved', 'paid', 'denied', 'appealed'] as const;
 
