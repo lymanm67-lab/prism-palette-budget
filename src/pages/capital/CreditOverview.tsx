@@ -204,6 +204,9 @@ const CreditOverview = () => {
       {/* Import Section */}
       <CreditReportImport onSuccess={refetch} />
 
+      {/* Credit Score Simulator */}
+      {accounts.length > 0 && <CreditScoreSimulator accounts={accounts} />}
+
       {/* Accounts Table */}
       <Tabs value={tab} onValueChange={setTab}>
         <div className="flex items-center justify-between flex-wrap gap-2">
