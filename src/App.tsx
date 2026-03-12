@@ -38,6 +38,18 @@ import Subscriptions from "@/pages/Subscriptions";
 import Forecast from "@/pages/Forecast";
 import YearInReview from "@/pages/YearInReview";
 import ApiDocs from "@/pages/ApiDocs";
+import CapitalDashboard from "@/pages/CapitalDashboard";
+import CreditOverview from "@/pages/capital/CreditOverview";
+import Metro2Scanner from "@/pages/capital/Metro2Scanner";
+import DisputeManager from "@/pages/capital/DisputeManager";
+import FundingReadiness from "@/pages/capital/FundingReadiness";
+import BusinessCredit from "@/pages/capital/BusinessCredit";
+import Receivables from "@/pages/capital/Receivables";
+import PayrollRunway from "@/pages/capital/PayrollRunway";
+import FundingSimulator from "@/pages/capital/FundingSimulator";
+import SurvivalIndex from "@/pages/capital/SurvivalIndex";
+import DocumentVault from "@/pages/capital/DocumentVault";
+import AiCoach from "@/pages/capital/AiCoach";
 
 const queryClient = new QueryClient();
 
@@ -116,6 +128,18 @@ const App = () => (
               <Route path="/legal" element={<Legal />} />
               <Route path="/getting-started" element={<GettingStarted />} />
               <Route path="/api-docs" element={<ApiDocs />} />
+              <Route path="/capital" element={<CapitalDashboard />} />
+              <Route path="/capital/credit-overview" element={<CreditOverview />} />
+              <Route path="/capital/metro2-scanner" element={<Metro2Scanner />} />
+              <Route path="/capital/disputes" element={<DisputeManager />} />
+              <Route path="/capital/funding-readiness" element={<FundingReadiness />} />
+              <Route path="/capital/business-credit" element={<BusinessCredit />} />
+              <Route path="/capital/receivables" element={<Receivables />} />
+              <Route path="/capital/payroll-runway" element={<PayrollRunway />} />
+              <Route path="/capital/funding-simulator" element={<FundingSimulator />} />
+              <Route path="/capital/survival-index" element={<SurvivalIndex />} />
+              <Route path="/capital/vault" element={<DocumentVault />} />
+              <Route path="/capital/ai-coach" element={<AiCoach />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
