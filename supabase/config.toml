@@ -50,3 +50,6 @@ verify_jwt = false
 
 [functions.capital-coach]
 verify_jwt = false
+
+[functions.metro2-scan]
+verify_jwt = false
