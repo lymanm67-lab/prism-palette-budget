@@ -1104,6 +1104,50 @@ export type Database = {
           },
         ]
       }
+      loan_readiness_items: {
+        Row: {
+          created_at: string
+          document_key: string
+          document_label: string
+          household_id: string
+          id: string
+          is_uploaded: boolean
+          notes: string | null
+          updated_at: string
+          uploaded_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          document_key: string
+          document_label: string
+          household_id: string
+          id?: string
+          is_uploaded?: boolean
+          notes?: string | null
+          updated_at?: string
+          uploaded_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          document_key?: string
+          document_label?: string
+          household_id?: string
+          id?: string
+          is_uploaded?: boolean
+          notes?: string | null
+          updated_at?: string
+          uploaded_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loan_readiness_items_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       medicaid_claims: {
         Row: {
           amount: number

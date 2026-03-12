@@ -1,6 +1,6 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, ArrowLeftRight, PiggyBank, BarChart3, Grid3x3, X,
-  Settings, Target, CreditCard, Wallet, TrendingUp, Receipt, Calculator, Home } from 'lucide-react';
+  Settings, Target, CreditCard, Wallet, TrendingUp, Receipt, Calculator, Home, Shield, Landmark, ClipboardCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState, useCallback } from 'react';
 import { useSidebarBadges } from '@/hooks/use-sidebar-badges';
@@ -21,7 +21,10 @@ const MORE_ITEMS = [
   { to: '/subscriptions', icon: CreditCard, label: 'Subscriptions' },
   { to: '/net-worth', icon: TrendingUp, label: 'Net Worth' },
   { to: '/calculators', icon: Calculator, label: 'Calculators' },
-  { to: '/capital', icon: CreditCard, label: 'Capital' },
+  { to: '/capital', icon: Shield, label: 'Capital' },
+  { to: '/capital/bankability', icon: BarChart3, label: 'Bankability' },
+  { to: '/capital/loan-readiness', icon: ClipboardCheck, label: 'Loan Ready' },
+  { to: '/capital/banking-intelligence', icon: Landmark, label: 'Banking Intel' },
   { to: '/settings', icon: Settings, label: 'Settings' },
 ];
 

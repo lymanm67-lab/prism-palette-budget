@@ -51,6 +51,13 @@ import FundingSimulator from "@/pages/capital/FundingSimulator";
 import SurvivalIndex from "@/pages/capital/SurvivalIndex";
 import DocumentVault from "@/pages/capital/DocumentVault";
 import AiCoach from "@/pages/capital/AiCoach";
+import CapitalStackPlanner from "@/pages/capital/CapitalStackPlanner";
+import BankingIntelligence from "@/pages/capital/BankingIntelligence";
+import BankStatementAnalyzer from "@/pages/capital/BankStatementAnalyzer";
+import FinancialRiskRadar from "@/pages/capital/FinancialRiskRadar";
+import BankabilityScore from "@/pages/capital/BankabilityScore";
+import LoanReadiness from "@/pages/capital/LoanReadiness";
+import DSCRCalculator from "@/pages/capital/DSCRCalculator";
 
 const queryClient = new QueryClient();
 
@@ -142,6 +149,13 @@ const App = () => (
               <Route path="/capital/survival-index" element={<SurvivalIndex />} />
               <Route path="/capital/vault" element={<DocumentVault />} />
               <Route path="/capital/ai-coach" element={<AiCoach />} />
+              <Route path="/capital/capital-stack" element={<CapitalStackPlanner />} />
+              <Route path="/capital/banking-intelligence" element={<BankingIntelligence />} />
+              <Route path="/capital/bank-analyzer" element={<BankStatementAnalyzer />} />
+              <Route path="/capital/risk-radar" element={<FinancialRiskRadar />} />
+              <Route path="/capital/bankability" element={<BankabilityScore />} />
+              <Route path="/capital/loan-readiness" element={<LoanReadiness />} />
+              <Route path="/capital/dscr" element={<DSCRCalculator />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
