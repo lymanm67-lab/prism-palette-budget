@@ -273,6 +273,9 @@ const Receivables = () => {
         </Card>
       </div>
 
+      {/* Medicaid Payment Predictor */}
+      <PaymentPredictor claims={claims} avgCycle={stats.avgCycle} />
+
       {/* Claims Table */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
