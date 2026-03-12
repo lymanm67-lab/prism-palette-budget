@@ -51,6 +51,13 @@ import FundingSimulator from "@/pages/capital/FundingSimulator";
 import SurvivalIndex from "@/pages/capital/SurvivalIndex";
 import DocumentVault from "@/pages/capital/DocumentVault";
 import AiCoach from "@/pages/capital/AiCoach";
+import CapitalStackPlanner from "@/pages/capital/CapitalStackPlanner";
+import BankingIntelligence from "@/pages/capital/BankingIntelligence";
+import BankStatementAnalyzer from "@/pages/capital/BankStatementAnalyzer";
+import FinancialRiskRadar from "@/pages/capital/FinancialRiskRadar";
+import BankabilityScore from "@/pages/capital/BankabilityScore";
+import LoanReadiness from "@/pages/capital/LoanReadiness";
+import DSCRCalculator from "@/pages/capital/DSCRCalculator";
 
 const queryClient = new QueryClient();
 
