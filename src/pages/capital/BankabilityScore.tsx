@@ -17,7 +17,8 @@ interface ScoreFactor {
 }
 
 const BankabilityScore = () => {
-  const { householdId } = useHousehold();
+  const { household } = useHousehold();
+  const householdId = household?.id;
 
   const { data: creditAccounts } = useQuery({
     queryKey: ["bankability-credit", householdId],
