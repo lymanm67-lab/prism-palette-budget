@@ -171,10 +171,18 @@ const DisputeManager = () => {
                 {/* Actions */}
                 <div className="flex flex-wrap gap-2">
                   {d.status === 'draft' && (
-                    <Button size="sm" onClick={() => handleSubmit(d)}><Send className="h-3.5 w-3.5 mr-1" />Mark Submitted</Button>
+                    <>
+                      <Button size="sm" variant="outline" onClick={() => setLetterDispute(d)}>
+                        <FileEdit className="h-3.5 w-3.5 mr-1" />Generate eOSCAR Letter
+                      </Button>
+                      <Button size="sm" onClick={() => handleSubmit(d)}><Send className="h-3.5 w-3.5 mr-1" />Mark Submitted</Button>
+                    </>
                   )}
                   {(d.status === 'submitted' || d.status === 'in_progress') && (
                     <>
+                      <Button size="sm" variant="outline" onClick={() => setLetterDispute(d)}>
+                        <FileEdit className="h-3.5 w-3.5 mr-1" />View Letter
+                      </Button>
                       <Button size="sm" variant="outline" onClick={() => handleResolve(d.id, 'resolved')}><CheckCircle2 className="h-3.5 w-3.5 mr-1" />Resolved</Button>
                       <Button size="sm" variant="outline" onClick={() => handleResolve(d.id, 'denied')}><XCircle className="h-3.5 w-3.5 mr-1" />Denied</Button>
                     </>
