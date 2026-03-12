@@ -37,6 +37,7 @@ import NetWorth from "@/pages/NetWorth";
 import Subscriptions from "@/pages/Subscriptions";
 import Forecast from "@/pages/Forecast";
 import YearInReview from "@/pages/YearInReview";
+import BillNegotiation from "@/pages/BillNegotiation";
 import ApiDocs from "@/pages/ApiDocs";
 import CapitalDashboard from "@/pages/CapitalDashboard";
 import CreditOverview from "@/pages/capital/CreditOverview";
