@@ -1,6 +1,6 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, ArrowLeftRight, PiggyBank, BarChart3, Grid3x3, X,
-  Settings, Target, CreditCard, Wallet, TrendingUp, Receipt, Calculator, Home, Shield, Landmark, ClipboardCheck } from 'lucide-react';
+  Settings, Target, Wallet, TrendingUp, Receipt, Calculator, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState, useCallback } from 'react';
 import { useSidebarBadges } from '@/hooks/use-sidebar-badges';
