@@ -10,6 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import PageOverview from '@/components/PageOverview';
 import AddCreditAccountDialog from '@/components/capital/AddCreditAccountDialog';
 import CreditReportImport from '@/components/capital/CreditReportImport';
+import CreditScoreSimulator from '@/components/capital/CreditScoreSimulator';
 import { useCreditAccounts, CreditAccount } from '@/hooks/use-credit-accounts';
 import { format } from 'date-fns';
 
@@ -202,6 +203,9 @@ const CreditOverview = () => {
 
       {/* Import Section */}
       <CreditReportImport onSuccess={refetch} />
+
+      {/* Credit Score Simulator */}
+      {accounts.length > 0 && <CreditScoreSimulator accounts={accounts} />}
 
       {/* Accounts Table */}
       <Tabs value={tab} onValueChange={setTab}>
