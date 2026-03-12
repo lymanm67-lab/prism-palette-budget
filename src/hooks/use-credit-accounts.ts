@@ -29,7 +29,7 @@ export interface CreditAccount {
 }
 
 export function useCreditAccounts() {
-  const { currentHousehold } = useHousehold();
+  const { household: currentHousehold } = useHousehold();
   const queryClient = useQueryClient();
   const householdId = currentHousehold?.id;
 

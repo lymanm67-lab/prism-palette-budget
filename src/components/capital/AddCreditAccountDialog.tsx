@@ -48,7 +48,7 @@ interface Props {
 export default function AddCreditAccountDialog({ onSuccess, defaultBureau }: Props) {
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
-  const { currentHousehold } = useHousehold();
+  const { household: currentHousehold } = useHousehold();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
