@@ -20,7 +20,6 @@ const NAV_SECTIONS = [
     label: 'Home',
     items: [
       { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', color: 'text-prism-teal' },
-      { to: '/getting-started', icon: GraduationCap, label: 'Getting Started', color: 'text-prism-amber' },
     ],
   },
   {
@@ -33,22 +32,22 @@ const NAV_SECTIONS = [
     ],
   },
   {
-    label: 'Budget & Plan',
+    label: 'Plan',
     items: [
       { to: '/budgets', icon: PiggyBank, label: 'Budgets', color: 'text-prism-amber' },
-      { to: '/cash-flow', icon: Wallet, label: 'Cash Flow', color: 'text-prism-teal' },
       { to: '/categories', icon: Tags, label: 'Categories', color: 'text-prism-lime' },
+      { to: '/cash-flow', icon: Wallet, label: 'Cash Flow', color: 'text-prism-teal' },
       { to: '/forecast', icon: LineChart, label: 'Forecast', color: 'text-prism-sky' },
+      { to: '/calculators', icon: Calculator, label: 'Calculators', color: 'text-prism-indigo' },
     ],
   },
   {
-    label: 'Goals & Wealth',
+    label: 'Grow',
     items: [
       { to: '/goals', icon: Target, label: 'Goals', color: 'text-prism-lime' },
       { to: '/debt-payoff', icon: TrendingDown, label: 'Debt Payoff', color: 'text-prism-rose' },
       { to: '/net-worth', icon: Scale, label: 'Net Worth', color: 'text-prism-teal' },
       { to: '/investments', icon: TrendingUp, label: 'Investments', color: 'text-prism-indigo' },
-      { to: '/home-buying', icon: Home, label: 'Home Buying', color: 'text-prism-amber' },
     ],
   },
   {
@@ -56,53 +55,34 @@ const NAV_SECTIONS = [
     items: [
       { to: '/reports', icon: BarChart3, label: 'Reports', color: 'text-prism-orange' },
       { to: '/spending-trends', icon: TrendingUp, label: 'Spending Trends', color: 'text-prism-lime' },
-      { to: '/bill-negotiation', icon: Scissors, label: 'Bill Negotiation', color: 'text-prism-teal' },
-      { to: '/year-in-review', icon: Sparkles, label: 'Year in Review', color: 'text-prism-amber' },
       { to: '/tax-assistant', icon: Bot, label: 'Tax Assistant', color: 'text-prism-indigo' },
-      { to: '/calculators', icon: Calculator, label: 'Calculators', color: 'text-prism-sky' },
+      { to: '/year-in-review', icon: Sparkles, label: 'Year in Review', color: 'text-prism-amber' },
     ],
   },
   {
-    label: 'Capital — Credit',
+    label: 'Capital',
     items: [
       { to: '/capital', icon: Shield, label: 'Capital Dashboard', color: 'text-prism-teal' },
       { to: '/capital/credit-overview', icon: FileSearch, label: 'Credit Overview', color: 'text-prism-sky' },
       { to: '/capital/metro2-scanner', icon: FileSearch, label: 'Metro2 Scanner', color: 'text-prism-amber' },
-      { to: '/capital/disputes', icon: FileText, label: 'Dispute Manager', color: 'text-prism-orange' },
-      { to: '/capital/funding-readiness', icon: TrendingUp, label: 'Funding Score', color: 'text-prism-lime' },
+      { to: '/capital/disputes', icon: FileText, label: 'Disputes', color: 'text-prism-orange' },
       { to: '/capital/business-credit', icon: Building2, label: 'Business Credit', color: 'text-prism-indigo' },
-      { to: '/capital/bankability', icon: BarChart3, label: 'Bankability Score', color: 'text-prism-violet' },
-    ],
-  },
-  {
-    label: 'Capital — Operations',
-    items: [
+      { to: '/capital/bankability', icon: BarChart3, label: 'Bankability', color: 'text-prism-violet' },
+      { to: '/capital/loan-readiness', icon: ClipboardCheck, label: 'Loan Readiness', color: 'text-prism-lime' },
       { to: '/capital/receivables', icon: DollarSign, label: 'Receivables', color: 'text-prism-sky' },
       { to: '/capital/payroll-runway', icon: Clock, label: 'Payroll Runway', color: 'text-prism-rose' },
-      { to: '/capital/funding-simulator', icon: BarChart3, label: 'Funding Simulator', color: 'text-prism-violet' },
-      { to: '/capital/survival-index', icon: Activity, label: 'Survival Index', color: 'text-prism-teal' },
-      { to: '/capital/dscr', icon: Calculator, label: 'DSCR Calculator', color: 'text-prism-amber' },
-      { to: '/capital/bank-analyzer', icon: Landmark, label: 'Bank Analyzer', color: 'text-prism-lime' },
-      { to: '/capital/risk-radar', icon: Radar, label: 'Risk Radar', color: 'text-prism-rose' },
-    ],
-  },
-  {
-    label: 'Capital — Resources',
-    items: [
-      { to: '/capital/capital-stack', icon: Layers, label: 'Capital Stack', color: 'text-prism-indigo' },
-      { to: '/capital/banking-intelligence', icon: Building2, label: 'Banking Intel', color: 'text-prism-sky' },
-      { to: '/capital/loan-readiness', icon: ClipboardCheck, label: 'Loan Readiness', color: 'text-prism-orange' },
-      { to: '/capital/vault', icon: Lock, label: 'Document Vault', color: 'text-muted-foreground' },
       { to: '/capital/ai-coach', icon: Bot, label: 'AI Coach', color: 'text-prism-amber' },
+      { to: '/capital/vault', icon: Lock, label: 'Document Vault', color: 'text-muted-foreground' },
     ],
   },
   {
     label: 'More',
     items: [
-      { to: '/roadmap', icon: Map, label: 'Prism Roadmap', color: 'text-prism-teal' },
+      { to: '/bill-negotiation', icon: Scissors, label: 'Bill Negotiation', color: 'text-prism-teal' },
+      { to: '/home-buying', icon: Home, label: 'Home Buying', color: 'text-prism-amber' },
+      { to: '/settings', icon: Settings, label: 'Settings', color: 'text-muted-foreground' },
       { to: '/about', icon: Heart, label: 'About', color: 'text-prism-rose' },
       { to: '/legal', icon: Scale, label: 'Legal', color: 'text-muted-foreground' },
-      { to: '/settings', icon: Settings, label: 'Settings', color: 'text-muted-foreground' },
     ],
   },
 ];
