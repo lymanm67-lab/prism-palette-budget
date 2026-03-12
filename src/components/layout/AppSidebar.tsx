@@ -55,6 +55,7 @@ const NAV_SECTIONS = [
     items: [
       { to: '/reports', icon: BarChart3, label: 'Reports', color: 'text-prism-orange' },
       { to: '/spending-trends', icon: TrendingUp, label: 'Spending Trends', color: 'text-prism-lime' },
+      { to: '/bill-negotiation', icon: Scissors, label: 'Bill Negotiation', color: 'text-prism-teal' },
       { to: '/year-in-review', icon: Sparkles, label: 'Year in Review', color: 'text-prism-amber' },
       { to: '/tax-assistant', icon: Bot, label: 'Tax Assistant', color: 'text-prism-indigo' },
       { to: '/calculators', icon: Calculator, label: 'Calculators', color: 'text-prism-sky' },
