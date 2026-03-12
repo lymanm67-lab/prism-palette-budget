@@ -255,6 +255,60 @@ const DisputeManager = () => {
         </Card>
       )}
 
+      {/* Bureau Portal Links */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Building2 className="h-4 w-4 text-primary" />
+            Bureau Online Dispute Portals
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-3 md:grid-cols-3">
+          <a
+            href="https://www.equifax.com/personal/credit-report-services/credit-dispute/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 p-3 rounded-lg border bg-background hover:bg-accent transition-colors group"
+          >
+            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20">
+              <ExternalLink className="h-4 w-4 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-sm">Equifax</p>
+              <p className="text-xs text-muted-foreground truncate">equifax.com/dispute</p>
+            </div>
+          </a>
+          <a
+            href="https://www.experian.com/disputes/main.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 p-3 rounded-lg border bg-background hover:bg-accent transition-colors group"
+          >
+            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20">
+              <ExternalLink className="h-4 w-4 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-sm">Experian</p>
+              <p className="text-xs text-muted-foreground truncate">experian.com/disputes</p>
+            </div>
+          </a>
+          <a
+            href="https://dispute.transunion.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 p-3 rounded-lg border bg-background hover:bg-accent transition-colors group"
+          >
+            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20">
+              <ExternalLink className="h-4 w-4 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-sm">TransUnion</p>
+              <p className="text-xs text-muted-foreground truncate">dispute.transunion.com</p>
+            </div>
+          </a>
+        </CardContent>
+      </Card>
+
       <div className="flex justify-end">
         <Button onClick={() => { resetForm(); setShowCreate(true); }}><Plus className="h-4 w-4 mr-2" />New Dispute</Button>
       </div>
