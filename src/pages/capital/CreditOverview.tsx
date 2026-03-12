@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Upload, FileText, Shield, Trash2, CreditCard, DollarSign, AlertTriangle } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Upload, FileText, Shield, Trash2, CreditCard, DollarSign, AlertTriangle, Gauge, Info, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
