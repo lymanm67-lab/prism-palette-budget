@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import {
   Shield, FileSearch, FileText, TrendingUp, DollarSign, Clock,
   BarChart3, Activity, Building2, Lock, Bot, AlertTriangle,
-  ChevronRight, ArrowUpRight, CheckCircle2, Circle, Rocket,
+  ChevronRight, ChevronDown, ArrowUpRight, CheckCircle2, Circle, Rocket,
 } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
