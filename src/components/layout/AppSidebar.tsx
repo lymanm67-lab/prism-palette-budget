@@ -71,7 +71,7 @@ const NAV_SECTIONS = [
       { to: '/capital/disputes', icon: FileText, label: 'Dispute Manager', color: 'text-prism-orange' },
       { to: '/capital/funding-readiness', icon: TrendingUp, label: 'Funding Score', color: 'text-prism-lime' },
       { to: '/capital/business-credit', icon: Building2, label: 'Business Credit', color: 'text-prism-indigo' },
-      { to: '/capital/bankability', icon: ChartBar, label: 'Bankability Score', color: 'text-prism-violet' },
+      { to: '/capital/bankability', icon: BarChart3, label: 'Bankability Score', color: 'text-prism-violet' },
     ],
   },
   {
