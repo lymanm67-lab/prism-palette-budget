@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle2, Circle, ArrowRight, Building2, CreditCard, Wrench, DollarSign, FileText, Landmark } from "lucide-react";
+import { CheckCircle2, Circle, ArrowRight, Building2, CreditCard, Wrench, DollarSign, FileText, Landmark, Layers } from "lucide-react";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
