@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { FileText, Plus, Clock, CheckCircle2, XCircle, AlertTriangle, Send, Trash2, Download, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
+import { FileText, Plus, Clock, CheckCircle2, XCircle, AlertTriangle, Send, Trash2, Download, ChevronDown, ChevronUp, Sparkles, FileEdit } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -17,6 +17,8 @@ import { useMetro2Findings } from '@/hooks/use-metro2-findings';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { format, differenceInDays, addDays, isPast } from 'date-fns';
 import { exportToPdf } from '@/lib/export-utils';
+import DisputeLetterGenerator from '@/components/capital/DisputeLetterGenerator';
+import { OSCAR_REASON_CODES } from '@/components/capital/DisputeLetterGenerator';
 import { toast } from 'sonner';
 
 /* ── helpers ─────────────────────────────────────────── */
@@ -56,6 +58,7 @@ const DisputeManager = () => {
   const [showCreate, setShowCreate] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const letterRef = useRef<HTMLDivElement>(null);
+  const [letterDispute, setLetterDispute] = useState<CreditDispute | null>(null);
 
   // form state
   const [form, setForm] = useState({ bureau: '', dispute_reason: '', explanation: '', credit_account_id: '', metro2_violation: '' });
@@ -168,10 +171,18 @@ const DisputeManager = () => {
                 {/* Actions */}
                 <div className="flex flex-wrap gap-2">
                   {d.status === 'draft' && (
-                    <Button size="sm" onClick={() => handleSubmit(d)}><Send className="h-3.5 w-3.5 mr-1" />Mark Submitted</Button>
+                    <>
+                      <Button size="sm" variant="outline" onClick={() => setLetterDispute(d)}>
+                        <FileEdit className="h-3.5 w-3.5 mr-1" />Generate eOSCAR Letter
+                      </Button>
+                      <Button size="sm" onClick={() => handleSubmit(d)}><Send className="h-3.5 w-3.5 mr-1" />Mark Submitted</Button>
+                    </>
                   )}
                   {(d.status === 'submitted' || d.status === 'in_progress') && (
                     <>
+                      <Button size="sm" variant="outline" onClick={() => setLetterDispute(d)}>
+                        <FileEdit className="h-3.5 w-3.5 mr-1" />View Letter
+                      </Button>
                       <Button size="sm" variant="outline" onClick={() => handleResolve(d.id, 'resolved')}><CheckCircle2 className="h-3.5 w-3.5 mr-1" />Resolved</Button>
                       <Button size="sm" variant="outline" onClick={() => handleResolve(d.id, 'denied')}><XCircle className="h-3.5 w-3.5 mr-1" />Denied</Button>
                     </>
@@ -287,6 +298,22 @@ const DisputeManager = () => {
               </Select>
             </div>
             <div>
+              <Label>eOSCAR Reason Code</Label>
+              <Select onValueChange={v => {
+                const reason = OSCAR_REASON_CODES.find(r => r.code === v);
+                if (reason) setForm(p => ({ ...p, dispute_reason: reason.label }));
+              }}>
+                <SelectTrigger><SelectValue placeholder="Select eOSCAR code (optional)" /></SelectTrigger>
+                <SelectContent>
+                  {OSCAR_REASON_CODES.map(r => (
+                    <SelectItem key={r.code} value={r.code}>
+                      <span className="font-mono text-xs mr-2">{r.code}</span>{r.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
               <Label>Dispute Reason *</Label>
               <Input value={form.dispute_reason} onChange={e => setForm(p => ({ ...p, dispute_reason: e.target.value }))} placeholder="e.g. Incorrect balance reported" />
             </div>
@@ -307,6 +334,17 @@ const DisputeManager = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* eOSCAR Letter Generator */}
+      {letterDispute && (
+        <DisputeLetterGenerator
+          dispute={letterDispute}
+          account={accounts.find(a => a.id === letterDispute.credit_account_id)}
+          onSubmit={handleSubmit}
+          open={!!letterDispute}
+          onOpenChange={(open) => { if (!open) setLetterDispute(null); }}
+        />
+      )}
     </div>
   );
 };

@@ -9,6 +9,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Progress } from '@/components/ui/progress';
 import PageOverview from '@/components/PageOverview';
 import AddCreditAccountDialog from '@/components/capital/AddCreditAccountDialog';
+import CreditReportImport from '@/components/capital/CreditReportImport';
 import { useCreditAccounts, CreditAccount } from '@/hooks/use-credit-accounts';
 import { format } from 'date-fns';
 
@@ -199,33 +200,8 @@ const CreditOverview = () => {
         );
       })()}
 
-      {/* Upload Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Upload className="h-5 w-5 text-primary" />
-            Import Credit Report
-          </CardTitle>
-          <CardDescription>Upload your credit report as PDF, CSV, or JSON from any major bureau</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
-            {BUREAUS.map(bureau => (
-              <div key={bureau} className="flex flex-col items-center gap-3 rounded-xl border-2 border-dashed border-muted-foreground/20 p-6 hover:border-primary/40 transition-colors cursor-pointer">
-                <Shield className="h-8 w-8 text-muted-foreground" />
-                <span className="font-medium text-sm">{bureau}</span>
-                <Button variant="outline" size="sm" disabled>
-                  Upload Report (Coming Soon)
-                </Button>
-                <p className="text-[10px] text-muted-foreground">PDF, CSV, JSON</p>
-              </div>
-            ))}
-          </div>
-          <p className="text-xs text-muted-foreground mt-4 text-center">
-            Or enter account details manually below
-          </p>
-        </CardContent>
-      </Card>
+      {/* Import Section */}
+      <CreditReportImport onSuccess={refetch} />
 
       {/* Accounts Table */}
       <Tabs value={tab} onValueChange={setTab}>
