@@ -1,6 +1,6 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, ArrowLeftRight, PiggyBank, BarChart3, Grid3x3, X,
-  Settings, Target, CreditCard, Wallet, TrendingUp, Receipt, Calculator, Home, Shield, Landmark, ClipboardCheck } from 'lucide-react';
+  Settings, Target, Wallet, TrendingUp, Receipt, Calculator, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState, useCallback } from 'react';
 import { useSidebarBadges } from '@/hooks/use-sidebar-badges';
@@ -15,16 +15,13 @@ const BOTTOM_NAV = [
 
 const MORE_ITEMS = [
   { to: '/accounts', icon: Wallet, label: 'Accounts' },
-  { to: '/goals', icon: Target, label: 'Goals' },
-  { to: '/investments', icon: TrendingUp, label: 'Investments' },
   { to: '/recurring', icon: Receipt, label: 'Recurring' },
-  { to: '/subscriptions', icon: CreditCard, label: 'Subscriptions' },
+  { to: '/goals', icon: Target, label: 'Goals' },
   { to: '/net-worth', icon: TrendingUp, label: 'Net Worth' },
+  { to: '/investments', icon: TrendingUp, label: 'Investments' },
+  { to: '/cash-flow', icon: Wallet, label: 'Cash Flow' },
   { to: '/calculators', icon: Calculator, label: 'Calculators' },
   { to: '/capital', icon: Shield, label: 'Capital' },
-  { to: '/capital/bankability', icon: BarChart3, label: 'Bankability' },
-  { to: '/capital/loan-readiness', icon: ClipboardCheck, label: 'Loan Ready' },
-  { to: '/capital/banking-intelligence', icon: Landmark, label: 'Banking Intel' },
   { to: '/settings', icon: Settings, label: 'Settings' },
 ];
 
