@@ -1,27 +1,51 @@
-import { Building2, CheckCircle2, Circle } from 'lucide-react';
+import { useState } from 'react';
+import { Building2, CheckCircle2, Circle, ChevronDown, ChevronUp, StickyNote, Save } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import PageOverview from '@/components/PageOverview';
+import { useBusinessCreditSteps } from '@/hooks/use-business-credit-steps';
 
 const ROADMAP_STEPS = [
-  { step: 1, title: 'Entity Formation', description: 'Register LLC/Corp, obtain Articles of Organization', items: ['File with Secretary of State', 'Obtain operating agreement', 'Get certificate of formation'] },
-  { step: 2, title: 'EIN & Tax Setup', description: 'Apply for Employer Identification Number', items: ['Apply for EIN via IRS', 'Register for state taxes', 'Determine tax classification'] },
-  { step: 3, title: 'Business Bank Account', description: 'Open a dedicated business checking account', items: ['Choose a business-friendly bank', 'Separate personal and business finances', 'Set up online banking'] },
-  { step: 4, title: 'Business Credit Bureau Registration', description: 'Register with D&B, Experian Business, Equifax Business', items: ['Get D-U-N-S number', 'Register with Experian Business', 'Register with Equifax Small Business'] },
-  { step: 5, title: 'Vendor Tradelines', description: 'Establish Net-30/60/90 vendor accounts', items: ['Apply for starter vendor accounts', 'Make purchases and pay on time', 'Build 3-5 reporting tradelines'] },
-  { step: 6, title: 'Business Credit Cards', description: 'Apply for business credit cards that report to bureaus', items: ['Start with secured business cards if needed', 'Graduate to unsecured cards', 'Keep utilization below 30%'] },
+  { step: 1, key: 'entity_formation', title: 'Entity Formation', description: 'Register LLC/Corp, obtain Articles of Organization', items: ['File with Secretary of State', 'Obtain operating agreement', 'Get certificate of formation'] },
+  { step: 2, key: 'ein_tax_setup', title: 'EIN & Tax Setup', description: 'Apply for Employer Identification Number', items: ['Apply for EIN via IRS', 'Register for state taxes', 'Determine tax classification'] },
+  { step: 3, key: 'business_bank', title: 'Business Bank Account', description: 'Open a dedicated business checking account', items: ['Choose a business-friendly bank', 'Separate personal and business finances', 'Set up online banking'] },
+  { step: 4, key: 'bureau_registration', title: 'Business Credit Bureau Registration', description: 'Register with D&B, Experian Business, Equifax Business', items: ['Get D-U-N-S number', 'Register with Experian Business', 'Register with Equifax Small Business'] },
+  { step: 5, key: 'vendor_tradelines', title: 'Vendor Tradelines', description: 'Establish Net-30/60/90 vendor accounts', items: ['Apply for starter vendor accounts', 'Make purchases and pay on time', 'Build 3-5 reporting tradelines'] },
+  { step: 6, key: 'business_credit_cards', title: 'Business Credit Cards', description: 'Apply for business credit cards that report to bureaus', items: ['Start with secured business cards if needed', 'Graduate to unsecured cards', 'Keep utilization below 30%'] },
 ];
 
 const BusinessCredit = () => {
-  const completedSteps = 0;
+  const { steps, getStep, upsertStep, updateNotes, isLoading } = useBusinessCreditSteps();
+  const [expandedKey, setExpandedKey] = useState<string | null>(null);
+  const [notesDraft, setNotesDraft] = useState<Record<string, string>>({});
+
+  const completedSteps = ROADMAP_STEPS.filter(s => getStep(s.key)?.is_completed).length;
   const progress = (completedSteps / ROADMAP_STEPS.length) * 100;
+
+  const toggleStep = (key: string, label: string) => {
+    const current = getStep(key);
+    upsertStep({ step_key: key, step_label: label, is_completed: !current?.is_completed });
+  };
+
+  const handleSaveNotes = (key: string, label: string) => {
+    updateNotes({ step_key: key, notes: notesDraft[key] ?? '', step_label: label });
+  };
+
+  const openNotes = (key: string) => {
+    if (expandedKey === key) { setExpandedKey(null); return; }
+    const existing = getStep(key);
+    setNotesDraft(prev => ({ ...prev, [key]: existing?.notes || '' }));
+    setExpandedKey(key);
+  };
 
   return (
     <div className="space-y-6 pb-8">
       <PageOverview title="Business Credit Builder" description="Step-by-step roadmap to establish strong business credit" icon={Building2} ttsScript="Step-by-step roadmap to establish strong business credit." features={['Entity formation checklist', 'Vendor tradeline suggestions', 'Credit bureau registration']} />
 
-      {/* Progress */}
       <Card className="p-6">
         <div className="flex items-center justify-between mb-3">
           <h3 className="font-semibold">Capital Preparation Roadmap</h3>
@@ -30,34 +54,59 @@ const BusinessCredit = () => {
         <Progress value={progress} className="h-3" />
       </Card>
 
-      {/* Steps */}
       <div className="space-y-4">
-        {ROADMAP_STEPS.map((step) => (
-          <Card key={step.step} className="overflow-hidden">
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-sm font-bold">
-                  {step.step}
+        {ROADMAP_STEPS.map((step) => {
+          const saved = getStep(step.key);
+          const isDone = saved?.is_completed ?? false;
+          const isExpanded = expandedKey === step.key;
+
+          return (
+            <Card key={step.key} className={`overflow-hidden transition-colors ${isDone ? 'border-emerald-500/40 bg-emerald-500/5' : ''}`}>
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-3">
+                  <Checkbox checked={isDone} onCheckedChange={() => toggleStep(step.key, step.title)} className="h-5 w-5" />
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-sm font-bold">
+                    {step.step}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <CardTitle className={`text-base ${isDone ? 'line-through text-muted-foreground' : ''}`}>{step.title}</CardTitle>
+                    <CardDescription className="text-xs">{step.description}</CardDescription>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    {saved?.notes && <StickyNote className="h-3.5 w-3.5 text-primary" />}
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openNotes(step.key)}>
+                      {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <CardTitle className="text-base">{step.title}</CardTitle>
-                  <CardDescription className="text-xs">{step.description}</CardDescription>
-                </div>
-                <Circle className="h-5 w-5 text-muted-foreground/30" />
-              </div>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <ul className="space-y-2">
-                {step.items.map((item, i) => (
-                  <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Circle className="h-3 w-3 shrink-0" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        ))}
+              </CardHeader>
+              <CardContent className="pt-0 space-y-3">
+                <ul className="space-y-2">
+                  {step.items.map((item, i) => (
+                    <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
+                      {isDone ? <CheckCircle2 className="h-3 w-3 shrink-0 text-emerald-500" /> : <Circle className="h-3 w-3 shrink-0" />}
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+                {isExpanded && (
+                  <div className="border-t pt-3 space-y-2">
+                    <label className="text-xs font-medium text-muted-foreground">Notes</label>
+                    <Textarea
+                      value={notesDraft[step.key] ?? ''}
+                      onChange={e => setNotesDraft(prev => ({ ...prev, [step.key]: e.target.value }))}
+                      placeholder="Add notes, links, or reminders for this step..."
+                      rows={3}
+                    />
+                    <Button size="sm" onClick={() => handleSaveNotes(step.key, step.title)}>
+                      <Save className="h-3.5 w-3.5 mr-1" />Save Notes
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
     </div>
   );
