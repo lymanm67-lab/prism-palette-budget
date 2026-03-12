@@ -12,7 +12,8 @@ import { supabase } from "@/integrations/supabase/client";
 import PageOverview from "@/components/PageOverview";
 
 const DSCRCalculator = () => {
-  const { householdId } = useHousehold();
+  const { household } = useHousehold();
+  const householdId = household?.id;
   const [form, setForm] = useState({
     revenue: "",
     operatingExpenses: "",
