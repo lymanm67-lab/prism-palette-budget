@@ -17,7 +17,8 @@ interface RiskAlert {
 }
 
 const FinancialRiskRadar = () => {
-  const { householdId } = useHousehold();
+  const { household } = useHousehold();
+  const householdId = household?.id;
 
   const { data: snapshots } = useQuery({
     queryKey: ["risk-snapshots", householdId],
