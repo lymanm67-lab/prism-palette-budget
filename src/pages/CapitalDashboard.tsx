@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import {
   Shield, FileSearch, FileText, TrendingUp, DollarSign, Clock,
   BarChart3, Activity, Building2, Lock, Bot, AlertTriangle,
-  ChevronRight, ArrowUpRight, CheckCircle2, Circle, Rocket,
+  ChevronRight, ChevronDown, ArrowUpRight, CheckCircle2, Circle, Rocket,
 } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -196,45 +197,52 @@ const CapitalDashboard = () => {
 
       {/* Getting Started Card */}
       {gsCompleted < gsTotal && (
-        <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-transparent overflow-hidden">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Rocket className="h-5 w-5 text-primary" />
-                <CardTitle className="text-base">Get Started with Capital</CardTitle>
-              </div>
-              <Badge variant="outline" className="text-xs">{gsCompleted} / {gsTotal}</Badge>
-            </div>
-            <Progress value={gsProgress} className="h-2 mt-2" />
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="space-y-2">
-              {GETTING_STARTED_STEPS.map(step => {
-                const done = gsCompletion[step.key as keyof typeof gsCompletion];
-                return (
-                  <button
-                    key={step.key}
-                    onClick={() => navigate(step.route)}
-                    className={cn(
-                      'flex items-center gap-3 w-full rounded-lg px-3 py-2 text-sm transition-colors text-left',
-                      done
-                        ? 'text-muted-foreground'
-                        : 'hover:bg-accent text-foreground'
-                    )}
-                  >
-                    {done
-                      ? <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-                      : <Circle className="h-4 w-4 text-muted-foreground/40 shrink-0" />
-                    }
-                    <step.icon className="h-4 w-4 text-muted-foreground shrink-0" />
-                    <span className={done ? 'line-through' : ''}>{step.label}</span>
-                    {!done && <ChevronRight className="h-3.5 w-3.5 ml-auto text-muted-foreground" />}
-                  </button>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
+        <Collapsible defaultOpen className="overflow-hidden">
+          <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-transparent overflow-hidden">
+            <CardHeader className="pb-3">
+              <CollapsibleTrigger className="flex items-center justify-between w-full text-left">
+                <div className="flex items-center gap-2">
+                  <Rocket className="h-5 w-5 text-primary" />
+                  <CardTitle className="text-base">Get Started with Capital</CardTitle>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="text-xs">{gsCompleted} / {gsTotal}</Badge>
+                  <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 [[data-state=closed]_&]:rotate-[-90deg]" />
+                </div>
+              </CollapsibleTrigger>
+              <Progress value={gsProgress} className="h-2 mt-2" />
+            </CardHeader>
+            <CollapsibleContent>
+              <CardContent className="pt-0">
+                <div className="space-y-2">
+                  {GETTING_STARTED_STEPS.map(step => {
+                    const done = gsCompletion[step.key as keyof typeof gsCompletion];
+                    return (
+                      <button
+                        key={step.key}
+                        onClick={() => navigate(step.route)}
+                        className={cn(
+                          'flex items-center gap-3 w-full rounded-lg px-3 py-2 text-sm transition-colors text-left',
+                          done
+                            ? 'text-muted-foreground'
+                            : 'hover:bg-accent text-foreground'
+                        )}
+                      >
+                        {done
+                          ? <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                          : <Circle className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+                        }
+                        <step.icon className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className={done ? 'line-through' : ''}>{step.label}</span>
+                        {!done && <ChevronRight className="h-3.5 w-3.5 ml-auto text-muted-foreground" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
       )}
 
       {/* Compliance Notice */}
