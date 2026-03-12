@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { FileSearch, AlertTriangle, CheckCircle2, Info, Scan, Shield, ChevronDown, ChevronRight, CheckCheck } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { FileSearch, AlertTriangle, CheckCircle2, Info, Scan, Shield, ChevronDown, ChevronRight, CheckCheck, FileText, Gavel } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -7,7 +8,10 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import PageOverview from '@/components/PageOverview';
 import { useMetro2Findings } from '@/hooks/use-metro2-findings';
 import { useCreditAccounts } from '@/hooks/use-credit-accounts';
+import { useDisputes, type DisputeInsert } from '@/hooks/use-disputes';
+import { useHousehold } from '@/contexts/HouseholdContext';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
 
 const severityConfig: Record<string, { color: string; icon: typeof AlertTriangle; label: string; badgeVariant: 'destructive' | 'secondary' | 'outline' }> = {
   high: { color: 'text-destructive', icon: AlertTriangle, label: 'High', badgeVariant: 'destructive' },
