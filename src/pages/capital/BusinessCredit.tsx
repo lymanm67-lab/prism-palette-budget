@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Building2, CheckCircle2, Circle, ChevronDown, ChevronUp, StickyNote, Save } from 'lucide-react';
+import { Building2, CheckCircle2, Circle, ChevronDown, ChevronUp, StickyNote, Save, ExternalLink } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
@@ -52,6 +52,54 @@ const BusinessCredit = () => {
           <Badge variant="outline">{completedSteps} / {ROADMAP_STEPS.length} complete</Badge>
         </div>
         <Progress value={progress} className="h-3" />
+      </Card>
+
+      {/* Quick Links */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <ExternalLink className="h-4 w-4 text-primary" />
+            Essential Registration Links
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+          <a href="https://www.irs.gov/businesses/small-businesses-self-employed/apply-for-an-employer-identification-number-ein-online" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 p-3 rounded-lg border bg-background hover:bg-accent transition-colors group">
+            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20">
+              <ExternalLink className="h-4 w-4 text-primary" />
+            </div>
+            <div className="min-w-0">
+              <p className="font-medium text-sm">Apply for EIN</p>
+              <p className="text-xs text-muted-foreground truncate">IRS.gov</p>
+            </div>
+          </a>
+          <a href="https://www.dnb.com/duns/get-a-duns.html" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 p-3 rounded-lg border bg-background hover:bg-accent transition-colors group">
+            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20">
+              <ExternalLink className="h-4 w-4 text-primary" />
+            </div>
+            <div className="min-w-0">
+              <p className="font-medium text-sm">Get D-U-N-S Number</p>
+              <p className="text-xs text-muted-foreground truncate">dnb.com</p>
+            </div>
+          </a>
+          <a href="https://www.experian.com/small-business/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 p-3 rounded-lg border bg-background hover:bg-accent transition-colors group">
+            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20">
+              <ExternalLink className="h-4 w-4 text-primary" />
+            </div>
+            <div className="min-w-0">
+              <p className="font-medium text-sm">Experian Business</p>
+              <p className="text-xs text-muted-foreground truncate">experian.com</p>
+            </div>
+          </a>
+          <a href="https://www.equifax.com/business/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 p-3 rounded-lg border bg-background hover:bg-accent transition-colors group">
+            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20">
+              <ExternalLink className="h-4 w-4 text-primary" />
+            </div>
+            <div className="min-w-0">
+              <p className="font-medium text-sm">Equifax Small Business</p>
+              <p className="text-xs text-muted-foreground truncate">equifax.com</p>
+            </div>
+          </a>
+        </CardContent>
       </Card>
 
       <div className="space-y-4">
