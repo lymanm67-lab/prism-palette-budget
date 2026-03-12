@@ -33,7 +33,8 @@ const REQUIRED_DOCUMENTS = [
 ];
 
 const LoanReadiness = () => {
-  const { householdId } = useHousehold();
+  const { household } = useHousehold();
+  const householdId = household?.id;
   const queryClient = useQueryClient();
 
   const { data: items, isLoading } = useQuery({
