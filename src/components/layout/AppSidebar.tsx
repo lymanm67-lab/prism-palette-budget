@@ -71,6 +71,7 @@ const NAV_SECTIONS = [
       { to: '/capital/disputes', icon: FileText, label: 'Dispute Manager', color: 'text-prism-orange' },
       { to: '/capital/funding-readiness', icon: TrendingUp, label: 'Funding Score', color: 'text-prism-lime' },
       { to: '/capital/business-credit', icon: Building2, label: 'Business Credit', color: 'text-prism-indigo' },
+      { to: '/capital/bankability', icon: ChartBar, label: 'Bankability Score', color: 'text-prism-violet' },
     ],
   },
   {
@@ -80,6 +81,17 @@ const NAV_SECTIONS = [
       { to: '/capital/payroll-runway', icon: Clock, label: 'Payroll Runway', color: 'text-prism-rose' },
       { to: '/capital/funding-simulator', icon: BarChart3, label: 'Funding Simulator', color: 'text-prism-violet' },
       { to: '/capital/survival-index', icon: Activity, label: 'Survival Index', color: 'text-prism-teal' },
+      { to: '/capital/dscr', icon: Calculator, label: 'DSCR Calculator', color: 'text-prism-amber' },
+      { to: '/capital/bank-analyzer', icon: Landmark, label: 'Bank Analyzer', color: 'text-prism-lime' },
+      { to: '/capital/risk-radar', icon: Radar, label: 'Risk Radar', color: 'text-prism-rose' },
+    ],
+  },
+  {
+    label: 'Capital — Resources',
+    items: [
+      { to: '/capital/capital-stack', icon: Layers, label: 'Capital Stack', color: 'text-prism-indigo' },
+      { to: '/capital/banking-intelligence', icon: Building2, label: 'Banking Intel', color: 'text-prism-sky' },
+      { to: '/capital/loan-readiness', icon: ClipboardCheck, label: 'Loan Readiness', color: 'text-prism-orange' },
       { to: '/capital/vault', icon: Lock, label: 'Document Vault', color: 'text-muted-foreground' },
       { to: '/capital/ai-coach', icon: Bot, label: 'AI Coach', color: 'text-prism-amber' },
     ],

@@ -149,6 +149,13 @@ const App = () => (
               <Route path="/capital/survival-index" element={<SurvivalIndex />} />
               <Route path="/capital/vault" element={<DocumentVault />} />
               <Route path="/capital/ai-coach" element={<AiCoach />} />
+              <Route path="/capital/capital-stack" element={<CapitalStackPlanner />} />
+              <Route path="/capital/banking-intelligence" element={<BankingIntelligence />} />
+              <Route path="/capital/bank-analyzer" element={<BankStatementAnalyzer />} />
+              <Route path="/capital/risk-radar" element={<FinancialRiskRadar />} />
+              <Route path="/capital/bankability" element={<BankabilityScore />} />
+              <Route path="/capital/loan-readiness" element={<LoanReadiness />} />
+              <Route path="/capital/dscr" element={<DSCRCalculator />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
