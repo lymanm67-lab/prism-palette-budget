@@ -368,6 +368,89 @@ export type Database = {
           },
         ]
       }
+      credit_accounts: {
+        Row: {
+          account_name: string
+          account_number: string | null
+          account_status: string
+          account_type: string
+          balance: number
+          bureau: string
+          created_at: string
+          credit_limit: number | null
+          date_closed: string | null
+          date_of_first_delinquency: string | null
+          date_opened: string | null
+          dispute_status: string | null
+          high_balance: number | null
+          household_id: string
+          id: string
+          monthly_payment: number | null
+          notes: string | null
+          payment_history: string | null
+          remarks_codes: string | null
+          responsibility: string | null
+          terms: string | null
+          updated_at: string
+        }
+        Insert: {
+          account_name: string
+          account_number?: string | null
+          account_status?: string
+          account_type?: string
+          balance?: number
+          bureau?: string
+          created_at?: string
+          credit_limit?: number | null
+          date_closed?: string | null
+          date_of_first_delinquency?: string | null
+          date_opened?: string | null
+          dispute_status?: string | null
+          high_balance?: number | null
+          household_id: string
+          id?: string
+          monthly_payment?: number | null
+          notes?: string | null
+          payment_history?: string | null
+          remarks_codes?: string | null
+          responsibility?: string | null
+          terms?: string | null
+          updated_at?: string
+        }
+        Update: {
+          account_name?: string
+          account_number?: string | null
+          account_status?: string
+          account_type?: string
+          balance?: number
+          bureau?: string
+          created_at?: string
+          credit_limit?: number | null
+          date_closed?: string | null
+          date_of_first_delinquency?: string | null
+          date_opened?: string | null
+          dispute_status?: string | null
+          high_balance?: number | null
+          household_id?: string
+          id?: string
+          monthly_payment?: number | null
+          notes?: string | null
+          payment_history?: string | null
+          remarks_codes?: string | null
+          responsibility?: string | null
+          terms?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_accounts_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       debt_items: {
         Row: {
           account_id: string | null
