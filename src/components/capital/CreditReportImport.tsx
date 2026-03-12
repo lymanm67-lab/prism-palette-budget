@@ -395,6 +395,9 @@ const CreditReportImport = ({ onSuccess }: { onSuccess: () => void }) => {
                   <Upload className="h-4 w-4 mr-2" />Choose File
                 </Button>
                 <Badge variant="secondary" className="text-xs flex items-center gap-1">
+                  <FileText className="h-3 w-3" />PDF
+                </Badge>
+                <Badge variant="secondary" className="text-xs flex items-center gap-1">
                   <FileSpreadsheet className="h-3 w-3" />CSV
                 </Badge>
                 <Badge variant="secondary" className="text-xs flex items-center gap-1">
