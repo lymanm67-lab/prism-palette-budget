@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
-import { Upload, FileText, Loader2, CheckCircle2, AlertTriangle, FileJson, FileSpreadsheet } from 'lucide-react';
+import { Upload, FileText, Loader2, CheckCircle2, AlertTriangle, FileJson, FileSpreadsheet, ExternalLink, Globe, ChevronDown } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,11 +9,64 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { supabase } from '@/integrations/supabase/client';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { toast } from 'sonner';
 
 const BUREAUS = ['Equifax', 'Experian', 'TransUnion'] as const;
+
+const FREE_REPORT_SOURCES = [
+  {
+    name: 'AnnualCreditReport.com',
+    url: 'https://www.annualcreditreport.com',
+    description: 'Official federally-authorized source — one free report per bureau per year',
+    bureaus: ['Equifax', 'Experian', 'TransUnion'],
+    icon: '🏛️',
+  },
+  {
+    name: 'FreeCreditReport.com',
+    url: 'https://www.freecreditreport.com',
+    description: 'Free Experian credit report and FICO® Score',
+    bureaus: ['Experian'],
+    icon: '📊',
+  },
+  {
+    name: 'Equifax',
+    url: 'https://www.equifax.com/personal/credit-report-services/free-credit-reports/',
+    description: 'Free weekly Equifax credit report directly from the bureau',
+    bureaus: ['Equifax'],
+    icon: '🔵',
+  },
+  {
+    name: 'Experian',
+    url: 'https://www.experian.com/consumer-products/free-credit-report.html',
+    description: 'Free Experian credit report and credit monitoring',
+    bureaus: ['Experian'],
+    icon: '🔴',
+  },
+  {
+    name: 'TransUnion',
+    url: 'https://www.transunion.com/credit-disputes/dispute-your-credit',
+    description: 'Free TransUnion credit report and dispute filing',
+    bureaus: ['TransUnion'],
+    icon: '🟢',
+  },
+  {
+    name: 'Credit Karma',
+    url: 'https://www.creditkarma.com',
+    description: 'Free credit reports from Equifax and TransUnion with VantageScore',
+    bureaus: ['Equifax', 'TransUnion'],
+    icon: '💚',
+  },
+];
+
+const IMPORT_STEPS = [
+  { step: 1, text: 'Click a link below to get your free credit report' },
+  { step: 2, text: 'Download the report as PDF, or copy the text content' },
+  { step: 3, text: 'Come back here and upload the file or paste the text' },
+  { step: 4, text: 'Our AI will extract all accounts automatically' },
+];
 
 interface ParsedAccount {
   account_name: string;
@@ -175,6 +228,60 @@ const CreditReportImport = ({ onSuccess }: { onSuccess: () => void }) => {
 
   return (
     <>
+      {/* Pull Your Free Credit Report */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Globe className="h-5 w-5 text-primary" />
+            Pull Your Free Credit Report
+          </CardTitle>
+          <CardDescription>
+            Get your report from an official source, then import it here for AI-powered analysis
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* How it works */}
+          <div className="flex flex-wrap gap-2">
+            {IMPORT_STEPS.map(s => (
+              <div key={s.step} className="flex items-center gap-2 rounded-lg border border-border/50 bg-muted/30 px-3 py-2 text-xs">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-[10px] font-bold shrink-0">
+                  {s.step}
+                </span>
+                <span className="text-muted-foreground">{s.text}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Source Links */}
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {FREE_REPORT_SOURCES.map(source => (
+              <a
+                key={source.name}
+                href={source.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-start gap-3 rounded-xl border border-border/50 p-4 transition-all hover:border-primary/40 hover:bg-primary/5 hover:shadow-sm"
+              >
+                <span className="text-2xl shrink-0">{source.icon}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-medium text-sm group-hover:text-primary transition-colors">{source.name}</span>
+                    <ExternalLink className="h-3 w-3 text-muted-foreground group-hover:text-primary shrink-0" />
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{source.description}</p>
+                  <div className="flex gap-1 mt-1.5">
+                    {source.bureaus.map(b => (
+                      <Badge key={b} variant="outline" className="text-[9px] px-1.5 py-0">{b}</Badge>
+                    ))}
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Import Section */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
@@ -220,6 +327,32 @@ const CreditReportImport = ({ onSuccess }: { onSuccess: () => void }) => {
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Quick links inside dialog */}
+            <Collapsible>
+              <CollapsibleTrigger className="flex items-center gap-2 text-sm text-primary hover:underline w-full">
+                <Globe className="h-4 w-4" />
+                <span>Need to download your report first?</span>
+                <ChevronDown className="h-3.5 w-3.5 ml-auto transition-transform [[data-state=open]_&]:rotate-180" />
+              </CollapsibleTrigger>
+              <CollapsibleContent className="pt-2">
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {FREE_REPORT_SOURCES.filter(s => s.bureaus.includes(bureau)).map(source => (
+                    <a
+                      key={source.name}
+                      href={source.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 rounded-lg border border-border/50 p-2.5 text-xs hover:bg-primary/5 transition-colors"
+                    >
+                      <span>{source.icon}</span>
+                      <span className="font-medium">{source.name}</span>
+                      <ExternalLink className="h-3 w-3 ml-auto text-muted-foreground" />
+                    </a>
+                  ))}
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
 
             {/* File upload */}
             <div>
