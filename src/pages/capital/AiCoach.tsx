@@ -17,7 +17,7 @@ const SUGGESTED_TOPICS = [
 const AiCoach = () => {
   return (
     <div className="space-y-6 pb-8">
-      <PageOverview title="AI Financial Readiness Coach" description="AI assistant for credit education, business credit strategy, and agency financial management" />
+      <PageOverview title="AI Financial Readiness Coach" description="AI assistant for credit education, business credit strategy, and agency financial management" icon={Bot} ttsScript="AI assistant for credit education and capital planning." features={['Credit report explanations', 'Metro2 interpretation', 'Capital planning guidance']} />
 
       <Card className="overflow-hidden">
         <CardHeader className="bg-muted/30">

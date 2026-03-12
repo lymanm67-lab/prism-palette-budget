@@ -13,7 +13,7 @@ const CreditOverview = () => {
 
   return (
     <div className="space-y-6 pb-8">
-      <PageOverview title="Credit Overview" description="Import and analyze credit reports from all three major bureaus" />
+      <PageOverview title="Credit Overview" description="Import and analyze credit reports from all three major bureaus" icon={Shield} ttsScript="Import and analyze credit reports from all three major bureaus." features={['Upload PDF, CSV, or JSON', 'Equifax, Experian, TransUnion', 'Structured account dashboard']} />
 
       {/* Upload Section */}
       <Card>

@@ -6,7 +6,7 @@ import PageOverview from '@/components/PageOverview';
 const Receivables = () => {
   return (
     <div className="space-y-6 pb-8">
-      <PageOverview title="Medicaid Receivable Pipeline" description="Track claims status and forecast reimbursement timing" />
+      <PageOverview title="Medicaid Receivable Pipeline" description="Track claims status and forecast reimbursement timing" icon={DollarSign} ttsScript="Track claims status and forecast reimbursement timing." features={['Claims tracking', 'Payment prediction', 'Reimbursement cycle analysis']} />
 
       {/* Pipeline Stats */}
       <div className="grid gap-4 md:grid-cols-4">

@@ -161,6 +161,9 @@ const CapitalDashboard = () => {
       <PageOverview
         title="FocusOS Capital"
         description="Credit Intelligence & Agency Financial Command Center"
+        icon={Shield}
+        ttsScript="Welcome to FocusOS Capital, your Credit Intelligence and Agency Financial Command Center."
+        features={CAPITAL_FEATURES}
       />
 
       {/* Compliance Notice */}

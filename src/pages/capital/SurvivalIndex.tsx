@@ -15,7 +15,7 @@ const RISK_FACTORS = [
 const SurvivalIndex = () => {
   return (
     <div className="space-y-6 pb-8">
-      <PageOverview title="DODD Agency Survival Index" description="Predictive health score for agency sustainability" />
+      <PageOverview title="DODD Agency Survival Index" description="Predictive health score for agency sustainability" icon={Activity} ttsScript="Predictive health score for agency sustainability." features={['Cash flow stability analysis', 'Client census tracking', 'Compliance readiness scoring']} />
 
       {/* Main Score */}
       <Card className="text-center p-8">

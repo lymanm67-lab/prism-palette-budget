@@ -57,6 +57,23 @@ const NAV_SECTIONS = [
     ],
   },
   {
+    label: 'FocusOS Capital',
+    items: [
+      { to: '/capital', icon: Shield, label: 'Capital Dashboard', color: 'text-prism-teal' },
+      { to: '/capital/credit-overview', icon: FileSearch, label: 'Credit Overview', color: 'text-prism-sky' },
+      { to: '/capital/metro2-scanner', icon: FileSearch, label: 'Metro2 Scanner', color: 'text-prism-amber' },
+      { to: '/capital/disputes', icon: FileText, label: 'Dispute Manager', color: 'text-prism-orange' },
+      { to: '/capital/funding-readiness', icon: TrendingUp, label: 'Funding Score', color: 'text-prism-lime' },
+      { to: '/capital/business-credit', icon: Building2, label: 'Business Credit', color: 'text-prism-indigo' },
+      { to: '/capital/receivables', icon: DollarSign, label: 'Receivables', color: 'text-prism-sky' },
+      { to: '/capital/payroll-runway', icon: Clock, label: 'Payroll Runway', color: 'text-prism-rose' },
+      { to: '/capital/funding-simulator', icon: BarChart3, label: 'Funding Simulator', color: 'text-prism-violet' },
+      { to: '/capital/survival-index', icon: Activity, label: 'Survival Index', color: 'text-prism-teal' },
+      { to: '/capital/vault', icon: Lock, label: 'Document Vault', color: 'text-muted-foreground' },
+      { to: '/capital/ai-coach', icon: Bot, label: 'AI Coach', color: 'text-prism-amber' },
+    ],
+  },
+  {
     label: 'More',
     items: [
       { to: '/about', icon: Heart, label: 'About', color: 'text-prism-rose' },

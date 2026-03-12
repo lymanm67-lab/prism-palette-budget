@@ -37,7 +37,7 @@ const PayrollRunway = () => {
 
   return (
     <div className="space-y-6 pb-8">
-      <PageOverview title="Payroll Runway Calculator" description="Calculate days of payroll coverage and monitor cash reserves" />
+      <PageOverview title="Payroll Runway Calculator" description="Calculate days of payroll coverage and monitor cash reserves" icon={Clock} ttsScript="Calculate days of payroll coverage and monitor cash reserves." features={['Cash reserve analysis', 'Color-coded indicators', 'Risk alerts']} />
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* Input */}

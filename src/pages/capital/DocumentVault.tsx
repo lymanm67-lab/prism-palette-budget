@@ -14,7 +14,7 @@ const VAULT_CATEGORIES = [
 const DocumentVault = () => {
   return (
     <div className="space-y-6 pb-8">
-      <PageOverview title="Secure Financial Document Vault" description="Encrypted storage for credit reports, disputes, and agency financials" />
+      <PageOverview title="Secure Financial Document Vault" description="Encrypted storage for credit reports, disputes, and agency financials" icon={Lock} ttsScript="Encrypted storage for financial documents." features={['End-to-end encryption', 'Role-based access', 'Organized categories']} />
 
       <div className="flex items-start gap-3 rounded-lg border border-prism-teal/30 bg-prism-teal/5 p-4">
         <Lock className="h-5 w-5 text-prism-teal shrink-0 mt-0.5" />

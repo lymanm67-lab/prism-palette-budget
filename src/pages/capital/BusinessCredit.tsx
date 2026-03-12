@@ -19,7 +19,7 @@ const BusinessCredit = () => {
 
   return (
     <div className="space-y-6 pb-8">
-      <PageOverview title="Business Credit Builder" description="Step-by-step roadmap to establish strong business credit" />
+      <PageOverview title="Business Credit Builder" description="Step-by-step roadmap to establish strong business credit" icon={Building2} ttsScript="Step-by-step roadmap to establish strong business credit." features={['Entity formation checklist', 'Vendor tradeline suggestions', 'Credit bureau registration']} />
 
       {/* Progress */}
       <Card className="p-6">

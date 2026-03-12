@@ -13,7 +13,7 @@ const FUNDING_OPTIONS = [
 const FundingSimulator = () => {
   return (
     <div className="space-y-6 pb-8">
-      <PageOverview title="Funding Scenario Simulator" description="Compare financing options and their impact on cash flow" />
+      <PageOverview title="Funding Scenario Simulator" description="Compare financing options and their impact on cash flow" icon={BarChart3} ttsScript="Compare financing options and their impact on cash flow." features={['Receivable factoring simulation', 'Bridge loan modeling', 'Working capital analysis']} />
 
       <div className="grid gap-4 md:grid-cols-2">
         {FUNDING_OPTIONS.map(option => (

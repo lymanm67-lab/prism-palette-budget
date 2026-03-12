@@ -15,7 +15,7 @@ const SCORE_FACTORS = [
 const FundingReadiness = () => {
   return (
     <div className="space-y-6 pb-8">
-      <PageOverview title="Agency Funding Readiness Score" description="Proprietary scoring model evaluating your readiness for capital acquisition" />
+      <PageOverview title="Agency Funding Readiness Score" description="Proprietary scoring model evaluating your readiness for capital acquisition" icon={TrendingUp} ttsScript="Proprietary scoring model evaluating your readiness for capital." features={['Payment history analysis', 'Credit utilization tracking', 'Improvement recommendations']} />
 
       {/* Main Score */}
       <Card className="text-center p-8">

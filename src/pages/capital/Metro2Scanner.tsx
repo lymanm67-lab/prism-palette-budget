@@ -6,7 +6,7 @@ import PageOverview from '@/components/PageOverview';
 const Metro2Scanner = () => {
   return (
     <div className="space-y-6 pb-8">
-      <PageOverview title="Metro2 Risk Scanner" description="AI-powered compliance analysis against Metro2 reporting standards" />
+      <PageOverview title="Metro2 Risk Scanner" description="AI-powered compliance analysis against Metro2 reporting standards" icon={FileSearch} ttsScript="AI-powered Metro2 compliance analysis." features={['Detect reporting inconsistencies', 'Severity classification', 'Recommended dispute actions']} />
 
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-3">

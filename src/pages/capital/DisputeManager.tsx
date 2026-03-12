@@ -7,7 +7,7 @@ import PageOverview from '@/components/PageOverview';
 const DisputeManager = () => {
   return (
     <div className="space-y-6 pb-8">
-      <PageOverview title="Dispute Manager" description="Prepare eOSCAR-compatible disputes with FCRA compliance tracking" />
+      <PageOverview title="Dispute Manager" description="Prepare eOSCAR-compatible disputes with FCRA compliance tracking" icon={FileText} ttsScript="Prepare eOSCAR-compatible disputes with FCRA compliance tracking." features={['Generate dispute letters', 'Track 30-day investigation timer', 'Export PDF and mail-ready documents']} />
 
       {/* Stats */}
       <div className="grid gap-4 md:grid-cols-4">

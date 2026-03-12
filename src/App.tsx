@@ -128,6 +128,18 @@ const App = () => (
               <Route path="/legal" element={<Legal />} />
               <Route path="/getting-started" element={<GettingStarted />} />
               <Route path="/api-docs" element={<ApiDocs />} />
+              <Route path="/capital" element={<CapitalDashboard />} />
+              <Route path="/capital/credit-overview" element={<CreditOverview />} />
+              <Route path="/capital/metro2-scanner" element={<Metro2Scanner />} />
+              <Route path="/capital/disputes" element={<DisputeManager />} />
+              <Route path="/capital/funding-readiness" element={<FundingReadiness />} />
+              <Route path="/capital/business-credit" element={<BusinessCredit />} />
+              <Route path="/capital/receivables" element={<Receivables />} />
+              <Route path="/capital/payroll-runway" element={<PayrollRunway />} />
+              <Route path="/capital/funding-simulator" element={<FundingSimulator />} />
+              <Route path="/capital/survival-index" element={<SurvivalIndex />} />
+              <Route path="/capital/vault" element={<DocumentVault />} />
+              <Route path="/capital/ai-coach" element={<AiCoach />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
