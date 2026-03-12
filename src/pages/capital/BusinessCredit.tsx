@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Building2, CheckCircle2, Circle, ChevronDown, ChevronUp, StickyNote, Save } from 'lucide-react';
+import { Building2, CheckCircle2, Circle, ChevronDown, ChevronUp, StickyNote, Save, ExternalLink } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
