@@ -102,6 +102,36 @@ const BusinessCredit = () => {
         </CardContent>
       </Card>
 
+      {/* Vendor Tradeline Resources */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <ExternalLink className="h-4 w-4 text-primary" />
+            Vendor Tradeline Resources
+          </CardTitle>
+          <p className="text-xs text-muted-foreground">Establish Net-30/60/90 vendor accounts that report to business credit bureaus</p>
+        </CardHeader>
+        <CardContent className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+          {[
+            { name: 'Tradeline Supply', url: 'https://www.tradelinesupply.com', desc: 'tradelinesupply.com' },
+            { name: 'Boost Credit 101', url: 'https://www.boostcredit101.com', desc: 'boostcredit101.com' },
+            { name: 'Tradelines Club', url: 'https://www.tradelines.club', desc: 'tradelines.club' },
+            { name: 'Improve My Credit Fitness', url: 'https://www.improvemycreditfitness.com', desc: 'improvemycreditfitness.com' },
+            { name: 'Tradeline Genie', url: 'https://www.tradelinegenie.com', desc: 'tradelinegenie.com' },
+          ].map((link) => (
+            <a key={link.url} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 p-3 rounded-lg border bg-background hover:bg-accent transition-colors group">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20">
+                <ExternalLink className="h-4 w-4 text-primary" />
+              </div>
+              <div className="min-w-0">
+                <p className="font-medium text-sm">{link.name}</p>
+                <p className="text-xs text-muted-foreground truncate">{link.desc}</p>
+              </div>
+            </a>
+          ))}
+        </CardContent>
+      </Card>
+
       <div className="space-y-4">
         {ROADMAP_STEPS.map((step) => {
           const saved = getStep(step.key);
