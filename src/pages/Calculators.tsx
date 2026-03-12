@@ -305,10 +305,10 @@ const Calculators = () => {
       {pageGuideOpen && (
         <PageOverview
           title="Financial Calculators"
-          description="Six powerful calculators for mortgage, auto loans, credit cards, investments, general debt, and wealth projection."
+          description="Seven powerful calculators for mortgage, auto loans, credit cards, investments, general debt, wealth projection, and revenue goal planning."
           icon={Calculator}
           iconColor="text-prism-indigo"
-          ttsScript="The Calculators page offers six financial calculators to help you plan. The Mortgage calculator shows monthly payments, total interest, and amortization schedules. The Auto Loan calculator factors in down payment and trade-in value. The Credit Card calculator shows how long it takes to pay off a balance. The Investment calculator projects compound growth over time. The General Debt calculator handles any loan type. The Wealth Multiplier shows how much each dollar invested today will grow by retirement."
+          ttsScript="The Calculators page offers seven financial calculators to help you plan. The Mortgage calculator shows monthly payments, total interest, and amortization schedules. The Auto Loan calculator factors in down payment and trade-in value. The Credit Card calculator shows how long it takes to pay off a balance. The Investment calculator projects compound growth over time. The General Debt calculator handles any loan type. The Wealth Multiplier shows how much each dollar invested today will grow by retirement. The Focus Offer Calculator helps you plan how many sales you need to hit your revenue goals."
           features={[
             'Mortgage payment and amortization calculator',
             'Auto loan with trade-in value',
@@ -316,12 +316,14 @@ const Calculators = () => {
             'Investment compound growth projections',
             'General debt calculator',
             'Wealth multiplier by age',
+            'Focus Offer revenue planning',
           ]}
           demoData={[
             { label: 'Mortgage Payment', value: '$1,896/mo', badge: '$350k @ 6.5%' },
             { label: 'Auto Payment', value: '$575/mo', badge: '$30k @ 5.9%' },
             { label: 'CC Payoff', value: '42 months', badge: '$8k @ 22.99%' },
             { label: 'Wealth Multiplier', value: '23x', badge: 'Age 30' },
+            { label: 'Focus Offer', value: '10 sales', badge: '$10k @ $1,000' },
           ]}
         />
       )}
