@@ -1,13 +1,11 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Shield, FileSearch, FileText, TrendingUp, DollarSign, Clock,
   BarChart3, Activity, Building2, Lock, Bot, AlertTriangle,
-  ChevronRight, ChevronDown, ArrowUpRight, CheckCircle2, Circle, Rocket,
-  Radar, Calculator, Landmark, CreditCard,
+  ChevronRight, CheckCircle2, Radar, Calculator, Landmark,
+  Rocket, ArrowRight, CreditCard, Users, Sparkles,
 } from 'lucide-react';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -21,97 +19,40 @@ import { useHousehold } from '@/contexts/HouseholdContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
-const CAPITAL_FEATURES = [
-  'Credit report import & analysis',
-  'Metro2 compliance scanning',
-  'eOSCAR dispute preparation',
-  'Agency financial command center',
-  'Business credit building roadmap',
-];
+// ── Scoring helpers ──
 
-interface ModuleCard {
-  title: string;
-  description: string;
-  icon: React.ElementType;
-  route: string;
-  status: 'active' | 'coming-soon';
-  category: 'credit' | 'agency';
-  color: string;
-  stat?: string;
-  statLabel?: string;
-}
-
-const MODULES: ModuleCard[] = [
-  { title: 'Credit Overview', description: 'Import and analyze credit reports from all three bureaus', icon: Shield, route: '/capital/credit-overview', status: 'active', category: 'credit', color: 'text-prism-teal', stat: '—', statLabel: 'Credit Score' },
-  { title: 'Metro2 Risk Scanner', description: 'AI-powered compliance analysis against Metro2 reporting standards', icon: FileSearch, route: '/capital/metro2-scanner', status: 'active', category: 'credit', color: 'text-prism-amber', stat: '0', statLabel: 'Issues Found' },
-  { title: 'Dispute Manager', description: 'Prepare eOSCAR-compatible disputes with FCRA compliance', icon: FileText, route: '/capital/disputes', status: 'active', category: 'credit', color: 'text-prism-orange', stat: '0', statLabel: 'Active Disputes' },
-  { title: 'Funding Readiness Score', description: 'Proprietary scoring model evaluating your readiness for capital', icon: TrendingUp, route: '/capital/funding-readiness', status: 'active', category: 'credit', color: 'text-prism-lime', stat: '—', statLabel: 'Score / 100' },
-  { title: 'Business Credit Builder', description: 'Step-by-step roadmap to establish strong business credit', icon: Building2, route: '/capital/business-credit', status: 'active', category: 'credit', color: 'text-prism-indigo', stat: '0%', statLabel: 'Progress' },
-  { title: 'Medicaid Receivable Pipeline', description: 'Track claims submitted, pending, approved, and denied', icon: DollarSign, route: '/capital/receivables', status: 'active', category: 'agency', color: 'text-prism-sky', stat: '$0', statLabel: 'Outstanding' },
-  { title: 'Payroll Runway', description: 'Calculate days of payroll coverage and monitor cash reserves', icon: Clock, route: '/capital/payroll-runway', status: 'active', category: 'agency', color: 'text-prism-rose', stat: '— days', statLabel: 'Runway' },
-  { title: 'Funding Simulator', description: 'Simulate receivable factoring, bridge loans, and working capital', icon: BarChart3, route: '/capital/funding-simulator', status: 'active', category: 'agency', color: 'text-prism-violet' },
-  { title: 'Agency Survival Index', description: 'Predictive health score for DODD agency sustainability', icon: Activity, route: '/capital/survival-index', status: 'active', category: 'agency', color: 'text-prism-teal', stat: '—', statLabel: 'Score / 100' },
-  { title: 'Document Vault', description: 'Encrypted storage for credit reports, disputes, and financials', icon: Lock, route: '/capital/vault', status: 'active', category: 'agency', color: 'text-muted-foreground' },
-  { title: 'AI Financial Coach', description: 'AI assistant for credit education and capital planning guidance', icon: Bot, route: '/capital/ai-coach', status: 'active', category: 'agency', color: 'text-prism-amber' },
-];
-
-const GETTING_STARTED_STEPS = [
-  { key: 'credit_accounts', label: 'Add credit accounts', route: '/capital/credit-overview', icon: Shield },
-  { key: 'metro2_scan', label: 'Run Metro2 compliance scan', route: '/capital/metro2-scanner', icon: FileSearch },
-  { key: 'dispute', label: 'Create your first dispute', route: '/capital/disputes', icon: FileText },
-  { key: 'business_credit', label: 'Start business credit roadmap', route: '/capital/business-credit', icon: Building2 },
-  { key: 'funding_score', label: 'Check funding readiness score', route: '/capital/funding-readiness', icon: TrendingUp },
-];
-
-// --- Bankability scoring logic (mirrors BankabilityScore page) ---
 function computeBankabilityScore(creditAccounts: any[], snapshots: any[], claims: any[], loanItems: any[]) {
   const openAccounts = creditAccounts.filter(a => a.account_status === 'Open');
   const totalBalance = openAccounts.reduce((s, a) => s + Number(a.balance || 0), 0);
   const totalLimit = openAccounts.reduce((s, a) => s + Number(a.credit_limit || 0), 0);
   const utilization = totalLimit > 0 ? (totalBalance / totalLimit) * 100 : 100;
   const creditStrength = Math.max(0, 100 - utilization);
-
   const latest = snapshots[0];
   const revenueStability = latest ? Math.min(100, (Number(latest.monthly_revenue) / 50000) * 100) : 0;
-
   const noi = latest ? Number(latest.monthly_revenue) - Number(latest.monthly_operating_expenses) : 0;
   const cashFlow = noi > 0 ? Math.min(100, (noi / 20000) * 100) : 0;
-
-  const payrollDays = latest && Number(latest.biweekly_payroll) > 0
-    ? (Number(latest.cash_reserves) / (Number(latest.biweekly_payroll) / 14)) : 0;
+  const payrollDays = latest && Number(latest.biweekly_payroll) > 0 ? (Number(latest.cash_reserves) / (Number(latest.biweekly_payroll) / 14)) : 0;
   const bankRelationship = Math.min(100, (payrollDays / 90) * 100);
-
-  const approvedClaims = claims.filter(c => c.status === 'approved' || c.status === 'paid').length;
+  const approvedClaims = claims.filter((c: any) => c.status === 'approved' || c.status === 'paid').length;
   const totalClaims = claims.length;
   const medicaidStability = totalClaims > 0 ? (approvedClaims / totalClaims) * 100 : 50;
-
-  const uploadedDocs = loanItems.filter(i => i.is_uploaded).length;
-  const loanReadinessPct = loanItems.length > 0 ? (uploadedDocs / 18) * 100 : 0;
-
   const factors = [
-    { value: creditStrength, weight: 20 },
-    { value: 50, weight: 10 }, // PAYDEX placeholder
-    { value: 50, weight: 10 }, // Biz bureau placeholder
-    { value: revenueStability, weight: 15 },
-    { value: cashFlow, weight: 15 },
-    { value: noi > 0 ? Math.min(100, (noi / 10000) * 100) : 0, weight: 10 }, // DSCR proxy
-    { value: bankRelationship, weight: 10 },
-    { value: medicaidStability, weight: 10 },
+    { value: creditStrength, weight: 20 }, { value: 50, weight: 10 }, { value: 50, weight: 10 },
+    { value: revenueStability, weight: 15 }, { value: cashFlow, weight: 15 },
+    { value: noi > 0 ? Math.min(100, (noi / 10000) * 100) : 0, weight: 10 },
+    { value: bankRelationship, weight: 10 }, { value: medicaidStability, weight: 10 },
   ];
   return Math.round(factors.reduce((s, f) => s + (f.value * f.weight / 100), 0));
 }
 
-// --- Risk radar alert generation (mirrors FinancialRiskRadar page) ---
 function computeRiskAlerts(snapshots: any[], claims: any[]) {
   const alerts: { severity: 'critical' | 'warning' | 'info'; title: string }[] = [];
   const latest = snapshots[0];
-
   if (latest) {
     const dailyPayroll = Number(latest.biweekly_payroll) / 14;
     const runwayDays = dailyPayroll > 0 ? Math.floor(Number(latest.cash_reserves) / dailyPayroll) : 999;
     if (runwayDays < 30) alerts.push({ severity: 'critical', title: 'Payroll runway < 30 days' });
     else if (runwayDays < 60) alerts.push({ severity: 'warning', title: 'Payroll runway < 60 days' });
-
     if (snapshots.length >= 2) {
       const prev = snapshots[1];
       const drop = ((Number(prev.monthly_revenue) - Number(latest.monthly_revenue)) / Number(prev.monthly_revenue)) * 100;
@@ -119,21 +60,118 @@ function computeRiskAlerts(snapshots: any[], claims: any[]) {
       else if (drop > 10) alerts.push({ severity: 'warning', title: `Revenue dropped ${Math.round(drop)}%` });
     }
   }
-
-  const deniedClaims = claims.filter(c => c.status === 'denied').length;
+  const deniedClaims = claims.filter((c: any) => c.status === 'denied').length;
   const totalClaims = claims.length;
   if (totalClaims > 0) {
     const denyRate = (deniedClaims / totalClaims) * 100;
     if (denyRate > 15) alerts.push({ severity: 'critical', title: `Claim denial rate ${Math.round(denyRate)}%` });
     else if (denyRate > 8) alerts.push({ severity: 'warning', title: `Claim denial rate ${Math.round(denyRate)}%` });
   }
-
   return alerts;
 }
 
+// ── Step definitions ──
+
+interface StepModule {
+  title: string;
+  description: string;
+  icon: React.ElementType;
+  route: string;
+}
+
+const STEP_1_MODULES: StepModule[] = [
+  { title: 'Credit Overview', description: 'Import & analyze credit reports from all 3 bureaus', icon: Shield, route: '/capital/credit-overview' },
+  { title: 'Metro2 Scanner', description: 'Detect reporting violations against Metro2 standards', icon: FileSearch, route: '/capital/metro2-scanner' },
+  { title: 'Dispute Manager', description: 'Prepare eOSCAR-compatible dispute packages', icon: FileText, route: '/capital/disputes' },
+  { title: 'Funding Readiness', description: 'Score your readiness for capital access', icon: TrendingUp, route: '/capital/funding-readiness' },
+];
+
+const STEP_2_MODULES: StepModule[] = [
+  { title: 'Business Credit Builder', description: '6-step roadmap to establish strong business credit', icon: Building2, route: '/capital/business-credit' },
+  { title: 'Banking Intelligence', description: 'Find commercial lenders & SBA-active banks', icon: Landmark, route: '/capital/banking-intel' },
+  { title: 'Vendor Tradelines', description: 'Discover vendors that report to business bureaus', icon: CreditCard, route: '/capital/business-credit' },
+  { title: 'Capital Stack Planner', description: 'Visual funding roadmap from vendor credit to SBA loans', icon: BarChart3, route: '/capital/capital-stack' },
+];
+
+const STEP_3_MODULES: StepModule[] = [
+  { title: 'Receivable Pipeline', description: 'Track Medicaid claims & reimbursements', icon: DollarSign, route: '/capital/receivables' },
+  { title: 'Payroll Runway', description: 'Days of payroll coverage remaining', icon: Clock, route: '/capital/payroll-runway' },
+  { title: 'DSCR Calculator', description: 'Debt Service Coverage Ratio analysis', icon: Calculator, route: '/capital/dscr' },
+  { title: 'Bank Statement Analyzer', description: 'Upload statements for health scoring', icon: Activity, route: '/capital/bank-analyzer' },
+  { title: 'Risk Radar', description: 'Real-time alerts for emerging financial risks', icon: Radar, route: '/capital/risk-radar' },
+];
+
+const STEP_4_MODULES: StepModule[] = [
+  { title: 'Bankability Score', description: '8-factor lender attractiveness score', icon: Landmark, route: '/capital/bankability' },
+  { title: 'Loan Readiness', description: '18-document checklist for lender applications', icon: FileText, route: '/capital/loan-readiness' },
+  { title: 'Funding Simulator', description: 'Simulate factoring, bridge loans & working capital', icon: BarChart3, route: '/capital/funding-simulator' },
+  { title: 'Survival Index', description: 'Predictive agency health & sustainability score', icon: Activity, route: '/capital/survival-index' },
+  { title: 'Document Vault', description: 'Encrypted storage for financial documents', icon: Lock, route: '/capital/vault' },
+  { title: 'AI Coach', description: 'AI assistant for credit & capital guidance', icon: Bot, route: '/capital/ai-coach' },
+];
+
+// ── Step number badge ──
+
+const StepNumber = ({ num, color }: { num: number; color: string }) => (
+  <div className={cn('h-9 w-9 rounded-full flex items-center justify-center text-sm font-bold border-2 shrink-0', color)}>
+    {num}
+  </div>
+);
+
+// ── Connecting line ──
+
+const ConnectingLine = () => (
+  <div className="hidden lg:flex justify-center py-1">
+    <div className="w-0.5 h-8 bg-gradient-to-b from-border to-border/40 rounded-full" />
+  </div>
+);
+
+// ── Full module card (for Steps 1-2) ──
+
+const FullModuleCard = ({ mod }: { mod: StepModule }) => {
+  const navigate = useNavigate();
+  return (
+    <Card
+      className="group cursor-pointer hover:border-primary/40 hover:shadow-md transition-all duration-200"
+      onClick={() => navigate(mod.route)}
+    >
+      <CardContent className="flex items-center gap-4 py-4 px-5">
+        <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors">
+          <mod.icon className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold">{mod.title}</p>
+          <p className="text-xs text-muted-foreground truncate">{mod.description}</p>
+        </div>
+        <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+      </CardContent>
+    </Card>
+  );
+};
+
+// ── Compact module row (for Steps 3-4) ──
+
+const CompactModuleRow = ({ mod }: { mod: StepModule }) => {
+  const navigate = useNavigate();
+  return (
+    <button
+      onClick={() => navigate(mod.route)}
+      className="flex items-center gap-3 w-full rounded-lg px-3 py-2.5 text-left hover:bg-accent/50 transition-colors group"
+    >
+      <mod.icon className="h-4 w-4 text-muted-foreground shrink-0 group-hover:text-primary transition-colors" />
+      <div className="flex-1 min-w-0">
+        <span className="text-sm font-medium">{mod.title}</span>
+        <span className="text-xs text-muted-foreground ml-2 hidden sm:inline">— {mod.description}</span>
+      </div>
+      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+    </button>
+  );
+};
+
+// ── Main Dashboard ──
+
 const CapitalDashboard = () => {
   const navigate = useNavigate();
-  const [filter, setFilter] = useState<'all' | 'credit' | 'agency'>('all');
   const { accounts } = useCreditAccounts();
   const { findings } = useMetro2Findings();
   const { disputes } = useDisputes();
@@ -141,7 +179,6 @@ const CapitalDashboard = () => {
   const { household } = useHousehold();
   const householdId = household?.id;
 
-  // Shared data for summary widgets
   const { data: snapshots = [] } = useQuery({
     queryKey: ['dash-snapshots', householdId],
     queryFn: async () => {
@@ -172,34 +209,19 @@ const CapitalDashboard = () => {
     enabled: !!householdId,
   });
 
-  // Compute summary values
+  // Summary computations
   const bankabilityScore = computeBankabilityScore(accounts, snapshots, claims, loanItems);
   const riskAlerts = computeRiskAlerts(snapshots, claims);
   const criticalAlerts = riskAlerts.filter(a => a.severity === 'critical').length;
   const warningAlerts = riskAlerts.filter(a => a.severity === 'warning').length;
-
-  const uploadedDocs = loanItems.filter(i => i.is_uploaded).length;
+  const uploadedDocs = loanItems.filter((i: any) => i.is_uploaded).length;
   const loanReadinessPct = loanItems.length > 0 ? Math.round((uploadedDocs / 18) * 100) : 0;
-
   const latest = snapshots[0];
   const noi = latest ? Number(latest.monthly_revenue) - Number(latest.monthly_operating_expenses) : 0;
   const dscrValue = latest && Number(latest.biweekly_payroll) > 0
-    ? (noi / (Number(latest.biweekly_payroll) * 2)).toFixed(2)
-    : '—';
+    ? (noi / (Number(latest.biweekly_payroll) * 2)).toFixed(2) : '—';
 
-  // Getting started
-  const gsCompletion = {
-    credit_accounts: accounts.length > 0,
-    metro2_scan: findings.length > 0,
-    dispute: disputes.length > 0,
-    business_credit: bizSteps.some(s => s.is_completed),
-    funding_score: accounts.length > 0,
-  };
-  const gsCompleted = Object.values(gsCompletion).filter(Boolean).length;
-  const gsTotal = GETTING_STARTED_STEPS.length;
-  const gsProgress = Math.round((gsCompleted / gsTotal) * 100);
-
-  const filtered = filter === 'all' ? MODULES : MODULES.filter(m => m.category === filter);
+  const bizProgress = bizSteps.length > 0 ? Math.round((bizSteps.filter(s => s.is_completed).length / bizSteps.length) * 100) : 0;
 
   return (
     <div className="space-y-6 pb-8">
@@ -207,244 +229,134 @@ const CapitalDashboard = () => {
         title="FocusOS Capital"
         description="Credit Intelligence & Agency Financial Command Center"
         icon={Shield}
-        ttsScript="Welcome to FocusOS Capital, your Credit Intelligence and Agency Financial Command Center."
-        features={CAPITAL_FEATURES}
+        ttsScript="Welcome to FocusOS Capital. Follow the 4-step journey from credit intelligence to growth funding."
+        features={[
+          'Step 1: Know Your Credit — analyze, scan, dispute',
+          'Step 2: Build Business Credit — PAYDEX, tradelines, capital stack',
+          'Step 3: Master Cash Flow — receivables, payroll, DSCR',
+          'Step 4: Grow & Get Funded — bankability, readiness, simulation',
+        ]}
       />
 
-      {/* Getting Started Card */}
-      {gsCompleted < gsTotal && (
-        <Collapsible defaultOpen className="overflow-hidden">
-          <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-transparent overflow-hidden">
-            <CardHeader className="pb-3">
-              <CollapsibleTrigger className="flex items-center justify-between w-full text-left">
-                <div className="flex items-center gap-2">
-                  <Rocket className="h-5 w-5 text-primary" />
-                  <CardTitle className="text-base">Get Started with Capital</CardTitle>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="text-xs">{gsCompleted} / {gsTotal}</Badge>
-                  <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 [[data-state=closed]_&]:rotate-[-90deg]" />
-                </div>
-              </CollapsibleTrigger>
-              <Progress value={gsProgress} className="h-2 mt-2" />
-            </CardHeader>
-            <CollapsibleContent>
-              <CardContent className="pt-0">
-                <div className="space-y-2">
-                  {GETTING_STARTED_STEPS.map(step => {
-                    const done = gsCompletion[step.key as keyof typeof gsCompletion];
-                    return (
-                      <button
-                        key={step.key}
-                        onClick={() => navigate(step.route)}
-                        className={cn(
-                          'flex items-center gap-3 w-full rounded-lg px-3 py-2 text-sm transition-colors text-left',
-                          done ? 'text-muted-foreground' : 'hover:bg-accent text-foreground'
-                        )}
-                      >
-                        {done ? <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" /> : <Circle className="h-4 w-4 text-muted-foreground/40 shrink-0" />}
-                        <step.icon className="h-4 w-4 text-muted-foreground shrink-0" />
-                        <span className={done ? 'line-through' : ''}>{step.label}</span>
-                        {!done && <ChevronRight className="h-3.5 w-3.5 ml-auto text-muted-foreground" />}
-                      </button>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </CollapsibleContent>
-          </Card>
-        </Collapsible>
-      )}
+      {/* ─── START HERE Hero ─── */}
+      <Card className="relative overflow-hidden border-primary/30 bg-gradient-to-br from-primary/8 via-accent/5 to-transparent">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--primary)/0.08),transparent_60%)]" />
+        <CardContent className="relative py-8 px-6 sm:px-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
+            <div className="h-14 w-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+              <Rocket className="h-7 w-7 text-primary" />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-xl sm:text-2xl font-bold tracking-tight">Start Here</h2>
+              <p className="text-sm text-muted-foreground mt-1 max-w-xl">
+                Build your financial foundation in 4 steps — from understanding your credit to securing growth capital for your agency.
+              </p>
+            </div>
+            <Button onClick={() => navigate('/capital/credit-overview')} size="lg" className="gap-2 shrink-0">
+              Begin Step 1 <ArrowRight className="h-4 w-4" />
+            </Button>
+          </div>
 
-      {/* Compliance Notice */}
-      <div className="flex items-start gap-3 rounded-lg border border-prism-amber/30 bg-prism-amber/5 p-4">
+          {/* Quick Score Strip */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-6 border-t border-border/50">
+            <MiniStat label="Bankability" value={accounts.length > 0 ? String(bankabilityScore) : '—'} suffix="/100" positive={bankabilityScore >= 75} />
+            <MiniStat label="Risk Alerts" value={String(criticalAlerts + warningAlerts)} suffix={criticalAlerts > 0 ? 'critical' : 'active'} positive={criticalAlerts + warningAlerts === 0} />
+            <MiniStat label="Loan Ready" value={`${loanReadinessPct}%`} suffix={`${uploadedDocs}/18`} positive={loanReadinessPct >= 80} />
+            <MiniStat label="DSCR" value={dscrValue} suffix="ratio" positive={dscrValue !== '—' && Number(dscrValue) >= 1.2} />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ─── STEP 1: Know Your Credit ─── */}
+      <section>
+        <div className="flex items-center gap-3 mb-4">
+          <StepNumber num={1} color="border-prism-teal text-prism-teal" />
+          <div>
+            <h3 className="text-lg font-bold">Know Your Credit</h3>
+            <p className="text-xs text-muted-foreground">Analyze personal credit, detect Metro2 violations, prepare disputes</p>
+          </div>
+          {accounts.length > 0 && <Badge variant="outline" className="ml-auto text-emerald-600 border-emerald-300 text-[10px]"><CheckCircle2 className="h-3 w-3 mr-1" />Started</Badge>}
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {STEP_1_MODULES.map(m => <FullModuleCard key={m.route} mod={m} />)}
+        </div>
+      </section>
+
+      <ConnectingLine />
+
+      {/* ─── STEP 2: Build Business Credit ─── */}
+      <section>
+        <div className="flex items-center gap-3 mb-4">
+          <StepNumber num={2} color="border-prism-indigo text-prism-indigo" />
+          <div>
+            <h3 className="text-lg font-bold">Build Business Credit</h3>
+            <p className="text-xs text-muted-foreground">Establish PAYDEX, add vendor tradelines, plan your capital stack</p>
+          </div>
+          {bizProgress > 0 && (
+            <Badge variant="outline" className="ml-auto text-prism-indigo border-prism-indigo/30 text-[10px]">{bizProgress}% complete</Badge>
+          )}
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {STEP_2_MODULES.map(m => <FullModuleCard key={m.route + m.title} mod={m} />)}
+        </div>
+      </section>
+
+      <ConnectingLine />
+
+      {/* ─── STEP 3: Master Cash Flow ─── */}
+      <section>
+        <div className="flex items-center gap-3 mb-3">
+          <StepNumber num={3} color="border-prism-sky text-prism-sky" />
+          <div>
+            <h3 className="text-lg font-bold">Master Cash Flow</h3>
+            <p className="text-xs text-muted-foreground">Medicaid receivables, payroll coverage, debt service & risk monitoring</p>
+          </div>
+        </div>
+        <Card>
+          <CardContent className="py-2 px-1 divide-y divide-border/50">
+            {STEP_3_MODULES.map(m => <CompactModuleRow key={m.route} mod={m} />)}
+          </CardContent>
+        </Card>
+      </section>
+
+      <ConnectingLine />
+
+      {/* ─── STEP 4: Grow & Get Funded ─── */}
+      <section>
+        <div className="flex items-center gap-3 mb-3">
+          <StepNumber num={4} color="border-prism-lime text-prism-lime" />
+          <div>
+            <h3 className="text-lg font-bold">Grow & Get Funded</h3>
+            <p className="text-xs text-muted-foreground">Bankability scoring, loan readiness, funding simulation & AI guidance</p>
+          </div>
+        </div>
+        <Card>
+          <CardContent className="py-2 px-1 divide-y divide-border/50">
+            {STEP_4_MODULES.map(m => <CompactModuleRow key={m.route + m.title} mod={m} />)}
+          </CardContent>
+        </Card>
+      </section>
+
+      {/* ─── Compliance Notice ─── */}
+      <div className="flex items-start gap-3 rounded-lg border border-prism-amber/30 bg-prism-amber/5 p-4 mt-4">
         <AlertTriangle className="h-5 w-5 text-prism-amber shrink-0 mt-0.5" />
         <p className="text-xs text-muted-foreground leading-relaxed">
-          This system provides financial education, credit analysis, and operational planning tools.
-          It does not provide credit repair services or guarantee removal of credit report items.
+          This platform provides financial education and operational intelligence tools.
+          It does not provide lending services, credit repair, or guarantee credit approvals.
         </p>
-      </div>
-
-      {/* Summary Widgets Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Bankability Score */}
-        <Card
-          className="cursor-pointer hover:border-primary/30 transition-colors"
-          onClick={() => navigate('/capital/bankability')}
-        >
-          <CardContent className="pt-5 pb-4">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Landmark className="h-4 w-4 text-primary" />
-                </div>
-                <span className="text-sm font-medium">Bankability</span>
-              </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <div className="flex items-baseline gap-1.5">
-              <span className={cn('text-3xl font-bold', bankabilityScore >= 75 ? 'text-emerald-500' : bankabilityScore >= 60 ? 'text-amber-500' : 'text-destructive')}>
-                {accounts.length > 0 ? bankabilityScore : '—'}
-              </span>
-              <span className="text-xs text-muted-foreground">/ 100</span>
-            </div>
-            <Progress value={accounts.length > 0 ? bankabilityScore : 0} className="h-1.5 mt-2" />
-            <p className="text-[11px] text-muted-foreground mt-2">
-              {bankabilityScore >= 90 ? 'Highly bankable' : bankabilityScore >= 75 ? 'Moderately bankable' : bankabilityScore >= 60 ? 'Needs improvement' : 'Add data to score'}
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Risk Radar Alerts */}
-        <Card
-          className="cursor-pointer hover:border-primary/30 transition-colors"
-          onClick={() => navigate('/capital/risk-radar')}
-        >
-          <CardContent className="pt-5 pb-4">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <div className={cn('h-8 w-8 rounded-lg flex items-center justify-center', criticalAlerts > 0 ? 'bg-destructive/10' : warningAlerts > 0 ? 'bg-amber-500/10' : 'bg-emerald-500/10')}>
-                  <Radar className={cn('h-4 w-4', criticalAlerts > 0 ? 'text-destructive' : warningAlerts > 0 ? 'text-amber-500' : 'text-emerald-500')} />
-                </div>
-                <span className="text-sm font-medium">Risk Radar</span>
-              </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
-            </div>
-            {riskAlerts.length === 0 ? (
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-                <span className="text-sm text-emerald-600 font-medium">All Clear</span>
-              </div>
-            ) : (
-              <div className="space-y-1.5">
-                {criticalAlerts > 0 && (
-                  <Badge variant="destructive" className="text-[10px]">{criticalAlerts} Critical</Badge>
-                )}
-                {warningAlerts > 0 && (
-                  <Badge variant="secondary" className="text-[10px] bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 ml-1">{warningAlerts} Warning</Badge>
-                )}
-              </div>
-            )}
-            <div className="mt-2 space-y-1">
-              {riskAlerts.slice(0, 2).map((a, i) => (
-                <p key={i} className="text-[11px] text-muted-foreground truncate">• {a.title}</p>
-              ))}
-              {riskAlerts.length === 0 && <p className="text-[11px] text-muted-foreground">No active financial risks detected</p>}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Loan Readiness */}
-        <Card
-          className="cursor-pointer hover:border-primary/30 transition-colors"
-          onClick={() => navigate('/capital/loan-readiness')}
-        >
-          <CardContent className="pt-5 pb-4">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-prism-indigo/10 flex items-center justify-center">
-                  <FileText className="h-4 w-4 text-prism-indigo" />
-                </div>
-                <span className="text-sm font-medium">Loan Readiness</span>
-              </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <div className="flex items-baseline gap-1.5">
-              <span className={cn('text-3xl font-bold', loanReadinessPct >= 80 ? 'text-emerald-500' : loanReadinessPct >= 50 ? 'text-amber-500' : 'text-muted-foreground')}>
-                {loanReadinessPct}%
-              </span>
-              <span className="text-xs text-muted-foreground">complete</span>
-            </div>
-            <Progress value={loanReadinessPct} className="h-1.5 mt-2" />
-            <p className="text-[11px] text-muted-foreground mt-2">{uploadedDocs} of 18 documents ready</p>
-          </CardContent>
-        </Card>
-
-        {/* DSCR Indicator */}
-        <Card
-          className="cursor-pointer hover:border-primary/30 transition-colors"
-          onClick={() => navigate('/capital/dscr')}
-        >
-          <CardContent className="pt-5 pb-4">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-prism-lime/10 flex items-center justify-center">
-                  <Calculator className="h-4 w-4 text-prism-lime" />
-                </div>
-                <span className="text-sm font-medium">DSCR</span>
-              </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <div className="flex items-baseline gap-1.5">
-              <span className={cn('text-3xl font-bold',
-                dscrValue === '—' ? 'text-muted-foreground' :
-                Number(dscrValue) >= 1.5 ? 'text-emerald-500' :
-                Number(dscrValue) >= 1.0 ? 'text-amber-500' : 'text-destructive'
-              )}>
-                {dscrValue}
-              </span>
-              <span className="text-xs text-muted-foreground">ratio</span>
-            </div>
-            <p className="text-[11px] text-muted-foreground mt-2">
-              {dscrValue === '—' ? 'Add financial snapshots to calculate' :
-                Number(dscrValue) >= 1.5 ? 'Strong debt coverage' :
-                Number(dscrValue) >= 1.2 ? 'Healthy range' :
-                Number(dscrValue) >= 1.0 ? 'Borderline — monitor closely' : 'High risk — below 1.0'}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Filter Tabs */}
-      <div className="flex gap-2">
-        {(['all', 'credit', 'agency'] as const).map(f => (
-          <Button
-            key={f}
-            variant={filter === f ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setFilter(f)}
-            className="capitalize"
-          >
-            {f === 'all' ? 'All Modules' : f === 'credit' ? 'Credit Intelligence' : 'Agency Finance'}
-          </Button>
-        ))}
-      </div>
-
-      {/* Module Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {filtered.map((mod) => (
-          <Card
-            key={mod.route}
-            className="group cursor-pointer hover:border-primary/30"
-            onClick={() => navigate(mod.route)}
-          >
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between">
-                <div className={cn('flex h-10 w-10 items-center justify-center rounded-xl bg-muted', mod.color)}>
-                  <mod.icon className="h-5 w-5" />
-                </div>
-                {mod.status === 'coming-soon' ? (
-                  <Badge variant="secondary" className="text-[10px]">Coming Soon</Badge>
-                ) : (
-                  <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                )}
-              </div>
-              <CardTitle className="text-base mt-2">{mod.title}</CardTitle>
-              <CardDescription className="text-xs">{mod.description}</CardDescription>
-            </CardHeader>
-            {mod.stat && (
-              <CardContent className="pt-0">
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-2xl font-bold">{mod.stat}</span>
-                  {mod.statLabel && <span className="text-xs text-muted-foreground">{mod.statLabel}</span>}
-                </div>
-              </CardContent>
-            )}
-          </Card>
-        ))}
       </div>
     </div>
   );
 };
+
+// ── Mini stat for hero strip ──
+
+const MiniStat = ({ label, value, suffix, positive }: { label: string; value: string; suffix: string; positive: boolean }) => (
+  <div className="text-center">
+    <p className="text-[11px] text-muted-foreground mb-0.5">{label}</p>
+    <p className={cn('text-lg font-bold', positive ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground')}>{value}</p>
+    <p className="text-[10px] text-muted-foreground">{suffix}</p>
+  </div>
+);
 
 export default CapitalDashboard;
