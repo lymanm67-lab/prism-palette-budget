@@ -132,6 +132,7 @@ const BusinessCredit = () => {
         </CardContent>
       </Card>
 
+      <div className="space-y-4">
         {ROADMAP_STEPS.map((step) => {
           const saved = getStep(step.key);
           const isDone = saved?.is_completed ?? false;
