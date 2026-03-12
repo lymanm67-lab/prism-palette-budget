@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Shield, FileSearch, FileText, TrendingUp, DollarSign, Clock,
   BarChart3, Activity, Building2, Lock, Bot, AlertTriangle,
-  ChevronRight, ArrowUpRight,
+  ChevronRight, ArrowUpRight, CheckCircle2, Circle, Rocket,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +11,10 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import PageOverview from '@/components/PageOverview';
+import { useCreditAccounts } from '@/hooks/use-credit-accounts';
+import { useMetro2Findings } from '@/hooks/use-metro2-findings';
+import { useDisputes } from '@/hooks/use-disputes';
+import { useBusinessCreditSteps } from '@/hooks/use-business-credit-steps';
 
 const CAPITAL_FEATURES = [
   'Credit report import & analysis',
