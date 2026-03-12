@@ -58,6 +58,7 @@ const DisputeManager = () => {
   const [showCreate, setShowCreate] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const letterRef = useRef<HTMLDivElement>(null);
+  const [letterDispute, setLetterDispute] = useState<CreditDispute | null>(null);
 
   // form state
   const [form, setForm] = useState({ bureau: '', dispute_reason: '', explanation: '', credit_account_id: '', metro2_violation: '' });
