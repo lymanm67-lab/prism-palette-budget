@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { FileText, Plus, Clock, CheckCircle2, XCircle, AlertTriangle, Send, Trash2, Download, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
+import { FileText, Plus, Clock, CheckCircle2, XCircle, AlertTriangle, Send, Trash2, Download, ChevronDown, ChevronUp, Sparkles, FileEdit } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
