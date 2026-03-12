@@ -17,6 +17,8 @@ import { useMetro2Findings } from '@/hooks/use-metro2-findings';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { format, differenceInDays, addDays, isPast } from 'date-fns';
 import { exportToPdf } from '@/lib/export-utils';
+import DisputeLetterGenerator from '@/components/capital/DisputeLetterGenerator';
+import { OSCAR_REASON_CODES } from '@/components/capital/DisputeLetterGenerator';
 import { toast } from 'sonner';
 
 /* ── helpers ─────────────────────────────────────────── */
