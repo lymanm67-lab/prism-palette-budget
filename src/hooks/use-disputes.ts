@@ -94,6 +94,7 @@ export function useDisputes() {
     pending,
     resolved,
     createDispute: createDispute.mutate,
+    createDisputeAsync: createDispute.mutateAsync,
     updateDispute: updateDispute.mutate,
     deleteDispute: deleteDispute.mutate,
     isCreating: createDispute.isPending,

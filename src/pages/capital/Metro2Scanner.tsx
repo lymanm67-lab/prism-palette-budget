@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { FileSearch, AlertTriangle, CheckCircle2, Info, Scan, Shield, ChevronDown, ChevronRight, CheckCheck } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { FileSearch, AlertTriangle, CheckCircle2, Info, Scan, Shield, ChevronDown, ChevronRight, CheckCheck, FileText, Gavel } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -7,7 +8,10 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import PageOverview from '@/components/PageOverview';
 import { useMetro2Findings } from '@/hooks/use-metro2-findings';
 import { useCreditAccounts } from '@/hooks/use-credit-accounts';
+import { useDisputes, type DisputeInsert } from '@/hooks/use-disputes';
+import { useHousehold } from '@/contexts/HouseholdContext';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
 
 const severityConfig: Record<string, { color: string; icon: typeof AlertTriangle; label: string; badgeVariant: 'destructive' | 'secondary' | 'outline' }> = {
   high: { color: 'text-destructive', icon: AlertTriangle, label: 'High', badgeVariant: 'destructive' },
@@ -16,10 +20,16 @@ const severityConfig: Record<string, { color: string; icon: typeof AlertTriangle
 };
 
 const Metro2Scanner = () => {
+  const navigate = useNavigate();
+  const { household } = useHousehold();
+  const householdId = household?.id;
   const { findings, high, medium, low, scanning, runScan, toggleResolved, isLoading } = useMetro2Findings();
   const { accounts } = useCreditAccounts();
+  const { createDisputeAsync, isCreating } = useDisputes();
   const [showResolved, setShowResolved] = useState(false);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [creatingDisputeFor, setCreatingDisputeFor] = useState<string | null>(null);
+  const [bulkCreating, setBulkCreating] = useState(false);
 
   const toggle = (id: string) => {
     setExpandedIds(prev => {
@@ -33,9 +43,61 @@ const Metro2Scanner = () => {
   const resolvedCount = findings.filter(f => f.is_resolved).length;
   const compliantCount = accounts.length - new Set(findings.filter(f => !f.is_resolved).map(f => f.credit_account_id)).size;
 
+  const criticalHighFindings = findings.filter(f => (f.severity === 'high') && !f.is_resolved);
+
   const getAccountName = (id: string) => {
     const acct = accounts.find(a => a.id === id);
     return acct ? `${acct.account_name} (${acct.bureau})` : 'Unknown Account';
+  };
+
+  const buildDisputePayload = (finding: typeof findings[0]): DisputeInsert | null => {
+    if (!householdId) return null;
+    const acct = accounts.find(a => a.id === finding.credit_account_id);
+    return {
+      household_id: householdId,
+      bureau: acct?.bureau || 'Equifax',
+      dispute_reason: finding.title,
+      explanation: `${finding.explanation}\n\nMetro2 Principle: ${finding.metro2_principle || 'N/A'}\nRecommended: ${finding.recommended_action || 'N/A'}`,
+      credit_account_id: finding.credit_account_id,
+      metro2_violation: finding.violation_type,
+      status: 'draft',
+    };
+  };
+
+  const handleCreateDispute = async (finding: typeof findings[0]) => {
+    const payload = buildDisputePayload(finding);
+    if (!payload) return;
+    setCreatingDisputeFor(finding.id);
+    try {
+      await createDisputeAsync(payload);
+      toast.success('Draft dispute created');
+      navigate('/capital/disputes');
+    } catch {
+      // error handled by hook
+    } finally {
+      setCreatingDisputeFor(null);
+    }
+  };
+
+  const handleBulkDispute = async () => {
+    if (!householdId) return;
+    setBulkCreating(true);
+    try {
+      let created = 0;
+      for (const finding of criticalHighFindings) {
+        const payload = buildDisputePayload(finding);
+        if (payload) {
+          await createDisputeAsync(payload);
+          created++;
+        }
+      }
+      toast.success(`${created} draft dispute${created !== 1 ? 's' : ''} created`);
+      navigate('/capital/disputes');
+    } catch {
+      // error handled by hook
+    } finally {
+      setBulkCreating(false);
+    }
   };
 
   const lastScanDate = findings.length > 0
@@ -63,11 +125,25 @@ const Metro2Scanner = () => {
             <span className="text-xs text-muted-foreground">Last scan: {lastScanDate}</span>
           )}
         </div>
-        {resolvedCount > 0 && (
-          <Button variant="ghost" size="sm" onClick={() => setShowResolved(!showResolved)}>
-            {showResolved ? 'Hide' : 'Show'} {resolvedCount} resolved
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {criticalHighFindings.length > 0 && (
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleBulkDispute}
+              disabled={bulkCreating}
+              className="gap-2"
+            >
+              <Gavel className="h-4 w-4" />
+              {bulkCreating ? 'Creating…' : `Dispute All High Issues (${criticalHighFindings.length})`}
+            </Button>
+          )}
+          {resolvedCount > 0 && (
+            <Button variant="ghost" size="sm" onClick={() => setShowResolved(!showResolved)}>
+              {showResolved ? 'Hide' : 'Show'} {resolvedCount} resolved
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Summary Cards */}
@@ -176,6 +252,17 @@ const Metro2Scanner = () => {
                         </div>
                       )}
                       <div className="flex gap-2 pt-1">
+                        {!finding.is_resolved && (
+                          <Button
+                            size="sm"
+                            onClick={() => handleCreateDispute(finding)}
+                            disabled={creatingDisputeFor === finding.id}
+                            className="gap-1.5"
+                          >
+                            <FileText className="h-3.5 w-3.5" />
+                            {creatingDisputeFor === finding.id ? 'Creating…' : 'Create Dispute'}
+                          </Button>
+                        )}
                         <Button
                           variant="outline"
                           size="sm"
