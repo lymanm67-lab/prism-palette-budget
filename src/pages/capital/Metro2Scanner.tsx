@@ -20,10 +20,16 @@ const severityConfig: Record<string, { color: string; icon: typeof AlertTriangle
 };
 
 const Metro2Scanner = () => {
+  const navigate = useNavigate();
+  const { household } = useHousehold();
+  const householdId = household?.id;
   const { findings, high, medium, low, scanning, runScan, toggleResolved, isLoading } = useMetro2Findings();
   const { accounts } = useCreditAccounts();
+  const { createDisputeAsync, isCreating } = useDisputes();
   const [showResolved, setShowResolved] = useState(false);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [creatingDisputeFor, setCreatingDisputeFor] = useState<string | null>(null);
+  const [bulkCreating, setBulkCreating] = useState(false);
 
   const toggle = (id: string) => {
     setExpandedIds(prev => {
@@ -36,6 +42,8 @@ const Metro2Scanner = () => {
   const displayed = showResolved ? findings : findings.filter(f => !f.is_resolved);
   const resolvedCount = findings.filter(f => f.is_resolved).length;
   const compliantCount = accounts.length - new Set(findings.filter(f => !f.is_resolved).map(f => f.credit_account_id)).size;
+
+  const criticalHighFindings = findings.filter(f => (f.severity === 'high') && !f.is_resolved);
 
   const getAccountName = (id: string) => {
     const acct = accounts.find(a => a.id === id);
