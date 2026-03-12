@@ -53,3 +53,6 @@ verify_jwt = false
 
 [functions.metro2-scan]
 verify_jwt = false
+
+[functions.bill-negotiation]
+verify_jwt = false
