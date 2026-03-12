@@ -1,4 +1,4 @@
-import { TrendingUp, ArrowUpRight, AlertTriangle, CheckCircle2, Info } from 'lucide-react';
+import { TrendingUp, ArrowUpRight, AlertTriangle, CheckCircle2, Info, ExternalLink } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
