@@ -72,7 +72,7 @@ const MoneyMath = () => {
   return (
     <div className="space-y-6 pb-8">
       <PageOverview
-        title="Money Math"
+        title="Focus Offer Calculator"
         description="Price your offers. Hit your goals. Calculate exactly how many sales you need."
         icon={Calculator}
         ttsScript="Calculate exactly how many sales of each offer you need to hit your monthly revenue goal."
