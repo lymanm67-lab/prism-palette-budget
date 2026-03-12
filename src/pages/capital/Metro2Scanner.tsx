@@ -50,6 +50,56 @@ const Metro2Scanner = () => {
     return acct ? `${acct.account_name} (${acct.bureau})` : 'Unknown Account';
   };
 
+  const buildDisputePayload = (finding: typeof findings[0]): DisputeInsert | null => {
+    if (!householdId) return null;
+    const acct = accounts.find(a => a.id === finding.credit_account_id);
+    return {
+      household_id: householdId,
+      bureau: acct?.bureau || 'Equifax',
+      dispute_reason: finding.title,
+      explanation: `${finding.explanation}\n\nMetro2 Principle: ${finding.metro2_principle || 'N/A'}\nRecommended: ${finding.recommended_action || 'N/A'}`,
+      credit_account_id: finding.credit_account_id,
+      metro2_violation: finding.violation_type,
+      status: 'draft',
+    };
+  };
+
+  const handleCreateDispute = async (finding: typeof findings[0]) => {
+    const payload = buildDisputePayload(finding);
+    if (!payload) return;
+    setCreatingDisputeFor(finding.id);
+    try {
+      await createDisputeAsync(payload);
+      toast.success('Draft dispute created');
+      navigate('/capital/disputes');
+    } catch {
+      // error handled by hook
+    } finally {
+      setCreatingDisputeFor(null);
+    }
+  };
+
+  const handleBulkDispute = async () => {
+    if (!householdId) return;
+    setBulkCreating(true);
+    try {
+      let created = 0;
+      for (const finding of criticalHighFindings) {
+        const payload = buildDisputePayload(finding);
+        if (payload) {
+          await createDisputeAsync(payload);
+          created++;
+        }
+      }
+      toast.success(`${created} draft dispute${created !== 1 ? 's' : ''} created`);
+      navigate('/capital/disputes');
+    } catch {
+      // error handled by hook
+    } finally {
+      setBulkCreating(false);
+    }
+  };
+
   const lastScanDate = findings.length > 0
     ? format(new Date(findings[0].created_at), 'MMM d, yyyy h:mm a')
     : null;
