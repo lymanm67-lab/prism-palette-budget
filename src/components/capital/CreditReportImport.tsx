@@ -1,5 +1,9 @@
 import { useState, useRef, useCallback } from 'react';
 import { Upload, FileText, Loader2, CheckCircle2, AlertTriangle, FileJson, FileSpreadsheet, ExternalLink, Globe, ChevronDown } from 'lucide-react';
+import * as pdfjsLib from 'pdfjs-dist';
+
+// Set PDF.js worker
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -148,8 +152,36 @@ const CreditReportImport = ({ onSuccess }: { onSuccess: () => void }) => {
       setParsedAccounts(accounts);
       setMode('structured');
       toast.success(`Loaded ${accounts.length} accounts from CSV`);
+    } else if (ext === 'pdf') {
+      // Extract text from PDF using pdf.js
+      toast.info('Extracting text from PDF...');
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        let fullText = '';
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const content = await page.getTextContent();
+          const pageText = content.items
+            .map((item: any) => item.str)
+            .join(' ');
+          fullText += pageText + '\n';
+        }
+        
+        if (fullText.trim().length < 50) {
+          toast.error('PDF appears to be scanned/image-based. Please copy and paste the text from your credit report instead.');
+          return;
+        }
+        
+        setRawText(fullText);
+        setMode('ai');
+        toast.success(`Extracted ${fullText.length} characters from PDF. Click "Parse with AI" to extract accounts.`);
+      } catch (err: any) {
+        console.error('PDF parse error:', err);
+        toast.error('Could not read PDF. Try pasting the text content instead.');
+      }
     } else {
-      // Treat as text (PDF text content pasted, or .txt)
+      // Treat as text (.txt)
       const text = await file.text();
       setRawText(text);
       setMode('ai');
@@ -362,6 +394,9 @@ const CreditReportImport = ({ onSuccess }: { onSuccess: () => void }) => {
                 <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
                   <Upload className="h-4 w-4 mr-2" />Choose File
                 </Button>
+                <Badge variant="secondary" className="text-xs flex items-center gap-1">
+                  <FileText className="h-3 w-3" />PDF
+                </Badge>
                 <Badge variant="secondary" className="text-xs flex items-center gap-1">
                   <FileSpreadsheet className="h-3 w-3" />CSV
                 </Badge>
