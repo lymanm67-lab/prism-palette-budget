@@ -58,6 +58,7 @@ import FinancialRiskRadar from "@/pages/capital/FinancialRiskRadar";
 import BankabilityScore from "@/pages/capital/BankabilityScore";
 import LoanReadiness from "@/pages/capital/LoanReadiness";
 import DSCRCalculator from "@/pages/capital/DSCRCalculator";
+import MoneyMath from "@/pages/capital/MoneyMath";
 
 const queryClient = new QueryClient();
 
@@ -156,6 +157,7 @@ const App = () => (
               <Route path="/capital/bankability" element={<BankabilityScore />} />
               <Route path="/capital/loan-readiness" element={<LoanReadiness />} />
               <Route path="/capital/dscr" element={<DSCRCalculator />} />
+              <Route path="/capital/money-math" element={<MoneyMath />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
