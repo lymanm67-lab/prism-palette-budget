@@ -281,6 +281,11 @@ const Forecast = () => {
           </Card>
         </motion.div>
       )}
+
+      {/* Receivables & Payables Timeline */}
+      <motion.div variants={item}>
+        <ReceivablesPayablesTimeline />
+      </motion.div>
     </motion.div>
   );
 };
