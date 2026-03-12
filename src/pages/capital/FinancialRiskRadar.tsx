@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { AlertTriangle, Clock, DollarSign, TrendingDown, Users, Shield, Activity } from "lucide-react";
+import { AlertTriangle, Clock, DollarSign, TrendingDown, Users, Shield, Activity, Radar } from "lucide-react";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
