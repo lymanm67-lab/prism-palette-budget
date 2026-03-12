@@ -125,11 +125,25 @@ const Metro2Scanner = () => {
             <span className="text-xs text-muted-foreground">Last scan: {lastScanDate}</span>
           )}
         </div>
-        {resolvedCount > 0 && (
-          <Button variant="ghost" size="sm" onClick={() => setShowResolved(!showResolved)}>
-            {showResolved ? 'Hide' : 'Show'} {resolvedCount} resolved
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {criticalHighFindings.length > 0 && (
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleBulkDispute}
+              disabled={bulkCreating}
+              className="gap-2"
+            >
+              <Gavel className="h-4 w-4" />
+              {bulkCreating ? 'Creating…' : `Dispute All High Issues (${criticalHighFindings.length})`}
+            </Button>
+          )}
+          {resolvedCount > 0 && (
+            <Button variant="ghost" size="sm" onClick={() => setShowResolved(!showResolved)}>
+              {showResolved ? 'Hide' : 'Show'} {resolvedCount} resolved
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Summary Cards */}
