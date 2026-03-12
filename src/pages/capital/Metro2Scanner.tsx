@@ -252,6 +252,17 @@ const Metro2Scanner = () => {
                         </div>
                       )}
                       <div className="flex gap-2 pt-1">
+                        {!finding.is_resolved && (
+                          <Button
+                            size="sm"
+                            onClick={() => handleCreateDispute(finding)}
+                            disabled={creatingDisputeFor === finding.id}
+                            className="gap-1.5"
+                          >
+                            <FileText className="h-3.5 w-3.5" />
+                            {creatingDisputeFor === finding.id ? 'Creating…' : 'Create Dispute'}
+                          </Button>
+                        )}
                         <Button
                           variant="outline"
                           size="sm"
