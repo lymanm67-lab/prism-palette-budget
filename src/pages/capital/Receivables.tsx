@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, forwardRef } from 'react';
 import { DollarSign, Plus, Clock, CheckCircle2, XCircle, Send, Trash2, Edit2, ChevronRight, BarChart3, TrendingUp, AlertTriangle, CalendarClock } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,85 +19,86 @@ import { addDays } from 'date-fns';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 /* ── Payment Predictor Component ── */
-function PaymentPredictor({ claims, avgCycle }: { claims: MedicaidClaim[]; avgCycle: number | null }) {
-  const predictions = useMemo(() => {
-    const paidClaims = claims.filter(c => c.status === 'paid' && c.submission_date && c.payment_date);
+const PaymentPredictor = forwardRef<HTMLDivElement, { claims: MedicaidClaim[]; avgCycle: number | null }>(
+  function PaymentPredictor({ claims, avgCycle }, ref) {
+    const predictions = useMemo(() => {
+      const paidClaims = claims.filter(c => c.status === 'paid' && c.submission_date && c.payment_date);
 
-    // Compute per-status average days from historical data
-    const statusDurations: Record<string, number[]> = {};
-    paidClaims.forEach(c => {
-      const days = differenceInDays(new Date(c.payment_date!), new Date(c.submission_date!));
-      if (days > 0) {
-        (statusDurations['all'] ??= []).push(days);
-      }
-    });
+      // Compute per-status average days from historical data
+      const statusDurations: Record<string, number[]> = {};
+      paidClaims.forEach(c => {
+        const days = differenceInDays(new Date(c.payment_date!), new Date(c.submission_date!));
+        if (days > 0) {
+          (statusDurations['all'] ??= []).push(days);
+        }
+      });
 
-    const allDurations = statusDurations['all'] ?? [];
-    const mean = allDurations.length > 0 ? allDurations.reduce((a, b) => a + b, 0) / allDurations.length : 45;
-    const stdDev = allDurations.length > 1
-      ? Math.sqrt(allDurations.reduce((s, d) => s + (d - mean) ** 2, 0) / (allDurations.length - 1))
-      : mean * 0.3;
+      const allDurations = statusDurations['all'] ?? [];
+      const mean = allDurations.length > 0 ? allDurations.reduce((a, b) => a + b, 0) / allDurations.length : 45;
+      const stdDev = allDurations.length > 1
+        ? Math.sqrt(allDurations.reduce((s, d) => s + (d - mean) ** 2, 0) / (allDurations.length - 1))
+        : mean * 0.3;
 
-    // Predict for open claims
-    const openClaims = claims.filter(c => ['submitted', 'pending', 'approved', 'appealed'].includes(c.status));
+      // Predict for open claims
+      const openClaims = claims.filter(c => ['submitted', 'pending', 'approved', 'appealed'].includes(c.status));
 
-    return openClaims.map(claim => {
-      const refDate = claim.submission_date || claim.service_date;
-      const daysSoFar = differenceInDays(new Date(), new Date(refDate));
+      return openClaims.map(claim => {
+        const refDate = claim.submission_date || claim.service_date;
+        const daysSoFar = differenceInDays(new Date(), new Date(refDate));
 
-      // Status-based adjustment: closer statuses get shorter remaining time
-      const statusMultiplier: Record<string, number> = { submitted: 1, pending: 0.65, approved: 0.25, appealed: 0.85 };
-      const mult = statusMultiplier[claim.status] ?? 1;
-      const expectedTotal = Math.round(mean * mult + (claim.status === 'appealed' ? mean * 0.3 : 0));
-      const remainingDays = Math.max(0, expectedTotal - daysSoFar * (1 - mult));
-      const estPaymentDate = addDays(new Date(), Math.round(remainingDays));
+        // Status-based adjustment: closer statuses get shorter remaining time
+        const statusMultiplier: Record<string, number> = { submitted: 1, pending: 0.65, approved: 0.25, appealed: 0.85 };
+        const mult = statusMultiplier[claim.status] ?? 1;
+        const expectedTotal = Math.round(mean * mult + (claim.status === 'appealed' ? mean * 0.3 : 0));
+        const remainingDays = Math.max(0, expectedTotal - daysSoFar * (1 - mult));
+        const estPaymentDate = addDays(new Date(), Math.round(remainingDays));
 
-      // Delay probability: chance it exceeds average
-      const zScore = (daysSoFar - mean) / (stdDev || 1);
-      const delayProb = daysSoFar > mean * 0.5
-        ? Math.min(95, Math.max(5, Math.round(50 + zScore * 25)))
-        : Math.max(5, Math.round(15 + daysSoFar / mean * 20));
+        // Delay probability: chance it exceeds average
+        const zScore = (daysSoFar - mean) / (stdDev || 1);
+        const delayProb = daysSoFar > mean * 0.5
+          ? Math.min(95, Math.max(5, Math.round(50 + zScore * 25)))
+          : Math.max(5, Math.round(15 + daysSoFar / mean * 20));
 
-      // Confidence based on data volume
-      const confidence = allDurations.length >= 10 ? 'high' : allDurations.length >= 3 ? 'medium' : 'low';
+        // Confidence based on data volume
+        const confidence = allDurations.length >= 10 ? 'high' : allDurations.length >= 3 ? 'medium' : 'low';
 
-      return {
-        claim,
-        estPaymentDate,
-        remainingDays: Math.round(remainingDays),
-        delayProb,
-        daysSoFar,
-        confidence,
-      };
-    }).sort((a, b) => a.remainingDays - b.remainingDays);
-  }, [claims, avgCycle]);
+        return {
+          claim,
+          estPaymentDate,
+          remainingDays: Math.round(remainingDays),
+          delayProb,
+          daysSoFar,
+          confidence,
+        };
+      }).sort((a, b) => a.remainingDays - b.remainingDays);
+    }, [claims, avgCycle]);
 
-  if (predictions.length === 0) {
-    return (
-      <Card className="p-6">
-        <div className="flex items-center gap-2 mb-2">
-          <CalendarClock className="h-5 w-5 text-primary" />
-          <CardTitle className="text-base">Payment Predictor</CardTitle>
-        </div>
-        <p className="text-sm text-muted-foreground text-center py-6">No open claims to predict. Add claims to see estimated payment dates.</p>
-      </Card>
-    );
-  }
-
-  const highRisk = predictions.filter(p => p.delayProb >= 60);
-
-  return (
-    <Card>
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+    if (predictions.length === 0) {
+      return (
+        <Card ref={ref} className="p-6">
+          <div className="flex items-center gap-2 mb-2">
             <CalendarClock className="h-5 w-5 text-primary" />
             <CardTitle className="text-base">Payment Predictor</CardTitle>
-            <Badge variant="secondary" className="text-xs">
-              {predictions[0]?.confidence === 'low' ? 'Limited Data' : predictions[0]?.confidence === 'medium' ? 'Moderate Data' : 'Strong Data'}
-            </Badge>
           </div>
-          {highRisk.length > 0 && (
+          <p className="text-sm text-muted-foreground text-center py-6">No open claims to predict. Add claims to see estimated payment dates.</p>
+        </Card>
+      );
+    }
+
+    const highRisk = predictions.filter(p => p.delayProb >= 60);
+
+    return (
+      <Card ref={ref}>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <CalendarClock className="h-5 w-5 text-primary" />
+              <CardTitle className="text-base">Payment Predictor</CardTitle>
+              <Badge variant="secondary" className="text-xs">
+                {predictions[0]?.confidence === 'low' ? 'Limited Data' : predictions[0]?.confidence === 'medium' ? 'Moderate Data' : 'Strong Data'}
+              </Badge>
+            </div>
+            {highRisk.length > 0 && (
             <Badge variant="destructive" className="text-xs gap-1">
               <AlertTriangle className="h-3 w-3" />
               {highRisk.length} at risk of delay
@@ -165,7 +166,7 @@ function PaymentPredictor({ claims, avgCycle }: { claims: MedicaidClaim[]; avgCy
       </CardContent>
     </Card>
   );
-}
+});
 
 const STATUSES = ['submitted', 'pending', 'approved', 'paid', 'denied', 'appealed'] as const;
 
