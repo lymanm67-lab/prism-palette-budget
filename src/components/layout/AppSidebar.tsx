@@ -3,7 +3,8 @@ import {
   LayoutDashboard, Landmark, ArrowLeftRight, PiggyBank, BarChart3, Tags, Target,
   Settings, Bot, LogOut, ChevronLeft, ChevronRight, Sun, Moon, TrendingDown,
   TrendingUp, Calculator, Scale, Map, Heart, Home, Wallet, RepeatIcon, GraduationCap,
-  CreditCard, LineChart, Sparkles,
+  CreditCard, LineChart, Sparkles, Shield, FileSearch, FileText, Building2,
+  DollarSign, Clock, Activity, Lock,
 } from 'lucide-react';
 import prismLogo from '@/assets/prism-budget-logo.png';
 import { useAuth } from '@/contexts/AuthContext';
