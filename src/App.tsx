@@ -157,6 +157,7 @@ const App = () => (
               <Route path="/capital/bankability" element={<BankabilityScore />} />
               <Route path="/capital/loan-readiness" element={<LoanReadiness />} />
               <Route path="/capital/dscr" element={<DSCRCalculator />} />
+              <Route path="/capital/money-math" element={<MoneyMath />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
