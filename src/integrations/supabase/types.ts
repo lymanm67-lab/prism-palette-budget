@@ -70,6 +70,56 @@ export type Database = {
           },
         ]
       }
+      agency_financial_snapshots: {
+        Row: {
+          biweekly_payroll: number
+          cash_reserves: number
+          client_census: number
+          created_at: string
+          household_id: string
+          id: string
+          monthly_operating_expenses: number
+          monthly_revenue: number
+          notes: string | null
+          snapshot_month: string
+          updated_at: string
+        }
+        Insert: {
+          biweekly_payroll?: number
+          cash_reserves?: number
+          client_census?: number
+          created_at?: string
+          household_id: string
+          id?: string
+          monthly_operating_expenses?: number
+          monthly_revenue?: number
+          notes?: string | null
+          snapshot_month: string
+          updated_at?: string
+        }
+        Update: {
+          biweekly_payroll?: number
+          cash_reserves?: number
+          client_census?: number
+          created_at?: string
+          household_id?: string
+          id?: string
+          monthly_operating_expenses?: number
+          monthly_revenue?: number
+          notes?: string | null
+          snapshot_month?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agency_financial_snapshots_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string
@@ -146,6 +196,50 @@ export type Database = {
           },
           {
             foreignKeyName: "budgets_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_credit_steps: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          household_id: string
+          id: string
+          is_completed: boolean
+          notes: string | null
+          step_key: string
+          step_label: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          household_id: string
+          id?: string
+          is_completed?: boolean
+          notes?: string | null
+          step_key: string
+          step_label: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          household_id?: string
+          id?: string
+          is_completed?: boolean
+          notes?: string | null
+          step_key?: string
+          step_label?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_credit_steps_household_id_fkey"
             columns: ["household_id"]
             isOneToOne: false
             referencedRelation: "households"
@@ -451,6 +545,75 @@ export type Database = {
           },
         ]
       }
+      credit_disputes: {
+        Row: {
+          bureau: string
+          created_at: string
+          credit_account_id: string | null
+          dispute_reason: string
+          explanation: string | null
+          household_id: string
+          id: string
+          metro2_violation: string | null
+          outcome: string | null
+          outcome_notes: string | null
+          response_due_date: string | null
+          response_received_date: string | null
+          status: string
+          submitted_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          bureau: string
+          created_at?: string
+          credit_account_id?: string | null
+          dispute_reason: string
+          explanation?: string | null
+          household_id: string
+          id?: string
+          metro2_violation?: string | null
+          outcome?: string | null
+          outcome_notes?: string | null
+          response_due_date?: string | null
+          response_received_date?: string | null
+          status?: string
+          submitted_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          bureau?: string
+          created_at?: string
+          credit_account_id?: string | null
+          dispute_reason?: string
+          explanation?: string | null
+          household_id?: string
+          id?: string
+          metro2_violation?: string | null
+          outcome?: string | null
+          outcome_notes?: string | null
+          response_due_date?: string | null
+          response_received_date?: string | null
+          status?: string
+          submitted_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_disputes_credit_account_id_fkey"
+            columns: ["credit_account_id"]
+            isOneToOne: false
+            referencedRelation: "credit_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credit_disputes_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       debt_items: {
         Row: {
           account_id: string | null
@@ -633,6 +796,59 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "financial_insights_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      funding_scenarios: {
+        Row: {
+          amount: number
+          created_at: string
+          household_id: string
+          id: string
+          interest_rate: number
+          monthly_payment: number
+          name: string
+          notes: string | null
+          parameters: Json | null
+          scenario_type: string
+          term_months: number
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          household_id: string
+          id?: string
+          interest_rate?: number
+          monthly_payment?: number
+          name: string
+          notes?: string | null
+          parameters?: Json | null
+          scenario_type?: string
+          term_months?: number
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          household_id?: string
+          id?: string
+          interest_rate?: number
+          monthly_payment?: number
+          name?: string
+          notes?: string | null
+          parameters?: Json | null
+          scenario_type?: string
+          term_months?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "funding_scenarios_household_id_fkey"
             columns: ["household_id"]
             isOneToOne: false
             referencedRelation: "households"
@@ -881,6 +1097,65 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "investment_watchlist_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      medicaid_claims: {
+        Row: {
+          amount: number
+          claim_number: string | null
+          client_name: string
+          created_at: string
+          denial_reason: string | null
+          household_id: string
+          id: string
+          notes: string | null
+          payment_amount: number | null
+          payment_date: string | null
+          service_date: string
+          status: string
+          submission_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          claim_number?: string | null
+          client_name: string
+          created_at?: string
+          denial_reason?: string | null
+          household_id: string
+          id?: string
+          notes?: string | null
+          payment_amount?: number | null
+          payment_date?: string | null
+          service_date: string
+          status?: string
+          submission_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          claim_number?: string | null
+          client_name?: string
+          created_at?: string
+          denial_reason?: string | null
+          household_id?: string
+          id?: string
+          notes?: string | null
+          payment_amount?: number | null
+          payment_date?: string | null
+          service_date?: string
+          status?: string
+          submission_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medicaid_claims_household_id_fkey"
             columns: ["household_id"]
             isOneToOne: false
             referencedRelation: "households"
