@@ -70,7 +70,6 @@ const NAV_SECTIONS = [
       { to: '/capital/loan-readiness', icon: ClipboardCheck, label: 'Loan Readiness', color: 'text-prism-lime' },
       { to: '/capital/receivables', icon: DollarSign, label: 'Receivables', color: 'text-prism-sky' },
       { to: '/capital/payroll-runway', icon: Clock, label: 'Payroll Runway', color: 'text-prism-rose' },
-      { to: '/capital/money-math', icon: Calculator, label: 'Offer Calculator', color: 'text-prism-lime' },
       { to: '/capital/ai-coach', icon: Bot, label: 'AI Coach', color: 'text-prism-amber' },
       { to: '/capital/vault', icon: Lock, label: 'Document Vault', color: 'text-muted-foreground' },
     ],
