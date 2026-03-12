@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Upload, FileText, Shield, Trash2, CreditCard, DollarSign, AlertTriangle, Gauge, Info, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { Upload, FileText, Shield, Trash2, CreditCard, DollarSign, AlertTriangle, Gauge, Info, TrendingUp, TrendingDown, Minus, ExternalLink } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -314,6 +314,40 @@ const CreditOverview = () => {
           </TabsContent>
         ))}
       </Tabs>
+
+      {/* Credit Monitoring & Education Resources */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <ExternalLink className="h-4 w-4 text-primary" />
+            Free Credit Monitoring & Education
+          </CardTitle>
+          <p className="text-xs text-muted-foreground">Monitor your credit and learn how to improve it with these free resources</p>
+        </CardHeader>
+        <CardContent className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+          {[
+            { name: 'AnnualCreditReport.com', url: 'https://www.annualcreditreport.com/', desc: 'Free annual reports from all 3 bureaus' },
+            { name: 'Credit Karma', url: 'https://www.creditkarma.com/', desc: 'Free scores, monitoring & alerts' },
+            { name: 'Credit Sesame', url: 'https://www.creditsesame.com/', desc: 'Free credit score & identity protection' },
+            { name: 'NerdWallet Credit Score', url: 'https://www.nerdwallet.com/free-credit-score', desc: 'Free TransUnion score & report' },
+            { name: 'Experian Free Score', url: 'https://www.experian.com/consumer-products/free-credit-report.html', desc: 'Free Experian credit report' },
+            { name: 'myFICO Education', url: 'https://www.myfico.com/credit-education', desc: 'FICO score education center' },
+            { name: 'CFPB Credit Resources', url: 'https://www.consumerfinance.gov/consumer-tools/credit-reports-and-scores/', desc: 'Government credit education' },
+            { name: 'Credit.org', url: 'https://credit.org/', desc: 'Nonprofit credit counseling' },
+            { name: 'Khan Academy Finance', url: 'https://www.khanacademy.org/college-careers-more/personal-finance', desc: 'Free financial literacy courses' },
+          ].map((link) => (
+            <a key={link.url} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 p-3 rounded-lg border bg-background hover:bg-accent transition-colors group">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20">
+                <ExternalLink className="h-4 w-4 text-primary" />
+              </div>
+              <div className="min-w-0">
+                <p className="font-medium text-sm">{link.name}</p>
+                <p className="text-xs text-muted-foreground truncate">{link.desc}</p>
+              </div>
+            </a>
+          ))}
+        </CardContent>
+      </Card>
 
       <p className="text-xs text-muted-foreground text-center">
         This system provides financial education and credit analysis tools. It does not provide credit repair services.
