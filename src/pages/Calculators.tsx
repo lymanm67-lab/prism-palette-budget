@@ -293,6 +293,59 @@ const Calculators = () => {
     return { multiplier, monthlyTo1M, monthlyTo2M, age };
   }, [wealthAge]);
 
+  // Restore state from URL query params (shared links)
+  useEffect(() => {
+    const calc = searchParams.get('calc');
+    if (!calc) return;
+
+    setActiveCalc(calc);
+
+    // Helper to get param or keep default
+    const p = (key: string) => searchParams.get(key);
+
+    if (calc === 'mortgage') {
+      setMortgageForm(f => ({
+        price: p('price') ?? f.price,
+        down: p('down') ?? f.down,
+        rate: p('rate') ?? f.rate,
+        years: p('years') ?? f.years,
+      }));
+    } else if (calc === 'auto') {
+      setAutoForm(f => ({
+        price: p('price') ?? f.price,
+        down: p('down') ?? f.down,
+        rate: p('rate') ?? f.rate,
+        years: p('years') ?? f.years,
+        tradeIn: p('tradeIn') ?? f.tradeIn,
+      }));
+    } else if (calc === 'credit') {
+      setCcForm(f => ({
+        balance: p('balance') ?? f.balance,
+        apr: p('apr') ?? f.apr,
+        payment: p('payment') ?? f.payment,
+      }));
+    } else if (calc === 'investment') {
+      setInvestForm(f => ({
+        initial: p('initial') ?? f.initial,
+        monthly: p('monthly') ?? f.monthly,
+        rate: p('rate') ?? f.rate,
+        years: p('years') ?? f.years,
+      }));
+    } else if (calc === 'debt') {
+      setDebtForm(f => ({
+        balance: p('balance') ?? f.balance,
+        rate: p('rate') ?? f.rate,
+        payment: p('payment') ?? f.payment,
+      }));
+    } else if (calc === 'wealth') {
+      const age = p('age');
+      if (age) setWealthAge(age);
+    }
+
+    // Clean up query params after restoring
+    setSearchParams({}, { replace: true });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
 
   const InputField = ({ label, value, onChange, icon: Icon, suffix }: { label: string; value: string; onChange: (v: string) => void; icon?: any; suffix?: string }) => (
     <div className="space-y-1.5">
