@@ -52,7 +52,7 @@ const About = () => {
             <h2 className="font-display text-2xl font-bold">The Creator of PrismBudget™</h2>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-lg">
               Designer, developer, and someone who understands what it's like to stare at a bank account
-              and feel lost. PrismBudget was born out of a personal mission to make financial clarity
+              and feel lost. PrismBudget™ was born out of a personal mission to make financial clarity
               accessible to everyone — not just those who can afford a financial advisor.
             </p>
             <p className="text-xs text-muted-foreground/60 italic">
