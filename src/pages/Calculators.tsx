@@ -640,10 +640,16 @@ const Calculators = () => {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
                   <ResultCard label="Payoff Time" value={debtResult.months > 0 ? `${Math.floor(debtResult.months / 12)}y ${debtResult.months % 12}m` : '—'} accent />
-                  <ResultCard label="Total Interest" value={formatCurrency(debtResult.totalInterest)} />
-                  <ResultCard label="Total Paid" value={formatCurrency(debtResult.totalPaid)} />
+                  <ResultCard label="Total Interest" value={formatCurrency(debtResult.totalInterest)} numericValue={debtResult.totalInterest} formatFn={formatCurrency} />
+                  <ResultCard label="Total Paid" value={formatCurrency(debtResult.totalPaid)} numericValue={debtResult.totalPaid} formatFn={formatCurrency} />
                   <ResultCard label="Interest Cost" value={`${debtResult.totalPaid > 0 ? Math.round((debtResult.totalInterest / debtResult.totalPaid) * 100) : 0}%`} sub="of total" />
                 </div>
+                {debtPayoffSchedule.length > 0 && (
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-2 font-medium">Payoff Timeline</p>
+                    <CalculatorChart type="payoff" data={debtPayoffSchedule} />
+                  </div>
+                )}
                 <div>
                   <p className="text-xs text-muted-foreground mb-2">Payment Breakdown</p>
                   <div className="flex gap-1 h-4 rounded-full overflow-hidden">
