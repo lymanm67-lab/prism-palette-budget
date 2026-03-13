@@ -72,6 +72,13 @@ export default function FocusOfferCalculator({ onOpenHistory }: { onOpenHistory?
         ]
   );
 
+  // Clean up URL params after restoring
+  useEffect(() => {
+    if (initialParams) {
+      setSearchParams({}, { replace: true });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const goal = parseFloat(revenueGoal) || 0;
   const fixed = parseFloat(fixedCosts) || 0;
   const actual = parseFloat(actualRevenue) || 0;
