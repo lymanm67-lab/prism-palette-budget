@@ -22,6 +22,7 @@ import CalculatorActions from '@/components/CalculatorActions';
 import CalculatorHistory from '@/components/CalculatorHistory';
 import FocusOfferCalculator from '@/components/FocusOfferCalculator';
 import CalculatorGuide from '@/components/CalculatorGuide';
+import CalculatorScenariosAndPitfalls from '@/components/CalculatorScenariosAndPitfalls';
 
 // ─── Calculation helpers ───
 
