@@ -460,7 +460,20 @@ const Calculators = () => {
           />
         </TabsContent>
         <TabsContent value="auto" className="mt-6">
-          <div className="grid gap-6 lg:grid-cols-2">
+          <CalculatorGuide
+            title="Auto Loan Calculator"
+            icon={Car}
+            iconColor="text-prism-sky"
+            ttsScript="The Auto Loan Calculator estimates your monthly car payment. Enter the vehicle price, down payment, trade-in value if applicable, interest rate, and loan term. Your monthly payment, total interest, and total cost are calculated instantly. The amortization chart tracks your remaining balance, and the cost breakdown bar shows how much goes to principal versus interest."
+            instructions={[
+              'Enter the vehicle purchase price',
+              'Add your down payment and trade-in value (if any)',
+              'Set the annual interest rate and loan term',
+              'Results show monthly payment, total interest, and total cost',
+              'The chart tracks your remaining balance over the loan term',
+            ]}
+          />
+          <div className="grid gap-6 lg:grid-cols-2 mt-4">
             <Card className="prism-card-shine border-border/50">
               <CardHeader>
                 <CardTitle className="font-display flex items-center gap-2 text-lg">
