@@ -90,7 +90,7 @@ const About = () => {
               tax questions I was too embarrassed to ask anyone.
             </p>
             <p>
-              Today, PrismBudget is used by thousands of people to take control of their finances. Some are 
+              Today, PrismBudget™ is used by thousands of people to take control of their finances. Some are 
               where I was — paycheck to paycheck, terrified to open their credit card statements. Others are 
               further along, building wealth and crushing it. The app serves them all because it was built from 
               lived experience, not a boardroom.
