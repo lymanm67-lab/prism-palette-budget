@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Save, Copy, Download, Check, History } from 'lucide-react';
+import { Save, Copy, Download, Check, History, Link2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
