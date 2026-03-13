@@ -96,7 +96,7 @@ const About = () => {
               lived experience, not a boardroom.
             </p>
             <p className="font-medium text-foreground">
-              If you're reading this, you're already ahead. You're taking action. And PrismBudget is here 
+              If you're reading this, you're already ahead. You're taking action. And PrismBudget™ is here 
               to make sure every dollar you earn works as hard as you do.
             </p>
           </div>

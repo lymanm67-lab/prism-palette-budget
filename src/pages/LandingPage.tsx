@@ -195,7 +195,7 @@ const LandingPage = () => {
             <Sparkles className="h-8 w-8 text-white" />
           </div>
           <h2 className="font-display text-4xl sm:text-5xl font-extrabold text-white">Ready to take control?</h2>
-          <p className="mt-4 text-lg text-white/50">Join thousands building real wealth with PrismBudget.</p>
+          <p className="mt-4 text-lg text-white/50">Join thousands building real wealth with PrismBudget™.</p>
           <Button size="lg" onClick={() => navigate('/onboarding')} className="mt-8 prism-gradient hover:opacity-90 text-lg h-14 px-10 gap-2 font-bold rounded-2xl prism-glow">
             Get Started Free <ArrowRight className="h-5 w-5" />
           </Button>
@@ -206,8 +206,8 @@ const LandingPage = () => {
       <footer className="py-8 border-t border-border">
         <div className="mx-auto max-w-7xl px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <img src={prismLogo} alt="PrismBudget" className="h-14 w-14 rounded-lg object-contain" />
-            <span className="font-display font-bold">PrismBudget</span>
+            <img src={prismLogo} alt="PrismBudget™" className="h-14 w-14 rounded-lg object-contain" />
+            <span className="font-display font-bold">PrismBudget™</span>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-muted-foreground">
             <button onClick={() => navigate('/legal')} className="hover:text-foreground transition-colors">Privacy Policy</button>
@@ -218,7 +218,7 @@ const LandingPage = () => {
             <span className="hidden sm:inline text-border">·</span>
             <button onClick={() => navigate('/legal')} className="hover:text-foreground transition-colors">Legal & Compliance</button>
           </div>
-          <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} PrismBudget. All rights reserved.</p>
+          <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} PrismBudget™. All rights reserved.</p>
         </div>
       </footer>
     </div>
