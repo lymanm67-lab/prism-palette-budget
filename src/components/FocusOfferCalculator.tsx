@@ -16,6 +16,7 @@ import {
 import AnimatedNumber from '@/components/AnimatedNumber';
 import CalculatorInsight from '@/components/CalculatorInsight';
 import CalculatorActions from '@/components/CalculatorActions';
+import CalculatorGuide from '@/components/CalculatorGuide';
 
 type Timeframe = 'weekly' | 'monthly' | 'quarterly' | 'yearly';
 
