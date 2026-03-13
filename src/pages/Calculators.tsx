@@ -162,6 +162,16 @@ const Calculators = () => {
   const { formatCurrency } = useCurrency();
   const [activeCalc, setActiveCalc] = useState('mortgage');
   const [pageGuideOpen, setPageGuideOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+
+  const handleRestore = (type: string, inputs: Record<string, any>) => {
+    setActiveCalc(type);
+    if (type === 'mortgage') setMortgageForm(inputs as any);
+    else if (type === 'auto') setAutoForm(inputs as any);
+    else if (type === 'creditcard') setCcForm(inputs as any);
+    else if (type === 'investment') setInvestForm(inputs as any);
+    else if (type === 'debt') setDebtForm(inputs as any);
+  };
 
   // Mortgage
   const [mortgageForm, setMortgageForm] = useState({ price: '350000', down: '70000', rate: '6.5', years: '30' });
