@@ -535,6 +535,10 @@ const Calculators = () => {
                   onOpenHistory={() => setHistoryOpen(true)}
                 />
               </CardContent>
+            </Card>
+          </div>
+          <CalculatorInsight
+            calculatorType="auto"
             inputs={autoForm}
             results={{ payment: autoResult.payment, totalInterest: autoResult.totalInterest, totalPaid: autoResult.totalPaid }}
             hasResults={autoResult.payment > 0}
