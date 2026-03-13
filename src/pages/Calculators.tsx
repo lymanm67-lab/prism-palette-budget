@@ -436,10 +436,14 @@ const Calculators = () => {
               <CardHeader><CardTitle className="font-display text-lg">Results</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
-                  <ResultCard label="Monthly Payment" value={formatCurrency(mortgageResult.payment)} accent />
-                  <ResultCard label="Total Interest" value={formatCurrency(mortgageResult.totalInterest)} />
-                  <ResultCard label="Total Paid" value={formatCurrency(mortgageResult.totalPaid)} />
+                  <ResultCard label="Monthly Payment" value={formatCurrency(mortgageResult.payment)} numericValue={mortgageResult.payment} formatFn={formatCurrency} accent />
+                  <ResultCard label="Total Interest" value={formatCurrency(mortgageResult.totalInterest)} numericValue={mortgageResult.totalInterest} formatFn={formatCurrency} />
+                  <ResultCard label="Total Paid" value={formatCurrency(mortgageResult.totalPaid)} numericValue={mortgageResult.totalPaid} formatFn={formatCurrency} />
                   <ResultCard label="Interest / Principal" value={`${mortgageResult.totalPaid > 0 ? Math.round((mortgageResult.totalInterest / mortgageResult.totalPaid) * 100) : 0}%`} sub="of total cost" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-2 font-medium">Remaining Balance Over Time</p>
+                  <CalculatorChart type="amortization" data={mortgageResult.schedule} />
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground mb-2">Payment Breakdown</p>
