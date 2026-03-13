@@ -705,6 +705,14 @@ const Calculators = () => {
                     <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-prism-rose inline-block" /> Interest</span>
                   </div>
                 </div>
+                <CalculatorActions
+                  calculatorType="debt"
+                  inputs={debtForm}
+                  results={{ months: debtResult.months, totalInterest: debtResult.totalInterest, totalPaid: debtResult.totalPaid }}
+                  hasResults={debtResult.months > 0}
+                  summaryText={`Debt Payoff Calculator\nBalance: $${debtForm.balance} | Rate: ${debtForm.rate}% | Payment: $${debtForm.payment}/mo\nPayoff: ${Math.floor(debtResult.months/12)}y ${debtResult.months%12}m\nTotal Interest: ${formatCurrency(debtResult.totalInterest)}\nTotal Paid: ${formatCurrency(debtResult.totalPaid)}`}
+                  onOpenHistory={() => setHistoryOpen(true)}
+                />
               </CardContent>
             </Card>
           </div>
