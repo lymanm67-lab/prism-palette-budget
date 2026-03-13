@@ -16,6 +16,8 @@ import {
 import { Progress } from '@/components/ui/progress';
 import PageOverview from '@/components/PageOverview';
 import CalculatorInsight from '@/components/CalculatorInsight';
+import AnimatedNumber from '@/components/AnimatedNumber';
+import CalculatorChart from '@/components/CalculatorChart';
 
 // ─── Calculation helpers ───
 
