@@ -149,6 +149,21 @@ export default function FocusOfferCalculator({ onOpenHistory }: { onOpenHistory?
 
   return (
     <div className="space-y-6">
+      <CalculatorGuide
+        title="Focus Offer / Revenue Goal"
+        icon={Target}
+        iconColor="text-prism-lime"
+        ttsScript="The Focus Offer Calculator helps you plan how many sales you need to hit your revenue goal. Start by choosing a timeframe: weekly, monthly, quarterly, or yearly. Then set your revenue target, fixed costs, and actual revenue earned so far. Add up to three offers with a name, price, and cost per unit. The Sales Breakdown tab shows how many units of each offer you need to sell per period, per week, and per day. The Scenarios tab compares conservative, realistic, and stretch targets. The Break-Even tab shows how many units you need to cover your fixed costs. The Blended tab splits your goal evenly across all offers. The Revenue Tracker gauge shows your progress toward the goal with a status indicator."
+        instructions={[
+          'Choose a timeframe: weekly, monthly, quarterly, or yearly',
+          'Set your revenue goal for that period',
+          'Add fixed costs for break-even analysis',
+          'Enter actual revenue earned so far to track progress',
+          'Name up to 3 offers with price and cost per unit',
+          'View Sales Breakdown, Scenarios, Break-Even, and Blended tabs',
+          'The Revenue Tracker shows progress with a visual gauge',
+        ]}
+      />
       {/* ─── GOAL & TIMEFRAME ─── */}
       <Card className="prism-card-shine border-border/50">
         <CardHeader>
