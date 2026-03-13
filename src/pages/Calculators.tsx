@@ -663,6 +663,20 @@ const Calculators = () => {
               'The growth chart shows your portfolio value over time',
             ]}
           />
+          <CalculatorScenariosAndPitfalls
+            scenarios={[
+              { title: 'Starting at 25', description: '$500/mo at 8% for 40 years grows to $1.74M. Starting at 35 yields only $745k — less than half.' },
+              { title: 'Employer Match', description: 'If your employer matches 50% up to 6%, contribute at least 6%. That\'s an instant 50% return on your money.' },
+              { title: 'Lump Sum vs DCA', description: 'Historically, investing a lump sum beats dollar-cost averaging 2/3 of the time, but DCA reduces emotional risk.' },
+              { title: 'Roth vs Traditional', description: 'If you expect higher taxes in retirement, Roth contributions grow tax-free. Compare the growth difference here.' },
+            ]}
+            pitfalls={[
+              { title: 'Waiting to Start', description: 'Every year you delay costs exponentially. Starting 5 years late on $500/mo at 8% costs over $250k in lost growth.' },
+              { title: 'Unrealistic Returns', description: 'Historical S&P 500 averages ~10% before inflation, ~7% after. Don\'t plan on 12%+ returns.' },
+              { title: 'Ignoring Fees', description: 'A 1% annual fee on $500k costs $5,000/year. Over 30 years, fees can eat 20%+ of your returns.' },
+              { title: 'Panic Selling', description: 'Missing just the 10 best market days over 20 years can cut your returns in half. Stay invested.' },
+            ]}
+          />
           <div className="grid gap-6 lg:grid-cols-2 mt-4">
             <Card className="prism-card-shine border-border/50">
               <CardHeader>
