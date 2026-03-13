@@ -55,9 +55,9 @@ const Metro2Scanner = () => {
     const acct = accounts.find(a => a.id === finding.credit_account_id);
     return {
       household_id: householdId,
-      bureau: acct?.bureau || 'Equifax',
+      bureau: acct?.bureau || 'Equifax™',
       dispute_reason: finding.title,
-      explanation: `${finding.explanation}\n\nMetro2 Principle: ${finding.metro2_principle || 'N/A'}\nRecommended: ${finding.recommended_action || 'N/A'}`,
+      explanation: `${finding.explanation}\n\nMetro2™ Principle: ${finding.metro2_principle || 'N/A'}\nRecommended: ${finding.recommended_action || 'N/A'}`,
       credit_account_id: finding.credit_account_id,
       metro2_violation: finding.violation_type,
       status: 'draft',
