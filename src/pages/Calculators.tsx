@@ -751,7 +751,77 @@ const Calculators = () => {
           />
         </TabsContent>
 
-        {/* ─── FOCUS OFFER CALCULATOR ─── */}
+        {/* ─── WEALTH MULTIPLIER ─── */}
+        <TabsContent value="wealth" className="mt-6">
+          <CalculatorGuide
+            title="Wealth Multiplier"
+            icon={PiggyBank}
+            iconColor="text-prism-indigo"
+            ttsScript="The Wealth Multiplier shows how much every dollar you invest today could grow by retirement at age 65. Enter your current age and see the multiplier effect of compound growth. You'll also see how much you'd need to invest monthly to reach one million and two million dollars by retirement. The younger you start, the more powerful the multiplier becomes."
+            instructions={[
+              'Enter your current age (18–64)',
+              'See how much each $1 invested today becomes by age 65',
+              'View the monthly investment needed to reach $1M and $2M',
+              'The chart shows the multiplier declining as you age — start early!',
+            ]}
+          />
+          <div className="grid gap-6 lg:grid-cols-2 mt-4">
+            <Card className="prism-card-shine border-border/50">
+              <CardHeader>
+                <CardTitle className="font-display flex items-center gap-2 text-lg">
+                  <PiggyBank className="h-5 w-5 text-prism-indigo" /> Wealth Multiplier
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <InputField label="Current Age" value={wealthAge} onChange={handleWealthAgeChange} icon={CalendarDays} suffix="years" />
+                <p className="text-xs text-muted-foreground">
+                  Based on compound growth assumptions: returns start at ~10% at age 20 and gradually decrease to ~5.5% approaching retirement at 65.
+                </p>
+                <div className="p-3 rounded-xl bg-muted/50">
+                  <p className="text-xs text-muted-foreground mb-2 font-medium">Multiplier by Age</p>
+                  <div className="grid grid-cols-5 gap-1.5">
+                    {WEALTH_MULTIPLIER_DATA.map(d => (
+                      <div key={d.age} className={cn(
+                        'text-center p-1.5 rounded-lg text-xs transition-colors',
+                        parseInt(wealthAge) === d.age ? 'bg-primary text-primary-foreground' : 'bg-muted/50'
+                      )}>
+                        <p className="font-bold">{d.multiplier.toFixed(0)}x</p>
+                        <p className="text-[10px] text-muted-foreground">{d.age}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="prism-card-shine border-border/50">
+              <CardHeader><CardTitle className="font-display text-lg">Results</CardTitle></CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <ResultCard label="Wealth Multiplier" value={`${wealthResult.multiplier.toFixed(1)}x`} accent sub={`At age ${wealthResult.age}`} />
+                  <ResultCard label="$1 Becomes" value={formatCurrency(wealthResult.multiplier)} sub="by age 65" />
+                  <ResultCard label="Monthly for $1M" value={formatCurrency(wealthResult.monthlyTo1M)} numericValue={wealthResult.monthlyTo1M} formatFn={formatCurrency} sub="to reach $1,000,000" />
+                  <ResultCard label="Monthly for $2M" value={formatCurrency(wealthResult.monthlyTo2M)} numericValue={wealthResult.monthlyTo2M} formatFn={formatCurrency} sub="to reach $2,000,000" />
+                </div>
+                <CalculatorActions
+                  calculatorType="wealth"
+                  inputs={{ age: wealthAge }}
+                  results={{ multiplier: wealthResult.multiplier, monthlyTo1M: wealthResult.monthlyTo1M, monthlyTo2M: wealthResult.monthlyTo2M }}
+                  hasResults={true}
+                  summaryText={`Wealth Multiplier\nAge: ${wealthAge}\nMultiplier: ${wealthResult.multiplier.toFixed(1)}x\nMonthly for $1M: ${formatCurrency(wealthResult.monthlyTo1M)}\nMonthly for $2M: ${formatCurrency(wealthResult.monthlyTo2M)}`}
+                  onOpenHistory={() => setHistoryOpen(true)}
+                />
+              </CardContent>
+            </Card>
+          </div>
+          <CalculatorInsight
+            calculatorType="wealth"
+            inputs={{ age: wealthAge }}
+            results={{ multiplier: wealthResult.multiplier, monthlyTo1M: wealthResult.monthlyTo1M, monthlyTo2M: wealthResult.monthlyTo2M }}
+            hasResults={true}
+          />
+        </TabsContent>
+
+
         <TabsContent value="offers" className="mt-6">
           <FocusOfferCalculator onOpenHistory={() => setHistoryOpen(true)} />
         </TabsContent>
