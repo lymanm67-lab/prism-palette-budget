@@ -16,6 +16,8 @@ import {
 import { Progress } from '@/components/ui/progress';
 import PageOverview from '@/components/PageOverview';
 import CalculatorInsight from '@/components/CalculatorInsight';
+import AnimatedNumber from '@/components/AnimatedNumber';
+import CalculatorChart from '@/components/CalculatorChart';
 
 // ─── Calculation helpers ───
 
@@ -128,13 +130,29 @@ const CALCULATORS = [
   { id: 'offers', label: 'Focus Offer', icon: Target, color: 'text-prism-lime', bg: 'from-prism-lime/20 to-prism-lime/5' },
 ];
 
-// ─── Shared result card ───
-const ResultCard = ({ label, value, sub, accent }: { label: string; value: string; sub?: string; accent?: boolean }) => (
-  <div className={`p-3 rounded-xl ${accent ? 'bg-primary/10 ring-1 ring-primary/20' : 'bg-muted/50'}`}>
+// ─── Shared result card with gradient ───
+const ResultCard = ({ label, value, sub, accent, numericValue, formatFn }: { label: string; value: string; sub?: string; accent?: boolean; numericValue?: number; formatFn?: (n: number) => string }) => (
+  <motion.div
+    initial={{ opacity: 0, scale: 0.95 }}
+    animate={{ opacity: 1, scale: 1 }}
+    transition={{ duration: 0.3 }}
+    className={cn(
+      'p-3 rounded-xl border transition-all',
+      accent
+        ? 'bg-gradient-to-br from-primary/15 to-primary/5 border-primary/20 shadow-sm shadow-primary/5'
+        : 'bg-gradient-to-br from-muted/60 to-muted/30 border-border/40'
+    )}
+  >
     <p className="text-xs text-muted-foreground uppercase tracking-wider">{label}</p>
-    <p className={`font-display text-lg font-bold mt-0.5 ${accent ? 'text-primary' : ''}`}>{value}</p>
+    <p className={cn('font-display text-lg font-bold mt-0.5', accent && 'text-primary')}>
+      {numericValue !== undefined && formatFn ? (
+        <AnimatedNumber value={numericValue} formatFn={formatFn} />
+      ) : (
+        value
+      )}
+    </p>
     {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
-  </div>
+  </motion.div>
 );
 
 // ─── Component ───
@@ -169,6 +187,29 @@ const Calculators = () => {
     );
   }, [ccForm]);
 
+  // CC payoff schedule for chart
+  const ccPayoffSchedule = useMemo(() => {
+    const bal = parseFloat(ccForm.balance) || 0;
+    const apr = parseFloat(ccForm.apr) || 0;
+    const pmt = parseFloat(ccForm.payment) || 0;
+    if (pmt <= 0 || bal <= 0) return [];
+    const r = apr / 100 / 12;
+    let b = bal;
+    const pts: { label: string; balance: number; paid: number }[] = [];
+    let totalPaid = 0;
+    let m = 0;
+    while (b > 0.01 && m < 600) {
+      m++;
+      const interest = b * r;
+      b = Math.max(0, b + interest - pmt);
+      totalPaid += pmt;
+      if (m % Math.max(1, Math.ceil(ccResult.months / 20)) === 0 || b <= 0.01) {
+        pts.push({ label: `Mo ${m}`, balance: b, paid: totalPaid });
+      }
+    }
+    return pts;
+  }, [ccForm, ccResult.months]);
+
   // Investment
   const [investForm, setInvestForm] = useState({ initial: '10000', monthly: '500', rate: '8', years: '20' });
   const investResult = useMemo(() => {
@@ -197,6 +238,28 @@ const Calculators = () => {
     }
     return { months, totalInterest, totalPaid: balance + totalInterest };
   }, [debtForm]);
+
+  // Debt payoff schedule for chart
+  const debtPayoffSchedule = useMemo(() => {
+    const bal0 = parseFloat(debtForm.balance) || 0;
+    const r = (parseFloat(debtForm.rate) || 0) / 100 / 12;
+    const pmt = parseFloat(debtForm.payment) || 0;
+    if (pmt <= 0 || bal0 <= 0) return [];
+    let b = bal0;
+    const pts: { label: string; balance: number; paid: number }[] = [];
+    let totalPaid = 0;
+    let m = 0;
+    while (b > 0.01 && m < 600) {
+      m++;
+      const interest = b * r;
+      b = Math.max(0, b + interest - pmt);
+      totalPaid += pmt;
+      if (m % Math.max(1, Math.ceil(debtResult.months / 20)) === 0 || b <= 0.01) {
+        pts.push({ label: `Mo ${m}`, balance: b, paid: totalPaid });
+      }
+    }
+    return pts;
+  }, [debtForm, debtResult.months]);
 
   // Wealth multiplier
   const [wealthAge, setWealthAge] = useState('30');
@@ -373,10 +436,14 @@ const Calculators = () => {
               <CardHeader><CardTitle className="font-display text-lg">Results</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
-                  <ResultCard label="Monthly Payment" value={formatCurrency(mortgageResult.payment)} accent />
-                  <ResultCard label="Total Interest" value={formatCurrency(mortgageResult.totalInterest)} />
-                  <ResultCard label="Total Paid" value={formatCurrency(mortgageResult.totalPaid)} />
+                  <ResultCard label="Monthly Payment" value={formatCurrency(mortgageResult.payment)} numericValue={mortgageResult.payment} formatFn={formatCurrency} accent />
+                  <ResultCard label="Total Interest" value={formatCurrency(mortgageResult.totalInterest)} numericValue={mortgageResult.totalInterest} formatFn={formatCurrency} />
+                  <ResultCard label="Total Paid" value={formatCurrency(mortgageResult.totalPaid)} numericValue={mortgageResult.totalPaid} formatFn={formatCurrency} />
                   <ResultCard label="Interest / Principal" value={`${mortgageResult.totalPaid > 0 ? Math.round((mortgageResult.totalInterest / mortgageResult.totalPaid) * 100) : 0}%`} sub="of total cost" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-2 font-medium">Remaining Balance Over Time</p>
+                  <CalculatorChart type="amortization" data={mortgageResult.schedule} />
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground mb-2">Payment Breakdown</p>
@@ -419,10 +486,14 @@ const Calculators = () => {
               <CardHeader><CardTitle className="font-display text-lg">Results</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
-                  <ResultCard label="Monthly Payment" value={formatCurrency(autoResult.payment)} accent />
-                  <ResultCard label="Total Interest" value={formatCurrency(autoResult.totalInterest)} />
-                  <ResultCard label="Total Paid" value={formatCurrency(autoResult.totalPaid)} />
+                  <ResultCard label="Monthly Payment" value={formatCurrency(autoResult.payment)} numericValue={autoResult.payment} formatFn={formatCurrency} accent />
+                  <ResultCard label="Total Interest" value={formatCurrency(autoResult.totalInterest)} numericValue={autoResult.totalInterest} formatFn={formatCurrency} />
+                  <ResultCard label="Total Paid" value={formatCurrency(autoResult.totalPaid)} numericValue={autoResult.totalPaid} formatFn={formatCurrency} />
                   <ResultCard label="Loan Amount" value={formatCurrency(Math.max(0, (parseFloat(autoForm.price)||0) - (parseFloat(autoForm.down)||0) - (parseFloat(autoForm.tradeIn)||0)))} />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-2 font-medium">Remaining Balance Over Time</p>
+                  <CalculatorChart type="amortization" data={autoResult.schedule} />
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground mb-2">Cost Breakdown</p>
@@ -469,10 +540,16 @@ const Calculators = () => {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
                   <ResultCard label="Months to Payoff" value={ccResult.months > 0 ? `${ccResult.months} months` : '—'} accent sub={ccResult.months > 0 ? `${Math.floor(ccResult.months / 12)}y ${ccResult.months % 12}m` : undefined} />
-                  <ResultCard label="Total Interest" value={formatCurrency(ccResult.totalInterest)} />
-                  <ResultCard label="Total Paid" value={formatCurrency(ccResult.totalPaid)} />
+                  <ResultCard label="Total Interest" value={formatCurrency(ccResult.totalInterest)} numericValue={ccResult.totalInterest} formatFn={formatCurrency} />
+                  <ResultCard label="Total Paid" value={formatCurrency(ccResult.totalPaid)} numericValue={ccResult.totalPaid} formatFn={formatCurrency} />
                   <ResultCard label="Interest Ratio" value={`${ccResult.totalPaid > 0 ? Math.round((ccResult.totalInterest / ccResult.totalPaid) * 100) : 0}%`} sub="of total paid" />
                 </div>
+                {ccPayoffSchedule.length > 0 && (
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-2 font-medium">Payoff Timeline</p>
+                    <CalculatorChart type="payoff" data={ccPayoffSchedule} />
+                  </div>
+                )}
                 {ccResult.months > 0 && (
                   <div className="p-3 rounded-xl bg-muted/50 text-xs space-y-1">
                     <p className="font-medium">💡 Tip: Increasing your payment by {formatCurrency(50)}/mo could save you:</p>
@@ -512,13 +589,19 @@ const Calculators = () => {
               <CardHeader><CardTitle className="font-display text-lg">Results</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
-                  <ResultCard label="Final Balance" value={formatCurrency(investResult.finalBalance)} accent />
-                  <ResultCard label="Total Contributions" value={formatCurrency(investResult.totalContributions)} />
-                  <ResultCard label="Total Earnings" value={formatCurrency(investResult.totalInterest)} />
+                  <ResultCard label="Final Balance" value={formatCurrency(investResult.finalBalance)} numericValue={investResult.finalBalance} formatFn={formatCurrency} accent />
+                  <ResultCard label="Total Contributions" value={formatCurrency(investResult.totalContributions)} numericValue={investResult.totalContributions} formatFn={formatCurrency} />
+                  <ResultCard label="Total Earnings" value={formatCurrency(investResult.totalInterest)} numericValue={investResult.totalInterest} formatFn={formatCurrency} />
                   <ResultCard label="Growth" value={`${investResult.totalContributions > 0 ? Math.round(((investResult.finalBalance - investResult.totalContributions) / investResult.totalContributions) * 100) : 0}%`} sub="return on investment" />
                 </div>
+                {investResult.schedule.length > 0 && (
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-2 font-medium">Growth Over Time</p>
+                    <CalculatorChart type="growth" data={investResult.schedule} />
+                  </div>
+                )}
                 <div>
-                  <p className="text-xs text-muted-foreground mb-2">Growth Over Time</p>
+                  <p className="text-xs text-muted-foreground mb-2">Composition</p>
                   <div className="flex gap-1 h-4 rounded-full overflow-hidden">
                     <div className="bg-prism-lime transition-all" style={{ width: `${investResult.finalBalance > 0 ? (investResult.totalContributions / investResult.finalBalance) * 100 : 0}%` }} />
                     <div className="bg-prism-teal transition-all" style={{ width: `${investResult.finalBalance > 0 ? (investResult.totalInterest / investResult.finalBalance) * 100 : 0}%` }} />
@@ -528,20 +611,6 @@ const Calculators = () => {
                     <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-prism-teal inline-block" /> Earnings</span>
                   </div>
                 </div>
-                {investResult.schedule.length > 0 && (
-                  <div className="space-y-1.5 max-h-48 overflow-y-auto">
-                    <p className="text-xs text-muted-foreground font-medium">Year-by-Year</p>
-                    {investResult.schedule.map((s, i) => (
-                      <div key={i} className="flex items-center gap-3 text-xs p-2 rounded-lg bg-muted/30">
-                        <span className="text-muted-foreground w-12">Year {Math.round(s.month / 12)}</span>
-                        <div className="flex-1">
-                          <Progress value={(s.contributions / s.balance) * 100} className="h-1.5" />
-                        </div>
-                        <span className="font-display font-bold w-24 text-right">{formatCurrency(s.balance)}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </CardContent>
             </Card>
           </div>
@@ -571,10 +640,16 @@ const Calculators = () => {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
                   <ResultCard label="Payoff Time" value={debtResult.months > 0 ? `${Math.floor(debtResult.months / 12)}y ${debtResult.months % 12}m` : '—'} accent />
-                  <ResultCard label="Total Interest" value={formatCurrency(debtResult.totalInterest)} />
-                  <ResultCard label="Total Paid" value={formatCurrency(debtResult.totalPaid)} />
+                  <ResultCard label="Total Interest" value={formatCurrency(debtResult.totalInterest)} numericValue={debtResult.totalInterest} formatFn={formatCurrency} />
+                  <ResultCard label="Total Paid" value={formatCurrency(debtResult.totalPaid)} numericValue={debtResult.totalPaid} formatFn={formatCurrency} />
                   <ResultCard label="Interest Cost" value={`${debtResult.totalPaid > 0 ? Math.round((debtResult.totalInterest / debtResult.totalPaid) * 100) : 0}%`} sub="of total" />
                 </div>
+                {debtPayoffSchedule.length > 0 && (
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-2 font-medium">Payoff Timeline</p>
+                    <CalculatorChart type="payoff" data={debtPayoffSchedule} />
+                  </div>
+                )}
                 <div>
                   <p className="text-xs text-muted-foreground mb-2">Payment Breakdown</p>
                   <div className="flex gap-1 h-4 rounded-full overflow-hidden">
