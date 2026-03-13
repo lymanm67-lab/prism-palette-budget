@@ -588,6 +588,14 @@ const Calculators = () => {
                     })()}
                   </div>
                 )}
+                <CalculatorActions
+                  calculatorType="creditcard"
+                  inputs={ccForm}
+                  results={{ months: ccResult.months, totalInterest: ccResult.totalInterest, totalPaid: ccResult.totalPaid }}
+                  hasResults={ccResult.months > 0}
+                  summaryText={`Credit Card Payoff\nBalance: $${ccForm.balance} | APR: ${ccForm.apr}% | Payment: $${ccForm.payment}/mo\nPayoff: ${ccResult.months} months\nTotal Interest: ${formatCurrency(ccResult.totalInterest)}\nTotal Paid: ${formatCurrency(ccResult.totalPaid)}`}
+                  onOpenHistory={() => setHistoryOpen(true)}
+                />
               </CardContent>
             </Card>
           </div>
