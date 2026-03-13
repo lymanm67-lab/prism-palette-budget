@@ -318,6 +318,44 @@ export type Database = {
           },
         ]
       }
+      calculator_snapshots: {
+        Row: {
+          calculator_type: string
+          created_at: string
+          household_id: string
+          id: string
+          inputs: Json
+          label: string
+          results: Json
+        }
+        Insert: {
+          calculator_type: string
+          created_at?: string
+          household_id: string
+          id?: string
+          inputs?: Json
+          label?: string
+          results?: Json
+        }
+        Update: {
+          calculator_type?: string
+          created_at?: string
+          household_id?: string
+          id?: string
+          inputs?: Json
+          label?: string
+          results?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calculator_snapshots_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           color: string

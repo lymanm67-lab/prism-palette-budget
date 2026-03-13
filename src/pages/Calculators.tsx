@@ -18,6 +18,8 @@ import PageOverview from '@/components/PageOverview';
 import CalculatorInsight from '@/components/CalculatorInsight';
 import AnimatedNumber from '@/components/AnimatedNumber';
 import CalculatorChart from '@/components/CalculatorChart';
+import CalculatorActions from '@/components/CalculatorActions';
+import CalculatorHistory from '@/components/CalculatorHistory';
 
 // ─── Calculation helpers ───
 
@@ -160,6 +162,16 @@ const Calculators = () => {
   const { formatCurrency } = useCurrency();
   const [activeCalc, setActiveCalc] = useState('mortgage');
   const [pageGuideOpen, setPageGuideOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+
+  const handleRestore = (type: string, inputs: Record<string, any>) => {
+    setActiveCalc(type);
+    if (type === 'mortgage') setMortgageForm(inputs as any);
+    else if (type === 'auto') setAutoForm(inputs as any);
+    else if (type === 'creditcard') setCcForm(inputs as any);
+    else if (type === 'investment') setInvestForm(inputs as any);
+    else if (type === 'debt') setDebtForm(inputs as any);
+  };
 
   // Mortgage
   const [mortgageForm, setMortgageForm] = useState({ price: '350000', down: '70000', rate: '6.5', years: '30' });
@@ -456,6 +468,14 @@ const Calculators = () => {
                     <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-prism-rose inline-block" /> Interest</span>
                   </div>
                 </div>
+                <CalculatorActions
+                  calculatorType="mortgage"
+                  inputs={mortgageForm}
+                  results={{ payment: mortgageResult.payment, totalInterest: mortgageResult.totalInterest, totalPaid: mortgageResult.totalPaid }}
+                  hasResults={mortgageResult.payment > 0}
+                  summaryText={`Mortgage Calculator\nPrice: ${mortgageForm.price} | Down: ${mortgageForm.down} | Rate: ${mortgageForm.rate}% | Term: ${mortgageForm.years}yr\nMonthly Payment: ${formatCurrency(mortgageResult.payment)}\nTotal Interest: ${formatCurrency(mortgageResult.totalInterest)}\nTotal Paid: ${formatCurrency(mortgageResult.totalPaid)}`}
+                  onOpenHistory={() => setHistoryOpen(true)}
+                />
               </CardContent>
             </Card>
           </div>
@@ -506,6 +526,14 @@ const Calculators = () => {
                     <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-prism-rose inline-block" /> Interest</span>
                   </div>
                 </div>
+                <CalculatorActions
+                  calculatorType="auto"
+                  inputs={autoForm}
+                  results={{ payment: autoResult.payment, totalInterest: autoResult.totalInterest, totalPaid: autoResult.totalPaid }}
+                  hasResults={autoResult.payment > 0}
+                  summaryText={`Auto Loan Calculator\nPrice: ${autoForm.price} | Down: ${autoForm.down} | Rate: ${autoForm.rate}% | Term: ${autoForm.years}yr\nMonthly Payment: ${formatCurrency(autoResult.payment)}\nTotal Interest: ${formatCurrency(autoResult.totalInterest)}\nTotal Paid: ${formatCurrency(autoResult.totalPaid)}`}
+                  onOpenHistory={() => setHistoryOpen(true)}
+                />
               </CardContent>
             </Card>
           </div>
@@ -560,6 +588,14 @@ const Calculators = () => {
                     })()}
                   </div>
                 )}
+                <CalculatorActions
+                  calculatorType="creditcard"
+                  inputs={ccForm}
+                  results={{ months: ccResult.months, totalInterest: ccResult.totalInterest, totalPaid: ccResult.totalPaid }}
+                  hasResults={ccResult.months > 0}
+                  summaryText={`Credit Card Payoff\nBalance: $${ccForm.balance} | APR: ${ccForm.apr}% | Payment: $${ccForm.payment}/mo\nPayoff: ${ccResult.months} months\nTotal Interest: ${formatCurrency(ccResult.totalInterest)}\nTotal Paid: ${formatCurrency(ccResult.totalPaid)}`}
+                  onOpenHistory={() => setHistoryOpen(true)}
+                />
               </CardContent>
             </Card>
           </div>
@@ -611,6 +647,14 @@ const Calculators = () => {
                     <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-prism-teal inline-block" /> Earnings</span>
                   </div>
                 </div>
+                <CalculatorActions
+                  calculatorType="investment"
+                  inputs={investForm}
+                  results={{ finalBalance: investResult.finalBalance, totalContributions: investResult.totalContributions, totalInterest: investResult.totalInterest }}
+                  hasResults={investResult.finalBalance > 0}
+                  summaryText={`Investment Calculator\nInitial: $${investForm.initial} | Monthly: $${investForm.monthly} | Rate: ${investForm.rate}% | Years: ${investForm.years}\nFinal Balance: ${formatCurrency(investResult.finalBalance)}\nTotal Contributions: ${formatCurrency(investResult.totalContributions)}\nTotal Earnings: ${formatCurrency(investResult.totalInterest)}`}
+                  onOpenHistory={() => setHistoryOpen(true)}
+                />
               </CardContent>
             </Card>
           </div>
@@ -661,6 +705,14 @@ const Calculators = () => {
                     <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-prism-rose inline-block" /> Interest</span>
                   </div>
                 </div>
+                <CalculatorActions
+                  calculatorType="debt"
+                  inputs={debtForm}
+                  results={{ months: debtResult.months, totalInterest: debtResult.totalInterest, totalPaid: debtResult.totalPaid }}
+                  hasResults={debtResult.months > 0}
+                  summaryText={`Debt Payoff Calculator\nBalance: $${debtForm.balance} | Rate: ${debtForm.rate}% | Payment: $${debtForm.payment}/mo\nPayoff: ${Math.floor(debtResult.months/12)}y ${debtResult.months%12}m\nTotal Interest: ${formatCurrency(debtResult.totalInterest)}\nTotal Paid: ${formatCurrency(debtResult.totalPaid)}`}
+                  onOpenHistory={() => setHistoryOpen(true)}
+                />
               </CardContent>
             </Card>
           </div>
@@ -835,6 +887,7 @@ const Calculators = () => {
           />
         </TabsContent>
       </Tabs>
+      <CalculatorHistory open={historyOpen} onOpenChange={setHistoryOpen} onRestore={handleRestore} />
     </motion.div>
     </TooltipProvider>
   );
