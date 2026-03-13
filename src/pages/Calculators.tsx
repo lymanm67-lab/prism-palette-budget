@@ -667,6 +667,19 @@ const Calculators = () => {
                   hasResults={ccResult.months > 0}
                   summaryText={`Credit Card Payoff\nBalance: $${ccForm.balance} | APR: ${ccForm.apr}% | Payment: $${ccForm.payment}/mo\nPayoff: ${ccResult.months} months\nTotal Interest: ${formatCurrency(ccResult.totalInterest)}\nTotal Paid: ${formatCurrency(ccResult.totalPaid)}`}
                   onOpenHistory={() => setHistoryOpen(true)}
+                  printData={{
+                    inputs: [
+                      { label: 'Current Balance', value: `$${Number(ccForm.balance).toLocaleString()}` },
+                      { label: 'APR', value: `${ccForm.apr}%` },
+                      { label: 'Monthly Payment', value: `$${Number(ccForm.payment).toLocaleString()}/mo` },
+                    ],
+                    results: [
+                      { label: 'Months to Payoff', value: `${ccResult.months} months (${Math.floor(ccResult.months/12)}y ${ccResult.months%12}m)`, highlight: true },
+                      { label: 'Total Interest', value: formatCurrency(ccResult.totalInterest) },
+                      { label: 'Total Paid', value: formatCurrency(ccResult.totalPaid) },
+                      { label: 'Interest Ratio', value: `${ccResult.totalPaid > 0 ? Math.round((ccResult.totalInterest / ccResult.totalPaid) * 100) : 0}%` },
+                    ],
+                  }}
                 />
               </CardContent>
             </Card>
