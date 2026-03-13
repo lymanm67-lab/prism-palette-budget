@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import PageOverview from '@/components/PageOverview';
+import CalculatorInsight from '@/components/CalculatorInsight';
 
 // ─── Calculation helpers ───
 
