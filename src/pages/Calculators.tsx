@@ -759,6 +759,7 @@ const Calculators = () => {
             hasResults={!!offerResults && offerResults.length > 0}
           />
         </TabsContent>
+      </Tabs>
     </motion.div>
     </TooltipProvider>
   );
