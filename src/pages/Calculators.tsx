@@ -462,6 +462,21 @@ const Calculators = () => {
                   hasResults={mortgageResult.payment > 0}
                   summaryText={`Mortgage Calculator\nPrice: ${mortgageForm.price} | Down: ${mortgageForm.down} | Rate: ${mortgageForm.rate}% | Term: ${mortgageForm.years}yr\nMonthly Payment: ${formatCurrency(mortgageResult.payment)}\nTotal Interest: ${formatCurrency(mortgageResult.totalInterest)}\nTotal Paid: ${formatCurrency(mortgageResult.totalPaid)}`}
                   onOpenHistory={() => setHistoryOpen(true)}
+                  printData={{
+                    inputs: [
+                      { label: 'Home Price', value: `$${Number(mortgageForm.price).toLocaleString()}` },
+                      { label: 'Down Payment', value: `$${Number(mortgageForm.down).toLocaleString()}` },
+                      { label: 'Interest Rate', value: `${mortgageForm.rate}%` },
+                      { label: 'Loan Term', value: `${mortgageForm.years} years` },
+                      { label: 'Loan Amount', value: formatCurrency(Math.max(0, (parseFloat(mortgageForm.price)||0) - (parseFloat(mortgageForm.down)||0))) },
+                    ],
+                    results: [
+                      { label: 'Monthly Payment', value: formatCurrency(mortgageResult.payment), highlight: true },
+                      { label: 'Total Interest', value: formatCurrency(mortgageResult.totalInterest) },
+                      { label: 'Total Paid', value: formatCurrency(mortgageResult.totalPaid) },
+                      { label: 'Interest Ratio', value: `${mortgageResult.totalPaid > 0 ? Math.round((mortgageResult.totalInterest / mortgageResult.totalPaid) * 100) : 0}%` },
+                    ],
+                  }}
                 />
               </CardContent>
             </Card>
