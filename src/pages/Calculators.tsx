@@ -1017,7 +1017,7 @@ const Calculators = () => {
                   inputs={{ age: wealthAge }}
                   results={{ multiplier: wealthResult.multiplier, monthlyTo1M: wealthResult.monthlyTo1M, monthlyTo2M: wealthResult.monthlyTo2M }}
                   hasResults={true}
-                  summaryText={`Wealth Multiplier\nAge: ${wealthAge}\nMultiplier: ${wealthResult.multiplier.toFixed(1)}x\nMonthly for $1M: ${formatCurrency(wealthResult.monthlyTo1M)}\nMonthly for $2M: ${formatCurrency(wealthResult.monthlyTo2M)}`}
+                  summaryText={`# 🌟 Wealth Multiplier\n\n**Inputs**\n- **Current Age:** ${wealthAge}\n\n**Results**\n- **Multiplier:** ${wealthResult.multiplier.toFixed(1)}x\n- **Monthly to reach $1M:** ${formatCurrency(wealthResult.monthlyTo1M)}\n- **Monthly to reach $2M:** ${formatCurrency(wealthResult.monthlyTo2M)}`}
                   onOpenHistory={() => setHistoryOpen(true)}
                   printData={{
                     inputs: [
