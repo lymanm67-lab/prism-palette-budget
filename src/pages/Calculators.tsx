@@ -611,7 +611,6 @@ const Calculators = () => {
                     <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-prism-teal inline-block" /> Earnings</span>
                   </div>
                 </div>
-                )}
               </CardContent>
             </Card>
           </div>
