@@ -820,7 +820,7 @@ const Calculators = () => {
                   inputs={investForm}
                   results={{ finalBalance: investResult.finalBalance, totalContributions: investResult.totalContributions, totalInterest: investResult.totalInterest }}
                   hasResults={investResult.finalBalance > 0}
-                  summaryText={`Investment Calculator\nInitial: $${investForm.initial} | Monthly: $${investForm.monthly} | Rate: ${investForm.rate}% | Years: ${investForm.years}\nFinal Balance: ${formatCurrency(investResult.finalBalance)}\nTotal Contributions: ${formatCurrency(investResult.totalContributions)}\nTotal Earnings: ${formatCurrency(investResult.totalInterest)}`}
+                  summaryText={`# 📈 Investment Calculator\n\n**Inputs**\n- **Initial Investment:** ${formatCurrency(Number(investForm.initial))}\n- **Monthly Contribution:** ${formatCurrency(Number(investForm.monthly))}\n- **Expected Return:** ${investForm.rate}%\n- **Time Horizon:** ${investForm.years} years\n\n**Results**\n- **Final Balance:** ${formatCurrency(investResult.finalBalance)}\n- **Total Contributions:** ${formatCurrency(investResult.totalContributions)}\n- **Total Earnings:** ${formatCurrency(investResult.totalInterest)}`}
                   onOpenHistory={() => setHistoryOpen(true)}
                   printData={{
                     inputs: [
