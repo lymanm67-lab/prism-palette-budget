@@ -386,7 +386,21 @@ const Calculators = () => {
 
         {/* ─── MORTGAGE ─── */}
         <TabsContent value="mortgage" className="mt-6">
-          <div className="grid gap-6 lg:grid-cols-2">
+          <CalculatorGuide
+            title="Mortgage Calculator"
+            icon={Home}
+            iconColor="text-prism-teal"
+            ttsScript="The Mortgage Calculator helps you estimate your monthly home loan payment. Enter the home price, your down payment, the interest rate, and the loan term in years. You'll see your monthly payment, total interest paid over the life of the loan, and an amortization chart showing how your balance decreases over time. The payment breakdown bar shows the split between principal and interest."
+            instructions={[
+              'Enter the full home purchase price',
+              'Add your down payment amount — the loan is calculated on the difference',
+              'Set the annual interest rate and loan term in years',
+              'Results update instantly: monthly payment, total interest, and total cost',
+              'The amortization chart shows your remaining balance over time',
+              'Use Save to keep results, Copy to clipboard, or Export as a text file',
+            ]}
+          />
+          <div className="grid gap-6 lg:grid-cols-2 mt-4">
             <Card className="prism-card-shine border-border/50">
               <CardHeader>
                 <CardTitle className="font-display flex items-center gap-2 text-lg">
