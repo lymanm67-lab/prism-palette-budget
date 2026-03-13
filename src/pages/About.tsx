@@ -29,7 +29,7 @@ const About = () => {
           </div>
           <div>
             <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-              The Story Behind <span className="prism-gradient-text">PrismBudget</span>
+              The Story Behind <span className="prism-gradient-text">PrismBudget™</span>
             </h1>
             <p className="mt-3 text-white/80 leading-relaxed max-w-xl">
               Built by someone who lived the financial struggle — and decided to build the tool they wished existed.
@@ -49,10 +49,10 @@ const About = () => {
           />
           <div className="text-center sm:text-left space-y-2">
             <p className="text-xs font-bold uppercase tracking-wider text-prism-teal">Meet the Designer</p>
-            <h2 className="font-display text-2xl font-bold">The Creator of PrismBudget</h2>
+            <h2 className="font-display text-2xl font-bold">The Creator of PrismBudget™</h2>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-lg">
               Designer, developer, and someone who understands what it's like to stare at a bank account
-              and feel lost. PrismBudget was born out of a personal mission to make financial clarity
+              and feel lost. PrismBudget™ was born out of a personal mission to make financial clarity
               accessible to everyone — not just those who can afford a financial advisor.
             </p>
             <p className="text-xs text-muted-foreground/60 italic">
@@ -76,7 +76,7 @@ const About = () => {
             <p>
               I wanted something that would meet me where I was. Something that would tell me, step by step, 
               what to do <em>next</em> with my money. Not just track where it went, but guide me toward where it 
-              <em> should</em> go. That's when the idea for PrismBudget was born.
+              <em> should</em> go. That's when the idea for PrismBudget™ was born.
             </p>
             <p>
               The name "Prism" represents clarity — taking the chaotic white noise of personal finance and 
@@ -84,19 +84,19 @@ const About = () => {
               because I needed it at some point on my own journey: the debt payoff planner that kept me motivated 
               when I was $30K in the hole, the{' '}
               <Link to="/roadmap" className="text-prism-teal hover:underline font-medium">
-                Prism Financial Roadmap
+                Prism Financial™ Roadmap
               </Link>{' '}
               that gave me a clear sequence of wealth-building steps, and the AI assistant that answered the 
               tax questions I was too embarrassed to ask anyone.
             </p>
             <p>
-              Today, PrismBudget is used by thousands of people to take control of their finances. Some are 
+              Today, PrismBudget™ is used by thousands of people to take control of their finances. Some are 
               where I was — paycheck to paycheck, terrified to open their credit card statements. Others are 
               further along, building wealth and crushing it. The app serves them all because it was built from 
               lived experience, not a boardroom.
             </p>
             <p className="font-medium text-foreground">
-              If you're reading this, you're already ahead. You're taking action. And PrismBudget is here 
+              If you're reading this, you're already ahead. You're taking action. And PrismBudget™ is here 
               to make sure every dollar you earn works as hard as you do.
             </p>
           </div>

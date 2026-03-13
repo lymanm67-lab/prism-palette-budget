@@ -276,17 +276,17 @@ const PrismRoadmap = () => {
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl font-extrabold tracking-tight">
-            <span className="prism-gradient-text">Prism Financial Roadmap</span>
+            <span className="prism-gradient-text">Prism Financial™ Roadmap</span>
           </h1>
           <p className="text-muted-foreground mt-1">
             Your step-by-step path to financial freedom. 9 proven steps, personalized to your data.
           </p>
           <PageOverview
-            title="Prism Financial Roadmap"
+            title="Prism Financial™ Roadmap"
             description="A 9-step financial freedom plan personalized to your accounts and data. Track progress and add notes."
             icon={Compass}
             iconColor="text-prism-teal"
-            ttsScript="The Prism Financial Roadmap is your step-by-step guide to financial freedom. It consists of 9 proven steps: Set your safety net by covering insurance deductibles. Eliminate high-interest debt like credit cards. Build a full emergency fund of 3 to 6 months expenses. Enter hyper-accumulation by maximizing retirement contributions. Pay off low-interest debt like student loans and car loans. Build a bridge account for early retirement access. Invest in real estate or alternative assets. Create legacy wealth. And finally achieve financial independence. Each step is personalized based on your actual account data."
+            ttsScript="The Prism Financial™ Roadmap is your step-by-step guide to financial freedom. It consists of 9 proven steps: Set your safety net by covering insurance deductibles. Eliminate high-interest debt like credit cards. Build a full emergency fund of 3 to 6 months expenses. Enter hyper-accumulation by maximizing retirement contributions. Pay off low-interest debt like student loans and car loans. Build a bridge account for early retirement access. Invest in real estate or alternative assets. Create legacy wealth. And finally achieve financial independence. Each step is personalized based on your actual account data."
             features={[
               '9 proven financial steps',
               'Auto-detects progress from your accounts',
