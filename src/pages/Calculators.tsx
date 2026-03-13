@@ -21,6 +21,7 @@ import CalculatorChart from '@/components/CalculatorChart';
 import CalculatorActions from '@/components/CalculatorActions';
 import CalculatorHistory from '@/components/CalculatorHistory';
 import FocusOfferCalculator from '@/components/FocusOfferCalculator';
+import CalculatorGuide from '@/components/CalculatorGuide';
 
 // ─── Calculation helpers ───
 
@@ -385,7 +386,21 @@ const Calculators = () => {
 
         {/* ─── MORTGAGE ─── */}
         <TabsContent value="mortgage" className="mt-6">
-          <div className="grid gap-6 lg:grid-cols-2">
+          <CalculatorGuide
+            title="Mortgage Calculator"
+            icon={Home}
+            iconColor="text-prism-teal"
+            ttsScript="The Mortgage Calculator helps you estimate your monthly home loan payment. Enter the home price, your down payment, the interest rate, and the loan term in years. You'll see your monthly payment, total interest paid over the life of the loan, and an amortization chart showing how your balance decreases over time. The payment breakdown bar shows the split between principal and interest."
+            instructions={[
+              'Enter the full home purchase price',
+              'Add your down payment amount — the loan is calculated on the difference',
+              'Set the annual interest rate and loan term in years',
+              'Results update instantly: monthly payment, total interest, and total cost',
+              'The amortization chart shows your remaining balance over time',
+              'Use Save to keep results, Copy to clipboard, or Export as a text file',
+            ]}
+          />
+          <div className="grid gap-6 lg:grid-cols-2 mt-4">
             <Card className="prism-card-shine border-border/50">
               <CardHeader>
                 <CardTitle className="font-display flex items-center gap-2 text-lg">
@@ -445,7 +460,20 @@ const Calculators = () => {
           />
         </TabsContent>
         <TabsContent value="auto" className="mt-6">
-          <div className="grid gap-6 lg:grid-cols-2">
+          <CalculatorGuide
+            title="Auto Loan Calculator"
+            icon={Car}
+            iconColor="text-prism-sky"
+            ttsScript="The Auto Loan Calculator estimates your monthly car payment. Enter the vehicle price, down payment, trade-in value if applicable, interest rate, and loan term. Your monthly payment, total interest, and total cost are calculated instantly. The amortization chart tracks your remaining balance, and the cost breakdown bar shows how much goes to principal versus interest."
+            instructions={[
+              'Enter the vehicle purchase price',
+              'Add your down payment and trade-in value (if any)',
+              'Set the annual interest rate and loan term',
+              'Results show monthly payment, total interest, and total cost',
+              'The chart tracks your remaining balance over the loan term',
+            ]}
+          />
+          <div className="grid gap-6 lg:grid-cols-2 mt-4">
             <Card className="prism-card-shine border-border/50">
               <CardHeader>
                 <CardTitle className="font-display flex items-center gap-2 text-lg">
@@ -503,7 +531,21 @@ const Calculators = () => {
           />
         </TabsContent>
         <TabsContent value="credit" className="mt-6">
-          <div className="grid gap-6 lg:grid-cols-2">
+          <CalculatorGuide
+            title="Credit Card Payoff"
+            icon={CreditCard}
+            iconColor="text-prism-rose"
+            ttsScript="The Credit Card Payoff Calculator shows how long it will take to pay off your credit card balance. Enter your current balance, the annual percentage rate or APR, and your monthly payment amount. You'll see the number of months to payoff, total interest paid, and total cost. If your payment is too low to cover monthly interest, you'll get a warning. A helpful tip shows how much you could save by paying an extra fifty dollars per month."
+            instructions={[
+              'Enter your current credit card balance',
+              'Add your card\'s APR (annual percentage rate)',
+              'Set the monthly payment you plan to make',
+              'Results show months to payoff, total interest, and total cost',
+              'Warning appears if your payment doesn\'t cover monthly interest',
+              'A tip shows savings from increasing your payment by $50/mo',
+            ]}
+          />
+          <div className="grid gap-6 lg:grid-cols-2 mt-4">
             <Card className="prism-card-shine border-border/50">
               <CardHeader>
                 <CardTitle className="font-display flex items-center gap-2 text-lg">
@@ -565,7 +607,21 @@ const Calculators = () => {
           />
         </TabsContent>
         <TabsContent value="investment" className="mt-6">
-          <div className="grid gap-6 lg:grid-cols-2">
+          <CalculatorGuide
+            title="Investment Calculator"
+            icon={TrendingUp}
+            iconColor="text-prism-lime"
+            ttsScript="The Investment Calculator projects how your money grows over time with compound interest. Enter your initial investment, monthly contribution, expected annual return rate, and time horizon in years. You'll see the final balance, total contributions, total earnings, and your overall return on investment percentage. The growth chart visualizes how your portfolio builds year by year, and the composition bar shows contributions versus earnings."
+            instructions={[
+              'Enter your initial lump-sum investment',
+              'Set a monthly contribution amount',
+              'Choose an expected annual return rate',
+              'Set your investment time horizon in years',
+              'Results show final balance, total contributions, and earnings',
+              'The growth chart shows your portfolio value over time',
+            ]}
+          />
+          <div className="grid gap-6 lg:grid-cols-2 mt-4">
             <Card className="prism-card-shine border-border/50">
               <CardHeader>
                 <CardTitle className="font-display flex items-center gap-2 text-lg">
@@ -624,7 +680,21 @@ const Calculators = () => {
           />
         </TabsContent>
         <TabsContent value="debt" className="mt-6">
-          <div className="grid gap-6 lg:grid-cols-2">
+          <CalculatorGuide
+            title="General Debt Calculator"
+            icon={DollarSign}
+            iconColor="text-prism-amber"
+            ttsScript="The General Debt Calculator works for any type of loan — student loans, personal loans, or other debts. Enter the total debt balance, the annual interest rate, and your planned monthly payment. You'll see the payoff timeline in years and months, total interest paid, total cost, and a payoff chart. The payment breakdown bar shows how much of your total goes to principal versus interest."
+            instructions={[
+              'Enter your total debt balance',
+              'Set the annual interest rate',
+              'Enter your planned monthly payment',
+              'Results show payoff time, total interest, and total cost',
+              'The payoff chart tracks your declining balance',
+              'Works for any loan type: student, personal, medical, etc.',
+            ]}
+          />
+          <div className="grid gap-6 lg:grid-cols-2 mt-4">
             <Card className="prism-card-shine border-border/50">
               <CardHeader>
                 <CardTitle className="font-display flex items-center gap-2 text-lg">
