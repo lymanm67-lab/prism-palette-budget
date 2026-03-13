@@ -276,13 +276,13 @@ const PrismRoadmap = () => {
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl font-extrabold tracking-tight">
-            <span className="prism-gradient-text">Prism Financial Roadmap</span>
+            <span className="prism-gradient-text">Prism Financial™ Roadmap</span>
           </h1>
           <p className="text-muted-foreground mt-1">
             Your step-by-step path to financial freedom. 9 proven steps, personalized to your data.
           </p>
           <PageOverview
-            title="Prism Financial Roadmap"
+            title="Prism Financial™ Roadmap"
             description="A 9-step financial freedom plan personalized to your accounts and data. Track progress and add notes."
             icon={Compass}
             iconColor="text-prism-teal"
