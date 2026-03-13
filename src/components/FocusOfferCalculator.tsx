@@ -446,6 +446,20 @@ export default function FocusOfferCalculator({ onOpenHistory }: { onOpenHistory?
                   hasResults={true}
                   summaryText={summaryText}
                   onOpenHistory={onOpenHistory}
+                  printData={{
+                    inputs: [
+                      { label: 'Revenue Goal', value: formatCurrency(goal) },
+                      { label: 'Timeframe', value: tf.label },
+                      { label: 'Fixed Costs', value: fixed > 0 ? formatCurrency(fixed) : 'N/A' },
+                      ...activeOffers.map((o, i) => ({ label: `Offer ${i+1}`, value: `${o.name || 'Unnamed'} — ${formatCurrency(o.price)} (cost: ${formatCurrency(o.cost)})` })),
+                    ],
+                    results: offerResults ? offerResults.map(r => ({
+                      label: r.name,
+                      value: `${r.unitsNeeded} sales needed (${formatCurrency(r.netProfit)} profit)`,
+                      highlight: r === offerResults[0],
+                    })) : [],
+                    notes: breakEvenResults ? `Break-even: ${breakEvenResults.map(b => `${b.name}: ${b.units === Infinity ? 'N/A' : b.units + ' units'}`).join(' | ')}` : undefined,
+                  }}
                 />
               </CardContent>
             </Card>

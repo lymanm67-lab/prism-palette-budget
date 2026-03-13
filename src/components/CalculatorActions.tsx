@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useHousehold } from '@/contexts/HouseholdContext';
+import CalculatorPrintView from '@/components/CalculatorPrintView';
 
 interface CalculatorActionsProps {
   calculatorType: string;
@@ -12,9 +13,14 @@ interface CalculatorActionsProps {
   hasResults: boolean;
   summaryText: string;
   onOpenHistory?: () => void;
+  printData?: {
+    inputs: { label: string; value: string }[];
+    results: { label: string; value: string; highlight?: boolean }[];
+    notes?: string;
+  };
 }
 
-export default function CalculatorActions({ calculatorType, inputs, results, hasResults, summaryText, onOpenHistory }: CalculatorActionsProps) {
+export default function CalculatorActions({ calculatorType, inputs, results, hasResults, summaryText, onOpenHistory, printData }: CalculatorActionsProps) {
   const { household } = useHousehold();
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -80,6 +86,14 @@ export default function CalculatorActions({ calculatorType, inputs, results, has
         <Download className="h-3.5 w-3.5" />
         Export
       </Button>
+      {printData && (
+        <CalculatorPrintView
+          calculatorType={calculatorType}
+          inputs={printData.inputs}
+          results={printData.results}
+          notes={printData.notes}
+        />
+      )}
       {onOpenHistory && (
         <Button variant="ghost" size="sm" onClick={onOpenHistory} className="gap-1.5 text-xs ml-auto">
           <History className="h-3.5 w-3.5" />

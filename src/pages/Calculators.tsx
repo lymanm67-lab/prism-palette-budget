@@ -462,6 +462,21 @@ const Calculators = () => {
                   hasResults={mortgageResult.payment > 0}
                   summaryText={`Mortgage Calculator\nPrice: ${mortgageForm.price} | Down: ${mortgageForm.down} | Rate: ${mortgageForm.rate}% | Term: ${mortgageForm.years}yr\nMonthly Payment: ${formatCurrency(mortgageResult.payment)}\nTotal Interest: ${formatCurrency(mortgageResult.totalInterest)}\nTotal Paid: ${formatCurrency(mortgageResult.totalPaid)}`}
                   onOpenHistory={() => setHistoryOpen(true)}
+                  printData={{
+                    inputs: [
+                      { label: 'Home Price', value: `$${Number(mortgageForm.price).toLocaleString()}` },
+                      { label: 'Down Payment', value: `$${Number(mortgageForm.down).toLocaleString()}` },
+                      { label: 'Interest Rate', value: `${mortgageForm.rate}%` },
+                      { label: 'Loan Term', value: `${mortgageForm.years} years` },
+                      { label: 'Loan Amount', value: formatCurrency(Math.max(0, (parseFloat(mortgageForm.price)||0) - (parseFloat(mortgageForm.down)||0))) },
+                    ],
+                    results: [
+                      { label: 'Monthly Payment', value: formatCurrency(mortgageResult.payment), highlight: true },
+                      { label: 'Total Interest', value: formatCurrency(mortgageResult.totalInterest) },
+                      { label: 'Total Paid', value: formatCurrency(mortgageResult.totalPaid) },
+                      { label: 'Interest Ratio', value: `${mortgageResult.totalPaid > 0 ? Math.round((mortgageResult.totalInterest / mortgageResult.totalPaid) * 100) : 0}%` },
+                    ],
+                  }}
                 />
               </CardContent>
             </Card>
@@ -547,6 +562,21 @@ const Calculators = () => {
                   hasResults={autoResult.payment > 0}
                   summaryText={`Auto Loan Calculator\nPrice: ${autoForm.price} | Down: ${autoForm.down} | Rate: ${autoForm.rate}% | Term: ${autoForm.years}yr\nMonthly Payment: ${formatCurrency(autoResult.payment)}\nTotal Interest: ${formatCurrency(autoResult.totalInterest)}\nTotal Paid: ${formatCurrency(autoResult.totalPaid)}`}
                   onOpenHistory={() => setHistoryOpen(true)}
+                  printData={{
+                    inputs: [
+                      { label: 'Vehicle Price', value: `$${Number(autoForm.price).toLocaleString()}` },
+                      { label: 'Down Payment', value: `$${Number(autoForm.down).toLocaleString()}` },
+                      { label: 'Trade-in Value', value: `$${Number(autoForm.tradeIn).toLocaleString()}` },
+                      { label: 'Interest Rate', value: `${autoForm.rate}%` },
+                      { label: 'Loan Term', value: `${autoForm.years} years` },
+                    ],
+                    results: [
+                      { label: 'Monthly Payment', value: formatCurrency(autoResult.payment), highlight: true },
+                      { label: 'Total Interest', value: formatCurrency(autoResult.totalInterest) },
+                      { label: 'Total Paid', value: formatCurrency(autoResult.totalPaid) },
+                      { label: 'Loan Amount', value: formatCurrency(Math.max(0, (parseFloat(autoForm.price)||0) - (parseFloat(autoForm.down)||0) - (parseFloat(autoForm.tradeIn)||0))) },
+                    ],
+                  }}
                 />
               </CardContent>
             </Card>
@@ -637,6 +667,19 @@ const Calculators = () => {
                   hasResults={ccResult.months > 0}
                   summaryText={`Credit Card Payoff\nBalance: $${ccForm.balance} | APR: ${ccForm.apr}% | Payment: $${ccForm.payment}/mo\nPayoff: ${ccResult.months} months\nTotal Interest: ${formatCurrency(ccResult.totalInterest)}\nTotal Paid: ${formatCurrency(ccResult.totalPaid)}`}
                   onOpenHistory={() => setHistoryOpen(true)}
+                  printData={{
+                    inputs: [
+                      { label: 'Current Balance', value: `$${Number(ccForm.balance).toLocaleString()}` },
+                      { label: 'APR', value: `${ccForm.apr}%` },
+                      { label: 'Monthly Payment', value: `$${Number(ccForm.payment).toLocaleString()}/mo` },
+                    ],
+                    results: [
+                      { label: 'Months to Payoff', value: `${ccResult.months} months (${Math.floor(ccResult.months/12)}y ${ccResult.months%12}m)`, highlight: true },
+                      { label: 'Total Interest', value: formatCurrency(ccResult.totalInterest) },
+                      { label: 'Total Paid', value: formatCurrency(ccResult.totalPaid) },
+                      { label: 'Interest Ratio', value: `${ccResult.totalPaid > 0 ? Math.round((ccResult.totalInterest / ccResult.totalPaid) * 100) : 0}%` },
+                    ],
+                  }}
                 />
               </CardContent>
             </Card>
@@ -724,6 +767,20 @@ const Calculators = () => {
                   hasResults={investResult.finalBalance > 0}
                   summaryText={`Investment Calculator\nInitial: $${investForm.initial} | Monthly: $${investForm.monthly} | Rate: ${investForm.rate}% | Years: ${investForm.years}\nFinal Balance: ${formatCurrency(investResult.finalBalance)}\nTotal Contributions: ${formatCurrency(investResult.totalContributions)}\nTotal Earnings: ${formatCurrency(investResult.totalInterest)}`}
                   onOpenHistory={() => setHistoryOpen(true)}
+                  printData={{
+                    inputs: [
+                      { label: 'Initial Investment', value: `$${Number(investForm.initial).toLocaleString()}` },
+                      { label: 'Monthly Contribution', value: `$${Number(investForm.monthly).toLocaleString()}` },
+                      { label: 'Annual Return', value: `${investForm.rate}%` },
+                      { label: 'Time Horizon', value: `${investForm.years} years` },
+                    ],
+                    results: [
+                      { label: 'Final Balance', value: formatCurrency(investResult.finalBalance), highlight: true },
+                      { label: 'Total Contributions', value: formatCurrency(investResult.totalContributions) },
+                      { label: 'Total Earnings', value: formatCurrency(investResult.totalInterest) },
+                      { label: 'ROI', value: `${investResult.totalContributions > 0 ? Math.round(((investResult.finalBalance - investResult.totalContributions) / investResult.totalContributions) * 100) : 0}%` },
+                    ],
+                  }}
                 />
               </CardContent>
             </Card>
@@ -810,6 +867,19 @@ const Calculators = () => {
                   hasResults={debtResult.months > 0}
                   summaryText={`Debt Payoff Calculator\nBalance: $${debtForm.balance} | Rate: ${debtForm.rate}% | Payment: $${debtForm.payment}/mo\nPayoff: ${Math.floor(debtResult.months/12)}y ${debtResult.months%12}m\nTotal Interest: ${formatCurrency(debtResult.totalInterest)}\nTotal Paid: ${formatCurrency(debtResult.totalPaid)}`}
                   onOpenHistory={() => setHistoryOpen(true)}
+                  printData={{
+                    inputs: [
+                      { label: 'Total Debt', value: `$${Number(debtForm.balance).toLocaleString()}` },
+                      { label: 'Interest Rate', value: `${debtForm.rate}%` },
+                      { label: 'Monthly Payment', value: `$${Number(debtForm.payment).toLocaleString()}/mo` },
+                    ],
+                    results: [
+                      { label: 'Payoff Time', value: `${Math.floor(debtResult.months/12)}y ${debtResult.months%12}m`, highlight: true },
+                      { label: 'Total Interest', value: formatCurrency(debtResult.totalInterest) },
+                      { label: 'Total Paid', value: formatCurrency(debtResult.totalPaid) },
+                      { label: 'Interest Cost', value: `${debtResult.totalPaid > 0 ? Math.round((debtResult.totalInterest / debtResult.totalPaid) * 100) : 0}%` },
+                    ],
+                  }}
                 />
               </CardContent>
             </Card>
@@ -894,6 +964,19 @@ const Calculators = () => {
                   hasResults={true}
                   summaryText={`Wealth Multiplier\nAge: ${wealthAge}\nMultiplier: ${wealthResult.multiplier.toFixed(1)}x\nMonthly for $1M: ${formatCurrency(wealthResult.monthlyTo1M)}\nMonthly for $2M: ${formatCurrency(wealthResult.monthlyTo2M)}`}
                   onOpenHistory={() => setHistoryOpen(true)}
+                  printData={{
+                    inputs: [
+                      { label: 'Current Age', value: `${wealthAge} years` },
+                      { label: 'Retirement Age', value: '65 years' },
+                      { label: 'Years to Grow', value: `${65 - (parseInt(wealthAge) || 30)} years` },
+                    ],
+                    results: [
+                      { label: 'Wealth Multiplier', value: `${wealthResult.multiplier.toFixed(1)}x`, highlight: true },
+                      { label: '$1 Becomes', value: formatCurrency(wealthResult.multiplier) },
+                      { label: 'Monthly for $1M', value: formatCurrency(wealthResult.monthlyTo1M) },
+                      { label: 'Monthly for $2M', value: formatCurrency(wealthResult.monthlyTo2M) },
+                    ],
+                  }}
                 />
               </CardContent>
             </Card>
