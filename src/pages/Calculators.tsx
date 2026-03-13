@@ -562,6 +562,21 @@ const Calculators = () => {
                   hasResults={autoResult.payment > 0}
                   summaryText={`Auto Loan Calculator\nPrice: ${autoForm.price} | Down: ${autoForm.down} | Rate: ${autoForm.rate}% | Term: ${autoForm.years}yr\nMonthly Payment: ${formatCurrency(autoResult.payment)}\nTotal Interest: ${formatCurrency(autoResult.totalInterest)}\nTotal Paid: ${formatCurrency(autoResult.totalPaid)}`}
                   onOpenHistory={() => setHistoryOpen(true)}
+                  printData={{
+                    inputs: [
+                      { label: 'Vehicle Price', value: `$${Number(autoForm.price).toLocaleString()}` },
+                      { label: 'Down Payment', value: `$${Number(autoForm.down).toLocaleString()}` },
+                      { label: 'Trade-in Value', value: `$${Number(autoForm.tradeIn).toLocaleString()}` },
+                      { label: 'Interest Rate', value: `${autoForm.rate}%` },
+                      { label: 'Loan Term', value: `${autoForm.years} years` },
+                    ],
+                    results: [
+                      { label: 'Monthly Payment', value: formatCurrency(autoResult.payment), highlight: true },
+                      { label: 'Total Interest', value: formatCurrency(autoResult.totalInterest) },
+                      { label: 'Total Paid', value: formatCurrency(autoResult.totalPaid) },
+                      { label: 'Loan Amount', value: formatCurrency(Math.max(0, (parseFloat(autoForm.price)||0) - (parseFloat(autoForm.down)||0) - (parseFloat(autoForm.tradeIn)||0))) },
+                    ],
+                  }}
                 />
               </CardContent>
             </Card>
