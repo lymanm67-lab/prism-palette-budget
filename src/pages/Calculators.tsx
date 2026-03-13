@@ -130,13 +130,29 @@ const CALCULATORS = [
   { id: 'offers', label: 'Focus Offer', icon: Target, color: 'text-prism-lime', bg: 'from-prism-lime/20 to-prism-lime/5' },
 ];
 
-// ─── Shared result card ───
-const ResultCard = ({ label, value, sub, accent }: { label: string; value: string; sub?: string; accent?: boolean }) => (
-  <div className={`p-3 rounded-xl ${accent ? 'bg-primary/10 ring-1 ring-primary/20' : 'bg-muted/50'}`}>
+// ─── Shared result card with gradient ───
+const ResultCard = ({ label, value, sub, accent, numericValue, formatFn }: { label: string; value: string; sub?: string; accent?: boolean; numericValue?: number; formatFn?: (n: number) => string }) => (
+  <motion.div
+    initial={{ opacity: 0, scale: 0.95 }}
+    animate={{ opacity: 1, scale: 1 }}
+    transition={{ duration: 0.3 }}
+    className={cn(
+      'p-3 rounded-xl border transition-all',
+      accent
+        ? 'bg-gradient-to-br from-primary/15 to-primary/5 border-primary/20 shadow-sm shadow-primary/5'
+        : 'bg-gradient-to-br from-muted/60 to-muted/30 border-border/40'
+    )}
+  >
     <p className="text-xs text-muted-foreground uppercase tracking-wider">{label}</p>
-    <p className={`font-display text-lg font-bold mt-0.5 ${accent ? 'text-primary' : ''}`}>{value}</p>
+    <p className={cn('font-display text-lg font-bold mt-0.5', accent && 'text-primary')}>
+      {numericValue !== undefined && formatFn ? (
+        <AnimatedNumber value={numericValue} formatFn={formatFn} />
+      ) : (
+        value
+      )}
+    </p>
     {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
-  </div>
+  </motion.div>
 );
 
 // ─── Component ───
