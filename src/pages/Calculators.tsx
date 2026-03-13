@@ -187,6 +187,29 @@ const Calculators = () => {
     );
   }, [ccForm]);
 
+  // CC payoff schedule for chart
+  const ccPayoffSchedule = useMemo(() => {
+    const bal = parseFloat(ccForm.balance) || 0;
+    const apr = parseFloat(ccForm.apr) || 0;
+    const pmt = parseFloat(ccForm.payment) || 0;
+    if (pmt <= 0 || bal <= 0) return [];
+    const r = apr / 100 / 12;
+    let b = bal;
+    const pts: { label: string; balance: number; paid: number }[] = [];
+    let totalPaid = 0;
+    let m = 0;
+    while (b > 0.01 && m < 600) {
+      m++;
+      const interest = b * r;
+      b = Math.max(0, b + interest - pmt);
+      totalPaid += pmt;
+      if (m % Math.max(1, Math.ceil(ccResult.months / 20)) === 0 || b <= 0.01) {
+        pts.push({ label: `Mo ${m}`, balance: b, paid: totalPaid });
+      }
+    }
+    return pts;
+  }, [ccForm, ccResult.months]);
+
   // Investment
   const [investForm, setInvestForm] = useState({ initial: '10000', monthly: '500', rate: '8', years: '20' });
   const investResult = useMemo(() => {
@@ -215,6 +238,28 @@ const Calculators = () => {
     }
     return { months, totalInterest, totalPaid: balance + totalInterest };
   }, [debtForm]);
+
+  // Debt payoff schedule for chart
+  const debtPayoffSchedule = useMemo(() => {
+    const bal0 = parseFloat(debtForm.balance) || 0;
+    const r = (parseFloat(debtForm.rate) || 0) / 100 / 12;
+    const pmt = parseFloat(debtForm.payment) || 0;
+    if (pmt <= 0 || bal0 <= 0) return [];
+    let b = bal0;
+    const pts: { label: string; balance: number; paid: number }[] = [];
+    let totalPaid = 0;
+    let m = 0;
+    while (b > 0.01 && m < 600) {
+      m++;
+      const interest = b * r;
+      b = Math.max(0, b + interest - pmt);
+      totalPaid += pmt;
+      if (m % Math.max(1, Math.ceil(debtResult.months / 20)) === 0 || b <= 0.01) {
+        pts.push({ label: `Mo ${m}`, balance: b, paid: totalPaid });
+      }
+    }
+    return pts;
+  }, [debtForm, debtResult.months]);
 
   // Wealth multiplier
   const [wealthAge, setWealthAge] = useState('30');
