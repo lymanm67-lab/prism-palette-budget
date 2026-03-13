@@ -84,7 +84,7 @@ const About = () => {
               because I needed it at some point on my own journey: the debt payoff planner that kept me motivated 
               when I was $30K in the hole, the{' '}
               <Link to="/roadmap" className="text-prism-teal hover:underline font-medium">
-                Prism Financial Roadmap
+                Prism Financial™ Roadmap
               </Link>{' '}
               that gave me a clear sequence of wealth-building steps, and the AI assistant that answered the 
               tax questions I was too embarrassed to ask anyone.
