@@ -468,6 +468,14 @@ const Calculators = () => {
                     <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-prism-rose inline-block" /> Interest</span>
                   </div>
                 </div>
+                <CalculatorActions
+                  calculatorType="mortgage"
+                  inputs={mortgageForm}
+                  results={{ payment: mortgageResult.payment, totalInterest: mortgageResult.totalInterest, totalPaid: mortgageResult.totalPaid }}
+                  hasResults={mortgageResult.payment > 0}
+                  summaryText={`Mortgage Calculator\nPrice: ${mortgageForm.price} | Down: ${mortgageForm.down} | Rate: ${mortgageForm.rate}% | Term: ${mortgageForm.years}yr\nMonthly Payment: ${formatCurrency(mortgageResult.payment)}\nTotal Interest: ${formatCurrency(mortgageResult.totalInterest)}\nTotal Paid: ${formatCurrency(mortgageResult.totalPaid)}`}
+                  onOpenHistory={() => setHistoryOpen(true)}
+                />
               </CardContent>
             </Card>
           </div>
