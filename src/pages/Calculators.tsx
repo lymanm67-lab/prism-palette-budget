@@ -289,50 +289,7 @@ const Calculators = () => {
     return { multiplier, monthlyTo1M, monthlyTo2M, age };
   }, [wealthAge]);
 
-  // Focus Offer Calculator state
-  const [revenueGoal, setRevenueGoal] = useState('');
-  const [offers, setOffers] = useState<{ name: string; price: number }[]>([
-    { name: '', price: 0 },
-    { name: '', price: 0 },
-    { name: '', price: 0 },
-  ]);
 
-  const goal = parseFloat(revenueGoal) || 0;
-
-  const updateOffer = (index: number, field: 'name' | 'price', value: string) => {
-    setOffers(prev => prev.map((o, i) =>
-      i === index ? { ...o, [field]: field === 'price' ? (parseFloat(value) || 0) : value } : o
-    ));
-  };
-
-  const activeOffers = useMemo(() => offers.filter(o => o.price > 0), [offers]);
-
-  const offerResults = useMemo(() => {
-    if (goal <= 0 || activeOffers.length === 0) return null;
-    return activeOffers.map(offer => {
-      const unitsNeeded = Math.ceil(goal / offer.price);
-      const weeklyUnits = Math.ceil(unitsNeeded / 4);
-      const dailyUnits = Math.ceil(unitsNeeded / 30);
-      return {
-        name: offer.name || 'Unnamed Offer',
-        price: offer.price,
-        unitsNeeded,
-        weeklyUnits,
-        dailyUnits,
-        totalRevenue: unitsNeeded * offer.price,
-      };
-    });
-  }, [goal, activeOffers]);
-
-  const blendedResult = useMemo(() => {
-    if (!offerResults || offerResults.length < 2) return null;
-    const splitGoal = goal / offerResults.length;
-    return offerResults.map(r => ({
-      ...r,
-      unitsNeeded: Math.ceil(splitGoal / r.price),
-      weeklyUnits: Math.ceil(Math.ceil(splitGoal / r.price) / 4),
-    }));
-  }, [offerResults, goal]);
 
   const InputField = ({ label, value, onChange, icon: Icon, suffix }: { label: string; value: string; onChange: (v: string) => void; icon?: any; suffix?: string }) => (
     <div className="space-y-1.5">
