@@ -573,6 +573,20 @@ const Calculators = () => {
               'A tip shows savings from increasing your payment by $50/mo',
             ]}
           />
+          <CalculatorScenariosAndPitfalls
+            scenarios={[
+              { title: 'Balance Transfer', description: 'Moving $8k from 23% to a 0% intro card saves ~$150/mo in interest. Pay it off before the promo ends.' },
+              { title: 'Aggressive Payoff', description: 'Doubling your payment from $250 to $500/mo on $8k cuts payoff time in half and saves thousands.' },
+              { title: 'Minimum Payment Trap', description: 'Paying only $160/mo on $8k at 23% takes 9+ years and costs $9,000+ in interest alone.' },
+              { title: 'Debt Snowball', description: 'Pay off the smallest card first for a quick win, then roll that payment into the next card.' },
+            ]}
+            pitfalls={[
+              { title: 'Paying Only the Minimum', description: 'Minimum payments maximize interest for the lender. Even $50 extra/mo makes a massive difference.' },
+              { title: 'Continuing to Charge', description: 'Adding new charges while paying off a balance erases your progress. Freeze the card during payoff.' },
+              { title: 'Ignoring the APR', description: 'A "low" payment on a 25%+ APR card means most of your payment goes to interest, not principal.' },
+              { title: 'Missing a Payment', description: 'One missed payment can trigger a penalty APR of 29%+ and damage your credit score significantly.' },
+            ]}
+          />
           <div className="grid gap-6 lg:grid-cols-2 mt-4">
             <Card className="prism-card-shine border-border/50">
               <CardHeader>
