@@ -49,7 +49,7 @@ const About = () => {
           />
           <div className="text-center sm:text-left space-y-2">
             <p className="text-xs font-bold uppercase tracking-wider text-prism-teal">Meet the Designer</p>
-            <h2 className="font-display text-2xl font-bold">The Creator of PrismBudget</h2>
+            <h2 className="font-display text-2xl font-bold">The Creator of PrismBudget™</h2>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-lg">
               Designer, developer, and someone who understands what it's like to stare at a bank account
               and feel lost. PrismBudget was born out of a personal mission to make financial clarity
