@@ -867,6 +867,19 @@ const Calculators = () => {
                   hasResults={debtResult.months > 0}
                   summaryText={`Debt Payoff Calculator\nBalance: $${debtForm.balance} | Rate: ${debtForm.rate}% | Payment: $${debtForm.payment}/mo\nPayoff: ${Math.floor(debtResult.months/12)}y ${debtResult.months%12}m\nTotal Interest: ${formatCurrency(debtResult.totalInterest)}\nTotal Paid: ${formatCurrency(debtResult.totalPaid)}`}
                   onOpenHistory={() => setHistoryOpen(true)}
+                  printData={{
+                    inputs: [
+                      { label: 'Total Debt', value: `$${Number(debtForm.balance).toLocaleString()}` },
+                      { label: 'Interest Rate', value: `${debtForm.rate}%` },
+                      { label: 'Monthly Payment', value: `$${Number(debtForm.payment).toLocaleString()}/mo` },
+                    ],
+                    results: [
+                      { label: 'Payoff Time', value: `${Math.floor(debtResult.months/12)}y ${debtResult.months%12}m`, highlight: true },
+                      { label: 'Total Interest', value: formatCurrency(debtResult.totalInterest) },
+                      { label: 'Total Paid', value: formatCurrency(debtResult.totalPaid) },
+                      { label: 'Interest Cost', value: `${debtResult.totalPaid > 0 ? Math.round((debtResult.totalInterest / debtResult.totalPaid) * 100) : 0}%` },
+                    ],
+                  }}
                 />
               </CardContent>
             </Card>
