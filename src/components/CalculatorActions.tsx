@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Save, Copy, Download, Check, History } from 'lucide-react';
+import { Save, Copy, Download, Check, History, Link2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,6 +24,8 @@ export default function CalculatorActions({ calculatorType, inputs, results, has
   const { household } = useHousehold();
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
+
 
   if (!hasResults) return null;
 
@@ -72,6 +74,25 @@ export default function CalculatorActions({ calculatorType, inputs, results, has
     toast.success('File downloaded');
   };
 
+  const handleShareLink = async () => {
+    try {
+      const params = new URLSearchParams();
+      params.set('calc', calculatorType);
+      Object.entries(inputs).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          params.set(key, String(value));
+        }
+      });
+      const shareUrl = `${window.location.origin}/calculators?${params.toString()}`;
+      await navigator.clipboard.writeText(shareUrl);
+      setLinkCopied(true);
+      toast.success('Shareable link copied to clipboard');
+      setTimeout(() => setLinkCopied(false), 2000);
+    } catch {
+      toast.error('Failed to copy link');
+    }
+  };
+
   return (
     <div className="flex items-center gap-2 flex-wrap">
       <Button variant="outline" size="sm" onClick={handleSave} disabled={saving} className="gap-1.5 text-xs">
@@ -81,6 +102,10 @@ export default function CalculatorActions({ calculatorType, inputs, results, has
       <Button variant="outline" size="sm" onClick={handleCopy} className="gap-1.5 text-xs">
         {copied ? <Check className="h-3.5 w-3.5 text-primary" /> : <Copy className="h-3.5 w-3.5" />}
         {copied ? 'Copied' : 'Copy'}
+      </Button>
+      <Button variant="outline" size="sm" onClick={handleShareLink} className="gap-1.5 text-xs">
+        {linkCopied ? <Check className="h-3.5 w-3.5 text-primary" /> : <Link2 className="h-3.5 w-3.5" />}
+        {linkCopied ? 'Link Copied' : 'Share Link'}
       </Button>
       <Button variant="outline" size="sm" onClick={handleExport} className="gap-1.5 text-xs">
         <Download className="h-3.5 w-3.5" />

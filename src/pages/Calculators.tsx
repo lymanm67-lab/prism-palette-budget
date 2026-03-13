@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -163,6 +164,7 @@ const ResultCard = ({ label, value, sub, accent, numericValue, formatFn }: { lab
 // ─── Component ───
 const Calculators = () => {
   const { formatCurrency } = useCurrency();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activeCalc, setActiveCalc] = useState('mortgage');
   const [pageGuideOpen, setPageGuideOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -290,6 +292,59 @@ const Calculators = () => {
     const monthlyTo2M = calcMonthlyToMillion(age, 2000000);
     return { multiplier, monthlyTo1M, monthlyTo2M, age };
   }, [wealthAge]);
+
+  // Restore state from URL query params (shared links)
+  useEffect(() => {
+    const calc = searchParams.get('calc');
+    if (!calc) return;
+
+    setActiveCalc(calc);
+
+    // Helper to get param or keep default
+    const p = (key: string) => searchParams.get(key);
+
+    if (calc === 'mortgage') {
+      setMortgageForm(f => ({
+        price: p('price') ?? f.price,
+        down: p('down') ?? f.down,
+        rate: p('rate') ?? f.rate,
+        years: p('years') ?? f.years,
+      }));
+    } else if (calc === 'auto') {
+      setAutoForm(f => ({
+        price: p('price') ?? f.price,
+        down: p('down') ?? f.down,
+        rate: p('rate') ?? f.rate,
+        years: p('years') ?? f.years,
+        tradeIn: p('tradeIn') ?? f.tradeIn,
+      }));
+    } else if (calc === 'credit') {
+      setCcForm(f => ({
+        balance: p('balance') ?? f.balance,
+        apr: p('apr') ?? f.apr,
+        payment: p('payment') ?? f.payment,
+      }));
+    } else if (calc === 'investment') {
+      setInvestForm(f => ({
+        initial: p('initial') ?? f.initial,
+        monthly: p('monthly') ?? f.monthly,
+        rate: p('rate') ?? f.rate,
+        years: p('years') ?? f.years,
+      }));
+    } else if (calc === 'debt') {
+      setDebtForm(f => ({
+        balance: p('balance') ?? f.balance,
+        rate: p('rate') ?? f.rate,
+        payment: p('payment') ?? f.payment,
+      }));
+    } else if (calc === 'wealth') {
+      const age = p('age');
+      if (age) setWealthAge(age);
+    }
+
+    // Clean up query params after restoring
+    setSearchParams({}, { replace: true });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
 
   const InputField = ({ label, value, onChange, icon: Icon, suffix }: { label: string; value: string; onChange: (v: string) => void; icon?: any; suffix?: string }) => (
