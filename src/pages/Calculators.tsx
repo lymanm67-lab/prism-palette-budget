@@ -680,7 +680,21 @@ const Calculators = () => {
           />
         </TabsContent>
         <TabsContent value="debt" className="mt-6">
-          <div className="grid gap-6 lg:grid-cols-2">
+          <CalculatorGuide
+            title="General Debt Calculator"
+            icon={DollarSign}
+            iconColor="text-prism-amber"
+            ttsScript="The General Debt Calculator works for any type of loan — student loans, personal loans, or other debts. Enter the total debt balance, the annual interest rate, and your planned monthly payment. You'll see the payoff timeline in years and months, total interest paid, total cost, and a payoff chart. The payment breakdown bar shows how much of your total goes to principal versus interest."
+            instructions={[
+              'Enter your total debt balance',
+              'Set the annual interest rate',
+              'Enter your planned monthly payment',
+              'Results show payoff time, total interest, and total cost',
+              'The payoff chart tracks your declining balance',
+              'Works for any loan type: student, personal, medical, etc.',
+            ]}
+          />
+          <div className="grid gap-6 lg:grid-cols-2 mt-4">
             <Card className="prism-card-shine border-border/50">
               <CardHeader>
                 <CardTitle className="font-display flex items-center gap-2 text-lg">
