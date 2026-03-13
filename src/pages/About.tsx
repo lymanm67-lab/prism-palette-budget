@@ -29,7 +29,7 @@ const About = () => {
           </div>
           <div>
             <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-              The Story Behind <span className="prism-gradient-text">PrismBudget</span>
+              The Story Behind <span className="prism-gradient-text">PrismBudget™</span>
             </h1>
             <p className="mt-3 text-white/80 leading-relaxed max-w-xl">
               Built by someone who lived the financial struggle — and decided to build the tool they wished existed.
