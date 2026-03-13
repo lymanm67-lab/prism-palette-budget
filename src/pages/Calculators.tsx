@@ -847,6 +847,7 @@ const Calculators = () => {
           />
         </TabsContent>
       </Tabs>
+      <CalculatorHistory open={historyOpen} onOpenChange={setHistoryOpen} onRestore={handleRestore} />
     </motion.div>
     </TooltipProvider>
   );
