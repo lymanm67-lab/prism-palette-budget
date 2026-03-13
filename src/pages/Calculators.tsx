@@ -342,8 +342,10 @@ const Calculators = () => {
       if (age) setWealthAge(age);
     }
 
-    // Clean up query params after restoring
-    setSearchParams({}, { replace: true });
+    // Clean up query params after restoring (skip for 'offers' — child handles its own)
+    if (calc !== 'offers') {
+      setSearchParams({}, { replace: true });
+    }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
 
