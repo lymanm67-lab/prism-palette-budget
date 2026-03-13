@@ -515,7 +515,7 @@ const Calculators = () => {
                   inputs={mortgageForm}
                   results={{ payment: mortgageResult.payment, totalInterest: mortgageResult.totalInterest, totalPaid: mortgageResult.totalPaid }}
                   hasResults={mortgageResult.payment > 0}
-                  summaryText={`Mortgage Calculator\nPrice: ${mortgageForm.price} | Down: ${mortgageForm.down} | Rate: ${mortgageForm.rate}% | Term: ${mortgageForm.years}yr\nMonthly Payment: ${formatCurrency(mortgageResult.payment)}\nTotal Interest: ${formatCurrency(mortgageResult.totalInterest)}\nTotal Paid: ${formatCurrency(mortgageResult.totalPaid)}`}
+                  summaryText={`# 🏠 Mortgage Calculator\n\n**Inputs**\n- **Home Price:** ${formatCurrency(Number(mortgageForm.price))}\n- **Down Payment:** ${formatCurrency(Number(mortgageForm.down))}\n- **Interest Rate:** ${mortgageForm.rate}%\n- **Term:** ${mortgageForm.years} years\n\n**Results**\n- **Monthly Payment:** ${formatCurrency(mortgageResult.payment)}\n- **Total Interest:** ${formatCurrency(mortgageResult.totalInterest)}\n- **Total Paid:** ${formatCurrency(mortgageResult.totalPaid)}`}
                   onOpenHistory={() => setHistoryOpen(true)}
                   printData={{
                     inputs: [
@@ -615,7 +615,7 @@ const Calculators = () => {
                   inputs={autoForm}
                   results={{ payment: autoResult.payment, totalInterest: autoResult.totalInterest, totalPaid: autoResult.totalPaid }}
                   hasResults={autoResult.payment > 0}
-                  summaryText={`Auto Loan Calculator\nPrice: ${autoForm.price} | Down: ${autoForm.down} | Rate: ${autoForm.rate}% | Term: ${autoForm.years}yr\nMonthly Payment: ${formatCurrency(autoResult.payment)}\nTotal Interest: ${formatCurrency(autoResult.totalInterest)}\nTotal Paid: ${formatCurrency(autoResult.totalPaid)}`}
+                  summaryText={`# 🚗 Auto Loan Calculator\n\n**Inputs**\n- **Vehicle Price:** ${formatCurrency(Number(autoForm.price))}\n- **Down Payment:** ${formatCurrency(Number(autoForm.down))}\n- **Interest Rate:** ${autoForm.rate}%\n- **Term:** ${autoForm.years} years\n\n**Results**\n- **Monthly Payment:** ${formatCurrency(autoResult.payment)}\n- **Total Interest:** ${formatCurrency(autoResult.totalInterest)}\n- **Total Paid:** ${formatCurrency(autoResult.totalPaid)}`}
                   onOpenHistory={() => setHistoryOpen(true)}
                   printData={{
                     inputs: [
@@ -720,7 +720,7 @@ const Calculators = () => {
                   inputs={ccForm}
                   results={{ months: ccResult.months, totalInterest: ccResult.totalInterest, totalPaid: ccResult.totalPaid }}
                   hasResults={ccResult.months > 0}
-                  summaryText={`Credit Card Payoff\nBalance: $${ccForm.balance} | APR: ${ccForm.apr}% | Payment: $${ccForm.payment}/mo\nPayoff: ${ccResult.months} months\nTotal Interest: ${formatCurrency(ccResult.totalInterest)}\nTotal Paid: ${formatCurrency(ccResult.totalPaid)}`}
+                  summaryText={`# 💳 Credit Card Payoff\n\n**Inputs**\n- **Balance:** ${formatCurrency(Number(ccForm.balance))}\n- **APR:** ${ccForm.apr}%\n- **Monthly Payment:** ${formatCurrency(Number(ccForm.payment))}\n\n**Results**\n- **Payoff Time:** ${ccResult.months} months\n- **Total Interest:** ${formatCurrency(ccResult.totalInterest)}\n- **Total Paid:** ${formatCurrency(ccResult.totalPaid)}`}
                   onOpenHistory={() => setHistoryOpen(true)}
                   printData={{
                     inputs: [
@@ -820,7 +820,7 @@ const Calculators = () => {
                   inputs={investForm}
                   results={{ finalBalance: investResult.finalBalance, totalContributions: investResult.totalContributions, totalInterest: investResult.totalInterest }}
                   hasResults={investResult.finalBalance > 0}
-                  summaryText={`Investment Calculator\nInitial: $${investForm.initial} | Monthly: $${investForm.monthly} | Rate: ${investForm.rate}% | Years: ${investForm.years}\nFinal Balance: ${formatCurrency(investResult.finalBalance)}\nTotal Contributions: ${formatCurrency(investResult.totalContributions)}\nTotal Earnings: ${formatCurrency(investResult.totalInterest)}`}
+                  summaryText={`# 📈 Investment Calculator\n\n**Inputs**\n- **Initial Investment:** ${formatCurrency(Number(investForm.initial))}\n- **Monthly Contribution:** ${formatCurrency(Number(investForm.monthly))}\n- **Expected Return:** ${investForm.rate}%\n- **Time Horizon:** ${investForm.years} years\n\n**Results**\n- **Final Balance:** ${formatCurrency(investResult.finalBalance)}\n- **Total Contributions:** ${formatCurrency(investResult.totalContributions)}\n- **Total Earnings:** ${formatCurrency(investResult.totalInterest)}`}
                   onOpenHistory={() => setHistoryOpen(true)}
                   printData={{
                     inputs: [
@@ -920,7 +920,7 @@ const Calculators = () => {
                   inputs={debtForm}
                   results={{ months: debtResult.months, totalInterest: debtResult.totalInterest, totalPaid: debtResult.totalPaid }}
                   hasResults={debtResult.months > 0}
-                  summaryText={`Debt Payoff Calculator\nBalance: $${debtForm.balance} | Rate: ${debtForm.rate}% | Payment: $${debtForm.payment}/mo\nPayoff: ${Math.floor(debtResult.months/12)}y ${debtResult.months%12}m\nTotal Interest: ${formatCurrency(debtResult.totalInterest)}\nTotal Paid: ${formatCurrency(debtResult.totalPaid)}`}
+                  summaryText={`# 💰 Debt Payoff Calculator\n\n**Inputs**\n- **Balance:** ${formatCurrency(Number(debtForm.balance))}\n- **Interest Rate:** ${debtForm.rate}%\n- **Monthly Payment:** ${formatCurrency(Number(debtForm.payment))}\n\n**Results**\n- **Payoff Time:** ${Math.floor(debtResult.months/12)}y ${debtResult.months%12}m\n- **Total Interest:** ${formatCurrency(debtResult.totalInterest)}\n- **Total Paid:** ${formatCurrency(debtResult.totalPaid)}`}
                   onOpenHistory={() => setHistoryOpen(true)}
                   printData={{
                     inputs: [
@@ -1017,7 +1017,7 @@ const Calculators = () => {
                   inputs={{ age: wealthAge }}
                   results={{ multiplier: wealthResult.multiplier, monthlyTo1M: wealthResult.monthlyTo1M, monthlyTo2M: wealthResult.monthlyTo2M }}
                   hasResults={true}
-                  summaryText={`Wealth Multiplier\nAge: ${wealthAge}\nMultiplier: ${wealthResult.multiplier.toFixed(1)}x\nMonthly for $1M: ${formatCurrency(wealthResult.monthlyTo1M)}\nMonthly for $2M: ${formatCurrency(wealthResult.monthlyTo2M)}`}
+                  summaryText={`# 🌟 Wealth Multiplier\n\n**Inputs**\n- **Current Age:** ${wealthAge}\n\n**Results**\n- **Multiplier:** ${wealthResult.multiplier.toFixed(1)}x\n- **Monthly to reach $1M:** ${formatCurrency(wealthResult.monthlyTo1M)}\n- **Monthly to reach $2M:** ${formatCurrency(wealthResult.monthlyTo2M)}`}
                   onOpenHistory={() => setHistoryOpen(true)}
                   printData={{
                     inputs: [

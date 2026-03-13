@@ -173,7 +173,7 @@ export default function FocusOfferCalculator({ onOpenHistory }: { onOpenHistory?
     'at-risk': { label: 'At Risk', color: 'text-destructive', bg: 'bg-destructive/10 border-destructive/30' },
   };
 
-  const summaryText = offerResults ? `Focus Offer Calculator (${tf.label})\nGoal: $${goal.toLocaleString()}\n${offerResults.map(r => `${r.name}: ${r.unitsNeeded} units → $${r.grossRevenue.toLocaleString()} (profit: $${r.netProfit.toLocaleString()})`).join('\n')}` : '';
+  const summaryText = offerResults ? `# 🎯 Focus Offer Calculator (${tf.label})\n\n**Inputs**\n- **Revenue Goal:** $${goal.toLocaleString()}\n- **Timeframe:** ${tf.label}\n- **Fixed Costs:** $${fixedCosts.toLocaleString()}\n\n**Results**\n${offerResults.map(r => `- **${r.name}:** ${r.unitsNeeded} units → $${r.grossRevenue.toLocaleString()} revenue (profit: $${r.netProfit.toLocaleString()})`).join('\n')}` : '';
 
   return (
     <div className="space-y-6">
