@@ -752,8 +752,13 @@ const Calculators = () => {
               </div>
             )}
           </div>
+          <CalculatorInsight
+            calculatorType="offers"
+            inputs={{ goal: revenueGoal }}
+            results={{ offers: offerResults }}
+            hasResults={!!offerResults && offerResults.length > 0}
+          />
         </TabsContent>
-      </Tabs>
     </motion.div>
     </TooltipProvider>
   );
