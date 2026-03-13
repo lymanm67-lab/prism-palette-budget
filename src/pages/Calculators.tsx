@@ -720,7 +720,7 @@ const Calculators = () => {
                   inputs={ccForm}
                   results={{ months: ccResult.months, totalInterest: ccResult.totalInterest, totalPaid: ccResult.totalPaid }}
                   hasResults={ccResult.months > 0}
-                  summaryText={`Credit Card Payoff\nBalance: $${ccForm.balance} | APR: ${ccForm.apr}% | Payment: $${ccForm.payment}/mo\nPayoff: ${ccResult.months} months\nTotal Interest: ${formatCurrency(ccResult.totalInterest)}\nTotal Paid: ${formatCurrency(ccResult.totalPaid)}`}
+                  summaryText={`# 💳 Credit Card Payoff\n\n**Inputs**\n- **Balance:** ${formatCurrency(Number(ccForm.balance))}\n- **APR:** ${ccForm.apr}%\n- **Monthly Payment:** ${formatCurrency(Number(ccForm.payment))}\n\n**Results**\n- **Payoff Time:** ${ccResult.months} months\n- **Total Interest:** ${formatCurrency(ccResult.totalInterest)}\n- **Total Paid:** ${formatCurrency(ccResult.totalPaid)}`}
                   onOpenHistory={() => setHistoryOpen(true)}
                   printData={{
                     inputs: [
