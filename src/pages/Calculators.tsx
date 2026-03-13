@@ -750,6 +750,20 @@ const Calculators = () => {
               'Works for any loan type: student, personal, medical, etc.',
             ]}
           />
+          <CalculatorScenariosAndPitfalls
+            scenarios={[
+              { title: 'Student Loan Payoff', description: '$25k at 5% with $400/mo takes 5.8 years. Bumping to $600/mo saves 2+ years and $1,500 in interest.' },
+              { title: 'Medical Debt', description: 'Many hospitals offer 0% payment plans. A $10k bill at 0% with $300/mo takes just 34 months — no interest.' },
+              { title: 'Consolidation', description: 'Combining multiple debts into one lower-rate loan simplifies payments and can reduce total interest by 30–50%.' },
+              { title: 'Windfall Application', description: 'Applying a $5k tax refund to a $25k loan at 7% saves $4,200+ in interest over the loan\'s life.' },
+            ]}
+            pitfalls={[
+              { title: 'Paying Only Minimums', description: 'On a $25k loan at 7%, minimums of $300 take 11+ years. Increasing to $500 cuts it to 5 years.' },
+              { title: 'Ignoring High-Rate Debts', description: 'Always prioritize the highest-rate debt first (avalanche method) to minimize total interest paid.' },
+              { title: 'Refinancing Without Math', description: 'A lower rate with a longer term can actually cost more in total interest. Always compare total cost.' },
+              { title: 'No Emergency Fund', description: 'Aggressively paying debt without savings leads to more debt when emergencies hit. Keep $1k–$2k liquid.' },
+            ]}
+          />
           <div className="grid gap-6 lg:grid-cols-2 mt-4">
             <Card className="prism-card-shine border-border/50">
               <CardHeader>
