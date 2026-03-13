@@ -836,6 +836,20 @@ const Calculators = () => {
               'The chart shows the multiplier declining as you age — start early!',
             ]}
           />
+          <CalculatorScenariosAndPitfalls
+            scenarios={[
+              { title: 'Age 25 Investor', description: 'At 25, every $1 becomes ~$44 by 65. Investing just $200/mo from 25 yields over $500k by retirement.' },
+              { title: 'Late Starter at 40', description: 'Starting at 40 means a 7x multiplier instead of 44x. You\'ll need $2,800+/mo to reach $1M — but it\'s still possible.' },
+              { title: 'Power of 10 Years', description: 'Starting at 25 vs 35 with $500/mo means $1M+ more at retirement. A decade of compound growth is irreplaceable.' },
+              { title: 'Couple Investing Together', description: 'Two people investing $500/mo each starting at 30 can accumulate $2.5M+ by 65 through combined growth.' },
+            ]}
+            pitfalls={[
+              { title: 'Thinking It\'s Too Late', description: 'Even starting at 50, a 15-year runway with disciplined saving can build significant wealth. Every year counts.' },
+              { title: 'Cashing Out Early', description: 'Withdrawing retirement funds early triggers penalties and taxes, plus you lose all future compounding.' },
+              { title: 'Lifestyle Inflation', description: 'As income grows, increase investments — not just spending. Saving your raises is the fastest path to wealth.' },
+              { title: 'Ignoring Inflation', description: 'A million dollars in 30 years buys less than today. Aim for $2M+ to maintain purchasing power.' },
+            ]}
+          />
           <div className="grid gap-6 lg:grid-cols-2 mt-4">
             <Card className="prism-card-shine border-border/50">
               <CardHeader>
