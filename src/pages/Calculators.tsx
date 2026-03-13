@@ -545,9 +545,13 @@ const Calculators = () => {
               </CardContent>
             </Card>
           </div>
+          <CalculatorInsight
+            calculatorType="investment"
+            inputs={investForm}
+            results={{ finalBalance: investResult.finalBalance, totalContributions: investResult.totalContributions, totalInterest: investResult.totalInterest }}
+            hasResults={investResult.finalBalance > 0}
+          />
         </TabsContent>
-
-        {/* ─── GENERAL DEBT ─── */}
         <TabsContent value="debt" className="mt-6">
           <div className="grid gap-6 lg:grid-cols-2">
             <Card className="prism-card-shine border-border/50">
