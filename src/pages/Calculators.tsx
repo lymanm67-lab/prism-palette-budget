@@ -164,6 +164,7 @@ const ResultCard = ({ label, value, sub, accent, numericValue, formatFn }: { lab
 // ─── Component ───
 const Calculators = () => {
   const { formatCurrency } = useCurrency();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activeCalc, setActiveCalc] = useState('mortgage');
   const [pageGuideOpen, setPageGuideOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
