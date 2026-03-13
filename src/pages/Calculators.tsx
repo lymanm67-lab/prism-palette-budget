@@ -767,6 +767,20 @@ const Calculators = () => {
                   hasResults={investResult.finalBalance > 0}
                   summaryText={`Investment Calculator\nInitial: $${investForm.initial} | Monthly: $${investForm.monthly} | Rate: ${investForm.rate}% | Years: ${investForm.years}\nFinal Balance: ${formatCurrency(investResult.finalBalance)}\nTotal Contributions: ${formatCurrency(investResult.totalContributions)}\nTotal Earnings: ${formatCurrency(investResult.totalInterest)}`}
                   onOpenHistory={() => setHistoryOpen(true)}
+                  printData={{
+                    inputs: [
+                      { label: 'Initial Investment', value: `$${Number(investForm.initial).toLocaleString()}` },
+                      { label: 'Monthly Contribution', value: `$${Number(investForm.monthly).toLocaleString()}` },
+                      { label: 'Annual Return', value: `${investForm.rate}%` },
+                      { label: 'Time Horizon', value: `${investForm.years} years` },
+                    ],
+                    results: [
+                      { label: 'Final Balance', value: formatCurrency(investResult.finalBalance), highlight: true },
+                      { label: 'Total Contributions', value: formatCurrency(investResult.totalContributions) },
+                      { label: 'Total Earnings', value: formatCurrency(investResult.totalInterest) },
+                      { label: 'ROI', value: `${investResult.totalContributions > 0 ? Math.round(((investResult.finalBalance - investResult.totalContributions) / investResult.totalContributions) * 100) : 0}%` },
+                    ],
+                  }}
                 />
               </CardContent>
             </Card>
