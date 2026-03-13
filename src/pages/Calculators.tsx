@@ -487,6 +487,20 @@ const Calculators = () => {
               'The chart tracks your remaining balance over the loan term',
             ]}
           />
+          <CalculatorScenariosAndPitfalls
+            scenarios={[
+              { title: 'New vs Used', description: 'A 2-year-old certified pre-owned car can save 20–30% vs new while still having warranty coverage.' },
+              { title: 'Short-Term Loan', description: 'A 3-year loan at 5.9% on $30k costs $2,800 in interest vs $4,700 on a 5-year term.' },
+              { title: 'Large Trade-In', description: 'A $10k trade-in on a $35k car drops your loan to $25k — reducing payments by $170+/mo on a 5-year loan.' },
+              { title: '0% Dealer Financing', description: 'Compare 0% APR vs a cash discount. Sometimes the rebate beats the free financing.' },
+            ]}
+            pitfalls={[
+              { title: 'Stretching to 7+ Years', description: 'Longer terms mean lower payments but much more interest — and you may owe more than the car is worth.' },
+              { title: 'Ignoring Total Cost', description: 'Focus on total cost, not monthly payment. Dealers love stretching terms to make expensive cars seem affordable.' },
+              { title: 'Skipping Pre-Approval', description: 'Get pre-approved from your bank before the dealership. Dealer financing often has higher rates.' },
+              { title: 'Negative Equity Roll-In', description: 'Rolling an old loan balance into a new car loan starts you underwater immediately.' },
+            ]}
+          />
           <div className="grid gap-6 lg:grid-cols-2 mt-4">
             <Card className="prism-card-shine border-border/50">
               <CardHeader>
