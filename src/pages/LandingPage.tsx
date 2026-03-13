@@ -47,8 +47,8 @@ const LandingPage = () => {
 
         <nav className="relative z-10 mx-auto max-w-7xl px-6 py-5 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <img src={prismLogo} alt="PrismBudget" className="h-16 w-16 rounded-xl object-contain" />
-            <span className="font-display text-xl font-extrabold text-white tracking-tight">PrismBudget</span>
+            <img src={prismLogo} alt="PrismBudget™" className="h-16 w-16 rounded-xl object-contain" />
+            <span className="font-display text-xl font-extrabold text-white tracking-tight">PrismBudget™</span>
           </div>
           <div className="flex items-center gap-3">
             <Button variant="ghost" onClick={() => navigate('/auth')} className="text-white/60 hover:text-white hover:bg-white/10">
