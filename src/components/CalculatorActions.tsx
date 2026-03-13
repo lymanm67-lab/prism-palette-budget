@@ -24,6 +24,8 @@ export default function CalculatorActions({ calculatorType, inputs, results, has
   const { household } = useHousehold();
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
+
 
   if (!hasResults) return null;
 
