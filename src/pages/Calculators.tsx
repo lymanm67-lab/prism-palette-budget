@@ -607,7 +607,21 @@ const Calculators = () => {
           />
         </TabsContent>
         <TabsContent value="investment" className="mt-6">
-          <div className="grid gap-6 lg:grid-cols-2">
+          <CalculatorGuide
+            title="Investment Calculator"
+            icon={TrendingUp}
+            iconColor="text-prism-lime"
+            ttsScript="The Investment Calculator projects how your money grows over time with compound interest. Enter your initial investment, monthly contribution, expected annual return rate, and time horizon in years. You'll see the final balance, total contributions, total earnings, and your overall return on investment percentage. The growth chart visualizes how your portfolio builds year by year, and the composition bar shows contributions versus earnings."
+            instructions={[
+              'Enter your initial lump-sum investment',
+              'Set a monthly contribution amount',
+              'Choose an expected annual return rate',
+              'Set your investment time horizon in years',
+              'Results show final balance, total contributions, and earnings',
+              'The growth chart shows your portfolio value over time',
+            ]}
+          />
+          <div className="grid gap-6 lg:grid-cols-2 mt-4">
             <Card className="prism-card-shine border-border/50">
               <CardHeader>
                 <CardTitle className="font-display flex items-center gap-2 text-lg">
