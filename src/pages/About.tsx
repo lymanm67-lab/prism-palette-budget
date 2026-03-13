@@ -76,7 +76,7 @@ const About = () => {
             <p>
               I wanted something that would meet me where I was. Something that would tell me, step by step, 
               what to do <em>next</em> with my money. Not just track where it went, but guide me toward where it 
-              <em> should</em> go. That's when the idea for PrismBudget was born.
+              <em> should</em> go. That's when the idea for PrismBudget™ was born.
             </p>
             <p>
               The name "Prism" represents clarity — taking the chaotic white noise of personal finance and 
