@@ -438,9 +438,13 @@ const Calculators = () => {
               </CardContent>
             </Card>
           </div>
+          <CalculatorInsight
+            calculatorType="auto"
+            inputs={autoForm}
+            results={{ payment: autoResult.payment, totalInterest: autoResult.totalInterest, totalPaid: autoResult.totalPaid }}
+            hasResults={autoResult.payment > 0}
+          />
         </TabsContent>
-
-        {/* ─── CREDIT CARD ─── */}
         <TabsContent value="credit" className="mt-6">
           <div className="grid gap-6 lg:grid-cols-2">
             <Card className="prism-card-shine border-border/50">
