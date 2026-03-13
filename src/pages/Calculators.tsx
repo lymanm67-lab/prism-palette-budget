@@ -647,6 +647,14 @@ const Calculators = () => {
                     <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-prism-teal inline-block" /> Earnings</span>
                   </div>
                 </div>
+                <CalculatorActions
+                  calculatorType="investment"
+                  inputs={investForm}
+                  results={{ finalBalance: investResult.finalBalance, totalContributions: investResult.totalContributions, totalInterest: investResult.totalInterest }}
+                  hasResults={investResult.finalBalance > 0}
+                  summaryText={`Investment Calculator\nInitial: $${investForm.initial} | Monthly: $${investForm.monthly} | Rate: ${investForm.rate}% | Years: ${investForm.years}\nFinal Balance: ${formatCurrency(investResult.finalBalance)}\nTotal Contributions: ${formatCurrency(investResult.totalContributions)}\nTotal Earnings: ${formatCurrency(investResult.totalInterest)}`}
+                  onOpenHistory={() => setHistoryOpen(true)}
+                />
               </CardContent>
             </Card>
           </div>
