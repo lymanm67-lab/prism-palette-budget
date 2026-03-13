@@ -964,6 +964,19 @@ const Calculators = () => {
                   hasResults={true}
                   summaryText={`Wealth Multiplier\nAge: ${wealthAge}\nMultiplier: ${wealthResult.multiplier.toFixed(1)}x\nMonthly for $1M: ${formatCurrency(wealthResult.monthlyTo1M)}\nMonthly for $2M: ${formatCurrency(wealthResult.monthlyTo2M)}`}
                   onOpenHistory={() => setHistoryOpen(true)}
+                  printData={{
+                    inputs: [
+                      { label: 'Current Age', value: `${wealthAge} years` },
+                      { label: 'Retirement Age', value: '65 years' },
+                      { label: 'Years to Grow', value: `${65 - (parseInt(wealthAge) || 30)} years` },
+                    ],
+                    results: [
+                      { label: 'Wealth Multiplier', value: `${wealthResult.multiplier.toFixed(1)}x`, highlight: true },
+                      { label: '$1 Becomes', value: formatCurrency(wealthResult.multiplier) },
+                      { label: 'Monthly for $1M', value: formatCurrency(wealthResult.monthlyTo1M) },
+                      { label: 'Monthly for $2M', value: formatCurrency(wealthResult.monthlyTo2M) },
+                    ],
+                  }}
                 />
               </CardContent>
             </Card>
