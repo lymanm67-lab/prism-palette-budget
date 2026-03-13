@@ -20,6 +20,7 @@ import AnimatedNumber from '@/components/AnimatedNumber';
 import CalculatorChart from '@/components/CalculatorChart';
 import CalculatorActions from '@/components/CalculatorActions';
 import CalculatorHistory from '@/components/CalculatorHistory';
+import FocusOfferCalculator from '@/components/FocusOfferCalculator';
 
 // ─── Calculation helpers ───
 
