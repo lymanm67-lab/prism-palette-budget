@@ -486,10 +486,14 @@ const Calculators = () => {
               <CardHeader><CardTitle className="font-display text-lg">Results</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
-                  <ResultCard label="Monthly Payment" value={formatCurrency(autoResult.payment)} accent />
-                  <ResultCard label="Total Interest" value={formatCurrency(autoResult.totalInterest)} />
-                  <ResultCard label="Total Paid" value={formatCurrency(autoResult.totalPaid)} />
+                  <ResultCard label="Monthly Payment" value={formatCurrency(autoResult.payment)} numericValue={autoResult.payment} formatFn={formatCurrency} accent />
+                  <ResultCard label="Total Interest" value={formatCurrency(autoResult.totalInterest)} numericValue={autoResult.totalInterest} formatFn={formatCurrency} />
+                  <ResultCard label="Total Paid" value={formatCurrency(autoResult.totalPaid)} numericValue={autoResult.totalPaid} formatFn={formatCurrency} />
                   <ResultCard label="Loan Amount" value={formatCurrency(Math.max(0, (parseFloat(autoForm.price)||0) - (parseFloat(autoForm.down)||0) - (parseFloat(autoForm.tradeIn)||0)))} />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-2 font-medium">Remaining Balance Over Time</p>
+                  <CalculatorChart type="amortization" data={autoResult.schedule} />
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground mb-2">Cost Breakdown</p>
