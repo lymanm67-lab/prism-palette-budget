@@ -108,9 +108,9 @@ const Metro2Scanner = () => {
     <div className="space-y-6 pb-8">
       <PageOverview
         title="Metro2 Risk Scanner"
-        description="AI-powered compliance analysis against Metro2 reporting standards"
+        description="AI-powered compliance analysis against Metro2™ reporting standards"
         icon={FileSearch}
-        ttsScript="Welcome to the Metro2 Risk Scanner. This tool uses AI to analyze your credit accounts against the Metro2 data reporting format — the industry standard used by creditors to report to bureaus. It checks for ten types of violations including incorrect delinquency dates, conflicting status codes, duplicate reporting across bureaus, and stale negative items that should have aged off. Each finding is classified as high, medium, or low severity with a specific recommended action. Scenario: Imagine a collection account shows a date of first delinquency that is two years newer than it should be. This violation is illegally resetting the 7-year reporting clock. The scanner flags it as high severity and recommends disputing with the bureau citing FCRA Section 605."
+        ttsScript="Welcome to the Metro2™ Risk Scanner. This tool uses AI to analyze your credit accounts against the Metro2™ data reporting format — the industry standard used by creditors to report to bureaus. It checks for ten types of violations including incorrect delinquency dates, conflicting status codes, duplicate reporting across bureaus, and stale negative items that should have aged off. Each finding is classified as high, medium, or low severity with a specific recommended action. Scenario: Imagine a collection account shows a date of first delinquency that is two years newer than it should be. This violation is illegally resetting the 7-year reporting clock. The scanner flags it as high severity and recommends disputing with the bureau citing FCRA™ Section 605."
         features={['Scan for 10+ Metro2 violation types', 'High, medium, and low severity classification', 'One-click dispute creation from findings', 'Track resolved vs unresolved violations']}
       />
 
