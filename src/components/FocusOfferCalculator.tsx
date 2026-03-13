@@ -468,7 +468,18 @@ export default function FocusOfferCalculator({ onOpenHistory }: { onOpenHistory?
                 </div>
                 <CalculatorActions
                   calculatorType="offers"
-                  inputs={{ goal: revenueGoal, timeframe, fixedCosts }}
+                  inputs={{
+                    goal: revenueGoal,
+                    timeframe,
+                    fixedCosts,
+                    actualRevenue,
+                    ...offers.reduce((acc, o, i) => ({
+                      ...acc,
+                      [`o${i}n`]: o.name,
+                      [`o${i}p`]: o.price || '',
+                      [`o${i}c`]: o.cost || '',
+                    }), {}),
+                  }}
                   results={{ offers: offerResults }}
                   hasResults={true}
                   summaryText={summaryText}
