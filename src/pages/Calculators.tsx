@@ -589,13 +589,19 @@ const Calculators = () => {
               <CardHeader><CardTitle className="font-display text-lg">Results</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
-                  <ResultCard label="Final Balance" value={formatCurrency(investResult.finalBalance)} accent />
-                  <ResultCard label="Total Contributions" value={formatCurrency(investResult.totalContributions)} />
-                  <ResultCard label="Total Earnings" value={formatCurrency(investResult.totalInterest)} />
+                  <ResultCard label="Final Balance" value={formatCurrency(investResult.finalBalance)} numericValue={investResult.finalBalance} formatFn={formatCurrency} accent />
+                  <ResultCard label="Total Contributions" value={formatCurrency(investResult.totalContributions)} numericValue={investResult.totalContributions} formatFn={formatCurrency} />
+                  <ResultCard label="Total Earnings" value={formatCurrency(investResult.totalInterest)} numericValue={investResult.totalInterest} formatFn={formatCurrency} />
                   <ResultCard label="Growth" value={`${investResult.totalContributions > 0 ? Math.round(((investResult.finalBalance - investResult.totalContributions) / investResult.totalContributions) * 100) : 0}%`} sub="return on investment" />
                 </div>
+                {investResult.schedule.length > 0 && (
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-2 font-medium">Growth Over Time</p>
+                    <CalculatorChart type="growth" data={investResult.schedule} />
+                  </div>
+                )}
                 <div>
-                  <p className="text-xs text-muted-foreground mb-2">Growth Over Time</p>
+                  <p className="text-xs text-muted-foreground mb-2">Composition</p>
                   <div className="flex gap-1 h-4 rounded-full overflow-hidden">
                     <div className="bg-prism-lime transition-all" style={{ width: `${investResult.finalBalance > 0 ? (investResult.totalContributions / investResult.finalBalance) * 100 : 0}%` }} />
                     <div className="bg-prism-teal transition-all" style={{ width: `${investResult.finalBalance > 0 ? (investResult.totalInterest / investResult.finalBalance) * 100 : 0}%` }} />
@@ -605,19 +611,6 @@ const Calculators = () => {
                     <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-prism-teal inline-block" /> Earnings</span>
                   </div>
                 </div>
-                {investResult.schedule.length > 0 && (
-                  <div className="space-y-1.5 max-h-48 overflow-y-auto">
-                    <p className="text-xs text-muted-foreground font-medium">Year-by-Year</p>
-                    {investResult.schedule.map((s, i) => (
-                      <div key={i} className="flex items-center gap-3 text-xs p-2 rounded-lg bg-muted/30">
-                        <span className="text-muted-foreground w-12">Year {Math.round(s.month / 12)}</span>
-                        <div className="flex-1">
-                          <Progress value={(s.contributions / s.balance) * 100} className="h-1.5" />
-                        </div>
-                        <span className="font-display font-bold w-24 text-right">{formatCurrency(s.balance)}</span>
-                      </div>
-                    ))}
-                  </div>
                 )}
               </CardContent>
             </Card>
