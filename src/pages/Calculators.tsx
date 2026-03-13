@@ -531,7 +531,21 @@ const Calculators = () => {
           />
         </TabsContent>
         <TabsContent value="credit" className="mt-6">
-          <div className="grid gap-6 lg:grid-cols-2">
+          <CalculatorGuide
+            title="Credit Card Payoff"
+            icon={CreditCard}
+            iconColor="text-prism-rose"
+            ttsScript="The Credit Card Payoff Calculator shows how long it will take to pay off your credit card balance. Enter your current balance, the annual percentage rate or APR, and your monthly payment amount. You'll see the number of months to payoff, total interest paid, and total cost. If your payment is too low to cover monthly interest, you'll get a warning. A helpful tip shows how much you could save by paying an extra fifty dollars per month."
+            instructions={[
+              'Enter your current credit card balance',
+              'Add your card\'s APR (annual percentage rate)',
+              'Set the monthly payment you plan to make',
+              'Results show months to payoff, total interest, and total cost',
+              'Warning appears if your payment doesn\'t cover monthly interest',
+              'A tip shows savings from increasing your payment by $50/mo',
+            ]}
+          />
+          <div className="grid gap-6 lg:grid-cols-2 mt-4">
             <Card className="prism-card-shine border-border/50">
               <CardHeader>
                 <CardTitle className="font-display flex items-center gap-2 text-lg">
