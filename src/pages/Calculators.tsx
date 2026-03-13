@@ -400,6 +400,20 @@ const Calculators = () => {
               'Use Save to keep results, Copy to clipboard, or Export as a text file',
             ]}
           />
+          <CalculatorScenariosAndPitfalls
+            scenarios={[
+              { title: 'First-Time Buyer', description: 'Put 20% down to avoid PMI. On a $350k home, that\'s $70k down — saving $150–250/mo in private mortgage insurance.' },
+              { title: 'Refinancing', description: 'Dropping from 7% to 5.5% on a $280k balance saves ~$300/mo. Break-even on closing costs in about 18 months.' },
+              { title: 'Extra Payments', description: 'Adding just $200/mo to a 30-year mortgage can cut 5–7 years off the loan and save tens of thousands in interest.' },
+              { title: '15 vs 30 Year', description: 'A 15-year term has higher payments but saves 50–60% in total interest. Compare both using this calculator.' },
+            ]}
+            pitfalls={[
+              { title: 'Ignoring Taxes & Insurance', description: 'Your actual monthly housing cost includes taxes, insurance, and possibly HOA — often $500–1,000+ beyond the mortgage.' },
+              { title: 'Maxing Out Your Budget', description: 'Just because you qualify for a $400k loan doesn\'t mean you should. Keep total housing under 28% of gross income.' },
+              { title: 'Skipping Rate Comparison', description: 'Even 0.25% lower rate on a $300k loan saves $15,000+ over 30 years. Always shop multiple lenders.' },
+              { title: 'Forgetting Closing Costs', description: 'Budget 2–5% of the home price for closing costs. On a $350k home, that\'s $7k–$17.5k due at signing.' },
+            ]}
+          />
           <div className="grid gap-6 lg:grid-cols-2 mt-4">
             <Card className="prism-card-shine border-border/50">
               <CardHeader>
