@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { AlertTriangle, Lightbulb, ChevronDown, ChevronUp } from 'lucide-react';
+import { AlertTriangle, Lightbulb, ChevronDown, ChevronUp, Volume2, Pause, Play, Square } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useTTS } from '@/hooks/use-tts';
 import { cn } from '@/lib/utils';
 
 interface CalculatorScenariosAndPitfallsProps {
@@ -9,6 +11,13 @@ interface CalculatorScenariosAndPitfallsProps {
 
 export default function CalculatorScenariosAndPitfalls({ scenarios, pitfalls }: CalculatorScenariosAndPitfallsProps) {
   const [expanded, setExpanded] = useState(false);
+  const { speak, pause, resume, stop, isSpeaking, isPaused } = useTTS();
+
+  const generateTTSScript = () => {
+    const scenariosText = scenarios.map(s => `Real-World Scenario: ${s.title}. ${s.description}`).join('. ');
+    const pitfallsText = pitfalls.map(p => `Pitfall to Avoid: ${p.title}. ${p.description}`).join('. ');
+    return `Scenarios and Pitfalls to Avoid. ${scenariosText}. ${pitfallsText}`;
+  };
 
   return (
     <div className="rounded-xl border border-border/40 bg-muted/20 mt-4">
@@ -20,7 +29,69 @@ export default function CalculatorScenariosAndPitfalls({ scenarios, pitfalls }: 
           <Lightbulb className="h-4 w-4 text-prism-amber" />
           Scenarios & Pitfalls to Avoid
         </span>
-        {expanded ? <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />}
+        <div className="flex items-center gap-1">
+          {expanded && (
+            <>
+              {!isSpeaking && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0 mr-1"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    speak(generateTTSScript());
+                  }}
+                  title="Listen"
+                >
+                  <Volume2 className="h-3.5 w-3.5" />
+                </Button>
+              )}
+              {isSpeaking && !isPaused && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0 mr-1"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    pause();
+                  }}
+                  title="Pause"
+                >
+                  <Pause className="h-3.5 w-3.5" />
+                </Button>
+              )}
+              {isSpeaking && isPaused && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0 mr-1"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    resume();
+                  }}
+                  title="Resume"
+                >
+                  <Play className="h-3.5 w-3.5" />
+                </Button>
+              )}
+              {isSpeaking && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0 mr-1"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    stop();
+                  }}
+                  title="Stop"
+                >
+                  <Square className="h-3.5 w-3.5" />
+                </Button>
+              )}
+            </>
+          )}
+          {expanded ? <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />}
+        </div>
       </button>
 
       {expanded && (
