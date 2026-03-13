@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -36,6 +37,7 @@ interface Offer {
 
 export default function FocusOfferCalculator({ onOpenHistory }: { onOpenHistory?: () => void }) {
   const { formatCurrency } = useCurrency();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // Core state
   const [timeframe, setTimeframe] = useState<Timeframe>('monthly');
@@ -47,6 +49,31 @@ export default function FocusOfferCalculator({ onOpenHistory }: { onOpenHistory?
     { name: '', price: 0, cost: 0 },
     { name: '', price: 0, cost: 0 },
   ]);
+
+  // Restore state from URL query params (shared links)
+  useEffect(() => {
+    const calc = searchParams.get('calc');
+    if (calc !== 'offers') return;
+
+    const p = (key: string) => searchParams.get(key);
+    if (p('goal')) setRevenueGoal(p('goal')!);
+    if (p('timeframe')) setTimeframe(p('timeframe') as Timeframe);
+    if (p('fixedCosts')) setFixedCosts(p('fixedCosts')!);
+    if (p('actualRevenue')) setActualRevenue(p('actualRevenue')!);
+
+    const restoredOffers: Offer[] = [];
+    for (let i = 0; i < 3; i++) {
+      const name = p(`o${i}n`) || '';
+      const price = parseFloat(p(`o${i}p`) || '0') || 0;
+      const cost = parseFloat(p(`o${i}c`) || '0') || 0;
+      restoredOffers.push({ name, price, cost });
+    }
+    if (restoredOffers.some(o => o.price > 0)) {
+      setOffers(restoredOffers);
+    }
+
+    setSearchParams({}, { replace: true });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const goal = parseFloat(revenueGoal) || 0;
   const fixed = parseFloat(fixedCosts) || 0;
@@ -441,7 +468,18 @@ export default function FocusOfferCalculator({ onOpenHistory }: { onOpenHistory?
                 </div>
                 <CalculatorActions
                   calculatorType="offers"
-                  inputs={{ goal: revenueGoal, timeframe, fixedCosts }}
+                  inputs={{
+                    goal: revenueGoal,
+                    timeframe,
+                    fixedCosts,
+                    actualRevenue,
+                    ...offers.reduce((acc, o, i) => ({
+                      ...acc,
+                      [`o${i}n`]: o.name,
+                      [`o${i}p`]: o.price || '',
+                      [`o${i}c`]: o.cost || '',
+                    }), {}),
+                  }}
                   results={{ offers: offerResults }}
                   hasResults={true}
                   summaryText={summaryText}
