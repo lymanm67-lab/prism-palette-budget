@@ -615,7 +615,7 @@ const Calculators = () => {
                   inputs={autoForm}
                   results={{ payment: autoResult.payment, totalInterest: autoResult.totalInterest, totalPaid: autoResult.totalPaid }}
                   hasResults={autoResult.payment > 0}
-                  summaryText={`Auto Loan Calculator\nPrice: ${autoForm.price} | Down: ${autoForm.down} | Rate: ${autoForm.rate}% | Term: ${autoForm.years}yr\nMonthly Payment: ${formatCurrency(autoResult.payment)}\nTotal Interest: ${formatCurrency(autoResult.totalInterest)}\nTotal Paid: ${formatCurrency(autoResult.totalPaid)}`}
+                  summaryText={`# 🚗 Auto Loan Calculator\n\n**Inputs**\n- **Vehicle Price:** ${formatCurrency(Number(autoForm.price))}\n- **Down Payment:** ${formatCurrency(Number(autoForm.down))}\n- **Interest Rate:** ${autoForm.rate}%\n- **Term:** ${autoForm.years} years\n\n**Results**\n- **Monthly Payment:** ${formatCurrency(autoResult.payment)}\n- **Total Interest:** ${formatCurrency(autoResult.totalInterest)}\n- **Total Paid:** ${formatCurrency(autoResult.totalPaid)}`}
                   onOpenHistory={() => setHistoryOpen(true)}
                   printData={{
                     inputs: [
