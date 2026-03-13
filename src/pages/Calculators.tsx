@@ -920,7 +920,7 @@ const Calculators = () => {
                   inputs={debtForm}
                   results={{ months: debtResult.months, totalInterest: debtResult.totalInterest, totalPaid: debtResult.totalPaid }}
                   hasResults={debtResult.months > 0}
-                  summaryText={`Debt Payoff Calculator\nBalance: $${debtForm.balance} | Rate: ${debtForm.rate}% | Payment: $${debtForm.payment}/mo\nPayoff: ${Math.floor(debtResult.months/12)}y ${debtResult.months%12}m\nTotal Interest: ${formatCurrency(debtResult.totalInterest)}\nTotal Paid: ${formatCurrency(debtResult.totalPaid)}`}
+                  summaryText={`# 💰 Debt Payoff Calculator\n\n**Inputs**\n- **Balance:** ${formatCurrency(Number(debtForm.balance))}\n- **Interest Rate:** ${debtForm.rate}%\n- **Monthly Payment:** ${formatCurrency(Number(debtForm.payment))}\n\n**Results**\n- **Payoff Time:** ${Math.floor(debtResult.months/12)}y ${debtResult.months%12}m\n- **Total Interest:** ${formatCurrency(debtResult.totalInterest)}\n- **Total Paid:** ${formatCurrency(debtResult.totalPaid)}`}
                   onOpenHistory={() => setHistoryOpen(true)}
                   printData={{
                     inputs: [
