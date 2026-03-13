@@ -11,7 +11,7 @@ import { useCurrency } from '@/hooks/use-currency';
 import { cn } from '@/lib/utils';
 import {
   Home, Car, CreditCard, TrendingUp, Calculator, DollarSign, Percent, CalendarDays, PiggyBank, Sparkles, BookOpen, MoreHorizontal,
-  Target, TrendingUp as TrendingUpIcon, Users, Calendar,
+  Target,
 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import PageOverview from '@/components/PageOverview';
@@ -20,6 +20,7 @@ import AnimatedNumber from '@/components/AnimatedNumber';
 import CalculatorChart from '@/components/CalculatorChart';
 import CalculatorActions from '@/components/CalculatorActions';
 import CalculatorHistory from '@/components/CalculatorHistory';
+import FocusOfferCalculator from '@/components/FocusOfferCalculator';
 
 // ─── Calculation helpers ───
 
@@ -288,50 +289,7 @@ const Calculators = () => {
     return { multiplier, monthlyTo1M, monthlyTo2M, age };
   }, [wealthAge]);
 
-  // Focus Offer Calculator state
-  const [revenueGoal, setRevenueGoal] = useState('');
-  const [offers, setOffers] = useState<{ name: string; price: number }[]>([
-    { name: '', price: 0 },
-    { name: '', price: 0 },
-    { name: '', price: 0 },
-  ]);
 
-  const goal = parseFloat(revenueGoal) || 0;
-
-  const updateOffer = (index: number, field: 'name' | 'price', value: string) => {
-    setOffers(prev => prev.map((o, i) =>
-      i === index ? { ...o, [field]: field === 'price' ? (parseFloat(value) || 0) : value } : o
-    ));
-  };
-
-  const activeOffers = useMemo(() => offers.filter(o => o.price > 0), [offers]);
-
-  const offerResults = useMemo(() => {
-    if (goal <= 0 || activeOffers.length === 0) return null;
-    return activeOffers.map(offer => {
-      const unitsNeeded = Math.ceil(goal / offer.price);
-      const weeklyUnits = Math.ceil(unitsNeeded / 4);
-      const dailyUnits = Math.ceil(unitsNeeded / 30);
-      return {
-        name: offer.name || 'Unnamed Offer',
-        price: offer.price,
-        unitsNeeded,
-        weeklyUnits,
-        dailyUnits,
-        totalRevenue: unitsNeeded * offer.price,
-      };
-    });
-  }, [goal, activeOffers]);
-
-  const blendedResult = useMemo(() => {
-    if (!offerResults || offerResults.length < 2) return null;
-    const splitGoal = goal / offerResults.length;
-    return offerResults.map(r => ({
-      ...r,
-      unitsNeeded: Math.ceil(splitGoal / r.price),
-      weeklyUnits: Math.ceil(Math.ceil(splitGoal / r.price) / 4),
-    }));
-  }, [offerResults, goal]);
 
   const InputField = ({ label, value, onChange, icon: Icon, suffix }: { label: string; value: string; onChange: (v: string) => void; icon?: any; suffix?: string }) => (
     <div className="space-y-1.5">
@@ -726,165 +684,7 @@ const Calculators = () => {
 
         {/* ─── FOCUS OFFER CALCULATOR ─── */}
         <TabsContent value="offers" className="mt-6">
-          <div className="space-y-6">
-            {/* Revenue Goal */}
-            <Card className="prism-card-shine border-border/50">
-              <CardHeader>
-                <CardTitle className="font-display flex items-center gap-2 text-lg">
-                  <Target className="h-5 w-5 text-prism-lime" /> Monthly Revenue Goal
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Revenue Goal</Label>
-                    <div className="relative">
-                      <DollarSign className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                      <Input
-                        type="text"
-                        inputMode="numeric"
-                        placeholder="10,000"
-                        value={revenueGoal}
-                        onChange={e => setRevenueGoal(e.target.value.replace(/[^0-9.]/g, ''))}
-                        className="h-9 text-sm pl-8"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Offers */}
-            <Card className="prism-card-shine border-border/50">
-              <CardHeader>
-                <CardTitle className="font-display flex items-center gap-2 text-lg">
-                  <TrendingUpIcon className="h-5 w-5 text-prism-lime" /> Your Offers
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid gap-4 md:grid-cols-3">
-                  {offers.map((offer, i) => (
-                    <div key={i} className="space-y-3 p-4 rounded-xl bg-muted/30">
-                      <div className="flex items-center gap-2">
-                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">{i + 1}</span>
-                        <span className="text-sm font-medium">Offer {i + 1}</span>
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs">Name</Label>
-                        <Input
-                          placeholder={i === 0 ? 'e.g. 1:1 Coaching' : i === 1 ? 'e.g. Group Program' : 'e.g. Digital Course'}
-                          value={offer.name}
-                          onChange={e => updateOffer(i, 'name', e.target.value)}
-                          className="h-8 text-sm"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs">Price ($)</Label>
-                        <Input
-                          type="number"
-                          placeholder="0"
-                          value={offer.price || ''}
-                          onChange={e => updateOffer(i, 'price', e.target.value)}
-                          className="h-8 text-sm"
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Results */}
-            {!offerResults ? (
-              <Card className="prism-card-shine border-border/50">
-                <CardContent className="py-12 text-center">
-                  <DollarSign className="h-12 w-12 mx-auto text-muted-foreground/20 mb-3" />
-                  <p className="text-sm text-muted-foreground">Enter your monthly revenue goal and offer prices to see your sales breakdown.</p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-6">
-                {/* Individual offer breakdowns */}
-                <Card className="prism-card-shine border-border/50">
-                  <CardHeader>
-                    <CardTitle className="font-display flex items-center gap-2 text-lg">
-                      <Users className="h-5 w-5 text-prism-lime" /> Sales Breakdown
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <p className="text-xs text-muted-foreground">If you only sold one offer, here's what it takes to hit ${goal.toLocaleString()}/mo:</p>
-                    <div className="grid gap-4 md:grid-cols-3">
-                      {offerResults.map((r, i) => (
-                        <div key={i} className="p-4 rounded-xl bg-muted/30 space-y-3">
-                          <div>
-                            <p className="text-xs text-muted-foreground uppercase tracking-wide">Offer</p>
-                            <p className="font-semibold text-foreground">{r.name}</p>
-                            <p className="text-sm text-muted-foreground">${r.price.toLocaleString()} each</p>
-                          </div>
-                          <div className="grid grid-cols-3 gap-2 text-center">
-                            <div className="rounded-lg bg-primary/10 p-2">
-                              <p className="text-xl font-bold text-primary">{r.unitsNeeded}</p>
-                              <p className="text-[10px] text-muted-foreground uppercase">/ month</p>
-                            </div>
-                            <div className="rounded-lg bg-accent/50 p-2">
-                              <p className="text-xl font-bold text-foreground">{r.weeklyUnits}</p>
-                              <p className="text-[10px] text-muted-foreground uppercase">/ week</p>
-                            </div>
-                            <div className="rounded-lg bg-muted p-2">
-                              <p className="text-xl font-bold text-foreground">{r.dailyUnits}</p>
-                              <p className="text-[10px] text-muted-foreground uppercase">/ day</p>
-                            </div>
-                          </div>
-                          <div className={cn(
-                            'text-xs rounded-md p-2 text-center font-medium',
-                            r.totalRevenue >= goal ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-muted text-muted-foreground'
-                          )}>
-                            = ${r.totalRevenue.toLocaleString()} revenue
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Blended scenario */}
-                {blendedResult && (
-                  <Card className="prism-card-shine border-border/50">
-                    <CardHeader>
-                      <CardTitle className="font-display flex items-center gap-2 text-lg">
-                        <Calendar className="h-5 w-5 text-prism-lime" /> Blended Scenario
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <p className="text-xs text-muted-foreground">Split your ${goal.toLocaleString()} goal evenly across all {blendedResult.length} offers:</p>
-                      <div className="grid gap-4 md:grid-cols-3">
-                        {blendedResult.map((r, i) => (
-                          <div key={i} className="flex items-center gap-3 rounded-lg border border-border p-3">
-                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">{i + 1}</span>
-                            <div className="min-w-0 flex-1">
-                              <p className="text-sm font-medium truncate">{r.name}</p>
-                              <p className="text-xs text-muted-foreground">
-                                {r.unitsNeeded} sales/mo · {r.weeklyUnits}/wk
-                              </p>
-                            </div>
-                            <p className="text-sm font-semibold text-primary whitespace-nowrap">
-                              ${(r.unitsNeeded * r.price).toLocaleString()}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
-            )}
-          </div>
-          <CalculatorInsight
-            calculatorType="offers"
-            inputs={{ goal: revenueGoal }}
-            results={{ offers: offerResults }}
-            hasResults={!!offerResults && offerResults.length > 0}
-          />
+          <FocusOfferCalculator onOpenHistory={() => setHistoryOpen(true)} />
         </TabsContent>
       </Tabs>
       <CalculatorHistory open={historyOpen} onOpenChange={setHistoryOpen} onRestore={handleRestore} />
