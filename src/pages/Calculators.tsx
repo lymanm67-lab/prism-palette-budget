@@ -526,11 +526,15 @@ const Calculators = () => {
                     <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-prism-rose inline-block" /> Interest</span>
                   </div>
                 </div>
+                <CalculatorActions
+                  calculatorType="auto"
+                  inputs={autoForm}
+                  results={{ payment: autoResult.payment, totalInterest: autoResult.totalInterest, totalPaid: autoResult.totalPaid }}
+                  hasResults={autoResult.payment > 0}
+                  summaryText={`Auto Loan Calculator\nPrice: ${autoForm.price} | Down: ${autoForm.down} | Rate: ${autoForm.rate}% | Term: ${autoForm.years}yr\nMonthly Payment: ${formatCurrency(autoResult.payment)}\nTotal Interest: ${formatCurrency(autoResult.totalInterest)}\nTotal Paid: ${formatCurrency(autoResult.totalPaid)}`}
+                  onOpenHistory={() => setHistoryOpen(true)}
+                />
               </CardContent>
-            </Card>
-          </div>
-          <CalculatorInsight
-            calculatorType="auto"
             inputs={autoForm}
             results={{ payment: autoResult.payment, totalInterest: autoResult.totalInterest, totalPaid: autoResult.totalPaid }}
             hasResults={autoResult.payment > 0}
