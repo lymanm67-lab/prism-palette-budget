@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import PageOverview from '@/components/PageOverview';
+import CalculatorInsight from '@/components/CalculatorInsight';
 
 // ─── Calculation helpers ───
 
@@ -391,9 +392,13 @@ const Calculators = () => {
               </CardContent>
             </Card>
           </div>
+          <CalculatorInsight
+            calculatorType="mortgage"
+            inputs={mortgageForm}
+            results={{ payment: mortgageResult.payment, totalInterest: mortgageResult.totalInterest, totalPaid: mortgageResult.totalPaid }}
+            hasResults={mortgageResult.payment > 0}
+          />
         </TabsContent>
-
-        {/* ─── AUTO ─── */}
         <TabsContent value="auto" className="mt-6">
           <div className="grid gap-6 lg:grid-cols-2">
             <Card className="prism-card-shine border-border/50">
@@ -433,9 +438,13 @@ const Calculators = () => {
               </CardContent>
             </Card>
           </div>
+          <CalculatorInsight
+            calculatorType="auto"
+            inputs={autoForm}
+            results={{ payment: autoResult.payment, totalInterest: autoResult.totalInterest, totalPaid: autoResult.totalPaid }}
+            hasResults={autoResult.payment > 0}
+          />
         </TabsContent>
-
-        {/* ─── CREDIT CARD ─── */}
         <TabsContent value="credit" className="mt-6">
           <div className="grid gap-6 lg:grid-cols-2">
             <Card className="prism-card-shine border-border/50">
@@ -477,9 +486,13 @@ const Calculators = () => {
               </CardContent>
             </Card>
           </div>
+          <CalculatorInsight
+            calculatorType="credit"
+            inputs={ccForm}
+            results={{ months: ccResult.months, totalInterest: ccResult.totalInterest, totalPaid: ccResult.totalPaid }}
+            hasResults={ccResult.months > 0}
+          />
         </TabsContent>
-
-        {/* ─── INVESTMENT ─── */}
         <TabsContent value="investment" className="mt-6">
           <div className="grid gap-6 lg:grid-cols-2">
             <Card className="prism-card-shine border-border/50">
@@ -532,9 +545,13 @@ const Calculators = () => {
               </CardContent>
             </Card>
           </div>
+          <CalculatorInsight
+            calculatorType="investment"
+            inputs={investForm}
+            results={{ finalBalance: investResult.finalBalance, totalContributions: investResult.totalContributions, totalInterest: investResult.totalInterest }}
+            hasResults={investResult.finalBalance > 0}
+          />
         </TabsContent>
-
-        {/* ─── GENERAL DEBT ─── */}
         <TabsContent value="debt" className="mt-6">
           <div className="grid gap-6 lg:grid-cols-2">
             <Card className="prism-card-shine border-border/50">
@@ -572,6 +589,12 @@ const Calculators = () => {
               </CardContent>
             </Card>
           </div>
+          <CalculatorInsight
+            calculatorType="debt"
+            inputs={debtForm}
+            results={{ months: debtResult.months, totalInterest: debtResult.totalInterest, totalPaid: debtResult.totalPaid }}
+            hasResults={debtResult.months > 0}
+          />
         </TabsContent>
 
         {/* ─── FOCUS OFFER CALCULATOR ─── */}
@@ -729,6 +752,12 @@ const Calculators = () => {
               </div>
             )}
           </div>
+          <CalculatorInsight
+            calculatorType="offers"
+            inputs={{ goal: revenueGoal }}
+            results={{ offers: offerResults }}
+            hasResults={!!offerResults && offerResults.length > 0}
+          />
         </TabsContent>
       </Tabs>
     </motion.div>

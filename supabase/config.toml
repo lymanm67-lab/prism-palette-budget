@@ -59,3 +59,6 @@ verify_jwt = false
 
 [functions.parse-credit-report]
 verify_jwt = false
+
+[functions.calculator-insights]
+verify_jwt = false
