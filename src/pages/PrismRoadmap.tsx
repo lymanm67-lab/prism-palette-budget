@@ -286,7 +286,7 @@ const PrismRoadmap = () => {
             description="A 9-step financial freedom plan personalized to your accounts and data. Track progress and add notes."
             icon={Compass}
             iconColor="text-prism-teal"
-            ttsScript="The Prism Financial Roadmap is your step-by-step guide to financial freedom. It consists of 9 proven steps: Set your safety net by covering insurance deductibles. Eliminate high-interest debt like credit cards. Build a full emergency fund of 3 to 6 months expenses. Enter hyper-accumulation by maximizing retirement contributions. Pay off low-interest debt like student loans and car loans. Build a bridge account for early retirement access. Invest in real estate or alternative assets. Create legacy wealth. And finally achieve financial independence. Each step is personalized based on your actual account data."
+            ttsScript="The Prism Financial™ Roadmap is your step-by-step guide to financial freedom. It consists of 9 proven steps: Set your safety net by covering insurance deductibles. Eliminate high-interest debt like credit cards. Build a full emergency fund of 3 to 6 months expenses. Enter hyper-accumulation by maximizing retirement contributions. Pay off low-interest debt like student loans and car loans. Build a bridge account for early retirement access. Invest in real estate or alternative assets. Create legacy wealth. And finally achieve financial independence. Each step is personalized based on your actual account data."
             features={[
               '9 proven financial steps',
               'Auto-detects progress from your accounts',
