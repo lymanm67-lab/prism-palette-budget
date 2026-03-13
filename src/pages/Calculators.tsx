@@ -18,6 +18,8 @@ import PageOverview from '@/components/PageOverview';
 import CalculatorInsight from '@/components/CalculatorInsight';
 import AnimatedNumber from '@/components/AnimatedNumber';
 import CalculatorChart from '@/components/CalculatorChart';
+import CalculatorActions from '@/components/CalculatorActions';
+import CalculatorHistory from '@/components/CalculatorHistory';
 
 // ─── Calculation helpers ───
 
