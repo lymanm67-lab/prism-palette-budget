@@ -39,41 +39,38 @@ export default function FocusOfferCalculator({ onOpenHistory }: { onOpenHistory?
   const { formatCurrency } = useCurrency();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Core state
-  const [timeframe, setTimeframe] = useState<Timeframe>('monthly');
-  const [revenueGoal, setRevenueGoal] = useState('');
-  const [fixedCosts, setFixedCosts] = useState('');
-  const [actualRevenue, setActualRevenue] = useState('');
-  const [offers, setOffers] = useState<Offer[]>([
-    { name: '', price: 0, cost: 0 },
-    { name: '', price: 0, cost: 0 },
-    { name: '', price: 0, cost: 0 },
-  ]);
-
-  // Restore state from URL query params (shared links)
-  useEffect(() => {
-    const calc = searchParams.get('calc');
-    if (calc !== 'offers') return;
-
-    const p = (key: string) => searchParams.get(key);
-    if (p('goal')) setRevenueGoal(p('goal')!);
-    if (p('timeframe')) setTimeframe(p('timeframe') as Timeframe);
-    if (p('fixedCosts')) setFixedCosts(p('fixedCosts')!);
-    if (p('actualRevenue')) setActualRevenue(p('actualRevenue')!);
-
-    const restoredOffers: Offer[] = [];
-    for (let i = 0; i < 3; i++) {
-      const name = p(`o${i}n`) || '';
-      const price = parseFloat(p(`o${i}p`) || '0') || 0;
-      const cost = parseFloat(p(`o${i}c`) || '0') || 0;
-      restoredOffers.push({ name, price, cost });
-    }
-    if (restoredOffers.some(o => o.price > 0)) {
-      setOffers(restoredOffers);
-    }
-
-    setSearchParams({}, { replace: true });
+  // Read shared link params once at mount time (before parent clears them)
+  const initialParams = useMemo(() => {
+    const url = new URL(window.location.href);
+    const sp = url.searchParams;
+    if (sp.get('calc') !== 'offers') return null;
+    return {
+      goal: sp.get('goal') || '',
+      timeframe: (sp.get('timeframe') as Timeframe) || 'monthly',
+      fixedCosts: sp.get('fixedCosts') || '',
+      actualRevenue: sp.get('actualRevenue') || '',
+      offers: Array.from({ length: 3 }, (_, i) => ({
+        name: sp.get(`o${i}n`) || '',
+        price: parseFloat(sp.get(`o${i}p`) || '0') || 0,
+        cost: parseFloat(sp.get(`o${i}c`) || '0') || 0,
+      })),
+    };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Core state
+  const [timeframe, setTimeframe] = useState<Timeframe>(initialParams?.timeframe || 'monthly');
+  const [revenueGoal, setRevenueGoal] = useState(initialParams?.goal || '');
+  const [fixedCosts, setFixedCosts] = useState(initialParams?.fixedCosts || '');
+  const [actualRevenue, setActualRevenue] = useState(initialParams?.actualRevenue || '');
+  const [offers, setOffers] = useState<Offer[]>(
+    initialParams?.offers && initialParams.offers.some(o => o.price > 0)
+      ? initialParams.offers
+      : [
+          { name: '', price: 0, cost: 0 },
+          { name: '', price: 0, cost: 0 },
+          { name: '', price: 0, cost: 0 },
+        ]
+  );
 
   const goal = parseFloat(revenueGoal) || 0;
   const fixed = parseFloat(fixedCosts) || 0;
