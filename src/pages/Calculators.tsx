@@ -515,7 +515,7 @@ const Calculators = () => {
                   inputs={mortgageForm}
                   results={{ payment: mortgageResult.payment, totalInterest: mortgageResult.totalInterest, totalPaid: mortgageResult.totalPaid }}
                   hasResults={mortgageResult.payment > 0}
-                  summaryText={`Mortgage Calculator\nPrice: ${mortgageForm.price} | Down: ${mortgageForm.down} | Rate: ${mortgageForm.rate}% | Term: ${mortgageForm.years}yr\nMonthly Payment: ${formatCurrency(mortgageResult.payment)}\nTotal Interest: ${formatCurrency(mortgageResult.totalInterest)}\nTotal Paid: ${formatCurrency(mortgageResult.totalPaid)}`}
+                  summaryText={`# 🏠 Mortgage Calculator\n\n**Inputs**\n- **Home Price:** ${formatCurrency(Number(mortgageForm.price))}\n- **Down Payment:** ${formatCurrency(Number(mortgageForm.down))}\n- **Interest Rate:** ${mortgageForm.rate}%\n- **Term:** ${mortgageForm.years} years\n\n**Results**\n- **Monthly Payment:** ${formatCurrency(mortgageResult.payment)}\n- **Total Interest:** ${formatCurrency(mortgageResult.totalInterest)}\n- **Total Paid:** ${formatCurrency(mortgageResult.totalPaid)}`}
                   onOpenHistory={() => setHistoryOpen(true)}
                   printData={{
                     inputs: [
