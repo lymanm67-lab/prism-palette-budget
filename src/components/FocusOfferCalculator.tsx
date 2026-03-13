@@ -17,6 +17,7 @@ import AnimatedNumber from '@/components/AnimatedNumber';
 import CalculatorInsight from '@/components/CalculatorInsight';
 import CalculatorActions from '@/components/CalculatorActions';
 import CalculatorGuide from '@/components/CalculatorGuide';
+import CalculatorScenariosAndPitfalls from '@/components/CalculatorScenariosAndPitfalls';
 
 type Timeframe = 'weekly' | 'monthly' | 'quarterly' | 'yearly';
 
@@ -162,6 +163,20 @@ export default function FocusOfferCalculator({ onOpenHistory }: { onOpenHistory?
           'Name up to 3 offers with price and cost per unit',
           'View Sales Breakdown, Scenarios, Break-Even, and Blended tabs',
           'The Revenue Tracker shows progress with a visual gauge',
+        ]}
+      />
+      <CalculatorScenariosAndPitfalls
+        scenarios={[
+          { title: 'Premium 1:1 Service', description: 'A $3,000 coaching package means only 4 sales to hit $10k/mo. Fewer clients, higher margins, more personal attention.' },
+          { title: 'Low-Ticket Funnel', description: 'A $47 digital product needs 213 sales for $10k. Works best with large email lists or paid traffic at scale.' },
+          { title: 'Tiered Offer Stack', description: 'Combine a $97 course + $497 group program + $2k 1:1 coaching. Blended pricing captures all budget levels.' },
+          { title: 'Recurring Revenue', description: 'A $97/mo membership with 100 members generates $9,700/mo predictably. Focus on retention over acquisition.' },
+        ]}
+        pitfalls={[
+          { title: 'Underpricing Your Offer', description: 'Charging too little means you need unrealistic sales volume. Price based on value delivered, not competitor rates.' },
+          { title: 'Ignoring Cost of Delivery', description: 'A $1,000 offer with $600 in costs gives only $400 profit. Always calculate true margins before setting goals.' },
+          { title: 'Too Many Offers', description: 'Spreading focus across 5+ offers dilutes marketing efforts. One strong offer outperforms three mediocre ones.' },
+          { title: 'No Tracking Habit', description: 'Setting a goal without tracking actual revenue weekly leads to surprises. Update the tracker regularly.' },
         ]}
       />
       {/* ─── GOAL & TIMEFRAME ─── */}

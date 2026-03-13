@@ -22,6 +22,7 @@ import CalculatorActions from '@/components/CalculatorActions';
 import CalculatorHistory from '@/components/CalculatorHistory';
 import FocusOfferCalculator from '@/components/FocusOfferCalculator';
 import CalculatorGuide from '@/components/CalculatorGuide';
+import CalculatorScenariosAndPitfalls from '@/components/CalculatorScenariosAndPitfalls';
 
 // ─── Calculation helpers ───
 
@@ -399,6 +400,20 @@ const Calculators = () => {
               'Use Save to keep results, Copy to clipboard, or Export as a text file',
             ]}
           />
+          <CalculatorScenariosAndPitfalls
+            scenarios={[
+              { title: 'First-Time Buyer', description: 'Put 20% down to avoid PMI. On a $350k home, that\'s $70k down — saving $150–250/mo in private mortgage insurance.' },
+              { title: 'Refinancing', description: 'Dropping from 7% to 5.5% on a $280k balance saves ~$300/mo. Break-even on closing costs in about 18 months.' },
+              { title: 'Extra Payments', description: 'Adding just $200/mo to a 30-year mortgage can cut 5–7 years off the loan and save tens of thousands in interest.' },
+              { title: '15 vs 30 Year', description: 'A 15-year term has higher payments but saves 50–60% in total interest. Compare both using this calculator.' },
+            ]}
+            pitfalls={[
+              { title: 'Ignoring Taxes & Insurance', description: 'Your actual monthly housing cost includes taxes, insurance, and possibly HOA — often $500–1,000+ beyond the mortgage.' },
+              { title: 'Maxing Out Your Budget', description: 'Just because you qualify for a $400k loan doesn\'t mean you should. Keep total housing under 28% of gross income.' },
+              { title: 'Skipping Rate Comparison', description: 'Even 0.25% lower rate on a $300k loan saves $15,000+ over 30 years. Always shop multiple lenders.' },
+              { title: 'Forgetting Closing Costs', description: 'Budget 2–5% of the home price for closing costs. On a $350k home, that\'s $7k–$17.5k due at signing.' },
+            ]}
+          />
           <div className="grid gap-6 lg:grid-cols-2 mt-4">
             <Card className="prism-card-shine border-border/50">
               <CardHeader>
@@ -472,6 +487,20 @@ const Calculators = () => {
               'The chart tracks your remaining balance over the loan term',
             ]}
           />
+          <CalculatorScenariosAndPitfalls
+            scenarios={[
+              { title: 'New vs Used', description: 'A 2-year-old certified pre-owned car can save 20–30% vs new while still having warranty coverage.' },
+              { title: 'Short-Term Loan', description: 'A 3-year loan at 5.9% on $30k costs $2,800 in interest vs $4,700 on a 5-year term.' },
+              { title: 'Large Trade-In', description: 'A $10k trade-in on a $35k car drops your loan to $25k — reducing payments by $170+/mo on a 5-year loan.' },
+              { title: '0% Dealer Financing', description: 'Compare 0% APR vs a cash discount. Sometimes the rebate beats the free financing.' },
+            ]}
+            pitfalls={[
+              { title: 'Stretching to 7+ Years', description: 'Longer terms mean lower payments but much more interest — and you may owe more than the car is worth.' },
+              { title: 'Ignoring Total Cost', description: 'Focus on total cost, not monthly payment. Dealers love stretching terms to make expensive cars seem affordable.' },
+              { title: 'Skipping Pre-Approval', description: 'Get pre-approved from your bank before the dealership. Dealer financing often has higher rates.' },
+              { title: 'Negative Equity Roll-In', description: 'Rolling an old loan balance into a new car loan starts you underwater immediately.' },
+            ]}
+          />
           <div className="grid gap-6 lg:grid-cols-2 mt-4">
             <Card className="prism-card-shine border-border/50">
               <CardHeader>
@@ -542,6 +571,20 @@ const Calculators = () => {
               'Results show months to payoff, total interest, and total cost',
               'Warning appears if your payment doesn\'t cover monthly interest',
               'A tip shows savings from increasing your payment by $50/mo',
+            ]}
+          />
+          <CalculatorScenariosAndPitfalls
+            scenarios={[
+              { title: 'Balance Transfer', description: 'Moving $8k from 23% to a 0% intro card saves ~$150/mo in interest. Pay it off before the promo ends.' },
+              { title: 'Aggressive Payoff', description: 'Doubling your payment from $250 to $500/mo on $8k cuts payoff time in half and saves thousands.' },
+              { title: 'Minimum Payment Trap', description: 'Paying only $160/mo on $8k at 23% takes 9+ years and costs $9,000+ in interest alone.' },
+              { title: 'Debt Snowball', description: 'Pay off the smallest card first for a quick win, then roll that payment into the next card.' },
+            ]}
+            pitfalls={[
+              { title: 'Paying Only the Minimum', description: 'Minimum payments maximize interest for the lender. Even $50 extra/mo makes a massive difference.' },
+              { title: 'Continuing to Charge', description: 'Adding new charges while paying off a balance erases your progress. Freeze the card during payoff.' },
+              { title: 'Ignoring the APR', description: 'A "low" payment on a 25%+ APR card means most of your payment goes to interest, not principal.' },
+              { title: 'Missing a Payment', description: 'One missed payment can trigger a penalty APR of 29%+ and damage your credit score significantly.' },
             ]}
           />
           <div className="grid gap-6 lg:grid-cols-2 mt-4">
@@ -620,6 +663,20 @@ const Calculators = () => {
               'The growth chart shows your portfolio value over time',
             ]}
           />
+          <CalculatorScenariosAndPitfalls
+            scenarios={[
+              { title: 'Starting at 25', description: '$500/mo at 8% for 40 years grows to $1.74M. Starting at 35 yields only $745k — less than half.' },
+              { title: 'Employer Match', description: 'If your employer matches 50% up to 6%, contribute at least 6%. That\'s an instant 50% return on your money.' },
+              { title: 'Lump Sum vs DCA', description: 'Historically, investing a lump sum beats dollar-cost averaging 2/3 of the time, but DCA reduces emotional risk.' },
+              { title: 'Roth vs Traditional', description: 'If you expect higher taxes in retirement, Roth contributions grow tax-free. Compare the growth difference here.' },
+            ]}
+            pitfalls={[
+              { title: 'Waiting to Start', description: 'Every year you delay costs exponentially. Starting 5 years late on $500/mo at 8% costs over $250k in lost growth.' },
+              { title: 'Unrealistic Returns', description: 'Historical S&P 500 averages ~10% before inflation, ~7% after. Don\'t plan on 12%+ returns.' },
+              { title: 'Ignoring Fees', description: 'A 1% annual fee on $500k costs $5,000/year. Over 30 years, fees can eat 20%+ of your returns.' },
+              { title: 'Panic Selling', description: 'Missing just the 10 best market days over 20 years can cut your returns in half. Stay invested.' },
+            ]}
+          />
           <div className="grid gap-6 lg:grid-cols-2 mt-4">
             <Card className="prism-card-shine border-border/50">
               <CardHeader>
@@ -693,6 +750,20 @@ const Calculators = () => {
               'Works for any loan type: student, personal, medical, etc.',
             ]}
           />
+          <CalculatorScenariosAndPitfalls
+            scenarios={[
+              { title: 'Student Loan Payoff', description: '$25k at 5% with $400/mo takes 5.8 years. Bumping to $600/mo saves 2+ years and $1,500 in interest.' },
+              { title: 'Medical Debt', description: 'Many hospitals offer 0% payment plans. A $10k bill at 0% with $300/mo takes just 34 months — no interest.' },
+              { title: 'Consolidation', description: 'Combining multiple debts into one lower-rate loan simplifies payments and can reduce total interest by 30–50%.' },
+              { title: 'Windfall Application', description: 'Applying a $5k tax refund to a $25k loan at 7% saves $4,200+ in interest over the loan\'s life.' },
+            ]}
+            pitfalls={[
+              { title: 'Paying Only Minimums', description: 'On a $25k loan at 7%, minimums of $300 take 11+ years. Increasing to $500 cuts it to 5 years.' },
+              { title: 'Ignoring High-Rate Debts', description: 'Always prioritize the highest-rate debt first (avalanche method) to minimize total interest paid.' },
+              { title: 'Refinancing Without Math', description: 'A lower rate with a longer term can actually cost more in total interest. Always compare total cost.' },
+              { title: 'No Emergency Fund', description: 'Aggressively paying debt without savings leads to more debt when emergencies hit. Keep $1k–$2k liquid.' },
+            ]}
+          />
           <div className="grid gap-6 lg:grid-cols-2 mt-4">
             <Card className="prism-card-shine border-border/50">
               <CardHeader>
@@ -763,6 +834,20 @@ const Calculators = () => {
               'See how much each $1 invested today becomes by age 65',
               'View the monthly investment needed to reach $1M and $2M',
               'The chart shows the multiplier declining as you age — start early!',
+            ]}
+          />
+          <CalculatorScenariosAndPitfalls
+            scenarios={[
+              { title: 'Age 25 Investor', description: 'At 25, every $1 becomes ~$44 by 65. Investing just $200/mo from 25 yields over $500k by retirement.' },
+              { title: 'Late Starter at 40', description: 'Starting at 40 means a 7x multiplier instead of 44x. You\'ll need $2,800+/mo to reach $1M — but it\'s still possible.' },
+              { title: 'Power of 10 Years', description: 'Starting at 25 vs 35 with $500/mo means $1M+ more at retirement. A decade of compound growth is irreplaceable.' },
+              { title: 'Couple Investing Together', description: 'Two people investing $500/mo each starting at 30 can accumulate $2.5M+ by 65 through combined growth.' },
+            ]}
+            pitfalls={[
+              { title: 'Thinking It\'s Too Late', description: 'Even starting at 50, a 15-year runway with disciplined saving can build significant wealth. Every year counts.' },
+              { title: 'Cashing Out Early', description: 'Withdrawing retirement funds early triggers penalties and taxes, plus you lose all future compounding.' },
+              { title: 'Lifestyle Inflation', description: 'As income grows, increase investments — not just spending. Saving your raises is the fastest path to wealth.' },
+              { title: 'Ignoring Inflation', description: 'A million dollars in 30 years buys less than today. Aim for $2M+ to maintain purchasing power.' },
             ]}
           />
           <div className="grid gap-6 lg:grid-cols-2 mt-4">
