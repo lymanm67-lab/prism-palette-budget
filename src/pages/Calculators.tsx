@@ -589,10 +589,14 @@ const Calculators = () => {
               </CardContent>
             </Card>
           </div>
+          <CalculatorInsight
+            calculatorType="debt"
+            inputs={debtForm}
+            results={{ months: debtResult.months, totalInterest: debtResult.totalInterest, totalPaid: debtResult.totalPaid }}
+            hasResults={debtResult.months > 0}
+          />
         </TabsContent>
 
-        {/* ─── FOCUS OFFER CALCULATOR ─── */}
-        <TabsContent value="offers" className="mt-6">
           <div className="space-y-6">
             {/* Revenue Goal */}
             <Card className="prism-card-shine border-border/50">
