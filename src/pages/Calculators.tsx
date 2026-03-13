@@ -540,10 +540,16 @@ const Calculators = () => {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
                   <ResultCard label="Months to Payoff" value={ccResult.months > 0 ? `${ccResult.months} months` : '—'} accent sub={ccResult.months > 0 ? `${Math.floor(ccResult.months / 12)}y ${ccResult.months % 12}m` : undefined} />
-                  <ResultCard label="Total Interest" value={formatCurrency(ccResult.totalInterest)} />
-                  <ResultCard label="Total Paid" value={formatCurrency(ccResult.totalPaid)} />
+                  <ResultCard label="Total Interest" value={formatCurrency(ccResult.totalInterest)} numericValue={ccResult.totalInterest} formatFn={formatCurrency} />
+                  <ResultCard label="Total Paid" value={formatCurrency(ccResult.totalPaid)} numericValue={ccResult.totalPaid} formatFn={formatCurrency} />
                   <ResultCard label="Interest Ratio" value={`${ccResult.totalPaid > 0 ? Math.round((ccResult.totalInterest / ccResult.totalPaid) * 100) : 0}%`} sub="of total paid" />
                 </div>
+                {ccPayoffSchedule.length > 0 && (
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-2 font-medium">Payoff Timeline</p>
+                    <CalculatorChart type="payoff" data={ccPayoffSchedule} />
+                  </div>
+                )}
                 {ccResult.months > 0 && (
                   <div className="p-3 rounded-xl bg-muted/50 text-xs space-y-1">
                     <p className="font-medium">💡 Tip: Increasing your payment by {formatCurrency(50)}/mo could save you:</p>
