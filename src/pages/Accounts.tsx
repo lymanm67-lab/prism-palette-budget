@@ -569,10 +569,11 @@ const Accounts = () => {
                     <Button
                       size="sm"
                       className="h-8 gap-1.5 bg-amber-500 hover:bg-amber-600 text-white border-0"
-                      disabled={!!updateLinkToken}
+                      disabled={!!updateLinkToken || stalePlaidItems.length === 0}
                       onClick={() => {
-                        // Reset attempted set so auto-relink runs again
-                        setAutoRelinkAttempted(new Set());
+                        const firstStalePlaid = stalePlaidItems[0];
+                        if (!firstStalePlaid) return;
+                        requestPlaidRelink(firstStalePlaid.plaid_item_id, firstStalePlaid.institution_name, false);
                       }}
                     >
                       <RotateCcw className={`h-3.5 w-3.5 ${updateLinkToken ? 'animate-spin' : ''}`} />
