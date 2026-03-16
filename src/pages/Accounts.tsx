@@ -127,7 +127,8 @@ const Accounts = () => {
       }
     };
     launchRelink();
-  }, [stalePlaidItems, updateLinkToken, household]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stalePlaidItems.length, updateLinkToken, household?.id]);
 
   // Plaid Link in update mode
   const onUpdateSuccess = useCallback(async () => {
