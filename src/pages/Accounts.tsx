@@ -145,13 +145,15 @@ const Accounts = () => {
     }
   }, [household]);
 
-  // Auto-launch re-link for the first stale Plaid item
+  // Auto-launch re-link for only one stale Plaid item per page load
   useEffect(() => {
-    if (stalePlaidItems.length === 0 || updateLinkToken || !household) return;
+    if (autoRelinkTriggered || stalePlaidItems.length === 0 || updateLinkToken || !household) return;
     const staleItem = stalePlaidItems[0];
+    if (!staleItem) return;
+
+    setAutoRelinkTriggered(true);
     requestPlaidRelink(staleItem.plaid_item_id, staleItem.institution_name, true);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stalePlaidItems.length, updateLinkToken, household?.id]);
+  }, [autoRelinkTriggered, stalePlaidItems, updateLinkToken, household, requestPlaidRelink]);
 
   // Plaid Link in update mode
   const onUpdateSuccess = useCallback(async () => {
