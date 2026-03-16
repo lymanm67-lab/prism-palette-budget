@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -65,6 +65,25 @@ const Accounts = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [refreshingAccountId, setRefreshingAccountId] = useState<string | null>(null);
   const snapTradeRef = useRef<SnapTradeConnectHandle>(null);
+
+  // Tick every 30s so "X minutes ago" labels update live
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setTick(t => t + 1), 30_000);
+    return () => clearInterval(id);
+  }, []);
+
+  const timeAgo = useCallback((dateStr: string | null) => {
+    if (!dateStr) return null;
+    const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+    if (seconds < 60) return 'just now';
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    return `${days}d ago`;
+  }, []);
 
   const handleRefreshSingleAccount = async (accountId: string, providerType: string | null, institution: string | null) => {
     if (!household) return;
@@ -494,11 +513,13 @@ const Accounts = () => {
                                     <TooltipTrigger asChild>
                                       <span className={`text-[11px] flex items-center gap-0.5 ${stale ? 'text-amber-500' : 'text-muted-foreground'}`}>
                                         {stale ? <AlertTriangle className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
-                                        {formatDate(acc.last_synced_at)}
+                                        {timeAgo(acc.last_synced_at)}
                                       </span>
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                      {stale ? 'Data may be stale — try refreshing' : `Last synced ${formatDate(acc.last_synced_at)}`}
+                                      {stale
+                                        ? `Stale — last synced ${formatDate(acc.last_synced_at)}`
+                                        : `Synced ${formatDate(acc.last_synced_at)}`}
                                     </TooltipContent>
                                   </Tooltip>
                                 ) : (
