@@ -71,6 +71,7 @@ const Accounts = () => {
   const [relinkingInstitution, setRelinkingInstitution] = useState<string | null>(null);
   const [relinkingPlaidItemId, setRelinkingPlaidItemId] = useState<string | null>(null);
   const [autoRelinkAttempted, setAutoRelinkAttempted] = useState<Set<string>>(new Set());
+  const [autoRelinkTriggered, setAutoRelinkTriggered] = useState(false);
 
   // Tick every 30s so "X minutes ago" labels update live
   const [, setTick] = useState(0);
@@ -144,13 +145,15 @@ const Accounts = () => {
     }
   }, [household]);
 
-  // Auto-launch re-link for the first stale Plaid item
+  // Auto-launch re-link for only one stale Plaid item per page load
   useEffect(() => {
-    if (stalePlaidItems.length === 0 || updateLinkToken || !household) return;
+    if (autoRelinkTriggered || stalePlaidItems.length === 0 || updateLinkToken || !household) return;
     const staleItem = stalePlaidItems[0];
+    if (!staleItem) return;
+
+    setAutoRelinkTriggered(true);
     requestPlaidRelink(staleItem.plaid_item_id, staleItem.institution_name, true);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stalePlaidItems.length, updateLinkToken, household?.id]);
+  }, [autoRelinkTriggered, stalePlaidItems, updateLinkToken, household, requestPlaidRelink]);
 
   // Plaid Link in update mode
   const onUpdateSuccess = useCallback(async () => {
@@ -566,10 +569,11 @@ const Accounts = () => {
                     <Button
                       size="sm"
                       className="h-8 gap-1.5 bg-amber-500 hover:bg-amber-600 text-white border-0"
-                      disabled={!!updateLinkToken}
+                      disabled={!!updateLinkToken || stalePlaidItems.length === 0}
                       onClick={() => {
-                        // Reset attempted set so auto-relink runs again
-                        setAutoRelinkAttempted(new Set());
+                        const firstStalePlaid = stalePlaidItems[0];
+                        if (!firstStalePlaid) return;
+                        requestPlaidRelink(firstStalePlaid.plaid_item_id, firstStalePlaid.institution_name, false);
                       }}
                     >
                       <RotateCcw className={`h-3.5 w-3.5 ${updateLinkToken ? 'animate-spin' : ''}`} />
