@@ -158,6 +158,7 @@ const Accounts = () => {
 
   // Plaid Link in update mode
   const onUpdateSuccess = useCallback(async () => {
+    plaidLinkOpenedRef.current = false;
     if (relinkingPlaidItemId) {
       setAutoRelinkAttempted(prev => new Set([...prev, relinkingPlaidItemId]));
     }
@@ -172,6 +173,7 @@ const Accounts = () => {
     token: updateLinkToken,
     onSuccess: onUpdateSuccess,
     onExit: () => {
+      plaidLinkOpenedRef.current = false;
       if (relinkingPlaidItemId) {
         setAutoRelinkAttempted(prev => new Set([...prev, relinkingPlaidItemId]));
       }
@@ -181,9 +183,10 @@ const Accounts = () => {
     },
   });
 
-  // Auto-open the update Plaid Link when token is ready
+  // Auto-open the update Plaid Link when token is ready — only once per token
   useEffect(() => {
-    if (updateLinkToken && updateLinkReady) {
+    if (updateLinkToken && updateLinkReady && !plaidLinkOpenedRef.current) {
+      plaidLinkOpenedRef.current = true;
       toast.info(`Re-linking ${relinkingInstitution || 'bank connection'}…`, { duration: 3000 });
       openUpdateLink();
     }
