@@ -8,6 +8,7 @@ import CommandPalette from '@/components/CommandPalette';
 import NotificationsPanel from '@/components/NotificationsPanel';
 import KeyboardShortcutsModal from '@/components/KeyboardShortcutsModal';
 import PullToRefresh from '@/components/PullToRefresh';
+import { useRealtimeRefresh } from '@/hooks/use-realtime-refresh';
 
 const AppLayout = () => {
   const isMobile = useIsMobile();
@@ -15,6 +16,9 @@ const AppLayout = () => {
   const queryClient = useQueryClient();
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [lastKey, setLastKey] = useState<string | null>(null);
+
+  // Auto-refresh accounts & transactions via Realtime
+  useRealtimeRefresh();
 
   const handleRefresh = useCallback(async () => {
     await queryClient.invalidateQueries();
