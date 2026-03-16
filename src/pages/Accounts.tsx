@@ -114,12 +114,12 @@ const Accounts = () => {
         if (res.ok && data.link_token) {
           setUpdateLinkToken(data.link_token);
         } else {
-          console.error('Failed to get update link token:', data);
+          console.warn('Skipping auto-relink for', staleItem.institution_name, data.error_code, data.error);
           setAutoRelinkAttempted(prev => new Set([...prev, staleItem.plaid_item_id]));
-          const msg = data.error_code === 'INVALID_TOKEN'
-            ? `${staleItem.institution_name || 'Bank'} needs to be reconnected. Use "Connect Bank Account" to re-add it.`
-            : `Could not auto-relink ${staleItem.institution_name || 'bank'}: ${data.error || 'Unknown error'}`;
-          toast.error(msg);
+          // Only show error toast for unexpected errors, not env mismatches or non-Plaid items
+          if (data.error_code !== 'ENV_MISMATCH' && data.error_code !== 'NOT_PLAID') {
+            toast.error(`Could not auto-relink ${staleItem.institution_name || 'bank'}: ${data.error || 'Unknown error'}`);
+          }
         }
       } catch (err) {
         console.error('Auto-relink error:', err);
