@@ -513,11 +513,13 @@ const Accounts = () => {
                                     <TooltipTrigger asChild>
                                       <span className={`text-[11px] flex items-center gap-0.5 ${stale ? 'text-amber-500' : 'text-muted-foreground'}`}>
                                         {stale ? <AlertTriangle className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
-                                        {formatDate(acc.last_synced_at)}
+                                        {timeAgo(acc.last_synced_at)}
                                       </span>
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                      {stale ? 'Data may be stale — try refreshing' : `Last synced ${formatDate(acc.last_synced_at)}`}
+                                      {stale
+                                        ? `Stale — last synced ${formatDate(acc.last_synced_at)}`
+                                        : `Synced ${formatDate(acc.last_synced_at)}`}
                                     </TooltipContent>
                                   </Tooltip>
                                 ) : (
