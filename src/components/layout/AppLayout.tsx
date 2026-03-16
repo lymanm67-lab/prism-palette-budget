@@ -8,6 +8,7 @@ import CommandPalette from '@/components/CommandPalette';
 import NotificationsPanel from '@/components/NotificationsPanel';
 import KeyboardShortcutsModal from '@/components/KeyboardShortcutsModal';
 import PullToRefresh from '@/components/PullToRefresh';
+import { useRealtimeRefresh } from '@/hooks/use-realtime-refresh';
 
 const AppLayout = () => {
   const isMobile = useIsMobile();
