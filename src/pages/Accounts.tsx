@@ -715,6 +715,25 @@ const Accounts = () => {
                             </TooltipTrigger>
                             <TooltipContent>Refresh account</TooltipContent>
                           </Tooltip>
+                          {stale && acc.provider_type === 'plaid' && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                                  disabled={!canManualRelink}
+                                  onClick={() => {
+                                    if (!stalePlaidItem) return;
+                                    requestPlaidRelink(stalePlaidItem.plaid_item_id, stalePlaidItem.institution_name, false);
+                                  }}
+                                >
+                                  <RotateCcw className={`h-4 w-4 ${relinkingPlaidItemId === stalePlaidItem?.plaid_item_id ? 'animate-spin' : ''}`} />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>{canManualRelink ? 'Re-link stale Plaid connection' : 'Re-link unavailable for this account'}</TooltipContent>
+                            </Tooltip>
+                          )}
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Button
