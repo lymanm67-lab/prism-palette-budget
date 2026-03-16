@@ -127,16 +127,20 @@ const Accounts = () => {
       }
     };
     launchRelink();
-  }, [stalePlaidItems, updateLinkToken, household]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stalePlaidItems.length, updateLinkToken, household?.id]);
 
   // Plaid Link in update mode
   const onUpdateSuccess = useCallback(async () => {
+    // Mark as attempted so the auto-relink effect doesn't re-trigger
+    if (stalePlaidItems.length > 0) {
+      setAutoRelinkAttempted(prev => new Set([...prev, stalePlaidItems[0].plaid_item_id]));
+    }
     toast.success(`${relinkingInstitution || 'Bank'} re-linked! Syncing fresh transactions…`);
     setUpdateLinkToken(null);
     setRelinkingInstitution(null);
-    // Trigger a full sync after re-link
     handleRefreshAccounts();
-  }, [relinkingInstitution]);
+  }, [relinkingInstitution, stalePlaidItems]);
 
   const { open: openUpdateLink, ready: updateLinkReady } = usePlaidLink({
     token: updateLinkToken,
