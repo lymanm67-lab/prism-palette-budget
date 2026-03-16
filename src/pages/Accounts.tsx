@@ -517,6 +517,20 @@ const Accounts = () => {
                               <Button
                                 variant="ghost"
                                 size="icon"
+                                className="h-8 w-8 text-muted-foreground hover:text-prism-teal"
+                                disabled={refreshingAccountId === acc.id}
+                                onClick={() => handleRefreshSingleAccount(acc.id, acc.provider_type, acc.institution)}
+                              >
+                                <RefreshCw className={`h-4 w-4 ${refreshingAccountId === acc.id ? 'animate-spin' : ''}`} />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Refresh account</TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
                                 className="h-8 w-8 text-muted-foreground hover:text-prism-sky"
                                 onClick={() => startEditing(acc.id, acc.name)}
                               >
