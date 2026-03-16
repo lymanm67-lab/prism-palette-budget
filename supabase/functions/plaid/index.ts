@@ -108,7 +108,21 @@ Deno.serve(async (req) => {
         });
       }
 
-      const plaidResponse = await fetch(`${PLAID_BASE_URL}/link/token/create`, {
+      // Detect environment from access token format
+      const accessToken = plaidItem.plaid_access_token;
+      let plaidBaseUrl = PLAID_BASE_URL;
+      if (accessToken.startsWith('access-sandbox-')) {
+        plaidBaseUrl = 'https://sandbox.plaid.com';
+      } else if (accessToken.startsWith('access-development-')) {
+        plaidBaseUrl = 'https://development.plaid.com';
+      } else if (!accessToken.startsWith('access-')) {
+        console.error('Invalid access token format for plaid_item_id:', plaid_item_id);
+        return new Response(JSON.stringify({ error: 'Invalid access token format. Please reconnect this bank account.', error_code: 'INVALID_TOKEN' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      const plaidResponse = await fetch(`${plaidBaseUrl}/link/token/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -116,7 +130,7 @@ Deno.serve(async (req) => {
           secret: PLAID_SECRET,
           user: { client_user_id: userId },
           client_name: 'PrismBudget',
-          access_token: plaidItem.plaid_access_token,
+          access_token: accessToken,
           country_codes: ['US'],
           language: 'en',
         }),
@@ -124,7 +138,10 @@ Deno.serve(async (req) => {
       const data = await plaidResponse.json();
       if (!plaidResponse.ok) {
         console.error('Plaid update link token failed:', plaidResponse.status, JSON.stringify(data));
-        return new Response(JSON.stringify({ error: 'Failed to create re-link token. Please try again.' }), {
+        return new Response(JSON.stringify({ 
+          error: data.error_message || 'Failed to create re-link token. Please try again.',
+          error_code: data.error_code || 'PLAID_ERROR',
+        }), {
           status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
