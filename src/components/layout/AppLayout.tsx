@@ -17,6 +17,9 @@ const AppLayout = () => {
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [lastKey, setLastKey] = useState<string | null>(null);
 
+  // Auto-refresh accounts & transactions via Realtime
+  useRealtimeRefresh();
+
   const handleRefresh = useCallback(async () => {
     await queryClient.invalidateQueries();
     // Small delay for visual feedback
