@@ -69,6 +69,7 @@ const Accounts = () => {
 
   const [updateLinkToken, setUpdateLinkToken] = useState<string | null>(null);
   const [relinkingInstitution, setRelinkingInstitution] = useState<string | null>(null);
+  const [relinkingPlaidItemId, setRelinkingPlaidItemId] = useState<string | null>(null);
   const [autoRelinkAttempted, setAutoRelinkAttempted] = useState<Set<string>>(new Set());
 
   // Tick every 30s so "X minutes ago" labels update live
@@ -77,6 +78,15 @@ const Accounts = () => {
     const id = setInterval(() => setTick(t => t + 1), 30_000);
     return () => clearInterval(id);
   }, []);
+
+  const normalizeInstitution = useCallback((value: string | null | undefined) => (value || '').trim().toLowerCase(), []);
+
+  const isSameInstitution = useCallback((accountInstitution: string | null | undefined, plaidInstitution: string | null | undefined) => {
+    const left = normalizeInstitution(accountInstitution);
+    const right = normalizeInstitution(plaidInstitution);
+    if (!left || !right) return false;
+    return left === right || left.includes(right) || right.includes(left);
+  }, [normalizeInstitution]);
 
   // Detect stale Plaid connections and auto-trigger update-mode re-link
   const stalePlaidItems = useMemo(() => {
@@ -89,69 +99,81 @@ const Accounts = () => {
     });
   }, [plaidConnections, autoRelinkAttempted]);
 
+  const requestPlaidRelink = useCallback(async (
+    plaidItemId: string,
+    institutionName: string | null | undefined,
+    silentExpectedErrors = false
+  ) => {
+    if (!household) return;
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      setRelinkingInstitution(institutionName || 'Bank');
+      setRelinkingPlaidItemId(plaidItemId);
+
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const res = await fetch(`${supabaseUrl}/functions/v1/plaid/create-update-link-token`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          household_id: household.id,
+          plaid_item_id: plaidItemId,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.link_token) {
+        setUpdateLinkToken(data.link_token);
+        return;
+      }
+
+      setAutoRelinkAttempted(prev => new Set([...prev, plaidItemId]));
+      const isExpected = data.error_code === 'ENV_MISMATCH' || data.error_code === 'NOT_PLAID';
+      if (!(silentExpectedErrors && isExpected)) {
+        toast.error(`Could not re-link ${institutionName || 'bank'}: ${data.error || 'Unknown error'}`);
+      }
+    } catch (err) {
+      console.error('Re-link request error:', err);
+      setAutoRelinkAttempted(prev => new Set([...prev, plaidItemId]));
+      toast.error(`Could not re-link ${institutionName || 'bank'}`);
+    }
+  }, [household]);
+
   // Auto-launch re-link for the first stale Plaid item
   useEffect(() => {
     if (stalePlaidItems.length === 0 || updateLinkToken || !household) return;
     const staleItem = stalePlaidItems[0];
-    const launchRelink = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) return;
-        setRelinkingInstitution(staleItem.institution_name || 'Bank');
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-        const res = await fetch(`${supabaseUrl}/functions/v1/plaid/create-update-link-token`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            household_id: household.id,
-            plaid_item_id: staleItem.plaid_item_id,
-          }),
-        });
-        const data = await res.json();
-        if (res.ok && data.link_token) {
-          setUpdateLinkToken(data.link_token);
-        } else {
-          console.warn('Skipping auto-relink for', staleItem.institution_name, data.error_code, data.error);
-          setAutoRelinkAttempted(prev => new Set([...prev, staleItem.plaid_item_id]));
-          // Only show error toast for unexpected errors, not env mismatches or non-Plaid items
-          if (data.error_code !== 'ENV_MISMATCH' && data.error_code !== 'NOT_PLAID') {
-            toast.error(`Could not auto-relink ${staleItem.institution_name || 'bank'}: ${data.error || 'Unknown error'}`);
-          }
-        }
-      } catch (err) {
-        console.error('Auto-relink error:', err);
-        setAutoRelinkAttempted(prev => new Set([...prev, staleItem.plaid_item_id]));
-      }
-    };
-    launchRelink();
+    requestPlaidRelink(staleItem.plaid_item_id, staleItem.institution_name, true);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stalePlaidItems.length, updateLinkToken, household?.id]);
 
   // Plaid Link in update mode
   const onUpdateSuccess = useCallback(async () => {
-    // Mark as attempted so the auto-relink effect doesn't re-trigger
-    if (stalePlaidItems.length > 0) {
-      setAutoRelinkAttempted(prev => new Set([...prev, stalePlaidItems[0].plaid_item_id]));
+    if (relinkingPlaidItemId) {
+      setAutoRelinkAttempted(prev => new Set([...prev, relinkingPlaidItemId]));
     }
     toast.success(`${relinkingInstitution || 'Bank'} re-linked! Syncing fresh transactions…`);
     setUpdateLinkToken(null);
     setRelinkingInstitution(null);
+    setRelinkingPlaidItemId(null);
     handleRefreshAccounts();
-  }, [relinkingInstitution, stalePlaidItems]);
+  }, [relinkingInstitution, relinkingPlaidItemId]);
 
   const { open: openUpdateLink, ready: updateLinkReady } = usePlaidLink({
     token: updateLinkToken,
     onSuccess: onUpdateSuccess,
     onExit: () => {
-      // Mark as attempted so we don't re-prompt on this page load
-      if (stalePlaidItems.length > 0) {
-        setAutoRelinkAttempted(prev => new Set([...prev, stalePlaidItems[0].plaid_item_id]));
+      if (relinkingPlaidItemId) {
+        setAutoRelinkAttempted(prev => new Set([...prev, relinkingPlaidItemId]));
       }
       setUpdateLinkToken(null);
       setRelinkingInstitution(null);
+      setRelinkingPlaidItemId(null);
     },
   });
 
