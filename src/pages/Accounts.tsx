@@ -63,7 +63,52 @@ const Accounts = () => {
   const [editName, setEditName] = useState('');
   const [pageGuideOpen, setPageGuideOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [refreshingAccountId, setRefreshingAccountId] = useState<string | null>(null);
   const snapTradeRef = useRef<SnapTradeConnectHandle>(null);
+
+  const handleRefreshSingleAccount = async (accountId: string, providerType: string | null, institution: string | null) => {
+    if (!household) return;
+    setRefreshingAccountId(accountId);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+
+      if (providerType === 'snaptrade') {
+        await syncSnapTrade.mutateAsync();
+      } else {
+        // For Plaid and manual accounts, trigger Plaid sync
+        const res = await fetch(`${supabaseUrl}/functions/v1/plaid/sync-transactions`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ household_id: household.id }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Sync failed');
+
+        if (data.new_transactions > 0 && data.new_transaction_ids?.length) {
+          toast.success(`${data.new_transactions} new transactions synced`);
+          try {
+            await supabase.functions.invoke('auto-categorize', {
+              body: { transaction_ids: data.new_transaction_ids, household_id: household.id },
+            });
+          } catch { /* ignore */ }
+        } else {
+          toast.success('Account refreshed — no new transactions');
+        }
+      }
+
+      qc.invalidateQueries({ queryKey: ['accounts'] });
+      qc.invalidateQueries({ queryKey: ['transactions'] });
+      qc.invalidateQueries({ queryKey: ['investment_holdings'] });
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to refresh account');
+    }
+    setRefreshingAccountId(null);
+  };
   const handleRefreshAccounts = async () => {
     if (!household) return;
     setRefreshing(true);
@@ -467,6 +512,20 @@ const Accounts = () => {
                           {formatCurrency(acc.balance)}
                         </span>
                         <div className="flex items-center gap-0.5 shrink-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-muted-foreground hover:text-prism-teal"
+                                disabled={refreshingAccountId === acc.id}
+                                onClick={() => handleRefreshSingleAccount(acc.id, acc.provider_type, acc.institution)}
+                              >
+                                <RefreshCw className={`h-4 w-4 ${refreshingAccountId === acc.id ? 'animate-spin' : ''}`} />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Refresh account</TooltipContent>
+                          </Tooltip>
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Button
