@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { usePlaidLink } from 'react-plaid-link';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -66,12 +67,92 @@ const Accounts = () => {
   const [refreshingAccountId, setRefreshingAccountId] = useState<string | null>(null);
   const snapTradeRef = useRef<SnapTradeConnectHandle>(null);
 
+  const [updateLinkToken, setUpdateLinkToken] = useState<string | null>(null);
+  const [relinkingInstitution, setRelinkingInstitution] = useState<string | null>(null);
+  const [autoRelinkAttempted, setAutoRelinkAttempted] = useState<Set<string>>(new Set());
+
   // Tick every 30s so "X minutes ago" labels update live
   const [, setTick] = useState(0);
   useEffect(() => {
     const id = setInterval(() => setTick(t => t + 1), 30_000);
     return () => clearInterval(id);
   }, []);
+
+  // Detect stale Plaid connections and auto-trigger update-mode re-link
+  const stalePlaidItems = useMemo(() => {
+    if (!plaidConnections) return [];
+    return plaidConnections.filter((item: any) => {
+      const isStaleItem = item.updated_at && (Date.now() - new Date(item.updated_at).getTime() > 48 * 60 * 60 * 1000);
+      return (item.status === 'error' || isStaleItem) && !autoRelinkAttempted.has(item.plaid_item_id);
+    });
+  }, [plaidConnections, autoRelinkAttempted]);
+
+  // Auto-launch re-link for the first stale Plaid item
+  useEffect(() => {
+    if (stalePlaidItems.length === 0 || updateLinkToken || !household) return;
+    const staleItem = stalePlaidItems[0];
+    const launchRelink = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+        setRelinkingInstitution(staleItem.institution_name || 'Bank');
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const res = await fetch(`${supabaseUrl}/functions/v1/plaid/create-update-link-token`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            household_id: household.id,
+            plaid_item_id: staleItem.plaid_item_id,
+          }),
+        });
+        const data = await res.json();
+        if (res.ok && data.link_token) {
+          setUpdateLinkToken(data.link_token);
+        } else {
+          console.error('Failed to get update link token:', data);
+          setAutoRelinkAttempted(prev => new Set([...prev, staleItem.plaid_item_id]));
+          toast.error(`Could not auto-relink ${staleItem.institution_name || 'bank'}. Use the Re-link button to try manually.`);
+        }
+      } catch (err) {
+        console.error('Auto-relink error:', err);
+        setAutoRelinkAttempted(prev => new Set([...prev, staleItem.plaid_item_id]));
+      }
+    };
+    launchRelink();
+  }, [stalePlaidItems, updateLinkToken, household]);
+
+  // Plaid Link in update mode
+  const onUpdateSuccess = useCallback(async () => {
+    toast.success(`${relinkingInstitution || 'Bank'} re-linked! Syncing fresh transactions…`);
+    setUpdateLinkToken(null);
+    setRelinkingInstitution(null);
+    // Trigger a full sync after re-link
+    handleRefreshAccounts();
+  }, [relinkingInstitution]);
+
+  const { open: openUpdateLink, ready: updateLinkReady } = usePlaidLink({
+    token: updateLinkToken,
+    onSuccess: onUpdateSuccess,
+    onExit: () => {
+      // Mark as attempted so we don't re-prompt on this page load
+      if (stalePlaidItems.length > 0) {
+        setAutoRelinkAttempted(prev => new Set([...prev, stalePlaidItems[0].plaid_item_id]));
+      }
+      setUpdateLinkToken(null);
+      setRelinkingInstitution(null);
+    },
+  });
+
+  // Auto-open the update Plaid Link when token is ready
+  useEffect(() => {
+    if (updateLinkToken && updateLinkReady) {
+      toast.info(`Re-linking ${relinkingInstitution || 'bank connection'}…`, { duration: 3000 });
+      openUpdateLink();
+    }
+  }, [updateLinkToken, updateLinkReady, openUpdateLink, relinkingInstitution]);
 
   const timeAgo = useCallback((dateStr: string | null) => {
     if (!dateStr) return null;
@@ -454,13 +535,14 @@ const Accounts = () => {
                     <Button
                       size="sm"
                       className="h-8 gap-1.5 bg-amber-500 hover:bg-amber-600 text-white border-0"
+                      disabled={!!updateLinkToken}
                       onClick={() => {
-                        const plaidBtn = document.querySelector('[data-plaid-trigger]') as HTMLButtonElement;
-                        plaidBtn?.click();
+                        // Reset attempted set so auto-relink runs again
+                        setAutoRelinkAttempted(new Set());
                       }}
                     >
-                      <RotateCcw className="h-3.5 w-3.5" />
-                      Re-link
+                      <RotateCcw className={`h-3.5 w-3.5 ${updateLinkToken ? 'animate-spin' : ''}`} />
+                      {updateLinkToken ? 'Re-linking…' : 'Re-link'}
                     </Button>
                   </div>
                 </CardContent>

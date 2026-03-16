@@ -74,6 +74,65 @@ Deno.serve(async (req) => {
       });
     }
 
+    if (action === 'create-update-link-token' && req.method === 'POST') {
+      const { household_id, plaid_item_id } = await req.json();
+
+      // Verify membership
+      const { data: membership } = await supabase
+        .from('household_members')
+        .select('id')
+        .eq('household_id', household_id)
+        .eq('user_id', userId)
+        .single();
+      if (!membership) {
+        return new Response(JSON.stringify({ error: 'Forbidden' }), {
+          status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // Get access token using service role
+      const serviceSupabase = createClient(
+        Deno.env.get('SUPABASE_URL')!,
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+      );
+      const { data: plaidItem } = await serviceSupabase
+        .from('plaid_items')
+        .select('plaid_access_token')
+        .eq('household_id', household_id)
+        .eq('plaid_item_id', plaid_item_id)
+        .single();
+
+      if (!plaidItem) {
+        return new Response(JSON.stringify({ error: 'Plaid item not found' }), {
+          status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      const plaidResponse = await fetch(`${PLAID_BASE_URL}/link/token/create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          client_id: PLAID_CLIENT_ID,
+          secret: PLAID_SECRET,
+          user: { client_user_id: userId },
+          client_name: 'PrismBudget',
+          access_token: plaidItem.plaid_access_token,
+          country_codes: ['US'],
+          language: 'en',
+        }),
+      });
+      const data = await plaidResponse.json();
+      if (!plaidResponse.ok) {
+        console.error('Plaid update link token failed:', plaidResponse.status, JSON.stringify(data));
+        return new Response(JSON.stringify({ error: 'Failed to create re-link token. Please try again.' }), {
+          status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      return new Response(JSON.stringify({ link_token: data.link_token }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     if (action === 'exchange-token' && req.method === 'POST') {
       const { public_token, institution, household_id } = await req.json();
 
