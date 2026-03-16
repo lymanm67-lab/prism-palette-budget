@@ -626,6 +626,10 @@ const Accounts = () => {
                     const Icon = ACCOUNT_ICONS[acc.account_type] || Landmark;
                     const isEditing = editingId === acc.id;
                     const stale = isStale(acc.last_synced_at);
+                    const stalePlaidItem = stale && acc.provider_type === 'plaid'
+                      ? stalePlaidItems.find((item: any) => isSameInstitution(acc.institution, item.institution_name))
+                      : null;
+                    const canManualRelink = Boolean(stalePlaidItem) && !updateLinkToken;
                     return (
                       <div key={acc.id} className="flex items-center gap-2 sm:gap-4 rounded-xl border border-border/30 p-3 sm:p-4 interactive-row hover-border-glow group cursor-default">
                         <div className={`flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-gradient-to-br ${GRADIENT_MAP[acc.account_type]} transition-transform duration-300 group-hover:scale-110 shrink-0`}>
