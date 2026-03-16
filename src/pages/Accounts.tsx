@@ -535,13 +535,14 @@ const Accounts = () => {
                     <Button
                       size="sm"
                       className="h-8 gap-1.5 bg-amber-500 hover:bg-amber-600 text-white border-0"
+                      disabled={!!updateLinkToken}
                       onClick={() => {
-                        const plaidBtn = document.querySelector('[data-plaid-trigger]') as HTMLButtonElement;
-                        plaidBtn?.click();
+                        // Reset attempted set so auto-relink runs again
+                        setAutoRelinkAttempted(new Set());
                       }}
                     >
-                      <RotateCcw className="h-3.5 w-3.5" />
-                      Re-link
+                      <RotateCcw className={`h-3.5 w-3.5 ${updateLinkToken ? 'animate-spin' : ''}`} />
+                      {updateLinkToken ? 'Re-linking…' : 'Re-link'}
                     </Button>
                   </div>
                 </CardContent>
