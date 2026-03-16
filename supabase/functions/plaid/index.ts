@@ -110,14 +110,29 @@ Deno.serve(async (req) => {
 
       // Detect environment from access token format
       const accessToken = plaidItem.plaid_access_token;
-      let plaidBaseUrl = PLAID_BASE_URL;
-      if (accessToken.startsWith('access-sandbox-')) {
-        plaidBaseUrl = 'https://sandbox.plaid.com';
-      } else if (accessToken.startsWith('access-development-')) {
-        plaidBaseUrl = 'https://development.plaid.com';
-      } else if (!accessToken.startsWith('access-')) {
-        console.error('Invalid access token format for plaid_item_id:', plaid_item_id);
-        return new Response(JSON.stringify({ error: 'Invalid access token format. Please reconnect this bank account.', error_code: 'INVALID_TOKEN' }), {
+      if (!accessToken.startsWith('access-')) {
+        console.error('Non-Plaid token found for plaid_item_id:', plaid_item_id, '- skipping');
+        return new Response(JSON.stringify({ error: 'This connection is not managed by Plaid and cannot be re-linked here.', error_code: 'NOT_PLAID' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // Extract environment from token (access-<env>-<id>)
+      const tokenEnv = accessToken.split('-')[1]; // sandbox, development, or production
+      const envUrlMap: Record<string, string> = {
+        sandbox: 'https://sandbox.plaid.com',
+        development: 'https://development.plaid.com',
+        production: 'https://production.plaid.com',
+      };
+      const plaidBaseUrl = envUrlMap[tokenEnv] || PLAID_BASE_URL;
+
+      // Warn if token env doesn't match production (our keys are production)
+      if (tokenEnv !== 'production') {
+        console.warn(`Token for ${plaid_item_id} is ${tokenEnv} env - may fail with production keys. User should reconnect.`);
+        return new Response(JSON.stringify({ 
+          error: `This connection uses ${tokenEnv} credentials and needs to be reconnected. Use "Connect Bank Account" to re-add it.`,
+          error_code: 'ENV_MISMATCH',
+        }), {
           status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
