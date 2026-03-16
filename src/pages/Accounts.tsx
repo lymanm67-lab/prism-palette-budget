@@ -418,6 +418,57 @@ const Accounts = () => {
           />
         )}
 
+        {/* Stale connection banner */}
+        {(() => {
+          const staleAccounts = (accounts || []).filter(a => a.provider_type && a.provider_type !== 'manual' && isStale(a.last_synced_at));
+          if (!staleAccounts.length) return null;
+          const staleNames = staleAccounts.map(a => a.institution || a.name);
+          const uniqueInstitutions = [...new Set(staleNames)];
+          return (
+            <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
+              <Card className="border-amber-500/40 bg-amber-500/5">
+                <CardContent className="flex items-start gap-3 p-4">
+                  <div className="h-9 w-9 rounded-lg bg-amber-500/15 flex items-center justify-center shrink-0 mt-0.5">
+                    <AlertTriangle className="h-5 w-5 text-amber-500" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm text-foreground">
+                      {staleAccounts.length === 1 ? '1 account needs attention' : `${staleAccounts.length} accounts need attention`}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {uniqueInstitutions.join(', ')} {uniqueInstitutions.length === 1 ? 'hasn\'t' : 'haven\'t'} synced in over 48 hours. 
+                      The connection may need to be re-linked.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 gap-1.5 border-amber-500/30 text-amber-600 hover:bg-amber-500/10 hover:text-amber-700"
+                      onClick={handleRefreshAccounts}
+                      disabled={refreshing}
+                    >
+                      <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} />
+                      Try Refresh
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="h-8 gap-1.5 bg-amber-500 hover:bg-amber-600 text-white border-0"
+                      onClick={() => {
+                        const plaidBtn = document.querySelector('[data-plaid-trigger]') as HTMLButtonElement;
+                        plaidBtn?.click();
+                      }}
+                    >
+                      <RotateCcw className="h-3.5 w-3.5" />
+                      Re-link
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          );
+        })()}
+
         {sortedGroups.length === 0 && (
           <Card className="prism-card-shine border-border/50">
             <CardContent className="flex flex-col items-center justify-center p-12 text-center">
