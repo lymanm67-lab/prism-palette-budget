@@ -4,7 +4,8 @@ import {
   Settings, Bot, LogOut, ChevronLeft, ChevronRight, Sun, Moon, TrendingDown,
   TrendingUp, Calculator, Scale, Heart, Home, Wallet, RepeatIcon,
   CreditCard, LineChart, Sparkles, Shield, FileSearch, FileText, Building2,
-  DollarSign, Clock, Lock, Scissors, ClipboardCheck, Gauge,
+  DollarSign, Clock, Lock, Scissors, ClipboardCheck, Gauge, ChevronDown,
+  Layers, Search, AlertTriangle, Activity, Banknote,
 } from 'lucide-react';
 import prismLogo from '@/assets/prism-budget-logo.png';
 import { useAuth } from '@/contexts/AuthContext';
@@ -13,8 +14,18 @@ import { useState } from 'react';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { useSidebarBadges } from '@/hooks/use-sidebar-badges';
+import type { LucideIcon } from 'lucide-react';
 
-const NAV_SECTIONS = [
+type NavItem = { to: string; icon: LucideIcon; label: string; color: string };
+type NavSubGroup = { subLabel: string; items: NavItem[] };
+type NavSection = {
+  label: string;
+  items?: NavItem[];
+  subGroups?: NavSubGroup[];
+  topItems?: NavItem[];
+};
+
+const NAV_SECTIONS: NavSection[] = [
   {
     label: 'Overview',
     items: [
@@ -62,18 +73,43 @@ const NAV_SECTIONS = [
   },
   {
     label: 'Capital',
-    items: [
+    topItems: [
       { to: '/capital', icon: Shield, label: 'Dashboard', color: 'text-prism-teal' },
-      { to: '/capital/credit-overview', icon: FileSearch, label: 'Credit Overview', color: 'text-prism-sky' },
-      { to: '/capital/metro2-scanner', icon: Gauge, label: 'Metro2 Scanner', color: 'text-prism-amber' },
-      { to: '/capital/disputes', icon: FileText, label: 'Disputes', color: 'text-prism-orange' },
-      { to: '/capital/business-credit', icon: Building2, label: 'Business Credit', color: 'text-prism-indigo' },
-      { to: '/capital/bankability', icon: BarChart3, label: 'Bankability', color: 'text-prism-violet' },
-      { to: '/capital/loan-readiness', icon: ClipboardCheck, label: 'Loan Readiness', color: 'text-prism-lime' },
-      { to: '/capital/receivables', icon: DollarSign, label: 'Receivables', color: 'text-prism-sky' },
-      { to: '/capital/payroll-runway', icon: Clock, label: 'Payroll Runway', color: 'text-prism-rose' },
       { to: '/capital/ai-coach', icon: Bot, label: 'AI Coach', color: 'text-prism-amber' },
-      { to: '/capital/vault', icon: Lock, label: 'Document Vault', color: 'text-muted-foreground' },
+    ],
+    subGroups: [
+      {
+        subLabel: 'Credit Health',
+        items: [
+          { to: '/capital/credit-overview', icon: FileSearch, label: 'Credit Overview', color: 'text-prism-sky' },
+          { to: '/capital/metro2-scanner', icon: Gauge, label: 'Metro2 Scanner', color: 'text-prism-amber' },
+          { to: '/capital/disputes', icon: FileText, label: 'Disputes', color: 'text-prism-orange' },
+          { to: '/capital/money-math', icon: Calculator, label: 'Money Math', color: 'text-prism-indigo' },
+        ],
+      },
+      {
+        subLabel: 'Business & Funding',
+        items: [
+          { to: '/capital/business-credit', icon: Building2, label: 'Business Credit', color: 'text-prism-indigo' },
+          { to: '/capital/bankability', icon: BarChart3, label: 'Bankability', color: 'text-prism-violet' },
+          { to: '/capital/loan-readiness', icon: ClipboardCheck, label: 'Loan Readiness', color: 'text-prism-lime' },
+          { to: '/capital/capital-stack', icon: Layers, label: 'Capital Stack', color: 'text-prism-teal' },
+          { to: '/capital/banking-intelligence', icon: Search, label: 'Banking Intel', color: 'text-prism-sky' },
+          { to: '/capital/funding-simulator', icon: Banknote, label: 'Funding Sim', color: 'text-prism-orange' },
+        ],
+      },
+      {
+        subLabel: 'Cash Flow & Risk',
+        items: [
+          { to: '/capital/receivables', icon: DollarSign, label: 'Receivables', color: 'text-prism-sky' },
+          { to: '/capital/payroll-runway', icon: Clock, label: 'Payroll Runway', color: 'text-prism-rose' },
+          { to: '/capital/risk-radar', icon: AlertTriangle, label: 'Risk Radar', color: 'text-prism-orange' },
+          { to: '/capital/dscr', icon: Activity, label: 'DSCR Calculator', color: 'text-prism-teal' },
+          { to: '/capital/bank-analyzer', icon: LineChart, label: 'Bank Analyzer', color: 'text-prism-violet' },
+          { to: '/capital/survival-index', icon: Shield, label: 'Survival Index', color: 'text-prism-rose' },
+          { to: '/capital/vault', icon: Lock, label: 'Document Vault', color: 'text-muted-foreground' },
+        ],
+      },
     ],
   },
   {
