@@ -66,12 +66,20 @@ const Subscriptions = () => {
   const [selectedSubId, setSelectedSubId] = useState<string | null>(null);
   const [reallocationSub, setReallocationSub] = useState<any>(null);
 
+  const NON_SUB_KEYWORDS = ['rent', 'mortgage', 'insurance', 'utilit', 'electric', 'gas', 'water', 'sewer', 'trash', 'debt', 'loan', 'transfer', 'payment'];
+
+  const isNonSubscription = (sub: any) => {
+    const merchant = (sub.merchant || '').toLowerCase();
+    const catName = (sub.categories?.name || '').toLowerCase();
+    return NON_SUB_KEYWORDS.some(kw => merchant.includes(kw) || catName.includes(kw)) || (sub.is_transfer === true);
+  };
+
   const activeSubs = useMemo(() => (subscriptions || []).filter(s => !s.is_cancelled), [subscriptions]);
   const cancelledSubs = useMemo(() => (subscriptions || []).filter(s => s.is_cancelled), [subscriptions]);
   const selectedSub = useMemo(() => activeSubs.find(s => s.id === selectedSubId), [activeSubs, selectedSubId]);
 
   const totalMonthly = useMemo(() => {
-    return activeSubs.reduce((sum, s) => {
+    return activeSubs.filter(s => !isNonSubscription(s)).reduce((sum, s) => {
       if (s.frequency === 'monthly') return sum + s.average_amount;
       if (s.frequency === 'weekly') return sum + s.average_amount * 4.33;
       if (s.frequency === 'biweekly') return sum + s.average_amount * 2.17;
