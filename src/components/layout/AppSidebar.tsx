@@ -1,4 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   LayoutDashboard, Landmark, ArrowLeftRight, PiggyBank, BarChart3, Tags, Target,
   Settings, Bot, LogOut, ChevronLeft, ChevronRight, Sun, Moon, TrendingDown,
@@ -261,11 +262,22 @@ const AppSidebar = () => {
                         <div className="ml-auto h-1.5 w-1.5 rounded-full bg-prism-teal" />
                       )}
                     </button>
-                    {isOpen && (
-                      <div className="ml-2 space-y-px border-l border-sidebar-border/50 pl-1 mt-0.5">
-                        {sg.items.map(renderNavItem)}
-                      </div>
-                    )}
+                    <AnimatePresence initial={false}>
+                      {isOpen && (
+                        <motion.div
+                          key={sg.subLabel}
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2, ease: 'easeInOut' }}
+                          className="overflow-hidden"
+                        >
+                          <div className="ml-2 space-y-px border-l border-sidebar-border/50 pl-1 mt-0.5">
+                            {sg.items.map(renderNavItem)}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 );
               })}
