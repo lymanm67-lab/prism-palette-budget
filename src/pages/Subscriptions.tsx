@@ -455,10 +455,27 @@ const Subscriptions = () => {
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2">
                         <span className="font-display text-lg font-semibold text-prism-rose whitespace-nowrap">
                           {formatCurrency(sub.average_amount)}
                         </span>
+                        {isNonSubscription(sub) && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                  onClick={(e) => { e.stopPropagation(); deleteSub.mutate(sub.id); }}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Not a subscription — delete</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                             <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -486,6 +503,9 @@ const Subscriptions = () => {
                             </DropdownMenuItem>
                             <DropdownMenuItem className="text-destructive" onClick={(e) => { e.stopPropagation(); handleCancel(sub.id); }}>
                               <XCircle className="h-3.5 w-3.5 mr-2" /> Mark Cancelled
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-destructive" onClick={(e) => { e.stopPropagation(); deleteSub.mutate(sub.id); }}>
+                              <Trash2 className="h-3.5 w-3.5 mr-2" /> Delete
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
