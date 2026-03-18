@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { cn } from '@/lib/utils';
 import { useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
