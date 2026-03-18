@@ -27,6 +27,7 @@ import {
   MoreHorizontal, Info, BookOpen, Volume2,
 } from 'lucide-react';
 import { exportTransactionsToCsv } from '@/lib/export-transactions';
+import { CameraCapture } from '@/components/CameraCapture';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import CsvImportDialog from '@/components/CsvImportDialog';
@@ -127,6 +128,7 @@ const Transactions = () => {
   const [merchantOpen, setMerchantOpen] = useState(false);
   const [scanLoading, setScanLoading] = useState(false);
   const receiptInputRef = useRef<HTMLInputElement>(null);
+  const [cameraOpen, setCameraOpen] = useState(false);
   const [viewFilter, setViewFilter] = useState<TxnViewFilter>('all');
   const handleScanReceipt = useCallback(async (file: File) => {
     setScanLoading(true);
@@ -882,51 +884,51 @@ const Transactions = () => {
               <DialogHeader><DialogTitle className="font-display">Add Transaction</DialogTitle></DialogHeader>
               <div className="space-y-4">
                 {/* Scan Receipt */}
-                <div className="flex items-center gap-2">
-                  <input
-                    ref={receiptInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={e => {
-                      const file = e.target.files?.[0];
-                      if (file) handleScanReceipt(file);
+                {cameraOpen ? (
+                  <CameraCapture
+                    loading={scanLoading}
+                    onCapture={(file) => {
+                      setCameraOpen(false);
+                      handleScanReceipt(file);
                     }}
+                    onClose={() => setCameraOpen(false)}
                   />
-                  <input
-                    id="receipt-camera-input"
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    className="hidden"
-                    onChange={e => {
-                      const file = e.target.files?.[0];
-                      if (file) handleScanReceipt(file);
-                    }}
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="gap-2 flex-1"
-                    disabled={scanLoading}
-                    onClick={() => receiptInputRef.current?.click()}
-                  >
-                    {scanLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                    {scanLoading ? 'Scanning...' : 'Upload Receipt'}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="gap-2 flex-1"
-                    disabled={scanLoading}
-                    onClick={() => document.getElementById('receipt-camera-input')?.click()}
-                  >
-                    <Camera className="h-4 w-4" />
-                    Camera
-                  </Button>
-                </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <input
+                      ref={receiptInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={e => {
+                        const file = e.target.files?.[0];
+                        if (file) handleScanReceipt(file);
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="gap-2 flex-1"
+                      disabled={scanLoading}
+                      onClick={() => receiptInputRef.current?.click()}
+                    >
+                      {scanLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                      {scanLoading ? 'Scanning...' : 'Upload Receipt'}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="gap-2 flex-1"
+                      disabled={scanLoading}
+                      onClick={() => setCameraOpen(true)}
+                    >
+                      <Camera className="h-4 w-4" />
+                      Camera
+                    </Button>
+                  </div>
+                )}
 
                 {/* Debit / Credit Toggle */}
                 <div className="flex rounded-lg border overflow-hidden">
