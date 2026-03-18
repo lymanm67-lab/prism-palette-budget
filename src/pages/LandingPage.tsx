@@ -63,11 +63,11 @@ const LandingPage = () => {
         <div className="relative z-10 mx-auto max-w-4xl px-6 py-20 sm:py-32 text-center">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
             <h1 className="font-display text-5xl sm:text-7xl font-extrabold text-white tracking-tight leading-tight">
-              Your Finances, <br />
-              <span className="prism-gradient-text">Brilliantly Clear</span>
+              Spend Smarter, <br />
+              <span className="prism-gradient-text">Not Less</span>
             </h1>
             <p className="mt-6 text-lg sm:text-xl text-white/50 max-w-2xl mx-auto">
-              The all-in-one budget app that helps you track spending, crush debt, and build wealth — with AI-powered insights.
+              Smart Spend Guardrails coach you in real time. AI catches zombie subscriptions. Your money finally has a brain.
             </p>
             <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" onClick={() => navigate('/onboarding')} className="prism-gradient hover:opacity-90 text-lg h-14 px-10 gap-2 font-bold rounded-2xl prism-glow">
