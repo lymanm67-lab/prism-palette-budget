@@ -652,6 +652,60 @@ export type Database = {
           },
         ]
       }
+      credit_documents: {
+        Row: {
+          bureau: string | null
+          created_at: string
+          dispute_id: string | null
+          document_type: string
+          file_name: string
+          file_size: number | null
+          household_id: string
+          id: string
+          notes: string | null
+          storage_path: string
+        }
+        Insert: {
+          bureau?: string | null
+          created_at?: string
+          dispute_id?: string | null
+          document_type?: string
+          file_name: string
+          file_size?: number | null
+          household_id: string
+          id?: string
+          notes?: string | null
+          storage_path: string
+        }
+        Update: {
+          bureau?: string | null
+          created_at?: string
+          dispute_id?: string | null
+          document_type?: string
+          file_name?: string
+          file_size?: number | null
+          household_id?: string
+          id?: string
+          notes?: string | null
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_documents_dispute_id_fkey"
+            columns: ["dispute_id"]
+            isOneToOne: false
+            referencedRelation: "credit_disputes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credit_documents_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       debt_items: {
         Row: {
           account_id: string | null

@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { FileText, Download, Copy, Send, Printer, ExternalLink } from 'lucide-react';
+import { FileText, Download, Copy, Send, Printer, ExternalLink, Save, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -9,10 +9,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { exportToPdf } from '@/lib/export-utils';
+import { supabase } from '@/integrations/supabase/client';
+import { useHousehold } from '@/contexts/HouseholdContext';
 import { toast } from 'sonner';
 import { format, addDays } from 'date-fns';
 import { type CreditDispute } from '@/hooks/use-disputes';
 import { type CreditAccount } from '@/hooks/use-credit-accounts';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 // eOSCAR-compatible reason codes (CDIA Data Reporting Resource Guide)
 export const OSCAR_REASON_CODES = [
@@ -66,11 +70,13 @@ interface Props {
 }
 
 const DisputeLetterGenerator = ({ dispute, account, onSubmit, open, onOpenChange }: Props) => {
+  const { household } = useHousehold();
   const letterRef = useRef<HTMLDivElement>(null);
   const [senderName, setSenderName] = useState('');
   const [senderAddress, setSenderAddress] = useState('');
   const [senderSSN, setSenderSSN] = useState('');
   const [senderDOB, setSenderDOB] = useState('');
+  const [savingToVault, setSavingToVault] = useState(false);
   const [reasonCode, setReasonCode] = useState(
     OSCAR_REASON_CODES.find(r => dispute.dispute_reason.toLowerCase().includes(r.label.toLowerCase()))?.code || ''
   );
@@ -102,6 +108,59 @@ const DisputeLetterGenerator = ({ dispute, account, onSubmit, open, onOpenChange
     printWindow.document.write(`<html><head><title>Dispute Letter</title><style>body{font-family:serif;padding:40px;font-size:12pt;line-height:1.6}h2{text-align:center}table{width:100%;border-collapse:collapse;margin:10px 0}td{padding:4px 8px;border:1px solid #ccc;font-size:11pt}</style></head><body>${letterRef.current.innerHTML}</body></html>`);
     printWindow.document.close();
     printWindow.print();
+  };
+
+  const handleSaveToVault = async () => {
+    if (!letterRef.current || !household) return;
+    setSavingToVault(true);
+    try {
+      const canvas = await html2canvas(letterRef.current, {
+        scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff',
+      });
+      const imgData = canvas.toDataURL('image/png');
+      const imgWidth = 210;
+      const pageHeight = 297;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      let heightLeft = imgHeight;
+      let position = 0;
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      const pdfBlob = pdf.output('blob');
+      const fileName = `dispute-letter-${dispute.bureau}-${format(new Date(), 'yyyyMMdd-HHmmss')}.pdf`;
+      const storagePath = `${household.id}/letters/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('credit-documents')
+        .upload(storagePath, pdfBlob, { contentType: 'application/pdf' });
+      if (uploadError) throw uploadError;
+
+      await (supabase as any).from('credit_documents').insert({
+        household_id: household.id,
+        document_type: 'dispute_letter',
+        bureau: dispute.bureau,
+        file_name: fileName,
+        storage_path: storagePath,
+        file_size: pdfBlob.size,
+        dispute_id: dispute.id,
+        notes: `Dispute letter for ${account?.account_name || 'Unknown'} — ${dispute.dispute_reason}`,
+      });
+
+      toast.success('Dispute letter saved to your document vault');
+    } catch (err: any) {
+      console.error('Save to vault error:', err);
+      toast.error(`Could not save: ${err.message}`);
+    } finally {
+      setSavingToVault(false);
+    }
   };
 
   return (
@@ -241,6 +300,9 @@ const DisputeLetterGenerator = ({ dispute, account, onSubmit, open, onOpenChange
           <Button variant="outline" size="sm" onClick={handleCopyText}><Copy className="h-4 w-4 mr-2" />Copy Text</Button>
           <Button variant="outline" size="sm" onClick={handlePrint}><Printer className="h-4 w-4 mr-2" />Print</Button>
           <Button variant="outline" size="sm" onClick={handleExportPdf}><Download className="h-4 w-4 mr-2" />Export PDF</Button>
+          <Button variant="outline" size="sm" onClick={handleSaveToVault} disabled={savingToVault}>
+            {savingToVault ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Saving...</> : <><Save className="h-4 w-4 mr-2" />Save to Vault</>}
+          </Button>
           <Button variant="outline" size="sm" asChild>
             <a href={bureauInfo.disputeUrl} target="_blank" rel="noopener noreferrer">
               <ExternalLink className="h-4 w-4 mr-2" />File at {dispute.bureau}
