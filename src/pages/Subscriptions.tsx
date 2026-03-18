@@ -251,6 +251,21 @@ const Subscriptions = () => {
             {detectSubs.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
             Detect
           </Button>
+          <Button
+            variant="outline"
+            onClick={async () => {
+              try {
+                const result = await scoreDifficulty.mutateAsync();
+                toast.success(`Scored cancellation difficulty for ${result.scored} subscriptions`);
+              } catch {
+                toast.error('Failed to score cancellation difficulty');
+              }
+            }}
+            disabled={scoreDifficulty.isPending || !activeSubs.length}
+          >
+            {scoreDifficulty.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Shield className="h-4 w-4 mr-2" />}
+            Score Difficulty
+          </Button>
           <Button onClick={handleGetInsights} disabled={insightsLoading || !activeSubs.length}>
             {insightsLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
             AI Insights
