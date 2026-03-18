@@ -27,6 +27,7 @@ import {
   MoreHorizontal, Info, BookOpen, Volume2,
 } from 'lucide-react';
 import { exportTransactionsToCsv } from '@/lib/export-transactions';
+import { CameraCapture } from '@/components/CameraCapture';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import CsvImportDialog from '@/components/CsvImportDialog';
