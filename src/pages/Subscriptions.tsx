@@ -66,12 +66,20 @@ const Subscriptions = () => {
   const [selectedSubId, setSelectedSubId] = useState<string | null>(null);
   const [reallocationSub, setReallocationSub] = useState<any>(null);
 
+  const NON_SUB_KEYWORDS = ['rent', 'mortgage', 'insurance', 'utilit', 'electric', 'gas', 'water', 'sewer', 'trash', 'debt', 'loan', 'transfer', 'payment'];
+
+  const isNonSubscription = (sub: any) => {
+    const merchant = (sub.merchant || '').toLowerCase();
+    const catName = (sub.categories?.name || '').toLowerCase();
+    return NON_SUB_KEYWORDS.some(kw => merchant.includes(kw) || catName.includes(kw)) || (sub.is_transfer === true);
+  };
+
   const activeSubs = useMemo(() => (subscriptions || []).filter(s => !s.is_cancelled), [subscriptions]);
   const cancelledSubs = useMemo(() => (subscriptions || []).filter(s => s.is_cancelled), [subscriptions]);
   const selectedSub = useMemo(() => activeSubs.find(s => s.id === selectedSubId), [activeSubs, selectedSubId]);
 
   const totalMonthly = useMemo(() => {
-    return activeSubs.reduce((sum, s) => {
+    return activeSubs.filter(s => !isNonSubscription(s)).reduce((sum, s) => {
       if (s.frequency === 'monthly') return sum + s.average_amount;
       if (s.frequency === 'weekly') return sum + s.average_amount * 4.33;
       if (s.frequency === 'biweekly') return sum + s.average_amount * 2.17;
@@ -447,10 +455,27 @@ const Subscriptions = () => {
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2">
                         <span className="font-display text-lg font-semibold text-prism-rose whitespace-nowrap">
                           {formatCurrency(sub.average_amount)}
                         </span>
+                        {isNonSubscription(sub) && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                  onClick={(e) => { e.stopPropagation(); deleteSub.mutate(sub.id); }}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Not a subscription — delete</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                             <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -478,6 +503,9 @@ const Subscriptions = () => {
                             </DropdownMenuItem>
                             <DropdownMenuItem className="text-destructive" onClick={(e) => { e.stopPropagation(); handleCancel(sub.id); }}>
                               <XCircle className="h-3.5 w-3.5 mr-2" /> Mark Cancelled
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-destructive" onClick={(e) => { e.stopPropagation(); deleteSub.mutate(sub.id); }}>
+                              <Trash2 className="h-3.5 w-3.5 mr-2" /> Delete
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
