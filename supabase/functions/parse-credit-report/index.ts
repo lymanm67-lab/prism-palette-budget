@@ -124,7 +124,29 @@ Deno.serve(async (req) => {
     // Strip markdown code fences if present
     content = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
 
-    const accounts = JSON.parse(content);
+    let accounts;
+    try {
+      accounts = JSON.parse(content);
+    } catch (parseErr) {
+      // AI response may have been truncated — attempt to recover valid JSON
+      // Find the last complete object by looking for the last "},"  or "}" before end
+      const lastCloseBrace = content.lastIndexOf("}");
+      if (lastCloseBrace > 0) {
+        const trimmed = content.substring(0, lastCloseBrace + 1);
+        // Ensure it ends as a valid array
+        const arrayCandidate = trimmed.endsWith("]") ? trimmed : trimmed + "]";
+        // Also handle case where trailing comma before our added "]"
+        const cleaned = arrayCandidate.replace(/,\s*\]/, "]");
+        try {
+          accounts = JSON.parse(cleaned);
+        } catch {
+          console.error("JSON recovery also failed, returning partial parse");
+          accounts = [];
+        }
+      } else {
+        accounts = [];
+      }
+    }
 
     return new Response(JSON.stringify({ accounts, count: accounts.length }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
