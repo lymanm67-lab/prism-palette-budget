@@ -1663,6 +1663,11 @@ export type Database = {
         Row: {
           average_amount: number
           cancel_reminder_date: string | null
+          cancellation_confirmed_at: string | null
+          cancellation_difficulty: string
+          cancellation_notes: string | null
+          cancellation_requested_at: string | null
+          cancellation_status: string
           category_id: string | null
           created_at: string
           frequency: string
@@ -1675,11 +1680,19 @@ export type Database = {
           next_expected_date: string | null
           normalized_merchant: string | null
           notes: string | null
+          savings_reallocated_to: string | null
           updated_at: string
+          usage_status: string
+          user_usage_override: string | null
         }
         Insert: {
           average_amount?: number
           cancel_reminder_date?: string | null
+          cancellation_confirmed_at?: string | null
+          cancellation_difficulty?: string
+          cancellation_notes?: string | null
+          cancellation_requested_at?: string | null
+          cancellation_status?: string
           category_id?: string | null
           created_at?: string
           frequency?: string
@@ -1692,11 +1705,19 @@ export type Database = {
           next_expected_date?: string | null
           normalized_merchant?: string | null
           notes?: string | null
+          savings_reallocated_to?: string | null
           updated_at?: string
+          usage_status?: string
+          user_usage_override?: string | null
         }
         Update: {
           average_amount?: number
           cancel_reminder_date?: string | null
+          cancellation_confirmed_at?: string | null
+          cancellation_difficulty?: string
+          cancellation_notes?: string | null
+          cancellation_requested_at?: string | null
+          cancellation_status?: string
           category_id?: string | null
           created_at?: string
           frequency?: string
@@ -1709,7 +1730,10 @@ export type Database = {
           next_expected_date?: string | null
           normalized_merchant?: string | null
           notes?: string | null
+          savings_reallocated_to?: string | null
           updated_at?: string
+          usage_status?: string
+          user_usage_override?: string | null
         }
         Relationships: [
           {
