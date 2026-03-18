@@ -48,6 +48,7 @@ const Subscriptions = () => {
   const updateSub = useUpdateSubscription();
   const deleteSub = useDeleteSubscription();
   const getInsights = useSubscriptionInsights();
+  const scoreDifficulty = useScoreCancellationDifficulty();
   const { formatCurrency } = useCurrency();
   const { household } = useHousehold();
   const qc = useQueryClient();
