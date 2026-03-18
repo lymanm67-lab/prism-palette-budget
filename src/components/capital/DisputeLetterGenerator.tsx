@@ -70,11 +70,13 @@ interface Props {
 }
 
 const DisputeLetterGenerator = ({ dispute, account, onSubmit, open, onOpenChange }: Props) => {
+  const { household } = useHousehold();
   const letterRef = useRef<HTMLDivElement>(null);
   const [senderName, setSenderName] = useState('');
   const [senderAddress, setSenderAddress] = useState('');
   const [senderSSN, setSenderSSN] = useState('');
   const [senderDOB, setSenderDOB] = useState('');
+  const [savingToVault, setSavingToVault] = useState(false);
   const [reasonCode, setReasonCode] = useState(
     OSCAR_REASON_CODES.find(r => dispute.dispute_reason.toLowerCase().includes(r.label.toLowerCase()))?.code || ''
   );
