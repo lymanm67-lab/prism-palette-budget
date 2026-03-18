@@ -247,7 +247,35 @@ const Subscriptions = () => {
           <h1 className="font-display text-3xl font-extrabold tracking-tight">
             <span className="prism-gradient-text">Subscriptions</span>
           </h1>
-          <p className="text-muted-foreground mt-1">Track, review, and cancel unused subscriptions with ease.</p>
+          <div className="flex items-center gap-3 mt-2">
+            <p className="text-muted-foreground">Track, review, and cancel unused subscriptions.</p>
+            <div className="flex items-center rounded-lg border border-border bg-muted/30 p-0.5">
+              <button
+                onClick={() => setViewMode('personal')}
+                className={cn(
+                  'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all',
+                  viewMode === 'personal'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                <User className="h-3.5 w-3.5" />
+                Personal
+              </button>
+              <button
+                onClick={() => setViewMode('business')}
+                className={cn(
+                  'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all',
+                  viewMode === 'business'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                <Building2 className="h-3.5 w-3.5" />
+                Business
+              </button>
+            </div>
+          </div>
         </div>
         <PageOverview
           title="Subscription Cleanup"
