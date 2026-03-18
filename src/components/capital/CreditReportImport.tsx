@@ -278,10 +278,36 @@ const CreditReportImport = ({ onSuccess }: { onSuccess: () => void }) => {
       const { error } = await (supabase as any).from('credit_accounts').insert(rows);
       if (error) throw error;
 
+      // Save uploaded file to storage if available
+      if (uploadedFile) {
+        try {
+          const ext = uploadedFile.name.split('.').pop() || 'pdf';
+          const storagePath = `${household.id}/reports/${bureau.toLowerCase()}-${Date.now()}.${ext}`;
+          const { error: uploadError } = await supabase.storage
+            .from('credit-documents')
+            .upload(storagePath, uploadedFile);
+          if (uploadError) throw uploadError;
+
+          await (supabase as any).from('credit_documents').insert({
+            household_id: household.id,
+            document_type: 'credit_report',
+            bureau,
+            file_name: uploadedFile.name,
+            storage_path: storagePath,
+            file_size: uploadedFile.size,
+          });
+          toast.success('Credit report saved to your document vault');
+        } catch (storageErr: any) {
+          console.error('Storage save error:', storageErr);
+          toast.warning('Accounts imported but report file could not be saved');
+        }
+      }
+
       toast.success(`Imported ${selected.length} accounts`);
       setDialogOpen(false);
       setParsedAccounts([]);
       setRawText('');
+      setUploadedFile(null);
       onSuccess();
     } catch (e: any) {
       toast.error(e.message);
