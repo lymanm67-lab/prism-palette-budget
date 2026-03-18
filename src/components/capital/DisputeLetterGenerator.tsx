@@ -241,6 +241,11 @@ const DisputeLetterGenerator = ({ dispute, account, onSubmit, open, onOpenChange
           <Button variant="outline" size="sm" onClick={handleCopyText}><Copy className="h-4 w-4 mr-2" />Copy Text</Button>
           <Button variant="outline" size="sm" onClick={handlePrint}><Printer className="h-4 w-4 mr-2" />Print</Button>
           <Button variant="outline" size="sm" onClick={handleExportPdf}><Download className="h-4 w-4 mr-2" />Export PDF</Button>
+          <Button variant="outline" size="sm" asChild>
+            <a href={bureauInfo.disputeUrl} target="_blank" rel="noopener noreferrer">
+              <ExternalLink className="h-4 w-4 mr-2" />File at {dispute.bureau}
+            </a>
+          </Button>
           <Button size="sm" onClick={() => { onSubmit(dispute); onOpenChange(false); }}>
             <Send className="h-4 w-4 mr-2" />Mark as Submitted
           </Button>
