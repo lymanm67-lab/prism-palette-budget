@@ -39,18 +39,21 @@ export const OSCAR_REASON_CODES = [
   { code: '103', label: 'Result of identity theft', category: 'Fraud' },
 ];
 
-const BUREAU_ADDRESSES: Record<string, { name: string; address: string }> = {
+const BUREAU_ADDRESSES: Record<string, { name: string; address: string; disputeUrl: string }> = {
   Equifax: {
     name: 'Equifax Information Services LLC',
     address: 'P.O. Box 740256\nAtlanta, GA 30374-0256',
+    disputeUrl: 'https://www.equifax.com/personal/credit-report-services/credit-dispute/',
   },
   Experian: {
     name: 'Experian',
     address: 'P.O. Box 4500\nAllen, TX 75013',
+    disputeUrl: 'https://www.experian.com/disputes/main.html',
   },
   TransUnion: {
     name: 'TransUnion LLC Consumer Dispute Center',
     address: 'P.O. Box 2000\nChester, PA 19016',
+    disputeUrl: 'https://www.transunion.com/credit-disputes/dispute-your-credit',
   },
 };
 
