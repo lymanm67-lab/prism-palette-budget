@@ -1,0 +1,1 @@
+UPDATE subscriptions SET frequency = 'monthly' WHERE frequency = 'weekly';
