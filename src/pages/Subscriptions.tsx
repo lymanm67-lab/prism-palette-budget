@@ -30,6 +30,8 @@ import { UsageStatusBadge, UserOverrideBadge, CancellationStatusBadge } from '@/
 import { SubscriptionActionPanel } from '@/components/subscriptions/SubscriptionActionPanel';
 import { CleanupSavingsDashboard } from '@/components/subscriptions/CleanupSavingsDashboard';
 import { SavingsReallocationDialog } from '@/components/subscriptions/SavingsReallocationDialog';
+import { StillChargedAlerts } from '@/components/subscriptions/StillChargedAlerts';
+import { useCheckCanceledCharges } from '@/hooks/use-subscription-alerts';
 
 const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.06 } } };
 const item = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } };
