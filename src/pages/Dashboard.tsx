@@ -7,6 +7,7 @@ import GettingStartedWidget from '@/components/GettingStartedWidget';
 import FinancialHealthScore from '@/components/FinancialHealthScore';
 import GoalTrackerWidget from '@/components/GoalTrackerWidget';
 import SpendingAnomalyAlert from '@/components/SpendingAnomalyAlert';
+import { SpendGuardrailBar } from '@/components/guardrails/SpendGuardrailBar';
 import MoMIndicator from '@/components/MoMIndicator';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
