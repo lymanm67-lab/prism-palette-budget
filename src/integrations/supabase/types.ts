@@ -894,6 +894,83 @@ export type Database = {
           },
         ]
       }
+      guardrail_category_limits: {
+        Row: {
+          category_id: string
+          created_at: string
+          guardrail_id: string
+          id: string
+          weekly_limit: number
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          guardrail_id: string
+          id?: string
+          weekly_limit?: number
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          guardrail_id?: string
+          id?: string
+          weekly_limit?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guardrail_category_limits_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guardrail_category_limits_guardrail_id_fkey"
+            columns: ["guardrail_id"]
+            isOneToOne: false
+            referencedRelation: "guardrail_settings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guardrail_settings: {
+        Row: {
+          created_at: string
+          daily_limit: number | null
+          household_id: string
+          id: string
+          is_enabled: boolean
+          updated_at: string
+          weekly_limit: number | null
+        }
+        Insert: {
+          created_at?: string
+          daily_limit?: number | null
+          household_id: string
+          id?: string
+          is_enabled?: boolean
+          updated_at?: string
+          weekly_limit?: number | null
+        }
+        Update: {
+          created_at?: string
+          daily_limit?: number | null
+          household_id?: string
+          id?: string
+          is_enabled?: boolean
+          updated_at?: string
+          weekly_limit?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guardrail_settings_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: true
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       homebuyer_checklist: {
         Row: {
           created_at: string
