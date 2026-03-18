@@ -30,6 +30,8 @@ import { UsageStatusBadge, UserOverrideBadge, CancellationStatusBadge } from '@/
 import { SubscriptionActionPanel } from '@/components/subscriptions/SubscriptionActionPanel';
 import { CleanupSavingsDashboard } from '@/components/subscriptions/CleanupSavingsDashboard';
 import { SavingsReallocationDialog } from '@/components/subscriptions/SavingsReallocationDialog';
+import { StillChargedAlerts } from '@/components/subscriptions/StillChargedAlerts';
+import { useCheckCanceledCharges } from '@/hooks/use-subscription-alerts';
 
 const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.06 } } };
 const item = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } };
@@ -49,6 +51,7 @@ const Subscriptions = () => {
   const deleteSub = useDeleteSubscription();
   const getInsights = useSubscriptionInsights();
   const scoreDifficulty = useScoreCancellationDifficulty();
+  const checkCanceled = useCheckCanceledCharges();
   const { formatCurrency } = useCurrency();
   const { household } = useHousehold();
   const qc = useQueryClient();
@@ -266,6 +269,25 @@ const Subscriptions = () => {
             {scoreDifficulty.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Shield className="h-4 w-4 mr-2" />}
             Score Difficulty
           </Button>
+          <Button
+            variant="outline"
+            onClick={async () => {
+              try {
+                const result = await checkCanceled.mutateAsync();
+                if (result.alerts > 0) {
+                  toast.warning(`Found ${result.alerts} canceled subscription(s) still being charged!`);
+                } else {
+                  toast.success(`Checked ${result.checked} canceled subscriptions — no unexpected charges found`);
+                }
+              } catch {
+                toast.error('Failed to check canceled charges');
+              }
+            }}
+            disabled={checkCanceled.isPending || !cancelledSubs.length}
+          >
+            {checkCanceled.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <AlertTriangle className="h-4 w-4 mr-2" />}
+            Check Charges
+          </Button>
           <Button onClick={handleGetInsights} disabled={insightsLoading || !activeSubs.length}>
             {insightsLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
             AI Insights
@@ -315,6 +337,9 @@ const Subscriptions = () => {
           </Card>
         </motion.div>
       </div>
+
+      {/* Still-Charged Alerts */}
+      <StillChargedAlerts />
 
       {/* Cleanup Savings Dashboard */}
       <CleanupSavingsDashboard subscriptions={subscriptions || []} formatCurrency={formatCurrency} />
