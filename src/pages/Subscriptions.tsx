@@ -12,7 +12,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import {
   useSubscriptions, useDetectSubscriptions, useUpdateSubscription,
-  useDeleteSubscription, useSubscriptionInsights,
+  useDeleteSubscription, useSubscriptionInsights, useScoreCancellationDifficulty,
 } from '@/hooks/use-subscriptions';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -48,6 +48,7 @@ const Subscriptions = () => {
   const updateSub = useUpdateSubscription();
   const deleteSub = useDeleteSubscription();
   const getInsights = useSubscriptionInsights();
+  const scoreDifficulty = useScoreCancellationDifficulty();
   const { formatCurrency } = useCurrency();
   const { household } = useHousehold();
   const qc = useQueryClient();
@@ -249,6 +250,21 @@ const Subscriptions = () => {
           <Button variant="outline" onClick={handleDetect} disabled={detectSubs.isPending}>
             {detectSubs.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
             Detect
+          </Button>
+          <Button
+            variant="outline"
+            onClick={async () => {
+              try {
+                const result = await scoreDifficulty.mutateAsync();
+                toast.success(`Scored cancellation difficulty for ${result.scored} subscriptions`);
+              } catch {
+                toast.error('Failed to score cancellation difficulty');
+              }
+            }}
+            disabled={scoreDifficulty.isPending || !activeSubs.length}
+          >
+            {scoreDifficulty.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Shield className="h-4 w-4 mr-2" />}
+            Score Difficulty
           </Button>
           <Button onClick={handleGetInsights} disabled={insightsLoading || !activeSubs.length}>
             {insightsLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}

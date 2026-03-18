@@ -106,6 +106,9 @@ export function SubscriptionActionPanel({ subscription: sub, onClose, onUpdate, 
               </span>
               <Badge variant="outline" className={`text-xs ${diff.color}`}>{diff.label}</Badge>
             </div>
+            {sub.cancellation_notes && (
+              <p className="text-xs text-muted-foreground italic pl-5">{sub.cancellation_notes}</p>
+            )}
           </div>
 
           <Separator />
