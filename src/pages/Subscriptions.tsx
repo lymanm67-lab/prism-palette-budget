@@ -319,6 +319,9 @@ const Subscriptions = () => {
         </motion.div>
       </div>
 
+      {/* Still-Charged Alerts */}
+      <StillChargedAlerts />
+
       {/* Cleanup Savings Dashboard */}
       <CleanupSavingsDashboard subscriptions={subscriptions || []} formatCurrency={formatCurrency} />
 
