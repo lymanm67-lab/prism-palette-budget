@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { FileText, Download, Copy, Send, Printer, ExternalLink } from 'lucide-react';
+import { FileText, Download, Copy, Send, Printer, ExternalLink, Save, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -9,10 +9,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { exportToPdf } from '@/lib/export-utils';
+import { supabase } from '@/integrations/supabase/client';
+import { useHousehold } from '@/contexts/HouseholdContext';
 import { toast } from 'sonner';
 import { format, addDays } from 'date-fns';
 import { type CreditDispute } from '@/hooks/use-disputes';
 import { type CreditAccount } from '@/hooks/use-credit-accounts';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 // eOSCAR-compatible reason codes (CDIA Data Reporting Resource Guide)
 export const OSCAR_REASON_CODES = [
