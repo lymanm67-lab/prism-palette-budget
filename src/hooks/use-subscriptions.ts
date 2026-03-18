@@ -74,3 +74,18 @@ export function useSubscriptionInsights() {
     },
   });
 }
+
+export function useScoreCancellationDifficulty() {
+  const { household } = useHousehold();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke('score-cancellation-difficulty', {
+        body: { household_id: household!.id },
+      });
+      if (error) throw error;
+      return data as { scored: number; results: { id: string; merchant: string; difficulty: string; reason: string }[] };
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['subscriptions'] }),
+  });
+}
