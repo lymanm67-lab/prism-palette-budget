@@ -104,11 +104,11 @@ serve(async (req) => {
       if (stdDev > avgInterval * 0.4) continue;
 
       let frequency: string;
-      if (avgInterval <= 10) frequency = "weekly";
-      else if (avgInterval <= 18) frequency = "biweekly";
-      else if (avgInterval <= 45) frequency = "monthly";
-      else if (avgInterval <= 100) frequency = "quarterly";
-      else if (avgInterval <= 400) frequency = "yearly";
+      if (avgInterval >= 5 && avgInterval <= 9) frequency = "weekly";
+      else if (avgInterval >= 12 && avgInterval <= 18) frequency = "biweekly";
+      else if (avgInterval >= 25 && avgInterval <= 45) frequency = "monthly";
+      else if (avgInterval >= 80 && avgInterval <= 110) frequency = "quarterly";
+      else if (avgInterval >= 340 && avgInterval <= 400) frequency = "yearly";
       else continue;
 
       const avgAmount = group.amounts.reduce((s, v) => s + v, 0) / group.amounts.length;
