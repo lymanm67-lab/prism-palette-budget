@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { FileText, Download, Copy, Send, Printer } from 'lucide-react';
+import { FileText, Download, Copy, Send, Printer, ExternalLink } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -39,18 +39,21 @@ export const OSCAR_REASON_CODES = [
   { code: '103', label: 'Result of identity theft', category: 'Fraud' },
 ];
 
-const BUREAU_ADDRESSES: Record<string, { name: string; address: string }> = {
+const BUREAU_ADDRESSES: Record<string, { name: string; address: string; disputeUrl: string }> = {
   Equifax: {
     name: 'Equifax Information Services LLC',
     address: 'P.O. Box 740256\nAtlanta, GA 30374-0256',
+    disputeUrl: 'https://www.equifax.com/personal/credit-report-services/credit-dispute/',
   },
   Experian: {
     name: 'Experian',
     address: 'P.O. Box 4500\nAllen, TX 75013',
+    disputeUrl: 'https://www.experian.com/disputes/main.html',
   },
   TransUnion: {
     name: 'TransUnion LLC Consumer Dispute Center',
     address: 'P.O. Box 2000\nChester, PA 19016',
+    disputeUrl: 'https://www.transunion.com/credit-disputes/dispute-your-credit',
   },
 };
 
@@ -238,6 +241,11 @@ const DisputeLetterGenerator = ({ dispute, account, onSubmit, open, onOpenChange
           <Button variant="outline" size="sm" onClick={handleCopyText}><Copy className="h-4 w-4 mr-2" />Copy Text</Button>
           <Button variant="outline" size="sm" onClick={handlePrint}><Printer className="h-4 w-4 mr-2" />Print</Button>
           <Button variant="outline" size="sm" onClick={handleExportPdf}><Download className="h-4 w-4 mr-2" />Export PDF</Button>
+          <Button variant="outline" size="sm" asChild>
+            <a href={bureauInfo.disputeUrl} target="_blank" rel="noopener noreferrer">
+              <ExternalLink className="h-4 w-4 mr-2" />File at {dispute.bureau}
+            </a>
+          </Button>
           <Button size="sm" onClick={() => { onSubmit(dispute); onOpenChange(false); }}>
             <Send className="h-4 w-4 mr-2" />Mark as Submitted
           </Button>
