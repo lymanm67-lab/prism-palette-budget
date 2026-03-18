@@ -289,7 +289,7 @@ const Subscriptions = () => {
                   <TooltipTrigger asChild>
                     <span tabIndex={0} className="inline-flex">
                       <Button
-                        variant="outline" size="icon" className="h-8 w-8"
+                        variant="outline" size="icon" className={cn("h-8 w-8", !cancelledSubs.length && "opacity-50")}
                         disabled={checkCanceled.isPending || !cancelledSubs.length}
                         onClick={async () => {
                           try {
@@ -302,7 +302,7 @@ const Subscriptions = () => {
                       </Button>
                     </span>
                   </TooltipTrigger>
-                  <TooltipContent>Check Canceled Charges</TooltipContent>
+                  <TooltipContent>{cancelledSubs.length ? 'Check Canceled Charges' : 'No cancelled subs to check'}</TooltipContent>
                 </Tooltip>
 
                 <Tooltip>
