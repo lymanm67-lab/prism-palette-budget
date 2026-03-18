@@ -249,7 +249,7 @@ const Subscriptions = () => {
             </div>
 
             {/* Icon action buttons with tooltips */}
-            <TooltipProvider delayDuration={200}>
+            <TooltipProvider delayDuration={0}>
               <div className="flex items-center gap-1">
                 <Tooltip>
                   <TooltipTrigger asChild>
