@@ -1,30 +1,35 @@
 import { useState, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import {
   useSubscriptions, useDetectSubscriptions, useUpdateSubscription,
   useDeleteSubscription, useSubscriptionInsights,
 } from '@/hooks/use-subscriptions';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useCurrency } from '@/hooks/use-currency';
 import { format, parseISO } from 'date-fns';
 import {
   Loader2, RefreshCw, Sparkles, CreditCard, Calendar, TrendingDown,
   AlertTriangle, CheckCircle2, XCircle, Bell, Trash2, DollarSign, Plus, Pencil,
+  MoreVertical, Shield,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import PageOverview from '@/components/PageOverview';
 import CategoryCombobox from '@/components/CategoryCombobox';
+import { UsageStatusBadge, UserOverrideBadge, CancellationStatusBadge } from '@/components/subscriptions/SubscriptionStatusBadge';
+import { SubscriptionActionPanel } from '@/components/subscriptions/SubscriptionActionPanel';
+import { CleanupSavingsDashboard } from '@/components/subscriptions/CleanupSavingsDashboard';
+import { SavingsReallocationDialog } from '@/components/subscriptions/SavingsReallocationDialog';
 
 const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.06 } } };
 const item = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } };
@@ -54,9 +59,12 @@ const Subscriptions = () => {
   const [addOpen, setAddOpen] = useState(false);
   const [newSub, setNewSub] = useState({ merchant: '', average_amount: '', frequency: 'monthly', category_id: '' });
   const [editSub, setEditSub] = useState<any>(null);
+  const [selectedSubId, setSelectedSubId] = useState<string | null>(null);
+  const [reallocationSub, setReallocationSub] = useState<any>(null);
 
   const activeSubs = useMemo(() => (subscriptions || []).filter(s => !s.is_cancelled), [subscriptions]);
   const cancelledSubs = useMemo(() => (subscriptions || []).filter(s => s.is_cancelled), [subscriptions]);
+  const selectedSub = useMemo(() => activeSubs.find(s => s.id === selectedSubId), [activeSubs, selectedSubId]);
 
   const totalMonthly = useMemo(() => {
     return activeSubs.reduce((sum, s) => {
@@ -92,9 +100,27 @@ const Subscriptions = () => {
     }
   };
 
+  const handleUpdate = async (id: string, updates: any) => {
+    try {
+      await updateSub.mutateAsync({ id, ...updates });
+      // If marking as canceled, trigger reallocation
+      if (updates.cancellation_status === 'canceled' || updates.is_cancelled === true) {
+        const sub = (subscriptions || []).find(s => s.id === id);
+        if (sub && updates.cancellation_status === 'canceled') {
+          setReallocationSub(sub);
+          setSelectedSubId(null);
+        }
+      }
+    } catch {
+      toast.error('Failed to update subscription');
+    }
+  };
+
   const handleCancel = async (id: string) => {
     try {
-      await updateSub.mutateAsync({ id, is_cancelled: true });
+      await updateSub.mutateAsync({ id, is_cancelled: true, cancellation_status: 'canceled', cancellation_confirmed_at: new Date().toISOString() });
+      const sub = (subscriptions || []).find(s => s.id === id);
+      if (sub) setReallocationSub(sub);
       toast.success('Subscription marked as cancelled');
     } catch {
       toast.error('Failed to update subscription');
@@ -103,7 +129,7 @@ const Subscriptions = () => {
 
   const handleReactivate = async (id: string) => {
     try {
-      await updateSub.mutateAsync({ id, is_cancelled: false });
+      await updateSub.mutateAsync({ id, is_cancelled: false, cancellation_status: 'not_started', cancellation_confirmed_at: null });
       toast.success('Subscription reactivated');
     } catch {
       toast.error('Failed to update');
@@ -173,6 +199,17 @@ const Subscriptions = () => {
     }
   };
 
+  const handleSetUsageOverride = async (id: string, override: string) => {
+    await handleUpdate(id, { user_usage_override: override });
+    toast.success('Usage status updated');
+  };
+
+  const handleAllocateSavings = async (destination: string) => {
+    if (!reallocationSub) return;
+    await handleUpdate(reallocationSub.id, { savings_reallocated_to: destination });
+    toast.success(`Savings allocated to ${destination.replace(/_/g, ' ')}`);
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-20">
@@ -188,15 +225,15 @@ const Subscriptions = () => {
           <h1 className="font-display text-3xl font-extrabold tracking-tight">
             <span className="prism-gradient-text">Subscriptions</span>
           </h1>
-          <p className="text-muted-foreground mt-1">Track and manage your recurring subscriptions.</p>
+          <p className="text-muted-foreground mt-1">Track, review, and cancel unused subscriptions with ease.</p>
         </div>
         <PageOverview
-          title="Subscriptions"
-          description="AI-powered subscription detection and management. Track recurring payments, get cancellation insights, and find savings."
+          title="Subscription Cleanup"
+          description="AI-powered subscription detection with assisted cancellation workflows. Find unused subscriptions, get cancellation help, and reclaim your money."
           icon={CreditCard}
           iconColor="text-prism-violet"
-          ttsScript="Welcome to Subscriptions. This page detects recurring payments from your transactions using AI. You can see your active subscriptions, monthly and yearly costs, and get AI-powered insights on potential savings. Mark subscriptions as cancelled or set reminders before renewal dates."
-          features={['Auto-detect subscriptions from transactions', 'AI savings recommendations', 'Cancellation tracking & reminders', 'Monthly/yearly cost summary']}
+          ttsScript="Welcome to Subscription Cleanup. This page detects recurring payments from your transactions using AI. You can classify subscriptions, get cancellation assistance with pre-written emails and scripts, and track your savings."
+          features={['Auto-detect subscriptions from transactions', 'Assisted cancellation with email templates & scripts', 'Cancellation tracking & reminders', 'Savings impact dashboard with reallocation']}
         />
         <div className="flex gap-2">
           <TooltipProvider>
@@ -263,6 +300,9 @@ const Subscriptions = () => {
         </motion.div>
       </div>
 
+      {/* Cleanup Savings Dashboard */}
+      <CleanupSavingsDashboard subscriptions={subscriptions || []} formatCurrency={formatCurrency} />
+
       {/* AI Insights Panel */}
       {insightsData && (
         <motion.div variants={item}>
@@ -312,78 +352,122 @@ const Subscriptions = () => {
         </motion.div>
       )}
 
-      {/* Active Subscriptions */}
-      <motion.div variants={item}>
-        <Card className="prism-card-shine border-border/50">
-          <CardHeader className="pb-3">
-            <CardTitle className="font-display text-lg">Active Subscriptions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {activeSubs.length === 0 ? (
-              <div className="text-center py-8">
-                <CreditCard className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3" />
-                <p className="text-muted-foreground text-sm">No subscriptions detected yet.</p>
-                <p className="text-xs text-muted-foreground mt-1">Click "Detect" to scan your transactions for recurring payments.</p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {activeSubs.map(sub => (
-                  <div key={sub.id} className="flex items-center justify-between rounded-xl border border-border/30 p-4 interactive-row hover-border-glow">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <div className="h-10 w-10 rounded-lg flex items-center justify-center text-xs font-bold bg-prism-violet/10 text-prism-violet shrink-0">
-                        {(sub.merchant || '?').substring(0, 2).toUpperCase()}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="font-medium text-sm truncate">{sub.merchant}</p>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <Badge variant="outline" className="text-[10px] h-5">
-                            {FREQ_LABELS[sub.frequency] || sub.frequency}
-                          </Badge>
-                          {sub.next_expected_date && (
-                            <span className="flex items-center gap-1">
-                              <Calendar className="h-3 w-3" />
-                              Next: {format(parseISO(sub.next_expected_date), 'MMM d')}
-                            </span>
-                          )}
-                          {sub.cancel_reminder_date && (
-                            <span className="flex items-center gap-1 text-prism-orange">
-                              <Bell className="h-3 w-3" />
-                              Remind: {format(parseISO(sub.cancel_reminder_date), 'MMM d')}
-                            </span>
-                          )}
+      {/* Active Subscriptions + Action Panel */}
+      <div className="grid gap-6 lg:grid-cols-5">
+        <motion.div variants={item} className={selectedSub ? 'lg:col-span-3' : 'lg:col-span-5'}>
+          <Card className="prism-card-shine border-border/50">
+            <CardHeader className="pb-3">
+              <CardTitle className="font-display text-lg flex items-center gap-2">
+                Active Subscriptions
+                <Badge variant="outline" className="text-xs">{activeSubs.length}</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {activeSubs.length === 0 ? (
+                <div className="text-center py-8">
+                  <CreditCard className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3" />
+                  <p className="text-muted-foreground text-sm">No subscriptions detected yet.</p>
+                  <p className="text-xs text-muted-foreground mt-1">Click "Detect" to scan your transactions for recurring payments.</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {activeSubs.map(sub => (
+                    <div
+                      key={sub.id}
+                      className={`flex items-center justify-between rounded-xl border p-4 cursor-pointer transition-all
+                        ${selectedSubId === sub.id ? 'border-prism-violet/50 bg-prism-violet/5 ring-1 ring-prism-violet/20' : 'border-border/30 interactive-row hover-border-glow'}`}
+                      onClick={() => setSelectedSubId(selectedSubId === sub.id ? null : sub.id)}
+                    >
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="h-10 w-10 rounded-lg flex items-center justify-center text-xs font-bold bg-prism-violet/10 text-prism-violet shrink-0">
+                          {(sub.merchant || '?').substring(0, 2).toUpperCase()}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-medium text-sm truncate">{sub.merchant}</p>
+                          <div className="flex items-center gap-1.5 flex-wrap mt-1">
+                            <Badge variant="outline" className="text-[10px] h-5">
+                              {FREQ_LABELS[sub.frequency] || sub.frequency}
+                            </Badge>
+                            <UsageStatusBadge status={sub.usage_status || 'active'} />
+                            <UserOverrideBadge override={sub.user_usage_override} />
+                            <CancellationStatusBadge status={sub.cancellation_status || 'not_started'} />
+                            {sub.next_expected_date && (
+                              <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                                <Calendar className="h-3 w-3" />
+                                {format(parseISO(sub.next_expected_date), 'MMM d')}
+                              </span>
+                            )}
+                            {sub.cancel_reminder_date && (
+                              <span className="flex items-center gap-1 text-[10px] text-prism-orange">
+                                <Bell className="h-3 w-3" />
+                                {format(parseISO(sub.cancel_reminder_date), 'MMM d')}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="font-display text-lg font-semibold text-prism-rose whitespace-nowrap">
-                        {formatCurrency(sub.average_amount)}
-                      </span>
-                      <div className="flex gap-1">
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(sub)}>
-                                <Pencil className="h-3.5 w-3.5" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Edit</TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setReminderDialog(sub.id); setReminderDate(''); }} title="Set reminder">
-                          <Bell className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-prism-rose hover:text-prism-rose" onClick={() => handleCancel(sub.id)} title="Mark cancelled">
-                          <XCircle className="h-3.5 w-3.5" />
-                        </Button>
+                      <div className="flex items-center gap-3">
+                        <span className="font-display text-lg font-semibold text-prism-rose whitespace-nowrap">
+                          {formatCurrency(sub.average_amount)}
+                        </span>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <MoreVertical className="h-3.5 w-3.5" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openEdit(sub); }}>
+                              <Pencil className="h-3.5 w-3.5 mr-2" /> Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setSelectedSubId(sub.id); }}>
+                              <Shield className="h-3.5 w-3.5 mr-2" /> Take Action
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setReminderDialog(sub.id); setReminderDate(''); }}>
+                              <Bell className="h-3.5 w-3.5 mr-2" /> Set Reminder
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleSetUsageOverride(sub.id, 'still_using'); }}>
+                              <CheckCircle2 className="h-3.5 w-3.5 mr-2" /> Still Using
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleSetUsageOverride(sub.id, 'no_longer_using'); }}>
+                              <AlertTriangle className="h-3.5 w-3.5 mr-2" /> Not Using
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleSetUsageOverride(sub.id, 'unsure'); }}>
+                              Unsure
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-destructive" onClick={(e) => { e.stopPropagation(); handleCancel(sub.id); }}>
+                              <XCircle className="h-3.5 w-3.5 mr-2" /> Mark Cancelled
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </motion.div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Action Panel */}
+        <AnimatePresence>
+          {selectedSub && (
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              className="lg:col-span-2"
+            >
+              <SubscriptionActionPanel
+                subscription={selectedSub}
+                onClose={() => setSelectedSubId(null)}
+                onUpdate={handleUpdate}
+                formatCurrency={formatCurrency}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
       {/* Cancelled */}
       {cancelledSubs.length > 0 && (
@@ -401,6 +485,11 @@ const Subscriptions = () => {
                         {(sub.merchant || '?').substring(0, 2).toUpperCase()}
                       </div>
                       <span className="text-sm line-through text-muted-foreground">{sub.merchant}</span>
+                      {sub.savings_reallocated_to && (
+                        <Badge variant="outline" className="text-[10px] h-5 bg-prism-teal/10 text-prism-teal border-prism-teal/30">
+                          → {sub.savings_reallocated_to.replace(/_/g, ' ')}
+                        </Badge>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-muted-foreground">{formatCurrency(sub.average_amount)}</span>
@@ -418,6 +507,16 @@ const Subscriptions = () => {
           </Card>
         </motion.div>
       )}
+
+      {/* Savings Reallocation Dialog */}
+      <SavingsReallocationDialog
+        open={!!reallocationSub}
+        onClose={() => setReallocationSub(null)}
+        merchant={reallocationSub?.merchant || ''}
+        amount={reallocationSub?.average_amount || 0}
+        formatCurrency={formatCurrency}
+        onAllocate={handleAllocateSavings}
+      />
 
       {/* Reminder Dialog */}
       <Dialog open={!!reminderDialog} onOpenChange={(o) => !o && setReminderDialog(null)}>
