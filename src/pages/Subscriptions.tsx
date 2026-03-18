@@ -287,18 +287,20 @@ const Subscriptions = () => {
 
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button
-                      variant="outline" size="icon" className="h-8 w-8"
-                      disabled={checkCanceled.isPending || !cancelledSubs.length}
-                      onClick={async () => {
-                        try {
-                          const r = await checkCanceled.mutateAsync();
-                          r.alerts > 0 ? toast.warning(`${r.alerts} still charged!`) : toast.success('No zombie charges');
-                        } catch { toast.error('Check failed'); }
-                      }}
-                    >
-                      {checkCanceled.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <AlertTriangle className="h-4 w-4 text-prism-orange" />}
-                    </Button>
+                    <span tabIndex={0} className="inline-flex">
+                      <Button
+                        variant="outline" size="icon" className="h-8 w-8"
+                        disabled={checkCanceled.isPending || !cancelledSubs.length}
+                        onClick={async () => {
+                          try {
+                            const r = await checkCanceled.mutateAsync();
+                            r.alerts > 0 ? toast.warning(`${r.alerts} still charged!`) : toast.success('No zombie charges');
+                          } catch { toast.error('Check failed'); }
+                        }}
+                      >
+                        {checkCanceled.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <AlertTriangle className="h-4 w-4 text-prism-orange" />}
+                      </Button>
+                    </span>
                   </TooltipTrigger>
                   <TooltipContent>Check Canceled Charges</TooltipContent>
                 </Tooltip>
