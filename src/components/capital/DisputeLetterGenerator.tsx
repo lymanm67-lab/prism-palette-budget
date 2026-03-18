@@ -110,6 +110,59 @@ const DisputeLetterGenerator = ({ dispute, account, onSubmit, open, onOpenChange
     printWindow.print();
   };
 
+  const handleSaveToVault = async () => {
+    if (!letterRef.current || !household) return;
+    setSavingToVault(true);
+    try {
+      const canvas = await html2canvas(letterRef.current, {
+        scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff',
+      });
+      const imgData = canvas.toDataURL('image/png');
+      const imgWidth = 210;
+      const pageHeight = 297;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      let heightLeft = imgHeight;
+      let position = 0;
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      const pdfBlob = pdf.output('blob');
+      const fileName = `dispute-letter-${dispute.bureau}-${format(new Date(), 'yyyyMMdd-HHmmss')}.pdf`;
+      const storagePath = `${household.id}/letters/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('credit-documents')
+        .upload(storagePath, pdfBlob, { contentType: 'application/pdf' });
+      if (uploadError) throw uploadError;
+
+      await (supabase as any).from('credit_documents').insert({
+        household_id: household.id,
+        document_type: 'dispute_letter',
+        bureau: dispute.bureau,
+        file_name: fileName,
+        storage_path: storagePath,
+        file_size: pdfBlob.size,
+        dispute_id: dispute.id,
+        notes: `Dispute letter for ${account?.account_name || 'Unknown'} — ${dispute.dispute_reason}`,
+      });
+
+      toast.success('Dispute letter saved to your document vault');
+    } catch (err: any) {
+      console.error('Save to vault error:', err);
+      toast.error(`Could not save: ${err.message}`);
+    } finally {
+      setSavingToVault(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
