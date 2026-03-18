@@ -292,6 +292,11 @@ const Dashboard = () => {
         <SpendingAnomalyAlert />
       </motion.div>
 
+      {/* Smart Spend Guardrails */}
+      <motion.div variants={item}>
+        <SpendGuardrailBar />
+      </motion.div>
+
       {/* Getting Started Widget */}
       <motion.div variants={item}>
         <GettingStartedWidget />
