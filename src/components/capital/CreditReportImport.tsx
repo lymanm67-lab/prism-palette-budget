@@ -102,6 +102,7 @@ const CreditReportImport = ({ onSuccess }: { onSuccess: () => void }) => {
   const [parsedAccounts, setParsedAccounts] = useState<ParsedAccount[]>([]);
   const [rawText, setRawText] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 
   const fmt = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
 
