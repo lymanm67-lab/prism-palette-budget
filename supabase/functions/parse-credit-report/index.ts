@@ -99,7 +99,7 @@ Deno.serve(async (req) => {
         model,
         messages,
         temperature: 0.1,
-        max_tokens: 8000,
+        max_tokens: 16000,
       }),
     });
 
