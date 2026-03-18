@@ -10,7 +10,7 @@ export function useSubscriptions() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('subscriptions' as any)
-        .select('*, categories(name, color)')
+        .select('*, categories(name, color, group_id, category_groups(budget_type, business_profile_id))')
         .eq('household_id', household!.id)
         .order('average_amount', { ascending: false });
       if (error) throw error;
