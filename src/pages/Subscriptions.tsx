@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { cn } from '@/lib/utils';
 import { useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,7 +22,7 @@ import { format, parseISO } from 'date-fns';
 import {
   Loader2, RefreshCw, Sparkles, CreditCard, Calendar, TrendingDown,
   AlertTriangle, CheckCircle2, XCircle, Bell, Trash2, DollarSign, Plus, Pencil,
-  MoreVertical, Shield,
+  MoreVertical, Shield, Building2, User,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import PageOverview from '@/components/PageOverview';
@@ -65,6 +66,7 @@ const Subscriptions = () => {
   const [editSub, setEditSub] = useState<any>(null);
   const [selectedSubId, setSelectedSubId] = useState<string | null>(null);
   const [reallocationSub, setReallocationSub] = useState<any>(null);
+  const [viewMode, setViewMode] = useState<'personal' | 'business'>('personal');
 
   const NON_SUB_KEYWORDS = ['rent', 'mortgage', 'insurance', 'utilit', 'electric', 'gas', 'water', 'sewer', 'trash', 'debt', 'loan', 'transfer', 'payment'];
 
@@ -74,8 +76,17 @@ const Subscriptions = () => {
     return NON_SUB_KEYWORDS.some(kw => merchant.includes(kw) || catName.includes(kw)) || (sub.is_transfer === true);
   };
 
-  const activeSubs = useMemo(() => (subscriptions || []).filter(s => !s.is_cancelled), [subscriptions]);
-  const cancelledSubs = useMemo(() => (subscriptions || []).filter(s => s.is_cancelled), [subscriptions]);
+  const isBusiness = (sub: any) => {
+    const group = sub.categories?.category_groups;
+    return group?.budget_type === 'business' || !!group?.business_profile_id;
+  };
+
+  const filteredSubs = useMemo(() => {
+    return (subscriptions || []).filter(s => viewMode === 'business' ? isBusiness(s) : !isBusiness(s));
+  }, [subscriptions, viewMode]);
+
+  const activeSubs = useMemo(() => filteredSubs.filter(s => !s.is_cancelled), [filteredSubs]);
+  const cancelledSubs = useMemo(() => filteredSubs.filter(s => s.is_cancelled), [filteredSubs]);
   const selectedSub = useMemo(() => activeSubs.find(s => s.id === selectedSubId), [activeSubs, selectedSubId]);
 
   const totalMonthly = useMemo(() => {
@@ -237,7 +248,35 @@ const Subscriptions = () => {
           <h1 className="font-display text-3xl font-extrabold tracking-tight">
             <span className="prism-gradient-text">Subscriptions</span>
           </h1>
-          <p className="text-muted-foreground mt-1">Track, review, and cancel unused subscriptions with ease.</p>
+          <div className="flex items-center gap-3 mt-2">
+            <p className="text-muted-foreground">Track, review, and cancel unused subscriptions.</p>
+            <div className="flex items-center rounded-lg border border-border bg-muted/30 p-0.5">
+              <button
+                onClick={() => setViewMode('personal')}
+                className={cn(
+                  'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all',
+                  viewMode === 'personal'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                <User className="h-3.5 w-3.5" />
+                Personal
+              </button>
+              <button
+                onClick={() => setViewMode('business')}
+                className={cn(
+                  'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all',
+                  viewMode === 'business'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                <Building2 className="h-3.5 w-3.5" />
+                Business
+              </button>
+            </div>
+          </div>
         </div>
         <PageOverview
           title="Subscription Cleanup"

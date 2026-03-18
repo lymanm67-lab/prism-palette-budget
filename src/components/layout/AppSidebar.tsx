@@ -4,7 +4,7 @@ import {
   Settings, Bot, LogOut, ChevronLeft, ChevronRight, Sun, Moon, TrendingDown,
   TrendingUp, Calculator, Scale, Heart, Home, Wallet, RepeatIcon,
   CreditCard, LineChart, Sparkles, Shield, FileSearch, FileText, Building2,
-  DollarSign, Clock, Lock, Scissors, ClipboardCheck,
+  DollarSign, Clock, Lock, Scissors, ClipboardCheck, Gauge,
 } from 'lucide-react';
 import prismLogo from '@/assets/prism-budget-logo.png';
 import { useAuth } from '@/contexts/AuthContext';
@@ -16,54 +16,56 @@ import { useSidebarBadges } from '@/hooks/use-sidebar-badges';
 
 const NAV_SECTIONS = [
   {
-    label: 'Home',
+    label: 'Overview',
     items: [
       { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', color: 'text-prism-teal' },
+      { to: '/reports', icon: BarChart3, label: 'Reports', color: 'text-prism-orange' },
+      { to: '/year-in-review', icon: Sparkles, label: 'Year in Review', color: 'text-prism-amber' },
     ],
   },
   {
-    label: 'Track',
+    label: 'Track & Organize',
     items: [
       { to: '/accounts', icon: Landmark, label: 'Accounts', color: 'text-prism-sky' },
       { to: '/transactions', icon: ArrowLeftRight, label: 'Transactions', color: 'text-prism-orange' },
+      { to: '/categories', icon: Tags, label: 'Categories', color: 'text-prism-lime' },
       { to: '/recurring', icon: RepeatIcon, label: 'Recurring', color: 'text-prism-teal' },
       { to: '/subscriptions', icon: CreditCard, label: 'Subscriptions', color: 'text-prism-violet' },
     ],
   },
   {
-    label: 'Plan',
+    label: 'Budget & Control',
     items: [
       { to: '/budgets', icon: PiggyBank, label: 'Budgets', color: 'text-prism-amber' },
-      { to: '/categories', icon: Tags, label: 'Categories', color: 'text-prism-lime' },
       { to: '/cash-flow', icon: Wallet, label: 'Cash Flow', color: 'text-prism-teal' },
       { to: '/forecast', icon: LineChart, label: 'Forecast', color: 'text-prism-sky' },
-      { to: '/calculators', icon: Calculator, label: 'Calculators', color: 'text-prism-indigo' },
+      { to: '/spending-trends', icon: TrendingUp, label: 'Spending Trends', color: 'text-prism-lime' },
+      { to: '/bill-negotiation', icon: Scissors, label: 'Bill Negotiation', color: 'text-prism-rose' },
     ],
   },
   {
-    label: 'Grow',
+    label: 'Eliminate Debt',
+    items: [
+      { to: '/debt-payoff', icon: TrendingDown, label: 'Debt Payoff', color: 'text-prism-rose' },
+      { to: '/calculators', icon: Calculator, label: 'Calculators', color: 'text-prism-indigo' },
+      { to: '/tax-assistant', icon: Bot, label: 'Tax Assistant', color: 'text-prism-indigo' },
+    ],
+  },
+  {
+    label: 'Build Wealth',
     items: [
       { to: '/goals', icon: Target, label: 'Goals', color: 'text-prism-lime' },
-      { to: '/debt-payoff', icon: TrendingDown, label: 'Debt Payoff', color: 'text-prism-rose' },
       { to: '/net-worth', icon: Scale, label: 'Net Worth', color: 'text-prism-teal' },
       { to: '/investments', icon: TrendingUp, label: 'Investments', color: 'text-prism-indigo' },
-    ],
-  },
-  {
-    label: 'Insights',
-    items: [
-      { to: '/reports', icon: BarChart3, label: 'Reports', color: 'text-prism-orange' },
-      { to: '/spending-trends', icon: TrendingUp, label: 'Spending Trends', color: 'text-prism-lime' },
-      { to: '/tax-assistant', icon: Bot, label: 'Tax Assistant', color: 'text-prism-indigo' },
-      { to: '/year-in-review', icon: Sparkles, label: 'Year in Review', color: 'text-prism-amber' },
+      { to: '/home-buying', icon: Home, label: 'Home Buying', color: 'text-prism-amber' },
     ],
   },
   {
     label: 'Capital',
     items: [
-      { to: '/capital', icon: Shield, label: 'Capital Dashboard', color: 'text-prism-teal' },
+      { to: '/capital', icon: Shield, label: 'Dashboard', color: 'text-prism-teal' },
       { to: '/capital/credit-overview', icon: FileSearch, label: 'Credit Overview', color: 'text-prism-sky' },
-      { to: '/capital/metro2-scanner', icon: FileSearch, label: 'Metro2 Scanner', color: 'text-prism-amber' },
+      { to: '/capital/metro2-scanner', icon: Gauge, label: 'Metro2 Scanner', color: 'text-prism-amber' },
       { to: '/capital/disputes', icon: FileText, label: 'Disputes', color: 'text-prism-orange' },
       { to: '/capital/business-credit', icon: Building2, label: 'Business Credit', color: 'text-prism-indigo' },
       { to: '/capital/bankability', icon: BarChart3, label: 'Bankability', color: 'text-prism-violet' },
@@ -77,8 +79,6 @@ const NAV_SECTIONS = [
   {
     label: 'More',
     items: [
-      { to: '/bill-negotiation', icon: Scissors, label: 'Bill Negotiation', color: 'text-prism-teal' },
-      { to: '/home-buying', icon: Home, label: 'Home Buying', color: 'text-prism-amber' },
       { to: '/settings', icon: Settings, label: 'Settings', color: 'text-muted-foreground' },
       { to: '/about', icon: Heart, label: 'About', color: 'text-prism-rose' },
       { to: '/legal', icon: Scale, label: 'Legal', color: 'text-muted-foreground' },
