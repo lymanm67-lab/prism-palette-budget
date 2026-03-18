@@ -65,6 +65,7 @@ const Subscriptions = () => {
   const [editSub, setEditSub] = useState<any>(null);
   const [selectedSubId, setSelectedSubId] = useState<string | null>(null);
   const [reallocationSub, setReallocationSub] = useState<any>(null);
+  const [viewMode, setViewMode] = useState<'personal' | 'business'>('personal');
 
   const NON_SUB_KEYWORDS = ['rent', 'mortgage', 'insurance', 'utilit', 'electric', 'gas', 'water', 'sewer', 'trash', 'debt', 'loan', 'transfer', 'payment'];
 
@@ -74,8 +75,17 @@ const Subscriptions = () => {
     return NON_SUB_KEYWORDS.some(kw => merchant.includes(kw) || catName.includes(kw)) || (sub.is_transfer === true);
   };
 
-  const activeSubs = useMemo(() => (subscriptions || []).filter(s => !s.is_cancelled), [subscriptions]);
-  const cancelledSubs = useMemo(() => (subscriptions || []).filter(s => s.is_cancelled), [subscriptions]);
+  const isBusiness = (sub: any) => {
+    const group = sub.categories?.category_groups;
+    return group?.budget_type === 'business' || !!group?.business_profile_id;
+  };
+
+  const filteredSubs = useMemo(() => {
+    return (subscriptions || []).filter(s => viewMode === 'business' ? isBusiness(s) : !isBusiness(s));
+  }, [subscriptions, viewMode]);
+
+  const activeSubs = useMemo(() => filteredSubs.filter(s => !s.is_cancelled), [filteredSubs]);
+  const cancelledSubs = useMemo(() => filteredSubs.filter(s => s.is_cancelled), [filteredSubs]);
   const selectedSub = useMemo(() => activeSubs.find(s => s.id === selectedSubId), [activeSubs, selectedSubId]);
 
   const totalMonthly = useMemo(() => {
