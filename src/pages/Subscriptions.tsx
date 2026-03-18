@@ -269,6 +269,25 @@ const Subscriptions = () => {
             {scoreDifficulty.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Shield className="h-4 w-4 mr-2" />}
             Score Difficulty
           </Button>
+          <Button
+            variant="outline"
+            onClick={async () => {
+              try {
+                const result = await checkCanceled.mutateAsync();
+                if (result.alerts > 0) {
+                  toast.warning(`Found ${result.alerts} canceled subscription(s) still being charged!`);
+                } else {
+                  toast.success(`Checked ${result.checked} canceled subscriptions — no unexpected charges found`);
+                }
+              } catch {
+                toast.error('Failed to check canceled charges');
+              }
+            }}
+            disabled={checkCanceled.isPending || !cancelledSubs.length}
+          >
+            {checkCanceled.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <AlertTriangle className="h-4 w-4 mr-2" />}
+            Check Charges
+          </Button>
           <Button onClick={handleGetInsights} disabled={insightsLoading || !activeSubs.length}>
             {insightsLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
             AI Insights
