@@ -8,12 +8,12 @@ import {
 import prismLogo from '@/assets/prism-budget-logo.png';
 
 const FEATURES = [
+  { icon: ShieldCheck, title: 'Smart Spend Guardrails', desc: 'Real-time spending limits with color-coded alerts that coach you in the moment of decision.' },
   { icon: Target, title: 'Zero-Based Budgeting', desc: 'Give every dollar a job with intuitive envelope budgeting.' },
-  { icon: Wallet, title: 'Multi-Account Tracking', desc: 'Checking, savings, credit, investments — unified view.' },
-  { icon: BarChart3, title: 'Smart Reports', desc: 'Net worth, cash flow, and spending trends at a glance.' },
-  { icon: Bot, title: 'AI Tax Assistant', desc: 'Get personalized tax guidance powered by AI.' },
-  { icon: ShieldCheck, title: 'Bank-Level Security', desc: 'Enterprise-grade encryption for your financial data.' },
-  { icon: Zap, title: 'Business + Personal', desc: 'Separate business finances with dedicated profiles.' },
+  { icon: Bot, title: 'AI Subscription Guard', desc: 'Auto-detect zombie charges from canceled subscriptions and score cancellation difficulty.' },
+  { icon: BarChart3, title: 'Smart Reports', desc: 'Net worth, cash flow, spending trends, and predictive insights at a glance.' },
+  { icon: Wallet, title: 'Multi-Account Tracking', desc: 'Checking, savings, credit, investments — one unified view.' },
+  { icon: Zap, title: 'Business + Personal', desc: 'Separate business finances with dedicated profiles and AI tax assistance.' },
 ];
 
 const PRICING = [
