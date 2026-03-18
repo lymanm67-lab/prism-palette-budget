@@ -12,7 +12,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import {
   useSubscriptions, useDetectSubscriptions, useUpdateSubscription,
-  useDeleteSubscription, useSubscriptionInsights,
+  useDeleteSubscription, useSubscriptionInsights, useScoreCancellationDifficulty,
 } from '@/hooks/use-subscriptions';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { supabase } from '@/integrations/supabase/client';
