@@ -863,10 +863,10 @@ const Accounts = () => {
                 const needsReconnect = isErrored || isStaleConn;
 
                 return (
-                <div key={conn.id} className={`flex items-center justify-between gap-3 p-3 rounded-xl border group ${needsReconnect ? 'border-amber-500/40 bg-amber-500/5' : 'border-border/30'}`}>
+                <div key={conn.id} className={`flex items-center justify-between gap-3 p-3 rounded-xl border group ${needsReconnect ? 'border-prism-amber/40 bg-prism-amber/5' : 'border-border/30'}`}>
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className={`h-9 w-9 rounded-xl flex items-center justify-center shrink-0 ${needsReconnect ? 'bg-amber-500/10' : 'bg-primary/10'}`}>
-                      {needsReconnect ? <AlertTriangle className="h-4 w-4 text-amber-500" /> : <TrendingUp className="h-4 w-4 text-primary" />}
+                    <div className={`h-9 w-9 rounded-xl flex items-center justify-center shrink-0 ${needsReconnect ? 'bg-prism-amber/10' : 'bg-primary/10'}`}>
+                      {needsReconnect ? <AlertTriangle className="h-4 w-4 text-prism-amber" /> : <TrendingUp className="h-4 w-4 text-primary" />}
                     </div>
                     <div className="min-w-0">
                       <p className="font-medium text-sm truncate">{conn.institution_name || 'Investment Connection'}</p>
