@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { FileText, Plus, Clock, CheckCircle2, XCircle, AlertTriangle, Send, Trash2, Download, ChevronDown, ChevronUp, Sparkles, FileEdit, ExternalLink, Building2 } from 'lucide-react';
+import { FileText, Plus, Clock, CheckCircle2, XCircle, AlertTriangle, Send, Trash2, Download, ChevronDown, ChevronUp, Sparkles, FileEdit, ExternalLink, Building2, Save, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -20,6 +20,9 @@ import { exportToPdf } from '@/lib/export-utils';
 import DisputeLetterGenerator from '@/components/capital/DisputeLetterGenerator';
 import { OSCAR_REASON_CODES } from '@/components/capital/DisputeLetterGenerator';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 /* ── helpers ─────────────────────────────────────────── */
 
@@ -29,6 +32,12 @@ const statusColor: Record<string, string> = {
   in_progress: 'bg-amber-500/15 text-amber-600',
   resolved: 'bg-emerald-500/15 text-emerald-600',
   denied: 'bg-destructive/15 text-destructive',
+};
+
+const BUREAU_DISPUTE_URLS: Record<string, string> = {
+  Equifax: 'https://www.equifax.com/personal/credit-report-services/credit-dispute/',
+  Experian: 'https://www.experian.com/disputes/main.html',
+  TransUnion: 'https://www.transunion.com/credit-disputes/dispute-your-credit',
 };
 
 function FcraTimer({ submittedDate }: { submittedDate: string | null }) {
@@ -62,6 +71,7 @@ const DisputeManager = () => {
 
   // form state
   const [form, setForm] = useState({ bureau: '', dispute_reason: '', explanation: '', credit_account_id: '', metro2_violation: '' });
+  const [savingId, setSavingId] = useState<string | null>(null);
   const resetForm = () => setForm({ bureau: '', dispute_reason: '', explanation: '', credit_account_id: '', metro2_violation: '' });
 
   const handleCreate = () => {
@@ -111,6 +121,47 @@ const DisputeManager = () => {
         await exportToPdf(letterRef.current, `dispute-letter-${d.bureau}-${format(new Date(), 'yyyyMMdd')}`);
         toast.success('PDF exported');
       } catch { toast.error('PDF export failed'); }
+    }
+  };
+
+  const handleSaveInlineToVault = async (d: CreditDispute) => {
+    if (!letterRef.current || !household) return;
+    setSavingId(d.id);
+    try {
+      const canvas = await html2canvas(letterRef.current, {
+        scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff',
+      });
+      const imgData = canvas.toDataURL('image/png');
+      const imgWidth = 210;
+      const pageHeight = 297;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      let heightLeft = imgHeight;
+      let position = 0;
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+      const pdfBlob = pdf.output('blob');
+      const fileName = `dispute-letter-${d.bureau}-${format(new Date(), 'yyyyMMdd-HHmmss')}.pdf`;
+      const storagePath = `${household.id}/letters/${fileName}`;
+      const { error: uploadError } = await supabase.storage.from('credit-documents').upload(storagePath, pdfBlob, { contentType: 'application/pdf' });
+      if (uploadError) throw uploadError;
+      const acct = accounts.find(a => a.id === d.credit_account_id);
+      await (supabase as any).from('credit_documents').insert({
+        household_id: household.id, document_type: 'dispute_letter', bureau: d.bureau,
+        file_name: fileName, storage_path: storagePath, file_size: pdfBlob.size,
+        dispute_id: d.id, notes: `Dispute letter for ${acct?.account_name || 'Unknown'} — ${d.dispute_reason}`,
+      });
+      toast.success('Letter saved to document vault');
+    } catch (err: any) {
+      toast.error(`Could not save: ${err.message}`);
+    } finally {
+      setSavingId(null);
     }
   };
 
@@ -188,6 +239,16 @@ const DisputeManager = () => {
                     </>
                   )}
                   <Button size="sm" variant="outline" onClick={() => handleExportPdf(d)}><Download className="h-3.5 w-3.5 mr-1" />Export PDF</Button>
+                  <Button size="sm" variant="outline" onClick={() => handleSaveInlineToVault(d)} disabled={savingId === d.id}>
+                    {savingId === d.id ? <><Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />Saving...</> : <><Save className="h-3.5 w-3.5 mr-1" />Save to Vault</>}
+                  </Button>
+                  {BUREAU_DISPUTE_URLS[d.bureau] && (
+                    <Button size="sm" variant="outline" asChild>
+                      <a href={BUREAU_DISPUTE_URLS[d.bureau]} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="h-3.5 w-3.5 mr-1" />File at {d.bureau}
+                      </a>
+                    </Button>
+                  )}
                   <Button size="sm" variant="destructive" onClick={() => deleteDispute(d.id)}><Trash2 className="h-3.5 w-3.5 mr-1" />Delete</Button>
                 </div>
               </div>
