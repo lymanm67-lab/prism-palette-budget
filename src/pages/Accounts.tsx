@@ -384,7 +384,7 @@ const Accounts = () => {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <DialogTrigger asChild>
-                    <Button size="sm" className="gap-1.5 h-8 prism-gradient text-white border-0 hover:opacity-90">
+                    <Button size="sm" className="gap-1.5 h-8 prism-gradient text-primary-foreground border-0 hover:opacity-90">
                       <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Add Account</span>
                     </Button>
                   </DialogTrigger>
