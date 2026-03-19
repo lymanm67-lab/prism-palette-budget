@@ -177,7 +177,10 @@ const CreditReportImport = ({ onSuccess }: { onSuccess: () => void }) => {
       try {
         const data = JSON.parse(text);
         const accounts = Array.isArray(data) ? data : data.accounts || [];
-        setParsedAccounts(accounts.map((a: any) => ({ ...a, selected: true })));
+        let acctList = accounts.map((a: any) => ({ ...a, selected: true }));
+        acctList = detectDuplicates(acctList, existingAccounts);
+        acctList = detectIntraBatchDuplicates(acctList);
+        setParsedAccounts(acctList);
         setMode('structured');
         toast.success(`Loaded ${accounts.length} accounts from JSON`);
       } catch {
