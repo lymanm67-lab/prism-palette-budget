@@ -541,7 +541,7 @@ const Accounts = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-8 gap-1.5 flex-1 sm:flex-none border-amber-500/30 text-amber-600 hover:bg-amber-500/10 hover:text-amber-700"
+                      className="h-8 gap-1.5 flex-1 sm:flex-none border-prism-amber/30 text-prism-amber hover:bg-prism-amber/10 hover:text-prism-amber"
                       onClick={handleRefreshAccounts}
                       disabled={refreshing}
                     >
