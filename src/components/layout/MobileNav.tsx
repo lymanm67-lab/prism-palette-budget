@@ -30,8 +30,10 @@ const MobileNav = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const badges = useSidebarBadges();
   const [pressedItem, setPressedItem] = useState<string | null>(null);
+  const { theme, setTheme } = useTheme();
 
   const badgeMap: Record<string, number> = {
     '/transactions': badges.transactions,
