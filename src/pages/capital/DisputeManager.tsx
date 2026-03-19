@@ -34,6 +34,12 @@ const statusColor: Record<string, string> = {
   denied: 'bg-destructive/15 text-destructive',
 };
 
+const BUREAU_DISPUTE_URLS: Record<string, string> = {
+  Equifax: 'https://www.equifax.com/personal/credit-report-services/credit-dispute/',
+  Experian: 'https://www.experian.com/disputes/main.html',
+  TransUnion: 'https://www.transunion.com/credit-disputes/dispute-your-credit',
+};
+
 function FcraTimer({ submittedDate }: { submittedDate: string | null }) {
   if (!submittedDate) return <span className="text-xs text-muted-foreground">—</span>;
   const due = addDays(new Date(submittedDate), 30);
