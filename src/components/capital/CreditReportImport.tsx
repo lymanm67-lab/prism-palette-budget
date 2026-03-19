@@ -316,6 +316,28 @@ const CreditReportImport = ({ onSuccess }: { onSuccess: () => void }) => {
     setParsedAccounts(prev => prev.map((a, i) => i === idx ? { ...a, selected: !a.selected } : a));
   };
 
+  const setDuplicateAction = (idx: number, action: 'accept' | 'skip' | 'replace') => {
+    setParsedAccounts(prev => prev.map((a, i) => {
+      if (i !== idx) return a;
+      return { ...a, duplicateAction: action, selected: action !== 'skip' };
+    }));
+  };
+
+  const batchDuplicateAction = (action: 'accept' | 'skip' | 'replace') => {
+    setParsedAccounts(prev => prev.map(a => {
+      if (!a.isDuplicate) return a;
+      return { ...a, duplicateAction: action, selected: action !== 'skip' };
+    }));
+  };
+
+  const updateParsedAccount = (idx: number, field: keyof ParsedAccount, value: any) => {
+    setParsedAccounts(prev => prev.map((a, i) => i === idx ? { ...a, [field]: value } : a));
+  };
+
+  const removeParsedAccount = (idx: number) => {
+    setParsedAccounts(prev => prev.filter((_, i) => i !== idx));
+  };
+
   const handleImport = async () => {
     if (!household) return;
     const selected = parsedAccounts.filter(a => a.selected);
@@ -323,6 +345,14 @@ const CreditReportImport = ({ onSuccess }: { onSuccess: () => void }) => {
 
     setSaving(true);
     try {
+      // Handle replacements first — delete existing accounts that are being replaced
+      const replacements = selected.filter(a => a.isDuplicate && a.duplicateAction === 'replace' && a.duplicateOf);
+      for (const r of replacements) {
+        if (r.duplicateOf?.id) {
+          await (supabase as any).from('credit_accounts').delete().eq('id', r.duplicateOf.id);
+        }
+      }
+
       const rows = selected.map(a => ({
         household_id: household.id,
         bureau,
@@ -372,7 +402,7 @@ const CreditReportImport = ({ onSuccess }: { onSuccess: () => void }) => {
         }
       }
 
-      toast.success(`Imported ${selected.length} accounts`);
+      toast.success(`Imported ${selected.length} accounts${replacements.length ? ` (${replacements.length} replaced)` : ''}`);
       setDialogOpen(false);
       setParsedAccounts([]);
       setRawText('');
@@ -386,6 +416,7 @@ const CreditReportImport = ({ onSuccess }: { onSuccess: () => void }) => {
   };
 
   const selectedCount = parsedAccounts.filter(a => a.selected).length;
+  const duplicateCount = parsedAccounts.filter(a => a.isDuplicate).length;
 
   return (
     <>
