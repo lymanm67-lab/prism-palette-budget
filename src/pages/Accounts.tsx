@@ -546,24 +546,26 @@ const Accounts = () => {
           return (
             <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
               <Card className="border-amber-500/40 bg-amber-500/5">
-                <CardContent className="flex items-start gap-3 p-4">
-                  <div className="h-9 w-9 rounded-lg bg-amber-500/15 flex items-center justify-center shrink-0 mt-0.5">
-                    <AlertTriangle className="h-5 w-5 text-amber-500" />
+                <CardContent className="p-4 space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-amber-500/15 flex items-center justify-center shrink-0 mt-0.5">
+                      <AlertTriangle className="h-5 w-5 text-amber-500" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm text-foreground">
+                        {staleAccounts.length === 1 ? '1 account needs attention' : `${staleAccounts.length} accounts need attention`}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                        {uniqueInstitutions.join(', ')} {uniqueInstitutions.length === 1 ? 'hasn\'t' : 'haven\'t'} synced in over 48 hours. 
+                        The connection may need to be re-linked.
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm text-foreground">
-                      {staleAccounts.length === 1 ? '1 account needs attention' : `${staleAccounts.length} accounts need attention`}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {uniqueInstitutions.join(', ')} {uniqueInstitutions.length === 1 ? 'hasn\'t' : 'haven\'t'} synced in over 48 hours. 
-                      The connection may need to be re-linked.
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-2">
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-8 gap-1.5 border-amber-500/30 text-amber-600 hover:bg-amber-500/10 hover:text-amber-700"
+                      className="h-8 gap-1.5 flex-1 sm:flex-none border-amber-500/30 text-amber-600 hover:bg-amber-500/10 hover:text-amber-700"
                       onClick={handleRefreshAccounts}
                       disabled={refreshing}
                     >
@@ -572,7 +574,7 @@ const Accounts = () => {
                     </Button>
                     <Button
                       size="sm"
-                      className="h-8 gap-1.5 bg-amber-500 hover:bg-amber-600 text-white border-0"
+                      className="h-8 gap-1.5 flex-1 sm:flex-none bg-amber-500 hover:bg-amber-600 text-white border-0"
                       disabled={!!updateLinkToken || stalePlaidItems.length === 0}
                       onClick={() => {
                         const firstStalePlaid = stalePlaidItems[0];
