@@ -71,6 +71,7 @@ const DisputeManager = () => {
 
   // form state
   const [form, setForm] = useState({ bureau: '', dispute_reason: '', explanation: '', credit_account_id: '', metro2_violation: '' });
+  const [savingId, setSavingId] = useState<string | null>(null);
   const resetForm = () => setForm({ bureau: '', dispute_reason: '', explanation: '', credit_account_id: '', metro2_violation: '' });
 
   const handleCreate = () => {
