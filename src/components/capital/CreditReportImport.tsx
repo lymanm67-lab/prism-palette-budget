@@ -593,12 +593,39 @@ const CreditReportImport = ({ onSuccess }: { onSuccess: () => void }) => {
                   <Label className="flex items-center gap-2">
                     <CheckCircle2 className="h-4 w-4 text-accent" />
                     {parsedAccounts.length} accounts found — {selectedCount} selected
+                    {duplicateCount > 0 && (
+                      <Badge variant="secondary" className="text-xs ml-1">
+                        <Copy className="h-3 w-3 mr-1" />{duplicateCount} duplicate{duplicateCount > 1 ? 's' : ''}
+                      </Badge>
+                    )}
                   </Label>
                   <Button variant="ghost" size="sm" onClick={() => { setParsedAccounts([]); setRawText(''); }}>
                     Clear & Retry
                   </Button>
                 </div>
-                <div className="border rounded-lg overflow-x-auto max-h-[300px] overflow-y-auto">
+
+                {/* Batch duplicate actions */}
+                {duplicateCount > 0 && (
+                  <div className="flex items-center gap-2 mb-3 p-2.5 rounded-lg border border-amber-500/30 bg-amber-500/5">
+                    <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" />
+                    <span className="text-xs text-muted-foreground flex-1">
+                      {duplicateCount} account{duplicateCount > 1 ? 's match' : ' matches'} existing records
+                    </span>
+                    <div className="flex gap-1.5">
+                      <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => batchDuplicateAction('skip')}>
+                        <XCircle className="h-3 w-3 mr-1" />Skip All
+                      </Button>
+                      <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => batchDuplicateAction('accept')}>
+                        <CheckCheck className="h-3 w-3 mr-1" />Import All
+                      </Button>
+                      <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => batchDuplicateAction('replace')}>
+                        <Pencil className="h-3 w-3 mr-1" />Replace All
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                <div className="border rounded-lg overflow-x-auto max-h-[350px] overflow-y-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -608,17 +635,45 @@ const CreditReportImport = ({ onSuccess }: { onSuccess: () => void }) => {
                         <TableHead>Status</TableHead>
                         <TableHead className="text-right">Balance</TableHead>
                         <TableHead className="text-right">Limit</TableHead>
+                        <TableHead className="w-24">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {parsedAccounts.map((acct, i) => (
-                        <TableRow key={i} className={acct.selected ? '' : 'opacity-40'}>
+                        <TableRow
+                          key={i}
+                          className={`${acct.selected ? '' : 'opacity-40'} ${acct.isDuplicate ? 'bg-amber-500/5' : ''}`}
+                        >
                           <TableCell>
                             <Checkbox checked={acct.selected} onCheckedChange={() => toggleAccount(i)} />
                           </TableCell>
                           <TableCell className="font-medium text-sm">
-                            {acct.account_name}
-                            {acct.account_number && <span className="text-muted-foreground text-xs ml-1">••{acct.account_number.slice(-4)}</span>}
+                            {editingIdx === i ? (
+                              <input
+                                className="w-full border rounded px-2 py-1 text-sm bg-background"
+                                value={acct.account_name}
+                                onChange={e => updateParsedAccount(i, 'account_name', e.target.value)}
+                                onBlur={() => setEditingIdx(null)}
+                                onKeyDown={e => e.key === 'Enter' && setEditingIdx(null)}
+                                autoFocus
+                              />
+                            ) : (
+                              <>
+                                {acct.account_name}
+                                {acct.account_number && <span className="text-muted-foreground text-xs ml-1">••{acct.account_number.slice(-4)}</span>}
+                              </>
+                            )}
+                            {acct.isDuplicate && (
+                              <div className="flex items-center gap-1 mt-0.5">
+                                <Badge variant="outline" className="text-[10px] border-amber-500/40 text-amber-600">
+                                  <Copy className="h-2.5 w-2.5 mr-0.5" />
+                                  {acct.duplicateOf ? `Matches: ${acct.duplicateOf.account_name}` : 'Intra-batch duplicate'}
+                                </Badge>
+                                {acct.duplicateAction === 'accept' && <Badge className="text-[10px] bg-accent">Import anyway</Badge>}
+                                {acct.duplicateAction === 'replace' && <Badge className="text-[10px] bg-primary">Replace existing</Badge>}
+                                {acct.duplicateAction === 'skip' && <Badge variant="secondary" className="text-[10px]">Skipped</Badge>}
+                              </div>
+                            )}
                           </TableCell>
                           <TableCell className="text-xs">{acct.account_type}</TableCell>
                           <TableCell>
@@ -626,8 +681,42 @@ const CreditReportImport = ({ onSuccess }: { onSuccess: () => void }) => {
                               {acct.account_status}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-right font-mono text-sm">{fmt(acct.balance)}</TableCell>
+                          <TableCell className="text-right font-mono text-sm">
+                            {editingIdx === i ? (
+                              <input
+                                className="w-20 border rounded px-2 py-1 text-sm text-right bg-background"
+                                type="number"
+                                value={acct.balance}
+                                onChange={e => updateParsedAccount(i, 'balance', parseFloat(e.target.value) || 0)}
+                              />
+                            ) : (
+                              fmt(acct.balance)
+                            )}
+                          </TableCell>
                           <TableCell className="text-right font-mono text-sm">{acct.credit_limit ? fmt(acct.credit_limit) : '—'}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setEditingIdx(editingIdx === i ? null : i)} title="Edit">
+                                <Pencil className="h-3 w-3" />
+                              </Button>
+                              <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => removeParsedAccount(i)} title="Remove">
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                              {acct.isDuplicate && (
+                                <>
+                                  {acct.duplicateAction === 'skip' ? (
+                                    <Button variant="ghost" size="icon" className="h-6 w-6 text-accent" onClick={() => setDuplicateAction(i, 'accept')} title="Accept duplicate">
+                                      <CheckCheck className="h-3 w-3" />
+                                    </Button>
+                                  ) : (
+                                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setDuplicateAction(i, 'skip')} title="Skip duplicate">
+                                      <XCircle className="h-3 w-3" />
+                                    </Button>
+                                  )}
+                                </>
+                              )}
+                            </div>
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
