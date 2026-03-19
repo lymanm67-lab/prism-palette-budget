@@ -876,7 +876,7 @@ const Accounts = () => {
                         </Badge>
                         <span className="text-[10px] text-muted-foreground">SnapTrade</span>
                         {needsReconnect && (
-                          <span className="text-[10px] text-amber-600 font-medium">Needs re-authorization</span>
+                          <span className="text-[10px] text-prism-amber font-medium">Needs re-authorization</span>
                         )}
                         {!needsReconnect && (
                           <span className="text-[10px] text-muted-foreground">
