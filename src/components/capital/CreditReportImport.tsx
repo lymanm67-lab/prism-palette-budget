@@ -90,6 +90,52 @@ interface ParsedAccount {
   terms?: string | null;
   notes?: string | null;
   selected?: boolean;
+  isDuplicate?: boolean;
+  duplicateOf?: { id: string; account_name: string; balance: number; bureau: string } | null;
+  duplicateAction?: 'accept' | 'skip' | 'replace';
+  editing?: boolean;
+}
+
+function normalizeAccountName(name: string): string {
+  return (name || '').toLowerCase().trim().replace(/[^a-z0-9]/g, '');
+}
+
+function detectDuplicates(
+  parsed: ParsedAccount[],
+  existing: Array<{ id: string; account_name: string; account_number: string | null; balance: number; bureau: string; account_type: string }>
+): ParsedAccount[] {
+  return parsed.map(acct => {
+    const normName = normalizeAccountName(acct.account_name);
+    const match = existing.find(ex => {
+      const exNorm = normalizeAccountName(ex.account_name);
+      // Match by name similarity
+      if (normName === exNorm) return true;
+      // Match by account number if both present
+      if (acct.account_number && ex.account_number) {
+        const pLast4 = acct.account_number.slice(-4);
+        const eLast4 = ex.account_number.slice(-4);
+        if (pLast4 === eLast4 && normName.includes(exNorm.slice(0, 4))) return true;
+      }
+      return false;
+    });
+    if (match) {
+      return { ...acct, isDuplicate: true, duplicateOf: match, duplicateAction: 'skip' as const, selected: false };
+    }
+    return { ...acct, isDuplicate: false, duplicateOf: null };
+  });
+}
+
+// Detect intra-batch duplicates (same account appearing multiple times in the import)
+function detectIntraBatchDuplicates(accounts: ParsedAccount[]): ParsedAccount[] {
+  const seen = new Map<string, number>();
+  return accounts.map((acct, i) => {
+    const key = `${normalizeAccountName(acct.account_name)}|${acct.account_number?.slice(-4) || ''}|${acct.balance}`;
+    if (seen.has(key)) {
+      return { ...acct, isDuplicate: true, duplicateOf: null, duplicateAction: 'skip' as const, selected: false };
+    }
+    seen.set(key, i);
+    return acct;
+  });
 }
 
 const CreditReportImport = ({ onSuccess }: { onSuccess: () => void }) => {
@@ -103,6 +149,19 @@ const CreditReportImport = ({ onSuccess }: { onSuccess: () => void }) => {
   const [rawText, setRawText] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [existingAccounts, setExistingAccounts] = useState<Array<{ id: string; account_name: string; account_number: string | null; balance: number; bureau: string; account_type: string }>>([]);
+  const [editingIdx, setEditingIdx] = useState<number | null>(null);
+
+  // Fetch existing credit accounts for duplicate detection
+  useEffect(() => {
+    if (!household || !dialogOpen) return;
+    (async () => {
+      const { data } = await (supabase as any).from('credit_accounts')
+        .select('id, account_name, account_number, balance, bureau, account_type')
+        .eq('household_id', household.id);
+      setExistingAccounts(data || []);
+    })();
+  }, [household, dialogOpen]);
 
   const fmt = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
 
