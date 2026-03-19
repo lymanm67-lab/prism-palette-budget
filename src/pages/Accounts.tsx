@@ -417,7 +417,7 @@ const Accounts = () => {
                     <Label>Starting Balance</Label>
                     <Input type="number" step="0.01" value={form.balance} onChange={e => setForm(f => ({ ...f, balance: e.target.value }))} placeholder="0.00" />
                   </div>
-                  <Button onClick={handleCreate} disabled={!form.name || createAccount.isPending} className="w-full prism-gradient text-white border-0 hover:opacity-90">
+                  <Button onClick={handleCreate} disabled={!form.name || createAccount.isPending} className="w-full prism-gradient text-primary-foreground border-0 hover:opacity-90">
                     {createAccount.isPending ? 'Creating...' : 'Add Account'}
                   </Button>
                 </div>
