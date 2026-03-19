@@ -676,7 +676,7 @@ const Accounts = () => {
                             {acc.last_synced_at ? (
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <span className={`text-[11px] flex items-center gap-0.5 ${stale ? 'text-amber-500' : 'text-muted-foreground'}`}>
+                                  <span className={`text-[11px] flex items-center gap-0.5 ${stale ? 'text-prism-amber' : 'text-muted-foreground'}`}>
                                     {stale ? <AlertTriangle className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
                                     {timeAgo(acc.last_synced_at)}
                                   </span>
