@@ -20,6 +20,9 @@ import { exportToPdf } from '@/lib/export-utils';
 import DisputeLetterGenerator from '@/components/capital/DisputeLetterGenerator';
 import { OSCAR_REASON_CODES } from '@/components/capital/DisputeLetterGenerator';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 /* ── helpers ─────────────────────────────────────────── */
 
