@@ -141,9 +141,6 @@ const Accounts = () => {
   // Plaid Link in update mode
   const onUpdateSuccess = useCallback(async () => {
     plaidLinkOpenedRef.current = false;
-    if (relinkingPlaidItemId) {
-      setAutoRelinkAttempted(prev => new Set([...prev, relinkingPlaidItemId]));
-    }
     toast.success(`${relinkingInstitution || 'Bank'} re-linked! Syncing fresh transactions…`);
     setUpdateLinkToken(null);
     setRelinkingInstitution(null);
