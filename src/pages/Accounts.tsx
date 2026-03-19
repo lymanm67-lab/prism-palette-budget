@@ -784,7 +784,7 @@ const Accounts = () => {
             <CardHeader className="pb-3">
               <CardTitle className="font-display text-lg flex items-center gap-2">
                 <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-prism-sky to-prism-teal flex items-center justify-center">
-                  <Link2 className="h-3.5 w-3.5 text-white" />
+                  <Link2 className="h-3.5 w-3.5 text-primary-foreground" />
                 </div>
                 Connected Services
               </CardTitle>
