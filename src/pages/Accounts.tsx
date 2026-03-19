@@ -598,7 +598,7 @@ const Accounts = () => {
                 <CardHeader className="flex flex-row items-center justify-between pb-3">
                   <CardTitle className="font-display text-lg flex items-center gap-2.5">
                     <div className={`h-7 w-7 rounded-lg bg-gradient-to-br ${groupGradient} flex items-center justify-center`}>
-                      <GroupIcon className="h-3.5 w-3.5 text-white" />
+                      <GroupIcon className="h-3.5 w-3.5 text-primary-foreground" />
                     </div>
                     {groupName}
                     <Badge variant="outline" className="text-[10px] ml-1">{accts.length}</Badge>
