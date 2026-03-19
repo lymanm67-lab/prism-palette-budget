@@ -384,7 +384,7 @@ const Accounts = () => {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <DialogTrigger asChild>
-                    <Button size="sm" className="gap-1.5 h-8 prism-gradient text-white border-0 hover:opacity-90">
+                    <Button size="sm" className="gap-1.5 h-8 prism-gradient text-primary-foreground border-0 hover:opacity-90">
                       <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Add Account</span>
                     </Button>
                   </DialogTrigger>
@@ -417,7 +417,7 @@ const Accounts = () => {
                     <Label>Starting Balance</Label>
                     <Input type="number" step="0.01" value={form.balance} onChange={e => setForm(f => ({ ...f, balance: e.target.value }))} placeholder="0.00" />
                   </div>
-                  <Button onClick={handleCreate} disabled={!form.name || createAccount.isPending} className="w-full prism-gradient text-white border-0 hover:opacity-90">
+                  <Button onClick={handleCreate} disabled={!form.name || createAccount.isPending} className="w-full prism-gradient text-primary-foreground border-0 hover:opacity-90">
                     {createAccount.isPending ? 'Creating...' : 'Add Account'}
                   </Button>
                 </div>
@@ -521,11 +521,11 @@ const Accounts = () => {
           const uniqueInstitutions = [...new Set(staleNames)];
           return (
             <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
-              <Card className="border-amber-500/40 bg-amber-500/5">
+              <Card className="border-prism-amber/40 bg-prism-amber/5">
                 <CardContent className="p-4 space-y-3">
                   <div className="flex items-start gap-3">
-                    <div className="h-9 w-9 rounded-lg bg-amber-500/15 flex items-center justify-center shrink-0 mt-0.5">
-                      <AlertTriangle className="h-5 w-5 text-amber-500" />
+                    <div className="h-9 w-9 rounded-lg bg-prism-amber/15 flex items-center justify-center shrink-0 mt-0.5">
+                      <AlertTriangle className="h-5 w-5 text-prism-amber" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm text-foreground">
@@ -541,7 +541,7 @@ const Accounts = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-8 gap-1.5 flex-1 sm:flex-none border-amber-500/30 text-amber-600 hover:bg-amber-500/10 hover:text-amber-700"
+                      className="h-8 gap-1.5 flex-1 sm:flex-none border-prism-amber/30 text-prism-amber hover:bg-prism-amber/10 hover:text-prism-amber"
                       onClick={handleRefreshAccounts}
                       disabled={refreshing}
                     >
@@ -550,7 +550,7 @@ const Accounts = () => {
                     </Button>
                     <Button
                       size="sm"
-                      className="h-8 gap-1.5 flex-1 sm:flex-none bg-amber-500 hover:bg-amber-600 text-white border-0"
+                      className="h-8 gap-1.5 flex-1 sm:flex-none bg-prism-amber hover:bg-prism-amber/90 text-primary-foreground border-0"
                       disabled={!!updateLinkToken || stalePlaidItems.length === 0}
                       onClick={() => {
                         const firstStalePlaid = stalePlaidItems[0];
@@ -572,7 +572,7 @@ const Accounts = () => {
           <Card className="prism-card-shine border-border/50">
             <CardContent className="flex flex-col items-center justify-center p-12 text-center">
               <div className="h-16 w-16 rounded-2xl prism-gradient prism-glow flex items-center justify-center mb-4">
-                <Landmark className="h-8 w-8 text-white" />
+                <Landmark className="h-8 w-8 text-primary-foreground" />
               </div>
               <h3 className="font-display text-lg font-bold mb-1">No accounts yet</h3>
               <p className="text-muted-foreground text-sm max-w-sm">Add your first account to start tracking your finances.</p>
@@ -598,7 +598,7 @@ const Accounts = () => {
                 <CardHeader className="flex flex-row items-center justify-between pb-3">
                   <CardTitle className="font-display text-lg flex items-center gap-2.5">
                     <div className={`h-7 w-7 rounded-lg bg-gradient-to-br ${groupGradient} flex items-center justify-center`}>
-                      <GroupIcon className="h-3.5 w-3.5 text-white" />
+                      <GroupIcon className="h-3.5 w-3.5 text-primary-foreground" />
                     </div>
                     {groupName}
                     <Badge variant="outline" className="text-[10px] ml-1">{accts.length}</Badge>
@@ -620,7 +620,7 @@ const Accounts = () => {
                       <div key={acc.id} className="rounded-xl border border-border/30 p-3 sm:p-4 interactive-row hover-border-glow group cursor-default space-y-2 sm:space-y-0">
                         <div className="flex items-center gap-3 sm:gap-4">
                           <div className={`flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-gradient-to-br ${GRADIENT_MAP[acc.account_type]} transition-transform duration-300 group-hover:scale-110 shrink-0`}>
-                            <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                            <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary-foreground" />
                           </div>
                           <div className="flex-1 min-w-0">
                             {isEditing ? (
@@ -676,7 +676,7 @@ const Accounts = () => {
                             {acc.last_synced_at ? (
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <span className={`text-[11px] flex items-center gap-0.5 ${stale ? 'text-amber-500' : 'text-muted-foreground'}`}>
+                                  <span className={`text-[11px] flex items-center gap-0.5 ${stale ? 'text-prism-amber' : 'text-muted-foreground'}`}>
                                     {stale ? <AlertTriangle className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
                                     {timeAgo(acc.last_synced_at)}
                                   </span>
@@ -784,7 +784,7 @@ const Accounts = () => {
             <CardHeader className="pb-3">
               <CardTitle className="font-display text-lg flex items-center gap-2">
                 <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-prism-sky to-prism-teal flex items-center justify-center">
-                  <Link2 className="h-3.5 w-3.5 text-white" />
+                  <Link2 className="h-3.5 w-3.5 text-primary-foreground" />
                 </div>
                 Connected Services
               </CardTitle>
@@ -798,10 +798,10 @@ const Accounts = () => {
                 const consentExpiring = item.consent_expiration && (new Date(item.consent_expiration).getTime() - Date.now() < 7 * 24 * 60 * 60 * 1000);
 
                 return (
-                  <div key={item.id} className={`flex items-center justify-between gap-3 p-3 rounded-xl border group ${needsAttention || consentExpiring ? 'border-amber-500/40 bg-amber-500/5' : 'border-border/30'}`}>
+                  <div key={item.id} className={`flex items-center justify-between gap-3 p-3 rounded-xl border group ${needsAttention || consentExpiring ? 'border-prism-amber/40 bg-prism-amber/5' : 'border-border/30'}`}>
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className={`h-9 w-9 rounded-xl flex items-center justify-center shrink-0 ${needsAttention ? 'bg-amber-500/10' : 'bg-primary/10'}`}>
-                        {needsAttention ? <AlertTriangle className="h-4 w-4 text-amber-500" /> : <Landmark className="h-4 w-4 text-primary" />}
+                      <div className={`h-9 w-9 rounded-xl flex items-center justify-center shrink-0 ${needsAttention ? 'bg-prism-amber/10' : 'bg-primary/10'}`}>
+                        {needsAttention ? <AlertTriangle className="h-4 w-4 text-prism-amber" /> : <Landmark className="h-4 w-4 text-primary" />}
                       </div>
                       <div className="min-w-0">
                         <p className="font-medium text-sm truncate">{item.institution_name || 'Bank Connection'}</p>
@@ -811,7 +811,7 @@ const Accounts = () => {
                           </Badge>
                           <span className="text-[10px] text-muted-foreground">Plaid</span>
                           {consentExpiring && (
-                            <span className="text-[10px] text-amber-600 font-medium">Consent expiring soon</span>
+                            <span className="text-[10px] text-prism-amber font-medium">Consent expiring soon</span>
                           )}
                           {!needsAttention && !consentExpiring && (
                             <span className="text-[10px] text-muted-foreground">
@@ -863,10 +863,10 @@ const Accounts = () => {
                 const needsReconnect = isErrored || isStaleConn;
 
                 return (
-                <div key={conn.id} className={`flex items-center justify-between gap-3 p-3 rounded-xl border group ${needsReconnect ? 'border-amber-500/40 bg-amber-500/5' : 'border-border/30'}`}>
+                <div key={conn.id} className={`flex items-center justify-between gap-3 p-3 rounded-xl border group ${needsReconnect ? 'border-prism-amber/40 bg-prism-amber/5' : 'border-border/30'}`}>
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className={`h-9 w-9 rounded-xl flex items-center justify-center shrink-0 ${needsReconnect ? 'bg-amber-500/10' : 'bg-primary/10'}`}>
-                      {needsReconnect ? <AlertTriangle className="h-4 w-4 text-amber-500" /> : <TrendingUp className="h-4 w-4 text-primary" />}
+                    <div className={`h-9 w-9 rounded-xl flex items-center justify-center shrink-0 ${needsReconnect ? 'bg-prism-amber/10' : 'bg-primary/10'}`}>
+                      {needsReconnect ? <AlertTriangle className="h-4 w-4 text-prism-amber" /> : <TrendingUp className="h-4 w-4 text-primary" />}
                     </div>
                     <div className="min-w-0">
                       <p className="font-medium text-sm truncate">{conn.institution_name || 'Investment Connection'}</p>
@@ -876,7 +876,7 @@ const Accounts = () => {
                         </Badge>
                         <span className="text-[10px] text-muted-foreground">SnapTrade</span>
                         {needsReconnect && (
-                          <span className="text-[10px] text-amber-600 font-medium">Needs re-authorization</span>
+                          <span className="text-[10px] text-prism-amber font-medium">Needs re-authorization</span>
                         )}
                         {!needsReconnect && (
                           <span className="text-[10px] text-muted-foreground">
@@ -894,7 +894,7 @@ const Accounts = () => {
                           variant={needsReconnect ? 'default' : 'ghost'}
                           size={needsReconnect ? 'sm' : 'icon'}
                           className={needsReconnect
-                            ? 'h-8 gap-1.5 text-xs bg-amber-500 hover:bg-amber-600 text-white'
+                            ? 'h-8 gap-1.5 text-xs bg-prism-amber hover:bg-prism-amber/90 text-primary-foreground'
                             : 'h-8 w-8 text-muted-foreground hover:text-primary sm:opacity-0 sm:group-hover:opacity-100 transition-opacity'
                           }
                           disabled={reconnectSnapTrade.isPending}
