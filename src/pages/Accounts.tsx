@@ -70,8 +70,6 @@ const Accounts = () => {
   const [updateLinkToken, setUpdateLinkToken] = useState<string | null>(null);
   const [relinkingInstitution, setRelinkingInstitution] = useState<string | null>(null);
   const [relinkingPlaidItemId, setRelinkingPlaidItemId] = useState<string | null>(null);
-  const [autoRelinkAttempted, setAutoRelinkAttempted] = useState<Set<string>>(new Set());
-  const [autoRelinkTriggered, setAutoRelinkTriggered] = useState(false);
   const plaidLinkOpenedRef = useRef(false);
 
   // Tick every 30s so "X minutes ago" labels update live
