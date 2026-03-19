@@ -239,6 +239,16 @@ const DisputeManager = () => {
                     </>
                   )}
                   <Button size="sm" variant="outline" onClick={() => handleExportPdf(d)}><Download className="h-3.5 w-3.5 mr-1" />Export PDF</Button>
+                  <Button size="sm" variant="outline" onClick={() => handleSaveInlineToVault(d)} disabled={savingId === d.id}>
+                    {savingId === d.id ? <><Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />Saving...</> : <><Save className="h-3.5 w-3.5 mr-1" />Save to Vault</>}
+                  </Button>
+                  {BUREAU_DISPUTE_URLS[d.bureau] && (
+                    <Button size="sm" variant="outline" asChild>
+                      <a href={BUREAU_DISPUTE_URLS[d.bureau]} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="h-3.5 w-3.5 mr-1" />File at {d.bureau}
+                      </a>
+                    </Button>
+                  )}
                   <Button size="sm" variant="destructive" onClick={() => deleteDispute(d.id)}><Trash2 className="h-3.5 w-3.5 mr-1" />Delete</Button>
                 </div>
               </div>
