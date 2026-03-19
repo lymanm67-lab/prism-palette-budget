@@ -620,7 +620,7 @@ const Accounts = () => {
                       <div key={acc.id} className="rounded-xl border border-border/30 p-3 sm:p-4 interactive-row hover-border-glow group cursor-default space-y-2 sm:space-y-0">
                         <div className="flex items-center gap-3 sm:gap-4">
                           <div className={`flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-gradient-to-br ${GRADIENT_MAP[acc.account_type]} transition-transform duration-300 group-hover:scale-110 shrink-0`}>
-                            <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                            <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary-foreground" />
                           </div>
                           <div className="flex-1 min-w-0">
                             {isEditing ? (
