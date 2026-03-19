@@ -131,14 +131,9 @@ const Accounts = () => {
         return;
       }
 
-      setAutoRelinkAttempted(prev => new Set([...prev, plaidItemId]));
-      const isExpected = data.error_code === 'ENV_MISMATCH' || data.error_code === 'NOT_PLAID';
-      if (!(silentExpectedErrors && isExpected)) {
-        toast.error(`Could not re-link ${institutionName || 'bank'}: ${data.error || 'Unknown error'}`);
-      }
+      toast.error(`Could not re-link ${institutionName || 'bank'}: ${data.error || 'Unknown error'}`);
     } catch (err) {
       console.error('Re-link request error:', err);
-      setAutoRelinkAttempted(prev => new Set([...prev, plaidItemId]));
       toast.error(`Could not re-link ${institutionName || 'bank'}`);
     }
   }, [household]);
