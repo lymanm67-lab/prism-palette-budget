@@ -1,10 +1,11 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, ArrowLeftRight, PiggyBank, BarChart3, Grid3x3, X,
-  Settings, Target, Wallet, TrendingUp, Receipt, Calculator, Shield } from 'lucide-react';
+  Settings, Target, Wallet, TrendingUp, Receipt, Calculator, Shield, Menu, Sun, Moon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState, useCallback } from 'react';
 import { useSidebarBadges } from '@/hooks/use-sidebar-badges';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTheme } from 'next-themes';
 
 const BOTTOM_NAV = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Home' },
