@@ -894,7 +894,7 @@ const Accounts = () => {
                           variant={needsReconnect ? 'default' : 'ghost'}
                           size={needsReconnect ? 'sm' : 'icon'}
                           className={needsReconnect
-                            ? 'h-8 gap-1.5 text-xs bg-amber-500 hover:bg-amber-600 text-white'
+                            ? 'h-8 gap-1.5 text-xs bg-prism-amber hover:bg-prism-amber/90 text-primary-foreground'
                             : 'h-8 w-8 text-muted-foreground hover:text-primary sm:opacity-0 sm:group-hover:opacity-100 transition-opacity'
                           }
                           disabled={reconnectSnapTrade.isPending}
