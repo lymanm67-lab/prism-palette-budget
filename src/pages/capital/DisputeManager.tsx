@@ -124,6 +124,47 @@ const DisputeManager = () => {
     }
   };
 
+  const handleSaveInlineToVault = async (d: CreditDispute) => {
+    if (!letterRef.current || !household) return;
+    setSavingId(d.id);
+    try {
+      const canvas = await html2canvas(letterRef.current, {
+        scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff',
+      });
+      const imgData = canvas.toDataURL('image/png');
+      const imgWidth = 210;
+      const pageHeight = 297;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      let heightLeft = imgHeight;
+      let position = 0;
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+      const pdfBlob = pdf.output('blob');
+      const fileName = `dispute-letter-${d.bureau}-${format(new Date(), 'yyyyMMdd-HHmmss')}.pdf`;
+      const storagePath = `${household.id}/letters/${fileName}`;
+      const { error: uploadError } = await supabase.storage.from('credit-documents').upload(storagePath, pdfBlob, { contentType: 'application/pdf' });
+      if (uploadError) throw uploadError;
+      const acct = accounts.find(a => a.id === d.credit_account_id);
+      await (supabase as any).from('credit_documents').insert({
+        household_id: household.id, document_type: 'dispute_letter', bureau: d.bureau,
+        file_name: fileName, storage_path: storagePath, file_size: pdfBlob.size,
+        dispute_id: d.id, notes: `Dispute letter for ${acct?.account_name || 'Unknown'} — ${d.dispute_reason}`,
+      });
+      toast.success('Letter saved to document vault');
+    } catch (err: any) {
+      toast.error(`Could not save: ${err.message}`);
+    } finally {
+      setSavingId(null);
+    }
+  };
+
   const stats = {
     active: active.length,
     pending: pending.length,
