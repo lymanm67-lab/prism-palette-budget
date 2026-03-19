@@ -40,17 +40,17 @@ export function SpendGuardrailBar() {
     return (
       <>
         <Card className="border-dashed border-2 border-primary/20 bg-primary/5">
-          <CardContent className="flex items-center justify-between p-4">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center">
+          <CardContent className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="h-10 w-10 shrink-0 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center">
                 <Shield className="h-5 w-5 text-primary-foreground" />
               </div>
-              <div>
-                <p className="font-display font-semibold text-sm">Smart Spend Guardrails</p>
-                <p className="text-xs text-muted-foreground">Set spending limits to stay on track — your financial coach in the moment.</p>
+              <div className="min-w-0">
+                <p className="font-display font-semibold text-sm truncate">Smart Spend Guardrails</p>
+                <p className="text-xs text-muted-foreground line-clamp-2">Set spending limits to stay on track — your financial coach in the moment.</p>
               </div>
             </div>
-            <Button size="sm" onClick={() => setSettingsOpen(true)} className="gap-1.5">
+            <Button size="sm" onClick={() => setSettingsOpen(true)} className="gap-1.5 shrink-0 w-full sm:w-auto">
               <Settings2 className="h-3.5 w-3.5" /> Set Up
             </Button>
           </CardContent>
