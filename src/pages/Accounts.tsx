@@ -70,8 +70,6 @@ const Accounts = () => {
   const [updateLinkToken, setUpdateLinkToken] = useState<string | null>(null);
   const [relinkingInstitution, setRelinkingInstitution] = useState<string | null>(null);
   const [relinkingPlaidItemId, setRelinkingPlaidItemId] = useState<string | null>(null);
-  const [autoRelinkAttempted, setAutoRelinkAttempted] = useState<Set<string>>(new Set());
-  const [autoRelinkTriggered, setAutoRelinkTriggered] = useState(false);
   const plaidLinkOpenedRef = useRef(false);
 
   // Tick every 30s so "X minutes ago" labels update live
@@ -90,16 +88,15 @@ const Accounts = () => {
     return left === right || left.includes(right) || right.includes(left);
   }, [normalizeInstitution]);
 
-  // Detect stale Plaid connections and auto-trigger update-mode re-link
+  // Detect stale Plaid connections for the banner
   const stalePlaidItems = useMemo(() => {
     if (!plaidConnections) return [];
     return plaidConnections.filter((item: any) => {
-      // Skip non-Plaid items (e.g. MX connections stored in plaid_items)
       if (item.plaid_item_id?.startsWith('USR-')) return false;
       const isStaleItem = item.updated_at && (Date.now() - new Date(item.updated_at).getTime() > 48 * 60 * 60 * 1000);
-      return (item.status === 'error' || isStaleItem) && !autoRelinkAttempted.has(item.plaid_item_id);
+      return item.status === 'error' || isStaleItem;
     });
-  }, [plaidConnections, autoRelinkAttempted]);
+  }, [plaidConnections]);
 
   const requestPlaidRelink = useCallback(async (
     plaidItemId: string,
@@ -134,34 +131,16 @@ const Accounts = () => {
         return;
       }
 
-      setAutoRelinkAttempted(prev => new Set([...prev, plaidItemId]));
-      const isExpected = data.error_code === 'ENV_MISMATCH' || data.error_code === 'NOT_PLAID';
-      if (!(silentExpectedErrors && isExpected)) {
-        toast.error(`Could not re-link ${institutionName || 'bank'}: ${data.error || 'Unknown error'}`);
-      }
+      toast.error(`Could not re-link ${institutionName || 'bank'}: ${data.error || 'Unknown error'}`);
     } catch (err) {
       console.error('Re-link request error:', err);
-      setAutoRelinkAttempted(prev => new Set([...prev, plaidItemId]));
       toast.error(`Could not re-link ${institutionName || 'bank'}`);
     }
   }, [household]);
 
-  // Auto-launch re-link for only one stale Plaid item per page load
-  useEffect(() => {
-    if (autoRelinkTriggered || stalePlaidItems.length === 0 || updateLinkToken || !household) return;
-    const staleItem = stalePlaidItems[0];
-    if (!staleItem) return;
-
-    setAutoRelinkTriggered(true);
-    requestPlaidRelink(staleItem.plaid_item_id, staleItem.institution_name, true);
-  }, [autoRelinkTriggered, stalePlaidItems, updateLinkToken, household, requestPlaidRelink]);
-
   // Plaid Link in update mode
   const onUpdateSuccess = useCallback(async () => {
     plaidLinkOpenedRef.current = false;
-    if (relinkingPlaidItemId) {
-      setAutoRelinkAttempted(prev => new Set([...prev, relinkingPlaidItemId]));
-    }
     toast.success(`${relinkingInstitution || 'Bank'} re-linked! Syncing fresh transactions…`);
     setUpdateLinkToken(null);
     setRelinkingInstitution(null);
@@ -174,9 +153,6 @@ const Accounts = () => {
     onSuccess: onUpdateSuccess,
     onExit: () => {
       plaidLinkOpenedRef.current = false;
-      if (relinkingPlaidItemId) {
-        setAutoRelinkAttempted(prev => new Set([...prev, relinkingPlaidItemId]));
-      }
       setUpdateLinkToken(null);
       setRelinkingInstitution(null);
       setRelinkingPlaidItemId(null);
