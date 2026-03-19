@@ -572,7 +572,7 @@ const Accounts = () => {
           <Card className="prism-card-shine border-border/50">
             <CardContent className="flex flex-col items-center justify-center p-12 text-center">
               <div className="h-16 w-16 rounded-2xl prism-gradient prism-glow flex items-center justify-center mb-4">
-                <Landmark className="h-8 w-8 text-white" />
+                <Landmark className="h-8 w-8 text-primary-foreground" />
               </div>
               <h3 className="font-display text-lg font-bold mb-1">No accounts yet</h3>
               <p className="text-muted-foreground text-sm max-w-sm">Add your first account to start tracking your finances.</p>
