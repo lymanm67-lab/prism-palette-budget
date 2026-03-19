@@ -256,9 +256,12 @@ const CreditReportImport = ({ onSuccess }: { onSuccess: () => void }) => {
               body: { images, bureau, mode: 'ocr' },
             });
             if (error) throw error;
-            const accounts = (data.accounts || []).map((a: any) => ({ ...a, selected: true }));
+            let accounts = (data.accounts || []).map((a: any) => ({ ...a, selected: true }));
+            accounts = detectDuplicates(accounts, existingAccounts);
+            accounts = detectIntraBatchDuplicates(accounts);
             setParsedAccounts(accounts);
-            toast.success(`AI Vision extracted ${accounts.length} accounts from scanned PDF`);
+            const dupeCount = accounts.filter((a: ParsedAccount) => a.isDuplicate).length;
+            toast.success(`AI Vision extracted ${accounts.length} accounts${dupeCount ? ` (${dupeCount} duplicates found)` : ''} from scanned PDF`);
           } catch (ocrErr: any) {
             console.error('OCR parse error:', ocrErr);
             toast.error(`OCR failed: ${ocrErr.message}. Try pasting the text manually.`);
