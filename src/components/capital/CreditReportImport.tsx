@@ -299,9 +299,12 @@ const CreditReportImport = ({ onSuccess }: { onSuccess: () => void }) => {
         body: { report_text: trimmedText, bureau },
       });
       if (error) throw error;
-      const accounts = (data.accounts || []).map((a: any) => ({ ...a, selected: true }));
+      let accounts = (data.accounts || []).map((a: any) => ({ ...a, selected: true }));
+      accounts = detectDuplicates(accounts, existingAccounts);
+      accounts = detectIntraBatchDuplicates(accounts);
       setParsedAccounts(accounts);
-      toast.success(`AI extracted ${accounts.length} accounts`);
+      const dupeCount = accounts.filter((a: ParsedAccount) => a.isDuplicate).length;
+      toast.success(`AI extracted ${accounts.length} accounts${dupeCount ? ` (${dupeCount} duplicates found)` : ''}`);
     } catch (e: any) {
       toast.error(`Parse failed: ${e.message}`);
     } finally {
