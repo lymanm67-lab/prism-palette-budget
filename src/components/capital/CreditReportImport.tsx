@@ -1,5 +1,5 @@
-import { useState, useRef, useCallback } from 'react';
-import { Upload, FileText, Loader2, CheckCircle2, AlertTriangle, FileJson, FileSpreadsheet, ExternalLink, Globe, ChevronDown } from 'lucide-react';
+import { useState, useRef, useCallback, useEffect } from 'react';
+import { Upload, FileText, Loader2, CheckCircle2, AlertTriangle, FileJson, FileSpreadsheet, ExternalLink, Globe, ChevronDown, Copy, Pencil, Trash2, CheckCheck, XCircle } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist';
 
 // Set PDF.js worker
