@@ -811,7 +811,7 @@ const Accounts = () => {
                           </Badge>
                           <span className="text-[10px] text-muted-foreground">Plaid</span>
                           {consentExpiring && (
-                            <span className="text-[10px] text-amber-600 font-medium">Consent expiring soon</span>
+                            <span className="text-[10px] text-prism-amber font-medium">Consent expiring soon</span>
                           )}
                           {!needsAttention && !consentExpiring && (
                             <span className="text-[10px] text-muted-foreground">
