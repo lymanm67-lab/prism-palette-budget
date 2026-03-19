@@ -550,7 +550,7 @@ const Accounts = () => {
                     </Button>
                     <Button
                       size="sm"
-                      className="h-8 gap-1.5 flex-1 sm:flex-none bg-amber-500 hover:bg-amber-600 text-white border-0"
+                      className="h-8 gap-1.5 flex-1 sm:flex-none bg-prism-amber hover:bg-prism-amber/90 text-primary-foreground border-0"
                       disabled={!!updateLinkToken || stalePlaidItems.length === 0}
                       onClick={() => {
                         const firstStalePlaid = stalePlaidItems[0];
