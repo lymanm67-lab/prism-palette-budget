@@ -153,9 +153,6 @@ const Accounts = () => {
     onSuccess: onUpdateSuccess,
     onExit: () => {
       plaidLinkOpenedRef.current = false;
-      if (relinkingPlaidItemId) {
-        setAutoRelinkAttempted(prev => new Set([...prev, relinkingPlaidItemId]));
-      }
       setUpdateLinkToken(null);
       setRelinkingInstitution(null);
       setRelinkingPlaidItemId(null);
