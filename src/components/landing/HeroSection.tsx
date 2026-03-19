@@ -2,6 +2,9 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Wallet, ShieldAlert, CalendarClock, BarChart3 } from 'lucide-react';
+import screenshot1 from '@/assets/screenshot-1.png';
+import screenshot2 from '@/assets/screenshot-2.png';
+import screenshot3 from '@/assets/screenshot-3.png';
 
 const BENEFITS_STRIP = [
   { icon: Wallet, text: 'Budget smarter' },
@@ -65,6 +68,64 @@ const HeroSection = () => {
               <span className="text-xs sm:text-sm font-medium text-primary-foreground/70">{b.text}</span>
             </div>
           ))}
+        </motion.div>
+
+        {/* Product screenshots showcase */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8, duration: 0.8 }}
+          className="mt-16 sm:mt-20 relative"
+        >
+          <div className="flex items-end justify-center gap-3 sm:gap-6 max-w-4xl mx-auto">
+            {/* Left screenshot - tilted */}
+            <motion.div
+              className="w-[28%] sm:w-[25%] flex-shrink-0"
+              initial={{ rotate: -6, opacity: 0 }}
+              animate={{ rotate: -6, opacity: 1 }}
+              transition={{ delay: 1, duration: 0.6 }}
+            >
+              <img
+                src={screenshot2}
+                alt="Prism Budget spending categories view"
+                className="rounded-xl sm:rounded-2xl shadow-2xl border border-primary-foreground/10 w-full"
+                loading="eager"
+              />
+            </motion.div>
+
+            {/* Center screenshot - larger, straight */}
+            <motion.div
+              className="w-[40%] sm:w-[38%] flex-shrink-0 z-10"
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.9, duration: 0.6 }}
+            >
+              <img
+                src={screenshot1}
+                alt="Prism Budget main dashboard"
+                className="rounded-xl sm:rounded-2xl shadow-2xl border-2 border-accent/30 w-full"
+                loading="eager"
+              />
+            </motion.div>
+
+            {/* Right screenshot - tilted */}
+            <motion.div
+              className="w-[28%] sm:w-[25%] flex-shrink-0"
+              initial={{ rotate: 6, opacity: 0 }}
+              animate={{ rotate: 6, opacity: 1 }}
+              transition={{ delay: 1.1, duration: 0.6 }}
+            >
+              <img
+                src={screenshot3}
+                alt="Prism Budget financial insights"
+                className="rounded-xl sm:rounded-2xl shadow-2xl border border-primary-foreground/10 w-full"
+                loading="eager"
+              />
+            </motion.div>
+          </div>
+
+          {/* Gradient fade at bottom */}
+          <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-[hsl(var(--prism-navy))] to-transparent pointer-events-none" />
         </motion.div>
       </div>
     </header>
