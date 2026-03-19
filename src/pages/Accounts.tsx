@@ -798,10 +798,10 @@ const Accounts = () => {
                 const consentExpiring = item.consent_expiration && (new Date(item.consent_expiration).getTime() - Date.now() < 7 * 24 * 60 * 60 * 1000);
 
                 return (
-                  <div key={item.id} className={`flex items-center justify-between gap-3 p-3 rounded-xl border group ${needsAttention || consentExpiring ? 'border-amber-500/40 bg-amber-500/5' : 'border-border/30'}`}>
+                  <div key={item.id} className={`flex items-center justify-between gap-3 p-3 rounded-xl border group ${needsAttention || consentExpiring ? 'border-prism-amber/40 bg-prism-amber/5' : 'border-border/30'}`}>
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className={`h-9 w-9 rounded-xl flex items-center justify-center shrink-0 ${needsAttention ? 'bg-amber-500/10' : 'bg-primary/10'}`}>
-                        {needsAttention ? <AlertTriangle className="h-4 w-4 text-amber-500" /> : <Landmark className="h-4 w-4 text-primary" />}
+                      <div className={`h-9 w-9 rounded-xl flex items-center justify-center shrink-0 ${needsAttention ? 'bg-prism-amber/10' : 'bg-primary/10'}`}>
+                        {needsAttention ? <AlertTriangle className="h-4 w-4 text-prism-amber" /> : <Landmark className="h-4 w-4 text-primary" />}
                       </div>
                       <div className="min-w-0">
                         <p className="font-medium text-sm truncate">{item.institution_name || 'Bank Connection'}</p>
