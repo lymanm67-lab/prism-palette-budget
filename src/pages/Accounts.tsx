@@ -640,157 +640,158 @@ const Accounts = () => {
                       ? stalePlaidItems.find((item: any) => isSameInstitution(acc.institution, item.institution_name))
                       : null;
                     const canManualRelink = Boolean(stalePlaidItem) && !updateLinkToken;
-                    return (
-                      <div key={acc.id} className="flex items-center gap-2 sm:gap-4 rounded-xl border border-border/30 p-3 sm:p-4 interactive-row hover-border-glow group cursor-default">
-                        <div className={`flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-gradient-to-br ${GRADIENT_MAP[acc.account_type]} transition-transform duration-300 group-hover:scale-110 shrink-0`}>
-                          <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          {isEditing ? (
-                            <div className="flex items-center gap-2">
-                              <Input
-                                value={editName}
-                                onChange={e => setEditName(e.target.value)}
-                                onKeyDown={e => {
-                                  if (e.key === 'Enter') saveEdit(acc.id);
-                                  if (e.key === 'Escape') cancelEdit();
-                                }}
-                                className="h-8 text-sm"
-                                autoFocus
-                              />
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="h-7 w-7 text-prism-teal hover:text-prism-teal" onClick={() => saveEdit(acc.id)}>
-                                    <Check className="h-4 w-4" />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>Save</TooltipContent>
-                              </Tooltip>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground" onClick={cancelEdit}>
-                                    <X className="h-4 w-4" />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>Cancel</TooltipContent>
-                              </Tooltip>
-                            </div>
-                          ) : (
-                            <>
-                              <p className="font-medium text-sm truncate">{acc.name}</p>
-                              <div className="flex items-center gap-1.5 flex-wrap">
-                                <Badge variant="secondary" className="text-[10px] capitalize">{acc.account_type}</Badge>
-                                {acc.institution && (
-                                  <span className="text-[10px] text-muted-foreground truncate">{acc.institution}</span>
-                                )}
-                                {acc.provider_type && acc.provider_type !== 'manual' && (
-                                  <Badge variant="outline" className="text-[9px] capitalize">{acc.provider_type}</Badge>
-                                )}
-                                {acc.last_synced_at ? (
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <span className={`text-[11px] flex items-center gap-0.5 ${stale ? 'text-amber-500' : 'text-muted-foreground'}`}>
-                                        {stale ? <AlertTriangle className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
-                                        {timeAgo(acc.last_synced_at)}
-                                      </span>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      {stale
-                                        ? `Stale — last synced ${formatDate(acc.last_synced_at)}`
-                                        : `Synced ${formatDate(acc.last_synced_at)}`}
-                                    </TooltipContent>
-                                  </Tooltip>
-                                ) : (
-                                  <span className="text-[11px] text-muted-foreground">Manual</span>
-                                )}
+                     return (
+                      <div key={acc.id} className="rounded-xl border border-border/30 p-3 sm:p-4 interactive-row hover-border-glow group cursor-default space-y-2 sm:space-y-0">
+                        <div className="flex items-center gap-3 sm:gap-4">
+                          <div className={`flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-gradient-to-br ${GRADIENT_MAP[acc.account_type]} transition-transform duration-300 group-hover:scale-110 shrink-0`}>
+                            <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            {isEditing ? (
+                              <div className="flex items-center gap-2">
+                                <Input
+                                  value={editName}
+                                  onChange={e => setEditName(e.target.value)}
+                                  onKeyDown={e => {
+                                    if (e.key === 'Enter') saveEdit(acc.id);
+                                    if (e.key === 'Escape') cancelEdit();
+                                  }}
+                                  className="h-8 text-sm"
+                                  autoFocus
+                                />
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-7 w-7 text-prism-teal hover:text-prism-teal" onClick={() => saveEdit(acc.id)}>
+                                      <Check className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Save</TooltipContent>
+                                </Tooltip>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground" onClick={cancelEdit}>
+                                      <X className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Cancel</TooltipContent>
+                                </Tooltip>
                               </div>
-                            </>
-                          )}
+                            ) : (
+                              <>
+                                <p className="font-medium text-sm leading-tight">{acc.name}</p>
+                                {acc.institution && (
+                                  <p className="text-xs text-muted-foreground leading-tight mt-0.5">{acc.institution}</p>
+                                )}
+                              </>
+                            )}
+                          </div>
+                          <span className={`font-display text-sm sm:text-lg font-semibold tabular-nums shrink-0 ${acc.balance >= 0 ? 'text-prism-teal' : 'text-prism-rose'}`}>
+                            {formatCurrency(acc.balance)}
+                          </span>
                         </div>
-                        <span className={`font-display text-sm sm:text-lg font-semibold tabular-nums shrink-0 ${acc.balance >= 0 ? 'text-prism-teal' : 'text-prism-rose'}`}>
-                          {formatCurrency(acc.balance)}
-                        </span>
-                        <div className="flex items-center gap-0.5 shrink-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-muted-foreground hover:text-prism-teal"
-                                disabled={refreshingAccountId === acc.id}
-                                onClick={() => handleRefreshSingleAccount(acc.id, acc.provider_type, acc.institution)}
-                              >
-                                <RefreshCw className={`h-4 w-4 ${refreshingAccountId === acc.id ? 'animate-spin' : ''}`} />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Refresh account</TooltipContent>
-                          </Tooltip>
-                          {stale && acc.provider_type === 'plaid' && (
+
+                        {/* Meta row + actions */}
+                        <div className="flex items-center justify-between pl-12 sm:pl-14">
+                          <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                            <Badge variant="secondary" className="text-[10px] capitalize">{acc.account_type}</Badge>
+                            {acc.provider_type && acc.provider_type !== 'manual' && (
+                              <Badge variant="outline" className="text-[9px] capitalize">{acc.provider_type}</Badge>
+                            )}
+                            {acc.last_synced_at ? (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className={`text-[11px] flex items-center gap-0.5 ${stale ? 'text-amber-500' : 'text-muted-foreground'}`}>
+                                    {stale ? <AlertTriangle className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
+                                    {timeAgo(acc.last_synced_at)}
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  {stale
+                                    ? `Stale — last synced ${formatDate(acc.last_synced_at)}`
+                                    : `Synced ${formatDate(acc.last_synced_at)}`}
+                                </TooltipContent>
+                              </Tooltip>
+                            ) : (
+                              <span className="text-[11px] text-muted-foreground">Manual</span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-0.5 shrink-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                                  disabled={!canManualRelink}
-                                  onClick={() => {
-                                    if (!stalePlaidItem) return;
-                                    requestPlaidRelink(stalePlaidItem.plaid_item_id, stalePlaidItem.institution_name, false);
-                                  }}
+                                  className="h-7 w-7 text-muted-foreground hover:text-prism-teal"
+                                  disabled={refreshingAccountId === acc.id}
+                                  onClick={() => handleRefreshSingleAccount(acc.id, acc.provider_type, acc.institution)}
                                 >
-                                  <RotateCcw className={`h-4 w-4 ${relinkingPlaidItemId === stalePlaidItem?.plaid_item_id ? 'animate-spin' : ''}`} />
+                                  <RefreshCw className={`h-3.5 w-3.5 ${refreshingAccountId === acc.id ? 'animate-spin' : ''}`} />
                                 </Button>
                               </TooltipTrigger>
-                              <TooltipContent>{canManualRelink ? 'Re-link stale Plaid connection' : 'Re-link unavailable for this account'}</TooltipContent>
+                              <TooltipContent>Refresh account</TooltipContent>
                             </Tooltip>
-                          )}
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-muted-foreground hover:text-prism-sky"
-                                onClick={() => startEditing(acc.id, acc.name)}
-                              >
-                                <Pencil className="h-4 w-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Rename</TooltipContent>
-                          </Tooltip>
-                          <AlertDialog>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <AlertDialogTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive">
-                                    <Trash2 className="h-4 w-4" />
+                            {stale && acc.provider_type === 'plaid' && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                                    disabled={!canManualRelink}
+                                    onClick={() => {
+                                      if (!stalePlaidItem) return;
+                                      requestPlaidRelink(stalePlaidItem.plaid_item_id, stalePlaidItem.institution_name, false);
+                                    }}
+                                  >
+                                    <RotateCcw className={`h-3.5 w-3.5 ${relinkingPlaidItemId === stalePlaidItem?.plaid_item_id ? 'animate-spin' : ''}`} />
                                   </Button>
-                                </AlertDialogTrigger>
-                              </TooltipTrigger>
-                              <TooltipContent>Delete</TooltipContent>
-                            </Tooltip>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Delete "{acc.name}"?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  This will permanently delete this account and all its transactions. This action cannot be undone.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => {
-                                    deleteAccount.mutate(acc.id, {
-                                      onSuccess: () => toast.success(`"${acc.name}" deleted successfully`),
-                                      onError: () => toast.error(`Failed to delete "${acc.name}"`),
-                                    });
-                                  }}
-                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                >
-                                  Delete
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+                                </TooltipTrigger>
+                                <TooltipContent>{canManualRelink ? 'Re-link stale Plaid connection' : 'Re-link unavailable'}</TooltipContent>
+                              </Tooltip>
+                            )}
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground">
+                                  <MoreHorizontal className="h-3.5 w-3.5" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem className="gap-2" onSelect={() => startEditing(acc.id, acc.name)}>
+                                  <Pencil className="h-3.5 w-3.5" /> Rename
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <DropdownMenuItem className="gap-2 text-destructive focus:text-destructive" onSelect={e => e.preventDefault()}>
+                                      <Trash2 className="h-3.5 w-3.5" /> Delete
+                                    </DropdownMenuItem>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Delete "{acc.name}"?</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        This will permanently delete this account and all its transactions. This action cannot be undone.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                      <AlertDialogAction
+                                        onClick={() => {
+                                          deleteAccount.mutate(acc.id, {
+                                            onSuccess: () => toast.success(`"${acc.name}" deleted successfully`),
+                                            onError: () => toast.error(`Failed to delete "${acc.name}"`),
+                                          });
+                                        }}
+                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                      >
+                                        Delete
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
                         </div>
                       </div>
                     );
