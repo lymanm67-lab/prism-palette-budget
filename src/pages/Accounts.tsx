@@ -138,16 +138,6 @@ const Accounts = () => {
     }
   }, [household]);
 
-  // Auto-launch re-link for only one stale Plaid item per page load
-  useEffect(() => {
-    if (autoRelinkTriggered || stalePlaidItems.length === 0 || updateLinkToken || !household) return;
-    const staleItem = stalePlaidItems[0];
-    if (!staleItem) return;
-
-    setAutoRelinkTriggered(true);
-    requestPlaidRelink(staleItem.plaid_item_id, staleItem.institution_name, true);
-  }, [autoRelinkTriggered, stalePlaidItems, updateLinkToken, household, requestPlaidRelink]);
-
   // Plaid Link in update mode
   const onUpdateSuccess = useCallback(async () => {
     plaidLinkOpenedRef.current = false;
