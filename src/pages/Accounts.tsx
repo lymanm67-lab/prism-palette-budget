@@ -88,16 +88,15 @@ const Accounts = () => {
     return left === right || left.includes(right) || right.includes(left);
   }, [normalizeInstitution]);
 
-  // Detect stale Plaid connections and auto-trigger update-mode re-link
+  // Detect stale Plaid connections for the banner
   const stalePlaidItems = useMemo(() => {
     if (!plaidConnections) return [];
     return plaidConnections.filter((item: any) => {
-      // Skip non-Plaid items (e.g. MX connections stored in plaid_items)
       if (item.plaid_item_id?.startsWith('USR-')) return false;
       const isStaleItem = item.updated_at && (Date.now() - new Date(item.updated_at).getTime() > 48 * 60 * 60 * 1000);
-      return (item.status === 'error' || isStaleItem) && !autoRelinkAttempted.has(item.plaid_item_id);
+      return item.status === 'error' || isStaleItem;
     });
-  }, [plaidConnections, autoRelinkAttempted]);
+  }, [plaidConnections]);
 
   const requestPlaidRelink = useCallback(async (
     plaidItemId: string,
