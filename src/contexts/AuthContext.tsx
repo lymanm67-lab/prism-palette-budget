@@ -1,12 +1,18 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { PRODUCT_TO_TIER, type SubscriptionTier } from '@/lib/stripe-plans';
 
 interface AuthContextType {
   session: Session | null;
   user: User | null;
   loading: boolean;
   signOut: () => Promise<void>;
+  subscribed: boolean;
+  subscriptionTier: SubscriptionTier;
+  subscriptionEnd: string | null;
+  isTrial: boolean;
+  refreshSubscription: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -14,6 +20,11 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
   signOut: async () => {},
+  subscribed: false,
+  subscriptionTier: null,
+  subscriptionEnd: null,
+  isTrial: false,
+  refreshSubscription: async () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -21,6 +32,27 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [subscribed, setSubscribed] = useState(false);
+  const [subscriptionTier, setSubscriptionTier] = useState<SubscriptionTier>(null);
+  const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
+  const [isTrial, setIsTrial] = useState(false);
+
+  const checkSubscription = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('check-subscription');
+      if (error) throw error;
+      setSubscribed(data.subscribed ?? false);
+      setIsTrial(data.is_trial ?? false);
+      setSubscriptionEnd(data.subscription_end ?? null);
+      if (data.product_id && PRODUCT_TO_TIER[data.product_id]) {
+        setSubscriptionTier(PRODUCT_TO_TIER[data.product_id]);
+      } else {
+        setSubscriptionTier(null);
+      }
+    } catch (err) {
+      console.error('check-subscription error:', err);
+    }
+  };
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -36,12 +68,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => subscription.unsubscribe();
   }, []);
 
+  // Check subscription when session changes
+  useEffect(() => {
+    if (session) {
+      checkSubscription();
+      const interval = setInterval(checkSubscription, 60_000);
+      return () => clearInterval(interval);
+    } else {
+      setSubscribed(false);
+      setSubscriptionTier(null);
+      setSubscriptionEnd(null);
+      setIsTrial(false);
+    }
+  }, [session]);
+
   const signOut = async () => {
     await supabase.auth.signOut();
   };
 
   return (
-    <AuthContext.Provider value={{ session, user: session?.user ?? null, loading, signOut }}>
+    <AuthContext.Provider value={{
+      session,
+      user: session?.user ?? null,
+      loading,
+      signOut,
+      subscribed,
+      subscriptionTier,
+      subscriptionEnd,
+      isTrial,
+      refreshSubscription: checkSubscription,
+    }}>
       {children}
     </AuthContext.Provider>
   );

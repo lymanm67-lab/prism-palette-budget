@@ -2,10 +2,15 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
-import { CheckCircle2, Star, Briefcase } from 'lucide-react';
+import { CheckCircle2, Star, Briefcase, Loader2 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { STRIPE_PLANS } from '@/lib/stripe-plans';
+import { toast } from 'sonner';
 
 const PLANS = [
   {
+    key: 'personal' as const,
     name: 'Prism Personal',
     monthly: 12.99,
     yearly: 99,
@@ -25,6 +30,7 @@ const PLANS = [
     highlight: false,
   },
   {
+    key: 'premium' as const,
     name: 'Prism Premium',
     monthly: 19.99,
     yearly: 149,
@@ -45,6 +51,7 @@ const PLANS = [
     highlight: true,
   },
   {
+    key: 'business' as const,
     name: 'Prism Business Pro',
     monthly: 39.99,
     yearly: 349,
@@ -69,7 +76,36 @@ const PLANS = [
 
 const PricingSection = () => {
   const navigate = useNavigate();
+  const { user, subscribed, subscriptionTier } = useAuth();
   const [annual, setAnnual] = useState(true);
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+
+  const handleCheckout = async (planKey: 'personal' | 'premium' | 'business') => {
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+
+    const plan = STRIPE_PLANS[planKey];
+    const priceId = annual ? plan.annual_price_id : plan.monthly_price_id;
+
+    setLoadingPlan(planKey);
+    try {
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { priceId },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to start checkout');
+    } finally {
+      setLoadingPlan(null);
+    }
+  };
+
+  const isCurrentPlan = (planKey: string) => subscribed && subscriptionTier === planKey;
 
   return (
     <section id="pricing" className="py-20 sm:py-28 bg-muted/20">
@@ -81,7 +117,7 @@ const PricingSection = () => {
             <span className="prism-gradient-text">fits your life</span>
           </h2>
           <p className="mt-3 text-muted-foreground text-base sm:text-lg">
-            Save more with annual billing. Annual plans are the best value.
+            Start with a 14-day free trial. No credit card charged until trial ends.
           </p>
         </motion.div>
 
@@ -101,63 +137,80 @@ const PricingSection = () => {
         </div>
 
         <div className="grid gap-8 lg:grid-cols-3 max-w-5xl mx-auto items-start">
-          {PLANS.map((plan, i) => (
-            <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }} transition={{ delay: i * 0.1 }}
-              className={`rounded-2xl border p-8 relative ${plan.highlight ? 'border-accent shadow-xl lg:scale-105 bg-card ring-2 ring-accent/20' : 'border-border bg-card'}`}>
+          {PLANS.map((plan, i) => {
+            const current = isCurrentPlan(plan.key);
+            return (
+              <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }} transition={{ delay: i * 0.1 }}
+                className={`rounded-2xl border p-8 relative ${plan.highlight ? 'border-accent shadow-xl lg:scale-105 bg-card ring-2 ring-accent/20' : 'border-border bg-card'} ${current ? 'ring-2 ring-green-500/50 border-green-500' : ''}`}>
 
-              {plan.badge && plan.badgeIcon && (
-                <div className={`absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold text-primary-foreground ${plan.highlight ? 'prism-gradient-teal' : 'prism-gradient'}`}>
-                  <plan.badgeIcon className="h-3 w-3" /> {plan.badge}
+                {current && (
+                  <div className="absolute -top-3 right-4 flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold bg-green-500 text-white">
+                    ✓ Your Plan
+                  </div>
+                )}
+
+                {plan.badge && plan.badgeIcon && !current && (
+                  <div className={`absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold text-primary-foreground ${plan.highlight ? 'prism-gradient-teal' : 'prism-gradient'}`}>
+                    <plan.badgeIcon className="h-3 w-3" /> {plan.badge}
+                  </div>
+                )}
+
+                <h3 className="font-display text-xl font-bold">{plan.name}</h3>
+
+                <div className="mt-4 flex items-baseline gap-1">
+                  <span className="font-display text-4xl font-extrabold">
+                    ${annual ? (plan.yearly / 12).toFixed(2) : plan.monthly.toFixed(2)}
+                  </span>
+                  <span className="text-muted-foreground text-sm">/month</span>
                 </div>
-              )}
 
-              <h3 className="font-display text-xl font-bold">{plan.name}</h3>
+                {annual && (
+                  <div className="mt-1.5 space-y-0.5">
+                    <p className="text-xs text-muted-foreground">
+                      Billed annually at <span className="font-semibold text-foreground">${plan.yearly}/year</span>
+                    </p>
+                    <p className="text-xs font-semibold text-accent">
+                      Save ${plan.yearlySavings} per year
+                    </p>
+                  </div>
+                )}
 
-              <div className="mt-4 flex items-baseline gap-1">
-                <span className="font-display text-4xl font-extrabold">
-                  ${annual ? (plan.yearly / 12).toFixed(2) : plan.monthly.toFixed(2)}
-                </span>
-                <span className="text-muted-foreground text-sm">/month</span>
-              </div>
-
-              {annual && (
-                <div className="mt-1.5 space-y-0.5">
-                  <p className="text-xs text-muted-foreground">
-                    Billed annually at <span className="font-semibold text-foreground">${plan.yearly}/year</span>
+                {!annual && (
+                  <p className="mt-1.5 text-xs text-muted-foreground">
+                    Switch to annual and save <span className="font-semibold text-accent">${plan.yearlySavings}/year</span>
                   </p>
-                  <p className="text-xs font-semibold text-accent">
-                    Save ${plan.yearlySavings} per year
-                  </p>
-                </div>
-              )}
+                )}
 
-              {!annual && (
-                <p className="mt-1.5 text-xs text-muted-foreground">
-                  Switch to annual and save <span className="font-semibold text-accent">${plan.yearlySavings}/year</span>
+                <p className="mt-4 text-xs text-muted-foreground leading-relaxed border-t border-border pt-4">
+                  <span className="font-semibold text-foreground">Best for:</span> {plan.bestFor}
                 </p>
-              )}
 
-              <p className="mt-4 text-xs text-muted-foreground leading-relaxed border-t border-border pt-4">
-                <span className="font-semibold text-foreground">Best for:</span> {plan.bestFor}
-              </p>
+                <ul className="mt-5 space-y-2.5">
+                  {plan.features.map((f, j) => (
+                    <li key={j} className={`flex items-start gap-2 text-sm ${f.endsWith(':') ? 'font-semibold text-foreground mt-1' : ''}`}>
+                      {!f.endsWith(':') && <CheckCircle2 className="h-4 w-4 text-accent shrink-0 mt-0.5" />}
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
 
-              <ul className="mt-5 space-y-2.5">
-                {plan.features.map((f, j) => (
-                  <li key={j} className={`flex items-start gap-2 text-sm ${f.endsWith(':') ? 'font-semibold text-foreground mt-1' : ''}`}>
-                    {!f.endsWith(':') && <CheckCircle2 className="h-4 w-4 text-accent shrink-0 mt-0.5" />}
-                    <span>{f}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <Button onClick={() => navigate('/onboarding')}
-                className={`w-full mt-8 rounded-xl h-11 font-semibold ${plan.highlight ? 'prism-gradient-teal text-primary-foreground hover:opacity-90 prism-glow-teal' : ''}`}
-                variant={plan.highlight ? 'default' : 'outline'}>
-                {plan.cta}
-              </Button>
-            </motion.div>
-          ))}
+                <Button
+                  onClick={() => current ? null : handleCheckout(plan.key)}
+                  disabled={!!loadingPlan || current}
+                  className={`w-full mt-8 rounded-xl h-11 font-semibold ${plan.highlight && !current ? 'prism-gradient-teal text-primary-foreground hover:opacity-90 prism-glow-teal' : ''}`}
+                  variant={plan.highlight ? 'default' : 'outline'}>
+                  {loadingPlan === plan.key ? (
+                    <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Starting checkout…</>
+                  ) : current ? (
+                    'Current Plan'
+                  ) : (
+                    plan.cta
+                  )}
+                </Button>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>
