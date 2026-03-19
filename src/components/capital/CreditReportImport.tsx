@@ -1,5 +1,5 @@
-import { useState, useRef, useCallback } from 'react';
-import { Upload, FileText, Loader2, CheckCircle2, AlertTriangle, FileJson, FileSpreadsheet, ExternalLink, Globe, ChevronDown } from 'lucide-react';
+import { useState, useRef, useCallback, useEffect } from 'react';
+import { Upload, FileText, Loader2, CheckCircle2, AlertTriangle, FileJson, FileSpreadsheet, ExternalLink, Globe, ChevronDown, Copy, Pencil, Trash2, CheckCheck, XCircle } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist';
 
 // Set PDF.js worker
@@ -90,6 +90,52 @@ interface ParsedAccount {
   terms?: string | null;
   notes?: string | null;
   selected?: boolean;
+  isDuplicate?: boolean;
+  duplicateOf?: { id: string; account_name: string; balance: number; bureau: string } | null;
+  duplicateAction?: 'accept' | 'skip' | 'replace';
+  editing?: boolean;
+}
+
+function normalizeAccountName(name: string): string {
+  return (name || '').toLowerCase().trim().replace(/[^a-z0-9]/g, '');
+}
+
+function detectDuplicates(
+  parsed: ParsedAccount[],
+  existing: Array<{ id: string; account_name: string; account_number: string | null; balance: number; bureau: string; account_type: string }>
+): ParsedAccount[] {
+  return parsed.map(acct => {
+    const normName = normalizeAccountName(acct.account_name);
+    const match = existing.find(ex => {
+      const exNorm = normalizeAccountName(ex.account_name);
+      // Match by name similarity
+      if (normName === exNorm) return true;
+      // Match by account number if both present
+      if (acct.account_number && ex.account_number) {
+        const pLast4 = acct.account_number.slice(-4);
+        const eLast4 = ex.account_number.slice(-4);
+        if (pLast4 === eLast4 && normName.includes(exNorm.slice(0, 4))) return true;
+      }
+      return false;
+    });
+    if (match) {
+      return { ...acct, isDuplicate: true, duplicateOf: match, duplicateAction: 'skip' as const, selected: false };
+    }
+    return { ...acct, isDuplicate: false, duplicateOf: null };
+  });
+}
+
+// Detect intra-batch duplicates (same account appearing multiple times in the import)
+function detectIntraBatchDuplicates(accounts: ParsedAccount[]): ParsedAccount[] {
+  const seen = new Map<string, number>();
+  return accounts.map((acct, i) => {
+    const key = `${normalizeAccountName(acct.account_name)}|${acct.account_number?.slice(-4) || ''}|${acct.balance}`;
+    if (seen.has(key)) {
+      return { ...acct, isDuplicate: true, duplicateOf: null, duplicateAction: 'skip' as const, selected: false };
+    }
+    seen.set(key, i);
+    return acct;
+  });
 }
 
 const CreditReportImport = ({ onSuccess }: { onSuccess: () => void }) => {
@@ -103,6 +149,19 @@ const CreditReportImport = ({ onSuccess }: { onSuccess: () => void }) => {
   const [rawText, setRawText] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [existingAccounts, setExistingAccounts] = useState<Array<{ id: string; account_name: string; account_number: string | null; balance: number; bureau: string; account_type: string }>>([]);
+  const [editingIdx, setEditingIdx] = useState<number | null>(null);
+
+  // Fetch existing credit accounts for duplicate detection
+  useEffect(() => {
+    if (!household || !dialogOpen) return;
+    (async () => {
+      const { data } = await (supabase as any).from('credit_accounts')
+        .select('id, account_name, account_number, balance, bureau, account_type')
+        .eq('household_id', household.id);
+      setExistingAccounts(data || []);
+    })();
+  }, [household, dialogOpen]);
 
   const fmt = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
 
@@ -118,7 +177,10 @@ const CreditReportImport = ({ onSuccess }: { onSuccess: () => void }) => {
       try {
         const data = JSON.parse(text);
         const accounts = Array.isArray(data) ? data : data.accounts || [];
-        setParsedAccounts(accounts.map((a: any) => ({ ...a, selected: true })));
+        let acctList = accounts.map((a: any) => ({ ...a, selected: true }));
+        acctList = detectDuplicates(acctList, existingAccounts);
+        acctList = detectIntraBatchDuplicates(acctList);
+        setParsedAccounts(acctList);
         setMode('structured');
         toast.success(`Loaded ${accounts.length} accounts from JSON`);
       } catch {
@@ -151,8 +213,9 @@ const CreditReportImport = ({ onSuccess }: { onSuccess: () => void }) => {
           selected: true,
         });
       }
-      setParsedAccounts(accounts);
-      setMode('structured');
+      let withDupes = detectDuplicates(accounts, existingAccounts);
+      withDupes = detectIntraBatchDuplicates(withDupes);
+      setParsedAccounts(withDupes);
       toast.success(`Loaded ${accounts.length} accounts from CSV`);
     } else if (ext === 'pdf') {
       // Extract text from PDF using pdf.js
@@ -193,9 +256,12 @@ const CreditReportImport = ({ onSuccess }: { onSuccess: () => void }) => {
               body: { images, bureau, mode: 'ocr' },
             });
             if (error) throw error;
-            const accounts = (data.accounts || []).map((a: any) => ({ ...a, selected: true }));
+            let accounts = (data.accounts || []).map((a: any) => ({ ...a, selected: true }));
+            accounts = detectDuplicates(accounts, existingAccounts);
+            accounts = detectIntraBatchDuplicates(accounts);
             setParsedAccounts(accounts);
-            toast.success(`AI Vision extracted ${accounts.length} accounts from scanned PDF`);
+            const dupeCount = accounts.filter((a: ParsedAccount) => a.isDuplicate).length;
+            toast.success(`AI Vision extracted ${accounts.length} accounts${dupeCount ? ` (${dupeCount} duplicates found)` : ''} from scanned PDF`);
           } catch (ocrErr: any) {
             console.error('OCR parse error:', ocrErr);
             toast.error(`OCR failed: ${ocrErr.message}. Try pasting the text manually.`);
@@ -233,9 +299,12 @@ const CreditReportImport = ({ onSuccess }: { onSuccess: () => void }) => {
         body: { report_text: trimmedText, bureau },
       });
       if (error) throw error;
-      const accounts = (data.accounts || []).map((a: any) => ({ ...a, selected: true }));
+      let accounts = (data.accounts || []).map((a: any) => ({ ...a, selected: true }));
+      accounts = detectDuplicates(accounts, existingAccounts);
+      accounts = detectIntraBatchDuplicates(accounts);
       setParsedAccounts(accounts);
-      toast.success(`AI extracted ${accounts.length} accounts`);
+      const dupeCount = accounts.filter((a: ParsedAccount) => a.isDuplicate).length;
+      toast.success(`AI extracted ${accounts.length} accounts${dupeCount ? ` (${dupeCount} duplicates found)` : ''}`);
     } catch (e: any) {
       toast.error(`Parse failed: ${e.message}`);
     } finally {
@@ -247,6 +316,28 @@ const CreditReportImport = ({ onSuccess }: { onSuccess: () => void }) => {
     setParsedAccounts(prev => prev.map((a, i) => i === idx ? { ...a, selected: !a.selected } : a));
   };
 
+  const setDuplicateAction = (idx: number, action: 'accept' | 'skip' | 'replace') => {
+    setParsedAccounts(prev => prev.map((a, i) => {
+      if (i !== idx) return a;
+      return { ...a, duplicateAction: action, selected: action !== 'skip' };
+    }));
+  };
+
+  const batchDuplicateAction = (action: 'accept' | 'skip' | 'replace') => {
+    setParsedAccounts(prev => prev.map(a => {
+      if (!a.isDuplicate) return a;
+      return { ...a, duplicateAction: action, selected: action !== 'skip' };
+    }));
+  };
+
+  const updateParsedAccount = (idx: number, field: keyof ParsedAccount, value: any) => {
+    setParsedAccounts(prev => prev.map((a, i) => i === idx ? { ...a, [field]: value } : a));
+  };
+
+  const removeParsedAccount = (idx: number) => {
+    setParsedAccounts(prev => prev.filter((_, i) => i !== idx));
+  };
+
   const handleImport = async () => {
     if (!household) return;
     const selected = parsedAccounts.filter(a => a.selected);
@@ -254,6 +345,14 @@ const CreditReportImport = ({ onSuccess }: { onSuccess: () => void }) => {
 
     setSaving(true);
     try {
+      // Handle replacements first — delete existing accounts that are being replaced
+      const replacements = selected.filter(a => a.isDuplicate && a.duplicateAction === 'replace' && a.duplicateOf);
+      for (const r of replacements) {
+        if (r.duplicateOf?.id) {
+          await (supabase as any).from('credit_accounts').delete().eq('id', r.duplicateOf.id);
+        }
+      }
+
       const rows = selected.map(a => ({
         household_id: household.id,
         bureau,
@@ -303,7 +402,7 @@ const CreditReportImport = ({ onSuccess }: { onSuccess: () => void }) => {
         }
       }
 
-      toast.success(`Imported ${selected.length} accounts`);
+      toast.success(`Imported ${selected.length} accounts${replacements.length ? ` (${replacements.length} replaced)` : ''}`);
       setDialogOpen(false);
       setParsedAccounts([]);
       setRawText('');
@@ -317,6 +416,7 @@ const CreditReportImport = ({ onSuccess }: { onSuccess: () => void }) => {
   };
 
   const selectedCount = parsedAccounts.filter(a => a.selected).length;
+  const duplicateCount = parsedAccounts.filter(a => a.isDuplicate).length;
 
   return (
     <>
@@ -493,12 +593,39 @@ const CreditReportImport = ({ onSuccess }: { onSuccess: () => void }) => {
                   <Label className="flex items-center gap-2">
                     <CheckCircle2 className="h-4 w-4 text-accent" />
                     {parsedAccounts.length} accounts found — {selectedCount} selected
+                    {duplicateCount > 0 && (
+                      <Badge variant="secondary" className="text-xs ml-1">
+                        <Copy className="h-3 w-3 mr-1" />{duplicateCount} duplicate{duplicateCount > 1 ? 's' : ''}
+                      </Badge>
+                    )}
                   </Label>
                   <Button variant="ghost" size="sm" onClick={() => { setParsedAccounts([]); setRawText(''); }}>
                     Clear & Retry
                   </Button>
                 </div>
-                <div className="border rounded-lg overflow-x-auto max-h-[300px] overflow-y-auto">
+
+                {/* Batch duplicate actions */}
+                {duplicateCount > 0 && (
+                  <div className="flex items-center gap-2 mb-3 p-2.5 rounded-lg border border-amber-500/30 bg-amber-500/5">
+                    <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" />
+                    <span className="text-xs text-muted-foreground flex-1">
+                      {duplicateCount} account{duplicateCount > 1 ? 's match' : ' matches'} existing records
+                    </span>
+                    <div className="flex gap-1.5">
+                      <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => batchDuplicateAction('skip')}>
+                        <XCircle className="h-3 w-3 mr-1" />Skip All
+                      </Button>
+                      <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => batchDuplicateAction('accept')}>
+                        <CheckCheck className="h-3 w-3 mr-1" />Import All
+                      </Button>
+                      <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => batchDuplicateAction('replace')}>
+                        <Pencil className="h-3 w-3 mr-1" />Replace All
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                <div className="border rounded-lg overflow-x-auto max-h-[350px] overflow-y-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -508,17 +635,45 @@ const CreditReportImport = ({ onSuccess }: { onSuccess: () => void }) => {
                         <TableHead>Status</TableHead>
                         <TableHead className="text-right">Balance</TableHead>
                         <TableHead className="text-right">Limit</TableHead>
+                        <TableHead className="w-24">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {parsedAccounts.map((acct, i) => (
-                        <TableRow key={i} className={acct.selected ? '' : 'opacity-40'}>
+                        <TableRow
+                          key={i}
+                          className={`${acct.selected ? '' : 'opacity-40'} ${acct.isDuplicate ? 'bg-amber-500/5' : ''}`}
+                        >
                           <TableCell>
                             <Checkbox checked={acct.selected} onCheckedChange={() => toggleAccount(i)} />
                           </TableCell>
                           <TableCell className="font-medium text-sm">
-                            {acct.account_name}
-                            {acct.account_number && <span className="text-muted-foreground text-xs ml-1">••{acct.account_number.slice(-4)}</span>}
+                            {editingIdx === i ? (
+                              <input
+                                className="w-full border rounded px-2 py-1 text-sm bg-background"
+                                value={acct.account_name}
+                                onChange={e => updateParsedAccount(i, 'account_name', e.target.value)}
+                                onBlur={() => setEditingIdx(null)}
+                                onKeyDown={e => e.key === 'Enter' && setEditingIdx(null)}
+                                autoFocus
+                              />
+                            ) : (
+                              <>
+                                {acct.account_name}
+                                {acct.account_number && <span className="text-muted-foreground text-xs ml-1">••{acct.account_number.slice(-4)}</span>}
+                              </>
+                            )}
+                            {acct.isDuplicate && (
+                              <div className="flex items-center gap-1 mt-0.5">
+                                <Badge variant="outline" className="text-[10px] border-amber-500/40 text-amber-600">
+                                  <Copy className="h-2.5 w-2.5 mr-0.5" />
+                                  {acct.duplicateOf ? `Matches: ${acct.duplicateOf.account_name}` : 'Intra-batch duplicate'}
+                                </Badge>
+                                {acct.duplicateAction === 'accept' && <Badge className="text-[10px] bg-accent">Import anyway</Badge>}
+                                {acct.duplicateAction === 'replace' && <Badge className="text-[10px] bg-primary">Replace existing</Badge>}
+                                {acct.duplicateAction === 'skip' && <Badge variant="secondary" className="text-[10px]">Skipped</Badge>}
+                              </div>
+                            )}
                           </TableCell>
                           <TableCell className="text-xs">{acct.account_type}</TableCell>
                           <TableCell>
@@ -526,8 +681,42 @@ const CreditReportImport = ({ onSuccess }: { onSuccess: () => void }) => {
                               {acct.account_status}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-right font-mono text-sm">{fmt(acct.balance)}</TableCell>
+                          <TableCell className="text-right font-mono text-sm">
+                            {editingIdx === i ? (
+                              <input
+                                className="w-20 border rounded px-2 py-1 text-sm text-right bg-background"
+                                type="number"
+                                value={acct.balance}
+                                onChange={e => updateParsedAccount(i, 'balance', parseFloat(e.target.value) || 0)}
+                              />
+                            ) : (
+                              fmt(acct.balance)
+                            )}
+                          </TableCell>
                           <TableCell className="text-right font-mono text-sm">{acct.credit_limit ? fmt(acct.credit_limit) : '—'}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setEditingIdx(editingIdx === i ? null : i)} title="Edit">
+                                <Pencil className="h-3 w-3" />
+                              </Button>
+                              <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => removeParsedAccount(i)} title="Remove">
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                              {acct.isDuplicate && (
+                                <>
+                                  {acct.duplicateAction === 'skip' ? (
+                                    <Button variant="ghost" size="icon" className="h-6 w-6 text-accent" onClick={() => setDuplicateAction(i, 'accept')} title="Accept duplicate">
+                                      <CheckCheck className="h-3 w-3" />
+                                    </Button>
+                                  ) : (
+                                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setDuplicateAction(i, 'skip')} title="Skip duplicate">
+                                      <XCircle className="h-3 w-3" />
+                                    </Button>
+                                  )}
+                                </>
+                              )}
+                            </div>
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
