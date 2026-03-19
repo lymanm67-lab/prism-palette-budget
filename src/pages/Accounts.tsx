@@ -521,11 +521,11 @@ const Accounts = () => {
           const uniqueInstitutions = [...new Set(staleNames)];
           return (
             <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
-              <Card className="border-amber-500/40 bg-amber-500/5">
+              <Card className="border-prism-amber/40 bg-prism-amber/5">
                 <CardContent className="p-4 space-y-3">
                   <div className="flex items-start gap-3">
-                    <div className="h-9 w-9 rounded-lg bg-amber-500/15 flex items-center justify-center shrink-0 mt-0.5">
-                      <AlertTriangle className="h-5 w-5 text-amber-500" />
+                    <div className="h-9 w-9 rounded-lg bg-prism-amber/15 flex items-center justify-center shrink-0 mt-0.5">
+                      <AlertTriangle className="h-5 w-5 text-prism-amber" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm text-foreground">
