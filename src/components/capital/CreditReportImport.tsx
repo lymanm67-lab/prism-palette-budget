@@ -210,8 +210,9 @@ const CreditReportImport = ({ onSuccess }: { onSuccess: () => void }) => {
           selected: true,
         });
       }
-      setParsedAccounts(accounts);
-      setMode('structured');
+      let withDupes = detectDuplicates(accounts, existingAccounts);
+      withDupes = detectIntraBatchDuplicates(withDupes);
+      setParsedAccounts(withDupes);
       toast.success(`Loaded ${accounts.length} accounts from CSV`);
     } else if (ext === 'pdf') {
       // Extract text from PDF using pdf.js
