@@ -2,10 +2,28 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
+import { useABTest } from '@/hooks/use-ab-test';
 import heroProductShot from '@/assets/hero-product-shot.png';
 
 const HeroSection = () => {
   const navigate = useNavigate();
+
+  const headline = useABTest('hero_headline', 'control');
+  const cta = useABTest('hero_cta', 'control');
+
+  const headlineText = headline.variant.config?.headline as string ||
+    "You're making money, but you still don't have a clear picture of where it's going.";
+  const subheadlineText = headline.variant.config?.subheadline as string ||
+    'Prism shows you exactly where your money is going and what you can safely spend.';
+  const supportingText = headline.variant.config?.supporting as string ||
+    'Know exactly what you can safely spend today, this week, and this month without guessing.';
+  const ctaText = cta.variant.config?.text as string || 'Start Your Free Trial';
+
+  const handleCtaClick = () => {
+    cta.trackClick();
+    headline.trackClick();
+    navigate('/onboarding');
+  };
 
   return (
     <header className="relative overflow-hidden auth-gradient-bg pt-24 sm:pt-28">
@@ -22,23 +40,29 @@ const HeroSection = () => {
           </div>
 
           <h1 className="font-display text-4xl sm:text-6xl lg:text-7xl font-extrabold text-white tracking-tight leading-[1.1]">
-            You're making money, but you still don't have a{' '}
-            <span className="prism-gradient-text">clear picture</span>{' '}
-            of where it's going.
+            {headlineText.includes('clear picture') ? (
+              <>
+                You're making money, but you still don't have a{' '}
+                <span className="prism-gradient-text">clear picture</span>{' '}
+                of where it's going.
+              </>
+            ) : (
+              headlineText
+            )}
           </h1>
 
           <p className="mt-6 text-base sm:text-lg text-white/90 max-w-3xl mx-auto leading-relaxed font-medium">
-            Prism shows you exactly where your money is going and what you can safely spend.
+            {subheadlineText}
           </p>
 
           <p className="mt-4 text-sm sm:text-base text-white/70 max-w-2xl mx-auto leading-relaxed">
-            Know exactly what you can safely spend today, this week, and this month without guessing.
+            {supportingText}
           </p>
 
           <div className="mt-10 flex flex-col items-center gap-3">
-            <Button size="lg" onClick={() => navigate('/onboarding')}
+            <Button size="lg" onClick={handleCtaClick}
               className="prism-gradient-teal hover:opacity-90 text-lg h-14 px-10 gap-2 font-bold rounded-2xl prism-glow-teal text-white">
-              Start Your Free Trial <ArrowRight className="h-5 w-5" />
+              {ctaText} <ArrowRight className="h-5 w-5" />
             </Button>
             <p className="text-xs text-white/50 font-medium">
               See your full financial picture in the next 10 minutes.
