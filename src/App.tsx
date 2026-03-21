@@ -158,6 +158,7 @@ const App = () => (
               <Route path="/capital/loan-readiness" element={<LoanReadiness />} />
               <Route path="/capital/dscr" element={<DSCRCalculator />} />
               <Route path="/capital/money-math" element={<MoneyMath />} />
+              <Route path="/experiments" element={<ExperimentsDashboard />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
