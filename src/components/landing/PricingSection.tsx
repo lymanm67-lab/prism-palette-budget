@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { STRIPE_PLANS } from '@/lib/stripe-plans';
 import { toast } from 'sonner';
+import { useABTest } from '@/hooks/use-ab-test';
 
 const PLANS = [
   {
@@ -89,6 +90,11 @@ const PricingSection = () => {
   const { user, subscribed, subscriptionTier } = useAuth();
   const [annual, setAnnual] = useState(true);
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const headlineTest = useABTest('pricing_headline', 'control');
+  const guidanceTest = useABTest('pricing_guidance', 'control');
+
+  const headlineText = headlineTest.variant.config?.headline as string || 'Choose the plan that gives you full control';
+  const showGuidance = (guidanceTest.variant.config?.showGuidance as boolean) !== false;
 
   const handleCheckout = async (planKey: 'personal' | 'premium' | 'business') => {
     if (!user) {
@@ -123,12 +129,18 @@ const PricingSection = () => {
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
           className="text-center mb-4">
           <h2 className="font-display text-3xl sm:text-5xl font-extrabold tracking-tight text-foreground">
-            Choose the plan that gives you{' '}
-            <span className="prism-gradient-text">full control</span>
+            {headlineText.includes('full control') ? (
+              <>
+                Choose the plan that gives you{' '}
+                <span className="prism-gradient-text">full control</span>
+              </>
+            ) : headlineText}
           </h2>
-          <p className="mt-3 text-foreground/70 text-base sm:text-lg">
-            Most users start with Premium for full financial clarity.
-          </p>
+          {showGuidance && (
+            <p className="mt-3 text-foreground/70 text-base sm:text-lg">
+              Most users start with Premium for full financial clarity.
+            </p>
+          )}
           <p className="mt-1.5 text-sm text-foreground/50">
             Most users recover the cost within the first 30 days.
           </p>

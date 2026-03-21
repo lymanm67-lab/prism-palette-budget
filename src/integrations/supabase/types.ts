@@ -14,6 +14,152 @@ export type Database = {
   }
   public: {
     Tables: {
+      ab_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          experiment_id: string
+          id: string
+          metadata: Json | null
+          variant_id: string
+          visitor_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          experiment_id: string
+          id?: string
+          metadata?: Json | null
+          variant_id: string
+          visitor_id: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          experiment_id?: string
+          id?: string
+          metadata?: Json | null
+          variant_id?: string
+          visitor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ab_events_experiment_id_fkey"
+            columns: ["experiment_id"]
+            isOneToOne: false
+            referencedRelation: "ab_experiment_results"
+            referencedColumns: ["experiment_id"]
+          },
+          {
+            foreignKeyName: "ab_events_experiment_id_fkey"
+            columns: ["experiment_id"]
+            isOneToOne: false
+            referencedRelation: "ab_experiments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ab_events_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "ab_experiment_results"
+            referencedColumns: ["variant_id"]
+          },
+          {
+            foreignKeyName: "ab_events_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "ab_variants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ab_experiments: {
+        Row: {
+          created_at: string
+          description: string | null
+          ended_at: string | null
+          id: string
+          name: string
+          required_sample_size: number
+          started_at: string | null
+          status: string
+          target_element: string
+          updated_at: string
+          winner_variant_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          ended_at?: string | null
+          id?: string
+          name: string
+          required_sample_size?: number
+          started_at?: string | null
+          status?: string
+          target_element: string
+          updated_at?: string
+          winner_variant_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          ended_at?: string | null
+          id?: string
+          name?: string
+          required_sample_size?: number
+          started_at?: string | null
+          status?: string
+          target_element?: string
+          updated_at?: string
+          winner_variant_id?: string | null
+        }
+        Relationships: []
+      }
+      ab_variants: {
+        Row: {
+          config: Json
+          created_at: string
+          experiment_id: string
+          id: string
+          is_control: boolean
+          name: string
+          variant_key: string
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          experiment_id: string
+          id?: string
+          is_control?: boolean
+          name: string
+          variant_key: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          experiment_id?: string
+          id?: string
+          is_control?: boolean
+          name?: string
+          variant_key?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ab_variants_experiment_id_fkey"
+            columns: ["experiment_id"]
+            isOneToOne: false
+            referencedRelation: "ab_experiment_results"
+            referencedColumns: ["experiment_id"]
+          },
+          {
+            foreignKeyName: "ab_variants_experiment_id_fkey"
+            columns: ["experiment_id"]
+            isOneToOne: false
+            referencedRelation: "ab_experiments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       accounts: {
         Row: {
           account_type: Database["public"]["Enums"]["account_type"]
@@ -2119,6 +2265,23 @@ export type Database = {
       }
     }
     Views: {
+      ab_experiment_results: {
+        Row: {
+          click_through_rate: number | null
+          clicks: number | null
+          conversion_rate: number | null
+          conversions: number | null
+          experiment_id: string | null
+          experiment_name: string | null
+          impressions: number | null
+          is_control: boolean | null
+          status: string | null
+          variant_id: string | null
+          variant_key: string | null
+          variant_name: string | null
+        }
+        Relationships: []
+      }
       plaid_items_safe: {
         Row: {
           consent_expiration: string | null
