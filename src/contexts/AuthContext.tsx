@@ -12,6 +12,7 @@ interface AuthContextType {
   subscriptionTier: SubscriptionTier;
   subscriptionEnd: string | null;
   isTrial: boolean;
+  isFounder: boolean;
   refreshSubscription: () => Promise<void>;
 }
 
@@ -24,6 +25,7 @@ const AuthContext = createContext<AuthContextType>({
   subscriptionTier: null,
   subscriptionEnd: null,
   isTrial: false,
+  isFounder: false,
   refreshSubscription: async () => {},
 });
 
@@ -36,6 +38,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [subscriptionTier, setSubscriptionTier] = useState<SubscriptionTier>(null);
   const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
   const [isTrial, setIsTrial] = useState(false);
+  const [isFounder, setIsFounder] = useState(false);
 
   const checkSubscription = async () => {
     try {
@@ -68,6 +71,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => subscription.unsubscribe();
   }, []);
 
+  // Check founder role when session changes
+  useEffect(() => {
+    if (session?.user?.id) {
+      supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', session.user.id)
+        .eq('role', 'founder')
+        .maybeSingle()
+        .then(({ data }) => {
+          setIsFounder(!!data);
+        });
+    } else {
+      setIsFounder(false);
+    }
+  }, [session]);
+
   // Check subscription when session changes
   useEffect(() => {
     if (session) {
@@ -80,7 +100,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSubscriptionEnd(null);
       setIsTrial(false);
     }
-  }, [session]);
+  }, [session, isFounder]);
 
   const signOut = async () => {
     await supabase.auth.signOut();
@@ -92,10 +112,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       user: session?.user ?? null,
       loading,
       signOut,
-      subscribed,
-      subscriptionTier,
+      subscribed: subscribed || isFounder,
+      subscriptionTier: isFounder ? 'business' : subscriptionTier,
       subscriptionEnd,
       isTrial,
+      isFounder,
       refreshSubscription: checkSubscription,
     }}>
       {children}

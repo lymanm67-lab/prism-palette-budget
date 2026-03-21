@@ -2017,6 +2017,27 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       plaid_items_safe: {
@@ -2054,6 +2075,13 @@ export type Database = {
           updated_at: string
         }[]
       }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       is_household_member: {
         Args: { _household_id: string; _user_id: string }
         Returns: boolean
@@ -2067,6 +2095,7 @@ export type Database = {
         | "investment"
         | "loan"
         | "other"
+      app_role: "founder" | "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2202,6 +2231,7 @@ export const Constants = {
         "loan",
         "other",
       ],
+      app_role: ["founder", "admin", "user"],
     },
   },
 } as const
