@@ -8,8 +8,8 @@ import GuardrailSystemSection from '@/components/landing/GuardrailSystemSection'
 import FeaturesSection from '@/components/landing/FeaturesSection';
 import ComparisonSection from '@/components/landing/ComparisonSection';
 import TestimonialsSection from '@/components/landing/TestimonialsSection';
+import PrePricingBridge from '@/components/landing/PrePricingBridge';
 import PricingSection from '@/components/landing/PricingSection';
-import WhyUpgradeSection from '@/components/landing/WhyUpgradeSection';
 import FAQSection from '@/components/landing/FAQSection';
 import FinalCTASection from '@/components/landing/FinalCTASection';
 import LandingFooter from '@/components/landing/LandingFooter';
@@ -27,8 +27,8 @@ const LandingPage = () => {
       <FeaturesSection />
       <ComparisonSection />
       <TestimonialsSection />
+      <PrePricingBridge />
       <PricingSection />
-      <WhyUpgradeSection />
       <FAQSection />
       <FinalCTASection />
       <LandingFooter />

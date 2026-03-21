@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
-import { CheckCircle2, Star, Briefcase, Loader2 } from 'lucide-react';
+import { CheckCircle2, Star, Briefcase, Loader2, Users, TrendingUp, Star as StarIcon, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { STRIPE_PLANS } from '@/lib/stripe-plans';
@@ -15,7 +15,8 @@ const PLANS = [
     monthly: 12.99,
     yearly: 99,
     yearlySavings: 56,
-    bestFor: 'Individuals who want better budgeting, planning, and personal financial organization',
+    bestFor: 'Individuals who want better budgeting and personal financial organization',
+    tagline: null,
     features: [
       'Personal budgeting tools',
       'Spending categories',
@@ -36,6 +37,7 @@ const PLANS = [
     yearly: 149,
     yearlySavings: 90,
     bestFor: 'Users who want deeper financial control and premium planning tools',
+    tagline: 'Full control. Better decisions. Less financial stress.',
     features: [
       'Everything in Personal, plus:',
       'Cash flow forecasting',
@@ -56,7 +58,8 @@ const PLANS = [
     monthly: 39.99,
     yearly: 349,
     yearlySavings: 130,
-    bestFor: 'Entrepreneurs, consultants, and business professionals who need personal and business financial clarity',
+    bestFor: 'Entrepreneurs and business owners who need personal and business financial clarity',
+    tagline: 'Replaces multiple apps, spreadsheets, and manual tracking.',
     features: [
       'Everything in Premium, plus:',
       'Personal & business dashboards',
@@ -72,6 +75,13 @@ const PLANS = [
     badgeIcon: Briefcase,
     highlight: false,
   },
+];
+
+const TRUST_STATS = [
+  { icon: Users, value: '4,200+', label: 'Active Users' },
+  { icon: TrendingUp, value: '$2.1M', label: 'Waste Identified' },
+  { icon: StarIcon, value: '4.9/5', label: 'Average Rating' },
+  { icon: RefreshCw, value: '92%', label: 'Retention Rate' },
 ];
 
 const PricingSection = () => {
@@ -111,13 +121,16 @@ const PricingSection = () => {
     <section id="pricing" className="py-20 sm:py-28 bg-muted/20">
       <div className="mx-auto max-w-7xl px-6">
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-          className="text-center mb-6">
-          <h2 className="font-display text-3xl sm:text-5xl font-extrabold tracking-tight">
-            Choose the Prism plan that{' '}
-            <span className="prism-gradient-text">fits your life</span>
+          className="text-center mb-4">
+          <h2 className="font-display text-3xl sm:text-5xl font-extrabold tracking-tight text-foreground">
+            Choose the plan that gives you{' '}
+            <span className="prism-gradient-text">full control</span>
           </h2>
-          <p className="mt-3 text-muted-foreground text-base sm:text-lg">
-            Start with a 14-day free trial. No credit card charged until trial ends.
+          <p className="mt-3 text-foreground/70 text-base sm:text-lg">
+            Most users start with Premium for full financial clarity.
+          </p>
+          <p className="mt-1.5 text-sm text-foreground/50">
+            Most users recover the cost within the first 30 days.
           </p>
         </motion.div>
 
@@ -160,18 +173,20 @@ const PricingSection = () => {
 
                 <div className="mt-4 flex items-baseline gap-1">
                   <span className="font-display text-4xl font-extrabold">
-                    ${annual ? (plan.yearly / 12).toFixed(2) : plan.monthly.toFixed(2)}
+                    ${annual ? plan.yearly : plan.monthly.toFixed(2)}
                   </span>
-                  <span className="text-muted-foreground text-sm">/month</span>
+                  <span className="text-muted-foreground text-sm">
+                    {annual ? '/year' : '/month'}
+                  </span>
                 </div>
 
                 {annual && (
                   <div className="mt-1.5 space-y-0.5">
                     <p className="text-xs text-muted-foreground">
-                      Billed annually at <span className="font-semibold text-foreground">${plan.yearly}/year</span>
+                      Only <span className="font-semibold text-foreground">${(plan.yearly / 12).toFixed(2)}/month</span>
                     </p>
                     <p className="text-xs font-semibold text-accent">
-                      Save ${plan.yearlySavings} per year
+                      Save ${plan.yearlySavings} annually
                     </p>
                   </div>
                 )}
@@ -180,6 +195,14 @@ const PricingSection = () => {
                   <p className="mt-1.5 text-xs text-muted-foreground">
                     Switch to annual and save <span className="font-semibold text-accent">${plan.yearlySavings}/year</span>
                   </p>
+                )}
+
+                <p className="mt-1 text-[11px] text-muted-foreground italic">
+                  Less than the cost of one forgotten subscription.
+                </p>
+
+                {plan.tagline && (
+                  <p className="mt-3 text-xs font-semibold text-accent">{plan.tagline}</p>
                 )}
 
                 <p className="mt-4 text-xs text-muted-foreground leading-relaxed border-t border-border pt-4">
@@ -212,6 +235,26 @@ const PricingSection = () => {
             );
           })}
         </div>
+
+        {/* Trust bar */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mt-14 max-w-3xl mx-auto"
+        >
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+            {TRUST_STATS.map((stat, i) => (
+              <div key={i} className="text-center">
+                <p className="text-xl sm:text-2xl font-extrabold prism-gradient-text">{stat.value}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-center text-sm text-foreground/60 font-medium">
+            14-day free trial · Cancel anytime · No credit card charged until trial ends
+          </p>
+        </motion.div>
       </div>
     </section>
   );

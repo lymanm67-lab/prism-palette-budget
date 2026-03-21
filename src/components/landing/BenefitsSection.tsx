@@ -7,7 +7,7 @@ const BENEFITS = [
   { icon: Lightbulb, title: 'Better decisions, not just more data', desc: 'Cut waste, prepare for expenses, and plan with confidence.' },
   { icon: Briefcase, title: 'Personal & business in one ecosystem', desc: 'Stop juggling disconnected tools for your money.' },
   { icon: ShieldCheck, title: 'Less stress around bills & taxes', desc: 'Stay organized year-round so nothing sneaks up on you.' },
-  { icon: BadgeDollarSign, title: 'Pays for itself', desc: 'Catch one wasteful subscription and Prism has earned its keep.' },
+  { icon: BadgeDollarSign, title: 'Recovers its cost within 30 days', desc: 'By catching hidden subscriptions, avoiding missed expenses, and improving financial decisions.' },
 ];
 
 const BenefitsSection = () => (
@@ -16,7 +16,7 @@ const BenefitsSection = () => (
       <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
         className="text-center mb-4">
         <p className="text-sm sm:text-base text-muted-foreground font-medium max-w-2xl mx-auto mb-6">
-          Prism solves this by bringing everything into one clear system.
+          Prism replaces all of that with one clear system you can actually trust.
         </p>
         <h2 className="font-display text-3xl sm:text-5xl font-extrabold tracking-tight">
           Why Prism Is Worth More Than a{' '}

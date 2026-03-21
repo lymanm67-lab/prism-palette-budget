@@ -13,6 +13,7 @@ const SafeToSpendSection = () => (
   <section className="py-16 sm:py-24 bg-muted/20">
     <div className="mx-auto max-w-5xl px-6 text-center">
       <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+        <p className="text-xs font-semibold uppercase tracking-widest text-accent mb-4">Your Safe-to-Spend Right Now</p>
         <h2 className="font-display text-3xl sm:text-5xl font-extrabold tracking-tight">
           Know exactly what you can{' '}
           <span className="prism-gradient-text">safely spend</span>
@@ -40,6 +41,10 @@ const SafeToSpendSection = () => (
           </motion.div>
         ))}
       </div>
+
+      <p className="mt-6 text-xs text-muted-foreground max-w-xl mx-auto">
+        Updated in real time based on your income, expenses, and upcoming obligations.
+      </p>
     </div>
   </section>
 );
