@@ -46,7 +46,10 @@ const ExperimentsDashboard = () => {
 
   useEffect(() => {
     if (isFounder) fetchData();
-  }, []);
+  }, [isFounder]);
+
+  // Only founder/admin can access
+  if (!isFounder) return <Navigate to="/dashboard" replace />;
 
   const fetchData = async () => {
     setLoading(true);
