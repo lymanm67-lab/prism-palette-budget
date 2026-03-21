@@ -706,6 +706,47 @@ export type Database = {
           },
         ]
       }
+      daily_progress: {
+        Row: {
+          actual_spent: number
+          created_at: string
+          date: string
+          household_id: string
+          id: string
+          mode: string
+          safe_to_spend: number
+          within_budget: boolean
+        }
+        Insert: {
+          actual_spent?: number
+          created_at?: string
+          date: string
+          household_id: string
+          id?: string
+          mode?: string
+          safe_to_spend?: number
+          within_budget?: boolean
+        }
+        Update: {
+          actual_spent?: number
+          created_at?: string
+          date?: string
+          household_id?: string
+          id?: string
+          mode?: string
+          safe_to_spend?: number
+          within_budget?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_progress_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       debt_items: {
         Row: {
           account_id: string | null
@@ -890,6 +931,44 @@ export type Database = {
             foreignKeyName: "financial_insights_household_id_fkey"
             columns: ["household_id"]
             isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financial_mode_settings: {
+        Row: {
+          buffer_percent: number
+          created_at: string
+          current_mode: string
+          greenlight_unlocked: boolean
+          household_id: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          buffer_percent?: number
+          created_at?: string
+          current_mode?: string
+          greenlight_unlocked?: boolean
+          household_id: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          buffer_percent?: number
+          created_at?: string
+          current_mode?: string
+          greenlight_unlocked?: boolean
+          household_id?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_mode_settings_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: true
             referencedRelation: "households"
             referencedColumns: ["id"]
           },
