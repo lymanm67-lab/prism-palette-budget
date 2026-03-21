@@ -1,8 +1,8 @@
 import { motion } from 'framer-motion';
 import {
-  PiggyBank, Target, Tags, CalendarDays, Bell, ScanSearch, RotateCcw,
-  TrendingUp, LineChart, Handshake, CreditCard, FileText, Search,
-  LayoutDashboard, DollarSign, Receipt, PieChart, BarChart3, Repeat, Wrench, Briefcase,
+  PiggyBank, Target, Bell, ScanSearch,
+  TrendingUp, LineChart, CreditCard, FileText,
+  LayoutDashboard, DollarSign, PieChart, Briefcase,
 } from 'lucide-react';
 
 const GROUPS = [
@@ -10,13 +10,10 @@ const GROUPS = [
     label: 'Personal Finance',
     color: 'from-prism-teal to-prism-sky',
     features: [
-      { icon: PiggyBank, name: 'Zero-sum budgeting' },
-      { icon: Target, name: 'Savings goals' },
-      { icon: Tags, name: 'Spending categories' },
-      { icon: CalendarDays, name: 'Monthly planning' },
-      { icon: Bell, name: 'Alerts & reminders' },
-      { icon: ScanSearch, name: 'Subscription detection' },
-      { icon: RotateCcw, name: 'Recurring expense awareness' },
+      { icon: PiggyBank, name: 'Zero-sum budgeting & savings goals' },
+      { icon: Target, name: 'Spending categories & monthly planning' },
+      { icon: Bell, name: 'Alerts, reminders & subscription detection' },
+      { icon: ScanSearch, name: 'Recurring expense awareness' },
     ],
   },
   {
@@ -25,10 +22,8 @@ const GROUPS = [
     features: [
       { icon: TrendingUp, name: 'Cash flow forecasting' },
       { icon: LineChart, name: 'Net worth tracking' },
-      { icon: Handshake, name: 'Bill negotiation workflows' },
-      { icon: CreditCard, name: 'Credit issue tracking & guidance' },
+      { icon: CreditCard, name: 'Credit guidance & bill negotiation' },
       { icon: FileText, name: 'Tax prep organization' },
-      { icon: Search, name: 'Expense review tools' },
     ],
   },
   {
@@ -36,26 +31,25 @@ const GROUPS = [
     color: 'from-prism-orange to-prism-amber',
     features: [
       { icon: LayoutDashboard, name: 'Personal & business dashboards' },
-      { icon: DollarSign, name: 'Owner pay planning' },
-      { icon: Receipt, name: 'Business expense tracking & review' },
-      { icon: PieChart, name: 'Profit planning' },
-      { icon: BarChart3, name: 'Business cash flow visibility' },
-      { icon: Briefcase, name: 'Tax readiness support' },
-      { icon: Repeat, name: 'Recurring business expense monitoring' },
-      { icon: Wrench, name: 'Premium planning tools' },
+      { icon: DollarSign, name: 'Owner pay & profit planning' },
+      { icon: PieChart, name: 'Business cash flow visibility' },
+      { icon: Briefcase, name: 'Tax readiness & premium tools' },
     ],
   },
 ];
 
 const FeaturesSection = () => (
-  <section id="features" className="py-20 sm:py-28 bg-muted/20">
+  <section id="features" className="py-16 sm:py-24 bg-muted/20">
     <div className="mx-auto max-w-7xl px-6">
       <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-        className="text-center mb-16">
+        className="text-center mb-14">
         <h2 className="font-display text-3xl sm:text-5xl font-extrabold tracking-tight">
-          Everything you need to stay{' '}
-          <span className="prism-gradient-text">financially focused</span>
+          Everything you need{' '}
+          <span className="prism-gradient-text">without switching tools</span>
         </h2>
+        <p className="mt-3 text-muted-foreground text-sm sm:text-base max-w-2xl mx-auto">
+          From households to side hustles to serious business owners — one platform covers it all.
+        </p>
       </motion.div>
 
       <div className="grid gap-8 lg:grid-cols-3">
@@ -77,10 +71,6 @@ const FeaturesSection = () => (
           </motion.div>
         ))}
       </div>
-
-      <p className="text-center text-sm text-muted-foreground mt-10 italic">
-        Prism is built for real life — from households to side hustles to serious business owners.
-      </p>
     </div>
   </section>
 );
