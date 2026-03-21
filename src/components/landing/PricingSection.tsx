@@ -129,12 +129,18 @@ const PricingSection = () => {
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
           className="text-center mb-4">
           <h2 className="font-display text-3xl sm:text-5xl font-extrabold tracking-tight text-foreground">
-            Choose the plan that gives you{' '}
-            <span className="prism-gradient-text">full control</span>
+            {headlineText.includes('full control') ? (
+              <>
+                Choose the plan that gives you{' '}
+                <span className="prism-gradient-text">full control</span>
+              </>
+            ) : headlineText}
           </h2>
-          <p className="mt-3 text-foreground/70 text-base sm:text-lg">
-            Most users start with Premium for full financial clarity.
-          </p>
+          {showGuidance && (
+            <p className="mt-3 text-foreground/70 text-base sm:text-lg">
+              Most users start with Premium for full financial clarity.
+            </p>
+          )}
           <p className="mt-1.5 text-sm text-foreground/50">
             Most users recover the cost within the first 30 days.
           </p>
