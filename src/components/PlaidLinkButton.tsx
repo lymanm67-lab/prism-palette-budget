@@ -3,9 +3,10 @@ import { usePlaidLink } from 'react-plaid-link';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useHousehold } from '@/contexts/HouseholdContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
-import { Landmark, Loader2 } from 'lucide-react';
+import { Landmark, Loader2, Lock } from 'lucide-react';
 
 const PlaidLinkButton = () => {
   const [linkToken, setLinkToken] = useState<string | null>(null);
