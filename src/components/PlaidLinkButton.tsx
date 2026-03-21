@@ -14,7 +14,7 @@ const PlaidLinkButton = () => {
   const [syncing, setSyncing] = useState(false);
   const { toast } = useToast();
   const { household } = useHousehold();
-  const { subscribed } = useAuth();
+  const { subscribed, subscriptionTier } = useAuth();
   const qc = useQueryClient();
 
   const createLinkToken = useCallback(async () => {
