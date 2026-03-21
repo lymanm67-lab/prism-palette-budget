@@ -38,6 +38,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [subscriptionTier, setSubscriptionTier] = useState<SubscriptionTier>(null);
   const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
   const [isTrial, setIsTrial] = useState(false);
+  const [isFounder, setIsFounder] = useState(false);
 
   const checkSubscription = async () => {
     try {
