@@ -3,6 +3,8 @@ import { ShieldCheck, TrendingUp, Unlock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { useABTest } from '@/hooks/use-ab-test';
 
 const STEPS = [
   { icon: ShieldCheck, title: 'Start with guardrails', desc: 'Protect your spending with conservative limits that keep you on track.' },
@@ -12,6 +14,22 @@ const STEPS = [
 
 const GuardrailSystemSection = () => {
   const navigate = useNavigate();
+  const { variant } = useABTest('guardrail_visibility', 'control');
+  const visibility = (variant.config?.visibility as string) || 'normal';
+
+  if (visibility === 'reduced') {
+    return (
+      <section className="py-10 sm:py-14 bg-background">
+        <div className="mx-auto max-w-3xl px-6 text-center">
+          <motion.div initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+            <p className="text-sm text-muted-foreground">
+              Start with guardrails. Build discipline. Unlock more financial freedom in 90 days.
+            </p>
+          </motion.div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-16 sm:py-24 bg-background">
@@ -26,6 +44,19 @@ const GuardrailSystemSection = () => {
             This is not just tracking. This is a system for real financial control.
           </p>
         </motion.div>
+
+        {visibility === 'prominent' && (
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="max-w-md mx-auto mb-10 rounded-2xl border border-accent/20 bg-accent/5 p-6 text-center"
+          >
+            <p className="text-xs font-semibold uppercase tracking-widest text-accent mb-2">90-Day Journey</p>
+            <Progress value={33} className="h-3 mb-2" />
+            <p className="text-sm text-muted-foreground">Build habits → Gain control → Unlock flexibility</p>
+          </motion.div>
+        )}
 
         <div className="grid gap-6 sm:grid-cols-3 max-w-4xl mx-auto">
           {STEPS.map((step, i) => (

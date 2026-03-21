@@ -13,8 +13,13 @@ import PricingSection from '@/components/landing/PricingSection';
 import FAQSection from '@/components/landing/FAQSection';
 import FinalCTASection from '@/components/landing/FinalCTASection';
 import LandingFooter from '@/components/landing/LandingFooter';
+import { useScrollDepthTracking, useTimeOnPageTracking } from '@/hooks/use-ab-test';
 
 const LandingPage = () => {
+  // Track scroll depth and time on page for the hero headline experiment
+  useScrollDepthTracking('hero_headline');
+  useTimeOnPageTracking('hero_headline');
+
   return (
     <div className="min-h-screen bg-background">
       <LandingNav />
