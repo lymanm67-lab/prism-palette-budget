@@ -16,22 +16,18 @@ const FinalCTASection = () => {
       <div className="relative z-10 mx-auto max-w-3xl text-center px-6">
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl prism-gradient-teal prism-glow-teal">
-            <Sparkles className="h-8 w-8 text-primary-foreground" />
+            <Sparkles className="h-8 w-8 text-white" />
           </div>
-          <h2 className="font-display text-3xl sm:text-5xl font-extrabold text-primary-foreground leading-tight">
+          <h2 className="font-display text-3xl sm:text-5xl font-extrabold text-white leading-tight">
             Your money needs more than another tracker
           </h2>
-          <p className="mt-4 text-base sm:text-lg text-primary-foreground/50 max-w-xl mx-auto">
-            Get the clarity, control, and confidence to manage your finances in one place with Prism.
+          <p className="mt-4 text-base sm:text-lg text-white/80 max-w-xl mx-auto">
+            Get clear, stay in control, and make confident decisions with your money — starting today.
           </p>
-          <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" onClick={() => navigate(subscribed ? '/dashboard' : '/auth')}
-              className="prism-gradient-teal hover:opacity-90 text-lg h-14 px-10 gap-2 font-bold rounded-2xl prism-glow-teal text-primary-foreground">
+          <div className="mt-8">
+            <Button size="lg" onClick={() => navigate(subscribed ? '/dashboard' : '/onboarding')}
+              className="prism-gradient-teal hover:opacity-90 text-lg h-14 px-10 gap-2 font-bold rounded-2xl prism-glow-teal text-white">
               {subscribed ? 'Go to Dashboard' : 'Start Your Free Trial'} <ArrowRight className="h-5 w-5" />
-            </Button>
-            <Button size="lg" variant="ghost" onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
-              className="text-primary-foreground/40 hover:text-primary-foreground hover:bg-primary-foreground/5 h-14 px-8 rounded-2xl">
-              Choose Your Plan
             </Button>
           </div>
         </motion.div>

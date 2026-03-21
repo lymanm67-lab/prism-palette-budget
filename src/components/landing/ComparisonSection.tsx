@@ -14,7 +14,6 @@ const ROWS = [
 
 const COLS = ['Basic Budget App', 'Subscription Tracker', 'Business Expense Tool', 'Prism'];
 
-// 1 = has, 0 = no
 const DATA: number[][] = [
   [1, 0, 0, 1],
   [0, 1, 0, 1],
@@ -32,8 +31,8 @@ const ComparisonSection = () => (
       <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
         className="text-center mb-14">
         <h2 className="font-display text-3xl sm:text-5xl font-extrabold tracking-tight">
-          More than budgeting. More than tracking.{' '}
-          <span className="prism-gradient-text">More than one more app.</span>
+          Not another budgeting app.{' '}
+          <span className="prism-gradient-text">A system for real control.</span>
         </h2>
       </motion.div>
 

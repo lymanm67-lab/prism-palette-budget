@@ -44,7 +44,7 @@ const FeaturesSection = () => (
       <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
         className="text-center mb-14">
         <h2 className="font-display text-3xl sm:text-5xl font-extrabold tracking-tight">
-          Everything you need{' '}
+          Everything you need,{' '}
           <span className="prism-gradient-text">without switching tools</span>
         </h2>
         <p className="mt-3 text-muted-foreground text-sm sm:text-base max-w-2xl mx-auto">

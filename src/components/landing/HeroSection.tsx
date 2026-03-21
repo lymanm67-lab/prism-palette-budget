@@ -28,22 +28,21 @@ const HeroSection = () => {
           </h1>
 
           <p className="mt-6 text-base sm:text-lg text-white/90 max-w-3xl mx-auto leading-relaxed font-medium">
-            Prism shows you where your money goes and what you can safely spend.
+            Prism shows you exactly where your money is going and what you can safely spend.
           </p>
 
           <p className="mt-4 text-sm sm:text-base text-white/70 max-w-2xl mx-auto leading-relaxed">
-            Know exactly what you can safely spend today, this week, and this month.
+            Know exactly what you can safely spend today, this week, and this month without guessing.
           </p>
 
-          <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="mt-10 flex flex-col items-center gap-3">
             <Button size="lg" onClick={() => navigate('/onboarding')}
               className="prism-gradient-teal hover:opacity-90 text-lg h-14 px-10 gap-2 font-bold rounded-2xl prism-glow-teal text-white">
               Start Your Free Trial <ArrowRight className="h-5 w-5" />
             </Button>
-            <Button size="lg" variant="ghost" onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
-              className="text-white/60 hover:text-white hover:bg-white/5 h-14 px-8 rounded-2xl">
-              See Pricing
-            </Button>
+            <p className="text-xs text-white/50 font-medium">
+              See your full financial picture in the next 10 minutes.
+            </p>
           </div>
         </motion.div>
 
