@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { STRIPE_PLANS } from '@/lib/stripe-plans';
 import { toast } from 'sonner';
+import { useABTest } from '@/hooks/use-ab-test';
 
 const PLANS = [
   {
