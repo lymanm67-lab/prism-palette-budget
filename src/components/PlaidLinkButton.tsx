@@ -14,7 +14,7 @@ const PlaidLinkButton = () => {
   const [syncing, setSyncing] = useState(false);
   const { toast } = useToast();
   const { household } = useHousehold();
-  const { subscribed } = useAuth();
+  const { subscribed, subscriptionTier } = useAuth();
   const qc = useQueryClient();
 
   const createLinkToken = useCallback(async () => {
@@ -100,9 +100,11 @@ const PlaidLinkButton = () => {
     );
   }
 
-  if (!subscribed) {
+  const hasPlaidAccess = subscribed && (subscriptionTier === 'premium' || subscriptionTier === 'business');
+
+  if (!hasPlaidAccess) {
     return (
-      <Button disabled className="gap-2 opacity-70" title="Requires an active subscription">
+      <Button disabled className="gap-2 opacity-70" title="Requires Premium or Business Pro subscription">
         <Lock className="h-4 w-4" /> Connect Bank Account
       </Button>
     );
