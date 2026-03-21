@@ -28,7 +28,7 @@ const HeroSection = () => {
           </h1>
 
           <p className="mt-6 text-base sm:text-lg text-white/90 max-w-3xl mx-auto leading-relaxed font-medium">
-            In the next 10 minutes, Prism shows you exactly where your money is going and what you can safely spend.
+            Prism shows you where your money goes and what you can safely spend.
           </p>
 
           <p className="mt-4 text-sm sm:text-base text-white/70 max-w-2xl mx-auto leading-relaxed">
