@@ -7,7 +7,9 @@ import GettingStartedWidget from '@/components/GettingStartedWidget';
 import FinancialHealthScore from '@/components/FinancialHealthScore';
 import GoalTrackerWidget from '@/components/GoalTrackerWidget';
 import SpendingAnomalyAlert from '@/components/SpendingAnomalyAlert';
-import { SpendGuardrailBar } from '@/components/guardrails/SpendGuardrailBar';
+import { SafeToSpendHero } from '@/components/SafeToSpendHero';
+import { ProgressTracker } from '@/components/ProgressTracker';
+import { ModeSettingsDialog } from '@/components/ModeSettingsDialog';
 import MoMIndicator from '@/components/MoMIndicator';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -15,9 +17,12 @@ import { useAccounts, useTransactions, useSpendingByCategory, useCategoryGroups,
 import { useBusinessProfiles } from '@/hooks/use-business-data';
 import { useCurrency } from '@/hooks/use-currency';
 import { useMoMIndicators } from '@/hooks/use-mom-indicators';
+import { useSubscriptions } from '@/hooks/use-subscriptions';
+import { useSafeToSpend } from '@/hooks/use-safe-to-spend';
 import {
   TrendingUp, Wallet, CreditCard, ArrowUpRight, Loader2,
-  Sparkles, ChevronRight, Building2, PiggyBank, User, LayoutGrid, Settings2, FileBarChart
+  Sparkles, ChevronRight, Building2, PiggyBank, User, LayoutGrid, Settings2, FileBarChart,
+  Shield, Receipt, DollarSign
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import BusinessProfileManager from '@/components/BusinessProfileManager';
@@ -35,14 +40,7 @@ const tooltipStyle = { background: 'hsl(var(--card))', border: '1px solid hsl(va
 const tooltipItemStyle = { color: 'hsl(var(--foreground))' };
 const tooltipLabelStyle = { color: 'hsl(var(--foreground))' };
 
-const STAT_CARDS = [
-  { key: 'netWorth', label: 'Net Worth', icon: TrendingUp, gradient: 'from-prism-navy to-prism-teal', glow: 'prism-glow' },
-  { key: 'totalAssets', label: 'Total Assets', icon: Wallet, gradient: 'from-prism-teal to-prism-lime', glow: 'prism-glow-teal' },
-  { key: 'totalLiabilities', label: 'Liabilities', icon: CreditCard, gradient: 'from-prism-orange to-prism-rose', glow: 'prism-glow-warm' },
-  { key: 'monthlyIncome', label: 'Income (this month)', icon: ArrowUpRight, gradient: 'from-prism-sky to-prism-teal', glow: 'prism-glow-teal' },
-];
-
-type DashboardMode = 'personal' | 'business' | 'all';
+type DashboardMode = 'combined' | 'personal' | 'business';
 
 const Dashboard = () => {
   const { formatCurrency, formatCompact } = useCurrency();
@@ -51,13 +49,16 @@ const Dashboard = () => {
   const { data: categoryGroups } = useCategoryGroups();
   const { data: categories } = useCategories();
   const { data: businessProfiles } = useBusinessProfiles();
+  const { data: subscriptions } = useSubscriptions();
   const momIndicators = useMoMIndicators();
+  const safeToSpend = useSafeToSpend();
   const navigate = useNavigate();
 
-  const [mode, setMode] = useState<DashboardMode>('personal');
+  const [mode, setMode] = useState<DashboardMode>('combined');
   const [selectedBusiness, setSelectedBusiness] = useState<string>('all');
   const [manageOpen, setManageOpen] = useState(false);
   const [recapOpen, setRecapOpen] = useState(false);
+  const [modeSettingsOpen, setModeSettingsOpen] = useState(false);
 
   const now = new Date();
   const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
@@ -67,46 +68,30 @@ const Dashboard = () => {
   // Build category ID sets for personal vs business filtering
   const { personalCatIds, businessCatIds, filteredBusinessCatIds } = useMemo(() => {
     if (!categoryGroups || !categories) return { personalCatIds: new Set<string>(), businessCatIds: new Set<string>(), filteredBusinessCatIds: new Set<string>() };
-
-    const personalGroupIds = new Set(
-      (categoryGroups as any[]).filter(g => (g.budget_type || 'personal') === 'personal').map(g => g.id)
-    );
+    const personalGroupIds = new Set((categoryGroups as any[]).filter(g => (g.budget_type || 'personal') === 'personal').map(g => g.id));
     const businessGroups = (categoryGroups as any[]).filter(g => (g.budget_type || 'personal') === 'business');
     const businessGroupIds = new Set(businessGroups.map(g => g.id));
-
     const filteredBizGroupIds = new Set(
-      selectedBusiness === 'all'
-        ? businessGroups.map(g => g.id)
-        : businessGroups.filter(g => g.business_profile_id === selectedBusiness).map(g => g.id)
+      selectedBusiness === 'all' ? businessGroups.map(g => g.id) : businessGroups.filter(g => g.business_profile_id === selectedBusiness).map(g => g.id)
     );
-
     const pIds = new Set(categories.filter(c => personalGroupIds.has(c.group_id)).map(c => c.id));
     const bIds = new Set(categories.filter(c => businessGroupIds.has(c.group_id)).map(c => c.id));
     const fbIds = new Set(categories.filter(c => filteredBizGroupIds.has(c.group_id)).map(c => c.id));
-
     return { personalCatIds: pIds, businessCatIds: bIds, filteredBusinessCatIds: fbIds };
   }, [categoryGroups, categories, selectedBusiness]);
 
   // Filter transactions by mode
   const filteredTransactions = useMemo(() => {
     if (!transactions) return [];
-    if (mode === 'personal') {
-      return transactions.filter(t => !t.category_id || personalCatIds.has(t.category_id));
-    }
-    if (mode === 'business') {
-      return transactions.filter(t => t.category_id && filteredBusinessCatIds.has(t.category_id));
-    }
-    return transactions; // 'all'
+    if (mode === 'personal') return transactions.filter(t => !t.category_id || personalCatIds.has(t.category_id));
+    if (mode === 'business') return transactions.filter(t => t.category_id && filteredBusinessCatIds.has(t.category_id));
+    return transactions;
   }, [transactions, mode, personalCatIds, filteredBusinessCatIds]);
 
   // Filter spending data by mode
   const filteredSpending = useMemo(() => {
     if (!spendingData) return [];
-    // spendingData is already aggregated by category name; we need to re-aggregate from raw transactions
-    // For simplicity, we'll filter the existing spending data if we can match category names
-    // But better: re-aggregate from filtered transactions
-    if (mode === 'all') return spendingData;
-
+    if (mode === 'combined') return spendingData;
     const prefix = monthStart.substring(0, 7);
     const relevantTxns = filteredTransactions.filter(t => t.date.startsWith(prefix) && t.amount < 0);
     const map = new Map<string, { name: string; color: string; value: number }>();
@@ -134,7 +119,11 @@ const Dashboard = () => {
     return filteredTransactions.filter(t => t.date.startsWith(prefix) && t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0);
   }, [filteredTransactions, monthStart]);
 
-  const statValues: Record<string, number> = { netWorth, totalAssets, totalLiabilities, monthlyIncome };
+  const totalSubscriptionCost = useMemo(() => {
+    return (subscriptions || [])
+      .filter((s: any) => s.is_active && !s.is_cancelled)
+      .reduce((sum: number, s: any) => sum + Math.abs(s.average_amount || 0), 0);
+  }, [subscriptions]);
 
   const monthlyCashflow = useMemo(() => {
     const map = new Map<string, { month: string; income: number; expenses: number }>();
@@ -155,34 +144,17 @@ const Dashboard = () => {
         <div className="h-8 w-64 bg-muted animate-pulse rounded-lg mb-2" />
         <div className="h-4 w-96 bg-muted/60 animate-pulse rounded" />
       </div>
+      <div className="h-48 bg-muted animate-pulse rounded-xl mb-6" />
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-32 bg-muted animate-pulse rounded-lg" />
+          <div key={i} className="h-24 bg-muted animate-pulse rounded-lg" />
         ))}
       </div>
-      <div className="grid gap-6 md:grid-cols-2 mb-8">
-        <div className="h-96 bg-muted animate-pulse rounded-lg" />
-        <div className="h-96 bg-muted animate-pulse rounded-lg" />
-      </div>
     </div>
   );
-
-  if (accLoading) return (
-    <div className="flex items-center justify-center p-20">
-      <div className="flex flex-col items-center gap-3">
-        <div className="h-12 w-12 rounded-2xl prism-gradient prism-glow flex items-center justify-center">
-          <Loader2 className="h-6 w-6 animate-spin text-white" />
-        </div>
-        <p className="text-sm text-muted-foreground">Loading your finances…</p>
-      </div>
-    </div>
-  );
-
-  const modeIcon = mode === 'personal' ? User : mode === 'business' ? Building2 : LayoutGrid;
-  const ModeIcon = modeIcon;
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
+    <motion.div variants={container} initial="hidden" animate="show" className="space-y-5">
       {/* Header with mode toggle */}
       <motion.div variants={item} className="flex flex-col gap-3">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -190,88 +162,64 @@ const Dashboard = () => {
             <h1 className="font-display text-3xl font-extrabold tracking-tight">
               <span className="prism-gradient-text">Dashboard</span>
             </h1>
-            <p className="text-muted-foreground mt-1">Your financial overview at a glance.</p>
+            <p className="text-muted-foreground mt-1">Your financial control center.</p>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-            <TooltipProvider delayDuration={300}>
+            <TooltipProvider delayDuration={0}>
               <ShadcnTooltip>
                 <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-1.5"
-                    onClick={() => navigate('/reports')}
-                  >
-                    <FileBarChart className="h-4 w-4 text-emerald-500 lg:h-3.5 lg:w-3.5" />
-                    <span className="hidden lg:inline">View Reports</span>
+                  <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setModeSettingsOpen(true)}>
+                    <Shield className="h-4 w-4 text-primary lg:h-3.5 lg:w-3.5" />
+                    <span className="hidden lg:inline">Mode</span>
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent className="lg:hidden">
-                  <p>View Reports</p>
-                </TooltipContent>
+                <TooltipContent className="lg:hidden"><p>Financial Mode</p></TooltipContent>
+              </ShadcnTooltip>
+              <ShadcnTooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate('/reports')}>
+                    <FileBarChart className="h-4 w-4 text-emerald-500 lg:h-3.5 lg:w-3.5" />
+                    <span className="hidden lg:inline">Reports</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent className="lg:hidden"><p>View Reports</p></TooltipContent>
               </ShadcnTooltip>
             </TooltipProvider>
             <PageOverview
               title="Dashboard Overview"
-              description="Your central hub showing net worth, income, spending patterns, and account balances. Toggle between personal and business views."
+              description="Your financial control center. Safe-to-Spend tells you what you can spend across personal and business without disrupting stability."
               icon={TrendingUp}
               iconColor="text-prism-teal"
-              ttsScript="Welcome to your Dashboard. This is the central hub of Prism Budget where you can see your complete financial picture at a glance. At the top, you will find four key metrics: Net Worth, Total Assets, Liabilities, and monthly Income. Below that, a spending breakdown chart shows where your money goes by category. You can toggle between Personal, Business, or All views using the mode selector. The dashboard also features AI spending insights and a weekly financial recap. Use the quick actions to navigate to specific features."
+              ttsScript="Welcome to your Dashboard. The combined Safe to Spend number at the top is the most important metric. It shows what you can safely spend today across all your finances."
               features={[
-                'Net worth, assets, and liabilities at a glance',
-                'Monthly income tracking',
-                'Spending breakdown by category with charts',
-                'Personal vs. Business view toggle',
-                'AI-powered spending insights',
-                'Weekly financial recap',
+                'Combined Safe-to-Spend across personal & business',
+                '90-day financial control progression',
+                'Guardrail, Balanced, and Green Light modes',
+                'Net worth, cash flow, and spending breakdown',
+                'Smart alerts and AI insights',
               ]}
-              demoData={[
-                { label: 'Net Worth', value: '$45,230', color: '#14b8a6' },
-                { label: 'Total Assets', value: '$52,800', color: '#0ea5e9' },
-                { label: 'Liabilities', value: '$7,570', color: '#f43f5e' },
-                { label: 'Monthly Income', value: '$6,500', color: '#8b5cf6' },
-                { label: 'Top Category', value: '$1,200', badge: 'Housing' },
-                { label: 'Savings Rate', value: '22%', color: '#22c55e' },
-              ]}
+              demoData={[]}
             />
           </div>
         </div>
+
+        {/* View filter */}
         <div className="flex items-center gap-2 flex-wrap">
-          {/* Mode Toggle */}
           <div className="flex rounded-lg border border-border p-0.5">
-            <button
-              onClick={() => setMode('personal')}
-              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                mode === 'personal' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
+            <button onClick={() => setMode('combined')} className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${mode === 'combined' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
+              <LayoutGrid className="h-3.5 w-3.5" /> Combined
+            </button>
+            <button onClick={() => setMode('personal')} className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${mode === 'personal' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
               <User className="h-3.5 w-3.5" /> Personal
             </button>
-            <button
-              onClick={() => setMode('business')}
-              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                mode === 'business' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
+            <button onClick={() => setMode('business')} className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${mode === 'business' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
               <Building2 className="h-3.5 w-3.5" /> Business
             </button>
-            <button
-              onClick={() => setMode('all')}
-              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                mode === 'all' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <LayoutGrid className="h-3.5 w-3.5" /> All
-            </button>
           </div>
-
-          {/* Business selector + manage */}
           {mode === 'business' && (
             <div className="flex items-center gap-1.5">
               <Select value={selectedBusiness} onValueChange={setSelectedBusiness}>
-                <SelectTrigger className="w-[180px] h-9 text-sm">
-                  <SelectValue placeholder="All Businesses" />
-                </SelectTrigger>
+                <SelectTrigger className="w-[180px] h-9 text-sm"><SelectValue placeholder="All Businesses" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Businesses</SelectItem>
                   {businessProfiles && businessProfiles.map(bp => (
@@ -287,14 +235,19 @@ const Dashboard = () => {
         </div>
       </motion.div>
 
+      {/* ========== SAFE-TO-SPEND HERO (Primary Focus) ========== */}
+      <motion.div variants={item}>
+        <SafeToSpendHero />
+      </motion.div>
+
+      {/* ========== 90-Day Progress Tracker ========== */}
+      <motion.div variants={item}>
+        <ProgressTracker />
+      </motion.div>
+
       {/* Spending Anomaly Alert */}
       <motion.div variants={item}>
         <SpendingAnomalyAlert />
-      </motion.div>
-
-      {/* Smart Spend Guardrails */}
-      <motion.div variants={item}>
-        <SpendGuardrailBar />
       </motion.div>
 
       {/* Getting Started Widget */}
@@ -302,7 +255,36 @@ const Dashboard = () => {
         <GettingStartedWidget />
       </motion.div>
 
-      {/* Weekly Recap Card */}
+      {/* Quick Stats: Net Worth, Available Cash, Bills, Subscriptions */}
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {[
+          { label: 'Net Worth', value: netWorth, icon: TrendingUp, gradient: 'from-prism-navy to-prism-teal', mom: momIndicators?.income },
+          { label: 'Available Cash', value: safeToSpend.totalAvailableCash, icon: Wallet, gradient: 'from-prism-teal to-prism-lime', mom: null },
+          { label: 'Monthly Expenses', value: monthlyExpenses, icon: CreditCard, gradient: 'from-prism-orange to-prism-rose', mom: null },
+          { label: 'Subscriptions', value: totalSubscriptionCost, icon: Receipt, gradient: 'from-prism-violet to-prism-sky', mom: null },
+        ].map((stat, i) => (
+          <motion.div key={stat.label} variants={item}>
+            <Card className="prism-card-shine border-border/50 hover-lift">
+              <CardContent className="flex items-center gap-3 p-4">
+                <div className={`h-10 w-10 shrink-0 rounded-xl bg-gradient-to-br ${stat.gradient} flex items-center justify-center`}>
+                  <stat.icon className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{stat.label}</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="font-display text-lg font-bold">{formatCurrency(stat.value)}</p>
+                    {stat.mom && (
+                      <MoMIndicator percentageChange={stat.mom.percentageChange} direction={stat.mom.direction} />
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Weekly Recap */}
       <motion.div variants={item}>
         <Card className="prism-card-shine border-primary/20 cursor-pointer hover-lift" onClick={() => setRecapOpen(true)}>
           <CardContent className="flex items-center gap-4 p-5">
@@ -311,272 +293,141 @@ const Dashboard = () => {
             </div>
             <div className="flex-1">
               <h3 className="font-display text-base font-bold">Your Weekly Recap</h3>
-              <p className="text-sm text-muted-foreground mt-0.5">
-                See how your net worth and spending changed this week →
-              </p>
+              <p className="text-sm text-muted-foreground mt-0.5">See how your net worth and spending changed this week →</p>
             </div>
             <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
           </CardContent>
         </Card>
       </motion.div>
 
-      {/* "All" mode: side-by-side summary */}
-      {mode === 'all' ? (
-        <>
-          {/* Combined stat cards */}
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {STAT_CARDS.map((stat) => {
-              const momData = stat.key === 'monthlyIncome' ? momIndicators?.income : null;
-              return (
-                <motion.div key={stat.key} variants={item}>
-                  <Card className="prism-card-shine border-border/50 hover-lift hover-glow-violet hover-icon-bounce">
-                    <CardContent className="flex items-center gap-4 p-5">
-                      <div className={`stat-card-icon icon-target bg-gradient-to-br ${stat.gradient}`}>
-                        <stat.icon className="h-6 w-6 text-white" />
+      {/* Split view for Combined mode */}
+      {mode === 'combined' && (
+        <div className="grid gap-6 lg:grid-cols-2">
+          <AllModePanel title="Personal" icon={<User className="h-3.5 w-3.5 text-white" />} gradient="from-prism-violet to-prism-sky"
+            transactions={transactions?.filter(t => !t.category_id || personalCatIds.has(t.category_id)) || []}
+            formatCurrency={formatCurrency} monthPrefix={monthStart.substring(0, 7)} navigate={navigate} />
+          <AllModePanel title="Business" icon={<Building2 className="h-3.5 w-3.5 text-white" />} gradient="from-prism-teal to-prism-lime"
+            transactions={transactions?.filter(t => t.category_id && businessCatIds.has(t.category_id)) || []}
+            formatCurrency={formatCurrency} monthPrefix={monthStart.substring(0, 7)} navigate={navigate} />
+        </div>
+      )}
+
+      {/* Financial Health Score */}
+      <motion.div variants={item}>
+        <FinancialHealthScore monthlyIncome={monthlyIncome} monthlyExpenses={monthlyExpenses} totalAssets={totalAssets} totalLiabilities={totalLiabilities} />
+      </motion.div>
+
+      {/* Charts */}
+      <DashboardCharts monthlyCashflow={monthlyCashflow} spendingData={filteredSpending} formatCurrency={formatCurrency} formatCompact={formatCompact} />
+
+      {/* Goals + AI Insights */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <motion.div variants={item}><GoalTrackerWidget /></motion.div>
+        <motion.div variants={item}>
+          <AiSpendingInsights transactions={filteredTransactions} accounts={accounts || []} monthlyIncome={monthlyIncome} monthlyExpenses={monthlyExpenses} />
+        </motion.div>
+      </div>
+
+      {/* Recent Transactions */}
+      {filteredTransactions.length > 0 && (
+        <motion.div variants={item}>
+          <Card className="prism-card-shine border-border/50">
+            <CardHeader className="pb-2 flex flex-row items-center justify-between">
+              <CardTitle className="font-display text-lg flex items-center gap-2">
+                <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-prism-orange to-prism-rose flex items-center justify-center">
+                  <CreditCard className="h-3.5 w-3.5 text-white" />
+                </div>
+                Recent Transactions
+              </CardTitle>
+              <button onClick={() => navigate('/transactions')} className="flex items-center gap-1 text-sm text-primary hover:underline">
+                View all <ChevronRight className="h-3.5 w-3.5" />
+              </button>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-1.5">
+                {filteredTransactions.slice(0, 8).map(t => (
+                  <div key={t.id} className="flex items-center justify-between rounded-xl border border-border/30 px-3.5 py-2.5 interactive-row hover-border-glow cursor-pointer" onClick={() => navigate('/transactions')}>
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: (t.categories as any)?.color || 'hsl(var(--muted-foreground))' }} />
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium truncate">{t.merchant || 'Unknown Merchant'}</p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {(t.categories as any)?.name || 'Uncategorized'} · {new Date(t.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        </p>
+                      </div>
+                    </div>
+                    <span className={`font-display text-sm font-semibold shrink-0 ${t.amount >= 0 ? 'text-prism-teal' : 'text-prism-rose'}`}>
+                      {formatCurrency(t.amount)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+
+      {/* Accounts */}
+      {accounts && accounts.length > 0 && (
+        <motion.div variants={item}>
+          <Card className="prism-card-shine border-border/50">
+            <CardHeader className="pb-2">
+              <CardTitle className="font-display text-lg flex items-center gap-2">
+                <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-prism-sky to-prism-indigo flex items-center justify-center">
+                  <Building2 className="h-3.5 w-3.5 text-white" />
+                </div>
+                Accounts
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {accounts.map((acc) => (
+                  <div key={acc.id} className="flex items-center justify-between rounded-xl border border-border/30 p-3.5 interactive-row hover-border-glow cursor-pointer" onClick={() => navigate('/accounts')}>
+                    <div className="flex items-center gap-3">
+                      <div className={`h-9 w-9 rounded-lg flex items-center justify-center text-xs font-bold ${acc.balance >= 0 ? 'bg-prism-teal/10 text-prism-teal' : 'bg-prism-rose/10 text-prism-rose'}`}>
+                        {acc.name.substring(0, 2).toUpperCase()}
                       </div>
                       <div>
-                        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{stat.label}</p>
-                        <div className="flex items-center gap-2">
-                          <p className="font-display text-xl font-bold">{formatCurrency(statValues[stat.key])}</p>
-                          {momData && (
-                            <MoMIndicator
-                              percentageChange={momData.percentageChange}
-                              direction={momData.direction}
-                            />
-                          )}
-                        </div>
+                        <p className="font-medium text-sm">{acc.name}</p>
+                        <p className="text-xs text-muted-foreground">{acc.institution || 'Manual'} · {acc.account_type}</p>
                       </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              );
-            })}
-          </div>
-
-          {/* Financial Health Score */}
-          <motion.div variants={item}>
-            <FinancialHealthScore
-              monthlyIncome={monthlyIncome}
-              monthlyExpenses={monthlyExpenses}
-              totalAssets={totalAssets}
-              totalLiabilities={totalLiabilities}
-            />
-          </motion.div>
-
-          {/* Split view: Personal vs Business */}
-          <div className="grid gap-6 lg:grid-cols-2">
-            <AllModePanel
-              title="Personal"
-              icon={<User className="h-3.5 w-3.5 text-white" />}
-              gradient="from-prism-violet to-prism-sky"
-              transactions={transactions?.filter(t => !t.category_id || personalCatIds.has(t.category_id)) || []}
-              formatCurrency={formatCurrency}
-              monthPrefix={monthStart.substring(0, 7)}
-            />
-            <AllModePanel
-              title="Business"
-              icon={<Building2 className="h-3.5 w-3.5 text-white" />}
-              gradient="from-prism-teal to-prism-lime"
-              transactions={transactions?.filter(t => t.category_id && businessCatIds.has(t.category_id)) || []}
-              formatCurrency={formatCurrency}
-              monthPrefix={monthStart.substring(0, 7)}
-            />
-          </div>
-
-          {/* Combined charts */}
-          <DashboardCharts
-            monthlyCashflow={monthlyCashflow}
-            spendingData={filteredSpending}
-            formatCurrency={formatCurrency}
-            formatCompact={formatCompact}
-          />
-
-          {/* AI Spending Insights */}
-          <AiSpendingInsights
-            transactions={filteredTransactions}
-            accounts={accounts || []}
-            monthlyIncome={monthlyIncome}
-            monthlyExpenses={monthlyExpenses}
-          />
-        </>
-      ) : (
-        <>
-          {/* Stat Cards */}
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {STAT_CARDS.map((stat) => {
-              const momData = stat.key === 'monthlyIncome' ? momIndicators?.income : null;
-              return (
-                <motion.div key={stat.key} variants={item}>
-                  <Card className="prism-card-shine border-border/50 hover-lift hover-glow-violet hover-icon-bounce">
-                    <CardContent className="flex items-center gap-4 p-5">
-                      <div className={`stat-card-icon icon-target bg-gradient-to-br ${stat.gradient}`}>
-                        <stat.icon className="h-6 w-6 text-white" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{stat.label}</p>
-                        <div className="flex items-center gap-2">
-                          <p className="font-display text-xl font-bold">{formatCurrency(statValues[stat.key])}</p>
-                          {momData && (
-                            <MoMIndicator
-                              percentageChange={momData.percentageChange}
-                              direction={momData.direction}
-                            />
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              );
-            })}
-          </div>
-
-          {/* Financial Health Score */}
-          <motion.div variants={item}>
-            <FinancialHealthScore
-              monthlyIncome={monthlyIncome}
-              monthlyExpenses={monthlyExpenses}
-              totalAssets={totalAssets}
-              totalLiabilities={totalLiabilities}
-            />
-          </motion.div>
-
-          {/* Charts */}
-          <DashboardCharts
-            monthlyCashflow={monthlyCashflow}
-            spendingData={filteredSpending}
-            formatCurrency={formatCurrency}
-            formatCompact={formatCompact}
-          />
-
-          {/* Goal Tracker + AI Spending Insights */}
-          <div className="grid gap-6 lg:grid-cols-2">
-            <motion.div variants={item}>
-              <GoalTrackerWidget />
-            </motion.div>
-            <motion.div variants={item}>
-              <AiSpendingInsights
-                transactions={filteredTransactions}
-                accounts={accounts || []}
-                monthlyIncome={monthlyIncome}
-                monthlyExpenses={monthlyExpenses}
-              />
-            </motion.div>
-          </div>
-
-          {/* Recent Transactions */}
-          {filteredTransactions.length > 0 && (
-            <motion.div variants={item}>
-              <Card className="prism-card-shine border-border/50">
-                <CardHeader className="pb-2 flex flex-row items-center justify-between">
-                  <CardTitle className="font-display text-lg flex items-center gap-2">
-                    <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-prism-orange to-prism-rose flex items-center justify-center">
-                      <CreditCard className="h-3.5 w-3.5 text-white" />
                     </div>
-                    Recent Transactions
-                  </CardTitle>
-                  <button
-                    onClick={() => navigate('/transactions')}
-                    className="flex items-center gap-1 text-sm text-primary hover:underline"
-                  >
-                    View all <ChevronRight className="h-3.5 w-3.5" />
-                  </button>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-1.5">
-                    {filteredTransactions.slice(0, 8).map(t => (
-                      <div key={t.id} className="flex items-center justify-between rounded-xl border border-border/30 px-3.5 py-2.5 interactive-row hover-border-glow cursor-pointer"
-                        onClick={() => navigate('/transactions')}>
-                        <div className="flex items-center gap-3 min-w-0">
-                          <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: (t.categories as any)?.color || 'hsl(var(--muted-foreground))' }} />
-                          <div className="min-w-0">
-                            <p className="text-sm font-medium truncate">{t.merchant || 'Unknown Merchant'}</p>
-                            <p className="text-xs text-muted-foreground truncate">
-                              {(t.categories as any)?.name || 'Uncategorized'} · {new Date(t.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                            </p>
-                          </div>
-                        </div>
-                        <span className={`font-display text-sm font-semibold shrink-0 ${t.amount >= 0 ? 'text-prism-teal' : 'text-prism-rose'}`}>
-                          {formatCurrency(t.amount)}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          )}
-
-          {/* Accounts */}
-          {accounts && accounts.length > 0 && (
-            <motion.div variants={item}>
-              <Card className="prism-card-shine border-border/50">
-                <CardHeader className="pb-2">
-                  <CardTitle className="font-display text-lg flex items-center gap-2">
-                    <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-prism-sky to-prism-indigo flex items-center justify-center">
-                      <Building2 className="h-3.5 w-3.5 text-white" />
+                    <div className="flex items-center gap-2">
+                      <span className={`font-display text-lg font-semibold ${acc.balance >= 0 ? 'text-prism-teal' : 'text-prism-rose'}`}>
+                        {formatCurrency(acc.balance)}
+                      </span>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground/30" />
                     </div>
-                    Accounts
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {accounts.map((acc) => (
-                      <div key={acc.id} className="flex items-center justify-between rounded-xl border border-border/30 p-3.5 interactive-row hover-border-glow cursor-pointer"
-                        onClick={() => navigate('/accounts')}>
-                        <div className="flex items-center gap-3">
-                          <div className={`h-9 w-9 rounded-lg flex items-center justify-center text-xs font-bold ${
-                            acc.balance >= 0
-                              ? 'bg-prism-teal/10 text-prism-teal'
-                              : 'bg-prism-rose/10 text-prism-rose'
-                          }`}>
-                            {acc.name.substring(0, 2).toUpperCase()}
-                          </div>
-                          <div>
-                            <p className="font-medium text-sm">{acc.name}</p>
-                            <p className="text-xs text-muted-foreground">{acc.institution || 'Manual'} · {acc.account_type}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className={`font-display text-lg font-semibold ${acc.balance >= 0 ? 'text-prism-teal' : 'text-prism-rose'}`}>
-                            {formatCurrency(acc.balance)}
-                          </span>
-                          <ChevronRight className="h-4 w-4 text-muted-foreground/30" />
-                        </div>
-                      </div>
-                    ))}
                   </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          )}
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
 
-          {(!accounts || accounts.length === 0) && (
-            <motion.div variants={item}>
-              <Card className="prism-card-shine border-border/50">
-                <CardContent className="flex flex-col items-center justify-center p-12 text-center">
-                  <div className="h-16 w-16 rounded-2xl prism-gradient prism-glow flex items-center justify-center mb-4">
-                    <Sparkles className="h-8 w-8 text-white" />
-                  </div>
-                  <h3 className="font-display text-lg font-bold mb-1">Welcome to PrismBudget!</h3>
-                  <p className="text-muted-foreground text-sm max-w-sm">
-                    Add accounts and transactions to see your dashboard come alive with vibrant insights.
-                  </p>
-                  <button
-                    onClick={() => navigate('/accounts')}
-                    className="mt-4 flex items-center gap-2 rounded-xl prism-gradient px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-                  >
-                    <Wallet className="h-4 w-4" /> Add Your First Account
-                  </button>
-                </CardContent>
-              </Card>
-            </motion.div>
-          )}
-        </>
+      {(!accounts || accounts.length === 0) && (
+        <motion.div variants={item}>
+          <Card className="prism-card-shine border-border/50">
+            <CardContent className="flex flex-col items-center justify-center p-12 text-center">
+              <div className="h-16 w-16 rounded-2xl prism-gradient prism-glow flex items-center justify-center mb-4">
+                <Sparkles className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="font-display text-lg font-bold mb-1">Welcome to PrismBudget!</h3>
+              <p className="text-muted-foreground text-sm max-w-sm">
+                Add accounts and transactions to see your Safe-to-Spend come alive.
+              </p>
+              <button onClick={() => navigate('/accounts')} className="mt-4 flex items-center gap-2 rounded-xl prism-gradient px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90">
+                <Wallet className="h-4 w-4" /> Add Your First Account
+              </button>
+            </CardContent>
+          </Card>
+        </motion.div>
       )}
 
       <BusinessProfileManager open={manageOpen} onOpenChange={setManageOpen} />
       <WeeklyRecap open={recapOpen} onOpenChange={setRecapOpen} />
+      <ModeSettingsDialog open={modeSettingsOpen} onClose={() => setModeSettingsOpen(false)} />
     </motion.div>
   );
 };
@@ -657,13 +508,8 @@ function DashboardCharts({ monthlyCashflow, spendingData, formatCurrency, format
   );
 }
 
-function AllModePanel({ title, icon, gradient, transactions, formatCurrency, monthPrefix }: {
-  title: string;
-  icon: React.ReactNode;
-  gradient: string;
-  transactions: any[];
-  formatCurrency: (v: number) => string;
-  monthPrefix: string;
+function AllModePanel({ title, icon, gradient, transactions, formatCurrency, monthPrefix, navigate }: {
+  title: string; icon: React.ReactNode; gradient: string; transactions: any[]; formatCurrency: (v: number) => string; monthPrefix: string; navigate: (path: string) => void;
 }) {
   const monthTxns = transactions.filter(t => t.date.startsWith(monthPrefix));
   const income = monthTxns.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0);
@@ -675,9 +521,7 @@ function AllModePanel({ title, icon, gradient, transactions, formatCurrency, mon
       <Card className="prism-card-shine border-border/50 hover-lift">
         <CardHeader className="pb-2">
           <CardTitle className="font-display text-lg flex items-center gap-2">
-            <div className={`h-7 w-7 rounded-lg bg-gradient-to-br ${gradient} flex items-center justify-center`}>
-              {icon}
-            </div>
+            <div className={`h-7 w-7 rounded-lg bg-gradient-to-br ${gradient} flex items-center justify-center`}>{icon}</div>
             {title}
           </CardTitle>
         </CardHeader>
@@ -698,14 +542,12 @@ function AllModePanel({ title, icon, gradient, transactions, formatCurrency, mon
           </div>
           <div className="mt-4 space-y-1.5">
             {transactions.slice(0, 5).map(t => (
-              <div key={t.id} className="flex items-center justify-between text-sm interactive-row rounded-lg px-2 py-1.5">
+              <div key={t.id} className="flex items-center justify-between text-sm interactive-row rounded-lg px-2 py-1.5 cursor-pointer" onClick={() => navigate('/transactions')}>
                 <div className="flex items-center gap-2">
                   <span className="h-2 w-2 rounded-full" style={{ backgroundColor: (t.categories as any)?.color || 'hsl(var(--muted-foreground))' }} />
                   <span className="text-muted-foreground truncate max-w-[140px]">{t.merchant || (t.categories as any)?.name || 'Transaction'}</span>
                 </div>
-                <span className={`font-medium ${t.amount >= 0 ? 'text-prism-teal' : 'text-prism-rose'}`}>
-                  {formatCurrency(t.amount)}
-                </span>
+                <span className={`font-medium ${t.amount >= 0 ? 'text-prism-teal' : 'text-prism-rose'}`}>{formatCurrency(t.amount)}</span>
               </div>
             ))}
             {transactions.length === 0 && (
