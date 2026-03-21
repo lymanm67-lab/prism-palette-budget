@@ -100,6 +100,14 @@ const PlaidLinkButton = () => {
     );
   }
 
+  if (!subscribed) {
+    return (
+      <Button disabled className="gap-2 opacity-70" title="Requires an active subscription">
+        <Lock className="h-4 w-4" /> Connect Bank Account
+      </Button>
+    );
+  }
+
   return (
     <Button onClick={createLinkToken} disabled={loading} className="gap-2" data-plaid-trigger>
       {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Landmark className="h-4 w-4" />}
