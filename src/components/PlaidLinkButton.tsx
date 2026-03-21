@@ -3,9 +3,10 @@ import { usePlaidLink } from 'react-plaid-link';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useHousehold } from '@/contexts/HouseholdContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
-import { Landmark, Loader2 } from 'lucide-react';
+import { Landmark, Loader2, Lock } from 'lucide-react';
 
 const PlaidLinkButton = () => {
   const [linkToken, setLinkToken] = useState<string | null>(null);
@@ -13,6 +14,7 @@ const PlaidLinkButton = () => {
   const [syncing, setSyncing] = useState(false);
   const { toast } = useToast();
   const { household } = useHousehold();
+  const { subscribed } = useAuth();
   const qc = useQueryClient();
 
   const createLinkToken = useCallback(async () => {
@@ -94,6 +96,14 @@ const PlaidLinkButton = () => {
     return (
       <Button disabled className="gap-2">
         <Loader2 className="h-4 w-4 animate-spin" /> Syncing accounts...
+      </Button>
+    );
+  }
+
+  if (!subscribed) {
+    return (
+      <Button disabled className="gap-2 opacity-70" title="Requires an active subscription">
+        <Lock className="h-4 w-4" /> Connect Bank Account
       </Button>
     );
   }
