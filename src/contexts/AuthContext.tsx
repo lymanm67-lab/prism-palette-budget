@@ -71,6 +71,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => subscription.unsubscribe();
   }, []);
 
+  // Check founder role when session changes
+  useEffect(() => {
+    if (session?.user?.id) {
+      supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', session.user.id)
+        .eq('role', 'founder')
+        .maybeSingle()
+        .then(({ data }) => {
+          setIsFounder(!!data);
+        });
+    } else {
+      setIsFounder(false);
+    }
+  }, [session]);
+
   // Check subscription when session changes
   useEffect(() => {
     if (session) {
