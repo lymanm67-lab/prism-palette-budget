@@ -31,7 +31,7 @@ const LandingNav = () => {
         </div>
 
         {/* Desktop nav links */}
-        <div className={`hidden md:flex items-center gap-6 text-sm font-medium ${scrolled ? 'text-muted-foreground' : 'text-primary-foreground/70'}`}>
+        <div className={`hidden md:flex items-center gap-6 text-sm font-semibold ${scrolled ? 'text-muted-foreground' : 'text-white/90'}`}>
           <button onClick={() => scrollTo('benefits')} className="hover:text-accent transition-colors">Benefits</button>
           <button onClick={() => scrollTo('features')} className="hover:text-accent transition-colors">Features</button>
           <button onClick={() => scrollTo('pricing')} className="hover:text-accent transition-colors">Pricing</button>
