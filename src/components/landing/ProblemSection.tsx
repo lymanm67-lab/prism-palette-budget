@@ -1,41 +1,49 @@
 import { motion } from 'framer-motion';
-import { AlertTriangle, Eye, Layers, Receipt, Calculator, GitBranch } from 'lucide-react';
+import { Layers, ScanSearch, Eye } from 'lucide-react';
 
-const PAIN_POINTS = [
-  { icon: Layers, text: 'Too many apps for one financial life' },
-  { icon: Receipt, text: 'Hidden subscriptions and recurring charges' },
-  { icon: Eye, text: 'Poor visibility into where money is going' },
-  { icon: Calculator, text: 'Stress around tax prep and bill planning' },
-  { icon: GitBranch, text: 'Confusion when personal and business money overlap' },
-  { icon: AlertTriangle, text: 'No clear picture of cash flow or future expenses' },
+const GROUPS = [
+  {
+    icon: Layers,
+    title: 'Too many tools',
+    items: ['Budgeting apps', 'Spreadsheets', 'Business expense tools'],
+  },
+  {
+    icon: ScanSearch,
+    title: 'Hidden problems',
+    items: ['Forgotten subscriptions', 'Missed recurring expenses'],
+  },
+  {
+    icon: Eye,
+    title: 'Lack of clarity',
+    items: ['Cash flow confusion', 'Personal & business money overlap'],
+  },
 ];
 
 const ProblemSection = () => (
-  <section className="py-20 sm:py-28 bg-muted/30">
-    <div className="mx-auto max-w-6xl px-6">
+  <section className="py-16 sm:py-24 bg-muted/30">
+    <div className="mx-auto max-w-5xl px-6">
       <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
         className="text-center mb-14">
         <h2 className="font-display text-3xl sm:text-5xl font-extrabold tracking-tight">
-          Most money apps show numbers.{' '}
-          <span className="prism-gradient-text">Prism helps you take action.</span>
+          Why managing money still feels{' '}
+          <span className="prism-gradient-text">harder than it should</span>
         </h2>
-        <p className="mt-5 text-muted-foreground text-base sm:text-lg max-w-3xl mx-auto leading-relaxed">
-          People are tired of bouncing between budgeting apps, subscription trackers, spreadsheets,
-          business expense tools, and tax prep checklists. That scattered approach creates stress,
-          confusion, and missed opportunities. Prism brings everything together into one financial
-          control center.
-        </p>
       </motion.div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto">
-        {PAIN_POINTS.map((p, i) => (
+      <div className="grid gap-6 sm:grid-cols-3 max-w-4xl mx-auto">
+        {GROUPS.map((g, i) => (
           <motion.div key={i} initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }} transition={{ delay: i * 0.06 }}
-            className="flex items-start gap-3 rounded-xl border border-destructive/10 bg-destructive/5 p-5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-destructive/10 shrink-0">
-              <p.icon className="h-4 w-4 text-destructive" />
+            viewport={{ once: true }} transition={{ delay: i * 0.1 }}
+            className="rounded-2xl border border-destructive/10 bg-destructive/5 p-6">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-destructive/10 mb-4">
+              <g.icon className="h-5 w-5 text-destructive" />
             </div>
-            <p className="text-sm font-medium text-foreground leading-snug">{p.text}</p>
+            <h3 className="font-display text-base font-bold mb-3">{g.title}</h3>
+            <ul className="space-y-2">
+              {g.items.map((item, j) => (
+                <li key={j} className="text-sm text-muted-foreground leading-snug">• {item}</li>
+              ))}
+            </ul>
           </motion.div>
         ))}
       </div>
