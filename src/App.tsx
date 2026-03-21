@@ -59,7 +59,7 @@ import BankabilityScore from "@/pages/capital/BankabilityScore";
 import LoanReadiness from "@/pages/capital/LoanReadiness";
 import DSCRCalculator from "@/pages/capital/DSCRCalculator";
 import MoneyMath from "@/pages/capital/MoneyMath";
-
+import ExperimentsDashboard from "@/pages/ExperimentsDashboard";
 const queryClient = new QueryClient();
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
