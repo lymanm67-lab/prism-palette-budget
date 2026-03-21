@@ -90,6 +90,11 @@ const PricingSection = () => {
   const { user, subscribed, subscriptionTier } = useAuth();
   const [annual, setAnnual] = useState(true);
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const headlineTest = useABTest('pricing_headline', 'control');
+  const guidanceTest = useABTest('pricing_guidance', 'control');
+
+  const headlineText = headlineTest.variant.config?.headline as string || 'Choose the plan that gives you full control';
+  const showGuidance = (guidanceTest.variant.config?.showGuidance as boolean) !== false;
 
   const handleCheckout = async (planKey: 'personal' | 'premium' | 'business') => {
     if (!user) {
