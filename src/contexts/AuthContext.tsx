@@ -12,6 +12,7 @@ interface AuthContextType {
   subscriptionTier: SubscriptionTier;
   subscriptionEnd: string | null;
   isTrial: boolean;
+  isFounder: boolean;
   refreshSubscription: () => Promise<void>;
 }
 
