@@ -30,16 +30,26 @@ const HeroSection = () => {
           </div>
 
           <h1 className="font-display text-4xl sm:text-6xl lg:text-7xl font-extrabold text-white tracking-tight leading-[1.1]">
-            Take Control of Your Money,{' '}
-            <span className="block sm:inline">Personal Life, and</span>{' '}
-            <span className="prism-gradient-text">Business</span>{' '}
-            <span className="block sm:inline">in One Place</span>
+            You're making money, but you still don't have a{' '}
+            <span className="prism-gradient-text">clear picture</span>{' '}
+            of where it's going.
           </h1>
 
-          <p className="mt-6 text-base sm:text-lg text-white/75 max-w-3xl mx-auto leading-relaxed">
-            Prism is more than a budgeting app. It helps you track spending, catch waste, organize your finances,
-            plan ahead, and manage both personal and business money — with clarity and confidence.
+          <p className="mt-6 text-base sm:text-lg text-white/90 max-w-3xl mx-auto leading-relaxed font-medium">
+            In the next 10 minutes, Prism shows you exactly where your money is going and what you can safely spend.
           </p>
+
+          <div className="mt-8 flex flex-col gap-4 max-w-2xl mx-auto">
+            <p className="text-sm sm:text-base text-white/70 leading-relaxed">
+              Know what you can <span className="text-accent font-semibold">safely spend today, this week, and this month</span> — without guessing.
+            </p>
+            <p className="text-sm sm:text-base text-white/70 leading-relaxed">
+              Start with guardrails. Build discipline. <span className="text-accent font-semibold">Unlock more financial freedom in 90 days.</span>
+            </p>
+            <p className="text-xs sm:text-sm text-white/50 italic">
+              Not another budgeting app. A system to finally take control of your money.
+            </p>
+          </div>
 
           <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" onClick={() => navigate('/onboarding')}
