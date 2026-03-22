@@ -30,6 +30,7 @@ const NAV_SECTIONS: NavSection[] = [
   {
     label: 'Overview',
     items: [
+      { to: '/getting-started', icon: ClipboardCheck, label: 'Get Started', color: 'text-prism-lime' },
       { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', color: 'text-prism-teal' },
       { to: '/reports', icon: BarChart3, label: 'Reports', color: 'text-prism-orange' },
       { to: '/year-in-review', icon: Sparkles, label: 'Year in Review', color: 'text-prism-amber' },
