@@ -209,7 +209,8 @@ const Calculators = () => {
 
   const handleRestore = (type: string, inputs: Record<string, any>) => {
     setActiveCalc(type);
-    if (type === 'mortgage') setMortgageForm(inputs as any);
+    if (type === 'safetospend') setStsForm(inputs as any);
+    else if (type === 'mortgage') setMortgageForm(inputs as any);
     else if (type === 'auto') setAutoForm(inputs as any);
     else if (type === 'creditcard') setCcForm(inputs as any);
     else if (type === 'investment') setInvestForm(inputs as any);
