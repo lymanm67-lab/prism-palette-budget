@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 const FAQS = [
-  { q: 'Is Prism just a budgeting app?', a: 'No. Prism is an all-in-one financial command center. It includes budgeting, subscription monitoring, forecasting, credit tracking, net worth visibility, tax prep organization, and business finance tools — all in one place.' },
+  { q: 'Is Prism just a financial control system?', a: 'No. Prism is an all-in-one financial command center. It includes budgeting, subscription monitoring, forecasting, credit tracking, net worth visibility, tax prep organization, and business finance tools — all in one place.' },
   { q: 'What makes Prism different from other money apps?', a: 'Most apps do one thing — track spending or monitor subscriptions. Prism replaces multiple tools by combining personal budgeting, financial planning, waste detection, and business management into a single platform.' },
   { q: 'Can I use Prism for both personal and business finances?', a: 'Yes. The Business Pro plan gives you separate dashboards for personal and business finances, so you can manage both from one login without mixing them up.' },
   { q: 'Which plan is best for entrepreneurs?', a: 'The Business Pro plan is designed specifically for entrepreneurs, consultants, and small business owners who need visibility into both personal and business finances alongside premium planning tools.' },

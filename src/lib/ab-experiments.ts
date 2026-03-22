@@ -35,7 +35,7 @@ export const EXPERIMENT_DEFINITIONS = {
         is_control: false,
         config: {
           headline: 'See exactly where your money is going — in the next 10 minutes.',
-          subheadline: 'Prism replaces budgeting apps, spreadsheets, and guesswork with one clear system.',
+          subheadline: 'Prism replaces financial control systems, spreadsheets, and guesswork with one clear system.',
           supporting: 'Know what you can safely spend today, this week, and this month.',
         },
       },

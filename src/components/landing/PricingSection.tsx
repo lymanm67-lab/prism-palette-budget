@@ -19,7 +19,7 @@ const PLANS = [
     bestFor: 'Individuals who want better budgeting and personal financial organization',
     tagline: null,
     features: [
-      'Personal budgeting tools',
+      'Personal financial control systems',
       'Spending categories',
       'Savings tracking',
       'Alerts & reminders',

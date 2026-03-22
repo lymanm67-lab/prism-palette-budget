@@ -88,7 +88,7 @@ const FEATURES = [
 ];
 
 const PLAN_ITEMS = [
-  'Zero-based budgeting tools to track every dollar',
+  'Zero-based financial control systems to track every dollar',
   'Multi-account management for all your finances',
   'AI-powered tax guidance and deduction tracking',
   'Detailed spending reports and trend analysis',
