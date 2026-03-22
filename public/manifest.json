@@ -1,7 +1,7 @@
 {
   "name": "PrismMoney",
   "short_name": "PrismMoney",
-  "description": "Zero-based budgeting app with AI-powered insights for personal and business finance.",
+  "description": "Financial control system with Safe-to-Spend tracking and AI-powered insights.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0d1321",
