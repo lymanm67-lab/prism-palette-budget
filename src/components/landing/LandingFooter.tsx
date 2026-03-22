@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import prismLogo from '@/assets/prism-budget-logo.png';
+import prismLogo from '@/assets/prism-money-logo.png';
 
 const LandingFooter = () => {
   const navigate = useNavigate();

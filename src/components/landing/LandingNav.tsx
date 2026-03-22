@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import prismLogo from '@/assets/prism-budget-logo.png';
+import prismLogo from '@/assets/prism-money-logo.png';
 import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 

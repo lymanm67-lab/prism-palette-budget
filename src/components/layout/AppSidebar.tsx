@@ -8,7 +8,7 @@ import {
   DollarSign, Clock, Lock, Scissors, ClipboardCheck, Gauge, ChevronDown,
   Layers, Search, AlertTriangle, Activity, Banknote,
 } from 'lucide-react';
-import prismLogo from '@/assets/prism-budget-logo.png';
+import prismLogo from '@/assets/prism-money-logo.png';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';

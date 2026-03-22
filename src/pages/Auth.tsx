@@ -11,7 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
 import { Sparkles, ArrowRight, Mail, Lock, UserPlus, LogIn } from 'lucide-react';
-import prismLogo from '@/assets/prism-budget-logo.png';
+import prismLogo from '@/assets/prism-money-logo.png';
 
 type View = 'login' | 'signup' | 'forgot';
 
