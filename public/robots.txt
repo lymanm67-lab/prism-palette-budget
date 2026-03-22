@@ -1,10 +1,37 @@
 User-agent: *
 Allow: /
+Allow: /about
+Allow: /auth
+Allow: /onboarding
+Allow: /reset-password
+Allow: /roadmap
+Allow: /legal
+
+# Block all authenticated/private routes
 Disallow: /dashboard
+Disallow: /accounts
 Disallow: /transactions
 Disallow: /budgets
-Disallow: /accounts
+Disallow: /categories
+Disallow: /reports
 Disallow: /settings
-Disallow: /onboarding
+Disallow: /calculators
+Disallow: /getting-started
+Disallow: /cash-flow
+Disallow: /investments
+Disallow: /recurring
+Disallow: /subscriptions
+Disallow: /forecast
+Disallow: /goals
+Disallow: /debt-payoff
+Disallow: /net-worth
+Disallow: /year-in-review
+Disallow: /bill-negotiation
+Disallow: /home-buying
+Disallow: /tax-assistant
+Disallow: /api-docs
+Disallow: /capital
+Disallow: /experiments
+Disallow: /spending-trends
 
 Sitemap: https://prism-palette-budget.lovable.app/sitemap.xml
