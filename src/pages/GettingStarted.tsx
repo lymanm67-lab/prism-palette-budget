@@ -411,9 +411,9 @@ function StepCard({ step, index, isCompleted, isAutoDetected, onToggleComplete }
                     </Button>
                   )}
                   <Button
-                    variant="outline"
+                    variant={step.id === 'safe-to-spend' ? 'default' : 'outline'}
                     size="sm"
-                    className="gap-1.5 ml-auto"
+                    className={cn('gap-1.5 ml-auto', step.id === 'safe-to-spend' && 'bg-gradient-to-r from-prism-teal to-prism-sky text-primary-foreground hover:opacity-90')}
                     onClick={(e) => { e.stopPropagation(); navigate(step.route); }}
                   >
                     <Rocket className="h-3.5 w-3.5" /> Go to {step.title.split(' ').pop()}
