@@ -461,19 +461,19 @@ const Calculators = () => {
 
       {/* Calculator tabs — icon-only with tooltips on mobile, full labels on desktop */}
       <Tabs value={activeCalc} onValueChange={setActiveCalc}>
-        <TabsList className="flex h-auto w-full gap-1 bg-muted/50 p-1">
+        <TabsList className="flex h-auto w-full gap-1 bg-muted/50 p-1 overflow-x-auto">
           {CALCULATORS.map(c => (
             <Tooltip key={c.id}>
               <TooltipTrigger asChild>
                 <TabsTrigger
                   value={c.id}
-                  className="flex-1 gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg px-2 py-2 sm:px-3"
+                  className="flex-1 min-w-0 gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg px-2 py-2 lg:px-3"
                 >
                   <c.icon className={`h-4 w-4 shrink-0 ${c.color}`} />
-                  <span className="hidden sm:inline text-xs truncate">{c.label}</span>
+                  <span className="hidden lg:inline text-xs truncate">{c.label}</span>
                 </TabsTrigger>
               </TooltipTrigger>
-              <TooltipContent side="bottom" className="sm:hidden">
+              <TooltipContent side="bottom" className="lg:hidden">
                 <p>{c.label}</p>
               </TooltipContent>
             </Tooltip>
