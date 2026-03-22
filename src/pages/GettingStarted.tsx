@@ -59,6 +59,49 @@ const TRAINING_STEPS: TrainingStep[] = [
     ],
   },
   {
+    id: 'safe-to-spend',
+    title: 'Safe-to-Spend & Guardrails',
+    icon: Wallet,
+    color: 'text-prism-teal',
+    route: '/dashboard',
+    summary: 'Understand your Safe-to-Spend number and set up spending guardrails for daily financial control.',
+    ttsScript: `Safe-to-Spend is the most important number in Prism. It tells you exactly what you can safely spend today, this week, and this month without disrupting your financial stability.
+
+Here's how it works: Prism takes your monthly income, subtracts your recurring obligations like rent and utilities, subtracts your subscriptions, subtracts what you've already spent this month, and then applies a safety buffer based on your financial mode. The result is your Safe-to-Spend number.
+
+To get an accurate number, make sure you've added your accounts, income transactions, and recurring bills first.
+
+Next, set up your financial mode. Go to the Dashboard and click the Mode button — the shield icon in the top right. You'll see three options:
+
+Guardrail Mode is the default and recommended starting point. It applies a conservative safety buffer to protect you from overspending and help you build discipline.
+
+Balanced Mode gives moderate flexibility with a smaller buffer. It's good once you've built some consistency.
+
+Green Light Mode gives you the most flexibility with minimal buffers. This unlocks after you've shown consistent spending habits over 90 days.
+
+You can also set up Spend Guardrails for extra protection. These let you set daily and weekly spending limits. When you approach or exceed a limit, Prism shows a warning with a color-coded progress bar — green means you're on track, yellow means you're getting close, and red means you've exceeded your limit.
+
+The 90-day progress tracker on the dashboard shows your consistency. Stay within your Safe-to-Spend each day to build your streak. If you exceed it one day, don't worry — it doesn't reset your progress. Just get back on track the next day.
+
+Your Safe-to-Spend updates in real time as you add transactions, pay bills, and receive income. Switch between Combined, Personal, and Business views to see your Safe-to-Spend for each context.`,
+    steps: [
+      'Go to Dashboard — your Safe-to-Spend is the large number at the top',
+      'Click the Mode button (shield icon) to choose Guardrail, Balanced, or Green Light',
+      'Adjust your safety buffer percentage to your comfort level',
+      'Review your Daily, Weekly, and Monthly Safe-to-Spend amounts',
+      'Hover over the info icon on the progress bar to see the full breakdown',
+      'Switch between Combined, Personal, and Business views',
+      'Track your 90-day consistency streak on the progress tracker',
+    ],
+    tips: [
+      'Start with Guardrail Mode — it builds discipline before flexibility',
+      'Check your daily Safe-to-Spend before making purchases',
+      'One bad day does not reset your progress — stay consistent',
+      'The income-based bar shows what percentage of your income is safe to spend',
+      'Set up Spend Guardrails in Settings for daily and weekly alerts',
+    ],
+  },
+  {
     id: 'categories',
     title: 'Organize Categories',
     icon: Tags,
