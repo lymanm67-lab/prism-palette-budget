@@ -479,7 +479,267 @@ const Calculators = () => {
           ))}
         </TabsList>
 
-        {/* ─── MORTGAGE ─── */}
+        {/* ─── SAFE-TO-SPEND ─── */}
+        <TabsContent value="safetospend" className="mt-6">
+          <CalculatorGuide
+            title="Safe-to-Spend Calculator"
+            icon={Shield}
+            iconColor="text-prism-teal"
+            ttsScript="The Safe-to-Spend Calculator helps you figure out exactly how much you can safely spend each day, week, and month. Enter your monthly income, recurring bills, subscriptions, and what you've already spent. Choose a safety buffer percentage. The calculator shows your safe spending limits instantly. Once you're happy with the numbers, they match what you'll see on your dashboard."
+            instructions={[
+              'Enter your total monthly income (salary, freelance, business revenue)',
+              'Enter your total recurring monthly bills (rent, utilities, loans, insurance)',
+              'Enter your monthly subscription costs (Netflix, gym, software, etc.)',
+              'Enter how much you have already spent this month',
+              'Set your safety buffer — 15% for Guardrail, 10% for Balanced, 5% for Green Light',
+              'Review your Daily, Weekly, and Monthly Safe-to-Spend results',
+            ]}
+          />
+          <CalculatorScenariosAndPitfalls
+            scenarios={[
+              { title: 'New to Budgeting', description: 'Start with a 15-20% buffer (Guardrail Mode). This protects you while you learn your spending patterns. You can reduce it later.' },
+              { title: 'Entrepreneur', description: 'Use your average monthly revenue, not your best month. Variable income needs a higher buffer (15-20%) to handle slow months.' },
+              { title: 'Dual Income Household', description: 'Combine both incomes and all shared bills. Switch to the Combined view on the dashboard to see the full picture.' },
+              { title: 'Paying Off Debt', description: 'Include minimum debt payments in recurring bills. Any extra debt payments reduce your Safe-to-Spend but accelerate freedom.' },
+            ]}
+            pitfalls={[
+              { title: 'Forgetting Subscriptions', description: 'The average person has 12+ subscriptions. Check your bank statements or use the Subscriptions page to catch them all.' },
+              { title: 'Using Gross Instead of Net', description: 'Enter your take-home pay (after taxes), not your gross salary. Using gross inflates your Safe-to-Spend.' },
+              { title: 'Skipping the Buffer', description: 'A 0% buffer means zero margin for error. Life is unpredictable — even 5% provides meaningful protection.' },
+            ]}
+          />
+
+          <div className="grid lg:grid-cols-2 gap-6 mt-6">
+            {/* Input card with step indicators */}
+            <Card className="prism-card-shine border-border/50">
+              <CardHeader>
+                <CardTitle className="font-display text-lg flex items-center gap-2">
+                  <Shield className="h-5 w-5 text-prism-teal" />
+                  Calculate Your Safe-to-Spend
+                </CardTitle>
+                {/* Step progress */}
+                <div className="flex items-center gap-2 pt-2">
+                  {stsSteps.map((step, i) => (
+                    <div key={i} className="flex items-center gap-1.5 text-xs">
+                      {step.done
+                        ? <CheckCircle2 className="h-3.5 w-3.5 text-prism-teal" />
+                        : <div className="h-3.5 w-3.5 rounded-full border border-muted-foreground/40" />
+                      }
+                      <span className={step.done ? 'text-foreground font-medium' : 'text-muted-foreground'}>{step.label}</span>
+                      {i < stsSteps.length - 1 && <span className="text-muted-foreground/30 mx-1">→</span>}
+                    </div>
+                  ))}
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Step 1: Income */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold flex items-center gap-1.5">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-prism-teal/15 text-[10px] font-bold text-prism-teal">1</span>
+                    Monthly Net Income
+                  </Label>
+                  <p className="text-[11px] text-muted-foreground">Your take-home pay after taxes — salary, freelance, business revenue combined</p>
+                  <div className="relative">
+                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type="number" placeholder="e.g. 6000"
+                      value={stsForm.income}
+                      onChange={e => setStsForm(f => ({ ...f, income: e.target.value }))}
+                      className="pl-9"
+                    />
+                  </div>
+                </div>
+
+                {/* Step 2: Bills */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold flex items-center gap-1.5">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-prism-rose/15 text-[10px] font-bold text-prism-rose">2</span>
+                    Monthly Recurring Bills
+                  </Label>
+                  <p className="text-[11px] text-muted-foreground">Rent/mortgage, utilities, car payment, insurance, loans, etc.</p>
+                  <div className="relative">
+                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type="number" placeholder="e.g. 2500"
+                      value={stsForm.recurringBills}
+                      onChange={e => setStsForm(f => ({ ...f, recurringBills: e.target.value }))}
+                      className="pl-9"
+                    />
+                  </div>
+                </div>
+
+                {/* Step 3: Subscriptions */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold flex items-center gap-1.5">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-prism-amber/15 text-[10px] font-bold text-prism-amber">3</span>
+                    Monthly Subscriptions
+                  </Label>
+                  <p className="text-[11px] text-muted-foreground">Netflix, Spotify, gym, software, cloud storage, etc.</p>
+                  <div className="relative">
+                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type="number" placeholder="e.g. 200"
+                      value={stsForm.subscriptions}
+                      onChange={e => setStsForm(f => ({ ...f, subscriptions: e.target.value }))}
+                      className="pl-9"
+                    />
+                  </div>
+                </div>
+
+                {/* Step 4: Already Spent */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold flex items-center gap-1.5">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-prism-violet/15 text-[10px] font-bold text-prism-violet">4</span>
+                    Already Spent This Month
+                  </Label>
+                  <p className="text-[11px] text-muted-foreground">Total discretionary spending so far this month (dining, shopping, etc.)</p>
+                  <div className="relative">
+                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type="number" placeholder="e.g. 800"
+                      value={stsForm.alreadySpent}
+                      onChange={e => setStsForm(f => ({ ...f, alreadySpent: e.target.value }))}
+                      className="pl-9"
+                    />
+                  </div>
+                </div>
+
+                {/* Buffer */}
+                <div className="space-y-1.5 pt-2 border-t border-border/30">
+                  <Label className="text-xs font-semibold flex items-center gap-1.5">
+                    <Shield className="h-4 w-4 text-prism-teal" />
+                    Safety Buffer
+                  </Label>
+                  <div className="flex items-center gap-3">
+                    <div className="flex rounded-lg border border-border p-0.5 flex-1">
+                      {[
+                        { label: 'Guardrail', value: '15', color: 'text-prism-teal' },
+                        { label: 'Balanced', value: '10', color: 'text-prism-amber' },
+                        { label: 'Green Light', value: '5', color: 'text-prism-lime' },
+                      ].map(mode => (
+                        <button
+                          key={mode.value}
+                          onClick={() => setStsForm(f => ({ ...f, bufferPercent: mode.value }))}
+                          className={cn(
+                            'flex-1 rounded-md px-2 py-1.5 text-xs font-medium transition-colors',
+                            stsForm.bufferPercent === mode.value
+                              ? 'bg-primary text-primary-foreground'
+                              : 'text-muted-foreground hover:text-foreground'
+                          )}
+                        >
+                          {mode.label}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="relative w-20">
+                      <Input
+                        type="number" min="0" max="50"
+                        value={stsForm.bufferPercent}
+                        onChange={e => setStsForm(f => ({ ...f, bufferPercent: e.target.value }))}
+                        className="pr-6 text-center text-sm"
+                      />
+                      <Percent className="absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Results card */}
+            <Card className="prism-card-shine border-border/50">
+              <CardHeader>
+                <CardTitle className="font-display text-lg">Your Safe-to-Spend</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Big hero number */}
+                <div className="text-center p-4 rounded-xl bg-gradient-to-br from-primary/10 to-prism-teal/10 border border-primary/20">
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Monthly Safe-to-Spend</p>
+                  <p className="font-display text-4xl font-extrabold prism-gradient-text">
+                    <AnimatedNumber value={stsResult.monthly} formatFn={formatCurrency} />
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">{stsResult.daysRemaining} days remaining this month</p>
+                </div>
+
+                {/* Daily + Weekly */}
+                <div className="grid grid-cols-2 gap-3">
+                  <ResultCard label="Daily Safe-to-Spend" value={formatCurrency(stsResult.daily)} numericValue={stsResult.daily} formatFn={formatCurrency} accent sub={`${stsResult.daysRemaining} days left`} />
+                  <ResultCard label="Weekly Safe-to-Spend" value={formatCurrency(stsResult.weekly)} numericValue={stsResult.weekly} formatFn={formatCurrency} accent />
+                </div>
+
+                {/* Breakdown */}
+                <div className="space-y-2 pt-3 border-t border-border/30">
+                  <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">How It's Calculated</p>
+                  <div className="space-y-1.5">
+                    {[
+                      { label: 'Monthly Income', value: stsResult.income, color: 'text-prism-teal', sign: '' },
+                      { label: 'Recurring Bills', value: stsResult.bills, color: 'text-prism-rose', sign: '−' },
+                      { label: 'Subscriptions', value: stsResult.subs, color: 'text-prism-amber', sign: '−' },
+                      { label: 'Already Spent', value: stsResult.spent, color: 'text-prism-violet', sign: '−' },
+                      { label: `Safety Buffer (${stsResult.buffer}%)`, value: stsResult.bufferAmount, color: 'text-prism-sky', sign: '−' },
+                    ].map((row, i) => (
+                      <div key={i} className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">{row.sign} {row.label}</span>
+                        <span className={cn('font-mono font-medium', row.color)}>{formatCurrency(row.value)}</span>
+                      </div>
+                    ))}
+                    <div className="flex items-center justify-between text-sm font-bold pt-2 border-t border-border/30">
+                      <span>= Safe-to-Spend</span>
+                      <span className="text-primary font-display text-lg">{formatCurrency(stsResult.monthly)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Income percentage bar */}
+                {stsResult.income > 0 && (
+                  <div className="pt-2">
+                    <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                      <span>{Math.round((stsResult.monthly / stsResult.income) * 100)}% of income is safe to spend</span>
+                    </div>
+                    <div className="h-2.5 rounded-full bg-muted overflow-hidden">
+                      <motion.div
+                        className="h-full rounded-full bg-gradient-to-r from-primary to-prism-teal"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${Math.min(100, (stsResult.monthly / stsResult.income) * 100)}%` }}
+                        transition={{ duration: 0.8, ease: 'easeOut' }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <CalculatorActions
+                  calculatorType="safetospend"
+                  inputs={stsForm}
+                  results={{ daily: stsResult.daily, weekly: stsResult.weekly, monthly: stsResult.monthly }}
+                  hasResults={stsResult.income > 0}
+                  summaryText={`# 🛡️ Safe-to-Spend\n\n**Inputs**\n- **Monthly Income:** ${formatCurrency(stsResult.income)}\n- **Recurring Bills:** ${formatCurrency(stsResult.bills)}\n- **Subscriptions:** ${formatCurrency(stsResult.subs)}\n- **Already Spent:** ${formatCurrency(stsResult.spent)}\n- **Safety Buffer:** ${stsResult.buffer}%\n\n**Results**\n- **Daily:** ${formatCurrency(stsResult.daily)}\n- **Weekly:** ${formatCurrency(stsResult.weekly)}\n- **Monthly:** ${formatCurrency(stsResult.monthly)}`}
+                  onOpenHistory={() => setHistoryOpen(true)}
+                  printData={{
+                    inputs: [
+                      { label: 'Monthly Income', value: formatCurrency(stsResult.income) },
+                      { label: 'Recurring Bills', value: formatCurrency(stsResult.bills) },
+                      { label: 'Subscriptions', value: formatCurrency(stsResult.subs) },
+                      { label: 'Already Spent', value: formatCurrency(stsResult.spent) },
+                      { label: 'Safety Buffer', value: `${stsResult.buffer}%` },
+                    ],
+                    results: [
+                      { label: 'Monthly Safe-to-Spend', value: formatCurrency(stsResult.monthly), highlight: true },
+                      { label: 'Weekly Safe-to-Spend', value: formatCurrency(stsResult.weekly) },
+                      { label: 'Daily Safe-to-Spend', value: formatCurrency(stsResult.daily) },
+                    ],
+                  }}
+                />
+              </CardContent>
+            </Card>
+          </div>
+
+          <CalculatorInsight
+            calculatorType="safetospend"
+            inputs={stsForm}
+            results={{ daily: stsResult.daily, weekly: stsResult.weekly, monthly: stsResult.monthly, buffer: stsResult.buffer }}
+            hasResults={stsResult.income > 0}
+          />
+        </TabsContent>
+
         <TabsContent value="mortgage" className="mt-6">
           <CalculatorGuide
             title="Mortgage Calculator"
