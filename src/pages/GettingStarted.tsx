@@ -147,6 +147,53 @@ const TRAINING_STEPS: TrainingStep[] = [
     ],
   },
   {
+    id: 'safe-to-spend',
+    title: 'Safe-to-Spend & Guardrails',
+    icon: Wallet,
+    color: 'text-prism-teal',
+    route: '/calculators',
+    summary: 'Now that your accounts, transactions, bills, and subscriptions are set up — use the Safe-to-Spend Calculator to see exactly what you can safely spend.',
+    ttsScript: `Now that you've set up your accounts, transactions, recurring bills, and subscriptions, it's time to calculate your Safe-to-Spend number.
+
+Go to Calculators in the sidebar. The Safe-to-Spend Calculator is the first tab — it's already selected by default.
+
+Here's what to do:
+
+Step 1: Enter your monthly net income — that's your take-home pay after taxes. If you have multiple income sources like salary plus freelance, add them together.
+
+Step 2: Enter your total monthly recurring bills. You already set these up in the Recurring section — add up rent, utilities, car payment, insurance, and loan payments.
+
+Step 3: Enter your monthly subscription total. You already reviewed these on the Subscriptions page. If you're not sure of the exact number, click the link in the calculator to go review them.
+
+Step 4: Enter how much you've already spent this month on discretionary purchases — dining, shopping, entertainment, and so on. Check your Transactions page for this.
+
+Step 5: Choose your safety buffer. Guardrail Mode uses 15 percent, Balanced uses 10 percent, and Green Light uses 5 percent. If you're just starting out, stick with Guardrail at 15 percent.
+
+The calculator instantly shows your Daily, Weekly, and Monthly Safe-to-Spend numbers, plus a full breakdown of exactly how it's calculated.
+
+Here's a real example: Say you earn 6,000 dollars. Bills are 2,500. Subscriptions cost 200. You've spent 800 so far. That leaves 2,500 dollars. With a 15 percent buffer, 375 is set aside, giving you 2,125 dollars Safe-to-Spend for the rest of the month.
+
+Once you know your number, go to the Dashboard, click the Mode button — the shield icon — and choose your preferred mode. Your Safe-to-Spend updates automatically as you add new transactions throughout the month.`,
+    steps: [
+      'Step 1: Go to Calculators → Safe-to-Spend tab (selected by default)',
+      'Step 2: Enter your monthly net income (take-home pay after taxes)',
+      'Step 3: Enter your total recurring bills (from the Recurring page)',
+      'Step 4: Enter your subscription total (from the Subscriptions page)',
+      'Step 5: Enter how much you\'ve already spent this month (check Transactions)',
+      'Step 6: Choose your buffer — Guardrail (15%), Balanced (10%), or Green Light (5%)',
+      'Step 7: Review your Daily, Weekly, and Monthly Safe-to-Spend results',
+      'Step 8: Go to Dashboard → click Mode (shield icon) → select your preferred mode',
+    ],
+    tips: [
+      'Complete Accounts, Transactions, Recurring, and Subscriptions first for accurate numbers',
+      'Formula: Income − Bills − Subscriptions − Already Spent × (1 − Buffer%) = Safe-to-Spend',
+      'Example: $6,000 − $2,500 − $200 − $800 = $2,500 × 85% = $2,125/month',
+      'Start with Guardrail Mode (15% buffer) — it protects you while you build habits',
+      'Your dashboard number updates automatically as you add transactions',
+      'Use the calculator\'s Save & Share feature to keep a snapshot of your calculation',
+    ],
+  },
+  {
     id: 'cashflow',
     title: 'Monitor Cash Flow',
     icon: Wallet,
