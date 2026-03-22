@@ -40,7 +40,7 @@ const LandingNav = () => {
 
         <div className="hidden md:flex items-center gap-3">
           <Button variant="ghost" onClick={() => navigate('/auth')}
-            className={scrolled ? 'text-muted-foreground hover:text-foreground' : 'text-primary-foreground/60 hover:text-primary-foreground hover:bg-primary-foreground/10'}>
+            className={scrolled ? 'text-muted-foreground hover:text-foreground' : 'text-white font-semibold hover:text-white hover:bg-white/10'}>
             Sign In
           </Button>
           <Button onClick={() => navigate('/onboarding')} className="prism-gradient-teal text-primary-foreground font-semibold hover:opacity-90 rounded-xl">
