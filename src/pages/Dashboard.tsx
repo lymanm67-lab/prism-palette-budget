@@ -186,19 +186,59 @@ const Dashboard = () => {
               </ShadcnTooltip>
             </TooltipProvider>
             <PageOverview
-              title="Dashboard Overview"
-              description="Your financial control center. Safe-to-Spend tells you what you can spend across personal and business without disrupting stability."
-              icon={TrendingUp}
+              title="Safe-to-Spend Setup Guide"
+              description="Your Safe-to-Spend updates automatically based on your accounts, income, bills, and subscriptions. Here's how to set it up and get an accurate number."
+              icon={DollarSign}
               iconColor="text-prism-teal"
-              ttsScript="Welcome to your Dashboard. The combined Safe to Spend number at the top is the most important metric. It shows what you can safely spend today across all your finances."
+              ttsScript={`Welcome to your financial control center. Let me walk you through how Safe-to-Spend works and how to set it up.
+
+Safe-to-Spend is the most important number in this app. It tells you exactly what you can spend today, this week, and this month without disrupting your financial stability.
+
+Here's how it's calculated: Your monthly income, minus your recurring obligations like rent and utilities, minus your subscriptions, minus what you've already spent this month. Then a safety buffer is applied based on your current financial mode.
+
+To get an accurate Safe-to-Spend number, follow these steps:
+
+Step 1: Add your bank accounts. Go to Accounts in the sidebar and add your checking and savings accounts with their current balances. This gives Prism your available cash.
+
+Step 2: Add your income. Go to Transactions and enter your income sources like salary, freelance payments, or business revenue. Use positive amounts for money coming in.
+
+Step 3: Set up recurring bills. Go to Recurring in the sidebar and add your regular obligations like rent, mortgage, utilities, loan payments, and insurance. These are subtracted from your Safe-to-Spend automatically.
+
+Step 4: Review your subscriptions. Go to Subscriptions in the sidebar. Prism auto-detects recurring charges from your transactions. Review them to make sure nothing is missed.
+
+Step 5: Choose your financial mode. Click the Mode button at the top of this dashboard. Guardrail Mode applies a conservative safety buffer and is recommended for getting started. Balanced Mode gives moderate flexibility. Green Light Mode gives the most flexibility but requires consistent spending habits.
+
+For business owners: Tag your business transactions and expenses separately. Switch between Combined, Personal, and Business views using the filter buttons to see your Safe-to-Spend for each context.
+
+The income-based progress bar below your Safe-to-Spend number shows what percentage of your income is available to spend. Hover over the info icon for a detailed breakdown.
+
+Your Safe-to-Spend updates in real time as you add transactions, pay bills, and receive income. The goal is simple: stay within your number each day, build consistency, and unlock more financial freedom over time.`}
               features={[
-                'Combined Safe-to-Spend across personal & business',
-                '90-day financial control progression',
-                'Guardrail, Balanced, and Green Light modes',
-                'Net worth, cash flow, and spending breakdown',
-                'Smart alerts and AI insights',
+                'Add accounts to establish your available cash balance',
+                'Record income (salary, freelance, business revenue)',
+                'Set up recurring bills and obligations',
+                'Review auto-detected subscriptions',
+                'Choose your financial mode and safety buffer',
+                'Use Combined, Personal, or Business views',
+                'Track your 90-day consistency streak',
+                'Income-based context shows % safe to spend',
               ]}
-              demoData={[]}
+              demoData={[
+                { label: 'Monthly Income', value: '$8,500', color: '#2eb88a' },
+                { label: 'Recurring Bills', value: '-$3,200', color: '#e5547a' },
+                { label: 'Subscriptions', value: '-$285', color: '#e5a525' },
+                { label: 'Already Spent', value: '-$1,450', color: '#7c5cf5' },
+                { label: 'Safety Buffer (15%)', value: '-$535', color: '#3b9fe5' },
+                { label: 'Safe to Spend', value: '$3,030', badge: 'Monthly', color: '#2d9e6f' },
+              ]}
+              demoTableHeaders={['Step', 'Where', 'What to Add']}
+              demoTableRows={[
+                ['1', 'Accounts', 'Checking & savings balances'],
+                ['2', 'Transactions', 'Income (positive amounts)'],
+                ['3', 'Recurring', 'Rent, utilities, loan payments'],
+                ['4', 'Subscriptions', 'Review auto-detected charges'],
+                ['5', 'Dashboard → Mode', 'Choose Guardrail, Balanced, or Green Light'],
+              ]}
             />
           </div>
         </div>
