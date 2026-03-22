@@ -79,7 +79,7 @@ const HeroSection = () => {
         >
           <img
             src={heroProductShot}
-            alt="Prism Budget dashboard — your financial command center"
+            alt="PrismMoney dashboard — your financial command center"
             className="w-full rounded-2xl"
             loading="eager"
           />

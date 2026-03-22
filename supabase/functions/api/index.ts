@@ -81,7 +81,7 @@ serve(async (req) => {
 
   if (!version || version !== "v1" || !resource) {
     return json({
-      message: "Prism Budget API v1",
+      message: "PrismMoney API v1",
       endpoints: ALLOWED_TABLES.map((t) => `/v1/${t}`),
       docs: "Pass Bearer token from your auth session. All data is scoped by RLS.",
     });

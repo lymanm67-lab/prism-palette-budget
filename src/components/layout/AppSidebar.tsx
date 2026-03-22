@@ -8,7 +8,7 @@ import {
   DollarSign, Clock, Lock, Scissors, ClipboardCheck, Gauge, ChevronDown,
   Layers, Search, AlertTriangle, Activity, Banknote,
 } from 'lucide-react';
-import prismLogo from '@/assets/prism-budget-logo.png';
+import prismLogo from '@/assets/prism-money-logo.png';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
@@ -201,14 +201,14 @@ const AppSidebar = () => {
       <div className="relative flex h-16 items-center justify-between px-4">
         {!collapsed && (
           <div className="flex items-center gap-2.5">
-            <img src={prismLogo} alt="PrismBudget" className="h-16 w-16 rounded-xl object-contain" />
+            <img src={prismLogo} alt="PrismMoney" className="h-16 w-16 rounded-xl object-contain" />
             <span className="font-display text-lg font-extrabold tracking-tight prism-gradient-text">
-              PrismBudget
+              PrismMoney
             </span>
           </div>
         )}
         {collapsed && (
-          <img src={prismLogo} alt="PrismBudget" className="mx-auto h-16 w-16 rounded-xl object-contain" />
+          <img src={prismLogo} alt="PrismMoney" className="mx-auto h-16 w-16 rounded-xl object-contain" />
         )}
         <Button
           variant="ghost"

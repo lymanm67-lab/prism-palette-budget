@@ -31,7 +31,7 @@ const ComparisonSection = () => (
       <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
         className="text-center mb-14">
         <h2 className="font-display text-3xl sm:text-5xl font-extrabold tracking-tight">
-          Not another budgeting app.{' '}
+          Not another finance app.{' '}
           <span className="prism-gradient-text">A system for real control.</span>
         </h2>
       </motion.div>

@@ -67,7 +67,7 @@ export default function ApiDocs() {
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">API Documentation</h1>
         <p className="text-muted-foreground mt-1">
-          Integrate Prism Budget data into your other apps using the REST API.
+          Integrate PrismMoney data into your other apps using the REST API.
         </p>
       </motion.div>
 

@@ -316,7 +316,7 @@ Your Safe-to-Spend updates in real time as you add transactions, pay bills, and 
   },
 ];
 
-const WELCOME_TTS = `Welcome to Prism Budget! This Getting Started guide will walk you through every feature of the app, step by step. Each section includes a voice walkthrough you can listen to, detailed setup steps, and helpful tips. Start from the top with Accounts and work your way down, or jump to any section you need. Let's get your finances organized!`;
+const WELCOME_TTS = `Welcome to PrismMoney! This Getting Started guide will walk you through every feature of the app, step by step. Each section includes a voice walkthrough you can listen to, detailed setup steps, and helpful tips. Start from the top with Accounts and work your way down, or jump to any section you need. Let's get your finances organized!`;
 
 function StepCard({ step, index, isCompleted, isAutoDetected, onToggleComplete }: {
   step: TrainingStep;
@@ -473,7 +473,7 @@ function StepCard({ step, index, isCompleted, isAutoDetected, onToggleComplete }
 // ──────────────── Guided Tour Component ────────────────
 const TOUR_SLIDES = [
   {
-    title: 'Welcome to PrismBudget! 🎉',
+    title: 'Welcome to PrismMoney! 🎉',
     desc: 'This guided tour walks you through the key steps to get your finances organized. It takes about 5 minutes.',
     icon: Rocket,
     gradient: 'from-prism-navy to-prism-teal',
@@ -722,7 +722,7 @@ const GettingStarted = () => {
       {/* Header */}
       <div>
         <h1 className="font-display text-2xl sm:text-3xl font-bold">Getting Started</h1>
-        <p className="text-sm sm:text-base text-muted-foreground">Learn how to set up and use every feature of Prism Budget.</p>
+        <p className="text-sm sm:text-base text-muted-foreground">Learn how to set up and use every feature of PrismMoney.</p>
       </div>
 
       {/* Welcome card with progress */}
@@ -733,7 +733,7 @@ const GettingStarted = () => {
               <Rocket className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
             </div>
             <div className="min-w-0 flex-1">
-              <h2 className="font-display text-lg sm:text-xl font-bold">Welcome to Prism Budget!</h2>
+              <h2 className="font-display text-lg sm:text-xl font-bold">Welcome to PrismMoney!</h2>
               <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                 Follow these {TRAINING_STEPS.length} steps to get your finances fully set up. 
                 Each section includes a voice walkthrough, step-by-step instructions, and pro tips.
@@ -820,7 +820,7 @@ const GettingStarted = () => {
               </div>
               <h3 className="font-display text-xl font-bold">You're All Set! 🎉</h3>
               <p className="text-sm text-muted-foreground mt-1">
-                You've completed all the training steps. You're now a Prism Budget pro!
+                You've completed all the training steps. You're now a PrismMoney pro!
               </p>
             </CardContent>
           </Card>

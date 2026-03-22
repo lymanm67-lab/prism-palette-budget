@@ -169,7 +169,7 @@ serve(async (req) => {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              from: "PrismBudget <onboarding@resend.dev>",
+              from: "PrismMoney <onboarding@resend.dev>",
               to: [user.email],
               subject: `💰 Your Weekly Financial Digest — ${formatDate(weekAgoStr)} to ${formatDate(todayStr)}`,
               html: emailHtml.replace("{{name}}", profile?.display_name || user.email.split("@")[0]),
@@ -316,7 +316,7 @@ function buildEmailHtml(data: {
 
   <!-- Footer -->
   <div style="text-align:center;color:#9ca3af;font-size:12px;border-top:1px solid #f0f0f0;padding-top:16px;">
-    <p>Sent by PrismBudget • Your finances, your way</p>
+    <p>Sent by PrismMoney • Your finances, your way</p>
   </div>
 </div>
 </body>

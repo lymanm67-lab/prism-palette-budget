@@ -62,7 +62,7 @@ const MobileNav = () => {
         >
           <Menu className="h-5 w-5" />
         </button>
-        <span className="font-display text-lg font-extrabold tracking-tight prism-gradient-text">PrismBudget</span>
+        <span className="font-display text-lg font-extrabold tracking-tight prism-gradient-text">PrismMoney</span>
         <button
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
           className="h-9 w-9 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-muted active:animate-haptic-press"
