@@ -64,41 +64,52 @@ const TRAINING_STEPS: TrainingStep[] = [
     icon: Wallet,
     color: 'text-prism-teal',
     route: '/dashboard',
-    summary: 'Understand your Safe-to-Spend number and set up spending guardrails for daily financial control.',
-    ttsScript: `Safe-to-Spend is the most important number in Prism. It tells you exactly what you can safely spend today, this week, and this month without disrupting your financial stability.
+    summary: 'Set up your Safe-to-Spend number step by step — the core of your financial control system.',
+    ttsScript: `Let's set up your Safe-to-Spend number. This is the most important feature in PrismMoney — it tells you exactly what you can safely spend each day, week, and month.
 
-Here's how it works: Prism takes your monthly income, subtracts your recurring obligations like rent and utilities, subtracts your subscriptions, subtracts what you've already spent this month, and then applies a safety buffer based on your financial mode. The result is your Safe-to-Spend number.
+Here is the exact formula:
 
-To get an accurate number, make sure you've added your accounts, income transactions, and recurring bills first.
+Safe-to-Spend equals your Monthly Income, minus Recurring Bills, minus Subscriptions, minus what you've Already Spent this month, multiplied by your Safety Buffer.
 
-Next, set up your financial mode. Go to the Dashboard and click the Mode button — the shield icon in the top right. You'll see three options:
+Let me walk you through each piece:
 
-Guardrail Mode is the default and recommended starting point. It applies a conservative safety buffer to protect you from overspending and help you build discipline.
+Step 1: Add your bank accounts. Go to Accounts in the sidebar and click Add Account. Add every checking and savings account you use. Enter the current balance for each one. This gives PrismMoney your total available cash.
 
-Balanced Mode gives moderate flexibility with a smaller buffer. It's good once you've built some consistency.
+Step 2: Record your income. Go to Transactions and click Add Transaction. Enter your income sources as positive amounts — for example, your salary of 5,000 dollars, freelance income of 1,500 dollars, or business revenue. Make sure the date is in the current month so it counts toward this month's Safe-to-Spend.
 
-Green Light Mode gives you the most flexibility with minimal buffers. This unlocks after you've shown consistent spending habits over 90 days.
+Step 3: Set up your recurring bills. Go to Recurring in the sidebar and click Add Recurring. Add every regular bill: rent or mortgage, utilities, car payment, insurance, loan payments. Set the correct frequency — monthly, weekly, biweekly, quarterly, or yearly. PrismMoney automatically converts these to monthly amounts for the calculation.
 
-You can also set up Spend Guardrails for extra protection. These let you set daily and weekly spending limits. When you approach or exceed a limit, Prism shows a warning with a color-coded progress bar — green means you're on track, yellow means you're getting close, and red means you've exceeded your limit.
+Step 4: Check your subscriptions. Go to Subscriptions in the sidebar. PrismMoney auto-detects recurring charges from your transactions. Review the list to make sure all active subscriptions are included — Netflix, Spotify, gym memberships, software tools, and so on.
 
-The 90-day progress tracker on the dashboard shows your consistency. Stay within your Safe-to-Spend each day to build your streak. If you exceed it one day, don't worry — it doesn't reset your progress. Just get back on track the next day.
+Step 5: Choose your financial mode. Go back to the Dashboard and click the Mode button — the shield icon in the top right corner. Choose one of three modes:
 
-Your Safe-to-Spend updates in real time as you add transactions, pay bills, and receive income. Switch between Combined, Personal, and Business views to see your Safe-to-Spend for each context.`,
+Guardrail Mode applies a 15 percent safety buffer by default. This means 15 percent of your remaining money is set aside as protection. This is the recommended starting point.
+
+Balanced Mode uses a 10 percent buffer — more flexibility but less protection.
+
+Green Light Mode uses only a 5 percent buffer — maximum flexibility for users who have built consistent habits.
+
+You can also manually adjust the buffer percentage to any number you want.
+
+Here's a real example: Say you earn 6,000 dollars this month. Your recurring bills total 2,500 dollars. Subscriptions cost 200 dollars. You've already spent 800 dollars this month. That leaves 2,500 dollars. With a 15 percent Guardrail buffer, 375 dollars is set aside, giving you a Safe-to-Spend of 2,125 dollars for the rest of the month. Divided by the remaining days, that's your daily Safe-to-Spend.
+
+Once set up, your number updates automatically every time you add a transaction, pay a bill, or receive income. You can also set daily and weekly spending limits under Spend Guardrails for extra alerts and protection.`,
     steps: [
-      'Go to Dashboard — your Safe-to-Spend is the large number at the top',
-      'Click the Mode button (shield icon) to choose Guardrail, Balanced, or Green Light',
-      'Adjust your safety buffer percentage to your comfort level',
-      'Review your Daily, Weekly, and Monthly Safe-to-Spend amounts',
-      'Hover over the info icon on the progress bar to see the full breakdown',
-      'Switch between Combined, Personal, and Business views',
-      'Track your 90-day consistency streak on the progress tracker',
+      'Step 1: Go to Accounts → Add Account → enter each checking/savings account with its balance',
+      'Step 2: Go to Transactions → Add Transaction → enter income as positive amounts (salary, freelance, revenue)',
+      'Step 3: Go to Recurring → Add Recurring → enter every bill (rent, utilities, loans) with frequency',
+      'Step 4: Go to Subscriptions → review auto-detected subscriptions and add any missing ones',
+      'Step 5: Go to Dashboard → click Mode (shield icon) → choose Guardrail, Balanced, or Green Light',
+      'Step 6: Optionally adjust your safety buffer percentage in the Mode settings',
+      'Step 7: Review your Daily, Weekly, and Monthly Safe-to-Spend on the Dashboard',
     ],
     tips: [
-      'Start with Guardrail Mode — it builds discipline before flexibility',
-      'Check your daily Safe-to-Spend before making purchases',
-      'One bad day does not reset your progress — stay consistent',
-      'The income-based bar shows what percentage of your income is safe to spend',
-      'Set up Spend Guardrails in Settings for daily and weekly alerts',
+      'Formula: Income − Bills − Subscriptions − Already Spent × (1 − Buffer%) = Safe-to-Spend',
+      'Example: $6,000 income − $2,500 bills − $200 subs − $800 spent = $2,500 × 85% = $2,125/month',
+      'Start with Guardrail Mode (15% buffer) — it protects you while you build habits',
+      'Add ALL accounts and bills for an accurate number — missing data means an inaccurate Safe-to-Spend',
+      'Your number updates in real time — no need to recalculate manually',
+      'Switch between Combined, Personal, and Business views to see each context separately',
     ],
   },
   {
