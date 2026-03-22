@@ -166,9 +166,46 @@ const ResultCard = ({ label, value, sub, accent, numericValue, formatFn }: { lab
 const Calculators = () => {
   const { formatCurrency } = useCurrency();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [activeCalc, setActiveCalc] = useState('mortgage');
+  const [activeCalc, setActiveCalc] = useState('safetospend');
   const [pageGuideOpen, setPageGuideOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+
+  // Safe-to-Spend calculator
+  const [stsForm, setStsForm] = useState({
+    income: '', recurringBills: '', subscriptions: '', alreadySpent: '', bufferPercent: '15',
+  });
+  const stsResult = useMemo(() => {
+    const income = parseFloat(stsForm.income) || 0;
+    const bills = parseFloat(stsForm.recurringBills) || 0;
+    const subs = parseFloat(stsForm.subscriptions) || 0;
+    const spent = parseFloat(stsForm.alreadySpent) || 0;
+    const buffer = parseFloat(stsForm.bufferPercent) || 15;
+
+    const remaining = income - bills - subs - spent;
+    const bufferAmount = remaining * (buffer / 100);
+    const monthly = Math.max(0, remaining - bufferAmount);
+
+    const now = new Date();
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const daysRemaining = Math.max(1, daysInMonth - now.getDate() + 1);
+    const daily = monthly / daysRemaining;
+    const weekly = monthly / Math.max(1, daysRemaining / 7);
+
+    return { income, bills, subs, spent, remaining, bufferAmount, monthly, daily, weekly, buffer, daysRemaining };
+  }, [stsForm]);
+
+  const stsSteps = useMemo(() => {
+    const income = parseFloat(stsForm.income) || 0;
+    const bills = parseFloat(stsForm.recurringBills) || 0;
+    const subs = parseFloat(stsForm.subscriptions) || 0;
+    const spent = parseFloat(stsForm.alreadySpent) || 0;
+    return [
+      { label: 'Monthly Income', done: income > 0 },
+      { label: 'Recurring Bills', done: bills > 0 },
+      { label: 'Subscriptions', done: subs > 0 },
+      { label: 'Already Spent', done: spent > 0 },
+    ];
+  }, [stsForm]);
 
   const handleRestore = (type: string, inputs: Record<string, any>) => {
     setActiveCalc(type);
