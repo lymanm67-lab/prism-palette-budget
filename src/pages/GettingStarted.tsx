@@ -155,7 +155,7 @@ const TRAINING_STEPS: TrainingStep[] = [
     summary: 'Now that your accounts, transactions, bills, and subscriptions are set up — use the Safe-to-Spend Calculator to see exactly what you can safely spend.',
     ttsScript: `Now that you've set up your accounts, transactions, recurring bills, and subscriptions, it's time to calculate your Safe-to-Spend number.
 
-Go to Calculators in the sidebar. The Safe-to-Spend Calculator is the first tab — it's already selected by default.
+Click the "Go to Guardrails" button on this card to open the Safe-to-Spend Calculator. It's the first tab and already selected by default.
 
 Here's what to do:
 
