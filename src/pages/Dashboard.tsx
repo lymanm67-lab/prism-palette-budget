@@ -237,7 +237,11 @@ const Dashboard = () => {
 
       {/* ========== SAFE-TO-SPEND HERO (Primary Focus) ========== */}
       <motion.div variants={item}>
-        <SafeToSpendHero />
+        <SafeToSpendHero 
+          viewMode={mode} 
+          filteredIncome={monthlyIncome} 
+          filteredExpenses={monthlyExpenses} 
+        />
       </motion.div>
 
       {/* ========== 90-Day Progress Tracker ========== */}
