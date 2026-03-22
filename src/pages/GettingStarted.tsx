@@ -63,7 +63,7 @@ const TRAINING_STEPS: TrainingStep[] = [
     title: 'Safe-to-Spend & Guardrails',
     icon: Wallet,
     color: 'text-prism-teal',
-    route: '/dashboard',
+    route: '/calculators',
     summary: 'Set up your Safe-to-Spend number step by step — the core of your financial control system.',
     ttsScript: `Let's set up your Safe-to-Spend number. This is the most important feature in PrismMoney — it tells you exactly what you can safely spend each day, week, and month.
 
