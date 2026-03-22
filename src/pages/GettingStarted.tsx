@@ -175,7 +175,7 @@ Here's a real example: Say you earn 6,000 dollars. Bills are 2,500. Subscription
 
 Once you know your number, go to the Dashboard, click the Mode button — the shield icon — and choose your preferred mode. Your Safe-to-Spend updates automatically as you add new transactions throughout the month.`,
     steps: [
-      'Step 1: Go to Calculators → Safe-to-Spend tab (selected by default)',
+      'Step 1: Click the "Go to Guardrails" button below to open the Safe-to-Spend Calculator',
       'Step 2: Enter your monthly net income (take-home pay after taxes)',
       'Step 3: Enter your total recurring bills (from the Recurring page)',
       'Step 4: Enter your subscription total (from the Subscriptions page)',
