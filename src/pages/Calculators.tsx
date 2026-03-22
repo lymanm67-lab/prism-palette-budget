@@ -473,7 +473,7 @@ const Calculators = () => {
                   <span className="hidden lg:inline text-xs truncate">{c.label}</span>
                 </TabsTrigger>
               </TooltipTrigger>
-              <TooltipContent side="bottom" className="sm:hidden">
+              <TooltipContent side="bottom" className="lg:hidden">
                 <p>{c.label}</p>
               </TooltipContent>
             </Tooltip>
