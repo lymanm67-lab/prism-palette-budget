@@ -575,7 +575,12 @@ const Calculators = () => {
                     <span className="flex h-5 w-5 items-center justify-center rounded-full bg-prism-amber/15 text-[10px] font-bold text-prism-amber">3</span>
                     Monthly Subscriptions
                   </Label>
-                  <p className="text-[11px] text-muted-foreground">Netflix, Spotify, gym, software, cloud storage, etc.</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    Netflix, Spotify, gym, software, cloud storage, etc.
+                    {!stsForm.subscriptions && (
+                      <> — Not sure? <a href="/subscriptions" className="text-primary underline underline-offset-2 hover:text-primary/80">Review your subscriptions</a> first.</>
+                    )}
+                  </p>
                   <div className="relative">
                     <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
