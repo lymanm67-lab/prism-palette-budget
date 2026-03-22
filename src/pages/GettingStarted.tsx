@@ -59,60 +59,6 @@ const TRAINING_STEPS: TrainingStep[] = [
     ],
   },
   {
-    id: 'safe-to-spend',
-    title: 'Safe-to-Spend & Guardrails',
-    icon: Wallet,
-    color: 'text-prism-teal',
-    route: '/calculators',
-    summary: 'Set up your Safe-to-Spend number step by step — the core of your financial control system.',
-    ttsScript: `Let's set up your Safe-to-Spend number. This is the most important feature in PrismMoney — it tells you exactly what you can safely spend each day, week, and month.
-
-Here is the exact formula:
-
-Safe-to-Spend equals your Monthly Income, minus Recurring Bills, minus Subscriptions, minus what you've Already Spent this month, multiplied by your Safety Buffer.
-
-Let me walk you through each piece:
-
-Step 1: Add your bank accounts. Go to Accounts in the sidebar and click Add Account. Add every checking and savings account you use. Enter the current balance for each one. This gives PrismMoney your total available cash.
-
-Step 2: Record your income. Go to Transactions and click Add Transaction. Enter your income sources as positive amounts — for example, your salary of 5,000 dollars, freelance income of 1,500 dollars, or business revenue. Make sure the date is in the current month so it counts toward this month's Safe-to-Spend.
-
-Step 3: Set up your recurring bills. Go to Recurring in the sidebar and click Add Recurring. Add every regular bill: rent or mortgage, utilities, car payment, insurance, loan payments. Set the correct frequency — monthly, weekly, biweekly, quarterly, or yearly. PrismMoney automatically converts these to monthly amounts for the calculation.
-
-Step 4: Check your subscriptions. Go to Subscriptions in the sidebar. PrismMoney auto-detects recurring charges from your transactions. Review the list to make sure all active subscriptions are included — Netflix, Spotify, gym memberships, software tools, and so on.
-
-Step 5: Choose your financial mode. Go back to the Dashboard and click the Mode button — the shield icon in the top right corner. Choose one of three modes:
-
-Guardrail Mode applies a 15 percent safety buffer by default. This means 15 percent of your remaining money is set aside as protection. This is the recommended starting point.
-
-Balanced Mode uses a 10 percent buffer — more flexibility but less protection.
-
-Green Light Mode uses only a 5 percent buffer — maximum flexibility for users who have built consistent habits.
-
-You can also manually adjust the buffer percentage to any number you want.
-
-Here's a real example: Say you earn 6,000 dollars this month. Your recurring bills total 2,500 dollars. Subscriptions cost 200 dollars. You've already spent 800 dollars this month. That leaves 2,500 dollars. With a 15 percent Guardrail buffer, 375 dollars is set aside, giving you a Safe-to-Spend of 2,125 dollars for the rest of the month. Divided by the remaining days, that's your daily Safe-to-Spend.
-
-Once set up, your number updates automatically every time you add a transaction, pay a bill, or receive income. You can also set daily and weekly spending limits under Spend Guardrails for extra alerts and protection.`,
-    steps: [
-      'Step 1: Go to Accounts → Add Account → enter each checking/savings account with its balance',
-      'Step 2: Go to Transactions → Add Transaction → enter income as positive amounts (salary, freelance, revenue)',
-      'Step 3: Go to Recurring → Add Recurring → enter every bill (rent, utilities, loans) with frequency',
-      'Step 4: Go to Subscriptions → review auto-detected subscriptions and add any missing ones',
-      'Step 5: Go to Dashboard → click Mode (shield icon) → choose Guardrail, Balanced, or Green Light',
-      'Step 6: Optionally adjust your safety buffer percentage in the Mode settings',
-      'Step 7: Review your Daily, Weekly, and Monthly Safe-to-Spend on the Dashboard',
-    ],
-    tips: [
-      'Formula: Income − Bills − Subscriptions − Already Spent × (1 − Buffer%) = Safe-to-Spend',
-      'Example: $6,000 income − $2,500 bills − $200 subs − $800 spent = $2,500 × 85% = $2,125/month',
-      'Start with Guardrail Mode (15% buffer) — it protects you while you build habits',
-      'Add ALL accounts and bills for an accurate number — missing data means an inaccurate Safe-to-Spend',
-      'Your number updates in real time — no need to recalculate manually',
-      'Switch between Combined, Personal, and Business views to see each context separately',
-    ],
-  },
-  {
     id: 'categories',
     title: 'Organize Categories',
     icon: Tags,
@@ -198,6 +144,53 @@ Once set up, your number updates automatically every time you add a transaction,
       'Add all subscriptions to catch forgotten charges',
       'Use the calendar view to see payment clusters',
       'Set end dates for temporary subscriptions',
+    ],
+  },
+  {
+    id: 'safe-to-spend',
+    title: 'Safe-to-Spend & Guardrails',
+    icon: Wallet,
+    color: 'text-prism-teal',
+    route: '/calculators',
+    summary: 'Now that your accounts, transactions, bills, and subscriptions are set up — use the Safe-to-Spend Calculator to see exactly what you can safely spend.',
+    ttsScript: `Now that you've set up your accounts, transactions, recurring bills, and subscriptions, it's time to calculate your Safe-to-Spend number.
+
+Go to Calculators in the sidebar. The Safe-to-Spend Calculator is the first tab — it's already selected by default.
+
+Here's what to do:
+
+Step 1: Enter your monthly net income — that's your take-home pay after taxes. If you have multiple income sources like salary plus freelance, add them together.
+
+Step 2: Enter your total monthly recurring bills. You already set these up in the Recurring section — add up rent, utilities, car payment, insurance, and loan payments.
+
+Step 3: Enter your monthly subscription total. You already reviewed these on the Subscriptions page. If you're not sure of the exact number, click the link in the calculator to go review them.
+
+Step 4: Enter how much you've already spent this month on discretionary purchases — dining, shopping, entertainment, and so on. Check your Transactions page for this.
+
+Step 5: Choose your safety buffer. Guardrail Mode uses 15 percent, Balanced uses 10 percent, and Green Light uses 5 percent. If you're just starting out, stick with Guardrail at 15 percent.
+
+The calculator instantly shows your Daily, Weekly, and Monthly Safe-to-Spend numbers, plus a full breakdown of exactly how it's calculated.
+
+Here's a real example: Say you earn 6,000 dollars. Bills are 2,500. Subscriptions cost 200. You've spent 800 so far. That leaves 2,500 dollars. With a 15 percent buffer, 375 is set aside, giving you 2,125 dollars Safe-to-Spend for the rest of the month.
+
+Once you know your number, go to the Dashboard, click the Mode button — the shield icon — and choose your preferred mode. Your Safe-to-Spend updates automatically as you add new transactions throughout the month.`,
+    steps: [
+      'Step 1: Go to Calculators → Safe-to-Spend tab (selected by default)',
+      'Step 2: Enter your monthly net income (take-home pay after taxes)',
+      'Step 3: Enter your total recurring bills (from the Recurring page)',
+      'Step 4: Enter your subscription total (from the Subscriptions page)',
+      'Step 5: Enter how much you\'ve already spent this month (check Transactions)',
+      'Step 6: Choose your buffer — Guardrail (15%), Balanced (10%), or Green Light (5%)',
+      'Step 7: Review your Daily, Weekly, and Monthly Safe-to-Spend results',
+      'Step 8: Go to Dashboard → click Mode (shield icon) → select your preferred mode',
+    ],
+    tips: [
+      'Complete Accounts, Transactions, Recurring, and Subscriptions first for accurate numbers',
+      'Formula: Income − Bills − Subscriptions − Already Spent × (1 − Buffer%) = Safe-to-Spend',
+      'Example: $6,000 − $2,500 − $200 − $800 = $2,500 × 85% = $2,125/month',
+      'Start with Guardrail Mode (15% buffer) — it protects you while you build habits',
+      'Your dashboard number updates automatically as you add transactions',
+      'Use the calculator\'s Save & Share feature to keep a snapshot of your calculation',
     ],
   },
   {
