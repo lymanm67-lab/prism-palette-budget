@@ -45,7 +45,7 @@ serve(async (req) => {
     const highestRate = Math.max(...(debts || []).map((d: any) => d.interest_rate), 0);
     const lowestBalance = Math.min(...(debts || []).map((d: any) => d.balance), Infinity);
 
-    const systemPrompt = `You are PrismBudget's AI Debt Advisor — a friendly, expert financial coach who helps users eliminate debt faster. You analyze their actual debt portfolio and provide personalized, actionable recommendations.
+    const systemPrompt = `You are PrismMoney's AI Debt Advisor — a friendly, expert financial coach who helps users eliminate debt faster. You analyze their actual debt portfolio and provide personalized, actionable recommendations.
 
 Your personality: Encouraging but honest. Use plain language. Be specific with numbers. Celebrate wins.
 

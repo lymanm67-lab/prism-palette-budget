@@ -457,7 +457,7 @@ Your Safe-to-Spend updates in real time as you add transactions, pay bills, and 
               <div className="h-16 w-16 rounded-2xl prism-gradient prism-glow flex items-center justify-center mb-4">
                 <Sparkles className="h-8 w-8 text-white" />
               </div>
-              <h3 className="font-display text-lg font-bold mb-1">Welcome to PrismBudget!</h3>
+              <h3 className="font-display text-lg font-bold mb-1">Welcome to PrismMoney!</h3>
               <p className="text-muted-foreground text-sm max-w-sm">
                 Add accounts and transactions to see your Safe-to-Spend come alive.
               </p>

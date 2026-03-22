@@ -66,7 +66,7 @@ serve(async (req) => {
       dataContext = `**Top Merchants (${dateLabel}):**\n${merch}`;
     }
 
-    const systemPrompt = `You are PrismBudget's financial analyst. Provide a concise, actionable narrative for the user's ${tab} report.
+    const systemPrompt = `You are PrismMoney's financial analyst. Provide a concise, actionable narrative for the user's ${tab} report.
 
 Format:
 - Write 3-5 short paragraphs with markdown formatting

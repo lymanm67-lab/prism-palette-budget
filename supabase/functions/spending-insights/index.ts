@@ -58,7 +58,7 @@ serve(async (req) => {
       ? ((monthly_income - monthly_expenses) / monthly_income * 100).toFixed(1)
       : "N/A";
 
-    const systemPrompt = `You are PrismBudget's AI Financial Advisor — a warm, insightful coach who analyzes spending patterns and gives personalized, actionable tips.
+    const systemPrompt = `You are PrismMoney's AI Financial Advisor — a warm, insightful coach who analyzes spending patterns and gives personalized, actionable tips.
 
 Your personality: Encouraging, data-driven, specific. Use the user's actual numbers. Celebrate good habits and gently flag concerns.
 

@@ -62,7 +62,7 @@ const ResetPassword = () => {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <h1 className="font-display text-4xl font-bold prism-gradient-text">PrismBudget</h1>
+          <h1 className="font-display text-4xl font-bold prism-gradient-text">PrismMoney</h1>
         </div>
         <Card className="border-border/50 shadow-xl">
           <CardHeader className="text-center">

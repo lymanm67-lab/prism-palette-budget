@@ -24,9 +24,9 @@ const LandingNav = () => {
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-card/95 backdrop-blur-lg border-b border-border shadow-sm' : 'bg-transparent'}`}>
       <div className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <img src={prismLogo} alt="PrismBudget™" className="h-10 w-10 rounded-lg object-contain" />
+          <img src={prismLogo} alt="PrismMoney™" className="h-10 w-10 rounded-lg object-contain" />
           <span className={`font-display text-lg font-extrabold tracking-tight ${scrolled ? 'text-foreground' : 'text-white'}`}>
-            PrismBudget™
+            PrismMoney™
           </span>
         </div>
 

@@ -56,7 +56,7 @@ const NotFound = () => {
 
         <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground/50">
           <Zap className="h-3 w-3" />
-          PrismBudget
+          PrismMoney
         </div>
       </motion.div>
     </div>

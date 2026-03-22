@@ -1,6 +1,6 @@
 {
-  "name": "PrismBudget",
-  "short_name": "PrismBudget",
+  "name": "PrismMoney",
+  "short_name": "PrismMoney",
   "description": "Zero-based budgeting app with AI-powered insights for personal and business finance.",
   "start_url": "/",
   "display": "standalone",

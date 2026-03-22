@@ -201,14 +201,14 @@ const AppSidebar = () => {
       <div className="relative flex h-16 items-center justify-between px-4">
         {!collapsed && (
           <div className="flex items-center gap-2.5">
-            <img src={prismLogo} alt="PrismBudget" className="h-16 w-16 rounded-xl object-contain" />
+            <img src={prismLogo} alt="PrismMoney" className="h-16 w-16 rounded-xl object-contain" />
             <span className="font-display text-lg font-extrabold tracking-tight prism-gradient-text">
-              PrismBudget
+              PrismMoney
             </span>
           </div>
         )}
         {collapsed && (
-          <img src={prismLogo} alt="PrismBudget" className="mx-auto h-16 w-16 rounded-xl object-contain" />
+          <img src={prismLogo} alt="PrismMoney" className="mx-auto h-16 w-16 rounded-xl object-contain" />
         )}
         <Button
           variant="ghost"
