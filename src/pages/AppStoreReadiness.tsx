@@ -5,6 +5,7 @@ import screenshot2 from "@/assets/screenshots/app-store-2.png";
 import screenshot3 from "@/assets/screenshots/app-store-3.png";
 import screenshot4 from "@/assets/screenshots/app-store-4.png";
 import screenshot5 from "@/assets/screenshots/app-store-5.png";
+import featureGraphic from "@/assets/screenshots/app-store-hero.png";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -505,6 +506,11 @@ export default function AppStoreReadiness() {
                     </div>
                   </div>
                 ))}
+              </div>
+              {/* Feature Graphic */}
+              <div className="mt-6">
+                <h4 className="font-medium text-sm mb-2">Play Store Feature Graphic (1024×500)</h4>
+                <img src={featureGraphic} alt="Play Store Feature Graphic" className="w-full rounded-xl border" />
               </div>
               <div className="mt-4 grid grid-cols-2 gap-3">
                 <div className="p-3 rounded-lg bg-muted/30 text-center">
