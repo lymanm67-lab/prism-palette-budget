@@ -347,6 +347,8 @@ serve(async (req) => {
       .filter((t) => t.amount < 0 && t.category_id && businessCatIds.has(t.category_id))
       .reduce((s, t) => s + Math.abs(t.amount), 0);
 
+    const misclassifiedCount = misclassified.length;
+
     const summary = {
       month,
       total_transactions: totalTxns,
@@ -357,6 +359,7 @@ serve(async (req) => {
       uncategorized_count: uncategorized.length,
       duplicate_groups: duplicates.length,
       tax_gaps: taxGaps.length,
+      misclassified_count: misclassifiedCount,
       accounts_reviewed: (accounts || []).filter((a) => a.is_active).length,
       businesses_reviewed: (bizProfiles || []).length,
       finding_counts: {
@@ -378,12 +381,15 @@ Analyze this monthly reconciliation for ${month} and write a concise audit narra
 3. Specific action items for tax-readiness
 4. Any red flags for IRS compliance
 
+5. Entity misclassification (personal expenses in business categories or vice versa)
+
 Data:
 - Summary: ${JSON.stringify(summary)}
 - Findings: ${JSON.stringify(findings.map((f) => ({ type: f.type, severity: f.severity, title: f.title })))}
 - Tax gaps: ${JSON.stringify(taxGaps)}
 - Uncategorized: ${uncategorized.length} transactions
 - Duplicates: ${duplicates.length} groups
+- Entity misclassifications: ${misclassifiedCount} items
 
 Write in a professional but accessible tone. Use specific numbers. Format with markdown.`;
 
