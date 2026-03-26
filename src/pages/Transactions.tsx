@@ -125,6 +125,7 @@ const Transactions = () => {
   const editReceiptInputRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({ date: new Date().toISOString().split('T')[0], merchant: '', amount: '', account_id: '', category_id: '', notes: '', tags: '', goal_id: '', is_transfer: false });
   const [formType, setFormType] = useState<'debit' | 'credit'>('debit');
+  const [formEntityType, setFormEntityType] = useState<'personal' | 'business'>('personal');
   const [transferForm, setTransferForm] = useState({ date: new Date().toISOString().split('T')[0], amount: '', from_account: '', to_account: '', notes: '' });
   const [merchantOpen, setMerchantOpen] = useState(false);
   const [scanLoading, setScanLoading] = useState(false);
