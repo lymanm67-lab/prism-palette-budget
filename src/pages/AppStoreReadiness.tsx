@@ -179,7 +179,7 @@ const SCREENSHOT_PREVIEWS = [
   { title: "4. Smart Tools", subtitle: "Financial Calculators", description: "Safe-to-Spend, mortgage, auto, credit card, investment, and debt calculators with scenarios & pitfalls", image: screenshot4 },
   { title: "5. Health Score", subtitle: "Financial Health at a Glance", description: "Savings rate, debt ratio, emergency fund, and net worth scored out of 100 with tips to improve", image: screenshot5 },
   { title: "6. Deep Reports", subtitle: "Spending by Category", description: "Pie & bar charts, budget vs actual, cash flow trends, net worth, and top merchants — Personal or Business", image: screenshot6 },
-  { title: "7. Build Credit", subtitle: "Credit & Capital Tools", description: "Credit Overview, Metro2 Scanner, Dispute Manager, Business Credit Builder, Funding Readiness, and Banking Intelligence — all in one place", image: screenshot7 },
+  { title: "7. Build Credit", subtitle: "Credit & Capital Tools", description: "Pull free credit reports, AI-powered analysis across Equifax, Experian, and TransUnion — plus Metro2 Scanner, Dispute Manager, and Business Credit Builder", image: screenshot8 },
 ];
 
 const DEPLOY_STEPS = [
