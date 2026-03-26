@@ -5,6 +5,9 @@ import screenshot2 from "@/assets/screenshots/app-store-2.png";
 import screenshot3 from "@/assets/screenshots/app-store-3.png";
 import screenshot4 from "@/assets/screenshots/app-store-4.png";
 import screenshot5 from "@/assets/screenshots/app-store-5.png";
+import screenshot6 from "@/assets/screenshots/app-store-6.png";
+import screenshot7 from "@/assets/screenshots/app-store-7.png";
+import screenshot8 from "@/assets/screenshots/app-store-8.png";
 import featureGraphic from "@/assets/screenshots/app-store-hero.png";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -170,11 +173,14 @@ Start free — no credit card required. Upgrade as your financial journey grows.
 Questions? Visit prismmoney.app`;
 
 const SCREENSHOT_PREVIEWS = [
-  { title: "1. The Promise", subtitle: "Take Control of Your Financial Life", description: "See your total balance, credit score, bills due, and quick actions — all in 60 seconds", image: screenshot1 },
-  { title: "2. The Problem", subtitle: "Personal Money Floating Your Business?", description: "Most entrepreneurs mix personal & business funds. Prism separates them and shows the full picture", image: screenshot2 },
-  { title: "3. Find Waste", subtitle: "Stop Paying for What You Forgot", description: "Auto-detect forgotten subscriptions and cancel with one tap — users save $29/month on average", image: screenshot3 },
-  { title: "4. Reduce Bills", subtitle: "Lower Your Monthly Bills", description: "Get ready-made templates, scripts, and step-by-step tools to negotiate Internet, Phone, and Cable yourself — save $110/month", image: screenshot4 },
-  { title: "5. Grow Smarter", subtitle: "Make Smarter Financial Decisions", description: "AI-powered tax estimates find $3,280 in write-offs and reduce taxable income by 18%", image: screenshot5 },
+  { title: "1. The Promise", subtitle: "Your Financial Control Center", description: "Safe-to-Spend, Guardrail Mode, daily/weekly/monthly breakdowns — know exactly what you can spend", image: screenshot1 },
+  { title: "2. Getting Started", subtitle: "Guided Onboarding & Setup", description: "82% complete in minutes — step-by-step guide to connect accounts, set budgets, and monitor cash flow", image: screenshot2 },
+  { title: "3. Find Waste", subtitle: "Track Every Subscription", description: "9 active subscriptions costing $169/mo — see yearly totals, spot duplicates, and cancel what you forgot", image: screenshot3 },
+  { title: "4. Smart Tools", subtitle: "Financial Calculators", description: "Safe-to-Spend, mortgage, auto, credit card, investment, and debt calculators with scenarios & pitfalls", image: screenshot4 },
+  { title: "5. Health Score", subtitle: "Financial Health at a Glance", description: "Savings rate, debt ratio, emergency fund, and net worth scored out of 100 with tips to improve", image: screenshot5 },
+  { title: "6. Deep Reports", subtitle: "Spending by Category", description: "Pie & bar charts, budget vs actual, cash flow trends, net worth, and top merchants — Personal or Business", image: screenshot6 },
+  { title: "7. Build Credit", subtitle: "Credit Builder & Business Credit", description: "Metro2 Scanner, Dispute Manager, Funding Readiness, Business Credit Builder, and Banking Intelligence", image: screenshot7 },
+  { title: "8. Credit Reports", subtitle: "Pull & Analyze Free Credit Reports", description: "Import from AnnualCreditReport.com — AI extracts all accounts from Equifax, Experian, and TransUnion", image: screenshot8 },
 ];
 
 const DEPLOY_STEPS = [
