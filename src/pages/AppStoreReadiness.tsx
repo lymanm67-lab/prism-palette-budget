@@ -491,17 +491,17 @@ export default function AppStoreReadiness() {
         <TabsContent value="screenshots">
           <Card className="border-border/50">
             <CardHeader>
-              <CardTitle className="text-base">Screenshot Previews</CardTitle>
-              <CardDescription>6 screenshots required for each device size — all complete</CardDescription>
+              <CardTitle className="text-base">Screenshot Story Arc</CardTitle>
+              <CardDescription>5 screenshots that guide users from problem → solution → results</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {SCREENSHOT_PREVIEWS.map((ss, idx) => (
                   <div key={idx} className="rounded-xl border overflow-hidden bg-muted/20 flex flex-col">
-                    <img src={ss.image} alt={ss.title} className="w-full object-cover" />
+                    <img src={ss.image} alt={ss.subtitle} className="w-full object-cover" />
                     <div className="p-3">
-                      <Badge variant="outline" className="text-[10px] mb-1">Screen {idx + 1}</Badge>
-                      <h4 className="font-bold text-sm">{ss.title}</h4>
+                      <Badge variant="outline" className="text-[10px] mb-1.5">{ss.title}</Badge>
+                      <h4 className="font-bold text-sm">{ss.subtitle}</h4>
                       <p className="text-[11px] text-muted-foreground mt-0.5">{ss.description}</p>
                     </div>
                   </div>
