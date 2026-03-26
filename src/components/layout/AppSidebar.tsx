@@ -54,6 +54,7 @@ const NAV_SECTIONS: NavSection[] = [
       { to: '/forecast', icon: LineChart, label: 'Forecast', color: 'text-prism-sky' },
       { to: '/spending-trends', icon: TrendingUp, label: 'Spending Trends', color: 'text-prism-lime' },
       { to: '/bill-negotiation', icon: Scissors, label: 'Bill Negotiation', color: 'text-prism-rose' },
+      { to: '/reconciliation', icon: FileSearch, label: 'Reconciliation', color: 'text-prism-teal' },
     ],
   },
   {
@@ -62,7 +63,6 @@ const NAV_SECTIONS: NavSection[] = [
       { to: '/debt-payoff', icon: TrendingDown, label: 'Debt Payoff', color: 'text-prism-rose' },
       { to: '/calculators', icon: Calculator, label: 'Calculators', color: 'text-prism-indigo' },
       { to: '/tax-assistant', icon: Bot, label: 'Tax Assistant', color: 'text-prism-indigo' },
-      { to: '/reconciliation', icon: FileSearch, label: 'Reconciliation', color: 'text-prism-teal' },
     ],
   },
   {
