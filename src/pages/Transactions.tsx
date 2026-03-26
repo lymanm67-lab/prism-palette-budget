@@ -1303,6 +1303,21 @@ const Transactions = () => {
           <Button size="sm" variant="outline" onClick={() => { const allIds = new Set(filtered.map(t => t.id)); setSelected(allIds); }} className="gap-1 h-8 text-xs">
             <Check className="h-3 w-3" /> Select all ({filtered.length})
           </Button>
+          {viewFilter !== 'trash' && (
+            <div className="flex items-center gap-2 rounded-md border border-border/60 bg-background/60 px-2 py-1">
+              <span className="text-xs text-muted-foreground">Rename merchant</span>
+              <Input
+                placeholder="e.g. Lovable"
+                value={bulkMerchant}
+                onChange={(e) => setBulkMerchant(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') bulkRenameMerchant(); }}
+                className="h-8 w-[170px] text-xs"
+              />
+              <Button size="sm" variant="outline" onClick={bulkRenameMerchant} disabled={!bulkMerchant.trim()} className="gap-1 h-8">
+                <Pencil className="h-3.5 w-3.5" /> Rename
+              </Button>
+            </div>
+          )}
           {viewFilter === 'trash' ? (
             <>
               <Button size="sm" variant="outline" className="gap-1 h-8" onClick={async () => {
