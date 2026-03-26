@@ -55,7 +55,7 @@ const REQUIREMENTS: AppStoreRequirement[] = [
   { id: "r26", category: "Native Features", requirement: "Secure encrypted storage", status: "complete", platform: "both", notes: "Capacitor Preferences + Keychain/Keystore for financial data" },
   { id: "r27", category: "Native Features", requirement: "Background sync", status: "complete", platform: "both", notes: "Queued transactions sync automatically when online" },
   // Store Listing
-  { id: "r28", category: "Store Listing", requirement: "App title and subtitle", status: "complete", platform: "both", notes: "PrismMoney™ — Personal Finance & Budgeting" },
+  { id: "r28", category: "Store Listing", requirement: "App title and subtitle", status: "complete", platform: "both", notes: "PrismMoney™ — Personal & Business Finance" },
   { id: "r29", category: "Store Listing", requirement: "Full description (4000 chars)", status: "complete", platform: "both", notes: "See Store Listing tab for full copy" },
   { id: "r30", category: "Store Listing", requirement: "Keywords / tags", status: "complete", platform: "both", notes: "30 optimized keywords — see Store Listing tab" },
   { id: "r31", category: "Store Listing", requirement: "Category: Finance / Business", status: "complete", platform: "both", notes: "Primary: Finance — Secondary: Business" },
