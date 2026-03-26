@@ -21,7 +21,6 @@ import {
 const STEPS = [
   { id: 'welcome' },
   { id: 'journey' },
-  { id: 'features' },
   { id: 'plan' },
 ] as const;
 
@@ -106,7 +105,6 @@ const Onboarding = () => {
 
   const canGoNext =
     stepId === 'welcome' ||
-    stepId === 'features' ||
     stepId === 'plan' ||
     (stepId === 'journey' && selectedJourney !== null);
 
@@ -265,39 +263,6 @@ const Onboarding = () => {
               </div>
             )}
 
-            {/* ——— Features ——— */}
-            {stepId === 'features' && (
-              <div className="space-y-8">
-                <div className="text-center">
-                  <h2 className="font-display text-3xl sm:text-4xl font-bold text-white">
-                    Everything you need to{' '}
-                    <span className="prism-gradient-text">succeed</span>
-                  </h2>
-                </div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {FEATURES.map((feat, i) => {
-                    const Icon = feat.icon;
-                    return (
-                      <motion.div
-                        key={i}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.07 }}
-                        className="rounded-2xl border border-white/10 bg-white/5 p-5 hover:bg-white/8 transition-colors"
-                      >
-                        <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[hsl(var(--prism-teal))] to-[hsl(var(--prism-sky))]">
-                          <Icon className="h-5 w-5 text-white" />
-                        </div>
-                        <h3 className="font-display font-semibold text-white">
-                          {feat.title}
-                        </h3>
-                        <p className="mt-1 text-sm text-white/40">{feat.desc}</p>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
 
             {/* ——— Plan ——— */}
             {stepId === 'plan' && (
