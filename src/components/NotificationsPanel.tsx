@@ -30,6 +30,7 @@ const severityIcon: Record<string, any> = {
   warning: AlertTriangle,
   info: TrendingUp,
   success: Target,
+  critical: AlertTriangle,
   default: Bell,
 };
 
@@ -37,7 +38,16 @@ const severityColor: Record<string, string> = {
   warning: 'text-amber-500',
   info: 'text-blue-500',
   success: 'text-emerald-500',
+  critical: 'text-destructive',
   default: 'text-muted-foreground',
+};
+
+const severityPriority: Record<string, number> = {
+  critical: 0,
+  warning: 1,
+  info: 2,
+  success: 3,
+  default: 4,
 };
 
 export default function NotificationsPanel() {
@@ -57,7 +67,10 @@ export default function NotificationsPanel() {
         .order('created_at', { ascending: false })
         .limit(50);
       
-      setInsights((data as Insight[]) || []);
+      setInsights(((data as Insight[]) || []).sort((a, b) => {
+        if (a.is_read !== b.is_read) return a.is_read ? 1 : -1;
+        return (severityPriority[a.severity] ?? 4) - (severityPriority[b.severity] ?? 4);
+      }));
       setLoading(false);
     };
     
