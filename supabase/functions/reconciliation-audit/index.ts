@@ -255,6 +255,87 @@ serve(async (req) => {
       });
     }
 
+    // 5. Entity misclassification detection
+    const PERSONAL_KEYWORDS = [
+      "grocery", "groceries", "restaurant", "dining", "entertainment", "clothing",
+      "apparel", "personal care", "gym", "fitness", "streaming", "subscription",
+      "pet", "childcare", "daycare", "hair", "salon", "spa", "movie", "gaming",
+      "alcohol", "liquor", "bar", "coffee shop", "fast food", "takeout",
+    ];
+    const BUSINESS_KEYWORDS = [
+      "office supply", "office supplies", "software", "saas", "advertising",
+      "marketing", "consulting", "professional service", "legal", "accounting",
+      "payroll", "shipping", "freight", "wholesale", "inventory", "web hosting",
+      "domain", "business insurance", "license", "permit", "contractor",
+      "subcontractor", "equipment", "printing", "postage",
+    ];
+
+    const misclassified: any[] = [];
+
+    for (const t of txns) {
+      if (!t.category_id || t.is_transfer) continue;
+      const cat = catMap.get(t.category_id);
+      if (!cat) continue;
+      const group = groupMap.get(cat.group_id);
+      if (!group) continue;
+
+      const merchantLower = (t.merchant || t.normalized_merchant || "").toLowerCase();
+      const catNameLower = cat.name.toLowerCase();
+      const searchText = `${merchantLower} ${catNameLower}`;
+
+      if (group.budget_type === "business") {
+        // Check if this looks like a personal expense in a business category
+        const matchedKeyword = PERSONAL_KEYWORDS.find((kw) => searchText.includes(kw));
+        if (matchedKeyword) {
+          const bizName = group.business_profile_id
+            ? bizMap.get(group.business_profile_id)?.business_name || "Unknown Business"
+            : "Business";
+          misclassified.push({
+            direction: "personal_in_business",
+            transaction_id: t.id,
+            date: t.date,
+            amount: t.amount,
+            merchant: t.merchant || t.normalized_merchant || "Unknown",
+            current_category: cat.name,
+            current_entity: bizName,
+            matched_keyword: matchedKeyword,
+            suggestion: "This appears to be a personal expense categorized under a business entity",
+          });
+        }
+      } else if (group.budget_type === "personal") {
+        // Check if this looks like a business expense in a personal category
+        const matchedKeyword = BUSINESS_KEYWORDS.find((kw) => searchText.includes(kw));
+        if (matchedKeyword) {
+          misclassified.push({
+            direction: "business_in_personal",
+            transaction_id: t.id,
+            date: t.date,
+            amount: t.amount,
+            merchant: t.merchant || t.normalized_merchant || "Unknown",
+            current_category: cat.name,
+            current_entity: "Personal",
+            matched_keyword: matchedKeyword,
+            suggestion: "This appears to be a business expense categorized under Personal",
+          });
+        }
+      }
+    }
+
+    if (misclassified.length > 0) {
+      const personalInBiz = misclassified.filter((m) => m.direction === "personal_in_business");
+      const bizInPersonal = misclassified.filter((m) => m.direction === "business_in_personal");
+      findings.push({
+        type: "entity_misclassification",
+        severity: "error",
+        title: `${misclassified.length} potential entity misclassification${misclassified.length > 1 ? "s" : ""} found`,
+        subtitle: [
+          personalInBiz.length > 0 ? `${personalInBiz.length} personal expense(s) in business categories` : null,
+          bizInPersonal.length > 0 ? `${bizInPersonal.length} business expense(s) in personal categories` : null,
+        ].filter(Boolean).join(" · "),
+        details: misclassified.slice(0, 30),
+      });
+    }
+
     // ========== SUMMARY STATS ==========
     const totalTxns = txns.length;
     const totalIncome = txns.filter((t) => t.amount > 0 && !t.is_transfer).reduce((s, t) => s + t.amount, 0);
@@ -266,6 +347,8 @@ serve(async (req) => {
       .filter((t) => t.amount < 0 && t.category_id && businessCatIds.has(t.category_id))
       .reduce((s, t) => s + Math.abs(t.amount), 0);
 
+    const misclassifiedCount = misclassified.length;
+
     const summary = {
       month,
       total_transactions: totalTxns,
@@ -276,6 +359,7 @@ serve(async (req) => {
       uncategorized_count: uncategorized.length,
       duplicate_groups: duplicates.length,
       tax_gaps: taxGaps.length,
+      misclassified_count: misclassifiedCount,
       accounts_reviewed: (accounts || []).filter((a) => a.is_active).length,
       businesses_reviewed: (bizProfiles || []).length,
       finding_counts: {
@@ -297,12 +381,15 @@ Analyze this monthly reconciliation for ${month} and write a concise audit narra
 3. Specific action items for tax-readiness
 4. Any red flags for IRS compliance
 
+5. Entity misclassification (personal expenses in business categories or vice versa)
+
 Data:
 - Summary: ${JSON.stringify(summary)}
 - Findings: ${JSON.stringify(findings.map((f) => ({ type: f.type, severity: f.severity, title: f.title })))}
 - Tax gaps: ${JSON.stringify(taxGaps)}
 - Uncategorized: ${uncategorized.length} transactions
 - Duplicates: ${duplicates.length} groups
+- Entity misclassifications: ${misclassifiedCount} items
 
 Write in a professional but accessible tone. Use specific numbers. Format with markdown.`;
 

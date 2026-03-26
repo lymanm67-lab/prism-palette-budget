@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Sparkles, ShieldCheck, FileSearch, Copy, Scale, Receipt } from 'lucide-react';
+import { ArrowRight, Sparkles, ShieldCheck, FileSearch, Copy, Scale, Receipt, Shuffle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import LandingNav from '@/components/landing/LandingNav';
 import LandingFooter from '@/components/landing/LandingFooter';
@@ -20,6 +20,7 @@ const ENTRIES = [
       { icon: Copy, text: 'Duplicate transaction detection — catches double-entries across accounts by matching date, amount, and merchant' },
       { icon: Scale, text: 'Balance reconciliation — verifies account balances match your actual transaction totals' },
       { icon: Receipt, text: 'Tax-readiness audit — identifies missing deductions, uncategorized business expenses, and Schedule C gaps' },
+      { icon: Shuffle, text: 'Entity misclassification detection — flags personal expenses in business categories and business expenses in personal categories' },
       { icon: ShieldCheck, text: 'AI narrative summary — plain-English audit report you can share with your accountant' },
       { icon: Sparkles, text: 'Downloadable PDF export — one-click audit report for your records' },
     ],
