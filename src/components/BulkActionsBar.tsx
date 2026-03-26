@@ -5,9 +5,10 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Input } from '@/components/ui/input';
 import { 
   Tags, Trash2, FolderInput, Download, X, Check, 
-  CheckCircle2, Loader2, Tag 
+  CheckCircle2, Loader2, Tag, PenLine 
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
@@ -61,6 +62,8 @@ export default function BulkActionsBar({
   const [accountOpen, setAccountOpen] = useState(false);
   const [tagOpen, setTagOpen] = useState(false);
   const [tagSearch, setTagSearch] = useState('');
+  const [merchantOpen, setMerchantOpen] = useState(false);
+  const [newMerchant, setNewMerchant] = useState('');
 
   const selectedCount = selected.size;
   const selectedTransactions = transactions.filter(t => selected.has(t.id));
@@ -128,6 +131,26 @@ export default function BulkActionsBar({
     }
   };
 
+  const handleBulkRenameMerchant = async () => {
+    const trimmed = newMerchant.trim();
+    if (!trimmed) return;
+    setLoading(true);
+    try {
+      const ids = Array.from(selected);
+      for (const id of ids) {
+        await supabase.from('transactions').update({ merchant: trimmed }).eq('id', id);
+      }
+      qc.invalidateQueries({ queryKey: ['transactions'] });
+      toast.success(`Renamed merchant to "${trimmed}" for ${selectedCount} transactions`);
+      onClearSelection();
+    } catch (e: any) {
+      toast.error('Failed to rename merchant');
+    } finally {
+      setLoading(false);
+      setMerchantOpen(false);
+      setNewMerchant('');
+    }
+  };
   const handleBulkDelete = async () => {
     setLoading(true);
     try {
@@ -219,6 +242,31 @@ export default function BulkActionsBar({
                   </CommandGroup>
                 </CommandList>
               </Command>
+            </PopoverContent>
+          </Popover>
+
+          {/* Rename Merchant */}
+          <Popover open={merchantOpen} onOpenChange={(open) => { setMerchantOpen(open); if (!open) setNewMerchant(''); }}>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="sm" className="gap-1.5" disabled={loading}>
+                <PenLine className="h-4 w-4" />
+                <span className="hidden sm:inline">Rename</span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[240px] p-3" align="center">
+              <p className="text-xs text-muted-foreground mb-2">Set merchant name for all selected</p>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="New merchant name..."
+                  value={newMerchant}
+                  onChange={(e) => setNewMerchant(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleBulkRenameMerchant(); }}
+                  className="h-8 text-sm"
+                />
+                <Button size="sm" className="h-8 px-2" onClick={handleBulkRenameMerchant} disabled={loading || !newMerchant.trim()}>
+                  <Check className="h-4 w-4" />
+                </Button>
+              </div>
             </PopoverContent>
           </Popover>
 
