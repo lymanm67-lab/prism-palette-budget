@@ -110,6 +110,7 @@ const Transactions = () => {
   const [editMultiple, setEditMultiple] = useState(false);
   const [bulkCategory, setBulkCategory] = useState('');
   const [bulkAccount, setBulkAccount] = useState('');
+  const [bulkMerchant, setBulkMerchant] = useState('');
   const [sortKey, setSortKey] = useState<SortKey>('date');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [autoCatLoading, setAutoCatLoading] = useState(false);
@@ -496,6 +497,16 @@ const Transactions = () => {
     setSelected(new Set());
     setBulkCategory('');
     toast.success(`Categorized ${selected.size} transactions`);
+  };
+
+  const bulkRenameMerchant = async () => {
+    const trimmed = bulkMerchant.trim();
+    if (!trimmed) return;
+    for (const id of selected) { await supabase.from('transactions').update({ merchant: trimmed }).eq('id', id); }
+    qc.invalidateQueries({ queryKey: ['transactions'] });
+    setSelected(new Set());
+    setBulkMerchant('');
+    toast.success(`Renamed ${selected.size} transactions to "${trimmed}"`);
   };
 
   const bulkChangeAccount = async () => {
@@ -1342,6 +1353,18 @@ const Transactions = () => {
                 </Select>
                 <Button size="sm" variant="outline" onClick={bulkChangeAccount} disabled={!bulkAccount} className="gap-1 h-8">
                   <Landmark className="h-3.5 w-3.5" /> Move
+                </Button>
+              </div>
+              <div className="flex items-center gap-2">
+                <Input
+                  placeholder="Rename merchant…"
+                  value={bulkMerchant}
+                  onChange={(e) => setBulkMerchant(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') bulkRenameMerchant(); }}
+                  className="h-8 w-[160px] text-xs"
+                />
+                <Button size="sm" variant="outline" onClick={bulkRenameMerchant} disabled={!bulkMerchant.trim()} className="gap-1 h-8">
+                  <Pencil className="h-3.5 w-3.5" /> Rename
                 </Button>
               </div>
               <Button size="sm" variant="outline" onClick={bulkMarkTransfer} className="gap-1 h-8">
