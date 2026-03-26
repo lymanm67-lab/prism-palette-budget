@@ -43,26 +43,26 @@ const NAV_SECTIONS: NavSection[] = [
       { to: '/transactions', icon: ArrowLeftRight, label: 'Transactions', color: 'text-prism-orange' },
       { to: '/categories', icon: Tags, label: 'Categories', color: 'text-prism-lime' },
       { to: '/recurring', icon: RepeatIcon, label: 'Recurring', color: 'text-prism-teal' },
-      { to: '/subscriptions', icon: CreditCard, label: 'Subscriptions', color: 'text-prism-violet' },
     ],
   },
   {
-    label: 'Budget & Control',
+    label: 'Budget & Plan',
     items: [
       { to: '/budgets', icon: PiggyBank, label: 'Budgets', color: 'text-prism-amber' },
       { to: '/cash-flow', icon: Wallet, label: 'Cash Flow', color: 'text-prism-teal' },
       { to: '/forecast', icon: LineChart, label: 'Forecast', color: 'text-prism-sky' },
       { to: '/spending-trends', icon: TrendingUp, label: 'Spending Trends', color: 'text-prism-lime' },
-      { to: '/bill-negotiation', icon: Scissors, label: 'Bill Negotiation', color: 'text-prism-rose' },
+      { to: '/tax-assistant', icon: Bot, label: 'Tax Assistant', color: 'text-prism-indigo' },
       { to: '/reconciliation', icon: FileSearch, label: 'Reconciliation', color: 'text-prism-teal' },
     ],
   },
   {
-    label: 'Eliminate Debt',
+    label: 'Save & Reduce',
     items: [
+      { to: '/subscriptions', icon: CreditCard, label: 'Subscriptions', color: 'text-prism-violet' },
+      { to: '/bill-negotiation', icon: Scissors, label: 'Bill Negotiation', color: 'text-prism-rose' },
       { to: '/debt-payoff', icon: TrendingDown, label: 'Debt Payoff', color: 'text-prism-rose' },
       { to: '/calculators', icon: Calculator, label: 'Calculators', color: 'text-prism-indigo' },
-      { to: '/tax-assistant', icon: Bot, label: 'Tax Assistant', color: 'text-prism-indigo' },
     ],
   },
   {
