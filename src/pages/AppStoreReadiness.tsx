@@ -170,11 +170,11 @@ Start free — no credit card required. Upgrade as your financial journey grows.
 Questions? Visit prismmoney.app`;
 
 const SCREENSHOT_PREVIEWS = [
-  { title: "Take Control", description: "Dashboard overview with total balance, insights, credit score, and quick actions", image: screenshot1 },
-  { title: "Personal & Business", description: "See personal and business finances together — finally the full picture in one place", image: screenshot2 },
-  { title: "Subscriptions", description: "Find and cancel subscriptions you forgot about — save $29/month automatically", image: screenshot3 },
-  { title: "Bill Negotiation", description: "Lower your monthly bills — we help negotiate Internet, Phone, Cable and save $110/mo", image: screenshot4 },
-  { title: "Business Insights", description: "Advanced tax estimates, key write-offs, and smart tax strategy to keep more of what you earn", image: screenshot5 },
+  { title: "1. The Promise", subtitle: "Take Control of Your Financial Life", description: "See your total balance, credit score, bills due, and quick actions — all in 60 seconds", image: screenshot1 },
+  { title: "2. The Problem", subtitle: "Personal Money Floating Your Business?", description: "Most entrepreneurs mix personal & business funds. Prism separates them and shows the full picture", image: screenshot2 },
+  { title: "3. Find Waste", subtitle: "Stop Paying for What You Forgot", description: "Auto-detect forgotten subscriptions and cancel with one tap — users save $29/month on average", image: screenshot3 },
+  { title: "4. Reduce Bills", subtitle: "Lower Your Monthly Bills", description: "We negotiate Internet, Phone, and Cable for you — save $110/month without lifting a finger", image: screenshot4 },
+  { title: "5. Grow Smarter", subtitle: "Make Smarter Financial Decisions", description: "AI-powered tax estimates find $3,280 in write-offs and reduce taxable income by 18%", image: screenshot5 },
 ];
 
 const DEPLOY_STEPS = [
