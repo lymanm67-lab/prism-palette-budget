@@ -498,7 +498,7 @@ export default function AppStoreReadiness() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {SCREENSHOT_PREVIEWS.map((ss, idx) => (
                   <div key={idx} className="rounded-xl border overflow-hidden bg-muted/20 flex flex-col">
-                    <img src={ss.image} alt={ss.subtitle} className="w-full object-cover" />
+                    <img src={ss.image} alt={ss.subtitle} className="w-full h-auto object-contain" />
                     <div className="p-3">
                       <Badge variant="outline" className="text-[10px] mb-1.5">{ss.title}</Badge>
                       <h4 className="font-bold text-sm">{ss.subtitle}</h4>
