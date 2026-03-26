@@ -8,6 +8,7 @@ const ROWS = [
   'Cash flow forecasting',
   'Credit & bill support workflows',
   'Tax organization',
+  'AI audit & reconciliation',
   'Personal & business management',
   'All-in-one visibility',
 ];
@@ -17,6 +18,7 @@ const COLS = ['Basic Budget App', 'Subscription Tracker', 'Business Expense Tool
 const DATA: number[][] = [
   [1, 0, 0, 1],
   [0, 1, 0, 1],
+  [0, 0, 0, 1],
   [0, 0, 0, 1],
   [0, 0, 0, 1],
   [0, 0, 0, 1],

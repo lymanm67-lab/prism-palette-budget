@@ -36,6 +36,7 @@ const LandingNav = () => {
           <button onClick={() => scrollTo('features')} className="hover:text-accent transition-colors">Features</button>
           <button onClick={() => scrollTo('pricing')} className="hover:text-accent transition-colors">Pricing</button>
           <button onClick={() => scrollTo('faq')} className="hover:text-accent transition-colors">FAQ</button>
+          <button onClick={() => navigate('/changelog')} className="hover:text-accent transition-colors">What's New</button>
         </div>
 
         <div className="hidden md:flex items-center gap-3">
@@ -64,6 +65,7 @@ const LandingNav = () => {
           <button onClick={() => scrollTo('features')} className="block w-full text-left text-sm font-medium text-foreground py-2">Features</button>
           <button onClick={() => scrollTo('pricing')} className="block w-full text-left text-sm font-medium text-foreground py-2">Pricing</button>
           <button onClick={() => scrollTo('faq')} className="block w-full text-left text-sm font-medium text-foreground py-2">FAQ</button>
+          <button onClick={() => { setMobileOpen(false); navigate('/changelog'); }} className="block w-full text-left text-sm font-medium text-foreground py-2">What's New</button>
           <div className="flex gap-2 pt-2">
             <Button variant="outline" onClick={() => { setMobileOpen(false); navigate('/auth'); }} className="flex-1">Sign In</Button>
             <Button onClick={() => { setMobileOpen(false); navigate('/onboarding'); }} className="flex-1 prism-gradient-teal text-primary-foreground">Start Free Trial</Button>

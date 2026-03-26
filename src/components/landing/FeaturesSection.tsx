@@ -23,7 +23,7 @@ const GROUPS = [
       { icon: TrendingUp, name: 'Cash flow forecasting' },
       { icon: LineChart, name: 'Net worth tracking' },
       { icon: CreditCard, name: 'Credit guidance & bill negotiation' },
-      { icon: FileText, name: 'Tax prep organization' },
+      { icon: FileText, name: 'Tax prep & AI monthly reconciliation' },
     ],
   },
   {

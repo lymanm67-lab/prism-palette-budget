@@ -7,7 +7,7 @@ const BENEFITS = [
   { icon: Lightbulb, title: 'Better decisions, not just more data', desc: 'Cut waste, prepare for expenses, and plan with confidence.' },
   { icon: Briefcase, title: 'Personal & business in one ecosystem', desc: 'Stop juggling disconnected tools for your money.' },
   { icon: ShieldCheck, title: 'Less stress around bills & taxes', desc: 'Stay organized year-round so nothing sneaks up on you.' },
-  { icon: BadgeDollarSign, title: 'Recovers its cost within 30 days', desc: 'By catching hidden subscriptions, avoiding missed expenses, and improving financial decisions.' },
+  { icon: BadgeDollarSign, title: 'AI monthly audit & reconciliation', desc: 'Automatically catches duplicates, missing categories, balance errors, and tax-readiness gaps every month.' },
 ];
 
 const BenefitsSection = () => (
