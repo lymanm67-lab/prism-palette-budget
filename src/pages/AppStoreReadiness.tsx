@@ -38,7 +38,7 @@ const REQUIREMENTS: AppStoreRequirement[] = [
   // Assets
   { id: "r7", category: "Assets", requirement: "App icon (1024x1024)", status: "complete", platform: "both", notes: "PrismMoney logo with gradient branding" },
   { id: "r8", category: "Assets", requirement: "Splash screen images (all sizes)", status: "complete", platform: "both", notes: "Light & dark variants for all device sizes" },
-  { id: "r9", category: "Assets", requirement: "App Store screenshots — iPhone 6.7\"", status: "complete", platform: "ios", notes: "6 screenshots: Dashboard, Budgets, Cash Flow, Investments, Debt Payoff, Goals" },
+  { id: "r9", category: "Assets", requirement: "App Store screenshots — iPhone 6.7\"", status: "complete", platform: "ios", notes: "5 screenshots: Dashboard, Personal & Business, Subscriptions, Bills, Tax Insights" },
   { id: "r10", category: "Assets", requirement: "App Store screenshots — iPhone 6.5\"", status: "complete", platform: "ios", notes: "Same 6 views, resized for 6.5\" display" },
   { id: "r11", category: "Assets", requirement: "App Store screenshots — iPad 12.9\"", status: "complete", platform: "ios", notes: "Tablet-optimized layout screenshots" },
   { id: "r12", category: "Assets", requirement: "Play Store screenshots (phone)", status: "complete", platform: "android", notes: "8 screenshots covering all key features" },
