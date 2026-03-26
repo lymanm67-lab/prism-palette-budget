@@ -287,9 +287,19 @@ Your Safe-to-Spend updates in real time as you add transactions, pay bills, and 
         />
       </motion.div>
 
+      {/* ========== STS Equation View ========== */}
+      <motion.div variants={item}>
+        <StsEquationView />
+      </motion.div>
+
       {/* ========== 90-Day Progress Tracker ========== */}
       <motion.div variants={item}>
         <ProgressTracker />
+      </motion.div>
+
+      {/* ========== Savings Impact Counter ========== */}
+      <motion.div variants={item}>
+        <SavingsImpactCounter />
       </motion.div>
 
       {/* Spending Anomaly Alert */}
