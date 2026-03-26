@@ -369,6 +369,11 @@ Your Safe-to-Spend updates in real time as you add transactions, pay bills, and 
         </div>
       )}
 
+      {/* 30-Day Cash Forecast */}
+      <motion.div variants={item}>
+        <CashFlowForecastChart />
+      </motion.div>
+
       {/* Financial Health Score */}
       <motion.div variants={item}>
         <FinancialHealthScore monthlyIncome={monthlyIncome} monthlyExpenses={monthlyExpenses} totalAssets={totalAssets} totalLiabilities={totalLiabilities} />
