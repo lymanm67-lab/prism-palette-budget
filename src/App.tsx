@@ -62,6 +62,7 @@ import MoneyMath from "@/pages/capital/MoneyMath";
 import ExperimentsDashboard from "@/pages/ExperimentsDashboard";
 import ReconciliationAudit from "@/pages/ReconciliationAudit";
 import Changelog from "@/pages/Changelog";
+import AppStoreReadiness from "@/pages/AppStoreReadiness";
 const queryClient = new QueryClient();
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -163,6 +164,7 @@ const App = () => (
               <Route path="/capital/money-math" element={<MoneyMath />} />
               <Route path="/reconciliation" element={<ReconciliationAudit />} />
               <Route path="/experiments" element={<ExperimentsDashboard />} />
+              <Route path="/app-store-readiness" element={<AppStoreReadiness />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
