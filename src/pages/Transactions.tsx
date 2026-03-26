@@ -110,6 +110,7 @@ const Transactions = () => {
   const [editMultiple, setEditMultiple] = useState(false);
   const [bulkCategory, setBulkCategory] = useState('');
   const [bulkAccount, setBulkAccount] = useState('');
+  const [bulkMerchant, setBulkMerchant] = useState('');
   const [sortKey, setSortKey] = useState<SortKey>('date');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [autoCatLoading, setAutoCatLoading] = useState(false);
