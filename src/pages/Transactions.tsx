@@ -115,6 +115,7 @@ const Transactions = () => {
   const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [autoCatLoading, setAutoCatLoading] = useState(false);
   const [editTxn, setEditTxn] = useState<any>(null);
+  const [editEntityType, setEditEntityType] = useState<'personal' | 'business'>('personal');
   const [editForm, setEditForm] = useState({ merchant: '', amount: '', date: '', account_id: '', category_id: '', notes: '', tags: '', goal_id: '', is_transfer: false, transfer_linked_account: '' });
   const [aiSuggestion, setAiSuggestion] = useState<{ id: string; name: string; color: string } | null>(null);
   const [aiSuggestionLoading, setAiSuggestionLoading] = useState(false);
@@ -558,6 +559,9 @@ const Transactions = () => {
     const isCredit = txn.amount > 0;
     setEditType(isCredit ? 'credit' : 'debit');
     setEditReceiptUrl(txn.receipt_url || null);
+    // Determine entity type from category
+    const catEntityType = txn.category_id && businessCatIds.has(txn.category_id) ? 'business' : 'personal';
+    setEditEntityType(catEntityType);
     setAiSuggestion(null);
     // Find linked transfer account
     let linkedAccount = '';
@@ -1920,6 +1924,31 @@ const Transactions = () => {
                 <span className="h-2 w-2 rounded-full bg-current opacity-60" /> CREDIT
               </button>
             </div>
+
+            {/* Personal / Business Toggle */}
+            <div className="flex rounded-lg border overflow-hidden">
+              <button
+                type="button"
+                onClick={() => { setEditEntityType('personal'); setEditForm(f => ({ ...f, category_id: '' })); }}
+                className={cn(
+                  'flex-1 py-2.5 text-sm font-medium flex items-center justify-center gap-2 transition-colors',
+                  editEntityType === 'personal' ? 'bg-primary text-primary-foreground' : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+                )}
+              >
+                👤 Personal
+              </button>
+              <button
+                type="button"
+                onClick={() => { setEditEntityType('business'); setEditForm(f => ({ ...f, category_id: '' })); }}
+                className={cn(
+                  'flex-1 py-2.5 text-sm font-medium flex items-center justify-center gap-2 transition-colors',
+                  editEntityType === 'business' ? 'bg-primary text-primary-foreground' : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+                )}
+              >
+                💼 Business
+              </button>
+            </div>
+
             <div className="space-y-2">
               <Label>Amount</Label>
               <Input type="number" step="0.01" min="0" value={editForm.amount} onChange={e => setEditForm(f => ({ ...f, amount: e.target.value }))} placeholder="$0.00" />
@@ -1966,7 +1995,7 @@ const Transactions = () => {
             {!editForm.is_transfer && (
             <div className="space-y-2">
               <Label>Category</Label>
-              <CategoryCombobox value={editForm.category_id} onValueChange={v => { setEditForm(f => ({ ...f, category_id: v })); setAiSuggestion(null); }} />
+              <CategoryCombobox value={editForm.category_id} onValueChange={v => { setEditForm(f => ({ ...f, category_id: v })); setAiSuggestion(null); }} budgetTypeFilter={editEntityType} />
               {/* AI Suggestion */}
               {aiSuggestionLoading && (
                 <div className="flex items-center gap-2 text-xs text-muted-foreground py-1">
