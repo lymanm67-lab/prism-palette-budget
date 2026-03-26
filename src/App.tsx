@@ -60,6 +60,7 @@ import LoanReadiness from "@/pages/capital/LoanReadiness";
 import DSCRCalculator from "@/pages/capital/DSCRCalculator";
 import MoneyMath from "@/pages/capital/MoneyMath";
 import ExperimentsDashboard from "@/pages/ExperimentsDashboard";
+import ReconciliationAudit from "@/pages/ReconciliationAudit";
 const queryClient = new QueryClient();
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -158,6 +159,7 @@ const App = () => (
               <Route path="/capital/loan-readiness" element={<LoanReadiness />} />
               <Route path="/capital/dscr" element={<DSCRCalculator />} />
               <Route path="/capital/money-math" element={<MoneyMath />} />
+              <Route path="/reconciliation" element={<ReconciliationAudit />} />
               <Route path="/experiments" element={<ExperimentsDashboard />} />
             </Route>
             <Route path="*" element={<NotFound />} />

@@ -62,6 +62,7 @@ const NAV_SECTIONS: NavSection[] = [
       { to: '/debt-payoff', icon: TrendingDown, label: 'Debt Payoff', color: 'text-prism-rose' },
       { to: '/calculators', icon: Calculator, label: 'Calculators', color: 'text-prism-indigo' },
       { to: '/tax-assistant', icon: Bot, label: 'Tax Assistant', color: 'text-prism-indigo' },
+      { to: '/reconciliation', icon: FileSearch, label: 'Reconciliation', color: 'text-prism-teal' },
     ],
   },
   {
