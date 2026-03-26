@@ -151,7 +151,7 @@ export default function BulkActionsBar({
       setNewMerchant('');
     }
   };
-
+  const handleBulkDelete = async () => {
     setLoading(true);
     try {
       const ids = Array.from(selected);
