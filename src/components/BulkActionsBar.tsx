@@ -245,6 +245,31 @@ export default function BulkActionsBar({
             </PopoverContent>
           </Popover>
 
+          {/* Rename Merchant */}
+          <Popover open={merchantOpen} onOpenChange={(open) => { setMerchantOpen(open); if (!open) setNewMerchant(''); }}>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="sm" className="gap-1.5" disabled={loading}>
+                <PenLine className="h-4 w-4" />
+                <span className="hidden sm:inline">Rename</span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[240px] p-3" align="center">
+              <p className="text-xs text-muted-foreground mb-2">Set merchant name for all selected</p>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="New merchant name..."
+                  value={newMerchant}
+                  onChange={(e) => setNewMerchant(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleBulkRenameMerchant(); }}
+                  className="h-8 text-sm"
+                />
+                <Button size="sm" className="h-8 px-2" onClick={handleBulkRenameMerchant} disabled={loading || !newMerchant.trim()}>
+                  <Check className="h-4 w-4" />
+                </Button>
+              </div>
+            </PopoverContent>
+          </Popover>
+
           {/* Move to Account */}
           <Popover open={accountOpen} onOpenChange={setAccountOpen}>
             <PopoverTrigger asChild>
