@@ -7,7 +7,7 @@ import { useSubscriptions } from '@/hooks/use-subscriptions';
 import { useSpendGuardrails } from '@/hooks/use-spend-guardrails';
 import { useSafeToSpend } from '@/hooks/use-safe-to-spend';
 import { Sparkles, TrendingUp, Ban, ShieldCheck, PiggyBank } from 'lucide-react';
-import { AnimatedNumber } from '@/components/AnimatedNumber';
+
 
 export function SavingsImpactCounter() {
   const { formatCurrency } = useCurrency();
