@@ -17,6 +17,8 @@ const LandingFooter = () => {
           <button onClick={() => navigate('/legal')} className="hover:text-foreground transition-colors">Terms of Service</button>
           <span className="hidden sm:inline text-border">·</span>
           <button onClick={() => navigate('/legal')} className="hover:text-foreground transition-colors">Cookie Policy</button>
+          <span className="hidden sm:inline text-border">·</span>
+          <button onClick={() => navigate('/changelog')} className="hover:text-foreground transition-colors">What's New</button>
         </div>
         <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} PrismMoney™. All rights reserved.</p>
       </div>
