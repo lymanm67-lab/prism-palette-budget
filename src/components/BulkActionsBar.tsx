@@ -62,6 +62,8 @@ export default function BulkActionsBar({
   const [accountOpen, setAccountOpen] = useState(false);
   const [tagOpen, setTagOpen] = useState(false);
   const [tagSearch, setTagSearch] = useState('');
+  const [merchantOpen, setMerchantOpen] = useState(false);
+  const [newMerchant, setNewMerchant] = useState('');
 
   const selectedCount = selected.size;
   const selectedTransactions = transactions.filter(t => selected.has(t.id));
