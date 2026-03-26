@@ -9,6 +9,7 @@ const FAQS = [
   { q: 'Why should I choose annual billing?', a: 'Annual billing saves you up to $130 per year depending on your plan. It\'s the smart choice if you\'re committed to improving your financial health long-term.' },
   { q: 'Does Prism help with planning and organization, not just tracking?', a: 'Absolutely. Prism includes cash flow forecasting, tax prep organization, bill scheduling, savings goals, and financial insights — so you can plan ahead, not just look back.' },
   { q: 'Is there a free trial?', a: 'Yes. Every plan comes with a free trial so you can explore the features and see the value before committing.' },
+  { q: 'How does the AI monthly reconciliation work?', a: 'Prism\'s AI audits all your accounts and transactions each month — catching duplicate entries, missing categories, balance discrepancies, and tax-readiness gaps. You get a plain-English summary and a downloadable PDF report you can share with your accountant.' },
 ];
 
 const FAQSection = () => (
