@@ -131,7 +131,27 @@ export default function BulkActionsBar({
     }
   };
 
-  const handleBulkDelete = async () => {
+  const handleBulkRenameMerchant = async () => {
+    const trimmed = newMerchant.trim();
+    if (!trimmed) return;
+    setLoading(true);
+    try {
+      const ids = Array.from(selected);
+      for (const id of ids) {
+        await supabase.from('transactions').update({ merchant: trimmed }).eq('id', id);
+      }
+      qc.invalidateQueries({ queryKey: ['transactions'] });
+      toast.success(`Renamed merchant to "${trimmed}" for ${selectedCount} transactions`);
+      onClearSelection();
+    } catch (e: any) {
+      toast.error('Failed to rename merchant');
+    } finally {
+      setLoading(false);
+      setMerchantOpen(false);
+      setNewMerchant('');
+    }
+  };
+
     setLoading(true);
     try {
       const ids = Array.from(selected);
