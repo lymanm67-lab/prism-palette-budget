@@ -61,6 +61,7 @@ import DSCRCalculator from "@/pages/capital/DSCRCalculator";
 import MoneyMath from "@/pages/capital/MoneyMath";
 import ExperimentsDashboard from "@/pages/ExperimentsDashboard";
 import ReconciliationAudit from "@/pages/ReconciliationAudit";
+import Changelog from "@/pages/Changelog";
 const queryClient = new QueryClient();
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -106,6 +107,7 @@ const App = () => (
             <Route path="/onboarding" element={<AuthRoute><Onboarding /></AuthRoute>} />
             <Route path="/auth" element={<AuthRoute><Auth /></AuthRoute>} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/changelog" element={<Changelog />} />
             <Route element={
               <ProtectedRoute>
                 <HouseholdProvider>
