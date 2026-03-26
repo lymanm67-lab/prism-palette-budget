@@ -79,8 +79,7 @@ export function useSafeToSpend(): SafeToSpendResult {
     const daysRemaining = daysInMonth - now.getDate() + 1;
 
     const dailySafe = daysRemaining > 0 ? monthlySafe / daysRemaining : 0;
-    const weeksRemaining = Math.max(1, daysRemaining / 7);
-    const weeklySafe = monthlySafe / weeksRemaining;
+    const weeklySafe = dailySafe * Math.min(7, daysRemaining);
 
     return {
       daily: Math.round(dailySafe * 100) / 100,
