@@ -1093,7 +1093,7 @@ const Transactions = () => {
                 </div>
                 <div className="space-y-2">
                   <Label>Category</Label>
-                  <CategoryCombobox value={form.category_id} onValueChange={v => setForm(f => ({ ...f, category_id: v }))} />
+                  <CategoryCombobox value={form.category_id} onValueChange={v => setForm(f => ({ ...f, category_id: v }))} budgetTypeFilter={formEntityType} />
                 </div>
                 <div className="space-y-2">
                   <Label>Goal</Label>
