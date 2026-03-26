@@ -499,7 +499,16 @@ const Transactions = () => {
     toast.success(`Categorized ${selected.size} transactions`);
   };
 
-  const bulkChangeAccount = async () => {
+  const bulkRenameMerchant = async () => {
+    const trimmed = bulkMerchant.trim();
+    if (!trimmed) return;
+    for (const id of selected) { await supabase.from('transactions').update({ merchant: trimmed }).eq('id', id); }
+    qc.invalidateQueries({ queryKey: ['transactions'] });
+    setSelected(new Set());
+    setBulkMerchant('');
+    toast.success(`Renamed ${selected.size} transactions to "${trimmed}"`);
+  };
+
     if (!bulkAccount) return;
     for (const id of selected) { await supabase.from('transactions').update({ account_id: bulkAccount }).eq('id', id); }
     qc.invalidateQueries({ queryKey: ['transactions'] });
