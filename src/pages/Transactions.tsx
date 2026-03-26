@@ -509,6 +509,7 @@ const Transactions = () => {
     toast.success(`Renamed ${selected.size} transactions to "${trimmed}"`);
   };
 
+  const bulkChangeAccount = async () => {
     if (!bulkAccount) return;
     for (const id of selected) { await supabase.from('transactions').update({ account_id: bulkAccount }).eq('id', id); }
     qc.invalidateQueries({ queryKey: ['transactions'] });
