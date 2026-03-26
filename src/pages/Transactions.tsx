@@ -966,6 +966,30 @@ const Transactions = () => {
                   </button>
                 </div>
 
+                {/* Personal / Business Toggle */}
+                <div className="flex rounded-lg border overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => { setFormEntityType('personal'); setForm(f => ({ ...f, category_id: '' })); }}
+                    className={cn(
+                      'flex-1 py-2.5 text-sm font-medium flex items-center justify-center gap-2 transition-colors',
+                      formEntityType === 'personal' ? 'bg-primary text-primary-foreground' : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+                    )}
+                  >
+                    👤 Personal
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setFormEntityType('business'); setForm(f => ({ ...f, category_id: '' })); }}
+                    className={cn(
+                      'flex-1 py-2.5 text-sm font-medium flex items-center justify-center gap-2 transition-colors',
+                      formEntityType === 'business' ? 'bg-primary text-primary-foreground' : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+                    )}
+                  >
+                    💼 Business
+                  </button>
+                </div>
+
                 <div className="space-y-2">
                   <Label>Amount</Label>
                   <Input type="number" step="0.01" min="0" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} placeholder="$0.00" />
