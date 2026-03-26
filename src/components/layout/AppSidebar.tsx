@@ -6,7 +6,7 @@ import {
   TrendingUp, Calculator, Scale, Heart, Home, Wallet, RepeatIcon,
   CreditCard, LineChart, Sparkles, Shield, FileSearch, FileText, Building2,
   DollarSign, Clock, Lock, Scissors, ClipboardCheck, Gauge, ChevronDown,
-  Layers, Search, AlertTriangle, Activity, Banknote,
+  Layers, Search, AlertTriangle, Activity, Banknote, Smartphone,
 } from 'lucide-react';
 import prismLogo from '@/assets/prism-money-logo.png';
 import { useAuth } from '@/contexts/AuthContext';
@@ -118,6 +118,7 @@ const NAV_SECTIONS: NavSection[] = [
   {
     label: 'More',
     items: [
+      { to: '/app-store-readiness', icon: Smartphone, label: 'App Store', color: 'text-prism-indigo' },
       { to: '/settings', icon: Settings, label: 'Settings', color: 'text-muted-foreground' },
       { to: '/about', icon: Heart, label: 'About', color: 'text-prism-rose' },
       { to: '/legal', icon: Scale, label: 'Legal', color: 'text-muted-foreground' },
