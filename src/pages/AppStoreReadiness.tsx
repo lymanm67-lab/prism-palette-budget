@@ -1,13 +1,12 @@
 import { useState } from "react";
 import prismLogo from "@/assets/prism-money-logo.png";
-import screenshot1 from "@/assets/screenshots/app-store-1.png";
-import screenshot2 from "@/assets/screenshots/app-store-2.png";
-import screenshot3 from "@/assets/screenshots/app-store-3.png";
-import screenshot4 from "@/assets/screenshots/app-store-4.png";
-import screenshot5 from "@/assets/screenshots/app-store-5.png";
-import screenshot6 from "@/assets/screenshots/app-store-6.png";
-import screenshot7 from "@/assets/screenshots/app-store-7.png";
-import screenshot8 from "@/assets/screenshots/app-store-8.png";
+import screenshot1 from "@/assets/screenshots/store-ready-1.png";
+import screenshot2 from "@/assets/screenshots/store-ready-2.png";
+import screenshot3 from "@/assets/screenshots/store-ready-3.png";
+import screenshot4 from "@/assets/screenshots/store-ready-4.png";
+import screenshot5 from "@/assets/screenshots/store-ready-5.png";
+import screenshot6 from "@/assets/screenshots/store-ready-6.png";
+import screenshot7 from "@/assets/screenshots/store-ready-7.png";
 import featureGraphic from "@/assets/screenshots/app-store-hero.png";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -179,7 +178,7 @@ const SCREENSHOT_PREVIEWS = [
   { title: "4. Smart Tools", subtitle: "Financial Calculators", description: "Safe-to-Spend, mortgage, auto, credit card, investment, and debt calculators with scenarios & pitfalls", image: screenshot4 },
   { title: "5. Health Score", subtitle: "Financial Health at a Glance", description: "Savings rate, debt ratio, emergency fund, and net worth scored out of 100 with tips to improve", image: screenshot5 },
   { title: "6. Deep Reports", subtitle: "Spending by Category", description: "Pie & bar charts, budget vs actual, cash flow trends, net worth, and top merchants — Personal or Business", image: screenshot6 },
-  { title: "7. Build Credit", subtitle: "Credit & Capital Tools", description: "Pull free credit reports, AI-powered analysis across Equifax, Experian, and TransUnion — plus Metro2 Scanner, Dispute Manager, and Business Credit Builder", image: screenshot8 },
+  { title: "7. Build Credit", subtitle: "Credit & Capital Tools", description: "Pull free credit reports, AI-powered analysis across Equifax, Experian, and TransUnion — plus Metro2 Scanner, Dispute Manager, and Business Credit Builder", image: screenshot7 },
 ];
 
 const DEPLOY_STEPS = [
