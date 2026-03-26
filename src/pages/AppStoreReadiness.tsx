@@ -496,12 +496,13 @@ export default function AppStoreReadiness() {
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {SCREENSHOT_PREVIEWS.map((ss, idx) => (
-                  <div key={idx} className={`rounded-xl border bg-gradient-to-br ${ss.color} p-4 aspect-[9/16] flex flex-col justify-between`}>
-                    <div>
-                      <Badge variant="outline" className="text-[10px] mb-2">Screen {idx + 1}</Badge>
+                  <div key={idx} className="rounded-xl border overflow-hidden bg-muted/20 flex flex-col">
+                    <img src={ss.image} alt={ss.title} className="w-full object-cover" />
+                    <div className="p-3">
+                      <Badge variant="outline" className="text-[10px] mb-1">Screen {idx + 1}</Badge>
                       <h4 className="font-bold text-sm">{ss.title}</h4>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">{ss.description}</p>
                     </div>
-                    <p className="text-[11px] text-muted-foreground">{ss.description}</p>
                   </div>
                 ))}
               </div>
