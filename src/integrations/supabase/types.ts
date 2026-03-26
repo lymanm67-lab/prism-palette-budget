@@ -1785,6 +1785,53 @@ export type Database = {
         }
         Relationships: []
       }
+      reconciliation_audits: {
+        Row: {
+          ai_narrative: string | null
+          audit_month: string
+          completed_at: string | null
+          created_at: string
+          findings: Json
+          household_id: string
+          id: string
+          status: string
+          summary: Json
+          trigger_type: string
+        }
+        Insert: {
+          ai_narrative?: string | null
+          audit_month: string
+          completed_at?: string | null
+          created_at?: string
+          findings?: Json
+          household_id: string
+          id?: string
+          status?: string
+          summary?: Json
+          trigger_type?: string
+        }
+        Update: {
+          ai_narrative?: string | null
+          audit_month?: string
+          completed_at?: string | null
+          created_at?: string
+          findings?: Json
+          household_id?: string
+          id?: string
+          status?: string
+          summary?: Json
+          trigger_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reconciliation_audits_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recurring_transactions: {
         Row: {
           account_id: string
