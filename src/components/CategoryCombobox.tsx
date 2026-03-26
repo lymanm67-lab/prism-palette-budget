@@ -12,9 +12,10 @@ interface CategoryComboboxProps {
   onValueChange: (id: string) => void;
   placeholder?: string;
   className?: string;
+  budgetTypeFilter?: 'personal' | 'business' | null;
 }
 
-export default function CategoryCombobox({ value, onValueChange, placeholder = 'Select category...', className }: CategoryComboboxProps) {
+export default function CategoryCombobox({ value, onValueChange, placeholder = 'Select category...', className, budgetTypeFilter = null }: CategoryComboboxProps) {
   const { data: categories } = useCategories();
   const { data: groups } = useCategoryGroups();
   const createCategory = useCreateCategory();
@@ -25,11 +26,22 @@ export default function CategoryCombobox({ value, onValueChange, placeholder = '
 
   const selectedCat = useMemo(() => categories?.find(c => c.id === value), [categories, value]);
 
+  // Build a group budget_type lookup
+  const groupTypeMap = useMemo(() => {
+    const m = new Map<string, string>();
+    if (groups) for (const g of groups) m.set(g.id, (g as any).budget_type || 'personal');
+    return m;
+  }, [groups]);
+
   const filtered = useMemo(() => {
     if (!categories) return [];
+    let list = categories;
+    if (budgetTypeFilter) {
+      list = list.filter(c => groupTypeMap.get(c.group_id) === budgetTypeFilter);
+    }
     const q = search.toLowerCase();
-    return q ? categories.filter(c => c.name.toLowerCase().includes(q)) : categories;
-  }, [categories, search]);
+    return q ? list.filter(c => c.name.toLowerCase().includes(q)) : list;
+  }, [categories, search, budgetTypeFilter, groupTypeMap]);
 
   // Group filtered categories by group
   const grouped = useMemo(() => {
