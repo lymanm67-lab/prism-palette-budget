@@ -1,5 +1,10 @@
 import { useState } from "react";
 import prismLogo from "@/assets/prism-money-logo.png";
+import screenshot1 from "@/assets/screenshots/app-store-1.png";
+import screenshot2 from "@/assets/screenshots/app-store-2.png";
+import screenshot3 from "@/assets/screenshots/app-store-3.png";
+import screenshot4 from "@/assets/screenshots/app-store-4.png";
+import screenshot5 from "@/assets/screenshots/app-store-5.png";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -33,7 +38,7 @@ const REQUIREMENTS: AppStoreRequirement[] = [
   // Assets
   { id: "r7", category: "Assets", requirement: "App icon (1024x1024)", status: "complete", platform: "both", notes: "PrismMoney logo with gradient branding" },
   { id: "r8", category: "Assets", requirement: "Splash screen images (all sizes)", status: "complete", platform: "both", notes: "Light & dark variants for all device sizes" },
-  { id: "r9", category: "Assets", requirement: "App Store screenshots — iPhone 6.7\"", status: "complete", platform: "ios", notes: "6 screenshots: Dashboard, Budgets, Cash Flow, Investments, Debt Payoff, Goals" },
+  { id: "r9", category: "Assets", requirement: "App Store screenshots — iPhone 6.7\"", status: "complete", platform: "ios", notes: "5 screenshots: Dashboard, Personal & Business, Subscriptions, Bills, Tax Insights" },
   { id: "r10", category: "Assets", requirement: "App Store screenshots — iPhone 6.5\"", status: "complete", platform: "ios", notes: "Same 6 views, resized for 6.5\" display" },
   { id: "r11", category: "Assets", requirement: "App Store screenshots — iPad 12.9\"", status: "complete", platform: "ios", notes: "Tablet-optimized layout screenshots" },
   { id: "r12", category: "Assets", requirement: "Play Store screenshots (phone)", status: "complete", platform: "android", notes: "8 screenshots covering all key features" },
@@ -164,12 +169,11 @@ Start free — no credit card required. Upgrade as your financial journey grows.
 Questions? Visit prismmoney.app`;
 
 const SCREENSHOT_PREVIEWS = [
-  { title: "Dashboard", description: "Real-time financial overview with Safe-to-Spend, accounts, and quick actions", color: "from-primary/20 to-accent/20" },
-  { title: "Budgets", description: "Zero-based budgeting with category tracking and rollover support", color: "from-prism-lime/20 to-prism-teal/20" },
-  { title: "Cash Flow", description: "Income vs expenses with forecasting and trend analysis", color: "from-prism-sky/20 to-prism-indigo/20" },
-  { title: "Investments", description: "Portfolio tracking with holdings, watchlist, and performance charts", color: "from-prism-amber/20 to-prism-orange/20" },
-  { title: "Debt Payoff", description: "Snowball/avalanche strategies with visual debt-free countdown", color: "from-prism-rose/20 to-prism-violet/20" },
-  { title: "Goals", description: "Financial goal tracking with progress visualization and milestones", color: "from-prism-teal/20 to-prism-lime/20" },
+  { title: "Take Control", description: "Dashboard overview with total balance, insights, credit score, and quick actions", image: screenshot1 },
+  { title: "Personal & Business", description: "See personal and business finances together — finally the full picture in one place", image: screenshot2 },
+  { title: "Subscriptions", description: "Find and cancel subscriptions you forgot about — save $29/month automatically", image: screenshot3 },
+  { title: "Bill Negotiation", description: "Lower your monthly bills — we help negotiate Internet, Phone, Cable and save $110/mo", image: screenshot4 },
+  { title: "Business Insights", description: "Advanced tax estimates, key write-offs, and smart tax strategy to keep more of what you earn", image: screenshot5 },
 ];
 
 const DEPLOY_STEPS = [
@@ -492,12 +496,13 @@ export default function AppStoreReadiness() {
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {SCREENSHOT_PREVIEWS.map((ss, idx) => (
-                  <div key={idx} className={`rounded-xl border bg-gradient-to-br ${ss.color} p-4 aspect-[9/16] flex flex-col justify-between`}>
-                    <div>
-                      <Badge variant="outline" className="text-[10px] mb-2">Screen {idx + 1}</Badge>
+                  <div key={idx} className="rounded-xl border overflow-hidden bg-muted/20 flex flex-col">
+                    <img src={ss.image} alt={ss.title} className="w-full object-cover" />
+                    <div className="p-3">
+                      <Badge variant="outline" className="text-[10px] mb-1">Screen {idx + 1}</Badge>
                       <h4 className="font-bold text-sm">{ss.title}</h4>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">{ss.description}</p>
                     </div>
-                    <p className="text-[11px] text-muted-foreground">{ss.description}</p>
                   </div>
                 ))}
               </div>
