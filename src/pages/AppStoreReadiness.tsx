@@ -1,5 +1,10 @@
 import { useState } from "react";
 import prismLogo from "@/assets/prism-money-logo.png";
+import screenshot1 from "@/assets/screenshots/app-store-1.png";
+import screenshot2 from "@/assets/screenshots/app-store-2.png";
+import screenshot3 from "@/assets/screenshots/app-store-3.png";
+import screenshot4 from "@/assets/screenshots/app-store-4.png";
+import screenshot5 from "@/assets/screenshots/app-store-5.png";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -164,12 +169,11 @@ Start free — no credit card required. Upgrade as your financial journey grows.
 Questions? Visit prismmoney.app`;
 
 const SCREENSHOT_PREVIEWS = [
-  { title: "Dashboard", description: "Real-time financial overview with Safe-to-Spend, accounts, and quick actions", color: "from-primary/20 to-accent/20" },
-  { title: "Budgets", description: "Zero-based budgeting with category tracking and rollover support", color: "from-prism-lime/20 to-prism-teal/20" },
-  { title: "Cash Flow", description: "Income vs expenses with forecasting and trend analysis", color: "from-prism-sky/20 to-prism-indigo/20" },
-  { title: "Investments", description: "Portfolio tracking with holdings, watchlist, and performance charts", color: "from-prism-amber/20 to-prism-orange/20" },
-  { title: "Debt Payoff", description: "Snowball/avalanche strategies with visual debt-free countdown", color: "from-prism-rose/20 to-prism-violet/20" },
-  { title: "Goals", description: "Financial goal tracking with progress visualization and milestones", color: "from-prism-teal/20 to-prism-lime/20" },
+  { title: "Take Control", description: "Dashboard overview with total balance, insights, credit score, and quick actions", image: screenshot1 },
+  { title: "Personal & Business", description: "See personal and business finances together — finally the full picture in one place", image: screenshot2 },
+  { title: "Subscriptions", description: "Find and cancel subscriptions you forgot about — save $29/month automatically", image: screenshot3 },
+  { title: "Bill Negotiation", description: "Lower your monthly bills — we help negotiate Internet, Phone, Cable and save $110/mo", image: screenshot4 },
+  { title: "Business Insights", description: "Advanced tax estimates, key write-offs, and smart tax strategy to keep more of what you earn", image: screenshot5 },
 ];
 
 const DEPLOY_STEPS = [
