@@ -33,5 +33,7 @@ Disallow: /api-docs
 Disallow: /capital
 Disallow: /experiments
 Disallow: /spending-trends
+Disallow: /reconciliation
+Disallow: /app-store-readiness
 
 Sitemap: https://prism-palette-budget.lovable.app/sitemap.xml
