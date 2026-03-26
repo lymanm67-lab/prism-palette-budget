@@ -1355,6 +1355,18 @@ const Transactions = () => {
                   <Landmark className="h-3.5 w-3.5" /> Move
                 </Button>
               </div>
+              <div className="flex items-center gap-2">
+                <Input
+                  placeholder="Rename merchant…"
+                  value={bulkMerchant}
+                  onChange={(e) => setBulkMerchant(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') bulkRenameMerchant(); }}
+                  className="h-8 w-[160px] text-xs"
+                />
+                <Button size="sm" variant="outline" onClick={bulkRenameMerchant} disabled={!bulkMerchant.trim()} className="gap-1 h-8">
+                  <Pencil className="h-3.5 w-3.5" /> Rename
+                </Button>
+              </div>
               <Button size="sm" variant="outline" onClick={bulkMarkTransfer} className="gap-1 h-8">
                 <ArrowRightLeft className="h-3.5 w-3.5" /> Mark Transfer
               </Button>
