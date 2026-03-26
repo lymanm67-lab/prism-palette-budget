@@ -21,7 +21,6 @@ import {
 const STEPS = [
   { id: 'welcome' },
   { id: 'journey' },
-  { id: 'features' },
   { id: 'plan' },
 ] as const;
 
@@ -106,7 +105,6 @@ const Onboarding = () => {
 
   const canGoNext =
     stepId === 'welcome' ||
-    stepId === 'features' ||
     stepId === 'plan' ||
     (stepId === 'journey' && selectedJourney !== null);
 

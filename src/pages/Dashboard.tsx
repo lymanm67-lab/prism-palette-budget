@@ -320,12 +320,16 @@ Your Safe-to-Spend updates in real time as you add transactions, pay bills, and 
           { label: 'Monthly Expenses', value: monthlyExpenses, icon: CreditCard, gradient: 'from-prism-orange to-prism-rose', mom: null },
           { label: 'Subscriptions', value: totalSubscriptionCost, icon: Receipt, gradient: 'from-prism-violet to-prism-sky', mom: null },
         ].map((stat, i) => (
-          <motion.div key={stat.label} variants={item}>
-            <Card className="prism-card-shine border-border/50 hover-lift">
+          <motion.div key={stat.label} variants={item} whileHover={{ scale: 1.02, y: -2 }} transition={{ type: 'spring', stiffness: 400 }}>
+            <Card className="prism-card-shine border-border/50 hover-lift cursor-pointer" onClick={() => navigate(stat.label === 'Net Worth' ? '/net-worth' : stat.label === 'Subscriptions' ? '/subscriptions' : stat.label === 'Monthly Expenses' ? '/spending-trends' : '/accounts')}>
               <CardContent className="flex items-center gap-3 p-4">
-                <div className={`h-10 w-10 shrink-0 rounded-xl bg-gradient-to-br ${stat.gradient} flex items-center justify-center`}>
+                <motion.div
+                  className={`h-10 w-10 shrink-0 rounded-xl bg-gradient-to-br ${stat.gradient} flex items-center justify-center`}
+                  whileHover={{ rotate: [0, -10, 10, 0] }}
+                  transition={{ duration: 0.4 }}
+                >
                   <stat.icon className="h-5 w-5 text-white" />
-                </div>
+                </motion.div>
                 <div>
                   <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{stat.label}</p>
                   <div className="flex items-center gap-1.5">
