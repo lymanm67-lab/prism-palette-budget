@@ -151,6 +151,10 @@ const ReconciliationAudit = () => {
       <PageOverview
         title="Reconciliation Audit"
         description="AI-powered monthly reconciliation to catch errors, duplicates, and tax-readiness gaps."
+        icon={RefreshCw}
+        iconColor="text-prism-teal"
+        ttsScript="This page runs an AI audit of your transactions each month, checking for missing categories, duplicates, balance issues, and tax-readiness gaps."
+        features={['Missing categorizations', 'Duplicate detection', 'Balance reconciliation', 'Tax-readiness gaps', 'AI narrative summary', 'PDF export']}
       />
 
       {/* Controls */}
