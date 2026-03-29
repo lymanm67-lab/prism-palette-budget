@@ -56,27 +56,35 @@ const BillNegotiation = () => {
   const [analyzing, setAnalyzing] = useState(false);
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
 
-  // Normalize subscription amounts to monthly
+  // Match Subscriptions page normalization exactly
   const toMonthly = (amount: number, frequency: string) => {
     switch (frequency) {
+      case 'monthly': return amount;
       case 'weekly': return amount * 4.33;
       case 'biweekly': return amount * 2.17;
       case 'quarterly': return amount / 3;
-      case 'semi-annual': return amount / 6;
-      case 'annual': case 'yearly': return amount / 12;
-      default: return amount; // monthly
+      case 'yearly': return amount / 12;
+      default: return 0;
     }
   };
 
-  // Filter out non-subscription items (same logic as Subscriptions page)
+  // Match Subscriptions page filtering logic exactly
   const NON_SUB_KEYWORDS = ['rent', 'mortgage', 'insurance', 'utilit', 'electric', 'gas', 'water', 'sewer', 'trash', 'debt', 'loan', 'transfer', 'payment'];
-  const isNonSubscription = (sub: any) => {
-    const merchant = (sub.merchant || '').toLowerCase();
-    return NON_SUB_KEYWORDS.some(kw => merchant.includes(kw));
+
+  const isBusiness = (sub: any) => {
+    const group = sub.categories?.category_groups;
+    return group?.budget_type === 'business' || !!group?.business_profile_id;
   };
 
-  const allActiveSubs = (subscriptions || []).filter((s: any) => s.is_active);
-  const trueSubs = allActiveSubs.filter((s: any) => !isNonSubscription(s));
+  const isNonSubscription = (sub: any) => {
+    const merchant = (sub.merchant || '').toLowerCase();
+    const catName = (sub.categories?.name || '').toLowerCase();
+    return NON_SUB_KEYWORDS.some(kw => merchant.includes(kw) || catName.includes(kw)) || (sub.is_transfer === true);
+  };
+
+  const allActiveSubs = (subscriptions || []).filter((s: any) => s.is_active && !s.is_cancelled);
+  const personalActiveSubs = allActiveSubs.filter((s: any) => !isBusiness(s));
+  const trueSubs = personalActiveSubs.filter((s: any) => !isNonSubscription(s));
   const totalMonthlyBills = trueSubs
     .reduce((sum: number, s: any) => sum + toMonthly(s.average_amount, s.frequency), 0);
 
@@ -92,7 +100,7 @@ const BillNegotiation = () => {
     try {
       const { data, error } = await supabase.functions.invoke('bill-negotiation', {
         body: {
-          subscriptions: (subscriptions || []).filter((s: any) => s.is_active).map((s: any) => ({
+          subscriptions: trueSubs.map((s: any) => ({
             merchant: s.merchant,
             average_amount: s.average_amount,
             frequency: s.frequency,
@@ -130,7 +138,7 @@ const BillNegotiation = () => {
       {/* Explanation */}
       <div className="rounded-lg border border-border/50 bg-muted/30 px-4 py-3">
         <p className="text-xs text-muted-foreground">
-          <strong className="text-foreground">How this is calculated:</strong> Monthly Spend shows only true subscriptions (software, streaming, memberships) normalized to monthly amounts. Non-subscription recurring charges like rent, utilities, insurance, and loan payments are excluded. This matches the total shown on the Subscriptions page.
+          <strong className="text-foreground">How this is calculated:</strong> Monthly Spend uses the same logic as the Subscriptions page (Personal view): only active, not-cancelled, non-business, true subscriptions (software, streaming, memberships), normalized to monthly amounts. Non-subscription charges like rent, utilities, insurance, and loans are excluded.
         </p>
       </div>
 
