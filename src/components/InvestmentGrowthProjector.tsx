@@ -174,7 +174,7 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
   // Plan state
   const [planName, setPlanName] = useState('My 35-Year Investment Plan');
   // National-average fallback defaults (overwritten once user's payroll data loads)
-  const [startingBalance, setStartingBalance] = useState('87000');
+  const [startingBalance, setStartingBalance] = useState('165000');
   const [monthlyContrib, setMonthlyContrib] = useState(() =>
     currentContribs.employee > 0 ? currentContribs.employee.toFixed(0) : '575'
   );
