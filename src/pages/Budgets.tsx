@@ -2019,9 +2019,10 @@ const Budgets = () => {
             {!editingBudget && form.budgetKind === 'expense' && (
               <div className="space-y-2">
                 <Label>Expense Type</Label>
-                <Select value={form.expense_type} onValueChange={v => setForm(f => ({ ...f, expense_type: v as 'fixed' | 'flexible' | 'non_monthly', group_id: '', category_id: '' }))}>
+                <Select value={form.expense_type} onValueChange={v => setForm(f => ({ ...f, expense_type: v as 'fixed' | 'flexible' | 'non_monthly' | 'payroll_deduction', group_id: '', category_id: '' }))}>
                   <SelectTrigger><SelectValue placeholder="Select expense type" /></SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="payroll_deduction">Payroll & Pre-Tax Deductions</SelectItem>
                     <SelectItem value="fixed">Fixed</SelectItem>
                     <SelectItem value="flexible">Flexible</SelectItem>
                     <SelectItem value="non_monthly">Non-Monthly</SelectItem>
