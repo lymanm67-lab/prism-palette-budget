@@ -7,7 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { useSpendingByCategory, useTransactionsByDateRange, useBudgets, useCategories, useAccounts, useAllTransactions } from '@/hooks/use-finance-data';
 import { useCurrency } from '@/hooks/use-currency';
-import { CalendarIcon, Download, FileText, Loader2, Building2, User, BarChart3, Printer } from 'lucide-react';
+import { CalendarIcon, Download, FileText, Loader2, Building2, User, BarChart3, Printer, PieChart as PieChartIcon, Scale, Wallet, TrendingUp, LineChart as LineChartIcon, Store, Briefcase, Sprout } from 'lucide-react';
 import { useMemo, useRef, useState, useCallback } from 'react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { exportToPdf, exportToCsv } from '@/lib/export-utils';
@@ -24,6 +24,7 @@ import PageOverview from '@/components/PageOverview';
 import ReportNarrative from '@/components/ReportNarrative';
 import PayrollReportTab from '@/components/PayrollReportTab';
 import InvestmentGrowthProjector from '@/components/InvestmentGrowthProjector';
+import ReportTabGuide from '@/components/ReportTabGuide';
 const tooltipStyle = { background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))' };
 
 const TREND_COLORS = [
