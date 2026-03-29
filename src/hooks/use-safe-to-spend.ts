@@ -31,7 +31,9 @@ export interface SafeToSpendResult {
   isLoading: boolean;
 }
 
-export function useSafeToSpend(): SafeToSpendResult {
+export type StsScope = 'combined' | 'personal' | 'business';
+
+export function useSafeToSpend(scope: StsScope = 'combined'): SafeToSpendResult {
   const { data: accounts } = useAccounts();
   const { data: transactions } = useTransactions();
   const { data: recurring } = useRecurringTransactions();
@@ -64,6 +66,9 @@ export function useSafeToSpend(): SafeToSpendResult {
     let budgetExpenses = 0;
     for (const b of (budgetsWithGroups || [])) {
       const group = b.categories?.category_groups;
+      const isBusiness = group?.budget_type === 'business' || !!group?.business_profile_id;
+      if (scope === 'personal' && isBusiness) continue;
+      if (scope === 'business' && !isBusiness) continue;
       const expType = group?.expense_type || 'flexible';
       if (expType === 'income') {
         budgetIncome += b.planned_amount || 0;
@@ -101,7 +106,14 @@ export function useSafeToSpend(): SafeToSpendResult {
 
     // Monthly subscriptions
     const monthlySubscriptions = (subscriptions || [])
-      .filter((sub: any) => sub.is_active && !sub.is_cancelled && !isNonSubscription(sub))
+      .filter((sub: any) => {
+        if (!sub.is_active || sub.is_cancelled || isNonSubscription(sub)) return false;
+        const subGroup = sub.categories?.category_groups;
+        const isBiz = subGroup?.budget_type === 'business' || !!subGroup?.business_profile_id;
+        if (scope === 'personal' && isBiz) return false;
+        if (scope === 'business' && !isBiz) return false;
+        return true;
+      })
       .reduce((s: number, sub: any) => {
         const amt = Math.abs(sub.average_amount || 0);
         if (sub.frequency === 'yearly' || sub.frequency === 'annual') return s + amt / 12;
@@ -149,5 +161,5 @@ export function useSafeToSpend(): SafeToSpendResult {
       mode,
       isLoading: !accounts,
     };
-  }, [accounts, transactions, recurring, subscriptions, modeSettings, budgetsWithGroups]);
+  }, [accounts, transactions, recurring, subscriptions, modeSettings, budgetsWithGroups, scope]);
 }
