@@ -84,6 +84,7 @@ const NAV_SECTIONS: NavSection[] = [
   },
   {
     label: 'Capital',
+    mode: 'business',
     topItems: [
       { to: '/capital', icon: Shield, label: 'Dashboard', color: 'text-prism-teal' },
       { to: '/capital/ai-coach', icon: Bot, label: 'AI Coach', color: 'text-prism-amber' },
@@ -101,6 +102,7 @@ const NAV_SECTIONS: NavSection[] = [
       },
       {
         subLabel: 'Business & Funding',
+        mode: 'business',
         items: [
           { to: '/capital/business-credit', icon: Building2, label: 'Business Credit', color: 'text-prism-indigo' },
           { to: '/capital/loan-readiness', icon: ClipboardCheck, label: 'Loan Readiness', color: 'text-prism-lime' },
@@ -112,6 +114,7 @@ const NAV_SECTIONS: NavSection[] = [
       },
       {
         subLabel: 'Cash Flow & Risk',
+        mode: 'business',
         items: [
           { to: '/capital/receivables', icon: DollarSign, label: 'Receivables', color: 'text-prism-sky' },
           { to: '/capital/bank-analyzer', icon: LineChart, label: 'Bank Analyzer', color: 'text-prism-violet' },
