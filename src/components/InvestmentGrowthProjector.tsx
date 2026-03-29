@@ -183,6 +183,7 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
   const [inflationRate, setInflationRate] = useState('3');
   const [taxRate, setTaxRate] = useState('22');
   const [ssMonthlyBenefit, setSsMonthlyBenefit] = useState('2200');
+  const [targetRetirementIncome, setTargetRetirementIncome] = useState('80000');
   const [schedules, setSchedules] = useState<ContributionSchedule[]>(DEFAULT_SCHEDULES);
   const [isEditing, setIsEditing] = useState(false);
   const [showSchedule, setShowSchedule] = useState(false);
@@ -530,6 +531,157 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
             <p>• Social Security: ${ssMonthly.toLocaleString()}/mo estimated benefit (COLA-adjusted, shown in today's dollars)</p>
             <p>• 4% Rule: Withdraw 4% of after-tax portfolio annually for sustainable 30-year retirement spending</p>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Retirement Readiness Assessment */}
+      <Card className="border-2 border-primary/20">
+        <CardHeader className="pb-3">
+          <CardTitle className="font-display text-base flex items-center gap-2">
+            <Award className="h-5 w-5 text-primary" />
+            Retirement Readiness Assessment
+          </CardTitle>
+          <div className="flex items-center gap-3 mt-2">
+            <label className="text-xs font-medium text-muted-foreground whitespace-nowrap">Target Annual Retirement Income</label>
+            <Input
+              value={targetRetirementIncome}
+              onChange={e => setTargetRetirementIncome(e.target.value)}
+              type="number"
+              className="h-8 w-32"
+            />
+            <span className="text-xs text-muted-foreground">({formatCurrency((parseFloat(targetRetirementIncome) || 0) / 12)}/mo in today's dollars)</span>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {(() => {
+            const targetIncome = parseFloat(targetRetirementIncome) || 80000;
+            const ssAnnual = ssMonthly * 12;
+            const neededFromPortfolio = targetIncome - ssAnnual; // what 4% withdrawal must cover
+            const requiredAfterTaxPortfolio = neededFromPortfolio / 0.04;
+            const requiredPreTaxReal = requiredAfterTaxPortfolio / (1 - tax / 100);
+
+            // Find which year each scenario hits the target (using real balance)
+            const readinessByScenario = Object.entries(scenarios).map(([label, rows]) => {
+              const yearHit = rows.findIndex(r => {
+                const afterTaxReal = r.realBalance * (1 - tax / 100);
+                const withdrawal = afterTaxReal * 0.04;
+                return (withdrawal + ssAnnual) >= targetIncome;
+              });
+              return { label, yearHit: yearHit >= 0 ? yearHit + 1 : -1 };
+            });
+
+            // Calculate contribution gap for 10% scenario at year 20
+            const targetYear = 20;
+            const scenario10 = scenarios['10%'];
+            const atYear20 = scenario10[Math.min(targetYear - 1, scenario10.length - 1)];
+            const realAt20 = atYear20?.realBalance || 0;
+            const afterTaxAt20 = realAt20 * (1 - tax / 100);
+            const incomeAt20 = afterTaxAt20 * 0.04 + ssAnnual;
+            const shortfall = targetIncome - incomeAt20;
+            const isOnTrack = shortfall <= 0;
+
+            // Rough estimate: how much extra/mo needed now to close gap
+            // shortfall per year / 0.04 = extra portfolio needed (after tax)
+            // extra portfolio pre-tax = extra / (1 - tax%)
+            // approximate extra monthly over 20 years at 10% ≈ extraPortfolio / (12 * FV annuity factor)
+            const extraPortfolioNeeded = !isOnTrack ? (shortfall / 0.04) / (1 - tax / 100) : 0;
+            const fvAnnuityFactor20 = (Math.pow(1.10, targetYear) - 1) / 0.10; // FV of $1/yr at 10%
+            const extraAnnual = extraPortfolioNeeded / fvAnnuityFactor20;
+            const extraMonthly = extraAnnual / 12;
+
+            return (
+              <>
+                {/* Readiness Meter */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  {readinessByScenario.map(({ label, yearHit }) => {
+                    const ready = yearHit > 0 && yearHit <= 25;
+                    const close = yearHit > 25 && yearHit <= horizon;
+                    return (
+                      <div key={label} className={cn(
+                        "p-3 rounded-lg border text-center",
+                        ready ? "bg-emerald-500/5 border-emerald-500/20" :
+                        close ? "bg-amber-500/5 border-amber-500/20" :
+                        "bg-destructive/5 border-destructive/20"
+                      )}>
+                        <p className="text-xs font-medium text-muted-foreground">{label} ROI</p>
+                        <p className={cn(
+                          "text-2xl font-bold tabular-nums mt-1",
+                          ready ? "text-emerald-600 dark:text-emerald-400" :
+                          close ? "text-amber-600 dark:text-amber-400" :
+                          "text-destructive"
+                        )}>
+                          {yearHit > 0 ? `Year ${yearHit}` : `>${horizon} yrs`}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground mt-1">
+                          {ready ? '✅ On track for 20–25 yr retirement' :
+                           close ? '⚠️ Close — consider increasing contributions' :
+                           '❌ Gap exists — action needed'}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Gap Analysis at Year 20 */}
+                <div className={cn(
+                  "p-4 rounded-lg border",
+                  isOnTrack ? "bg-emerald-500/5 border-emerald-500/20" : "bg-amber-500/5 border-amber-500/20"
+                )}>
+                  <p className="text-sm font-semibold mb-2">
+                    {isOnTrack ? '🎯 You\'re on track!' : '📊 Gap Analysis at Year 20 (10% ROI)'}
+                  </p>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                    <div>
+                      <p className="text-[10px] text-muted-foreground">Target Income</p>
+                      <p className="text-sm font-bold tabular-nums">{formatCurrency(targetIncome)}/yr</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-muted-foreground">Projected at Yr 20</p>
+                      <p className="text-sm font-bold tabular-nums">{formatCurrency(incomeAt20)}/yr</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-muted-foreground">{isOnTrack ? 'Surplus' : 'Shortfall'}</p>
+                      <p className={cn("text-sm font-bold tabular-nums", isOnTrack ? "text-emerald-600 dark:text-emerald-400" : "text-destructive")}>
+                        {isOnTrack ? '+' : '-'}{formatCurrency(Math.abs(shortfall))}/yr
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-muted-foreground">Portfolio Needed (Real)</p>
+                      <p className="text-sm font-bold tabular-nums">{formatCompact(requiredAfterTaxPortfolio)}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Recommendation */}
+                {!isOnTrack && (
+                  <div className="p-4 rounded-lg bg-primary/5 border border-primary/10">
+                    <p className="text-sm font-semibold mb-2">💡 How to Close the Gap</p>
+                    <div className="space-y-2 text-sm text-muted-foreground">
+                      <p>To retire in <span className="font-semibold text-foreground">20 years</span> with {formatCurrency(targetIncome)}/yr income at 10% ROI:</p>
+                      <div className="flex items-center gap-3 p-2 rounded bg-muted/30">
+                        <span className="text-xs text-muted-foreground">Increase contributions by</span>
+                        <span className="text-lg font-bold text-primary tabular-nums">+{formatCurrency(Math.ceil(extraMonthly / 10) * 10)}/mo</span>
+                        <span className="text-xs text-muted-foreground">starting now</span>
+                      </div>
+                      <p className="text-xs">Or delay retirement to Year {readinessByScenario.find(s => s.label === '10%')?.yearHit || '25+'} at current contribution levels.</p>
+                      <p className="text-xs">Alternative: Target {formatCurrency(incomeAt20)}/yr retirement income instead — achievable with current plan by Year 20.</p>
+                    </div>
+                  </div>
+                )}
+
+                {isOnTrack && (
+                  <div className="p-4 rounded-lg bg-emerald-500/5 border border-emerald-500/10">
+                    <p className="text-sm font-semibold mb-1">✅ Your current plan supports retirement in 20–25 years</p>
+                    <p className="text-xs text-muted-foreground">
+                      At 10% ROI, your projected retirement income of {formatCurrency(incomeAt20)}/yr
+                      ({formatCurrency(incomeAt20 / 12)}/mo) exceeds your target by {formatCurrency(Math.abs(shortfall))}/yr.
+                      This includes {formatCurrency(ssAnnual)}/yr from Social Security.
+                    </p>
+                  </div>
+                )}
+              </>
+            );
+          })()}
         </CardContent>
       </Card>
 
