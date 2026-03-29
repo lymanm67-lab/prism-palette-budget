@@ -234,12 +234,18 @@ const Categories = () => {
   const handleSaveGroup = async () => {
     if (!groupForm.name.trim()) return;
     const bpId = groupForm.budget_type === 'business' && groupForm.business_profile_id ? groupForm.business_profile_id : null;
-    if (editingGroup) {
-      await updateGroup.mutateAsync({ id: editingGroup.id, name: groupForm.name.trim(), color: groupForm.color, budget_type: groupForm.budget_type, business_profile_id: bpId, expense_type: groupForm.expense_type });
-    } else {
-      await createGroup.mutateAsync({ name: groupForm.name.trim(), color: groupForm.color, sort_order: (groups?.length || 0), budget_type: groupForm.budget_type, business_profile_id: bpId, expense_type: groupForm.expense_type });
+    try {
+      if (editingGroup) {
+        await updateGroup.mutateAsync({ id: editingGroup.id, name: groupForm.name.trim(), color: groupForm.color, budget_type: groupForm.budget_type, business_profile_id: bpId, expense_type: groupForm.expense_type });
+        toast.success(`Group "${groupForm.name.trim()}" updated`);
+      } else {
+        await createGroup.mutateAsync({ name: groupForm.name.trim(), color: groupForm.color, sort_order: (groups?.length || 0), budget_type: groupForm.budget_type, business_profile_id: bpId, expense_type: groupForm.expense_type });
+        toast.success(`Group "${groupForm.name.trim()}" created`);
+      }
+      setGroupDialogOpen(false);
+    } catch (e: any) {
+      toast.error(e.message || 'Failed to save group');
     }
-    setGroupDialogOpen(false);
   };
 
   // Category dialog
