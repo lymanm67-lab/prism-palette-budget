@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Input } from '@/components/ui/input';
 import { useBudgets, useCategories, useCategoryGroups } from '@/hooks/use-finance-data';
 import { useCurrency } from '@/hooks/use-currency';
-import { TrendingUp, PiggyBank, Briefcase, CheckCircle2, AlertTriangle, Shield, Heart, DollarSign } from 'lucide-react';
+import { TrendingUp, PiggyBank, Briefcase, CheckCircle2, AlertTriangle, Shield, Heart, DollarSign, Award, ArrowUp, Target } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 
@@ -573,6 +573,127 @@ export default function PayrollReportTab({ budgetMonth }: PayrollReportTabProps)
           </div>
         </CardContent>
       </Card>
+
+      {/* National Average Comparison & Ranking */}
+      {(() => {
+        const rate = analysis.totalSavingsRate;
+        const benchmarks = [
+          { label: 'National Average Savings Rate', value: 4.6, source: 'BEA 2024' },
+          { label: 'Average 401(k) Contribution Rate', value: 7.4, source: 'Vanguard 2024' },
+          { label: 'Average Total Retirement Rate (w/ Employer)', value: 11.7, source: 'Fidelity 2024' },
+          { label: 'Recommended Wealth-Building Standard', value: 20, source: 'Financial Experts' },
+          { label: 'Top 10% Savers', value: 25, source: 'Federal Reserve SCF' },
+        ];
+
+        // Determine percentile rank
+        let rank: string;
+        let rankColor: string;
+        let rankIcon: typeof Award;
+        if (rate >= 25) { rank = 'Top 5%'; rankColor = 'text-emerald-600 dark:text-emerald-400'; rankIcon = Award; }
+        else if (rate >= 20) { rank = 'Top 15%'; rankColor = 'text-emerald-600 dark:text-emerald-400'; rankIcon = Award; }
+        else if (rate >= 15) { rank = 'Top 25%'; rankColor = 'text-sky-600 dark:text-sky-400'; rankIcon = TrendingUp; }
+        else if (rate >= 11.7) { rank = 'Above Average'; rankColor = 'text-sky-600 dark:text-sky-400'; rankIcon = TrendingUp; }
+        else if (rate >= 7.4) { rank = 'Average'; rankColor = 'text-amber-600 dark:text-amber-400'; rankIcon = Target; }
+        else if (rate >= 4.6) { rank = 'Below Average'; rankColor = 'text-orange-600 dark:text-orange-400'; rankIcon = AlertTriangle; }
+        else { rank = 'Bottom 25%'; rankColor = 'text-rose-600 dark:text-rose-400'; rankIcon = AlertTriangle; }
+
+        const RankIcon = rankIcon;
+
+        // Generate recommendations
+        const recommendations: string[] = [];
+        if (rate < 7.4) recommendations.push('Increase your 401(k)/403(b) contribution by at least 1-2% per paycheck to match the national average employee deferral rate.');
+        if (rate < 11.7) recommendations.push('With employer match, aim for a combined rate of at least 12% — the average total contribution rate reported by major plan providers.');
+        if (rate < 15) recommendations.push('Consider maxing out your HSA ($4,300 individual / $8,550 family for 2025) — it offers triple tax advantages.');
+        if (rate < 20) recommendations.push('Target the 20% wealth-building standard by adding a Roth IRA ($7,000/yr limit) or increasing payroll deferrals.');
+        if (rate >= 20 && rate < 25) recommendations.push('You\'re exceeding the 20% standard — consider taxable brokerage investing or 529 education savings to further build wealth.');
+        if (rate >= 25) recommendations.push('Exceptional savings rate. Consider diversifying across asset classes and reviewing estate planning strategies.');
+
+        return (
+          <Card className="border-2 border-sky-500/20">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="font-display text-base flex items-center gap-2">
+                  <Award className="h-5 w-5 text-sky-500" />
+                  National Comparison & Ranking
+                </CardTitle>
+                <Badge className={cn('text-xs font-semibold', rankColor)} variant="outline">
+                  <RankIcon className="h-3 w-3 mr-1" />
+                  {rank}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              {/* Benchmark comparison bars */}
+              <div className="space-y-3">
+                <h4 className="text-sm font-semibold">Your Rate vs. National Benchmarks</h4>
+                {benchmarks.map((b, i) => {
+                  const isAbove = rate >= b.value;
+                  return (
+                    <div key={i} className="space-y-1">
+                      <div className="flex justify-between text-xs">
+                        <span className="text-muted-foreground">{b.label}</span>
+                        <span className="tabular-nums font-medium">{b.value}%</span>
+                      </div>
+                      <div className="relative h-3 bg-muted/50 rounded-full overflow-hidden">
+                        {/* Benchmark line */}
+                        <div className="absolute h-full bg-muted-foreground/20 rounded-full" style={{ width: `${Math.min(b.value * 4, 100)}%` }} />
+                        {/* User rate */}
+                        <div
+                          className={cn('absolute h-full rounded-full transition-all', isAbove ? 'bg-emerald-500' : 'bg-amber-500')}
+                          style={{ width: `${Math.min(rate * 4, 100)}%` }}
+                        />
+                        {/* Benchmark marker */}
+                        <div className="absolute h-full w-0.5 bg-foreground/40" style={{ left: `${Math.min(b.value * 4, 100)}%` }} />
+                      </div>
+                      <div className="flex justify-between text-[10px] text-muted-foreground">
+                        <span>{isAbove ? `+${(rate - b.value).toFixed(1)}% above` : `${(b.value - rate).toFixed(1)}% below`}</span>
+                        <span>{b.source}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+                {/* Your rate label */}
+                <div className="flex items-center gap-2 text-xs pt-1">
+                  <div className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                  <span>Your Total Savings Rate: <span className="font-bold tabular-nums">{rate.toFixed(2)}%</span></span>
+                  <div className="h-2.5 w-0.5 bg-foreground/40 mx-1" />
+                  <span className="text-muted-foreground">Benchmark markers</span>
+                </div>
+              </div>
+
+              {/* Recommendations */}
+              <div className="space-y-2 pt-2 border-t">
+                <h4 className="text-sm font-semibold flex items-center gap-1.5">
+                  <ArrowUp className="h-4 w-4 text-sky-500" />
+                  Recommendations
+                </h4>
+                {recommendations.map((rec, i) => (
+                  <div key={i} className="flex gap-2 text-sm p-2.5 rounded-lg bg-sky-500/5 border border-sky-500/10">
+                    <CheckCircle2 className="h-4 w-4 text-sky-500 shrink-0 mt-0.5" />
+                    <span>{rec}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Quick stats row */}
+              <div className="grid grid-cols-3 gap-3 pt-2 border-t">
+                <div className="text-center p-3 rounded-lg bg-muted/30">
+                  <p className="text-lg font-bold tabular-nums text-emerald-600 dark:text-emerald-400">{rate >= 4.6 ? `+${(rate - 4.6).toFixed(1)}%` : `${(rate - 4.6).toFixed(1)}%`}</p>
+                  <p className="text-[10px] text-muted-foreground">vs National Average</p>
+                </div>
+                <div className="text-center p-3 rounded-lg bg-muted/30">
+                  <p className="text-lg font-bold tabular-nums">{rate >= 11.7 ? `+${(rate - 11.7).toFixed(1)}%` : `${(rate - 11.7).toFixed(1)}%`}</p>
+                  <p className="text-[10px] text-muted-foreground">vs Avg Total Rate</p>
+                </div>
+                <div className="text-center p-3 rounded-lg bg-muted/30">
+                  <p className={cn('text-lg font-bold tabular-nums', rate >= 20 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400')}>{rate >= 20 ? `+${(rate - 20).toFixed(1)}%` : `${(rate - 20).toFixed(1)}%`}</p>
+                  <p className="text-[10px] text-muted-foreground">vs 20% Standard</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })()}
     </div>
   );
 }
