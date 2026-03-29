@@ -525,9 +525,10 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
             {Object.entries(scenarios).map(([label, rows]) => {
               const finalReal = rows[horizon - 1]?.realBalance || 0;
               const afterTax = finalReal * (1 - tax / 100);
-              const ssAnnualReal = ssMonthly * 12; // SS is already in today's dollars (COLA-adjusted)
+              const ssAnnualReal = ssMonthly * 12;
+              const pensionAnnual = spousePension * 12;
               const withdrawalRate4Pct = afterTax * 0.04;
-              const totalRetirementIncome = withdrawalRate4Pct + ssAnnualReal;
+              const totalRetirementIncome = withdrawalRate4Pct + ssAnnualReal + pensionAnnual;
               const monthlyRetirement = totalRetirementIncome / 12;
 
               return (
@@ -544,6 +545,10 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
                   <div>
                     <p className="text-[10px] text-muted-foreground">+ Social Security / yr</p>
                     <p className="text-sm font-semibold tabular-nums">{formatCurrency(ssAnnualReal)}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-foreground">+ Spouse Pension / yr</p>
+                    <p className="text-sm font-semibold tabular-nums">{formatCurrency(pensionAnnual)}</p>
                   </div>
                   <div className="pt-2 border-t border-border/50">
                     <p className="text-[10px] text-muted-foreground font-semibold">Total Retirement Income</p>
@@ -586,8 +591,10 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
           {(() => {
             const targetIncome = parseFloat(targetRetirementIncome) || 80000;
             const ssAnnual = ssMonthly * 12;
-            const neededFromPortfolio = targetIncome - ssAnnual; // what 4% withdrawal must cover
-            const requiredAfterTaxPortfolio = neededFromPortfolio / 0.04;
+            const pensionAnnual = spousePension * 12;
+            const guaranteedIncome = ssAnnual + pensionAnnual;
+            const neededFromPortfolio = targetIncome - guaranteedIncome;
+            const requiredAfterTaxPortfolio = neededFromPortfolio > 0 ? neededFromPortfolio / 0.04 : 0;
             const requiredPreTaxReal = requiredAfterTaxPortfolio / (1 - tax / 100);
 
             // Find which year each scenario hits the target (using real balance)
@@ -595,7 +602,7 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
               const yearHit = rows.findIndex(r => {
                 const afterTaxReal = r.realBalance * (1 - tax / 100);
                 const withdrawal = afterTaxReal * 0.04;
-                return (withdrawal + ssAnnual) >= targetIncome;
+                return (withdrawal + guaranteedIncome) >= targetIncome;
               });
               return { label, yearHit: yearHit >= 0 ? yearHit + 1 : -1 };
             });
@@ -606,7 +613,7 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
             const atYear20 = scenario10[Math.min(targetYear - 1, scenario10.length - 1)];
             const realAt20 = atYear20?.realBalance || 0;
             const afterTaxAt20 = realAt20 * (1 - tax / 100);
-            const incomeAt20 = afterTaxAt20 * 0.04 + ssAnnual;
+            const incomeAt20 = afterTaxAt20 * 0.04 + guaranteedIncome;
             const shortfall = targetIncome - incomeAt20;
             const isOnTrack = shortfall <= 0;
 
@@ -705,7 +712,7 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
                     <p className="text-xs text-muted-foreground">
                       At 10% ROI, your projected retirement income of {formatCurrency(incomeAt20)}/yr
                       ({formatCurrency(incomeAt20 / 12)}/mo) exceeds your target by {formatCurrency(Math.abs(shortfall))}/yr.
-                      This includes {formatCurrency(ssAnnual)}/yr from Social Security.
+                      This includes {formatCurrency(ssAnnual)}/yr from Social Security and {formatCurrency(pensionAnnual)}/yr from spouse pension.
                     </p>
                   </div>
                 )}
