@@ -153,7 +153,10 @@ const PricingSection = () => {
     }
   };
 
-  const isCurrentPlan = (planKey: string) => subscribed && subscriptionTier === planKey;
+  const isCurrentPlan = (planKey: string) => {
+    if (planKey === 'lite') return user && !subscribed;
+    return subscribed && subscriptionTier === planKey;
+  };
 
   return (
     <section id="pricing" className="py-20 sm:py-28 bg-muted/20">
