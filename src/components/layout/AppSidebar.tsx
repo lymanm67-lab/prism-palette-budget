@@ -84,6 +84,7 @@ const NAV_SECTIONS: NavSection[] = [
       {
         subLabel: 'Credit Health',
         items: [
+          { to: '/capital/credit-health', icon: Heart, label: 'Credit Health', color: 'text-prism-rose' },
           { to: '/capital/credit-overview', icon: FileSearch, label: 'Credit Overview', color: 'text-prism-sky' },
           { to: '/capital/metro2-scanner', icon: Gauge, label: 'Metro2 Scanner', color: 'text-prism-amber' },
           { to: '/capital/disputes', icon: FileText, label: 'Disputes', color: 'text-prism-orange' },

@@ -59,6 +59,13 @@ import BankabilityScore from "@/pages/capital/BankabilityScore";
 import LoanReadiness from "@/pages/capital/LoanReadiness";
 import DSCRCalculator from "@/pages/capital/DSCRCalculator";
 import MoneyMath from "@/pages/capital/MoneyMath";
+import CreditHealthDashboard from "@/pages/capital/CreditHealthDashboard";
+import CreditHealthBreakdown from "@/pages/capital/CreditHealthBreakdown";
+import CreditHealthIssues from "@/pages/capital/CreditHealthIssues";
+import CreditHealthTimeline from "@/pages/capital/CreditHealthTimeline";
+import CreditHealthExplain from "@/pages/capital/CreditHealthExplain";
+import CreditHealthReadiness from "@/pages/capital/CreditHealthReadiness";
+import CreditHealthOnboarding from "@/pages/capital/CreditHealthOnboarding";
 import ExperimentsDashboard from "@/pages/ExperimentsDashboard";
 import ReconciliationAudit from "@/pages/ReconciliationAudit";
 import Changelog from "@/pages/Changelog";
@@ -162,6 +169,13 @@ const App = () => (
               <Route path="/capital/loan-readiness" element={<LoanReadiness />} />
               <Route path="/capital/dscr" element={<DSCRCalculator />} />
               <Route path="/capital/money-math" element={<MoneyMath />} />
+              <Route path="/capital/credit-health" element={<CreditHealthDashboard />} />
+              <Route path="/capital/credit-health/breakdown" element={<CreditHealthBreakdown />} />
+              <Route path="/capital/credit-health/issues" element={<CreditHealthIssues />} />
+              <Route path="/capital/credit-health/timeline" element={<CreditHealthTimeline />} />
+              <Route path="/capital/credit-health/explain" element={<CreditHealthExplain />} />
+              <Route path="/capital/credit-health/readiness" element={<CreditHealthReadiness />} />
+              <Route path="/capital/credit-health/onboarding" element={<CreditHealthOnboarding />} />
               <Route path="/reconciliation" element={<ReconciliationAudit />} />
               <Route path="/experiments" element={<ExperimentsDashboard />} />
               <Route path="/app-store-readiness" element={<AppStoreReadiness />} />
