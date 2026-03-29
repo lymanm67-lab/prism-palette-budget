@@ -91,6 +91,7 @@ const CreditHealthDashboard = () => {
         title="Credit Health"
         description="Understand your score, find what's hurting it, and follow a clear plan to improve"
         icon={Heart}
+        ttsScript="Welcome to Credit Health. This is your command center for understanding and improving your credit score. View your estimated score, see what factors are holding you back, get a personalized next best step, and follow a guided 7 to 120 day action timeline. Use the Score Breakdown for detailed factor education, the Issue Tracker to manage disputes, and the Approval Readiness screen to prepare for applications."
         features={['Score analysis & factor breakdown', 'Guided 7-120 day action plan', 'Issue tracking & dispute management', 'Approval readiness assessment']}
       />
 
