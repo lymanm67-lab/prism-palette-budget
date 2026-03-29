@@ -11,6 +11,26 @@ import { useABTest } from '@/hooks/use-ab-test';
 
 const PLANS = [
   {
+    key: 'lite' as const,
+    name: 'Prism Lite',
+    monthly: 0,
+    yearly: 0,
+    yearlySavings: 0,
+    bestFor: 'Anyone curious about their spending — see your Safe-to-Spend number instantly',
+    tagline: 'Free forever. No credit card required.',
+    features: [
+      'Safe-to-Spend calculator',
+      '1 manual account',
+      'Basic spending categories',
+      'Monthly spending overview',
+    ],
+    cta: 'Get Started Free',
+    badge: 'Free',
+    badgeIcon: Zap,
+    highlight: false,
+    isFree: true,
+  },
+  {
     key: 'personal' as const,
     name: 'Prism Personal',
     monthly: 12.99,
@@ -19,6 +39,8 @@ const PLANS = [
     bestFor: 'Individuals who want better budgeting and personal financial organization',
     tagline: null,
     features: [
+      'Everything in Lite, plus:',
+      'Unlimited accounts',
       'Personal financial control systems',
       'Spending categories',
       'Savings tracking',
@@ -30,6 +52,7 @@ const PLANS = [
     badge: null,
     badgeIcon: null,
     highlight: false,
+    isFree: false,
   },
   {
     key: 'premium' as const,
@@ -41,6 +64,8 @@ const PLANS = [
     tagline: 'Full control. Better decisions. Less financial stress.',
     features: [
       'Everything in Personal, plus:',
+      'Plaid bank connections',
+      'AI spending insights',
       'Cash flow forecasting',
       'Net worth tracking',
       'Bill negotiation workflows',
@@ -52,6 +77,7 @@ const PLANS = [
     badge: 'Most Popular',
     badgeIcon: Star,
     highlight: true,
+    isFree: false,
   },
   {
     key: 'business' as const,
@@ -75,6 +101,7 @@ const PLANS = [
     badge: 'Best for Business',
     badgeIcon: Briefcase,
     highlight: false,
+    isFree: false,
   },
 ];
 
