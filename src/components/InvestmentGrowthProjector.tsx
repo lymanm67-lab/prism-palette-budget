@@ -568,6 +568,8 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
             <p>• Inflation: {inflation}% annual — erodes purchasing power over {horizon} years by {((1 - 1 / Math.pow(1 + inflation / 100, horizon)) * 100).toFixed(0)}%</p>
             <p>• Tax Rate: {tax}% effective rate applied to portfolio withdrawals in retirement</p>
             <p>• Social Security: ${ssMonthly.toLocaleString()}/mo estimated benefit (COLA-adjusted, shown in today's dollars)</p>
+            <p>• Spouse Pension: ${spousePension.toLocaleString()}/mo ({formatCurrency(spousePension * 12)}/yr guaranteed income)</p>
+            <p>• Guaranteed Income: {formatCurrency((ssMonthly + spousePension) * 12)}/yr (SS + Pension combined)</p>
             <p>• 4% Rule: Withdraw 4% of after-tax portfolio annually for sustainable 30-year retirement spending</p>
           </div>
         </CardContent>
