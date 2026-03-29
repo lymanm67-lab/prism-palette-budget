@@ -26,17 +26,17 @@ const CreditHealthDashboard = () => {
   const { disputes } = useDisputes();
 
   // ── Score computation (reuses existing CreditOverview logic) ──
-  const metrics = useMemo(() => {
-    const revolving = accounts.filter(a => a.account_type === 'Revolving');
+  const computeScore = (accts: typeof accounts) => {
+    const revolving = accts.filter(a => a.account_type === 'Revolving');
     const totalBalance = revolving.reduce((s, a) => s + Number(a.balance), 0);
     const totalLimit = revolving.reduce((s, a) => s + Number(a.credit_limit || 0), 0);
     const utilization = totalLimit > 0 ? (totalBalance / totalLimit) * 100 : 0;
-    const negativeCount = accounts.filter(a =>
+    const negativeCount = accts.filter(a =>
       ['Collection', 'Charge-Off', 'Foreclosure', 'Repossession'].includes(a.account_status)
     ).length;
-    const openAccounts = accounts.filter(a => a.account_status.toLowerCase() === 'open');
+    const openAccounts = accts.filter(a => a.account_status.toLowerCase() === 'open');
     const avgAge = (() => {
-      const withDates = accounts.filter(a => a.date_opened);
+      const withDates = accts.filter(a => a.date_opened);
       if (!withDates.length) return 0;
       const now = new Date();
       return withDates.reduce((sum, a) => sum + ((now.getTime() - new Date(a.date_opened!).getTime()) / (1000 * 60 * 60 * 24 * 30)), 0) / withDates.length;
@@ -45,14 +45,26 @@ const CreditHealthDashboard = () => {
     const utilizationScore = utilization <= 10 ? 100 : utilization <= 30 ? 80 : utilization <= 50 ? 55 : utilization <= 75 ? 30 : 10;
     const negativeScore = negativeCount === 0 ? 100 : negativeCount <= 2 ? 40 : 15;
     const ageScore = avgAge >= 84 ? 100 : avgAge >= 48 ? 75 : avgAge >= 24 ? 55 : avgAge >= 12 ? 35 : 20;
-    const types = new Set(accounts.map(a => a.account_type));
+    const types = new Set(accts.map(a => a.account_type));
     const mixScore = types.size >= 4 ? 100 : types.size >= 3 ? 75 : types.size >= 2 ? 50 : 30;
     const totalAcctsScore = openAccounts.length >= 10 ? 100 : openAccounts.length >= 5 ? 75 : openAccounts.length >= 3 ? 50 : 30;
 
     const raw = 300 + (550 * (utilizationScore * 0.20 + negativeScore * 0.28 + ageScore * 0.13 + mixScore * 0.11 + totalAcctsScore * 0.08 + 100 * 0.20) / 100);
-    const score = accounts.length > 0 ? Math.min(850, Math.max(300, Math.round(raw))) : 0;
+    const score = accts.length > 0 ? Math.min(850, Math.max(300, Math.round(raw))) : 0;
 
     return { score, utilization, negativeCount, avgAge, utilizationScore, negativeScore, ageScore, mixScore, totalAcctsScore, openAccounts: openAccounts.length, totalBalance, totalLimit };
+  };
+
+  const metrics = useMemo(() => computeScore(accounts), [accounts]);
+
+  // Per-bureau scores
+  const bureauScores = useMemo(() => {
+    const bureaus = ['Equifax', 'Experian', 'TransUnion'] as const;
+    return bureaus.map(bureau => {
+      const bureauAccounts = accounts.filter(a => a.bureau === bureau);
+      const result = computeScore(bureauAccounts);
+      return { bureau, score: result.score, count: bureauAccounts.length };
+    });
   }, [accounts]);
 
   const toStatus = (s: number): FactorStatus => s >= 70 ? 'good' : s >= 40 ? 'fair' : s >= 20 ? 'poor' : 'critical';
@@ -124,6 +136,20 @@ const CreditHealthDashboard = () => {
                       <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Negative Items</p>
                       <p className={`text-xl font-bold ${metrics.negativeCount > 0 ? 'text-destructive' : ''}`}>{metrics.negativeCount}</p>
                     </div>
+                  </div>
+
+                  {/* Per-Bureau Scores */}
+                  <div className="grid grid-cols-3 gap-3 pt-2 border-t border-border/50">
+                    {bureauScores.map(b => {
+                      const color = b.score === 0 ? 'text-muted-foreground' : b.score >= 670 ? 'text-emerald-600' : b.score >= 580 ? 'text-amber-600' : 'text-destructive';
+                      return (
+                        <div key={b.bureau} className="space-y-1 text-center">
+                          <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{b.bureau}</p>
+                          <p className={`text-lg font-bold ${color}`}>{b.score > 0 ? b.score : '—'}</p>
+                          <p className="text-[10px] text-muted-foreground">{b.count} account{b.count !== 1 ? 's' : ''}</p>
+                        </div>
+                      );
+                    })}
                   </div>
                   <div className="flex gap-2 flex-wrap">
                     <Button size="sm" variant="outline" onClick={() => navigate('/capital/credit-overview')}>
