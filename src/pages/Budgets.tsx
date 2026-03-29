@@ -370,6 +370,10 @@ const Budgets = () => {
   // Gross income = net income + payroll deductions
   const grossIncomeBudget = totalIncomeBudget + sectionTotals.payroll_deduction.budget;
 
+  // Net expenses exclude payroll deductions for unallocated calc
+  const netExpenseBudget = sectionTotals.fixed.budget + sectionTotals.flexible.budget + sectionTotals.non_monthly.budget;
+  const unallocated = totalIncomeBudget - netExpenseBudget;
+
   // Unbudgeted categories
   const budgetedCategoryIds = new Set(budgetItems.map(b => b.category_id));
   const unbudgetedCategories = (categories || []).filter(c => filteredCategoryIds.has(c.id) && !budgetedCategoryIds.has(c.id));
