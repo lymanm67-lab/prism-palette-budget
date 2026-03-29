@@ -203,6 +203,7 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
   const [selectedScenario, setSelectedScenario] = useState('all');
   const [savedPlanId, setSavedPlanId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [viewMode, setViewMode] = useState<'combined' | 'yours' | 'spouse'>('combined');
   const printRef = useRef<HTMLDivElement>(null);
 
   // Update from payroll when data loads
@@ -214,13 +215,19 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
     }
   }, [currentContribs]);
 
-  const baseAnnual = useMemo(() => {
+  // Individual annual contributions
+  const yourAnnual = useMemo(() => {
     const emp = parseFloat(monthlyContrib) || 0;
     const er = parseFloat(employerMonthly) || 0;
     const hsa = parseFloat(hsaMonthly) || 0;
-    const spouseContrib = parseFloat(spouseAnnualContrib) || 0;
-    return (emp + er + hsa) * 12 + spouseContrib;
-  }, [monthlyContrib, employerMonthly, hsaMonthly, spouseAnnualContrib]);
+    return (emp + er + hsa) * 12;
+  }, [monthlyContrib, employerMonthly, hsaMonthly]);
+
+  const wifeAnnual = parseFloat(spouseAnnualContrib) || 0;
+  const baseAnnual = yourAnnual + wifeAnnual;
+
+  const yourStart = 165000; // Your portfolio
+  const wifeStart = (parseFloat(spousePortfolio) || 0) + (parseFloat(spouseDeferredComp) || 0);
 
   const horizon = parseInt(horizonYears) || 35;
   const start = parseFloat(startingBalance) || 0;
@@ -233,13 +240,35 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
   const pBoostInterval = parseInt(periodicBoostInterval) || 0;
   const spousePension = parseFloat(spousePensionMonthly) || 0;
 
-  // Compute all scenarios
-  const scenarios = useMemo(() => ({
+  // Compute scenarios for each view
+  const scenariosCombined = useMemo(() => ({
     '8%': computeProjection(start, baseAnnual, horizon, 8, schedules, boostYear, boostAmt, false, inflation, pBoostAmt, pBoostInterval),
     '10%': computeProjection(start, baseAnnual, horizon, 10, schedules, boostYear, boostAmt, false, inflation, pBoostAmt, pBoostInterval),
     '12%': computeProjection(start, baseAnnual, horizon, 12, schedules, boostYear, boostAmt, false, inflation, pBoostAmt, pBoostInterval),
     'Mixed': computeProjection(start, baseAnnual, horizon, 0, schedules, boostYear, boostAmt, true, inflation, pBoostAmt, pBoostInterval),
   }), [start, baseAnnual, horizon, schedules, boostYear, boostAmt, inflation, pBoostAmt, pBoostInterval]);
+
+  const scenariosYours = useMemo(() => ({
+    '8%': computeProjection(yourStart, yourAnnual, horizon, 8, schedules, boostYear, boostAmt, false, inflation, pBoostAmt, pBoostInterval),
+    '10%': computeProjection(yourStart, yourAnnual, horizon, 10, schedules, boostYear, boostAmt, false, inflation, pBoostAmt, pBoostInterval),
+    '12%': computeProjection(yourStart, yourAnnual, horizon, 12, schedules, boostYear, boostAmt, false, inflation, pBoostAmt, pBoostInterval),
+    'Mixed': computeProjection(yourStart, yourAnnual, horizon, 0, schedules, boostYear, boostAmt, true, inflation, pBoostAmt, pBoostInterval),
+  }), [yourStart, yourAnnual, horizon, schedules, boostYear, boostAmt, inflation, pBoostAmt, pBoostInterval]);
+
+  const scenariosSpouse = useMemo(() => ({
+    '8%': computeProjection(wifeStart, wifeAnnual, horizon, 8, schedules, 0, 0, false, inflation, 0, 0),
+    '10%': computeProjection(wifeStart, wifeAnnual, horizon, 10, schedules, 0, 0, false, inflation, 0, 0),
+    '12%': computeProjection(wifeStart, wifeAnnual, horizon, 12, schedules, 0, 0, false, inflation, 0, 0),
+    'Mixed': computeProjection(wifeStart, wifeAnnual, horizon, 0, schedules, 0, 0, true, inflation, 0, 0),
+  }), [wifeStart, wifeAnnual, horizon, schedules, inflation]);
+
+  const scenarios = viewMode === 'yours' ? scenariosYours : viewMode === 'spouse' ? scenariosSpouse : scenariosCombined;
+
+  const viewLabels = {
+    combined: { title: 'Household Combined', start: formatCurrency(start), annual: formatCurrency(baseAnnual) },
+    yours: { title: 'Your Portfolio', start: formatCurrency(yourStart), annual: formatCurrency(yourAnnual) },
+    spouse: { title: "Wife's Portfolio", start: formatCurrency(wifeStart), annual: formatCurrency(wifeAnnual) },
+  };
 
   // Chart data
   const chartData = useMemo(() => {
