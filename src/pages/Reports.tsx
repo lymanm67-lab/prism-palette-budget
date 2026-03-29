@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -416,16 +417,34 @@ const Reports = () => {
         <BusinessReports startDate={startDate} endDate={endDate} budgetMonth={budgetMonth} />
       ) : (
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TooltipProvider delayDuration={0}>
         <TabsList className="flex-wrap h-auto gap-1">
-          <TabsTrigger value="spending">Spending</TabsTrigger>
-          <TabsTrigger value="budget">Budget vs Actual</TabsTrigger>
-          <TabsTrigger value="cashflow">Cash Flow</TabsTrigger>
-          <TabsTrigger value="networth">Net Worth</TabsTrigger>
-          <TabsTrigger value="trends">Trends</TabsTrigger>
-          <TabsTrigger value="merchants">Top Merchants</TabsTrigger>
-          <TabsTrigger value="payroll">Payroll Analysis</TabsTrigger>
-          <TabsTrigger value="investment-growth">Investment Growth</TabsTrigger>
+          {[
+            { value: 'spending', label: 'Spending', icon: PieChartIcon },
+            { value: 'budget', label: 'Budget vs Actual', icon: Scale },
+            { value: 'cashflow', label: 'Cash Flow', icon: Wallet },
+            { value: 'networth', label: 'Net Worth', icon: TrendingUp },
+            { value: 'trends', label: 'Trends', icon: LineChartIcon },
+            { value: 'merchants', label: 'Top Merchants', icon: Store },
+            { value: 'payroll', label: 'Payroll Analysis', icon: Briefcase },
+            { value: 'investment-growth', label: 'Investment Growth', icon: Sprout },
+          ].map(({ value, label, icon: TabIcon }) => (
+            <Tooltip key={value}>
+              <TooltipTrigger asChild>
+                <span>
+                  <TabsTrigger value={value} className="gap-1.5">
+                    <TabIcon className="h-4 w-4" />
+                    <span className="hidden sm:inline">{label}</span>
+                  </TabsTrigger>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent className="sm:hidden">
+                <p>{label}</p>
+              </TooltipContent>
+            </Tooltip>
+          ))}
         </TabsList>
+        </TooltipProvider>
 
         <div ref={reportRef}>
         {/* ==================== SPENDING ==================== */}
