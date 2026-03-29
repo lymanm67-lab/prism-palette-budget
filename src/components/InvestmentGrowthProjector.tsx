@@ -193,7 +193,7 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
   const [inflationRate, setInflationRate] = useState('3');
   const [taxRate, setTaxRate] = useState('22');
   const [ssMonthlyBenefit, setSsMonthlyBenefit] = useState('3157');
-  const [spousePensionMonthly, setSpousePensionMonthly] = useState('7505');
+  const [spousePensionMonthly, setSpousePensionMonthly] = useState('7762');
   const [targetRetirementIncome, setTargetRetirementIncome] = useState('80000');
   const [periodicBoostAmount, setPeriodicBoostAmount] = useState('10000');
   const [periodicBoostInterval, setPeriodicBoostInterval] = useState('5');
