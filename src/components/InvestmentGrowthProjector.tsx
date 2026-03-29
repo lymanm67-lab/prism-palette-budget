@@ -173,9 +173,10 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
 
   // Plan state
   const [planName, setPlanName] = useState('Household 25-Year Investment Plan');
-  // Your portfolio + spouse portfolio combined
-  const [startingBalance, setStartingBalance] = useState('473059');
+  // Combined household portfolio: Your $165K + Wife's $308,059 + Wife's Deferred Comp $25,980
+  const [startingBalance, setStartingBalance] = useState('499039');
   const [spousePortfolio, setSpousePortfolio] = useState('308059');
+  const [spouseDeferredComp, setSpouseDeferredComp] = useState('25980');
   const [spouseAnnualContrib, setSpouseAnnualContrib] = useState('10181');
   const [monthlyContrib, setMonthlyContrib] = useState(() =>
     currentContribs.employee > 0 ? currentContribs.employee.toFixed(0) : '575'
@@ -407,10 +408,14 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
             </div>
 
             <p className="text-xs font-semibold text-muted-foreground mb-1 mt-3">Spouse (Wife)</p>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
               <div>
                 <label className="text-xs font-medium text-muted-foreground">Wife's Portfolio</label>
                 <Input value={spousePortfolio} onChange={e => setSpousePortfolio(e.target.value)} type="number" className="h-8 mt-1" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Wife's Deferred Comp</label>
+                <Input value={spouseDeferredComp} onChange={e => setSpouseDeferredComp(e.target.value)} type="number" className="h-8 mt-1" />
               </div>
               <div>
                 <label className="text-xs font-medium text-muted-foreground">Wife's Annual Contrib</label>
