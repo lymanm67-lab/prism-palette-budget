@@ -279,7 +279,7 @@ const Budgets = () => {
 
   // Group budgets by expense type
   const groupBudgetsByExpenseType = useCallback((items: BudgetRow[]) => {
-    const groups: Record<ExpenseType, BudgetRow[]> = { income: [], fixed: [], flexible: [], non_monthly: [] };
+    const groups: Record<ExpenseType, BudgetRow[]> = { income: [], payroll_deduction: [], fixed: [], flexible: [], non_monthly: [] };
     for (const b of items) {
       if (hideZeroAmounts && b.planned_amount === 0) continue;
       if (hiddenBudgetIds.has(b.id)) continue;
@@ -302,6 +302,7 @@ const Budgets = () => {
   const calcSectionTotals = useCallback((grouped: Record<ExpenseType, BudgetRow[]>) => {
     const totals: Record<ExpenseType, { budget: number; actual: number; remaining: number }> = {
       income: { budget: 0, actual: 0, remaining: 0 },
+      payroll_deduction: { budget: 0, actual: 0, remaining: 0 },
       fixed: { budget: 0, actual: 0, remaining: 0 },
       flexible: { budget: 0, actual: 0, remaining: 0 },
       non_monthly: { budget: 0, actual: 0, remaining: 0 },
