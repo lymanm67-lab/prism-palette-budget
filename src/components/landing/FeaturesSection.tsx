@@ -3,7 +3,7 @@ import {
   PiggyBank, Target, Bell, ScanSearch,
   TrendingUp, LineChart, CreditCard, FileText,
   LayoutDashboard, DollarSign, PieChart, Briefcase,
-  FileUp, Camera,
+  FileUp, Camera, Milestone, ShieldCheck,
 } from 'lucide-react';
 
 const GROUPS = [
@@ -18,13 +18,13 @@ const GROUPS = [
     ],
   },
   {
-    label: 'Financial Control',
+    label: 'Wealth & Retirement',
     color: 'from-prism-navy to-prism-indigo',
     features: [
-      { icon: TrendingUp, name: 'Cash flow forecasting' },
-      { icon: LineChart, name: 'Net worth tracking' },
-      { icon: CreditCard, name: 'Credit guidance & bill negotiation' },
-      { icon: FileText, name: 'Tax prep & AI monthly reconciliation' },
+      { icon: TrendingUp, name: 'Household investment growth projector (8–12% ROI)' },
+      { icon: Milestone, name: 'Retirement readiness assessment with gap analysis' },
+      { icon: LineChart, name: 'Inflation, tax & Social Security impact modeling' },
+      { icon: ShieldCheck, name: 'Spouse pension & deferred comp integration' },
     ],
   },
   {
@@ -32,9 +32,9 @@ const GROUPS = [
     color: 'from-prism-orange to-prism-amber',
     features: [
       { icon: LayoutDashboard, name: 'Personal & business dashboards' },
-      { icon: DollarSign, name: 'Owner pay & profit planning' },
-      { icon: PieChart, name: 'Business cash flow visibility' },
-      { icon: Briefcase, name: 'Tax readiness & premium tools' },
+      { icon: DollarSign, name: 'Cash flow forecasting & net worth tracking' },
+      { icon: PieChart, name: 'Credit guidance & AI monthly reconciliation' },
+      { icon: Briefcase, name: 'Tax readiness & capital planning tools' },
     ],
   },
 ];

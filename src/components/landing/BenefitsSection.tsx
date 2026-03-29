@@ -1,10 +1,11 @@
 import { motion } from 'framer-motion';
-import { LayoutDashboard, Eye, Lightbulb, Briefcase, ShieldCheck, BadgeDollarSign, Camera } from 'lucide-react';
+import { LayoutDashboard, Eye, Lightbulb, Briefcase, ShieldCheck, BadgeDollarSign, Camera, TrendingUp } from 'lucide-react';
 
 const BENEFITS = [
-  { icon: LayoutDashboard, title: 'All-in-one financial command center', desc: 'Budgeting, subscriptions, forecasting, net worth, and planning — one place.' },
-  { icon: Eye, title: 'Clarity instead of chaos', desc: 'See where your money is leaking and what needs attention next.' },
-  { icon: Lightbulb, title: 'Better decisions, not just more data', desc: 'Cut waste, prepare for expenses, and plan with confidence.' },
+  { icon: LayoutDashboard, title: 'All-in-one financial command center', desc: 'Budgeting, investments, retirement planning, subscriptions, and forecasting — one place.' },
+  { icon: TrendingUp, title: 'Household retirement projections', desc: 'See yours, your spouse\'s, and combined portfolios with Social Security, pensions, and inflation-adjusted returns.' },
+  { icon: Eye, title: 'Clarity instead of chaos', desc: 'See where your money is leaking and when you can realistically retire.' },
+  { icon: Lightbulb, title: 'Better decisions, not just more data', desc: 'Know exactly how much more to save, when to retire, and what income to expect.' },
   { icon: Briefcase, title: 'Personal & business in one ecosystem', desc: 'Stop juggling disconnected tools for your money.' },
   { icon: ShieldCheck, title: 'Less stress around bills & taxes', desc: 'Stay organized year-round so nothing sneaks up on you.' },
   { icon: BadgeDollarSign, title: 'AI monthly audit & reconciliation', desc: 'Automatically catches duplicates, missing categories, balance errors, and tax-readiness gaps every month.' },
