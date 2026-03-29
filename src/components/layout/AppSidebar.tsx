@@ -19,13 +19,14 @@ import type { LucideIcon } from 'lucide-react';
 
 type NavMode = 'personal' | 'business' | 'full';
 
-type NavItem = { to: string; icon: LucideIcon; label: string; color: string };
-type NavSubGroup = { subLabel: string; items: NavItem[] };
+type NavItem = { to: string; icon: LucideIcon; label: string; color: string; mode?: 'personal' | 'business' };
+type NavSubGroup = { subLabel: string; items: NavItem[]; mode?: 'business' };
 type NavSection = {
   label: string;
   items?: NavItem[];
   subGroups?: NavSubGroup[];
   topItems?: NavItem[];
+  mode?: 'personal' | 'business';
 };
 
 const NAV_SECTIONS: NavSection[] = [
