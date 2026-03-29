@@ -461,7 +461,7 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
               <p className="text-base font-bold tabular-nums">{formatCurrency(parseFloat(monthlyContrib) || 0)}</p>
             </div>
             <div className="p-3 rounded-lg bg-muted/30 text-center">
-              <p className="text-xs text-muted-foreground">Employer (9%)</p>
+              <p className="text-xs text-muted-foreground">Employer Match</p>
               <p className="text-base font-bold tabular-nums">{formatCurrency(parseFloat(employerMonthly) || 0)}</p>
             </div>
             <div className="p-3 rounded-lg bg-muted/30 text-center">
