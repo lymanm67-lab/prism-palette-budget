@@ -107,7 +107,7 @@ export default function PayrollReportTab({ budgetMonth }: PayrollReportTabProps)
   const { data: budgets } = useBudgets(budgetMonth);
   const { data: categories } = useCategories();
   const { data: categoryGroups } = useCategoryGroups();
-  const [manualEmployerContrib, setManualEmployerContrib] = useState<string>('516.56');
+  const [employerMatchPct, setEmployerMatchPct] = useState<string>('9');
 
   const analysis = useMemo(() => {
     if (!budgets || !categories || !categoryGroups) return null;
