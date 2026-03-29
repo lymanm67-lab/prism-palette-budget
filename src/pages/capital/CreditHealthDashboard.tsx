@@ -1,9 +1,9 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Heart, CreditCard, Clock, Shield, BarChart3, FileText,
-  TrendingUp, TrendingDown, ArrowUpRight, Minus, RefreshCw,
+  TrendingUp, TrendingDown, ArrowUpRight, Minus, RefreshCw, Landmark,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -16,14 +16,51 @@ import ScoreBarriers, { type Barrier } from '@/components/credit-health/ScoreBar
 import TimelinePreview from '@/components/credit-health/TimelinePreview';
 import { useCreditAccounts } from '@/hooks/use-credit-accounts';
 import { useDisputes } from '@/hooks/use-disputes';
+import { useHousehold } from '@/contexts/HouseholdContext';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const stagger = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.08 } } } as const;
 const fadeUp = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 300, damping: 24 } } } as const;
 
 const CreditHealthDashboard = () => {
   const navigate = useNavigate();
-  const { accounts } = useCreditAccounts();
+  const { accounts, refetch } = useCreditAccounts();
   const { disputes } = useDisputes();
+  const { household } = useHousehold();
+  const householdId = household?.id;
+  const [syncing, setSyncing] = useState(false);
+
+  const syncLiabilities = useCallback(async () => {
+    if (!householdId) { toast.error('No household found'); return; }
+    setSyncing(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { toast.error('Please sign in'); return; }
+
+      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+      const res = await fetch(
+        `https://${projectId}.supabase.co/functions/v1/plaid/sync-liabilities`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify({ household_id: householdId }),
+        }
+      );
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || 'Sync failed');
+      toast.success(`Synced ${result.accounts_synced} credit accounts from your banks`);
+      refetch();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to sync liabilities');
+    } finally {
+      setSyncing(false);
+    }
+  }, [householdId, refetch]);
 
   // ── Score computation (reuses existing CreditOverview logic) ──
   const computeScore = (accts: typeof accounts) => {
@@ -119,7 +156,11 @@ const CreditHealthDashboard = () => {
                 <div className="space-y-4">
                   <div>
                     <p className="text-sm text-muted-foreground">Estimated VantageScore®</p>
-                    <p className="text-xs text-muted-foreground mt-1">Based on your imported credit data</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {accounts.some(a => a.bureau === 'Plaid')
+                        ? 'Based on real bank data + imported credit reports'
+                        : 'Based on imported credit data — sync banks for better accuracy'}
+                    </p>
                   </div>
                   <div className="grid grid-cols-3 gap-4">
                     <div className="space-y-1">
@@ -152,6 +193,10 @@ const CreditHealthDashboard = () => {
                     })}
                   </div>
                   <div className="flex gap-2 flex-wrap">
+                    <Button size="sm" variant="outline" onClick={syncLiabilities} disabled={syncing}>
+                      <Landmark className="h-3.5 w-3.5 mr-1.5" />
+                      {syncing ? 'Syncing…' : 'Sync from Banks'}
+                    </Button>
                     <Button size="sm" variant="outline" onClick={() => navigate('/capital/credit-overview')}>
                       <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Update Reports
                     </Button>
