@@ -27,6 +27,7 @@ const CreditHealthDashboard = () => {
   const navigate = useNavigate();
   const { accounts, refetch } = useCreditAccounts();
   const { disputes } = useDisputes();
+  const { household } = useHousehold();
   const householdId = household?.id;
   const [syncing, setSyncing] = useState(false);
 
