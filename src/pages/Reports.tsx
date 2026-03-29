@@ -616,6 +616,74 @@ const Reports = () => {
             </Card>
           )}
           <ReportNarrative tab="spending" spendingData={spendingData || undefined} dateLabel={dateLabel} />
+          </>
+          )}
+          {spendingSub === 'merchants' && (
+          <>
+          <ReportTabGuide
+            title="Top Merchants"
+            icon={Store}
+            iconColor="text-rose-500"
+            howToUse={[
+              'The horizontal bar chart ranks merchants by total spending.',
+              'Below the chart, each merchant shows the total amount and transaction count.',
+              'Use this to identify where you spend the most and find opportunities to save.',
+              'Merchant names are extracted from your transaction descriptions.',
+            ]}
+            howToEnterData={[
+              'Add transactions with merchant names on the Transactions page.',
+              'Import bank statements — merchant names are extracted automatically.',
+              'Use the merchant normalization feature to clean up inconsistent names.',
+            ]}
+            ttsScript="The Top Merchants report ranks the stores and services where you spend the most. The bar chart shows the top merchants by total amount. Below it, each merchant lists the total spent and how many transactions. To use this report, make sure your transactions have merchant names. Import bank statements for automatic merchant extraction. Use merchant normalization in settings to clean up messy names."
+            dataEntryLinks={[
+              { label: 'Transactions', path: '/transactions', description: 'Add transactions with merchants' },
+              { label: 'Subscriptions', path: '/subscriptions', description: 'Track recurring merchants' },
+            ]}
+          />
+          <Card>
+            <CardHeader><CardTitle className="font-display">Top Merchants by Spending</CardTitle></CardHeader>
+            <CardContent>
+              {topMerchants.length > 0 ? (
+                <>
+                  <ResponsiveContainer width="100%" height={Math.max(300, topMerchants.length * 40 + 40)} className="[&_.recharts-text]:!bg-transparent [&_text]:!bg-transparent">
+                    <BarChart data={topMerchants} layout="vertical" margin={{ left: 10, right: 20 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
+                      <XAxis type="number" stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={v => formatCompact(v)} tick={{ fill: 'hsl(var(--foreground))' }} />
+                      <YAxis type="category" dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={11} width={120} tick={{ fill: 'hsl(var(--foreground))' }} />
+                      <Tooltip cursor={{ fill: 'transparent' }} formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} itemStyle={{ color: 'hsl(var(--foreground))' }} labelStyle={{ color: 'hsl(var(--foreground))' }} />
+                      <Bar dataKey="total" name="Total Spent" radius={[0, 6, 6, 0]} barSize={20}>
+                        {topMerchants.map((_, i) => (
+                          <Cell key={i} fill={TREND_COLORS[i % TREND_COLORS.length]} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                  <div className="mt-6 space-y-2">
+                    {topMerchants.map((m, i) => (
+                      <div key={m.name} className="flex items-center justify-between rounded-lg px-3 py-2 hover:bg-muted/50 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <span className="flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold text-primary-foreground" style={{ backgroundColor: TREND_COLORS[i % TREND_COLORS.length] }}>
+                            {i + 1}
+                          </span>
+                          <span className="text-sm font-medium">{m.name}</span>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-sm font-bold text-foreground">{formatCurrency(m.total)}</span>
+                          <span className="ml-2 text-xs text-muted-foreground">{m.count} txn{m.count !== 1 ? 's' : ''}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <p className="py-10 text-center text-muted-foreground">No merchant data in this period.</p>
+              )}
+            </CardContent>
+          </Card>
+          <ReportNarrative tab="merchants" topMerchants={topMerchants} dateLabel={dateLabel} />
+          </>
+          )}
         </TabsContent>
 
         {/* ==================== BUDGET VS ACTUAL ==================== */}
