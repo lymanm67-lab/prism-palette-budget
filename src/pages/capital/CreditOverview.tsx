@@ -11,6 +11,7 @@ import PageOverview from '@/components/PageOverview';
 import AddCreditAccountDialog from '@/components/capital/AddCreditAccountDialog';
 import CreditReportImport from '@/components/capital/CreditReportImport';
 import CreditScoreSimulator from '@/components/capital/CreditScoreSimulator';
+import AiCreditAnalysis from '@/components/capital/AiCreditAnalysis';
 import { useCreditAccounts, CreditAccount } from '@/hooks/use-credit-accounts';
 import { format } from 'date-fns';
 
@@ -256,6 +257,9 @@ const CreditOverview = () => {
 
       {/* Import Section */}
       <CreditReportImport onSuccess={refetch} />
+
+      {/* AI Credit Analysis */}
+      {accounts.length > 0 && <AiCreditAnalysis />}
 
       {/* Credit Score Simulator */}
       {accounts.length > 0 && <CreditScoreSimulator accounts={accounts} />}
