@@ -195,6 +195,7 @@ export default function PayrollReportTab({ budgetMonth }: PayrollReportTabProps)
       totalFixedExp, totalFlexibleExp, totalNonMonthlyExp,
       expenseBarData,
       employeeContrib, employeeContribPct,
+      employerContrib, employerContribPct, employerBenefitItems,
       hsaTotal, hsaPct,
       rothTotal, rothPct,
       deferredTotal, deferredPct,
