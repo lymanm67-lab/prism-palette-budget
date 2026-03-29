@@ -282,8 +282,6 @@ Your Safe-to-Spend updates in real time as you add transactions, pay bills, and 
       <motion.div variants={item}>
         <SafeToSpendHero 
           viewMode={mode} 
-          filteredIncome={monthlyIncome} 
-          filteredExpenses={monthlyExpenses} 
         />
       </motion.div>
 
