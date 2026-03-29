@@ -1,0 +1,2 @@
+ALTER TABLE public.category_groups DROP CONSTRAINT IF EXISTS category_groups_expense_type_check;
+ALTER TABLE public.category_groups ADD CONSTRAINT category_groups_expense_type_check CHECK (expense_type IN ('income', 'fixed', 'flexible', 'non_monthly', 'payroll_deduction'));
