@@ -71,6 +71,8 @@ function computeProjection(
   oneTimeBoostMonthly: number,
   useMixedRoi: boolean,
   inflationRate: number,
+  periodicBoostAmount: number,
+  periodicBoostInterval: number,
 ) {
   const rows: { year: number; annualContrib: number; endBalance: number; roi: number; growth: number; realBalance: number }[] = [];
   let balance = startingBalance;
@@ -91,6 +93,11 @@ function computeProjection(
     let yearContrib = currentAnnual;
     if (y === oneTimeBoostYear) {
       yearContrib += oneTimeBoostMonthly * 12;
+    }
+
+    // Periodic lump-sum boost every N years
+    if (periodicBoostInterval > 0 && periodicBoostAmount > 0 && y % periodicBoostInterval === 0) {
+      yearContrib += periodicBoostAmount;
     }
 
     const roi = useMixedRoi ? (MIXED_ROI_MAP[y] ?? 8) : annualRoi;
