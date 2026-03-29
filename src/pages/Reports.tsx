@@ -23,6 +23,7 @@ import BusinessReports from '@/components/BusinessReports';
 import PageOverview from '@/components/PageOverview';
 import ReportNarrative from '@/components/ReportNarrative';
 import PayrollReportTab from '@/components/PayrollReportTab';
+import InvestmentGrowthProjector from '@/components/InvestmentGrowthProjector';
 const tooltipStyle = { background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))' };
 
 const TREND_COLORS = [
