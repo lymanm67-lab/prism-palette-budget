@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -6,7 +6,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Input } from '@/components/ui/input';
 import { useBudgets, useCategories, useCategoryGroups } from '@/hooks/use-finance-data';
 import { useCurrency } from '@/hooks/use-currency';
-import { TrendingUp, PiggyBank, Briefcase, CheckCircle2, AlertTriangle, Shield, Heart, DollarSign, Award, ArrowUp, Target } from 'lucide-react';
+import { TrendingUp, PiggyBank, Briefcase, CheckCircle2, AlertTriangle, Shield, Heart, DollarSign, Award, ArrowUp, Target, Calculator, CalendarPlus, Rocket } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Slider } from '@/components/ui/slider';
 import { cn } from '@/lib/utils';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 
@@ -706,6 +709,248 @@ export default function PayrollReportTab({ budgetMonth }: PayrollReportTabProps)
           </Card>
         );
       })()}
+
+      {/* Annual Increase Simulator */}
+      <AnnualIncreaseSimulator
+        currentRate={analysis.totalSavingsRate}
+        grossIncome={analysis.grossIncome}
+        currentMonthlySavings={analysis.totalSavingsInvestment}
+      />
     </div>
+  );
+}
+
+/* ======================== Annual Increase Simulator ======================== */
+
+interface SimulatorProps {
+  currentRate: number;
+  grossIncome: number;
+  currentMonthlySavings: number;
+}
+
+function AnnualIncreaseSimulator({ currentRate, grossIncome, currentMonthlySavings }: SimulatorProps) {
+  const { formatCurrency } = useCurrency();
+  const [annualIncreasePct, setAnnualIncreasePct] = useState(2);
+  const [targetRate, setTargetRate] = useState(30);
+  const [startMonth, setStartMonth] = useState(() => {
+    const now = new Date();
+    // Default to next July
+    const year = now.getMonth() >= 6 ? now.getFullYear() + 1 : now.getFullYear();
+    return `${year}-07`;
+  });
+
+  const simulation = useMemo(() => {
+    if (grossIncome <= 0 || currentRate >= targetRate) return [];
+
+    const rows: {
+      year: number;
+      date: string;
+      newRate: number;
+      monthlyContrib: number;
+      annualContrib: number;
+      additionalMonthly: number;
+      cumulativeAdditional: number;
+    }[] = [];
+
+    let rate = currentRate;
+    let cumulativeAdditional = 0;
+    const [startYear, startMo] = startMonth.split('-').map(Number);
+    let year = 0;
+
+    while (rate < targetRate) {
+      year++;
+      rate = Math.min(rate + annualIncreasePct, targetRate);
+      const monthlyContrib = (grossIncome * rate) / 100;
+      const annualContrib = monthlyContrib * 12;
+      const additionalMonthly = monthlyContrib - currentMonthlySavings - (cumulativeAdditional > 0 ? cumulativeAdditional : 0);
+      cumulativeAdditional = monthlyContrib - currentMonthlySavings;
+
+      const dateObj = new Date(startYear + year - 1, startMo - 1);
+      const dateLabel = dateObj.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+
+      rows.push({
+        year,
+        date: dateLabel,
+        newRate: rate,
+        monthlyContrib,
+        annualContrib,
+        additionalMonthly: (grossIncome * annualIncreasePct) / 100,
+        cumulativeAdditional,
+      });
+    }
+
+    return rows;
+  }, [grossIncome, currentRate, targetRate, annualIncreasePct, startMonth, currentMonthlySavings]);
+
+  const yearsToTarget = simulation.length;
+  const finalRow = simulation[simulation.length - 1];
+
+  return (
+    <Card className="border-2 border-violet-500/20">
+      <CardHeader className="pb-3">
+        <CardTitle className="font-display text-base flex items-center gap-2">
+          <Calculator className="h-5 w-5 text-violet-500" />
+          Annual Increase Simulator
+        </CardTitle>
+        <p className="text-xs text-muted-foreground">
+          Model adding a fixed % increase each year until you reach your target savings rate.
+        </p>
+      </CardHeader>
+      <CardContent className="space-y-5">
+        {/* Controls */}
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="space-y-2">
+            <Label className="text-xs font-medium">Annual Increase</Label>
+            <div className="flex items-center gap-2">
+              <Slider
+                value={[annualIncreasePct]}
+                onValueChange={([v]) => setAnnualIncreasePct(v)}
+                min={1}
+                max={5}
+                step={0.5}
+                className="flex-1"
+              />
+              <span className="text-sm font-bold tabular-nums w-12 text-right">{annualIncreasePct}%</span>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label className="text-xs font-medium">Target Rate</Label>
+            <div className="flex items-center gap-2">
+              <Slider
+                value={[targetRate]}
+                onValueChange={([v]) => setTargetRate(v)}
+                min={Math.ceil(currentRate) + 1}
+                max={50}
+                step={1}
+                className="flex-1"
+              />
+              <span className="text-sm font-bold tabular-nums w-12 text-right">{targetRate}%</span>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label className="text-xs font-medium">Start Date</Label>
+            <Input
+              type="month"
+              value={startMonth}
+              onChange={(e) => setStartMonth(e.target.value)}
+              className="h-9 text-sm"
+            />
+          </div>
+        </div>
+
+        {/* Summary cards */}
+        <div className="grid grid-cols-3 gap-3">
+          <div className="text-center p-3 rounded-lg bg-violet-500/5 border border-violet-500/10">
+            <p className="text-xs text-muted-foreground">Current Rate</p>
+            <p className="text-lg font-bold tabular-nums">{currentRate.toFixed(1)}%</p>
+            <p className="text-[10px] text-muted-foreground">{formatCurrency(currentMonthlySavings)}/mo</p>
+          </div>
+          <div className="text-center p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/10">
+            <p className="text-xs text-muted-foreground">Target Rate</p>
+            <p className="text-lg font-bold tabular-nums text-emerald-600 dark:text-emerald-400">{targetRate}%</p>
+            <p className="text-[10px] text-muted-foreground">{finalRow ? formatCurrency(finalRow.monthlyContrib) : '—'}/mo</p>
+          </div>
+          <div className="text-center p-3 rounded-lg bg-sky-500/5 border border-sky-500/10">
+            <p className="text-xs text-muted-foreground">Years to Target</p>
+            <p className="text-lg font-bold tabular-nums text-sky-600 dark:text-sky-400">{yearsToTarget}</p>
+            <p className="text-[10px] text-muted-foreground">+{annualIncreasePct}%/year</p>
+          </div>
+        </div>
+
+        {/* Progress visualization */}
+        <div className="space-y-1">
+          <div className="flex justify-between text-xs text-muted-foreground">
+            <span>Current: {currentRate.toFixed(1)}%</span>
+            <span>Target: {targetRate}%</span>
+          </div>
+          <div className="relative h-4 bg-muted/50 rounded-full overflow-hidden">
+            <div
+              className="absolute h-full bg-violet-500/30 rounded-full transition-all"
+              style={{ width: `${Math.min((currentRate / targetRate) * 100, 100)}%` }}
+            />
+            {simulation.map((row, i) => (
+              <div
+                key={i}
+                className="absolute h-full w-0.5 bg-violet-500/60"
+                style={{ left: `${Math.min((row.newRate / targetRate) * 100, 100)}%` }}
+                title={`Year ${row.year}: ${row.newRate.toFixed(1)}%`}
+              />
+            ))}
+            <div
+              className="absolute h-full bg-emerald-500 rounded-full transition-all"
+              style={{ width: `${Math.min((currentRate / targetRate) * 100, 100)}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Year-by-year table */}
+        {simulation.length > 0 && (
+          <div className="rounded-lg border overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/30">
+                  <TableHead className="text-xs w-14">Year</TableHead>
+                  <TableHead className="text-xs">Date</TableHead>
+                  <TableHead className="text-xs text-right">New Rate</TableHead>
+                  <TableHead className="text-xs text-right">Monthly</TableHead>
+                  <TableHead className="text-xs text-right">Annual</TableHead>
+                  <TableHead className="text-xs text-right hidden sm:table-cell">+ per Month</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {/* Starting point */}
+                <TableRow className="bg-muted/10">
+                  <TableCell className="text-xs font-medium tabular-nums">Now</TableCell>
+                  <TableCell className="text-xs">Current</TableCell>
+                  <TableCell className="text-xs text-right tabular-nums font-medium">{currentRate.toFixed(2)}%</TableCell>
+                  <TableCell className="text-xs text-right tabular-nums">{formatCurrency(currentMonthlySavings)}</TableCell>
+                  <TableCell className="text-xs text-right tabular-nums">{formatCurrency(currentMonthlySavings * 12)}</TableCell>
+                  <TableCell className="text-xs text-right tabular-nums hidden sm:table-cell">—</TableCell>
+                </TableRow>
+                {simulation.map((row) => (
+                  <TableRow key={row.year} className={row.newRate >= targetRate ? 'bg-emerald-500/5' : ''}>
+                    <TableCell className="text-xs font-medium tabular-nums">{row.year}</TableCell>
+                    <TableCell className="text-xs">{row.date}</TableCell>
+                    <TableCell className="text-xs text-right tabular-nums font-medium">
+                      <span className={row.newRate >= targetRate ? 'text-emerald-600 dark:text-emerald-400 font-bold' : ''}>
+                        {row.newRate.toFixed(2)}%
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-xs text-right tabular-nums">{formatCurrency(row.monthlyContrib)}</TableCell>
+                    <TableCell className="text-xs text-right tabular-nums">{formatCurrency(row.annualContrib)}</TableCell>
+                    <TableCell className="text-xs text-right tabular-nums hidden sm:table-cell text-sky-600 dark:text-sky-400">
+                      +{formatCurrency(row.additionalMonthly)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+
+        {/* Insight */}
+        {finalRow && (
+          <div className="flex gap-2 p-3 rounded-lg bg-violet-500/5 border border-violet-500/10">
+            <Rocket className="h-4 w-4 text-violet-500 shrink-0 mt-0.5" />
+            <p className="text-sm">
+              By increasing your savings rate <strong>{annualIncreasePct}% each year</strong> starting{' '}
+              <strong>{simulation[0]?.date}</strong>, you'll reach <strong>{targetRate}%</strong> in{' '}
+              <strong>{yearsToTarget} year{yearsToTarget !== 1 ? 's' : ''}</strong>, contributing{' '}
+              <strong>{formatCurrency(finalRow.monthlyContrib)}/mo</strong> ({formatCurrency(finalRow.annualContrib)}/yr).
+              That's an additional <strong>{formatCurrency(finalRow.cumulativeAdditional)}/mo</strong> over your current savings.
+            </p>
+          </div>
+        )}
+
+        {currentRate >= targetRate && (
+          <div className="flex gap-2 p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/10">
+            <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
+            <p className="text-sm">
+              You've already reached or exceeded your target of <strong>{targetRate}%</strong>! Consider raising your target or diversifying into additional investment vehicles.
+            </p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
