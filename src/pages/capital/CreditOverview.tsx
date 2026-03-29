@@ -161,7 +161,8 @@ const CreditOverview = () => {
                       <span className="text-xs font-medium text-muted-foreground">{scoreLabel}</span>
                     </div>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">Range: 300 – 850</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mt-1">Combined Estimate</p>
+                  <p className="text-[10px] text-muted-foreground">Range: 300 – 850</p>
                 </div>
 
                 {/* Per-Bureau Scores */}
