@@ -319,76 +319,109 @@ const AppSidebar = () => {
         )}
       </div>
 
-      <nav className="relative flex-1 overflow-y-auto px-2 py-2 space-y-2">
-        {filteredSections.map((section, sIdx) => (
-          <div key={section.label}>
-            {!collapsed && (
-              <p className="px-3 pb-1 text-[10px] font-bold uppercase tracking-widest text-sidebar-foreground/30">
-                {section.label}
-              </p>
-            )}
-            {collapsed && sIdx > 0 && (
-              <div className="mx-3 mb-1 h-px bg-sidebar-border" />
-            )}
+      <nav className="relative flex-1 overflow-y-auto px-2 py-2 space-y-1">
+        {filteredSections.map((section, sIdx) => {
+          const sectionOpen = openSections[section.label] ?? true;
+          const allSectionItems = [
+            ...(section.items ?? []),
+            ...(section.topItems ?? []),
+            ...(section.subGroups?.flatMap(sg => sg.items) ?? []),
+          ];
+          const hasActiveInSection = allSectionItems.some(i => location.pathname === i.to);
 
-            <div className="space-y-px">
-              {/* Top-level items (e.g. Capital Dashboard, AI Coach) */}
-              {section.topItems?.map(renderNavItem)}
-
-              {/* Standard flat items */}
-              {section.items?.map(renderNavItem)}
-
-              {/* Collapsible sub-groups (expanded mode) */}
-              {!collapsed && section.subGroups?.map((sg) => {
-                const isOpen = openSubGroups[sg.subLabel] ?? false;
-                const hasActive = sg.items.some(i => location.pathname === i.to);
-                return (
-                  <div key={sg.subLabel} className="mt-1">
-                    <button
-                      onClick={() => toggleSubGroup(sg.subLabel)}
-                      className={cn(
-                        'flex w-full items-center gap-2 rounded-lg px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider transition-colors',
-                        hasActive
-                          ? 'text-sidebar-foreground/70'
-                          : 'text-sidebar-foreground/30 hover:text-sidebar-foreground/50'
-                      )}
-                    >
-                      <ChevronDown className={cn(
-                        'h-3 w-3 shrink-0 transition-transform duration-200',
-                        !isOpen && '-rotate-90'
-                      )} />
-                      <span>{sg.subLabel}</span>
-                      {hasActive && !isOpen && (
-                        <div className="ml-auto h-1.5 w-1.5 rounded-full bg-prism-teal" />
-                      )}
-                    </button>
-                    <AnimatePresence initial={false}>
-                      {isOpen && (
-                        <motion.div
-                          key={sg.subLabel}
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.2, ease: 'easeInOut' }}
-                          className="overflow-hidden"
-                        >
-                          <div className="ml-2 space-y-px border-l border-sidebar-border/50 pl-1 mt-0.5">
-                            {sg.items.map(renderNavItem)}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                );
-              })}
-
-              {/* In collapsed mode, show sub-group items as flat icons */}
-              {collapsed && section.subGroups?.map((sg) =>
-                sg.items.map(renderNavItem)
+          return (
+            <div key={section.label}>
+              {!collapsed && (
+                <button
+                  onClick={() => toggleSection(section.label)}
+                  className={cn(
+                    'flex w-full items-center gap-1.5 px-3 pb-1 pt-1 text-[10px] font-bold uppercase tracking-widest transition-colors rounded-md',
+                    hasActiveInSection
+                      ? 'text-sidebar-foreground/50'
+                      : 'text-sidebar-foreground/30 hover:text-sidebar-foreground/50'
+                  )}
+                >
+                  <ChevronDown className={cn(
+                    'h-3 w-3 shrink-0 transition-transform duration-200',
+                    !sectionOpen && '-rotate-90'
+                  )} />
+                  <span className="flex-1 text-left">{section.label}</span>
+                  {hasActiveInSection && !sectionOpen && (
+                    <div className="h-1.5 w-1.5 rounded-full bg-prism-teal" />
+                  )}
+                </button>
               )}
+              {collapsed && sIdx > 0 && (
+                <div className="mx-3 mb-1 h-px bg-sidebar-border" />
+              )}
+
+              <AnimatePresence initial={false}>
+                {(sectionOpen || collapsed) && (
+                  <motion.div
+                    key={section.label + '-content'}
+                    initial={collapsed ? false : { height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2, ease: 'easeInOut' }}
+                    className="overflow-hidden"
+                  >
+                    <div className="space-y-px">
+                      {section.topItems?.map(renderNavItem)}
+                      {section.items?.map(renderNavItem)}
+
+                      {!collapsed && section.subGroups?.map((sg) => {
+                        const isOpen = openSubGroups[sg.subLabel] ?? false;
+                        const hasActive = sg.items.some(i => location.pathname === i.to);
+                        return (
+                          <div key={sg.subLabel} className="mt-1">
+                            <button
+                              onClick={() => toggleSubGroup(sg.subLabel)}
+                              className={cn(
+                                'flex w-full items-center gap-2 rounded-lg px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider transition-colors',
+                                hasActive
+                                  ? 'text-sidebar-foreground/70'
+                                  : 'text-sidebar-foreground/30 hover:text-sidebar-foreground/50'
+                              )}
+                            >
+                              <ChevronDown className={cn(
+                                'h-3 w-3 shrink-0 transition-transform duration-200',
+                                !isOpen && '-rotate-90'
+                              )} />
+                              <span>{sg.subLabel}</span>
+                              {hasActive && !isOpen && (
+                                <div className="ml-auto h-1.5 w-1.5 rounded-full bg-prism-teal" />
+                              )}
+                            </button>
+                            <AnimatePresence initial={false}>
+                              {isOpen && (
+                                <motion.div
+                                  key={sg.subLabel}
+                                  initial={{ height: 0, opacity: 0 }}
+                                  animate={{ height: 'auto', opacity: 1 }}
+                                  exit={{ height: 0, opacity: 0 }}
+                                  transition={{ duration: 0.2, ease: 'easeInOut' }}
+                                  className="overflow-hidden"
+                                >
+                                  <div className="ml-2 space-y-px border-l border-sidebar-border/50 pl-1 mt-0.5">
+                                    {sg.items.map(renderNavItem)}
+                                  </div>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
+                        );
+                      })}
+
+                      {collapsed && section.subGroups?.map((sg) =>
+                        sg.items.map(renderNavItem)
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </nav>
 
       <div className="relative border-t border-sidebar-border p-3 space-y-1">
