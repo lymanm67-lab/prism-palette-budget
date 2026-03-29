@@ -621,6 +621,20 @@ const Budgets = () => {
     const remaining = effectiveBudget - actual;
     const pct = effectiveBudget > 0 ? Math.min((actual / effectiveBudget) * 100, 100) : 0;
     const overBudget = remaining < 0;
+    const bizOffset = businessOffsets.get(b.category_id);
+
+    const offsetBadge = bizOffset ? (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-sky-500/10 text-sky-600 dark:text-sky-400 font-medium shrink-0 cursor-default whitespace-nowrap">
+            {bizOffset.pct}% → Biz
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{formatCurrency(bizOffset.bizAmount)}/mo offset to {bizOffset.bizCategory}</p>
+        </TooltipContent>
+      </Tooltip>
+    ) : null;
 
     return (
       <div key={b.id} className={cn("group py-2.5 px-3 hover:bg-muted/30 rounded-lg transition-colors", selectedBudgetIds.has(b.id) && "bg-primary/5")}>
