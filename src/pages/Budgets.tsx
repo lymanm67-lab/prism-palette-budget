@@ -1546,7 +1546,24 @@ const Budgets = () => {
                 <div className="hidden sm:block w-[62px]" />
               </div>
 
-              {/* Expenses Section */}
+              {/* Payroll & Pre-Tax Deductions Section */}
+              {groupedBudgets.payroll_deduction.length > 0 && (
+                <>
+                  <Card className="overflow-hidden">
+                    <CardContent className="p-2">
+                      {renderSection('payroll_deduction', groupedBudgets.payroll_deduction)}
+                    </CardContent>
+                  </Card>
+                  {/* Gross → Net breakdown */}
+                  <div className="flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 bg-sky-500/5 rounded-lg text-xs sm:text-sm">
+                    <span className="flex-1 font-medium text-sky-600 dark:text-sky-400">Gross → Net Income</span>
+                    <span className="tabular-nums text-muted-foreground">{formatCurrency(grossIncomeBudget)} gross</span>
+                    <span className="tabular-nums text-muted-foreground">− {formatCurrency(sectionTotals.payroll_deduction.budget)} deductions</span>
+                    <span className="tabular-nums font-semibold">= {formatCurrency(totalIncomeBudget)} net</span>
+                  </div>
+                </>
+              )}
+
               <Card className="overflow-hidden">
                 <CardContent className="p-2 space-y-1">
                   <div className="hidden sm:flex items-center gap-3 px-3 py-1.5 text-xs font-medium text-muted-foreground border-b">
