@@ -121,7 +121,8 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
   const { data: budgets } = useBudgets(budgetMonth);
   const { data: categories } = useCategories();
   const { data: categoryGroups } = useCategoryGroups();
-  const { householdId } = useHousehold();
+  const { household } = useHousehold();
+  const householdId = household?.id;
 
   // Derive current contributions from payroll data
   const currentContribs = useMemo(() => {
