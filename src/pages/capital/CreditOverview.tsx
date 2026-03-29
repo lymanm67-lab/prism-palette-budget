@@ -258,6 +258,9 @@ const CreditOverview = () => {
       {/* Import Section */}
       <CreditReportImport onSuccess={refetch} />
 
+      {/* AI Credit Analysis */}
+      {accounts.length > 0 && <AiCreditAnalysis />}
+
       {/* Credit Score Simulator */}
       {accounts.length > 0 && <CreditScoreSimulator accounts={accounts} />}
 
