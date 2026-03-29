@@ -606,6 +606,8 @@ export type Database = {
           id: string
           name: string
           sort_order: number
+          target_percent_max: number | null
+          target_percent_min: number | null
         }
         Insert: {
           budget_type?: string
@@ -617,6 +619,8 @@ export type Database = {
           id?: string
           name: string
           sort_order?: number
+          target_percent_max?: number | null
+          target_percent_min?: number | null
         }
         Update: {
           budget_type?: string
@@ -628,6 +632,8 @@ export type Database = {
           id?: string
           name?: string
           sort_order?: number
+          target_percent_max?: number | null
+          target_percent_min?: number | null
         }
         Relationships: [
           {
