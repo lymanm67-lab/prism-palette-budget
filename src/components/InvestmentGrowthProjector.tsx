@@ -406,8 +406,8 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
               </div>
             </div>
 
-            {/* Inflation, Tax, Social Security */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 rounded-lg bg-muted/20 border border-border/50">
+            {/* Inflation, Tax, Social Security, Pension */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 p-3 rounded-lg bg-muted/20 border border-border/50">
               <div>
                 <label className="text-xs font-medium text-muted-foreground">Inflation Rate %</label>
                 <Input value={inflationRate} onChange={e => setInflationRate(e.target.value)} type="number" className="h-8 mt-1" step="0.5" />
@@ -417,16 +417,20 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
                 <Input value={taxRate} onChange={e => setTaxRate(e.target.value)} type="number" className="h-8 mt-1" />
               </div>
               <div>
-                <label className="text-xs font-medium text-muted-foreground">Est. SS Monthly Benefit</label>
+                <label className="text-xs font-medium text-muted-foreground">Est. SS Monthly</label>
                 <Input value={ssMonthlyBenefit} onChange={e => setSsMonthlyBenefit(e.target.value)} type="number" className="h-8 mt-1" />
               </div>
               <div>
-                <label className="text-xs font-medium text-muted-foreground">Target Retirement Income/yr</label>
+                <label className="text-xs font-medium text-muted-foreground">Spouse Pension Monthly</label>
+                <Input value={spousePensionMonthly} onChange={e => setSpousePensionMonthly(e.target.value)} type="number" className="h-8 mt-1" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Target Retirement $/yr</label>
                 <Input value={targetRetirementIncome} onChange={e => setTargetRetirementIncome(e.target.value)} type="number" className="h-8 mt-1" />
               </div>
               <div>
-                <label className="text-xs font-medium text-muted-foreground">SS Annual (Today's $)</label>
-                <p className="text-sm font-bold mt-2 tabular-nums">{formatCurrency(ssMonthly * 12)}/yr</p>
+                <label className="text-xs font-medium text-muted-foreground">Guaranteed Income/yr</label>
+                <p className="text-sm font-bold mt-2 tabular-nums">{formatCurrency((ssMonthly + spousePension) * 12)}/yr</p>
               </div>
             </div>
 
