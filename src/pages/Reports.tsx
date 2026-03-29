@@ -846,6 +846,7 @@ const Reports = () => {
             <CardHeader><CardTitle className="font-display">Spending Trends by Category</CardTitle></CardHeader>
             <CardContent>
               {spendingTrends.data.length > 0 ? (
+                <ResponsiveContainer width="100%" height={350}>
                   <LineChart data={spendingTrends.data}>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
