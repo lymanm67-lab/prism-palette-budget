@@ -23,6 +23,7 @@ import BusinessReports from '@/components/BusinessReports';
 import PageOverview from '@/components/PageOverview';
 import ReportNarrative from '@/components/ReportNarrative';
 import PayrollReportTab from '@/components/PayrollReportTab';
+import InvestmentGrowthProjector from '@/components/InvestmentGrowthProjector';
 const tooltipStyle = { background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))' };
 
 const TREND_COLORS = [
@@ -422,6 +423,7 @@ const Reports = () => {
           <TabsTrigger value="trends">Trends</TabsTrigger>
           <TabsTrigger value="merchants">Top Merchants</TabsTrigger>
           <TabsTrigger value="payroll">Payroll Analysis</TabsTrigger>
+          <TabsTrigger value="investment-growth">Investment Growth</TabsTrigger>
         </TabsList>
 
         <div ref={reportRef}>
@@ -825,6 +827,11 @@ const Reports = () => {
         {/* ==================== PAYROLL ANALYSIS ==================== */}
         <TabsContent value="payroll">
           <PayrollReportTab budgetMonth={budgetMonth} />
+        </TabsContent>
+
+        {/* ==================== INVESTMENT GROWTH ==================== */}
+        <TabsContent value="investment-growth">
+          <InvestmentGrowthProjector budgetMonth={budgetMonth} />
         </TabsContent>
         </div>
       </Tabs>
