@@ -302,6 +302,45 @@ const Budgets = () => {
   const personalGroupedBudgets = useMemo(() => groupBudgetsByExpenseType(personalBudgetItems), [groupBudgetsByExpenseType, personalBudgetItems]);
   const businessGroupedBudgets = useMemo(() => groupBudgetsByExpenseType(businessBudgetItems), [groupBudgetsByExpenseType, businessBudgetItems]);
 
+  // Business offset mapping: detect personal categories that have a matching business budget
+  const PERSONAL_TO_BIZ_MAP: Record<string, string[]> = {
+    'rent': ['rent'],
+    'utilities': ['utilities'],
+    'home insurance': ['insurance'],
+    'internet service': ['telephone & internet'],
+    'mobile phone': ['telephone & internet'],
+    'auto': ['vehicle expenses'],
+    'fuel': ['vehicle expenses'],
+  };
+
+  const businessOffsets = useMemo(() => {
+    const offsets = new Map<string, { bizAmount: number; bizCategory: string; pct: number }>();
+    if (!categories || !categoryGroups || !budgets) return offsets;
+
+    const bizGroups = new Set((categoryGroups as any[]).filter((g: any) => g.budget_type === 'business').map((g: any) => g.id));
+    const bizCats = categories.filter(c => bizGroups.has(c.group_id));
+
+    for (const [personalName, bizNames] of Object.entries(PERSONAL_TO_BIZ_MAP)) {
+      const personalCat = categories.find(c => c.name.toLowerCase() === personalName && !bizGroups.has(c.group_id));
+      if (!personalCat) continue;
+      const personalBudget = (budgets as any[]).find((b: any) => b.category_id === personalCat.id && b.month === month);
+      if (!personalBudget || personalBudget.planned_amount <= 0) continue;
+
+      for (const bizName of bizNames) {
+        const bizCat = bizCats.find(c => c.name.toLowerCase() === bizName);
+        if (!bizCat) continue;
+        const bizBudget = (budgets as any[]).find((b: any) => b.category_id === bizCat.id && b.month === month);
+        if (!bizBudget || bizBudget.planned_amount <= 0) continue;
+
+        const totalOriginal = personalBudget.planned_amount + bizBudget.planned_amount;
+        const pct = Math.round((bizBudget.planned_amount / totalOriginal) * 100);
+        offsets.set(personalCat.id, { bizAmount: bizBudget.planned_amount, bizCategory: bizCat.name, pct });
+        break;
+      }
+    }
+    return offsets;
+  }, [categories, categoryGroups, budgets, month]);
+
 
   // Section totals helper
   const calcSectionTotals = useCallback((grouped: Record<ExpenseType, BudgetRow[]>) => {
@@ -582,6 +621,20 @@ const Budgets = () => {
     const remaining = effectiveBudget - actual;
     const pct = effectiveBudget > 0 ? Math.min((actual / effectiveBudget) * 100, 100) : 0;
     const overBudget = remaining < 0;
+    const bizOffset = businessOffsets.get(b.category_id);
+
+    const offsetBadge = bizOffset ? (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-sky-500/10 text-sky-600 dark:text-sky-400 font-medium shrink-0 cursor-default whitespace-nowrap">
+            {bizOffset.pct}% → Biz
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{formatCurrency(bizOffset.bizAmount)}/mo offset to {bizOffset.bizCategory}</p>
+        </TooltipContent>
+      </Tooltip>
+    ) : null;
 
     return (
       <div key={b.id} className={cn("group py-2.5 px-3 hover:bg-muted/30 rounded-lg transition-colors", selectedBudgetIds.has(b.id) && "bg-primary/5")}>
@@ -590,6 +643,7 @@ const Budgets = () => {
           <Checkbox checked={selectedBudgetIds.has(b.id)} onCheckedChange={() => toggleBudgetSelection(b.id)} className="shrink-0" />
           <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: b.categories?.color || 'hsl(var(--primary))' }} />
           <span className="flex-1 text-sm font-medium truncate">{b.categories?.name || 'Unknown'}</span>
+          {offsetBadge}
           {b.rollover && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium shrink-0">↻</span>}
           {b.planned_amount === 0 && (
             <Tooltip>
@@ -637,6 +691,7 @@ const Budgets = () => {
           <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: b.categories?.color || 'hsl(var(--primary))' }} />
           <div className="flex-1 min-w-0 flex items-center gap-1.5">
             <span className="text-sm font-medium truncate">{b.categories?.name || 'Unknown'}</span>
+            {offsetBadge}
             {b.rollover && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium shrink-0">↻</span>}
             {rolloverAmt > 0 && <span className="text-[10px] text-emerald-600 dark:text-emerald-400 shrink-0">+{formatCurrency(rolloverAmt)}</span>}
           </div>
