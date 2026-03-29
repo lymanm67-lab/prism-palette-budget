@@ -137,6 +137,12 @@ const NAV_SECTIONS: NavSection[] = [
   },
 ];
 
+const NAV_MODE_CONFIG: Record<NavMode, { icon: LucideIcon; label: string; shortLabel: string; color: string }> = {
+  personal: { icon: User, label: 'Personal', shortLabel: 'P', color: 'text-prism-teal' },
+  business: { icon: Briefcase, label: 'Business', shortLabel: 'B', color: 'text-prism-indigo' },
+  full: { icon: Globe, label: 'Full View', shortLabel: 'F', color: 'text-prism-orange' },
+};
+
 const AppSidebar = () => {
   const { signOut, user } = useAuth();
   const location = useLocation();
@@ -144,6 +150,33 @@ const AppSidebar = () => {
   const { theme, setTheme } = useTheme();
   const isDark = theme === 'dark';
   const badges = useSidebarBadges();
+
+  // Nav mode — persisted in localStorage
+  const [navMode, setNavMode] = useState<NavMode>(() => {
+    return (localStorage.getItem('prism_nav_mode') as NavMode) || 'full';
+  });
+  useEffect(() => { localStorage.setItem('prism_nav_mode', navMode); }, [navMode]);
+
+  const cycleNavMode = () => {
+    const order: NavMode[] = ['personal', 'business', 'full'];
+    setNavMode(order[(order.indexOf(navMode) + 1) % 3]);
+  };
+
+  // Filter sections/items based on navMode
+  const filteredSections = NAV_SECTIONS.filter(section => {
+    if (navMode === 'full') return true;
+    if (section.mode && section.mode !== navMode) return false;
+    return true;
+  }).map(section => {
+    if (navMode === 'full') return section;
+    return {
+      ...section,
+      subGroups: section.subGroups?.filter(sg => {
+        if (sg.mode && sg.mode !== navMode) return false;
+        return true;
+      }),
+    };
+  });
 
   // Track which capital sub-groups are open — auto-open the one with the active route
   const [openSubGroups, setOpenSubGroups] = useState<Record<string, boolean>>(() => {
