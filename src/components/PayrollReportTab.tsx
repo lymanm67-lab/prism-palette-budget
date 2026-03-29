@@ -241,7 +241,7 @@ export default function PayrollReportTab({ budgetMonth }: PayrollReportTabProps)
       meetsStandard: totalSavingsRate >= 20,
       retirementItems, hsaItems, rothItems, deferredItems,
     };
-  }, [budgets, categories, categoryGroups]);
+  }, [budgets, categories, categoryGroups, manualEmployerContrib]);
 
   if (!analysis || analysis.totalDeductions === 0) {
     return (
