@@ -250,83 +250,87 @@ export function PaystubUploader({ open, onOpenChange }: PaystubUploaderProps) {
         )}
 
         {step === 'review' && paystub && (
-          <ScrollArea className="flex-1 -mx-6 px-6">
-            <div className="space-y-4 pb-4">
-              {/* Summary card */}
-              <Card className="bg-muted/50">
-                <CardContent className="pt-4 space-y-2">
-                  {paystub.employer_name && (
-                    <p className="text-sm"><span className="text-muted-foreground">Employer:</span> <span className="font-medium">{paystub.employer_name}</span></p>
-                  )}
-                  {paystub.pay_frequency && (
-                    <p className="text-sm"><span className="text-muted-foreground">Pay Frequency:</span> <Badge variant="secondary">{FREQ_LABELS[paystub.pay_frequency] || paystub.pay_frequency}</Badge></p>
-                  )}
-                  <div className="flex gap-4 pt-1">
-                    <div>
-                      <p className="text-xs text-muted-foreground">Monthly Gross</p>
-                      <p className="font-bold text-base">{formatCurrency(paystub.monthly_gross_pay)}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Monthly Net</p>
-                      <p className="font-bold text-base text-emerald-600">{formatCurrency(paystub.monthly_net_pay)}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Total Deductions</p>
-                      <p className="font-bold text-base text-sky-600">
-                        {formatCurrency(paystub.deductions.reduce((s, d) => s + d.monthly_amount, 0))}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Deductions list */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium">Deductions ({paystub.deductions.length})</p>
-                  <Button variant="ghost" size="sm" className="text-xs h-7"
-                    onClick={() => {
-                      if (selectedDeductions.size === paystub.deductions.length) {
-                        setSelectedDeductions(new Set());
-                      } else {
-                        setSelectedDeductions(new Set(paystub.deductions.map((_, i) => i)));
-                      }
-                    }}
-                  >
-                    {selectedDeductions.size === paystub.deductions.length ? 'Deselect All' : 'Select All'}
-                  </Button>
-                </div>
-
-                {paystub.deductions.map((ded, i) => (
-                  <div
-                    key={i}
-                    className={`flex items-center gap-3 p-2.5 rounded-lg border transition-colors cursor-pointer ${
-                      selectedDeductions.has(i) ? 'border-accent/40 bg-accent/5' : 'border-border'
-                    }`}
-                    onClick={() => toggleDeduction(i)}
-                  >
-                    <Checkbox checked={selectedDeductions.has(i)} className="pointer-events-none" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{ded.name}</p>
-                      <div className="flex items-center gap-2">
-                        {ded.is_pretax && <Badge variant="outline" className="text-[10px] h-4 px-1">Pre-tax</Badge>}
-                        <span className="text-xs text-muted-foreground">{ded.category.replace(/_/g, ' ')}</span>
+          <>
+            <ScrollArea className="flex-1 -mx-6 px-6 min-h-0">
+              <div className="space-y-4 pb-2">
+                {/* Summary card */}
+                <Card className="bg-muted/50">
+                  <CardContent className="pt-4 space-y-2">
+                    {paystub.employer_name && (
+                      <p className="text-sm"><span className="text-muted-foreground">Employer:</span> <span className="font-medium">{paystub.employer_name}</span></p>
+                    )}
+                    {paystub.pay_frequency && (
+                      <p className="text-sm"><span className="text-muted-foreground">Pay Frequency:</span> <Badge variant="secondary">{FREQ_LABELS[paystub.pay_frequency] || paystub.pay_frequency}</Badge></p>
+                    )}
+                    <div className="flex gap-4 pt-1">
+                      <div>
+                        <p className="text-xs text-muted-foreground">Monthly Gross</p>
+                        <p className="font-bold text-base">{formatCurrency(paystub.monthly_gross_pay)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Monthly Net</p>
+                        <p className="font-bold text-base text-emerald-600">{formatCurrency(paystub.monthly_net_pay)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Total Deductions</p>
+                        <p className="font-bold text-base text-sky-600">
+                          {formatCurrency(paystub.deductions.reduce((s, d) => s + d.monthly_amount, 0))}
+                        </p>
                       </div>
                     </div>
-                    <div className="text-right shrink-0">
-                      <p className="text-sm font-bold">{formatCurrency(ded.monthly_amount)}<span className="text-[10px] text-muted-foreground font-normal">/mo</span></p>
-                      <p className="text-[10px] text-muted-foreground">{formatCurrency(ded.amount)}/pay</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  </CardContent>
+                </Card>
 
+                {/* Deductions list */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium">Deductions ({paystub.deductions.length})</p>
+                    <Button variant="ghost" size="sm" className="text-xs h-7"
+                      onClick={() => {
+                        if (selectedDeductions.size === paystub.deductions.length) {
+                          setSelectedDeductions(new Set());
+                        } else {
+                          setSelectedDeductions(new Set(paystub.deductions.map((_, i) => i)));
+                        }
+                      }}
+                    >
+                      {selectedDeductions.size === paystub.deductions.length ? 'Deselect All' : 'Select All'}
+                    </Button>
+                  </div>
+
+                  {paystub.deductions.map((ded, i) => (
+                    <div
+                      key={i}
+                      className={`flex items-center gap-3 p-2.5 rounded-lg border transition-colors cursor-pointer ${
+                        selectedDeductions.has(i) ? 'border-accent/40 bg-accent/5' : 'border-border'
+                      }`}
+                      onClick={() => toggleDeduction(i)}
+                    >
+                      <Checkbox checked={selectedDeductions.has(i)} className="pointer-events-none" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{ded.name}</p>
+                        <div className="flex items-center gap-2">
+                          {ded.is_pretax && <Badge variant="outline" className="text-[10px] h-4 px-1">Pre-tax</Badge>}
+                          <span className="text-xs text-muted-foreground">{ded.category.replace(/_/g, ' ')}</span>
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className="text-sm font-bold">{formatCurrency(ded.monthly_amount)}<span className="text-[10px] text-muted-foreground font-normal">/mo</span></p>
+                        <p className="text-[10px] text-muted-foreground">{formatCurrency(ded.amount)}/pay</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </ScrollArea>
+
+            <div className="pt-3 border-t">
               <Button className="w-full gap-2" onClick={handleApply} disabled={applying || selectedDeductions.size === 0}>
                 {applying ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
                 Apply {selectedDeductions.size} Deductions to Budget
               </Button>
             </div>
-          </ScrollArea>
+          </>
         )}
 
         {step === 'done' && (
