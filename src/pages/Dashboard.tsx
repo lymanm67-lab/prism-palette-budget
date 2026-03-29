@@ -287,7 +287,7 @@ Your Safe-to-Spend updates in real time as you add transactions, pay bills, and 
 
       {/* ========== STS Equation View ========== */}
       <motion.div variants={item}>
-        <StsEquationView />
+        <StsEquationView scope={mode} />
       </motion.div>
 
       {/* ========== 90-Day Progress Tracker ========== */}
