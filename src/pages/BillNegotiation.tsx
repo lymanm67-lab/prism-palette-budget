@@ -77,6 +77,11 @@ const BillNegotiation = () => {
 
   const billCount = activeSubs.length;
 
+  // Use the sum of individual recommendation savings (more transparent than AI's total)
+  const validatedSavings = analysis
+    ? analysis.recommendations.reduce((sum: number, r: Recommendation) => sum + r.potential_savings, 0)
+    : 0;
+
   const runAnalysis = async () => {
     setAnalyzing(true);
     try {
@@ -174,8 +179,8 @@ const BillNegotiation = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Total Potential Savings</p>
-                <p className="text-3xl font-bold text-emerald-600">${analysis.total_potential_monthly_savings.toFixed(0)}<span className="text-lg">/mo</span></p>
-                <p className="text-sm text-muted-foreground mt-1">${(analysis.total_potential_monthly_savings * 12).toFixed(0)} per year</p>
+                <p className="text-3xl font-bold text-emerald-600">${validatedSavings.toFixed(2)}<span className="text-lg">/mo</span></p>
+                <p className="text-sm text-muted-foreground mt-1">${(validatedSavings * 12).toFixed(0)} per year</p>
               </div>
               <Button variant="outline" onClick={runAnalysis} disabled={analyzing} size="sm">
                 {analyzing ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Sparkles className="h-3.5 w-3.5 mr-1" />}
