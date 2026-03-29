@@ -610,9 +610,10 @@ const Reports = () => {
             dataEntryLinks={[
               { label: 'Budgets', path: '/budgets', description: 'Set monthly budgets' },
               { label: 'Transactions', path: '/transactions', description: 'Categorize transactions' },
-              <Card>
+              { label: 'Categories', path: '/categories', description: 'Manage categories' },
             ]}
           />
+          <Card>
             <CardHeader>
               <CardTitle className="font-display">Budget vs Actual</CardTitle>
             </CardHeader>
