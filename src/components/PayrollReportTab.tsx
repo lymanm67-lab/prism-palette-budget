@@ -107,7 +107,7 @@ export default function PayrollReportTab({ budgetMonth }: PayrollReportTabProps)
   const { data: budgets } = useBudgets(budgetMonth);
   const { data: categories } = useCategories();
   const { data: categoryGroups } = useCategoryGroups();
-  const [manualEmployerContrib, setManualEmployerContrib] = useState<string>('516.56');
+  const [employerMatchPct, setEmployerMatchPct] = useState<string>('9');
 
   const analysis = useMemo(() => {
     if (!budgets || !categories || !categoryGroups) return null;
@@ -198,8 +198,9 @@ export default function PayrollReportTab({ budgetMonth }: PayrollReportTabProps)
       return lower.includes('employer') || lower.includes('match') || lower.includes('company contrib');
     });
     const detectedEmployerContrib = detectedEmployerItems.reduce((s, d) => s + d.monthlyAmount, 0);
-    const manualVal = parseFloat(manualEmployerContrib) || 0;
-    const employerContrib = detectedEmployerContrib > 0 ? detectedEmployerContrib : manualVal;
+    const matchPct = parseFloat(employerMatchPct) || 0;
+    const calculatedEmployerContrib = grossIncome > 0 ? (grossIncome * matchPct) / 100 : 0;
+    const employerContrib = detectedEmployerContrib > 0 ? detectedEmployerContrib : calculatedEmployerContrib;
     const employerContribPct = grossIncome > 0 ? (employerContrib / grossIncome) * 100 : 0;
     const employerBenefitItems = detectedEmployerItems;
 
@@ -241,7 +242,7 @@ export default function PayrollReportTab({ budgetMonth }: PayrollReportTabProps)
       meetsStandard: totalSavingsRate >= 20,
       retirementItems, hsaItems, rothItems, deferredItems,
     };
-  }, [budgets, categories, categoryGroups, manualEmployerContrib]);
+  }, [budgets, categories, categoryGroups, employerMatchPct]);
 
   if (!analysis || analysis.totalDeductions === 0) {
     return (
@@ -475,15 +476,16 @@ export default function PayrollReportTab({ budgetMonth }: PayrollReportTabProps)
                 ) : (
                   <div className="flex items-center gap-2 p-2 rounded-lg bg-sky-500/5 border border-sky-500/10">
                     <span className="text-sm whitespace-nowrap">Employer Match</span>
-                    <span className="text-muted-foreground text-sm">$</span>
                     <Input
                       type="number"
-                      value={manualEmployerContrib}
-                      onChange={(e) => setManualEmployerContrib(e.target.value)}
-                      className="h-7 w-24 text-sm tabular-nums"
-                      step="0.01"
+                      value={employerMatchPct}
+                      onChange={(e) => setEmployerMatchPct(e.target.value)}
+                      className="h-7 w-16 text-sm tabular-nums"
+                      step="0.5"
+                      min="0"
+                      max="100"
                     />
-                    <span className="text-xs text-muted-foreground whitespace-nowrap">/mo</span>
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">% of gross = {formatCurrency(analysis.employerContrib)}/mo</span>
                   </div>
                 )}
                 <div className="flex justify-between text-sm font-semibold">
