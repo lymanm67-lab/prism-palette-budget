@@ -66,7 +66,7 @@ const CreditHealthIssues = () => {
 
   return (
     <div className="space-y-6 pb-8">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => navigate('/capital/credit-health')}>
             <ArrowLeft className="h-4 w-4" />
@@ -76,9 +76,24 @@ const CreditHealthIssues = () => {
             <p className="text-sm text-muted-foreground">Track report errors and dispute progress</p>
           </div>
         </div>
-        <Button onClick={() => setShowAdd(true)} className="gap-1.5">
-          <Plus className="h-4 w-4" /> Add New Issue
-        </Button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <PageOverview
+            title="Issue Tracker"
+            description="Track errors found on your credit reports and manage the dispute process from identification through resolution."
+            icon={AlertCircle}
+            iconColor="text-prism-orange"
+            features={[
+              'Log credit report errors with detailed descriptions',
+              'Track dispute status from draft to resolution',
+              'Response deadline tracking with countdown timers',
+              'Organized view of active, pending, and resolved issues',
+            ]}
+            ttsScript="Welcome to the Issue Tracker. This tool helps you manage errors found on your credit reports. Start by clicking Add New Issue to log an error — select the bureau, choose the type of issue, and describe what's wrong. Each issue moves through a lifecycle: identified, submitted, under review, and finally resolved or validated. The dashboard shows your issues organized by status so you can see what needs attention. For submitted disputes, you'll see countdown timers showing when the bureau's response is due. Bureaus have 30 days to investigate, and you can track each dispute's progress right here."
+          />
+          <Button onClick={() => setShowAdd(true)} className="gap-1.5">
+            <Plus className="h-4 w-4" /> Add New Issue
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}
