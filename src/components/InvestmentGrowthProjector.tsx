@@ -173,10 +173,10 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
 
   // Plan state
   const [planName, setPlanName] = useState('Household 25-Year Investment Plan');
-  // Combined household portfolio: Your $165K + Wife's $308,059 + Wife's Deferred Comp $25,980
-  const [startingBalance, setStartingBalance] = useState('499039');
-  const [spousePortfolio, setSpousePortfolio] = useState('308059');
-  const [spouseDeferredComp, setSpouseDeferredComp] = useState('25980');
+  // Combined household portfolio (estimated March 2026): Your $165K + Wife's ~$360K portfolio + Wife's ~$29.3K deferred comp
+  const [startingBalance, setStartingBalance] = useState('554270');
+  const [spousePortfolio, setSpousePortfolio] = useState('360000');
+  const [spouseDeferredComp, setSpouseDeferredComp] = useState('29270');
   const [spouseAnnualContrib, setSpouseAnnualContrib] = useState('10181');
   const [monthlyContrib, setMonthlyContrib] = useState(() =>
     currentContribs.employee > 0 ? currentContribs.employee.toFixed(0) : '575'
