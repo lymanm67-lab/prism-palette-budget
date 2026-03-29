@@ -684,15 +684,45 @@ const Budgets = () => {
     const key = sectionKey || type;
     const isOpen = openSections[key] ?? true;
     const isIncome = type === 'income';
+    const isPayroll = type === 'payroll_deduction';
     const pct = totals.budget > 0 ? Math.min((totals.actual / totals.budget) * 100, 100) : 0;
+
+    // Compute percentage of net income for benchmark badge
+    const netIncome = totalIncomeBudget;
+    const pctOfNet = netIncome > 0 ? Math.round((totals.budget / netIncome) * 100) : 0;
+    const benchmark = BENCHMARK_RANGES[type];
+    const benchmarkStatus = benchmark
+      ? pctOfNet <= benchmark.max && pctOfNet >= benchmark.min
+        ? 'good'
+        : pctOfNet < benchmark.min
+        ? 'low'
+        : 'high'
+      : null;
 
     return (
       <Collapsible key={key} open={isOpen} onOpenChange={() => toggleSection(key)}>
         <CollapsibleTrigger asChild>
           <button className="w-full flex items-center gap-2 sm:gap-3 py-3 px-3 hover:bg-muted/30 rounded-lg transition-colors text-left">
             {isOpen ? <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" /> : <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0 rotate-180" />}
-            <span className={cn('flex-1 font-display font-semibold text-sm sm:text-base', EXPENSE_TYPE_COLORS[type])}>
+            <span className={cn('flex-1 font-display font-semibold text-sm sm:text-base flex items-center gap-2', EXPENSE_TYPE_COLORS[type])}>
               {EXPENSE_TYPE_LABELS[type]}
+              {/* Percentage of net income badge */}
+              {!isIncome && netIncome > 0 && totals.budget > 0 && (
+                <span className={cn(
+                  'hidden sm:inline-flex items-center text-[10px] px-1.5 py-0.5 rounded-full font-medium',
+                  benchmarkStatus === 'good' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
+                  benchmarkStatus === 'high' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400' :
+                  benchmarkStatus === 'low' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' :
+                  'bg-muted text-muted-foreground'
+                )}>
+                  {pctOfNet}% of net{benchmark ? ` (target: ${benchmark.label})` : ''}
+                </span>
+              )}
+              {isPayroll && grossIncomeBudget > 0 && totals.budget > 0 && (
+                <span className="hidden sm:inline-flex items-center text-[10px] px-1.5 py-0.5 rounded-full font-medium bg-sky-500/10 text-sky-600 dark:text-sky-400">
+                  {Math.round((totals.budget / grossIncomeBudget) * 100)}% of gross
+                </span>
+              )}
             </span>
             <span className="text-right text-xs sm:text-sm font-semibold tabular-nums sm:w-[90px]">{formatCurrency(totals.budget)}</span>
             <span className="hidden sm:inline-block w-[90px] text-right text-sm tabular-nums text-muted-foreground">{formatCurrency(totals.actual)}</span>
