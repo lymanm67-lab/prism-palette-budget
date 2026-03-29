@@ -346,6 +346,9 @@ const ReconciliationAudit = () => {
           )}
         </>
       )}
+
+      {/* Statement Upload & Reconciliation */}
+      <StatementReconciliation />
     </motion.div>
   );
 };
