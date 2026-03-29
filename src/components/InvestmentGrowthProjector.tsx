@@ -408,6 +408,10 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
                 <Input value={ssMonthlyBenefit} onChange={e => setSsMonthlyBenefit(e.target.value)} type="number" className="h-8 mt-1" />
               </div>
               <div>
+                <label className="text-xs font-medium text-muted-foreground">Target Retirement Income/yr</label>
+                <Input value={targetRetirementIncome} onChange={e => setTargetRetirementIncome(e.target.value)} type="number" className="h-8 mt-1" />
+              </div>
+              <div>
                 <label className="text-xs font-medium text-muted-foreground">SS Annual (Today's $)</label>
                 <p className="text-sm font-bold mt-2 tabular-nums">{formatCurrency(ssMonthly * 12)}/yr</p>
               </div>
