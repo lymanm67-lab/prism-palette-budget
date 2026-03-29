@@ -6,24 +6,27 @@ import {
   TrendingUp, Calculator, Scale, Heart, Home, Wallet, RepeatIcon,
   CreditCard, LineChart, Sparkles, Shield, FileSearch, FileText, Building2,
   DollarSign, Clock, Lock, Scissors, ClipboardCheck, Gauge, ChevronDown,
-  Layers, Search, AlertTriangle, Activity, Banknote, Smartphone,
+  Layers, Search, AlertTriangle, Activity, Banknote, Smartphone, User, Briefcase, Globe,
 } from 'lucide-react';
 import prismLogo from '@/assets/prism-money-logo.png';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { useSidebarBadges } from '@/hooks/use-sidebar-badges';
 import type { LucideIcon } from 'lucide-react';
 
-type NavItem = { to: string; icon: LucideIcon; label: string; color: string };
-type NavSubGroup = { subLabel: string; items: NavItem[] };
+type NavMode = 'personal' | 'business' | 'full';
+
+type NavItem = { to: string; icon: LucideIcon; label: string; color: string; mode?: 'personal' | 'business' };
+type NavSubGroup = { subLabel: string; items: NavItem[]; mode?: 'business' };
 type NavSection = {
   label: string;
   items?: NavItem[];
   subGroups?: NavSubGroup[];
   topItems?: NavItem[];
+  mode?: 'personal' | 'business';
 };
 
 const NAV_SECTIONS: NavSection[] = [
@@ -81,6 +84,7 @@ const NAV_SECTIONS: NavSection[] = [
   },
   {
     label: 'Capital',
+    mode: 'business',
     topItems: [
       { to: '/capital', icon: Shield, label: 'Dashboard', color: 'text-prism-teal' },
       { to: '/capital/ai-coach', icon: Bot, label: 'AI Coach', color: 'text-prism-amber' },
@@ -98,6 +102,7 @@ const NAV_SECTIONS: NavSection[] = [
       },
       {
         subLabel: 'Business & Funding',
+        mode: 'business',
         items: [
           { to: '/capital/business-credit', icon: Building2, label: 'Business Credit', color: 'text-prism-indigo' },
           { to: '/capital/loan-readiness', icon: ClipboardCheck, label: 'Loan Readiness', color: 'text-prism-lime' },
@@ -109,6 +114,7 @@ const NAV_SECTIONS: NavSection[] = [
       },
       {
         subLabel: 'Cash Flow & Risk',
+        mode: 'business',
         items: [
           { to: '/capital/receivables', icon: DollarSign, label: 'Receivables', color: 'text-prism-sky' },
           { to: '/capital/bank-analyzer', icon: LineChart, label: 'Bank Analyzer', color: 'text-prism-violet' },
@@ -131,6 +137,12 @@ const NAV_SECTIONS: NavSection[] = [
   },
 ];
 
+const NAV_MODE_CONFIG: Record<NavMode, { icon: LucideIcon; label: string; shortLabel: string; color: string }> = {
+  personal: { icon: User, label: 'Personal', shortLabel: 'P', color: 'text-prism-teal' },
+  business: { icon: Briefcase, label: 'Business', shortLabel: 'B', color: 'text-prism-indigo' },
+  full: { icon: Globe, label: 'Full View', shortLabel: 'F', color: 'text-prism-orange' },
+};
+
 const AppSidebar = () => {
   const { signOut, user } = useAuth();
   const location = useLocation();
@@ -138,6 +150,33 @@ const AppSidebar = () => {
   const { theme, setTheme } = useTheme();
   const isDark = theme === 'dark';
   const badges = useSidebarBadges();
+
+  // Nav mode — persisted in localStorage
+  const [navMode, setNavMode] = useState<NavMode>(() => {
+    return (localStorage.getItem('prism_nav_mode') as NavMode) || 'full';
+  });
+  useEffect(() => { localStorage.setItem('prism_nav_mode', navMode); }, [navMode]);
+
+  const cycleNavMode = () => {
+    const order: NavMode[] = ['personal', 'business', 'full'];
+    setNavMode(order[(order.indexOf(navMode) + 1) % 3]);
+  };
+
+  // Filter sections/items based on navMode
+  const filteredSections = NAV_SECTIONS.filter(section => {
+    if (navMode === 'full') return true;
+    if (section.mode && section.mode !== navMode) return false;
+    return true;
+  }).map(section => {
+    if (navMode === 'full') return section;
+    return {
+      ...section,
+      subGroups: section.subGroups?.filter(sg => {
+        if (sg.mode && sg.mode !== navMode) return false;
+        return true;
+      }),
+    };
+  });
 
   // Track which capital sub-groups are open — auto-open the one with the active route
   const [openSubGroups, setOpenSubGroups] = useState<Record<string, boolean>>(() => {
@@ -227,8 +266,43 @@ const AppSidebar = () => {
         </Button>
       </div>
 
+      {/* Nav Mode Toggle */}
+      <div className="relative px-2 py-1.5">
+        {!collapsed ? (
+          <div className="flex items-center gap-0.5 rounded-lg bg-sidebar-accent/50 p-0.5">
+            {(['personal', 'business', 'full'] as NavMode[]).map(mode => {
+              const cfg = NAV_MODE_CONFIG[mode];
+              const active = navMode === mode;
+              return (
+                <button
+                  key={mode}
+                  onClick={() => setNavMode(mode)}
+                  className={cn(
+                    'flex-1 flex items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-[11px] font-semibold transition-all duration-200',
+                    active
+                      ? 'bg-background shadow-sm text-foreground'
+                      : 'text-sidebar-foreground/40 hover:text-sidebar-foreground/70'
+                  )}
+                >
+                  <cfg.icon className={cn('h-3.5 w-3.5', active ? cfg.color : '')} />
+                  <span>{cfg.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <button
+            onClick={cycleNavMode}
+            className="mx-auto flex h-8 w-8 items-center justify-center rounded-lg bg-sidebar-accent/50 transition-colors hover:bg-sidebar-accent"
+            title={`View: ${NAV_MODE_CONFIG[navMode].label}`}
+          >
+            {(() => { const Ic = NAV_MODE_CONFIG[navMode].icon; return <Ic className={cn('h-4 w-4', NAV_MODE_CONFIG[navMode].color)} />; })()}
+          </button>
+        )}
+      </div>
+
       <nav className="relative flex-1 overflow-y-auto px-2 py-2 space-y-2">
-        {NAV_SECTIONS.map((section, sIdx) => (
+        {filteredSections.map((section, sIdx) => (
           <div key={section.label}>
             {!collapsed && (
               <p className="px-3 pb-1 text-[10px] font-bold uppercase tracking-widest text-sidebar-foreground/30">
