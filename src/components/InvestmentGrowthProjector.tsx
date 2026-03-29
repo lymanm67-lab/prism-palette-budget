@@ -688,7 +688,141 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
         </CardContent>
       </Card>
 
-      {/* Retirement Readiness Assessment */}
+      {/* Spouse Retirement Age Comparison: 62 vs 70 */}
+      <Card className="border-2 border-amber-500/20">
+        <CardHeader className="pb-3">
+          <CardTitle className="font-display text-base flex items-center gap-2">
+            <Calculator className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+            Spouse Retirement Age: 62 vs 70
+          </CardTitle>
+          <p className="text-xs text-muted-foreground mt-1">
+            Impact of early retirement (70% pension) vs full pension at 70
+          </p>
+        </CardHeader>
+        <CardContent>
+          {(() => {
+            const earlyPension = 6559; // 70% at age 62
+            const fullPension = spousePension; // full at age 70
+            const earlyRetireYearsLost = 8; // 8 fewer years of wife's contributions
+            const wifeAnnualContribVal = parseFloat(spouseAnnualContrib) || 0;
+
+            // Use 10% ROI as the reference scenario
+            const refRate = 0.10;
+
+            // Full retirement at 70 — use current projections
+            const fullScenario = scenarios['10%'];
+            const fullFinalBalance = fullScenario[horizon - 1]?.endBalance || 0;
+            const fullFinalReal = fullScenario[horizon - 1]?.realBalance || 0;
+            const fullAfterTax = fullFinalReal * (1 - tax / 100);
+            const fullWithdrawal = fullAfterTax * 0.04;
+            const fullTotalIncome = fullWithdrawal + (ssMonthly * 12) + (fullPension * 12);
+
+            // Early retirement at 62 — lose 8 years of wife's contributions + lower pension
+            // Approximate: total lost contributions compounded
+            let lostWealth = 0;
+            for (let y = 0; y < earlyRetireYearsLost; y++) {
+              lostWealth = (lostWealth + wifeAnnualContribVal) * (1 + refRate);
+            }
+            const earlyFinalBalance = fullFinalBalance - lostWealth;
+            const earlyFinalReal = earlyFinalBalance / Math.pow(1 + inflation / 100, horizon);
+            const earlyAfterTax = earlyFinalReal * (1 - tax / 100);
+            const earlyWithdrawal = earlyAfterTax * 0.04;
+            const earlyTotalIncome = earlyWithdrawal + (ssMonthly * 12) + (earlyPension * 12);
+
+            const wealthDiff = fullFinalBalance - earlyFinalBalance;
+            const incomeDiff = fullTotalIncome - earlyTotalIncome;
+            const pensionDiffAnnual = (fullPension - earlyPension) * 12;
+
+            return (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Early Retirement */}
+                  <div className="p-4 rounded-lg border border-amber-500/20 bg-amber-500/5 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">⚡</span>
+                      <div>
+                        <p className="text-sm font-bold">Retire at 62</p>
+                        <p className="text-[10px] text-muted-foreground">70% pension · 8 fewer contribution years</p>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div>
+                        <p className="text-[10px] text-muted-foreground">Pension</p>
+                        <p className="text-sm font-semibold tabular-nums">{formatCurrency(earlyPension)}/mo ({formatCurrency(earlyPension * 12)}/yr)</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-muted-foreground">Portfolio (10% ROI, nominal)</p>
+                        <p className="text-base font-bold tabular-nums">{formatCompact(earlyFinalBalance)}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-muted-foreground">4% Withdrawal + SS + Pension</p>
+                        <p className="text-base font-bold tabular-nums text-amber-600 dark:text-amber-400">{formatCurrency(earlyTotalIncome)}/yr</p>
+                        <p className="text-xs text-muted-foreground">{formatCurrency(earlyTotalIncome / 12)}/mo</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Full Retirement */}
+                  <div className="p-4 rounded-lg border border-accent/20 bg-accent/5 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">🏆</span>
+                      <div>
+                        <p className="text-sm font-bold">Retire at 70</p>
+                        <p className="text-[10px] text-muted-foreground">100% pension · Full contribution period</p>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div>
+                        <p className="text-[10px] text-muted-foreground">Pension</p>
+                        <p className="text-sm font-semibold tabular-nums">{formatCurrency(fullPension)}/mo ({formatCurrency(fullPension * 12)}/yr)</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-muted-foreground">Portfolio (10% ROI, nominal)</p>
+                        <p className="text-base font-bold tabular-nums">{formatCompact(fullFinalBalance)}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-muted-foreground">4% Withdrawal + SS + Pension</p>
+                        <p className="text-base font-bold tabular-nums text-accent">{formatCurrency(fullTotalIncome)}/yr</p>
+                        <p className="text-xs text-muted-foreground">{formatCurrency(fullTotalIncome / 12)}/mo</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Cost of Early Retirement */}
+                <div className="p-4 rounded-lg border border-destructive/20 bg-destructive/5">
+                  <p className="text-sm font-bold mb-3">💰 Cost of Retiring 8 Years Early</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+                    <div>
+                      <p className="text-[10px] text-muted-foreground">Lost Portfolio Wealth</p>
+                      <p className="text-lg font-bold tabular-nums text-destructive">{formatCompact(wealthDiff)}</p>
+                      <p className="text-[10px] text-muted-foreground">{formatCurrency(wealthDiff)}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-muted-foreground">Pension Reduction</p>
+                      <p className="text-lg font-bold tabular-nums text-destructive">-{formatCurrency(pensionDiffAnnual)}/yr</p>
+                      <p className="text-[10px] text-muted-foreground">-{formatCurrency((fullPension - earlyPension))}/mo forever</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-muted-foreground">Total Income Difference</p>
+                      <p className="text-lg font-bold tabular-nums text-destructive">-{formatCurrency(incomeDiff)}/yr</p>
+                      <p className="text-[10px] text-muted-foreground">-{formatCurrency(incomeDiff / 12)}/mo in retirement</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-lg bg-muted/20 text-xs text-muted-foreground space-y-1">
+                  <p><span className="font-semibold text-foreground">Key takeaway:</span> Retiring at 62 costs {formatCompact(wealthDiff)} in portfolio growth plus {formatCurrency(pensionDiffAnnual)}/yr in reduced pension — a combined {formatCurrency(incomeDiff)}/yr less in retirement income.</p>
+                  <p>• Early pension: $6,559/mo (70% of full) vs $7,762/mo at age 70</p>
+                  <p>• 8 years of lost contributions ({formatCurrency(wifeAnnualContribVal)}/yr) compound significantly at 10% ROI</p>
+                  <p>• Consider: Could she work part-time from 62-65 and take pension at 65 as a middle ground?</p>
+                </div>
+              </div>
+            );
+          })()}
+        </CardContent>
+      </Card>
+
       <Card className="border-2 border-primary/20">
         <CardHeader className="pb-3">
           <CardTitle className="font-display text-base flex items-center gap-2">
