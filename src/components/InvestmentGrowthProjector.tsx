@@ -672,7 +672,8 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
                         <TableHead className="text-right">Annual Contribution</TableHead>
                         <TableHead className="text-right">ROI</TableHead>
                         <TableHead className="text-right">Growth</TableHead>
-                        <TableHead className="text-right">End of Year Balance</TableHead>
+                        <TableHead className="text-right">Nominal Balance</TableHead>
+                        <TableHead className="text-right">Real Balance</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -685,6 +686,7 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
                             <TableCell className="text-right tabular-nums">{r.roi}%</TableCell>
                             <TableCell className="text-right tabular-nums text-emerald-600 dark:text-emerald-400">{formatCurrency(r.growth)}</TableCell>
                             <TableCell className="text-right tabular-nums font-medium">{formatCurrency(r.endBalance)}</TableCell>
+                            <TableCell className="text-right tabular-nums text-muted-foreground">{formatCurrency(r.realBalance)}</TableCell>
                           </TableRow>
                         );
                       })}
