@@ -207,15 +207,17 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
   const horizon = parseInt(horizonYears) || 35;
   const start = parseFloat(startingBalance) || 0;
   const boostYear = parseInt(oneTimeBoostYear) || 0;
-  const boostAmt = parseFloat(oneTimeBoostAmount) || 0;
+  const inflation = parseFloat(inflationRate) || 3;
+  const tax = parseFloat(taxRate) || 22;
+  const ssMonthly = parseFloat(ssMonthlyBenefit) || 0;
 
   // Compute all scenarios
   const scenarios = useMemo(() => ({
-    '8%': computeProjection(start, baseAnnual, horizon, 8, schedules, boostYear, boostAmt, false),
-    '10%': computeProjection(start, baseAnnual, horizon, 10, schedules, boostYear, boostAmt, false),
-    '12%': computeProjection(start, baseAnnual, horizon, 12, schedules, boostYear, boostAmt, false),
-    'Mixed': computeProjection(start, baseAnnual, horizon, 0, schedules, boostYear, boostAmt, true),
-  }), [start, baseAnnual, horizon, schedules, boostYear, boostAmt]);
+    '8%': computeProjection(start, baseAnnual, horizon, 8, schedules, boostYear, boostAmt, false, inflation),
+    '10%': computeProjection(start, baseAnnual, horizon, 10, schedules, boostYear, boostAmt, false, inflation),
+    '12%': computeProjection(start, baseAnnual, horizon, 12, schedules, boostYear, boostAmt, false, inflation),
+    'Mixed': computeProjection(start, baseAnnual, horizon, 0, schedules, boostYear, boostAmt, true, inflation),
+  }), [start, baseAnnual, horizon, schedules, boostYear, boostAmt, inflation]);
 
   // Chart data
   const chartData = useMemo(() => {
