@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
-import { CheckCircle2, Star, Briefcase, Loader2, Users, TrendingUp, Star as StarIcon, RefreshCw } from 'lucide-react';
+import { CheckCircle2, Star, Briefcase, Loader2, Users, TrendingUp, Star as StarIcon, RefreshCw, Zap } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { STRIPE_PLANS } from '@/lib/stripe-plans';
