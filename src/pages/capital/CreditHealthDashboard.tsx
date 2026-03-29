@@ -137,6 +137,19 @@ const CreditHealthDashboard = () => {
                       <p className={`text-xl font-bold ${metrics.negativeCount > 0 ? 'text-destructive' : ''}`}>{metrics.negativeCount}</p>
                     </div>
                   </div>
+
+                  {/* Per-Bureau Scores */}
+                  <div className="grid grid-cols-3 gap-3 pt-2 border-t border-border/50">
+                    {bureauScores.map(b => {
+                      const color = b.score === 0 ? 'text-muted-foreground' : b.score >= 670 ? 'text-emerald-600' : b.score >= 580 ? 'text-amber-600' : 'text-destructive';
+                      return (
+                        <div key={b.bureau} className="space-y-1 text-center">
+                          <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{b.bureau}</p>
+                          <p className={`text-lg font-bold ${color}`}>{b.score > 0 ? b.score : '—'}</p>
+                          <p className="text-[10px] text-muted-foreground">{b.count} account{b.count !== 1 ? 's' : ''}</p>
+                        </div>
+                      );
+                    })}
                   <div className="flex gap-2 flex-wrap">
                     <Button size="sm" variant="outline" onClick={() => navigate('/capital/credit-overview')}>
                       <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Update Reports
