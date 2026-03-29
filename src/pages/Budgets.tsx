@@ -313,6 +313,11 @@ const Budgets = () => {
     'fuel': ['vehicle expenses'],
   };
 
+  // Fixed percentage overrides for items like debt settlement where business portion is known
+  const FIXED_BIZ_PCT: Record<string, { pct: number; label: string }> = {
+    'gitmeid law': { pct: 60, label: 'Debt Settlement (Biz portion)' },
+  };
+
   const businessOffsets = useMemo(() => {
     const offsets = new Map<string, { bizAmount: number; bizCategory: string; pct: number }>();
     if (!categories || !categoryGroups || !budgets) return offsets;
@@ -320,6 +325,7 @@ const Budgets = () => {
     const bizGroups = new Set((categoryGroups as any[]).filter((g: any) => g.budget_type === 'business').map((g: any) => g.id));
     const bizCats = categories.filter(c => bizGroups.has(c.group_id));
 
+    // Category-to-category offsets
     for (const [personalName, bizNames] of Object.entries(PERSONAL_TO_BIZ_MAP)) {
       const personalCat = categories.find(c => c.name.toLowerCase() === personalName && !bizGroups.has(c.group_id));
       if (!personalCat) continue;
@@ -338,6 +344,17 @@ const Budgets = () => {
         break;
       }
     }
+
+    // Fixed percentage overrides (e.g. debt settlement with known business portion)
+    for (const [name, config] of Object.entries(FIXED_BIZ_PCT)) {
+      const cat = categories.find(c => c.name.toLowerCase() === name && !bizGroups.has(c.group_id));
+      if (!cat) continue;
+      const budget = (budgets as any[]).find((b: any) => b.category_id === cat.id && b.month === month);
+      if (!budget || budget.planned_amount <= 0) continue;
+      const bizAmount = Math.round(budget.planned_amount * (config.pct / 100) * 100) / 100;
+      offsets.set(cat.id, { bizAmount, bizCategory: config.label, pct: config.pct });
+    }
+
     return offsets;
   }, [categories, categoryGroups, budgets, month]);
 
