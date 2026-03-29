@@ -167,15 +167,16 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
 
   // Plan state
   const [planName, setPlanName] = useState('My 35-Year Investment Plan');
-  const [startingBalance, setStartingBalance] = useState('160000');
+  // National-average fallback defaults (overwritten once user's payroll data loads)
+  const [startingBalance, setStartingBalance] = useState('87000');
   const [monthlyContrib, setMonthlyContrib] = useState(() =>
-    currentContribs.employee > 0 ? currentContribs.employee.toFixed(0) : '1164'
+    currentContribs.employee > 0 ? currentContribs.employee.toFixed(0) : '575'
   );
   const [employerMonthly, setEmployerMonthly] = useState(() =>
-    currentContribs.employer > 0 ? currentContribs.employer.toFixed(0) : '517'
+    currentContribs.employer > 0 ? currentContribs.employer.toFixed(0) : '287'
   );
   const [hsaMonthly, setHsaMonthly] = useState(() =>
-    currentContribs.hsa > 0 ? currentContribs.hsa.toFixed(0) : '160'
+    currentContribs.hsa > 0 ? currentContribs.hsa.toFixed(0) : '150'
   );
   const [horizonYears, setHorizonYears] = useState('35');
   const [oneTimeBoostYear, setOneTimeBoostYear] = useState('2');
