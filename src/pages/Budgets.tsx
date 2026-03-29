@@ -1101,6 +1101,7 @@ const Budgets = () => {
   }
 
   return (
+    <>
     <TooltipProvider delayDuration={300}>
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       {/* Print-only repeating header — position:fixed repeats on every printed page in Chrome */}
@@ -2380,7 +2381,6 @@ const Budgets = () => {
       onOpenChange={setBillScanOpen}
       categories={(categories || []).map(c => ({ id: c.id, name: c.name }))}
       onResult={(bill) => {
-        // Pre-fill the budget creation form with scanned data
         const matchedCat = (categories || []).find(c => c.name.toLowerCase() === bill.category.toLowerCase());
         if (matchedCat) {
           setForm({ category_id: matchedCat.id, planned_amount: String(bill.amount), rollover: false, budgetKind: 'expense', group_id: matchedCat.group_id, expense_type: 'fixed' });
@@ -2391,7 +2391,7 @@ const Budgets = () => {
         }
       }}
     />
-    </motion.div>
+    </>
   );
 };
 
