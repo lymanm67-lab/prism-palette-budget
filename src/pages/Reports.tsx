@@ -424,13 +424,10 @@ const Reports = () => {
         <TabsList className="flex-wrap h-auto gap-1">
           {[
             { value: 'spending', label: 'Spending', icon: PieChartIcon, color: 'text-rose-500' },
-            { value: 'budget', label: 'Budget vs Actual', icon: Scale, color: 'text-amber-500' },
-            { value: 'cashflow', label: 'Cash Flow', icon: Wallet, color: 'text-emerald-500' },
-            { value: 'networth', label: 'Net Worth', icon: TrendingUp, color: 'text-blue-500' },
-            { value: 'trends', label: 'Trends', icon: LineChartIcon, color: 'text-violet-500' },
-            { value: 'merchants', label: 'Top Merchants', icon: Store, color: 'text-orange-500' },
-            { value: 'payroll', label: 'Payroll Analysis', icon: Briefcase, color: 'text-cyan-500' },
-            { value: 'investment-growth', label: 'Investment Growth', icon: Sprout, color: 'text-green-500' },
+            { value: 'budget', label: 'Budget & Flow', icon: Scale, color: 'text-amber-500' },
+            { value: 'wealth', label: 'Wealth', icon: TrendingUp, color: 'text-blue-500' },
+            { value: 'payroll', label: 'Payroll', icon: Briefcase, color: 'text-cyan-500' },
+            { value: 'investment-growth', label: 'Growth', icon: Sprout, color: 'text-green-500' },
           ].map(({ value, label, icon: TabIcon, color }) => (
             <UiTooltip key={value}>
               <TooltipTrigger asChild>
