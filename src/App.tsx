@@ -70,6 +70,7 @@ import ExperimentsDashboard from "@/pages/ExperimentsDashboard";
 import ReconciliationAudit from "@/pages/ReconciliationAudit";
 import Changelog from "@/pages/Changelog";
 import AppStoreReadiness from "@/pages/AppStoreReadiness";
+import CrossoverTracker from "@/pages/CrossoverTracker";
 const queryClient = new QueryClient();
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -179,6 +180,7 @@ const App = () => (
               <Route path="/reconciliation" element={<ReconciliationAudit />} />
               <Route path="/experiments" element={<ExperimentsDashboard />} />
               <Route path="/app-store-readiness" element={<AppStoreReadiness />} />
+              <Route path="/crossover-tracker" element={<CrossoverTracker />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

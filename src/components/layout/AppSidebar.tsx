@@ -71,6 +71,7 @@ const NAV_SECTIONS: NavSection[] = [
       { to: '/net-worth', icon: Scale, label: 'Net Worth', color: 'text-prism-teal' },
       { to: '/goals', icon: Target, label: 'Goals', color: 'text-prism-lime' },
       { to: '/investments', icon: TrendingUp, label: 'Investments', color: 'text-prism-indigo' },
+      { to: '/crossover-tracker', icon: Target, label: 'Crossover Tracker', color: 'text-prism-lime' },
       { to: '/home-buying', icon: Home, label: 'Home Buying', color: 'text-prism-amber' },
     ],
   },
