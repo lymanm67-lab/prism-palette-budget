@@ -1668,6 +1668,25 @@ const Budgets = () => {
                   <span className="text-emerald-600 dark:text-emerald-400">{formatCurrency(Math.abs(totalIncomeRemaining))} remaining</span>
                 </div>
               </div>
+              {/* Payroll deductions in summary */}
+              {sectionTotals.payroll_deduction.budget > 0 && (
+                <div>
+                  <div className="flex justify-between text-sm">
+                    <span className="font-medium">Pre-Tax Deductions</span>
+                    <span className="font-semibold">{formatCurrency(sectionTotals.payroll_deduction.budget)} budget</span>
+                  </div>
+                  <div className="mt-1.5 h-2 rounded-full bg-muted overflow-hidden">
+                    <div className="h-full bg-sky-500 rounded-full transition-all" style={{ width: `${sectionTotals.payroll_deduction.budget > 0 ? Math.min((sectionTotals.payroll_deduction.actual / sectionTotals.payroll_deduction.budget) * 100, 100) : 0}%` }} />
+                  </div>
+                  <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                    <span>{formatCurrency(sectionTotals.payroll_deduction.actual)} deducted</span>
+                    <span>{formatCurrency(sectionTotals.payroll_deduction.remaining)} remaining</span>
+                  </div>
+                  <div className="text-[10px] text-sky-600 dark:text-sky-400 mt-1">
+                    {grossIncomeBudget > 0 ? `${Math.round((sectionTotals.payroll_deduction.budget / grossIncomeBudget) * 100)}% of gross income` : ''}
+                  </div>
+                </div>
+              )}
               {(['fixed', 'flexible', 'non_monthly'] as ExpenseType[]).map(type => {
                 const t = sectionTotals[type];
                 const pct = t.budget > 0 ? Math.min((t.actual / t.budget) * 100, 100) : 0;
