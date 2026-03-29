@@ -138,13 +138,16 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
     const payrollCatIds = new Set(categories.filter(c => payrollGroupIds.has(c.group_id)).map(c => c.id));
     const incomeCatIds = new Set(categories.filter(c => incomeGroupIds.has(c.group_id)).map(c => c.id));
 
+    // Also find HSA categories in ANY group (not just payroll_deduction)
+    const HSA_PATTERN = /\bhsa\b/i;
+    const allHsaCatIds = new Set(categories.filter(c => HSA_PATTERN.test(c.name)).map(c => c.id));
+
     let netIncome = 0;
     let totalDeductions = 0;
     let retirementTotal = 0;
     let hsaTotal = 0;
 
     const RETIREMENT_PATTERNS = [/tax\s*deferred|tda/i, /deferred\s*comp/i, /roth/i, /401\s*\(?k\)?/i, /403\s*\(?b\)?/i, /457\s*\(?b\)?/i, /pension/i];
-    const HSA_PATTERN = /\bhsa\b/i;
 
     for (const b of budgets as any[]) {
       if (incomeCatIds.has(b.category_id)) {
@@ -156,6 +159,9 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
           if (HSA_PATTERN.test(cat.name)) hsaTotal += b.planned_amount;
           else if (RETIREMENT_PATTERNS.some(p => p.test(cat.name))) retirementTotal += b.planned_amount;
         }
+      } else if (allHsaCatIds.has(b.category_id)) {
+        // HSA found outside payroll_deduction group — still count it
+        hsaTotal += b.planned_amount;
       }
     }
 
