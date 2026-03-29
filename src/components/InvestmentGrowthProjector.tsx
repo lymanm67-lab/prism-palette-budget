@@ -160,26 +160,27 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
     }
 
     const gross = netIncome + totalDeductions;
-    const employer = gross * 0.09; // 9% default employer match
+    const employer = gross * 0.04; // 4% national average employer match
 
     return { employee: retirementTotal, employer, hsa: hsaTotal, gross };
   }, [budgets, categories, categoryGroups]);
 
   // Plan state
   const [planName, setPlanName] = useState('My 35-Year Investment Plan');
-  const [startingBalance, setStartingBalance] = useState('160000');
+  // National-average fallback defaults (overwritten once user's payroll data loads)
+  const [startingBalance, setStartingBalance] = useState('87000');
   const [monthlyContrib, setMonthlyContrib] = useState(() =>
-    currentContribs.employee > 0 ? currentContribs.employee.toFixed(0) : '1164'
+    currentContribs.employee > 0 ? currentContribs.employee.toFixed(0) : '575'
   );
   const [employerMonthly, setEmployerMonthly] = useState(() =>
-    currentContribs.employer > 0 ? currentContribs.employer.toFixed(0) : '517'
+    currentContribs.employer > 0 ? currentContribs.employer.toFixed(0) : '287'
   );
   const [hsaMonthly, setHsaMonthly] = useState(() =>
-    currentContribs.hsa > 0 ? currentContribs.hsa.toFixed(0) : '160'
+    currentContribs.hsa > 0 ? currentContribs.hsa.toFixed(0) : '150'
   );
   const [horizonYears, setHorizonYears] = useState('35');
-  const [oneTimeBoostYear, setOneTimeBoostYear] = useState('2');
-  const [oneTimeBoostAmount, setOneTimeBoostAmount] = useState('583');
+  const [oneTimeBoostYear, setOneTimeBoostYear] = useState('0');
+  const [oneTimeBoostAmount, setOneTimeBoostAmount] = useState('0');
   const [schedules, setSchedules] = useState<ContributionSchedule[]>(DEFAULT_SCHEDULES);
   const [isEditing, setIsEditing] = useState(false);
   const [showSchedule, setShowSchedule] = useState(false);
@@ -460,7 +461,7 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
               <p className="text-base font-bold tabular-nums">{formatCurrency(parseFloat(monthlyContrib) || 0)}</p>
             </div>
             <div className="p-3 rounded-lg bg-muted/30 text-center">
-              <p className="text-xs text-muted-foreground">Employer (9%)</p>
+              <p className="text-xs text-muted-foreground">Employer Match</p>
               <p className="text-base font-bold tabular-nums">{formatCurrency(parseFloat(employerMonthly) || 0)}</p>
             </div>
             <div className="p-3 rounded-lg bg-muted/30 text-center">
