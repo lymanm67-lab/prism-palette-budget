@@ -1,8 +1,12 @@
 import { useMemo } from 'react';
-import { useAccounts, useTransactions } from '@/hooks/use-finance-data';
+import { useAccounts, useTransactions, useBudgets } from '@/hooks/use-finance-data';
 import { useRecurringTransactions } from '@/hooks/use-recurring';
 import { useModeSettings, type FinancialMode, MODE_CONFIG } from '@/hooks/use-financial-mode';
 import { useSubscriptions } from '@/hooks/use-subscriptions';
+import { useHousehold } from '@/contexts/HouseholdContext';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { format, startOfMonth } from 'date-fns';
 
 export interface SafeToSpendResult {
   daily: number;
@@ -12,6 +16,8 @@ export interface SafeToSpendResult {
   monthlyIncome: number;
   monthlyObligations: number;
   monthlySubscriptions: number;
+  budgetIncome: number;
+  budgetExpenses: number;
   bufferPercent: number;
   mode: FinancialMode;
   isLoading: boolean;
@@ -23,10 +29,42 @@ export function useSafeToSpend(): SafeToSpendResult {
   const { data: recurring } = useRecurringTransactions();
   const { data: subscriptions } = useSubscriptions();
   const { data: modeSettings } = useModeSettings();
+  const { household } = useHousehold();
+
+  // Fetch budgets with category group info to identify income vs expense
+  const currentMonth = format(startOfMonth(new Date()), 'yyyy-MM-dd');
+  const { data: budgetsWithGroups } = useQuery({
+    queryKey: ['budgets-with-groups', household?.id, currentMonth],
+    enabled: !!household,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('budgets')
+        .select('planned_amount, categories(name, group_id, category_groups(expense_type, budget_type, business_profile_id))')
+        .eq('household_id', household!.id)
+        .eq('month', currentMonth);
+      if (error) throw error;
+      return data as any[];
+    },
+  });
 
   return useMemo(() => {
     const mode: FinancialMode = (modeSettings?.current_mode as FinancialMode) || 'guardrail';
     const bufferPercent = modeSettings?.buffer_percent ?? MODE_CONFIG[mode].bufferDefault;
+
+    // Calculate budget-based income and expenses (personal only, matching Subscriptions page logic)
+    let budgetIncome = 0;
+    let budgetExpenses = 0;
+    for (const b of (budgetsWithGroups || [])) {
+      const group = b.categories?.category_groups;
+      const isBusiness = group?.budget_type === 'business' || !!group?.business_profile_id;
+      if (isBusiness) continue; // personal only
+      const expType = group?.expense_type || 'flexible';
+      if (expType === 'income') {
+        budgetIncome += b.planned_amount || 0;
+      } else if (expType !== 'equity') {
+        budgetExpenses += b.planned_amount || 0;
+      }
+    }
 
     // Total available cash (checking + savings)
     const totalAvailableCash = (accounts || [])
@@ -39,7 +77,10 @@ export function useSafeToSpend(): SafeToSpendResult {
     const monthTxns = (transactions || []).filter(t => t.date.startsWith(monthPrefix));
     const monthlyIncome = monthTxns.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0);
 
-    // Monthly obligations from recurring transactions (bills)
+    // Use higher of budget income vs actual transaction income
+    const effectiveIncome = Math.max(monthlyIncome, budgetIncome);
+
+    // Monthly obligations from recurring transactions (bills) 
     const monthlyObligations = (recurring || [])
       .filter((r: any) => r.is_active && r.amount < 0)
       .reduce((s: number, r: any) => {
@@ -67,8 +108,12 @@ export function useSafeToSpend(): SafeToSpendResult {
       .filter(t => t.amount < 0 && !t.is_transfer)
       .reduce((s, t) => s + Math.abs(t.amount), 0);
 
-    // Base monthly safe-to-spend: income - obligations - subscriptions - already spent
-    const baseMonthlySafe = monthlyIncome - monthlyObligations - monthlySubscriptions - monthlySpent;
+    // Use higher of budget expenses vs (obligations + subscriptions)
+    const recurringTotal = monthlyObligations + monthlySubscriptions;
+    const effectiveExpenses = Math.max(recurringTotal, budgetExpenses);
+
+    // Base monthly safe-to-spend: income - expenses - already spent
+    const baseMonthlySafe = effectiveIncome - effectiveExpenses - monthlySpent;
     
     // Apply buffer
     const bufferMultiplier = 1 - (bufferPercent / 100);
@@ -86,12 +131,14 @@ export function useSafeToSpend(): SafeToSpendResult {
       weekly: Math.round(weeklySafe * 100) / 100,
       monthly: Math.round(monthlySafe * 100) / 100,
       totalAvailableCash,
-      monthlyIncome,
+      monthlyIncome: effectiveIncome,
       monthlyObligations,
       monthlySubscriptions,
+      budgetIncome,
+      budgetExpenses,
       bufferPercent,
       mode,
       isLoading: !accounts,
     };
-  }, [accounts, transactions, recurring, subscriptions, modeSettings]);
+  }, [accounts, transactions, recurring, subscriptions, modeSettings, budgetsWithGroups]);
 }
