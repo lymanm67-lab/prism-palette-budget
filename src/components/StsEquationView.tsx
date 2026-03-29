@@ -3,13 +3,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useSafeToSpend } from '@/hooks/use-safe-to-spend';
+import { useSafeToSpend, type StsScope } from '@/hooks/use-safe-to-spend';
 import { useCurrency } from '@/hooks/use-currency';
 import { MODE_CONFIG } from '@/hooks/use-financial-mode';
 import { Calculator, ChevronDown, ChevronUp, Minus, X, Equal, Shield } from 'lucide-react';
 
-export function StsEquationView() {
-  const sts = useSafeToSpend();
+export function StsEquationView({ scope = 'combined' }: { scope?: StsScope }) {
+  const sts = useSafeToSpend(scope);
   const { formatCurrency } = useCurrency();
   const [expanded, setExpanded] = useState(false);
 

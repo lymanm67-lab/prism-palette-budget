@@ -282,14 +282,12 @@ Your Safe-to-Spend updates in real time as you add transactions, pay bills, and 
       <motion.div variants={item}>
         <SafeToSpendHero 
           viewMode={mode} 
-          filteredIncome={monthlyIncome} 
-          filteredExpenses={monthlyExpenses} 
         />
       </motion.div>
 
       {/* ========== STS Equation View ========== */}
       <motion.div variants={item}>
-        <StsEquationView />
+        <StsEquationView scope={mode} />
       </motion.div>
 
       {/* ========== 90-Day Progress Tracker ========== */}

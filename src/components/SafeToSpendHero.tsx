@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useSafeToSpend } from '@/hooks/use-safe-to-spend';
+import { useSafeToSpend, type StsScope } from '@/hooks/use-safe-to-spend';
 import { useCurrency } from '@/hooks/use-currency';
 import { MODE_CONFIG } from '@/hooks/use-financial-mode';
 import { Shield, Zap, Leaf, DollarSign, Calendar, CalendarDays, TrendingUp, Info } from 'lucide-react';
@@ -23,12 +23,10 @@ const viewLabels: Record<ViewMode, string> = {
 
 interface SafeToSpendHeroProps {
   viewMode?: ViewMode;
-  filteredIncome?: number;
-  filteredExpenses?: number;
 }
 
-export function SafeToSpendHero({ viewMode = 'combined', filteredIncome, filteredExpenses }: SafeToSpendHeroProps) {
-  const sts = useSafeToSpend();
+export function SafeToSpendHero({ viewMode = 'combined' }: SafeToSpendHeroProps) {
+  const sts = useSafeToSpend(viewMode as StsScope);
   const { formatCurrency } = useCurrency();
 
   if (sts.isLoading) {
@@ -45,8 +43,8 @@ export function SafeToSpendHero({ viewMode = 'combined', filteredIncome, filtere
   const ModeIcon = modeIcons[sts.mode];
   const label = `${viewLabels[viewMode]} Safe to Spend`;
 
-  const displayIncome = filteredIncome ?? sts.monthlyIncome;
-  const displayExpenses = filteredExpenses ?? (sts.monthlyObligations + sts.monthlySubscriptions);
+  const displayIncome = sts.monthlyIncome;
+  const displayExpenses = sts.monthlyObligations + sts.monthlySubscriptions;
   const stsPercent = displayIncome > 0 ? Math.round((sts.monthly / displayIncome) * 100) : 0;
   const isBusinessView = viewMode === 'business';
   const profit = displayIncome - displayExpenses;
