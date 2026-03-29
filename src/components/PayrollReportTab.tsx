@@ -192,13 +192,16 @@ export default function PayrollReportTab({ budgetMonth }: PayrollReportTabProps)
     const deferredTotal = deferredItems.reduce((s, d) => s + d.monthlyAmount, 0);
     const deferredPct = grossIncome > 0 ? (deferredTotal / grossIncome) * 100 : 0;
 
-    // Employer-paid benefits toward retirement (e.g. employer 401k match)
-    const employerBenefitItems = deductions.filter(d => {
+    // Employer-paid benefits toward retirement
+    const detectedEmployerItems = deductions.filter(d => {
       const lower = d.name.toLowerCase();
       return lower.includes('employer') || lower.includes('match') || lower.includes('company contrib');
     });
-    const employerContrib = employerBenefitItems.reduce((s, d) => s + d.monthlyAmount, 0);
+    const detectedEmployerContrib = detectedEmployerItems.reduce((s, d) => s + d.monthlyAmount, 0);
+    const manualVal = parseFloat(manualEmployerContrib) || 0;
+    const employerContrib = detectedEmployerContrib > 0 ? detectedEmployerContrib : manualVal;
     const employerContribPct = grossIncome > 0 ? (employerContrib / grossIncome) * 100 : 0;
+    const employerBenefitItems = detectedEmployerItems;
 
     const totalSavingsInvestment = employeeContrib + hsaTotal + employerContrib;
     const totalSavingsRate = grossIncome > 0 ? (totalSavingsInvestment / grossIncome) * 100 : 0;
