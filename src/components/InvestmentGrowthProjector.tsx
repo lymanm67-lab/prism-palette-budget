@@ -71,6 +71,8 @@ function computeProjection(
   oneTimeBoostMonthly: number,
   useMixedRoi: boolean,
   inflationRate: number,
+  periodicBoostAmount: number,
+  periodicBoostInterval: number,
 ) {
   const rows: { year: number; annualContrib: number; endBalance: number; roi: number; growth: number; realBalance: number }[] = [];
   let balance = startingBalance;
@@ -91,6 +93,11 @@ function computeProjection(
     let yearContrib = currentAnnual;
     if (y === oneTimeBoostYear) {
       yearContrib += oneTimeBoostMonthly * 12;
+    }
+
+    // Periodic lump-sum boost every N years
+    if (periodicBoostInterval > 0 && periodicBoostAmount > 0 && y % periodicBoostInterval === 0) {
+      yearContrib += periodicBoostAmount;
     }
 
     const roi = useMixedRoi ? (MIXED_ROI_MAP[y] ?? 8) : annualRoi;
@@ -184,6 +191,8 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
   const [taxRate, setTaxRate] = useState('22');
   const [ssMonthlyBenefit, setSsMonthlyBenefit] = useState('2200');
   const [targetRetirementIncome, setTargetRetirementIncome] = useState('80000');
+  const [periodicBoostAmount, setPeriodicBoostAmount] = useState('10000');
+  const [periodicBoostInterval, setPeriodicBoostInterval] = useState('5');
   const [schedules, setSchedules] = useState<ContributionSchedule[]>(DEFAULT_SCHEDULES);
   const [isEditing, setIsEditing] = useState(false);
   const [showSchedule, setShowSchedule] = useState(false);
@@ -215,14 +224,16 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
   const inflation = parseFloat(inflationRate) || 3;
   const tax = parseFloat(taxRate) || 22;
   const ssMonthly = parseFloat(ssMonthlyBenefit) || 0;
+  const pBoostAmt = parseFloat(periodicBoostAmount) || 0;
+  const pBoostInterval = parseInt(periodicBoostInterval) || 0;
 
   // Compute all scenarios
   const scenarios = useMemo(() => ({
-    '8%': computeProjection(start, baseAnnual, horizon, 8, schedules, boostYear, boostAmt, false, inflation),
-    '10%': computeProjection(start, baseAnnual, horizon, 10, schedules, boostYear, boostAmt, false, inflation),
-    '12%': computeProjection(start, baseAnnual, horizon, 12, schedules, boostYear, boostAmt, false, inflation),
-    'Mixed': computeProjection(start, baseAnnual, horizon, 0, schedules, boostYear, boostAmt, true, inflation),
-  }), [start, baseAnnual, horizon, schedules, boostYear, boostAmt, inflation]);
+    '8%': computeProjection(start, baseAnnual, horizon, 8, schedules, boostYear, boostAmt, false, inflation, pBoostAmt, pBoostInterval),
+    '10%': computeProjection(start, baseAnnual, horizon, 10, schedules, boostYear, boostAmt, false, inflation, pBoostAmt, pBoostInterval),
+    '12%': computeProjection(start, baseAnnual, horizon, 12, schedules, boostYear, boostAmt, false, inflation, pBoostAmt, pBoostInterval),
+    'Mixed': computeProjection(start, baseAnnual, horizon, 0, schedules, boostYear, boostAmt, true, inflation, pBoostAmt, pBoostInterval),
+  }), [start, baseAnnual, horizon, schedules, boostYear, boostAmt, inflation, pBoostAmt, pBoostInterval]);
 
   // Chart data
   const chartData = useMemo(() => {
@@ -428,6 +439,19 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
                 <Input value={oneTimeBoostYear} onChange={e => setOneTimeBoostYear(e.target.value)} type="number" className="h-8 mt-1 w-20" min="1" max={horizonYears} />
               </div>
               <p className="text-xs text-muted-foreground pb-1">+{formatCurrency(boostAmt * 12)}/yr added in Year {boostYear} (e.g., debt payoff freed up)</p>
+            </div>
+
+            {/* Periodic lump-sum boost */}
+            <div className="flex items-end gap-3 p-3 rounded-lg bg-primary/5 border border-primary/10">
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Periodic Lump Sum</label>
+                <Input value={periodicBoostAmount} onChange={e => setPeriodicBoostAmount(e.target.value)} type="number" className="h-8 mt-1 w-28" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Every N Years</label>
+                <Input value={periodicBoostInterval} onChange={e => setPeriodicBoostInterval(e.target.value)} type="number" className="h-8 mt-1 w-20" min="1" max="10" />
+              </div>
+              <p className="text-xs text-muted-foreground pb-1">+{formatCurrency(pBoostAmt)} added every {pBoostInterval} years (Years {Array.from({length: Math.floor(horizon / pBoostInterval)}, (_, i) => (i+1) * pBoostInterval).join(', ')})</p>
             </div>
 
             {/* Contribution increase schedule */}
