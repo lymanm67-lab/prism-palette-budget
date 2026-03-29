@@ -73,6 +73,8 @@ function computeProjection(
   inflationRate: number,
   periodicBoostAmount: number,
   periodicBoostInterval: number,
+  debtRedirectMonthly: number,
+  debtRedirectStartYear: number,
 ) {
   const rows: { year: number; annualContrib: number; endBalance: number; roi: number; growth: number; realBalance: number }[] = [];
   let balance = startingBalance;
@@ -91,8 +93,15 @@ function computeProjection(
     }
 
     let yearContrib = currentAnnual;
+
+    // One-time monthly boost in a specific year
     if (y === oneTimeBoostYear) {
       yearContrib += oneTimeBoostMonthly * 12;
+    }
+
+    // Debt payoff redirect — ongoing from a specific year forward
+    if (debtRedirectStartYear > 0 && debtRedirectMonthly > 0 && y >= debtRedirectStartYear) {
+      yearContrib += debtRedirectMonthly * 12;
     }
 
     // Periodic lump-sum boost every N years
