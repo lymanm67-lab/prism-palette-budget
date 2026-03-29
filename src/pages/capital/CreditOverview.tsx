@@ -29,7 +29,6 @@ const CreditOverview = () => {
 
   const filtered = tab === 'all' ? accounts : accounts.filter(a => a.bureau === tab);
 
-  const totalBalance = accounts.reduce((s, a) => s + Number(a.balance), 0);
   const revolving = accounts.filter(a => a.account_type === 'Revolving');
   const revolvingBalance = revolving.reduce((s, a) => s + Number(a.balance), 0);
   const totalLimit = revolving.reduce((s, a) => s + Number(a.credit_limit || 0), 0);
@@ -37,6 +36,11 @@ const CreditOverview = () => {
   const negativeCount = accounts.filter(a =>
     ['Collection', 'Charge-Off', 'Foreclosure', 'Repossession'].includes(a.account_status)
   ).length;
+
+  const bureauBalances = (['Equifax', 'Experian', 'TransUnion'] as const).map(bureau => {
+    const ba = accounts.filter(a => a.bureau === bureau);
+    return { bureau, balance: ba.reduce((s, a) => s + Number(a.balance), 0), count: ba.length };
+  });
 
   const fmt = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
   const fmtDate = (d: string | null) => d ? format(new Date(d), 'MM/dd/yyyy') : '—';
