@@ -145,6 +145,8 @@ const Budgets = () => {
   const smartBudget = useSmartBudget();
   const [printPreview, setPrintPreview] = useState(false);
   const [printOrientation, setPrintOrientation] = useState<'portrait' | 'landscape'>('portrait');
+  const [paystubOpen, setPaystubOpen] = useState(false);
+  const [billScanOpen, setBillScanOpen] = useState(false);
   const toggleSection = (key: string) => setOpenSections(s => ({ ...s, [key]: !s[key] }));
 
   
