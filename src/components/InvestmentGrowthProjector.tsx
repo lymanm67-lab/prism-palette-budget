@@ -163,8 +163,8 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
     }
 
     const gross = netIncome + totalDeductions;
-    // Employer gives 3% annual raise; 2% goes to retirement, 1% to income
-    const employer = gross * 0.02;
+    // Employer contributes 9% of gross to retirement
+    const employer = gross * 0.09;
 
     return { employee: retirementTotal, employer, hsa: hsaTotal, gross };
   }, [budgets, categories, categoryGroups]);
