@@ -198,8 +198,9 @@ export default function PayrollReportTab({ budgetMonth }: PayrollReportTabProps)
       return lower.includes('employer') || lower.includes('match') || lower.includes('company contrib');
     });
     const detectedEmployerContrib = detectedEmployerItems.reduce((s, d) => s + d.monthlyAmount, 0);
-    const manualVal = parseFloat(manualEmployerContrib) || 0;
-    const employerContrib = detectedEmployerContrib > 0 ? detectedEmployerContrib : manualVal;
+    const matchPct = parseFloat(employerMatchPct) || 0;
+    const calculatedEmployerContrib = grossIncome > 0 ? (grossIncome * matchPct) / 100 : 0;
+    const employerContrib = detectedEmployerContrib > 0 ? detectedEmployerContrib : calculatedEmployerContrib;
     const employerContribPct = grossIncome > 0 ? (employerContrib / grossIncome) * 100 : 0;
     const employerBenefitItems = detectedEmployerItems;
 
