@@ -22,6 +22,7 @@ import {
 import BusinessReports from '@/components/BusinessReports';
 import PageOverview from '@/components/PageOverview';
 import ReportNarrative from '@/components/ReportNarrative';
+import PayrollReportTab from '@/components/PayrollReportTab';
 const tooltipStyle = { background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))' };
 
 const TREND_COLORS = [
@@ -420,6 +421,7 @@ const Reports = () => {
           <TabsTrigger value="networth">Net Worth</TabsTrigger>
           <TabsTrigger value="trends">Trends</TabsTrigger>
           <TabsTrigger value="merchants">Top Merchants</TabsTrigger>
+          <TabsTrigger value="payroll">Payroll Analysis</TabsTrigger>
         </TabsList>
 
         <div ref={reportRef}>
@@ -818,6 +820,11 @@ const Reports = () => {
             </CardContent>
           </Card>
           <ReportNarrative tab="merchants" topMerchants={topMerchants} dateLabel={dateLabel} />
+        </TabsContent>
+
+        {/* ==================== PAYROLL ANALYSIS ==================== */}
+        <TabsContent value="payroll">
+          <PayrollReportTab budgetMonth={budgetMonth} />
         </TabsContent>
         </div>
       </Tabs>

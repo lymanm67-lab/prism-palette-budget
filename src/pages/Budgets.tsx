@@ -27,6 +27,7 @@ import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 import { getDaysInMonth } from 'date-fns';
 import PageOverview from '@/components/PageOverview';
+import PayrollAnalysisWidget from '@/components/PayrollAnalysisWidget';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuLabel } from '@/components/ui/dropdown-menu';
 import { EmptyState } from '@/components/EmptyState';
@@ -1847,6 +1848,9 @@ const Budgets = () => {
               })}
             </CardContent>
           </Card>
+
+          {/* Payroll & Investment Analysis Widget */}
+          <PayrollAnalysisWidget month={month} />
         </div>
       </div>
       ) : (
