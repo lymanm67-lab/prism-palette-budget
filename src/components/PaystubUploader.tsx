@@ -125,11 +125,12 @@ export function PaystubUploader({ open, onOpenChange }: PaystubUploaderProps) {
         // Check if category already exists
         let cat = existingCats.find(c => c.name.toLowerCase() === ded.name.toLowerCase());
         if (!cat) {
-          cat = await createCategory.mutateAsync({
+          const created = await createCategory.mutateAsync({
             name: ded.name,
             group_id: groupId,
             color: '#0ea5e9',
           });
+          cat = created as any;
         }
 
         // Create budget for current month
