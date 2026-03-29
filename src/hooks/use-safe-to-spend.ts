@@ -8,6 +8,14 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format, startOfMonth } from 'date-fns';
 
+const NON_SUB_KEYWORDS = ['rent', 'mortgage', 'insurance', 'utilit', 'electric', 'gas', 'water', 'sewer', 'trash', 'debt', 'loan', 'transfer', 'payment'];
+
+function isNonSubscription(sub: any): boolean {
+  const merchant = (sub.merchant || '').toLowerCase();
+  const catName = (sub.categories?.name || '').toLowerCase();
+  return NON_SUB_KEYWORDS.some(kw => merchant.includes(kw) || catName.includes(kw)) || (sub.is_transfer === true);
+}
+
 export interface SafeToSpendResult {
   daily: number;
   weekly: number;
@@ -93,7 +101,7 @@ export function useSafeToSpend(): SafeToSpendResult {
 
     // Monthly subscriptions
     const monthlySubscriptions = (subscriptions || [])
-      .filter((sub: any) => sub.is_active && !sub.is_cancelled)
+      .filter((sub: any) => sub.is_active && !sub.is_cancelled && !isNonSubscription(sub))
       .reduce((s: number, sub: any) => {
         const amt = Math.abs(sub.average_amount || 0);
         if (sub.frequency === 'yearly' || sub.frequency === 'annual') return s + amt / 12;
