@@ -474,9 +474,10 @@ export default function PayrollReportTab({ budgetMonth }: PayrollReportTabProps)
                   </div>
                   <Progress value={Math.min(analysis.totalSavingsRate * 5, 100)} className="h-2" />
                   <p className="text-xs text-muted-foreground">
+                    Includes: Employee ({analysis.employeeContribPct.toFixed(2)}%) + HSA ({analysis.hsaPct.toFixed(2)}%){analysis.employerContrib > 0 ? ` + Employer (${analysis.employerContribPct.toFixed(2)}%)` : ''}.{' '}
                     {analysis.meetsStandard
-                      ? 'Meets the 20% wealth-building standard. Your savings and investment contributions are on track for long-term financial health.'
-                      : `Currently ${(20 - analysis.totalSavingsRate).toFixed(2)}% below the 20% wealth-building standard. Consider increasing retirement contributions or opening an IRA.`}
+                      ? 'Meets the 20% wealth-building standard.'
+                      : `${(20 - analysis.totalSavingsRate).toFixed(2)}% below the 20% standard.`}
                   </p>
                 </div>
               </div>
