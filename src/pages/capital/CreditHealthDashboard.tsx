@@ -156,7 +156,11 @@ const CreditHealthDashboard = () => {
                 <div className="space-y-4">
                   <div>
                     <p className="text-sm text-muted-foreground">Estimated VantageScore®</p>
-                    <p className="text-xs text-muted-foreground mt-1">Based on your imported credit data</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {accounts.some(a => a.bureau === 'Plaid')
+                        ? 'Based on real bank data + imported credit reports'
+                        : 'Based on imported credit data — sync banks for better accuracy'}
+                    </p>
                   </div>
                   <div className="grid grid-cols-3 gap-4">
                     <div className="space-y-1">
