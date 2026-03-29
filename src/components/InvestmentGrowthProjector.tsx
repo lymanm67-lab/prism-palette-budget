@@ -392,6 +392,26 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
               </div>
             </div>
 
+            {/* Inflation, Tax, Social Security */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 rounded-lg bg-muted/20 border border-border/50">
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Inflation Rate %</label>
+                <Input value={inflationRate} onChange={e => setInflationRate(e.target.value)} type="number" className="h-8 mt-1" step="0.5" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Tax Rate in Retirement %</label>
+                <Input value={taxRate} onChange={e => setTaxRate(e.target.value)} type="number" className="h-8 mt-1" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Est. SS Monthly Benefit</label>
+                <Input value={ssMonthlyBenefit} onChange={e => setSsMonthlyBenefit(e.target.value)} type="number" className="h-8 mt-1" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">SS Annual (Today's $)</label>
+                <p className="text-sm font-bold mt-2 tabular-nums">{formatCurrency(ssMonthly * 12)}/yr</p>
+              </div>
+            </div>
+
             {/* One-time boost */}
             <div className="flex items-end gap-3 p-3 rounded-lg bg-amber-500/5 border border-amber-500/10">
               <div>
