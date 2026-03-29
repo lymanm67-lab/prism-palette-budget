@@ -214,11 +214,18 @@ const CreditOverview = () => {
                 </CardContent>
               </Card>
               <Card>
-                <CardContent className="pt-4 pb-3 flex items-center gap-3">
-                  <DollarSign className="h-8 w-8 text-primary" />
-                  <div>
-                    <p className="text-xs text-muted-foreground">Total Balance</p>
-                    <p className="text-2xl font-bold">{fmt(totalBalance)}</p>
+                <CardContent className="pt-4 pb-3">
+                  <div className="flex items-center gap-3 mb-3">
+                    <DollarSign className="h-8 w-8 text-primary" />
+                    <p className="text-xs text-muted-foreground">Balance by Bureau</p>
+                  </div>
+                  <div className="space-y-1.5">
+                    {bureauBalances.map(b => (
+                      <div key={b.bureau} className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">{b.bureau}</span>
+                        <span className="font-semibold font-mono">{b.count > 0 ? fmt(b.balance) : '—'}</span>
+                      </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
