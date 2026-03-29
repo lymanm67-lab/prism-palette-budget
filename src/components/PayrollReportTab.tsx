@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -6,7 +6,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Input } from '@/components/ui/input';
 import { useBudgets, useCategories, useCategoryGroups } from '@/hooks/use-finance-data';
 import { useCurrency } from '@/hooks/use-currency';
-import { TrendingUp, PiggyBank, Briefcase, CheckCircle2, AlertTriangle, Shield, Heart, DollarSign, Award, ArrowUp, Target } from 'lucide-react';
+import { TrendingUp, PiggyBank, Briefcase, CheckCircle2, AlertTriangle, Shield, Heart, DollarSign, Award, ArrowUp, Target, Calculator, CalendarPlus, Rocket } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Slider } from '@/components/ui/slider';
 import { cn } from '@/lib/utils';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 
