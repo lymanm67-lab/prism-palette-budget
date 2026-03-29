@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useAccounts, useTransactions, useBudgets } from '@/hooks/use-finance-data';
+import { useAccounts, useTransactions } from '@/hooks/use-finance-data';
 import { useRecurringTransactions } from '@/hooks/use-recurring';
 import { useModeSettings, type FinancialMode, MODE_CONFIG } from '@/hooks/use-financial-mode';
 import { useSubscriptions } from '@/hooks/use-subscriptions';
@@ -51,14 +51,11 @@ export function useSafeToSpend(): SafeToSpendResult {
     const mode: FinancialMode = (modeSettings?.current_mode as FinancialMode) || 'guardrail';
     const bufferPercent = modeSettings?.buffer_percent ?? MODE_CONFIG[mode].bufferDefault;
 
-    // Calculate budget-based income and expenses (personal only, matching Subscriptions page logic)
+    // Calculate budget-based income and expenses
     let budgetIncome = 0;
     let budgetExpenses = 0;
-    console.log('[STS] budgetsWithGroups count:', (budgetsWithGroups || []).length, 'sample:', budgetsWithGroups?.[0]);
     for (const b of (budgetsWithGroups || [])) {
       const group = b.categories?.category_groups;
-      const isBusiness = group?.budget_type === 'business' || !!group?.business_profile_id;
-      if (isBusiness) continue; // personal only
       const expType = group?.expense_type || 'flexible';
       if (expType === 'income') {
         budgetIncome += b.planned_amount || 0;
@@ -80,7 +77,6 @@ export function useSafeToSpend(): SafeToSpendResult {
 
     // Use higher of budget income vs actual transaction income
     const effectiveIncome = Math.max(monthlyIncome, budgetIncome);
-    console.log('[STS] budgetIncome:', budgetIncome, 'budgetExpenses:', budgetExpenses, 'txnIncome:', monthlyIncome, 'effectiveIncome:', effectiveIncome);
 
     // Monthly obligations from recurring transactions (bills) 
     const monthlyObligations = (recurring || [])
@@ -114,8 +110,12 @@ export function useSafeToSpend(): SafeToSpendResult {
     const recurringTotal = monthlyObligations + monthlySubscriptions;
     const effectiveExpenses = Math.max(recurringTotal, budgetExpenses);
 
-    // Base monthly safe-to-spend: income - expenses - already spent
-    const baseMonthlySafe = effectiveIncome - effectiveExpenses - monthlySpent;
+    // Avoid double-counting: when budget expenses exist, they already represent full-month planned spending.
+    // Only subtract already-spent when no budget expense baseline exists.
+    const spentAdjustment = budgetExpenses > 0 ? 0 : monthlySpent;
+
+    // Base monthly safe-to-spend: income - expenses - optional spent adjustment
+    const baseMonthlySafe = effectiveIncome - effectiveExpenses - spentAdjustment;
     
     // Apply buffer
     const bufferMultiplier = 1 - (bufferPercent / 100);
