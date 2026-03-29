@@ -8,6 +8,8 @@ import { useTTS } from '@/hooks/use-tts';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { canUseAI } from '@/lib/stripe-plans';
+import { Lock } from 'lucide-react';
 
 interface AiSpendingInsightsProps {
   transactions: any[];
@@ -17,7 +19,8 @@ interface AiSpendingInsightsProps {
 }
 
 export default function AiSpendingInsights({ transactions, accounts, monthlyIncome, monthlyExpenses }: AiSpendingInsightsProps) {
-  const { user } = useAuth();
+  const { user, subscriptionTier } = useAuth();
+  const hasAIAccess = canUseAI(subscriptionTier);
   const { speak, pause, resume, stop, isSpeaking, isPaused } = useTTS();
   const [financialJourney, setFinancialJourney] = useState<string | null>(null);
   const [insights, setInsights] = useState('');
@@ -109,6 +112,24 @@ export default function AiSpendingInsights({ transactions, accounts, monthlyInco
       setLoading(false);
     }
   }, [transactions, accounts, monthlyIncome, monthlyExpenses, financialJourney]);
+
+  if (!hasAIAccess) {
+    return (
+      <Card className="border-border/50 opacity-75">
+        <CardHeader className="pb-4">
+          <CardTitle className="font-display text-lg flex items-center gap-2">
+            <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-prism-violet to-prism-rose flex items-center justify-center">
+              <Lock className="h-3.5 w-3.5 text-primary-foreground" />
+            </div>
+            AI Spending Insights
+          </CardTitle>
+          <p className="text-sm text-muted-foreground mt-2">
+            Upgrade to <span className="font-semibold text-foreground">Premium</span> to unlock AI-powered financial coaching and personalized spending analysis.
+          </p>
+        </CardHeader>
+      </Card>
+    );
+  }
 
   return (
     <motion.div

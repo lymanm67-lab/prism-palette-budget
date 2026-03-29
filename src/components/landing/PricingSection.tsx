@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
-import { CheckCircle2, Star, Briefcase, Loader2, Users, TrendingUp, Star as StarIcon, RefreshCw } from 'lucide-react';
+import { CheckCircle2, Star, Briefcase, Loader2, Users, TrendingUp, Star as StarIcon, RefreshCw, Zap } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { STRIPE_PLANS } from '@/lib/stripe-plans';
@@ -10,6 +10,26 @@ import { toast } from 'sonner';
 import { useABTest } from '@/hooks/use-ab-test';
 
 const PLANS = [
+  {
+    key: 'lite' as const,
+    name: 'Prism Lite',
+    monthly: 0,
+    yearly: 0,
+    yearlySavings: 0,
+    bestFor: 'Anyone curious about their spending — see your Safe-to-Spend number instantly',
+    tagline: 'Free forever. No credit card required.',
+    features: [
+      'Safe-to-Spend calculator',
+      '1 manual account',
+      'Basic spending categories',
+      'Monthly spending overview',
+    ],
+    cta: 'Get Started Free',
+    badge: 'Free',
+    badgeIcon: Zap,
+    highlight: false,
+    isFree: true,
+  },
   {
     key: 'personal' as const,
     name: 'Prism Personal',
@@ -19,6 +39,8 @@ const PLANS = [
     bestFor: 'Individuals who want better budgeting and personal financial organization',
     tagline: null,
     features: [
+      'Everything in Lite, plus:',
+      'Unlimited accounts',
       'Personal financial control systems',
       'Spending categories',
       'Savings tracking',
@@ -30,6 +52,7 @@ const PLANS = [
     badge: null,
     badgeIcon: null,
     highlight: false,
+    isFree: false,
   },
   {
     key: 'premium' as const,
@@ -41,6 +64,8 @@ const PLANS = [
     tagline: 'Full control. Better decisions. Less financial stress.',
     features: [
       'Everything in Personal, plus:',
+      'Plaid bank connections',
+      'AI spending insights',
       'Cash flow forecasting',
       'Net worth tracking',
       'Bill negotiation workflows',
@@ -52,6 +77,7 @@ const PLANS = [
     badge: 'Most Popular',
     badgeIcon: Star,
     highlight: true,
+    isFree: false,
   },
   {
     key: 'business' as const,
@@ -75,6 +101,7 @@ const PLANS = [
     badge: 'Best for Business',
     badgeIcon: Briefcase,
     highlight: false,
+    isFree: false,
   },
 ];
 
@@ -96,13 +123,18 @@ const PricingSection = () => {
   const headlineText = headlineTest.variant.config?.headline as string || 'Choose the plan that gives you full control';
   const showGuidance = (guidanceTest.variant.config?.showGuidance as boolean) !== false;
 
-  const handleCheckout = async (planKey: 'personal' | 'premium' | 'business') => {
+  const handleCheckout = async (planKey: string) => {
+    if (planKey === 'lite') {
+      navigate(user ? '/dashboard' : '/auth');
+      return;
+    }
+
     if (!user) {
       navigate('/auth');
       return;
     }
 
-    const plan = STRIPE_PLANS[planKey];
+    const plan = STRIPE_PLANS[planKey as 'personal' | 'premium' | 'business'];
     const priceId = annual ? plan.annual_price_id : plan.monthly_price_id;
 
     setLoadingPlan(planKey);
@@ -121,7 +153,10 @@ const PricingSection = () => {
     }
   };
 
-  const isCurrentPlan = (planKey: string) => subscribed && subscriptionTier === planKey;
+  const isCurrentPlan = (planKey: string) => {
+    if (planKey === 'lite') return user && !subscribed;
+    return subscribed && subscriptionTier === planKey;
+  };
 
   return (
     <section id="pricing" className="py-20 sm:py-28 bg-muted/20">
@@ -161,7 +196,7 @@ const PricingSection = () => {
           </span>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-3 max-w-5xl mx-auto items-start">
+        <div className="grid gap-6 lg:grid-cols-4 max-w-6xl mx-auto items-start">
           {PLANS.map((plan, i) => {
             const current = isCurrentPlan(plan.key);
             return (
@@ -185,14 +220,16 @@ const PricingSection = () => {
 
                 <div className="mt-4 flex items-baseline gap-1">
                   <span className="font-display text-4xl font-extrabold">
-                    ${annual ? plan.yearly : plan.monthly.toFixed(2)}
+                    {plan.isFree ? 'Free' : `$${annual ? plan.yearly : plan.monthly.toFixed(2)}`}
                   </span>
-                  <span className="text-muted-foreground text-sm">
-                    {annual ? '/year' : '/month'}
-                  </span>
+                  {!plan.isFree && (
+                    <span className="text-muted-foreground text-sm">
+                      {annual ? '/year' : '/month'}
+                    </span>
+                  )}
                 </div>
 
-                {annual && (
+                {!plan.isFree && annual && (
                   <div className="mt-1.5 space-y-0.5">
                     <p className="text-xs text-muted-foreground">
                       Only <span className="font-semibold text-foreground">${(plan.yearly / 12).toFixed(2)}/month</span>
@@ -203,15 +240,17 @@ const PricingSection = () => {
                   </div>
                 )}
 
-                {!annual && (
+                {!plan.isFree && !annual && (
                   <p className="mt-1.5 text-xs text-muted-foreground">
                     Switch to annual and save <span className="font-semibold text-accent">${plan.yearlySavings}/year</span>
                   </p>
                 )}
 
-                <p className="mt-1 text-[11px] text-muted-foreground italic">
-                  Less than the cost of one forgotten subscription.
-                </p>
+                {!plan.isFree && (
+                  <p className="mt-1 text-[11px] text-muted-foreground italic">
+                    Less than the cost of one forgotten subscription.
+                  </p>
+                )}
 
                 {plan.tagline && (
                   <p className="mt-3 text-xs font-semibold text-accent">{plan.tagline}</p>
