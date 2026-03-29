@@ -489,14 +489,16 @@ export default function PayrollReportTab({ budgetMonth }: PayrollReportTabProps)
             <p className="text-xs font-medium text-muted-foreground mb-2">Gross Income Allocation</p>
             <div className="flex h-6 rounded-full overflow-hidden">
               <div className="bg-rose-500 transition-all" style={{ width: `${analysis.grossIncome > 0 ? ((analysis.byType.get('tax')?.total || 0) / analysis.grossIncome * 100) : 0}%` }} title="Taxes" />
-              <div className="bg-emerald-500 transition-all" style={{ width: `${analysis.employeeContribPct}%` }} title="Retirement" />
+              <div className="bg-emerald-500 transition-all" style={{ width: `${analysis.employeeContribPct}%` }} title="Employee Retirement" />
+              {analysis.employerContribPct > 0 && <div className="bg-teal-400 transition-all" style={{ width: `${analysis.employerContribPct}%` }} title="Employer Retirement" />}
               <div className="transition-all" style={{ width: `${analysis.hsaPct}%`, backgroundColor: 'hsl(199, 89%, 48%)' }} title="HSA" />
               <div className="bg-purple-500 transition-all" style={{ width: `${analysis.grossIncome > 0 ? ((analysis.byType.get('insurance')?.total || 0) / analysis.grossIncome * 100) : 0}%` }} title="Insurance" />
               <div className="bg-muted-foreground/20 flex-1" title="Net Pay" />
             </div>
             <div className="flex flex-wrap gap-3 mt-2 text-[10px]">
               <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-rose-500" /> Taxes</span>
-              <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-emerald-500" /> Retirement</span>
+              <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-emerald-500" /> Employee Retirement</span>
+              {analysis.employerContrib > 0 && <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-teal-400" /> Employer Retirement</span>}
               <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full" style={{ backgroundColor: 'hsl(199, 89%, 48%)' }} /> HSA</span>
               <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-purple-500" /> Insurance</span>
               <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-muted-foreground/20" /> Net Pay</span>
