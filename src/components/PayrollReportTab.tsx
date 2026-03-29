@@ -1,8 +1,9 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Input } from '@/components/ui/input';
 import { useBudgets, useCategories, useCategoryGroups } from '@/hooks/use-finance-data';
 import { useCurrency } from '@/hooks/use-currency';
 import { TrendingUp, PiggyBank, Briefcase, CheckCircle2, AlertTriangle, Shield, Heart, DollarSign } from 'lucide-react';
@@ -106,6 +107,7 @@ export default function PayrollReportTab({ budgetMonth }: PayrollReportTabProps)
   const { data: budgets } = useBudgets(budgetMonth);
   const { data: categories } = useCategories();
   const { data: categoryGroups } = useCategoryGroups();
+  const [manualEmployerContrib, setManualEmployerContrib] = useState<string>('516.56');
 
   const analysis = useMemo(() => {
     if (!budgets || !categories || !categoryGroups) return null;
@@ -190,13 +192,16 @@ export default function PayrollReportTab({ budgetMonth }: PayrollReportTabProps)
     const deferredTotal = deferredItems.reduce((s, d) => s + d.monthlyAmount, 0);
     const deferredPct = grossIncome > 0 ? (deferredTotal / grossIncome) * 100 : 0;
 
-    // Employer-paid benefits toward retirement (e.g. employer 401k match)
-    const employerBenefitItems = deductions.filter(d => {
+    // Employer-paid benefits toward retirement
+    const detectedEmployerItems = deductions.filter(d => {
       const lower = d.name.toLowerCase();
       return lower.includes('employer') || lower.includes('match') || lower.includes('company contrib');
     });
-    const employerContrib = employerBenefitItems.reduce((s, d) => s + d.monthlyAmount, 0);
+    const detectedEmployerContrib = detectedEmployerItems.reduce((s, d) => s + d.monthlyAmount, 0);
+    const manualVal = parseFloat(manualEmployerContrib) || 0;
+    const employerContrib = detectedEmployerContrib > 0 ? detectedEmployerContrib : manualVal;
     const employerContribPct = grossIncome > 0 ? (employerContrib / grossIncome) * 100 : 0;
+    const employerBenefitItems = detectedEmployerItems;
 
     const totalSavingsInvestment = employeeContrib + hsaTotal + employerContrib;
     const totalSavingsRate = grossIncome > 0 ? (totalSavingsInvestment / grossIncome) * 100 : 0;
@@ -236,7 +241,7 @@ export default function PayrollReportTab({ budgetMonth }: PayrollReportTabProps)
       meetsStandard: totalSavingsRate >= 20,
       retirementItems, hsaItems, rothItems, deferredItems,
     };
-  }, [budgets, categories, categoryGroups]);
+  }, [budgets, categories, categoryGroups, manualEmployerContrib]);
 
   if (!analysis || analysis.totalDeductions === 0) {
     return (
@@ -454,33 +459,44 @@ export default function PayrollReportTab({ budgetMonth }: PayrollReportTabProps)
                 <span className="tabular-nums">{formatCurrency(analysis.employeeContrib + analysis.hsaTotal)} ({(analysis.employeeContribPct + analysis.hsaPct).toFixed(2)}% of gross)</span>
               </div>
 
-              {/* Employer Paid Benefits */}
-              {analysis.employerContrib > 0 && (
-                <div className="space-y-2 pt-3 border-t">
-                  <h4 className="text-sm font-semibold flex items-center gap-1.5">
-                    <Briefcase className="h-4 w-4 text-sky-500" />
-                    Employer Paid Benefits
-                  </h4>
-                  {analysis.employerBenefitItems.map((item: DeductionLine, i: number) => (
+              {/* Employer Paid Benefits — always shown */}
+              <div className="space-y-2 pt-3 border-t">
+                <h4 className="text-sm font-semibold flex items-center gap-1.5">
+                  <Briefcase className="h-4 w-4 text-sky-500" />
+                  Employer Paid Benefits (Retirement)
+                </h4>
+                {analysis.employerBenefitItems.length > 0 ? (
+                  analysis.employerBenefitItems.map((item: DeductionLine, i: number) => (
                     <div key={i} className="flex justify-between text-sm p-2 rounded-lg bg-sky-500/5 border border-sky-500/10">
                       <span>{item.name}</span>
                       <span className="tabular-nums font-medium">{formatCurrency(item.monthlyAmount)} <span className="text-muted-foreground">({item.pctOfGross.toFixed(2)}%)</span></span>
                     </div>
-                  ))}
-                  <div className="flex justify-between text-sm font-semibold">
-                    <span>Employer Total</span>
-                    <span className="tabular-nums">{formatCurrency(analysis.employerContrib)} ({analysis.employerContribPct.toFixed(2)}% of gross)</span>
+                  ))
+                ) : (
+                  <div className="flex items-center gap-2 p-2 rounded-lg bg-sky-500/5 border border-sky-500/10">
+                    <span className="text-sm whitespace-nowrap">Employer Match</span>
+                    <span className="text-muted-foreground text-sm">$</span>
+                    <Input
+                      type="number"
+                      value={manualEmployerContrib}
+                      onChange={(e) => setManualEmployerContrib(e.target.value)}
+                      className="h-7 w-24 text-sm tabular-nums"
+                      step="0.01"
+                    />
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">/mo</span>
                   </div>
+                )}
+                <div className="flex justify-between text-sm font-semibold">
+                  <span>Employer Total</span>
+                  <span className="tabular-nums">{formatCurrency(analysis.employerContrib)} ({analysis.employerContribPct.toFixed(2)}% of gross)</span>
                 </div>
-              )}
+              </div>
 
               {/* Combined Employee + Employer */}
-              {analysis.employerContrib > 0 && (
-                <div className="flex justify-between text-sm font-bold pt-2 border-t border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
-                  <span>Combined (Employee + Employer)</span>
-                  <span className="tabular-nums">{formatCurrency(analysis.employeeContrib + analysis.employerContrib)} ({(analysis.employeeContribPct + analysis.employerContribPct).toFixed(2)}%)</span>
-                </div>
-              )}
+              <div className="flex justify-between text-sm font-bold pt-2 border-t border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+                <span>Combined (Employee + Employer)</span>
+                <span className="tabular-nums">{formatCurrency(analysis.employeeContrib + analysis.hsaTotal + analysis.employerContrib)} ({(analysis.employeeContribPct + analysis.hsaPct + analysis.employerContribPct).toFixed(2)}%)</span>
+              </div>
             </div>
 
             <div className="space-y-3">
