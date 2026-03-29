@@ -404,6 +404,34 @@ export default function PayrollReportTab({ budgetMonth }: PayrollReportTabProps)
                 <span>Employee Total</span>
                 <span className="tabular-nums">{formatCurrency(analysis.employeeContrib)} ({analysis.employeeContribPct.toFixed(2)}% of gross)</span>
               </div>
+
+              {/* Employer Paid Benefits */}
+              {analysis.employerContrib > 0 && (
+                <div className="space-y-2 pt-3 border-t">
+                  <h4 className="text-sm font-semibold flex items-center gap-1.5">
+                    <Briefcase className="h-4 w-4 text-sky-500" />
+                    Employer Paid Benefits
+                  </h4>
+                  {analysis.employerBenefitItems.map((item: DeductionLine, i: number) => (
+                    <div key={i} className="flex justify-between text-sm p-2 rounded-lg bg-sky-500/5 border border-sky-500/10">
+                      <span>{item.name}</span>
+                      <span className="tabular-nums font-medium">{formatCurrency(item.monthlyAmount)} <span className="text-muted-foreground">({item.pctOfGross.toFixed(2)}%)</span></span>
+                    </div>
+                  ))}
+                  <div className="flex justify-between text-sm font-semibold">
+                    <span>Employer Total</span>
+                    <span className="tabular-nums">{formatCurrency(analysis.employerContrib)} ({analysis.employerContribPct.toFixed(2)}% of gross)</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Combined Employee + Employer */}
+              {analysis.employerContrib > 0 && (
+                <div className="flex justify-between text-sm font-bold pt-2 border-t border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+                  <span>Combined (Employee + Employer)</span>
+                  <span className="tabular-nums">{formatCurrency(analysis.employeeContrib + analysis.employerContrib)} ({(analysis.employeeContribPct + analysis.employerContribPct).toFixed(2)}%)</span>
+                </div>
+              )}
             </div>
 
             <div className="space-y-3">
@@ -416,6 +444,15 @@ export default function PayrollReportTab({ budgetMonth }: PayrollReportTabProps)
                   </div>
                   <Progress value={Math.min(analysis.employeeContribPct * 5, 100)} className="h-1.5" />
                 </div>
+                {analysis.employerContrib > 0 && (
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-sm">
+                      <span>Employer Retirement</span>
+                      <span className="font-bold tabular-nums">{analysis.employerContribPct.toFixed(2)}%</span>
+                    </div>
+                    <Progress value={Math.min(analysis.employerContribPct * 5, 100)} className="h-1.5" />
+                  </div>
+                )}
                 {analysis.hsaPct > 0 && (
                   <div className="space-y-1">
                     <div className="flex justify-between text-sm">
