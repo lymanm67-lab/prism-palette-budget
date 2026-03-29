@@ -685,6 +685,7 @@ const Reports = () => {
           />
           <div className="grid gap-6 lg:grid-cols-1">
             <Card>
+              <CardHeader><CardTitle className="font-display">Income vs Expenses</CardTitle></CardHeader>
               <CardContent>
                 {monthlyCashflow.length > 0 ? (
                   <ResponsiveContainer width="100%" height={350}>
