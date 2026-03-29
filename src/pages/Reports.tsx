@@ -54,6 +54,9 @@ const Reports = () => {
   }));
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('spending');
+  const [spendingSub, setSpendingSub] = useState<'categories' | 'merchants'>('categories');
+  const [budgetSub, setBudgetSub] = useState<'budget' | 'cashflow'>('budget');
+  const [wealthSub, setWealthSub] = useState<'networth' | 'trends'>('networth');
   const [reportMode, setReportMode] = useState<'personal' | 'business'>('personal');
   const [spendingChartType, setSpendingChartType] = useState<'pie' | 'bar'>('pie');
   const [showOtherBreakdown, setShowOtherBreakdown] = useState(false);
@@ -421,13 +424,10 @@ const Reports = () => {
         <TabsList className="flex-wrap h-auto gap-1">
           {[
             { value: 'spending', label: 'Spending', icon: PieChartIcon, color: 'text-rose-500' },
-            { value: 'budget', label: 'Budget vs Actual', icon: Scale, color: 'text-amber-500' },
-            { value: 'cashflow', label: 'Cash Flow', icon: Wallet, color: 'text-emerald-500' },
-            { value: 'networth', label: 'Net Worth', icon: TrendingUp, color: 'text-blue-500' },
-            { value: 'trends', label: 'Trends', icon: LineChartIcon, color: 'text-violet-500' },
-            { value: 'merchants', label: 'Top Merchants', icon: Store, color: 'text-orange-500' },
-            { value: 'payroll', label: 'Payroll Analysis', icon: Briefcase, color: 'text-cyan-500' },
-            { value: 'investment-growth', label: 'Investment Growth', icon: Sprout, color: 'text-green-500' },
+            { value: 'budget', label: 'Budget & Flow', icon: Scale, color: 'text-amber-500' },
+            { value: 'wealth', label: 'Wealth', icon: TrendingUp, color: 'text-blue-500' },
+            { value: 'payroll', label: 'Payroll', icon: Briefcase, color: 'text-cyan-500' },
+            { value: 'investment-growth', label: 'Growth', icon: Sprout, color: 'text-green-500' },
           ].map(({ value, label, icon: TabIcon, color }) => (
             <UiTooltip key={value}>
               <TooltipTrigger asChild>
@@ -447,8 +447,18 @@ const Reports = () => {
         </TooltipProvider>
 
         <div ref={reportRef}>
-        {/* ==================== SPENDING ==================== */}
+        {/* ==================== SPENDING & MERCHANTS ==================== */}
         <TabsContent value="spending">
+          <div className="flex gap-1 mb-4 rounded-lg bg-muted p-1 w-fit">
+            <button onClick={() => setSpendingSub('categories')} className={cn('px-3 py-1.5 text-xs font-medium rounded-md transition-colors', spendingSub === 'categories' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}>
+              <PieChartIcon className="h-3.5 w-3.5 inline mr-1.5" />Categories
+            </button>
+            <button onClick={() => setSpendingSub('merchants')} className={cn('px-3 py-1.5 text-xs font-medium rounded-md transition-colors', spendingSub === 'merchants' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}>
+              <Store className="h-3.5 w-3.5 inline mr-1.5" />Merchants
+            </button>
+          </div>
+          {spendingSub === 'categories' && (
+          <>
           <ReportTabGuide
             title="Spending Report"
             icon={PieChartIcon}
@@ -606,10 +616,88 @@ const Reports = () => {
             </Card>
           )}
           <ReportNarrative tab="spending" spendingData={spendingData || undefined} dateLabel={dateLabel} />
+          </>
+          )}
+          {spendingSub === 'merchants' && (
+          <>
+          <ReportTabGuide
+            title="Top Merchants"
+            icon={Store}
+            iconColor="text-rose-500"
+            howToUse={[
+              'The horizontal bar chart ranks merchants by total spending.',
+              'Below the chart, each merchant shows the total amount and transaction count.',
+              'Use this to identify where you spend the most and find opportunities to save.',
+              'Merchant names are extracted from your transaction descriptions.',
+            ]}
+            howToEnterData={[
+              'Add transactions with merchant names on the Transactions page.',
+              'Import bank statements — merchant names are extracted automatically.',
+              'Use the merchant normalization feature to clean up inconsistent names.',
+            ]}
+            ttsScript="The Top Merchants report ranks the stores and services where you spend the most. The bar chart shows the top merchants by total amount. Below it, each merchant lists the total spent and how many transactions. To use this report, make sure your transactions have merchant names. Import bank statements for automatic merchant extraction. Use merchant normalization in settings to clean up messy names."
+            dataEntryLinks={[
+              { label: 'Transactions', path: '/transactions', description: 'Add transactions with merchants' },
+              { label: 'Subscriptions', path: '/subscriptions', description: 'Track recurring merchants' },
+            ]}
+          />
+          <Card>
+            <CardHeader><CardTitle className="font-display">Top Merchants by Spending</CardTitle></CardHeader>
+            <CardContent>
+              {topMerchants.length > 0 ? (
+                <>
+                  <ResponsiveContainer width="100%" height={Math.max(300, topMerchants.length * 40 + 40)} className="[&_.recharts-text]:!bg-transparent [&_text]:!bg-transparent">
+                    <BarChart data={topMerchants} layout="vertical" margin={{ left: 10, right: 20 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
+                      <XAxis type="number" stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={v => formatCompact(v)} tick={{ fill: 'hsl(var(--foreground))' }} />
+                      <YAxis type="category" dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={11} width={120} tick={{ fill: 'hsl(var(--foreground))' }} />
+                      <Tooltip cursor={{ fill: 'transparent' }} formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} itemStyle={{ color: 'hsl(var(--foreground))' }} labelStyle={{ color: 'hsl(var(--foreground))' }} />
+                      <Bar dataKey="total" name="Total Spent" radius={[0, 6, 6, 0]} barSize={20}>
+                        {topMerchants.map((_, i) => (
+                          <Cell key={i} fill={TREND_COLORS[i % TREND_COLORS.length]} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                  <div className="mt-6 space-y-2">
+                    {topMerchants.map((m, i) => (
+                      <div key={m.name} className="flex items-center justify-between rounded-lg px-3 py-2 hover:bg-muted/50 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <span className="flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold text-primary-foreground" style={{ backgroundColor: TREND_COLORS[i % TREND_COLORS.length] }}>
+                            {i + 1}
+                          </span>
+                          <span className="text-sm font-medium">{m.name}</span>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-sm font-bold text-foreground">{formatCurrency(m.total)}</span>
+                          <span className="ml-2 text-xs text-muted-foreground">{m.count} txn{m.count !== 1 ? 's' : ''}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <p className="py-10 text-center text-muted-foreground">No merchant data in this period.</p>
+              )}
+            </CardContent>
+          </Card>
+          <ReportNarrative tab="merchants" topMerchants={topMerchants} dateLabel={dateLabel} />
+          </>
+          )}
         </TabsContent>
 
-        {/* ==================== BUDGET VS ACTUAL ==================== */}
+        {/* ==================== BUDGET & CASH FLOW ==================== */}
         <TabsContent value="budget">
+          <div className="flex gap-1 mb-4 rounded-lg bg-muted p-1 w-fit">
+            <button onClick={() => setBudgetSub('budget')} className={cn('px-3 py-1.5 text-xs font-medium rounded-md transition-colors', budgetSub === 'budget' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}>
+              <Scale className="h-3.5 w-3.5 inline mr-1.5" />Budget vs Actual
+            </button>
+            <button onClick={() => setBudgetSub('cashflow')} className={cn('px-3 py-1.5 text-xs font-medium rounded-md transition-colors', budgetSub === 'cashflow' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}>
+              <Wallet className="h-3.5 w-3.5 inline mr-1.5" />Cash Flow
+            </button>
+          </div>
+          {budgetSub === 'budget' && (
+          <>
           <ReportTabGuide
             title="Budget vs Actual"
             icon={Scale}
@@ -677,10 +765,10 @@ const Reports = () => {
             </CardContent>
           </Card>
           <ReportNarrative tab="budget" budgetVsActual={budgetVsActual} dateLabel={dateLabel} />
-        </TabsContent>
-
-        {/* ==================== CASH FLOW ==================== */}
-        <TabsContent value="cashflow">
+          </>
+          )}
+          {budgetSub === 'cashflow' && (
+          <>
           <ReportTabGuide
             title="Cash Flow"
             icon={Wallet}
@@ -766,10 +854,22 @@ const Reports = () => {
             )}
           </div>
           <ReportNarrative tab="cashflow" monthlyCashflow={monthlyCashflow} savingsRate={savingsRate} dateLabel={dateLabel} />
+          </>
+          )}
         </TabsContent>
 
-        {/* ==================== NET WORTH ==================== */}
-        <TabsContent value="networth">
+        {/* ==================== WEALTH & TRENDS ==================== */}
+        <TabsContent value="wealth">
+          <div className="flex gap-1 mb-4 rounded-lg bg-muted p-1 w-fit">
+            <button onClick={() => setWealthSub('networth')} className={cn('px-3 py-1.5 text-xs font-medium rounded-md transition-colors', wealthSub === 'networth' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}>
+              <TrendingUp className="h-3.5 w-3.5 inline mr-1.5" />Net Worth
+            </button>
+            <button onClick={() => setWealthSub('trends')} className={cn('px-3 py-1.5 text-xs font-medium rounded-md transition-colors', wealthSub === 'trends' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}>
+              <LineChartIcon className="h-3.5 w-3.5 inline mr-1.5" />Trends
+            </button>
+          </div>
+          {wealthSub === 'networth' && (
+          <>
           <ReportTabGuide
             title="Net Worth"
             icon={TrendingUp}
@@ -837,10 +937,10 @@ const Reports = () => {
             </CardContent>
           </Card>
           <ReportNarrative tab="networth" netWorthTrend={netWorthTrend} dateLabel={dateLabel} />
-        </TabsContent>
-
-        {/* ==================== TRENDS ==================== */}
-        <TabsContent value="trends">
+          </>
+          )}
+          {wealthSub === 'trends' && (
+          <>
           <ReportTabGuide
             title="Spending Trends"
             icon={LineChartIcon}
@@ -905,73 +1005,8 @@ const Reports = () => {
             </Card>
           )}
           <ReportNarrative tab="trends" monthlyCashflow={monthlyCashflow} savingsRate={savingsRate} dateLabel={dateLabel} />
-        </TabsContent>
-
-        {/* ==================== TOP MERCHANTS ==================== */}
-        <TabsContent value="merchants">
-          <ReportTabGuide
-            title="Top Merchants"
-            icon={Store}
-            iconColor="text-rose-500"
-            howToUse={[
-              'The horizontal bar chart ranks merchants by total spending.',
-              'Below the chart, each merchant shows the total amount and transaction count.',
-              'Use this to identify where you spend the most and find opportunities to save.',
-              'Merchant names are extracted from your transaction descriptions.',
-            ]}
-            howToEnterData={[
-              'Add transactions with merchant names on the Transactions page.',
-              'Import bank statements — merchant names are extracted automatically.',
-              'Use the merchant normalization feature to clean up inconsistent names.',
-            ]}
-            ttsScript="The Top Merchants report ranks the stores and services where you spend the most. The bar chart shows the top merchants by total amount. Below it, each merchant lists the total spent and how many transactions. To use this report, make sure your transactions have merchant names. Import bank statements for automatic merchant extraction. Use merchant normalization in settings to clean up messy names."
-            dataEntryLinks={[
-              { label: 'Transactions', path: '/transactions', description: 'Add transactions with merchants' },
-              { label: 'Subscriptions', path: '/subscriptions', description: 'Track recurring merchants' },
-            ]}
-          />
-          <Card>
-            <CardHeader><CardTitle className="font-display">Top Merchants by Spending</CardTitle></CardHeader>
-            <CardContent>
-              {topMerchants.length > 0 ? (
-                <>
-                  <ResponsiveContainer width="100%" height={Math.max(300, topMerchants.length * 40 + 40)} className="[&_.recharts-text]:!bg-transparent [&_text]:!bg-transparent">
-                    <BarChart data={topMerchants} layout="vertical" margin={{ left: 10, right: 20 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
-                      <XAxis type="number" stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={v => formatCompact(v)} tick={{ fill: 'hsl(var(--foreground))' }} />
-                      <YAxis type="category" dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={11} width={120} tick={{ fill: 'hsl(var(--foreground))' }} />
-                      <Tooltip cursor={{ fill: 'transparent' }} formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} itemStyle={{ color: 'hsl(var(--foreground))' }} labelStyle={{ color: 'hsl(var(--foreground))' }} />
-                      <Bar dataKey="total" name="Total Spent" radius={[0, 6, 6, 0]} barSize={20}>
-                        {topMerchants.map((_, i) => (
-                          <Cell key={i} fill={TREND_COLORS[i % TREND_COLORS.length]} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-
-                  <div className="mt-6 space-y-2">
-                    {topMerchants.map((m, i) => (
-                      <div key={m.name} className="flex items-center justify-between rounded-lg px-3 py-2 hover:bg-muted/50 transition-colors">
-                        <div className="flex items-center gap-3">
-                          <span className="flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold text-primary-foreground" style={{ backgroundColor: TREND_COLORS[i % TREND_COLORS.length] }}>
-                            {i + 1}
-                          </span>
-                          <span className="text-sm font-medium">{m.name}</span>
-                        </div>
-                        <div className="text-right">
-                          <span className="text-sm font-bold text-foreground">{formatCurrency(m.total)}</span>
-                          <span className="ml-2 text-xs text-muted-foreground">{m.count} txn{m.count !== 1 ? 's' : ''}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <p className="py-10 text-center text-muted-foreground">No merchant data in this period.</p>
-              )}
-            </CardContent>
-          </Card>
-          <ReportNarrative tab="merchants" topMerchants={topMerchants} dateLabel={dateLabel} />
+          </>
+          )}
         </TabsContent>
 
         {/* ==================== PAYROLL ANALYSIS ==================== */}
