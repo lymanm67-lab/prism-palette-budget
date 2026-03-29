@@ -391,7 +391,31 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
                 ) : (
                   <CardTitle className="font-display text-lg">{planName}</CardTitle>
                 )}
-                <p className="text-xs text-muted-foreground">Compound growth projections across multiple ROI scenarios</p>
+                <p className="text-xs text-muted-foreground">
+                  Viewing: <span className="font-semibold text-foreground">{viewLabels[viewMode].title}</span> — Starting {viewLabels[viewMode].start} · {viewLabels[viewMode].annual}/yr
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 print:hidden">
+              <div className="flex rounded-lg border border-border overflow-hidden">
+                <button
+                  onClick={() => setViewMode('yours')}
+                  className={cn("px-3 py-1.5 text-xs font-medium transition-colors", viewMode === 'yours' ? 'bg-primary text-primary-foreground' : 'bg-muted/30 hover:bg-muted')}
+                >
+                  Yours
+                </button>
+                <button
+                  onClick={() => setViewMode('spouse')}
+                  className={cn("px-3 py-1.5 text-xs font-medium transition-colors border-x border-border", viewMode === 'spouse' ? 'bg-primary text-primary-foreground' : 'bg-muted/30 hover:bg-muted')}
+                >
+                  Wife's
+                </button>
+                <button
+                  onClick={() => setViewMode('combined')}
+                  className={cn("px-3 py-1.5 text-xs font-medium transition-colors", viewMode === 'combined' ? 'bg-primary text-primary-foreground' : 'bg-muted/30 hover:bg-muted')}
+                >
+                  Combined
+                </button>
               </div>
             </div>
             <div className="flex items-center gap-2 print:hidden">
