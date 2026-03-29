@@ -842,11 +842,10 @@ const Reports = () => {
               { label: 'Spending Trends', path: '/spending-trends', description: 'Detailed spending analysis' },
             ]}
           />
-            <CardHeader><CardTitle className="font-display">Spending Trends by Category</CardTitle></CardHeader>
           <Card>
             <CardHeader><CardTitle className="font-display">Spending Trends by Category</CardTitle></CardHeader>
             <CardContent>
-                <ResponsiveContainer width="100%" height={350}>
+              {spendingTrends.data.length > 0 ? (
                   <LineChart data={spendingTrends.data}>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
