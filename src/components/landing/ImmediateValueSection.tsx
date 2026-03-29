@@ -1,11 +1,16 @@
 import { motion } from 'framer-motion';
 import { MapPin, ScanSearch, Wallet, AlertCircle } from 'lucide-react';
 
+import { motion } from 'framer-motion';
+import { MapPin, ScanSearch, Wallet, AlertCircle, Camera, FileUp } from 'lucide-react';
+
 const ITEMS = [
   { icon: MapPin, text: 'Where your money is actually going' },
   { icon: ScanSearch, text: 'Hidden subscriptions and wasted spending' },
   { icon: Wallet, text: 'What you can safely spend today' },
   { icon: AlertCircle, text: 'What needs your attention next' },
+  { icon: FileUp, text: 'Upload a paycheck stub to auto-fill your budget' },
+  { icon: Camera, text: 'Scan bills & statements to set up spending instantly' },
 ];
 
 const ImmediateValueSection = () => (
