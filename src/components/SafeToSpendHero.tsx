@@ -128,7 +128,7 @@ export function SafeToSpendHero({ viewMode = 'combined' }: SafeToSpendHeroProps)
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5 pt-5 border-t border-border/30">
             <MiniStat label="Available Cash" value={formatCurrency(sts.totalAvailableCash)} />
             <MiniStat label={isBusinessView ? 'Revenue' : 'Monthly Income'} value={formatCurrency(displayIncome)} />
-            <MiniStat label="Obligations" value={formatCurrency(sts.monthlyObligations)} />
+            <MiniStat label="Budget Expenses" value={formatCurrency(sts.effectiveExpenses)} />
             <MiniStat label={isBusinessView ? 'Net Profit' : 'Subscriptions'} value={isBusinessView ? formatCurrency(profit) : formatCurrency(sts.monthlySubscriptions)} />
           </div>
         </CardContent>
