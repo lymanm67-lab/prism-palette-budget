@@ -73,6 +73,8 @@ function computeProjection(
   inflationRate: number,
   periodicBoostAmount: number,
   periodicBoostInterval: number,
+  debtRedirectMonthly: number,
+  debtRedirectStartYear: number,
 ) {
   const rows: { year: number; annualContrib: number; endBalance: number; roi: number; growth: number; realBalance: number }[] = [];
   let balance = startingBalance;
@@ -91,8 +93,15 @@ function computeProjection(
     }
 
     let yearContrib = currentAnnual;
+
+    // One-time monthly boost in a specific year
     if (y === oneTimeBoostYear) {
       yearContrib += oneTimeBoostMonthly * 12;
+    }
+
+    // Debt payoff redirect — ongoing from a specific year forward
+    if (debtRedirectStartYear > 0 && debtRedirectMonthly > 0 && y >= debtRedirectStartYear) {
+      yearContrib += debtRedirectMonthly * 12;
     }
 
     // Periodic lump-sum boost every N years
@@ -203,6 +212,9 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
   const [selectedScenario, setSelectedScenario] = useState('all');
   const [savedPlanId, setSavedPlanId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [debtPaymentMonthly, setDebtPaymentMonthly] = useState('888');
+  const [debtPayoffYear, setDebtPayoffYear] = useState('2');
+  const [debtRedirectPercent, setDebtRedirectPercent] = useState('50');
   const [viewMode, setViewMode] = useState<'combined' | 'yours' | 'spouse'>('combined');
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -239,27 +251,31 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
   const pBoostAmt = parseFloat(periodicBoostAmount) || 0;
   const pBoostInterval = parseInt(periodicBoostInterval) || 0;
   const spousePension = parseFloat(spousePensionMonthly) || 0;
+  const debtMonthly = parseFloat(debtPaymentMonthly) || 0;
+  const debtYear = parseInt(debtPayoffYear) || 0;
+  const debtPct = parseFloat(debtRedirectPercent) || 0;
+  const debtRedirectMonthly = debtMonthly * (debtPct / 100);
 
   // Compute scenarios for each view
   const scenariosCombined = useMemo(() => ({
-    '8%': computeProjection(start, baseAnnual, horizon, 8, schedules, boostYear, boostAmt, false, inflation, pBoostAmt, pBoostInterval),
-    '10%': computeProjection(start, baseAnnual, horizon, 10, schedules, boostYear, boostAmt, false, inflation, pBoostAmt, pBoostInterval),
-    '12%': computeProjection(start, baseAnnual, horizon, 12, schedules, boostYear, boostAmt, false, inflation, pBoostAmt, pBoostInterval),
-    'Mixed': computeProjection(start, baseAnnual, horizon, 0, schedules, boostYear, boostAmt, true, inflation, pBoostAmt, pBoostInterval),
-  }), [start, baseAnnual, horizon, schedules, boostYear, boostAmt, inflation, pBoostAmt, pBoostInterval]);
+    '8%': computeProjection(start, baseAnnual, horizon, 8, schedules, boostYear, boostAmt, false, inflation, pBoostAmt, pBoostInterval, debtRedirectMonthly, debtYear),
+    '10%': computeProjection(start, baseAnnual, horizon, 10, schedules, boostYear, boostAmt, false, inflation, pBoostAmt, pBoostInterval, debtRedirectMonthly, debtYear),
+    '12%': computeProjection(start, baseAnnual, horizon, 12, schedules, boostYear, boostAmt, false, inflation, pBoostAmt, pBoostInterval, debtRedirectMonthly, debtYear),
+    'Mixed': computeProjection(start, baseAnnual, horizon, 0, schedules, boostYear, boostAmt, true, inflation, pBoostAmt, pBoostInterval, debtRedirectMonthly, debtYear),
+  }), [start, baseAnnual, horizon, schedules, boostYear, boostAmt, inflation, pBoostAmt, pBoostInterval, debtRedirectMonthly, debtYear]);
 
   const scenariosYours = useMemo(() => ({
-    '8%': computeProjection(yourStart, yourAnnual, horizon, 8, schedules, boostYear, boostAmt, false, inflation, pBoostAmt, pBoostInterval),
-    '10%': computeProjection(yourStart, yourAnnual, horizon, 10, schedules, boostYear, boostAmt, false, inflation, pBoostAmt, pBoostInterval),
-    '12%': computeProjection(yourStart, yourAnnual, horizon, 12, schedules, boostYear, boostAmt, false, inflation, pBoostAmt, pBoostInterval),
-    'Mixed': computeProjection(yourStart, yourAnnual, horizon, 0, schedules, boostYear, boostAmt, true, inflation, pBoostAmt, pBoostInterval),
-  }), [yourStart, yourAnnual, horizon, schedules, boostYear, boostAmt, inflation, pBoostAmt, pBoostInterval]);
+    '8%': computeProjection(yourStart, yourAnnual, horizon, 8, schedules, boostYear, boostAmt, false, inflation, pBoostAmt, pBoostInterval, debtRedirectMonthly, debtYear),
+    '10%': computeProjection(yourStart, yourAnnual, horizon, 10, schedules, boostYear, boostAmt, false, inflation, pBoostAmt, pBoostInterval, debtRedirectMonthly, debtYear),
+    '12%': computeProjection(yourStart, yourAnnual, horizon, 12, schedules, boostYear, boostAmt, false, inflation, pBoostAmt, pBoostInterval, debtRedirectMonthly, debtYear),
+    'Mixed': computeProjection(yourStart, yourAnnual, horizon, 0, schedules, boostYear, boostAmt, true, inflation, pBoostAmt, pBoostInterval, debtRedirectMonthly, debtYear),
+  }), [yourStart, yourAnnual, horizon, schedules, boostYear, boostAmt, inflation, pBoostAmt, pBoostInterval, debtRedirectMonthly, debtYear]);
 
   const scenariosSpouse = useMemo(() => ({
-    '8%': computeProjection(wifeStart, wifeAnnual, horizon, 8, schedules, 0, 0, false, inflation, 0, 0),
-    '10%': computeProjection(wifeStart, wifeAnnual, horizon, 10, schedules, 0, 0, false, inflation, 0, 0),
-    '12%': computeProjection(wifeStart, wifeAnnual, horizon, 12, schedules, 0, 0, false, inflation, 0, 0),
-    'Mixed': computeProjection(wifeStart, wifeAnnual, horizon, 0, schedules, 0, 0, true, inflation, 0, 0),
+    '8%': computeProjection(wifeStart, wifeAnnual, horizon, 8, schedules, 0, 0, false, inflation, 0, 0, 0, 0),
+    '10%': computeProjection(wifeStart, wifeAnnual, horizon, 10, schedules, 0, 0, false, inflation, 0, 0, 0, 0),
+    '12%': computeProjection(wifeStart, wifeAnnual, horizon, 12, schedules, 0, 0, false, inflation, 0, 0, 0, 0),
+    'Mixed': computeProjection(wifeStart, wifeAnnual, horizon, 0, schedules, 0, 0, true, inflation, 0, 0, 0, 0),
   }), [wifeStart, wifeAnnual, horizon, schedules, inflation]);
 
   const scenarios = viewMode === 'yours' ? scenariosYours : viewMode === 'spouse' ? scenariosSpouse : scenariosCombined;
@@ -536,6 +552,25 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
                 <Input value={periodicBoostInterval} onChange={e => setPeriodicBoostInterval(e.target.value)} type="number" className="h-8 mt-1 w-20" min="1" max="10" />
               </div>
               <p className="text-xs text-muted-foreground pb-1">+{formatCurrency(pBoostAmt)} added every {pBoostInterval} years (Years {Array.from({length: Math.floor(horizon / pBoostInterval)}, (_, i) => (i+1) * pBoostInterval).join(', ')})</p>
+            </div>
+
+            {/* Debt Payoff → Retirement Redirect */}
+            <div className="flex items-end gap-3 p-3 rounded-lg bg-accent/5 border border-accent/10">
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Debt Payment $/mo</label>
+                <Input value={debtPaymentMonthly} onChange={e => setDebtPaymentMonthly(e.target.value)} type="number" className="h-8 mt-1 w-28" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Paid Off in Year</label>
+                <Input value={debtPayoffYear} onChange={e => setDebtPayoffYear(e.target.value)} type="number" className="h-8 mt-1 w-20" min="1" max={horizonYears} />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">% to Retirement</label>
+                <Input value={debtRedirectPercent} onChange={e => setDebtRedirectPercent(e.target.value)} type="number" className="h-8 mt-1 w-20" min="0" max="100" />
+              </div>
+              <p className="text-xs text-muted-foreground pb-1">
+                +{formatCurrency(debtRedirectMonthly)}/mo → +{formatCurrency(debtRedirectMonthly * 12)}/yr to retirement starting Year {debtYear}
+              </p>
             </div>
 
             {/* Contribution increase schedule */}
