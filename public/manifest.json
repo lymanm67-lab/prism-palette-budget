@@ -1,7 +1,7 @@
 {
   "name": "PrismMoney",
   "short_name": "PrismMoney",
-  "description": "Financial control system with Safe-to-Spend tracking and AI-powered insights.",
+  "description": "Personal & business financial control system with household retirement projections, investment growth planning, Safe-to-Spend tracking, and AI-powered insights.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0d1321",
