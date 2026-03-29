@@ -184,12 +184,13 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
   const [hsaMonthly, setHsaMonthly] = useState(() =>
     currentContribs.hsa > 0 ? currentContribs.hsa.toFixed(0) : '150'
   );
-  const [horizonYears, setHorizonYears] = useState('35');
+  const [horizonYears, setHorizonYears] = useState('25');
   const [oneTimeBoostYear, setOneTimeBoostYear] = useState('0');
   const [oneTimeBoostAmount, setOneTimeBoostAmount] = useState('0');
   const [inflationRate, setInflationRate] = useState('3');
   const [taxRate, setTaxRate] = useState('22');
   const [ssMonthlyBenefit, setSsMonthlyBenefit] = useState('2200');
+  const [spousePensionMonthly, setSpousePensionMonthly] = useState('7505');
   const [targetRetirementIncome, setTargetRetirementIncome] = useState('80000');
   const [periodicBoostAmount, setPeriodicBoostAmount] = useState('10000');
   const [periodicBoostInterval, setPeriodicBoostInterval] = useState('5');
