@@ -732,6 +732,7 @@ const Categories = () => {
                   <SelectItem value="fixed">Fixed</SelectItem>
                   <SelectItem value="flexible">Flexible</SelectItem>
                   <SelectItem value="non_monthly">Non-Monthly</SelectItem>
+                  <SelectItem value="payroll_deduction">Payroll Deduction</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">Controls how this group appears on the Budgets page.</p>
