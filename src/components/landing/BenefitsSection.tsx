@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { LayoutDashboard, Eye, Lightbulb, Briefcase, ShieldCheck, BadgeDollarSign } from 'lucide-react';
+import { LayoutDashboard, Eye, Lightbulb, Briefcase, ShieldCheck, BadgeDollarSign, Camera } from 'lucide-react';
 
 const BENEFITS = [
   { icon: LayoutDashboard, title: 'All-in-one financial command center', desc: 'Budgeting, subscriptions, forecasting, net worth, and planning — one place.' },

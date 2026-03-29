@@ -1,7 +1,4 @@
 import { motion } from 'framer-motion';
-import { MapPin, ScanSearch, Wallet, AlertCircle } from 'lucide-react';
-
-import { motion } from 'framer-motion';
 import { MapPin, ScanSearch, Wallet, AlertCircle, Camera, FileUp } from 'lucide-react';
 
 const ITEMS = [
