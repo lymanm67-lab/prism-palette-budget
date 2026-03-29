@@ -447,8 +447,18 @@ const Reports = () => {
         </TooltipProvider>
 
         <div ref={reportRef}>
-        {/* ==================== SPENDING ==================== */}
+        {/* ==================== SPENDING & MERCHANTS ==================== */}
         <TabsContent value="spending">
+          <div className="flex gap-1 mb-4 rounded-lg bg-muted p-1 w-fit">
+            <button onClick={() => setSpendingSub('categories')} className={cn('px-3 py-1.5 text-xs font-medium rounded-md transition-colors', spendingSub === 'categories' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}>
+              <PieChartIcon className="h-3.5 w-3.5 inline mr-1.5" />Categories
+            </button>
+            <button onClick={() => setSpendingSub('merchants')} className={cn('px-3 py-1.5 text-xs font-medium rounded-md transition-colors', spendingSub === 'merchants' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}>
+              <Store className="h-3.5 w-3.5 inline mr-1.5" />Merchants
+            </button>
+          </div>
+          {spendingSub === 'categories' && (
+          <>
           <ReportTabGuide
             title="Spending Report"
             icon={PieChartIcon}
