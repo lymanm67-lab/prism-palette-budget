@@ -1403,6 +1403,41 @@ const Budgets = () => {
           )}
         </div>
       </div>
+      {/* Page Overview */}
+      <PageOverview
+        title="Budget & Spending Plan"
+        description="Build a zero-based budget each month, track actuals vs. planned, and get AI-powered insights to stay on target."
+        icon={PiggyBank}
+        iconColor="text-emerald-500"
+        ttsScript="Welcome to your Budget and Spending Plan. This is your monthly command center for managing every dollar. You can set planned amounts for income, fixed expenses, flexible spending, and non-monthly items. The summary cards at the top show your total income, expenses, what's left over, and how far through the month you are. Each budget line tracks actual spending against your plan with a color-coded progress bar — green means on track, amber means approaching your limit, and red means you've gone over. Use the Smart Budget button to let AI analyze your past spending and suggest realistic budget amounts. You can upload paystubs to auto-fill payroll deductions, scan bills to capture fixed expenses, and copy your entire budget forward to next month. The forecast tab projects where you'll land by month-end based on your current pace. Use the AI Audit to get a narrative review of your spending health, overspent categories, and actionable recommendations."
+        features={[
+          'Zero-based budgeting with income, fixed, flexible & non-monthly categories',
+          'Real-time actuals vs. planned tracking with color-coded progress bars',
+          'AI Smart Budget suggestions based on historical spending patterns',
+          'Paystub upload & bill scanning to auto-populate budget lines',
+          'Copy budgets forward to next month with one click',
+          'Forecast tab projecting month-end spending pace',
+          'AI Audit with narrative review and overspend alerts',
+          'Print-friendly view for offline review',
+        ]}
+        demoData={[
+          { label: 'Salary', value: '$6,500', badge: 'Income', color: '#10b981' },
+          { label: 'Rent/Mortgage', value: '$1,800', badge: 'Fixed', color: '#7c5cf5' },
+          { label: 'Groceries', value: '$400', badge: 'Flexible', color: '#f59e0b' },
+          { label: 'Utilities', value: '$200', badge: 'Fixed', color: '#7c5cf5' },
+          { label: 'Dining Out', value: '$150', badge: 'Flexible', color: '#f59e0b' },
+          { label: 'Subscriptions', value: '$50', badge: 'Flexible', color: '#f59e0b' },
+        ]}
+        demoTableHeaders={['Category', 'Budgeted', 'Actual', 'Remaining']}
+        demoTableRows={[
+          ['Salary', '$6,500', '$6,500', '$0'],
+          ['Rent/Mortgage', '$1,800', '$1,800', '$0'],
+          ['Groceries', '$400', '$275', '$125'],
+          ['Utilities', '$200', '$142', '$58'],
+          ['Dining Out', '$150', '$88', '$62'],
+          ['Subscriptions', '$50', '$50', '$0'],
+        ]}
+      />
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
