@@ -554,6 +554,25 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
               <p className="text-xs text-muted-foreground pb-1">+{formatCurrency(pBoostAmt)} added every {pBoostInterval} years (Years {Array.from({length: Math.floor(horizon / pBoostInterval)}, (_, i) => (i+1) * pBoostInterval).join(', ')})</p>
             </div>
 
+            {/* Debt Payoff → Retirement Redirect */}
+            <div className="flex items-end gap-3 p-3 rounded-lg bg-accent/5 border border-accent/10">
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Debt Payment $/mo</label>
+                <Input value={debtPaymentMonthly} onChange={e => setDebtPaymentMonthly(e.target.value)} type="number" className="h-8 mt-1 w-28" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Paid Off in Year</label>
+                <Input value={debtPayoffYear} onChange={e => setDebtPayoffYear(e.target.value)} type="number" className="h-8 mt-1 w-20" min="1" max={horizonYears} />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">% to Retirement</label>
+                <Input value={debtRedirectPercent} onChange={e => setDebtRedirectPercent(e.target.value)} type="number" className="h-8 mt-1 w-20" min="0" max="100" />
+              </div>
+              <p className="text-xs text-muted-foreground pb-1">
+                +{formatCurrency(debtRedirectMonthly)}/mo → +{formatCurrency(debtRedirectMonthly * 12)}/yr to retirement starting Year {debtYear}
+              </p>
+            </div>
+
             {/* Contribution increase schedule */}
             <div>
               <button onClick={() => setShowSchedule(!showSchedule)} className="flex items-center gap-1 text-sm font-semibold text-primary">
