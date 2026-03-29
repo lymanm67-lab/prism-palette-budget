@@ -1,9 +1,9 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Heart, CreditCard, Clock, Shield, BarChart3, FileText,
-  TrendingUp, TrendingDown, ArrowUpRight, Minus, RefreshCw,
+  TrendingUp, TrendingDown, ArrowUpRight, Minus, RefreshCw, Landmark,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -16,6 +16,9 @@ import ScoreBarriers, { type Barrier } from '@/components/credit-health/ScoreBar
 import TimelinePreview from '@/components/credit-health/TimelinePreview';
 import { useCreditAccounts } from '@/hooks/use-credit-accounts';
 import { useDisputes } from '@/hooks/use-disputes';
+import { useHousehold } from '@/contexts/HouseholdContext';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const stagger = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.08 } } } as const;
 const fadeUp = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 300, damping: 24 } } } as const;
