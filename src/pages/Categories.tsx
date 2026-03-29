@@ -334,10 +334,10 @@ const Categories = () => {
         </div>
         <PageOverview
           title="Categories Overview"
-          description="Create category groups and categories to classify spending and income. Assign colors and expense types for budgeting."
+          description="Create category groups and categories to classify spending and income. Assign colors and expense types for budgeting. Set up Payroll Deductions to track your gross-to-net income flow."
           icon={FolderOpen}
           iconColor="text-prism-lime"
-          ttsScript="The Categories page lets you organize all your transactions. Categories are arranged in groups like Housing, Food, Transportation, and Income. Each group contains individual categories and subcategories."
+          ttsScript="The Categories page lets you organize all your transactions. Categories are arranged in groups like Housing, Food, Transportation, and Income. Each group contains individual categories and subcategories. To track your full income picture, create a Payroll and Pre-Tax Deductions group. Set its expense type to Payroll Deduction, then add categories like 401k, HSA, federal taxes, state taxes, health insurance, and Roth IRA. On the Budgets page, this creates a dedicated section between Income and Expenses that calculates your Gross Income from your Net Income plus deductions. It also enables percentage-based benchmarks — like the Conscious Spending Plan targets of 50 to 60 percent for fixed costs and 20 to 35 percent for flexible spending."
           features={[
             'Organize categories into groups',
             'Add subcategories for granular tracking',
@@ -345,11 +345,13 @@ const Categories = () => {
             'Set expense types (fixed, flexible, discretionary)',
             'Link groups to business profiles',
             'Separate Personal and Business views',
+            '⭐ Payroll Deduction type for pre-tax items (401k, HSA, taxes)',
+            'Enables Gross → Net Income tracking on Budgets page',
           ]}
           demoData={[
             { label: 'Housing', value: '3 categories', badge: 'Fixed', color: '#3b82f6' },
             { label: 'Food & Dining', value: '4 categories', badge: 'Flexible', color: '#22c55e' },
-            { label: 'Transportation', value: '2 categories', badge: 'Flexible', color: '#f59e0b' },
+            { label: 'Payroll Deductions', value: '6 categories', badge: 'Pre-Tax', color: '#0ea5e9' },
             { label: 'Income', value: '3 categories', badge: 'Income', color: '#8b5cf6' },
           ]}
         />

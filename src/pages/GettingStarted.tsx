@@ -64,8 +64,8 @@ const TRAINING_STEPS: TrainingStep[] = [
     icon: Tags,
     color: 'text-prism-lime',
     route: '/categories',
-    summary: 'Create category groups and categories to classify your spending and income.',
-    ttsScript: `Next, let's set up your categories. Categories help you organize every transaction. Go to the Categories page. You'll see category groups like "Housing," "Food," and "Income." Each group contains individual categories — for example, "Food" might include "Groceries," "Dining Out," and "Coffee." You can create new groups, add categories within them, and assign colors for easy visual identification. Categories are used in budgets, reports, and auto-categorization rules.`,
+    summary: 'Create category groups and categories to classify your spending and income. Set up Payroll Deductions to track your gross-to-net income flow.',
+    ttsScript: `Next, let's set up your categories. Categories help you organize every transaction. Go to the Categories page. You'll see category groups like "Housing," "Food," and "Income." Each group contains individual categories — for example, "Food" might include "Groceries," "Dining Out," and "Coffee." You can create new groups, add categories within them, and assign colors for easy visual identification. Categories are used in budgets, reports, and auto-categorization rules. Important: to track your full income picture, create a category group called "Payroll and Pre-Tax Deductions" with the expense type set to "Payroll Deduction." Add categories for items like 401k, HSA, federal taxes, state taxes, health insurance, and Roth IRA. This lets the budget page calculate your gross income from your net income and show how much goes to pre-tax deductions before you even see your paycheck.`,
     steps: [
       'Go to Categories in the sidebar',
       'Review the default category groups',
@@ -73,11 +73,16 @@ const TRAINING_STEPS: TrainingStep[] = [
       'Add categories within each group',
       'Assign colors for visual identification',
       'Set expense types (fixed, flexible, discretionary)',
+      '⭐ Create a "Payroll & Pre-Tax Deductions" group',
+      'Set its expense type to "Payroll Deduction"',
+      'Add categories: 401k, HSA, Federal Tax, State Tax, Health Insurance, Roth IRA',
     ],
     tips: [
       'Start with broad groups and refine as you learn your spending patterns',
       'Use consistent naming — auto-categorization rules match by merchant name',
       'Color-coded categories make charts and reports easier to read',
+      'Payroll Deductions appear as a dedicated section on the Budgets page between Income and Expenses',
+      'Once budgeted, the system calculates Gross Income = Net Income + Deductions and shows benchmark percentages',
     ],
   },
   {
