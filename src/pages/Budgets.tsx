@@ -1182,6 +1182,28 @@ const Budgets = () => {
               <TooltipContent><p>AI-powered budget suggestions based on spending</p></TooltipContent>
             </Tooltip>
 
+            {/* Upload Paystub */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-1.5 h-8" onClick={() => setPaystubOpen(true)}>
+                  <FileUp className="h-4 w-4" />
+                  <span className="hidden sm:inline">Paystub</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent><p>Upload paycheck stub to auto-fill deductions</p></TooltipContent>
+            </Tooltip>
+
+            {/* Scan Bill */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-1.5 h-8" onClick={() => setBillScanOpen(true)}>
+                  <Receipt className="h-4 w-4" />
+                  <span className="hidden sm:inline">Scan Bill</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent><p>Scan a bill or statement with camera or file</p></TooltipContent>
+            </Tooltip>
+
             {/* More menu */}
             <Tooltip>
               <TooltipTrigger asChild>
@@ -2351,6 +2373,25 @@ const Budgets = () => {
       </AnimatePresence>
     </motion.div>
     </TooltipProvider>
+
+    <PaystubUploader open={paystubOpen} onOpenChange={setPaystubOpen} />
+    <BillScanner
+      open={billScanOpen}
+      onOpenChange={setBillScanOpen}
+      categories={(categories || []).map(c => ({ id: c.id, name: c.name }))}
+      onResult={(bill) => {
+        // Pre-fill the budget creation form with scanned data
+        const matchedCat = (categories || []).find(c => c.name.toLowerCase() === bill.category.toLowerCase());
+        if (matchedCat) {
+          setForm({ category_id: matchedCat.id, planned_amount: String(bill.amount), rollover: false, budgetKind: 'expense', group_id: matchedCat.group_id, expense_type: 'fixed' });
+          setEditingBudget(null);
+          setDialogOpen(true);
+        } else {
+          toast.info(`Scanned: ${bill.merchant} — ${bill.amount}. Create a matching category first.`);
+        }
+      }}
+    />
+    </motion.div>
   );
 };
 
