@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Check, ChevronDown, Clock, Target, Lightbulb } from 'lucide-react';
+import { ArrowLeft, Check, ChevronDown, Clock, Target, Lightbulb, CalendarDays } from 'lucide-react';
+import PageOverview from '@/components/PageOverview';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -98,14 +99,29 @@ const CreditHealthTimeline = () => {
 
   return (
     <div className="space-y-6 pb-8">
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/capital/credit-health')}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div>
-          <h1 className="text-xl font-bold">Action Timeline</h1>
-          <p className="text-sm text-muted-foreground">Your step-by-step credit improvement plan</p>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" onClick={() => navigate('/capital/credit-health')}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h1 className="text-xl font-bold">Action Timeline</h1>
+            <p className="text-sm text-muted-foreground">Your step-by-step credit improvement plan</p>
+          </div>
         </div>
+        <PageOverview
+          title="Action Timeline"
+          description="A structured, milestone-based plan that walks you through credit repair from the first week through six months, with checkable tasks and coach notes."
+          icon={CalendarDays}
+          iconColor="text-prism-teal"
+          features={[
+            'Five milestone phases from Day 1 through 6 months',
+            'Checkable tasks that save your progress locally',
+            'Coach notes explaining the strategy behind each phase',
+            'Overall progress bar tracking your completion percentage',
+          ]}
+          ttsScript="Welcome to the Action Timeline. This is your structured credit improvement plan, broken into five milestone phases. The first phase covers your first seven days — stabilizing and organizing your credit situation. You'll pull reports, identify errors, file disputes, and set up autopay. At day 45, you review dispute results and focus on reducing balances. Day 90 is about building positive history and considering tools like secured cards. At six months, you reassess your full profile and plan strategically. Each milestone has checkable tasks — check them off as you complete them, and your progress is saved automatically. The overall progress bar at the top shows how far you've come."
+        />
       </div>
 
       {/* Overall progress */}

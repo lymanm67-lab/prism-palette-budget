@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Heart, AlertTriangle, CheckCircle2, Clock, XCircle, Lightbulb } from 'lucide-react';
+import { ArrowLeft, Heart, AlertTriangle, CheckCircle2, Clock, XCircle, Lightbulb, MessageSquare } from 'lucide-react';
+import PageOverview from '@/components/PageOverview';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import InsightCard from '@/components/credit-health/InsightCard';
@@ -51,14 +52,29 @@ const ExplainMyScore = () => {
 
   return (
     <div className="space-y-6 pb-8">
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/capital/credit-health')}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div>
-          <h1 className="text-xl font-bold">Explain My Score</h1>
-          <p className="text-sm text-muted-foreground">Plain-language insights about your credit</p>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" onClick={() => navigate('/capital/credit-health')}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h1 className="text-xl font-bold">Explain My Score</h1>
+            <p className="text-sm text-muted-foreground">Plain-language insights about your credit</p>
+          </div>
         </div>
+        <PageOverview
+          title="Explain My Score"
+          description="Get a plain-language explanation of why your credit score is where it is, with personalized insights based on your actual credit data."
+          icon={MessageSquare}
+          iconColor="text-prism-amber"
+          features={[
+            'Identifies the most likely cause dragging your score down',
+            'Personalized do\'s and don\'ts based on your profile',
+            'Context-aware insights from your real credit data',
+            'Explains scoring model differences and reporting lag',
+          ]}
+          ttsScript="Welcome to Explain My Score. This page gives you a plain-language explanation of what's affecting your credit score the most. At the top, you'll see the Most Likely Cause section — this identifies the single biggest factor holding your score back, along with what to do next and what to avoid. Below that, you'll find personalized insights generated from your actual credit accounts and disputes. These cover utilization, negative items, open disputes, and more. The page also explains important nuances like scoring model differences and how long changes take to reflect."
+        />
       </div>
 
       {/* Most Likely Cause */}

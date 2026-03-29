@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, TrendingUp, TrendingDown, Minus, AlertTriangle, Info, Lightbulb } from 'lucide-react';
+import { ArrowLeft, TrendingUp, TrendingDown, Minus, AlertTriangle, Info, Lightbulb, BarChart3 } from 'lucide-react';
+import PageOverview from '@/components/PageOverview';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -50,14 +51,29 @@ const ScoreBreakdown = () => {
 
   return (
     <div className="space-y-6 pb-8">
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/capital/credit-health')}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div>
-          <h1 className="text-xl font-bold">Score Breakdown</h1>
-          <p className="text-sm text-muted-foreground">Understand what makes up your credit score</p>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" onClick={() => navigate('/capital/credit-health')}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h1 className="text-xl font-bold">Score Breakdown</h1>
+            <p className="text-sm text-muted-foreground">Understand what makes up your credit score</p>
+          </div>
         </div>
+        <PageOverview
+          title="Score Breakdown"
+          description="See how each of the five FICO scoring factors — payment history, utilization, credit age, new credit, and credit mix — contributes to your overall credit score."
+          icon={BarChart3}
+          iconColor="text-prism-sky"
+          features={[
+            'Visual breakdown of all five FICO scoring factors',
+            'Per-factor health status with color-coded indicators',
+            'Actionable tips on what helps and hurts each factor',
+            'Weight percentages showing each factor\'s impact',
+          ]}
+          ttsScript="Welcome to the Score Breakdown page. Here you can see how each of the five major credit scoring factors affects your overall score. Payment History, worth 35 percent, tracks your record of on-time payments. Credit Utilization, at 30 percent, measures how much of your available credit you're using. Length of Credit History accounts for 15 percent. New Credit and Credit Mix each make up 10 percent. Each factor shows a health indicator — green means you're in good shape, yellow means there's room to improve, and red flags areas that need attention. Expand any factor to see specific tips on what helps and what hurts your score in that category."
+        />
       </div>
 
       <div className="space-y-4">
