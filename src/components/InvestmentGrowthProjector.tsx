@@ -45,10 +45,7 @@ interface SavedPlan {
 }
 
 const DEFAULT_SCHEDULES: ContributionSchedule[] = [
-  { yearStart: 6, yearEnd: 15, increaseType: 'percent', value: 5 },
-  { yearStart: 16, yearEnd: 20, increaseType: 'percent', value: 7 },
-  { yearStart: 21, yearEnd: 30, increaseType: 'percent', value: 10 },
-  { yearStart: 31, yearEnd: 35, increaseType: 'percent', value: 15 },
+  { yearStart: 2, yearEnd: 35, increaseType: 'percent', value: 3 },
 ];
 
 const MIXED_ROI_MAP: Record<number, number> = {
@@ -166,7 +163,8 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
     }
 
     const gross = netIncome + totalDeductions;
-    const employer = gross * 0.04; // 4% national average employer match
+    // Employer contributes 9% of gross; 2/3 of that goes to retirement
+    const employer = gross * 0.09 * (2 / 3);
 
     return { employee: retirementTotal, employer, hsa: hsaTotal, gross };
   }, [budgets, categories, categoryGroups]);
