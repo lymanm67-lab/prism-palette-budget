@@ -130,8 +130,13 @@ const BillNegotiation = () => {
         <Card className="p-4">
           <p className="text-xs text-muted-foreground">Potential Savings</p>
           <p className="text-2xl font-bold text-emerald-600">
-            {analysis ? `$${analysis.total_potential_monthly_savings.toFixed(2)}/mo` : '—'}
+            {analysis ? `$${validatedSavings.toFixed(2)}/mo` : '—'}
           </p>
+          {analysis && analysis.recommendations.length > 0 && (
+            <p className="text-[10px] text-muted-foreground mt-1">
+              from {analysis.recommendations.length} recommendation{analysis.recommendations.length !== 1 ? 's' : ''}
+            </p>
+          )}
         </Card>
       </div>
 
