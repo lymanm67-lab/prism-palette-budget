@@ -30,8 +30,10 @@ const CreditOverview = () => {
   const filtered = tab === 'all' ? accounts : accounts.filter(a => a.bureau === tab);
 
   const totalBalance = accounts.reduce((s, a) => s + Number(a.balance), 0);
-  const totalLimit = accounts.reduce((s, a) => s + Number(a.credit_limit || 0), 0);
-  const utilization = totalLimit > 0 ? (totalBalance / totalLimit) * 100 : 0;
+  const revolving = accounts.filter(a => a.account_type === 'Revolving');
+  const revolvingBalance = revolving.reduce((s, a) => s + Number(a.balance), 0);
+  const totalLimit = revolving.reduce((s, a) => s + Number(a.credit_limit || 0), 0);
+  const utilization = totalLimit > 0 ? (revolvingBalance / totalLimit) * 100 : 0;
   const negativeCount = accounts.filter(a =>
     ['Collection', 'Charge-Off', 'Foreclosure', 'Repossession'].includes(a.account_status)
   ).length;
