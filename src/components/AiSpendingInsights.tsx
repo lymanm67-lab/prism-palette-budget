@@ -8,6 +8,8 @@ import { useTTS } from '@/hooks/use-tts';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { canUseAI } from '@/lib/stripe-plans';
+import { Lock } from 'lucide-react';
 
 interface AiSpendingInsightsProps {
   transactions: any[];
@@ -17,7 +19,8 @@ interface AiSpendingInsightsProps {
 }
 
 export default function AiSpendingInsights({ transactions, accounts, monthlyIncome, monthlyExpenses }: AiSpendingInsightsProps) {
-  const { user } = useAuth();
+  const { user, subscriptionTier } = useAuth();
+  const hasAIAccess = canUseAI(subscriptionTier);
   const { speak, pause, resume, stop, isSpeaking, isPaused } = useTTS();
   const [financialJourney, setFinancialJourney] = useState<string | null>(null);
   const [insights, setInsights] = useState('');
