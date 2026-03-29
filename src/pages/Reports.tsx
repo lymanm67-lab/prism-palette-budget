@@ -423,6 +423,7 @@ const Reports = () => {
           <TabsTrigger value="trends">Trends</TabsTrigger>
           <TabsTrigger value="merchants">Top Merchants</TabsTrigger>
           <TabsTrigger value="payroll">Payroll Analysis</TabsTrigger>
+          <TabsTrigger value="investment-growth">Investment Growth</TabsTrigger>
         </TabsList>
 
         <div ref={reportRef}>
