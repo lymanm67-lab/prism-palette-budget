@@ -160,7 +160,7 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
     }
 
     const gross = netIncome + totalDeductions;
-    const employer = gross * 0.09; // 9% default employer match
+    const employer = gross * 0.04; // 4% national average employer match
 
     return { employee: retirementTotal, employer, hsa: hsaTotal, gross };
   }, [budgets, categories, categoryGroups]);
@@ -179,8 +179,8 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
     currentContribs.hsa > 0 ? currentContribs.hsa.toFixed(0) : '150'
   );
   const [horizonYears, setHorizonYears] = useState('35');
-  const [oneTimeBoostYear, setOneTimeBoostYear] = useState('2');
-  const [oneTimeBoostAmount, setOneTimeBoostAmount] = useState('583');
+  const [oneTimeBoostYear, setOneTimeBoostYear] = useState('0');
+  const [oneTimeBoostAmount, setOneTimeBoostAmount] = useState('0');
   const [schedules, setSchedules] = useState<ContributionSchedule[]>(DEFAULT_SCHEDULES);
   const [isEditing, setIsEditing] = useState(false);
   const [showSchedule, setShowSchedule] = useState(false);
