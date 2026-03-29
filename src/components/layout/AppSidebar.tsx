@@ -39,16 +39,16 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { to: '/accounts', icon: Landmark, label: 'Accounts', color: 'text-prism-sky' },
       { to: '/transactions', icon: ArrowLeftRight, label: 'Transactions', color: 'text-prism-orange' },
-      { to: '/recurring', icon: RepeatIcon, label: 'Recurring', color: 'text-prism-teal' },
       { to: '/categories', icon: Tags, label: 'Categories', color: 'text-prism-lime' },
+      { to: '/recurring', icon: RepeatIcon, label: 'Recurring', color: 'text-prism-teal' },
     ],
   },
   {
     label: 'Plan & Budget',
     items: [
+      { to: '/spending-trends', icon: TrendingUp, label: 'Spending Trends', color: 'text-prism-lime' },
       { to: '/budgets', icon: PiggyBank, label: 'Budgets', color: 'text-prism-amber' },
       { to: '/cash-flow', icon: Wallet, label: 'Cash Flow', color: 'text-prism-teal' },
-      { to: '/spending-trends', icon: TrendingUp, label: 'Spending Trends', color: 'text-prism-lime' },
       { to: '/forecast', icon: LineChart, label: 'Forecast', color: 'text-prism-sky' },
     ],
   },
@@ -64,8 +64,8 @@ const NAV_SECTIONS: NavSection[] = [
   {
     label: 'Grow Wealth',
     items: [
-      { to: '/goals', icon: Target, label: 'Goals', color: 'text-prism-lime' },
       { to: '/net-worth', icon: Scale, label: 'Net Worth', color: 'text-prism-teal' },
+      { to: '/goals', icon: Target, label: 'Goals', color: 'text-prism-lime' },
       { to: '/investments', icon: TrendingUp, label: 'Investments', color: 'text-prism-indigo' },
       { to: '/home-buying', icon: Home, label: 'Home Buying', color: 'text-prism-amber' },
     ],
@@ -73,10 +73,10 @@ const NAV_SECTIONS: NavSection[] = [
   {
     label: 'Insights',
     items: [
-      { to: '/reports', icon: BarChart3, label: 'Reports', color: 'text-prism-orange' },
-      { to: '/year-in-review', icon: Sparkles, label: 'Year in Review', color: 'text-prism-amber' },
-      { to: '/tax-assistant', icon: Bot, label: 'Tax Assistant', color: 'text-prism-indigo' },
       { to: '/reconciliation', icon: FileSearch, label: 'Reconciliation', color: 'text-prism-teal' },
+      { to: '/reports', icon: BarChart3, label: 'Reports', color: 'text-prism-orange' },
+      { to: '/tax-assistant', icon: Bot, label: 'Tax Assistant', color: 'text-prism-indigo' },
+      { to: '/year-in-review', icon: Sparkles, label: 'Year in Review', color: 'text-prism-amber' },
     ],
   },
   {
@@ -101,9 +101,9 @@ const NAV_SECTIONS: NavSection[] = [
         items: [
           { to: '/capital/business-credit', icon: Building2, label: 'Business Credit', color: 'text-prism-indigo' },
           { to: '/capital/bankability', icon: BarChart3, label: 'Bankability', color: 'text-prism-violet' },
+          { to: '/capital/banking-intelligence', icon: Search, label: 'Banking Intel', color: 'text-prism-sky' },
           { to: '/capital/loan-readiness', icon: ClipboardCheck, label: 'Loan Readiness', color: 'text-prism-lime' },
           { to: '/capital/capital-stack', icon: Layers, label: 'Capital Stack', color: 'text-prism-teal' },
-          { to: '/capital/banking-intelligence', icon: Search, label: 'Banking Intel', color: 'text-prism-sky' },
           { to: '/capital/funding-simulator', icon: Banknote, label: 'Funding Sim', color: 'text-prism-orange' },
         ],
       },
@@ -111,10 +111,10 @@ const NAV_SECTIONS: NavSection[] = [
         subLabel: 'Cash Flow & Risk',
         items: [
           { to: '/capital/receivables', icon: DollarSign, label: 'Receivables', color: 'text-prism-sky' },
+          { to: '/capital/bank-analyzer', icon: LineChart, label: 'Bank Analyzer', color: 'text-prism-violet' },
+          { to: '/capital/dscr', icon: Activity, label: 'DSCR Calculator', color: 'text-prism-teal' },
           { to: '/capital/payroll-runway', icon: Clock, label: 'Payroll Runway', color: 'text-prism-rose' },
           { to: '/capital/risk-radar', icon: AlertTriangle, label: 'Risk Radar', color: 'text-prism-orange' },
-          { to: '/capital/dscr', icon: Activity, label: 'DSCR Calculator', color: 'text-prism-teal' },
-          { to: '/capital/bank-analyzer', icon: LineChart, label: 'Bank Analyzer', color: 'text-prism-violet' },
           { to: '/capital/survival-index', icon: Shield, label: 'Survival Index', color: 'text-prism-rose' },
           { to: '/capital/vault', icon: Lock, label: 'Document Vault', color: 'text-muted-foreground' },
         ],
