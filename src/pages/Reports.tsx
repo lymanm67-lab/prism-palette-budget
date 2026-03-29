@@ -686,8 +686,18 @@ const Reports = () => {
           )}
         </TabsContent>
 
-        {/* ==================== BUDGET VS ACTUAL ==================== */}
+        {/* ==================== BUDGET & CASH FLOW ==================== */}
         <TabsContent value="budget">
+          <div className="flex gap-1 mb-4 rounded-lg bg-muted p-1 w-fit">
+            <button onClick={() => setBudgetSub('budget')} className={cn('px-3 py-1.5 text-xs font-medium rounded-md transition-colors', budgetSub === 'budget' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}>
+              <Scale className="h-3.5 w-3.5 inline mr-1.5" />Budget vs Actual
+            </button>
+            <button onClick={() => setBudgetSub('cashflow')} className={cn('px-3 py-1.5 text-xs font-medium rounded-md transition-colors', budgetSub === 'cashflow' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}>
+              <Wallet className="h-3.5 w-3.5 inline mr-1.5" />Cash Flow
+            </button>
+          </div>
+          {budgetSub === 'budget' && (
+          <>
           <ReportTabGuide
             title="Budget vs Actual"
             icon={Scale}
@@ -755,10 +765,10 @@ const Reports = () => {
             </CardContent>
           </Card>
           <ReportNarrative tab="budget" budgetVsActual={budgetVsActual} dateLabel={dateLabel} />
-        </TabsContent>
-
-        {/* ==================== CASH FLOW ==================== */}
-        <TabsContent value="cashflow">
+          </>
+          )}
+          {budgetSub === 'cashflow' && (
+          <>
           <ReportTabGuide
             title="Cash Flow"
             icon={Wallet}
@@ -844,6 +854,8 @@ const Reports = () => {
             )}
           </div>
           <ReportNarrative tab="cashflow" monthlyCashflow={monthlyCashflow} savingsRate={savingsRate} dateLabel={dateLabel} />
+          </>
+          )}
         </TabsContent>
 
         {/* ==================== NET WORTH ==================== */}
