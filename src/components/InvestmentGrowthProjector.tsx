@@ -212,6 +212,9 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
   const [selectedScenario, setSelectedScenario] = useState('all');
   const [savedPlanId, setSavedPlanId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [debtPaymentMonthly, setDebtPaymentMonthly] = useState('888');
+  const [debtPayoffYear, setDebtPayoffYear] = useState('2');
+  const [debtRedirectPercent, setDebtRedirectPercent] = useState('50');
   const [viewMode, setViewMode] = useState<'combined' | 'yours' | 'spouse'>('combined');
   const printRef = useRef<HTMLDivElement>(null);
 
