@@ -368,8 +368,9 @@ const Budgets = () => {
   const totalIncomeActual = sectionTotals.income.actual;
   const totalIncomeRemaining = sectionTotals.income.remaining;
 
-  const totalExpenseBudget = sectionTotals.payroll_deduction.budget + sectionTotals.fixed.budget + sectionTotals.flexible.budget + sectionTotals.non_monthly.budget;
-  const totalExpenseActual = sectionTotals.payroll_deduction.actual + sectionTotals.fixed.actual + sectionTotals.flexible.actual + sectionTotals.non_monthly.actual;
+  // Exclude payroll deductions from expense totals — they're already deducted before net pay
+  const totalExpenseBudget = sectionTotals.fixed.budget + sectionTotals.flexible.budget + sectionTotals.non_monthly.budget;
+  const totalExpenseActual = sectionTotals.fixed.actual + sectionTotals.flexible.actual + sectionTotals.non_monthly.actual;
   const totalExpenseRemaining = totalExpenseBudget - totalExpenseActual;
 
   // Gross income = net income + payroll deductions
