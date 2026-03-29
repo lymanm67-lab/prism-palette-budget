@@ -1,4 +1,7 @@
 import { useMemo, useState, useCallback } from 'react';
+import { PaystubUploader } from '@/components/PaystubUploader';
+import { BillScanner } from '@/components/BillScanner';
+import { toast } from 'sonner';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend, Tooltip as RTooltip } from 'recharts';
 import ReactMarkdown from 'react-markdown';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -16,7 +19,7 @@ import { useBudgets, useCategories, useCategoryGroups, useTransactions, useUpser
 import { useBusinessProfiles } from '@/hooks/use-business-data';
 import { useSmartBudget } from '@/hooks/use-financial-intelligence';
 import { useCurrency } from '@/hooks/use-currency';
-import { Loader2, Plus, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Eye, EyeOff, Settings2, TrendingUp, AlertTriangle, CheckCircle2, PiggyBank, Sparkles, Copy, ClipboardCheck, MoreHorizontal, BookOpen, Printer, X, Scale } from 'lucide-react';
+import { Loader2, Plus, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Eye, EyeOff, Settings2, TrendingUp, AlertTriangle, CheckCircle2, PiggyBank, Sparkles, Copy, ClipboardCheck, MoreHorizontal, BookOpen, Printer, X, Scale, FileUp, Receipt } from 'lucide-react';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -143,6 +146,8 @@ const Budgets = () => {
   const smartBudget = useSmartBudget();
   const [printPreview, setPrintPreview] = useState(false);
   const [printOrientation, setPrintOrientation] = useState<'portrait' | 'landscape'>('portrait');
+  const [paystubOpen, setPaystubOpen] = useState(false);
+  const [billScanOpen, setBillScanOpen] = useState(false);
   const toggleSection = (key: string) => setOpenSections(s => ({ ...s, [key]: !s[key] }));
 
   
@@ -1097,6 +1102,7 @@ const Budgets = () => {
   }
 
   return (
+    <>
     <TooltipProvider delayDuration={300}>
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       {/* Print-only repeating header — position:fixed repeats on every printed page in Chrome */}
@@ -1176,6 +1182,28 @@ const Budgets = () => {
                 </Button>
               </TooltipTrigger>
               <TooltipContent><p>AI-powered budget suggestions based on spending</p></TooltipContent>
+            </Tooltip>
+
+            {/* Upload Paystub */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-1.5 h-8" onClick={() => setPaystubOpen(true)}>
+                  <FileUp className="h-4 w-4" />
+                  <span className="hidden sm:inline">Paystub</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent><p>Upload paycheck stub to auto-fill deductions</p></TooltipContent>
+            </Tooltip>
+
+            {/* Scan Bill */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-1.5 h-8" onClick={() => setBillScanOpen(true)}>
+                  <Receipt className="h-4 w-4" />
+                  <span className="hidden sm:inline">Scan Bill</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent><p>Scan a bill or statement with camera or file</p></TooltipContent>
             </Tooltip>
 
             {/* More menu */}
@@ -2347,6 +2375,24 @@ const Budgets = () => {
       </AnimatePresence>
     </motion.div>
     </TooltipProvider>
+
+    <PaystubUploader open={paystubOpen} onOpenChange={setPaystubOpen} />
+    <BillScanner
+      open={billScanOpen}
+      onOpenChange={setBillScanOpen}
+      categories={(categories || []).map(c => ({ id: c.id, name: c.name }))}
+      onResult={(bill) => {
+        const matchedCat = (categories || []).find(c => c.name.toLowerCase() === bill.category.toLowerCase());
+        if (matchedCat) {
+          setForm({ category_id: matchedCat.id, planned_amount: String(bill.amount), rollover: false, budgetKind: 'expense', group_id: matchedCat.group_id, expense_type: 'fixed' });
+          setEditingBudget(null);
+          setDialogOpen(true);
+        } else {
+          toast.info(`Scanned: ${bill.merchant} — ${bill.amount}. Create a matching category first.`);
+        }
+      }}
+    />
+    </>
   );
 };
 
