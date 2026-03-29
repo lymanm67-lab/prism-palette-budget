@@ -412,30 +412,46 @@ export default function PayrollReportTab({ budgetMonth }: PayrollReportTabProps)
           {/* Contribution breakdown */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-3">
-              <h4 className="text-sm font-semibold">Employee Contributions</h4>
+              <h4 className="text-sm font-semibold">Before Tax Deductions</h4>
               <div className="space-y-2">
-                {analysis.deferredItems.length > 0 && (
-                  <div className="flex justify-between text-sm p-2 rounded-lg bg-muted/30">
-                    <span>Deferred (Pre-tax)</span>
-                    <span className="tabular-nums font-medium">{formatCurrency(analysis.deferredTotal)} <span className="text-muted-foreground">({analysis.deferredPct.toFixed(2)}%)</span></span>
+                {analysis.deferredItems.map((item, i) => (
+                  <div key={`pre-${i}`} className="flex justify-between text-sm p-2 rounded-lg bg-muted/30">
+                    <span>{item.name}</span>
+                    <span className="tabular-nums font-medium">{formatCurrency(item.monthlyAmount)} <span className="text-muted-foreground">({item.pctOfGross.toFixed(2)}%)</span></span>
                   </div>
-                )}
-                {analysis.rothItems.length > 0 && (
-                  <div className="flex justify-between text-sm p-2 rounded-lg bg-muted/30">
-                    <span>Roth</span>
-                    <span className="tabular-nums font-medium">{formatCurrency(analysis.rothTotal)} <span className="text-muted-foreground">({analysis.rothPct.toFixed(2)}%)</span></span>
+                ))}
+                {analysis.hsaTotal > 0 && analysis.hsaItems.map((item, i) => (
+                  <div key={`hsa-${i}`} className="flex justify-between text-sm p-2 rounded-lg bg-muted/30">
+                    <span>{item.name}</span>
+                    <span className="tabular-nums font-medium">{formatCurrency(item.monthlyAmount)} <span className="text-muted-foreground">({item.pctOfGross.toFixed(2)}%)</span></span>
                   </div>
-                )}
-                {analysis.hsaTotal > 0 && (
-                  <div className="flex justify-between text-sm p-2 rounded-lg bg-muted/30">
-                    <span>HSA</span>
-                    <span className="tabular-nums font-medium">{formatCurrency(analysis.hsaTotal)} <span className="text-muted-foreground">({analysis.hsaPct.toFixed(2)}%)</span></span>
-                  </div>
-                )}
+                ))}
               </div>
               <div className="flex justify-between text-sm font-semibold border-t pt-2">
+                <span>Before Tax Total</span>
+                <span className="tabular-nums">{formatCurrency(analysis.deferredTotal + analysis.hsaTotal)} ({(analysis.deferredPct + analysis.hsaPct).toFixed(2)}%)</span>
+              </div>
+
+              {/* After Tax Deductions */}
+              {analysis.rothItems.length > 0 && (
+                <div className="space-y-2 pt-3 border-t">
+                  <h4 className="text-sm font-semibold">After Tax Deductions</h4>
+                  {analysis.rothItems.map((item, i) => (
+                    <div key={`roth-${i}`} className="flex justify-between text-sm p-2 rounded-lg bg-amber-500/5 border border-amber-500/10">
+                      <span>{item.name}</span>
+                      <span className="tabular-nums font-medium">{formatCurrency(item.monthlyAmount)} <span className="text-muted-foreground">({item.pctOfGross.toFixed(2)}%)</span></span>
+                    </div>
+                  ))}
+                  <div className="flex justify-between text-sm font-semibold border-t pt-2">
+                    <span>After Tax Total</span>
+                    <span className="tabular-nums">{formatCurrency(analysis.rothTotal)} ({analysis.rothPct.toFixed(2)}%)</span>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex justify-between text-sm font-bold pt-2 border-t border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
                 <span>Employee Total</span>
-                <span className="tabular-nums">{formatCurrency(analysis.employeeContrib)} ({analysis.employeeContribPct.toFixed(2)}% of gross)</span>
+                <span className="tabular-nums">{formatCurrency(analysis.employeeContrib + analysis.hsaTotal)} ({(analysis.employeeContribPct + analysis.hsaPct).toFixed(2)}% of gross)</span>
               </div>
 
               {/* Employer Paid Benefits */}
