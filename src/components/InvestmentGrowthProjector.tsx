@@ -382,17 +382,18 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
         </CardHeader>
         {isEditing && (
           <CardContent className="space-y-4 border-t pt-4">
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <p className="text-xs font-semibold text-muted-foreground mb-1">Your Contributions</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
               <div>
-                <label className="text-xs font-medium text-muted-foreground">Starting Balance</label>
+                <label className="text-xs font-medium text-muted-foreground">Combined Starting Balance</label>
                 <Input value={startingBalance} onChange={e => setStartingBalance(e.target.value)} type="number" className="h-8 mt-1" />
               </div>
               <div>
-                <label className="text-xs font-medium text-muted-foreground">Employee Monthly</label>
+                <label className="text-xs font-medium text-muted-foreground">Your Employee Monthly</label>
                 <Input value={monthlyContrib} onChange={e => setMonthlyContrib(e.target.value)} type="number" className="h-8 mt-1" />
               </div>
               <div>
-                <label className="text-xs font-medium text-muted-foreground">Employer Monthly</label>
+                <label className="text-xs font-medium text-muted-foreground">Your Employer Monthly</label>
                 <Input value={employerMonthly} onChange={e => setEmployerMonthly(e.target.value)} type="number" className="h-8 mt-1" />
               </div>
               <div>
@@ -400,11 +401,27 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
                 <Input value={hsaMonthly} onChange={e => setHsaMonthly(e.target.value)} type="number" className="h-8 mt-1" />
               </div>
               <div>
-                <label className="text-xs font-medium text-muted-foreground">Years</label>
+                <label className="text-xs font-medium text-muted-foreground">Years to Retirement</label>
                 <Input value={horizonYears} onChange={e => setHorizonYears(e.target.value)} type="number" className="h-8 mt-1" min="5" max="50" />
               </div>
+            </div>
+
+            <p className="text-xs font-semibold text-muted-foreground mb-1 mt-3">Spouse (Wife)</p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div>
-                <label className="text-xs font-medium text-muted-foreground">Total Annual</label>
+                <label className="text-xs font-medium text-muted-foreground">Wife's Portfolio</label>
+                <Input value={spousePortfolio} onChange={e => setSpousePortfolio(e.target.value)} type="number" className="h-8 mt-1" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Wife's Annual Contrib</label>
+                <Input value={spouseAnnualContrib} onChange={e => setSpouseAnnualContrib(e.target.value)} type="number" className="h-8 mt-1" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Wife's Salary</label>
+                <p className="text-sm font-bold mt-2 tabular-nums">$106,145/yr</p>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Household Total Annual</label>
                 <p className="text-sm font-bold mt-2 tabular-nums">{formatCurrency(baseAnnual)}/yr</p>
               </div>
             </div>
