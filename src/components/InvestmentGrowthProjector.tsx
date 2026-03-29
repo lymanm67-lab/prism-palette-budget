@@ -180,6 +180,9 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
   const [horizonYears, setHorizonYears] = useState('35');
   const [oneTimeBoostYear, setOneTimeBoostYear] = useState('0');
   const [oneTimeBoostAmount, setOneTimeBoostAmount] = useState('0');
+  const [inflationRate, setInflationRate] = useState('3');
+  const [taxRate, setTaxRate] = useState('22');
+  const [ssMonthlyBenefit, setSsMonthlyBenefit] = useState('2200');
   const [schedules, setSchedules] = useState<ContributionSchedule[]>(DEFAULT_SCHEDULES);
   const [isEditing, setIsEditing] = useState(false);
   const [showSchedule, setShowSchedule] = useState(false);
@@ -207,6 +210,7 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
   const horizon = parseInt(horizonYears) || 35;
   const start = parseFloat(startingBalance) || 0;
   const boostYear = parseInt(oneTimeBoostYear) || 0;
+  const boostAmt = parseFloat(oneTimeBoostAmount) || 0;
   const inflation = parseFloat(inflationRate) || 3;
   const tax = parseFloat(taxRate) || 22;
   const ssMonthly = parseFloat(ssMonthlyBenefit) || 0;
