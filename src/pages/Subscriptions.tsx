@@ -406,6 +406,13 @@ const Subscriptions = () => {
         </motion.div>
       </div>
 
+      {/* Explanation */}
+      <motion.div variants={item} className="rounded-lg border border-border/50 bg-muted/30 px-4 py-3">
+        <p className="text-xs text-muted-foreground">
+          <strong className="text-foreground">How this is calculated:</strong> Monthly and Yearly totals include only true subscriptions (software, streaming, memberships) — normalized to monthly amounts regardless of billing frequency. Non-subscription charges like rent, utilities, insurance, and loan payments are excluded and shown with a "Not a sub" badge below.
+        </p>
+      </motion.div>
+
       {/* Still-Charged Alerts */}
       <StillChargedAlerts />
 

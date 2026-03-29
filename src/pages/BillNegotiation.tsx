@@ -127,10 +127,17 @@ const BillNegotiation = () => {
         features={['AI analyzes every recurring bill', 'Provides negotiation scripts', 'Ranks by savings potential & difficulty']}
       />
 
+      {/* Explanation */}
+      <div className="rounded-lg border border-border/50 bg-muted/30 px-4 py-3">
+        <p className="text-xs text-muted-foreground">
+          <strong className="text-foreground">How this is calculated:</strong> Monthly Spend shows only true subscriptions (software, streaming, memberships) normalized to monthly amounts. Non-subscription recurring charges like rent, utilities, insurance, and loan payments are excluded. This matches the total shown on the Subscriptions page.
+        </p>
+      </div>
+
       {/* Summary Stats */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="p-4">
-          <p className="text-xs text-muted-foreground">Active Bills</p>
+          <p className="text-xs text-muted-foreground">Active Subscriptions</p>
           <p className="text-2xl font-bold">{billCount}</p>
         </Card>
         <Card className="p-4">
@@ -144,7 +151,7 @@ const BillNegotiation = () => {
           </p>
           {analysis && analysis.recommendations.length > 0 && (
             <p className="text-[10px] text-muted-foreground mt-1">
-              from {analysis.recommendations.length} recommendation{analysis.recommendations.length !== 1 ? 's' : ''}
+              sum of {analysis.recommendations.length} recommendation{analysis.recommendations.length !== 1 ? 's' : ''}
             </p>
           )}
         </Card>
