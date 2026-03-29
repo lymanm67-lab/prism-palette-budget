@@ -28,36 +28,32 @@ type NavSection = {
 
 const NAV_SECTIONS: NavSection[] = [
   {
-    label: 'Overview',
+    label: 'Home',
     items: [
-      { to: '/getting-started', icon: ClipboardCheck, label: 'Get Started', color: 'text-prism-lime' },
       { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', color: 'text-prism-teal' },
-      { to: '/reports', icon: BarChart3, label: 'Reports', color: 'text-prism-orange' },
-      { to: '/year-in-review', icon: Sparkles, label: 'Year in Review', color: 'text-prism-amber' },
+      { to: '/getting-started', icon: ClipboardCheck, label: 'Get Started', color: 'text-prism-lime' },
     ],
   },
   {
-    label: 'Track & Organize',
+    label: 'Track Money',
     items: [
       { to: '/accounts', icon: Landmark, label: 'Accounts', color: 'text-prism-sky' },
       { to: '/transactions', icon: ArrowLeftRight, label: 'Transactions', color: 'text-prism-orange' },
-      { to: '/categories', icon: Tags, label: 'Categories', color: 'text-prism-lime' },
       { to: '/recurring', icon: RepeatIcon, label: 'Recurring', color: 'text-prism-teal' },
+      { to: '/categories', icon: Tags, label: 'Categories', color: 'text-prism-lime' },
     ],
   },
   {
-    label: 'Budget & Plan',
+    label: 'Plan & Budget',
     items: [
       { to: '/budgets', icon: PiggyBank, label: 'Budgets', color: 'text-prism-amber' },
       { to: '/cash-flow', icon: Wallet, label: 'Cash Flow', color: 'text-prism-teal' },
-      { to: '/forecast', icon: LineChart, label: 'Forecast', color: 'text-prism-sky' },
       { to: '/spending-trends', icon: TrendingUp, label: 'Spending Trends', color: 'text-prism-lime' },
-      { to: '/tax-assistant', icon: Bot, label: 'Tax Assistant', color: 'text-prism-indigo' },
-      { to: '/reconciliation', icon: FileSearch, label: 'Reconciliation', color: 'text-prism-teal' },
+      { to: '/forecast', icon: LineChart, label: 'Forecast', color: 'text-prism-sky' },
     ],
   },
   {
-    label: 'Save & Reduce',
+    label: 'Save & Optimize',
     items: [
       { to: '/subscriptions', icon: CreditCard, label: 'Subscriptions', color: 'text-prism-violet' },
       { to: '/bill-negotiation', icon: Scissors, label: 'Bill Negotiation', color: 'text-prism-rose' },
@@ -66,12 +62,21 @@ const NAV_SECTIONS: NavSection[] = [
     ],
   },
   {
-    label: 'Build Wealth',
+    label: 'Grow Wealth',
     items: [
       { to: '/goals', icon: Target, label: 'Goals', color: 'text-prism-lime' },
       { to: '/net-worth', icon: Scale, label: 'Net Worth', color: 'text-prism-teal' },
       { to: '/investments', icon: TrendingUp, label: 'Investments', color: 'text-prism-indigo' },
       { to: '/home-buying', icon: Home, label: 'Home Buying', color: 'text-prism-amber' },
+    ],
+  },
+  {
+    label: 'Insights',
+    items: [
+      { to: '/reports', icon: BarChart3, label: 'Reports', color: 'text-prism-orange' },
+      { to: '/year-in-review', icon: Sparkles, label: 'Year in Review', color: 'text-prism-amber' },
+      { to: '/tax-assistant', icon: Bot, label: 'Tax Assistant', color: 'text-prism-indigo' },
+      { to: '/reconciliation', icon: FileSearch, label: 'Reconciliation', color: 'text-prism-teal' },
     ],
   },
   {
@@ -117,9 +122,8 @@ const NAV_SECTIONS: NavSection[] = [
     ],
   },
   {
-    label: 'More',
+    label: 'Settings',
     items: [
-      { to: '/app-store-readiness', icon: Smartphone, label: 'App Store', color: 'text-prism-indigo' },
       { to: '/settings', icon: Settings, label: 'Settings', color: 'text-muted-foreground' },
       { to: '/about', icon: Heart, label: 'About', color: 'text-prism-rose' },
       { to: '/legal', icon: Scale, label: 'Legal', color: 'text-muted-foreground' },
