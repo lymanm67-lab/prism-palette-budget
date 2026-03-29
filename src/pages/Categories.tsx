@@ -152,12 +152,12 @@ const Categories = () => {
     }
   };
 
-  // Detect duplicate categories
+  // Detect duplicate categories (only within the same category group — cross-entity duplicates are intentional)
   const duplicateGroups = useMemo(() => {
     if (!categories) return [];
     const map = new Map<string, typeof categories>();
     for (const c of categories) {
-      const key = c.name.toLowerCase().trim();
+      const key = `${c.group_id}::${c.name.toLowerCase().trim()}`;
       if (!map.has(key)) map.set(key, []);
       map.get(key)!.push(c);
     }
