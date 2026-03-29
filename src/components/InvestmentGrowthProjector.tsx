@@ -70,23 +70,18 @@ function computeProjection(
   oneTimeBoostYear: number,
   oneTimeBoostMonthly: number,
   useMixedRoi: boolean,
+  inflationRate: number,
 ) {
-  const rows: { year: number; annualContrib: number; endBalance: number; roi: number; growth: number }[] = [];
+  const rows: { year: number; annualContrib: number; endBalance: number; roi: number; growth: number; realBalance: number }[] = [];
   let balance = startingBalance;
   let currentAnnual = baseAnnualContrib;
+  const cumulativeInflation = (y: number) => Math.pow(1 + inflationRate / 100, y);
 
   for (let y = 1; y <= horizonYears; y++) {
-    // Apply contribution increases from schedule
     const sched = schedules.find(s => y >= s.yearStart && y <= s.yearEnd);
-    if (sched && y === sched.yearStart && y > 1) {
-      // Don't reset, apply from previous year
-    }
     if (y > 1) {
       const prevSched = schedules.find(s => y >= s.yearStart && y <= s.yearEnd);
       if (prevSched && prevSched.increaseType === 'percent') {
-        if (y === prevSched.yearStart) {
-          // first year of this bracket: increase from last year's contribution
-        }
         currentAnnual = currentAnnual * (1 + prevSched.value / 100);
       } else if (prevSched && prevSched.increaseType === 'fixed') {
         currentAnnual = currentAnnual + prevSched.value;
@@ -94,7 +89,6 @@ function computeProjection(
     }
 
     let yearContrib = currentAnnual;
-    // One-time boost in a specific year
     if (y === oneTimeBoostYear) {
       yearContrib += oneTimeBoostMonthly * 12;
     }
@@ -102,8 +96,9 @@ function computeProjection(
     const roi = useMixedRoi ? (MIXED_ROI_MAP[y] ?? 8) : annualRoi;
     const growth = balance * (roi / 100);
     balance = balance + yearContrib + growth;
+    const realBalance = balance / cumulativeInflation(y);
 
-    rows.push({ year: y, annualContrib: yearContrib, endBalance: balance, roi, growth });
+    rows.push({ year: y, annualContrib: yearContrib, endBalance: balance, roi, growth, realBalance });
   }
 
   return rows;
