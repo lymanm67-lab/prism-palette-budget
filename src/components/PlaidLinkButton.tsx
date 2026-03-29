@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { Landmark, Loader2, Lock } from 'lucide-react';
+import { canUsePlaid } from '@/lib/stripe-plans';
 
 const PlaidLinkButton = () => {
   const [linkToken, setLinkToken] = useState<string | null>(null);
@@ -100,7 +101,7 @@ const PlaidLinkButton = () => {
     );
   }
 
-  const hasPlaidAccess = subscribed && (subscriptionTier === 'premium' || subscriptionTier === 'business');
+  const hasPlaidAccess = canUsePlaid(subscriptionTier);
 
   if (!hasPlaidAccess) {
     return (
