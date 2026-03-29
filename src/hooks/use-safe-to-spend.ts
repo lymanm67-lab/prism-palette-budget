@@ -26,6 +26,7 @@ export interface SafeToSpendResult {
   monthlySubscriptions: number;
   budgetIncome: number;
   budgetExpenses: number;
+  effectiveExpenses: number;
   bufferPercent: number;
   mode: FinancialMode;
   isLoading: boolean;
@@ -157,6 +158,7 @@ export function useSafeToSpend(scope: StsScope = 'combined'): SafeToSpendResult 
       monthlySubscriptions,
       budgetIncome,
       budgetExpenses,
+      effectiveExpenses,
       bufferPercent,
       mode,
       isLoading: !accounts,
