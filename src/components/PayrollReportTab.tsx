@@ -157,7 +157,15 @@ export default function PayrollReportTab({ budgetMonth }: PayrollReportTabProps)
     const deferredTotal = deferredItems.reduce((s, d) => s + d.monthlyAmount, 0);
     const deferredPct = grossIncome > 0 ? (deferredTotal / grossIncome) * 100 : 0;
 
-    const totalSavingsInvestment = employeeContrib + hsaTotal;
+    // Employer-paid benefits toward retirement (e.g. employer 401k match)
+    const employerBenefitItems = deductions.filter(d => {
+      const lower = d.name.toLowerCase();
+      return lower.includes('employer') || lower.includes('match') || lower.includes('company contrib');
+    });
+    const employerContrib = employerBenefitItems.reduce((s, d) => s + d.monthlyAmount, 0);
+    const employerContribPct = grossIncome > 0 ? (employerContrib / grossIncome) * 100 : 0;
+
+    const totalSavingsInvestment = employeeContrib + hsaTotal + employerContrib;
     const totalSavingsRate = grossIncome > 0 ? (totalSavingsInvestment / grossIncome) * 100 : 0;
 
     // Expense breakdown as % of net
@@ -187,6 +195,7 @@ export default function PayrollReportTab({ budgetMonth }: PayrollReportTabProps)
       totalFixedExp, totalFlexibleExp, totalNonMonthlyExp,
       expenseBarData,
       employeeContrib, employeeContribPct,
+      employerContrib, employerContribPct, employerBenefitItems,
       hsaTotal, hsaPct,
       rothTotal, rothPct,
       deferredTotal, deferredPct,
@@ -395,6 +404,34 @@ export default function PayrollReportTab({ budgetMonth }: PayrollReportTabProps)
                 <span>Employee Total</span>
                 <span className="tabular-nums">{formatCurrency(analysis.employeeContrib)} ({analysis.employeeContribPct.toFixed(2)}% of gross)</span>
               </div>
+
+              {/* Employer Paid Benefits */}
+              {analysis.employerContrib > 0 && (
+                <div className="space-y-2 pt-3 border-t">
+                  <h4 className="text-sm font-semibold flex items-center gap-1.5">
+                    <Briefcase className="h-4 w-4 text-sky-500" />
+                    Employer Paid Benefits
+                  </h4>
+                  {analysis.employerBenefitItems.map((item: DeductionLine, i: number) => (
+                    <div key={i} className="flex justify-between text-sm p-2 rounded-lg bg-sky-500/5 border border-sky-500/10">
+                      <span>{item.name}</span>
+                      <span className="tabular-nums font-medium">{formatCurrency(item.monthlyAmount)} <span className="text-muted-foreground">({item.pctOfGross.toFixed(2)}%)</span></span>
+                    </div>
+                  ))}
+                  <div className="flex justify-between text-sm font-semibold">
+                    <span>Employer Total</span>
+                    <span className="tabular-nums">{formatCurrency(analysis.employerContrib)} ({analysis.employerContribPct.toFixed(2)}% of gross)</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Combined Employee + Employer */}
+              {analysis.employerContrib > 0 && (
+                <div className="flex justify-between text-sm font-bold pt-2 border-t border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+                  <span>Combined (Employee + Employer)</span>
+                  <span className="tabular-nums">{formatCurrency(analysis.employeeContrib + analysis.employerContrib)} ({(analysis.employeeContribPct + analysis.employerContribPct).toFixed(2)}%)</span>
+                </div>
+              )}
             </div>
 
             <div className="space-y-3">
@@ -407,6 +444,15 @@ export default function PayrollReportTab({ budgetMonth }: PayrollReportTabProps)
                   </div>
                   <Progress value={Math.min(analysis.employeeContribPct * 5, 100)} className="h-1.5" />
                 </div>
+                {analysis.employerContrib > 0 && (
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-sm">
+                      <span>Employer Retirement</span>
+                      <span className="font-bold tabular-nums">{analysis.employerContribPct.toFixed(2)}%</span>
+                    </div>
+                    <Progress value={Math.min(analysis.employerContribPct * 5, 100)} className="h-1.5" />
+                  </div>
+                )}
                 {analysis.hsaPct > 0 && (
                   <div className="space-y-1">
                     <div className="flex justify-between text-sm">
@@ -428,9 +474,10 @@ export default function PayrollReportTab({ budgetMonth }: PayrollReportTabProps)
                   </div>
                   <Progress value={Math.min(analysis.totalSavingsRate * 5, 100)} className="h-2" />
                   <p className="text-xs text-muted-foreground">
+                    Includes: Employee ({analysis.employeeContribPct.toFixed(2)}%) + HSA ({analysis.hsaPct.toFixed(2)}%){analysis.employerContrib > 0 ? ` + Employer (${analysis.employerContribPct.toFixed(2)}%)` : ''}.{' '}
                     {analysis.meetsStandard
-                      ? 'Meets the 20% wealth-building standard. Your savings and investment contributions are on track for long-term financial health.'
-                      : `Currently ${(20 - analysis.totalSavingsRate).toFixed(2)}% below the 20% wealth-building standard. Consider increasing retirement contributions or opening an IRA.`}
+                      ? 'Meets the 20% wealth-building standard.'
+                      : `${(20 - analysis.totalSavingsRate).toFixed(2)}% below the 20% standard.`}
                   </p>
                 </div>
               </div>
@@ -442,14 +489,16 @@ export default function PayrollReportTab({ budgetMonth }: PayrollReportTabProps)
             <p className="text-xs font-medium text-muted-foreground mb-2">Gross Income Allocation</p>
             <div className="flex h-6 rounded-full overflow-hidden">
               <div className="bg-rose-500 transition-all" style={{ width: `${analysis.grossIncome > 0 ? ((analysis.byType.get('tax')?.total || 0) / analysis.grossIncome * 100) : 0}%` }} title="Taxes" />
-              <div className="bg-emerald-500 transition-all" style={{ width: `${analysis.employeeContribPct}%` }} title="Retirement" />
+              <div className="bg-emerald-500 transition-all" style={{ width: `${analysis.employeeContribPct}%` }} title="Employee Retirement" />
+              {analysis.employerContribPct > 0 && <div className="bg-teal-400 transition-all" style={{ width: `${analysis.employerContribPct}%` }} title="Employer Retirement" />}
               <div className="transition-all" style={{ width: `${analysis.hsaPct}%`, backgroundColor: 'hsl(199, 89%, 48%)' }} title="HSA" />
               <div className="bg-purple-500 transition-all" style={{ width: `${analysis.grossIncome > 0 ? ((analysis.byType.get('insurance')?.total || 0) / analysis.grossIncome * 100) : 0}%` }} title="Insurance" />
               <div className="bg-muted-foreground/20 flex-1" title="Net Pay" />
             </div>
             <div className="flex flex-wrap gap-3 mt-2 text-[10px]">
               <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-rose-500" /> Taxes</span>
-              <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-emerald-500" /> Retirement</span>
+              <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-emerald-500" /> Employee Retirement</span>
+              {analysis.employerContrib > 0 && <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-teal-400" /> Employer Retirement</span>}
               <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full" style={{ backgroundColor: 'hsl(199, 89%, 48%)' }} /> HSA</span>
               <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-purple-500" /> Insurance</span>
               <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-muted-foreground/20" /> Net Pay</span>
