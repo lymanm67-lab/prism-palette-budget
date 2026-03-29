@@ -129,12 +129,11 @@ export function useSafeToSpend(): SafeToSpendResult {
     const bufferMultiplier = 1 - (bufferPercent / 100);
     const monthlySafe = Math.max(0, baseMonthlySafe * bufferMultiplier);
 
-    // Days remaining in month
     const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-    const daysRemaining = daysInMonth - now.getDate() + 1;
 
-    const dailySafe = daysRemaining > 0 ? monthlySafe / daysRemaining : 0;
-    const weeklySafe = dailySafe * 7;
+    // Consistent planning rates based on full month
+    const dailySafe = monthlySafe / daysInMonth;
+    const weeklySafe = monthlySafe / (daysInMonth / 7);
 
     return {
       daily: Math.round(dailySafe * 100) / 100,
