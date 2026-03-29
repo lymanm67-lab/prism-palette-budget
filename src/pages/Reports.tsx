@@ -54,6 +54,9 @@ const Reports = () => {
   }));
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('spending');
+  const [spendingSub, setSpendingSub] = useState<'categories' | 'merchants'>('categories');
+  const [budgetSub, setBudgetSub] = useState<'budget' | 'cashflow'>('budget');
+  const [wealthSub, setWealthSub] = useState<'networth' | 'trends'>('networth');
   const [reportMode, setReportMode] = useState<'personal' | 'business'>('personal');
   const [spendingChartType, setSpendingChartType] = useState<'pie' | 'bar'>('pie');
   const [showOtherBreakdown, setShowOtherBreakdown] = useState(false);
