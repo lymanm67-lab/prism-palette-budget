@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Shield, AlertTriangle, Check, CreditCard, Clock, FileText, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Shield, AlertTriangle, Check, CreditCard, Clock, FileText, TrendingUp, CheckCircle2 } from 'lucide-react';
+import PageOverview from '@/components/PageOverview';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -65,14 +66,29 @@ const ApprovalReadiness = () => {
 
   return (
     <div className="space-y-6 pb-8">
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/capital/credit-health')}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div>
-          <h1 className="text-xl font-bold">Approval Readiness</h1>
-          <p className="text-sm text-muted-foreground">Are you ready to apply for credit?</p>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" onClick={() => navigate('/capital/credit-health')}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h1 className="text-xl font-bold">Approval Readiness</h1>
+            <p className="text-sm text-muted-foreground">Are you ready to apply for credit?</p>
+          </div>
         </div>
+        <PageOverview
+          title="Approval Readiness"
+          description="Evaluate whether your credit profile is strong enough to apply for new credit, with a checklist of key approval factors and personalized next steps."
+          icon={CheckCircle2}
+          iconColor="text-prism-lime"
+          features={[
+            'Visual readiness meter showing your approval likelihood',
+            'Six-point checklist covering all key approval criteria',
+            'Estimated credit score based on your current data',
+            'Personalized improvement steps to reach approval readiness',
+          ]}
+          ttsScript="Welcome to Approval Readiness. This tool evaluates whether you're ready to apply for new credit — like a loan, credit card, or mortgage. At the top, the readiness meter shows your overall status: not ready, improving, nearly ready, or ready. Below that, a six-point checklist evaluates your credit score, utilization, negative items, open disputes, recent inquiries, and payment history. Each item shows a green check for pass, yellow for warning, or red for fail. At the bottom, you'll find specific next steps tailored to your situation to help you reach approval readiness before applying."
+        />
       </div>
 
       {/* Readiness Meter */}
