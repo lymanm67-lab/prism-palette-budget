@@ -429,7 +429,7 @@ const Reports = () => {
             { value: 'payroll', label: 'Payroll Analysis', icon: Briefcase },
             { value: 'investment-growth', label: 'Investment Growth', icon: Sprout },
           ].map(({ value, label, icon: TabIcon }) => (
-            <Tooltip key={value}>
+            <UiTooltip key={value}>
               <TooltipTrigger asChild>
                 <span>
                   <TabsTrigger value={value} className="gap-1.5">
@@ -441,7 +441,7 @@ const Reports = () => {
               <TooltipContent className="sm:hidden">
                 <p>{label}</p>
               </TooltipContent>
-            </Tooltip>
+            </UiTooltip>
           ))}
         </TabsList>
         </TooltipProvider>
