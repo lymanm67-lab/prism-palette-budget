@@ -3,6 +3,7 @@ import {
   PiggyBank, Target, Bell, ScanSearch,
   TrendingUp, LineChart, CreditCard, FileText,
   LayoutDashboard, DollarSign, PieChart, Briefcase,
+  FileUp, Camera,
 } from 'lucide-react';
 
 const GROUPS = [
@@ -12,8 +13,8 @@ const GROUPS = [
     features: [
       { icon: PiggyBank, name: 'Zero-sum budgeting & savings goals' },
       { icon: Target, name: 'Spending categories & monthly planning' },
-      { icon: Bell, name: 'Alerts, reminders & subscription detection' },
-      { icon: ScanSearch, name: 'Recurring expense awareness' },
+      { icon: FileUp, name: 'Paycheck stub upload → auto-fill budgets' },
+      { icon: Camera, name: 'Scan bills & receipts to categorize instantly' },
     ],
   },
   {

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { LayoutDashboard, Eye, Lightbulb, Briefcase, ShieldCheck, BadgeDollarSign } from 'lucide-react';
+import { LayoutDashboard, Eye, Lightbulb, Briefcase, ShieldCheck, BadgeDollarSign, Camera } from 'lucide-react';
 
 const BENEFITS = [
   { icon: LayoutDashboard, title: 'All-in-one financial command center', desc: 'Budgeting, subscriptions, forecasting, net worth, and planning — one place.' },
@@ -8,6 +8,7 @@ const BENEFITS = [
   { icon: Briefcase, title: 'Personal & business in one ecosystem', desc: 'Stop juggling disconnected tools for your money.' },
   { icon: ShieldCheck, title: 'Less stress around bills & taxes', desc: 'Stay organized year-round so nothing sneaks up on you.' },
   { icon: BadgeDollarSign, title: 'AI monthly audit & reconciliation', desc: 'Automatically catches duplicates, missing categories, balance errors, and tax-readiness gaps every month.' },
+  { icon: Camera, title: 'Smart document scanning', desc: 'Upload a paycheck stub or scan a bill — PrismMoney™ auto-fills your categories, deductions, and budgets.' },
 ];
 
 const BenefitsSection = () => (
