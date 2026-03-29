@@ -1393,6 +1393,13 @@ const Budgets = () => {
                       {renderSection('income', personalGroupedBudgets.income)}
                     </CardContent>
                   </Card>
+                  {personalGroupedBudgets.payroll_deduction.length > 0 && (
+                    <Card className="overflow-hidden">
+                      <CardContent className="p-2">
+                        {renderSection('payroll_deduction', personalGroupedBudgets.payroll_deduction)}
+                      </CardContent>
+                    </Card>
+                  )}
                   <Card className="overflow-hidden">
                     <CardContent className="p-2 space-y-1">
                       <div className="sm:hidden px-3 py-1.5 text-xs font-medium text-muted-foreground border-b">Expenses</div>
