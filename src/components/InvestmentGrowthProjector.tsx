@@ -458,18 +458,80 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
         )}
       </Card>
 
-      {/* Summary Cards */}
+      {/* Summary Cards — Nominal */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        {Object.entries(finalValues).map(([label, value]) => (
-          <Card key={label} className="border-l-4" style={{ borderLeftColor: scenarioColors[label as keyof typeof scenarioColors] }}>
-            <CardContent className="p-3">
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{label} ROI — Year {horizon}</p>
-              <p className="text-lg font-bold tabular-nums mt-1">{formatCompact(value)}</p>
-              <p className="text-xs text-muted-foreground tabular-nums">{formatCurrency(value)}</p>
-            </CardContent>
-          </Card>
-        ))}
+        {Object.entries(finalValues).map(([label, value]) => {
+          const realVal = scenarios[label as keyof typeof scenarios]?.[horizon - 1]?.realBalance || 0;
+          const afterTax = realVal * (1 - tax / 100);
+          return (
+            <Card key={label} className="border-l-4" style={{ borderLeftColor: scenarioColors[label as keyof typeof scenarioColors] }}>
+              <CardContent className="p-3">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{label} ROI — Year {horizon}</p>
+                <p className="text-lg font-bold tabular-nums mt-1">{formatCompact(value)}</p>
+                <p className="text-xs text-muted-foreground tabular-nums">{formatCurrency(value)}</p>
+                <div className="mt-2 pt-2 border-t border-border/50">
+                  <p className="text-[10px] text-muted-foreground">Real (inflation-adj)</p>
+                  <p className="text-sm font-semibold tabular-nums">{formatCompact(realVal)}</p>
+                  <p className="text-[10px] text-muted-foreground">After {tax}% Tax</p>
+                  <p className="text-sm font-semibold tabular-nums">{formatCompact(afterTax)}</p>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
+
+      {/* Real Wealth & Social Security Impact */}
+      <Card className="border-2 border-accent/20">
+        <CardHeader className="pb-3">
+          <CardTitle className="font-display text-base flex items-center gap-2">
+            <Target className="h-4 w-4 text-primary" />
+            Real Wealth Projection (Inflation + Tax + Social Security)
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {Object.entries(scenarios).map(([label, rows]) => {
+              const finalReal = rows[horizon - 1]?.realBalance || 0;
+              const afterTax = finalReal * (1 - tax / 100);
+              const ssAnnualReal = ssMonthly * 12; // SS is already in today's dollars (COLA-adjusted)
+              const withdrawalRate4Pct = afterTax * 0.04;
+              const totalRetirementIncome = withdrawalRate4Pct + ssAnnualReal;
+              const monthlyRetirement = totalRetirementIncome / 12;
+
+              return (
+                <div key={label} className="p-3 rounded-lg bg-muted/30 space-y-2">
+                  <p className="text-xs font-semibold">{label} ROI</p>
+                  <div>
+                    <p className="text-[10px] text-muted-foreground">After-Tax Portfolio (Real)</p>
+                    <p className="text-base font-bold tabular-nums">{formatCompact(afterTax)}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-foreground">4% Withdrawal / yr</p>
+                    <p className="text-sm font-semibold tabular-nums">{formatCurrency(withdrawalRate4Pct)}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-foreground">+ Social Security / yr</p>
+                    <p className="text-sm font-semibold tabular-nums">{formatCurrency(ssAnnualReal)}</p>
+                  </div>
+                  <div className="pt-2 border-t border-border/50">
+                    <p className="text-[10px] text-muted-foreground font-semibold">Total Retirement Income</p>
+                    <p className="text-lg font-bold tabular-nums text-primary">{formatCurrency(totalRetirementIncome)}/yr</p>
+                    <p className="text-xs text-muted-foreground">{formatCurrency(monthlyRetirement)}/mo (today's dollars)</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="mt-4 p-3 rounded-lg bg-muted/20 text-xs text-muted-foreground space-y-1">
+            <p><span className="font-semibold text-foreground">Assumptions:</span></p>
+            <p>• Inflation: {inflation}% annual — erodes purchasing power over {horizon} years by {((1 - 1 / Math.pow(1 + inflation / 100, horizon)) * 100).toFixed(0)}%</p>
+            <p>• Tax Rate: {tax}% effective rate applied to portfolio withdrawals in retirement</p>
+            <p>• Social Security: ${ssMonthly.toLocaleString()}/mo estimated benefit (COLA-adjusted, shown in today's dollars)</p>
+            <p>• 4% Rule: Withdraw 4% of after-tax portfolio annually for sustainable 30-year retirement spending</p>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Current Contributions Summary */}
       <Card>
