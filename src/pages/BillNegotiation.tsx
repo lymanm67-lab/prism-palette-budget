@@ -68,14 +68,19 @@ const BillNegotiation = () => {
     }
   };
 
-  // Use only subscriptions for the monthly spend — recurring transactions
-  // are already captured as subscriptions when detected, so combining both
-  // would double-count.
-  const activeSubs = (subscriptions || []).filter((s: any) => s.is_active);
-  const totalMonthlyBills = activeSubs
+  // Filter out non-subscription items (same logic as Subscriptions page)
+  const NON_SUB_KEYWORDS = ['rent', 'mortgage', 'insurance', 'utilit', 'electric', 'gas', 'water', 'sewer', 'trash', 'debt', 'loan', 'transfer', 'payment'];
+  const isNonSubscription = (sub: any) => {
+    const merchant = (sub.merchant || '').toLowerCase();
+    return NON_SUB_KEYWORDS.some(kw => merchant.includes(kw));
+  };
+
+  const allActiveSubs = (subscriptions || []).filter((s: any) => s.is_active);
+  const trueSubs = allActiveSubs.filter((s: any) => !isNonSubscription(s));
+  const totalMonthlyBills = trueSubs
     .reduce((sum: number, s: any) => sum + toMonthly(s.average_amount, s.frequency), 0);
 
-  const billCount = activeSubs.length;
+  const billCount = trueSubs.length;
 
   // Use the sum of individual recommendation savings (more transparent than AI's total)
   const validatedSavings = analysis
