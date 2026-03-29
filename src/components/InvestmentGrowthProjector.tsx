@@ -251,27 +251,31 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
   const pBoostAmt = parseFloat(periodicBoostAmount) || 0;
   const pBoostInterval = parseInt(periodicBoostInterval) || 0;
   const spousePension = parseFloat(spousePensionMonthly) || 0;
+  const debtMonthly = parseFloat(debtPaymentMonthly) || 0;
+  const debtYear = parseInt(debtPayoffYear) || 0;
+  const debtPct = parseFloat(debtRedirectPercent) || 0;
+  const debtRedirectMonthly = debtMonthly * (debtPct / 100);
 
   // Compute scenarios for each view
   const scenariosCombined = useMemo(() => ({
-    '8%': computeProjection(start, baseAnnual, horizon, 8, schedules, boostYear, boostAmt, false, inflation, pBoostAmt, pBoostInterval),
-    '10%': computeProjection(start, baseAnnual, horizon, 10, schedules, boostYear, boostAmt, false, inflation, pBoostAmt, pBoostInterval),
-    '12%': computeProjection(start, baseAnnual, horizon, 12, schedules, boostYear, boostAmt, false, inflation, pBoostAmt, pBoostInterval),
-    'Mixed': computeProjection(start, baseAnnual, horizon, 0, schedules, boostYear, boostAmt, true, inflation, pBoostAmt, pBoostInterval),
-  }), [start, baseAnnual, horizon, schedules, boostYear, boostAmt, inflation, pBoostAmt, pBoostInterval]);
+    '8%': computeProjection(start, baseAnnual, horizon, 8, schedules, boostYear, boostAmt, false, inflation, pBoostAmt, pBoostInterval, debtRedirectMonthly, debtYear),
+    '10%': computeProjection(start, baseAnnual, horizon, 10, schedules, boostYear, boostAmt, false, inflation, pBoostAmt, pBoostInterval, debtRedirectMonthly, debtYear),
+    '12%': computeProjection(start, baseAnnual, horizon, 12, schedules, boostYear, boostAmt, false, inflation, pBoostAmt, pBoostInterval, debtRedirectMonthly, debtYear),
+    'Mixed': computeProjection(start, baseAnnual, horizon, 0, schedules, boostYear, boostAmt, true, inflation, pBoostAmt, pBoostInterval, debtRedirectMonthly, debtYear),
+  }), [start, baseAnnual, horizon, schedules, boostYear, boostAmt, inflation, pBoostAmt, pBoostInterval, debtRedirectMonthly, debtYear]);
 
   const scenariosYours = useMemo(() => ({
-    '8%': computeProjection(yourStart, yourAnnual, horizon, 8, schedules, boostYear, boostAmt, false, inflation, pBoostAmt, pBoostInterval),
-    '10%': computeProjection(yourStart, yourAnnual, horizon, 10, schedules, boostYear, boostAmt, false, inflation, pBoostAmt, pBoostInterval),
-    '12%': computeProjection(yourStart, yourAnnual, horizon, 12, schedules, boostYear, boostAmt, false, inflation, pBoostAmt, pBoostInterval),
-    'Mixed': computeProjection(yourStart, yourAnnual, horizon, 0, schedules, boostYear, boostAmt, true, inflation, pBoostAmt, pBoostInterval),
-  }), [yourStart, yourAnnual, horizon, schedules, boostYear, boostAmt, inflation, pBoostAmt, pBoostInterval]);
+    '8%': computeProjection(yourStart, yourAnnual, horizon, 8, schedules, boostYear, boostAmt, false, inflation, pBoostAmt, pBoostInterval, debtRedirectMonthly, debtYear),
+    '10%': computeProjection(yourStart, yourAnnual, horizon, 10, schedules, boostYear, boostAmt, false, inflation, pBoostAmt, pBoostInterval, debtRedirectMonthly, debtYear),
+    '12%': computeProjection(yourStart, yourAnnual, horizon, 12, schedules, boostYear, boostAmt, false, inflation, pBoostAmt, pBoostInterval, debtRedirectMonthly, debtYear),
+    'Mixed': computeProjection(yourStart, yourAnnual, horizon, 0, schedules, boostYear, boostAmt, true, inflation, pBoostAmt, pBoostInterval, debtRedirectMonthly, debtYear),
+  }), [yourStart, yourAnnual, horizon, schedules, boostYear, boostAmt, inflation, pBoostAmt, pBoostInterval, debtRedirectMonthly, debtYear]);
 
   const scenariosSpouse = useMemo(() => ({
-    '8%': computeProjection(wifeStart, wifeAnnual, horizon, 8, schedules, 0, 0, false, inflation, 0, 0),
-    '10%': computeProjection(wifeStart, wifeAnnual, horizon, 10, schedules, 0, 0, false, inflation, 0, 0),
-    '12%': computeProjection(wifeStart, wifeAnnual, horizon, 12, schedules, 0, 0, false, inflation, 0, 0),
-    'Mixed': computeProjection(wifeStart, wifeAnnual, horizon, 0, schedules, 0, 0, true, inflation, 0, 0),
+    '8%': computeProjection(wifeStart, wifeAnnual, horizon, 8, schedules, 0, 0, false, inflation, 0, 0, 0, 0),
+    '10%': computeProjection(wifeStart, wifeAnnual, horizon, 10, schedules, 0, 0, false, inflation, 0, 0, 0, 0),
+    '12%': computeProjection(wifeStart, wifeAnnual, horizon, 12, schedules, 0, 0, false, inflation, 0, 0, 0, 0),
+    'Mixed': computeProjection(wifeStart, wifeAnnual, horizon, 0, schedules, 0, 0, true, inflation, 0, 0, 0, 0),
   }), [wifeStart, wifeAnnual, horizon, schedules, inflation]);
 
   const scenarios = viewMode === 'yours' ? scenariosYours : viewMode === 'spouse' ? scenariosSpouse : scenariosCombined;
