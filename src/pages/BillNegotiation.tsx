@@ -125,12 +125,12 @@ const BillNegotiation = () => {
         </Card>
         <Card className="p-4">
           <p className="text-xs text-muted-foreground">Monthly Spend</p>
-          <p className="text-2xl font-bold text-primary">${totalMonthlyBills.toFixed(0)}</p>
+          <p className="text-2xl font-bold text-primary">${totalMonthlyBills.toFixed(2)}</p>
         </Card>
         <Card className="p-4">
           <p className="text-xs text-muted-foreground">Potential Savings</p>
           <p className="text-2xl font-bold text-emerald-600">
-            {analysis ? `$${analysis.total_potential_monthly_savings.toFixed(0)}/mo` : '—'}
+            {analysis ? `$${analysis.total_potential_monthly_savings.toFixed(2)}/mo` : '—'}
           </p>
         </Card>
       </div>
@@ -149,7 +149,7 @@ const BillNegotiation = () => {
               <BadgeDollarSign className="h-12 w-12 mx-auto text-primary/40 mb-4" />
               <h3 className="font-semibold text-lg mb-2">Ready to Find Savings?</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                AI will analyze your {billCount} active bill{billCount !== 1 ? 's' : ''} totaling ${totalMonthlyBills.toFixed(0)}/mo
+                AI will analyze your {billCount} active bill{billCount !== 1 ? 's' : ''} totaling ${totalMonthlyBills.toFixed(2)}/mo
                 and identify negotiation, switching, and cancellation opportunities.
               </p>
               <Button onClick={runAnalysis} disabled={analyzing} size="lg">
