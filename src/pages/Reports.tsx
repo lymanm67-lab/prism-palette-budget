@@ -828,6 +828,11 @@ const Reports = () => {
         <TabsContent value="payroll">
           <PayrollReportTab budgetMonth={budgetMonth} />
         </TabsContent>
+
+        {/* ==================== INVESTMENT GROWTH ==================== */}
+        <TabsContent value="investment-growth">
+          <InvestmentGrowthProjector budgetMonth={budgetMonth} />
+        </TabsContent>
         </div>
       </Tabs>
       )}
