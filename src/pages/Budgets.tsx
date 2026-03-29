@@ -40,10 +40,11 @@ const formatMonth = (monthStr: string) => {
   return new Date(+y, +m - 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 };
 
-type ExpenseType = 'income' | 'fixed' | 'flexible' | 'non_monthly';
+type ExpenseType = 'income' | 'fixed' | 'flexible' | 'non_monthly' | 'payroll_deduction';
 
 const EXPENSE_TYPE_LABELS: Record<ExpenseType, string> = {
   income: 'Income',
+  payroll_deduction: 'Payroll & Pre-Tax Deductions',
   fixed: 'Fixed',
   flexible: 'Flexible',
   non_monthly: 'Non-Monthly',
@@ -51,6 +52,7 @@ const EXPENSE_TYPE_LABELS: Record<ExpenseType, string> = {
 
 const EXPENSE_TYPE_COLORS: Record<ExpenseType, string> = {
   income: 'text-emerald-600 dark:text-emerald-400',
+  payroll_deduction: 'text-sky-600 dark:text-sky-400',
   fixed: 'text-primary',
   flexible: 'text-amber-600 dark:text-amber-400',
   non_monthly: 'text-purple-600 dark:text-purple-400',
@@ -58,9 +60,17 @@ const EXPENSE_TYPE_COLORS: Record<ExpenseType, string> = {
 
 const BAR_COLORS: Record<ExpenseType, string> = {
   income: 'bg-emerald-500',
+  payroll_deduction: 'bg-sky-500',
   fixed: 'bg-primary',
   flexible: 'bg-amber-500',
   non_monthly: 'bg-purple-500',
+};
+
+// Conscious Spending Plan benchmark percentages (of net income)
+const BENCHMARK_RANGES: Partial<Record<ExpenseType, { min: number; max: number; label: string }>> = {
+  fixed: { min: 50, max: 60, label: '50-60%' },
+  flexible: { min: 20, max: 35, label: '20-35%' },
+  non_monthly: { min: 5, max: 10, label: '5-10%' },
 };
 
 interface BudgetRow {
