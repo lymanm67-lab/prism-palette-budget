@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
           secret: PLAID_SECRET,
           user: { client_user_id: userId },
           client_name: 'PrismMoney',
-          products: ['transactions'],
+          products: ['transactions', 'liabilities'],
           country_codes: ['US'],
           language: 'en',
         }),
@@ -514,6 +514,158 @@ Deno.serve(async (req) => {
         .eq('household_id', household_id);
 
       return new Response(JSON.stringify({ success: true }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // ── Sync Liabilities ──
+    if (action === 'sync-liabilities' && req.method === 'POST') {
+      const { household_id } = await req.json();
+
+      // Verify membership
+      const { data: membership } = await supabase
+        .from('household_members')
+        .select('id')
+        .eq('household_id', household_id)
+        .eq('user_id', userId)
+        .single();
+      if (!membership) {
+        return new Response(JSON.stringify({ error: 'Forbidden' }), {
+          status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      const serviceSupabase = createClient(
+        Deno.env.get('SUPABASE_URL')!,
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+      );
+
+      // Get all plaid items
+      const { data: plaidItems } = await serviceSupabase
+        .from('plaid_items')
+        .select('id, plaid_access_token, institution_name')
+        .eq('household_id', household_id)
+        .eq('status', 'active');
+
+      if (!plaidItems?.length) {
+        return new Response(JSON.stringify({ error: 'No connected bank accounts found.' }), {
+          status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      let totalSynced = 0;
+      const allLiabilities: any[] = [];
+
+      for (const item of plaidItems) {
+        try {
+          const liabResponse = await fetch(`${PLAID_BASE_URL}/liabilities/get`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              client_id: PLAID_CLIENT_ID,
+              secret: PLAID_SECRET,
+              access_token: item.plaid_access_token,
+            }),
+          });
+
+          if (!liabResponse.ok) {
+            console.warn(`Liabilities not available for item ${item.id}:`, liabResponse.status);
+            continue;
+          }
+
+          const liabData = await liabResponse.json();
+          const credit = liabData.liabilities?.credit || [];
+          const student = liabData.liabilities?.student || [];
+          const mortgage = liabData.liabilities?.mortgage || [];
+
+          // Map credit cards
+          for (const cc of credit) {
+            const acctName = cc.unofficial_name || cc.official_name || `${item.institution_name || 'Unknown'} Credit Card`;
+            allLiabilities.push({
+              household_id,
+              account_name: acctName,
+              account_type: 'Revolving',
+              account_status: cc.is_overdue ? 'Late' : 'Open',
+              balance: cc.last_statement_balance || cc.last_payment_amount || 0,
+              credit_limit: cc.credit_limit || null,
+              monthly_payment: cc.minimum_payment_amount || cc.last_payment_amount || null,
+              date_opened: null,
+              bureau: 'Plaid',
+              account_number: cc.account_id ? `****${cc.account_id.slice(-4)}` : null,
+              payment_history: cc.is_overdue ? 'Late payments detected' : 'Current',
+              notes: `Synced from ${item.institution_name || 'connected bank'} via Plaid`,
+              responsibility: 'Individual',
+            });
+          }
+
+          // Map student loans
+          for (const sl of student) {
+            allLiabilities.push({
+              household_id,
+              account_name: sl.loan_name || `${item.institution_name || 'Unknown'} Student Loan`,
+              account_type: 'Installment',
+              account_status: sl.loan_status?.type === 'repayment' ? 'Open' : (sl.loan_status?.type || 'Open'),
+              balance: sl.outstanding_interest_amount != null ? (Number(sl.outstanding_interest_amount) + Number(sl.last_payment_amount || 0)) : 0,
+              credit_limit: sl.origination_principal_amount || null,
+              monthly_payment: sl.minimum_payment_amount || sl.last_payment_amount || null,
+              date_opened: sl.origination_date || null,
+              bureau: 'Plaid',
+              account_number: sl.account_id ? `****${sl.account_id.slice(-4)}` : null,
+              payment_history: sl.is_overdue ? 'Late payments detected' : 'Current',
+              notes: `Synced from ${item.institution_name || 'connected bank'} via Plaid`,
+              responsibility: 'Individual',
+            });
+          }
+
+          // Map mortgages
+          for (const mg of mortgage) {
+            allLiabilities.push({
+              household_id,
+              account_name: mg.loan_type_description || `${item.institution_name || 'Unknown'} Mortgage`,
+              account_type: 'Mortgage',
+              account_status: mg.past_due_amount > 0 ? 'Late' : 'Open',
+              balance: mg.outstanding_principal_amount || mg.last_payment_amount || 0,
+              credit_limit: mg.origination_principal_amount || null,
+              monthly_payment: mg.last_payment_amount || null,
+              date_opened: mg.origination_date || null,
+              bureau: 'Plaid',
+              account_number: mg.account_number ? `****${mg.account_number.slice(-4)}` : null,
+              payment_history: mg.past_due_amount > 0 ? 'Late payments detected' : 'Current',
+              notes: `Synced from ${item.institution_name || 'connected bank'} via Plaid`,
+              responsibility: 'Individual',
+            });
+          }
+        } catch (e) {
+          console.error(`Error fetching liabilities for item ${item.id}:`, e);
+        }
+      }
+
+      // Clear existing Plaid-synced credit accounts and insert fresh
+      if (allLiabilities.length > 0) {
+        await serviceSupabase
+          .from('credit_accounts')
+          .delete()
+          .eq('household_id', household_id)
+          .eq('bureau', 'Plaid');
+
+        const { error: insertErr } = await serviceSupabase
+          .from('credit_accounts')
+          .insert(allLiabilities);
+
+        if (insertErr) {
+          console.error('Error inserting liabilities:', insertErr);
+        } else {
+          totalSynced = allLiabilities.length;
+        }
+      }
+
+      return new Response(JSON.stringify({
+        success: true,
+        accounts_synced: totalSynced,
+        credit_cards: allLiabilities.filter(a => a.account_type === 'Revolving').length,
+        student_loans: allLiabilities.filter(a => a.account_type === 'Installment').length,
+        mortgages: allLiabilities.filter(a => a.account_type === 'Mortgage').length,
+      }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
