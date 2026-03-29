@@ -134,7 +134,7 @@ const Budgets = () => {
     setSelectedBudgetIds(new Set());
   }, [selectedBudgetIds, deleteBudget]);
   const [copyingForward, setCopyingForward] = useState(false);
-  const [openSections, setOpenSections] = useState<Record<string, boolean>>({ income: true, fixed: true, flexible: true, non_monthly: true });
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({ income: true, payroll_deduction: true, fixed: true, flexible: true, non_monthly: true });
   const [viewTab, setViewTab] = useState<'budget' | 'forecast'>('budget');
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [quickAddForm, setQuickAddForm] = useState({ name: '', group_id: '', color: '#7c5cf5' });
@@ -363,11 +363,12 @@ const Budgets = () => {
   const totalIncomeActual = sectionTotals.income.actual;
   const totalIncomeRemaining = sectionTotals.income.remaining;
 
-  const totalExpenseBudget = sectionTotals.fixed.budget + sectionTotals.flexible.budget + sectionTotals.non_monthly.budget;
-  const totalExpenseActual = sectionTotals.fixed.actual + sectionTotals.flexible.actual + sectionTotals.non_monthly.actual;
+  const totalExpenseBudget = sectionTotals.payroll_deduction.budget + sectionTotals.fixed.budget + sectionTotals.flexible.budget + sectionTotals.non_monthly.budget;
+  const totalExpenseActual = sectionTotals.payroll_deduction.actual + sectionTotals.fixed.actual + sectionTotals.flexible.actual + sectionTotals.non_monthly.actual;
   const totalExpenseRemaining = totalExpenseBudget - totalExpenseActual;
 
-  const unallocated = totalIncomeBudget - totalExpenseBudget;
+  // Gross income = net income + payroll deductions
+  const grossIncomeBudget = totalIncomeBudget + sectionTotals.payroll_deduction.budget;
 
   // Unbudgeted categories
   const budgetedCategoryIds = new Set(budgetItems.map(b => b.category_id));
