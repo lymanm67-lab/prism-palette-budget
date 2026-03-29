@@ -101,7 +101,7 @@ const Budgets = () => {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState<{ category_id: string; planned_amount: string; rollover: boolean } | null>(null);
-  const [form, setForm] = useState({ category_id: '', planned_amount: '', rollover: false, budgetKind: 'expense' as 'income' | 'expense' | 'equity', group_id: '', expense_type: 'flexible' as 'fixed' | 'flexible' | 'non_monthly' });
+  const [form, setForm] = useState({ category_id: '', planned_amount: '', rollover: false, budgetKind: 'expense' as 'income' | 'expense' | 'equity', group_id: '', expense_type: 'flexible' as 'fixed' | 'flexible' | 'non_monthly' | 'payroll_deduction' });
   const [auditOpen, setAuditOpen] = useState(false);
   const [auditResult, setAuditResult] = useState<string>('');
   const [auditLoading, setAuditLoading] = useState(false);
