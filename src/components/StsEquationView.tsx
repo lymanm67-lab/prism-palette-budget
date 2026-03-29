@@ -16,14 +16,12 @@ export function StsEquationView({ scope = 'combined' }: { scope?: StsScope }) {
   if (sts.isLoading) return null;
 
   const config = MODE_CONFIG[sts.mode];
-  const baseAmount = sts.monthlyIncome - sts.monthlyObligations - sts.monthlySubscriptions;
-  const alreadySpent = baseAmount - (sts.monthly / (1 - sts.bufferPercent / 100));
-  const bufferAmount = Math.max(0, (sts.monthlyIncome - sts.monthlyObligations - sts.monthlySubscriptions - Math.max(0, -alreadySpent)) * (sts.bufferPercent / 100));
+  const baseMonthlySafe = sts.monthlyIncome - sts.effectiveExpenses;
+  const bufferAmount = Math.max(0, baseMonthlySafe * (sts.bufferPercent / 100));
 
   const steps = [
     { label: 'Monthly Income', value: sts.monthlyIncome, color: 'text-prism-teal', prefix: '' },
-    { label: 'Recurring Bills', value: sts.monthlyObligations, color: 'text-prism-rose', prefix: '−' },
-    { label: 'Subscriptions', value: sts.monthlySubscriptions, color: 'text-prism-orange', prefix: '−' },
+    { label: 'Budget Expenses', value: sts.effectiveExpenses, color: 'text-prism-rose', prefix: '−' },
     { label: `Safety Buffer (${sts.bufferPercent}%)`, value: bufferAmount, color: 'text-prism-sky', prefix: '−' },
   ];
 
@@ -40,7 +38,7 @@ export function StsEquationView({ scope = 'combined' }: { scope?: StsScope }) {
             </div>
             <div className="text-left">
               <p className="text-sm font-semibold">How your Safe-to-Spend is calculated</p>
-              <p className="text-[10px] text-muted-foreground">Income − Bills − Subs × (1 − Buffer%)</p>
+              <p className="text-[10px] text-muted-foreground">Income − Expenses × (1 − Buffer%)</p>
             </div>
           </div>
           {expanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
