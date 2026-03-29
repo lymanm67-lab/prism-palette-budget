@@ -101,6 +101,31 @@ const CreditOverview = () => {
           { label: 'Total Accounts', weight: '8%', score: totalAcctsScore, icon: totalAcctsScore >= 70 ? TrendingUp : totalAcctsScore >= 40 ? Minus : TrendingDown },
         ];
 
+        // Per-bureau scores
+        const computeBureauScore = (bureauAccts: typeof accounts) => {
+          if (bureauAccts.length === 0) return 0;
+          const bRevolving = bureauAccts.filter(a => a.account_type === 'Revolving');
+          const bBalance = bRevolving.reduce((s, a) => s + Number(a.balance), 0);
+          const bLimit = bRevolving.reduce((s, a) => s + Number(a.credit_limit || 0), 0);
+          const bUtil = bLimit > 0 ? (bBalance / bLimit) * 100 : 0;
+          const bNeg = bureauAccts.filter(a => ['Collection', 'Charge-Off', 'Foreclosure', 'Repossession'].includes(a.account_status)).length;
+          const bOpen = bureauAccts.filter(a => a.account_status.toLowerCase() === 'open');
+          const bWithDates = bureauAccts.filter(a => a.date_opened);
+          const bAvgAge = bWithDates.length ? bWithDates.reduce((sum, a) => sum + ((Date.now() - new Date(a.date_opened!).getTime()) / (1000 * 60 * 60 * 24 * 30)), 0) / bWithDates.length : 0;
+          const bTypes = new Set(bureauAccts.map(a => a.account_type));
+          const uS = bUtil <= 10 ? 100 : bUtil <= 30 ? 80 : bUtil <= 50 ? 55 : bUtil <= 75 ? 30 : 10;
+          const nS = bNeg === 0 ? 100 : bNeg <= 2 ? 40 : 15;
+          const aS = bAvgAge >= 84 ? 100 : bAvgAge >= 48 ? 75 : bAvgAge >= 24 ? 55 : bAvgAge >= 12 ? 35 : 20;
+          const mS = bTypes.size >= 4 ? 100 : bTypes.size >= 3 ? 75 : bTypes.size >= 2 ? 50 : 30;
+          const tS = bOpen.length >= 10 ? 100 : bOpen.length >= 5 ? 75 : bOpen.length >= 3 ? 50 : 30;
+          return Math.min(850, Math.max(300, Math.round(300 + (550 * (uS * 0.20 + nS * 0.28 + aS * 0.13 + mS * 0.11 + tS * 0.08 + 100 * 0.20) / 100))));
+        };
+
+        const bureauScores = (['Equifax', 'Experian', 'TransUnion'] as const).map(bureau => {
+          const ba = accounts.filter(a => a.bureau === bureau);
+          return { bureau, score: computeBureauScore(ba), count: ba.length };
+        });
+
         return (
           <div className="grid gap-4 lg:grid-cols-3">
             {/* VantageScore Card */}
@@ -137,6 +162,20 @@ const CreditOverview = () => {
                     </div>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">Range: 300 – 850</p>
+                </div>
+
+                {/* Per-Bureau Scores */}
+                <div className="grid grid-cols-3 gap-2 pt-3 border-t border-border/50">
+                  {bureauScores.map(b => {
+                    const color = b.score === 0 ? 'text-muted-foreground' : b.score >= 670 ? 'text-emerald-600' : b.score >= 580 ? 'text-amber-600' : 'text-destructive';
+                    return (
+                      <div key={b.bureau} className="text-center space-y-0.5">
+                        <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{b.bureau}</p>
+                        <p className={`text-base font-bold ${color}`}>{b.score > 0 ? b.score : '—'}</p>
+                        <p className="text-[10px] text-muted-foreground">{b.count} acct{b.count !== 1 ? 's' : ''}</p>
+                      </div>
+                    );
+                  })}
                 </div>
 
                 <div className="space-y-2">
