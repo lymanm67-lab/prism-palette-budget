@@ -172,9 +172,11 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
   }, [budgets, categories, categoryGroups]);
 
   // Plan state
-  const [planName, setPlanName] = useState('My 35-Year Investment Plan');
-  // National-average fallback defaults (overwritten once user's payroll data loads)
-  const [startingBalance, setStartingBalance] = useState('165000');
+  const [planName, setPlanName] = useState('Household 25-Year Investment Plan');
+  // Your portfolio + spouse portfolio combined
+  const [startingBalance, setStartingBalance] = useState('473059');
+  const [spousePortfolio, setSpousePortfolio] = useState('308059');
+  const [spouseAnnualContrib, setSpouseAnnualContrib] = useState('10181');
   const [monthlyContrib, setMonthlyContrib] = useState(() =>
     currentContribs.employee > 0 ? currentContribs.employee.toFixed(0) : '575'
   );
