@@ -17,8 +17,8 @@ import TimelinePreview from '@/components/credit-health/TimelinePreview';
 import { useCreditAccounts } from '@/hooks/use-credit-accounts';
 import { useDisputes } from '@/hooks/use-disputes';
 
-const stagger = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.08 } } };
-const fadeUp = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } } };
+const stagger = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.08 } } } as const;
+const fadeUp = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 300, damping: 24 } } } as const;
 
 const CreditHealthDashboard = () => {
   const navigate = useNavigate();
