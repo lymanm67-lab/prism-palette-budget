@@ -56,13 +56,26 @@ const BillNegotiation = () => {
   const [analyzing, setAnalyzing] = useState(false);
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
 
-  const totalMonthlyBills = [
-    ...(subscriptions || []).filter((s: any) => s.is_active).map((s: any) => s.average_amount),
-    ...(recurring || []).filter((r: any) => r.is_active).map((r: any) => Math.abs(r.amount)),
-  ].reduce((s, a) => s + a, 0);
+  // Normalize subscription amounts to monthly
+  const toMonthly = (amount: number, frequency: string) => {
+    switch (frequency) {
+      case 'weekly': return amount * 4.33;
+      case 'biweekly': return amount * 2.17;
+      case 'quarterly': return amount / 3;
+      case 'semi-annual': return amount / 6;
+      case 'annual': case 'yearly': return amount / 12;
+      default: return amount; // monthly
+    }
+  };
 
-  const billCount = (subscriptions || []).filter((s: any) => s.is_active).length +
-    (recurring || []).filter((r: any) => r.is_active).length;
+  // Use only subscriptions for the monthly spend — recurring transactions
+  // are already captured as subscriptions when detected, so combining both
+  // would double-count.
+  const activeSubs = (subscriptions || []).filter((s: any) => s.is_active);
+  const totalMonthlyBills = activeSubs
+    .reduce((sum: number, s: any) => sum + toMonthly(s.average_amount, s.frequency), 0);
+
+  const billCount = activeSubs.length;
 
   const runAnalysis = async () => {
     setAnalyzing(true);
