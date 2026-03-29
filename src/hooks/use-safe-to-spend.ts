@@ -54,6 +54,7 @@ export function useSafeToSpend(): SafeToSpendResult {
     // Calculate budget-based income and expenses (personal only, matching Subscriptions page logic)
     let budgetIncome = 0;
     let budgetExpenses = 0;
+    console.log('[STS] budgetsWithGroups count:', (budgetsWithGroups || []).length, 'sample:', budgetsWithGroups?.[0]);
     for (const b of (budgetsWithGroups || [])) {
       const group = b.categories?.category_groups;
       const isBusiness = group?.budget_type === 'business' || !!group?.business_profile_id;
@@ -79,6 +80,7 @@ export function useSafeToSpend(): SafeToSpendResult {
 
     // Use higher of budget income vs actual transaction income
     const effectiveIncome = Math.max(monthlyIncome, budgetIncome);
+    console.log('[STS] budgetIncome:', budgetIncome, 'budgetExpenses:', budgetExpenses, 'txnIncome:', monthlyIncome, 'effectiveIncome:', effectiveIncome);
 
     // Monthly obligations from recurring transactions (bills) 
     const monthlyObligations = (recurring || [])
