@@ -40,10 +40,11 @@ const formatMonth = (monthStr: string) => {
   return new Date(+y, +m - 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 };
 
-type ExpenseType = 'income' | 'fixed' | 'flexible' | 'non_monthly';
+type ExpenseType = 'income' | 'fixed' | 'flexible' | 'non_monthly' | 'payroll_deduction';
 
 const EXPENSE_TYPE_LABELS: Record<ExpenseType, string> = {
   income: 'Income',
+  payroll_deduction: 'Payroll & Pre-Tax Deductions',
   fixed: 'Fixed',
   flexible: 'Flexible',
   non_monthly: 'Non-Monthly',
@@ -51,6 +52,7 @@ const EXPENSE_TYPE_LABELS: Record<ExpenseType, string> = {
 
 const EXPENSE_TYPE_COLORS: Record<ExpenseType, string> = {
   income: 'text-emerald-600 dark:text-emerald-400',
+  payroll_deduction: 'text-sky-600 dark:text-sky-400',
   fixed: 'text-primary',
   flexible: 'text-amber-600 dark:text-amber-400',
   non_monthly: 'text-purple-600 dark:text-purple-400',
@@ -58,9 +60,17 @@ const EXPENSE_TYPE_COLORS: Record<ExpenseType, string> = {
 
 const BAR_COLORS: Record<ExpenseType, string> = {
   income: 'bg-emerald-500',
+  payroll_deduction: 'bg-sky-500',
   fixed: 'bg-primary',
   flexible: 'bg-amber-500',
   non_monthly: 'bg-purple-500',
+};
+
+// Conscious Spending Plan benchmark percentages (of net income)
+const BENCHMARK_RANGES: Partial<Record<ExpenseType, { min: number; max: number; label: string }>> = {
+  fixed: { min: 50, max: 60, label: '50-60%' },
+  flexible: { min: 20, max: 35, label: '20-35%' },
+  non_monthly: { min: 5, max: 10, label: '5-10%' },
 };
 
 interface BudgetRow {
@@ -91,7 +101,7 @@ const Budgets = () => {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState<{ category_id: string; planned_amount: string; rollover: boolean } | null>(null);
-  const [form, setForm] = useState({ category_id: '', planned_amount: '', rollover: false, budgetKind: 'expense' as 'income' | 'expense' | 'equity', group_id: '', expense_type: 'flexible' as 'fixed' | 'flexible' | 'non_monthly' });
+  const [form, setForm] = useState({ category_id: '', planned_amount: '', rollover: false, budgetKind: 'expense' as 'income' | 'expense' | 'equity', group_id: '', expense_type: 'flexible' as 'fixed' | 'flexible' | 'non_monthly' | 'payroll_deduction' });
   const [auditOpen, setAuditOpen] = useState(false);
   const [auditResult, setAuditResult] = useState<string>('');
   const [auditLoading, setAuditLoading] = useState(false);
@@ -124,7 +134,7 @@ const Budgets = () => {
     setSelectedBudgetIds(new Set());
   }, [selectedBudgetIds, deleteBudget]);
   const [copyingForward, setCopyingForward] = useState(false);
-  const [openSections, setOpenSections] = useState<Record<string, boolean>>({ income: true, fixed: true, flexible: true, non_monthly: true });
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({ income: true, payroll_deduction: true, fixed: true, flexible: true, non_monthly: true });
   const [viewTab, setViewTab] = useState<'budget' | 'forecast'>('budget');
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [quickAddForm, setQuickAddForm] = useState({ name: '', group_id: '', color: '#7c5cf5' });
@@ -269,7 +279,7 @@ const Budgets = () => {
 
   // Group budgets by expense type
   const groupBudgetsByExpenseType = useCallback((items: BudgetRow[]) => {
-    const groups: Record<ExpenseType, BudgetRow[]> = { income: [], fixed: [], flexible: [], non_monthly: [] };
+    const groups: Record<ExpenseType, BudgetRow[]> = { income: [], payroll_deduction: [], fixed: [], flexible: [], non_monthly: [] };
     for (const b of items) {
       if (hideZeroAmounts && b.planned_amount === 0) continue;
       if (hiddenBudgetIds.has(b.id)) continue;
@@ -292,6 +302,7 @@ const Budgets = () => {
   const calcSectionTotals = useCallback((grouped: Record<ExpenseType, BudgetRow[]>) => {
     const totals: Record<ExpenseType, { budget: number; actual: number; remaining: number }> = {
       income: { budget: 0, actual: 0, remaining: 0 },
+      payroll_deduction: { budget: 0, actual: 0, remaining: 0 },
       fixed: { budget: 0, actual: 0, remaining: 0 },
       flexible: { budget: 0, actual: 0, remaining: 0 },
       non_monthly: { budget: 0, actual: 0, remaining: 0 },
@@ -333,7 +344,7 @@ const Budgets = () => {
 
   // Compute all collapsible section keys for expand/collapse all
   const getAllSectionKeys = useCallback(() => {
-    const keys = ['income', 'fixed', 'flexible', 'non_monthly'];
+    const keys = ['income', 'payroll_deduction', 'fixed', 'flexible', 'non_monthly'];
     if (budgetType === 'all') {
       for (const biz of (perBusinessData || [])) {
         const bizKey = biz.name.replace(/\s+/g, '_');
@@ -352,11 +363,16 @@ const Budgets = () => {
   const totalIncomeActual = sectionTotals.income.actual;
   const totalIncomeRemaining = sectionTotals.income.remaining;
 
-  const totalExpenseBudget = sectionTotals.fixed.budget + sectionTotals.flexible.budget + sectionTotals.non_monthly.budget;
-  const totalExpenseActual = sectionTotals.fixed.actual + sectionTotals.flexible.actual + sectionTotals.non_monthly.actual;
+  const totalExpenseBudget = sectionTotals.payroll_deduction.budget + sectionTotals.fixed.budget + sectionTotals.flexible.budget + sectionTotals.non_monthly.budget;
+  const totalExpenseActual = sectionTotals.payroll_deduction.actual + sectionTotals.fixed.actual + sectionTotals.flexible.actual + sectionTotals.non_monthly.actual;
   const totalExpenseRemaining = totalExpenseBudget - totalExpenseActual;
 
-  const unallocated = totalIncomeBudget - totalExpenseBudget;
+  // Gross income = net income + payroll deductions
+  const grossIncomeBudget = totalIncomeBudget + sectionTotals.payroll_deduction.budget;
+
+  // Net expenses exclude payroll deductions for unallocated calc
+  const netExpenseBudget = sectionTotals.fixed.budget + sectionTotals.flexible.budget + sectionTotals.non_monthly.budget;
+  const unallocated = totalIncomeBudget - netExpenseBudget;
 
   // Unbudgeted categories
   const budgetedCategoryIds = new Set(budgetItems.map(b => b.category_id));
@@ -668,15 +684,45 @@ const Budgets = () => {
     const key = sectionKey || type;
     const isOpen = openSections[key] ?? true;
     const isIncome = type === 'income';
+    const isPayroll = type === 'payroll_deduction';
     const pct = totals.budget > 0 ? Math.min((totals.actual / totals.budget) * 100, 100) : 0;
+
+    // Compute percentage of net income for benchmark badge
+    const netIncome = totalIncomeBudget;
+    const pctOfNet = netIncome > 0 ? Math.round((totals.budget / netIncome) * 100) : 0;
+    const benchmark = BENCHMARK_RANGES[type];
+    const benchmarkStatus = benchmark
+      ? pctOfNet <= benchmark.max && pctOfNet >= benchmark.min
+        ? 'good'
+        : pctOfNet < benchmark.min
+        ? 'low'
+        : 'high'
+      : null;
 
     return (
       <Collapsible key={key} open={isOpen} onOpenChange={() => toggleSection(key)}>
         <CollapsibleTrigger asChild>
           <button className="w-full flex items-center gap-2 sm:gap-3 py-3 px-3 hover:bg-muted/30 rounded-lg transition-colors text-left">
             {isOpen ? <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" /> : <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0 rotate-180" />}
-            <span className={cn('flex-1 font-display font-semibold text-sm sm:text-base', EXPENSE_TYPE_COLORS[type])}>
+            <span className={cn('flex-1 font-display font-semibold text-sm sm:text-base flex items-center gap-2', EXPENSE_TYPE_COLORS[type])}>
               {EXPENSE_TYPE_LABELS[type]}
+              {/* Percentage of net income badge */}
+              {!isIncome && netIncome > 0 && totals.budget > 0 && (
+                <span className={cn(
+                  'hidden sm:inline-flex items-center text-[10px] px-1.5 py-0.5 rounded-full font-medium',
+                  benchmarkStatus === 'good' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
+                  benchmarkStatus === 'high' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400' :
+                  benchmarkStatus === 'low' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' :
+                  'bg-muted text-muted-foreground'
+                )}>
+                  {pctOfNet}% of net{benchmark ? ` (target: ${benchmark.label})` : ''}
+                </span>
+              )}
+              {isPayroll && grossIncomeBudget > 0 && totals.budget > 0 && (
+                <span className="hidden sm:inline-flex items-center text-[10px] px-1.5 py-0.5 rounded-full font-medium bg-sky-500/10 text-sky-600 dark:text-sky-400">
+                  {Math.round((totals.budget / grossIncomeBudget) * 100)}% of gross
+                </span>
+              )}
             </span>
             <span className="text-right text-xs sm:text-sm font-semibold tabular-nums sm:w-[90px]">{formatCurrency(totals.budget)}</span>
             <span className="hidden sm:inline-block w-[90px] text-right text-sm tabular-nums text-muted-foreground">{formatCurrency(totals.actual)}</span>
@@ -1347,6 +1393,13 @@ const Budgets = () => {
                       {renderSection('income', personalGroupedBudgets.income)}
                     </CardContent>
                   </Card>
+                  {personalGroupedBudgets.payroll_deduction.length > 0 && (
+                    <Card className="overflow-hidden">
+                      <CardContent className="p-2">
+                        {renderSection('payroll_deduction', personalGroupedBudgets.payroll_deduction)}
+                      </CardContent>
+                    </Card>
+                  )}
                   <Card className="overflow-hidden">
                     <CardContent className="p-2 space-y-1">
                       <div className="sm:hidden px-3 py-1.5 text-xs font-medium text-muted-foreground border-b">Expenses</div>
@@ -1500,7 +1553,24 @@ const Budgets = () => {
                 <div className="hidden sm:block w-[62px]" />
               </div>
 
-              {/* Expenses Section */}
+              {/* Payroll & Pre-Tax Deductions Section */}
+              {groupedBudgets.payroll_deduction.length > 0 && (
+                <>
+                  <Card className="overflow-hidden">
+                    <CardContent className="p-2">
+                      {renderSection('payroll_deduction', groupedBudgets.payroll_deduction)}
+                    </CardContent>
+                  </Card>
+                  {/* Gross → Net breakdown */}
+                  <div className="flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 bg-sky-500/5 rounded-lg text-xs sm:text-sm">
+                    <span className="flex-1 font-medium text-sky-600 dark:text-sky-400">Gross → Net Income</span>
+                    <span className="tabular-nums text-muted-foreground">{formatCurrency(grossIncomeBudget)} gross</span>
+                    <span className="tabular-nums text-muted-foreground">− {formatCurrency(sectionTotals.payroll_deduction.budget)} deductions</span>
+                    <span className="tabular-nums font-semibold">= {formatCurrency(totalIncomeBudget)} net</span>
+                  </div>
+                </>
+              )}
+
               <Card className="overflow-hidden">
                 <CardContent className="p-2 space-y-1">
                   <div className="hidden sm:flex items-center gap-3 px-3 py-1.5 text-xs font-medium text-muted-foreground border-b">
@@ -1598,6 +1668,25 @@ const Budgets = () => {
                   <span className="text-emerald-600 dark:text-emerald-400">{formatCurrency(Math.abs(totalIncomeRemaining))} remaining</span>
                 </div>
               </div>
+              {/* Payroll deductions in summary */}
+              {sectionTotals.payroll_deduction.budget > 0 && (
+                <div>
+                  <div className="flex justify-between text-sm">
+                    <span className="font-medium">Pre-Tax Deductions</span>
+                    <span className="font-semibold">{formatCurrency(sectionTotals.payroll_deduction.budget)} budget</span>
+                  </div>
+                  <div className="mt-1.5 h-2 rounded-full bg-muted overflow-hidden">
+                    <div className="h-full bg-sky-500 rounded-full transition-all" style={{ width: `${sectionTotals.payroll_deduction.budget > 0 ? Math.min((sectionTotals.payroll_deduction.actual / sectionTotals.payroll_deduction.budget) * 100, 100) : 0}%` }} />
+                  </div>
+                  <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                    <span>{formatCurrency(sectionTotals.payroll_deduction.actual)} deducted</span>
+                    <span>{formatCurrency(sectionTotals.payroll_deduction.remaining)} remaining</span>
+                  </div>
+                  <div className="text-[10px] text-sky-600 dark:text-sky-400 mt-1">
+                    {grossIncomeBudget > 0 ? `${Math.round((sectionTotals.payroll_deduction.budget / grossIncomeBudget) * 100)}% of gross income` : ''}
+                  </div>
+                </div>
+              )}
               {(['fixed', 'flexible', 'non_monthly'] as ExpenseType[]).map(type => {
                 const t = sectionTotals[type];
                 const pct = t.budget > 0 ? Math.min((t.actual / t.budget) * 100, 100) : 0;
@@ -1956,9 +2045,10 @@ const Budgets = () => {
             {!editingBudget && form.budgetKind === 'expense' && (
               <div className="space-y-2">
                 <Label>Expense Type</Label>
-                <Select value={form.expense_type} onValueChange={v => setForm(f => ({ ...f, expense_type: v as 'fixed' | 'flexible' | 'non_monthly', group_id: '', category_id: '' }))}>
+                <Select value={form.expense_type} onValueChange={v => setForm(f => ({ ...f, expense_type: v as 'fixed' | 'flexible' | 'non_monthly' | 'payroll_deduction', group_id: '', category_id: '' }))}>
                   <SelectTrigger><SelectValue placeholder="Select expense type" /></SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="payroll_deduction">Payroll & Pre-Tax Deductions</SelectItem>
                     <SelectItem value="fixed">Fixed</SelectItem>
                     <SelectItem value="flexible">Flexible</SelectItem>
                     <SelectItem value="non_monthly">Non-Monthly</SelectItem>
