@@ -179,9 +179,21 @@ export default function PayrollReportTab({ budgetMonth }: PayrollReportTabProps)
 
     // Investment & Savings Analysis
     const retirementItems = deductions.filter(d => d.type === 'retirement');
-    const hsaItems = deductions.filter(d => d.name.toLowerCase().includes('hsa'));
+    let hsaItems = deductions.filter(d => d.name.toLowerCase().includes('hsa'));
     const rothItems = retirementItems.filter(d => d.name.toLowerCase().includes('roth'));
     const deferredItems = retirementItems.filter(d => !d.name.toLowerCase().includes('roth'));
+
+    // Default HSA to $110/month if no HSA budget entry exists
+    if (hsaItems.length === 0 && grossIncome > 0) {
+      const defaultHsa: DeductionLine = {
+        name: 'HSA Savings',
+        monthlyAmount: 110,
+        annualAmount: 1320,
+        pctOfGross: grossIncome > 0 ? (110 / grossIncome) * 100 : 0,
+        type: 'health',
+      };
+      hsaItems = [defaultHsa];
+    }
 
     const employeeContrib = retirementItems.reduce((s, d) => s + d.monthlyAmount, 0);
     const employeeContribPct = grossIncome > 0 ? (employeeContrib / grossIncome) * 100 : 0;
