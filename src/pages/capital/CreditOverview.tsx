@@ -29,7 +29,6 @@ const CreditOverview = () => {
 
   const filtered = tab === 'all' ? accounts : accounts.filter(a => a.bureau === tab);
 
-  const totalBalance = accounts.reduce((s, a) => s + Number(a.balance), 0);
   const revolving = accounts.filter(a => a.account_type === 'Revolving');
   const revolvingBalance = revolving.reduce((s, a) => s + Number(a.balance), 0);
   const totalLimit = revolving.reduce((s, a) => s + Number(a.credit_limit || 0), 0);
@@ -37,6 +36,11 @@ const CreditOverview = () => {
   const negativeCount = accounts.filter(a =>
     ['Collection', 'Charge-Off', 'Foreclosure', 'Repossession'].includes(a.account_status)
   ).length;
+
+  const bureauBalances = (['Equifax', 'Experian', 'TransUnion'] as const).map(bureau => {
+    const ba = accounts.filter(a => a.bureau === bureau);
+    return { bureau, balance: ba.reduce((s, a) => s + Number(a.balance), 0), count: ba.length };
+  });
 
   const fmt = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
   const fmtDate = (d: string | null) => d ? format(new Date(d), 'MM/dd/yyyy') : '—';
@@ -210,11 +214,18 @@ const CreditOverview = () => {
                 </CardContent>
               </Card>
               <Card>
-                <CardContent className="pt-4 pb-3 flex items-center gap-3">
-                  <DollarSign className="h-8 w-8 text-primary" />
-                  <div>
-                    <p className="text-xs text-muted-foreground">Total Balance</p>
-                    <p className="text-2xl font-bold">{fmt(totalBalance)}</p>
+                <CardContent className="pt-4 pb-3">
+                  <div className="flex items-center gap-3 mb-3">
+                    <DollarSign className="h-8 w-8 text-primary" />
+                    <p className="text-xs text-muted-foreground">Balance by Bureau</p>
+                  </div>
+                  <div className="space-y-1.5">
+                    {bureauBalances.map(b => (
+                      <div key={b.bureau} className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">{b.bureau}</span>
+                        <span className="font-semibold font-mono">{b.count > 0 ? fmt(b.balance) : '—'}</span>
+                      </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
