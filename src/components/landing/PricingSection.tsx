@@ -123,13 +123,18 @@ const PricingSection = () => {
   const headlineText = headlineTest.variant.config?.headline as string || 'Choose the plan that gives you full control';
   const showGuidance = (guidanceTest.variant.config?.showGuidance as boolean) !== false;
 
-  const handleCheckout = async (planKey: 'personal' | 'premium' | 'business') => {
+  const handleCheckout = async (planKey: string) => {
+    if (planKey === 'lite') {
+      navigate(user ? '/dashboard' : '/auth');
+      return;
+    }
+
     if (!user) {
       navigate('/auth');
       return;
     }
 
-    const plan = STRIPE_PLANS[planKey];
+    const plan = STRIPE_PLANS[planKey as 'personal' | 'premium' | 'business'];
     const priceId = annual ? plan.annual_price_id : plan.monthly_price_id;
 
     setLoadingPlan(planKey);
@@ -188,7 +193,7 @@ const PricingSection = () => {
           </span>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-3 max-w-5xl mx-auto items-start">
+        <div className="grid gap-6 lg:grid-cols-4 max-w-6xl mx-auto items-start">
           {PLANS.map((plan, i) => {
             const current = isCurrentPlan(plan.key);
             return (
@@ -212,14 +217,16 @@ const PricingSection = () => {
 
                 <div className="mt-4 flex items-baseline gap-1">
                   <span className="font-display text-4xl font-extrabold">
-                    ${annual ? plan.yearly : plan.monthly.toFixed(2)}
+                    {plan.isFree ? 'Free' : `$${annual ? plan.yearly : plan.monthly.toFixed(2)}`}
                   </span>
-                  <span className="text-muted-foreground text-sm">
-                    {annual ? '/year' : '/month'}
-                  </span>
+                  {!plan.isFree && (
+                    <span className="text-muted-foreground text-sm">
+                      {annual ? '/year' : '/month'}
+                    </span>
+                  )}
                 </div>
 
-                {annual && (
+                {!plan.isFree && annual && (
                   <div className="mt-1.5 space-y-0.5">
                     <p className="text-xs text-muted-foreground">
                       Only <span className="font-semibold text-foreground">${(plan.yearly / 12).toFixed(2)}/month</span>
@@ -230,15 +237,17 @@ const PricingSection = () => {
                   </div>
                 )}
 
-                {!annual && (
+                {!plan.isFree && !annual && (
                   <p className="mt-1.5 text-xs text-muted-foreground">
                     Switch to annual and save <span className="font-semibold text-accent">${plan.yearlySavings}/year</span>
                   </p>
                 )}
 
-                <p className="mt-1 text-[11px] text-muted-foreground italic">
-                  Less than the cost of one forgotten subscription.
-                </p>
+                {!plan.isFree && (
+                  <p className="mt-1 text-[11px] text-muted-foreground italic">
+                    Less than the cost of one forgotten subscription.
+                  </p>
+                )}
 
                 {plan.tagline && (
                   <p className="mt-3 text-xs font-semibold text-accent">{plan.tagline}</p>
