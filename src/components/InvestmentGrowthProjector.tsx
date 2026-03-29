@@ -191,6 +191,8 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
   const [taxRate, setTaxRate] = useState('22');
   const [ssMonthlyBenefit, setSsMonthlyBenefit] = useState('2200');
   const [targetRetirementIncome, setTargetRetirementIncome] = useState('80000');
+  const [periodicBoostAmount, setPeriodicBoostAmount] = useState('10000');
+  const [periodicBoostInterval, setPeriodicBoostInterval] = useState('5');
   const [schedules, setSchedules] = useState<ContributionSchedule[]>(DEFAULT_SCHEDULES);
   const [isEditing, setIsEditing] = useState(false);
   const [showSchedule, setShowSchedule] = useState(false);
@@ -222,14 +224,16 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
   const inflation = parseFloat(inflationRate) || 3;
   const tax = parseFloat(taxRate) || 22;
   const ssMonthly = parseFloat(ssMonthlyBenefit) || 0;
+  const pBoostAmt = parseFloat(periodicBoostAmount) || 0;
+  const pBoostInterval = parseInt(periodicBoostInterval) || 0;
 
   // Compute all scenarios
   const scenarios = useMemo(() => ({
-    '8%': computeProjection(start, baseAnnual, horizon, 8, schedules, boostYear, boostAmt, false, inflation),
-    '10%': computeProjection(start, baseAnnual, horizon, 10, schedules, boostYear, boostAmt, false, inflation),
-    '12%': computeProjection(start, baseAnnual, horizon, 12, schedules, boostYear, boostAmt, false, inflation),
-    'Mixed': computeProjection(start, baseAnnual, horizon, 0, schedules, boostYear, boostAmt, true, inflation),
-  }), [start, baseAnnual, horizon, schedules, boostYear, boostAmt, inflation]);
+    '8%': computeProjection(start, baseAnnual, horizon, 8, schedules, boostYear, boostAmt, false, inflation, pBoostAmt, pBoostInterval),
+    '10%': computeProjection(start, baseAnnual, horizon, 10, schedules, boostYear, boostAmt, false, inflation, pBoostAmt, pBoostInterval),
+    '12%': computeProjection(start, baseAnnual, horizon, 12, schedules, boostYear, boostAmt, false, inflation, pBoostAmt, pBoostInterval),
+    'Mixed': computeProjection(start, baseAnnual, horizon, 0, schedules, boostYear, boostAmt, true, inflation, pBoostAmt, pBoostInterval),
+  }), [start, baseAnnual, horizon, schedules, boostYear, boostAmt, inflation, pBoostAmt, pBoostInterval]);
 
   // Chart data
   const chartData = useMemo(() => {
