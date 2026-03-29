@@ -344,7 +344,7 @@ const Budgets = () => {
 
   // Compute all collapsible section keys for expand/collapse all
   const getAllSectionKeys = useCallback(() => {
-    const keys = ['income', 'fixed', 'flexible', 'non_monthly'];
+    const keys = ['income', 'payroll_deduction', 'fixed', 'flexible', 'non_monthly'];
     if (budgetType === 'all') {
       for (const biz of (perBusinessData || [])) {
         const bizKey = biz.name.replace(/\s+/g, '_');
