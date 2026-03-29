@@ -93,7 +93,6 @@ const NAV_SECTIONS: NavSection[] = [
           { to: '/capital/credit-health', icon: Heart, label: 'Score & Factors', color: 'text-prism-rose' },
           { to: '/capital/metro2-scanner', icon: Gauge, label: 'Metro2 Scanner', color: 'text-prism-amber' },
           { to: '/capital/disputes', icon: FileText, label: 'Disputes', color: 'text-prism-orange' },
-          { to: '/capital/money-math', icon: Calculator, label: 'Money Math', color: 'text-prism-indigo' },
         ],
       },
       {
@@ -105,6 +104,7 @@ const NAV_SECTIONS: NavSection[] = [
           { to: '/capital/loan-readiness', icon: ClipboardCheck, label: 'Loan Readiness', color: 'text-prism-lime' },
           { to: '/capital/capital-stack', icon: Layers, label: 'Capital Stack', color: 'text-prism-teal' },
           { to: '/capital/funding-simulator', icon: Banknote, label: 'Funding Sim', color: 'text-prism-orange' },
+          { to: '/capital/money-math', icon: Calculator, label: 'Money Math', color: 'text-prism-indigo' },
         ],
       },
       {
