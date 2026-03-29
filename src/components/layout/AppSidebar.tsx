@@ -178,6 +178,24 @@ const AppSidebar = () => {
     };
   });
 
+  // Track which top-level sections are open — auto-open sections with active route
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {};
+    NAV_SECTIONS.forEach(section => {
+      const allItems = [
+        ...(section.items ?? []),
+        ...(section.topItems ?? []),
+        ...(section.subGroups?.flatMap(sg => sg.items) ?? []),
+      ];
+      initial[section.label] = allItems.some(i => location.pathname === i.to) || section.label === 'Home';
+    });
+    return initial;
+  });
+
+  const toggleSection = (label: string) => {
+    setOpenSections(prev => ({ ...prev, [label]: !prev[label] }));
+  };
+
   // Track which capital sub-groups are open — auto-open the one with the active route
   const [openSubGroups, setOpenSubGroups] = useState<Record<string, boolean>>(() => {
     const capitalSection = NAV_SECTIONS.find(s => s.label === 'Capital');
