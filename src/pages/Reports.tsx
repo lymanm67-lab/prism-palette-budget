@@ -683,8 +683,8 @@ const Reports = () => {
               { label: 'Recurring', path: '/recurring', description: 'Set up recurring transactions' },
             ]}
           />
+          <div className="grid gap-6 lg:grid-cols-1">
             <Card>
-              <CardHeader><CardTitle className="font-display">Income vs Expenses</CardTitle></CardHeader>
               <CardContent>
                 {monthlyCashflow.length > 0 ? (
                   <ResponsiveContainer width="100%" height={350}>
@@ -771,6 +771,7 @@ const Reports = () => {
               { label: 'Net Worth', path: '/net-worth', description: 'Detailed net worth view' },
             ]}
           />
+          <Card>
             <CardHeader><CardTitle className="font-display">Net Worth Over Time</CardTitle></CardHeader>
             <CardContent>
               {netWorthTrend.length > 0 ? (
@@ -842,8 +843,9 @@ const Reports = () => {
             ]}
           />
             <CardHeader><CardTitle className="font-display">Spending Trends by Category</CardTitle></CardHeader>
+          <Card>
+            <CardHeader><CardTitle className="font-display">Spending Trends by Category</CardTitle></CardHeader>
             <CardContent>
-              {spendingTrends.data.length > 0 ? (
                 <ResponsiveContainer width="100%" height={350}>
                   <LineChart data={spendingTrends.data}>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -908,6 +910,7 @@ const Reports = () => {
               { label: 'Subscriptions', path: '/subscriptions', description: 'Track recurring merchants' },
             ]}
           />
+          <Card>
             <CardHeader><CardTitle className="font-display">Top Merchants by Spending</CardTitle></CardHeader>
             <CardContent>
               {topMerchants.length > 0 ? (
@@ -976,6 +979,7 @@ const Reports = () => {
               { label: 'Getting Started', path: '/getting-started', description: 'Guided payroll setup' },
             ]}
           />
+          <PayrollReportTab budgetMonth={budgetMonth} />
         </TabsContent>
 
         {/* ==================== INVESTMENT GROWTH ==================== */}
@@ -1004,6 +1008,7 @@ const Reports = () => {
               { label: 'Getting Started', path: '/getting-started', description: 'Guided setup' },
             ]}
           />
+          <InvestmentGrowthProjector budgetMonth={budgetMonth} />
         </TabsContent>
         </div>
       </Tabs>
