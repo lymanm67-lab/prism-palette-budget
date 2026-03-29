@@ -217,8 +217,9 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
     const emp = parseFloat(monthlyContrib) || 0;
     const er = parseFloat(employerMonthly) || 0;
     const hsa = parseFloat(hsaMonthly) || 0;
-    return (emp + er + hsa) * 12;
-  }, [monthlyContrib, employerMonthly, hsaMonthly]);
+    const spouseContrib = parseFloat(spouseAnnualContrib) || 0;
+    return (emp + er + hsa) * 12 + spouseContrib;
+  }, [monthlyContrib, employerMonthly, hsaMonthly, spouseAnnualContrib]);
 
   const horizon = parseInt(horizonYears) || 35;
   const start = parseFloat(startingBalance) || 0;
