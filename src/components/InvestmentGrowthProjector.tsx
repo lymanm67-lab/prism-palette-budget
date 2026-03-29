@@ -70,23 +70,18 @@ function computeProjection(
   oneTimeBoostYear: number,
   oneTimeBoostMonthly: number,
   useMixedRoi: boolean,
+  inflationRate: number,
 ) {
-  const rows: { year: number; annualContrib: number; endBalance: number; roi: number; growth: number }[] = [];
+  const rows: { year: number; annualContrib: number; endBalance: number; roi: number; growth: number; realBalance: number }[] = [];
   let balance = startingBalance;
   let currentAnnual = baseAnnualContrib;
+  const cumulativeInflation = (y: number) => Math.pow(1 + inflationRate / 100, y);
 
   for (let y = 1; y <= horizonYears; y++) {
-    // Apply contribution increases from schedule
     const sched = schedules.find(s => y >= s.yearStart && y <= s.yearEnd);
-    if (sched && y === sched.yearStart && y > 1) {
-      // Don't reset, apply from previous year
-    }
     if (y > 1) {
       const prevSched = schedules.find(s => y >= s.yearStart && y <= s.yearEnd);
       if (prevSched && prevSched.increaseType === 'percent') {
-        if (y === prevSched.yearStart) {
-          // first year of this bracket: increase from last year's contribution
-        }
         currentAnnual = currentAnnual * (1 + prevSched.value / 100);
       } else if (prevSched && prevSched.increaseType === 'fixed') {
         currentAnnual = currentAnnual + prevSched.value;
@@ -94,7 +89,6 @@ function computeProjection(
     }
 
     let yearContrib = currentAnnual;
-    // One-time boost in a specific year
     if (y === oneTimeBoostYear) {
       yearContrib += oneTimeBoostMonthly * 12;
     }
@@ -102,8 +96,9 @@ function computeProjection(
     const roi = useMixedRoi ? (MIXED_ROI_MAP[y] ?? 8) : annualRoi;
     const growth = balance * (roi / 100);
     balance = balance + yearContrib + growth;
+    const realBalance = balance / cumulativeInflation(y);
 
-    rows.push({ year: y, annualContrib: yearContrib, endBalance: balance, roi, growth });
+    rows.push({ year: y, annualContrib: yearContrib, endBalance: balance, roi, growth, realBalance });
   }
 
   return rows;
@@ -185,6 +180,9 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
   const [horizonYears, setHorizonYears] = useState('35');
   const [oneTimeBoostYear, setOneTimeBoostYear] = useState('0');
   const [oneTimeBoostAmount, setOneTimeBoostAmount] = useState('0');
+  const [inflationRate, setInflationRate] = useState('3');
+  const [taxRate, setTaxRate] = useState('22');
+  const [ssMonthlyBenefit, setSsMonthlyBenefit] = useState('2200');
   const [schedules, setSchedules] = useState<ContributionSchedule[]>(DEFAULT_SCHEDULES);
   const [isEditing, setIsEditing] = useState(false);
   const [showSchedule, setShowSchedule] = useState(false);
@@ -213,14 +211,17 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
   const start = parseFloat(startingBalance) || 0;
   const boostYear = parseInt(oneTimeBoostYear) || 0;
   const boostAmt = parseFloat(oneTimeBoostAmount) || 0;
+  const inflation = parseFloat(inflationRate) || 3;
+  const tax = parseFloat(taxRate) || 22;
+  const ssMonthly = parseFloat(ssMonthlyBenefit) || 0;
 
   // Compute all scenarios
   const scenarios = useMemo(() => ({
-    '8%': computeProjection(start, baseAnnual, horizon, 8, schedules, boostYear, boostAmt, false),
-    '10%': computeProjection(start, baseAnnual, horizon, 10, schedules, boostYear, boostAmt, false),
-    '12%': computeProjection(start, baseAnnual, horizon, 12, schedules, boostYear, boostAmt, false),
-    'Mixed': computeProjection(start, baseAnnual, horizon, 0, schedules, boostYear, boostAmt, true),
-  }), [start, baseAnnual, horizon, schedules, boostYear, boostAmt]);
+    '8%': computeProjection(start, baseAnnual, horizon, 8, schedules, boostYear, boostAmt, false, inflation),
+    '10%': computeProjection(start, baseAnnual, horizon, 10, schedules, boostYear, boostAmt, false, inflation),
+    '12%': computeProjection(start, baseAnnual, horizon, 12, schedules, boostYear, boostAmt, false, inflation),
+    'Mixed': computeProjection(start, baseAnnual, horizon, 0, schedules, boostYear, boostAmt, true, inflation),
+  }), [start, baseAnnual, horizon, schedules, boostYear, boostAmt, inflation]);
 
   // Chart data
   const chartData = useMemo(() => {
@@ -391,6 +392,26 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
               </div>
             </div>
 
+            {/* Inflation, Tax, Social Security */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 rounded-lg bg-muted/20 border border-border/50">
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Inflation Rate %</label>
+                <Input value={inflationRate} onChange={e => setInflationRate(e.target.value)} type="number" className="h-8 mt-1" step="0.5" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Tax Rate in Retirement %</label>
+                <Input value={taxRate} onChange={e => setTaxRate(e.target.value)} type="number" className="h-8 mt-1" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Est. SS Monthly Benefit</label>
+                <Input value={ssMonthlyBenefit} onChange={e => setSsMonthlyBenefit(e.target.value)} type="number" className="h-8 mt-1" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">SS Annual (Today's $)</label>
+                <p className="text-sm font-bold mt-2 tabular-nums">{formatCurrency(ssMonthly * 12)}/yr</p>
+              </div>
+            </div>
+
             {/* One-time boost */}
             <div className="flex items-end gap-3 p-3 rounded-lg bg-amber-500/5 border border-amber-500/10">
               <div>
@@ -437,18 +458,80 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
         )}
       </Card>
 
-      {/* Summary Cards */}
+      {/* Summary Cards — Nominal */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        {Object.entries(finalValues).map(([label, value]) => (
-          <Card key={label} className="border-l-4" style={{ borderLeftColor: scenarioColors[label as keyof typeof scenarioColors] }}>
-            <CardContent className="p-3">
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{label} ROI — Year {horizon}</p>
-              <p className="text-lg font-bold tabular-nums mt-1">{formatCompact(value)}</p>
-              <p className="text-xs text-muted-foreground tabular-nums">{formatCurrency(value)}</p>
-            </CardContent>
-          </Card>
-        ))}
+        {Object.entries(finalValues).map(([label, value]) => {
+          const realVal = scenarios[label as keyof typeof scenarios]?.[horizon - 1]?.realBalance || 0;
+          const afterTax = realVal * (1 - tax / 100);
+          return (
+            <Card key={label} className="border-l-4" style={{ borderLeftColor: scenarioColors[label as keyof typeof scenarioColors] }}>
+              <CardContent className="p-3">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{label} ROI — Year {horizon}</p>
+                <p className="text-lg font-bold tabular-nums mt-1">{formatCompact(value)}</p>
+                <p className="text-xs text-muted-foreground tabular-nums">{formatCurrency(value)}</p>
+                <div className="mt-2 pt-2 border-t border-border/50">
+                  <p className="text-[10px] text-muted-foreground">Real (inflation-adj)</p>
+                  <p className="text-sm font-semibold tabular-nums">{formatCompact(realVal)}</p>
+                  <p className="text-[10px] text-muted-foreground">After {tax}% Tax</p>
+                  <p className="text-sm font-semibold tabular-nums">{formatCompact(afterTax)}</p>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
+
+      {/* Real Wealth & Social Security Impact */}
+      <Card className="border-2 border-accent/20">
+        <CardHeader className="pb-3">
+          <CardTitle className="font-display text-base flex items-center gap-2">
+            <Target className="h-4 w-4 text-primary" />
+            Real Wealth Projection (Inflation + Tax + Social Security)
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {Object.entries(scenarios).map(([label, rows]) => {
+              const finalReal = rows[horizon - 1]?.realBalance || 0;
+              const afterTax = finalReal * (1 - tax / 100);
+              const ssAnnualReal = ssMonthly * 12; // SS is already in today's dollars (COLA-adjusted)
+              const withdrawalRate4Pct = afterTax * 0.04;
+              const totalRetirementIncome = withdrawalRate4Pct + ssAnnualReal;
+              const monthlyRetirement = totalRetirementIncome / 12;
+
+              return (
+                <div key={label} className="p-3 rounded-lg bg-muted/30 space-y-2">
+                  <p className="text-xs font-semibold">{label} ROI</p>
+                  <div>
+                    <p className="text-[10px] text-muted-foreground">After-Tax Portfolio (Real)</p>
+                    <p className="text-base font-bold tabular-nums">{formatCompact(afterTax)}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-foreground">4% Withdrawal / yr</p>
+                    <p className="text-sm font-semibold tabular-nums">{formatCurrency(withdrawalRate4Pct)}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-foreground">+ Social Security / yr</p>
+                    <p className="text-sm font-semibold tabular-nums">{formatCurrency(ssAnnualReal)}</p>
+                  </div>
+                  <div className="pt-2 border-t border-border/50">
+                    <p className="text-[10px] text-muted-foreground font-semibold">Total Retirement Income</p>
+                    <p className="text-lg font-bold tabular-nums text-primary">{formatCurrency(totalRetirementIncome)}/yr</p>
+                    <p className="text-xs text-muted-foreground">{formatCurrency(monthlyRetirement)}/mo (today's dollars)</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="mt-4 p-3 rounded-lg bg-muted/20 text-xs text-muted-foreground space-y-1">
+            <p><span className="font-semibold text-foreground">Assumptions:</span></p>
+            <p>• Inflation: {inflation}% annual — erodes purchasing power over {horizon} years by {((1 - 1 / Math.pow(1 + inflation / 100, horizon)) * 100).toFixed(0)}%</p>
+            <p>• Tax Rate: {tax}% effective rate applied to portfolio withdrawals in retirement</p>
+            <p>• Social Security: ${ssMonthly.toLocaleString()}/mo estimated benefit (COLA-adjusted, shown in today's dollars)</p>
+            <p>• 4% Rule: Withdraw 4% of after-tax portfolio annually for sustainable 30-year retirement spending</p>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Current Contributions Summary */}
       <Card>
@@ -589,7 +672,8 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
                         <TableHead className="text-right">Annual Contribution</TableHead>
                         <TableHead className="text-right">ROI</TableHead>
                         <TableHead className="text-right">Growth</TableHead>
-                        <TableHead className="text-right">End of Year Balance</TableHead>
+                        <TableHead className="text-right">Nominal Balance</TableHead>
+                        <TableHead className="text-right">Real Balance</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -602,6 +686,7 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
                             <TableCell className="text-right tabular-nums">{r.roi}%</TableCell>
                             <TableCell className="text-right tabular-nums text-emerald-600 dark:text-emerald-400">{formatCurrency(r.growth)}</TableCell>
                             <TableCell className="text-right tabular-nums font-medium">{formatCurrency(r.endBalance)}</TableCell>
+                            <TableCell className="text-right tabular-nums text-muted-foreground">{formatCurrency(r.realBalance)}</TableCell>
                           </TableRow>
                         );
                       })}
