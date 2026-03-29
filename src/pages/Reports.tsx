@@ -430,7 +430,30 @@ const Reports = () => {
         <div ref={reportRef}>
         {/* ==================== SPENDING ==================== */}
         <TabsContent value="spending">
-          <div className="grid gap-6 lg:grid-cols-2">
+          <ReportTabGuide
+            title="Spending Report"
+            icon={PieChartIcon}
+            iconColor="text-prism-orange"
+            howToUse={[
+              'The pie chart shows your spending broken down by category for the selected date range.',
+              'Toggle between Pie and Bar views for different perspectives.',
+              'Click "Other" in the pie chart to expand smaller categories.',
+              'The Category Ranking shows a ranked list with progress bars.',
+              'Daily Spending tracks your cumulative spend over the period.',
+            ]}
+            howToEnterData={[
+              'Add transactions manually on the Transactions page.',
+              'Import bank statements via CSV, OFX, or QIF file upload.',
+              'Connect your bank for automatic transaction syncing.',
+              'Categorize transactions to see them reflected in this report.',
+            ]}
+            ttsScript="The Spending Report shows where your money goes. The pie chart breaks down spending by category. You can switch to a bar chart view. The category ranking shows each category with a progress bar. Below that, daily spending tracks your cumulative spending over time. To populate this report, add transactions manually on the Transactions page, or import bank statements using CSV, OFX, or QIF files. You can also connect your bank for automatic syncing."
+            dataEntryLinks={[
+              { label: 'Transactions', path: '/transactions', description: 'Add or import transactions' },
+              { label: 'Categories', path: '/categories', description: 'Manage spending categories' },
+              { label: 'Accounts', path: '/accounts', description: 'Connect bank accounts' },
+            ]}
+          />
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="font-display">Spending by Category</CardTitle>
@@ -567,7 +590,28 @@ const Reports = () => {
 
         {/* ==================== BUDGET VS ACTUAL ==================== */}
         <TabsContent value="budget">
-          <Card>
+          <ReportTabGuide
+            title="Budget vs Actual"
+            icon={Scale}
+            iconColor="text-sky-500"
+            howToUse={[
+              'Horizontal bars compare your planned budget (purple) against actual spending (blue).',
+              'The progress bars below show what percentage of each budget has been used.',
+              'Red indicators mean you have exceeded the budgeted amount.',
+              'Use this to identify categories where you are consistently over or under budget.',
+            ]}
+            howToEnterData={[
+              'Set up monthly budgets on the Budgets page for each spending category.',
+              'Transactions are matched to budgets via their category assignment.',
+              'Make sure transactions are categorized for accurate comparison.',
+            ]}
+            ttsScript="The Budget vs Actual report compares your planned spending against what you actually spent. Purple bars show your budget and blue bars show actual spending. Below the chart, progress bars indicate the percentage used. Red means you went over budget. To use this report, first set up monthly budgets on the Budgets page. Then make sure your transactions are categorized so they match the correct budget categories."
+            dataEntryLinks={[
+              { label: 'Budgets', path: '/budgets', description: 'Set monthly budgets' },
+              { label: 'Transactions', path: '/transactions', description: 'Categorize transactions' },
+              { label: 'Categories', path: '/categories', description: 'Manage categories' },
+            ]}
+          />
             <CardHeader>
               <CardTitle className="font-display">Budget vs Actual</CardTitle>
             </CardHeader>
@@ -616,7 +660,27 @@ const Reports = () => {
 
         {/* ==================== CASH FLOW ==================== */}
         <TabsContent value="cashflow">
-          <div className="grid gap-6 lg:grid-cols-1">
+          <ReportTabGuide
+            title="Cash Flow"
+            icon={Wallet}
+            iconColor="text-emerald-500"
+            howToUse={[
+              'The bar chart compares monthly income (green) vs expenses (red).',
+              'The Savings Rate chart shows what percentage of income you kept each month.',
+              'Summary cards display your average, best, and worst savings rate.',
+              'Use date range presets to compare different periods.',
+            ]}
+            howToEnterData={[
+              'Record both income and expense transactions on the Transactions page.',
+              'Import bank statements that include deposits and withdrawals.',
+              'Set up recurring transactions for predictable income and bills.',
+            ]}
+            ttsScript="The Cash Flow report shows your income versus expenses over time. Green bars are income and red bars are expenses. Below that, the savings rate chart shows what percentage of income you saved each month. Summary cards show your average, best, and worst months. To populate this, record both income and expense transactions. Import bank statements or set up recurring transactions for bills and paychecks."
+            dataEntryLinks={[
+              { label: 'Transactions', path: '/transactions', description: 'Record income & expenses' },
+              { label: 'Recurring', path: '/recurring', description: 'Set up recurring transactions' },
+            ]}
+          />
             <Card>
               <CardHeader><CardTitle className="font-display">Income vs Expenses</CardTitle></CardHeader>
               <CardContent>
@@ -684,7 +748,27 @@ const Reports = () => {
 
         {/* ==================== NET WORTH ==================== */}
         <TabsContent value="networth">
-          <Card>
+          <ReportTabGuide
+            title="Net Worth"
+            icon={TrendingUp}
+            iconColor="text-violet-500"
+            howToUse={[
+              'The area chart tracks your total net worth over time.',
+              'Net worth is calculated from the sum of all account balances.',
+              'Current balances for each account are shown below the chart.',
+              'An upward trend indicates growing wealth.',
+            ]}
+            howToEnterData={[
+              'Add all your financial accounts (checking, savings, credit, investment) on the Accounts page.',
+              'Keep account balances updated manually or via bank connections.',
+              'Add transactions to track balance changes over time.',
+            ]}
+            ttsScript="The Net Worth report tracks the total value of all your accounts over time. The area chart shows the trend. Below it, you can see current balances for each account. To use this report, add all your financial accounts on the Accounts page, including checking, savings, credit cards, and investment accounts. Keep balances updated through manual entry or bank connections."
+            dataEntryLinks={[
+              { label: 'Accounts', path: '/accounts', description: 'Add & manage accounts' },
+              { label: 'Net Worth', path: '/net-worth', description: 'Detailed net worth view' },
+            ]}
+          />
             <CardHeader><CardTitle className="font-display">Net Worth Over Time</CardTitle></CardHeader>
             <CardContent>
               {netWorthTrend.length > 0 ? (
@@ -734,7 +818,27 @@ const Reports = () => {
 
         {/* ==================== TRENDS ==================== */}
         <TabsContent value="trends">
-          <Card>
+          <ReportTabGuide
+            title="Spending Trends"
+            icon={LineChartIcon}
+            iconColor="text-amber-500"
+            howToUse={[
+              'Line chart shows your top spending categories tracked month over month.',
+              'Each line represents a different category, making it easy to spot increases.',
+              'The Monthly Net Savings bar chart below shows whether you saved or lost money each month.',
+              'Use the date range picker to view longer time spans for trend analysis.',
+            ]}
+            howToEnterData={[
+              'Add transactions consistently over multiple months for meaningful trends.',
+              'Categorize all transactions so they appear in the correct trend lines.',
+              'Import past bank statements to build historical trend data.',
+            ]}
+            ttsScript="The Spending Trends report shows how your spending categories change month over month. Each colored line represents a category. Below that, the net savings chart shows green bars for months you saved money and red bars for months you overspent. For best results, add transactions consistently over several months and make sure they are categorized. Import past bank statements to build historical data."
+            dataEntryLinks={[
+              { label: 'Transactions', path: '/transactions', description: 'Add & categorize transactions' },
+              { label: 'Spending Trends', path: '/spending-trends', description: 'Detailed spending analysis' },
+            ]}
+          />
             <CardHeader><CardTitle className="font-display">Spending Trends by Category</CardTitle></CardHeader>
             <CardContent>
               {spendingTrends.data.length > 0 ? (
@@ -781,7 +885,27 @@ const Reports = () => {
 
         {/* ==================== TOP MERCHANTS ==================== */}
         <TabsContent value="merchants">
-          <Card>
+          <ReportTabGuide
+            title="Top Merchants"
+            icon={Store}
+            iconColor="text-rose-500"
+            howToUse={[
+              'The horizontal bar chart ranks merchants by total spending.',
+              'Below the chart, each merchant shows the total amount and transaction count.',
+              'Use this to identify where you spend the most and find opportunities to save.',
+              'Merchant names are extracted from your transaction descriptions.',
+            ]}
+            howToEnterData={[
+              'Add transactions with merchant names on the Transactions page.',
+              'Import bank statements — merchant names are extracted automatically.',
+              'Use the merchant normalization feature to clean up inconsistent names.',
+            ]}
+            ttsScript="The Top Merchants report ranks the stores and services where you spend the most. The bar chart shows the top merchants by total amount. Below it, each merchant lists the total spent and how many transactions. To use this report, make sure your transactions have merchant names. Import bank statements for automatic merchant extraction. Use merchant normalization in settings to clean up messy names."
+            dataEntryLinks={[
+              { label: 'Transactions', path: '/transactions', description: 'Add transactions with merchants' },
+              { label: 'Subscriptions', path: '/subscriptions', description: 'Track recurring merchants' },
+            ]}
+          />
             <CardHeader><CardTitle className="font-display">Top Merchants by Spending</CardTitle></CardHeader>
             <CardContent>
               {topMerchants.length > 0 ? (
@@ -827,12 +951,57 @@ const Reports = () => {
 
         {/* ==================== PAYROLL ANALYSIS ==================== */}
         <TabsContent value="payroll">
-          <PayrollReportTab budgetMonth={budgetMonth} />
+          <ReportTabGuide
+            title="Payroll Analysis"
+            icon={Briefcase}
+            iconColor="text-sky-500"
+            howToUse={[
+              'This report breaks down your paycheck into gross income, deductions, and net pay.',
+              'Pre-tax deductions (401k, HSA, taxes) and after-tax deductions are separated.',
+              'The Investment & Savings section shows your total wealth-building rate.',
+              'National average comparison ranks your savings against benchmarks.',
+            ]}
+            howToEnterData={[
+              'Create a "Payroll & Pre-Tax Deductions" budget group in Categories.',
+              'Add budget categories for each payroll item (401k, HSA, Federal Tax, etc.).',
+              'Set the monthly budget amount for each deduction.',
+              'Upload a paystub to auto-extract deductions.',
+            ]}
+            ttsScript="The Payroll Analysis report breaks down your paycheck. It shows gross income, pre-tax deductions like 401k and HSA, after-tax deductions, and your net take-home pay. The investment and savings section calculates your total wealth-building rate including employer match. It then compares your rate to national averages. To set this up, create a Payroll and Pre-Tax Deductions budget group in Categories. Add items like 401k, HSA, and taxes with their monthly amounts. You can also upload a paystub to auto-extract the data."
+            dataEntryLinks={[
+              { label: 'Budgets', path: '/budgets', description: 'Set payroll deduction amounts' },
+              { label: 'Categories', path: '/categories', description: 'Create payroll categories' },
+              { label: 'Getting Started', path: '/getting-started', description: 'Guided payroll setup' },
+            ]}
+          />
         </TabsContent>
 
         {/* ==================== INVESTMENT GROWTH ==================== */}
         <TabsContent value="investment-growth">
-          <InvestmentGrowthProjector budgetMonth={budgetMonth} />
+          <ReportTabGuide
+            title="Investment Growth Projector"
+            icon={Sprout}
+            iconColor="text-emerald-500"
+            howToUse={[
+              'This projector models how your investments can grow over 35 years.',
+              'It uses your current retirement contributions, employer match, and HSA as starting values.',
+              'Choose different ROI scenarios (8%, 10%, 12%, or Mixed) to see projections.',
+              'The milestone table shows your portfolio at 5-year intervals.',
+              'The Financial Freedom target is based on the 4% withdrawal rule.',
+            ]}
+            howToEnterData={[
+              'Set up payroll deductions (401k, HSA) in the Budgets page first.',
+              'The projector auto-populates from your payroll budget data.',
+              'Edit contribution amounts, employer match %, and annual increase schedules directly.',
+              'Save scenarios to compare different strategies over time.',
+            ]}
+            ttsScript="The Investment Growth Projector models how your investments can grow over 35 years. It pulls your current retirement contributions, employer match, and HSA from your budget data automatically. You can choose different return scenarios like 8, 10, or 12 percent. The milestone table shows your projected portfolio at 5-year intervals. The financial freedom target calculates how much you need based on the 4 percent withdrawal rule. To get started, set up your payroll deductions on the Budgets page. You can also edit values directly and save different scenarios."
+            dataEntryLinks={[
+              { label: 'Budgets', path: '/budgets', description: 'Set contribution amounts' },
+              { label: 'Investments', path: '/investments', description: 'View current holdings' },
+              { label: 'Getting Started', path: '/getting-started', description: 'Guided setup' },
+            ]}
+          />
         </TabsContent>
         </div>
       </Tabs>
