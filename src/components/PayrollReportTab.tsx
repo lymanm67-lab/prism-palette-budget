@@ -60,10 +60,43 @@ const TYPE_ICONS: Record<DeductionType, typeof DollarSign> = {
   other: Briefcase,
 };
 
+// Ordered patterns: more specific first to avoid "tax" matching "Tax Deferred Account"
+const CLASSIFICATION_RULES: [RegExp, DeductionType][] = [
+  // Retirement — must come before generic "tax"
+  [/tax\s*deferred|tda/i, 'retirement'],
+  [/deferred\s*comp/i, 'retirement'],
+  [/roth/i, 'retirement'],
+  [/401\s*\(?k\)?/i, 'retirement'],
+  [/403\s*\(?b\)?/i, 'retirement'],
+  [/457\s*\(?b\)?/i, 'retirement'],
+  [/pension/i, 'retirement'],
+  [/employer\s*(match|contrib)/i, 'retirement'],
+  // Health
+  [/\bhsa\b/i, 'health'],
+  [/\bfsa\b/i, 'health'],
+  [/dental/i, 'health'],
+  [/vision/i, 'health'],
+  [/medical/i, 'health'],
+  [/health/i, 'health'],
+  // Insurance
+  [/\blife\b/i, 'insurance'],
+  [/disability/i, 'insurance'],
+  [/\bltd\b/i, 'insurance'],
+  [/\bstd\b/i, 'insurance'],
+  [/ad&d/i, 'insurance'],
+  // Tax — generic, last
+  [/federal/i, 'tax'],
+  [/\bstate\b/i, 'tax'],
+  [/fica/i, 'tax'],
+  [/social\s*security/i, 'tax'],
+  [/medicare/i, 'tax'],
+  [/\btax\b/i, 'tax'],
+  [/local\s*tax/i, 'tax'],
+];
+
 function classifyDeduction(name: string): DeductionType {
-  const lower = name.toLowerCase();
-  for (const [key, type] of Object.entries(DEDUCTION_TYPE_MAP)) {
-    if (lower.includes(key)) return type;
+  for (const [pattern, type] of CLASSIFICATION_RULES) {
+    if (pattern.test(name)) return type;
   }
   return 'other';
 }
