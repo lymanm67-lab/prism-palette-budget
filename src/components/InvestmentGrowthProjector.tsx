@@ -441,6 +441,19 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
               <p className="text-xs text-muted-foreground pb-1">+{formatCurrency(boostAmt * 12)}/yr added in Year {boostYear} (e.g., debt payoff freed up)</p>
             </div>
 
+            {/* Periodic lump-sum boost */}
+            <div className="flex items-end gap-3 p-3 rounded-lg bg-primary/5 border border-primary/10">
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Periodic Lump Sum</label>
+                <Input value={periodicBoostAmount} onChange={e => setPeriodicBoostAmount(e.target.value)} type="number" className="h-8 mt-1 w-28" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Every N Years</label>
+                <Input value={periodicBoostInterval} onChange={e => setPeriodicBoostInterval(e.target.value)} type="number" className="h-8 mt-1 w-20" min="1" max="10" />
+              </div>
+              <p className="text-xs text-muted-foreground pb-1">+{formatCurrency(pBoostAmt)} added every {pBoostInterval} years (Years {Array.from({length: Math.floor(horizon / pBoostInterval)}, (_, i) => (i+1) * pBoostInterval).join(', ')})</p>
+            </div>
+
             {/* Contribution increase schedule */}
             <div>
               <button onClick={() => setShowSchedule(!showSchedule)} className="flex items-center gap-1 text-sm font-semibold text-primary">
