@@ -25,8 +25,41 @@ const fadeUp = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transi
 
 const CreditHealthDashboard = () => {
   const navigate = useNavigate();
-  const { accounts } = useCreditAccounts();
+  const { accounts, refetch } = useCreditAccounts();
   const { disputes } = useDisputes();
+  const { householdId } = useHousehold();
+  const [syncing, setSyncing] = useState(false);
+
+  const syncLiabilities = useCallback(async () => {
+    if (!householdId) { toast.error('No household found'); return; }
+    setSyncing(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { toast.error('Please sign in'); return; }
+
+      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+      const res = await fetch(
+        `https://${projectId}.supabase.co/functions/v1/plaid/sync-liabilities`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify({ household_id: householdId }),
+        }
+      );
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || 'Sync failed');
+      toast.success(`Synced ${result.accounts_synced} credit accounts from your banks`);
+      refetch();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to sync liabilities');
+    } finally {
+      setSyncing(false);
+    }
+  }, [householdId, refetch]);
 
   // ── Score computation (reuses existing CreditOverview logic) ──
   const computeScore = (accts: typeof accounts) => {
