@@ -1,6 +1,7 @@
 import { useMemo, useState, useCallback } from 'react';
 import { PaystubUploader } from '@/components/PaystubUploader';
 import { BillScanner } from '@/components/BillScanner';
+import { toast } from 'sonner';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend, Tooltip as RTooltip } from 'recharts';
 import ReactMarkdown from 'react-markdown';
 import { motion, AnimatePresence } from 'framer-motion';
