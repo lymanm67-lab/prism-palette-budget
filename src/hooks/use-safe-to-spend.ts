@@ -54,6 +54,7 @@ export function useSafeToSpend(): SafeToSpendResult {
     // Calculate budget-based income and expenses (personal only, matching Subscriptions page logic)
     let budgetIncome = 0;
     let budgetExpenses = 0;
+    console.log('[STS] budgetsWithGroups count:', (budgetsWithGroups || []).length, 'sample:', budgetsWithGroups?.[0]);
     for (const b of (budgetsWithGroups || [])) {
       const group = b.categories?.category_groups;
       const isBusiness = group?.budget_type === 'business' || !!group?.business_profile_id;
@@ -65,6 +66,7 @@ export function useSafeToSpend(): SafeToSpendResult {
         budgetExpenses += b.planned_amount || 0;
       }
     }
+    console.log('[STS] budgetIncome:', budgetIncome, 'budgetExpenses:', budgetExpenses, 'txnIncome:', monthlyIncome, 'effectiveIncome:', Math.max(monthlyIncome, budgetIncome));
 
     // Total available cash (checking + savings)
     const totalAvailableCash = (accounts || [])
