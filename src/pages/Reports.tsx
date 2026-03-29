@@ -454,6 +454,7 @@ const Reports = () => {
               { label: 'Accounts', path: '/accounts', description: 'Connect bank accounts' },
             ]}
           />
+          <div className="grid gap-6 lg:grid-cols-2">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="font-display">Spending by Category</CardTitle>
@@ -609,7 +610,7 @@ const Reports = () => {
             dataEntryLinks={[
               { label: 'Budgets', path: '/budgets', description: 'Set monthly budgets' },
               { label: 'Transactions', path: '/transactions', description: 'Categorize transactions' },
-              { label: 'Categories', path: '/categories', description: 'Manage categories' },
+              <Card>
             ]}
           />
             <CardHeader>
