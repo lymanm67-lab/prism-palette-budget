@@ -113,6 +113,24 @@ export default function AiSpendingInsights({ transactions, accounts, monthlyInco
     }
   }, [transactions, accounts, monthlyIncome, monthlyExpenses, financialJourney]);
 
+  if (!hasAIAccess) {
+    return (
+      <Card className="border-border/50 opacity-75">
+        <CardHeader className="pb-4">
+          <CardTitle className="font-display text-lg flex items-center gap-2">
+            <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-prism-violet to-prism-rose flex items-center justify-center">
+              <Lock className="h-3.5 w-3.5 text-primary-foreground" />
+            </div>
+            AI Spending Insights
+          </CardTitle>
+          <p className="text-sm text-muted-foreground mt-2">
+            Upgrade to <span className="font-semibold text-foreground">Premium</span> to unlock AI-powered financial coaching and personalized spending analysis.
+          </p>
+        </CardHeader>
+      </Card>
+    );
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
