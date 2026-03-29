@@ -66,7 +66,6 @@ export function useSafeToSpend(): SafeToSpendResult {
         budgetExpenses += b.planned_amount || 0;
       }
     }
-    console.log('[STS] budgetIncome:', budgetIncome, 'budgetExpenses:', budgetExpenses, 'txnIncome:', monthlyIncome, 'effectiveIncome:', Math.max(monthlyIncome, budgetIncome));
 
     // Total available cash (checking + savings)
     const totalAvailableCash = (accounts || [])
@@ -81,6 +80,7 @@ export function useSafeToSpend(): SafeToSpendResult {
 
     // Use higher of budget income vs actual transaction income
     const effectiveIncome = Math.max(monthlyIncome, budgetIncome);
+    console.log('[STS] budgetIncome:', budgetIncome, 'budgetExpenses:', budgetExpenses, 'txnIncome:', monthlyIncome, 'effectiveIncome:', effectiveIncome);
 
     // Monthly obligations from recurring transactions (bills) 
     const monthlyObligations = (recurring || [])
