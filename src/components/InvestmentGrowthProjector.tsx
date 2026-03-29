@@ -227,6 +227,7 @@ export default function InvestmentGrowthProjector({ budgetMonth }: InvestmentGro
   const ssMonthly = parseFloat(ssMonthlyBenefit) || 0;
   const pBoostAmt = parseFloat(periodicBoostAmount) || 0;
   const pBoostInterval = parseInt(periodicBoostInterval) || 0;
+  const spousePension = parseFloat(spousePensionMonthly) || 0;
 
   // Compute all scenarios
   const scenarios = useMemo(() => ({
