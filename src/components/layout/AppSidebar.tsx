@@ -266,8 +266,43 @@ const AppSidebar = () => {
         </Button>
       </div>
 
+      {/* Nav Mode Toggle */}
+      <div className="relative px-2 py-1.5">
+        {!collapsed ? (
+          <div className="flex items-center gap-0.5 rounded-lg bg-sidebar-accent/50 p-0.5">
+            {(['personal', 'business', 'full'] as NavMode[]).map(mode => {
+              const cfg = NAV_MODE_CONFIG[mode];
+              const active = navMode === mode;
+              return (
+                <button
+                  key={mode}
+                  onClick={() => setNavMode(mode)}
+                  className={cn(
+                    'flex-1 flex items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-[11px] font-semibold transition-all duration-200',
+                    active
+                      ? 'bg-background shadow-sm text-foreground'
+                      : 'text-sidebar-foreground/40 hover:text-sidebar-foreground/70'
+                  )}
+                >
+                  <cfg.icon className={cn('h-3.5 w-3.5', active ? cfg.color : '')} />
+                  <span>{cfg.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <button
+            onClick={cycleNavMode}
+            className="mx-auto flex h-8 w-8 items-center justify-center rounded-lg bg-sidebar-accent/50 transition-colors hover:bg-sidebar-accent"
+            title={`View: ${NAV_MODE_CONFIG[navMode].label}`}
+          >
+            {(() => { const Ic = NAV_MODE_CONFIG[navMode].icon; return <Ic className={cn('h-4 w-4', NAV_MODE_CONFIG[navMode].color)} />; })()}
+          </button>
+        )}
+      </div>
+
       <nav className="relative flex-1 overflow-y-auto px-2 py-2 space-y-2">
-        {NAV_SECTIONS.map((section, sIdx) => (
+        {filteredSections.map((section, sIdx) => (
           <div key={section.label}>
             {!collapsed && (
               <p className="px-3 pb-1 text-[10px] font-bold uppercase tracking-widest text-sidebar-foreground/30">
