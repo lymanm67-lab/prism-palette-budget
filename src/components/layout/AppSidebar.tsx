@@ -18,8 +18,9 @@ import { useSidebarBadges } from '@/hooks/use-sidebar-badges';
 import type { LucideIcon } from 'lucide-react';
 
 type NavMode = 'personal' | 'business' | 'full';
+type SidebarDepth = 'essentials' | 'all';
 
-type NavItem = { to: string; icon: LucideIcon; label: string; color: string; mode?: 'personal' | 'business' };
+type NavItem = { to: string; icon: LucideIcon; label: string; color: string; mode?: 'personal' | 'business'; essential?: boolean };
 type NavSubGroup = { subLabel: string; items: NavItem[]; mode?: 'business' };
 type NavSection = {
   label: string;
@@ -33,17 +34,17 @@ const NAV_SECTIONS: NavSection[] = [
   {
     label: 'Home',
     items: [
-      { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', color: 'text-prism-teal' },
-      { to: '/getting-started', icon: ClipboardCheck, label: 'Get Started', color: 'text-prism-lime' },
+      { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', color: 'text-prism-teal', essential: true },
+      { to: '/getting-started', icon: ClipboardCheck, label: 'Get Started', color: 'text-prism-lime', essential: true },
     ],
   },
   {
     label: 'Track Money',
     items: [
-      { to: '/accounts', icon: Landmark, label: 'Accounts', color: 'text-prism-sky' },
-      { to: '/transactions', icon: ArrowLeftRight, label: 'Transactions', color: 'text-prism-orange' },
+      { to: '/accounts', icon: Landmark, label: 'Accounts', color: 'text-prism-sky', essential: true },
+      { to: '/transactions', icon: ArrowLeftRight, label: 'Transactions', color: 'text-prism-orange', essential: true },
       { to: '/categories', icon: Tags, label: 'Categories', color: 'text-prism-lime' },
-      { to: '/recurring', icon: RepeatIcon, label: 'Recurring', color: 'text-prism-teal' },
+      { to: '/recurring', icon: RepeatIcon, label: 'Recurring', color: 'text-prism-teal', essential: true },
       { to: '/reconciliation', icon: FileSearch, label: 'Reconciliation', color: 'text-prism-violet' },
     ],
   },
@@ -51,7 +52,7 @@ const NAV_SECTIONS: NavSection[] = [
     label: 'Plan & Budget',
     items: [
       { to: '/spending-trends', icon: TrendingUp, label: 'Spending Trends', color: 'text-prism-lime' },
-      { to: '/budgets', icon: PiggyBank, label: 'Budgets', color: 'text-prism-amber' },
+      { to: '/budgets', icon: PiggyBank, label: 'Budgets', color: 'text-prism-amber', essential: true },
       { to: '/cash-flow', icon: Wallet, label: 'Cash Flow', color: 'text-prism-teal' },
       { to: '/forecast', icon: LineChart, label: 'Forecast', color: 'text-prism-sky' },
       { to: '/calculators', icon: Calculator, label: 'Calculators', color: 'text-prism-indigo' },
@@ -69,7 +70,7 @@ const NAV_SECTIONS: NavSection[] = [
     label: 'Grow Wealth',
     items: [
       { to: '/net-worth', icon: Scale, label: 'Net Worth', color: 'text-prism-teal' },
-      { to: '/goals', icon: Target, label: 'Goals', color: 'text-prism-lime' },
+      { to: '/goals', icon: Target, label: 'Goals', color: 'text-prism-lime', essential: true },
       { to: '/investments', icon: TrendingUp, label: 'Investments', color: 'text-prism-indigo' },
       { to: '/crossover-tracker', icon: Target, label: 'Crossover Tracker', color: 'text-prism-lime' },
       { to: '/home-buying', icon: Home, label: 'Home Buying', color: 'text-prism-amber' },
@@ -78,7 +79,7 @@ const NAV_SECTIONS: NavSection[] = [
   {
     label: 'Insights',
     items: [
-      { to: '/reports', icon: BarChart3, label: 'Reports', color: 'text-prism-orange' },
+      { to: '/reports', icon: BarChart3, label: 'Reports', color: 'text-prism-orange', essential: true },
       { to: '/tax-assistant', icon: Bot, label: 'Tax Assistant', color: 'text-prism-indigo' },
       { to: '/year-in-review', icon: Sparkles, label: 'Year in Review', color: 'text-prism-amber' },
     ],
@@ -131,7 +132,7 @@ const NAV_SECTIONS: NavSection[] = [
   {
     label: 'Settings',
     items: [
-      { to: '/settings', icon: Settings, label: 'Settings', color: 'text-muted-foreground' },
+      { to: '/settings', icon: Settings, label: 'Settings', color: 'text-muted-foreground', essential: true },
       { to: '/about', icon: Heart, label: 'About', color: 'text-prism-rose' },
       { to: '/legal', icon: Scale, label: 'Legal', color: 'text-muted-foreground' },
     ],
@@ -158,6 +159,12 @@ const AppSidebar = () => {
   });
   useEffect(() => { localStorage.setItem('prism_nav_mode', navMode); }, [navMode]);
 
+  // Sidebar depth — essentials vs all
+  const [sidebarDepth, setSidebarDepth] = useState<SidebarDepth>(() => {
+    return (localStorage.getItem('prism_sidebar_depth') as SidebarDepth) || 'essentials';
+  });
+  useEffect(() => { localStorage.setItem('prism_sidebar_depth', sidebarDepth); }, [sidebarDepth]);
+
   const cycleNavMode = () => {
     const order: NavMode[] = ['personal', 'business', 'full'];
     setNavMode(order[(order.indexOf(navMode) + 1) % 3]);
@@ -169,15 +176,38 @@ const AppSidebar = () => {
     if (section.mode && section.mode !== navMode) return false;
     return true;
   }).map(section => {
-    if (navMode === 'full') return section;
-    return {
-      ...section,
-      subGroups: section.subGroups?.filter(sg => {
-        if (sg.mode && sg.mode !== navMode) return false;
-        return true;
-      }),
+    const filterItems = (items: NavItem[] | undefined) => {
+      if (!items) return items;
+      if (sidebarDepth === 'all') return items;
+      // In essentials mode, show essential items + any item on the current path
+      return items.filter(i => i.essential || location.pathname === i.to);
     };
-  });
+
+    const filtered = {
+      ...section,
+      items: filterItems(section.items),
+      topItems: filterItems(section.topItems),
+      subGroups: navMode !== 'full'
+        ? section.subGroups?.filter(sg => {
+            if (sg.mode && sg.mode !== navMode) return false;
+            return true;
+          })
+        : section.subGroups,
+    };
+
+    // In essentials mode, hide Capital section entirely (it's advanced)
+    if (sidebarDepth === 'essentials' && section.label === 'Capital') return null;
+
+    // Hide sections with no visible items
+    const totalItems = [
+      ...(filtered.items ?? []),
+      ...(filtered.topItems ?? []),
+      ...(filtered.subGroups?.flatMap(sg => sg.items) ?? []),
+    ];
+    if (totalItems.length === 0) return null;
+
+    return filtered;
+  }).filter(Boolean) as NavSection[];
 
   // Track which top-level sections are open — auto-open sections with active route
   const [openSections, setOpenSections] = useState<Record<string, boolean>>(() => {
@@ -426,6 +456,30 @@ const AppSidebar = () => {
       </nav>
 
       <div className="relative border-t border-sidebar-border p-3 space-y-1">
+        {/* Sidebar depth toggle */}
+        {!collapsed ? (
+          <button
+            onClick={() => setSidebarDepth(sidebarDepth === 'essentials' ? 'all' : 'essentials')}
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-sidebar-foreground/60 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          >
+            <Layers className="h-4 w-4 shrink-0 text-prism-violet" />
+            <span className="flex-1 text-left">
+              {sidebarDepth === 'essentials' ? 'Show All Tools' : 'Essentials Only'}
+            </span>
+            <span className="text-[10px] font-medium rounded-full bg-prism-violet/15 text-prism-violet px-2 py-0.5">
+              {sidebarDepth === 'essentials' ? 'Simple' : 'Full'}
+            </span>
+          </button>
+        ) : (
+          <button
+            onClick={() => setSidebarDepth(sidebarDepth === 'essentials' ? 'all' : 'essentials')}
+            className="mx-auto flex h-8 w-8 items-center justify-center rounded-lg text-sidebar-foreground/60 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            title={sidebarDepth === 'essentials' ? 'Show All Tools' : 'Essentials Only'}
+          >
+            <Layers className="h-4 w-4 text-prism-violet" />
+          </button>
+        )}
+
         <button
           onClick={() => setTheme(isDark ? 'light' : 'dark')}
           className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-sidebar-foreground/60 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"

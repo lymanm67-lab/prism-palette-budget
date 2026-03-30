@@ -25,6 +25,7 @@ import CsvImportDialog from '@/components/CsvImportDialog';
 import BankExportGuide from '@/components/BankExportGuide';
 import { toast } from 'sonner';
 import { EmptyState } from '@/components/EmptyState';
+import ConnectionTrustBadges from '@/components/ConnectionTrustBadges';
 import { supabase } from '@/integrations/supabase/client';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { useQueryClient } from '@tanstack/react-query';
@@ -490,6 +491,9 @@ const Accounts = () => {
           <MxConnectButton />
           <SnapTradeConnectButton ref={snapTradeRef} />
         </div>
+
+        {/* Trust badges for data connections */}
+        <ConnectionTrustBadges />
 
         {pageGuideOpen && (
           <PageOverview
