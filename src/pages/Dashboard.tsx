@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import NewUserOnboardingOverlay from '@/components/NewUserOnboardingOverlay';
 import AiSpendingInsights from '@/components/AiSpendingInsights';
 import { Tooltip as ShadcnTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import PageOverview from '@/components/PageOverview';
@@ -157,6 +158,8 @@ const Dashboard = () => {
   );
 
   return (
+    <>
+    <NewUserOnboardingOverlay />
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-5">
       {/* Header with mode toggle */}
       <motion.div variants={item} className="flex flex-col gap-3">
