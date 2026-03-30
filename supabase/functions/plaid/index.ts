@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
           secret: PLAID_SECRET,
           user: { client_user_id: userId },
           client_name: 'PrismMoney',
-          products: ['transactions', 'liabilities'],
+          products: ['transactions'],
           country_codes: ['US'],
           language: 'en',
         }),
