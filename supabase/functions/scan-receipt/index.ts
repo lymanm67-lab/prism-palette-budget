@@ -82,10 +82,12 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
-    if (!toolCall) throw new Error("No structured data returned from AI");
+    const content = data.choices?.[0]?.message?.content;
+    if (!content) throw new Error("No response from AI");
 
-    const extracted = JSON.parse(toolCall.function.arguments);
+    // Strip markdown fences if present
+    const jsonStr = content.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+    const extracted = JSON.parse(jsonStr);
 
     return new Response(JSON.stringify(extracted), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
