@@ -474,9 +474,10 @@ export function useSpendingByCategory(startDate: string, endDate: string, mode: 
 
       const { data, error } = await supabase
         .from('transactions')
-        .select('amount, category_id, account_id, categories(name, color, group_id, category_groups(budget_type))')
+        .select('amount, category_id, account_id, is_transfer, categories(name, color, group_id, category_groups(budget_type))')
         .eq('household_id', household!.id)
         .is('deleted_at', null)
+        .eq('is_transfer', false)
         .gte('date', startDate)
         .lte('date', endDate)
         .lt('amount', 0); // expenses only
