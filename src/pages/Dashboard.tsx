@@ -496,6 +496,7 @@ Your Safe-to-Spend updates in real time as you add transactions, pay bills, and 
       <WeeklyRecap open={recapOpen} onOpenChange={setRecapOpen} />
       <ModeSettingsDialog open={modeSettingsOpen} onClose={() => setModeSettingsOpen(false)} />
     </motion.div>
+    </>
   );
 };
 
