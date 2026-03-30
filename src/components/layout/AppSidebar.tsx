@@ -176,15 +176,38 @@ const AppSidebar = () => {
     if (section.mode && section.mode !== navMode) return false;
     return true;
   }).map(section => {
-    if (navMode === 'full') return section;
-    return {
-      ...section,
-      subGroups: section.subGroups?.filter(sg => {
-        if (sg.mode && sg.mode !== navMode) return false;
-        return true;
-      }),
+    const filterItems = (items: NavItem[] | undefined) => {
+      if (!items) return items;
+      if (sidebarDepth === 'all') return items;
+      // In essentials mode, show essential items + any item on the current path
+      return items.filter(i => i.essential || location.pathname === i.to);
     };
-  });
+
+    const filtered = {
+      ...section,
+      items: filterItems(section.items),
+      topItems: filterItems(section.topItems),
+      subGroups: navMode !== 'full'
+        ? section.subGroups?.filter(sg => {
+            if (sg.mode && sg.mode !== navMode) return false;
+            return true;
+          })
+        : section.subGroups,
+    };
+
+    // In essentials mode, hide Capital section entirely (it's advanced)
+    if (sidebarDepth === 'essentials' && section.label === 'Capital') return null;
+
+    // Hide sections with no visible items
+    const totalItems = [
+      ...(filtered.items ?? []),
+      ...(filtered.topItems ?? []),
+      ...(filtered.subGroups?.flatMap(sg => sg.items) ?? []),
+    ];
+    if (totalItems.length === 0) return null;
+
+    return filtered;
+  }).filter(Boolean) as NavSection[];
 
   // Track which top-level sections are open — auto-open sections with active route
   const [openSections, setOpenSections] = useState<Record<string, boolean>>(() => {
