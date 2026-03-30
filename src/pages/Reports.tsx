@@ -622,6 +622,57 @@ const Reports = () => {
             </Card>
           </div>
 
+          {/* Year-to-Date Category Totals */}
+          {ytdCategoryTotals.length > 0 && (
+            <Card className="mt-6">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <div>
+                  <CardTitle className="font-display">Year-to-Date Totals</CardTitle>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Jan 1 — {format(new Date(), 'MMM d, yyyy')} · Total: {formatCurrency(ytdGrandTotal)}
+                  </p>
+                </div>
+                <Badge variant="secondary" className="text-xs">
+                  {new Date().getFullYear()} YTD
+                </Badge>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={Math.max(320, ytdCategoryTotals.slice(0, 15).length * 36 + 40)}>
+                  <BarChart data={ytdCategoryTotals.slice(0, 15)} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
+                    <XAxis type="number" stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={v => formatCompact(v)} />
+                    <YAxis dataKey="name" type="category" stroke="hsl(var(--muted-foreground))" fontSize={11} width={120} tick={{ fill: 'hsl(var(--foreground))' }} />
+                    <Tooltip cursor={{ fill: 'transparent' }} formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} itemStyle={{ color: 'hsl(var(--foreground))' }} labelStyle={{ color: 'hsl(var(--foreground))' }} />
+                    <Bar dataKey="total" name="YTD Spent" radius={[0, 6, 6, 0]} barSize={20}>
+                      {ytdCategoryTotals.slice(0, 15).map((entry, i) => (
+                        <Cell key={i} fill={entry.color} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+                {/* Detailed list below chart */}
+                <div className="mt-4 space-y-2 border-t border-border pt-4">
+                  {ytdCategoryTotals.map((cat, i) => {
+                    const pct = ytdGrandTotal > 0 ? (cat.total / ytdGrandTotal) * 100 : 0;
+                    return (
+                      <div key={cat.name} className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="font-medium text-muted-foreground w-5 text-right shrink-0">{i + 1}</span>
+                          <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
+                          <span className="truncate">{cat.name}</span>
+                        </div>
+                        <div className="flex items-center gap-3 shrink-0">
+                          <span className="text-xs text-muted-foreground">{pct.toFixed(1)}%</span>
+                          <span className="font-semibold w-24 text-right">{formatCurrency(cat.total)}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Daily Spending */}
           {dailySpending.length > 0 && (
             <Card className="mt-6">
