@@ -8,7 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { useSpendingByCategory, useTransactionsByDateRange, useBudgets, useCategories, useAccounts, useAllTransactions } from '@/hooks/use-finance-data';
 import { useCurrency } from '@/hooks/use-currency';
-import { CalendarIcon, Download, FileText, Loader2, Building2, User, BarChart3, Printer, PieChart as PieChartIcon, Scale, Wallet, TrendingUp, LineChart as LineChartIcon, Store, Briefcase, Sprout } from 'lucide-react';
+import { CalendarIcon, Download, FileText, Loader2, Building2, User, BarChart3, Printer, PieChart as PieChartIcon, Scale, Wallet, TrendingUp, LineChart as LineChartIcon, Store, Briefcase, Sprout, Layers } from 'lucide-react';
 import { useMemo, useRef, useState, useCallback } from 'react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { exportToPdf, exportToCsv } from '@/lib/export-utils';
