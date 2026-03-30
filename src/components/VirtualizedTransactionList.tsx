@@ -217,6 +217,7 @@ export default function VirtualizedTransactionList({
                 isSelected={selected.has(txn.id)}
                 onToggle={() => onToggleSelect(txn.id)}
                 onClick={() => onRowClick(txn)}
+                onSwipeDelete={onSwipeDelete}
                 isDuplicate={duplicateIds.has(txn.id)}
               />
             </div>
