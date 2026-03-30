@@ -41,9 +41,12 @@ const PRESETS: { label: string; range: () => DateRange }[] = [
   { label: 'Last Month', range: () => ({ from: startOfMonth(subMonths(new Date(), 1)), to: endOfMonth(subMonths(new Date(), 1)) }) },
   { label: 'Last 3 Months', range: () => ({ from: startOfMonth(subMonths(new Date(), 2)), to: endOfMonth(new Date()) }) },
   { label: 'Last 6 Months', range: () => ({ from: startOfMonth(subMonths(new Date(), 5)), to: endOfMonth(new Date()) }) },
+  { label: 'Year to Date', range: () => ({ from: startOfYear(new Date()), to: new Date() }) },
   { label: 'This Year', range: () => ({ from: startOfYear(new Date()), to: endOfYear(new Date()) }) },
+  { label: 'Last Year', range: () => ({ from: startOfYear(subYears(new Date(), 1)), to: endOfYear(subYears(new Date(), 1)) }) },
   { label: 'Last 7 Days', range: () => ({ from: subDays(new Date(), 6), to: new Date() }) },
   { label: 'Last 30 Days', range: () => ({ from: subDays(new Date(), 29), to: new Date() }) },
+  { label: 'Custom', range: () => ({ from: startOfMonth(new Date()), to: endOfMonth(new Date()) }) },
 ];
 
 const Reports = () => {
