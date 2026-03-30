@@ -283,7 +283,7 @@ export function useTransactions() {
         .eq('household_id', household!.id)
         .is('deleted_at', null)
         .order('date', { ascending: false })
-        .limit(200);
+        .limit(1000);
       if (error) throw error;
       return data;
     },
