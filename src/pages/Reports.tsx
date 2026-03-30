@@ -365,6 +365,14 @@ const Reports = () => {
             >
               <Building2 className="h-3.5 w-3.5" /> Business
             </button>
+            <button
+              onClick={() => setReportMode('combined')}
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                reportMode === 'combined' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Layers className="h-3.5 w-3.5" /> Combined
+            </button>
           </div>
 
         {/* Date Range Picker */}
