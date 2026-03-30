@@ -737,6 +737,50 @@ const Reports = () => {
               </CardContent>
             </Card>
           )}
+
+          {/* Income vs Expenses */}
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle className="font-display">Income vs Expenses</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                {dateLabel}
+              </p>
+            </CardHeader>
+            <CardContent>
+              {/* Summary cards */}
+              <div className="grid grid-cols-3 gap-4 mb-6">
+                <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-4 text-center">
+                  <p className="text-xs font-medium text-muted-foreground mb-1">Income</p>
+                  <p className="text-lg font-bold text-emerald-500">{formatCurrency(incomeVsExpenses.income)}</p>
+                </div>
+                <div className="rounded-lg bg-rose-500/10 border border-rose-500/20 p-4 text-center">
+                  <p className="text-xs font-medium text-muted-foreground mb-1">Expenses</p>
+                  <p className="text-lg font-bold text-rose-500">{formatCurrency(incomeVsExpenses.expenses)}</p>
+                </div>
+                <div className={cn("rounded-lg p-4 text-center border", incomeVsExpenses.net >= 0 ? "bg-emerald-500/10 border-emerald-500/20" : "bg-rose-500/10 border-rose-500/20")}>
+                  <p className="text-xs font-medium text-muted-foreground mb-1">Net</p>
+                  <p className={cn("text-lg font-bold", incomeVsExpenses.net >= 0 ? "text-emerald-500" : "text-rose-500")}>{formatCurrency(incomeVsExpenses.net)}</p>
+                </div>
+              </div>
+
+              {incomeVsExpenses.byMonth.length > 0 ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={incomeVsExpenses.byMonth} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                    <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={v => formatCompact(v)} />
+                    <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} itemStyle={{ color: 'hsl(var(--foreground))' }} labelStyle={{ color: 'hsl(var(--foreground))' }} />
+                    <Legend />
+                    <Bar dataKey="income" name="Income" fill="hsl(160, 84%, 39%)" radius={[4, 4, 0, 0]} barSize={28} />
+                    <Bar dataKey="expenses" name="Expenses" fill="hsl(0, 84%, 60%)" radius={[4, 4, 0, 0]} barSize={28} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <p className="py-10 text-center text-muted-foreground">No data in this period.</p>
+              )}
+            </CardContent>
+          </Card>
+
           <ReportNarrative tab="spending" spendingData={spendingData || undefined} dateLabel={dateLabel} />
           </>
           )}
