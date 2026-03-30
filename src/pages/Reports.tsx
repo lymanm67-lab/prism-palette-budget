@@ -13,7 +13,7 @@ import { useMemo, useRef, useState, useCallback } from 'react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { exportToPdf, exportToCsv } from '@/lib/export-utils';
 import { toast } from 'sonner';
-import { format, startOfMonth, endOfMonth, subMonths, startOfYear, endOfYear, subDays, startOfWeek, endOfWeek } from 'date-fns';
+import { format, startOfMonth, endOfMonth, subMonths, startOfYear, endOfYear, subDays, startOfWeek, endOfWeek, subYears } from 'date-fns';
 import { cn } from '@/lib/utils';
 import {
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
@@ -41,9 +41,12 @@ const PRESETS: { label: string; range: () => DateRange }[] = [
   { label: 'Last Month', range: () => ({ from: startOfMonth(subMonths(new Date(), 1)), to: endOfMonth(subMonths(new Date(), 1)) }) },
   { label: 'Last 3 Months', range: () => ({ from: startOfMonth(subMonths(new Date(), 2)), to: endOfMonth(new Date()) }) },
   { label: 'Last 6 Months', range: () => ({ from: startOfMonth(subMonths(new Date(), 5)), to: endOfMonth(new Date()) }) },
+  { label: 'Year to Date', range: () => ({ from: startOfYear(new Date()), to: new Date() }) },
   { label: 'This Year', range: () => ({ from: startOfYear(new Date()), to: endOfYear(new Date()) }) },
+  { label: 'Last Year', range: () => ({ from: startOfYear(subYears(new Date(), 1)), to: endOfYear(subYears(new Date(), 1)) }) },
   { label: 'Last 7 Days', range: () => ({ from: subDays(new Date(), 6), to: new Date() }) },
   { label: 'Last 30 Days', range: () => ({ from: subDays(new Date(), 29), to: new Date() }) },
+  { label: 'Custom', range: () => ({ from: startOfMonth(new Date()), to: endOfMonth(new Date()) }) },
 ];
 
 const Reports = () => {
@@ -394,7 +397,9 @@ const Reports = () => {
                     className="block w-full text-left rounded-md px-2 py-1.5 text-sm hover:bg-muted transition-colors"
                     onClick={() => {
                       setDateRange(preset.range());
-                      setCalendarOpen(false);
+                      if (preset.label !== 'Custom') {
+                        setCalendarOpen(false);
+                      }
                     }}
                   >
                     {preset.label}
