@@ -18,8 +18,9 @@ import { useSidebarBadges } from '@/hooks/use-sidebar-badges';
 import type { LucideIcon } from 'lucide-react';
 
 type NavMode = 'personal' | 'business' | 'full';
+type SidebarDepth = 'essentials' | 'all';
 
-type NavItem = { to: string; icon: LucideIcon; label: string; color: string; mode?: 'personal' | 'business' };
+type NavItem = { to: string; icon: LucideIcon; label: string; color: string; mode?: 'personal' | 'business'; essential?: boolean };
 type NavSubGroup = { subLabel: string; items: NavItem[]; mode?: 'business' };
 type NavSection = {
   label: string;
