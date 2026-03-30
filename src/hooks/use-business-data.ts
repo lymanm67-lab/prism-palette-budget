@@ -131,6 +131,7 @@ export function useBusinessTransactions(startDate: string, endDate: string) {
         .from('transactions')
         .select('*, categories(name, color, group_id), accounts(name)')
         .eq('household_id', household!.id)
+        .is('deleted_at', null)
         .gte('date', startDate)
         .lte('date', endDate)
         .in('category_id', catIds)
