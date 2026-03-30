@@ -8,7 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { useSpendingByCategory, useTransactionsByDateRange, useBudgets, useCategories, useAccounts, useAllTransactions } from '@/hooks/use-finance-data';
 import { useCurrency } from '@/hooks/use-currency';
-import { CalendarIcon, Download, FileText, Loader2, Building2, User, BarChart3, Printer, PieChart as PieChartIcon, Scale, Wallet, TrendingUp, LineChart as LineChartIcon, Store, Briefcase, Sprout } from 'lucide-react';
+import { CalendarIcon, Download, FileText, Loader2, Building2, User, BarChart3, Printer, PieChart as PieChartIcon, Scale, Wallet, TrendingUp, LineChart as LineChartIcon, Store, Briefcase, Sprout, Layers } from 'lucide-react';
 import { useMemo, useRef, useState, useCallback } from 'react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { exportToPdf, exportToCsv } from '@/lib/export-utils';
@@ -57,7 +57,7 @@ const Reports = () => {
   const [spendingSub, setSpendingSub] = useState<'categories' | 'merchants'>('categories');
   const [budgetSub, setBudgetSub] = useState<'budget' | 'cashflow'>('budget');
   const [wealthSub, setWealthSub] = useState<'networth' | 'trends'>('networth');
-  const [reportMode, setReportMode] = useState<'personal' | 'business'>('personal');
+  const [reportMode, setReportMode] = useState<'personal' | 'business' | 'combined'>('personal');
   const [spendingChartType, setSpendingChartType] = useState<'pie' | 'bar'>('pie');
   const [showOtherBreakdown, setShowOtherBreakdown] = useState(false);
   const reportRef = useRef<HTMLDivElement>(null);
@@ -66,7 +66,7 @@ const Reports = () => {
   const endDate = format(dateRange.to, 'yyyy-MM-dd');
   const budgetMonth = format(dateRange.from, 'yyyy-MM-01');
 
-  const { data: spendingData, isLoading } = useSpendingByCategory(startDate, endDate, reportMode);
+  const { data: spendingData, isLoading } = useSpendingByCategory(startDate, endDate, reportMode === 'combined' ? 'all' : reportMode);
   const { data: transactions } = useTransactionsByDateRange(startDate, endDate);
   const { data: budgets } = useBudgets(budgetMonth);
   const { data: categories } = useCategories();
@@ -364,6 +364,14 @@ const Reports = () => {
               }`}
             >
               <Building2 className="h-3.5 w-3.5" /> Business
+            </button>
+            <button
+              onClick={() => setReportMode('combined')}
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                reportMode === 'combined' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Layers className="h-3.5 w-3.5" /> Combined
             </button>
           </div>
 
