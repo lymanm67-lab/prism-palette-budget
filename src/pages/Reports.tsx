@@ -13,7 +13,7 @@ import { useMemo, useRef, useState, useCallback } from 'react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { exportToPdf, exportToCsv } from '@/lib/export-utils';
 import { toast } from 'sonner';
-import { format, startOfMonth, endOfMonth, subMonths, startOfYear, endOfYear, subDays, startOfWeek, endOfWeek } from 'date-fns';
+import { format, startOfMonth, endOfMonth, subMonths, startOfYear, endOfYear, subDays, startOfWeek, endOfWeek, subYears } from 'date-fns';
 import { cn } from '@/lib/utils';
 import {
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
