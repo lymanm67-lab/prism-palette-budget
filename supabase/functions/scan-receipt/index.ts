@@ -53,37 +53,16 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are a receipt parser. Extract transaction details from receipt images. Return structured data using the extract_receipt tool. For the category, try to match one of these existing categories: ${categoryList}. If none match, suggest a reasonable category name. The date should be in YYYY-MM-DD format. The amount should be the total amount as a positive number. If you cannot read a field, leave it as an empty string or 0 for amount.`,
+            content: `You are a receipt parser. Extract transaction details from receipt images. Return ONLY a valid JSON object with these fields: merchant (string), amount (number, positive), date (string, YYYY-MM-DD), category (string). For the category, try to match one of these existing categories: ${categoryList}. If none match, suggest a reasonable category name. If you cannot read a field, use empty string or 0 for amount. No markdown, no explanation, just the JSON object.`,
           },
           {
             role: "user",
             content: [
-              { type: "text", text: "Extract the merchant name, total amount, date, and category from this receipt." },
+              { type: "text", text: "Extract the merchant name, total amount, date, and category from this receipt. Return only JSON." },
               { type: "image_url", image_url: { url: image } },
             ],
           },
         ],
-        tools: [
-          {
-            type: "function",
-            function: {
-              name: "extract_receipt",
-              description: "Extract structured receipt data",
-              parameters: {
-                type: "object",
-                properties: {
-                  merchant: { type: "string", description: "Merchant/store name" },
-                  amount: { type: "number", description: "Total amount as a positive number" },
-                  date: { type: "string", description: "Date in YYYY-MM-DD format" },
-                  category: { type: "string", description: "Best matching category name" },
-                },
-                required: ["merchant", "amount", "date", "category"],
-                additionalProperties: false,
-              },
-            },
-          },
-        ],
-        tool_choice: { type: "function", function: { name: "extract_receipt" } },
       }),
     });
 
@@ -103,10 +82,12 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
-    if (!toolCall) throw new Error("No structured data returned from AI");
+    const content = data.choices?.[0]?.message?.content;
+    if (!content) throw new Error("No response from AI");
 
-    const extracted = JSON.parse(toolCall.function.arguments);
+    // Strip markdown fences if present
+    const jsonStr = content.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+    const extracted = JSON.parse(jsonStr);
 
     return new Response(JSON.stringify(extracted), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
