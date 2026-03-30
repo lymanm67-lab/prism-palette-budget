@@ -457,11 +457,11 @@ export function useDeleteBudget() {
 }
 
 // ==================== SPENDING AGGREGATION ====================
-export function useSpendingByCategory(startDate: string, endDate: string) {
+export function useSpendingByCategory(startDate: string, endDate: string, mode: 'personal' | 'business' | 'all' = 'all') {
   const { household } = useHousehold();
   const { data: accounts } = useAccounts();
   return useQuery({
-    queryKey: ['spending_by_category', household?.id, startDate, endDate],
+    queryKey: ['spending_by_category', household?.id, startDate, endDate, mode],
     enabled: !!household,
     queryFn: async () => {
       // Build set of investment account IDs to exclude
@@ -474,7 +474,7 @@ export function useSpendingByCategory(startDate: string, endDate: string) {
 
       const { data, error } = await supabase
         .from('transactions')
-        .select('amount, category_id, account_id, categories(name, color)')
+        .select('amount, category_id, account_id, categories(name, color, group_id, category_groups(budget_type))')
         .eq('household_id', household!.id)
         .is('deleted_at', null)
         .gte('date', startDate)
@@ -482,10 +482,18 @@ export function useSpendingByCategory(startDate: string, endDate: string) {
         .lt('amount', 0); // expenses only
       if (error) throw error;
 
-      // Aggregate by category, excluding investment accounts
+      // Aggregate by category, excluding investment accounts and filtering by mode
       const map = new Map<string, { name: string; color: string; value: number }>();
       for (const t of data) {
         if (investmentAccountIds.has(t.account_id)) continue;
+
+        // Filter by budget_type when mode is specified
+        if (mode !== 'all' && t.categories?.category_groups) {
+          const budgetType = (t.categories.category_groups as any)?.budget_type;
+          if (mode === 'personal' && budgetType === 'business') continue;
+          if (mode === 'business' && budgetType !== 'business') continue;
+        }
+
         const catName = t.categories?.name || 'Uncategorized';
         const catColor = t.categories?.color || '#888';
         const existing = map.get(catName) || { name: catName, color: catColor, value: 0 };
