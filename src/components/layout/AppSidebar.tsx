@@ -456,6 +456,30 @@ const AppSidebar = () => {
       </nav>
 
       <div className="relative border-t border-sidebar-border p-3 space-y-1">
+        {/* Sidebar depth toggle */}
+        {!collapsed ? (
+          <button
+            onClick={() => setSidebarDepth(sidebarDepth === 'essentials' ? 'all' : 'essentials')}
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-sidebar-foreground/60 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          >
+            <Layers className="h-4 w-4 shrink-0 text-prism-violet" />
+            <span className="flex-1 text-left">
+              {sidebarDepth === 'essentials' ? 'Show All Tools' : 'Essentials Only'}
+            </span>
+            <span className="text-[10px] font-medium rounded-full bg-prism-violet/15 text-prism-violet px-2 py-0.5">
+              {sidebarDepth === 'essentials' ? 'Simple' : 'Full'}
+            </span>
+          </button>
+        ) : (
+          <button
+            onClick={() => setSidebarDepth(sidebarDepth === 'essentials' ? 'all' : 'essentials')}
+            className="mx-auto flex h-8 w-8 items-center justify-center rounded-lg text-sidebar-foreground/60 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+            title={sidebarDepth === 'essentials' ? 'Show All Tools' : 'Essentials Only'}
+          >
+            <Layers className="h-4 w-4 text-prism-violet" />
+          </button>
+        )}
+
         <button
           onClick={() => setTheme(isDark ? 'light' : 'dark')}
           className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-sidebar-foreground/60 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
