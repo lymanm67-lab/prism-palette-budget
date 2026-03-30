@@ -227,14 +227,20 @@ const Reports = () => {
     if (!allTransactions || !categories) return [];
     const ytdStart = format(startOfYear(new Date()), 'yyyy-MM-dd');
     const today = format(new Date(), 'yyyy-MM-dd');
+    const investmentIds = new Set((accounts || []).filter(a => a.account_type === 'investment').map(a => a.id));
     const catMap = new Map<string, { name: string; total: number; color: string }>();
 
     for (const t of allTransactions) {
       if (t.amount >= 0 || t.is_transfer || t.deleted_at) continue;
       if (t.date < ytdStart || t.date > today) continue;
-      // Skip investment accounts
-      const acct = accounts?.find(a => a.id === t.account_id);
-      if (acct?.account_type === 'investment') continue;
+      if (investmentIds.has(t.account_id)) continue;
+
+      // Respect reportMode (personal / business / combined)
+      if (reportMode !== 'combined' && t.categories?.category_groups) {
+        const budgetType = (t.categories.category_groups as any)?.budget_type;
+        if (reportMode === 'personal' && budgetType === 'business') continue;
+        if (reportMode === 'business' && budgetType !== 'business') continue;
+      }
 
       const catName = t.categories?.name || 'Uncategorized';
       const catColor = t.categories?.color || '#888';
@@ -244,7 +250,7 @@ const Reports = () => {
     }
 
     return Array.from(catMap.values()).sort((a, b) => b.total - a.total);
-  }, [allTransactions, categories, accounts]);
+  }, [allTransactions, categories, accounts, reportMode]);
 
   const ytdGrandTotal = useMemo(() => ytdCategoryTotals.reduce((s, c) => s + c.total, 0), [ytdCategoryTotals]);
 

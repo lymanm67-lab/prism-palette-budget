@@ -361,14 +361,28 @@ export function useAllTransactions() {
     queryKey: ['transactions_all', household?.id],
     enabled: !!household,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('transactions')
-        .select('*, categories(name, color), accounts(name, balance)')
-        .eq('household_id', household!.id)
-        .is('deleted_at', null)
-        .order('date', { ascending: true });
-      if (error) throw error;
-      return data;
+      // Fetch all transactions in pages to avoid the 1000-row default limit
+      const pageSize = 1000;
+      let allData: any[] = [];
+      let from = 0;
+      let keepGoing = true;
+      while (keepGoing) {
+        const { data, error } = await supabase
+          .from('transactions')
+          .select('*, categories(name, color, group_id, category_groups(budget_type)), accounts(name, balance)')
+          .eq('household_id', household!.id)
+          .is('deleted_at', null)
+          .order('date', { ascending: true })
+          .range(from, from + pageSize - 1);
+        if (error) throw error;
+        allData = allData.concat(data);
+        if (data.length < pageSize) {
+          keepGoing = false;
+        } else {
+          from += pageSize;
+        }
+      }
+      return allData;
     },
   });
 }
