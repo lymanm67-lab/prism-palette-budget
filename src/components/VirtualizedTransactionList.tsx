@@ -166,6 +166,7 @@ export default function VirtualizedTransactionList({
   selected,
   onToggleSelect,
   onRowClick,
+  onSwipeDelete,
   duplicateIds = new Set(),
 }: VirtualizedTransactionListProps) {
   const parentRef = useRef<HTMLDivElement>(null);
