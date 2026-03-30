@@ -57,7 +57,7 @@ const Reports = () => {
   const [spendingSub, setSpendingSub] = useState<'categories' | 'merchants'>('categories');
   const [budgetSub, setBudgetSub] = useState<'budget' | 'cashflow'>('budget');
   const [wealthSub, setWealthSub] = useState<'networth' | 'trends'>('networth');
-  const [reportMode, setReportMode] = useState<'personal' | 'business'>('personal');
+  const [reportMode, setReportMode] = useState<'personal' | 'business' | 'combined'>('personal');
   const [spendingChartType, setSpendingChartType] = useState<'pie' | 'bar'>('pie');
   const [showOtherBreakdown, setShowOtherBreakdown] = useState(false);
   const reportRef = useRef<HTMLDivElement>(null);
