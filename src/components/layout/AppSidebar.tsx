@@ -159,6 +159,12 @@ const AppSidebar = () => {
   });
   useEffect(() => { localStorage.setItem('prism_nav_mode', navMode); }, [navMode]);
 
+  // Sidebar depth — essentials vs all
+  const [sidebarDepth, setSidebarDepth] = useState<SidebarDepth>(() => {
+    return (localStorage.getItem('prism_sidebar_depth') as SidebarDepth) || 'essentials';
+  });
+  useEffect(() => { localStorage.setItem('prism_sidebar_depth', sidebarDepth); }, [sidebarDepth]);
+
   const cycleNavMode = () => {
     const order: NavMode[] = ['personal', 'business', 'full'];
     setNavMode(order[(order.indexOf(navMode) + 1) % 3]);
