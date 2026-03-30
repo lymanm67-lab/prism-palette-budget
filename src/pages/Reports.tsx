@@ -222,6 +222,32 @@ const Reports = () => {
     }));
   }, [monthlyCashflow]);
 
+  // ==================== INCOME VS EXPENSES ====================
+  const incomeVsExpenses = useMemo(() => {
+    if (!transactions) return { income: 0, expenses: 0, net: 0, byMonth: [] as { month: string; income: number; expenses: number }[] };
+    let income = 0;
+    let expenses = 0;
+    const monthMap = new Map<string, { month: string; sortKey: string; income: number; expenses: number }>();
+    for (const t of transactions) {
+      if (t.is_transfer || t.deleted_at) continue;
+      const acct = accounts?.find(a => a.id === t.account_id);
+      if (acct?.account_type === 'investment') continue;
+      if (t.amount > 0) {
+        income += t.amount;
+      } else {
+        expenses += Math.abs(t.amount);
+      }
+      const m = t.date.substring(0, 7);
+      const label = new Date(t.date).toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+      const existing = monthMap.get(m) || { month: label, sortKey: m, income: 0, expenses: 0 };
+      if (t.amount > 0) existing.income += t.amount;
+      else existing.expenses += Math.abs(t.amount);
+      monthMap.set(m, existing);
+    }
+    const byMonth = Array.from(monthMap.values()).sort((a, b) => a.sortKey.localeCompare(b.sortKey));
+    return { income, expenses, net: income - expenses, byMonth };
+  }, [transactions, accounts]);
+
   // ==================== YEAR-TO-DATE CATEGORY TOTALS ====================
   const ytdCategoryTotals = useMemo(() => {
     if (!allTransactions || !categories) return [];
