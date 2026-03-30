@@ -1,0 +1,1 @@
+UPDATE transactions SET deleted_at = now() WHERE id = '79b4f1d9-ef47-443d-8bde-379c921f5dbf';
