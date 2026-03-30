@@ -219,6 +219,32 @@ const Reports = () => {
     }));
   }, [monthlyCashflow]);
 
+  // ==================== YEAR-TO-DATE CATEGORY TOTALS ====================
+  const ytdCategoryTotals = useMemo(() => {
+    if (!allTransactions || !categories) return [];
+    const ytdStart = format(startOfYear(new Date()), 'yyyy-MM-dd');
+    const today = format(new Date(), 'yyyy-MM-dd');
+    const catMap = new Map<string, { name: string; total: number; color: string }>();
+
+    for (const t of allTransactions) {
+      if (t.amount >= 0 || t.is_transfer || t.deleted_at) continue;
+      if (t.date < ytdStart || t.date > today) continue;
+      // Skip investment accounts
+      const acct = accounts?.find(a => a.id === t.account_id);
+      if (acct?.account_type === 'investment') continue;
+
+      const catName = t.categories?.name || 'Uncategorized';
+      const catColor = t.categories?.color || '#888';
+      const existing = catMap.get(catName) || { name: catName, total: 0, color: catColor };
+      existing.total += Math.abs(t.amount);
+      catMap.set(catName, existing);
+    }
+
+    return Array.from(catMap.values()).sort((a, b) => b.total - a.total);
+  }, [allTransactions, categories, accounts]);
+
+  const ytdGrandTotal = useMemo(() => ytdCategoryTotals.reduce((s, c) => s + c.total, 0), [ytdCategoryTotals]);
+
   const dateLabel = `${format(dateRange.from, 'MMM d, yyyy')} — ${format(dateRange.to, 'MMM d, yyyy')}`;
 
   const handleExportPdf = useCallback(async () => {
