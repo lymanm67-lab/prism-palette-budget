@@ -302,10 +302,27 @@ const BusinessReports = ({ startDate, endDate, budgetMonth }: Props) => {
             <CardHeader><CardTitle className="font-display">Business Expense Breakdown</CardTitle></CardHeader>
             <CardContent>
               {expenseBreakdown.length > 0 ? (
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width="100%" height={320}>
                   <PieChart>
-                    <Pie data={expenseBreakdown} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={3} dataKey="value"
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false}>
+                    <Pie
+                      data={expenseBreakdown}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={55}
+                      outerRadius={90}
+                      paddingAngle={2}
+                      dataKey="value"
+                      label={({ name, percent, x, y, midAngle }) => {
+                        if (percent < 0.05) return null;
+                        const truncated = name.length > 12 ? name.slice(0, 11) + '…' : name;
+                        return (
+                          <text x={x} y={y} textAnchor={midAngle > 180 ? 'end' : 'start'} dominantBaseline="central" fill="hsl(var(--foreground))" fontSize={11} fontWeight={500}>
+                            {truncated} {(percent * 100).toFixed(0)}%
+                          </text>
+                        );
+                      }}
+                      labelLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1 }}
+                    >
                       {expenseBreakdown.map((e, i) => <Cell key={i} fill={e.color} />)}
                     </Pie>
                     <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} labelStyle={tooltipLabelStyle} />
