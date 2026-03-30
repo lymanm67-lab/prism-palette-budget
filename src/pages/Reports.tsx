@@ -66,7 +66,7 @@ const Reports = () => {
   const endDate = format(dateRange.to, 'yyyy-MM-dd');
   const budgetMonth = format(dateRange.from, 'yyyy-MM-01');
 
-  const { data: spendingData, isLoading } = useSpendingByCategory(startDate, endDate, reportMode);
+  const { data: spendingData, isLoading } = useSpendingByCategory(startDate, endDate, reportMode === 'combined' ? 'all' : reportMode);
   const { data: transactions } = useTransactionsByDateRange(startDate, endDate);
   const { data: budgets } = useBudgets(budgetMonth);
   const { data: categories } = useCategories();
