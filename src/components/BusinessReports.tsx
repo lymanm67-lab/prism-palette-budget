@@ -393,6 +393,65 @@ const BusinessReports = ({ startDate, endDate, budgetMonth }: Props) => {
         </Card>
       </TabsContent>
 
+      {/* Revenue vs Expenses */}
+      <TabsContent value="rev-vs-exp">
+        <div className="grid gap-4 sm:grid-cols-3 mb-6">
+          <Card><CardContent className="pt-6 text-center">
+            <TrendingUp className="mx-auto h-5 w-5 mb-1" style={{ color: 'hsl(160, 84%, 39%)' }} />
+            <p className="text-xs text-muted-foreground">Total Revenue</p>
+            <p className="font-display text-2xl font-bold" style={{ color: 'hsl(160, 84%, 39%)' }}>{formatCurrency(pnl.revenue)}</p>
+          </CardContent></Card>
+          <Card><CardContent className="pt-6 text-center">
+            <TrendingDown className="mx-auto h-5 w-5 text-destructive mb-1" />
+            <p className="text-xs text-muted-foreground">Total Expenses</p>
+            <p className="font-display text-2xl font-bold text-destructive">{formatCurrency(pnl.expenses)}</p>
+          </CardContent></Card>
+          <Card><CardContent className="pt-6 text-center">
+            <DollarSign className="mx-auto h-5 w-5 text-primary mb-1" />
+            <p className="text-xs text-muted-foreground">Net (Revenue − Expenses)</p>
+            <p className={`font-display text-2xl font-bold ${pnl.net >= 0 ? 'text-accent' : 'text-destructive'}`}>{formatCurrency(pnl.net)}</p>
+          </CardContent></Card>
+        </div>
+        {monthlyRevenue.length > 0 ? (
+          <Card>
+            <CardHeader><CardTitle className="font-display">Revenue vs Expenses by Month</CardTitle></CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={350}>
+                <BarChart data={monthlyRevenue} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={v => formatCompact(v)} />
+                  <Tooltip formatter={(v: number) => formatCurrency(v)} contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} labelStyle={tooltipLabelStyle} />
+                  <Legend />
+                  <Bar dataKey="revenue" name="Revenue" fill="hsl(160, 84%, 39%)" radius={[4, 4, 0, 0]} barSize={28} />
+                  <Bar dataKey="expenses" name="Expenses" fill="hsl(340, 82%, 52%)" radius={[4, 4, 0, 0]} barSize={28} />
+                </BarChart>
+              </ResponsiveContainer>
+
+              {/* Margin % per month */}
+              <div className="mt-6 space-y-2 border-t border-border pt-4">
+                <p className="text-sm font-medium text-muted-foreground mb-2">Profit Margin by Month</p>
+                {monthlyRevenue.map((m, i) => {
+                  const margin = m.revenue > 0 ? Math.round(((m.revenue - m.expenses) / m.revenue) * 100) : 0;
+                  const isPositive = margin >= 0;
+                  return (
+                    <div key={i} className="flex items-center justify-between text-sm">
+                      <span>{m.month}</span>
+                      <div className="flex items-center gap-3">
+                        <span className="text-muted-foreground">{formatCurrency(m.revenue - m.expenses)}</span>
+                        <Badge variant={isPositive ? 'default' : 'destructive'} className="text-xs min-w-[48px] justify-center">
+                          {margin}%
+                        </Badge>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        ) : <EmptyState message="No revenue or expense data in this period." />}
+      </TabsContent>
+
       {/* 4. Monthly Revenue & Expense Trends */}
       <TabsContent value="trend">
         <Card>
