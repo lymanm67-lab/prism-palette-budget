@@ -7,11 +7,57 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// Common crypto symbol mappings for CoinGecko API
+const CRYPTO_COINGECKO_MAP: Record<string, string> = {
+  "BTC-USD": "bitcoin", "ETH-USD": "ethereum", "SOL-USD": "solana",
+  "ADA-USD": "cardano", "DOT-USD": "polkadot", "DOGE-USD": "dogecoin",
+  "XRP-USD": "ripple", "AVAX-USD": "avalanche-2", "MATIC-USD": "matic-network",
+  "LINK-USD": "chainlink", "UNI-USD": "uniswap", "ATOM-USD": "cosmos",
+  "LTC-USD": "litecoin", "BNB-USD": "binancecoin", "SHIB-USD": "shiba-inu",
+  "TRX-USD": "tron", "FIL-USD": "filecoin", "APT-USD": "aptos",
+  "ARB-USD": "arbitrum", "OP-USD": "optimism", "SUI-USD": "sui",
+  "NEAR-USD": "near", "PEPE-USD": "pepe", "RENDER-USD": "render-token",
+};
+
+function isCryptoSymbol(symbol: string): boolean {
+  return symbol.endsWith("-USD") || CRYPTO_COINGECKO_MAP.hasOwnProperty(symbol);
+}
+
+/**
+ * Fetches a crypto price from CoinGecko (free, no API key).
+ */
+async function fetchCryptoFromCoinGecko(symbol: string): Promise<{ price: number; name?: string } | null> {
+  try {
+    const geckoId = CRYPTO_COINGECKO_MAP[symbol];
+    if (!geckoId) return null;
+
+    const url = `https://api.coingecko.com/api/v3/simple/price?ids=${geckoId}&vs_currencies=usd&include_24hr_change=true`;
+    const res = await fetch(url, {
+      headers: { "User-Agent": "Mozilla/5.0", "Accept": "application/json" },
+    });
+    if (!res.ok) {
+      console.warn(`CoinGecko returned ${res.status} for ${geckoId}`);
+      await res.text();
+      return null;
+    }
+    const data = await res.json();
+    const entry = data?.[geckoId];
+    if (!entry?.usd) return null;
+
+    // Capitalize the gecko ID as a readable name
+    const name = geckoId.charAt(0).toUpperCase() + geckoId.slice(1).replace(/-/g, " ");
+    return { price: entry.usd, name };
+  } catch (e) {
+    console.error(`CoinGecko failed for ${symbol}:`, e);
+    return null;
+  }
+}
+
 /**
  * Fetches the current price for a ticker symbol from Yahoo Finance.
  * Returns null if lookup fails.
  */
-async function fetchPrice(symbol: string): Promise<{ price: number; name?: string } | null> {
+async function fetchFromYahoo(symbol: string): Promise<{ price: number; name?: string } | null> {
   try {
     const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=1d`;
     const res = await fetch(url, {
@@ -19,7 +65,7 @@ async function fetchPrice(symbol: string): Promise<{ price: number; name?: strin
     });
     if (!res.ok) {
       console.warn(`Yahoo Finance returned ${res.status} for ${symbol}`);
-      await res.text(); // consume body
+      await res.text();
       return null;
     }
     const data = await res.json();
@@ -31,9 +77,26 @@ async function fetchPrice(symbol: string): Promise<{ price: number; name?: strin
 
     return { price, name: meta.shortName || meta.longName || undefined };
   } catch (e) {
-    console.error(`Failed to fetch price for ${symbol}:`, e);
+    console.error(`Yahoo Finance failed for ${symbol}:`, e);
     return null;
   }
+}
+
+/**
+ * Fetches price using Yahoo Finance first, then falls back to CoinGecko for crypto symbols.
+ */
+async function fetchPrice(symbol: string): Promise<{ price: number; name?: string } | null> {
+  // Try Yahoo Finance first
+  const yahooResult = await fetchFromYahoo(symbol);
+  if (yahooResult) return yahooResult;
+
+  // Fallback to CoinGecko for crypto
+  if (isCryptoSymbol(symbol)) {
+    console.log(`Yahoo failed for ${symbol}, trying CoinGecko fallback...`);
+    return await fetchCryptoFromCoinGecko(symbol);
+  }
+
+  return null;
 }
 
 serve(async (req) => {
