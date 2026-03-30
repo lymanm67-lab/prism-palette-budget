@@ -397,7 +397,9 @@ const Reports = () => {
                     className="block w-full text-left rounded-md px-2 py-1.5 text-sm hover:bg-muted transition-colors"
                     onClick={() => {
                       setDateRange(preset.range());
-                      setCalendarOpen(false);
+                      if (preset.label !== 'Custom') {
+                        setCalendarOpen(false);
+                      }
                     }}
                   >
                     {preset.label}
