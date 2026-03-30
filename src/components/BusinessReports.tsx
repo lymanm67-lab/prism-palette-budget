@@ -246,6 +246,7 @@ const BusinessReports = ({ startDate, endDate, budgetMonth }: Props) => {
         <TabsTrigger value="pnl" className="text-xs">P&L</TabsTrigger>
         <TabsTrigger value="expenses" className="text-xs">Expenses</TabsTrigger>
         <TabsTrigger value="revenue" className="text-xs">Revenue</TabsTrigger>
+        <TabsTrigger value="rev-vs-exp" className="text-xs">Rev vs Exp</TabsTrigger>
         <TabsTrigger value="trend" className="text-xs">Trends</TabsTrigger>
         <TabsTrigger value="biz-budget" className="text-xs">Budget</TabsTrigger>
         <TabsTrigger value="by-business" className="text-xs">By Business</TabsTrigger>
