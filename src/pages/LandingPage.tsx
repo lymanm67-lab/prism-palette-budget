@@ -1,5 +1,6 @@
 import LandingNav from '@/components/landing/LandingNav';
 import HeroSection from '@/components/landing/HeroSection';
+import PressLogosBar from '@/components/landing/PressLogosBar';
 import ImmediateValueSection from '@/components/landing/ImmediateValueSection';
 import SafeToSpendSection from '@/components/landing/SafeToSpendSection';
 import ProblemSection from '@/components/landing/ProblemSection';
@@ -24,6 +25,7 @@ const LandingPage = () => {
     <div className="min-h-screen bg-background">
       <LandingNav />
       <HeroSection />
+      <PressLogosBar />
       <ImmediateValueSection />
       <SafeToSpendSection />
       <ProblemSection />
