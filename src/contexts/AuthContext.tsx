@@ -58,17 +58,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
+    let isMounted = true;
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!isMounted) return;
       setSession(session);
       setLoading(false);
     });
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setLoading(false);
-    });
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        if (!isMounted) return;
+        setSession(session);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error('auth getSession error:', err);
+        if (isMounted) setLoading(false);
+      });
 
-    return () => subscription.unsubscribe();
+    // Failsafe: never let auth loading stay stuck forever in preview
+    const timeoutId = window.setTimeout(() => {
+      if (isMounted) setLoading(false);
+    }, 5000);
+
+    return () => {
+      isMounted = false;
+      window.clearTimeout(timeoutId);
+      subscription.unsubscribe();
+    };
   }, []);
 
   // Check founder role when session changes
