@@ -63,6 +63,8 @@ const Accounts = () => {
   const [form, setForm] = useState({ name: '', institution: '', account_type: 'checking' as AccountType, balance: '' });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
+  const [editingBalanceId, setEditingBalanceId] = useState<string | null>(null);
+  const [editBalance, setEditBalance] = useState('');
   const [pageGuideOpen, setPageGuideOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [refreshingAccountId, setRefreshingAccountId] = useState<string | null>(null);
@@ -332,6 +334,29 @@ const Accounts = () => {
   const cancelEdit = () => {
     setEditingId(null);
     setEditName('');
+  };
+
+  const startEditingBalance = (id: string, currentBalance: number) => {
+    setEditingBalanceId(id);
+    setEditBalance(String(currentBalance));
+  };
+
+  const saveBalanceEdit = async (id: string) => {
+    const parsed = parseFloat(editBalance);
+    if (isNaN(parsed)) return;
+    try {
+      await updateAccount.mutateAsync({ id, balance: parsed });
+      toast.success('Balance updated');
+    } catch {
+      toast.error('Failed to update balance');
+    }
+    setEditingBalanceId(null);
+    setEditBalance('');
+  };
+
+  const cancelBalanceEdit = () => {
+    setEditingBalanceId(null);
+    setEditBalance('');
   };
 
   if (isLoading) return (
@@ -665,9 +690,41 @@ const Accounts = () => {
                               </>
                             )}
                           </div>
-                          <span className={`font-display text-sm sm:text-lg font-semibold tabular-nums shrink-0 ${acc.balance >= 0 ? 'text-prism-teal' : 'text-prism-rose'}`}>
-                            {formatCurrency(acc.balance)}
-                          </span>
+                          {editingBalanceId === acc.id ? (
+                            <div className="flex items-center gap-1 shrink-0">
+                              <Input
+                                type="number"
+                                step="0.01"
+                                value={editBalance}
+                                onChange={e => setEditBalance(e.target.value)}
+                                onKeyDown={e => {
+                                  if (e.key === 'Enter') saveBalanceEdit(acc.id);
+                                  if (e.key === 'Escape') cancelBalanceEdit();
+                                }}
+                                className="h-8 w-28 text-sm text-right tabular-nums"
+                                autoFocus
+                              />
+                              <Button variant="ghost" size="icon" className="h-7 w-7 text-prism-teal hover:text-prism-teal" onClick={() => saveBalanceEdit(acc.id)}>
+                                <Check className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground" onClick={cancelBalanceEdit}>
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  type="button"
+                                  className={`font-display text-sm sm:text-lg font-semibold tabular-nums shrink-0 hover:underline hover:decoration-dotted cursor-pointer bg-transparent border-0 p-0 ${acc.balance >= 0 ? 'text-prism-teal' : 'text-prism-rose'}`}
+                                  onClick={() => startEditingBalance(acc.id, acc.balance)}
+                                >
+                                  {formatCurrency(acc.balance)}
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent>Click to edit balance</TooltipContent>
+                            </Tooltip>
+                          )}
                         </div>
 
                         {/* Meta row + actions */}
