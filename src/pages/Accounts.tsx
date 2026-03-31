@@ -336,6 +336,29 @@ const Accounts = () => {
     setEditName('');
   };
 
+  const startEditingBalance = (id: string, currentBalance: number) => {
+    setEditingBalanceId(id);
+    setEditBalance(String(currentBalance));
+  };
+
+  const saveBalanceEdit = async (id: string) => {
+    const parsed = parseFloat(editBalance);
+    if (isNaN(parsed)) return;
+    try {
+      await updateAccount.mutateAsync({ id, balance: parsed });
+      toast.success('Balance updated');
+    } catch {
+      toast.error('Failed to update balance');
+    }
+    setEditingBalanceId(null);
+    setEditBalance('');
+  };
+
+  const cancelBalanceEdit = () => {
+    setEditingBalanceId(null);
+    setEditBalance('');
+  };
+
   if (isLoading) return (
     <div className="p-8">
       <div className="mb-6">
