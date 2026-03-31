@@ -424,6 +424,7 @@ export function useUpdateTransaction() {
       qc.invalidateQueries({ queryKey: ['transactions'] });
       qc.invalidateQueries({ queryKey: ['transactions_all'] });
       qc.invalidateQueries({ queryKey: ['transactions_range'] });
+      qc.invalidateQueries({ queryKey: ['accounts'] });
     },
   });
 }
