@@ -339,13 +339,26 @@ const Transactions = () => {
       return true;
     });
 
-    result.sort((a, b) => {
-      let cmp = 0;
-      if (sortKey === 'date') cmp = a.date.localeCompare(b.date);
-      else if (sortKey === 'amount') cmp = Math.abs(a.amount) - Math.abs(b.amount);
-      else if (sortKey === 'merchant') cmp = (a.merchant || '').localeCompare(b.merchant || '');
-      return sortDir === 'desc' ? -cmp : cmp;
-    });
+    // When viewing duplicates, group matching entries together
+    if (viewFilter === 'duplicates') {
+      const dupeKey = (t: typeof result[0]) => {
+        const merchant = (t.merchant || '').toLowerCase().trim().replace(/\s+/g, ' ');
+        return `${t.date}|${Math.round(t.amount * 100)}|${merchant}`;
+      };
+      result.sort((a, b) => {
+        const groupCmp = dupeKey(a).localeCompare(dupeKey(b));
+        if (groupCmp !== 0) return groupCmp;
+        return a.id.localeCompare(b.id);
+      });
+    } else {
+      result.sort((a, b) => {
+        let cmp = 0;
+        if (sortKey === 'date') cmp = a.date.localeCompare(b.date);
+        else if (sortKey === 'amount') cmp = Math.abs(a.amount) - Math.abs(b.amount);
+        else if (sortKey === 'merchant') cmp = (a.merchant || '').localeCompare(b.merchant || '');
+        return sortDir === 'desc' ? -cmp : cmp;
+      });
+    }
 
     return result;
   }, [search, transactions, deletedTransactions, filters, sortKey, sortDir, viewFilter, duplicateIds, personalCatIds, businessCatIds]);
