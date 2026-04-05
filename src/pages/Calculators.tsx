@@ -12,7 +12,7 @@ import { useCurrency } from '@/hooks/use-currency';
 import { cn } from '@/lib/utils';
 import {
   Home, Car, CreditCard, TrendingUp, Calculator, DollarSign, Percent, CalendarDays, PiggyBank, Sparkles, BookOpen, MoreHorizontal,
-  Target, Shield, Wallet, CheckCircle2,
+  Target, Shield, Wallet, CheckCircle2, Scale,
 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import PageOverview from '@/components/PageOverview';
@@ -24,6 +24,7 @@ import CalculatorHistory from '@/components/CalculatorHistory';
 import FocusOfferCalculator from '@/components/FocusOfferCalculator';
 import CalculatorGuide from '@/components/CalculatorGuide';
 import CalculatorScenariosAndPitfalls from '@/components/CalculatorScenariosAndPitfalls';
+import RentVsBuyCalculator from '@/components/RentVsBuyCalculator';
 
 // ─── Calculation helpers ───
 
@@ -128,6 +129,7 @@ function calcMonthlyToMillion(currentAge: number, target: number = 1000000): num
 
 const CALCULATORS = [
   { id: 'safetospend', label: 'Safe-to-Spend', icon: Shield, color: 'text-prism-teal', bg: 'from-prism-teal/20 to-prism-teal/5' },
+  { id: 'rentvsbuy', label: 'Rent vs Buy', icon: Scale, color: 'text-prism-violet', bg: 'from-prism-violet/20 to-prism-violet/5' },
   { id: 'mortgage', label: 'Mortgage', icon: Home, color: 'text-prism-teal', bg: 'from-prism-teal/20 to-prism-teal/5' },
   { id: 'auto', label: 'Auto Loan', icon: Car, color: 'text-prism-sky', bg: 'from-prism-sky/20 to-prism-sky/5' },
   { id: 'credit', label: 'Credit Card', icon: CreditCard, color: 'text-prism-rose', bg: 'from-prism-rose/20 to-prism-rose/5' },
@@ -744,6 +746,10 @@ const Calculators = () => {
             results={{ daily: stsResult.daily, weekly: stsResult.weekly, monthly: stsResult.monthly, buffer: stsResult.buffer }}
             hasResults={stsResult.income > 0}
           />
+        </TabsContent>
+
+        <TabsContent value="rentvsbuy" className="mt-6">
+          <RentVsBuyCalculator onOpenHistory={() => setHistoryOpen(true)} />
         </TabsContent>
 
         <TabsContent value="mortgage" className="mt-6">
