@@ -263,16 +263,16 @@ export default function PricingCalculator() {
         <div className="grid gap-3 sm:grid-cols-3">
           <Card className="border-destructive/30 bg-destructive/5">
             <CardContent className="p-4 text-center">
-              <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Minimum</p>
-              <p className="text-xl font-bold text-destructive"><AnimatedNumber value={result.minPrice} formatFn={formatCurrency} /></p>
-              <p className="text-[11px] text-muted-foreground mt-1">Barely covers costs — avoid</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">{result.isCommitment ? 'Discount' : 'Minimum'}</p>
+              <p className="text-xl font-bold text-destructive"><AnimatedNumber value={result.minPrice} formatFn={v => result.isCommitment ? `${formatCurrency(v)}/mo` : formatCurrency(v)} /></p>
+              <p className="text-[11px] text-muted-foreground mt-1">{result.isCommitment ? 'Undervalues your time' : 'Barely covers costs — avoid'}</p>
             </CardContent>
           </Card>
           <Card className="border-primary/30 bg-primary/5 ring-2 ring-primary/20">
             <CardContent className="p-4 text-center">
               <p className="text-xs text-primary uppercase tracking-wider font-semibold mb-1">Recommended</p>
-              <p className="text-2xl font-bold text-primary"><AnimatedNumber value={result.competitivePrice} formatFn={formatCurrency} /></p>
-              <p className="text-[11px] text-muted-foreground mt-1">{formatCurrency(result.profitPerUnit)} profit per sale</p>
+              <p className="text-2xl font-bold text-primary"><AnimatedNumber value={result.competitivePrice} formatFn={v => result.isCommitment ? `${formatCurrency(v)}/mo` : formatCurrency(v)} /></p>
+              <p className="text-[11px] text-muted-foreground mt-1">{result.isCommitment ? `${formatCurrency(result.profitPerUnit)}/mo profit` : `${formatCurrency(result.profitPerUnit)} profit per sale`}</p>
             </CardContent>
           </Card>
           <Card className="border-green-500/30 bg-green-500/5">
