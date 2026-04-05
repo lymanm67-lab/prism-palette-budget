@@ -802,655 +802,655 @@ const Calculators = () => {
           />
         </div>)}
 
-        {activeCalc === 'rentvsbuy' && (<div className="mt-6">
-          <RentVsBuyCalculator onOpenHistory={() => setHistoryOpen(true)} />
-        </div>)}
+      {activeCalc === 'rentvsbuy' && (<div className="mt-6">
+        <RentVsBuyCalculator onOpenHistory={() => setHistoryOpen(true)} />
+      </div>)}
 
-        {activeCalc === 'mortgage' && (<div className="mt-6">
-          <CalculatorGuide
-            title="Mortgage Calculator"
-            icon={Home}
-            iconColor="text-prism-teal"
-            ttsScript="The Mortgage Calculator helps you estimate your monthly home loan payment. Enter the home price, your down payment, the interest rate, and the loan term in years. You'll see your monthly payment, total interest paid over the life of the loan, and an amortization chart showing how your balance decreases over time. The payment breakdown bar shows the split between principal and interest."
-            instructions={[
-              'Enter the full home purchase price',
-              'Add your down payment amount — the loan is calculated on the difference',
-              'Set the annual interest rate and loan term in years',
-              'Results update instantly: monthly payment, total interest, and total cost',
-              'The amortization chart shows your remaining balance over time',
-              'Use Save to keep results, Copy to clipboard, or Export as a text file',
-            ]}
-          />
-          <CalculatorScenariosAndPitfalls
-            scenarios={[
-              { title: 'First-Time Buyer', description: 'Put 20% down to avoid PMI. On a $350k home, that\'s $70k down — saving $150–250/mo in private mortgage insurance.' },
-              { title: 'Refinancing', description: 'Dropping from 7% to 5.5% on a $280k balance saves ~$300/mo. Break-even on closing costs in about 18 months.' },
-              { title: 'Extra Payments', description: 'Adding just $200/mo to a 30-year mortgage can cut 5–7 years off the loan and save tens of thousands in interest.' },
-              { title: '15 vs 30 Year', description: 'A 15-year term has higher payments but saves 50–60% in total interest. Compare both using this calculator.' },
-            ]}
-            pitfalls={[
-              { title: 'Ignoring Taxes & Insurance', description: 'Your actual monthly housing cost includes taxes, insurance, and possibly HOA — often $500–1,000+ beyond the mortgage.' },
-              { title: 'Maxing Out Your Budget', description: 'Just because you qualify for a $400k loan doesn\'t mean you should. Keep total housing under 28% of gross income.' },
-              { title: 'Skipping Rate Comparison', description: 'Even 0.25% lower rate on a $300k loan saves $15,000+ over 30 years. Always shop multiple lenders.' },
-              { title: 'Forgetting Closing Costs', description: 'Budget 2–5% of the home price for closing costs. On a $350k home, that\'s $7k–$17.5k due at signing.' },
-            ]}
-          />
-          <div className="grid gap-6 lg:grid-cols-2 mt-4">
-            <Card className="prism-card-shine border-border/50">
-              <CardHeader>
-                <CardTitle className="font-display flex items-center gap-2 text-lg">
-                  <Home className="h-5 w-5 text-prism-teal" /> Mortgage Calculator
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* State selector */}
-                <div className="space-y-1.5">
-                  <Label className="text-xs flex items-center gap-1.5">
-                    <MapPin className="h-3.5 w-3.5 text-prism-violet" />
-                    State
-                  </Label>
-                  <Select value={mortgageForm.state} onValueChange={handleMortgageStateChange}>
-                    <SelectTrigger className="h-9 text-sm">
-                      <SelectValue placeholder="Select state for accurate tax & insurance rates…" />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-[280px]">
-                      {Object.entries(STATE_DATA).filter(([k]) => k !== '').map(([code, data]) => (
-                        <SelectItem key={code} value={code}>
-                          <span className="flex items-center gap-2">
-                            <span className="font-mono text-xs text-muted-foreground w-6">{code}</span>
-                            {data.label}
-                          </span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {mortgageForm.state && (
-                    <p className="text-[10px] text-prism-teal">
-                      ✓ Property tax & insurance updated for {STATE_DATA[mortgageForm.state]?.label}
-                    </p>
-                  )}
-                </div>
-                <InputField label="Home Price" value={mortgageForm.price} onChange={v => setMortgageForm(f => ({ ...f, price: v }))} icon={DollarSign} />
-                <InputField label="Down Payment" value={mortgageForm.down} onChange={v => setMortgageForm(f => ({ ...f, down: v }))} icon={DollarSign} />
-                <InputField label="Interest Rate" value={mortgageForm.rate} onChange={v => setMortgageForm(f => ({ ...f, rate: v }))} icon={Percent} suffix="%" />
-                <InputField label="Loan Term" value={mortgageForm.years} onChange={v => setMortgageForm(f => ({ ...f, years: v }))} icon={CalendarDays} suffix="years" />
-                <InputField label="Property Tax Rate" value={mortgageForm.propertyTaxRate} onChange={v => setMortgageForm(f => ({ ...f, propertyTaxRate: v }))} icon={Percent} suffix="%" />
-                <InputField label="Insurance Rate" value={mortgageForm.insuranceRate} onChange={v => setMortgageForm(f => ({ ...f, insuranceRate: v }))} icon={Percent} suffix="%" />
-                <div className="text-xs text-muted-foreground">
-                  Loan Amount: {formatCurrency(Math.max(0, (parseFloat(mortgageForm.price) || 0) - (parseFloat(mortgageForm.down) || 0)))}
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="prism-card-shine border-border/50">
-              <CardHeader><CardTitle className="font-display text-lg">Results</CardTitle></CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
-                  <ResultCard label="Total Monthly" value={formatCurrency(mortgageResult.totalMonthly)} numericValue={mortgageResult.totalMonthly} formatFn={formatCurrency} accent sub="P&I + Tax + Insurance" />
-                  <ResultCard label="P&I Payment" value={formatCurrency(mortgageResult.payment)} numericValue={mortgageResult.payment} formatFn={formatCurrency} sub="Principal & Interest only" />
-                  <ResultCard label="Property Tax" value={formatCurrency(mortgageResult.monthlyPropTax)} numericValue={mortgageResult.monthlyPropTax} formatFn={formatCurrency} sub={`${mortgageForm.propertyTaxRate}%/yr`} />
-                  <ResultCard label="Insurance" value={formatCurrency(mortgageResult.monthlyInsurance)} numericValue={mortgageResult.monthlyInsurance} formatFn={formatCurrency} sub={`${mortgageForm.insuranceRate}%/yr`} />
-                  <ResultCard label="Total Interest" value={formatCurrency(mortgageResult.totalInterest)} numericValue={mortgageResult.totalInterest} formatFn={formatCurrency} />
-                  <ResultCard label="Interest / Principal" value={`${mortgageResult.totalPaid > 0 ? Math.round((mortgageResult.totalInterest / mortgageResult.totalPaid) * 100) : 0}%`} sub="of total cost" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground mb-2 font-medium">Remaining Balance Over Time</p>
-                  <CalculatorChart type="amortization" data={mortgageResult.schedule} />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground mb-2">Payment Breakdown</p>
-                  <div className="flex gap-1 h-4 rounded-full overflow-hidden">
-                    <div className="bg-prism-teal transition-all" style={{ width: `${mortgageResult.totalPaid > 0 ? ((mortgageResult.totalPaid - mortgageResult.totalInterest) / mortgageResult.totalPaid) * 100 : 0}%` }} />
-                    <div className="bg-prism-rose transition-all" style={{ width: `${mortgageResult.totalPaid > 0 ? (mortgageResult.totalInterest / mortgageResult.totalPaid) * 100 : 0}%` }} />
-                  </div>
-                  <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                    <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-prism-teal inline-block" /> Principal</span>
-                    <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-prism-rose inline-block" /> Interest</span>
-                  </div>
-                </div>
-                <CalculatorActions
-                  calculatorType="mortgage"
-                  inputs={mortgageForm}
-                  results={{ payment: mortgageResult.payment, totalInterest: mortgageResult.totalInterest, totalPaid: mortgageResult.totalPaid }}
-                  hasResults={mortgageResult.payment > 0}
-                  summaryText={`# 🏠 Mortgage Calculator\n\n**Inputs**\n${mortgageForm.state ? `- **State:** ${STATE_DATA[mortgageForm.state]?.label}\n` : ''}- **Home Price:** ${formatCurrency(Number(mortgageForm.price))}\n- **Down Payment:** ${formatCurrency(Number(mortgageForm.down))}\n- **Interest Rate:** ${mortgageForm.rate}%\n- **Term:** ${mortgageForm.years} years\n- **Property Tax:** ${mortgageForm.propertyTaxRate}%\n- **Insurance:** ${mortgageForm.insuranceRate}%\n\n**Results**\n- **Total Monthly:** ${formatCurrency(mortgageResult.totalMonthly)}\n- **P&I Payment:** ${formatCurrency(mortgageResult.payment)}\n- **Property Tax:** ${formatCurrency(mortgageResult.monthlyPropTax)}/mo\n- **Insurance:** ${formatCurrency(mortgageResult.monthlyInsurance)}/mo\n- **Total Interest:** ${formatCurrency(mortgageResult.totalInterest)}\n- **Total Paid:** ${formatCurrency(mortgageResult.totalPaid)}`}
-                  onOpenHistory={() => setHistoryOpen(true)}
-                  printData={{
-                    inputs: [
-                      ...(mortgageForm.state ? [{ label: 'State', value: STATE_DATA[mortgageForm.state]?.label || mortgageForm.state }] : []),
-                      { label: 'Home Price', value: `$${Number(mortgageForm.price).toLocaleString()}` },
-                      { label: 'Down Payment', value: `$${Number(mortgageForm.down).toLocaleString()}` },
-                      { label: 'Interest Rate', value: `${mortgageForm.rate}%` },
-                      { label: 'Loan Term', value: `${mortgageForm.years} years` },
-                      { label: 'Property Tax', value: `${mortgageForm.propertyTaxRate}%` },
-                      { label: 'Insurance', value: `${mortgageForm.insuranceRate}%` },
-                      { label: 'Loan Amount', value: formatCurrency(Math.max(0, (parseFloat(mortgageForm.price)||0) - (parseFloat(mortgageForm.down)||0))) },
-                    ],
-                    results: [
-                      { label: 'Total Monthly', value: formatCurrency(mortgageResult.totalMonthly), highlight: true },
-                      { label: 'P&I Payment', value: formatCurrency(mortgageResult.payment) },
-                      { label: 'Monthly Tax', value: formatCurrency(mortgageResult.monthlyPropTax) },
-                      { label: 'Monthly Insurance', value: formatCurrency(mortgageResult.monthlyInsurance) },
-                      { label: 'Total Interest', value: formatCurrency(mortgageResult.totalInterest) },
-                      { label: 'Total Paid', value: formatCurrency(mortgageResult.totalPaid) },
-                      { label: 'Interest Ratio', value: `${mortgageResult.totalPaid > 0 ? Math.round((mortgageResult.totalInterest / mortgageResult.totalPaid) * 100) : 0}%` },
-                    ],
-                  }}
-                />
-              </CardContent>
-            </Card>
-          </div>
-          <CalculatorInsight
-            calculatorType="mortgage"
-            inputs={mortgageForm}
-            results={{ payment: mortgageResult.payment, totalInterest: mortgageResult.totalInterest, totalPaid: mortgageResult.totalPaid }}
-            hasResults={mortgageResult.payment > 0}
-          />
-        </div>)}
-        {activeCalc === 'auto' && (<div className="mt-6">
-          <CalculatorGuide
-            title="Auto Loan Calculator"
-            icon={Car}
-            iconColor="text-prism-sky"
-            ttsScript="The Auto Loan Calculator estimates your monthly car payment. Enter the vehicle price, down payment, trade-in value if applicable, interest rate, and loan term. Your monthly payment, total interest, and total cost are calculated instantly. The amortization chart tracks your remaining balance, and the cost breakdown bar shows how much goes to principal versus interest."
-            instructions={[
-              'Enter the vehicle purchase price',
-              'Add your down payment and trade-in value (if any)',
-              'Set the annual interest rate and loan term',
-              'Results show monthly payment, total interest, and total cost',
-              'The chart tracks your remaining balance over the loan term',
-            ]}
-          />
-          <CalculatorScenariosAndPitfalls
-            scenarios={[
-              { title: 'New vs Used', description: 'A 2-year-old certified pre-owned car can save 20–30% vs new while still having warranty coverage.' },
-              { title: 'Short-Term Loan', description: 'A 3-year loan at 5.9% on $30k costs $2,800 in interest vs $4,700 on a 5-year term.' },
-              { title: 'Large Trade-In', description: 'A $10k trade-in on a $35k car drops your loan to $25k — reducing payments by $170+/mo on a 5-year loan.' },
-              { title: '0% Dealer Financing', description: 'Compare 0% APR vs a cash discount. Sometimes the rebate beats the free financing.' },
-            ]}
-            pitfalls={[
-              { title: 'Stretching to 7+ Years', description: 'Longer terms mean lower payments but much more interest — and you may owe more than the car is worth.' },
-              { title: 'Ignoring Total Cost', description: 'Focus on total cost, not monthly payment. Dealers love stretching terms to make expensive cars seem affordable.' },
-              { title: 'Skipping Pre-Approval', description: 'Get pre-approved from your bank before the dealership. Dealer financing often has higher rates.' },
-              { title: 'Negative Equity Roll-In', description: 'Rolling an old loan balance into a new car loan starts you underwater immediately.' },
-            ]}
-          />
-          <div className="grid gap-6 lg:grid-cols-2 mt-4">
-            <Card className="prism-card-shine border-border/50">
-              <CardHeader>
-                <CardTitle className="font-display flex items-center gap-2 text-lg">
-                  <Car className="h-5 w-5 text-prism-sky" /> Auto Loan Calculator
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <InputField label="Vehicle Price" value={autoForm.price} onChange={v => setAutoForm(f => ({ ...f, price: v }))} icon={DollarSign} />
-                <InputField label="Down Payment" value={autoForm.down} onChange={v => setAutoForm(f => ({ ...f, down: v }))} icon={DollarSign} />
-                <InputField label="Trade-in Value" value={autoForm.tradeIn} onChange={v => setAutoForm(f => ({ ...f, tradeIn: v }))} icon={DollarSign} />
-                <InputField label="Interest Rate" value={autoForm.rate} onChange={v => setAutoForm(f => ({ ...f, rate: v }))} icon={Percent} suffix="%" />
-                <InputField label="Loan Term" value={autoForm.years} onChange={v => setAutoForm(f => ({ ...f, years: v }))} icon={CalendarDays} suffix="years" />
-              </CardContent>
-            </Card>
-            <Card className="prism-card-shine border-border/50">
-              <CardHeader><CardTitle className="font-display text-lg">Results</CardTitle></CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
-                  <ResultCard label="Monthly Payment" value={formatCurrency(autoResult.payment)} numericValue={autoResult.payment} formatFn={formatCurrency} accent />
-                  <ResultCard label="Total Interest" value={formatCurrency(autoResult.totalInterest)} numericValue={autoResult.totalInterest} formatFn={formatCurrency} />
-                  <ResultCard label="Total Paid" value={formatCurrency(autoResult.totalPaid)} numericValue={autoResult.totalPaid} formatFn={formatCurrency} />
-                  <ResultCard label="Loan Amount" value={formatCurrency(Math.max(0, (parseFloat(autoForm.price)||0) - (parseFloat(autoForm.down)||0) - (parseFloat(autoForm.tradeIn)||0)))} />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground mb-2 font-medium">Remaining Balance Over Time</p>
-                  <CalculatorChart type="amortization" data={autoResult.schedule} />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground mb-2">Cost Breakdown</p>
-                  <div className="flex gap-1 h-4 rounded-full overflow-hidden">
-                    <div className="bg-prism-sky transition-all" style={{ width: `${autoResult.totalPaid > 0 ? ((autoResult.totalPaid - autoResult.totalInterest) / autoResult.totalPaid) * 100 : 0}%` }} />
-                    <div className="bg-prism-rose transition-all" style={{ width: `${autoResult.totalPaid > 0 ? (autoResult.totalInterest / autoResult.totalPaid) * 100 : 0}%` }} />
-                  </div>
-                  <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                    <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-prism-sky inline-block" /> Principal</span>
-                    <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-prism-rose inline-block" /> Interest</span>
-                  </div>
-                </div>
-                <CalculatorActions
-                  calculatorType="auto"
-                  inputs={autoForm}
-                  results={{ payment: autoResult.payment, totalInterest: autoResult.totalInterest, totalPaid: autoResult.totalPaid }}
-                  hasResults={autoResult.payment > 0}
-                  summaryText={`# 🚗 Auto Loan Calculator\n\n**Inputs**\n- **Vehicle Price:** ${formatCurrency(Number(autoForm.price))}\n- **Down Payment:** ${formatCurrency(Number(autoForm.down))}\n- **Interest Rate:** ${autoForm.rate}%\n- **Term:** ${autoForm.years} years\n\n**Results**\n- **Monthly Payment:** ${formatCurrency(autoResult.payment)}\n- **Total Interest:** ${formatCurrency(autoResult.totalInterest)}\n- **Total Paid:** ${formatCurrency(autoResult.totalPaid)}`}
-                  onOpenHistory={() => setHistoryOpen(true)}
-                  printData={{
-                    inputs: [
-                      { label: 'Vehicle Price', value: `$${Number(autoForm.price).toLocaleString()}` },
-                      { label: 'Down Payment', value: `$${Number(autoForm.down).toLocaleString()}` },
-                      { label: 'Trade-in Value', value: `$${Number(autoForm.tradeIn).toLocaleString()}` },
-                      { label: 'Interest Rate', value: `${autoForm.rate}%` },
-                      { label: 'Loan Term', value: `${autoForm.years} years` },
-                    ],
-                    results: [
-                      { label: 'Monthly Payment', value: formatCurrency(autoResult.payment), highlight: true },
-                      { label: 'Total Interest', value: formatCurrency(autoResult.totalInterest) },
-                      { label: 'Total Paid', value: formatCurrency(autoResult.totalPaid) },
-                      { label: 'Loan Amount', value: formatCurrency(Math.max(0, (parseFloat(autoForm.price)||0) - (parseFloat(autoForm.down)||0) - (parseFloat(autoForm.tradeIn)||0))) },
-                    ],
-                  }}
-                />
-              </CardContent>
-            </Card>
-          </div>
-          <CalculatorInsight
-            calculatorType="auto"
-            inputs={autoForm}
-            results={{ payment: autoResult.payment, totalInterest: autoResult.totalInterest, totalPaid: autoResult.totalPaid }}
-            hasResults={autoResult.payment > 0}
-          />
-        </div>)}
-        {activeCalc === 'credit' && (<div className="mt-6">
-          <CalculatorGuide
-            title="Credit Card Payoff"
-            icon={CreditCard}
-            iconColor="text-prism-rose"
-            ttsScript="The Credit Card Payoff Calculator shows how long it will take to pay off your credit card balance. Enter your current balance, the annual percentage rate or APR, and your monthly payment amount. You'll see the number of months to payoff, total interest paid, and total cost. If your payment is too low to cover monthly interest, you'll get a warning. A helpful tip shows how much you could save by paying an extra fifty dollars per month."
-            instructions={[
-              'Enter your current credit card balance',
-              'Add your card\'s APR (annual percentage rate)',
-              'Set the monthly payment you plan to make',
-              'Results show months to payoff, total interest, and total cost',
-              'Warning appears if your payment doesn\'t cover monthly interest',
-              'A tip shows savings from increasing your payment by $50/mo',
-            ]}
-          />
-          <CalculatorScenariosAndPitfalls
-            scenarios={[
-              { title: 'Balance Transfer', description: 'Moving $8k from 23% to a 0% intro card saves ~$150/mo in interest. Pay it off before the promo ends.' },
-              { title: 'Aggressive Payoff', description: 'Doubling your payment from $250 to $500/mo on $8k cuts payoff time in half and saves thousands.' },
-              { title: 'Minimum Payment Trap', description: 'Paying only $160/mo on $8k at 23% takes 9+ years and costs $9,000+ in interest alone.' },
-              { title: 'Debt Snowball', description: 'Pay off the smallest card first for a quick win, then roll that payment into the next card.' },
-            ]}
-            pitfalls={[
-              { title: 'Paying Only the Minimum', description: 'Minimum payments maximize interest for the lender. Even $50 extra/mo makes a massive difference.' },
-              { title: 'Continuing to Charge', description: 'Adding new charges while paying off a balance erases your progress. Freeze the card during payoff.' },
-              { title: 'Ignoring the APR', description: 'A "low" payment on a 25%+ APR card means most of your payment goes to interest, not principal.' },
-              { title: 'Missing a Payment', description: 'One missed payment can trigger a penalty APR of 29%+ and damage your credit score significantly.' },
-            ]}
-          />
-          <div className="grid gap-6 lg:grid-cols-2 mt-4">
-            <Card className="prism-card-shine border-border/50">
-              <CardHeader>
-                <CardTitle className="font-display flex items-center gap-2 text-lg">
-                  <CreditCard className="h-5 w-5 text-prism-rose" /> Credit Card Payoff
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <InputField label="Current Balance" value={ccForm.balance} onChange={v => setCcForm(f => ({ ...f, balance: v }))} icon={DollarSign} />
-                <InputField label="APR" value={ccForm.apr} onChange={v => setCcForm(f => ({ ...f, apr: v }))} icon={Percent} suffix="%" />
-                <InputField label="Monthly Payment" value={ccForm.payment} onChange={v => setCcForm(f => ({ ...f, payment: v }))} icon={DollarSign} />
-                {parseFloat(ccForm.payment) > 0 && parseFloat(ccForm.payment) <= (parseFloat(ccForm.balance) || 0) * (parseFloat(ccForm.apr) || 0) / 100 / 12 && (
-                  <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-xs font-medium">
-                    ⚠️ Payment is less than monthly interest. Balance will never be paid off!
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-            <Card className="prism-card-shine border-border/50">
-              <CardHeader><CardTitle className="font-display text-lg">Results</CardTitle></CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
-                  <ResultCard label="Months to Payoff" value={ccResult.months > 0 ? `${ccResult.months} months` : '—'} accent sub={ccResult.months > 0 ? `${Math.floor(ccResult.months / 12)}y ${ccResult.months % 12}m` : undefined} />
-                  <ResultCard label="Total Interest" value={formatCurrency(ccResult.totalInterest)} numericValue={ccResult.totalInterest} formatFn={formatCurrency} />
-                  <ResultCard label="Total Paid" value={formatCurrency(ccResult.totalPaid)} numericValue={ccResult.totalPaid} formatFn={formatCurrency} />
-                  <ResultCard label="Interest Ratio" value={`${ccResult.totalPaid > 0 ? Math.round((ccResult.totalInterest / ccResult.totalPaid) * 100) : 0}%`} sub="of total paid" />
-                </div>
-                {ccPayoffSchedule.length > 0 && (
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-2 font-medium">Payoff Timeline</p>
-                    <CalculatorChart type="payoff" data={ccPayoffSchedule} />
-                  </div>
-                )}
-                {ccResult.months > 0 && (
-                  <div className="p-3 rounded-xl bg-muted/50 text-xs space-y-1">
-                    <p className="font-medium">💡 Tip: Increasing your payment by {formatCurrency(50)}/mo could save you:</p>
-                    {(() => {
-                      const faster = calcCreditCardPayoff(parseFloat(ccForm.balance)||0, parseFloat(ccForm.apr)||0, (parseFloat(ccForm.payment)||0)+50);
-                      const saved = ccResult.totalInterest - faster.totalInterest;
-                      return <p className="text-prism-teal font-bold">{formatCurrency(saved)} in interest and {ccResult.months - faster.months} fewer months</p>;
-                    })()}
-                  </div>
-                )}
-                <CalculatorActions
-                  calculatorType="creditcard"
-                  inputs={ccForm}
-                  results={{ months: ccResult.months, totalInterest: ccResult.totalInterest, totalPaid: ccResult.totalPaid }}
-                  hasResults={ccResult.months > 0}
-                  summaryText={`# 💳 Credit Card Payoff\n\n**Inputs**\n- **Balance:** ${formatCurrency(Number(ccForm.balance))}\n- **APR:** ${ccForm.apr}%\n- **Monthly Payment:** ${formatCurrency(Number(ccForm.payment))}\n\n**Results**\n- **Payoff Time:** ${ccResult.months} months\n- **Total Interest:** ${formatCurrency(ccResult.totalInterest)}\n- **Total Paid:** ${formatCurrency(ccResult.totalPaid)}`}
-                  onOpenHistory={() => setHistoryOpen(true)}
-                  printData={{
-                    inputs: [
-                      { label: 'Current Balance', value: `$${Number(ccForm.balance).toLocaleString()}` },
-                      { label: 'APR', value: `${ccForm.apr}%` },
-                      { label: 'Monthly Payment', value: `$${Number(ccForm.payment).toLocaleString()}/mo` },
-                    ],
-                    results: [
-                      { label: 'Months to Payoff', value: `${ccResult.months} months (${Math.floor(ccResult.months/12)}y ${ccResult.months%12}m)`, highlight: true },
-                      { label: 'Total Interest', value: formatCurrency(ccResult.totalInterest) },
-                      { label: 'Total Paid', value: formatCurrency(ccResult.totalPaid) },
-                      { label: 'Interest Ratio', value: `${ccResult.totalPaid > 0 ? Math.round((ccResult.totalInterest / ccResult.totalPaid) * 100) : 0}%` },
-                    ],
-                  }}
-                />
-              </CardContent>
-            </Card>
-          </div>
-          <CalculatorInsight
-            calculatorType="credit"
-            inputs={ccForm}
-            results={{ months: ccResult.months, totalInterest: ccResult.totalInterest, totalPaid: ccResult.totalPaid }}
-            hasResults={ccResult.months > 0}
-          />
-        </div>)}
-        {activeCalc === 'investment' && (<div className="mt-6">
-          <CalculatorGuide
-            title="Investment Calculator"
-            icon={TrendingUp}
-            iconColor="text-prism-lime"
-            ttsScript="The Investment Calculator projects how your money grows over time with compound interest. Enter your initial investment, monthly contribution, expected annual return rate, and time horizon in years. You'll see the final balance, total contributions, total earnings, and your overall return on investment percentage. The growth chart visualizes how your portfolio builds year by year, and the composition bar shows contributions versus earnings."
-            instructions={[
-              'Enter your initial lump-sum investment',
-              'Set a monthly contribution amount',
-              'Choose an expected annual return rate',
-              'Set your investment time horizon in years',
-              'Results show final balance, total contributions, and earnings',
-              'The growth chart shows your portfolio value over time',
-            ]}
-          />
-          <CalculatorScenariosAndPitfalls
-            scenarios={[
-              { title: 'Starting at 25', description: '$500/mo at 8% for 40 years grows to $1.74M. Starting at 35 yields only $745k — less than half.' },
-              { title: 'Employer Match', description: 'If your employer matches 50% up to 6%, contribute at least 6%. That\'s an instant 50% return on your money.' },
-              { title: 'Lump Sum vs DCA', description: 'Historically, investing a lump sum beats dollar-cost averaging 2/3 of the time, but DCA reduces emotional risk.' },
-              { title: 'Roth vs Traditional', description: 'If you expect higher taxes in retirement, Roth contributions grow tax-free. Compare the growth difference here.' },
-            ]}
-            pitfalls={[
-              { title: 'Waiting to Start', description: 'Every year you delay costs exponentially. Starting 5 years late on $500/mo at 8% costs over $250k in lost growth.' },
-              { title: 'Unrealistic Returns', description: 'Historical S&P 500 averages ~10% before inflation, ~7% after. Don\'t plan on 12%+ returns.' },
-              { title: 'Ignoring Fees', description: 'A 1% annual fee on $500k costs $5,000/year. Over 30 years, fees can eat 20%+ of your returns.' },
-              { title: 'Panic Selling', description: 'Missing just the 10 best market days over 20 years can cut your returns in half. Stay invested.' },
-            ]}
-          />
-          <div className="grid gap-6 lg:grid-cols-2 mt-4">
-            <Card className="prism-card-shine border-border/50">
-              <CardHeader>
-                <CardTitle className="font-display flex items-center gap-2 text-lg">
-                  <TrendingUp className="h-5 w-5 text-prism-lime" /> Investment Calculator
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <InputField label="Initial Investment" value={investForm.initial} onChange={v => setInvestForm(f => ({ ...f, initial: v }))} icon={DollarSign} />
-                <InputField label="Monthly Contribution" value={investForm.monthly} onChange={v => setInvestForm(f => ({ ...f, monthly: v }))} icon={DollarSign} />
-                <InputField label="Annual Return" value={investForm.rate} onChange={v => setInvestForm(f => ({ ...f, rate: v }))} icon={Percent} suffix="%" />
-                <InputField label="Time Horizon" value={investForm.years} onChange={v => setInvestForm(f => ({ ...f, years: v }))} icon={CalendarDays} suffix="years" />
-              </CardContent>
-            </Card>
-            <Card className="prism-card-shine border-border/50">
-              <CardHeader><CardTitle className="font-display text-lg">Results</CardTitle></CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
-                  <ResultCard label="Final Balance" value={formatCurrency(investResult.finalBalance)} numericValue={investResult.finalBalance} formatFn={formatCurrency} accent />
-                  <ResultCard label="Total Contributions" value={formatCurrency(investResult.totalContributions)} numericValue={investResult.totalContributions} formatFn={formatCurrency} />
-                  <ResultCard label="Total Earnings" value={formatCurrency(investResult.totalInterest)} numericValue={investResult.totalInterest} formatFn={formatCurrency} />
-                  <ResultCard label="Growth" value={`${investResult.totalContributions > 0 ? Math.round(((investResult.finalBalance - investResult.totalContributions) / investResult.totalContributions) * 100) : 0}%`} sub="return on investment" />
-                </div>
-                {investResult.schedule.length > 0 && (
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-2 font-medium">Growth Over Time</p>
-                    <CalculatorChart type="growth" data={investResult.schedule} />
-                  </div>
-                )}
-                <div>
-                  <p className="text-xs text-muted-foreground mb-2">Composition</p>
-                  <div className="flex gap-1 h-4 rounded-full overflow-hidden">
-                    <div className="bg-prism-lime transition-all" style={{ width: `${investResult.finalBalance > 0 ? (investResult.totalContributions / investResult.finalBalance) * 100 : 0}%` }} />
-                    <div className="bg-prism-teal transition-all" style={{ width: `${investResult.finalBalance > 0 ? (investResult.totalInterest / investResult.finalBalance) * 100 : 0}%` }} />
-                  </div>
-                  <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                    <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-prism-lime inline-block" /> Contributions</span>
-                    <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-prism-teal inline-block" /> Earnings</span>
-                  </div>
-                </div>
-                <CalculatorActions
-                  calculatorType="investment"
-                  inputs={investForm}
-                  results={{ finalBalance: investResult.finalBalance, totalContributions: investResult.totalContributions, totalInterest: investResult.totalInterest }}
-                  hasResults={investResult.finalBalance > 0}
-                  summaryText={`# 📈 Investment Calculator\n\n**Inputs**\n- **Initial Investment:** ${formatCurrency(Number(investForm.initial))}\n- **Monthly Contribution:** ${formatCurrency(Number(investForm.monthly))}\n- **Expected Return:** ${investForm.rate}%\n- **Time Horizon:** ${investForm.years} years\n\n**Results**\n- **Final Balance:** ${formatCurrency(investResult.finalBalance)}\n- **Total Contributions:** ${formatCurrency(investResult.totalContributions)}\n- **Total Earnings:** ${formatCurrency(investResult.totalInterest)}`}
-                  onOpenHistory={() => setHistoryOpen(true)}
-                  printData={{
-                    inputs: [
-                      { label: 'Initial Investment', value: `$${Number(investForm.initial).toLocaleString()}` },
-                      { label: 'Monthly Contribution', value: `$${Number(investForm.monthly).toLocaleString()}` },
-                      { label: 'Annual Return', value: `${investForm.rate}%` },
-                      { label: 'Time Horizon', value: `${investForm.years} years` },
-                    ],
-                    results: [
-                      { label: 'Final Balance', value: formatCurrency(investResult.finalBalance), highlight: true },
-                      { label: 'Total Contributions', value: formatCurrency(investResult.totalContributions) },
-                      { label: 'Total Earnings', value: formatCurrency(investResult.totalInterest) },
-                      { label: 'ROI', value: `${investResult.totalContributions > 0 ? Math.round(((investResult.finalBalance - investResult.totalContributions) / investResult.totalContributions) * 100) : 0}%` },
-                    ],
-                  }}
-                />
-              </CardContent>
-            </Card>
-          </div>
-          <CalculatorInsight
-            calculatorType="investment"
-            inputs={investForm}
-            results={{ finalBalance: investResult.finalBalance, totalContributions: investResult.totalContributions, totalInterest: investResult.totalInterest }}
-            hasResults={investResult.finalBalance > 0}
-          />
-        </div>)}
-        {activeCalc === 'debt' && (<div className="mt-6">
-          <CalculatorGuide
-            title="General Debt Calculator"
-            icon={DollarSign}
-            iconColor="text-prism-amber"
-            ttsScript="The General Debt Calculator works for any type of loan — student loans, personal loans, or other debts. Enter the total debt balance, the annual interest rate, and your planned monthly payment. You'll see the payoff timeline in years and months, total interest paid, total cost, and a payoff chart. The payment breakdown bar shows how much of your total goes to principal versus interest."
-            instructions={[
-              'Enter your total debt balance',
-              'Set the annual interest rate',
-              'Enter your planned monthly payment',
-              'Results show payoff time, total interest, and total cost',
-              'The payoff chart tracks your declining balance',
-              'Works for any loan type: student, personal, medical, etc.',
-            ]}
-          />
-          <CalculatorScenariosAndPitfalls
-            scenarios={[
-              { title: 'Student Loan Payoff', description: '$25k at 5% with $400/mo takes 5.8 years. Bumping to $600/mo saves 2+ years and $1,500 in interest.' },
-              { title: 'Medical Debt', description: 'Many hospitals offer 0% payment plans. A $10k bill at 0% with $300/mo takes just 34 months — no interest.' },
-              { title: 'Consolidation', description: 'Combining multiple debts into one lower-rate loan simplifies payments and can reduce total interest by 30–50%.' },
-              { title: 'Windfall Application', description: 'Applying a $5k tax refund to a $25k loan at 7% saves $4,200+ in interest over the loan\'s life.' },
-            ]}
-            pitfalls={[
-              { title: 'Paying Only Minimums', description: 'On a $25k loan at 7%, minimums of $300 take 11+ years. Increasing to $500 cuts it to 5 years.' },
-              { title: 'Ignoring High-Rate Debts', description: 'Always prioritize the highest-rate debt first (avalanche method) to minimize total interest paid.' },
-              { title: 'Refinancing Without Math', description: 'A lower rate with a longer term can actually cost more in total interest. Always compare total cost.' },
-              { title: 'No Emergency Fund', description: 'Aggressively paying debt without savings leads to more debt when emergencies hit. Keep $1k–$2k liquid.' },
-            ]}
-          />
-          <div className="grid gap-6 lg:grid-cols-2 mt-4">
-            <Card className="prism-card-shine border-border/50">
-              <CardHeader>
-                <CardTitle className="font-display flex items-center gap-2 text-lg">
-                  <DollarSign className="h-5 w-5 text-prism-amber" /> General Debt Calculator
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <InputField label="Total Debt" value={debtForm.balance} onChange={v => setDebtForm(f => ({ ...f, balance: v }))} icon={DollarSign} />
-                <InputField label="Interest Rate" value={debtForm.rate} onChange={v => setDebtForm(f => ({ ...f, rate: v }))} icon={Percent} suffix="%" />
-                <InputField label="Monthly Payment" value={debtForm.payment} onChange={v => setDebtForm(f => ({ ...f, payment: v }))} icon={DollarSign} />
-              </CardContent>
-            </Card>
-            <Card className="prism-card-shine border-border/50">
-              <CardHeader><CardTitle className="font-display text-lg">Results</CardTitle></CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
-                  <ResultCard label="Payoff Time" value={debtResult.months > 0 ? `${Math.floor(debtResult.months / 12)}y ${debtResult.months % 12}m` : '—'} accent />
-                  <ResultCard label="Total Interest" value={formatCurrency(debtResult.totalInterest)} numericValue={debtResult.totalInterest} formatFn={formatCurrency} />
-                  <ResultCard label="Total Paid" value={formatCurrency(debtResult.totalPaid)} numericValue={debtResult.totalPaid} formatFn={formatCurrency} />
-                  <ResultCard label="Interest Cost" value={`${debtResult.totalPaid > 0 ? Math.round((debtResult.totalInterest / debtResult.totalPaid) * 100) : 0}%`} sub="of total" />
-                </div>
-                {debtPayoffSchedule.length > 0 && (
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-2 font-medium">Payoff Timeline</p>
-                    <CalculatorChart type="payoff" data={debtPayoffSchedule} />
-                  </div>
-                )}
-                <div>
-                  <p className="text-xs text-muted-foreground mb-2">Payment Breakdown</p>
-                  <div className="flex gap-1 h-4 rounded-full overflow-hidden">
-                    <div className="bg-prism-amber transition-all" style={{ width: `${debtResult.totalPaid > 0 ? ((parseFloat(debtForm.balance)||0) / debtResult.totalPaid) * 100 : 0}%` }} />
-                    <div className="bg-prism-rose transition-all" style={{ width: `${debtResult.totalPaid > 0 ? (debtResult.totalInterest / debtResult.totalPaid) * 100 : 0}%` }} />
-                  </div>
-                  <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                    <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-prism-amber inline-block" /> Principal</span>
-                    <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-prism-rose inline-block" /> Interest</span>
-                  </div>
-                </div>
-                <CalculatorActions
-                  calculatorType="debt"
-                  inputs={debtForm}
-                  results={{ months: debtResult.months, totalInterest: debtResult.totalInterest, totalPaid: debtResult.totalPaid }}
-                  hasResults={debtResult.months > 0}
-                  summaryText={`# 💰 Debt Payoff Calculator\n\n**Inputs**\n- **Balance:** ${formatCurrency(Number(debtForm.balance))}\n- **Interest Rate:** ${debtForm.rate}%\n- **Monthly Payment:** ${formatCurrency(Number(debtForm.payment))}\n\n**Results**\n- **Payoff Time:** ${Math.floor(debtResult.months/12)}y ${debtResult.months%12}m\n- **Total Interest:** ${formatCurrency(debtResult.totalInterest)}\n- **Total Paid:** ${formatCurrency(debtResult.totalPaid)}`}
-                  onOpenHistory={() => setHistoryOpen(true)}
-                  printData={{
-                    inputs: [
-                      { label: 'Total Debt', value: `$${Number(debtForm.balance).toLocaleString()}` },
-                      { label: 'Interest Rate', value: `${debtForm.rate}%` },
-                      { label: 'Monthly Payment', value: `$${Number(debtForm.payment).toLocaleString()}/mo` },
-                    ],
-                    results: [
-                      { label: 'Payoff Time', value: `${Math.floor(debtResult.months/12)}y ${debtResult.months%12}m`, highlight: true },
-                      { label: 'Total Interest', value: formatCurrency(debtResult.totalInterest) },
-                      { label: 'Total Paid', value: formatCurrency(debtResult.totalPaid) },
-                      { label: 'Interest Cost', value: `${debtResult.totalPaid > 0 ? Math.round((debtResult.totalInterest / debtResult.totalPaid) * 100) : 0}%` },
-                    ],
-                  }}
-                />
-              </CardContent>
-            </Card>
-          </div>
-          <CalculatorInsight
-            calculatorType="debt"
-            inputs={debtForm}
-            results={{ months: debtResult.months, totalInterest: debtResult.totalInterest, totalPaid: debtResult.totalPaid }}
-            hasResults={debtResult.months > 0}
-          />
-        </div>)}
-
-        {/* ─── WEALTH MULTIPLIER ─── */}
-        {activeCalc === 'wealth' && (<div className="mt-6">
-          <CalculatorGuide
-            title="Wealth Multiplier"
-            icon={PiggyBank}
-            iconColor="text-prism-indigo"
-            ttsScript="The Wealth Multiplier shows how much every dollar you invest today could grow by retirement at age 65. Enter your current age and see the multiplier effect of compound growth. You'll also see how much you'd need to invest monthly to reach one million and two million dollars by retirement. The younger you start, the more powerful the multiplier becomes."
-            instructions={[
-              'Enter your current age (18–64)',
-              'See how much each $1 invested today becomes by age 65',
-              'View the monthly investment needed to reach $1M and $2M',
-              'The chart shows the multiplier declining as you age — start early!',
-            ]}
-          />
-          <CalculatorScenariosAndPitfalls
-            scenarios={[
-              { title: 'Age 25 Investor', description: 'At 25, every $1 becomes ~$44 by 65. Investing just $200/mo from 25 yields over $500k by retirement.' },
-              { title: 'Late Starter at 40', description: 'Starting at 40 means a 7x multiplier instead of 44x. You\'ll need $2,800+/mo to reach $1M — but it\'s still possible.' },
-              { title: 'Power of 10 Years', description: 'Starting at 25 vs 35 with $500/mo means $1M+ more at retirement. A decade of compound growth is irreplaceable.' },
-              { title: 'Couple Investing Together', description: 'Two people investing $500/mo each starting at 30 can accumulate $2.5M+ by 65 through combined growth.' },
-            ]}
-            pitfalls={[
-              { title: 'Thinking It\'s Too Late', description: 'Even starting at 50, a 15-year runway with disciplined saving can build significant wealth. Every year counts.' },
-              { title: 'Cashing Out Early', description: 'Withdrawing retirement funds early triggers penalties and taxes, plus you lose all future compounding.' },
-              { title: 'Lifestyle Inflation', description: 'As income grows, increase investments — not just spending. Saving your raises is the fastest path to wealth.' },
-              { title: 'Ignoring Inflation', description: 'A million dollars in 30 years buys less than today. Aim for $2M+ to maintain purchasing power.' },
-            ]}
-          />
-          <div className="grid gap-6 lg:grid-cols-2 mt-4">
-            <Card className="prism-card-shine border-border/50">
-              <CardHeader>
-                <CardTitle className="font-display flex items-center gap-2 text-lg">
-                  <PiggyBank className="h-5 w-5 text-prism-indigo" /> Wealth Multiplier
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <InputField label="Current Age" value={wealthAge} onChange={handleWealthAgeChange} icon={CalendarDays} suffix="years" />
-                <p className="text-xs text-muted-foreground">
-                  Based on compound growth assumptions: returns start at ~10% at age 20 and gradually decrease to ~5.5% approaching retirement at 65.
-                </p>
-                <div className="p-3 rounded-xl bg-muted/50">
-                  <p className="text-xs text-muted-foreground mb-2 font-medium">Multiplier by Age</p>
-                  <div className="grid grid-cols-5 gap-1.5">
-                    {WEALTH_MULTIPLIER_DATA.map(d => (
-                      <div key={d.age} className={cn(
-                        'text-center p-1.5 rounded-lg text-xs transition-colors',
-                        parseInt(wealthAge) === d.age ? 'bg-primary text-primary-foreground' : 'bg-muted/50'
-                      )}>
-                        <p className="font-bold">{d.multiplier.toFixed(0)}x</p>
-                        <p className="text-[10px] text-muted-foreground">{d.age}</p>
-                      </div>
+      {activeCalc === 'mortgage' && (<div className="mt-6">
+        <CalculatorGuide
+          title="Mortgage Calculator"
+          icon={Home}
+          iconColor="text-prism-teal"
+          ttsScript="The Mortgage Calculator helps you estimate your monthly home loan payment. Enter the home price, your down payment, the interest rate, and the loan term in years. You'll see your monthly payment, total interest paid over the life of the loan, and an amortization chart showing how your balance decreases over time. The payment breakdown bar shows the split between principal and interest."
+          instructions={[
+            'Enter the full home purchase price',
+            'Add your down payment amount — the loan is calculated on the difference',
+            'Set the annual interest rate and loan term in years',
+            'Results update instantly: monthly payment, total interest, and total cost',
+            'The amortization chart shows your remaining balance over time',
+            'Use Save to keep results, Copy to clipboard, or Export as a text file',
+          ]}
+        />
+        <CalculatorScenariosAndPitfalls
+          scenarios={[
+            { title: 'First-Time Buyer', description: 'Put 20% down to avoid PMI. On a $350k home, that\'s $70k down — saving $150–250/mo in private mortgage insurance.' },
+            { title: 'Refinancing', description: 'Dropping from 7% to 5.5% on a $280k balance saves ~$300/mo. Break-even on closing costs in about 18 months.' },
+            { title: 'Extra Payments', description: 'Adding just $200/mo to a 30-year mortgage can cut 5–7 years off the loan and save tens of thousands in interest.' },
+            { title: '15 vs 30 Year', description: 'A 15-year term has higher payments but saves 50–60% in total interest. Compare both using this calculator.' },
+          ]}
+          pitfalls={[
+            { title: 'Ignoring Taxes & Insurance', description: 'Your actual monthly housing cost includes taxes, insurance, and possibly HOA — often $500–1,000+ beyond the mortgage.' },
+            { title: 'Maxing Out Your Budget', description: 'Just because you qualify for a $400k loan doesn\'t mean you should. Keep total housing under 28% of gross income.' },
+            { title: 'Skipping Rate Comparison', description: 'Even 0.25% lower rate on a $300k loan saves $15,000+ over 30 years. Always shop multiple lenders.' },
+            { title: 'Forgetting Closing Costs', description: 'Budget 2–5% of the home price for closing costs. On a $350k home, that\'s $7k–$17.5k due at signing.' },
+          ]}
+        />
+        <div className="grid gap-6 lg:grid-cols-2 mt-4">
+          <Card className="prism-card-shine border-border/50">
+            <CardHeader>
+              <CardTitle className="font-display flex items-center gap-2 text-lg">
+                <Home className="h-5 w-5 text-prism-teal" /> Mortgage Calculator
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* State selector */}
+              <div className="space-y-1.5">
+                <Label className="text-xs flex items-center gap-1.5">
+                  <MapPin className="h-3.5 w-3.5 text-prism-violet" />
+                  State
+                </Label>
+                <Select value={mortgageForm.state} onValueChange={handleMortgageStateChange}>
+                  <SelectTrigger className="h-9 text-sm">
+                    <SelectValue placeholder="Select state for accurate tax & insurance rates…" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-[280px]">
+                    {Object.entries(STATE_DATA).filter(([k]) => k !== '').map(([code, data]) => (
+                      <SelectItem key={code} value={code}>
+                        <span className="flex items-center gap-2">
+                          <span className="font-mono text-xs text-muted-foreground w-6">{code}</span>
+                          {data.label}
+                        </span>
+                      </SelectItem>
                     ))}
-                  </div>
+                  </SelectContent>
+                </Select>
+                {mortgageForm.state && (
+                  <p className="text-[10px] text-prism-teal">
+                    ✓ Property tax & insurance updated for {STATE_DATA[mortgageForm.state]?.label}
+                  </p>
+                )}
+              </div>
+              <InputField label="Home Price" value={mortgageForm.price} onChange={v => setMortgageForm(f => ({ ...f, price: v }))} icon={DollarSign} />
+              <InputField label="Down Payment" value={mortgageForm.down} onChange={v => setMortgageForm(f => ({ ...f, down: v }))} icon={DollarSign} />
+              <InputField label="Interest Rate" value={mortgageForm.rate} onChange={v => setMortgageForm(f => ({ ...f, rate: v }))} icon={Percent} suffix="%" />
+              <InputField label="Loan Term" value={mortgageForm.years} onChange={v => setMortgageForm(f => ({ ...f, years: v }))} icon={CalendarDays} suffix="years" />
+              <InputField label="Property Tax Rate" value={mortgageForm.propertyTaxRate} onChange={v => setMortgageForm(f => ({ ...f, propertyTaxRate: v }))} icon={Percent} suffix="%" />
+              <InputField label="Insurance Rate" value={mortgageForm.insuranceRate} onChange={v => setMortgageForm(f => ({ ...f, insuranceRate: v }))} icon={Percent} suffix="%" />
+              <div className="text-xs text-muted-foreground">
+                Loan Amount: {formatCurrency(Math.max(0, (parseFloat(mortgageForm.price) || 0) - (parseFloat(mortgageForm.down) || 0)))}
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="prism-card-shine border-border/50">
+            <CardHeader><CardTitle className="font-display text-lg">Results</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <ResultCard label="Total Monthly" value={formatCurrency(mortgageResult.totalMonthly)} numericValue={mortgageResult.totalMonthly} formatFn={formatCurrency} accent sub="P&I + Tax + Insurance" />
+                <ResultCard label="P&I Payment" value={formatCurrency(mortgageResult.payment)} numericValue={mortgageResult.payment} formatFn={formatCurrency} sub="Principal & Interest only" />
+                <ResultCard label="Property Tax" value={formatCurrency(mortgageResult.monthlyPropTax)} numericValue={mortgageResult.monthlyPropTax} formatFn={formatCurrency} sub={`${mortgageForm.propertyTaxRate}%/yr`} />
+                <ResultCard label="Insurance" value={formatCurrency(mortgageResult.monthlyInsurance)} numericValue={mortgageResult.monthlyInsurance} formatFn={formatCurrency} sub={`${mortgageForm.insuranceRate}%/yr`} />
+                <ResultCard label="Total Interest" value={formatCurrency(mortgageResult.totalInterest)} numericValue={mortgageResult.totalInterest} formatFn={formatCurrency} />
+                <ResultCard label="Interest / Principal" value={`${mortgageResult.totalPaid > 0 ? Math.round((mortgageResult.totalInterest / mortgageResult.totalPaid) * 100) : 0}%`} sub="of total cost" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-2 font-medium">Remaining Balance Over Time</p>
+                <CalculatorChart type="amortization" data={mortgageResult.schedule} />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-2">Payment Breakdown</p>
+                <div className="flex gap-1 h-4 rounded-full overflow-hidden">
+                  <div className="bg-prism-teal transition-all" style={{ width: `${mortgageResult.totalPaid > 0 ? ((mortgageResult.totalPaid - mortgageResult.totalInterest) / mortgageResult.totalPaid) * 100 : 0}%` }} />
+                  <div className="bg-prism-rose transition-all" style={{ width: `${mortgageResult.totalPaid > 0 ? (mortgageResult.totalInterest / mortgageResult.totalPaid) * 100 : 0}%` }} />
                 </div>
-              </CardContent>
-            </Card>
-            <Card className="prism-card-shine border-border/50">
-              <CardHeader><CardTitle className="font-display text-lg">Results</CardTitle></CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
-                  <ResultCard label="Wealth Multiplier" value={`${wealthResult.multiplier.toFixed(1)}x`} accent sub={`At age ${wealthResult.age}`} />
-                  <ResultCard label="$1 Becomes" value={formatCurrency(wealthResult.multiplier)} sub="by age 65" />
-                  <ResultCard label="Monthly for $1M" value={formatCurrency(wealthResult.monthlyTo1M)} numericValue={wealthResult.monthlyTo1M} formatFn={formatCurrency} sub="to reach $1,000,000" />
-                  <ResultCard label="Monthly for $2M" value={formatCurrency(wealthResult.monthlyTo2M)} numericValue={wealthResult.monthlyTo2M} formatFn={formatCurrency} sub="to reach $2,000,000" />
+                <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                  <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-prism-teal inline-block" /> Principal</span>
+                  <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-prism-rose inline-block" /> Interest</span>
                 </div>
-                <CalculatorActions
-                  calculatorType="wealth"
-                  inputs={{ age: wealthAge }}
-                  results={{ multiplier: wealthResult.multiplier, monthlyTo1M: wealthResult.monthlyTo1M, monthlyTo2M: wealthResult.monthlyTo2M }}
-                  hasResults={true}
-                  summaryText={`# 🌟 Wealth Multiplier\n\n**Inputs**\n- **Current Age:** ${wealthAge}\n\n**Results**\n- **Multiplier:** ${wealthResult.multiplier.toFixed(1)}x\n- **Monthly to reach $1M:** ${formatCurrency(wealthResult.monthlyTo1M)}\n- **Monthly to reach $2M:** ${formatCurrency(wealthResult.monthlyTo2M)}`}
-                  onOpenHistory={() => setHistoryOpen(true)}
-                  printData={{
-                    inputs: [
-                      { label: 'Current Age', value: `${wealthAge} years` },
-                      { label: 'Retirement Age', value: '65 years' },
-                      { label: 'Years to Grow', value: `${65 - (parseInt(wealthAge) || 30)} years` },
-                    ],
-                    results: [
-                      { label: 'Wealth Multiplier', value: `${wealthResult.multiplier.toFixed(1)}x`, highlight: true },
-                      { label: '$1 Becomes', value: formatCurrency(wealthResult.multiplier) },
-                      { label: 'Monthly for $1M', value: formatCurrency(wealthResult.monthlyTo1M) },
-                      { label: 'Monthly for $2M', value: formatCurrency(wealthResult.monthlyTo2M) },
-                    ],
-                  }}
-                />
-              </CardContent>
-            </Card>
-          </div>
-          <CalculatorInsight
-            calculatorType="wealth"
-            inputs={{ age: wealthAge }}
-            results={{ multiplier: wealthResult.multiplier, monthlyTo1M: wealthResult.monthlyTo1M, monthlyTo2M: wealthResult.monthlyTo2M }}
-            hasResults={true}
-          />
-        </div>)}
+              </div>
+              <CalculatorActions
+                calculatorType="mortgage"
+                inputs={mortgageForm}
+                results={{ payment: mortgageResult.payment, totalInterest: mortgageResult.totalInterest, totalPaid: mortgageResult.totalPaid }}
+                hasResults={mortgageResult.payment > 0}
+                summaryText={`# 🏠 Mortgage Calculator\n\n**Inputs**\n${mortgageForm.state ? `- **State:** ${STATE_DATA[mortgageForm.state]?.label}\n` : ''}- **Home Price:** ${formatCurrency(Number(mortgageForm.price))}\n- **Down Payment:** ${formatCurrency(Number(mortgageForm.down))}\n- **Interest Rate:** ${mortgageForm.rate}%\n- **Term:** ${mortgageForm.years} years\n- **Property Tax:** ${mortgageForm.propertyTaxRate}%\n- **Insurance:** ${mortgageForm.insuranceRate}%\n\n**Results**\n- **Total Monthly:** ${formatCurrency(mortgageResult.totalMonthly)}\n- **P&I Payment:** ${formatCurrency(mortgageResult.payment)}\n- **Property Tax:** ${formatCurrency(mortgageResult.monthlyPropTax)}/mo\n- **Insurance:** ${formatCurrency(mortgageResult.monthlyInsurance)}/mo\n- **Total Interest:** ${formatCurrency(mortgageResult.totalInterest)}\n- **Total Paid:** ${formatCurrency(mortgageResult.totalPaid)}`}
+                onOpenHistory={() => setHistoryOpen(true)}
+                printData={{
+                  inputs: [
+                    ...(mortgageForm.state ? [{ label: 'State', value: STATE_DATA[mortgageForm.state]?.label || mortgageForm.state }] : []),
+                    { label: 'Home Price', value: `$${Number(mortgageForm.price).toLocaleString()}` },
+                    { label: 'Down Payment', value: `$${Number(mortgageForm.down).toLocaleString()}` },
+                    { label: 'Interest Rate', value: `${mortgageForm.rate}%` },
+                    { label: 'Loan Term', value: `${mortgageForm.years} years` },
+                    { label: 'Property Tax', value: `${mortgageForm.propertyTaxRate}%` },
+                    { label: 'Insurance', value: `${mortgageForm.insuranceRate}%` },
+                    { label: 'Loan Amount', value: formatCurrency(Math.max(0, (parseFloat(mortgageForm.price)||0) - (parseFloat(mortgageForm.down)||0))) },
+                  ],
+                  results: [
+                    { label: 'Total Monthly', value: formatCurrency(mortgageResult.totalMonthly), highlight: true },
+                    { label: 'P&I Payment', value: formatCurrency(mortgageResult.payment) },
+                    { label: 'Monthly Tax', value: formatCurrency(mortgageResult.monthlyPropTax) },
+                    { label: 'Monthly Insurance', value: formatCurrency(mortgageResult.monthlyInsurance) },
+                    { label: 'Total Interest', value: formatCurrency(mortgageResult.totalInterest) },
+                    { label: 'Total Paid', value: formatCurrency(mortgageResult.totalPaid) },
+                    { label: 'Interest Ratio', value: `${mortgageResult.totalPaid > 0 ? Math.round((mortgageResult.totalInterest / mortgageResult.totalPaid) * 100) : 0}%` },
+                  ],
+                }}
+              />
+            </CardContent>
+          </Card>
+        </div>
+        <CalculatorInsight
+          calculatorType="mortgage"
+          inputs={mortgageForm}
+          results={{ payment: mortgageResult.payment, totalInterest: mortgageResult.totalInterest, totalPaid: mortgageResult.totalPaid }}
+          hasResults={mortgageResult.payment > 0}
+        />
+      </div>)}
+      {activeCalc === 'auto' && (<div className="mt-6">
+        <CalculatorGuide
+          title="Auto Loan Calculator"
+          icon={Car}
+          iconColor="text-prism-sky"
+          ttsScript="The Auto Loan Calculator estimates your monthly car payment. Enter the vehicle price, down payment, trade-in value if applicable, interest rate, and loan term. Your monthly payment, total interest, and total cost are calculated instantly. The amortization chart tracks your remaining balance, and the cost breakdown bar shows how much goes to principal versus interest."
+          instructions={[
+            'Enter the vehicle purchase price',
+            'Add your down payment and trade-in value (if any)',
+            'Set the annual interest rate and loan term',
+            'Results show monthly payment, total interest, and total cost',
+            'The chart tracks your remaining balance over the loan term',
+          ]}
+        />
+        <CalculatorScenariosAndPitfalls
+          scenarios={[
+            { title: 'New vs Used', description: 'A 2-year-old certified pre-owned car can save 20–30% vs new while still having warranty coverage.' },
+            { title: 'Short-Term Loan', description: 'A 3-year loan at 5.9% on $30k costs $2,800 in interest vs $4,700 on a 5-year term.' },
+            { title: 'Large Trade-In', description: 'A $10k trade-in on a $35k car drops your loan to $25k — reducing payments by $170+/mo on a 5-year loan.' },
+            { title: '0% Dealer Financing', description: 'Compare 0% APR vs a cash discount. Sometimes the rebate beats the free financing.' },
+          ]}
+          pitfalls={[
+            { title: 'Stretching to 7+ Years', description: 'Longer terms mean lower payments but much more interest — and you may owe more than the car is worth.' },
+            { title: 'Ignoring Total Cost', description: 'Focus on total cost, not monthly payment. Dealers love stretching terms to make expensive cars seem affordable.' },
+            { title: 'Skipping Pre-Approval', description: 'Get pre-approved from your bank before the dealership. Dealer financing often has higher rates.' },
+            { title: 'Negative Equity Roll-In', description: 'Rolling an old loan balance into a new car loan starts you underwater immediately.' },
+          ]}
+        />
+        <div className="grid gap-6 lg:grid-cols-2 mt-4">
+          <Card className="prism-card-shine border-border/50">
+            <CardHeader>
+              <CardTitle className="font-display flex items-center gap-2 text-lg">
+                <Car className="h-5 w-5 text-prism-sky" /> Auto Loan Calculator
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <InputField label="Vehicle Price" value={autoForm.price} onChange={v => setAutoForm(f => ({ ...f, price: v }))} icon={DollarSign} />
+              <InputField label="Down Payment" value={autoForm.down} onChange={v => setAutoForm(f => ({ ...f, down: v }))} icon={DollarSign} />
+              <InputField label="Trade-in Value" value={autoForm.tradeIn} onChange={v => setAutoForm(f => ({ ...f, tradeIn: v }))} icon={DollarSign} />
+              <InputField label="Interest Rate" value={autoForm.rate} onChange={v => setAutoForm(f => ({ ...f, rate: v }))} icon={Percent} suffix="%" />
+              <InputField label="Loan Term" value={autoForm.years} onChange={v => setAutoForm(f => ({ ...f, years: v }))} icon={CalendarDays} suffix="years" />
+            </CardContent>
+          </Card>
+          <Card className="prism-card-shine border-border/50">
+            <CardHeader><CardTitle className="font-display text-lg">Results</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <ResultCard label="Monthly Payment" value={formatCurrency(autoResult.payment)} numericValue={autoResult.payment} formatFn={formatCurrency} accent />
+                <ResultCard label="Total Interest" value={formatCurrency(autoResult.totalInterest)} numericValue={autoResult.totalInterest} formatFn={formatCurrency} />
+                <ResultCard label="Total Paid" value={formatCurrency(autoResult.totalPaid)} numericValue={autoResult.totalPaid} formatFn={formatCurrency} />
+                <ResultCard label="Loan Amount" value={formatCurrency(Math.max(0, (parseFloat(autoForm.price)||0) - (parseFloat(autoForm.down)||0) - (parseFloat(autoForm.tradeIn)||0)))} />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-2 font-medium">Remaining Balance Over Time</p>
+                <CalculatorChart type="amortization" data={autoResult.schedule} />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-2">Cost Breakdown</p>
+                <div className="flex gap-1 h-4 rounded-full overflow-hidden">
+                  <div className="bg-prism-sky transition-all" style={{ width: `${autoResult.totalPaid > 0 ? ((autoResult.totalPaid - autoResult.totalInterest) / autoResult.totalPaid) * 100 : 0}%` }} />
+                  <div className="bg-prism-rose transition-all" style={{ width: `${autoResult.totalPaid > 0 ? (autoResult.totalInterest / autoResult.totalPaid) * 100 : 0}%` }} />
+                </div>
+                <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                  <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-prism-sky inline-block" /> Principal</span>
+                  <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-prism-rose inline-block" /> Interest</span>
+                </div>
+              </div>
+              <CalculatorActions
+                calculatorType="auto"
+                inputs={autoForm}
+                results={{ payment: autoResult.payment, totalInterest: autoResult.totalInterest, totalPaid: autoResult.totalPaid }}
+                hasResults={autoResult.payment > 0}
+                summaryText={`# 🚗 Auto Loan Calculator\n\n**Inputs**\n- **Vehicle Price:** ${formatCurrency(Number(autoForm.price))}\n- **Down Payment:** ${formatCurrency(Number(autoForm.down))}\n- **Interest Rate:** ${autoForm.rate}%\n- **Term:** ${autoForm.years} years\n\n**Results**\n- **Monthly Payment:** ${formatCurrency(autoResult.payment)}\n- **Total Interest:** ${formatCurrency(autoResult.totalInterest)}\n- **Total Paid:** ${formatCurrency(autoResult.totalPaid)}`}
+                onOpenHistory={() => setHistoryOpen(true)}
+                printData={{
+                  inputs: [
+                    { label: 'Vehicle Price', value: `$${Number(autoForm.price).toLocaleString()}` },
+                    { label: 'Down Payment', value: `$${Number(autoForm.down).toLocaleString()}` },
+                    { label: 'Trade-in Value', value: `$${Number(autoForm.tradeIn).toLocaleString()}` },
+                    { label: 'Interest Rate', value: `${autoForm.rate}%` },
+                    { label: 'Loan Term', value: `${autoForm.years} years` },
+                  ],
+                  results: [
+                    { label: 'Monthly Payment', value: formatCurrency(autoResult.payment), highlight: true },
+                    { label: 'Total Interest', value: formatCurrency(autoResult.totalInterest) },
+                    { label: 'Total Paid', value: formatCurrency(autoResult.totalPaid) },
+                    { label: 'Loan Amount', value: formatCurrency(Math.max(0, (parseFloat(autoForm.price)||0) - (parseFloat(autoForm.down)||0) - (parseFloat(autoForm.tradeIn)||0))) },
+                  ],
+                }}
+              />
+            </CardContent>
+          </Card>
+        </div>
+        <CalculatorInsight
+          calculatorType="auto"
+          inputs={autoForm}
+          results={{ payment: autoResult.payment, totalInterest: autoResult.totalInterest, totalPaid: autoResult.totalPaid }}
+          hasResults={autoResult.payment > 0}
+        />
+      </div>)}
+      {activeCalc === 'credit' && (<div className="mt-6">
+        <CalculatorGuide
+          title="Credit Card Payoff"
+          icon={CreditCard}
+          iconColor="text-prism-rose"
+          ttsScript="The Credit Card Payoff Calculator shows how long it will take to pay off your credit card balance. Enter your current balance, the annual percentage rate or APR, and your monthly payment amount. You'll see the number of months to payoff, total interest paid, and total cost. If your payment is too low to cover monthly interest, you'll get a warning. A helpful tip shows how much you could save by paying an extra fifty dollars per month."
+          instructions={[
+            'Enter your current credit card balance',
+            'Add your card\'s APR (annual percentage rate)',
+            'Set the monthly payment you plan to make',
+            'Results show months to payoff, total interest, and total cost',
+            'Warning appears if your payment doesn\'t cover monthly interest',
+            'A tip shows savings from increasing your payment by $50/mo',
+          ]}
+        />
+        <CalculatorScenariosAndPitfalls
+          scenarios={[
+            { title: 'Balance Transfer', description: 'Moving $8k from 23% to a 0% intro card saves ~$150/mo in interest. Pay it off before the promo ends.' },
+            { title: 'Aggressive Payoff', description: 'Doubling your payment from $250 to $500/mo on $8k cuts payoff time in half and saves thousands.' },
+            { title: 'Minimum Payment Trap', description: 'Paying only $160/mo on $8k at 23% takes 9+ years and costs $9,000+ in interest alone.' },
+            { title: 'Debt Snowball', description: 'Pay off the smallest card first for a quick win, then roll that payment into the next card.' },
+          ]}
+          pitfalls={[
+            { title: 'Paying Only the Minimum', description: 'Minimum payments maximize interest for the lender. Even $50 extra/mo makes a massive difference.' },
+            { title: 'Continuing to Charge', description: 'Adding new charges while paying off a balance erases your progress. Freeze the card during payoff.' },
+            { title: 'Ignoring the APR', description: 'A "low" payment on a 25%+ APR card means most of your payment goes to interest, not principal.' },
+            { title: 'Missing a Payment', description: 'One missed payment can trigger a penalty APR of 29%+ and damage your credit score significantly.' },
+          ]}
+        />
+        <div className="grid gap-6 lg:grid-cols-2 mt-4">
+          <Card className="prism-card-shine border-border/50">
+            <CardHeader>
+              <CardTitle className="font-display flex items-center gap-2 text-lg">
+                <CreditCard className="h-5 w-5 text-prism-rose" /> Credit Card Payoff
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <InputField label="Current Balance" value={ccForm.balance} onChange={v => setCcForm(f => ({ ...f, balance: v }))} icon={DollarSign} />
+              <InputField label="APR" value={ccForm.apr} onChange={v => setCcForm(f => ({ ...f, apr: v }))} icon={Percent} suffix="%" />
+              <InputField label="Monthly Payment" value={ccForm.payment} onChange={v => setCcForm(f => ({ ...f, payment: v }))} icon={DollarSign} />
+              {parseFloat(ccForm.payment) > 0 && parseFloat(ccForm.payment) <= (parseFloat(ccForm.balance) || 0) * (parseFloat(ccForm.apr) || 0) / 100 / 12 && (
+                <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-xs font-medium">
+                  ⚠️ Payment is less than monthly interest. Balance will never be paid off!
+                </div>
+              )}
+            </CardContent>
+          </Card>
+          <Card className="prism-card-shine border-border/50">
+            <CardHeader><CardTitle className="font-display text-lg">Results</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <ResultCard label="Months to Payoff" value={ccResult.months > 0 ? `${ccResult.months} months` : '—'} accent sub={ccResult.months > 0 ? `${Math.floor(ccResult.months / 12)}y ${ccResult.months % 12}m` : undefined} />
+                <ResultCard label="Total Interest" value={formatCurrency(ccResult.totalInterest)} numericValue={ccResult.totalInterest} formatFn={formatCurrency} />
+                <ResultCard label="Total Paid" value={formatCurrency(ccResult.totalPaid)} numericValue={ccResult.totalPaid} formatFn={formatCurrency} />
+                <ResultCard label="Interest Ratio" value={`${ccResult.totalPaid > 0 ? Math.round((ccResult.totalInterest / ccResult.totalPaid) * 100) : 0}%`} sub="of total paid" />
+              </div>
+              {ccPayoffSchedule.length > 0 && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-2 font-medium">Payoff Timeline</p>
+                  <CalculatorChart type="payoff" data={ccPayoffSchedule} />
+                </div>
+              )}
+              {ccResult.months > 0 && (
+                <div className="p-3 rounded-xl bg-muted/50 text-xs space-y-1">
+                  <p className="font-medium">💡 Tip: Increasing your payment by {formatCurrency(50)}/mo could save you:</p>
+                  {(() => {
+                    const faster = calcCreditCardPayoff(parseFloat(ccForm.balance)||0, parseFloat(ccForm.apr)||0, (parseFloat(ccForm.payment)||0)+50);
+                    const saved = ccResult.totalInterest - faster.totalInterest;
+                    return <p className="text-prism-teal font-bold">{formatCurrency(saved)} in interest and {ccResult.months - faster.months} fewer months</p>;
+                  })()}
+                </div>
+              )}
+              <CalculatorActions
+                calculatorType="creditcard"
+                inputs={ccForm}
+                results={{ months: ccResult.months, totalInterest: ccResult.totalInterest, totalPaid: ccResult.totalPaid }}
+                hasResults={ccResult.months > 0}
+                summaryText={`# 💳 Credit Card Payoff\n\n**Inputs**\n- **Balance:** ${formatCurrency(Number(ccForm.balance))}\n- **APR:** ${ccForm.apr}%\n- **Monthly Payment:** ${formatCurrency(Number(ccForm.payment))}\n\n**Results**\n- **Payoff Time:** ${ccResult.months} months\n- **Total Interest:** ${formatCurrency(ccResult.totalInterest)}\n- **Total Paid:** ${formatCurrency(ccResult.totalPaid)}`}
+                onOpenHistory={() => setHistoryOpen(true)}
+                printData={{
+                  inputs: [
+                    { label: 'Current Balance', value: `$${Number(ccForm.balance).toLocaleString()}` },
+                    { label: 'APR', value: `${ccForm.apr}%` },
+                    { label: 'Monthly Payment', value: `$${Number(ccForm.payment).toLocaleString()}/mo` },
+                  ],
+                  results: [
+                    { label: 'Months to Payoff', value: `${ccResult.months} months (${Math.floor(ccResult.months/12)}y ${ccResult.months%12}m)`, highlight: true },
+                    { label: 'Total Interest', value: formatCurrency(ccResult.totalInterest) },
+                    { label: 'Total Paid', value: formatCurrency(ccResult.totalPaid) },
+                    { label: 'Interest Ratio', value: `${ccResult.totalPaid > 0 ? Math.round((ccResult.totalInterest / ccResult.totalPaid) * 100) : 0}%` },
+                  ],
+                }}
+              />
+            </CardContent>
+          </Card>
+        </div>
+        <CalculatorInsight
+          calculatorType="credit"
+          inputs={ccForm}
+          results={{ months: ccResult.months, totalInterest: ccResult.totalInterest, totalPaid: ccResult.totalPaid }}
+          hasResults={ccResult.months > 0}
+        />
+      </div>)}
+      {activeCalc === 'investment' && (<div className="mt-6">
+        <CalculatorGuide
+          title="Investment Calculator"
+          icon={TrendingUp}
+          iconColor="text-prism-lime"
+          ttsScript="The Investment Calculator projects how your money grows over time with compound interest. Enter your initial investment, monthly contribution, expected annual return rate, and time horizon in years. You'll see the final balance, total contributions, total earnings, and your overall return on investment percentage. The growth chart visualizes how your portfolio builds year by year, and the composition bar shows contributions versus earnings."
+          instructions={[
+            'Enter your initial lump-sum investment',
+            'Set a monthly contribution amount',
+            'Choose an expected annual return rate',
+            'Set your investment time horizon in years',
+            'Results show final balance, total contributions, and earnings',
+            'The growth chart shows your portfolio value over time',
+          ]}
+        />
+        <CalculatorScenariosAndPitfalls
+          scenarios={[
+            { title: 'Starting at 25', description: '$500/mo at 8% for 40 years grows to $1.74M. Starting at 35 yields only $745k — less than half.' },
+            { title: 'Employer Match', description: 'If your employer matches 50% up to 6%, contribute at least 6%. That\'s an instant 50% return on your money.' },
+            { title: 'Lump Sum vs DCA', description: 'Historically, investing a lump sum beats dollar-cost averaging 2/3 of the time, but DCA reduces emotional risk.' },
+            { title: 'Roth vs Traditional', description: 'If you expect higher taxes in retirement, Roth contributions grow tax-free. Compare the growth difference here.' },
+          ]}
+          pitfalls={[
+            { title: 'Waiting to Start', description: 'Every year you delay costs exponentially. Starting 5 years late on $500/mo at 8% costs over $250k in lost growth.' },
+            { title: 'Unrealistic Returns', description: 'Historical S&P 500 averages ~10% before inflation, ~7% after. Don\'t plan on 12%+ returns.' },
+            { title: 'Ignoring Fees', description: 'A 1% annual fee on $500k costs $5,000/year. Over 30 years, fees can eat 20%+ of your returns.' },
+            { title: 'Panic Selling', description: 'Missing just the 10 best market days over 20 years can cut your returns in half. Stay invested.' },
+          ]}
+        />
+        <div className="grid gap-6 lg:grid-cols-2 mt-4">
+          <Card className="prism-card-shine border-border/50">
+            <CardHeader>
+              <CardTitle className="font-display flex items-center gap-2 text-lg">
+                <TrendingUp className="h-5 w-5 text-prism-lime" /> Investment Calculator
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <InputField label="Initial Investment" value={investForm.initial} onChange={v => setInvestForm(f => ({ ...f, initial: v }))} icon={DollarSign} />
+              <InputField label="Monthly Contribution" value={investForm.monthly} onChange={v => setInvestForm(f => ({ ...f, monthly: v }))} icon={DollarSign} />
+              <InputField label="Annual Return" value={investForm.rate} onChange={v => setInvestForm(f => ({ ...f, rate: v }))} icon={Percent} suffix="%" />
+              <InputField label="Time Horizon" value={investForm.years} onChange={v => setInvestForm(f => ({ ...f, years: v }))} icon={CalendarDays} suffix="years" />
+            </CardContent>
+          </Card>
+          <Card className="prism-card-shine border-border/50">
+            <CardHeader><CardTitle className="font-display text-lg">Results</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <ResultCard label="Final Balance" value={formatCurrency(investResult.finalBalance)} numericValue={investResult.finalBalance} formatFn={formatCurrency} accent />
+                <ResultCard label="Total Contributions" value={formatCurrency(investResult.totalContributions)} numericValue={investResult.totalContributions} formatFn={formatCurrency} />
+                <ResultCard label="Total Earnings" value={formatCurrency(investResult.totalInterest)} numericValue={investResult.totalInterest} formatFn={formatCurrency} />
+                <ResultCard label="Growth" value={`${investResult.totalContributions > 0 ? Math.round(((investResult.finalBalance - investResult.totalContributions) / investResult.totalContributions) * 100) : 0}%`} sub="return on investment" />
+              </div>
+              {investResult.schedule.length > 0 && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-2 font-medium">Growth Over Time</p>
+                  <CalculatorChart type="growth" data={investResult.schedule} />
+                </div>
+              )}
+              <div>
+                <p className="text-xs text-muted-foreground mb-2">Composition</p>
+                <div className="flex gap-1 h-4 rounded-full overflow-hidden">
+                  <div className="bg-prism-lime transition-all" style={{ width: `${investResult.finalBalance > 0 ? (investResult.totalContributions / investResult.finalBalance) * 100 : 0}%` }} />
+                  <div className="bg-prism-teal transition-all" style={{ width: `${investResult.finalBalance > 0 ? (investResult.totalInterest / investResult.finalBalance) * 100 : 0}%` }} />
+                </div>
+                <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                  <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-prism-lime inline-block" /> Contributions</span>
+                  <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-prism-teal inline-block" /> Earnings</span>
+                </div>
+              </div>
+              <CalculatorActions
+                calculatorType="investment"
+                inputs={investForm}
+                results={{ finalBalance: investResult.finalBalance, totalContributions: investResult.totalContributions, totalInterest: investResult.totalInterest }}
+                hasResults={investResult.finalBalance > 0}
+                summaryText={`# 📈 Investment Calculator\n\n**Inputs**\n- **Initial Investment:** ${formatCurrency(Number(investForm.initial))}\n- **Monthly Contribution:** ${formatCurrency(Number(investForm.monthly))}\n- **Expected Return:** ${investForm.rate}%\n- **Time Horizon:** ${investForm.years} years\n\n**Results**\n- **Final Balance:** ${formatCurrency(investResult.finalBalance)}\n- **Total Contributions:** ${formatCurrency(investResult.totalContributions)}\n- **Total Earnings:** ${formatCurrency(investResult.totalInterest)}`}
+                onOpenHistory={() => setHistoryOpen(true)}
+                printData={{
+                  inputs: [
+                    { label: 'Initial Investment', value: `$${Number(investForm.initial).toLocaleString()}` },
+                    { label: 'Monthly Contribution', value: `$${Number(investForm.monthly).toLocaleString()}` },
+                    { label: 'Annual Return', value: `${investForm.rate}%` },
+                    { label: 'Time Horizon', value: `${investForm.years} years` },
+                  ],
+                  results: [
+                    { label: 'Final Balance', value: formatCurrency(investResult.finalBalance), highlight: true },
+                    { label: 'Total Contributions', value: formatCurrency(investResult.totalContributions) },
+                    { label: 'Total Earnings', value: formatCurrency(investResult.totalInterest) },
+                    { label: 'ROI', value: `${investResult.totalContributions > 0 ? Math.round(((investResult.finalBalance - investResult.totalContributions) / investResult.totalContributions) * 100) : 0}%` },
+                  ],
+                }}
+              />
+            </CardContent>
+          </Card>
+        </div>
+        <CalculatorInsight
+          calculatorType="investment"
+          inputs={investForm}
+          results={{ finalBalance: investResult.finalBalance, totalContributions: investResult.totalContributions, totalInterest: investResult.totalInterest }}
+          hasResults={investResult.finalBalance > 0}
+        />
+      </div>)}
+      {activeCalc === 'debt' && (<div className="mt-6">
+        <CalculatorGuide
+          title="General Debt Calculator"
+          icon={DollarSign}
+          iconColor="text-prism-amber"
+          ttsScript="The General Debt Calculator works for any type of loan — student loans, personal loans, or other debts. Enter the total debt balance, the annual interest rate, and your planned monthly payment. You'll see the payoff timeline in years and months, total interest paid, total cost, and a payoff chart. The payment breakdown bar shows how much of your total goes to principal versus interest."
+          instructions={[
+            'Enter your total debt balance',
+            'Set the annual interest rate',
+            'Enter your planned monthly payment',
+            'Results show payoff time, total interest, and total cost',
+            'The payoff chart tracks your declining balance',
+            'Works for any loan type: student, personal, medical, etc.',
+          ]}
+        />
+        <CalculatorScenariosAndPitfalls
+          scenarios={[
+            { title: 'Student Loan Payoff', description: '$25k at 5% with $400/mo takes 5.8 years. Bumping to $600/mo saves 2+ years and $1,500 in interest.' },
+            { title: 'Medical Debt', description: 'Many hospitals offer 0% payment plans. A $10k bill at 0% with $300/mo takes just 34 months — no interest.' },
+            { title: 'Consolidation', description: 'Combining multiple debts into one lower-rate loan simplifies payments and can reduce total interest by 30–50%.' },
+            { title: 'Windfall Application', description: 'Applying a $5k tax refund to a $25k loan at 7% saves $4,200+ in interest over the loan\'s life.' },
+          ]}
+          pitfalls={[
+            { title: 'Paying Only Minimums', description: 'On a $25k loan at 7%, minimums of $300 take 11+ years. Increasing to $500 cuts it to 5 years.' },
+            { title: 'Ignoring High-Rate Debts', description: 'Always prioritize the highest-rate debt first (avalanche method) to minimize total interest paid.' },
+            { title: 'Refinancing Without Math', description: 'A lower rate with a longer term can actually cost more in total interest. Always compare total cost.' },
+            { title: 'No Emergency Fund', description: 'Aggressively paying debt without savings leads to more debt when emergencies hit. Keep $1k–$2k liquid.' },
+          ]}
+        />
+        <div className="grid gap-6 lg:grid-cols-2 mt-4">
+          <Card className="prism-card-shine border-border/50">
+            <CardHeader>
+              <CardTitle className="font-display flex items-center gap-2 text-lg">
+                <DollarSign className="h-5 w-5 text-prism-amber" /> General Debt Calculator
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <InputField label="Total Debt" value={debtForm.balance} onChange={v => setDebtForm(f => ({ ...f, balance: v }))} icon={DollarSign} />
+              <InputField label="Interest Rate" value={debtForm.rate} onChange={v => setDebtForm(f => ({ ...f, rate: v }))} icon={Percent} suffix="%" />
+              <InputField label="Monthly Payment" value={debtForm.payment} onChange={v => setDebtForm(f => ({ ...f, payment: v }))} icon={DollarSign} />
+            </CardContent>
+          </Card>
+          <Card className="prism-card-shine border-border/50">
+            <CardHeader><CardTitle className="font-display text-lg">Results</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <ResultCard label="Payoff Time" value={debtResult.months > 0 ? `${Math.floor(debtResult.months / 12)}y ${debtResult.months % 12}m` : '—'} accent />
+                <ResultCard label="Total Interest" value={formatCurrency(debtResult.totalInterest)} numericValue={debtResult.totalInterest} formatFn={formatCurrency} />
+                <ResultCard label="Total Paid" value={formatCurrency(debtResult.totalPaid)} numericValue={debtResult.totalPaid} formatFn={formatCurrency} />
+                <ResultCard label="Interest Cost" value={`${debtResult.totalPaid > 0 ? Math.round((debtResult.totalInterest / debtResult.totalPaid) * 100) : 0}%`} sub="of total" />
+              </div>
+              {debtPayoffSchedule.length > 0 && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-2 font-medium">Payoff Timeline</p>
+                  <CalculatorChart type="payoff" data={debtPayoffSchedule} />
+                </div>
+              )}
+              <div>
+                <p className="text-xs text-muted-foreground mb-2">Payment Breakdown</p>
+                <div className="flex gap-1 h-4 rounded-full overflow-hidden">
+                  <div className="bg-prism-amber transition-all" style={{ width: `${debtResult.totalPaid > 0 ? ((parseFloat(debtForm.balance)||0) / debtResult.totalPaid) * 100 : 0}%` }} />
+                  <div className="bg-prism-rose transition-all" style={{ width: `${debtResult.totalPaid > 0 ? (debtResult.totalInterest / debtResult.totalPaid) * 100 : 0}%` }} />
+                </div>
+                <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                  <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-prism-amber inline-block" /> Principal</span>
+                  <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-prism-rose inline-block" /> Interest</span>
+                </div>
+              </div>
+              <CalculatorActions
+                calculatorType="debt"
+                inputs={debtForm}
+                results={{ months: debtResult.months, totalInterest: debtResult.totalInterest, totalPaid: debtResult.totalPaid }}
+                hasResults={debtResult.months > 0}
+                summaryText={`# 💰 Debt Payoff Calculator\n\n**Inputs**\n- **Balance:** ${formatCurrency(Number(debtForm.balance))}\n- **Interest Rate:** ${debtForm.rate}%\n- **Monthly Payment:** ${formatCurrency(Number(debtForm.payment))}\n\n**Results**\n- **Payoff Time:** ${Math.floor(debtResult.months/12)}y ${debtResult.months%12}m\n- **Total Interest:** ${formatCurrency(debtResult.totalInterest)}\n- **Total Paid:** ${formatCurrency(debtResult.totalPaid)}`}
+                onOpenHistory={() => setHistoryOpen(true)}
+                printData={{
+                  inputs: [
+                    { label: 'Total Debt', value: `$${Number(debtForm.balance).toLocaleString()}` },
+                    { label: 'Interest Rate', value: `${debtForm.rate}%` },
+                    { label: 'Monthly Payment', value: `$${Number(debtForm.payment).toLocaleString()}/mo` },
+                  ],
+                  results: [
+                    { label: 'Payoff Time', value: `${Math.floor(debtResult.months/12)}y ${debtResult.months%12}m`, highlight: true },
+                    { label: 'Total Interest', value: formatCurrency(debtResult.totalInterest) },
+                    { label: 'Total Paid', value: formatCurrency(debtResult.totalPaid) },
+                    { label: 'Interest Cost', value: `${debtResult.totalPaid > 0 ? Math.round((debtResult.totalInterest / debtResult.totalPaid) * 100) : 0}%` },
+                  ],
+                }}
+              />
+            </CardContent>
+          </Card>
+        </div>
+        <CalculatorInsight
+          calculatorType="debt"
+          inputs={debtForm}
+          results={{ months: debtResult.months, totalInterest: debtResult.totalInterest, totalPaid: debtResult.totalPaid }}
+          hasResults={debtResult.months > 0}
+        />
+      </div>)}
+
+      {/* ─── WEALTH MULTIPLIER ─── */}
+      {activeCalc === 'wealth' && (<div className="mt-6">
+        <CalculatorGuide
+          title="Wealth Multiplier"
+          icon={PiggyBank}
+          iconColor="text-prism-indigo"
+          ttsScript="The Wealth Multiplier shows how much every dollar you invest today could grow by retirement at age 65. Enter your current age and see the multiplier effect of compound growth. You'll also see how much you'd need to invest monthly to reach one million and two million dollars by retirement. The younger you start, the more powerful the multiplier becomes."
+          instructions={[
+            'Enter your current age (18–64)',
+            'See how much each $1 invested today becomes by age 65',
+            'View the monthly investment needed to reach $1M and $2M',
+            'The chart shows the multiplier declining as you age — start early!',
+          ]}
+        />
+        <CalculatorScenariosAndPitfalls
+          scenarios={[
+            { title: 'Age 25 Investor', description: 'At 25, every $1 becomes ~$44 by 65. Investing just $200/mo from 25 yields over $500k by retirement.' },
+            { title: 'Late Starter at 40', description: 'Starting at 40 means a 7x multiplier instead of 44x. You\'ll need $2,800+/mo to reach $1M — but it\'s still possible.' },
+            { title: 'Power of 10 Years', description: 'Starting at 25 vs 35 with $500/mo means $1M+ more at retirement. A decade of compound growth is irreplaceable.' },
+            { title: 'Couple Investing Together', description: 'Two people investing $500/mo each starting at 30 can accumulate $2.5M+ by 65 through combined growth.' },
+          ]}
+          pitfalls={[
+            { title: 'Thinking It\'s Too Late', description: 'Even starting at 50, a 15-year runway with disciplined saving can build significant wealth. Every year counts.' },
+            { title: 'Cashing Out Early', description: 'Withdrawing retirement funds early triggers penalties and taxes, plus you lose all future compounding.' },
+            { title: 'Lifestyle Inflation', description: 'As income grows, increase investments — not just spending. Saving your raises is the fastest path to wealth.' },
+            { title: 'Ignoring Inflation', description: 'A million dollars in 30 years buys less than today. Aim for $2M+ to maintain purchasing power.' },
+          ]}
+        />
+        <div className="grid gap-6 lg:grid-cols-2 mt-4">
+          <Card className="prism-card-shine border-border/50">
+            <CardHeader>
+              <CardTitle className="font-display flex items-center gap-2 text-lg">
+                <PiggyBank className="h-5 w-5 text-prism-indigo" /> Wealth Multiplier
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <InputField label="Current Age" value={wealthAge} onChange={handleWealthAgeChange} icon={CalendarDays} suffix="years" />
+              <p className="text-xs text-muted-foreground">
+                Based on compound growth assumptions: returns start at ~10% at age 20 and gradually decrease to ~5.5% approaching retirement at 65.
+              </p>
+              <div className="p-3 rounded-xl bg-muted/50">
+                <p className="text-xs text-muted-foreground mb-2 font-medium">Multiplier by Age</p>
+                <div className="grid grid-cols-5 gap-1.5">
+                  {WEALTH_MULTIPLIER_DATA.map(d => (
+                    <div key={d.age} className={cn(
+                      'text-center p-1.5 rounded-lg text-xs transition-colors',
+                      parseInt(wealthAge) === d.age ? 'bg-primary text-primary-foreground' : 'bg-muted/50'
+                    )}>
+                      <p className="font-bold">{d.multiplier.toFixed(0)}x</p>
+                      <p className="text-[10px] text-muted-foreground">{d.age}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="prism-card-shine border-border/50">
+            <CardHeader><CardTitle className="font-display text-lg">Results</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <ResultCard label="Wealth Multiplier" value={`${wealthResult.multiplier.toFixed(1)}x`} accent sub={`At age ${wealthResult.age}`} />
+                <ResultCard label="$1 Becomes" value={formatCurrency(wealthResult.multiplier)} sub="by age 65" />
+                <ResultCard label="Monthly for $1M" value={formatCurrency(wealthResult.monthlyTo1M)} numericValue={wealthResult.monthlyTo1M} formatFn={formatCurrency} sub="to reach $1,000,000" />
+                <ResultCard label="Monthly for $2M" value={formatCurrency(wealthResult.monthlyTo2M)} numericValue={wealthResult.monthlyTo2M} formatFn={formatCurrency} sub="to reach $2,000,000" />
+              </div>
+              <CalculatorActions
+                calculatorType="wealth"
+                inputs={{ age: wealthAge }}
+                results={{ multiplier: wealthResult.multiplier, monthlyTo1M: wealthResult.monthlyTo1M, monthlyTo2M: wealthResult.monthlyTo2M }}
+                hasResults={true}
+                summaryText={`# 🌟 Wealth Multiplier\n\n**Inputs**\n- **Current Age:** ${wealthAge}\n\n**Results**\n- **Multiplier:** ${wealthResult.multiplier.toFixed(1)}x\n- **Monthly to reach $1M:** ${formatCurrency(wealthResult.monthlyTo1M)}\n- **Monthly to reach $2M:** ${formatCurrency(wealthResult.monthlyTo2M)}`}
+                onOpenHistory={() => setHistoryOpen(true)}
+                printData={{
+                  inputs: [
+                    { label: 'Current Age', value: `${wealthAge} years` },
+                    { label: 'Retirement Age', value: '65 years' },
+                    { label: 'Years to Grow', value: `${65 - (parseInt(wealthAge) || 30)} years` },
+                  ],
+                  results: [
+                    { label: 'Wealth Multiplier', value: `${wealthResult.multiplier.toFixed(1)}x`, highlight: true },
+                    { label: '$1 Becomes', value: formatCurrency(wealthResult.multiplier) },
+                    { label: 'Monthly for $1M', value: formatCurrency(wealthResult.monthlyTo1M) },
+                    { label: 'Monthly for $2M', value: formatCurrency(wealthResult.monthlyTo2M) },
+                  ],
+                }}
+              />
+            </CardContent>
+          </Card>
+        </div>
+        <CalculatorInsight
+          calculatorType="wealth"
+          inputs={{ age: wealthAge }}
+          results={{ multiplier: wealthResult.multiplier, monthlyTo1M: wealthResult.monthlyTo1M, monthlyTo2M: wealthResult.monthlyTo2M }}
+          hasResults={true}
+        />
+      </div>)}
 
 
-        {activeCalc === 'offers' && (<div className="mt-6">
-          <FocusOfferCalculator onOpenHistory={() => setHistoryOpen(true)} />
-        </div>)}
+      {activeCalc === 'offers' && (<div className="mt-6">
+        <FocusOfferCalculator onOpenHistory={() => setHistoryOpen(true)} />
+      </div>)}
       
       <CalculatorHistory open={historyOpen} onOpenChange={setHistoryOpen} onRestore={handleRestore} />
     </motion.div>
