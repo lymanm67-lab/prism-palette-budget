@@ -10,6 +10,7 @@ import { useCurrency } from '@/hooks/use-currency';
 import { cn } from '@/lib/utils';
 import AnimatedNumber from '@/components/AnimatedNumber';
 import CalculatorActions from '@/components/CalculatorActions';
+import CalculatorScenariosAndPitfalls from '@/components/CalculatorScenariosAndPitfalls';
 import CalculatorGuide from '@/components/CalculatorGuide';
 
 const DESTINATION_TIERS = [
@@ -59,6 +60,21 @@ export default function VacationCalculator() {
         iconColor="text-prism-sky"
         ttsScript="Plan a vacation you can afford without going into debt."
         instructions={['Select destination tier and trip details', 'See total cost breakdown', 'Set a savings timeline to pay cash']}
+      />
+
+      <CalculatorScenariosAndPitfalls
+        scenarios={[
+          { title: 'Family of 4, Budget Tier', description: 'A family plans 5 nights at a budget destination. They estimate $600 in flights, $500 lodging, $400 food, and $200 activities. Total: $1,700. By saving $340/mo for 5 months they pay cash and skip the credit card interest.' },
+          { title: 'Couple, Premium Tier', description: 'A couple books a luxury 7-night trip: $2,800 flights, $2,100 lodging, $1,050 food. Total over $6,500. Seeing the real number early lets them downgrade to mid-tier or extend their savings timeline.' },
+          { title: 'Solo Traveler, Mid Tier', description: 'A solo traveler budgets 4 nights mid-tier at $1,200 total. They already have $800 saved, so only $400 remains, easily covered in 2 months at $200/mo.' },
+        ]}
+        pitfalls={[
+          { title: 'Forgetting Miscellaneous Costs', description: 'Tips, souvenirs, travel insurance, airport parking, and checked bags add 15-25% on top of your base estimate. Always budget a misc buffer.' },
+          { title: 'Booking Before Saving', description: 'Putting a trip on a credit card and paying it off later can double the real cost with interest. Save first, book second.' },
+          { title: 'Ignoring Per-Person Multipliers', description: 'Food, activities, and flights multiply per traveler. A $50/night food estimate for one person becomes $200/night for a family of four.' },
+          { title: 'No Emergency Buffer', description: 'Flight cancellations, medical issues, or lost luggage happen. Set aside 10% of your trip budget as a contingency fund.' },
+          { title: 'Comparing Sticker Price Only', description: 'A $99/night hotel with $40 in resort fees costs more than a $120/night hotel with none. Always compare total cost.' },
+        ]}
       />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
