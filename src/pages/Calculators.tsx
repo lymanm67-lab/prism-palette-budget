@@ -523,30 +523,26 @@ const Calculators = () => {
         />
       )}
 
-      {/* Calculator selector — card grid with grouped sections */}
-      <div className="space-y-4">
-        {CALCULATOR_GROUPS.map(group => (
-          <div key={group.label}>
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{group.label}</p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
-              {group.items.map(c => (
-                <button
-                  key={c.id}
-                  onClick={() => setActiveCalc(c.id)}
-                  className={cn(
-                    'flex items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left text-sm font-medium transition-all',
-                    activeCalc === c.id
-                      ? 'bg-primary text-primary-foreground border-primary shadow-md shadow-primary/20 scale-[1.02]'
-                      : 'bg-gradient-to-br from-muted/60 to-muted/30 border-border/40 hover:border-primary/40 hover:shadow-sm'
-                  )}
-                >
-                  <c.icon className={cn('h-4 w-4 shrink-0', activeCalc === c.id ? 'text-primary-foreground' : c.color)} />
-                  <span className="truncate">{c.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        ))}
+      {/* Calculator selector — flat grid, all calculators visible */}
+      <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2">
+        {CALCULATORS.map(c => {
+          const isActive = activeCalc === c.id;
+          return (
+            <button
+              key={c.id}
+              onClick={() => setActiveCalc(c.id)}
+              className={cn(
+                'flex flex-col items-center gap-1.5 rounded-xl border px-2 py-3 text-center transition-all',
+                isActive
+                  ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/25 scale-[1.03]'
+                  : 'bg-gradient-to-br from-muted/60 to-muted/30 border-border/40 hover:border-primary/40 hover:shadow-sm hover:scale-[1.01]'
+              )}
+            >
+              <c.icon className={cn('h-5 w-5', isActive ? 'text-primary-foreground' : c.color)} />
+              <span className="text-[11px] sm:text-xs font-medium leading-tight truncate w-full">{c.label}</span>
+            </button>
+          );
+        })}
       </div>
 
       {/* ─── Calculator content ─── */}
