@@ -222,12 +222,28 @@ const Calculators = () => {
   };
 
   // Mortgage
-  const [mortgageForm, setMortgageForm] = useState({ price: '350000', down: '70000', rate: '6.5', years: '30' });
+  const [mortgageForm, setMortgageForm] = useState({ price: '350000', down: '70000', rate: '6.5', years: '30', state: '', propertyTaxRate: '1.35', insuranceRate: '0.55' });
   const mortgageResult = useMemo(() => {
     const principal = (parseFloat(mortgageForm.price) || 0) - (parseFloat(mortgageForm.down) || 0);
     const months = (parseFloat(mortgageForm.years) || 30) * 12;
-    return calcAmortization(Math.max(0, principal), parseFloat(mortgageForm.rate) || 0, months);
+    const amort = calcAmortization(Math.max(0, principal), parseFloat(mortgageForm.rate) || 0, months);
+    const homePrice = parseFloat(mortgageForm.price) || 0;
+    const monthlyPropTax = (homePrice * (parseFloat(mortgageForm.propertyTaxRate) || 0) / 100) / 12;
+    const monthlyInsurance = (homePrice * (parseFloat(mortgageForm.insuranceRate) || 0) / 100) / 12;
+    const totalMonthly = amort.payment + monthlyPropTax + monthlyInsurance;
+    return { ...amort, monthlyPropTax, monthlyInsurance, totalMonthly };
   }, [mortgageForm]);
+
+  const handleMortgageStateChange = (stateCode: string) => {
+    const data = STATE_DATA[stateCode];
+    if (!data || stateCode === '') return;
+    setMortgageForm(f => ({
+      ...f,
+      state: stateCode,
+      propertyTaxRate: data.propertyTax.toString(),
+      insuranceRate: data.insurance.toString(),
+    }));
+  };
 
   // Auto
   const [autoForm, setAutoForm] = useState({ price: '35000', down: '5000', rate: '5.9', years: '5', tradeIn: '0' });
