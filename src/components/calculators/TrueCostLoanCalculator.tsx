@@ -102,15 +102,17 @@ export default function TrueCostLoanCalculator() {
           {result.chartData.length > 0 && (
             <div className="space-y-2">
               <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Interest Paid vs. What You Could've Earned</p>
-              <CalculatorChart
-                data={result.chartData}
-                xKey="month"
-                lines={[
-                  { key: 'loanCost', label: 'Cumulative Interest + Fees', color: 'hsl(var(--destructive))' },
-                  { key: 'investGrowth', label: 'If Invested Instead', color: 'hsl(var(--primary))' },
-                ]}
-                height={250}
-              />
+              <ResponsiveContainer width="100%" height={250}>
+                <AreaChart data={result.chartData}>
+                  <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                  <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 11 }} tickFormatter={(v: number) => `$${(v / 1000).toFixed(0)}k`} />
+                  <Tooltip />
+                  <Legend />
+                  <Area type="monotone" dataKey="loanCost" name="Interest + Fees" stroke="hsl(var(--destructive))" fill="hsl(var(--destructive))" fillOpacity={0.15} />
+                  <Area type="monotone" dataKey="investGrowth" name="If Invested" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.15} />
+                </AreaChart>
+              </ResponsiveContainer>
             </div>
           )}
 
