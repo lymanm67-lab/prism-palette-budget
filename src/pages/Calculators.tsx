@@ -850,9 +850,11 @@ const Calculators = () => {
               <CardHeader><CardTitle className="font-display text-lg">Results</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
-                  <ResultCard label="Monthly Payment" value={formatCurrency(mortgageResult.payment)} numericValue={mortgageResult.payment} formatFn={formatCurrency} accent />
+                  <ResultCard label="Total Monthly" value={formatCurrency(mortgageResult.totalMonthly)} numericValue={mortgageResult.totalMonthly} formatFn={formatCurrency} accent sub="P&I + Tax + Insurance" />
+                  <ResultCard label="P&I Payment" value={formatCurrency(mortgageResult.payment)} numericValue={mortgageResult.payment} formatFn={formatCurrency} sub="Principal & Interest only" />
+                  <ResultCard label="Property Tax" value={formatCurrency(mortgageResult.monthlyPropTax)} numericValue={mortgageResult.monthlyPropTax} formatFn={formatCurrency} sub={`${mortgageForm.propertyTaxRate}%/yr`} />
+                  <ResultCard label="Insurance" value={formatCurrency(mortgageResult.monthlyInsurance)} numericValue={mortgageResult.monthlyInsurance} formatFn={formatCurrency} sub={`${mortgageForm.insuranceRate}%/yr`} />
                   <ResultCard label="Total Interest" value={formatCurrency(mortgageResult.totalInterest)} numericValue={mortgageResult.totalInterest} formatFn={formatCurrency} />
-                  <ResultCard label="Total Paid" value={formatCurrency(mortgageResult.totalPaid)} numericValue={mortgageResult.totalPaid} formatFn={formatCurrency} />
                   <ResultCard label="Interest / Principal" value={`${mortgageResult.totalPaid > 0 ? Math.round((mortgageResult.totalInterest / mortgageResult.totalPaid) * 100) : 0}%`} sub="of total cost" />
                 </div>
                 <div>
