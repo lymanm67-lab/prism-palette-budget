@@ -1465,6 +1465,15 @@ const Calculators = () => {
       {activeCalc === 'offers' && (<div className="mt-6">
         <FocusOfferCalculator onOpenHistory={() => setHistoryOpen(true)} />
       </div>)}
+
+      {activeCalc === 'vacation' && (<div className="mt-6"><VacationCalculator /></div>)}
+      {activeCalc === 'wedding' && (<div className="mt-6"><WeddingCalculator /></div>)}
+      {activeCalc === 'honeymoon' && (<div className="mt-6"><HoneymoonCalculator /></div>)}
+      {activeCalc === 'bigpurchase' && (<div className="mt-6"><BigPurchaseCalculator /></div>)}
+      {activeCalc === 'holiday' && (<div className="mt-6"><HolidayGiftCalculator /></div>)}
+      {activeCalc === 'baby' && (<div className="mt-6"><BabyCostCalculator /></div>)}
+      {activeCalc === 'carafford' && (<div className="mt-6"><CarAffordabilityCalculator /></div>)}
+      {activeCalc === 'truecost' && (<div className="mt-6"><TrueCostLoanCalculator /></div>)}
       
       <CalculatorHistory open={historyOpen} onOpenChange={setHistoryOpen} onRestore={handleRestore} />
     </motion.div>
