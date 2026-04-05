@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { STATE_DATA } from '@/lib/state-data';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -129,17 +129,39 @@ function calcMonthlyToMillion(currentAge: number, target: number = 1000000): num
   return target / fvFactor;
 }
 
-const CALCULATORS = [
-  { id: 'safetospend', label: 'Safe-to-Spend', icon: Shield, color: 'text-prism-teal', bg: 'from-prism-teal/20 to-prism-teal/5' },
-  { id: 'rentvsbuy', label: 'Rent vs Buy', icon: Scale, color: 'text-prism-violet', bg: 'from-prism-violet/20 to-prism-violet/5' },
-  { id: 'mortgage', label: 'Mortgage', icon: Home, color: 'text-prism-teal', bg: 'from-prism-teal/20 to-prism-teal/5' },
-  { id: 'auto', label: 'Auto Loan', icon: Car, color: 'text-prism-sky', bg: 'from-prism-sky/20 to-prism-sky/5' },
-  { id: 'credit', label: 'Credit Card', icon: CreditCard, color: 'text-prism-rose', bg: 'from-prism-rose/20 to-prism-rose/5' },
-  { id: 'investment', label: 'Investment', icon: TrendingUp, color: 'text-prism-lime', bg: 'from-prism-lime/20 to-prism-lime/5' },
-  { id: 'debt', label: 'General Debt', icon: DollarSign, color: 'text-prism-amber', bg: 'from-prism-amber/20 to-prism-amber/5' },
-  { id: 'wealth', label: 'Wealth Multiplier', icon: PiggyBank, color: 'text-prism-indigo', bg: 'from-prism-indigo/20 to-prism-indigo/5' },
-  { id: 'offers', label: 'Focus Offer', icon: Target, color: 'text-prism-lime', bg: 'from-prism-lime/20 to-prism-lime/5' },
+const CALCULATOR_GROUPS = [
+  {
+    label: 'Essentials',
+    items: [
+      { id: 'safetospend', label: 'Safe-to-Spend', icon: Shield, color: 'text-prism-teal', bg: 'from-prism-teal/20 to-prism-teal/5' },
+      { id: 'rentvsbuy', label: 'Rent vs Buy', icon: Scale, color: 'text-prism-violet', bg: 'from-prism-violet/20 to-prism-violet/5' },
+    ],
+  },
+  {
+    label: 'Loans & Debt',
+    items: [
+      { id: 'mortgage', label: 'Mortgage', icon: Home, color: 'text-prism-teal', bg: 'from-prism-teal/20 to-prism-teal/5' },
+      { id: 'auto', label: 'Auto Loan', icon: Car, color: 'text-prism-sky', bg: 'from-prism-sky/20 to-prism-sky/5' },
+      { id: 'credit', label: 'Credit Card Payoff', icon: CreditCard, color: 'text-prism-rose', bg: 'from-prism-rose/20 to-prism-rose/5' },
+      { id: 'debt', label: 'General Debt', icon: DollarSign, color: 'text-prism-amber', bg: 'from-prism-amber/20 to-prism-amber/5' },
+    ],
+  },
+  {
+    label: 'Savings & Growth',
+    items: [
+      { id: 'investment', label: 'Investment', icon: TrendingUp, color: 'text-prism-lime', bg: 'from-prism-lime/20 to-prism-lime/5' },
+      { id: 'wealth', label: 'Wealth Multiplier', icon: PiggyBank, color: 'text-prism-indigo', bg: 'from-prism-indigo/20 to-prism-indigo/5' },
+    ],
+  },
+  {
+    label: 'Business',
+    items: [
+      { id: 'offers', label: 'Focus Offer', icon: Target, color: 'text-prism-lime', bg: 'from-prism-lime/20 to-prism-lime/5' },
+    ],
+  },
 ];
+
+const CALCULATORS = CALCULATOR_GROUPS.flatMap(g => g.items);
 
 // ─── Shared result card with gradient ───
 const ResultCard = ({ label, value, sub, accent, numericValue, formatFn }: { label: string; value: string; sub?: string; accent?: boolean; numericValue?: number; formatFn?: (n: number) => string }) => (
@@ -480,29 +502,42 @@ const Calculators = () => {
         />
       )}
 
-      {/* Calculator tabs — icon-only with tooltips on mobile, full labels on desktop */}
-      <Tabs value={activeCalc} onValueChange={setActiveCalc}>
-        <TabsList className="flex h-auto w-full gap-1 bg-muted/50 p-1 overflow-x-auto">
-          {CALCULATORS.map(c => (
-            <Tooltip key={c.id}>
-              <TooltipTrigger asChild>
-                <TabsTrigger
-                  value={c.id}
-                  className="flex-1 min-w-0 gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg px-2 py-2 lg:px-3"
-                >
-                  <c.icon className={`h-4 w-4 shrink-0 ${c.color}`} />
-                  <span className="hidden lg:inline text-xs truncate">{c.label}</span>
-                </TabsTrigger>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" className="lg:hidden">
-                <p>{c.label}</p>
-              </TooltipContent>
-            </Tooltip>
-          ))}
-        </TabsList>
+      {/* Calculator selector — grouped dropdown */}
+      {(() => {
+        const active = CALCULATORS.find(c => c.id === activeCalc);
+        const ActiveIcon = active?.icon || Calculator;
+        return (
+          <div className="flex items-center gap-3">
+            <Select value={activeCalc} onValueChange={setActiveCalc}>
+              <SelectTrigger className="w-full sm:w-80 h-12 text-base font-medium bg-gradient-to-r from-muted/60 to-muted/30 border-border/60">
+                <div className="flex items-center gap-2.5">
+                  <ActiveIcon className={cn('h-5 w-5 shrink-0', active?.color)} />
+                  <SelectValue />
+                </div>
+              </SelectTrigger>
+              <SelectContent className="max-h-[400px]">
+                {CALCULATOR_GROUPS.map(group => (
+                  <div key={group.label}>
+                    <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">{group.label}</div>
+                    {group.items.map(c => (
+                      <SelectItem key={c.id} value={c.id} className="pl-4">
+                        <div className="flex items-center gap-2">
+                          <c.icon className={cn('h-4 w-4 shrink-0', c.color)} />
+                          <span>{c.label}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </div>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        );
+      })()}
 
-        {/* ─── SAFE-TO-SPEND ─── */}
-        <TabsContent value="safetospend" className="mt-6">
+      {/* ─── Calculator content ─── */}
+      {activeCalc === 'safetospend' && (
+        <div className="mt-6">
           <CalculatorGuide
             title="Safe-to-Spend Calculator"
             icon={Shield}
@@ -765,13 +800,13 @@ const Calculators = () => {
             results={{ daily: stsResult.daily, weekly: stsResult.weekly, monthly: stsResult.monthly, buffer: stsResult.buffer }}
             hasResults={stsResult.income > 0}
           />
-        </TabsContent>
+        </div>)}
 
-        <TabsContent value="rentvsbuy" className="mt-6">
+        {activeCalc === 'rentvsbuy' && (<div className="mt-6">
           <RentVsBuyCalculator onOpenHistory={() => setHistoryOpen(true)} />
-        </TabsContent>
+        </div>)}
 
-        <TabsContent value="mortgage" className="mt-6">
+        {activeCalc === 'mortgage' && (<div className="mt-6">
           <CalculatorGuide
             title="Mortgage Calculator"
             icon={Home}
@@ -910,8 +945,8 @@ const Calculators = () => {
             results={{ payment: mortgageResult.payment, totalInterest: mortgageResult.totalInterest, totalPaid: mortgageResult.totalPaid }}
             hasResults={mortgageResult.payment > 0}
           />
-        </TabsContent>
-        <TabsContent value="auto" className="mt-6">
+        </div>)}
+        {activeCalc === 'auto' && (<div className="mt-6">
           <CalculatorGuide
             title="Auto Loan Calculator"
             icon={Car}
@@ -1010,8 +1045,8 @@ const Calculators = () => {
             results={{ payment: autoResult.payment, totalInterest: autoResult.totalInterest, totalPaid: autoResult.totalPaid }}
             hasResults={autoResult.payment > 0}
           />
-        </TabsContent>
-        <TabsContent value="credit" className="mt-6">
+        </div>)}
+        {activeCalc === 'credit' && (<div className="mt-6">
           <CalculatorGuide
             title="Credit Card Payoff"
             icon={CreditCard}
@@ -1113,8 +1148,8 @@ const Calculators = () => {
             results={{ months: ccResult.months, totalInterest: ccResult.totalInterest, totalPaid: ccResult.totalPaid }}
             hasResults={ccResult.months > 0}
           />
-        </TabsContent>
-        <TabsContent value="investment" className="mt-6">
+        </div>)}
+        {activeCalc === 'investment' && (<div className="mt-6">
           <CalculatorGuide
             title="Investment Calculator"
             icon={TrendingUp}
@@ -1214,8 +1249,8 @@ const Calculators = () => {
             results={{ finalBalance: investResult.finalBalance, totalContributions: investResult.totalContributions, totalInterest: investResult.totalInterest }}
             hasResults={investResult.finalBalance > 0}
           />
-        </TabsContent>
-        <TabsContent value="debt" className="mt-6">
+        </div>)}
+        {activeCalc === 'debt' && (<div className="mt-6">
           <CalculatorGuide
             title="General Debt Calculator"
             icon={DollarSign}
@@ -1313,10 +1348,10 @@ const Calculators = () => {
             results={{ months: debtResult.months, totalInterest: debtResult.totalInterest, totalPaid: debtResult.totalPaid }}
             hasResults={debtResult.months > 0}
           />
-        </TabsContent>
+        </div>)}
 
         {/* ─── WEALTH MULTIPLIER ─── */}
-        <TabsContent value="wealth" className="mt-6">
+        {activeCalc === 'wealth' && (<div className="mt-6">
           <CalculatorGuide
             title="Wealth Multiplier"
             icon={PiggyBank}
@@ -1410,13 +1445,13 @@ const Calculators = () => {
             results={{ multiplier: wealthResult.multiplier, monthlyTo1M: wealthResult.monthlyTo1M, monthlyTo2M: wealthResult.monthlyTo2M }}
             hasResults={true}
           />
-        </TabsContent>
+        </div>)}
 
 
-        <TabsContent value="offers" className="mt-6">
+        {activeCalc === 'offers' && (<div className="mt-6">
           <FocusOfferCalculator onOpenHistory={() => setHistoryOpen(true)} />
-        </TabsContent>
-      </Tabs>
+        </div>)}
+      
       <CalculatorHistory open={historyOpen} onOpenChange={setHistoryOpen} onRestore={handleRestore} />
     </motion.div>
     </TooltipProvider>
