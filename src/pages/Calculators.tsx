@@ -1186,7 +1186,7 @@ const Calculators = () => {
           pitfalls={[
             { title: 'Waiting to Start', description: 'Every year you delay costs exponentially. Starting 5 years late on $500/mo at 8% costs over $250k in lost growth.' },
             { title: 'Unrealistic Returns', description: 'Historical S&P 500 averages ~10% before inflation, ~7% after. Don\'t plan on 12%+ returns.' },
-            { title: 'Ignoring Fees', description: 'A 1% annual fee on $500k costs $5,000/year. Over 30 years, fees can eat 20%+ of your returns.' },
+            { title: 'Wrong Account Type for Your Tax Bracket', description: 'High earners benefit more from Traditional (tax deduction now). Lower earners benefit from Roth (tax-free growth). Picking wrong costs thousands.' },
             { title: 'Panic Selling', description: 'Missing just the 10 best market days over 20 years can cut your returns in half. Stay invested.' },
           ]}
         />
@@ -1285,10 +1285,10 @@ const Calculators = () => {
             { title: 'Windfall Application', description: 'Applying a $5k tax refund to a $25k loan at 7% saves $4,200+ in interest over the loan\'s life.' },
           ]}
           pitfalls={[
-            { title: 'Paying Only Minimums', description: 'On a $25k loan at 7%, minimums of $300 take 11+ years. Increasing to $500 cuts it to 5 years.' },
+            { title: 'Spending the Windfall Mentally', description: 'The moment you receive a lump sum your brain starts spending it. Allocate it on paper within 48 hours before impulse decisions erode the opportunity.' },
             { title: 'Ignoring High-Rate Debts', description: 'Always prioritize the highest-rate debt first (avalanche method) to minimize total interest paid.' },
             { title: 'Refinancing Without Math', description: 'A lower rate with a longer term can actually cost more in total interest. Always compare total cost.' },
-            { title: 'No Emergency Fund', description: 'Aggressively paying debt without savings leads to more debt when emergencies hit. Keep $1k–$2k liquid.' },
+            { title: 'Skipping the Tax Hit', description: 'Bonuses, settlements, and inheritance can trigger unexpected taxes. Set aside 25-30% for taxes before allocating the rest.' },
           ]}
         />
         <div className="grid gap-6 lg:grid-cols-2 mt-4">
@@ -1387,7 +1387,7 @@ const Calculators = () => {
             { title: 'Thinking It\'s Too Late', description: 'Even starting at 50, a 15-year runway with disciplined saving can build significant wealth. Every year counts.' },
             { title: 'Cashing Out Early', description: 'Withdrawing retirement funds early triggers penalties and taxes, plus you lose all future compounding.' },
             { title: 'Lifestyle Inflation', description: 'As income grows, increase investments — not just spending. Saving your raises is the fastest path to wealth.' },
-            { title: 'Ignoring Inflation', description: 'A million dollars in 30 years buys less than today. Aim for $2M+ to maintain purchasing power.' },
+            { title: 'Underestimating the Multiplier Effect', description: 'At age 25, $1 invested becomes ~$10+ by retirement. At 45, it only becomes ~$3. The multiplier shrinks fast — start now.' },
           ]}
         />
         <div className="grid gap-6 lg:grid-cols-2 mt-4">
