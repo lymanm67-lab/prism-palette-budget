@@ -411,7 +411,7 @@ export default function RentVsBuyCalculator({ onOpenHistory }: RentVsBuyCalculat
             <SliderField label="Private Mortgage Insurance (PMI)" value={inputs.pmiRate} onChange={v => update('pmiRate', v)}
               min={0} max={2} step={0.05} suffix="%"
               hint={inputs.downPaymentPercent < 20 ? 'Required when down payment is less than 20%' : 'Not required with 20%+ down payment'}
-              formatValue={v => `${v.toFixed(2)}% (${formatCurrency(inputs.loanAmount * v / 100 / 12)}/mo)`}
+              formatValue={v => `${v.toFixed(2)}% (${formatCurrency((inputs.homePrice * (1 - inputs.downPaymentPercent / 100)) * v / 100 / 12)}/mo)`}
             />
 
             {/* Advanced */}
