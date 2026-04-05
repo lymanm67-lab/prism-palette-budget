@@ -502,29 +502,42 @@ const Calculators = () => {
         />
       )}
 
-      {/* Calculator tabs — icon-only with tooltips on mobile, full labels on desktop */}
-      <Tabs value={activeCalc} onValueChange={setActiveCalc}>
-        <TabsList className="flex h-auto w-full gap-1 bg-muted/50 p-1 overflow-x-auto">
-          {CALCULATORS.map(c => (
-            <Tooltip key={c.id}>
-              <TooltipTrigger asChild>
-                <TabsTrigger
-                  value={c.id}
-                  className="flex-1 min-w-0 gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg px-2 py-2 lg:px-3"
-                >
-                  <c.icon className={`h-4 w-4 shrink-0 ${c.color}`} />
-                  <span className="hidden lg:inline text-xs truncate">{c.label}</span>
-                </TabsTrigger>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" className="lg:hidden">
-                <p>{c.label}</p>
-              </TooltipContent>
-            </Tooltip>
-          ))}
-        </TabsList>
+      {/* Calculator selector — grouped dropdown */}
+      {(() => {
+        const active = CALCULATORS.find(c => c.id === activeCalc);
+        const ActiveIcon = active?.icon || Calculator;
+        return (
+          <div className="flex items-center gap-3">
+            <Select value={activeCalc} onValueChange={setActiveCalc}>
+              <SelectTrigger className="w-full sm:w-80 h-12 text-base font-medium bg-gradient-to-r from-muted/60 to-muted/30 border-border/60">
+                <div className="flex items-center gap-2.5">
+                  <ActiveIcon className={cn('h-5 w-5 shrink-0', active?.color)} />
+                  <SelectValue />
+                </div>
+              </SelectTrigger>
+              <SelectContent className="max-h-[400px]">
+                {CALCULATOR_GROUPS.map(group => (
+                  <div key={group.label}>
+                    <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">{group.label}</div>
+                    {group.items.map(c => (
+                      <SelectItem key={c.id} value={c.id} className="pl-4">
+                        <div className="flex items-center gap-2">
+                          <c.icon className={cn('h-4 w-4 shrink-0', c.color)} />
+                          <span>{c.label}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </div>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        );
+      })()}
 
-        {/* ─── SAFE-TO-SPEND ─── */}
-        <TabsContent value="safetospend" className="mt-6">
+      {/* ─── Calculator content ─── */}
+      {activeCalc === 'safetospend' && (
+        <div className="mt-6">
           <CalculatorGuide
             title="Safe-to-Spend Calculator"
             icon={Shield}
