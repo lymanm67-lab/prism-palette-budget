@@ -11,6 +11,7 @@ import CalculatorActions from '@/components/CalculatorActions';
 import CalculatorGuide from '@/components/CalculatorGuide';
 
 type OfferType = 'product' | 'service' | 'bundle';
+type ServiceModel = 'per-session' | 'monthly-retainer' | 'package';
 
 const OFFER_TYPES: { id: OfferType; label: string; icon: typeof Package; description: string }[] = [
   { id: 'product', label: 'Physical Product', icon: Package, description: 'Goods with material & shipping costs' },
@@ -18,19 +19,36 @@ const OFFER_TYPES: { id: OfferType; label: string; icon: typeof Package; descrip
   { id: 'bundle', label: 'Bundle', icon: Layers, description: 'Service + products combined' },
 ];
 
+const SERVICE_MODELS: { id: ServiceModel; label: string; description: string }[] = [
+  { id: 'per-session', label: 'Per Session', description: 'Charge per session or hour' },
+  { id: 'monthly-retainer', label: '6-Mo Retainer', description: 'Monthly fee × 6 months' },
+  { id: 'package', label: '6-Mo Package', description: 'One lump-sum engagement' },
+];
+
 export default function PricingCalculator() {
   const { formatCurrency } = useCurrency();
   const [offerType, setOfferType] = useState<OfferType>('service');
+  const [serviceModel, setServiceModel] = useState<ServiceModel>('per-session');
 
   // Product inputs
   const [materialCost, setMaterialCost] = useState('15');
   const [shippingCost, setShippingCost] = useState('5');
   const [packagingCost, setPackagingCost] = useState('2');
 
-  // Service inputs
+  // Service per-session inputs
   const [hourlyRate, setHourlyRate] = useState('50');
   const [hoursPerClient, setHoursPerClient] = useState('4');
   const [prepHours, setPrepHours] = useState('1');
+
+  // Service 6-month retainer inputs
+  const [monthlyRetainerFee, setMonthlyRetainerFee] = useState('1500');
+  const [retainerSessionsPerMonth, setRetainerSessionsPerMonth] = useState('4');
+  const [retainerHoursPerSession, setRetainerHoursPerSession] = useState('1.5');
+
+  // Service 6-month package inputs
+  const [packageTotalPrice, setPackageTotalPrice] = useState('7500');
+  const [packageTotalSessions, setPackageTotalSessions] = useState('24');
+  const [packageHoursPerSession, setPackageHoursPerSession] = useState('1.5');
 
   // Bundle inputs
   const [productCostInBundle, setProductCostInBundle] = useState('25');
@@ -53,16 +71,47 @@ export default function PricingCalculator() {
     let directCost = 0;
     let laborValue = 0;
     let totalHours = 0;
+    let isCommitment = false;
+    let commitmentMonths = 6;
+    let commitmentTotalRevenue = 0;
+    let commitmentTotalHours = 0;
+    let commitmentEffectiveHourly = 0;
 
     if (offerType === 'product') {
       directCost = (parseFloat(materialCost) || 0) + (parseFloat(shippingCost) || 0) + (parseFloat(packagingCost) || 0);
     } else if (offerType === 'service') {
-      const rate = parseFloat(hourlyRate) || 0;
-      const clientHrs = parseFloat(hoursPerClient) || 0;
-      const prep = parseFloat(prepHours) || 0;
-      totalHours = clientHrs + prep;
-      laborValue = rate * totalHours;
-      directCost = laborValue;
+      if (serviceModel === 'per-session') {
+        const rate = parseFloat(hourlyRate) || 0;
+        const clientHrs = parseFloat(hoursPerClient) || 0;
+        const prep = parseFloat(prepHours) || 0;
+        totalHours = clientHrs + prep;
+        laborValue = rate * totalHours;
+        directCost = laborValue;
+      } else if (serviceModel === 'monthly-retainer') {
+        isCommitment = true;
+        const monthlyFee = parseFloat(monthlyRetainerFee) || 0;
+        const sessionsPerMo = parseFloat(retainerSessionsPerMonth) || 1;
+        const hrsPerSess = parseFloat(retainerHoursPerSession) || 1;
+        commitmentTotalRevenue = monthlyFee * commitmentMonths;
+        commitmentTotalHours = sessionsPerMo * hrsPerSess * commitmentMonths;
+        commitmentEffectiveHourly = commitmentTotalHours > 0 ? commitmentTotalRevenue / commitmentTotalHours : 0;
+        // Per-unit = per month for breakeven calc
+        totalHours = sessionsPerMo * hrsPerSess;
+        laborValue = monthlyFee;
+        directCost = monthlyFee * 0; // revenue model, cost is time
+      } else {
+        // package
+        isCommitment = true;
+        const totalPrice = parseFloat(packageTotalPrice) || 0;
+        const totalSess = parseFloat(packageTotalSessions) || 1;
+        const hrsPerSess = parseFloat(packageHoursPerSession) || 1;
+        commitmentTotalRevenue = totalPrice;
+        commitmentTotalHours = totalSess * hrsPerSess;
+        commitmentEffectiveHourly = commitmentTotalHours > 0 ? totalPrice / commitmentTotalHours : 0;
+        totalHours = commitmentTotalHours / commitmentMonths;
+        laborValue = totalPrice / commitmentMonths;
+        directCost = 0;
+      }
     } else {
       const prodCost = parseFloat(productCostInBundle) || 0;
       const svcHrs = parseFloat(serviceHoursInBundle) || 0;
@@ -73,31 +122,34 @@ export default function PricingCalculator() {
     }
 
     const totalCost = directCost + overheadPerUnit;
-    const preTaxPrice = totalCost / (1 - margin);
+    const preTaxPrice = isCommitment ? (laborValue > 0 ? laborValue : commitmentTotalRevenue / 6) : totalCost / (1 - margin);
     const taxAmount = preTaxPrice * tax;
 
     // Three price points
-    const minPrice = totalCost * 1.05; // 5% above cost — danger zone
+    const minPrice = isCommitment ? preTaxPrice * 0.75 : totalCost * 1.05;
     const competitivePrice = preTaxPrice;
     const premiumPrice = preTaxPrice * 1.35;
 
     // Breakeven
-    const breakeven = overhead > 0 ? Math.ceil(overhead / (competitivePrice - directCost)) : 0;
+    const breakeven = !isCommitment && overhead > 0 ? Math.ceil(overhead / (competitivePrice - directCost)) : 0;
 
     // Effective hourly rate (for services/bundles)
-    const effectiveHourly = totalHours > 0 ? (competitivePrice - (directCost - laborValue) - overheadPerUnit) / totalHours : 0;
+    const effectiveHourly = isCommitment ? commitmentEffectiveHourly : (totalHours > 0 ? (competitivePrice - (directCost - laborValue) - overheadPerUnit) / totalHours : 0);
 
     // Pricing zone assessment
-    const profitPerUnit = competitivePrice - totalCost;
-    const profitMarginActual = competitivePrice > 0 ? (profitPerUnit / competitivePrice) * 100 : 0;
+    const profitPerUnit = isCommitment ? (commitmentTotalRevenue - overhead * commitmentMonths) / commitmentMonths : competitivePrice - totalCost;
+    const profitMarginActual = isCommitment
+      ? (commitmentTotalRevenue > 0 ? ((commitmentTotalRevenue - overhead * commitmentMonths) / commitmentTotalRevenue) * 100 : 0)
+      : (competitivePrice > 0 ? (profitPerUnit / competitivePrice) * 100 : 0);
 
     return {
       directCost, overheadPerUnit, totalCost, taxAmount,
       minPrice, competitivePrice, premiumPrice,
       breakeven, effectiveHourly, totalHours,
       profitPerUnit, profitMarginActual, laborValue,
+      isCommitment, commitmentTotalRevenue, commitmentTotalHours, commitmentMonths,
     };
-  }, [offerType, materialCost, shippingCost, packagingCost, hourlyRate, hoursPerClient, prepHours, productCostInBundle, serviceHoursInBundle, bundleHourlyRate, monthlyOverhead, unitsPerMonth, taxRate, desiredMargin]);
+  }, [offerType, serviceModel, materialCost, shippingCost, packagingCost, hourlyRate, hoursPerClient, prepHours, monthlyRetainerFee, retainerSessionsPerMonth, retainerHoursPerSession, packageTotalPrice, packageTotalSessions, packageHoursPerSession, productCostInBundle, serviceHoursInBundle, bundleHourlyRate, monthlyOverhead, unitsPerMonth, taxRate, desiredMargin]);
 
   const zoneColor = result.profitMarginActual < 15 ? 'text-destructive' : result.profitMarginActual < 30 ? 'text-amber-500' : 'text-green-500';
   const zoneLabel = result.profitMarginActual < 15 ? 'Danger Zone — Too Low' : result.profitMarginActual < 30 ? 'Competitive — Watch Margins' : 'Healthy Margin';
@@ -137,9 +189,46 @@ export default function PricingCalculator() {
         )}
         {offerType === 'service' && (
           <>
-            <div className="space-y-2"><Label>Your Hourly Rate</Label><Input type="number" min="0" value={hourlyRate} onChange={e => setHourlyRate(e.target.value)} /></div>
-            <div className="space-y-2"><Label>Hours per Client/Session</Label><Input type="number" min="0" step="0.5" value={hoursPerClient} onChange={e => setHoursPerClient(e.target.value)} /></div>
-            <div className="space-y-2"><Label>Prep/Admin Hours</Label><Input type="number" min="0" step="0.5" value={prepHours} onChange={e => setPrepHours(e.target.value)} /></div>
+            {/* Service model sub-selector */}
+            <div className="sm:col-span-2 lg:col-span-3">
+              <Label className="mb-2 block text-xs text-muted-foreground uppercase tracking-wider">Pricing Model</Label>
+              <div className="grid grid-cols-3 gap-2">
+                {SERVICE_MODELS.map(m => (
+                  <button key={m.id} onClick={() => setServiceModel(m.id)}
+                    className={cn(
+                      'rounded-lg border px-3 py-2 text-xs font-medium transition-all',
+                      serviceModel === m.id
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'bg-muted/40 border-border/40 hover:border-primary/40'
+                    )}>
+                    <span className="block font-semibold">{m.label}</span>
+                    <span className={cn('text-[10px]', serviceModel === m.id ? 'text-primary-foreground/80' : 'text-muted-foreground')}>{m.description}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {serviceModel === 'per-session' && (
+              <>
+                <div className="space-y-2"><Label>Your Hourly Rate</Label><Input type="number" min="0" value={hourlyRate} onChange={e => setHourlyRate(e.target.value)} /></div>
+                <div className="space-y-2"><Label>Hours per Client/Session</Label><Input type="number" min="0" step="0.5" value={hoursPerClient} onChange={e => setHoursPerClient(e.target.value)} /></div>
+                <div className="space-y-2"><Label>Prep/Admin Hours</Label><Input type="number" min="0" step="0.5" value={prepHours} onChange={e => setPrepHours(e.target.value)} /></div>
+              </>
+            )}
+            {serviceModel === 'monthly-retainer' && (
+              <>
+                <div className="space-y-2"><Label>Monthly Retainer Fee</Label><Input type="number" min="0" value={monthlyRetainerFee} onChange={e => setMonthlyRetainerFee(e.target.value)} /></div>
+                <div className="space-y-2"><Label>Sessions per Month</Label><Input type="number" min="1" value={retainerSessionsPerMonth} onChange={e => setRetainerSessionsPerMonth(e.target.value)} /></div>
+                <div className="space-y-2"><Label>Hours per Session</Label><Input type="number" min="0.5" step="0.5" value={retainerHoursPerSession} onChange={e => setRetainerHoursPerSession(e.target.value)} /></div>
+              </>
+            )}
+            {serviceModel === 'package' && (
+              <>
+                <div className="space-y-2"><Label>Total Package Price (6 mo)</Label><Input type="number" min="0" value={packageTotalPrice} onChange={e => setPackageTotalPrice(e.target.value)} /></div>
+                <div className="space-y-2"><Label>Total Sessions Included</Label><Input type="number" min="1" value={packageTotalSessions} onChange={e => setPackageTotalSessions(e.target.value)} /></div>
+                <div className="space-y-2"><Label>Hours per Session</Label><Input type="number" min="0.5" step="0.5" value={packageHoursPerSession} onChange={e => setPackageHoursPerSession(e.target.value)} /></div>
+              </>
+            )}
           </>
         )}
         {offerType === 'bundle' && (
@@ -174,23 +263,23 @@ export default function PricingCalculator() {
         <div className="grid gap-3 sm:grid-cols-3">
           <Card className="border-destructive/30 bg-destructive/5">
             <CardContent className="p-4 text-center">
-              <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Minimum</p>
-              <p className="text-xl font-bold text-destructive"><AnimatedNumber value={result.minPrice} formatFn={formatCurrency} /></p>
-              <p className="text-[11px] text-muted-foreground mt-1">Barely covers costs — avoid</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">{result.isCommitment ? 'Discount' : 'Minimum'}</p>
+              <p className="text-xl font-bold text-destructive"><AnimatedNumber value={result.minPrice} formatFn={v => result.isCommitment ? `${formatCurrency(v)}/mo` : formatCurrency(v)} /></p>
+              <p className="text-[11px] text-muted-foreground mt-1">{result.isCommitment ? 'Undervalues your time' : 'Barely covers costs — avoid'}</p>
             </CardContent>
           </Card>
           <Card className="border-primary/30 bg-primary/5 ring-2 ring-primary/20">
             <CardContent className="p-4 text-center">
               <p className="text-xs text-primary uppercase tracking-wider font-semibold mb-1">Recommended</p>
-              <p className="text-2xl font-bold text-primary"><AnimatedNumber value={result.competitivePrice} formatFn={formatCurrency} /></p>
-              <p className="text-[11px] text-muted-foreground mt-1">{formatCurrency(result.profitPerUnit)} profit per sale</p>
+              <p className="text-2xl font-bold text-primary"><AnimatedNumber value={result.competitivePrice} formatFn={v => result.isCommitment ? `${formatCurrency(v)}/mo` : formatCurrency(v)} /></p>
+              <p className="text-[11px] text-muted-foreground mt-1">{result.isCommitment ? `${formatCurrency(result.profitPerUnit)}/mo profit` : `${formatCurrency(result.profitPerUnit)} profit per sale`}</p>
             </CardContent>
           </Card>
           <Card className="border-green-500/30 bg-green-500/5">
             <CardContent className="p-4 text-center">
               <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Premium</p>
-              <p className="text-xl font-bold text-green-600"><AnimatedNumber value={result.premiumPrice} formatFn={formatCurrency} /></p>
-              <p className="text-[11px] text-muted-foreground mt-1">For high-value positioning</p>
+              <p className="text-xl font-bold text-green-600"><AnimatedNumber value={result.premiumPrice} formatFn={v => result.isCommitment ? `${formatCurrency(v)}/mo` : formatCurrency(v)} /></p>
+              <p className="text-[11px] text-muted-foreground mt-1">{result.isCommitment ? 'Premium positioning' : 'For high-value positioning'}</p>
             </CardContent>
           </Card>
         </div>
@@ -198,12 +287,21 @@ export default function PricingCalculator() {
         {/* Breakdown */}
         <div className="grid gap-3 grid-cols-2 sm:grid-cols-4">
           {[
-            { label: 'Direct Cost', val: result.directCost },
-            { label: 'Overhead / Unit', val: result.overheadPerUnit },
-            { label: 'Total Cost', val: result.totalCost },
-            { label: 'Breakeven Units', val: result.breakeven, fmt: (n: number) => `${n} / mo` },
-            ...(result.totalHours > 0 ? [{ label: 'Effective $/hr', val: result.effectiveHourly, accent: true }] : []),
-            ...(result.laborValue > 0 ? [{ label: 'Labor Value', val: result.laborValue }] : []),
+            ...(result.isCommitment ? [
+              { label: '6-Mo Revenue', val: result.commitmentTotalRevenue },
+              { label: 'Total Hours', val: result.commitmentTotalHours, fmt: (n: number) => `${n.toFixed(0)} hrs` },
+              { label: 'Monthly Overhead', val: parseFloat(monthlyOverhead) || 0 },
+              { label: 'Effective $/hr', val: result.effectiveHourly, accent: true },
+              { label: 'Profit / Month', val: result.profitPerUnit },
+              { label: '6-Mo Net Profit', val: result.profitPerUnit * 6 },
+            ] : [
+              { label: 'Direct Cost', val: result.directCost },
+              { label: 'Overhead / Unit', val: result.overheadPerUnit },
+              { label: 'Total Cost', val: result.totalCost },
+              { label: 'Breakeven Units', val: result.breakeven, fmt: (n: number) => `${n} / mo` },
+              ...(result.totalHours > 0 ? [{ label: 'Effective $/hr', val: result.effectiveHourly, accent: true }] : []),
+              ...(result.laborValue > 0 ? [{ label: 'Labor Value', val: result.laborValue }] : []),
+            ]),
           ].map(r => (
             <Card key={r.label} className={cn('border', (r as any).accent && 'border-primary/30 bg-primary/5')}>
               <CardContent className="p-3">
@@ -216,9 +314,11 @@ export default function PricingCalculator() {
           ))}
         </div>
 
-        <CalculatorActions calculatorType="pricing" inputs={{ offerType, desiredMargin, monthlyOverhead, unitsPerMonth }}
+        <CalculatorActions calculatorType="pricing" inputs={{ offerType, serviceModel, desiredMargin, monthlyOverhead, unitsPerMonth }}
           results={result} hasResults={true}
-          summaryText={`Pricing (${offerType}): Recommended ${formatCurrency(result.competitivePrice)}, min ${formatCurrency(result.minPrice)}, premium ${formatCurrency(result.premiumPrice)}. Margin: ${result.profitMarginActual.toFixed(1)}%.`} />
+          summaryText={result.isCommitment
+            ? `Pricing (${serviceModel}): ${formatCurrency(result.competitivePrice)}/mo × 6 = ${formatCurrency(result.commitmentTotalRevenue)}. Effective rate: ${formatCurrency(result.effectiveHourly)}/hr. Margin: ${result.profitMarginActual.toFixed(1)}%.`
+            : `Pricing (${offerType}): Recommended ${formatCurrency(result.competitivePrice)}, min ${formatCurrency(result.minPrice)}, premium ${formatCurrency(result.premiumPrice)}. Margin: ${result.profitMarginActual.toFixed(1)}%.`} />
       </motion.div>
     </div>
   );
