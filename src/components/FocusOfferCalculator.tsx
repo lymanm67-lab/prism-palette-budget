@@ -209,6 +209,11 @@ export default function FocusOfferCalculator({ onOpenHistory }: { onOpenHistory?
           { title: 'Too Many Offers', description: 'Spreading focus across 5+ offers dilutes marketing efforts. One strong offer outperforms three mediocre ones.' },
           { title: 'No Tracking Habit', description: 'Setting a goal without tracking actual revenue weekly leads to surprises. Update the tracker regularly.' },
         ]}
+        tips={[
+          { title: 'Add an Upsell Tier', description: 'Offer a VIP or premium version at 2-3x your base price. Even if only 10-15% upgrade, it significantly boosts average revenue per customer.' },
+          { title: 'Create Urgency with Cohort Limits', description: 'Capping enrollment (e.g., "only 10 spots") creates real scarcity. It also lets you deliver better results, which drives referrals.' },
+          { title: 'Track Conversion Rate Weekly', description: 'Knowing your close rate (leads to sales) lets you reverse-engineer exactly how many leads you need. A 5% improvement in conversion beats doubling your ad spend.' },
+        ]}
       />
       {/* ─── GOAL & TIMEFRAME ─── */}
       <Card className="prism-card-shine border-border/50">

@@ -177,6 +177,11 @@ export default function PricingCalculator() {
           { title: 'Setting Price Once and Forgetting', description: 'Costs change. Materials go up, overhead grows, your skills improve. Re-run this calculator quarterly to make sure your prices still make sense.' },
           { title: 'Confusing Revenue with Profit', description: 'A $10,000 package sounds great until you subtract $4,000 in costs and $3,000 in overhead. Always look at profit per unit, not top-line revenue.' },
         ]}
+        tips={[
+          { title: 'Raise Prices 10% and Measure', description: 'Most businesses can raise prices 10% and lose fewer than 5% of customers. Net result: more profit with less work. Test it for 30 days.' },
+          { title: 'Anchor with a Premium Tier', description: 'Adding a high-priced option makes your mid-tier look like a bargain. Most buyers pick the middle option, which is now your real target price.' },
+          { title: 'Bundle for Higher Average Order Value', description: 'Combining products + services into a bundle lets you charge 20-40% more than selling them separately, while delivering more perceived value.' },
+        ]}
       />
 
       {/* Offer type selector */}
