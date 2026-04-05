@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { STATE_DATA } from '@/lib/state-data';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -800,13 +800,13 @@ const Calculators = () => {
             results={{ daily: stsResult.daily, weekly: stsResult.weekly, monthly: stsResult.monthly, buffer: stsResult.buffer }}
             hasResults={stsResult.income > 0}
           />
-        </TabsContent>
+        </div>)}
 
-        <TabsContent value="rentvsbuy" className="mt-6">
+        {activeCalc === 'rentvsbuy' && (<div className="mt-6">
           <RentVsBuyCalculator onOpenHistory={() => setHistoryOpen(true)} />
-        </TabsContent>
+        </div>)}
 
-        <TabsContent value="mortgage" className="mt-6">
+        {activeCalc === 'mortgage' && (<div className="mt-6">
           <CalculatorGuide
             title="Mortgage Calculator"
             icon={Home}
@@ -945,8 +945,8 @@ const Calculators = () => {
             results={{ payment: mortgageResult.payment, totalInterest: mortgageResult.totalInterest, totalPaid: mortgageResult.totalPaid }}
             hasResults={mortgageResult.payment > 0}
           />
-        </TabsContent>
-        <TabsContent value="auto" className="mt-6">
+        </div>)}
+        {activeCalc === 'auto' && (<div className="mt-6">
           <CalculatorGuide
             title="Auto Loan Calculator"
             icon={Car}
@@ -1045,8 +1045,8 @@ const Calculators = () => {
             results={{ payment: autoResult.payment, totalInterest: autoResult.totalInterest, totalPaid: autoResult.totalPaid }}
             hasResults={autoResult.payment > 0}
           />
-        </TabsContent>
-        <TabsContent value="credit" className="mt-6">
+        </div>)}
+        {activeCalc === 'credit' && (<div className="mt-6">
           <CalculatorGuide
             title="Credit Card Payoff"
             icon={CreditCard}
@@ -1148,8 +1148,8 @@ const Calculators = () => {
             results={{ months: ccResult.months, totalInterest: ccResult.totalInterest, totalPaid: ccResult.totalPaid }}
             hasResults={ccResult.months > 0}
           />
-        </TabsContent>
-        <TabsContent value="investment" className="mt-6">
+        </div>)}
+        {activeCalc === 'investment' && (<div className="mt-6">
           <CalculatorGuide
             title="Investment Calculator"
             icon={TrendingUp}
@@ -1249,8 +1249,8 @@ const Calculators = () => {
             results={{ finalBalance: investResult.finalBalance, totalContributions: investResult.totalContributions, totalInterest: investResult.totalInterest }}
             hasResults={investResult.finalBalance > 0}
           />
-        </TabsContent>
-        <TabsContent value="debt" className="mt-6">
+        </div>)}
+        {activeCalc === 'debt' && (<div className="mt-6">
           <CalculatorGuide
             title="General Debt Calculator"
             icon={DollarSign}
@@ -1348,10 +1348,10 @@ const Calculators = () => {
             results={{ months: debtResult.months, totalInterest: debtResult.totalInterest, totalPaid: debtResult.totalPaid }}
             hasResults={debtResult.months > 0}
           />
-        </TabsContent>
+        </div>)}
 
         {/* ─── WEALTH MULTIPLIER ─── */}
-        <TabsContent value="wealth" className="mt-6">
+        {activeCalc === 'wealth' && (<div className="mt-6">
           <CalculatorGuide
             title="Wealth Multiplier"
             icon={PiggyBank}
@@ -1445,13 +1445,13 @@ const Calculators = () => {
             results={{ multiplier: wealthResult.multiplier, monthlyTo1M: wealthResult.monthlyTo1M, monthlyTo2M: wealthResult.monthlyTo2M }}
             hasResults={true}
           />
-        </TabsContent>
+        </div>)}
 
 
-        <TabsContent value="offers" className="mt-6">
+        {activeCalc === 'offers' && (<div className="mt-6">
           <FocusOfferCalculator onOpenHistory={() => setHistoryOpen(true)} />
-        </TabsContent>
-      </Tabs>
+        </div>)}
+      
       <CalculatorHistory open={historyOpen} onOpenChange={setHistoryOpen} onRestore={handleRestore} />
     </motion.div>
     </TooltipProvider>
