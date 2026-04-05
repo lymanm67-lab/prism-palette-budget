@@ -364,6 +364,7 @@ const Calculators = () => {
 
     if (calc === 'mortgage') {
       setMortgageForm(f => ({
+        ...f,
         price: p('price') ?? f.price,
         down: p('down') ?? f.down,
         rate: p('rate') ?? f.rate,
