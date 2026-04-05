@@ -6,13 +6,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { STATE_DATA } from '@/lib/state-data';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useCurrency } from '@/hooks/use-currency';
 import { cn } from '@/lib/utils';
 import {
   Home, Car, CreditCard, TrendingUp, Calculator, DollarSign, Percent, CalendarDays, PiggyBank, Sparkles, BookOpen, MoreHorizontal,
-  Target, Shield, Wallet, CheckCircle2, Scale,
+  Target, Shield, Wallet, CheckCircle2, Scale, MapPin,
 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import PageOverview from '@/components/PageOverview';
@@ -220,12 +222,28 @@ const Calculators = () => {
   };
 
   // Mortgage
-  const [mortgageForm, setMortgageForm] = useState({ price: '350000', down: '70000', rate: '6.5', years: '30' });
+  const [mortgageForm, setMortgageForm] = useState({ price: '350000', down: '70000', rate: '6.5', years: '30', state: '', propertyTaxRate: '1.35', insuranceRate: '0.55' });
   const mortgageResult = useMemo(() => {
     const principal = (parseFloat(mortgageForm.price) || 0) - (parseFloat(mortgageForm.down) || 0);
     const months = (parseFloat(mortgageForm.years) || 30) * 12;
-    return calcAmortization(Math.max(0, principal), parseFloat(mortgageForm.rate) || 0, months);
+    const amort = calcAmortization(Math.max(0, principal), parseFloat(mortgageForm.rate) || 0, months);
+    const homePrice = parseFloat(mortgageForm.price) || 0;
+    const monthlyPropTax = (homePrice * (parseFloat(mortgageForm.propertyTaxRate) || 0) / 100) / 12;
+    const monthlyInsurance = (homePrice * (parseFloat(mortgageForm.insuranceRate) || 0) / 100) / 12;
+    const totalMonthly = amort.payment + monthlyPropTax + monthlyInsurance;
+    return { ...amort, monthlyPropTax, monthlyInsurance, totalMonthly };
   }, [mortgageForm]);
+
+  const handleMortgageStateChange = (stateCode: string) => {
+    const data = STATE_DATA[stateCode];
+    if (!data || stateCode === '') return;
+    setMortgageForm(f => ({
+      ...f,
+      state: stateCode,
+      propertyTaxRate: data.propertyTax.toString(),
+      insuranceRate: data.insurance.toString(),
+    }));
+  };
 
   // Auto
   const [autoForm, setAutoForm] = useState({ price: '35000', down: '5000', rate: '5.9', years: '5', tradeIn: '0' });
@@ -346,6 +364,7 @@ const Calculators = () => {
 
     if (calc === 'mortgage') {
       setMortgageForm(f => ({
+        ...f,
         price: p('price') ?? f.price,
         down: p('down') ?? f.down,
         rate: p('rate') ?? f.rate,
@@ -789,10 +808,39 @@ const Calculators = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* State selector */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs flex items-center gap-1.5">
+                    <MapPin className="h-3.5 w-3.5 text-prism-violet" />
+                    State
+                  </Label>
+                  <Select value={mortgageForm.state} onValueChange={handleMortgageStateChange}>
+                    <SelectTrigger className="h-9 text-sm">
+                      <SelectValue placeholder="Select state for accurate tax & insurance rates…" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-[280px]">
+                      {Object.entries(STATE_DATA).filter(([k]) => k !== '').map(([code, data]) => (
+                        <SelectItem key={code} value={code}>
+                          <span className="flex items-center gap-2">
+                            <span className="font-mono text-xs text-muted-foreground w-6">{code}</span>
+                            {data.label}
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {mortgageForm.state && (
+                    <p className="text-[10px] text-prism-teal">
+                      ✓ Property tax & insurance updated for {STATE_DATA[mortgageForm.state]?.label}
+                    </p>
+                  )}
+                </div>
                 <InputField label="Home Price" value={mortgageForm.price} onChange={v => setMortgageForm(f => ({ ...f, price: v }))} icon={DollarSign} />
                 <InputField label="Down Payment" value={mortgageForm.down} onChange={v => setMortgageForm(f => ({ ...f, down: v }))} icon={DollarSign} />
                 <InputField label="Interest Rate" value={mortgageForm.rate} onChange={v => setMortgageForm(f => ({ ...f, rate: v }))} icon={Percent} suffix="%" />
                 <InputField label="Loan Term" value={mortgageForm.years} onChange={v => setMortgageForm(f => ({ ...f, years: v }))} icon={CalendarDays} suffix="years" />
+                <InputField label="Property Tax Rate" value={mortgageForm.propertyTaxRate} onChange={v => setMortgageForm(f => ({ ...f, propertyTaxRate: v }))} icon={Percent} suffix="%" />
+                <InputField label="Insurance Rate" value={mortgageForm.insuranceRate} onChange={v => setMortgageForm(f => ({ ...f, insuranceRate: v }))} icon={Percent} suffix="%" />
                 <div className="text-xs text-muted-foreground">
                   Loan Amount: {formatCurrency(Math.max(0, (parseFloat(mortgageForm.price) || 0) - (parseFloat(mortgageForm.down) || 0)))}
                 </div>
@@ -802,9 +850,11 @@ const Calculators = () => {
               <CardHeader><CardTitle className="font-display text-lg">Results</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
-                  <ResultCard label="Monthly Payment" value={formatCurrency(mortgageResult.payment)} numericValue={mortgageResult.payment} formatFn={formatCurrency} accent />
+                  <ResultCard label="Total Monthly" value={formatCurrency(mortgageResult.totalMonthly)} numericValue={mortgageResult.totalMonthly} formatFn={formatCurrency} accent sub="P&I + Tax + Insurance" />
+                  <ResultCard label="P&I Payment" value={formatCurrency(mortgageResult.payment)} numericValue={mortgageResult.payment} formatFn={formatCurrency} sub="Principal & Interest only" />
+                  <ResultCard label="Property Tax" value={formatCurrency(mortgageResult.monthlyPropTax)} numericValue={mortgageResult.monthlyPropTax} formatFn={formatCurrency} sub={`${mortgageForm.propertyTaxRate}%/yr`} />
+                  <ResultCard label="Insurance" value={formatCurrency(mortgageResult.monthlyInsurance)} numericValue={mortgageResult.monthlyInsurance} formatFn={formatCurrency} sub={`${mortgageForm.insuranceRate}%/yr`} />
                   <ResultCard label="Total Interest" value={formatCurrency(mortgageResult.totalInterest)} numericValue={mortgageResult.totalInterest} formatFn={formatCurrency} />
-                  <ResultCard label="Total Paid" value={formatCurrency(mortgageResult.totalPaid)} numericValue={mortgageResult.totalPaid} formatFn={formatCurrency} />
                   <ResultCard label="Interest / Principal" value={`${mortgageResult.totalPaid > 0 ? Math.round((mortgageResult.totalInterest / mortgageResult.totalPaid) * 100) : 0}%`} sub="of total cost" />
                 </div>
                 <div>
@@ -827,18 +877,24 @@ const Calculators = () => {
                   inputs={mortgageForm}
                   results={{ payment: mortgageResult.payment, totalInterest: mortgageResult.totalInterest, totalPaid: mortgageResult.totalPaid }}
                   hasResults={mortgageResult.payment > 0}
-                  summaryText={`# 🏠 Mortgage Calculator\n\n**Inputs**\n- **Home Price:** ${formatCurrency(Number(mortgageForm.price))}\n- **Down Payment:** ${formatCurrency(Number(mortgageForm.down))}\n- **Interest Rate:** ${mortgageForm.rate}%\n- **Term:** ${mortgageForm.years} years\n\n**Results**\n- **Monthly Payment:** ${formatCurrency(mortgageResult.payment)}\n- **Total Interest:** ${formatCurrency(mortgageResult.totalInterest)}\n- **Total Paid:** ${formatCurrency(mortgageResult.totalPaid)}`}
+                  summaryText={`# 🏠 Mortgage Calculator\n\n**Inputs**\n${mortgageForm.state ? `- **State:** ${STATE_DATA[mortgageForm.state]?.label}\n` : ''}- **Home Price:** ${formatCurrency(Number(mortgageForm.price))}\n- **Down Payment:** ${formatCurrency(Number(mortgageForm.down))}\n- **Interest Rate:** ${mortgageForm.rate}%\n- **Term:** ${mortgageForm.years} years\n- **Property Tax:** ${mortgageForm.propertyTaxRate}%\n- **Insurance:** ${mortgageForm.insuranceRate}%\n\n**Results**\n- **Total Monthly:** ${formatCurrency(mortgageResult.totalMonthly)}\n- **P&I Payment:** ${formatCurrency(mortgageResult.payment)}\n- **Property Tax:** ${formatCurrency(mortgageResult.monthlyPropTax)}/mo\n- **Insurance:** ${formatCurrency(mortgageResult.monthlyInsurance)}/mo\n- **Total Interest:** ${formatCurrency(mortgageResult.totalInterest)}\n- **Total Paid:** ${formatCurrency(mortgageResult.totalPaid)}`}
                   onOpenHistory={() => setHistoryOpen(true)}
                   printData={{
                     inputs: [
+                      ...(mortgageForm.state ? [{ label: 'State', value: STATE_DATA[mortgageForm.state]?.label || mortgageForm.state }] : []),
                       { label: 'Home Price', value: `$${Number(mortgageForm.price).toLocaleString()}` },
                       { label: 'Down Payment', value: `$${Number(mortgageForm.down).toLocaleString()}` },
                       { label: 'Interest Rate', value: `${mortgageForm.rate}%` },
                       { label: 'Loan Term', value: `${mortgageForm.years} years` },
+                      { label: 'Property Tax', value: `${mortgageForm.propertyTaxRate}%` },
+                      { label: 'Insurance', value: `${mortgageForm.insuranceRate}%` },
                       { label: 'Loan Amount', value: formatCurrency(Math.max(0, (parseFloat(mortgageForm.price)||0) - (parseFloat(mortgageForm.down)||0))) },
                     ],
                     results: [
-                      { label: 'Monthly Payment', value: formatCurrency(mortgageResult.payment), highlight: true },
+                      { label: 'Total Monthly', value: formatCurrency(mortgageResult.totalMonthly), highlight: true },
+                      { label: 'P&I Payment', value: formatCurrency(mortgageResult.payment) },
+                      { label: 'Monthly Tax', value: formatCurrency(mortgageResult.monthlyPropTax) },
+                      { label: 'Monthly Insurance', value: formatCurrency(mortgageResult.monthlyInsurance) },
                       { label: 'Total Interest', value: formatCurrency(mortgageResult.totalInterest) },
                       { label: 'Total Paid', value: formatCurrency(mortgageResult.totalPaid) },
                       { label: 'Interest Ratio', value: `${mortgageResult.totalPaid > 0 ? Math.round((mortgageResult.totalInterest / mortgageResult.totalPaid) * 100) : 0}%` },
