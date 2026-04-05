@@ -71,16 +71,47 @@ export default function PricingCalculator() {
     let directCost = 0;
     let laborValue = 0;
     let totalHours = 0;
+    let isCommitment = false;
+    let commitmentMonths = 6;
+    let commitmentTotalRevenue = 0;
+    let commitmentTotalHours = 0;
+    let commitmentEffectiveHourly = 0;
 
     if (offerType === 'product') {
       directCost = (parseFloat(materialCost) || 0) + (parseFloat(shippingCost) || 0) + (parseFloat(packagingCost) || 0);
     } else if (offerType === 'service') {
-      const rate = parseFloat(hourlyRate) || 0;
-      const clientHrs = parseFloat(hoursPerClient) || 0;
-      const prep = parseFloat(prepHours) || 0;
-      totalHours = clientHrs + prep;
-      laborValue = rate * totalHours;
-      directCost = laborValue;
+      if (serviceModel === 'per-session') {
+        const rate = parseFloat(hourlyRate) || 0;
+        const clientHrs = parseFloat(hoursPerClient) || 0;
+        const prep = parseFloat(prepHours) || 0;
+        totalHours = clientHrs + prep;
+        laborValue = rate * totalHours;
+        directCost = laborValue;
+      } else if (serviceModel === 'monthly-retainer') {
+        isCommitment = true;
+        const monthlyFee = parseFloat(monthlyRetainerFee) || 0;
+        const sessionsPerMo = parseFloat(retainerSessionsPerMonth) || 1;
+        const hrsPerSess = parseFloat(retainerHoursPerSession) || 1;
+        commitmentTotalRevenue = monthlyFee * commitmentMonths;
+        commitmentTotalHours = sessionsPerMo * hrsPerSess * commitmentMonths;
+        commitmentEffectiveHourly = commitmentTotalHours > 0 ? commitmentTotalRevenue / commitmentTotalHours : 0;
+        // Per-unit = per month for breakeven calc
+        totalHours = sessionsPerMo * hrsPerSess;
+        laborValue = monthlyFee;
+        directCost = monthlyFee * 0; // revenue model, cost is time
+      } else {
+        // package
+        isCommitment = true;
+        const totalPrice = parseFloat(packageTotalPrice) || 0;
+        const totalSess = parseFloat(packageTotalSessions) || 1;
+        const hrsPerSess = parseFloat(packageHoursPerSession) || 1;
+        commitmentTotalRevenue = totalPrice;
+        commitmentTotalHours = totalSess * hrsPerSess;
+        commitmentEffectiveHourly = commitmentTotalHours > 0 ? totalPrice / commitmentTotalHours : 0;
+        totalHours = commitmentTotalHours / commitmentMonths;
+        laborValue = totalPrice / commitmentMonths;
+        directCost = 0;
+      }
     } else {
       const prodCost = parseFloat(productCostInBundle) || 0;
       const svcHrs = parseFloat(serviceHoursInBundle) || 0;
@@ -91,31 +122,34 @@ export default function PricingCalculator() {
     }
 
     const totalCost = directCost + overheadPerUnit;
-    const preTaxPrice = totalCost / (1 - margin);
+    const preTaxPrice = isCommitment ? (laborValue > 0 ? laborValue : commitmentTotalRevenue / 6) : totalCost / (1 - margin);
     const taxAmount = preTaxPrice * tax;
 
     // Three price points
-    const minPrice = totalCost * 1.05; // 5% above cost — danger zone
+    const minPrice = isCommitment ? preTaxPrice * 0.75 : totalCost * 1.05;
     const competitivePrice = preTaxPrice;
     const premiumPrice = preTaxPrice * 1.35;
 
     // Breakeven
-    const breakeven = overhead > 0 ? Math.ceil(overhead / (competitivePrice - directCost)) : 0;
+    const breakeven = !isCommitment && overhead > 0 ? Math.ceil(overhead / (competitivePrice - directCost)) : 0;
 
     // Effective hourly rate (for services/bundles)
-    const effectiveHourly = totalHours > 0 ? (competitivePrice - (directCost - laborValue) - overheadPerUnit) / totalHours : 0;
+    const effectiveHourly = isCommitment ? commitmentEffectiveHourly : (totalHours > 0 ? (competitivePrice - (directCost - laborValue) - overheadPerUnit) / totalHours : 0);
 
     // Pricing zone assessment
-    const profitPerUnit = competitivePrice - totalCost;
-    const profitMarginActual = competitivePrice > 0 ? (profitPerUnit / competitivePrice) * 100 : 0;
+    const profitPerUnit = isCommitment ? (commitmentTotalRevenue - overhead * commitmentMonths) / commitmentMonths : competitivePrice - totalCost;
+    const profitMarginActual = isCommitment
+      ? (commitmentTotalRevenue > 0 ? ((commitmentTotalRevenue - overhead * commitmentMonths) / commitmentTotalRevenue) * 100 : 0)
+      : (competitivePrice > 0 ? (profitPerUnit / competitivePrice) * 100 : 0);
 
     return {
       directCost, overheadPerUnit, totalCost, taxAmount,
       minPrice, competitivePrice, premiumPrice,
       breakeven, effectiveHourly, totalHours,
       profitPerUnit, profitMarginActual, laborValue,
+      isCommitment, commitmentTotalRevenue, commitmentTotalHours, commitmentMonths,
     };
-  }, [offerType, materialCost, shippingCost, packagingCost, hourlyRate, hoursPerClient, prepHours, productCostInBundle, serviceHoursInBundle, bundleHourlyRate, monthlyOverhead, unitsPerMonth, taxRate, desiredMargin]);
+  }, [offerType, serviceModel, materialCost, shippingCost, packagingCost, hourlyRate, hoursPerClient, prepHours, monthlyRetainerFee, retainerSessionsPerMonth, retainerHoursPerSession, packageTotalPrice, packageTotalSessions, packageHoursPerSession, productCostInBundle, serviceHoursInBundle, bundleHourlyRate, monthlyOverhead, unitsPerMonth, taxRate, desiredMargin]);
 
   const zoneColor = result.profitMarginActual < 15 ? 'text-destructive' : result.profitMarginActual < 30 ? 'text-amber-500' : 'text-green-500';
   const zoneLabel = result.profitMarginActual < 15 ? 'Danger Zone — Too Low' : result.profitMarginActual < 30 ? 'Competitive — Watch Margins' : 'Healthy Margin';
