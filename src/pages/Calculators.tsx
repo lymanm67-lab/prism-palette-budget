@@ -808,10 +808,39 @@ const Calculators = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* State selector */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs flex items-center gap-1.5">
+                    <MapPin className="h-3.5 w-3.5 text-prism-violet" />
+                    State
+                  </Label>
+                  <Select value={mortgageForm.state} onValueChange={handleMortgageStateChange}>
+                    <SelectTrigger className="h-9 text-sm">
+                      <SelectValue placeholder="Select state for accurate tax & insurance rates…" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-[280px]">
+                      {Object.entries(STATE_DATA).filter(([k]) => k !== '').map(([code, data]) => (
+                        <SelectItem key={code} value={code}>
+                          <span className="flex items-center gap-2">
+                            <span className="font-mono text-xs text-muted-foreground w-6">{code}</span>
+                            {data.label}
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {mortgageForm.state && (
+                    <p className="text-[10px] text-prism-teal">
+                      ✓ Property tax & insurance updated for {STATE_DATA[mortgageForm.state]?.label}
+                    </p>
+                  )}
+                </div>
                 <InputField label="Home Price" value={mortgageForm.price} onChange={v => setMortgageForm(f => ({ ...f, price: v }))} icon={DollarSign} />
                 <InputField label="Down Payment" value={mortgageForm.down} onChange={v => setMortgageForm(f => ({ ...f, down: v }))} icon={DollarSign} />
                 <InputField label="Interest Rate" value={mortgageForm.rate} onChange={v => setMortgageForm(f => ({ ...f, rate: v }))} icon={Percent} suffix="%" />
                 <InputField label="Loan Term" value={mortgageForm.years} onChange={v => setMortgageForm(f => ({ ...f, years: v }))} icon={CalendarDays} suffix="years" />
+                <InputField label="Property Tax Rate" value={mortgageForm.propertyTaxRate} onChange={v => setMortgageForm(f => ({ ...f, propertyTaxRate: v }))} icon={Percent} suffix="%" />
+                <InputField label="Insurance Rate" value={mortgageForm.insuranceRate} onChange={v => setMortgageForm(f => ({ ...f, insuranceRate: v }))} icon={Percent} suffix="%" />
                 <div className="text-xs text-muted-foreground">
                   Loan Amount: {formatCurrency(Math.max(0, (parseFloat(mortgageForm.price) || 0) - (parseFloat(mortgageForm.down) || 0)))}
                 </div>
