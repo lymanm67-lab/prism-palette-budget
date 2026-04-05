@@ -14,7 +14,7 @@ import { useCurrency } from '@/hooks/use-currency';
 import { cn } from '@/lib/utils';
 import {
   Home, Car, CreditCard, TrendingUp, Calculator, DollarSign, Percent, CalendarDays, PiggyBank, Sparkles, BookOpen, MoreHorizontal,
-  Target, Shield, Wallet, CheckCircle2, Scale, MapPin, Plane, Heart, Palmtree, ShoppingBag, Gift, Baby, Receipt,
+  Target, Shield, Wallet, CheckCircle2, Scale, MapPin, Plane, Heart, Palmtree, ShoppingBag, Gift, Baby, Receipt, Tag,
 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import PageOverview from '@/components/PageOverview';
@@ -35,6 +35,7 @@ import HolidayGiftCalculator from '@/components/calculators/HolidayGiftCalculato
 import BabyCostCalculator from '@/components/calculators/BabyCostCalculator';
 import CarAffordabilityCalculator from '@/components/calculators/CarAffordabilityCalculator';
 import TrueCostLoanCalculator from '@/components/calculators/TrueCostLoanCalculator';
+import PricingCalculator from '@/components/calculators/PricingCalculator';
 
 // ─── Calculation helpers ───
 
@@ -178,6 +179,7 @@ const CALCULATOR_GROUPS = [
     label: 'Business',
     items: [
       { id: 'offers', label: 'Focus Offer', icon: Target, color: 'text-prism-lime', bg: 'from-prism-lime/20 to-prism-lime/5' },
+      { id: 'pricing', label: 'Pricing', icon: Tag, color: 'text-prism-amber', bg: 'from-prism-amber/20 to-prism-amber/5' },
     ],
   },
 ];
@@ -1470,6 +1472,7 @@ const Calculators = () => {
       {activeCalc === 'baby' && (<div className="mt-6"><BabyCostCalculator /></div>)}
       {activeCalc === 'carafford' && (<div className="mt-6"><CarAffordabilityCalculator /></div>)}
       {activeCalc === 'truecost' && (<div className="mt-6"><TrueCostLoanCalculator /></div>)}
+      {activeCalc === 'pricing' && (<div className="mt-6"><PricingCalculator /></div>)}
       
       <CalculatorHistory open={historyOpen} onOpenChange={setHistoryOpen} onRestore={handleRestore} />
     </motion.div>
