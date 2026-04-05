@@ -75,6 +75,11 @@ export default function VacationCalculator() {
           { title: 'No Emergency Buffer', description: 'Flight cancellations, medical issues, or lost luggage happen. Set aside 10% of your trip budget as a contingency fund.' },
           { title: 'Comparing Sticker Price Only', description: 'A $99/night hotel with $40 in resort fees costs more than a $120/night hotel with none. Always compare total cost.' },
         ]}
+        tips={[
+          { title: 'Travel Off-Season', description: 'Flights and hotels can be 30-50% cheaper in shoulder season (just before or after peak). Same destination, dramatically lower cost.' },
+          { title: 'Use Points and Miles Strategically', description: 'A single travel rewards card used for everyday spending can earn enough points for one free flight per year. Apply points to the most expensive leg.' },
+          { title: 'Book 3-6 Months Ahead', description: 'Domestic flights are cheapest 1-3 months out, international 2-6 months. Booking too early or too late costs 20-40% more on average.' },
+        ]}
       />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

@@ -349,6 +349,11 @@ export default function RentVsBuyCalculator({ onOpenHistory }: RentVsBuyCalculat
           { title: 'Tax Deduction Fantasy', description: 'Only helps if itemized deductions exceed the standard deduction ($15k/$30k).' },
           { title: 'Forgetting Selling Costs', description: 'Agent fees + closing run 5–6%. On a $550k sale, that\'s $33k gone.' },
         ]}
+        tips={[
+          { title: 'House-Hack a Duplex', description: 'Buy a duplex, live in one unit, rent the other. The rental income can cover 50-100% of your mortgage, dramatically reducing your housing cost.' },
+          { title: 'Negotiate Seller Concessions', description: 'Ask the seller to cover 2-3% of closing costs. This keeps more cash in your pocket at closing for repairs, furniture, or your emergency fund.' },
+          { title: 'Avoid PMI with 20% Down', description: 'Private mortgage insurance costs $100-300/mo on a $350k home. Hitting 20% down eliminates it entirely, saving $1,200-$3,600/year.' },
+        ]}
       />
 
       {/* ── Live Verdict Banner ── */}
