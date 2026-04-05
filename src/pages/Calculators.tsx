@@ -1472,6 +1472,7 @@ const Calculators = () => {
       {activeCalc === 'baby' && (<div className="mt-6"><BabyCostCalculator /></div>)}
       {activeCalc === 'carafford' && (<div className="mt-6"><CarAffordabilityCalculator /></div>)}
       {activeCalc === 'truecost' && (<div className="mt-6"><TrueCostLoanCalculator /></div>)}
+      {activeCalc === 'pricing' && (<div className="mt-6"><PricingCalculator /></div>)}
       
       <CalculatorHistory open={historyOpen} onOpenChange={setHistoryOpen} onRestore={handleRestore} />
     </motion.div>
