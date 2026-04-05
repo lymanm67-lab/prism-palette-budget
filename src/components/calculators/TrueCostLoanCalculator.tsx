@@ -1,0 +1,124 @@
+import { useState, useMemo } from 'react';
+import { motion } from 'framer-motion';
+import { Receipt, TrendingUp } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Slider } from '@/components/ui/slider';
+import { Card, CardContent } from '@/components/ui/card';
+import { useCurrency } from '@/hooks/use-currency';
+import { cn } from '@/lib/utils';
+import AnimatedNumber from '@/components/AnimatedNumber';
+import CalculatorActions from '@/components/CalculatorActions';
+import CalculatorGuide from '@/components/CalculatorGuide';
+import CalculatorChart from '@/components/CalculatorChart';
+
+export default function TrueCostLoanCalculator() {
+  const { formatCurrency } = useCurrency();
+  const [principal, setPrincipal] = useState('10000');
+  const [apr, setApr] = useState('15');
+  const [term, setTerm] = useState([36]);
+  const [fees, setFees] = useState('300');
+  const [investReturn, setInvestReturn] = useState('8');
+
+  const result = useMemo(() => {
+    const p = parseFloat(principal) || 0;
+    const rate = parseFloat(apr) || 0;
+    const months = term[0] || 1;
+    const origFees = parseFloat(fees) || 0;
+    const investRate = parseFloat(investReturn) || 7;
+
+    const r = rate / 100 / 12;
+    const payment = r > 0 ? (p * r * Math.pow(1 + r, months)) / (Math.pow(1 + r, months) - 1) : p / months;
+    const totalPaid = payment * months + origFees;
+    const totalInterest = totalPaid - p;
+    const effectiveAPR = p > 0 ? ((totalPaid / p) ** (12 / months) - 1) * 100 : 0;
+
+    // Opportunity cost: if you invested the interest payments instead at investRate
+    const ir = investRate / 100 / 12;
+    let opportunityCost = 0;
+    const interestPerMonth = totalInterest / months;
+    const chartData: { month: number; loanCost: number; investGrowth: number }[] = [];
+    let cumLoanCost = origFees;
+    let cumInvest = 0;
+
+    for (let m = 1; m <= months; m++) {
+      const monthInterest = r > 0 ? (p * r * Math.pow(1 + r, m - 1) - payment * (Math.pow(1 + r, m - 1) - 1)) * r : 0;
+      cumLoanCost += (payment - (p / months)) + (m === 1 ? 0 : 0); // simplified
+      cumInvest = (cumInvest + interestPerMonth) * (1 + ir);
+      if (m % 3 === 0 || m === months) {
+        chartData.push({ month: m, loanCost: Math.round(interestPerMonth * m + origFees), investGrowth: Math.round(cumInvest) });
+      }
+    }
+    opportunityCost = cumInvest;
+
+    const trueCost = totalInterest + origFees + opportunityCost;
+    const costMultiplier = p > 0 ? totalPaid / p : 0;
+
+    return { payment, totalPaid, totalInterest, effectiveAPR, opportunityCost, trueCost, costMultiplier, origFees, chartData, months };
+  }, [principal, apr, term, fees, investReturn]);
+
+  return (
+    <div className="space-y-6">
+      <CalculatorGuide title="True Cost Loan Analyzer" icon={Receipt} iconColor="text-prism-amber"
+        ttsScript="See the real price tag of any loan including opportunity cost."
+        instructions={['Enter loan details and fees', 'See total interest, effective APR, and opportunity cost', 'Understand what that money could have earned invested']} />
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="space-y-2"><Label>Loan Amount</Label><Input type="number" min="0" value={principal} onChange={e => setPrincipal(e.target.value)} /></div>
+        <div className="space-y-2"><Label>APR (%)</Label><Input type="number" min="0" step="0.1" value={apr} onChange={e => setApr(e.target.value)} /></div>
+        <div className="space-y-2"><Label>Term: {term[0]} months</Label><Slider min={3} max={120} step={3} value={term} onValueChange={setTerm} /></div>
+        <div className="space-y-2"><Label>Origination Fees</Label><Input type="number" min="0" value={fees} onChange={e => setFees(e.target.value)} /></div>
+        <div className="space-y-2"><Label>Assumed Investment Return (%)</Label><Input type="number" min="0" step="0.5" value={investReturn} onChange={e => setInvestReturn(e.target.value)} /></div>
+      </div>
+
+      {(parseFloat(principal) || 0) > 0 && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+          <div className="rounded-xl p-4 border border-destructive/30 bg-destructive/5 text-center">
+            <p className="text-sm text-muted-foreground mb-1">True Cost of This Loan</p>
+            <p className="text-2xl font-bold text-destructive"><AnimatedNumber value={result.trueCost} formatFn={formatCurrency} /></p>
+            <p className="text-xs text-muted-foreground mt-1">You pay {result.costMultiplier.toFixed(2)}x the borrowed amount</p>
+          </div>
+
+          <div className="grid gap-3 grid-cols-2 sm:grid-cols-3">
+            {[
+              { label: 'Monthly Payment', val: result.payment },
+              { label: 'Total Interest', val: result.totalInterest },
+              { label: 'Fees', val: result.origFees },
+              { label: 'Effective APR', val: result.effectiveAPR, fmt: (n: number) => `${n.toFixed(2)}%` },
+              { label: 'Opportunity Cost', val: result.opportunityCost },
+              { label: 'Total Paid', val: result.totalPaid, accent: true },
+            ].map(r => (
+              <Card key={r.label} className={cn('border', r.accent && 'border-primary/30 bg-primary/5')}>
+                <CardContent className="p-3">
+                  <p className="text-xs text-muted-foreground">{r.label}</p>
+                  <p className={cn('text-lg font-bold', r.accent && 'text-primary')}>
+                    {r.fmt ? r.fmt(r.val) : <AnimatedNumber value={r.val} formatFn={formatCurrency} />}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {result.chartData.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Interest Paid vs. What You Could've Earned</p>
+              <CalculatorChart
+                data={result.chartData}
+                xKey="month"
+                lines={[
+                  { key: 'loanCost', label: 'Cumulative Interest + Fees', color: 'hsl(var(--destructive))' },
+                  { key: 'investGrowth', label: 'If Invested Instead', color: 'hsl(var(--primary))' },
+                ]}
+                height={250}
+              />
+            </div>
+          )}
+
+          <CalculatorActions calculatorType="truecostloan" inputs={{ principal, apr, term: term[0], fees, investReturn }}
+            results={result} hasResults={true}
+            summaryText={`True Cost: ${formatCurrency(result.trueCost)} total (${formatCurrency(result.totalInterest)} interest + ${formatCurrency(result.opportunityCost)} opportunity cost).`} />
+        </motion.div>
+      )}
+    </div>
+  );
+}
