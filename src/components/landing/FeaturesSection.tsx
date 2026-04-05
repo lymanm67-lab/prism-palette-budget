@@ -4,6 +4,7 @@ import {
   TrendingUp, LineChart, CreditCard, FileText,
   LayoutDashboard, DollarSign, PieChart, Briefcase,
   FileUp, Camera, Milestone, ShieldCheck,
+  Calculator, Plane, Heart, Car, Tag, Receipt,
 } from 'lucide-react';
 
 const GROUPS = [
@@ -15,6 +16,18 @@ const GROUPS = [
       { icon: Target, name: 'Spending categories & monthly planning' },
       { icon: FileUp, name: 'Paycheck stub upload → auto-fill budgets' },
       { icon: Camera, name: 'Scan bills & receipts to categorize instantly' },
+    ],
+  },
+  {
+    label: '18 Financial Calculators',
+    color: 'from-prism-violet to-prism-indigo',
+    features: [
+      { icon: Calculator, name: 'Mortgage, auto loan, credit card & debt payoff' },
+      { icon: Plane, name: 'Vacation planner, wedding budget & honeymoon fund' },
+      { icon: Car, name: 'Car affordability, baby costs & big purchase planner' },
+      { icon: Tag, name: 'Pricing calculator for products, services & bundles' },
+      { icon: Receipt, name: 'True cost loan analyzer with opportunity cost' },
+      { icon: Heart, name: 'Holiday gift budget & wealth multiplier' },
     ],
   },
   {
@@ -49,11 +62,11 @@ const FeaturesSection = () => (
           <span className="prism-gradient-text">without switching tools</span>
         </h2>
         <p className="mt-3 text-muted-foreground text-sm sm:text-base max-w-2xl mx-auto">
-          From households to side hustles to serious business owners — one platform covers it all.
+          From households to side hustles to serious business owners — 18 calculators and a complete financial control system in one platform.
         </p>
       </motion.div>
 
-      <div className="grid gap-8 lg:grid-cols-3">
+      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
         {GROUPS.map((group, gi) => (
           <motion.div key={gi} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }} transition={{ delay: gi * 0.12 }}
