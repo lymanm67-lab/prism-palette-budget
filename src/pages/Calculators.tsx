@@ -152,6 +152,19 @@ const CALCULATOR_GROUPS = [
       { id: 'auto', label: 'Auto Loan', icon: Car, color: 'text-prism-sky', bg: 'from-prism-sky/20 to-prism-sky/5' },
       { id: 'credit', label: 'Credit Card Payoff', icon: CreditCard, color: 'text-prism-rose', bg: 'from-prism-rose/20 to-prism-rose/5' },
       { id: 'debt', label: 'General Debt', icon: DollarSign, color: 'text-prism-amber', bg: 'from-prism-amber/20 to-prism-amber/5' },
+      { id: 'truecost', label: 'True Cost Loan', icon: Receipt, color: 'text-prism-rose', bg: 'from-prism-rose/20 to-prism-rose/5' },
+      { id: 'carafford', label: 'Car Affordability', icon: Car, color: 'text-prism-sky', bg: 'from-prism-sky/20 to-prism-sky/5' },
+    ],
+  },
+  {
+    label: 'Life Events',
+    items: [
+      { id: 'vacation', label: 'Vacation Planner', icon: Plane, color: 'text-prism-sky', bg: 'from-prism-sky/20 to-prism-sky/5' },
+      { id: 'wedding', label: 'Wedding Budget', icon: Heart, color: 'text-prism-rose', bg: 'from-prism-rose/20 to-prism-rose/5' },
+      { id: 'honeymoon', label: 'Honeymoon Fund', icon: Palmtree, color: 'text-prism-lime', bg: 'from-prism-lime/20 to-prism-lime/5' },
+      { id: 'bigpurchase', label: 'Big Purchase', icon: ShoppingBag, color: 'text-prism-amber', bg: 'from-prism-amber/20 to-prism-amber/5' },
+      { id: 'holiday', label: 'Holiday & Gifts', icon: Gift, color: 'text-prism-rose', bg: 'from-prism-rose/20 to-prism-rose/5' },
+      { id: 'baby', label: 'Baby Cost', icon: Baby, color: 'text-prism-sky', bg: 'from-prism-sky/20 to-prism-sky/5' },
     ],
   },
   {
