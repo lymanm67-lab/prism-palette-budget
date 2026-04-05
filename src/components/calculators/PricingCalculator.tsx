@@ -162,6 +162,23 @@ export default function PricingCalculator() {
         ttsScript="Know exactly what to charge so you never undervalue your work."
         instructions={['Choose your offer type', 'Enter your costs and desired margin', 'See minimum, competitive, and premium price points']} />
 
+      <CalculatorScenariosAndPitfalls
+        scenarios={[
+          { title: 'Freelancer Undercharging', description: 'A designer charges $40/hr but spends 2 unpaid hours per project on revisions and emails. Their effective rate drops to $20/hr. This calculator catches that by factoring in prep/admin time.' },
+          { title: '6-Month Coaching Package', description: "A coach offers 4 sessions/month at $1,500/mo. Over 6 months that is $9,000 for 36 hours, an effective rate of $250/hr. Without this breakdown, they might have priced at $800/mo and earned just $133/hr." },
+          { title: 'Product Business Ignoring Overhead', description: "A candle maker prices at $18 per candle with $6 in materials. Looks like great margins until $800/mo in rent and supplies drops their real margin to 12%." },
+          { title: 'Bundle Mispricing', description: "A consultant bundles a $50 workbook with 3 hours of coaching. Without calculating both product COGS and labor value together, they set the bundle at $200, below their $225 total cost." },
+        ]}
+        pitfalls={[
+          { title: 'Forgetting Your Own Time', description: "The number one pricing mistake: not counting prep, admin, follow-up, and travel time. If you spend 2 hours on a one-hour session, your real rate is half what you think." },
+          { title: 'Racing to the Bottom', description: 'Competing on price alone destroys margins. A 10% price cut requires 50% more volume to maintain the same profit. Price on value, not fear.' },
+          { title: 'Ignoring Overhead per Unit', description: "Rent, software, insurance, and subscriptions do not disappear because you are busy. Divide monthly overhead by units sold. That cost is real and must be covered." },
+          { title: 'No Commitment Premium', description: 'A 6-month engagement should cost LESS per session than one-offs because of guaranteed revenue. But many coaches price them the same, losing the value of commitment security.' },
+          { title: 'Setting Price Once and Forgetting', description: 'Costs change. Materials go up, overhead grows, your skills improve. Re-run this calculator quarterly to make sure your prices still make sense.' },
+          { title: 'Confusing Revenue with Profit', description: 'A $10,000 package sounds great until you subtract $4,000 in costs and $3,000 in overhead. Always look at profit per unit, not top-line revenue.' },
+        ]}
+      />
+
       {/* Offer type selector */}
       <div className="grid grid-cols-3 gap-2">
         {OFFER_TYPES.map(t => (
@@ -321,22 +338,6 @@ export default function PricingCalculator() {
             ? `Pricing (${serviceModel}): ${formatCurrency(result.competitivePrice)}/mo × 6 = ${formatCurrency(result.commitmentTotalRevenue)}. Effective rate: ${formatCurrency(result.effectiveHourly)}/hr. Margin: ${result.profitMarginActual.toFixed(1)}%.`
             : `Pricing (${offerType}): Recommended ${formatCurrency(result.competitivePrice)}, min ${formatCurrency(result.minPrice)}, premium ${formatCurrency(result.premiumPrice)}. Margin: ${result.profitMarginActual.toFixed(1)}%.`} />
 
-        <CalculatorScenariosAndPitfalls
-          scenarios={[
-            { title: 'Freelancer Undercharging', description: 'A designer charges $40/hr but spends 2 unpaid hours per project on revisions and emails. Their effective rate drops to $20/hr. This calculator catches that by factoring in prep/admin time.' },
-            { title: '6-Month Coaching Package', description: "A coach offers 4 sessions/month at $1,500/mo. Over 6 months that is $9,000 for 36 hours, an effective rate of $250/hr. Without this breakdown, they might have priced at $800/mo and earned just $133/hr." },
-            { title: 'Product Business Ignoring Overhead', description: "A candle maker prices at $18 per candle with $6 in materials. Looks like great margins until $800/mo in rent and supplies drops their real margin to 12%." },
-            { title: 'Bundle Mispricing', description: "A consultant bundles a $50 workbook with 3 hours of coaching. Without calculating both product COGS and labor value together, they set the bundle at $200, below their $225 total cost." },
-          ]}
-          pitfalls={[
-            { title: 'Forgetting Your Own Time', description: "The number one pricing mistake: not counting prep, admin, follow-up, and travel time. If you spend 2 hours on a one-hour session, your real rate is half what you think." },
-            { title: 'Racing to the Bottom', description: 'Competing on price alone destroys margins. A 10% price cut requires 50% more volume to maintain the same profit. Price on value, not fear.' },
-            { title: 'Ignoring Overhead per Unit', description: "Rent, software, insurance, and subscriptions do not disappear because you are busy. Divide monthly overhead by units sold. That cost is real and must be covered." },
-            { title: 'No Commitment Premium', description: 'A 6-month engagement should cost LESS per session than one-offs because of guaranteed revenue. But many coaches price them the same, losing the value of commitment security.' },
-            { title: 'Setting Price Once and Forgetting', description: 'Costs change. Materials go up, overhead grows, your skills improve. Re-run this calculator quarterly to make sure your prices still make sense.' },
-            { title: 'Confusing Revenue with Profit', description: 'A $10,000 package sounds great until you subtract $4,000 in costs and $3,000 in overhead. Always look at profit per unit, not top-line revenue.' },
-          ]}
-        />
       </motion.div>
     </div>
   );
