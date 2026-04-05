@@ -35,6 +35,7 @@ import HolidayGiftCalculator from '@/components/calculators/HolidayGiftCalculato
 import BabyCostCalculator from '@/components/calculators/BabyCostCalculator';
 import CarAffordabilityCalculator from '@/components/calculators/CarAffordabilityCalculator';
 import TrueCostLoanCalculator from '@/components/calculators/TrueCostLoanCalculator';
+import PricingCalculator from '@/components/calculators/PricingCalculator';
 
 // ─── Calculation helpers ───
 
