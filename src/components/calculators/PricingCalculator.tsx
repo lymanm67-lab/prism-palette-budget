@@ -28,16 +28,27 @@ const SERVICE_MODELS: { id: ServiceModel; label: string; description: string }[]
 export default function PricingCalculator() {
   const { formatCurrency } = useCurrency();
   const [offerType, setOfferType] = useState<OfferType>('service');
+  const [serviceModel, setServiceModel] = useState<ServiceModel>('per-session');
 
   // Product inputs
   const [materialCost, setMaterialCost] = useState('15');
   const [shippingCost, setShippingCost] = useState('5');
   const [packagingCost, setPackagingCost] = useState('2');
 
-  // Service inputs
+  // Service per-session inputs
   const [hourlyRate, setHourlyRate] = useState('50');
   const [hoursPerClient, setHoursPerClient] = useState('4');
   const [prepHours, setPrepHours] = useState('1');
+
+  // Service 6-month retainer inputs
+  const [monthlyRetainerFee, setMonthlyRetainerFee] = useState('1500');
+  const [retainerSessionsPerMonth, setRetainerSessionsPerMonth] = useState('4');
+  const [retainerHoursPerSession, setRetainerHoursPerSession] = useState('1.5');
+
+  // Service 6-month package inputs
+  const [packageTotalPrice, setPackageTotalPrice] = useState('7500');
+  const [packageTotalSessions, setPackageTotalSessions] = useState('24');
+  const [packageHoursPerSession, setPackageHoursPerSession] = useState('1.5');
 
   // Bundle inputs
   const [productCostInBundle, setProductCostInBundle] = useState('25');
