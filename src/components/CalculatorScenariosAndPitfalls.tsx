@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AlertTriangle, Lightbulb, ChevronDown, ChevronUp, Volume2, Pause, Play, Square } from 'lucide-react';
+import { AlertTriangle, Lightbulb, ChevronDown, ChevronUp, Volume2, Pause, Play, Square, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTTS } from '@/hooks/use-tts';
 import { cn } from '@/lib/utils';
@@ -7,16 +7,18 @@ import { cn } from '@/lib/utils';
 interface CalculatorScenariosAndPitfallsProps {
   scenarios: { title: string; description: string }[];
   pitfalls: { title: string; description: string }[];
+  tips?: { title: string; description: string }[];
 }
 
-export default function CalculatorScenariosAndPitfalls({ scenarios, pitfalls }: CalculatorScenariosAndPitfallsProps) {
+export default function CalculatorScenariosAndPitfalls({ scenarios, pitfalls, tips }: CalculatorScenariosAndPitfallsProps) {
   const [expanded, setExpanded] = useState(false);
   const { speak, pause, resume, stop, isSpeaking, isPaused } = useTTS();
 
   const generateTTSScript = () => {
     const scenariosText = scenarios.map(s => `Real-World Scenario: ${s.title}. ${s.description}`).join('. ');
     const pitfallsText = pitfalls.map(p => `Pitfall to Avoid: ${p.title}. ${p.description}`).join('. ');
-    return `Scenarios and Pitfalls to Avoid. ${scenariosText}. ${pitfallsText}`;
+    const tipsText = tips?.length ? tips.map(t => `Optimization Tip: ${t.title}. ${t.description}`).join('. ') : '';
+    return `Scenarios and Pitfalls to Avoid. ${scenariosText}. ${pitfallsText}.${tipsText ? ` Tips to Optimize. ${tipsText}` : ''}`;
   };
 
   return (
@@ -27,7 +29,7 @@ export default function CalculatorScenariosAndPitfalls({ scenarios, pitfalls }: 
       >
         <span className="flex items-center gap-2">
           <Lightbulb className="h-4 w-4 text-prism-amber" />
-          Scenarios & Pitfalls to Avoid
+          Scenarios, Pitfalls & Tips
         </span>
         <div className="flex items-center gap-1">
           {expanded && (
@@ -125,6 +127,23 @@ export default function CalculatorScenariosAndPitfalls({ scenarios, pitfalls }: 
               ))}
             </div>
           </div>
+
+          {/* Tips to Optimize */}
+          {tips && tips.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                <Zap className="h-3.5 w-3.5 text-prism-lime" /> Tips to Optimize
+              </p>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {tips.map((t, i) => (
+                  <div key={i} className="rounded-lg bg-prism-lime/5 border border-prism-lime/20 p-2.5 space-y-0.5">
+                    <p className="text-xs font-semibold text-foreground">{t.title}</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{t.description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
