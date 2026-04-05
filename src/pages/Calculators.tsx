@@ -748,6 +748,10 @@ const Calculators = () => {
           />
         </TabsContent>
 
+        <TabsContent value="rentvsbuy" className="mt-6">
+          <RentVsBuyCalculator onOpenHistory={() => setHistoryOpen(true)} />
+        </TabsContent>
+
         <TabsContent value="mortgage" className="mt-6">
           <CalculatorGuide
             title="Mortgage Calculator"
