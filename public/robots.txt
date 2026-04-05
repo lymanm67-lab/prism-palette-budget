@@ -6,6 +6,7 @@ Allow: /onboarding
 Allow: /reset-password
 Allow: /roadmap
 Allow: /legal
+Allow: /changelog
 
 # Block all authenticated/private routes
 Disallow: /dashboard
@@ -35,5 +36,6 @@ Disallow: /experiments
 Disallow: /spending-trends
 Disallow: /reconciliation
 Disallow: /app-store-readiness
+Disallow: /crossover-tracker
 
 Sitemap: https://prism-palette-budget.lovable.app/sitemap.xml
