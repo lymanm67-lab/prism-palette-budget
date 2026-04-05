@@ -129,17 +129,39 @@ function calcMonthlyToMillion(currentAge: number, target: number = 1000000): num
   return target / fvFactor;
 }
 
-const CALCULATORS = [
-  { id: 'safetospend', label: 'Safe-to-Spend', icon: Shield, color: 'text-prism-teal', bg: 'from-prism-teal/20 to-prism-teal/5' },
-  { id: 'rentvsbuy', label: 'Rent vs Buy', icon: Scale, color: 'text-prism-violet', bg: 'from-prism-violet/20 to-prism-violet/5' },
-  { id: 'mortgage', label: 'Mortgage', icon: Home, color: 'text-prism-teal', bg: 'from-prism-teal/20 to-prism-teal/5' },
-  { id: 'auto', label: 'Auto Loan', icon: Car, color: 'text-prism-sky', bg: 'from-prism-sky/20 to-prism-sky/5' },
-  { id: 'credit', label: 'Credit Card', icon: CreditCard, color: 'text-prism-rose', bg: 'from-prism-rose/20 to-prism-rose/5' },
-  { id: 'investment', label: 'Investment', icon: TrendingUp, color: 'text-prism-lime', bg: 'from-prism-lime/20 to-prism-lime/5' },
-  { id: 'debt', label: 'General Debt', icon: DollarSign, color: 'text-prism-amber', bg: 'from-prism-amber/20 to-prism-amber/5' },
-  { id: 'wealth', label: 'Wealth Multiplier', icon: PiggyBank, color: 'text-prism-indigo', bg: 'from-prism-indigo/20 to-prism-indigo/5' },
-  { id: 'offers', label: 'Focus Offer', icon: Target, color: 'text-prism-lime', bg: 'from-prism-lime/20 to-prism-lime/5' },
+const CALCULATOR_GROUPS = [
+  {
+    label: 'Essentials',
+    items: [
+      { id: 'safetospend', label: 'Safe-to-Spend', icon: Shield, color: 'text-prism-teal', bg: 'from-prism-teal/20 to-prism-teal/5' },
+      { id: 'rentvsbuy', label: 'Rent vs Buy', icon: Scale, color: 'text-prism-violet', bg: 'from-prism-violet/20 to-prism-violet/5' },
+    ],
+  },
+  {
+    label: 'Loans & Debt',
+    items: [
+      { id: 'mortgage', label: 'Mortgage', icon: Home, color: 'text-prism-teal', bg: 'from-prism-teal/20 to-prism-teal/5' },
+      { id: 'auto', label: 'Auto Loan', icon: Car, color: 'text-prism-sky', bg: 'from-prism-sky/20 to-prism-sky/5' },
+      { id: 'credit', label: 'Credit Card Payoff', icon: CreditCard, color: 'text-prism-rose', bg: 'from-prism-rose/20 to-prism-rose/5' },
+      { id: 'debt', label: 'General Debt', icon: DollarSign, color: 'text-prism-amber', bg: 'from-prism-amber/20 to-prism-amber/5' },
+    ],
+  },
+  {
+    label: 'Savings & Growth',
+    items: [
+      { id: 'investment', label: 'Investment', icon: TrendingUp, color: 'text-prism-lime', bg: 'from-prism-lime/20 to-prism-lime/5' },
+      { id: 'wealth', label: 'Wealth Multiplier', icon: PiggyBank, color: 'text-prism-indigo', bg: 'from-prism-indigo/20 to-prism-indigo/5' },
+    ],
+  },
+  {
+    label: 'Business',
+    items: [
+      { id: 'offers', label: 'Focus Offer', icon: Target, color: 'text-prism-lime', bg: 'from-prism-lime/20 to-prism-lime/5' },
+    ],
+  },
 ];
+
+const CALCULATORS = CALCULATOR_GROUPS.flatMap(g => g.items);
 
 // ─── Shared result card with gradient ───
 const ResultCard = ({ label, value, sub, accent, numericValue, formatFn }: { label: string; value: string; sub?: string; accent?: boolean; numericValue?: number; formatFn?: (n: number) => string }) => (
