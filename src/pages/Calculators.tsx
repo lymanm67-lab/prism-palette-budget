@@ -27,6 +27,14 @@ import FocusOfferCalculator from '@/components/FocusOfferCalculator';
 import CalculatorGuide from '@/components/CalculatorGuide';
 import CalculatorScenariosAndPitfalls from '@/components/CalculatorScenariosAndPitfalls';
 import RentVsBuyCalculator from '@/components/RentVsBuyCalculator';
+import VacationCalculator from '@/components/calculators/VacationCalculator';
+import WeddingCalculator from '@/components/calculators/WeddingCalculator';
+import HoneymoonCalculator from '@/components/calculators/HoneymoonCalculator';
+import BigPurchaseCalculator from '@/components/calculators/BigPurchaseCalculator';
+import HolidayGiftCalculator from '@/components/calculators/HolidayGiftCalculator';
+import BabyCostCalculator from '@/components/calculators/BabyCostCalculator';
+import CarAffordabilityCalculator from '@/components/calculators/CarAffordabilityCalculator';
+import TrueCostLoanCalculator from '@/components/calculators/TrueCostLoanCalculator';
 
 // ─── Calculation helpers ───
 
