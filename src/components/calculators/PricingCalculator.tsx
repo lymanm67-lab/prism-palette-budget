@@ -278,8 +278,8 @@ export default function PricingCalculator() {
           <Card className="border-green-500/30 bg-green-500/5">
             <CardContent className="p-4 text-center">
               <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Premium</p>
-              <p className="text-xl font-bold text-green-600"><AnimatedNumber value={result.premiumPrice} formatFn={formatCurrency} /></p>
-              <p className="text-[11px] text-muted-foreground mt-1">For high-value positioning</p>
+              <p className="text-xl font-bold text-green-600"><AnimatedNumber value={result.premiumPrice} formatFn={v => result.isCommitment ? `${formatCurrency(v)}/mo` : formatCurrency(v)} /></p>
+              <p className="text-[11px] text-muted-foreground mt-1">{result.isCommitment ? 'Premium positioning' : 'For high-value positioning'}</p>
             </CardContent>
           </Card>
         </div>
@@ -314,9 +314,11 @@ export default function PricingCalculator() {
           ))}
         </div>
 
-        <CalculatorActions calculatorType="pricing" inputs={{ offerType, desiredMargin, monthlyOverhead, unitsPerMonth }}
+        <CalculatorActions calculatorType="pricing" inputs={{ offerType, serviceModel, desiredMargin, monthlyOverhead, unitsPerMonth }}
           results={result} hasResults={true}
-          summaryText={`Pricing (${offerType}): Recommended ${formatCurrency(result.competitivePrice)}, min ${formatCurrency(result.minPrice)}, premium ${formatCurrency(result.premiumPrice)}. Margin: ${result.profitMarginActual.toFixed(1)}%.`} />
+          summaryText={result.isCommitment
+            ? `Pricing (${serviceModel}): ${formatCurrency(result.competitivePrice)}/mo × 6 = ${formatCurrency(result.commitmentTotalRevenue)}. Effective rate: ${formatCurrency(result.effectiveHourly)}/hr. Margin: ${result.profitMarginActual.toFixed(1)}%.`
+            : `Pricing (${offerType}): Recommended ${formatCurrency(result.competitivePrice)}, min ${formatCurrency(result.minPrice)}, premium ${formatCurrency(result.premiumPrice)}. Margin: ${result.profitMarginActual.toFixed(1)}%.`} />
       </motion.div>
     </div>
   );
