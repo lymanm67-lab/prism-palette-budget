@@ -576,6 +576,11 @@ const Calculators = () => {
               { title: 'Using Gross Instead of Net', description: 'Enter your take-home pay (after taxes), not your gross salary. Using gross inflates your Safe-to-Spend.' },
               { title: 'Skipping the Buffer', description: 'A 0% buffer means zero margin for error. Life is unpredictable — even 5% provides meaningful protection.' },
             ]}
+            tips={[
+              { title: 'Round Down Your Income', description: 'Use a slightly lower income number than your actual take-home. The extra becomes automatic savings you never miss.' },
+              { title: 'Automate Your Buffer', description: 'Set up an auto-transfer on payday to move your buffer amount to savings before you can spend it.' },
+              { title: 'Review Weekly, Not Daily', description: 'Checking daily creates anxiety. A weekly review gives you enough data to course-correct without stress.' },
+            ]}
           />
 
           <div className="grid lg:grid-cols-2 gap-6 mt-6">
@@ -846,6 +851,11 @@ const Calculators = () => {
             { title: 'Skipping Rate Comparison', description: 'Even 0.25% lower rate on a $300k loan saves $15,000+ over 30 years. Always shop multiple lenders.' },
             { title: 'Forgetting Closing Costs', description: 'Budget 2–5% of the home price for closing costs. On a $350k home, that\'s $7k–$17.5k due at signing.' },
           ]}
+          tips={[
+            { title: 'Make Biweekly Payments', description: 'Paying half your mortgage every two weeks equals 13 full payments per year instead of 12. On a $300k loan, this saves $30k+ in interest and shaves 4-5 years off.' },
+            { title: 'Recast After a Lump Sum', description: 'If you make a large extra payment, ask your lender to recast (re-amortize). This lowers your monthly payment permanently without refinancing fees.' },
+            { title: 'Buy Points If Staying 7+ Years', description: 'Paying 1% upfront to lower your rate by 0.25% breaks even around year 5-7. If you plan to stay longer, it saves thousands.' },
+          ]}
         />
         <div className="grid gap-6 lg:grid-cols-2 mt-4">
           <Card className="prism-card-shine border-border/50">
@@ -985,6 +995,11 @@ const Calculators = () => {
             { title: 'Skipping Pre-Approval', description: 'Get pre-approved from your bank before the dealership. Dealer financing often has higher rates.' },
             { title: 'Negative Equity Roll-In', description: 'Rolling an old loan balance into a new car loan starts you underwater immediately.' },
           ]}
+          tips={[
+            { title: 'Get Pre-Approved First', description: 'Walk into the dealership with a pre-approved rate from your bank or credit union. This gives you leverage to negotiate and often beats dealer financing.' },
+            { title: 'Negotiate the Out-the-Door Price', description: 'Dealers pad profit into monthly payment negotiations. Always negotiate the total price first, then discuss financing separately.' },
+            { title: 'Make One Extra Payment Per Year', description: 'One additional payment annually on a 60-month loan saves months of interest and builds equity faster, especially important if you trade in.' },
+          ]}
         />
         <div className="grid gap-6 lg:grid-cols-2 mt-4">
           <Card className="prism-card-shine border-border/50">
@@ -1085,6 +1100,11 @@ const Calculators = () => {
             { title: 'Continuing to Charge', description: 'Adding new charges while paying off a balance erases your progress. Freeze the card during payoff.' },
             { title: 'Ignoring the APR', description: 'A "low" payment on a 25%+ APR card means most of your payment goes to interest, not principal.' },
             { title: 'Missing a Payment', description: 'One missed payment can trigger a penalty APR of 29%+ and damage your credit score significantly.' },
+          ]}
+          tips={[
+            { title: 'Balance Transfer to 0% Promo', description: 'Move high-APR balances to a 0% intro card. Every dollar goes to principal for 12-21 months. Just pay it off before the promo ends.' },
+            { title: 'Pay Biweekly Instead of Monthly', description: 'Splitting your payment in half and paying every two weeks adds an extra full payment per year, cutting months off your payoff timeline.' },
+            { title: 'Call and Negotiate Your Rate', description: 'If you have a good payment history, call your issuer and ask for a lower APR. Success rate is 60-70% and can save hundreds in interest.' },
           ]}
         />
         <div className="grid gap-6 lg:grid-cols-2 mt-4">
@@ -1189,6 +1209,11 @@ const Calculators = () => {
             { title: 'Wrong Account Type for Your Tax Bracket', description: 'High earners benefit more from Traditional (tax deduction now). Lower earners benefit from Roth (tax-free growth). Picking wrong costs thousands.' },
             { title: 'Panic Selling', description: 'Missing just the 10 best market days over 20 years can cut your returns in half. Stay invested.' },
           ]}
+          tips={[
+            { title: 'Max Your Employer Match First', description: 'Employer 401(k) match is free money — a 100% instant return. Always contribute enough to get the full match before investing elsewhere.' },
+            { title: 'Backdoor Roth If Over Income Limit', description: 'High earners can contribute to a Traditional IRA then convert to Roth. Legal, IRS-approved, and lets you access tax-free growth.' },
+            { title: 'Tax-Loss Harvest Annually', description: 'Sell losing investments to offset gains and reduce your tax bill by up to $3,000/year. Reinvest immediately in a similar (not identical) fund.' },
+          ]}
         />
         <div className="grid gap-6 lg:grid-cols-2 mt-4">
           <Card className="prism-card-shine border-border/50">
@@ -1290,6 +1315,11 @@ const Calculators = () => {
             { title: 'Refinancing Without Math', description: 'A lower rate with a longer term can actually cost more in total interest. Always compare total cost.' },
             { title: 'Skipping the Tax Hit', description: 'Bonuses, settlements, and inheritance can trigger unexpected taxes. Set aside 25-30% for taxes before allocating the rest.' },
           ]}
+          tips={[
+            { title: 'Use the 50/30/20 Windfall Split', description: 'Allocate 50% to debt payoff, 30% to investments, and 20% to something you enjoy. This balances financial progress with reward.' },
+            { title: 'Target Highest-Rate Debt First', description: 'Applying your windfall to the highest-interest debt saves the most money long-term. Even partial payoff reduces the interest snowball.' },
+            { title: 'Keep It Quiet', description: 'Do not announce your windfall publicly. Financial pressure from others is real and leads to guilt-driven spending that erodes the opportunity.' },
+          ]}
         />
         <div className="grid gap-6 lg:grid-cols-2 mt-4">
           <Card className="prism-card-shine border-border/50">
@@ -1388,6 +1418,11 @@ const Calculators = () => {
             { title: 'Cashing Out Early', description: 'Withdrawing retirement funds early triggers penalties and taxes, plus you lose all future compounding.' },
             { title: 'Lifestyle Inflation', description: 'As income grows, increase investments — not just spending. Saving your raises is the fastest path to wealth.' },
             { title: 'Underestimating the Multiplier Effect', description: 'At age 25, $1 invested becomes ~$10+ by retirement. At 45, it only becomes ~$3. The multiplier shrinks fast — start now.' },
+          ]}
+          tips={[
+            { title: 'Increase Contributions 1% Annually', description: 'Bump your savings rate by 1% each year (or with each raise). You will not feel the difference, but over 20 years it adds six figures.' },
+            { title: 'Reinvest All Dividends', description: 'Dividend reinvestment compounds your returns automatically. A 2% dividend reinvested over 30 years can double your ending balance.' },
+            { title: 'Use Tax-Advantaged Accounts First', description: 'Max out 401(k), IRA, and HSA before taxable brokerage accounts. Tax-deferred growth is the single biggest wealth accelerator.' },
           ]}
         />
         <div className="grid gap-6 lg:grid-cols-2 mt-4">
