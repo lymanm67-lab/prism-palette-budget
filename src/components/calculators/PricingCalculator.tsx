@@ -189,9 +189,46 @@ export default function PricingCalculator() {
         )}
         {offerType === 'service' && (
           <>
-            <div className="space-y-2"><Label>Your Hourly Rate</Label><Input type="number" min="0" value={hourlyRate} onChange={e => setHourlyRate(e.target.value)} /></div>
-            <div className="space-y-2"><Label>Hours per Client/Session</Label><Input type="number" min="0" step="0.5" value={hoursPerClient} onChange={e => setHoursPerClient(e.target.value)} /></div>
-            <div className="space-y-2"><Label>Prep/Admin Hours</Label><Input type="number" min="0" step="0.5" value={prepHours} onChange={e => setPrepHours(e.target.value)} /></div>
+            {/* Service model sub-selector */}
+            <div className="sm:col-span-2 lg:col-span-3">
+              <Label className="mb-2 block text-xs text-muted-foreground uppercase tracking-wider">Pricing Model</Label>
+              <div className="grid grid-cols-3 gap-2">
+                {SERVICE_MODELS.map(m => (
+                  <button key={m.id} onClick={() => setServiceModel(m.id)}
+                    className={cn(
+                      'rounded-lg border px-3 py-2 text-xs font-medium transition-all',
+                      serviceModel === m.id
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'bg-muted/40 border-border/40 hover:border-primary/40'
+                    )}>
+                    <span className="block font-semibold">{m.label}</span>
+                    <span className={cn('text-[10px]', serviceModel === m.id ? 'text-primary-foreground/80' : 'text-muted-foreground')}>{m.description}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {serviceModel === 'per-session' && (
+              <>
+                <div className="space-y-2"><Label>Your Hourly Rate</Label><Input type="number" min="0" value={hourlyRate} onChange={e => setHourlyRate(e.target.value)} /></div>
+                <div className="space-y-2"><Label>Hours per Client/Session</Label><Input type="number" min="0" step="0.5" value={hoursPerClient} onChange={e => setHoursPerClient(e.target.value)} /></div>
+                <div className="space-y-2"><Label>Prep/Admin Hours</Label><Input type="number" min="0" step="0.5" value={prepHours} onChange={e => setPrepHours(e.target.value)} /></div>
+              </>
+            )}
+            {serviceModel === 'monthly-retainer' && (
+              <>
+                <div className="space-y-2"><Label>Monthly Retainer Fee</Label><Input type="number" min="0" value={monthlyRetainerFee} onChange={e => setMonthlyRetainerFee(e.target.value)} /></div>
+                <div className="space-y-2"><Label>Sessions per Month</Label><Input type="number" min="1" value={retainerSessionsPerMonth} onChange={e => setRetainerSessionsPerMonth(e.target.value)} /></div>
+                <div className="space-y-2"><Label>Hours per Session</Label><Input type="number" min="0.5" step="0.5" value={retainerHoursPerSession} onChange={e => setRetainerHoursPerSession(e.target.value)} /></div>
+              </>
+            )}
+            {serviceModel === 'package' && (
+              <>
+                <div className="space-y-2"><Label>Total Package Price (6 mo)</Label><Input type="number" min="0" value={packageTotalPrice} onChange={e => setPackageTotalPrice(e.target.value)} /></div>
+                <div className="space-y-2"><Label>Total Sessions Included</Label><Input type="number" min="1" value={packageTotalSessions} onChange={e => setPackageTotalSessions(e.target.value)} /></div>
+                <div className="space-y-2"><Label>Hours per Session</Label><Input type="number" min="0.5" step="0.5" value={packageHoursPerSession} onChange={e => setPackageHoursPerSession(e.target.value)} /></div>
+              </>
+            )}
           </>
         )}
         {offerType === 'bundle' && (
