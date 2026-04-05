@@ -11,11 +11,18 @@ import CalculatorActions from '@/components/CalculatorActions';
 import CalculatorGuide from '@/components/CalculatorGuide';
 
 type OfferType = 'product' | 'service' | 'bundle';
+type ServiceModel = 'per-session' | 'monthly-retainer' | 'package';
 
 const OFFER_TYPES: { id: OfferType; label: string; icon: typeof Package; description: string }[] = [
   { id: 'product', label: 'Physical Product', icon: Package, description: 'Goods with material & shipping costs' },
   { id: 'service', label: 'Service', icon: Users, description: 'Coaching, consulting, freelance' },
   { id: 'bundle', label: 'Bundle', icon: Layers, description: 'Service + products combined' },
+];
+
+const SERVICE_MODELS: { id: ServiceModel; label: string; description: string }[] = [
+  { id: 'per-session', label: 'Per Session', description: 'Charge per session or hour' },
+  { id: 'monthly-retainer', label: '6-Mo Retainer', description: 'Monthly fee × 6 months' },
+  { id: 'package', label: '6-Mo Package', description: 'One lump-sum engagement' },
 ];
 
 export default function PricingCalculator() {
