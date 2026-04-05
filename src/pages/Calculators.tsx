@@ -877,18 +877,24 @@ const Calculators = () => {
                   inputs={mortgageForm}
                   results={{ payment: mortgageResult.payment, totalInterest: mortgageResult.totalInterest, totalPaid: mortgageResult.totalPaid }}
                   hasResults={mortgageResult.payment > 0}
-                  summaryText={`# 🏠 Mortgage Calculator\n\n**Inputs**\n- **Home Price:** ${formatCurrency(Number(mortgageForm.price))}\n- **Down Payment:** ${formatCurrency(Number(mortgageForm.down))}\n- **Interest Rate:** ${mortgageForm.rate}%\n- **Term:** ${mortgageForm.years} years\n\n**Results**\n- **Monthly Payment:** ${formatCurrency(mortgageResult.payment)}\n- **Total Interest:** ${formatCurrency(mortgageResult.totalInterest)}\n- **Total Paid:** ${formatCurrency(mortgageResult.totalPaid)}`}
+                  summaryText={`# 🏠 Mortgage Calculator\n\n**Inputs**\n${mortgageForm.state ? `- **State:** ${STATE_DATA[mortgageForm.state]?.label}\n` : ''}- **Home Price:** ${formatCurrency(Number(mortgageForm.price))}\n- **Down Payment:** ${formatCurrency(Number(mortgageForm.down))}\n- **Interest Rate:** ${mortgageForm.rate}%\n- **Term:** ${mortgageForm.years} years\n- **Property Tax:** ${mortgageForm.propertyTaxRate}%\n- **Insurance:** ${mortgageForm.insuranceRate}%\n\n**Results**\n- **Total Monthly:** ${formatCurrency(mortgageResult.totalMonthly)}\n- **P&I Payment:** ${formatCurrency(mortgageResult.payment)}\n- **Property Tax:** ${formatCurrency(mortgageResult.monthlyPropTax)}/mo\n- **Insurance:** ${formatCurrency(mortgageResult.monthlyInsurance)}/mo\n- **Total Interest:** ${formatCurrency(mortgageResult.totalInterest)}\n- **Total Paid:** ${formatCurrency(mortgageResult.totalPaid)}`}
                   onOpenHistory={() => setHistoryOpen(true)}
                   printData={{
                     inputs: [
+                      ...(mortgageForm.state ? [{ label: 'State', value: STATE_DATA[mortgageForm.state]?.label || mortgageForm.state }] : []),
                       { label: 'Home Price', value: `$${Number(mortgageForm.price).toLocaleString()}` },
                       { label: 'Down Payment', value: `$${Number(mortgageForm.down).toLocaleString()}` },
                       { label: 'Interest Rate', value: `${mortgageForm.rate}%` },
                       { label: 'Loan Term', value: `${mortgageForm.years} years` },
+                      { label: 'Property Tax', value: `${mortgageForm.propertyTaxRate}%` },
+                      { label: 'Insurance', value: `${mortgageForm.insuranceRate}%` },
                       { label: 'Loan Amount', value: formatCurrency(Math.max(0, (parseFloat(mortgageForm.price)||0) - (parseFloat(mortgageForm.down)||0))) },
                     ],
                     results: [
-                      { label: 'Monthly Payment', value: formatCurrency(mortgageResult.payment), highlight: true },
+                      { label: 'Total Monthly', value: formatCurrency(mortgageResult.totalMonthly), highlight: true },
+                      { label: 'P&I Payment', value: formatCurrency(mortgageResult.payment) },
+                      { label: 'Monthly Tax', value: formatCurrency(mortgageResult.monthlyPropTax) },
+                      { label: 'Monthly Insurance', value: formatCurrency(mortgageResult.monthlyInsurance) },
                       { label: 'Total Interest', value: formatCurrency(mortgageResult.totalInterest) },
                       { label: 'Total Paid', value: formatCurrency(mortgageResult.totalPaid) },
                       { label: 'Interest Ratio', value: `${mortgageResult.totalPaid > 0 ? Math.round((mortgageResult.totalInterest / mortgageResult.totalPaid) * 100) : 0}%` },
