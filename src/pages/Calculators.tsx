@@ -179,6 +179,7 @@ const CALCULATOR_GROUPS = [
     label: 'Business',
     items: [
       { id: 'offers', label: 'Focus Offer', icon: Target, color: 'text-prism-lime', bg: 'from-prism-lime/20 to-prism-lime/5' },
+      { id: 'pricing', label: 'Pricing', icon: Tag, color: 'text-prism-amber', bg: 'from-prism-amber/20 to-prism-amber/5' },
     ],
   },
 ];
