@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
 import AnimatedNumber from '@/components/AnimatedNumber';
 import CalculatorActions from '@/components/CalculatorActions';
 import CalculatorGuide from '@/components/CalculatorGuide';
-import CalculatorChart from '@/components/CalculatorChart';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 export default function TrueCostLoanCalculator() {
   const { formatCurrency } = useCurrency();
