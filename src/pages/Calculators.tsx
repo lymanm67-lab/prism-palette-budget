@@ -502,38 +502,31 @@ const Calculators = () => {
         />
       )}
 
-      {/* Calculator selector — grouped dropdown */}
-      {(() => {
-        const active = CALCULATORS.find(c => c.id === activeCalc);
-        const ActiveIcon = active?.icon || Calculator;
-        return (
-          <div className="flex items-center gap-3">
-            <Select value={activeCalc} onValueChange={setActiveCalc}>
-              <SelectTrigger className="w-full sm:w-80 h-12 text-base font-medium bg-gradient-to-r from-muted/60 to-muted/30 border-border/60">
-                <div className="flex items-center gap-2.5">
-                  <ActiveIcon className={cn('h-5 w-5 shrink-0', active?.color)} />
-                  <SelectValue />
-                </div>
-              </SelectTrigger>
-              <SelectContent className="max-h-[400px]">
-                {CALCULATOR_GROUPS.map(group => (
-                  <div key={group.label}>
-                    <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">{group.label}</div>
-                    {group.items.map(c => (
-                      <SelectItem key={c.id} value={c.id} className="pl-4">
-                        <div className="flex items-center gap-2">
-                          <c.icon className={cn('h-4 w-4 shrink-0', c.color)} />
-                          <span>{c.label}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </div>
-                ))}
-              </SelectContent>
-            </Select>
+      {/* Calculator selector — card grid with grouped sections */}
+      <div className="space-y-4">
+        {CALCULATOR_GROUPS.map(group => (
+          <div key={group.label}>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{group.label}</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+              {group.items.map(c => (
+                <button
+                  key={c.id}
+                  onClick={() => setActiveCalc(c.id)}
+                  className={cn(
+                    'flex items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left text-sm font-medium transition-all',
+                    activeCalc === c.id
+                      ? 'bg-primary text-primary-foreground border-primary shadow-md shadow-primary/20 scale-[1.02]'
+                      : 'bg-gradient-to-br from-muted/60 to-muted/30 border-border/40 hover:border-primary/40 hover:shadow-sm'
+                  )}
+                >
+                  <c.icon className={cn('h-4 w-4 shrink-0', activeCalc === c.id ? 'text-primary-foreground' : c.color)} />
+                  <span className="truncate">{c.label}</span>
+                </button>
+              ))}
+            </div>
           </div>
-        );
-      })()}
+        ))}
+      </div>
 
       {/* ─── Calculator content ─── */}
       {activeCalc === 'safetospend' && (
