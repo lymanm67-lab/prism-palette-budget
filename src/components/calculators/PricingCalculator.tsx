@@ -287,12 +287,21 @@ export default function PricingCalculator() {
         {/* Breakdown */}
         <div className="grid gap-3 grid-cols-2 sm:grid-cols-4">
           {[
-            { label: 'Direct Cost', val: result.directCost },
-            { label: 'Overhead / Unit', val: result.overheadPerUnit },
-            { label: 'Total Cost', val: result.totalCost },
-            { label: 'Breakeven Units', val: result.breakeven, fmt: (n: number) => `${n} / mo` },
-            ...(result.totalHours > 0 ? [{ label: 'Effective $/hr', val: result.effectiveHourly, accent: true }] : []),
-            ...(result.laborValue > 0 ? [{ label: 'Labor Value', val: result.laborValue }] : []),
+            ...(result.isCommitment ? [
+              { label: '6-Mo Revenue', val: result.commitmentTotalRevenue },
+              { label: 'Total Hours', val: result.commitmentTotalHours, fmt: (n: number) => `${n.toFixed(0)} hrs` },
+              { label: 'Monthly Overhead', val: parseFloat(monthlyOverhead) || 0 },
+              { label: 'Effective $/hr', val: result.effectiveHourly, accent: true },
+              { label: 'Profit / Month', val: result.profitPerUnit },
+              { label: '6-Mo Net Profit', val: result.profitPerUnit * 6 },
+            ] : [
+              { label: 'Direct Cost', val: result.directCost },
+              { label: 'Overhead / Unit', val: result.overheadPerUnit },
+              { label: 'Total Cost', val: result.totalCost },
+              { label: 'Breakeven Units', val: result.breakeven, fmt: (n: number) => `${n} / mo` },
+              ...(result.totalHours > 0 ? [{ label: 'Effective $/hr', val: result.effectiveHourly, accent: true }] : []),
+              ...(result.laborValue > 0 ? [{ label: 'Labor Value', val: result.laborValue }] : []),
+            ]),
           ].map(r => (
             <Card key={r.label} className={cn('border', (r as any).accent && 'border-primary/30 bg-primary/5')}>
               <CardContent className="p-3">
