@@ -14,7 +14,7 @@ import { useCurrency } from '@/hooks/use-currency';
 import { cn } from '@/lib/utils';
 import {
   Home, Car, CreditCard, TrendingUp, Calculator, DollarSign, Percent, CalendarDays, PiggyBank, Sparkles, BookOpen, MoreHorizontal,
-  Target, Shield, Wallet, CheckCircle2, Scale, MapPin,
+  Target, Shield, Wallet, CheckCircle2, Scale, MapPin, Plane, Heart, Palmtree, ShoppingBag, Gift, Baby, Receipt,
 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import PageOverview from '@/components/PageOverview';
@@ -27,6 +27,14 @@ import FocusOfferCalculator from '@/components/FocusOfferCalculator';
 import CalculatorGuide from '@/components/CalculatorGuide';
 import CalculatorScenariosAndPitfalls from '@/components/CalculatorScenariosAndPitfalls';
 import RentVsBuyCalculator from '@/components/RentVsBuyCalculator';
+import VacationCalculator from '@/components/calculators/VacationCalculator';
+import WeddingCalculator from '@/components/calculators/WeddingCalculator';
+import HoneymoonCalculator from '@/components/calculators/HoneymoonCalculator';
+import BigPurchaseCalculator from '@/components/calculators/BigPurchaseCalculator';
+import HolidayGiftCalculator from '@/components/calculators/HolidayGiftCalculator';
+import BabyCostCalculator from '@/components/calculators/BabyCostCalculator';
+import CarAffordabilityCalculator from '@/components/calculators/CarAffordabilityCalculator';
+import TrueCostLoanCalculator from '@/components/calculators/TrueCostLoanCalculator';
 
 // ─── Calculation helpers ───
 
@@ -144,6 +152,19 @@ const CALCULATOR_GROUPS = [
       { id: 'auto', label: 'Auto Loan', icon: Car, color: 'text-prism-sky', bg: 'from-prism-sky/20 to-prism-sky/5' },
       { id: 'credit', label: 'Credit Card Payoff', icon: CreditCard, color: 'text-prism-rose', bg: 'from-prism-rose/20 to-prism-rose/5' },
       { id: 'debt', label: 'General Debt', icon: DollarSign, color: 'text-prism-amber', bg: 'from-prism-amber/20 to-prism-amber/5' },
+      { id: 'truecost', label: 'True Cost Loan', icon: Receipt, color: 'text-prism-rose', bg: 'from-prism-rose/20 to-prism-rose/5' },
+      { id: 'carafford', label: 'Car Affordability', icon: Car, color: 'text-prism-sky', bg: 'from-prism-sky/20 to-prism-sky/5' },
+    ],
+  },
+  {
+    label: 'Life Events',
+    items: [
+      { id: 'vacation', label: 'Vacation Planner', icon: Plane, color: 'text-prism-sky', bg: 'from-prism-sky/20 to-prism-sky/5' },
+      { id: 'wedding', label: 'Wedding Budget', icon: Heart, color: 'text-prism-rose', bg: 'from-prism-rose/20 to-prism-rose/5' },
+      { id: 'honeymoon', label: 'Honeymoon Fund', icon: Palmtree, color: 'text-prism-lime', bg: 'from-prism-lime/20 to-prism-lime/5' },
+      { id: 'bigpurchase', label: 'Big Purchase', icon: ShoppingBag, color: 'text-prism-amber', bg: 'from-prism-amber/20 to-prism-amber/5' },
+      { id: 'holiday', label: 'Holiday & Gifts', icon: Gift, color: 'text-prism-rose', bg: 'from-prism-rose/20 to-prism-rose/5' },
+      { id: 'baby', label: 'Baby Cost', icon: Baby, color: 'text-prism-sky', bg: 'from-prism-sky/20 to-prism-sky/5' },
     ],
   },
   {
@@ -1444,6 +1465,15 @@ const Calculators = () => {
       {activeCalc === 'offers' && (<div className="mt-6">
         <FocusOfferCalculator onOpenHistory={() => setHistoryOpen(true)} />
       </div>)}
+
+      {activeCalc === 'vacation' && (<div className="mt-6"><VacationCalculator /></div>)}
+      {activeCalc === 'wedding' && (<div className="mt-6"><WeddingCalculator /></div>)}
+      {activeCalc === 'honeymoon' && (<div className="mt-6"><HoneymoonCalculator /></div>)}
+      {activeCalc === 'bigpurchase' && (<div className="mt-6"><BigPurchaseCalculator /></div>)}
+      {activeCalc === 'holiday' && (<div className="mt-6"><HolidayGiftCalculator /></div>)}
+      {activeCalc === 'baby' && (<div className="mt-6"><BabyCostCalculator /></div>)}
+      {activeCalc === 'carafford' && (<div className="mt-6"><CarAffordabilityCalculator /></div>)}
+      {activeCalc === 'truecost' && (<div className="mt-6"><TrueCostLoanCalculator /></div>)}
       
       <CalculatorHistory open={historyOpen} onOpenChange={setHistoryOpen} onRestore={handleRestore} />
     </motion.div>
