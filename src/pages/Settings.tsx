@@ -1020,6 +1020,62 @@ const Settings = () => {
             </CardContent>
           </Card>
 
+          {/* Two-Factor Authentication */}
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle className="font-display">Two-Factor Authentication</CardTitle>
+              <CardDescription>Add an extra layer of security with a TOTP authenticator app.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {!mfaEnrolled ? (
+                mfaQr ? (
+                  <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground">Scan this QR code with your authenticator app (Google Authenticator, Authy, 1Password):</p>
+                    <div className="flex justify-center">
+                      <img src={mfaQr} alt="TOTP QR Code" className="w-48 h-48 rounded-lg border" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Enter the 6-digit code from your app</Label>
+                      <Input
+                        value={mfaVerifyCode}
+                        onChange={e => setMfaVerifyCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                        placeholder="000000"
+                        maxLength={6}
+                        className="text-center text-lg tracking-widest font-mono"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button onClick={handleVerifyMfa} disabled={mfaVerifyCode.length !== 6 || mfaLoading} className="gap-2">
+                        {mfaLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                        Verify & Enable
+                      </Button>
+                      <Button variant="ghost" onClick={() => { setMfaQr(null); setMfaFactorId(null); }}>Cancel</Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="text-sm text-muted-foreground">Protect your account by requiring a code from an authenticator app when signing in.</p>
+                    <Button onClick={handleEnrollMfa} disabled={mfaLoading} className="gap-2">
+                      {mfaLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Shield className="h-4 w-4" />}
+                      Enable 2FA
+                    </Button>
+                  </div>
+                )
+              ) : (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-sm text-prism-teal">
+                    <CheckCircle2 className="h-4 w-4" />
+                    <span className="font-medium">Two-factor authentication is enabled</span>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={handleUnenrollMfa} disabled={mfaLoading} className="gap-2 text-destructive">
+                    {mfaLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                    Disable 2FA
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Biometric Auth */}
           <Card className="mt-6">
             <CardHeader>
