@@ -996,6 +996,67 @@ const Settings = () => {
               </Button>
             </CardContent>
           </Card>
+
+          {/* Biometric Auth */}
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle className="font-display">Biometric Lock</CardTitle>
+              <CardDescription>Require Face ID or Touch ID when opening the app on mobile.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <Label>Enable biometric lock</Label>
+                <Switch
+                  checked={biometricEnabled}
+                  onCheckedChange={(checked) => enableBiometric(checked)}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Delete Account — Apple App Store Requirement */}
+          <Card className="mt-6 border-destructive/30">
+            <CardHeader>
+              <CardTitle className="font-display text-destructive">Delete Account</CardTitle>
+              <CardDescription>Permanently delete your account and all associated data. This action cannot be undone.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="rounded-lg bg-destructive/5 border border-destructive/20 p-3 text-sm text-muted-foreground">
+                <p>This will permanently remove:</p>
+                <ul className="list-disc list-inside mt-1 space-y-0.5">
+                  <li>Your profile and preferences</li>
+                  <li>All accounts, transactions, and budgets</li>
+                  <li>Connected bank integrations</li>
+                  <li>Goals, calculators, and reports</li>
+                </ul>
+              </div>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" className="gap-2">
+                    <Trash2 className="h-4 w-4" /> Delete My Account
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will permanently delete your account and all data. You will be signed out immediately. This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDeleteAccount}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      {deletingAccount ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                      Yes, Delete Everything
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
 
