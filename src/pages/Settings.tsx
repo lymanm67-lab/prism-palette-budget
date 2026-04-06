@@ -17,7 +17,7 @@ import { useHousehold } from '@/contexts/HouseholdContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { Loader2, Save, User, Users, DollarSign, Calendar, Building2, Plus, Pencil, Trash2, Globe, Phone, Mail, MapPin, Sun, Moon, Monitor, Sparkles, Search, Tag, Volume2, Pause, Square, Play, BookOpen, BellRing, Send } from 'lucide-react';
+import { Loader2, Save, User, Users, DollarSign, Calendar, Building2, Plus, Pencil, Trash2, Globe, Phone, Mail, MapPin, Sun, Moon, Monitor, Sparkles, Search, Tag, Volume2, Pause, Square, Play, BookOpen, BellRing, Send, Shield, CheckCircle2 } from 'lucide-react';
 import HouseholdInvitations from '@/components/HouseholdInvitations';
 import { Switch } from '@/components/ui/switch';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
