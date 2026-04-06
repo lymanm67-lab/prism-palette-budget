@@ -9,6 +9,10 @@ import NotificationsPanel from '@/components/NotificationsPanel';
 import KeyboardShortcutsModal from '@/components/KeyboardShortcutsModal';
 import PullToRefresh from '@/components/PullToRefresh';
 import { useRealtimeRefresh } from '@/hooks/use-realtime-refresh';
+import TrialCountdownBanner from '@/components/TrialCountdownBanner';
+import { usePushNotifications } from '@/hooks/use-push-notifications';
+import { useBiometricAuth } from '@/hooks/use-biometric-auth';
+import BiometricLockScreen from '@/components/BiometricLockScreen';
 
 const AppLayout = () => {
   const isMobile = useIsMobile();
@@ -19,6 +23,12 @@ const AppLayout = () => {
 
   // Auto-refresh accounts & transactions via Realtime
   useRealtimeRefresh();
+
+  // Initialize push notifications on native platforms
+  usePushNotifications();
+
+  // Biometric lock
+  const { isLocked, authenticate } = useBiometricAuth();
 
   const handleRefresh = useCallback(async () => {
     await queryClient.invalidateQueries();
@@ -67,6 +77,10 @@ const AppLayout = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [lastKey, navigate]);
 
+  if (isLocked) {
+    return <BiometricLockScreen onUnlock={authenticate} />;
+  }
+
   return (
     <>
       <CommandPalette />
@@ -75,6 +89,7 @@ const AppLayout = () => {
         {!isMobile && <AppSidebar />}
         <div className="flex-1 flex flex-col overflow-hidden">
           {isMobile && <MobileNav />}
+          <TrialCountdownBanner />
           {!isMobile && (
             <div className="flex items-center justify-end gap-2 px-4 py-2 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
               <kbd className="hidden sm:inline-flex h-6 items-center gap-1 rounded border border-border bg-muted px-2 text-[10px] font-medium text-muted-foreground">
