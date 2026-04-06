@@ -48,6 +48,25 @@ export default function BigPurchaseCalculator() {
         ttsScript="Compare saving vs. financing for any major purchase."
         instructions={['Enter the item cost', 'Compare loan cost vs. saving timeline', 'See the true cost of financing']} />
 
+      <CalculatorScenariosAndPitfalls
+        scenarios={[
+          { title: 'Furniture Set ($5,000)', description: 'A 12-month 0% financing deal costs nothing extra if paid off on time. But at 18% APR after promo, the remaining balance balloons fast.' },
+          { title: 'Home Renovation ($15,000)', description: 'A HELOC at 7% beats a personal loan at 12%. But your home is collateral — only borrow what you can comfortably repay.' },
+          { title: 'Electronics ($2,000)', description: 'Saving $400/mo for 5 months means no interest and no debt. The 30-day rule also weeds out impulse purchases.' },
+        ]}
+        pitfalls={[
+          { title: 'Deferred Interest Traps', description: '"0% for 12 months" often means retroactive interest on the full balance if not paid in full. Read the fine print and pay it off early.' },
+          { title: 'Financing Small Purchases', description: 'Taking a loan for items under $1,000 rarely makes sense. The interest and fees often exceed 20% of the item cost.' },
+          { title: 'Ignoring Depreciation', description: 'Electronics and furniture lose 30-50% of value in year one. Financing a depreciating asset means you owe more than it is worth.' },
+          { title: 'Monthly Payment Illusion', description: '"Only $49/mo" sounds cheap but over 48 months that is $2,352 for a $1,500 item. Always calculate total cost.' },
+        ]}
+        tips={[
+          { title: 'Apply the 30-Day Rule', description: 'Wait 30 days before any purchase over $200. If you still want it after a month, it is a real need — not an impulse. This eliminates 60%+ of regret purchases.' },
+          { title: 'Stack Cashback and Sales', description: 'Combine store sales, cashback credit cards (2-5%), and browser extensions like Rakuten. On a $3,000 purchase, triple-stacking can save $200+.' },
+          { title: 'Buy Refurbished or Open-Box', description: 'Manufacturer-refurbished items come with warranties and cost 20-40% less. Apple, Dell, and Best Buy all offer certified refurbished programs.' },
+        ]}
+      />
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="space-y-2"><Label>Item Cost</Label><Input type="number" min="0" value={itemCost} onChange={e => setItemCost(e.target.value)} /></div>
         <div className="space-y-2"><Label>Loan APR (%)</Label><Input type="number" min="0" step="0.1" value={loanRate} onChange={e => setLoanRate(e.target.value)} /></div>

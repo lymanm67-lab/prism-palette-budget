@@ -50,6 +50,25 @@ export default function HolidayGiftCalculator() {
         ttsScript="Plan holiday spending and gift budgets to avoid seasonal debt."
         instructions={['Add recipients and set per-person budgets', 'Include extras like food and travel', 'See monthly savings needed']} />
 
+      <CalculatorScenariosAndPitfalls
+        scenarios={[
+          { title: 'Family of 6 ($600)', description: '$100 per person with thoughtful, personalized gifts. Start shopping in October to catch early sales and avoid rush shipping fees.' },
+          { title: 'Extended Family ($1,200)', description: 'Set a family-wide spending cap or do a Secret Santa. Instead of 12 gifts at $100, buy 1 great gift for $100 and save $1,100.' },
+          { title: 'Homemade + Experiences', description: 'A $30 homemade gift basket or experience voucher (dinner, movie night) often means more than a $100 generic item.' },
+        ]}
+        pitfalls={[
+          { title: 'Credit Card Holiday Debt', description: 'The average American carries holiday debt into March. If you cannot pay cash, you are spending too much. Scale back — nobody remembers the gift, they remember the thought.' },
+          { title: 'Last-Minute Premium', description: 'Rush shipping, airport gift shops, and panic buying cost 30-50% more. Plan early and save.' },
+          { title: 'Forgetting Extras', description: 'Wrapping paper, shipping, holiday meals, decorations, and travel add 25-40% on top of gift budgets. Include these in your plan.' },
+          { title: 'Guilt Spending', description: 'Spending more than you can afford out of guilt or social pressure leads to January regret. Set a firm cap and communicate it.' },
+        ]}
+        tips={[
+          { title: 'Start a Sinking Fund in January', description: 'Divide your total holiday budget by 12 and auto-save monthly. By December you have cash ready — zero debt, zero stress.' },
+          { title: 'Propose a Family Spending Cap', description: 'Suggest a $25-50 per-person limit or Secret Santa. Most families are relieved — they want permission to spend less too.' },
+          { title: 'Shop Post-Holiday for Next Year', description: 'Buy wrapping paper, decorations, and non-perishable gifts at 50-75% off in January. Store them and save hundreds next December.' },
+        ]}
+      />
+
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <Label className="text-base font-semibold">Gift Recipients</Label>

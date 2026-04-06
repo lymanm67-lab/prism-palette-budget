@@ -63,6 +63,25 @@ export default function CarAffordabilityCalculator() {
         ttsScript="Find out what car you can actually afford without becoming car poor."
         instructions={['Enter income and existing debts', 'Set loan terms and ownership costs', 'See max affordable price and DTI impact']} />
 
+      <CalculatorScenariosAndPitfalls
+        scenarios={[
+          { title: 'First Car Buyer', description: 'With $3,000 down on a $18,000 car at 6.5% for 60 months, your payment is ~$293/mo. Keep total car costs under 15% of gross income.' },
+          { title: 'Upgrading Responsibly', description: 'Trade in your paid-off car and use the equity as a down payment. A $5,000 trade-in on a $25,000 car drops your monthly payment by $100+.' },
+          { title: 'Single Income Household', description: 'On $4,000/mo gross, the 20/4/10 rule means max $800 payment, 4+ year loan, and total car costs under $400/mo. A reliable $15k car fits perfectly.' },
+        ]}
+        pitfalls={[
+          { title: 'Stretching to 84 Months', description: 'Longer loans mean lower payments but higher total cost and negative equity risk. A 7-year loan on a depreciating car is a financial trap.' },
+          { title: 'Forgetting Total Ownership Cost', description: 'Insurance ($150/mo), gas ($200/mo), and maintenance ($100/mo) add $450/mo beyond your payment. Budget the full picture.' },
+          { title: 'Dealer Payment Negotiation', description: 'Dealers manipulate monthly payments to hide total cost. Always negotiate the out-the-door price, never the payment.' },
+          { title: 'Negative Equity Roll-Over', description: 'Rolling $3,000+ of old loan balance into a new car means you are immediately underwater. Pay off the old car first.' },
+        ]}
+        tips={[
+          { title: 'Buy 2-3 Years Used, Certified', description: 'A certified pre-owned car saves 20-35% vs new while still having manufacturer warranty. The biggest depreciation happens in years 1-2.' },
+          { title: 'Get Insurance Quotes Before Buying', description: 'Insurance on a sports car vs. a sedan can differ by $100+/mo. Get quotes on your top 3 choices before committing to avoid sticker shock.' },
+          { title: 'Save for 20% Down Minimum', description: 'A 20% down payment eliminates negative equity risk, lowers your rate, and reduces monthly payments. On a $25k car, that is $5,000 down.' },
+        ]}
+      />
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div className="space-y-2"><Label>Monthly Gross Income</Label><Input type="number" min="0" value={monthlyIncome} onChange={e => setMonthlyIncome(e.target.value)} /></div>
         <div className="space-y-2"><Label>Existing Monthly Debt</Label><Input type="number" min="0" value={existingDebt} onChange={e => setExistingDebt(e.target.value)} /></div>

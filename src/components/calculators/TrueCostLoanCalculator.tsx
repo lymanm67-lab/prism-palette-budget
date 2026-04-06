@@ -64,6 +64,25 @@ export default function TrueCostLoanCalculator() {
         ttsScript="See the real price tag of any loan including opportunity cost."
         instructions={['Enter loan details and fees', 'See total interest, effective APR, and opportunity cost', 'Understand what that money could have earned invested']} />
 
+      <CalculatorScenariosAndPitfalls
+        scenarios={[
+          { title: 'Personal Loan ($10k at 15%)', description: 'Over 36 months you pay $2,479 in interest plus $300 in fees. That same $346/mo invested at 8% would grow to $13,700. The true cost gap: $5,179.' },
+          { title: 'Student Loan ($30k at 5%)', description: 'Lower rate but long term means high total interest. Over 10 years, $30k costs $8,184 in interest. Paying $100 extra/mo saves $2,500+.' },
+          { title: 'Buy Now Pay Later', description: 'BNPL at 0% seems free, but missed payments trigger 25-30% APR retroactively. Plus the opportunity cost of fragmented spending adds up.' },
+        ]}
+        pitfalls={[
+          { title: 'Ignoring Origination Fees', description: 'A 3-5% origination fee on a $10k loan means you receive $9,500-9,700 but repay $10,000+ interest. Your effective APR is higher than advertised.' },
+          { title: 'Comparing APR Only', description: 'Two loans at the same APR but different terms have vastly different total costs. Always compare total amount repaid, not just the rate.' },
+          { title: 'Forgetting Opportunity Cost', description: 'Every dollar spent on loan payments is a dollar not invested. Over 10 years, the opportunity cost can exceed the interest paid.' },
+          { title: 'Refinancing Without Math', description: 'A lower rate with a longer term can increase total cost. Always compare total repayment amounts side by side.' },
+        ]}
+        tips={[
+          { title: 'Round Up Every Payment', description: 'Rounding your $346 payment up to $400 costs barely noticeable extra monthly but can shave months off the loan and save hundreds in interest.' },
+          { title: 'Make One Extra Payment Per Year', description: 'Use a tax refund or bonus to make a 13th payment annually. On a $10k loan at 15%, this saves $400+ in interest and cuts months off the term.' },
+          { title: 'Compare the Opportunity Cost Ratio', description: 'If the loan APR is lower than your expected investment return, the loan may make mathematical sense. But if loan APR exceeds 8-10%, pay it off aggressively.' },
+        ]}
+      />
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div className="space-y-2"><Label>Loan Amount</Label><Input type="number" min="0" value={principal} onChange={e => setPrincipal(e.target.value)} /></div>
         <div className="space-y-2"><Label>APR (%)</Label><Input type="number" min="0" step="0.1" value={apr} onChange={e => setApr(e.target.value)} /></div>
