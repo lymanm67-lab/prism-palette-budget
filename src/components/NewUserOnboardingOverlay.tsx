@@ -3,44 +3,50 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import {
-  ArrowRight, Landmark, ArrowLeftRight, PiggyBank,
-  RepeatIcon, Shield, CheckCircle2, Sparkles, X,
+  ArrowRight, Landmark, PiggyBank,
+  Target, Shield, CheckCircle2, Sparkles, X, Upload,
 } from 'lucide-react';
 import { useAccounts, useTransactions } from '@/hooks/use-finance-data';
+import { Progress } from '@/components/ui/progress';
 
 const SETUP_STEPS = [
   {
     icon: Sparkles,
     title: 'Welcome to PrismMoney',
-    desc: 'Your financial control system is ready. Let\'s get you set up in under 5 minutes.',
+    desc: 'Your financial command center is ready. We\'ll get you set up in 3 quick steps — takes about 2 minutes.',
     gradient: 'from-[hsl(var(--prism-teal))] to-[hsl(var(--prism-lime))]',
   },
   {
-    icon: Landmark,
-    title: 'Add Your Accounts',
-    desc: 'Start by adding your checking, savings, or credit accounts. This is how Prism knows your available cash.',
+    icon: Upload,
+    title: 'Step 1: Connect Your Money',
+    desc: 'Upload a CSV or bank file to import your transactions. Every bank supports this — no paid integration needed.',
     route: '/accounts',
+    actionLabel: 'Go to Accounts',
     gradient: 'from-[hsl(var(--prism-sky))] to-[hsl(var(--prism-teal))]',
+    tips: ['Download last 90 days from your bank website', 'Supports CSV, OFX, and QIF formats'],
   },
   {
-    icon: ArrowLeftRight,
-    title: 'Log a Transaction',
-    desc: 'Add your income and recent spending. Prism will calculate your Safe-to-Spend from day one.',
-    route: '/transactions',
+    icon: PiggyBank,
+    title: 'Step 2: Set Your Budget',
+    desc: 'Tell Prism how much you plan to spend in each category. We\'ll track it for you and show your Safe-to-Spend.',
+    route: '/budgets',
+    actionLabel: 'Set Up Budget',
     gradient: 'from-[hsl(var(--prism-orange))] to-[hsl(var(--prism-amber))]',
+    tips: ['Start with your 3 biggest categories', 'You can always adjust later'],
   },
   {
-    icon: RepeatIcon,
-    title: 'Set Up Bills',
-    desc: 'Add recurring obligations like rent, utilities, and loan payments so they\'re automatically deducted.',
-    route: '/recurring',
+    icon: Target,
+    title: 'Step 3: Pick a Goal',
+    desc: 'Whether it\'s an emergency fund, a vacation, or paying off debt — set a target and watch your progress.',
+    route: '/goals',
+    actionLabel: 'Create a Goal',
     gradient: 'from-[hsl(var(--prism-teal))] to-[hsl(var(--prism-indigo))]',
+    tips: ['$1,000 emergency fund is a great starter', 'Prism tracks your pace to deadline'],
   },
   {
     icon: Shield,
-    title: 'Choose Your Mode',
-    desc: 'Guardrail mode keeps you conservative. Balanced gives flexibility. Green Light is for confident spenders.',
-    route: '/dashboard',
+    title: 'You\'re All Set!',
+    desc: 'Your dashboard is ready. Prism will calculate your Safe-to-Spend, alert you to overspending, and keep you on track.',
     gradient: 'from-[hsl(var(--prism-indigo))] to-[hsl(var(--prism-violet))]',
   },
 ];
@@ -57,8 +63,6 @@ export default function NewUserOnboardingOverlay() {
   useEffect(() => {
     const completed = localStorage.getItem(STORAGE_KEY);
     if (completed) return;
-
-    // Show overlay only for new users with no data
     const hasData = (accounts && accounts.length > 0) || (transactions && transactions.length > 0);
     if (!hasData && accounts !== undefined) {
       setVisible(true);
@@ -73,6 +77,7 @@ export default function NewUserOnboardingOverlay() {
   const goToStep = (route?: string) => {
     if (step === SETUP_STEPS.length - 1) {
       dismiss();
+      navigate('/dashboard');
       return;
     }
     if (route && step > 0) {
@@ -88,6 +93,7 @@ export default function NewUserOnboardingOverlay() {
   const current = SETUP_STEPS[step];
   const Icon = current.icon;
   const isLast = step === SETUP_STEPS.length - 1;
+  const progressPercent = (step / (SETUP_STEPS.length - 1)) * 100;
 
   return (
     <AnimatePresence>
@@ -113,16 +119,13 @@ export default function NewUserOnboardingOverlay() {
             <X className="h-4 w-4" />
           </button>
 
-          {/* Progress dots */}
-          <div className="flex items-center justify-center gap-2 mb-8">
-            {SETUP_STEPS.map((_, i) => (
-              <div
-                key={i}
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  i === step ? 'w-8 bg-primary' : i < step ? 'w-2 bg-primary/40' : 'w-2 bg-muted-foreground/20'
-                }`}
-              />
-            ))}
+          {/* Progress bar */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
+              <span>Setup Progress</span>
+              <span>{Math.round(progressPercent)}%</span>
+            </div>
+            <Progress value={progressPercent} className="h-2" />
           </div>
 
           {/* Icon */}
@@ -133,21 +136,33 @@ export default function NewUserOnboardingOverlay() {
           </div>
 
           {/* Content */}
-          <div className="text-center space-y-3 mb-8">
+          <div className="text-center space-y-3 mb-6">
             <h2 className="font-display text-2xl font-bold">{current.title}</h2>
             <p className="text-muted-foreground text-sm leading-relaxed max-w-sm mx-auto">{current.desc}</p>
           </div>
 
+          {/* Tips */}
+          {'tips' in current && current.tips && (
+            <div className="bg-muted/50 rounded-xl p-3 mb-6 space-y-1.5">
+              {current.tips.map((tip, i) => (
+                <div key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
+                  <CheckCircle2 className="h-3.5 w-3.5 mt-0.5 text-prism-teal shrink-0" />
+                  <span>{tip}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
           {/* Actions */}
           <div className="flex flex-col gap-3">
             <Button
-              onClick={() => goToStep(current.route)}
+              onClick={() => goToStep('route' in current ? current.route : undefined)}
               size="lg"
               className="w-full h-12 gap-2 font-semibold rounded-xl"
             >
               {isLast ? (
                 <>
-                  <CheckCircle2 className="h-5 w-5" /> Start Using Prism
+                  <CheckCircle2 className="h-5 w-5" /> Go to Dashboard
                 </>
               ) : step === 0 ? (
                 <>
@@ -155,7 +170,7 @@ export default function NewUserOnboardingOverlay() {
                 </>
               ) : (
                 <>
-                  Take Me There <ArrowRight className="h-5 w-5" />
+                  {'actionLabel' in current ? current.actionLabel : 'Continue'} <ArrowRight className="h-5 w-5" />
                 </>
               )}
             </Button>
@@ -166,7 +181,7 @@ export default function NewUserOnboardingOverlay() {
                 onClick={() => setStep((s) => s + 1)}
                 className="text-muted-foreground"
               >
-                Skip this step
+                Skip — I'll do this later
               </Button>
             )}
             {step === 0 && (
