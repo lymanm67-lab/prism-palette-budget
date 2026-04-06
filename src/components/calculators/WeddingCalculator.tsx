@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import AnimatedNumber from '@/components/AnimatedNumber';
 import CalculatorActions from '@/components/CalculatorActions';
 import CalculatorGuide from '@/components/CalculatorGuide';
+import CalculatorScenariosAndPitfalls from '@/components/CalculatorScenariosAndPitfalls';
 
 const ALLOCATION = [
   { key: 'venue', label: 'Venue & Catering', pct: 0.40 },
@@ -48,6 +49,25 @@ export default function WeddingCalculator() {
       <CalculatorGuide title="Wedding Budget Planner" icon={Heart} iconColor="text-prism-rose"
         ttsScript="Plan your wedding without going into debt."
         instructions={['Set your total budget and guest count', 'See suggested allocation by category', 'Set a savings timeline']} />
+
+      <CalculatorScenariosAndPitfalls
+        scenarios={[
+          { title: 'Budget Wedding ($10k)', description: 'Backyard venue, DIY décor, and a food truck can deliver a beautiful wedding for under $10k. Focus spending on photography — those memories last forever.' },
+          { title: 'Mid-Range ($25k)', description: 'Average US wedding cost. Allocate 40% to venue/catering, negotiate package deals, and consider off-season dates for 20-30% savings.' },
+          { title: 'Destination Wedding', description: 'Often cheaper than local — smaller guest list means lower catering costs. A 30-person destination wedding can cost less than a 150-person local one.' },
+        ]}
+        pitfalls={[
+          { title: 'Going Into Debt', description: 'The average couple takes 1-2 years to pay off wedding debt. If you cannot pay cash, scale back — the marriage matters more than the party.' },
+          { title: 'Ignoring the Per-Guest Cost', description: 'Each guest costs $150-300 in food, drinks, favors, and seating. Cutting 20 guests saves $3,000-6,000 instantly.' },
+          { title: 'Skipping the Buffer', description: 'Unexpected costs (alterations, tips, last-minute rentals) add 10-15%. Always keep a miscellaneous buffer in your budget.' },
+          { title: 'Vendor Deposits Are Non-Refundable', description: 'Booking too early or without contracts means losing deposits if plans change. Read every cancellation policy.' },
+        ]}
+        tips={[
+          { title: 'Book Off-Season (Nov-Mar)', description: 'Venues and vendors discount 20-40% during off-peak months. A January wedding at the same venue can save $5,000+.' },
+          { title: 'Negotiate Package Deals', description: 'Ask venues if they bundle catering, bar, and linens. Bundled packages often save 15-25% vs. booking each vendor separately.' },
+          { title: 'Limit the Bar Menu', description: 'A curated selection of 2 signature cocktails, beer, and wine costs 40-50% less than a full open bar with no noticeable impact on guest satisfaction.' },
+        ]}
+      />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="space-y-2"><Label>Total Budget</Label><Input type="number" min="0" value={totalBudget} onChange={e => setTotalBudget(e.target.value)} /></div>

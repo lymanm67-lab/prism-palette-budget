@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import AnimatedNumber from '@/components/AnimatedNumber';
 import CalculatorActions from '@/components/CalculatorActions';
 import CalculatorGuide from '@/components/CalculatorGuide';
+import CalculatorScenariosAndPitfalls from '@/components/CalculatorScenariosAndPitfalls';
 import { STATE_DATA } from '@/lib/state-data';
 
 const CHILDCARE_OPTIONS = [
@@ -59,6 +60,25 @@ export default function BabyCostCalculator() {
       <CalculatorGuide title="Baby Cost Estimator" icon={Baby} iconColor="text-prism-sky"
         ttsScript="Estimate the first year costs of a new baby."
         instructions={['Select childcare plan and state', 'See monthly and annual cost breakdown', 'Plan your savings runway']} />
+
+      <CalculatorScenariosAndPitfalls
+        scenarios={[
+          { title: 'Stay-at-Home Parent', description: 'Eliminating childcare saves $10,800-30,000/year but reduces household income. Calculate the net — sometimes the savings exceed the lost salary after taxes and commuting costs.' },
+          { title: 'Daycare Center', description: 'Average $1,400/mo nationally but varies wildly by state. In Massachusetts, infant daycare averages $2,100/mo. Factor in your state\'s actual costs.' },
+          { title: 'Dual Income with Nanny Share', description: 'Splitting a nanny with another family cuts costs 30-40% while keeping both parents working. A $2,500/mo nanny becomes $1,250-1,500 each.' },
+        ]}
+        pitfalls={[
+          { title: 'Underestimating Year-One Costs', description: 'The first year averages $12,000-15,000 beyond childcare. Diapers alone cost $70-80/mo. Budget for the real number, not the rosy estimate.' },
+          { title: 'Buying Everything New', description: 'Babies outgrow clothes in weeks and use gear for months. Buying used cribs, strollers, and clothes saves 60-80% with minimal difference.' },
+          { title: 'Ignoring Insurance Changes', description: 'Adding a baby to your health plan can cost $200-500/mo more. Check your employer\'s rates before the baby arrives.' },
+          { title: 'No Emergency Buffer', description: 'Unexpected medical bills, formula switches, and early childcare needs happen. Keep 3 months of baby expenses in reserve.' },
+        ]}
+        tips={[
+          { title: 'Use a Dependent Care FSA', description: 'Contribute up to $5,000/year pre-tax for childcare expenses. At a 25% tax bracket, that saves $1,250 in taxes annually — free money.' },
+          { title: 'Buy Diapers in Bulk on Sale', description: 'Subscribe-and-save programs (Amazon, Target) plus couponing can cut diaper costs by 30-40%. Stock up during sales — babies go through 8-10/day.' },
+          { title: 'Accept Hand-Me-Downs Aggressively', description: 'Post on local parent groups that you accept all baby items. Most parents are desperate to offload gear. You can save $2,000+ in the first year this way.' },
+        ]}
+      />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div className="space-y-2"><Label>State</Label>
