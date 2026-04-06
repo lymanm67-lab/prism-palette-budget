@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,69 +9,78 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { HouseholdProvider } from "@/contexts/HouseholdContext";
 import AppLayout from "@/components/layout/AppLayout";
 import Auth from "@/pages/Auth";
-import Dashboard from "@/pages/Dashboard";
-import Accounts from "@/pages/Accounts";
-import Transactions from "@/pages/Transactions";
-import Budgets from "@/pages/Budgets";
-import Reports from "@/pages/Reports";
-import Categories from "@/pages/Categories";
+import LandingPage from "@/pages/LandingPage";
 import ResetPassword from "@/pages/ResetPassword";
-import Settings from "@/pages/Settings";
-import TaxAssistant from "@/pages/TaxAssistant";
-import Goals from "@/pages/Goals";
-import DebtPayoff from "@/pages/DebtPayoff";
-import Calculators from "@/pages/Calculators";
-import PrismRoadmap from "@/pages/PrismRoadmap";
-import About from "@/pages/About";
-import HomeBuyingChecklist from "@/pages/HomeBuyingChecklist";
 import NotFound from "./pages/NotFound";
 import Onboarding from "@/pages/Onboarding";
-import LandingPage from "@/pages/LandingPage";
-import Legal from "@/pages/Legal";
-import CashFlow from "@/pages/CashFlow";
-import Investments from "@/pages/Investments";
-import Recurring from "@/pages/Recurring";
-import GettingStarted from "@/pages/GettingStarted";
-import SpendingTrends from "@/pages/SpendingTrends";
-import NetWorth from "@/pages/NetWorth";
-import Subscriptions from "@/pages/Subscriptions";
-import Forecast from "@/pages/Forecast";
-import YearInReview from "@/pages/YearInReview";
-import BillNegotiation from "@/pages/BillNegotiation";
-import ApiDocs from "@/pages/ApiDocs";
-import CapitalDashboard from "@/pages/CapitalDashboard";
-import CreditOverview from "@/pages/capital/CreditOverview";
-import Metro2Scanner from "@/pages/capital/Metro2Scanner";
-import DisputeManager from "@/pages/capital/DisputeManager";
-import FundingReadiness from "@/pages/capital/FundingReadiness";
-import BusinessCredit from "@/pages/capital/BusinessCredit";
-import Receivables from "@/pages/capital/Receivables";
-import PayrollRunway from "@/pages/capital/PayrollRunway";
-import FundingSimulator from "@/pages/capital/FundingSimulator";
-import SurvivalIndex from "@/pages/capital/SurvivalIndex";
-import DocumentVault from "@/pages/capital/DocumentVault";
-import AiCoach from "@/pages/capital/AiCoach";
-import CapitalStackPlanner from "@/pages/capital/CapitalStackPlanner";
-import BankingIntelligence from "@/pages/capital/BankingIntelligence";
-import BankStatementAnalyzer from "@/pages/capital/BankStatementAnalyzer";
-import FinancialRiskRadar from "@/pages/capital/FinancialRiskRadar";
-import BankabilityScore from "@/pages/capital/BankabilityScore";
-import LoanReadiness from "@/pages/capital/LoanReadiness";
-import DSCRCalculator from "@/pages/capital/DSCRCalculator";
-import MoneyMath from "@/pages/capital/MoneyMath";
-import CreditHealthDashboard from "@/pages/capital/CreditHealthDashboard";
-import CreditHealthBreakdown from "@/pages/capital/CreditHealthBreakdown";
-import CreditHealthIssues from "@/pages/capital/CreditHealthIssues";
-import CreditHealthTimeline from "@/pages/capital/CreditHealthTimeline";
-import CreditHealthExplain from "@/pages/capital/CreditHealthExplain";
-import CreditHealthReadiness from "@/pages/capital/CreditHealthReadiness";
-import CreditHealthOnboarding from "@/pages/capital/CreditHealthOnboarding";
-import ExperimentsDashboard from "@/pages/ExperimentsDashboard";
-import ReconciliationAudit from "@/pages/ReconciliationAudit";
-import Changelog from "@/pages/Changelog";
-import AppStoreReadiness from "@/pages/AppStoreReadiness";
-import CrossoverTracker from "@/pages/CrossoverTracker";
+
+// Lazy-loaded heavy pages for code-splitting
+const Dashboard = lazy(() => import("@/pages/Dashboard"));
+const Accounts = lazy(() => import("@/pages/Accounts"));
+const Transactions = lazy(() => import("@/pages/Transactions"));
+const Budgets = lazy(() => import("@/pages/Budgets"));
+const Reports = lazy(() => import("@/pages/Reports"));
+const Categories = lazy(() => import("@/pages/Categories"));
+const Settings = lazy(() => import("@/pages/Settings"));
+const TaxAssistant = lazy(() => import("@/pages/TaxAssistant"));
+const Goals = lazy(() => import("@/pages/Goals"));
+const DebtPayoff = lazy(() => import("@/pages/DebtPayoff"));
+const Calculators = lazy(() => import("@/pages/Calculators"));
+const PrismRoadmap = lazy(() => import("@/pages/PrismRoadmap"));
+const About = lazy(() => import("@/pages/About"));
+const HomeBuyingChecklist = lazy(() => import("@/pages/HomeBuyingChecklist"));
+const CashFlow = lazy(() => import("@/pages/CashFlow"));
+const Investments = lazy(() => import("@/pages/Investments"));
+const Recurring = lazy(() => import("@/pages/Recurring"));
+const GettingStarted = lazy(() => import("@/pages/GettingStarted"));
+const SpendingTrends = lazy(() => import("@/pages/SpendingTrends"));
+const NetWorth = lazy(() => import("@/pages/NetWorth"));
+const Subscriptions = lazy(() => import("@/pages/Subscriptions"));
+const Forecast = lazy(() => import("@/pages/Forecast"));
+const YearInReview = lazy(() => import("@/pages/YearInReview"));
+const BillNegotiation = lazy(() => import("@/pages/BillNegotiation"));
+const ApiDocs = lazy(() => import("@/pages/ApiDocs"));
+const Legal = lazy(() => import("@/pages/Legal"));
+const Changelog = lazy(() => import("@/pages/Changelog"));
+const CapitalDashboard = lazy(() => import("@/pages/CapitalDashboard"));
+const CreditOverview = lazy(() => import("@/pages/capital/CreditOverview"));
+const Metro2Scanner = lazy(() => import("@/pages/capital/Metro2Scanner"));
+const DisputeManager = lazy(() => import("@/pages/capital/DisputeManager"));
+const FundingReadiness = lazy(() => import("@/pages/capital/FundingReadiness"));
+const BusinessCredit = lazy(() => import("@/pages/capital/BusinessCredit"));
+const Receivables = lazy(() => import("@/pages/capital/Receivables"));
+const PayrollRunway = lazy(() => import("@/pages/capital/PayrollRunway"));
+const FundingSimulator = lazy(() => import("@/pages/capital/FundingSimulator"));
+const SurvivalIndex = lazy(() => import("@/pages/capital/SurvivalIndex"));
+const DocumentVault = lazy(() => import("@/pages/capital/DocumentVault"));
+const AiCoach = lazy(() => import("@/pages/capital/AiCoach"));
+const CapitalStackPlanner = lazy(() => import("@/pages/capital/CapitalStackPlanner"));
+const BankingIntelligence = lazy(() => import("@/pages/capital/BankingIntelligence"));
+const BankStatementAnalyzer = lazy(() => import("@/pages/capital/BankStatementAnalyzer"));
+const FinancialRiskRadar = lazy(() => import("@/pages/capital/FinancialRiskRadar"));
+const BankabilityScore = lazy(() => import("@/pages/capital/BankabilityScore"));
+const LoanReadiness = lazy(() => import("@/pages/capital/LoanReadiness"));
+const DSCRCalculator = lazy(() => import("@/pages/capital/DSCRCalculator"));
+const MoneyMath = lazy(() => import("@/pages/capital/MoneyMath"));
+const CreditHealthDashboard = lazy(() => import("@/pages/capital/CreditHealthDashboard"));
+const CreditHealthBreakdown = lazy(() => import("@/pages/capital/CreditHealthBreakdown"));
+const CreditHealthIssues = lazy(() => import("@/pages/capital/CreditHealthIssues"));
+const CreditHealthTimeline = lazy(() => import("@/pages/capital/CreditHealthTimeline"));
+const CreditHealthExplain = lazy(() => import("@/pages/capital/CreditHealthExplain"));
+const CreditHealthReadiness = lazy(() => import("@/pages/capital/CreditHealthReadiness"));
+const CreditHealthOnboarding = lazy(() => import("@/pages/capital/CreditHealthOnboarding"));
+const ExperimentsDashboard = lazy(() => import("@/pages/ExperimentsDashboard"));
+const ReconciliationAudit = lazy(() => import("@/pages/ReconciliationAudit"));
+const AppStoreReadiness = lazy(() => import("@/pages/AppStoreReadiness"));
+const CrossoverTracker = lazy(() => import("@/pages/CrossoverTracker"));
+
 const queryClient = new QueryClient();
+
+const PageLoader = () => (
+  <div className="flex min-h-[50vh] items-center justify-center">
+    <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+  </div>
+);
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { session, user, loading } = useAuth();
@@ -80,7 +89,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     if (loading || !user || redirected.current) return;
-    // Redirect brand-new users (account created within the last 60 seconds) to Getting Started
     const createdAt = new Date(user.created_at).getTime();
     const isNew = Date.now() - createdAt < 60_000;
     const alreadySeen = localStorage.getItem(`prism_gs_seen_${user.id}`);
@@ -91,14 +99,14 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     }
   }, [loading, user, navigate]);
 
-  if (loading) return <div className="flex min-h-screen items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>;
+  if (loading) return <PageLoader />;
   if (!session) return <Navigate to="/" replace />;
   return <>{children}</>;
 };
 
 const AuthRoute = ({ children }: { children: React.ReactNode }) => {
   const { session, loading } = useAuth();
-  if (loading) return <div className="flex min-h-screen items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>;
+  if (loading) return <PageLoader />;
   if (session) return <Navigate to="/dashboard" replace />;
   return <>{children}</>;
 };
@@ -116,7 +124,7 @@ const App = () => (
             <Route path="/onboarding" element={<AuthRoute><Onboarding /></AuthRoute>} />
             <Route path="/auth" element={<AuthRoute><Auth /></AuthRoute>} />
             <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/changelog" element={<Changelog />} />
+            <Route path="/changelog" element={<Suspense fallback={<PageLoader />}><Changelog /></Suspense>} />
             <Route element={
               <ProtectedRoute>
                 <HouseholdProvider>
@@ -124,63 +132,63 @@ const App = () => (
                 </HouseholdProvider>
               </ProtectedRoute>
             }>
-              <Route index path="/dashboard" element={<Dashboard />} />
-              <Route path="/accounts" element={<Accounts />} />
-              <Route path="/transactions" element={<Transactions />} />
-              <Route path="/cash-flow" element={<CashFlow />} />
-              <Route path="/budgets" element={<Budgets />} />
-              <Route path="/categories" element={<Categories />} />
-              <Route path="/reports" element={<Reports />} />
-              <Route path="/spending-trends" element={<SpendingTrends />} />
-              <Route path="/goals" element={<Goals />} />
-              <Route path="/debt-payoff" element={<DebtPayoff />} />
-              <Route path="/investments" element={<Investments />} />
-              <Route path="/net-worth" element={<NetWorth />} />
-              <Route path="/recurring" element={<Recurring />} />
-              <Route path="/subscriptions" element={<Subscriptions />} />
-              <Route path="/forecast" element={<Forecast />} />
-              <Route path="/year-in-review" element={<YearInReview />} />
-              <Route path="/bill-negotiation" element={<BillNegotiation />} />
-              <Route path="/calculators" element={<Calculators />} />
-              <Route path="/roadmap" element={<PrismRoadmap />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/home-buying" element={<HomeBuyingChecklist />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/tax-assistant" element={<TaxAssistant />} />
-              <Route path="/legal" element={<Legal />} />
-              <Route path="/getting-started" element={<GettingStarted />} />
-              <Route path="/api-docs" element={<ApiDocs />} />
-              <Route path="/capital" element={<CapitalDashboard />} />
-              <Route path="/capital/credit-overview" element={<CreditOverview />} />
-              <Route path="/capital/metro2-scanner" element={<Metro2Scanner />} />
-              <Route path="/capital/disputes" element={<DisputeManager />} />
-              <Route path="/capital/funding-readiness" element={<FundingReadiness />} />
-              <Route path="/capital/business-credit" element={<BusinessCredit />} />
-              <Route path="/capital/receivables" element={<Receivables />} />
-              <Route path="/capital/payroll-runway" element={<PayrollRunway />} />
-              <Route path="/capital/funding-simulator" element={<FundingSimulator />} />
-              <Route path="/capital/survival-index" element={<SurvivalIndex />} />
-              <Route path="/capital/vault" element={<DocumentVault />} />
-              <Route path="/capital/ai-coach" element={<AiCoach />} />
-              <Route path="/capital/capital-stack" element={<CapitalStackPlanner />} />
-              <Route path="/capital/banking-intelligence" element={<BankingIntelligence />} />
-              <Route path="/capital/bank-analyzer" element={<BankStatementAnalyzer />} />
-              <Route path="/capital/risk-radar" element={<FinancialRiskRadar />} />
-              <Route path="/capital/bankability" element={<BankabilityScore />} />
-              <Route path="/capital/loan-readiness" element={<LoanReadiness />} />
-              <Route path="/capital/dscr" element={<DSCRCalculator />} />
-              <Route path="/capital/money-math" element={<MoneyMath />} />
-              <Route path="/capital/credit-health" element={<CreditHealthDashboard />} />
-              <Route path="/capital/credit-health/breakdown" element={<CreditHealthBreakdown />} />
-              <Route path="/capital/credit-health/issues" element={<CreditHealthIssues />} />
-              <Route path="/capital/credit-health/timeline" element={<CreditHealthTimeline />} />
-              <Route path="/capital/credit-health/explain" element={<CreditHealthExplain />} />
-              <Route path="/capital/credit-health/readiness" element={<CreditHealthReadiness />} />
-              <Route path="/capital/credit-health/onboarding" element={<CreditHealthOnboarding />} />
-              <Route path="/reconciliation" element={<ReconciliationAudit />} />
-              <Route path="/experiments" element={<ExperimentsDashboard />} />
-              <Route path="/app-store-readiness" element={<AppStoreReadiness />} />
-              <Route path="/crossover-tracker" element={<CrossoverTracker />} />
+              <Route index path="/dashboard" element={<Suspense fallback={<PageLoader />}><Dashboard /></Suspense>} />
+              <Route path="/accounts" element={<Suspense fallback={<PageLoader />}><Accounts /></Suspense>} />
+              <Route path="/transactions" element={<Suspense fallback={<PageLoader />}><Transactions /></Suspense>} />
+              <Route path="/cash-flow" element={<Suspense fallback={<PageLoader />}><CashFlow /></Suspense>} />
+              <Route path="/budgets" element={<Suspense fallback={<PageLoader />}><Budgets /></Suspense>} />
+              <Route path="/categories" element={<Suspense fallback={<PageLoader />}><Categories /></Suspense>} />
+              <Route path="/reports" element={<Suspense fallback={<PageLoader />}><Reports /></Suspense>} />
+              <Route path="/spending-trends" element={<Suspense fallback={<PageLoader />}><SpendingTrends /></Suspense>} />
+              <Route path="/goals" element={<Suspense fallback={<PageLoader />}><Goals /></Suspense>} />
+              <Route path="/debt-payoff" element={<Suspense fallback={<PageLoader />}><DebtPayoff /></Suspense>} />
+              <Route path="/investments" element={<Suspense fallback={<PageLoader />}><Investments /></Suspense>} />
+              <Route path="/net-worth" element={<Suspense fallback={<PageLoader />}><NetWorth /></Suspense>} />
+              <Route path="/recurring" element={<Suspense fallback={<PageLoader />}><Recurring /></Suspense>} />
+              <Route path="/subscriptions" element={<Suspense fallback={<PageLoader />}><Subscriptions /></Suspense>} />
+              <Route path="/forecast" element={<Suspense fallback={<PageLoader />}><Forecast /></Suspense>} />
+              <Route path="/year-in-review" element={<Suspense fallback={<PageLoader />}><YearInReview /></Suspense>} />
+              <Route path="/bill-negotiation" element={<Suspense fallback={<PageLoader />}><BillNegotiation /></Suspense>} />
+              <Route path="/calculators" element={<Suspense fallback={<PageLoader />}><Calculators /></Suspense>} />
+              <Route path="/roadmap" element={<Suspense fallback={<PageLoader />}><PrismRoadmap /></Suspense>} />
+              <Route path="/about" element={<Suspense fallback={<PageLoader />}><About /></Suspense>} />
+              <Route path="/home-buying" element={<Suspense fallback={<PageLoader />}><HomeBuyingChecklist /></Suspense>} />
+              <Route path="/settings" element={<Suspense fallback={<PageLoader />}><Settings /></Suspense>} />
+              <Route path="/tax-assistant" element={<Suspense fallback={<PageLoader />}><TaxAssistant /></Suspense>} />
+              <Route path="/legal" element={<Suspense fallback={<PageLoader />}><Legal /></Suspense>} />
+              <Route path="/getting-started" element={<Suspense fallback={<PageLoader />}><GettingStarted /></Suspense>} />
+              <Route path="/api-docs" element={<Suspense fallback={<PageLoader />}><ApiDocs /></Suspense>} />
+              <Route path="/capital" element={<Suspense fallback={<PageLoader />}><CapitalDashboard /></Suspense>} />
+              <Route path="/capital/credit-overview" element={<Suspense fallback={<PageLoader />}><CreditOverview /></Suspense>} />
+              <Route path="/capital/metro2-scanner" element={<Suspense fallback={<PageLoader />}><Metro2Scanner /></Suspense>} />
+              <Route path="/capital/disputes" element={<Suspense fallback={<PageLoader />}><DisputeManager /></Suspense>} />
+              <Route path="/capital/funding-readiness" element={<Suspense fallback={<PageLoader />}><FundingReadiness /></Suspense>} />
+              <Route path="/capital/business-credit" element={<Suspense fallback={<PageLoader />}><BusinessCredit /></Suspense>} />
+              <Route path="/capital/receivables" element={<Suspense fallback={<PageLoader />}><Receivables /></Suspense>} />
+              <Route path="/capital/payroll-runway" element={<Suspense fallback={<PageLoader />}><PayrollRunway /></Suspense>} />
+              <Route path="/capital/funding-simulator" element={<Suspense fallback={<PageLoader />}><FundingSimulator /></Suspense>} />
+              <Route path="/capital/survival-index" element={<Suspense fallback={<PageLoader />}><SurvivalIndex /></Suspense>} />
+              <Route path="/capital/vault" element={<Suspense fallback={<PageLoader />}><DocumentVault /></Suspense>} />
+              <Route path="/capital/ai-coach" element={<Suspense fallback={<PageLoader />}><AiCoach /></Suspense>} />
+              <Route path="/capital/capital-stack" element={<Suspense fallback={<PageLoader />}><CapitalStackPlanner /></Suspense>} />
+              <Route path="/capital/banking-intelligence" element={<Suspense fallback={<PageLoader />}><BankingIntelligence /></Suspense>} />
+              <Route path="/capital/bank-analyzer" element={<Suspense fallback={<PageLoader />}><BankStatementAnalyzer /></Suspense>} />
+              <Route path="/capital/risk-radar" element={<Suspense fallback={<PageLoader />}><FinancialRiskRadar /></Suspense>} />
+              <Route path="/capital/bankability" element={<Suspense fallback={<PageLoader />}><BankabilityScore /></Suspense>} />
+              <Route path="/capital/loan-readiness" element={<Suspense fallback={<PageLoader />}><LoanReadiness /></Suspense>} />
+              <Route path="/capital/dscr" element={<Suspense fallback={<PageLoader />}><DSCRCalculator /></Suspense>} />
+              <Route path="/capital/money-math" element={<Suspense fallback={<PageLoader />}><MoneyMath /></Suspense>} />
+              <Route path="/capital/credit-health" element={<Suspense fallback={<PageLoader />}><CreditHealthDashboard /></Suspense>} />
+              <Route path="/capital/credit-health/breakdown" element={<Suspense fallback={<PageLoader />}><CreditHealthBreakdown /></Suspense>} />
+              <Route path="/capital/credit-health/issues" element={<Suspense fallback={<PageLoader />}><CreditHealthIssues /></Suspense>} />
+              <Route path="/capital/credit-health/timeline" element={<Suspense fallback={<PageLoader />}><CreditHealthTimeline /></Suspense>} />
+              <Route path="/capital/credit-health/explain" element={<Suspense fallback={<PageLoader />}><CreditHealthExplain /></Suspense>} />
+              <Route path="/capital/credit-health/readiness" element={<Suspense fallback={<PageLoader />}><CreditHealthReadiness /></Suspense>} />
+              <Route path="/capital/credit-health/onboarding" element={<Suspense fallback={<PageLoader />}><CreditHealthOnboarding /></Suspense>} />
+              <Route path="/reconciliation" element={<Suspense fallback={<PageLoader />}><ReconciliationAudit /></Suspense>} />
+              <Route path="/experiments" element={<Suspense fallback={<PageLoader />}><ExperimentsDashboard /></Suspense>} />
+              <Route path="/app-store-readiness" element={<Suspense fallback={<PageLoader />}><AppStoreReadiness /></Suspense>} />
+              <Route path="/crossover-tracker" element={<Suspense fallback={<PageLoader />}><CrossoverTracker /></Suspense>} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
