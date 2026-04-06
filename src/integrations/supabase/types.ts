@@ -1761,6 +1761,7 @@ export type Database = {
           financial_journey: string | null
           fiscal_month_start_day: number
           id: string
+          trial_started_at: string
           updated_at: string
           user_id: string
           weekly_digest_enabled: boolean
@@ -1773,6 +1774,7 @@ export type Database = {
           financial_journey?: string | null
           fiscal_month_start_day?: number
           id?: string
+          trial_started_at?: string
           updated_at?: string
           user_id: string
           weekly_digest_enabled?: boolean
@@ -1785,6 +1787,7 @@ export type Database = {
           financial_journey?: string | null
           fiscal_month_start_day?: number
           id?: string
+          trial_started_at?: string
           updated_at?: string
           user_id?: string
           weekly_digest_enabled?: boolean
