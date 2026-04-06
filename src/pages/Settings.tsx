@@ -537,7 +537,72 @@ const Settings = () => {
     setDeletingAccount(false);
   };
 
-  // Personal profile
+  // MFA / 2FA state
+  const [mfaEnrolled, setMfaEnrolled] = useState(false);
+  const [mfaQr, setMfaQr] = useState<string | null>(null);
+  const [mfaFactorId, setMfaFactorId] = useState<string | null>(null);
+  const [mfaVerifyCode, setMfaVerifyCode] = useState('');
+  const [mfaLoading, setMfaLoading] = useState(false);
+
+  // Check MFA enrollment on mount
+  useEffect(() => {
+    const checkMfa = async () => {
+      const { data } = await supabase.auth.mfa.listFactors();
+      if (data?.totp && data.totp.length > 0) {
+        const verified = data.totp.find(f => f.status === 'verified');
+        setMfaEnrolled(!!verified);
+        if (verified) setMfaFactorId(verified.id);
+      }
+    };
+    checkMfa();
+  }, []);
+
+  const handleEnrollMfa = async () => {
+    setMfaLoading(true);
+    try {
+      const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'PrismMoney Authenticator' });
+      if (error) throw error;
+      setMfaQr(data.totp.qr_code);
+      setMfaFactorId(data.id);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to set up 2FA');
+    }
+    setMfaLoading(false);
+  };
+
+  const handleVerifyMfa = async () => {
+    if (!mfaFactorId) return;
+    setMfaLoading(true);
+    try {
+      const challenge = await supabase.auth.mfa.challenge({ factorId: mfaFactorId });
+      if (challenge.error) throw challenge.error;
+      const verify = await supabase.auth.mfa.verify({ factorId: mfaFactorId, challengeId: challenge.data.id, code: mfaVerifyCode });
+      if (verify.error) throw verify.error;
+      setMfaEnrolled(true);
+      setMfaQr(null);
+      setMfaVerifyCode('');
+      toast.success('Two-factor authentication enabled!');
+    } catch (err: any) {
+      toast.error(err.message || 'Invalid code. Try again.');
+    }
+    setMfaLoading(false);
+  };
+
+  const handleUnenrollMfa = async () => {
+    if (!mfaFactorId) return;
+    setMfaLoading(true);
+    try {
+      const { error } = await supabase.auth.mfa.unenroll({ factorId: mfaFactorId });
+      if (error) throw error;
+      setMfaEnrolled(false);
+      setMfaFactorId(null);
+      toast.success('Two-factor authentication disabled.');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to disable 2FA');
+    }
+    setMfaLoading(false);
+  };
+
   const { data: profile, isLoading } = useQuery({
     queryKey: ['profile', user?.id],
     enabled: !!user,
