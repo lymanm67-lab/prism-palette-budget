@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Upload, Landmark, FileSpreadsheet, Zap, Lock, Crown, ArrowRight, CheckCircle2 } from 'lucide-react';
 import CsvImportDialog from '@/components/CsvImportDialog';
 import BankExportGuide from '@/components/BankExportGuide';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import PlaidLinkButton from '@/components/PlaidLinkButton';
 import { useAuth } from '@/contexts/AuthContext';
 import { canUsePlaid } from '@/lib/stripe-plans';
@@ -102,7 +103,14 @@ export default function BankConnectHub() {
       </div>
 
       <CsvImportDialog open={csvOpen} onOpenChange={setCsvOpen} />
-      <BankExportGuide open={guideOpen} onOpenChange={setGuideOpen} />
+      <Dialog open={guideOpen} onOpenChange={setGuideOpen}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>How to Export from Your Bank</DialogTitle>
+          </DialogHeader>
+          <BankExportGuide />
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
