@@ -515,6 +515,27 @@ const Settings = () => {
   const { user } = useAuth();
   const { household } = useHousehold();
   const qc = useQueryClient();
+  const settingsNavigate = useNavigate();
+  const { biometricEnabled, enableBiometric } = useBiometricAuth();
+  const [deletingAccount, setDeletingAccount] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    setDeletingAccount(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+      const { data, error } = await supabase.functions.invoke('delete-account', {
+        body: { confirm: true },
+      });
+      if (error) throw error;
+      toast.success('Account deleted. Goodbye!');
+      await supabase.auth.signOut();
+      settingsNavigate('/');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to delete account');
+    }
+    setDeletingAccount(false);
+  };
 
   // Personal profile
   const { data: profile, isLoading } = useQuery({
