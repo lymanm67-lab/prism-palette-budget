@@ -10,18 +10,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { Loader2, Save, User, Users, DollarSign, Calendar, Building2, Plus, Pencil, Trash2, Globe, Phone, Mail, MapPin, Sun, Moon, Monitor, Sparkles, Search, Tag, Volume2, Pause, Square, Play, BookOpen, BellRing, Send } from 'lucide-react';
+import { Loader2, Save, User, Users, DollarSign, Calendar, Building2, Plus, Pencil, Trash2, Globe, Phone, Mail, MapPin, Sun, Moon, Monitor, Sparkles, Search, Tag, Volume2, Pause, Square, Play, BookOpen, BellRing, Send, Shield, CheckCircle2 } from 'lucide-react';
 import HouseholdInvitations from '@/components/HouseholdInvitations';
 import { Switch } from '@/components/ui/switch';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTTS } from '@/hooks/use-tts';
+import { useBiometricAuth } from '@/hooks/use-biometric-auth';
+import { useNavigate } from 'react-router-dom';
 
 const CURRENCIES = [
   { code: 'USD', name: 'US Dollar', symbol: '$' },
@@ -513,8 +515,94 @@ const Settings = () => {
   const { user } = useAuth();
   const { household } = useHousehold();
   const qc = useQueryClient();
+  const settingsNavigate = useNavigate();
+  const { biometricEnabled, enableBiometric } = useBiometricAuth();
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
-  // Personal profile
+  const handleDeleteAccount = async () => {
+    setDeletingAccount(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+      const { data, error } = await supabase.functions.invoke('delete-account', {
+        body: { confirm: true },
+      });
+      if (error) throw error;
+      toast.success('Account deleted. Goodbye!');
+      await supabase.auth.signOut();
+      settingsNavigate('/');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to delete account');
+    }
+    setDeletingAccount(false);
+  };
+
+  // MFA / 2FA state
+  const [mfaEnrolled, setMfaEnrolled] = useState(false);
+  const [mfaQr, setMfaQr] = useState<string | null>(null);
+  const [mfaFactorId, setMfaFactorId] = useState<string | null>(null);
+  const [mfaVerifyCode, setMfaVerifyCode] = useState('');
+  const [mfaLoading, setMfaLoading] = useState(false);
+
+  // Check MFA enrollment on mount
+  useEffect(() => {
+    const checkMfa = async () => {
+      const { data } = await supabase.auth.mfa.listFactors();
+      if (data?.totp && data.totp.length > 0) {
+        const verified = data.totp.find(f => f.status === 'verified');
+        setMfaEnrolled(!!verified);
+        if (verified) setMfaFactorId(verified.id);
+      }
+    };
+    checkMfa();
+  }, []);
+
+  const handleEnrollMfa = async () => {
+    setMfaLoading(true);
+    try {
+      const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'PrismMoney Authenticator' });
+      if (error) throw error;
+      setMfaQr(data.totp.qr_code);
+      setMfaFactorId(data.id);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to set up 2FA');
+    }
+    setMfaLoading(false);
+  };
+
+  const handleVerifyMfa = async () => {
+    if (!mfaFactorId) return;
+    setMfaLoading(true);
+    try {
+      const challenge = await supabase.auth.mfa.challenge({ factorId: mfaFactorId });
+      if (challenge.error) throw challenge.error;
+      const verify = await supabase.auth.mfa.verify({ factorId: mfaFactorId, challengeId: challenge.data.id, code: mfaVerifyCode });
+      if (verify.error) throw verify.error;
+      setMfaEnrolled(true);
+      setMfaQr(null);
+      setMfaVerifyCode('');
+      toast.success('Two-factor authentication enabled!');
+    } catch (err: any) {
+      toast.error(err.message || 'Invalid code. Try again.');
+    }
+    setMfaLoading(false);
+  };
+
+  const handleUnenrollMfa = async () => {
+    if (!mfaFactorId) return;
+    setMfaLoading(true);
+    try {
+      const { error } = await supabase.auth.mfa.unenroll({ factorId: mfaFactorId });
+      if (error) throw error;
+      setMfaEnrolled(false);
+      setMfaFactorId(null);
+      toast.success('Two-factor authentication disabled.');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to disable 2FA');
+    }
+    setMfaLoading(false);
+  };
+
   const { data: profile, isLoading } = useQuery({
     queryKey: ['profile', user?.id],
     enabled: !!user,
@@ -994,6 +1082,123 @@ const Settings = () => {
                 {updatePassword.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                 Update Password
               </Button>
+            </CardContent>
+          </Card>
+
+          {/* Two-Factor Authentication */}
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle className="font-display">Two-Factor Authentication</CardTitle>
+              <CardDescription>Add an extra layer of security with a TOTP authenticator app.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {!mfaEnrolled ? (
+                mfaQr ? (
+                  <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground">Scan this QR code with your authenticator app (Google Authenticator, Authy, 1Password):</p>
+                    <div className="flex justify-center">
+                      <img src={mfaQr} alt="TOTP QR Code" className="w-48 h-48 rounded-lg border" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Enter the 6-digit code from your app</Label>
+                      <Input
+                        value={mfaVerifyCode}
+                        onChange={e => setMfaVerifyCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                        placeholder="000000"
+                        maxLength={6}
+                        className="text-center text-lg tracking-widest font-mono"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button onClick={handleVerifyMfa} disabled={mfaVerifyCode.length !== 6 || mfaLoading} className="gap-2">
+                        {mfaLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                        Verify & Enable
+                      </Button>
+                      <Button variant="ghost" onClick={() => { setMfaQr(null); setMfaFactorId(null); }}>Cancel</Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="text-sm text-muted-foreground">Protect your account by requiring a code from an authenticator app when signing in.</p>
+                    <Button onClick={handleEnrollMfa} disabled={mfaLoading} className="gap-2">
+                      {mfaLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Shield className="h-4 w-4" />}
+                      Enable 2FA
+                    </Button>
+                  </div>
+                )
+              ) : (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-sm text-prism-teal">
+                    <CheckCircle2 className="h-4 w-4" />
+                    <span className="font-medium">Two-factor authentication is enabled</span>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={handleUnenrollMfa} disabled={mfaLoading} className="gap-2 text-destructive">
+                    {mfaLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                    Disable 2FA
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Biometric Auth */}
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle className="font-display">Biometric Lock</CardTitle>
+              <CardDescription>Require Face ID or Touch ID when opening the app on mobile.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <Label>Enable biometric lock</Label>
+                <Switch
+                  checked={biometricEnabled}
+                  onCheckedChange={(checked) => enableBiometric(checked)}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Delete Account — Apple App Store Requirement */}
+          <Card className="mt-6 border-destructive/30">
+            <CardHeader>
+              <CardTitle className="font-display text-destructive">Delete Account</CardTitle>
+              <CardDescription>Permanently delete your account and all associated data. This action cannot be undone.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="rounded-lg bg-destructive/5 border border-destructive/20 p-3 text-sm text-muted-foreground">
+                <p>This will permanently remove:</p>
+                <ul className="list-disc list-inside mt-1 space-y-0.5">
+                  <li>Your profile and preferences</li>
+                  <li>All accounts, transactions, and budgets</li>
+                  <li>Connected bank integrations</li>
+                  <li>Goals, calculators, and reports</li>
+                </ul>
+              </div>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" className="gap-2">
+                    <Trash2 className="h-4 w-4" /> Delete My Account
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will permanently delete your account and all data. You will be signed out immediately. This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDeleteAccount}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      {deletingAccount ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                      Yes, Delete Everything
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </CardContent>
           </Card>
         </TabsContent>
