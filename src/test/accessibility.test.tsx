@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/react";
-import { axe, toHaveNoViolations } from "vitest-axe";
+import { axe } from "vitest-axe";
+import * as matchers from "vitest-axe/matchers";
 import { BrowserRouter } from "react-router-dom";
 
-expect.extend(toHaveNoViolations);
+expect.extend(matchers);
 
 const Wrapper = ({ children }: { children: React.ReactNode }) => (
   <BrowserRouter>{children}</BrowserRouter>
