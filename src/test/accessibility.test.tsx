@@ -1,21 +1,20 @@
 import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/react";
 import { axe } from "vitest-axe";
+import "vitest-axe/extend-expect";
 import { BrowserRouter } from "react-router-dom";
 
-// Minimal wrapper for routing context
 const Wrapper = ({ children }: { children: React.ReactNode }) => (
   <BrowserRouter>{children}</BrowserRouter>
 );
 
-// ── Shared a11y assertion ──────────────────────────────────
 async function expectNoA11yViolations(ui: React.ReactElement) {
   const { container } = render(ui, { wrapper: Wrapper });
   const results = await axe(container);
+  // @ts-expect-error vitest-axe matcher
   expect(results).toHaveNoViolations();
 }
 
-// ── Tests ──────────────────────────────────────────────────
 describe("WCAG Accessibility Audit (axe-core)", () => {
   it("OfflineBanner has no violations", async () => {
     const { default: OfflineBanner } = await import("@/components/OfflineBanner");
@@ -23,14 +22,14 @@ describe("WCAG Accessibility Audit (axe-core)", () => {
   });
 
   it("EmptyState has no violations", async () => {
-    const { default: EmptyState } = await import("@/components/EmptyState");
+    const { EmptyState } = await import("@/components/EmptyState");
     await expectNoA11yViolations(
       <EmptyState icon="inbox" title="Nothing here" description="No data yet" />
     );
   });
 
   it("SkeletonCard has no violations", async () => {
-    const { default: SkeletonCard } = await import("@/components/SkeletonCard");
+    const { SkeletonCard } = await import("@/components/SkeletonCard");
     await expectNoA11yViolations(<SkeletonCard />);
   });
 
