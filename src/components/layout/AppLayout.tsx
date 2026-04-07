@@ -13,6 +13,7 @@ import TrialCountdownBanner from '@/components/TrialCountdownBanner';
 import { usePushNotifications } from '@/hooks/use-push-notifications';
 import { useBiometricAuth } from '@/hooks/use-biometric-auth';
 import BiometricLockScreen from '@/components/BiometricLockScreen';
+import OfflineBanner from '@/components/OfflineBanner';
 
 const AppLayout = () => {
   const isMobile = useIsMobile();
@@ -87,8 +88,9 @@ const AppLayout = () => {
       <KeyboardShortcutsModal open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
       <div className="flex h-screen overflow-hidden">
         {!isMobile && <AppSidebar />}
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <main className="flex-1 flex flex-col overflow-hidden" role="main" aria-label="Application content">
           {isMobile && <MobileNav />}
+          <OfflineBanner />
           <TrialCountdownBanner />
           {!isMobile && (
             <div className="flex items-center justify-end gap-2 px-4 py-2 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -109,7 +111,7 @@ const AppLayout = () => {
               <Outlet />
             </div>
           </PullToRefresh>
-        </div>
+        </main>
       </div>
     </>
   );
