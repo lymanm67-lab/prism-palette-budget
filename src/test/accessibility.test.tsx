@@ -23,8 +23,9 @@ describe("WCAG Accessibility Audit (axe-core)", () => {
 
   it("EmptyState has no violations", async () => {
     const { EmptyState } = await import("@/components/EmptyState");
+    const { Inbox } = await import("lucide-react");
     await expectNoA11yViolations(
-      <EmptyState icon="inbox" title="Nothing here" description="No data yet" />
+      <EmptyState icon={Inbox} title="Nothing here" description="No data yet" />
     );
   });
 
