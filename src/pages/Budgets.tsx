@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback } from 'react';
+import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import { PaystubUploader } from '@/components/PaystubUploader';
 import { BillScanner } from '@/components/BillScanner';
 import { toast } from 'sonner';
