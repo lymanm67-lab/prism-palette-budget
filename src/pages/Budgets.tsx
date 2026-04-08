@@ -326,9 +326,22 @@ const Budgets = () => {
     return new Set(categories.filter(c => groupIds.has(c.group_id)).map(c => c.id));
   }, [categories, categoryGroups]);
 
+  // For payroll_deduction categories, treat budgeted amount as actual (auto-deducted from paycheck)
+  const payrollCatIdsSet = useMemo(() => {
+    if (!categories || !categoryGroups) return new Set<string>();
+    return new Set(
+      (categories as any[])
+        .filter(c => {
+          const group = (categoryGroups as any[]).find((g: any) => g.id === c.group_id);
+          return group?.expense_type === 'payroll_deduction';
+        })
+        .map(c => c.id)
+    );
+  }, [categories, categoryGroups]);
+
   const budgetItems: BudgetRow[] = (budgets || []).map(b => ({
     ...b,
-    spent: spentByCategory[b.category_id] || 0,
+    spent: payrollCatIdsSet.has(b.category_id) ? b.planned_amount : (spentByCategory[b.category_id] || 0),
     received: receivedByCategory[b.category_id] || 0,
   })).filter(b => filteredCategoryIds.has(b.category_id));
 
