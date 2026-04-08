@@ -71,11 +71,12 @@ const BAR_COLORS: Record<ExpenseType, string> = {
 };
 
 // Budget benchmark percentages (60/20/10/10 model)
+// fixed=60% (bills, rent, insurance), flexible=20% (savings & investments),
+// non_monthly=10% (fun) + 10% (emergency) combined
 const BENCHMARK_RANGES: Partial<Record<ExpenseType, { min: number; max: number; label: string }>> = {
-  fixed: { min: 55, max: 60, label: '~60%' },
-  flexible: { min: 8, max: 10, label: '~10% Fun' },
-  non_monthly: { min: 8, max: 10, label: '~10% Emergency' },
-  savings: { min: 18, max: 22, label: '~20% Savings' },
+  fixed: { min: 55, max: 65, label: '~60%' },
+  flexible: { min: 18, max: 22, label: '~20% Savings' },
+  non_monthly: { min: 18, max: 22, label: '~20% Fun + Emergency' },
 };
 
 interface BudgetRow {
