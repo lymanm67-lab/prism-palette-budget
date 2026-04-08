@@ -20,12 +20,18 @@ export function GuardrailSettingsDialog({ open, onClose }: Props) {
   const [dailyLimit, setDailyLimit] = useState('');
   const [weeklyLimit, setWeeklyLimit] = useState('');
   const [isEnabled, setIsEnabled] = useState(true);
+  const [coolingOffThreshold, setCoolingOffThreshold] = useState('');
+  const [coolingOffHours, setCoolingOffHours] = useState('48');
+  const [multiUseCheck, setMultiUseCheck] = useState(false);
 
   useEffect(() => {
     if (settings) {
       setDailyLimit(settings.daily_limit ? String(settings.daily_limit) : '');
       setWeeklyLimit(settings.weekly_limit ? String(settings.weekly_limit) : '');
       setIsEnabled(settings.is_enabled ?? true);
+      setCoolingOffThreshold(settings.cooling_off_threshold ? String(settings.cooling_off_threshold) : '');
+      setCoolingOffHours(settings.cooling_off_hours ? String(settings.cooling_off_hours) : '48');
+      setMultiUseCheck(settings.multi_use_check_enabled ?? false);
     }
   }, [settings]);
 
@@ -35,6 +41,9 @@ export function GuardrailSettingsDialog({ open, onClose }: Props) {
         daily_limit: dailyLimit ? parseFloat(dailyLimit) : null,
         weekly_limit: weeklyLimit ? parseFloat(weeklyLimit) : null,
         is_enabled: isEnabled,
+        cooling_off_threshold: coolingOffThreshold ? parseFloat(coolingOffThreshold) : null,
+        cooling_off_hours: coolingOffHours ? parseInt(coolingOffHours) : 48,
+        multi_use_check_enabled: multiUseCheck,
       });
       toast.success('Guardrail settings saved');
       onClose();
