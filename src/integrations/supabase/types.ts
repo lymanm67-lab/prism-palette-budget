@@ -1218,31 +1218,84 @@ export type Database = {
           },
         ]
       }
+      guardrail_pending_purchases: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string
+          expires_at: string
+          household_id: string
+          id: string
+          multi_use_score: number | null
+          resolved_at: string | null
+          status: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          description?: string
+          expires_at?: string
+          household_id: string
+          id?: string
+          multi_use_score?: number | null
+          resolved_at?: string | null
+          status?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string
+          expires_at?: string
+          household_id?: string
+          id?: string
+          multi_use_score?: number | null
+          resolved_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guardrail_pending_purchases_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       guardrail_settings: {
         Row: {
+          cooling_off_hours: number
+          cooling_off_threshold: number | null
           created_at: string
           daily_limit: number | null
           household_id: string
           id: string
           is_enabled: boolean
+          multi_use_check_enabled: boolean
           updated_at: string
           weekly_limit: number | null
         }
         Insert: {
+          cooling_off_hours?: number
+          cooling_off_threshold?: number | null
           created_at?: string
           daily_limit?: number | null
           household_id: string
           id?: string
           is_enabled?: boolean
+          multi_use_check_enabled?: boolean
           updated_at?: string
           weekly_limit?: number | null
         }
         Update: {
+          cooling_off_hours?: number
+          cooling_off_threshold?: number | null
           created_at?: string
           daily_limit?: number | null
           household_id?: string
           id?: string
           is_enabled?: boolean
+          multi_use_check_enabled?: boolean
           updated_at?: string
           weekly_limit?: number | null
         }
