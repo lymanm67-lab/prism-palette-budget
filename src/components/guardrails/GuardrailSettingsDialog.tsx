@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Shield, Loader2 } from 'lucide-react';
+import { Shield, Loader2, Clock, Layers } from 'lucide-react';
 import { useGuardrailSettings, useUpsertGuardrailSettings } from '@/hooks/use-spend-guardrails';
 import { toast } from 'sonner';
 
@@ -97,6 +97,57 @@ export function GuardrailSettingsDialog({ open, onClose }: Props) {
                 onChange={(e) => setWeeklyLimit(e.target.value)}
               />
               <p className="text-[10px] text-muted-foreground">Leave empty to skip weekly tracking</p>
+            </div>
+          </div>
+
+          {/* Cooling-Off Rule */}
+          <div className="pt-3 border-t border-border/40 space-y-3">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-prism-orange" />
+              <p className="text-sm font-medium">48-Hour Cooling-Off Rule</p>
+            </div>
+            <p className="text-[10px] text-muted-foreground">
+              Purchases above this amount trigger a waiting period before you can proceed.
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="cooling-threshold" className="text-sm">Threshold ($)</Label>
+                <Input
+                  id="cooling-threshold"
+                  type="number"
+                  min="0"
+                  step="25"
+                  placeholder="e.g. 100"
+                  value={coolingOffThreshold}
+                  onChange={(e) => setCoolingOffThreshold(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="cooling-hours" className="text-sm">Wait (hours)</Label>
+                <Input
+                  id="cooling-hours"
+                  type="number"
+                  min="1"
+                  max="168"
+                  value={coolingOffHours}
+                  onChange={(e) => setCoolingOffHours(e.target.value)}
+                />
+              </div>
+            </div>
+            <p className="text-[10px] text-muted-foreground">Leave threshold empty to disable</p>
+          </div>
+
+          {/* Multi-Use Check */}
+          <div className="pt-3 border-t border-border/40">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Layers className="h-4 w-4 text-prism-violet" />
+                <div>
+                  <p className="text-sm font-medium">Multi-Use Check</p>
+                  <p className="text-[10px] text-muted-foreground">Ask "how many uses will this get?" (1-5) before purchase</p>
+                </div>
+              </div>
+              <Switch id="multi-use" checked={multiUseCheck} onCheckedChange={setMultiUseCheck} />
             </div>
           </div>
 
