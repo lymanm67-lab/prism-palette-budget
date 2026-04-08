@@ -1,4 +1,5 @@
 import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { PaystubUploader } from '@/components/PaystubUploader';
 import { BillScanner } from '@/components/BillScanner';
 import { toast } from 'sonner';
