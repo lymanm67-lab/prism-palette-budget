@@ -1,4 +1,5 @@
-import { useMemo, useState, useCallback } from 'react';
+import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { PaystubUploader } from '@/components/PaystubUploader';
 import { BillScanner } from '@/components/BillScanner';
 import { toast } from 'sonner';
@@ -104,6 +105,52 @@ const Budgets = () => {
   const deleteBudget = useDeleteBudget();
   const createCategory = useCreateCategory();
   const { data: businessProfiles } = useBusinessProfiles();
+
+  // Auto-seed payroll deduction budgets from most recent month that has them
+  const seededMonths = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    if (!household || !budgets || budgetsLoading || seededMonths.current.has(month)) return;
+    seededMonths.current.add(month);
+
+    // Check if current month already has any payroll_deduction budgets
+    const payrollCatIds = new Set(
+      (categories || [])
+        .filter(c => {
+          const group = (categoryGroups || []).find(g => g.id === c.group_id);
+          return group?.expense_type === 'payroll_deduction';
+        })
+        .map(c => c.id)
+    );
+    const hasPayroll = budgets.some(b => payrollCatIds.has(b.category_id));
+    if (hasPayroll || payrollCatIds.size === 0) return;
+
+    // Find most recent month with payroll budgets by checking previous 3 months
+    const seedFromPrev = async () => {
+      for (let i = 1; i <= 3; i++) {
+        const prevMonth = getMonth(monthOffset - i);
+        const { data: prevBudgets } = await supabase
+          .from('budgets')
+          .select('category_id, planned_amount, rollover')
+          .eq('household_id', household.id)
+          .eq('month', prevMonth);
+        const payrollBudgets = (prevBudgets || []).filter(b => payrollCatIds.has(b.category_id));
+        if (payrollBudgets.length > 0) {
+          for (const pb of payrollBudgets) {
+            await upsertBudget.mutateAsync({
+              category_id: pb.category_id,
+              month,
+              planned_amount: pb.planned_amount,
+              rollover: pb.rollover,
+            });
+          }
+          toast.success(`Auto-copied ${payrollBudgets.length} payroll deduction lines from previous month`);
+          return;
+        }
+      }
+    };
+    seedFromPrev();
+  }, [household, budgets, budgetsLoading, month, categories, categoryGroups, monthOffset, upsertBudget]);
+
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState<{ category_id: string; planned_amount: string; rollover: boolean } | null>(null);
