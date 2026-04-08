@@ -14,7 +14,7 @@ import { useCurrency } from '@/hooks/use-currency';
 import { cn } from '@/lib/utils';
 import {
   Home, Car, CreditCard, TrendingUp, Calculator, DollarSign, Percent, CalendarDays, PiggyBank, Sparkles, BookOpen, MoreHorizontal,
-  Target, Shield, Wallet, CheckCircle2, Scale, MapPin, Plane, Heart, Palmtree, ShoppingBag, Gift, Baby, Receipt, Tag,
+  Target, Shield, Wallet, CheckCircle2, Scale, MapPin, Plane, Heart, Palmtree, ShoppingBag, Gift, Baby, Receipt, Tag, ArrowLeftRight,
 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import PageOverview from '@/components/PageOverview';
@@ -36,6 +36,7 @@ import BabyCostCalculator from '@/components/calculators/BabyCostCalculator';
 import CarAffordabilityCalculator from '@/components/calculators/CarAffordabilityCalculator';
 import TrueCostLoanCalculator from '@/components/calculators/TrueCostLoanCalculator';
 import PricingCalculator from '@/components/calculators/PricingCalculator';
+import CurrencyExchangeCalculator from '@/components/calculators/CurrencyExchangeCalculator';
 
 // ─── Calculation helpers ───
 
