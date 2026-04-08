@@ -12,6 +12,7 @@ import { SafeToSpendHero } from '@/components/SafeToSpendHero';
 import { StsEquationView } from '@/components/StsEquationView';
 import { SavingsImpactCounter } from '@/components/SavingsImpactCounter';
 import { CashFlowForecastChart } from '@/components/CashFlowForecastChart';
+import { PendingPurchasesList } from '@/components/guardrails/PendingPurchasesList';
 import { ProgressTracker } from '@/components/ProgressTracker';
 import { ModeSettingsDialog } from '@/components/ModeSettingsDialog';
 import MoMIndicator from '@/components/MoMIndicator';
