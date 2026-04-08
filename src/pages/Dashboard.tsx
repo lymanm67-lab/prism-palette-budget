@@ -58,7 +58,7 @@ const Dashboard = () => {
   const safeToSpend = useSafeToSpend();
   const navigate = useNavigate();
 
-  const [mode, setMode] = useState<DashboardMode>('combined');
+  const [mode, setMode] = useState<DashboardMode>('personal');
   const [selectedBusiness, setSelectedBusiness] = useState<string>('all');
   const [manageOpen, setManageOpen] = useState(false);
   const [recapOpen, setRecapOpen] = useState(false);
