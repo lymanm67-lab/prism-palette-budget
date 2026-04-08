@@ -309,6 +309,11 @@ Your Safe-to-Spend updates in real time as you add transactions, pay bills, and 
         <SpendingAnomalyAlert />
       </motion.div>
 
+      {/* Pending Cooling-Off Purchases */}
+      <motion.div variants={item}>
+        <PendingPurchasesList />
+      </motion.div>
+
       {/* Getting Started Widget */}
       <motion.div variants={item}>
         <GettingStartedWidget />
