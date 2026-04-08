@@ -27,7 +27,7 @@ export function useUpsertGuardrailSettings() {
   const { household } = useHousehold();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (settings: { daily_limit?: number | null; weekly_limit?: number | null; is_enabled?: boolean }) => {
+    mutationFn: async (settings: { daily_limit?: number | null; weekly_limit?: number | null; is_enabled?: boolean; cooling_off_threshold?: number | null; cooling_off_hours?: number; multi_use_check_enabled?: boolean }) => {
       const { data: existing } = await supabase
         .from('guardrail_settings' as any)
         .select('id')
