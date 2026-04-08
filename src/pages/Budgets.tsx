@@ -70,11 +70,12 @@ const BAR_COLORS: Record<ExpenseType, string> = {
   non_monthly: 'bg-purple-500',
 };
 
-// Conscious Spending Plan benchmark percentages (of net income)
+// Budget benchmark percentages (60/20/10/10 model)
 const BENCHMARK_RANGES: Partial<Record<ExpenseType, { min: number; max: number; label: string }>> = {
-  fixed: { min: 50, max: 60, label: '50-60%' },
-  flexible: { min: 20, max: 35, label: '20-35%' },
-  non_monthly: { min: 5, max: 10, label: '5-10%' },
+  fixed: { min: 55, max: 60, label: '~60%' },
+  flexible: { min: 8, max: 10, label: '~10% Fun' },
+  non_monthly: { min: 8, max: 10, label: '~10% Emergency' },
+  savings: { min: 18, max: 22, label: '~20% Savings' },
 };
 
 interface BudgetRow {

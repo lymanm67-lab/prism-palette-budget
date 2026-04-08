@@ -125,7 +125,7 @@ const TRAINING_STEPS: TrainingStep[] = [
     ],
     tips: [
       'Start with your essential categories first (rent, utilities, groceries)',
-      'Use the 50/30/20 rule: 50% needs, 30% wants, 20% savings',
+      'Use the 60/20/10/10 rule: 60% fixed, 20% savings, 10% fun, 10% emergency',
       'Check your budget weekly to stay on track',
     ],
   },
@@ -517,7 +517,7 @@ const TOUR_SLIDES = [
     desc: 'Set planned spending amounts for each category. Track spending vs. budget in real time with visual progress bars.',
     icon: PiggyBank,
     gradient: 'from-prism-amber to-prism-orange',
-    tip: 'Start with the 50/30/20 rule: 50% needs, 30% wants, 20% savings & debt payoff.',
+    tip: 'Use the 60/20/10/10 rule: 60% fixed expenses, 20% savings & investments, 10% fun, 10% emergency.',
     route: '/budgets',
   },
   {
