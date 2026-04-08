@@ -14,7 +14,7 @@ import { useCurrency } from '@/hooks/use-currency';
 import { cn } from '@/lib/utils';
 import {
   Home, Car, CreditCard, TrendingUp, Calculator, DollarSign, Percent, CalendarDays, PiggyBank, Sparkles, BookOpen, MoreHorizontal,
-  Target, Shield, Wallet, CheckCircle2, Scale, MapPin, Plane, Heart, Palmtree, ShoppingBag, Gift, Baby, Receipt, Tag,
+  Target, Shield, Wallet, CheckCircle2, Scale, MapPin, Plane, Heart, Palmtree, ShoppingBag, Gift, Baby, Receipt, Tag, ArrowLeftRight,
 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import PageOverview from '@/components/PageOverview';
@@ -36,6 +36,7 @@ import BabyCostCalculator from '@/components/calculators/BabyCostCalculator';
 import CarAffordabilityCalculator from '@/components/calculators/CarAffordabilityCalculator';
 import TrueCostLoanCalculator from '@/components/calculators/TrueCostLoanCalculator';
 import PricingCalculator from '@/components/calculators/PricingCalculator';
+import CurrencyExchangeCalculator from '@/components/calculators/CurrencyExchangeCalculator';
 
 // ─── Calculation helpers ───
 
@@ -173,6 +174,12 @@ const CALCULATOR_GROUPS = [
     items: [
       { id: 'investment', label: 'Investment', icon: TrendingUp, color: 'text-prism-lime', bg: 'from-prism-lime/20 to-prism-lime/5' },
       { id: 'wealth', label: 'Wealth Multiplier', icon: PiggyBank, color: 'text-prism-indigo', bg: 'from-prism-indigo/20 to-prism-indigo/5' },
+    ],
+  },
+  {
+    label: 'Travel',
+    items: [
+      { id: 'currency', label: 'Currency Exchange', icon: ArrowLeftRight, color: 'text-prism-sky', bg: 'from-prism-sky/20 to-prism-sky/5' },
     ],
   },
   {
@@ -1508,6 +1515,7 @@ const Calculators = () => {
       {activeCalc === 'carafford' && (<div className="mt-6"><CarAffordabilityCalculator /></div>)}
       {activeCalc === 'truecost' && (<div className="mt-6"><TrueCostLoanCalculator /></div>)}
       {activeCalc === 'pricing' && (<div className="mt-6"><PricingCalculator /></div>)}
+      {activeCalc === 'currency' && <CurrencyExchangeCalculator />}
       
       <CalculatorHistory open={historyOpen} onOpenChange={setHistoryOpen} onRestore={handleRestore} />
     </motion.div>

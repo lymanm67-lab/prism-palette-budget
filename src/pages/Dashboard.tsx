@@ -12,6 +12,7 @@ import { SafeToSpendHero } from '@/components/SafeToSpendHero';
 import { StsEquationView } from '@/components/StsEquationView';
 import { SavingsImpactCounter } from '@/components/SavingsImpactCounter';
 import { CashFlowForecastChart } from '@/components/CashFlowForecastChart';
+import { PendingPurchasesList } from '@/components/guardrails/PendingPurchasesList';
 import { ProgressTracker } from '@/components/ProgressTracker';
 import { ModeSettingsDialog } from '@/components/ModeSettingsDialog';
 import MoMIndicator from '@/components/MoMIndicator';
@@ -306,6 +307,11 @@ Your Safe-to-Spend updates in real time as you add transactions, pay bills, and 
       {/* Spending Anomaly Alert */}
       <motion.div variants={item}>
         <SpendingAnomalyAlert />
+      </motion.div>
+
+      {/* Pending Cooling-Off Purchases */}
+      <motion.div variants={item}>
+        <PendingPurchasesList />
       </motion.div>
 
       {/* Getting Started Widget */}
