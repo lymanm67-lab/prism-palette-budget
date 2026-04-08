@@ -177,6 +177,12 @@ const CALCULATOR_GROUPS = [
     ],
   },
   {
+    label: 'Travel',
+    items: [
+      { id: 'currency', label: 'Currency Exchange', icon: ArrowLeftRight, color: 'text-prism-sky', bg: 'from-prism-sky/20 to-prism-sky/5' },
+    ],
+  },
+  {
     label: 'Business',
     items: [
       { id: 'offers', label: 'Focus Offer', icon: Target, color: 'text-prism-lime', bg: 'from-prism-lime/20 to-prism-lime/5' },
