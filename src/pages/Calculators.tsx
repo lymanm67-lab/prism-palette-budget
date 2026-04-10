@@ -538,6 +538,7 @@ const Calculators = () => {
       fvDebtRedirect: Math.round(fvDebtRedirect),
       remaining: Math.round(remaining),
       projectionData,
+      detailedSchedule,
       pctOfGross: Math.round(pctOfGross * 10) / 10,
       onTrack: totalMonthlyNeeded <= 968.23,
       debtRedirectBoost: debtRedirect,
