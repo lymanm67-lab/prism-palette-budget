@@ -576,6 +576,14 @@ const Calculators = () => {
         rate: p('rate') ?? f.rate,
         payment: p('payment') ?? f.payment,
       }));
+    } else if (calc === 'retiregoal') {
+      setRetireGoalForm(f => ({
+        ...f,
+        target: p('target') ?? f.target,
+        currentBalance: p('currentBalance') ?? f.currentBalance,
+        years: p('years') ?? f.years,
+        rate: p('rate') ?? f.rate,
+      }));
     } else if (calc === 'wealth') {
       const age = p('age');
       if (age) setWealthAge(age);
