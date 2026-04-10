@@ -491,6 +491,7 @@ const Calculators = () => {
       }));
     } else if (calc === 'investment') {
       setInvestForm(f => ({
+        ...f,
         initial: p('initial') ?? f.initial,
         monthly: p('monthly') ?? f.monthly,
         rate: p('rate') ?? f.rate,
