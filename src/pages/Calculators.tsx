@@ -456,7 +456,7 @@ const Calculators = () => {
   const [retireGoalForm, setRetireGoalForm] = useState({
     target: '1000000', currentBalance: '0', years: '15', rate: '8',
     employerMatchPct: '9', annualRaise: '3',
-    debtRedirectAmount: '888', debtRedirectStartYear: '3',
+    debtRedirectAmount: '1270.17', debtRedirectStartYear: '3',
   });
   const retireGoalResult = useMemo(() => {
     const target = parseFloat(retireGoalForm.target) || 0;
