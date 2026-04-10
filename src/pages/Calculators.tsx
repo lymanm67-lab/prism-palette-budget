@@ -456,6 +456,7 @@ const Calculators = () => {
   const [retireGoalForm, setRetireGoalForm] = useState({
     target: '1000000', currentBalance: '0', years: '15', rate: '8',
     employerMatch: '516.56', annualRaise: '3',
+    debtRedirectAmount: '888', debtRedirectStartYear: '3',
   });
   const retireGoalResult = useMemo(() => {
     const target = parseFloat(retireGoalForm.target) || 0;
@@ -466,15 +467,23 @@ const Calculators = () => {
     const raiseRate = (parseFloat(retireGoalForm.annualRaise) || 0) / 100;
     const r = annualRate / 100 / 12;
     const n = years * 12;
+    const debtRedirect = parseFloat(retireGoalForm.debtRedirectAmount) || 0;
+    const debtRedirectStartYear = parseFloat(retireGoalForm.debtRedirectStartYear) || 0;
+    const debtRedirectStartMonth = Math.round(debtRedirectStartYear * 12);
 
     // Future value of current balance
     const fvCurrent = current * Math.pow(1 + r, n);
-    // Remaining needed from contributions
-    const remaining = Math.max(0, target - fvCurrent);
 
-    // If there's an annual raise, we need to solve iteratively
-    // FV of growing annuity: sum of PMT*(1+g)^floor(k/12) * (1+r)^(n-k) for k=1..n
-    // Compute the factor once
+    // Compute the FV of the debt redirect boost (fixed amount starting at a future month)
+    let fvDebtRedirect = 0;
+    for (let k = debtRedirectStartMonth + 1; k <= n; k++) {
+      fvDebtRedirect += debtRedirect * Math.pow(1 + r, n - k);
+    }
+
+    // Remaining needed from base contributions (after current balance growth & debt redirect)
+    const remaining = Math.max(0, target - fvCurrent - fvDebtRedirect);
+
+    // Growing annuity factor for base contributions with annual raise
     let factor = 0;
     for (let k = 1; k <= n; k++) {
       const yearIdx = Math.floor((k - 1) / 12);
@@ -491,9 +500,11 @@ const Calculators = () => {
     let monthlyContrib = totalMonthlyNeeded;
     for (let y = 1; y <= years; y++) {
       for (let m = 0; m < 12; m++) {
+        const monthNum = (y - 1) * 12 + m + 1;
+        const boost = monthNum > debtRedirectStartMonth ? debtRedirect : 0;
         const interest = bal * r;
-        bal += interest + monthlyContrib;
-        totalContrib += monthlyContrib;
+        bal += interest + monthlyContrib + boost;
+        totalContrib += monthlyContrib + boost;
       }
       projectionData.push({ label: `Yr ${y}`, balance: bal, contributions: totalContrib });
       monthlyContrib = totalMonthlyNeeded * Math.pow(1 + raiseRate, y);
@@ -508,10 +519,13 @@ const Calculators = () => {
       employeeMonthly: Math.round(employeeMonthly * 100) / 100,
       employerMonthly: employer,
       fvCurrent: Math.round(fvCurrent),
+      fvDebtRedirect: Math.round(fvDebtRedirect),
       remaining: Math.round(remaining),
       projectionData,
       pctOfGross: Math.round(pctOfGross * 10) / 10,
       onTrack: totalMonthlyNeeded <= 968.23,
+      debtRedirectBoost: debtRedirect,
+      debtRedirectStartYear,
     };
   }, [retireGoalForm]);
 
