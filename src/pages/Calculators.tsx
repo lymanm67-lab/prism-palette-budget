@@ -1714,6 +1714,16 @@ const Calculators = () => {
                 <ResultCard label="Current Balance Grows To" value={formatCurrency(retireGoalResult.fvCurrent)} numericValue={retireGoalResult.fvCurrent} formatFn={formatCurrency} sub={`in ${retireGoalForm.years} years`} />
                 <ResultCard label="% of Gross Pay" value={`${retireGoalResult.pctOfGross}%`} sub="~$5,735/mo gross" />
               </div>
+              {retireGoalResult.fvDebtRedirect > 0 && (
+                <div className="p-3 rounded-xl bg-prism-amber/10 border border-prism-amber/20 text-xs space-y-1">
+                  <p className="font-medium flex items-center gap-1.5">
+                    <Sparkles className="h-3.5 w-3.5 text-prism-amber" /> Debt Redirect Impact
+                  </p>
+                  <p className="text-muted-foreground">
+                    Redirecting <span className="font-bold text-foreground">{formatCurrency(retireGoalResult.debtRedirectBoost)}/mo</span> starting year {retireGoalResult.debtRedirectStartYear} adds <span className="font-bold text-prism-teal">{formatCurrency(retireGoalResult.fvDebtRedirect)}</span> to your retirement — reducing your required base contribution.
+                  </p>
+                </div>
+              )}
 
               {retireGoalResult.projectionData.length > 0 && (
                 <div>
