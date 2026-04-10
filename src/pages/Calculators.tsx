@@ -455,7 +455,7 @@ const Calculators = () => {
   // Retirement Goal Reverse Calculator
   const [retireGoalForm, setRetireGoalForm] = useState({
     target: '1000000', currentBalance: '0', years: '15', rate: '8',
-    employerMatch: '516.56', annualRaise: '3',
+    employerMatchPct: '9', annualRaise: '3',
     debtRedirectAmount: '888', debtRedirectStartYear: '3',
   });
   const retireGoalResult = useMemo(() => {
@@ -463,7 +463,9 @@ const Calculators = () => {
     const current = parseFloat(retireGoalForm.currentBalance) || 0;
     const years = parseFloat(retireGoalForm.years) || 1;
     const annualRate = parseFloat(retireGoalForm.rate) || 0;
-    const employer = parseFloat(retireGoalForm.employerMatch) || 0;
+    const grossMonthly = 5735;
+    const employerMatchPct = (parseFloat(retireGoalForm.employerMatchPct) || 0) / 100;
+    const employer = grossMonthly * employerMatchPct;
     const raiseRate = (parseFloat(retireGoalForm.annualRaise) || 0) / 100;
     const r = annualRate / 100 / 12;
     const n = years * 12;
@@ -511,7 +513,6 @@ const Calculators = () => {
     }
 
     // Gross pay context (from payroll data)
-    const grossMonthly = 5735;
     const pctOfGross = grossMonthly > 0 ? (employeeMonthly / grossMonthly) * 100 : 0;
 
     return {
@@ -1691,7 +1692,8 @@ const Calculators = () => {
               <InputField label="Current Retirement Balance" value={retireGoalForm.currentBalance} onChange={v => setRetireGoalForm(f => ({ ...f, currentBalance: v }))} icon={DollarSign} />
               <InputField label="Years to Goal" value={retireGoalForm.years} onChange={v => setRetireGoalForm(f => ({ ...f, years: v }))} icon={CalendarDays} suffix="years" />
               <InputField label="Expected Annual Return" value={retireGoalForm.rate} onChange={v => setRetireGoalForm(f => ({ ...f, rate: v }))} icon={Percent} suffix="%" />
-              <InputField label="Monthly Employer Match" value={retireGoalForm.employerMatch} onChange={v => setRetireGoalForm(f => ({ ...f, employerMatch: v }))} icon={DollarSign} />
+              <InputField label="Employer Match (% of Gross)" value={retireGoalForm.employerMatchPct} onChange={v => setRetireGoalForm(f => ({ ...f, employerMatchPct: v }))} icon={Percent} suffix="%" />
+              <p className="text-[11px] text-muted-foreground -mt-1">9% of ~$5,735 gross = ~{formatCurrency(5735 * (parseFloat(retireGoalForm.employerMatchPct) || 0) / 100)}/mo</p>
               <InputField label="Annual Contribution Raise" value={retireGoalForm.annualRaise} onChange={v => setRetireGoalForm(f => ({ ...f, annualRaise: v }))} icon={TrendingUp} suffix="% / yr" />
               <div className="pt-2 border-t border-border/40">
                 <p className="text-xs font-medium text-muted-foreground mb-3 flex items-center gap-1.5">
@@ -1763,7 +1765,7 @@ const Calculators = () => {
                 inputs={retireGoalForm}
                 results={{ employeeMonthly: retireGoalResult.employeeMonthly, totalMonthlyNeeded: retireGoalResult.totalMonthlyNeeded, pctOfGross: retireGoalResult.pctOfGross }}
                 hasResults={retireGoalResult.totalMonthlyNeeded > 0}
-                summaryText={`# 🎯 Retirement Goal Calculator\n\n**Inputs**\n- **Target:** ${formatCurrency(Number(retireGoalForm.target))}\n- **Current Balance:** ${formatCurrency(Number(retireGoalForm.currentBalance))}\n- **Timeline:** ${retireGoalForm.years} years\n- **Expected Return:** ${retireGoalForm.rate}%\n- **Employer Match:** ${formatCurrency(Number(retireGoalForm.employerMatch))}/mo\n- **Annual Raise:** ${retireGoalForm.annualRaise}%\n\n**Results**\n- **Your Monthly Contribution:** ${formatCurrency(retireGoalResult.employeeMonthly)}\n- **Total Monthly (w/ match):** ${formatCurrency(retireGoalResult.totalMonthlyNeeded)}\n- **% of Gross Pay:** ${retireGoalResult.pctOfGross}%`}
+                summaryText={`# 🎯 Retirement Goal Calculator\n\n**Inputs**\n- **Target:** ${formatCurrency(Number(retireGoalForm.target))}\n- **Current Balance:** ${formatCurrency(Number(retireGoalForm.currentBalance))}\n- **Timeline:** ${retireGoalForm.years} years\n- **Expected Return:** ${retireGoalForm.rate}%\n- **Employer Match:** ${retireGoalForm.employerMatchPct}% of gross (${formatCurrency(retireGoalResult.employerMonthly)}/mo)\n- **Annual Raise:** ${retireGoalForm.annualRaise}%\n\n**Results**\n- **Your Monthly Contribution:** ${formatCurrency(retireGoalResult.employeeMonthly)}\n- **Total Monthly (w/ match):** ${formatCurrency(retireGoalResult.totalMonthlyNeeded)}\n- **% of Gross Pay:** ${retireGoalResult.pctOfGross}%`}
                 onOpenHistory={() => setHistoryOpen(true)}
                 printData={{
                   inputs: [
@@ -1771,7 +1773,7 @@ const Calculators = () => {
                     { label: 'Current Balance', value: formatCurrency(Number(retireGoalForm.currentBalance)) },
                     { label: 'Timeline', value: `${retireGoalForm.years} years` },
                     { label: 'Expected Return', value: `${retireGoalForm.rate}%` },
-                    { label: 'Employer Match', value: `${formatCurrency(Number(retireGoalForm.employerMatch))}/mo` },
+                    { label: 'Employer Match', value: `${retireGoalForm.employerMatchPct}% of gross (${formatCurrency(retireGoalResult.employerMonthly)}/mo)` },
                     { label: 'Annual Raise', value: `${retireGoalForm.annualRaise}%` },
                   ],
                   results: [
