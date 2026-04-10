@@ -566,6 +566,9 @@ const Budgets = () => {
     // For each budget with rollover enabled, check previous month
     for (const b of (budgets as any[])) {
       if (!b.rollover) continue;
+      // Payroll deduction categories auto-match spent to budget, so rollover is always zero
+      const expType = categoryExpenseType.get(b.category_id) || 'flexible';
+      if (expType === 'payroll_deduction') continue;
       const type = categoryExpenseType.get(b.category_id) || 'flexible';
       const isIncome = type === 'income';
       
