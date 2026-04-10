@@ -1327,6 +1327,7 @@ const Calculators = () => {
                   </Select>
                 </div>
               </div>
+              <InputField label="Annual Contribution Raise" value={investForm.annualRaise} onChange={v => setInvestForm(f => ({ ...f, annualRaise: v }))} icon={TrendingUp} suffix="% / yr" />
               <InputField label="Investment Length" value={investForm.years} onChange={v => setInvestForm(f => ({ ...f, years: v }))} icon={CalendarDays} suffix="years" />
             </CardContent>
           </Card>
