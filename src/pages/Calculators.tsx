@@ -505,8 +505,9 @@ const Calculators = () => {
     const employeeMonthly = factor > 0 ? remaining / factor : 0;
     const totalMonthlyNeeded = employeeMonthly + baseEmployer;
 
-    // Project year-by-year for chart
+    // Project month-by-month for detailed schedule
     const projectionData: { label: string; balance: number; contributions: number }[] = [];
+    const detailedSchedule: { month: number; year: number; deposit: number; interest: number; balance: number }[] = [];
     let bal = current;
     let totalContrib = current;
     for (let y = 1; y <= years; y++) {
@@ -517,9 +518,11 @@ const Calculators = () => {
       for (let m = 0; m < 12; m++) {
         const monthNum = yearIdx * 12 + m + 1;
         const boost = monthNum > debtRedirectStartMonth ? debtRedirect : 0;
+        const deposit = employeeThisMonth + employerThisMonth + boost;
         const interest = bal * r;
-        bal += interest + employeeThisMonth + employerThisMonth + boost;
-        totalContrib += employeeThisMonth + employerThisMonth + boost;
+        bal += interest + deposit;
+        totalContrib += deposit;
+        detailedSchedule.push({ month: monthNum, year: y, deposit, interest, balance: bal });
       }
       projectionData.push({ label: `Yr ${y}`, balance: bal, contributions: totalContrib });
     }
@@ -535,6 +538,7 @@ const Calculators = () => {
       fvDebtRedirect: Math.round(fvDebtRedirect),
       remaining: Math.round(remaining),
       projectionData,
+      detailedSchedule,
       pctOfGross: Math.round(pctOfGross * 10) / 10,
       onTrack: totalMonthlyNeeded <= 968.23,
       debtRedirectBoost: debtRedirect,
@@ -542,6 +546,8 @@ const Calculators = () => {
       grossMonthly: baseGrossMonthly,
     };
   }, [retireGoalForm]);
+
+  const [retireScheduleView, setRetireScheduleView] = useState<'annual' | 'monthly'>('annual');
 
   // Wealth multiplier
   const [wealthAge, setWealthAge] = useState('30');
@@ -1811,6 +1817,68 @@ const Calculators = () => {
           results={{ employeeMonthly: retireGoalResult.employeeMonthly, totalMonthlyNeeded: retireGoalResult.totalMonthlyNeeded, pctOfGross: retireGoalResult.pctOfGross }}
           hasResults={retireGoalResult.totalMonthlyNeeded > 0}
         />
+
+        {/* Accumulation Schedule */}
+        {retireGoalResult.detailedSchedule.length > 0 && (
+          <Card className="prism-card-shine border-border/50 mt-4">
+            <CardHeader className="flex flex-row items-center justify-between pb-3">
+              <CardTitle className="font-display text-lg">Accumulation Schedule</CardTitle>
+              <div className="flex gap-1">
+                <Button variant={retireScheduleView === 'annual' ? 'default' : 'outline'} size="sm" className="h-7 text-xs" onClick={() => setRetireScheduleView('annual')}>Annual</Button>
+                <Button variant={retireScheduleView === 'monthly' ? 'default' : 'outline'} size="sm" className="h-7 text-xs" onClick={() => setRetireScheduleView('monthly')}>Monthly</Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="max-h-[400px] overflow-auto rounded-lg border border-border/40">
+                <table className="w-full text-sm">
+                  <thead className="sticky top-0 bg-muted/80 backdrop-blur-sm">
+                    <tr className="border-b border-border/40">
+                      <th className="text-left p-2 text-xs font-medium text-muted-foreground">{retireScheduleView === 'annual' ? 'Year' : 'Month'}</th>
+                      <th className="text-right p-2 text-xs font-medium text-muted-foreground">Deposit</th>
+                      <th className="text-right p-2 text-xs font-medium text-muted-foreground">Interest</th>
+                      <th className="text-right p-2 text-xs font-medium text-muted-foreground">Ending Balance</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {retireScheduleView === 'annual' ? (
+                      (() => {
+                        const schedule = retireGoalResult.detailedSchedule;
+                        const yearRows: { year: number; deposit: number; interest: number; balance: number }[] = [];
+                        let yearDeposit = 0, yearInterest = 0;
+                        for (let i = 0; i < schedule.length; i++) {
+                          yearDeposit += schedule[i].deposit;
+                          yearInterest += schedule[i].interest;
+                          if ((i + 1) % 12 === 0 || i === schedule.length - 1) {
+                            yearRows.push({ year: schedule[i].year, deposit: yearDeposit, interest: yearInterest, balance: schedule[i].balance });
+                            yearDeposit = 0;
+                            yearInterest = 0;
+                          }
+                        }
+                        return yearRows.map(row => (
+                          <tr key={row.year} className="border-b border-border/20 hover:bg-muted/30">
+                            <td className="p-2 font-medium">Year {row.year}</td>
+                            <td className="p-2 text-right text-prism-lime">{formatCurrency(row.deposit)}</td>
+                            <td className="p-2 text-right text-prism-teal">{formatCurrency(row.interest)}</td>
+                            <td className="p-2 text-right font-semibold">{formatCurrency(row.balance)}</td>
+                          </tr>
+                        ));
+                      })()
+                    ) : (
+                      retireGoalResult.detailedSchedule.map(row => (
+                        <tr key={row.month} className="border-b border-border/20 hover:bg-muted/30">
+                          <td className="p-2 font-medium">Mo {row.month}</td>
+                          <td className="p-2 text-right text-prism-lime">{formatCurrency(row.deposit)}</td>
+                          <td className="p-2 text-right text-prism-teal">{formatCurrency(row.interest)}</td>
+                          <td className="p-2 text-right font-semibold">{formatCurrency(row.balance)}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>)}
 
       {/* ─── WEALTH MULTIPLIER ─── */}
