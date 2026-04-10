@@ -456,7 +456,7 @@ const Calculators = () => {
   const [retireGoalForm, setRetireGoalForm] = useState({
     target: '1000000', currentBalance: '0', years: '15', rate: '8',
     employerMatchPct: '9', annualRaise: '3',
-    debtRedirectAmount: '888', debtRedirectStartYear: '3',
+    debtRedirectAmount: '1270.17', debtRedirectStartYear: '3',
   });
   const retireGoalResult = useMemo(() => {
     const target = parseFloat(retireGoalForm.target) || 0;
@@ -1720,7 +1720,7 @@ const Calculators = () => {
                 <div className="space-y-3">
                   <InputField label="Monthly Amount to Redirect" value={retireGoalForm.debtRedirectAmount} onChange={v => setRetireGoalForm(f => ({ ...f, debtRedirectAmount: v }))} icon={DollarSign} />
                   <InputField label="Starts After Year" value={retireGoalForm.debtRedirectStartYear} onChange={v => setRetireGoalForm(f => ({ ...f, debtRedirectStartYear: v }))} icon={CalendarDays} suffix="years" />
-                  <p className="text-[11px] text-muted-foreground">Gitmeid debt ($533 business + $355 personal = $888/mo) redirected to retirement after payoff in 2027.</p>
+                  <p className="text-[11px] text-muted-foreground">Gitmeid ($533 + $355 = $888) + Vacation Loans ($153.70 + $228.47 = $382.17) = $1,270.17/mo redirected to retirement after payoff in 2027.</p>
                 </div>
               </div>
             </CardContent>
