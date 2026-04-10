@@ -1284,20 +1284,52 @@ const Calculators = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <InputField label="Initial Investment" value={investForm.initial} onChange={v => setInvestForm(f => ({ ...f, initial: v }))} icon={DollarSign} />
-              <InputField label="Monthly Contribution" value={investForm.monthly} onChange={v => setInvestForm(f => ({ ...f, monthly: v }))} icon={DollarSign} />
-              <InputField label="Annual Return" value={investForm.rate} onChange={v => setInvestForm(f => ({ ...f, rate: v }))} icon={Percent} suffix="%" />
-              <InputField label="Time Horizon" value={investForm.years} onChange={v => setInvestForm(f => ({ ...f, years: v }))} icon={CalendarDays} suffix="years" />
+              <InputField label="Starting Amount" value={investForm.initial} onChange={v => setInvestForm(f => ({ ...f, initial: v }))} icon={DollarSign} />
+              <InputField label="Annual Return Rate" value={investForm.rate} onChange={v => setInvestForm(f => ({ ...f, rate: v }))} icon={Percent} suffix="%" />
+              <div className="space-y-1.5">
+                <Label className="text-xs">Compound</Label>
+                <Select value={investForm.compoundFreq} onValueChange={v => setInvestForm(f => ({ ...f, compoundFreq: v as any }))}>
+                  <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="monthly">Monthly</SelectItem>
+                    <SelectItem value="annually">Annually</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <InputField label="Additional Contribution" value={investForm.monthly} onChange={v => setInvestForm(f => ({ ...f, monthly: v }))} icon={DollarSign} />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Contribute</Label>
+                  <Select value={investForm.contribTiming} onValueChange={v => setInvestForm(f => ({ ...f, contribTiming: v as any }))}>
+                    <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="beginning">Beginning</SelectItem>
+                      <SelectItem value="end">End</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Frequency</Label>
+                  <Select value={investForm.contribFreq} onValueChange={v => setInvestForm(f => ({ ...f, contribFreq: v as any }))}>
+                    <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="monthly">Monthly</SelectItem>
+                      <SelectItem value="annually">Annually</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <InputField label="Investment Length" value={investForm.years} onChange={v => setInvestForm(f => ({ ...f, years: v }))} icon={CalendarDays} suffix="years" />
             </CardContent>
           </Card>
           <Card className="prism-card-shine border-border/50">
             <CardHeader><CardTitle className="font-display text-lg">Results</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
-                <ResultCard label="Final Balance" value={formatCurrency(investResult.finalBalance)} numericValue={investResult.finalBalance} formatFn={formatCurrency} accent />
+                <ResultCard label="End Amount" value={formatCurrency(investResult.finalBalance)} numericValue={investResult.finalBalance} formatFn={formatCurrency} accent />
+                <ResultCard label="Starting Amount" value={formatCurrency(parseFloat(investForm.initial) || 0)} numericValue={parseFloat(investForm.initial) || 0} formatFn={formatCurrency} />
                 <ResultCard label="Total Contributions" value={formatCurrency(investResult.totalContributions)} numericValue={investResult.totalContributions} formatFn={formatCurrency} />
-                <ResultCard label="Total Earnings" value={formatCurrency(investResult.totalInterest)} numericValue={investResult.totalInterest} formatFn={formatCurrency} />
-                <ResultCard label="Growth" value={`${investResult.totalContributions > 0 ? Math.round(((investResult.finalBalance - investResult.totalContributions) / investResult.totalContributions) * 100) : 0}%`} sub="return on investment" />
+                <ResultCard label="Total Interest" value={formatCurrency(investResult.totalInterest)} numericValue={investResult.totalInterest} formatFn={formatCurrency} />
               </div>
               {investResult.schedule.length > 0 && (
                 <div>
@@ -1313,7 +1345,7 @@ const Calculators = () => {
                 </div>
                 <div className="flex justify-between text-xs text-muted-foreground mt-1">
                   <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-prism-lime inline-block" /> Contributions</span>
-                  <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-prism-teal inline-block" /> Earnings</span>
+                  <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-prism-teal inline-block" /> Interest</span>
                 </div>
               </div>
               <CalculatorActions
@@ -1321,26 +1353,90 @@ const Calculators = () => {
                 inputs={investForm}
                 results={{ finalBalance: investResult.finalBalance, totalContributions: investResult.totalContributions, totalInterest: investResult.totalInterest }}
                 hasResults={investResult.finalBalance > 0}
-                summaryText={`# 📈 Investment Calculator\n\n**Inputs**\n- **Initial Investment:** ${formatCurrency(Number(investForm.initial))}\n- **Monthly Contribution:** ${formatCurrency(Number(investForm.monthly))}\n- **Expected Return:** ${investForm.rate}%\n- **Time Horizon:** ${investForm.years} years\n\n**Results**\n- **Final Balance:** ${formatCurrency(investResult.finalBalance)}\n- **Total Contributions:** ${formatCurrency(investResult.totalContributions)}\n- **Total Earnings:** ${formatCurrency(investResult.totalInterest)}`}
+                summaryText={`# 📈 Investment Calculator\n\n**Inputs**\n- **Starting Amount:** ${formatCurrency(Number(investForm.initial))}\n- **Additional Contribution:** ${formatCurrency(Number(investForm.monthly))} ${investForm.contribFreq}\n- **Return Rate:** ${investForm.rate}%\n- **Compound:** ${investForm.compoundFreq}\n- **Contribute at:** ${investForm.contribTiming} of each ${investForm.contribFreq === 'monthly' ? 'month' : 'year'}\n- **Investment Length:** ${investForm.years} years\n\n**Results**\n- **End Amount:** ${formatCurrency(investResult.finalBalance)}\n- **Total Contributions:** ${formatCurrency(investResult.totalContributions)}\n- **Total Interest:** ${formatCurrency(investResult.totalInterest)}`}
                 onOpenHistory={() => setHistoryOpen(true)}
                 printData={{
                   inputs: [
-                    { label: 'Initial Investment', value: `$${Number(investForm.initial).toLocaleString()}` },
-                    { label: 'Monthly Contribution', value: `$${Number(investForm.monthly).toLocaleString()}` },
-                    { label: 'Annual Return', value: `${investForm.rate}%` },
-                    { label: 'Time Horizon', value: `${investForm.years} years` },
+                    { label: 'Starting Amount', value: `$${Number(investForm.initial).toLocaleString()}` },
+                    { label: 'Additional Contribution', value: `$${Number(investForm.monthly).toLocaleString()} ${investForm.contribFreq}` },
+                    { label: 'Return Rate', value: `${investForm.rate}%` },
+                    { label: 'Compound', value: investForm.compoundFreq },
+                    { label: 'Contribute at', value: `${investForm.contribTiming} of each ${investForm.contribFreq === 'monthly' ? 'month' : 'year'}` },
+                    { label: 'Investment Length', value: `${investForm.years} years` },
                   ],
                   results: [
-                    { label: 'Final Balance', value: formatCurrency(investResult.finalBalance), highlight: true },
+                    { label: 'End Amount', value: formatCurrency(investResult.finalBalance), highlight: true },
                     { label: 'Total Contributions', value: formatCurrency(investResult.totalContributions) },
-                    { label: 'Total Earnings', value: formatCurrency(investResult.totalInterest) },
-                    { label: 'ROI', value: `${investResult.totalContributions > 0 ? Math.round(((investResult.finalBalance - investResult.totalContributions) / investResult.totalContributions) * 100) : 0}%` },
+                    { label: 'Total Interest', value: formatCurrency(investResult.totalInterest) },
                   ],
                 }}
               />
             </CardContent>
           </Card>
         </div>
+
+        {/* Accumulation Schedule */}
+        {investResult.detailedSchedule.length > 0 && (
+          <Card className="prism-card-shine border-border/50 mt-4">
+            <CardHeader className="flex flex-row items-center justify-between pb-3">
+              <CardTitle className="font-display text-lg">Accumulation Schedule</CardTitle>
+              <div className="flex gap-1">
+                <Button variant={scheduleView === 'annual' ? 'default' : 'outline'} size="sm" className="h-7 text-xs" onClick={() => setScheduleView('annual')}>Annual</Button>
+                <Button variant={scheduleView === 'monthly' ? 'default' : 'outline'} size="sm" className="h-7 text-xs" onClick={() => setScheduleView('monthly')}>Monthly</Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="max-h-[400px] overflow-auto rounded-lg border border-border/40">
+                <table className="w-full text-sm">
+                  <thead className="sticky top-0 bg-muted/80 backdrop-blur-sm">
+                    <tr>
+                      <th className="text-left px-3 py-2 font-medium text-muted-foreground">{scheduleView === 'annual' ? 'Year' : 'Month'}</th>
+                      <th className="text-right px-3 py-2 font-medium text-muted-foreground">Deposit</th>
+                      <th className="text-right px-3 py-2 font-medium text-muted-foreground">Interest</th>
+                      <th className="text-right px-3 py-2 font-medium text-muted-foreground">Ending Balance</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(() => {
+                      const ds = investResult.detailedSchedule;
+                      const ppy = investResult.periodsPerYear;
+                      if (scheduleView === 'annual') {
+                        const rows: { year: number; deposit: number; interest: number; balance: number }[] = [];
+                        let yearDeposit = 0, yearInterest = 0;
+                        for (let i = 0; i < ds.length; i++) {
+                          yearDeposit += ds[i].deposit;
+                          yearInterest += ds[i].interest;
+                          if ((i + 1) % ppy === 0 || i === ds.length - 1) {
+                            rows.push({ year: rows.length + 1, deposit: yearDeposit, interest: yearInterest, balance: ds[i].balance });
+                            yearDeposit = 0; yearInterest = 0;
+                          }
+                        }
+                        return rows.map(r => (
+                          <tr key={r.year} className="border-t border-border/20 hover:bg-muted/30 transition-colors">
+                            <td className="px-3 py-1.5">{r.year}</td>
+                            <td className="text-right px-3 py-1.5">{formatCurrency(r.deposit)}</td>
+                            <td className="text-right px-3 py-1.5 text-prism-teal">{formatCurrency(r.interest)}</td>
+                            <td className="text-right px-3 py-1.5 font-medium">{formatCurrency(r.balance)}</td>
+                          </tr>
+                        ));
+                      } else {
+                        return ds.map((r, i) => (
+                          <tr key={i} className="border-t border-border/20 hover:bg-muted/30 transition-colors">
+                            <td className="px-3 py-1.5">{i + 1}</td>
+                            <td className="text-right px-3 py-1.5">{formatCurrency(r.deposit)}</td>
+                            <td className="text-right px-3 py-1.5 text-prism-teal">{formatCurrency(r.interest)}</td>
+                            <td className="text-right px-3 py-1.5 font-medium">{formatCurrency(r.balance)}</td>
+                          </tr>
+                        ));
+                      }
+                    })()}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <CalculatorInsight
           calculatorType="investment"
           inputs={investForm}
