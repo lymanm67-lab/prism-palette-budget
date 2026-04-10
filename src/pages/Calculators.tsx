@@ -223,6 +223,7 @@ const CALCULATOR_GROUPS = [
     label: 'Savings & Growth',
     items: [
       { id: 'investment', label: 'Investment', icon: TrendingUp, color: 'text-prism-lime', bg: 'from-prism-lime/20 to-prism-lime/5' },
+      { id: 'retiregoal', label: 'Retirement Goal', icon: Target, color: 'text-prism-teal', bg: 'from-prism-teal/20 to-prism-teal/5' },
       { id: 'wealth', label: 'Wealth Multiplier', icon: PiggyBank, color: 'text-prism-indigo', bg: 'from-prism-indigo/20 to-prism-indigo/5' },
     ],
   },
@@ -321,6 +322,7 @@ const Calculators = () => {
     else if (type === 'creditcard') setCcForm(inputs as any);
     else if (type === 'investment') setInvestForm(inputs as any);
     else if (type === 'debt') setDebtForm(inputs as any);
+    else if (type === 'retiregoal') setRetireGoalForm(inputs as any);
   };
 
   // Mortgage
@@ -449,6 +451,69 @@ const Calculators = () => {
     }
     return pts;
   }, [debtForm, debtResult.months]);
+
+  // Retirement Goal Reverse Calculator
+  const [retireGoalForm, setRetireGoalForm] = useState({
+    target: '1000000', currentBalance: '0', years: '15', rate: '8',
+    employerMatch: '516.56', annualRaise: '3',
+  });
+  const retireGoalResult = useMemo(() => {
+    const target = parseFloat(retireGoalForm.target) || 0;
+    const current = parseFloat(retireGoalForm.currentBalance) || 0;
+    const years = parseFloat(retireGoalForm.years) || 1;
+    const annualRate = parseFloat(retireGoalForm.rate) || 0;
+    const employer = parseFloat(retireGoalForm.employerMatch) || 0;
+    const raiseRate = (parseFloat(retireGoalForm.annualRaise) || 0) / 100;
+    const r = annualRate / 100 / 12;
+    const n = years * 12;
+
+    // Future value of current balance
+    const fvCurrent = current * Math.pow(1 + r, n);
+    // Remaining needed from contributions
+    const remaining = Math.max(0, target - fvCurrent);
+
+    // If there's an annual raise, we need to solve iteratively
+    // FV of growing annuity: sum of PMT*(1+g)^floor(k/12) * (1+r)^(n-k) for k=1..n
+    // Compute the factor once
+    let factor = 0;
+    for (let k = 1; k <= n; k++) {
+      const yearIdx = Math.floor((k - 1) / 12);
+      factor += Math.pow(1 + raiseRate, yearIdx) * Math.pow(1 + r, n - k);
+    }
+
+    const totalMonthlyNeeded = factor > 0 ? remaining / factor : 0;
+    const employeeMonthly = Math.max(0, totalMonthlyNeeded - employer);
+
+    // Project year-by-year for chart
+    const projectionData: { label: string; balance: number; contributions: number }[] = [];
+    let bal = current;
+    let totalContrib = current;
+    let monthlyContrib = totalMonthlyNeeded;
+    for (let y = 1; y <= years; y++) {
+      for (let m = 0; m < 12; m++) {
+        const interest = bal * r;
+        bal += interest + monthlyContrib;
+        totalContrib += monthlyContrib;
+      }
+      projectionData.push({ label: `Yr ${y}`, balance: bal, contributions: totalContrib });
+      monthlyContrib = totalMonthlyNeeded * Math.pow(1 + raiseRate, y);
+    }
+
+    // Gross pay context (from payroll data)
+    const grossMonthly = 5735;
+    const pctOfGross = grossMonthly > 0 ? (employeeMonthly / grossMonthly) * 100 : 0;
+
+    return {
+      totalMonthlyNeeded: Math.round(totalMonthlyNeeded * 100) / 100,
+      employeeMonthly: Math.round(employeeMonthly * 100) / 100,
+      employerMonthly: employer,
+      fvCurrent: Math.round(fvCurrent),
+      remaining: Math.round(remaining),
+      projectionData,
+      pctOfGross: Math.round(pctOfGross * 10) / 10,
+      onTrack: totalMonthlyNeeded <= 968.23,
+    };
+  }, [retireGoalForm]);
 
   // Wealth multiplier
   const [wealthAge, setWealthAge] = useState('30');
