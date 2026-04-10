@@ -63,24 +63,68 @@ function calcAmortization(principal: number, annualRate: number, months: number)
   return { payment, totalInterest, totalPaid: payment * months, schedule };
 }
 
-function calcCompoundInterest(principal: number, monthlyContribution: number, annualRate: number, years: number) {
-  const r = annualRate / 100 / 12;
-  const months = years * 12;
+function calcCompoundInterest(
+  principal: number,
+  contribution: number,
+  annualRate: number,
+  years: number,
+  compoundFreq: 'monthly' | 'annually' = 'monthly',
+  contribTiming: 'end' | 'beginning' = 'end',
+  contribFreq: 'monthly' | 'annually' = 'monthly',
+) {
+  const periodsPerYear = compoundFreq === 'monthly' ? 12 : 1;
+  const totalPeriods = years * periodsPerYear;
+  const ratePerPeriod = annualRate / 100 / periodsPerYear;
+
+  // Normalize contribution to per-compound-period amount
+  let contribPerPeriod = contribution;
+  if (contribFreq === 'monthly' && compoundFreq === 'annually') {
+    contribPerPeriod = contribution * 12;
+  } else if (contribFreq === 'annually' && compoundFreq === 'monthly') {
+    contribPerPeriod = contribution / 12;
+  }
+
   let balance = principal;
-  const schedule: { month: number; balance: number; contributions: number; interest: number }[] = [];
   let totalContributions = principal;
   let totalInterest = 0;
 
-  for (let m = 1; m <= months; m++) {
-    const interest = balance * r;
-    balance += interest + monthlyContribution;
-    totalContributions += monthlyContribution;
-    totalInterest += interest;
-    if (m % 12 === 0 || m === months) {
-      schedule.push({ month: m, balance, contributions: totalContributions, interest: totalInterest });
+  // Detailed schedule per period
+  const detailedSchedule: { period: number; deposit: number; interest: number; balance: number }[] = [];
+
+  for (let p = 1; p <= totalPeriods; p++) {
+    let periodDeposit = contribPerPeriod;
+    let periodInterest = 0;
+
+    if (contribTiming === 'beginning') {
+      balance += periodDeposit;
+      periodInterest = balance * ratePerPeriod;
+      balance += periodInterest;
+    } else {
+      periodInterest = balance * ratePerPeriod;
+      balance += periodInterest + periodDeposit;
     }
+
+    totalContributions += periodDeposit;
+    totalInterest += periodInterest;
+    detailedSchedule.push({ period: p, deposit: periodDeposit, interest: periodInterest, balance });
   }
-  return { finalBalance: balance, totalContributions, totalInterest, schedule };
+
+  // Summary schedule (yearly) for chart compatibility
+  const schedule: { month: number; balance: number; contributions: number; interest: number }[] = [];
+  if (compoundFreq === 'monthly') {
+    for (let i = 0; i < detailedSchedule.length; i++) {
+      const entry = detailedSchedule[i];
+      if ((i + 1) % 12 === 0 || i === detailedSchedule.length - 1) {
+        schedule.push({ month: entry.period, balance: entry.balance, contributions: totalContributions, interest: totalInterest });
+      }
+    }
+  } else {
+    detailedSchedule.forEach(entry => {
+      schedule.push({ month: entry.period, balance: entry.balance, contributions: totalContributions, interest: totalInterest });
+    });
+  }
+
+  return { finalBalance: balance, totalContributions, totalInterest, schedule, detailedSchedule, periodsPerYear };
 }
 
 function calcCreditCardPayoff(balance: number, apr: number, monthlyPayment: number) {
