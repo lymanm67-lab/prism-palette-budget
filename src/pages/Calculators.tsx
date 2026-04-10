@@ -383,13 +383,22 @@ const Calculators = () => {
   }, [ccForm, ccResult.months]);
 
   // Investment
-  const [investForm, setInvestForm] = useState({ initial: '10000', monthly: '500', rate: '8', years: '20' });
+  const [investForm, setInvestForm] = useState({
+    initial: '10000', monthly: '500', rate: '8', years: '20',
+    compoundFreq: 'monthly' as 'monthly' | 'annually',
+    contribTiming: 'end' as 'end' | 'beginning',
+    contribFreq: 'monthly' as 'monthly' | 'annually',
+  });
+  const [scheduleView, setScheduleView] = useState<'annual' | 'monthly'>('annual');
   const investResult = useMemo(() => {
     return calcCompoundInterest(
       parseFloat(investForm.initial) || 0,
       parseFloat(investForm.monthly) || 0,
       parseFloat(investForm.rate) || 0,
       parseFloat(investForm.years) || 0,
+      investForm.compoundFreq,
+      investForm.contribTiming,
+      investForm.contribFreq,
     );
   }, [investForm]);
 
