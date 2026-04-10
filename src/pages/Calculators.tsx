@@ -456,6 +456,7 @@ const Calculators = () => {
   const [retireGoalForm, setRetireGoalForm] = useState({
     target: '1000000', currentBalance: '0', years: '15', rate: '8',
     employerMatch: '516.56', annualRaise: '3',
+    debtRedirectAmount: '888', debtRedirectStartYear: '3',
   });
   const retireGoalResult = useMemo(() => {
     const target = parseFloat(retireGoalForm.target) || 0;
@@ -466,15 +467,23 @@ const Calculators = () => {
     const raiseRate = (parseFloat(retireGoalForm.annualRaise) || 0) / 100;
     const r = annualRate / 100 / 12;
     const n = years * 12;
+    const debtRedirect = parseFloat(retireGoalForm.debtRedirectAmount) || 0;
+    const debtRedirectStartYear = parseFloat(retireGoalForm.debtRedirectStartYear) || 0;
+    const debtRedirectStartMonth = Math.round(debtRedirectStartYear * 12);
 
     // Future value of current balance
     const fvCurrent = current * Math.pow(1 + r, n);
-    // Remaining needed from contributions
-    const remaining = Math.max(0, target - fvCurrent);
 
-    // If there's an annual raise, we need to solve iteratively
-    // FV of growing annuity: sum of PMT*(1+g)^floor(k/12) * (1+r)^(n-k) for k=1..n
-    // Compute the factor once
+    // Compute the FV of the debt redirect boost (fixed amount starting at a future month)
+    let fvDebtRedirect = 0;
+    for (let k = debtRedirectStartMonth + 1; k <= n; k++) {
+      fvDebtRedirect += debtRedirect * Math.pow(1 + r, n - k);
+    }
+
+    // Remaining needed from base contributions (after current balance growth & debt redirect)
+    const remaining = Math.max(0, target - fvCurrent - fvDebtRedirect);
+
+    // Growing annuity factor for base contributions with annual raise
     let factor = 0;
     for (let k = 1; k <= n; k++) {
       const yearIdx = Math.floor((k - 1) / 12);
@@ -491,9 +500,11 @@ const Calculators = () => {
     let monthlyContrib = totalMonthlyNeeded;
     for (let y = 1; y <= years; y++) {
       for (let m = 0; m < 12; m++) {
+        const monthNum = (y - 1) * 12 + m + 1;
+        const boost = monthNum > debtRedirectStartMonth ? debtRedirect : 0;
         const interest = bal * r;
-        bal += interest + monthlyContrib;
-        totalContrib += monthlyContrib;
+        bal += interest + monthlyContrib + boost;
+        totalContrib += monthlyContrib + boost;
       }
       projectionData.push({ label: `Yr ${y}`, balance: bal, contributions: totalContrib });
       monthlyContrib = totalMonthlyNeeded * Math.pow(1 + raiseRate, y);
@@ -508,10 +519,13 @@ const Calculators = () => {
       employeeMonthly: Math.round(employeeMonthly * 100) / 100,
       employerMonthly: employer,
       fvCurrent: Math.round(fvCurrent),
+      fvDebtRedirect: Math.round(fvDebtRedirect),
       remaining: Math.round(remaining),
       projectionData,
       pctOfGross: Math.round(pctOfGross * 10) / 10,
       onTrack: totalMonthlyNeeded <= 968.23,
+      debtRedirectBoost: debtRedirect,
+      debtRedirectStartYear,
     };
   }, [retireGoalForm]);
 
@@ -1679,6 +1693,16 @@ const Calculators = () => {
               <InputField label="Expected Annual Return" value={retireGoalForm.rate} onChange={v => setRetireGoalForm(f => ({ ...f, rate: v }))} icon={Percent} suffix="%" />
               <InputField label="Monthly Employer Match" value={retireGoalForm.employerMatch} onChange={v => setRetireGoalForm(f => ({ ...f, employerMatch: v }))} icon={DollarSign} />
               <InputField label="Annual Contribution Raise" value={retireGoalForm.annualRaise} onChange={v => setRetireGoalForm(f => ({ ...f, annualRaise: v }))} icon={TrendingUp} suffix="% / yr" />
+              <div className="pt-2 border-t border-border/40">
+                <p className="text-xs font-medium text-muted-foreground mb-3 flex items-center gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5 text-prism-amber" /> Debt Payoff Redirect
+                </p>
+                <div className="space-y-3">
+                  <InputField label="Monthly Amount to Redirect" value={retireGoalForm.debtRedirectAmount} onChange={v => setRetireGoalForm(f => ({ ...f, debtRedirectAmount: v }))} icon={DollarSign} />
+                  <InputField label="Starts After Year" value={retireGoalForm.debtRedirectStartYear} onChange={v => setRetireGoalForm(f => ({ ...f, debtRedirectStartYear: v }))} icon={CalendarDays} suffix="years" />
+                  <p className="text-[11px] text-muted-foreground">Gitmeid debt ($533 business + $355 personal = $888/mo) redirected to retirement after payoff in 2027.</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
           <Card className="prism-card-shine border-border/50">
@@ -1690,6 +1714,16 @@ const Calculators = () => {
                 <ResultCard label="Current Balance Grows To" value={formatCurrency(retireGoalResult.fvCurrent)} numericValue={retireGoalResult.fvCurrent} formatFn={formatCurrency} sub={`in ${retireGoalForm.years} years`} />
                 <ResultCard label="% of Gross Pay" value={`${retireGoalResult.pctOfGross}%`} sub="~$5,735/mo gross" />
               </div>
+              {retireGoalResult.fvDebtRedirect > 0 && (
+                <div className="p-3 rounded-xl bg-prism-amber/10 border border-prism-amber/20 text-xs space-y-1">
+                  <p className="font-medium flex items-center gap-1.5">
+                    <Sparkles className="h-3.5 w-3.5 text-prism-amber" /> Debt Redirect Impact
+                  </p>
+                  <p className="text-muted-foreground">
+                    Redirecting <span className="font-bold text-foreground">{formatCurrency(retireGoalResult.debtRedirectBoost)}/mo</span> starting year {retireGoalResult.debtRedirectStartYear} adds <span className="font-bold text-prism-teal">{formatCurrency(retireGoalResult.fvDebtRedirect)}</span> to your retirement — reducing your required base contribution.
+                  </p>
+                </div>
+              )}
 
               {retireGoalResult.projectionData.length > 0 && (
                 <div>
