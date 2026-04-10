@@ -21,6 +21,7 @@ interface DeductionLine {
 const DEDUCTION_TYPE_MAP: Record<string, DeductionLine['type']> = {
   '401k': 'retirement', '403b': 'retirement', '457b': 'retirement',
   'roth': 'retirement', 'deferred': 'retirement', 'pension': 'retirement',
+  'employer': 'retirement',
   'hsa': 'health', 'fsa': 'health', 'dental': 'health', 'vision': 'health',
   'medical': 'health', 'health': 'health',
   'federal': 'tax', 'state': 'tax', 'fica': 'tax', 'social security': 'tax',
