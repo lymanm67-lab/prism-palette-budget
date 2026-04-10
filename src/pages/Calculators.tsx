@@ -394,6 +394,7 @@ const Calculators = () => {
     compoundFreq: 'monthly' as 'monthly' | 'annually',
     contribTiming: 'end' as 'end' | 'beginning',
     contribFreq: 'monthly' as 'monthly' | 'annually',
+    annualRaise: '3',
   });
   const [scheduleView, setScheduleView] = useState<'annual' | 'monthly'>('annual');
   const investResult = useMemo(() => {
@@ -405,6 +406,7 @@ const Calculators = () => {
       investForm.compoundFreq,
       investForm.contribTiming,
       investForm.contribFreq,
+      parseFloat(investForm.annualRaise) || 0,
     );
   }, [investForm]);
 
