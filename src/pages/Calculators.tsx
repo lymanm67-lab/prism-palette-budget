@@ -1693,6 +1693,16 @@ const Calculators = () => {
               <InputField label="Expected Annual Return" value={retireGoalForm.rate} onChange={v => setRetireGoalForm(f => ({ ...f, rate: v }))} icon={Percent} suffix="%" />
               <InputField label="Monthly Employer Match" value={retireGoalForm.employerMatch} onChange={v => setRetireGoalForm(f => ({ ...f, employerMatch: v }))} icon={DollarSign} />
               <InputField label="Annual Contribution Raise" value={retireGoalForm.annualRaise} onChange={v => setRetireGoalForm(f => ({ ...f, annualRaise: v }))} icon={TrendingUp} suffix="% / yr" />
+              <div className="pt-2 border-t border-border/40">
+                <p className="text-xs font-medium text-muted-foreground mb-3 flex items-center gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5 text-prism-amber" /> Debt Payoff Redirect
+                </p>
+                <div className="space-y-3">
+                  <InputField label="Monthly Amount to Redirect" value={retireGoalForm.debtRedirectAmount} onChange={v => setRetireGoalForm(f => ({ ...f, debtRedirectAmount: v }))} icon={DollarSign} />
+                  <InputField label="Starts After Year" value={retireGoalForm.debtRedirectStartYear} onChange={v => setRetireGoalForm(f => ({ ...f, debtRedirectStartYear: v }))} icon={CalendarDays} suffix="years" />
+                  <p className="text-[11px] text-muted-foreground">Gitmeid debt ($533 business + $355 personal = $888/mo) redirected to retirement after payoff in 2027.</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
           <Card className="prism-card-shine border-border/50">
