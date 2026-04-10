@@ -71,17 +71,19 @@ function calcCompoundInterest(
   compoundFreq: 'monthly' | 'annually' = 'monthly',
   contribTiming: 'end' | 'beginning' = 'end',
   contribFreq: 'monthly' | 'annually' = 'monthly',
+  annualRaisePct: number = 0,
 ) {
   const periodsPerYear = compoundFreq === 'monthly' ? 12 : 1;
   const totalPeriods = years * periodsPerYear;
   const ratePerPeriod = annualRate / 100 / periodsPerYear;
+  const raiseRate = annualRaisePct / 100;
 
   // Normalize contribution to per-compound-period amount
-  let contribPerPeriod = contribution;
+  let baseContrib = contribution;
   if (contribFreq === 'monthly' && compoundFreq === 'annually') {
-    contribPerPeriod = contribution * 12;
+    baseContrib = contribution * 12;
   } else if (contribFreq === 'annually' && compoundFreq === 'monthly') {
-    contribPerPeriod = contribution / 12;
+    baseContrib = contribution / 12;
   }
 
   let balance = principal;
@@ -92,6 +94,10 @@ function calcCompoundInterest(
   const detailedSchedule: { period: number; deposit: number; interest: number; balance: number }[] = [];
 
   for (let p = 1; p <= totalPeriods; p++) {
+    // Determine current year (0-indexed) for raise calculation
+    const currentYear = Math.floor((p - 1) / periodsPerYear);
+    const contribPerPeriod = baseContrib * Math.pow(1 + raiseRate, currentYear);
+
     let periodDeposit = contribPerPeriod;
     let periodInterest = 0;
 
@@ -388,6 +394,7 @@ const Calculators = () => {
     compoundFreq: 'monthly' as 'monthly' | 'annually',
     contribTiming: 'end' as 'end' | 'beginning',
     contribFreq: 'monthly' as 'monthly' | 'annually',
+    annualRaise: '3',
   });
   const [scheduleView, setScheduleView] = useState<'annual' | 'monthly'>('annual');
   const investResult = useMemo(() => {
@@ -399,6 +406,7 @@ const Calculators = () => {
       investForm.compoundFreq,
       investForm.contribTiming,
       investForm.contribFreq,
+      parseFloat(investForm.annualRaise) || 0,
     );
   }, [investForm]);
 
@@ -1319,6 +1327,7 @@ const Calculators = () => {
                   </Select>
                 </div>
               </div>
+              <InputField label="Annual Contribution Raise" value={investForm.annualRaise} onChange={v => setInvestForm(f => ({ ...f, annualRaise: v }))} icon={TrendingUp} suffix="% / yr" />
               <InputField label="Investment Length" value={investForm.years} onChange={v => setInvestForm(f => ({ ...f, years: v }))} icon={CalendarDays} suffix="years" />
             </CardContent>
           </Card>
