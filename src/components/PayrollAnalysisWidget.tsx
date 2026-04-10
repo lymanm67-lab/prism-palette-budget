@@ -78,13 +78,16 @@ export default function PayrollAnalysisWidget({ month }: PayrollAnalysisWidgetPr
       if (incomeCatIds.has(b.category_id)) {
         netIncome += b.planned_amount;
       } else if (payrollCatIds.has(b.category_id)) {
-        totalDeductions += b.planned_amount;
         const cat = categories.find(c => c.id === b.category_id);
+        const isEmployer = cat ? cat.name.toLowerCase().includes('employer') : false;
+        if (!isEmployer) {
+          totalDeductions += b.planned_amount;
+        }
         if (cat) {
           deductions.push({
             name: cat.name,
             monthlyAmount: b.planned_amount,
-            pctOfGross: 0, // calculated after
+            pctOfGross: 0,
             type: classifyDeduction(cat.name),
           });
         }
@@ -93,6 +96,7 @@ export default function PayrollAnalysisWidget({ month }: PayrollAnalysisWidgetPr
       }
     }
 
+    // Gross = net + employee deductions only (employer match is additional, not deducted from pay)
     const grossIncome = netIncome + totalDeductions;
 
     // Calculate percentages
