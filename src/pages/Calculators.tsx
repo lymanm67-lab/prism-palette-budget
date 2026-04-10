@@ -1706,8 +1706,13 @@ const Calculators = () => {
               <InputField label="Years to Goal" value={retireGoalForm.years} onChange={v => setRetireGoalForm(f => ({ ...f, years: v }))} icon={CalendarDays} suffix="years" />
               <InputField label="Expected Annual Return" value={retireGoalForm.rate} onChange={v => setRetireGoalForm(f => ({ ...f, rate: v }))} icon={Percent} suffix="%" />
               <InputField label="Employer Match (% of Gross)" value={retireGoalForm.employerMatchPct} onChange={v => setRetireGoalForm(f => ({ ...f, employerMatchPct: v }))} icon={Percent} suffix="%" />
-              <p className="text-[11px] text-muted-foreground -mt-1">9% of ~$5,735 gross = ~{formatCurrency(5735 * (parseFloat(retireGoalForm.employerMatchPct) || 0) / 100)}/mo</p>
-              <InputField label="Annual Contribution Raise" value={retireGoalForm.annualRaise} onChange={v => setRetireGoalForm(f => ({ ...f, annualRaise: v }))} icon={TrendingUp} suffix="% / yr" />
+              <p className="text-[11px] text-muted-foreground -mt-1">
+                Year 1: {retireGoalForm.employerMatchPct}% of ${(5735).toLocaleString()} = ~{formatCurrency(5735 * (parseFloat(retireGoalForm.employerMatchPct) || 0) / 100)}/mo · Year 15: ~{formatCurrency(5735 * Math.pow(1 + (parseFloat(retireGoalForm.annualRaise) || 0) / 100, 14) * (parseFloat(retireGoalForm.employerMatchPct) || 0) / 100)}/mo
+              </p>
+              <InputField label="Annual Pay Raise" value={retireGoalForm.annualRaise} onChange={v => setRetireGoalForm(f => ({ ...f, annualRaise: v }))} icon={TrendingUp} suffix="% / yr" />
+              <p className="text-[11px] text-muted-foreground -mt-1">
+                Salary & employer match both grow {retireGoalForm.annualRaise}% annually. Your contributions increase with your paycheck.
+              </p>
               <div className="pt-2 border-t border-border/40">
                 <p className="text-xs font-medium text-muted-foreground mb-3 flex items-center gap-1.5">
                   <Sparkles className="h-3.5 w-3.5 text-prism-amber" /> Debt Payoff Redirect
