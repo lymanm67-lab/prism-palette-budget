@@ -455,7 +455,7 @@ const Calculators = () => {
   // Retirement Goal Reverse Calculator
   const [retireGoalForm, setRetireGoalForm] = useState({
     target: '1000000', currentBalance: '0', years: '15', rate: '8',
-    employerMatch: '516.56', annualRaise: '3',
+    employerMatchPct: '9', annualRaise: '3',
     debtRedirectAmount: '888', debtRedirectStartYear: '3',
   });
   const retireGoalResult = useMemo(() => {
