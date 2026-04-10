@@ -547,6 +547,8 @@ const Calculators = () => {
     };
   }, [retireGoalForm]);
 
+  const [retireScheduleView, setRetireScheduleView] = useState<'annual' | 'monthly'>('annual');
+
   // Wealth multiplier
   const [wealthAge, setWealthAge] = useState('30');
   const handleWealthAgeChange = (v: string) => {
