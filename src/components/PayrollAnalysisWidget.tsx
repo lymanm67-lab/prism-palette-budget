@@ -219,6 +219,7 @@ export default function PayrollAnalysisWidget({ month }: PayrollAnalysisWidgetPr
               </div>
             ))}
           </div>
+        )}
 
         {/* HSA if present */}
         {analysis.hsaPct > 0 && (
