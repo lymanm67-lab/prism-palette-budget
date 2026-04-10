@@ -99,12 +99,16 @@ export default function PayrollAnalysisWidget({ month }: PayrollAnalysisWidgetPr
       d.pctOfGross = grossIncome > 0 ? (d.monthlyAmount / grossIncome) * 100 : 0;
     }
 
-    // Investment/savings analysis
-    const retirementDeductions = deductions.filter(d => d.type === 'retirement');
+    // Split employer match from employee retirement deductions
+    const employerMatchDeductions = deductions.filter(d => d.name.toLowerCase().includes('employer'));
+    const retirementDeductions = deductions.filter(d => d.type === 'retirement' && !d.name.toLowerCase().includes('employer'));
     const healthDeductions = deductions.filter(d => d.type === 'health');
 
     const employeeContribution = retirementDeductions.reduce((s, d) => s + d.monthlyAmount, 0);
     const employeeContribPct = grossIncome > 0 ? (employeeContribution / grossIncome) * 100 : 0;
+
+    const employerMatch = employerMatchDeductions.reduce((s, d) => s + d.monthlyAmount, 0);
+    const employerMatchPct = grossIncome > 0 ? (employerMatch / grossIncome) * 100 : 0;
 
     const hsaAmount = healthDeductions.filter(d => d.name.toLowerCase().includes('hsa')).reduce((s, d) => s + d.monthlyAmount, 0);
     const hsaPct = grossIncome > 0 ? (hsaAmount / grossIncome) * 100 : 0;
@@ -112,8 +116,8 @@ export default function PayrollAnalysisWidget({ month }: PayrollAnalysisWidgetPr
     // Expense % of income
     const expensePctOfNet = netIncome > 0 ? (totalExpenses / netIncome) * 100 : 0;
 
-    // Total savings rate (deductions that are savings/investment + unallocated)
-    const savingsContributions = employeeContribution + hsaAmount;
+    // Total savings rate includes employee + employer + HSA
+    const savingsContributions = employeeContribution + employerMatch + hsaAmount;
     const totalSavingsRate = grossIncome > 0 ? (savingsContributions / grossIncome) * 100 : 0;
     const meetsStandard = totalSavingsRate >= 20;
 
@@ -126,11 +130,14 @@ export default function PayrollAnalysisWidget({ month }: PayrollAnalysisWidgetPr
       expensePctOfNet,
       employeeContribution,
       employeeContribPct,
+      employerMatch,
+      employerMatchPct,
       hsaAmount,
       hsaPct,
       totalSavingsRate,
       meetsStandard,
       retirementDeductions,
+      employerMatchDeductions,
     };
   }, [budgets, categories, categoryGroups]);
 
