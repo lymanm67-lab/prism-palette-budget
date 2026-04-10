@@ -505,8 +505,9 @@ const Calculators = () => {
     const employeeMonthly = factor > 0 ? remaining / factor : 0;
     const totalMonthlyNeeded = employeeMonthly + baseEmployer;
 
-    // Project year-by-year for chart
+    // Project month-by-month for detailed schedule
     const projectionData: { label: string; balance: number; contributions: number }[] = [];
+    const detailedSchedule: { month: number; year: number; deposit: number; interest: number; balance: number }[] = [];
     let bal = current;
     let totalContrib = current;
     for (let y = 1; y <= years; y++) {
@@ -517,9 +518,11 @@ const Calculators = () => {
       for (let m = 0; m < 12; m++) {
         const monthNum = yearIdx * 12 + m + 1;
         const boost = monthNum > debtRedirectStartMonth ? debtRedirect : 0;
+        const deposit = employeeThisMonth + employerThisMonth + boost;
         const interest = bal * r;
-        bal += interest + employeeThisMonth + employerThisMonth + boost;
-        totalContrib += employeeThisMonth + employerThisMonth + boost;
+        bal += interest + deposit;
+        totalContrib += deposit;
+        detailedSchedule.push({ month: monthNum, year: y, deposit, interest, balance: bal });
       }
       projectionData.push({ label: `Yr ${y}`, balance: bal, contributions: totalContrib });
     }
