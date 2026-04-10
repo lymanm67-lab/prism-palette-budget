@@ -71,17 +71,19 @@ function calcCompoundInterest(
   compoundFreq: 'monthly' | 'annually' = 'monthly',
   contribTiming: 'end' | 'beginning' = 'end',
   contribFreq: 'monthly' | 'annually' = 'monthly',
+  annualRaisePct: number = 0,
 ) {
   const periodsPerYear = compoundFreq === 'monthly' ? 12 : 1;
   const totalPeriods = years * periodsPerYear;
   const ratePerPeriod = annualRate / 100 / periodsPerYear;
+  const raiseRate = annualRaisePct / 100;
 
   // Normalize contribution to per-compound-period amount
-  let contribPerPeriod = contribution;
+  let baseContrib = contribution;
   if (contribFreq === 'monthly' && compoundFreq === 'annually') {
-    contribPerPeriod = contribution * 12;
+    baseContrib = contribution * 12;
   } else if (contribFreq === 'annually' && compoundFreq === 'monthly') {
-    contribPerPeriod = contribution / 12;
+    baseContrib = contribution / 12;
   }
 
   let balance = principal;
@@ -92,6 +94,10 @@ function calcCompoundInterest(
   const detailedSchedule: { period: number; deposit: number; interest: number; balance: number }[] = [];
 
   for (let p = 1; p <= totalPeriods; p++) {
+    // Determine current year (0-indexed) for raise calculation
+    const currentYear = Math.floor((p - 1) / periodsPerYear);
+    const contribPerPeriod = baseContrib * Math.pow(1 + raiseRate, currentYear);
+
     let periodDeposit = contribPerPeriod;
     let periodInterest = 0;
 
