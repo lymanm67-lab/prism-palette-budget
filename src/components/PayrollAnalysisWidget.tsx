@@ -206,6 +206,20 @@ export default function PayrollAnalysisWidget({ month }: PayrollAnalysisWidgetPr
           </div>
         )}
 
+        {/* Employer match */}
+        {analysis.employerMatch > 0 && (
+          <div className="space-y-1">
+            <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+              <CheckCircle2 className="h-3 w-3 text-emerald-500" /> Employer Contributions
+            </p>
+            {analysis.employerMatchDeductions.map((d, i) => (
+              <div key={i} className="flex justify-between text-xs px-2 py-1 rounded bg-emerald-500/10 border border-emerald-500/10">
+                <span className="font-medium">{d.name}</span>
+                <span className="tabular-nums font-medium">{formatCurrency(d.monthlyAmount)} <span className="text-muted-foreground">({d.pctOfGross.toFixed(2)}%)</span></span>
+              </div>
+            ))}
+          </div>
+
         {/* HSA if present */}
         {analysis.hsaPct > 0 && (
           <div className="flex justify-between text-xs px-2 py-1 rounded bg-emerald-500/5 border border-emerald-500/10">
