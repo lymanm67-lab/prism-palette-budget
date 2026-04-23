@@ -1,5 +1,10 @@
+import { useEffect } from 'react';
 import { Mail, Phone, Globe, MapPin } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+const SUPPORT_URL = 'https://www.prismbudget.com/support';
+const SUPPORT_TITLE = 'PrismMoney™ Support | Returns, Billing & Account Help';
+const SUPPORT_DESCRIPTION = 'Contact PrismMoney™ support for returns, billing questions, account help, and customer assistance with quick answers and direct support information.';
 
 const SUPPORT_ITEMS = [
   {
@@ -61,6 +66,42 @@ const SUPPORT_FAQS = [
 ];
 
 export default function Support() {
+  useEffect(() => {
+    const previousTitle = document.title;
+
+    const upsertMeta = (selector: string, attribute: 'name' | 'property', value: string, content: string) => {
+      let element = document.head.querySelector(selector) as HTMLMetaElement | null;
+      if (!element) {
+        element = document.createElement('meta');
+        element.setAttribute(attribute, value);
+        document.head.appendChild(element);
+      }
+      element.setAttribute('content', content);
+    };
+
+    const upsertLink = (rel: string, href: string) => {
+      let element = document.head.querySelector(`link[rel="${rel}"]`) as HTMLLinkElement | null;
+      if (!element) {
+        element = document.createElement('link');
+        element.setAttribute('rel', rel);
+        document.head.appendChild(element);
+      }
+      element.setAttribute('href', href);
+    };
+
+    document.title = SUPPORT_TITLE;
+    upsertMeta('meta[name="description"]', 'name', 'description', SUPPORT_DESCRIPTION);
+    upsertMeta('meta[property="og:title"]', 'property', 'og:title', SUPPORT_TITLE);
+    upsertMeta('meta[property="og:description"]', 'property', 'og:description', SUPPORT_DESCRIPTION);
+    upsertMeta('meta[property="og:type"]', 'property', 'og:type', 'website');
+    upsertMeta('meta[property="og:url"]', 'property', 'og:url', SUPPORT_URL);
+    upsertLink('canonical', SUPPORT_URL);
+
+    return () => {
+      document.title = previousTitle;
+    };
+  }, []);
+
   return (
     <main className="min-h-screen bg-background px-6 py-16 text-foreground">
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
