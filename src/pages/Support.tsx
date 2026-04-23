@@ -1,6 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Mail, Phone, Globe, MapPin } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 
 const SUPPORT_URL = 'https://www.prismbudget.com/support';
 const SUPPORT_TITLE = 'PrismMoney™ Support | Returns, Billing & Account Help';
@@ -32,40 +36,58 @@ const SUPPORT_ITEMS = [
   },
 ];
 
+const SUPPORT_EMAIL = 'Lymanm67@gmail.com';
+
 const SUPPORT_FAQS = [
   {
     id: 'returns',
+    category: 'Returns',
     question: 'How do I request a return or refund?',
     answer:
       'Email PrismMoney™ support with your order number, the item name, the reason for the return, and whether the package was opened or used. Once your request is reviewed, support will reply with the next steps and return instructions if your request is approved.',
   },
   {
     id: 'return-window',
+    category: 'Returns',
     question: 'How long do I have to start a return?',
     answer:
       'Return requests should be submitted within 30 days of delivery. Include your order details and the date the item arrived so support can verify eligibility quickly.',
   },
   {
     id: 'billing',
+    category: 'Billing',
     question: 'What should I do if I see an unexpected charge?',
     answer:
       'Send the billing date, amount charged, order number if available, and the email used at checkout. PrismMoney™ support can review the transaction and help confirm whether it was a duplicate, pending, or valid purchase.',
   },
   {
     id: 'account-help',
+    category: 'Account Help',
     question: 'How can I get help accessing my account or order details?',
     answer:
       'If you cannot access your account, include the email address you used when ordering, your full name, and a short description of the issue. Support can help verify your purchase and guide you to the correct next step.',
   },
   {
     id: 'response-times',
+    category: 'General Support',
     question: 'How fast will support respond?',
     answer:
       'Most support questions receive a response within 1–2 business days. For faster handling, include your order number, purchase date, and all relevant return or billing details in your first message.',
   },
 ];
 
+const buildPrefilledDetails = (category: string, question: string) =>
+  `Support topic: ${category}\nQuestion: ${question}\n\nOrder number:\nPurchase date:\nDetails:`;
+
 export default function Support() {
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    orderNumber: '',
+    topic: 'Returns',
+    details: buildPrefilledDetails('Returns', SUPPORT_FAQS[0].question),
+  });
+
   useEffect(() => {
     const previousTitle = document.title;
 
@@ -101,6 +123,29 @@ export default function Support() {
       document.title = previousTitle;
     };
   }, []);
+
+  const emailHref = useMemo(() => {
+    const subject = `${form.topic} — PrismMoney™ Support Request${form.orderNumber ? ` (${form.orderNumber})` : ''}`;
+    const body = [
+      `Name: ${form.name || '[Your name]'}`,
+      `Email: ${form.email || '[Your email]'}`,
+      `Order number: ${form.orderNumber || '[Order number]'}`,
+      '',
+      form.details,
+    ].join('\n');
+
+    return `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  }, [form]);
+
+  const handlePrefill = (category: string, question: string) => {
+    setForm((current) => ({
+      ...current,
+      topic: category,
+      details: buildPrefilledDetails(category, question),
+    }));
+
+    document.getElementById('contact-support-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   return (
     <main className="min-h-screen bg-background px-6 py-16 text-foreground">
@@ -171,13 +216,84 @@ export default function Support() {
                 <CardHeader>
                   <CardTitle className="text-lg">{faq.question}</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-4">
                   <p className="text-sm leading-6 text-muted-foreground">{faq.answer}</p>
+                  <Button variant="outline" onClick={() => handlePrefill(faq.category, faq.question)}>
+                    Contact support
+                  </Button>
                 </CardContent>
               </Card>
             ))}
           </div>
         </section>
+
+        <Card id="contact-support-form">
+          <CardHeader>
+            <CardTitle>Contact Support</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-2">
+                <Label htmlFor="support-name">Name</Label>
+                <Input
+                  id="support-name"
+                  value={form.name}
+                  onChange={(e) => setForm((current) => ({ ...current, name: e.target.value }))}
+                  placeholder="Your name"
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="support-email">Email</Label>
+                <Input
+                  id="support-email"
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => setForm((current) => ({ ...current, email: e.target.value }))}
+                  placeholder="you@example.com"
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-2">
+                <Label htmlFor="support-order">Order Number</Label>
+                <Input
+                  id="support-order"
+                  value={form.orderNumber}
+                  onChange={(e) => setForm((current) => ({ ...current, orderNumber: e.target.value }))}
+                  placeholder="Optional order number"
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="support-topic">Topic</Label>
+                <Input
+                  id="support-topic"
+                  value={form.topic}
+                  onChange={(e) => setForm((current) => ({ ...current, topic: e.target.value }))}
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="support-details">Details</Label>
+              <Textarea
+                id="support-details"
+                value={form.details}
+                onChange={(e) => setForm((current) => ({ ...current, details: e.target.value }))}
+                className="min-h-40"
+              />
+            </div>
+
+            <div className="flex flex-wrap gap-3">
+              <Button asChild>
+                <a href={emailHref}>Email support</a>
+              </Button>
+              <p className="self-center text-sm text-muted-foreground">
+                FAQ links prefill the topic and details for you.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </main>
   );
