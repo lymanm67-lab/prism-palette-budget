@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import LandingNav from '@/components/landing/LandingNav';
 import HeroSection from '@/components/landing/HeroSection';
 import PressLogosBar from '@/components/landing/PressLogosBar';
@@ -20,6 +21,28 @@ const LandingPage = () => {
   // Track scroll depth and time on page for the hero headline experiment
   useScrollDepthTracking('hero_headline');
   useTimeOnPageTracking('hero_headline');
+
+  useEffect(() => {
+    const previousClickbank = (window as Window & { clickbank?: { vendor: string } }).clickbank;
+    (window as Window & { clickbank?: { vendor: string } }).clickbank = {
+      vendor: 'lymanm',
+    };
+
+    const script = document.createElement('script');
+    script.src = 'https://scripts.clickbank.net/hop.min.js';
+    script.defer = true;
+    script.dataset.clickbankTracking = 'true';
+    document.body.appendChild(script);
+
+    return () => {
+      script.remove();
+      if (previousClickbank) {
+        (window as Window & { clickbank?: { vendor: string } }).clickbank = previousClickbank;
+      } else {
+        delete (window as Window & { clickbank?: { vendor: string } }).clickbank;
+      }
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
