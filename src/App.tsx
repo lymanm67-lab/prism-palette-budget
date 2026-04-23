@@ -42,6 +42,7 @@ const BillNegotiation = lazy(() => import("@/pages/BillNegotiation"));
 const ApiDocs = lazy(() => import("@/pages/ApiDocs"));
 const Legal = lazy(() => import("@/pages/Legal"));
 const Changelog = lazy(() => import("@/pages/Changelog"));
+const Support = lazy(() => import("@/pages/Support"));
 const CapitalDashboard = lazy(() => import("@/pages/CapitalDashboard"));
 const CreditOverview = lazy(() => import("@/pages/capital/CreditOverview"));
 const Metro2Scanner = lazy(() => import("@/pages/capital/Metro2Scanner"));
@@ -125,6 +126,7 @@ const App = () => (
             <Route path="/auth" element={<AuthRoute><Auth /></AuthRoute>} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/changelog" element={<Suspense fallback={<PageLoader />}><Changelog /></Suspense>} />
+            <Route path="/support" element={<Suspense fallback={<PageLoader />}><Support /></Suspense>} />
             <Route element={
               <ProtectedRoute>
                 <HouseholdProvider>
