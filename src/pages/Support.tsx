@@ -27,6 +27,39 @@ const SUPPORT_ITEMS = [
   },
 ];
 
+const SUPPORT_FAQS = [
+  {
+    id: 'returns',
+    question: 'How do I request a return or refund?',
+    answer:
+      'Email PrismMoney™ support with your order number, the item name, the reason for the return, and whether the package was opened or used. Once your request is reviewed, support will reply with the next steps and return instructions if your request is approved.',
+  },
+  {
+    id: 'return-window',
+    question: 'How long do I have to start a return?',
+    answer:
+      'Return requests should be submitted within 30 days of delivery. Include your order details and the date the item arrived so support can verify eligibility quickly.',
+  },
+  {
+    id: 'billing',
+    question: 'What should I do if I see an unexpected charge?',
+    answer:
+      'Send the billing date, amount charged, order number if available, and the email used at checkout. PrismMoney™ support can review the transaction and help confirm whether it was a duplicate, pending, or valid purchase.',
+  },
+  {
+    id: 'account-help',
+    question: 'How can I get help accessing my account or order details?',
+    answer:
+      'If you cannot access your account, include the email address you used when ordering, your full name, and a short description of the issue. Support can help verify your purchase and guide you to the correct next step.',
+  },
+  {
+    id: 'response-times',
+    question: 'How fast will support respond?',
+    answer:
+      'Most support questions receive a response within 1–2 business days. For faster handling, include your order number, purchase date, and all relevant return or billing details in your first message.',
+  },
+];
+
 export default function Support() {
   return (
     <main className="min-h-screen bg-background px-6 py-16 text-foreground">
@@ -68,6 +101,42 @@ export default function Support() {
             })}
           </CardContent>
         </Card>
+
+        <section className="space-y-5" aria-labelledby="support-faq-heading">
+          <div className="space-y-2">
+            <h2 id="support-faq-heading" className="font-display text-2xl font-bold tracking-tight">
+              Support FAQ
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Quick answers for returns, billing questions, and account help.
+            </p>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            {SUPPORT_FAQS.map((faq) => (
+              <a
+                key={faq.id}
+                href={`#${faq.id}`}
+                className="rounded-lg border border-border bg-card px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+              >
+                {faq.question}
+              </a>
+            ))}
+          </div>
+
+          <div className="space-y-4">
+            {SUPPORT_FAQS.map((faq) => (
+              <Card key={faq.id} id={faq.id}>
+                <CardHeader>
+                  <CardTitle className="text-lg">{faq.question}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm leading-6 text-muted-foreground">{faq.answer}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
       </div>
     </main>
   );
