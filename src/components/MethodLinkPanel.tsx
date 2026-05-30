@@ -22,8 +22,9 @@ type MethodLiability = {
   status: string;
 };
 
-export default function MethodLinkPanel({ entityReady }: { entityReady: boolean }) {
+export default function MethodLinkPanel() {
   const { household } = useHousehold();
+  const [entityReady, setEntityReady] = useState(false);
   const [plaidItems, setPlaidItems] = useState<PlaidItem[]>([]);
   const [sources, setSources] = useState<MethodAccount[]>([]);
   const [liabilities, setLiabilities] = useState<MethodLiability[]>([]);
@@ -41,7 +42,8 @@ export default function MethodLinkPanel({ entityReady }: { entityReady: boolean 
   const load = async () => {
     if (!household?.id) return;
     setLoading(true);
-    const [{ data: items }, { data: srcs }, { data: liabs }] = await Promise.all([
+    const [{ data: ent }, { data: items }, { data: srcs }, { data: liabs }] = await Promise.all([
+      supabase.from('method_entities').select('id').eq('household_id', household.id).maybeSingle(),
       supabase.from('plaid_items').select('id, institution_name').eq('household_id', household.id),
       supabase.from('method_accounts').select('id, method_account_id, mask, type, status').eq('household_id', household.id),
       supabase
@@ -49,6 +51,7 @@ export default function MethodLinkPanel({ entityReady }: { entityReady: boolean 
         .select('id, merchant_name, mask, balance, next_payment_minimum_amount, next_payment_due_date, status')
         .eq('household_id', household.id),
     ]);
+    setEntityReady(!!ent);
     setPlaidItems(items ?? []);
     setSources(srcs ?? []);
     setLiabilities(liabs ?? []);
