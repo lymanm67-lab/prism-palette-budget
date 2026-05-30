@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 const TRIAL_DAYS = 14;
 
 export function useTrialCountdown() {
-  const { user, subscribed, subscriptionTier } = useAuth();
+  const { user, subscribed, subscriptionTier, isFounder } = useAuth();
 
   const { data: profile } = useQuery({
     queryKey: ['profile-trial', user?.id],
@@ -32,8 +32,9 @@ export function useTrialCountdown() {
     ? Math.max(0, Math.ceil((trialEndDate.getTime() - now.getTime()) / (24 * 60 * 60 * 1000)))
     : 0;
 
-  const trialExpired = daysRemaining === 0 && !subscribed;
-  const showTrialBanner = !subscribed && !!trialStartedAt && !subscriptionTier;
+  const hasFullAccess = subscribed || isFounder || !!subscriptionTier;
+  const trialExpired = daysRemaining === 0 && !hasFullAccess;
+  const showTrialBanner = !hasFullAccess && !!trialStartedAt;
 
   return {
     daysRemaining,
