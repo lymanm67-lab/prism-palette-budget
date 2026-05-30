@@ -15,6 +15,7 @@ import { AlertTriangle, CheckCircle2, ExternalLink, Settings2, Info, Bell, Calen
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import MethodEntitySetup from './MethodEntitySetup';
+import MethodLinkPanel from './MethodLinkPanel';
 
 const HORIZON_DAYS = 45;
 
@@ -107,6 +108,8 @@ export default function BillPayPanel() {
   return (
     <div className="space-y-4">
       <MethodEntitySetup />
+      <MethodLinkPanel />
+
 
       <Alert>
         <Info className="h-4 w-4" />
