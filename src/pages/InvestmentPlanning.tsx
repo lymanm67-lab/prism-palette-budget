@@ -129,6 +129,10 @@ export default function InvestmentPlanning() {
           <TabsTrigger value="income">Income</TabsTrigger>
           <TabsTrigger value="realassets">Real assets</TabsTrigger>
           <TabsTrigger value="behavior">Coach</TabsTrigger>
+          <TabsTrigger value="estate">Estate</TabsTrigger>
+          <TabsTrigger value="charitable">Giving</TabsTrigger>
+          <TabsTrigger value="college">College</TabsTrigger>
+          <TabsTrigger value="automation">Automation</TabsTrigger>
           <TabsTrigger value="scenarios">Scenarios</TabsTrigger>
           <TabsTrigger value="milestones">Milestones</TabsTrigger>
         </TabsList>
@@ -169,6 +173,10 @@ export default function InvestmentPlanning() {
         <TabsContent value="income" className="mt-4"><IncomeEngineering plan={plan ?? null} /></TabsContent>
         <TabsContent value="realassets" className="mt-4"><RealAssetsPlanner /></TabsContent>
         <TabsContent value="behavior" className="mt-4"><BehaviorAccountability /></TabsContent>
+        <TabsContent value="estate" className="mt-4"><EstateExecution planId={plan?.id} /></TabsContent>
+        <TabsContent value="charitable" className="mt-4"><CharitablePlanner /></TabsContent>
+        <TabsContent value="college" className="mt-4"><CollegePlanner /></TabsContent>
+        <TabsContent value="automation" className="mt-4"><AutomationLog planId={plan?.id} /></TabsContent>
 
         <TabsContent value="scenarios" className="mt-4">
           <ScenarioComparison plan={plan ?? null} />
