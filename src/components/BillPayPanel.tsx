@@ -106,6 +106,8 @@ export default function BillPayPanel() {
 
   return (
     <div className="space-y-4">
+      <MethodEntitySetup />
+
       <Alert>
         <Info className="h-4 w-4" />
         <AlertDescription className="text-xs">
