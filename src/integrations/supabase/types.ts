@@ -991,6 +991,51 @@ export type Database = {
           },
         ]
       }
+      digital_assets: {
+        Row: {
+          asset_type: string
+          beneficiary: string | null
+          created_at: string
+          has_2fa: boolean
+          household_id: string
+          id: string
+          name: string
+          provider: string | null
+          recovery_notes: string | null
+          updated_at: string
+          username: string | null
+          vault_location: string | null
+        }
+        Insert: {
+          asset_type?: string
+          beneficiary?: string | null
+          created_at?: string
+          has_2fa?: boolean
+          household_id: string
+          id?: string
+          name: string
+          provider?: string | null
+          recovery_notes?: string | null
+          updated_at?: string
+          username?: string | null
+          vault_location?: string | null
+        }
+        Update: {
+          asset_type?: string
+          beneficiary?: string | null
+          created_at?: string
+          has_2fa?: boolean
+          household_id?: string
+          id?: string
+          name?: string
+          provider?: string | null
+          recovery_notes?: string | null
+          updated_at?: string
+          username?: string | null
+          vault_location?: string | null
+        }
+        Relationships: []
+      }
       financial_goals: {
         Row: {
           color: string | null
@@ -1930,6 +1975,33 @@ export type Database = {
           target_amount?: number
           updated_at?: string
           use_future_dollars?: boolean
+        }
+        Relationships: []
+      }
+      investment_rule_executions: {
+        Row: {
+          executed_at: string
+          household_id: string
+          id: string
+          notes: string | null
+          rule_id: string
+          status: string
+        }
+        Insert: {
+          executed_at?: string
+          household_id: string
+          id?: string
+          notes?: string | null
+          rule_id: string
+          status?: string
+        }
+        Update: {
+          executed_at?: string
+          household_id?: string
+          id?: string
+          notes?: string | null
+          rule_id?: string
+          status?: string
         }
         Relationships: []
       }
