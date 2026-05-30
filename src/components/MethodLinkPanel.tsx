@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Loader2, Landmark, Link2, RefreshCw, CreditCard, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -11,7 +10,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useHousehold } from '@/contexts/HouseholdContext';
 
 type PlaidItem = { id: string; institution_name: string | null };
-type PlaidAccount = { account_id: string; name: string; mask: string | null; subtype: string | null };
 type MethodAccount = { id: string; method_account_id: string; mask: string | null; type: string; status: string };
 type MethodLiability = {
   id: string;
@@ -26,17 +24,9 @@ type MethodLiability = {
 export default function MethodLinkPanel() {
   const { household } = useHousehold();
   const [entityReady, setEntityReady] = useState(false);
-  const [plaidItems, setPlaidItems] = useState<PlaidItem[]>([]);
   const [sources, setSources] = useState<MethodAccount[]>([]);
   const [liabilities, setLiabilities] = useState<MethodLiability[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // Source picker dialog state
-  const [pickerOpen, setPickerOpen] = useState(false);
-  const [pickerItem, setPickerItem] = useState<PlaidItem | null>(null);
-  const [pickerAccounts, setPickerAccounts] = useState<PlaidAccount[]>([]);
-  const [pickerLoading, setPickerLoading] = useState(false);
-  const [linking, setLinking] = useState<string | null>(null);
   const [connecting, setConnecting] = useState(false);
   const [syncing, setSyncing] = useState(false);
 
@@ -59,7 +49,6 @@ export default function MethodLinkPanel() {
     const items = (itemsRes.data ?? []).filter((it: any) => it.household_id === household.id);
     console.log('[MethodLinkPanel] loaded', { household: household.id, items: items.length, raw: itemsRes.data?.length });
     setEntityReady(!!entRes.data);
-    setPlaidItems(items as any);
     setSources(srcsRes.data ?? []);
     setLiabilities(liabsRes.data ?? []);
     setLoading(false);
@@ -76,39 +65,6 @@ export default function MethodLinkPanel() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [household?.id]);
-
-  const openPicker = async (item: PlaidItem) => {
-    if (!household?.id) return;
-    setPickerItem(item);
-    setPickerOpen(true);
-    setPickerLoading(true);
-    setPickerAccounts([]);
-    const { data, error } = await supabase.functions.invoke('method-list-plaid-accounts', {
-      body: { household_id: household.id, plaid_item_db_id: item.id },
-    });
-    setPickerLoading(false);
-    if (error || data?.error) {
-      toast.error(data?.error ?? error?.message ?? 'Failed to load accounts');
-      return;
-    }
-    setPickerAccounts(data.accounts ?? []);
-  };
-
-  const linkSource = async (acct: PlaidAccount) => {
-    if (!household?.id || !pickerItem) return;
-    setLinking(acct.account_id);
-    const { data, error } = await supabase.functions.invoke('method-link-source', {
-      body: { household_id: household.id, plaid_item_db_id: pickerItem.id, plaid_account_id: acct.account_id },
-    });
-    setLinking(null);
-    if (error || data?.error) {
-      toast.error(data?.error ?? error?.message ?? 'Failed to link account');
-      return;
-    }
-    toast.success(`Linked ${acct.name} as funding source`);
-    setPickerOpen(false);
-    load();
-  };
 
   const openConnect = async () => {
     if (!household?.id) return;
@@ -169,7 +125,7 @@ export default function MethodLinkPanel() {
           {sources.length === 0 ? (
             <Alert>
               <AlertDescription>
-                No Method funding source yet. Pick a connected bank below to enable bill payments.
+                Method funding requires a verified ACH source and cannot be created from a Plaid bank selection.
               </AlertDescription>
             </Alert>
           ) : (
@@ -182,26 +138,16 @@ export default function MethodLinkPanel() {
               ))}
             </ul>
           )}
-          {plaidItems.length === 0 ? (
-            <div className="flex items-center justify-between gap-2 rounded border border-dashed p-3">
-              <p className="text-xs text-muted-foreground">
-                Connect a bank first — Method uses one of your linked checking/savings accounts as the funding source.
-              </p>
-              <Button asChild size="sm" variant="default">
-                <Link to="/accounts">
-                  <Plus className="h-3 w-3 mr-1" /> Connect Bank
-                </Link>
-              </Button>
-            </div>
-          ) : (
-            <div className="flex flex-wrap gap-2 pt-1">
-              {plaidItems.map((it) => (
-                <Button key={it.id} variant="outline" size="sm" onClick={() => openPicker(it)}>
-                  Link from {it.institution_name ?? 'bank'}
-                </Button>
-              ))}
-            </div>
-          )}
+          <div className="flex items-center justify-between gap-2 rounded border border-dashed p-3">
+            <p className="text-xs text-muted-foreground">
+              To link real bills, use Method Connect below. Bank account funding setup is not available through Plaid.
+            </p>
+            <Button asChild size="sm" variant="outline">
+              <Link to="/accounts">
+                <Plus className="h-3 w-3 mr-1" /> Manage Banks
+              </Link>
+            </Button>
+          </div>
         </section>
 
         {/* Liabilities / bills */}
@@ -254,35 +200,6 @@ export default function MethodLinkPanel() {
         {loading && <p className="text-xs text-muted-foreground">Loading…</p>}
       </CardContent>
 
-      <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Pick a depository account</DialogTitle>
-          </DialogHeader>
-          {pickerLoading ? (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground py-6 justify-center">
-              <Loader2 className="h-4 w-4 animate-spin" /> Loading accounts…
-            </div>
-          ) : pickerAccounts.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-4">No depository accounts found in this Plaid item.</p>
-          ) : (
-            <ul className="space-y-2">
-              {pickerAccounts.map((a) => (
-                <li key={a.account_id} className="flex justify-between items-center rounded border p-2">
-                  <div className="text-sm">
-                    <div className="font-medium">{a.name}</div>
-                    <div className="text-xs text-muted-foreground">•••• {a.mask ?? '????'} · {a.subtype}</div>
-                  </div>
-                  <Button size="sm" onClick={() => linkSource(a)} disabled={linking === a.account_id}>
-                    {linking === a.account_id && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
-                    Use
-                  </Button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </DialogContent>
-      </Dialog>
     </Card>
   );
 }
