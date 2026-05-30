@@ -14,6 +14,7 @@ import { format, parseISO, differenceInCalendarDays } from 'date-fns';
 import { AlertTriangle, CheckCircle2, ExternalLink, Settings2, Info, Bell, Calendar as CalIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import MethodEntitySetup from './MethodEntitySetup';
 
 const HORIZON_DAYS = 45;
 
@@ -105,6 +106,8 @@ export default function BillPayPanel() {
 
   return (
     <div className="space-y-4">
+      <MethodEntitySetup />
+
       <Alert>
         <Info className="h-4 w-4" />
         <AlertDescription className="text-xs">
