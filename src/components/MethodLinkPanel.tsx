@@ -24,6 +24,7 @@ type MethodLiability = {
 export default function MethodLinkPanel() {
   const { household } = useHousehold();
   const [entityReady, setEntityReady] = useState(false);
+  const [plaidItems, setPlaidItems] = useState<PlaidItem[]>([]);
   const [sources, setSources] = useState<MethodAccount[]>([]);
   const [liabilities, setLiabilities] = useState<MethodLiability[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,6 +50,7 @@ export default function MethodLinkPanel() {
     const items = (itemsRes.data ?? []).filter((it: any) => it.household_id === household.id);
     console.log('[MethodLinkPanel] loaded', { household: household.id, items: items.length, raw: itemsRes.data?.length });
     setEntityReady(!!entRes.data);
+    setPlaidItems(items);
     setSources(srcsRes.data ?? []);
     setLiabilities(liabsRes.data ?? []);
     setLoading(false);
@@ -120,14 +122,26 @@ export default function MethodLinkPanel() {
             <h4 className="text-sm font-medium flex items-center gap-2">
               <Landmark className="h-4 w-4" /> Funding Sources
             </h4>
-            <Badge variant="secondary">{sources.length}</Badge>
+            <Badge variant="secondary">{sources.length || plaidItems.length}</Badge>
           </div>
           {sources.length === 0 ? (
-            <Alert>
-              <AlertDescription>
-                Method funding requires a verified ACH source and cannot be created from a Plaid bank selection.
-              </AlertDescription>
-            </Alert>
+            <div className="space-y-2">
+              {plaidItems.length > 0 && (
+                <ul className="space-y-1 text-sm">
+                  {plaidItems.map((item) => (
+                    <li key={item.id} className="flex items-center justify-between rounded border p-2">
+                      <span className="font-medium">{item.institution_name ?? 'Connected bank'}</span>
+                      <Badge variant="secondary">Bank connected</Badge>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <Alert>
+                <AlertDescription>
+                  Method funding requires a verified ACH source and cannot be created from a Plaid bank selection.
+                </AlertDescription>
+              </Alert>
+            </div>
           ) : (
             <ul className="space-y-1 text-sm">
               {sources.map((s) => (
