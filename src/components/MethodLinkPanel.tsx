@@ -165,7 +165,16 @@ export default function MethodLinkPanel() {
             </ul>
           )}
           {plaidItems.length === 0 ? (
-            <p className="text-xs text-muted-foreground">Connect a bank via Plaid first.</p>
+            <div className="flex items-center justify-between gap-2 rounded border border-dashed p-3">
+              <p className="text-xs text-muted-foreground">
+                Connect a bank first — Method uses one of your linked checking/savings accounts as the funding source.
+              </p>
+              <Button asChild size="sm" variant="default">
+                <Link to="/accounts">
+                  <Plus className="h-3 w-3 mr-1" /> Connect Bank
+                </Link>
+              </Button>
+            </div>
           ) : (
             <div className="flex flex-wrap gap-2 pt-1">
               {plaidItems.map((it) => (
