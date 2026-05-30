@@ -61,6 +61,13 @@ export default function MethodLinkPanel() {
 
   useEffect(() => {
     load();
+    const onFocus = () => load();
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onFocus);
+    return () => {
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onFocus);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [household?.id]);
 
@@ -135,8 +142,13 @@ export default function MethodLinkPanel() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base">
-          <Link2 className="h-4 w-4" /> Method Funding & Bills
+        <CardTitle className="flex items-center justify-between text-base">
+          <span className="flex items-center gap-2">
+            <Link2 className="h-4 w-4" /> Method Funding & Bills
+          </span>
+          <Button size="sm" variant="ghost" onClick={load} disabled={loading} className="h-7 px-2">
+            <RefreshCw className={`h-3 w-3 ${loading ? 'animate-spin' : ''}`} />
+          </Button>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
