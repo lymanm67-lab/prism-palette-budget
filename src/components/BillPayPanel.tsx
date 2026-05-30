@@ -283,3 +283,85 @@ export default function BillPayPanel() {
     </div>
   );
 }
+
+function HowToUseBillPay() {
+  const [open, setOpen] = useState(false);
+  return (
+    <Card className="border-primary/20 bg-primary/5">
+      <Collapsible open={open} onOpenChange={setOpen}>
+        <CollapsibleTrigger asChild>
+          <button className="w-full flex items-center justify-between p-4 text-left">
+            <div className="flex items-center gap-2">
+              <HelpCircle className="h-4 w-4 text-primary" />
+              <span className="font-medium text-sm">How to use & set up Bill Pay</span>
+              <Badge variant="secondary" className="text-[10px]">New here? Start here</Badge>
+            </div>
+            <ChevronDown className={cn('h-4 w-4 transition-transform', open && 'rotate-180')} />
+          </button>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <div className="px-4 pb-4 space-y-4 text-sm">
+            <div>
+              <p className="font-semibold mb-1">What Bill Pay does</p>
+              <p className="text-muted-foreground text-xs leading-relaxed">
+                Prism™ tracks every recurring expense, reminds you before each one is due, and lets you mark bills paid in one tap.
+                Optionally, link real bills via Method™ to see live balances and due dates from your billers (credit cards, loans, utilities).
+                Prism™ does not move money — you pay through the biller's site or set autopay directly with them.
+              </p>
+            </div>
+
+            <div>
+              <p className="font-semibold mb-1.5">Quick setup (3 steps)</p>
+              <ol className="space-y-2 text-xs text-muted-foreground list-decimal pl-4">
+                <li>
+                  <span className="font-medium text-foreground">Add recurring bills.</span> Click{' '}
+                  <span className="font-medium text-foreground">+ Add Recurring</span> at the top right (or import them from Transactions).
+                  Set merchant, amount, account, and next due date.
+                </li>
+                <li>
+                  <span className="font-medium text-foreground">Configure each bill.</span> Click the{' '}
+                  <Settings2 className="inline h-3 w-3" /> gear next to any bill to add the biller's website
+                  (for the one-tap Pay button), set reminder days, and flag autopay.
+                </li>
+                <li>
+                  <span className="font-medium text-foreground">Stay on top.</span> Use{' '}
+                  <span className="font-medium text-foreground">Mark paid</span> when you pay a bill. Prism™ logs the transaction
+                  and rolls the due date forward.
+                </li>
+              </ol>
+            </div>
+
+            <div className="rounded-lg border border-border/50 bg-background/50 p-3">
+              <p className="font-semibold mb-1.5 text-xs">Optional: Link real bills with Method™</p>
+              <ol className="space-y-1.5 text-xs text-muted-foreground list-decimal pl-4">
+                <li>
+                  Open <span className="font-medium text-foreground">Method™ Identity Verification</span> below and submit your name,
+                  email, phone (+15551234567 format), and DOB. Status turns to <em>active</em> or <em>incomplete</em> (both work in dev).
+                </li>
+                <li>
+                  In <span className="font-medium text-foreground">Link Bills with Method™</span>, pick a connected checking account
+                  as your funding source.
+                </li>
+                <li>
+                  Click <span className="font-medium text-foreground">Connect Bills</span> to launch Method's secure popup, log in to
+                  your biller (e.g., a credit card), then hit <span className="font-medium text-foreground">Sync Bills</span>.
+                </li>
+                <li>
+                  Live balances and due dates appear in the list below automatically.
+                </li>
+              </ol>
+            </div>
+
+            <div className="flex items-start gap-2 text-[11px] text-muted-foreground">
+              <Info className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+              <p>
+                Need to add a bill that isn't recurring yet? Switch to the <span className="font-medium text-foreground">List</span> tab
+                above and click <span className="font-medium text-foreground">+ Add Recurring</span>.
+              </p>
+            </div>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+    </Card>
+  );
+}
