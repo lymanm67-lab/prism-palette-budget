@@ -12,6 +12,11 @@ import { ScenarioComparison } from '@/components/investment/ScenarioComparison';
 import { MilestoneTracker } from '@/components/investment/MilestoneTracker';
 import { ProjectionCharts } from '@/components/investment/ProjectionCharts';
 import { DisclaimerBlock } from '@/components/investment/DisclaimerBlock';
+import { SpouseHouseholdPanel } from '@/components/investment/SpouseHouseholdPanel';
+import { PensionPlanner } from '@/components/investment/PensionPlanner';
+import { HSAPlanner } from '@/components/investment/HSAPlanner';
+import { LegacyPlanner } from '@/components/investment/LegacyPlanner';
+import { MoneyRulesManager } from '@/components/investment/MoneyRulesManager';
 import { runProjection } from '@/lib/investment/projection';
 import { exportInvestmentPlanPDF } from '@/lib/investment/exportInvestmentPlanPDF';
 import { toast } from '@/hooks/use-toast';
@@ -98,11 +103,16 @@ export default function InvestmentPlanning() {
       ) : null}
 
       <Tabs defaultValue={plan ? 'snapshot' : 'wizard'} className="w-full">
-        <TabsList className="grid grid-cols-3 md:grid-cols-6 h-auto">
+        <TabsList className="flex flex-wrap h-auto gap-1">
           <TabsTrigger value="snapshot">Snapshot</TabsTrigger>
           <TabsTrigger value="wizard">Setup</TabsTrigger>
           <TabsTrigger value="raise">Raises</TabsTrigger>
           <TabsTrigger value="debt">Debt→Wealth</TabsTrigger>
+          <TabsTrigger value="spouse">Spouse</TabsTrigger>
+          <TabsTrigger value="pensions">Pensions</TabsTrigger>
+          <TabsTrigger value="hsa">HSA</TabsTrigger>
+          <TabsTrigger value="legacy">Legacy</TabsTrigger>
+          <TabsTrigger value="rules">Money rules</TabsTrigger>
           <TabsTrigger value="scenarios">Scenarios</TabsTrigger>
           <TabsTrigger value="milestones">Milestones</TabsTrigger>
         </TabsList>
@@ -131,6 +141,12 @@ export default function InvestmentPlanning() {
             returnPct={plan?.expected_return_pct ?? 7}
           />
         </TabsContent>
+
+        <TabsContent value="spouse" className="mt-4"><SpouseHouseholdPanel planId={plan?.id} /></TabsContent>
+        <TabsContent value="pensions" className="mt-4"><PensionPlanner planId={plan?.id} /></TabsContent>
+        <TabsContent value="hsa" className="mt-4"><HSAPlanner plan={plan ?? null} /></TabsContent>
+        <TabsContent value="legacy" className="mt-4"><LegacyPlanner planId={plan?.id} /></TabsContent>
+        <TabsContent value="rules" className="mt-4"><MoneyRulesManager planId={plan?.id} /></TabsContent>
 
         <TabsContent value="scenarios" className="mt-4">
           <ScenarioComparison plan={plan ?? null} />
