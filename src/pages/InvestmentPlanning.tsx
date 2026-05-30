@@ -54,9 +54,13 @@ export default function InvestmentPlanning() {
     }
   };
 
+  useEffect(() => {
+    document.title = 'Investment Planning | Prism Money';
+  }, []);
+
   return (
     <div className="container max-w-6xl mx-auto p-4 md:p-6 space-y-6">
-      <PageTitle />
+
 
 
 
