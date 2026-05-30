@@ -108,8 +108,11 @@ export default function BillPayPanel() {
 
   return (
     <div className="space-y-4">
+      <HowToUseBillPay />
       <MethodEntitySetup />
       <MethodLinkPanel />
+
+
 
 
       <Alert>
