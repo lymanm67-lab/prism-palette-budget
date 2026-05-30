@@ -10,8 +10,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const PLAID_BASE_URL = (env: string) =>
-  env === 'production' ? 'https://production.plaid.com' : 'https://sandbox.plaid.com';
+const PLAID_BASE_URL = 'https://production.plaid.com';
 const METHOD_BASE_URL = (env: string) =>
   env === 'production' ? 'https://production.methodfi.com' : 'https://dev.methodfi.com';
 
@@ -22,7 +21,6 @@ Deno.serve(async (req) => {
   const METHOD_ENV = Deno.env.get('METHOD_ENV') ?? 'dev';
   const PLAID_CLIENT_ID = Deno.env.get('PLAID_CLIENT_ID');
   const PLAID_SECRET = Deno.env.get('PLAID_SECRET');
-  const PLAID_ENV = Deno.env.get('PLAID_ENV') ?? 'production';
   if (!METHOD_API_KEY || !PLAID_CLIENT_ID || !PLAID_SECRET) {
     return new Response(JSON.stringify({ error: 'Missing API credentials' }), {
       status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -86,9 +84,14 @@ Deno.serve(async (req) => {
         status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+    if (!pItem.plaid_access_token.startsWith('access-production-')) {
+      return new Response(JSON.stringify({ error: 'This bank connection must be reconnected before it can be used for bill pay.' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     // 1. Create Plaid processor token for Method
-    const procRes = await fetch(`${PLAID_BASE_URL(PLAID_ENV)}/processor/token/create`, {
+    const procRes = await fetch(`${PLAID_BASE_URL}/processor/token/create`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

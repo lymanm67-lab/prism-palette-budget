@@ -7,14 +7,12 @@ const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-const PLAID_BASE_URL = (env: string) =>
-  env === 'production' ? 'https://production.plaid.com' : 'https://sandbox.plaid.com';
+const PLAID_BASE_URL = 'https://production.plaid.com';
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
   const PLAID_CLIENT_ID = Deno.env.get('PLAID_CLIENT_ID');
   const PLAID_SECRET = Deno.env.get('PLAID_SECRET');
-  const PLAID_ENV = Deno.env.get('PLAID_ENV') ?? 'production';
   if (!PLAID_CLIENT_ID || !PLAID_SECRET) {
     return new Response(JSON.stringify({ error: 'Plaid creds missing' }), { status: 500, headers: corsHeaders });
   }
@@ -52,8 +50,13 @@ Deno.serve(async (req) => {
     if (!item?.plaid_access_token) {
       return new Response(JSON.stringify({ error: 'Plaid item not found' }), { status: 404, headers: corsHeaders });
     }
+    if (!item.plaid_access_token.startsWith('access-production-')) {
+      return new Response(JSON.stringify({ error: 'This bank connection must be reconnected before it can be used for bill pay.' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
-    const res = await fetch(`${PLAID_BASE_URL(PLAID_ENV)}/accounts/get`, {
+    const res = await fetch(`${PLAID_BASE_URL}/accounts/get`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ client_id: PLAID_CLIENT_ID, secret: PLAID_SECRET, access_token: item.plaid_access_token }),
