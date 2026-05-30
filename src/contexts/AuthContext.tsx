@@ -90,17 +90,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  // Check founder role when session changes
+  // Check full-access role when session changes
   useEffect(() => {
     if (session?.user?.id) {
       supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', session.user.id)
-        .eq('role', 'founder')
-        .maybeSingle()
-        .then(({ data }) => {
-          setIsFounder(!!data);
+        .in('role', ['founder', 'admin'])
+        .then(({ data, error }) => {
+          if (error) {
+            console.error('role check error:', error);
+            setIsFounder(false);
+            return;
+          }
+          setIsFounder((data ?? []).length > 0);
         });
     } else {
       setIsFounder(false);
