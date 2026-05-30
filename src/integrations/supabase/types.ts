@@ -1507,6 +1507,78 @@ export type Database = {
           },
         ]
       }
+      investment_legacy_goals: {
+        Row: {
+          advisors: Json
+          beneficiaries: Json
+          created_at: string
+          excluded_account_ids: string[]
+          has_poa: boolean
+          has_trust: boolean
+          has_will: boolean
+          household_id: string
+          id: string
+          included_account_ids: string[]
+          name: string
+          notes: string | null
+          plan_id: string
+          target_amount: number
+          target_year: number | null
+          updated_at: string
+        }
+        Insert: {
+          advisors?: Json
+          beneficiaries?: Json
+          created_at?: string
+          excluded_account_ids?: string[]
+          has_poa?: boolean
+          has_trust?: boolean
+          has_will?: boolean
+          household_id: string
+          id?: string
+          included_account_ids?: string[]
+          name?: string
+          notes?: string | null
+          plan_id: string
+          target_amount?: number
+          target_year?: number | null
+          updated_at?: string
+        }
+        Update: {
+          advisors?: Json
+          beneficiaries?: Json
+          created_at?: string
+          excluded_account_ids?: string[]
+          has_poa?: boolean
+          has_trust?: boolean
+          has_will?: boolean
+          household_id?: string
+          id?: string
+          included_account_ids?: string[]
+          name?: string
+          notes?: string | null
+          plan_id?: string
+          target_amount?: number
+          target_year?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investment_legacy_goals_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "investment_legacy_goals_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "investment_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       investment_milestones: {
         Row: {
           age: number
@@ -1545,6 +1617,213 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      investment_money_rules: {
+        Row: {
+          amount: number | null
+          amount_pct: number | null
+          created_at: string
+          destination: string | null
+          frequency: string
+          household_id: string
+          id: string
+          name: string
+          notes: string | null
+          plan_id: string | null
+          reminder: boolean
+          start_date: string | null
+          status: string
+          trigger_type: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number | null
+          amount_pct?: number | null
+          created_at?: string
+          destination?: string | null
+          frequency?: string
+          household_id: string
+          id?: string
+          name: string
+          notes?: string | null
+          plan_id?: string | null
+          reminder?: boolean
+          start_date?: string | null
+          status?: string
+          trigger_type?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number | null
+          amount_pct?: number | null
+          created_at?: string
+          destination?: string | null
+          frequency?: string
+          household_id?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          plan_id?: string | null
+          reminder?: boolean
+          start_date?: string | null
+          status?: string
+          trigger_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investment_money_rules_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "investment_money_rules_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "investment_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      investment_pensions: {
+        Row: {
+          cola_pct: number
+          created_at: string
+          household_id: string
+          id: string
+          is_taxable: boolean
+          lump_sum_amount: number | null
+          monthly_amount: number
+          notes: string | null
+          owner: string
+          plan_id: string
+          provider: string
+          start_age: number | null
+          survivor_pct: number
+          updated_at: string
+          use_mode: string
+        }
+        Insert: {
+          cola_pct?: number
+          created_at?: string
+          household_id: string
+          id?: string
+          is_taxable?: boolean
+          lump_sum_amount?: number | null
+          monthly_amount?: number
+          notes?: string | null
+          owner?: string
+          plan_id: string
+          provider: string
+          start_age?: number | null
+          survivor_pct?: number
+          updated_at?: string
+          use_mode?: string
+        }
+        Update: {
+          cola_pct?: number
+          created_at?: string
+          household_id?: string
+          id?: string
+          is_taxable?: boolean
+          lump_sum_amount?: number | null
+          monthly_amount?: number
+          notes?: string | null
+          owner?: string
+          plan_id?: string
+          provider?: string
+          start_age?: number | null
+          survivor_pct?: number
+          updated_at?: string
+          use_mode?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investment_pensions_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "investment_pensions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "investment_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      investment_plan_spouse: {
+        Row: {
+          created_at: string
+          current_age: number | null
+          current_balance: number
+          expected_return_pct: number
+          household_id: string
+          id: string
+          monthly_employee_contribution: number
+          monthly_employer_contribution: number
+          name: string | null
+          notes: string | null
+          plan_id: string
+          retirement_age: number | null
+          ss_claiming_age: number | null
+          ss_monthly_estimate: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_age?: number | null
+          current_balance?: number
+          expected_return_pct?: number
+          household_id: string
+          id?: string
+          monthly_employee_contribution?: number
+          monthly_employer_contribution?: number
+          name?: string | null
+          notes?: string | null
+          plan_id: string
+          retirement_age?: number | null
+          ss_claiming_age?: number | null
+          ss_monthly_estimate?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_age?: number | null
+          current_balance?: number
+          expected_return_pct?: number
+          household_id?: string
+          id?: string
+          monthly_employee_contribution?: number
+          monthly_employer_contribution?: number
+          name?: string | null
+          notes?: string | null
+          plan_id?: string
+          retirement_age?: number | null
+          ss_claiming_age?: number | null
+          ss_monthly_estimate?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investment_plan_spouse_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "investment_plan_spouse_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: true
+            referencedRelation: "investment_plans"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       investment_plans: {
         Row: {
