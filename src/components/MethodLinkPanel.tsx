@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Landmark, Link2, RefreshCw, CreditCard, Plus } from 'lucide-react';
+import { Loader2, Landmark, Link2, RefreshCw, CreditCard, Plus, ChevronDown } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -129,14 +130,22 @@ export default function MethodLinkPanel() {
           {sources.length === 0 ? (
             <div className="space-y-2">
               {plaidItems.length > 0 && (
-                <ul className="space-y-1 text-sm">
-                  {plaidItems.map((item) => (
-                    <li key={item.id} className="flex items-center justify-between rounded border p-2">
-                      <span className="font-medium">{item.institution_name ?? 'Connected bank'}</span>
-                      <Badge variant="secondary">Bank connected</Badge>
-                    </li>
-                  ))}
-                </ul>
+                <Collapsible>
+                  <CollapsibleTrigger className="flex w-full items-center justify-between rounded border p-2 text-sm hover:bg-muted/50 transition-colors [&[data-state=open]>svg]:rotate-180">
+                    <span className="font-medium">{plaidItems.length} connected bank{plaidItems.length === 1 ? '' : 's'}</span>
+                    <ChevronDown className="h-4 w-4 transition-transform" />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <ul className="space-y-1 text-sm mt-1">
+                      {plaidItems.map((item) => (
+                        <li key={item.id} className="flex items-center justify-between rounded border p-2">
+                          <span className="font-medium">{item.institution_name ?? 'Connected bank'}</span>
+                          <Badge variant="secondary">Bank connected</Badge>
+                        </li>
+                      ))}
+                    </ul>
+                  </CollapsibleContent>
+                </Collapsible>
               )}
               <Alert>
                 <AlertDescription>
