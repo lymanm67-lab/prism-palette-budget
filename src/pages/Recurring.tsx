@@ -205,6 +205,9 @@ const Recurring = () => {
         </Card>
       </div>
 
+      {/* Bill Pay View */}
+      {view === 'billpay' && <BillPayPanel />}
+
       {/* List View */}
       {view === 'list' && (
         <Card>
