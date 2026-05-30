@@ -1,11 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Zap, Clock, CheckCircle2 } from 'lucide-react';
-import { useInvestmentMoneyRules } from '@/hooks/use-investment-v2';
+import { useMoneyRules } from '@/hooks/use-investment-v2';
 import { useRuleExecutions } from '@/hooks/use-investment-v3';
 
 export function AutomationLog({ planId }: { planId?: string }) {
-  const { data: rules = [] } = useInvestmentMoneyRules(planId);
+  const { data: rules = [] } = useMoneyRules();
   const { data: executions = [] } = useRuleExecutions(planId);
 
   const active = rules.filter((r: any) => r.is_active);

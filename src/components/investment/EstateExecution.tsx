@@ -8,13 +8,13 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { Vault, Shield, KeyRound, Plus, Trash2, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { useDigitalAssets, useUpsertDigitalAsset, useDeleteDigitalAsset } from '@/hooks/use-investment-v3';
-import { useInvestmentLegacyGoals } from '@/hooks/use-investment-v2';
+import { useInvestmentLegacy } from '@/hooks/use-investment-v2';
 
 export function EstateExecution({ planId }: { planId?: string }) {
   const { data: assets = [] } = useDigitalAssets();
   const upsert = useUpsertDigitalAsset();
   const del = useDeleteDigitalAsset();
-  const { data: legacyGoals = [] } = useInvestmentLegacyGoals(planId);
+  const { data: legacyGoals = [] } = useInvestmentLegacy(planId);
 
   const [draft, setDraft] = useState({ asset_type: 'account', name: '', provider: '', username: '', beneficiary: '', vault_location: '', has_2fa: false });
 
