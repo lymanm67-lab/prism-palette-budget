@@ -115,6 +115,8 @@ export default function InvestmentPlanning() {
           <TabsTrigger value="hsa">HSA</TabsTrigger>
           <TabsTrigger value="legacy">Legacy</TabsTrigger>
           <TabsTrigger value="rules">Money rules</TabsTrigger>
+          <TabsTrigger value="tax">Tax</TabsTrigger>
+          <TabsTrigger value="risk">Risk</TabsTrigger>
           <TabsTrigger value="scenarios">Scenarios</TabsTrigger>
           <TabsTrigger value="milestones">Milestones</TabsTrigger>
         </TabsList>
@@ -149,6 +151,8 @@ export default function InvestmentPlanning() {
         <TabsContent value="hsa" className="mt-4"><HSAPlanner plan={plan ?? null} /></TabsContent>
         <TabsContent value="legacy" className="mt-4"><LegacyPlanner planId={plan?.id} /></TabsContent>
         <TabsContent value="rules" className="mt-4"><MoneyRulesManager planId={plan?.id} /></TabsContent>
+        <TabsContent value="tax" className="mt-4"><TaxPlanner plan={plan ?? null} /></TabsContent>
+        <TabsContent value="risk" className="mt-4"><RiskPlanner plan={plan ?? null} /></TabsContent>
 
         <TabsContent value="scenarios" className="mt-4">
           <ScenarioComparison plan={plan ?? null} />
