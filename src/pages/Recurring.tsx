@@ -37,7 +37,7 @@ const Recurring = () => {
   const { data: categories } = useCategories();
   const { formatCurrency: formatAmount } = useCurrency();
 
-  const [view, setView] = useState<'list' | 'calendar'>('list');
+  const [view, setView] = useState<'list' | 'calendar' | 'billpay'>('list');
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
