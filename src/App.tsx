@@ -74,6 +74,7 @@ const ExperimentsDashboard = lazy(() => import("@/pages/ExperimentsDashboard"));
 const ReconciliationAudit = lazy(() => import("@/pages/ReconciliationAudit"));
 const AppStoreReadiness = lazy(() => import("@/pages/AppStoreReadiness"));
 const CrossoverTracker = lazy(() => import("@/pages/CrossoverTracker"));
+const InvestmentPlanning = lazy(() => import("@/pages/InvestmentPlanning"));
 
 const queryClient = new QueryClient();
 
@@ -191,6 +192,7 @@ const App = () => (
               <Route path="/experiments" element={<Suspense fallback={<PageLoader />}><ExperimentsDashboard /></Suspense>} />
               <Route path="/app-store-readiness" element={<Suspense fallback={<PageLoader />}><AppStoreReadiness /></Suspense>} />
               <Route path="/crossover-tracker" element={<Suspense fallback={<PageLoader />}><CrossoverTracker /></Suspense>} />
+              <Route path="/planning/investments" element={<Suspense fallback={<PageLoader />}><InvestmentPlanning /></Suspense>} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
