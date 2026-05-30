@@ -3,9 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Landmark, Link2, RefreshCw, CreditCard, Plus, ChevronDown } from 'lucide-react';
+import { Loader2, Landmark, Link2, RefreshCw, CreditCard, ChevronDown } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useHousehold } from '@/contexts/HouseholdContext';
@@ -147,11 +146,6 @@ export default function MethodLinkPanel() {
                   </CollapsibleContent>
                 </Collapsible>
               )}
-              <Alert>
-                <AlertDescription>
-                  Method funding requires a verified ACH source and cannot be created from a Plaid bank selection.
-                </AlertDescription>
-              </Alert>
             </div>
           ) : (
             <ul className="space-y-1 text-sm">
@@ -163,15 +157,11 @@ export default function MethodLinkPanel() {
               ))}
             </ul>
           )}
-          <div className="flex items-center justify-between gap-2 rounded border border-dashed p-3">
+          <div className="rounded border border-dashed p-3 space-y-2">
+            <p className="text-sm font-medium">Ready to track your bills?</p>
             <p className="text-xs text-muted-foreground">
-              To link real bills, use Method Connect below. Bank account funding setup is not available through Plaid.
+              Use <span className="font-medium text-foreground">Connect Bills</span> below to authenticate directly with your credit cards, loans, and other billers.
             </p>
-            <Button asChild size="sm" variant="outline">
-              <Link to="/accounts">
-                <Plus className="h-3 w-3 mr-1" /> Manage Banks
-              </Link>
-            </Button>
           </div>
         </section>
 
