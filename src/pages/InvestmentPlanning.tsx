@@ -1,5 +1,4 @@
-import { useMemo } from 'react';
-import { Helmet } from 'react-helmet-async';
+import { useMemo, useEffect } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -57,10 +56,9 @@ export default function InvestmentPlanning() {
 
   return (
     <div className="container max-w-6xl mx-auto p-4 md:p-6 space-y-6">
-      <Helmet>
-        <title>Investment Planning | Prism Money</title>
-        <meta name="description" content="Build a clear investment plan that connects budgeting, debt payoff, Social Security, HSA, and retirement goals." />
-      </Helmet>
+      <PageTitle />
+
+
 
       <header className="flex items-start justify-between flex-wrap gap-3">
         <div>
