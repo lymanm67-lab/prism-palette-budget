@@ -51,6 +51,29 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { email: user.email });
 
+    const { data: roleRows, error: roleError } = await supabaseClient
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .in("role", ["founder", "admin"]);
+
+    if (roleError) throw roleError;
+
+    const hasFullAccessRole = (roleRows ?? []).length > 0;
+    if (hasFullAccessRole) {
+      logStep("Full-access role found", { userId: user.id });
+      return new Response(JSON.stringify({
+        subscribed: true,
+        product_id: null,
+        subscription_end: null,
+        is_trial: false,
+        has_full_access_role: true,
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
 
@@ -99,6 +122,7 @@ serve(async (req) => {
       product_id: productId,
       subscription_end: subscriptionEnd,
       is_trial: isTrial,
+      has_full_access_role: false,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
