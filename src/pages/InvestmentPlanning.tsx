@@ -17,6 +17,8 @@ import { PensionPlanner } from '@/components/investment/PensionPlanner';
 import { HSAPlanner } from '@/components/investment/HSAPlanner';
 import { LegacyPlanner } from '@/components/investment/LegacyPlanner';
 import { MoneyRulesManager } from '@/components/investment/MoneyRulesManager';
+import { TaxPlanner } from '@/components/investment/TaxPlanner';
+import { RiskPlanner } from '@/components/investment/RiskPlanner';
 import { runProjection } from '@/lib/investment/projection';
 import { exportInvestmentPlanPDF } from '@/lib/investment/exportInvestmentPlanPDF';
 import { toast } from '@/hooks/use-toast';
