@@ -1507,6 +1507,189 @@ export type Database = {
           },
         ]
       }
+      investment_milestones: {
+        Row: {
+          age: number
+          completed_at: string | null
+          created_at: string
+          description: string | null
+          household_id: string
+          id: string
+          is_completed: boolean
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          age: number
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          household_id: string
+          id?: string
+          is_completed?: boolean
+          sort_order?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          age?: number
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          household_id?: string
+          id?: string
+          is_completed?: boolean
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      investment_plans: {
+        Row: {
+          additional_monthly_amount: number | null
+          additional_start_date: string | null
+          annual_raise_pct: number
+          created_at: string
+          current_age: number | null
+          current_balance: number
+          current_monthly_income: number | null
+          debt_payment_amount: number | null
+          debt_payoff_date: string | null
+          employer_match_pct: number | null
+          expected_return_pct: number
+          household_id: string
+          hsa_balance: number
+          hsa_employer_contribution: number
+          hsa_invested: boolean
+          hsa_monthly_contribution: number
+          hsa_return_pct: number
+          id: string
+          inflation_pct: number
+          is_active: boolean
+          monthly_employee_contribution: number
+          monthly_employer_contribution: number
+          name: string
+          notes: string | null
+          raise_redirect_pct: number
+          retirement_age: number | null
+          ss_claiming_age: number | null
+          ss_invest_pct: number
+          ss_invest_while_working: boolean
+          ss_monthly_estimate: number | null
+          target_amount: number
+          updated_at: string
+          use_future_dollars: boolean
+        }
+        Insert: {
+          additional_monthly_amount?: number | null
+          additional_start_date?: string | null
+          annual_raise_pct?: number
+          created_at?: string
+          current_age?: number | null
+          current_balance?: number
+          current_monthly_income?: number | null
+          debt_payment_amount?: number | null
+          debt_payoff_date?: string | null
+          employer_match_pct?: number | null
+          expected_return_pct?: number
+          household_id: string
+          hsa_balance?: number
+          hsa_employer_contribution?: number
+          hsa_invested?: boolean
+          hsa_monthly_contribution?: number
+          hsa_return_pct?: number
+          id?: string
+          inflation_pct?: number
+          is_active?: boolean
+          monthly_employee_contribution?: number
+          monthly_employer_contribution?: number
+          name?: string
+          notes?: string | null
+          raise_redirect_pct?: number
+          retirement_age?: number | null
+          ss_claiming_age?: number | null
+          ss_invest_pct?: number
+          ss_invest_while_working?: boolean
+          ss_monthly_estimate?: number | null
+          target_amount?: number
+          updated_at?: string
+          use_future_dollars?: boolean
+        }
+        Update: {
+          additional_monthly_amount?: number | null
+          additional_start_date?: string | null
+          annual_raise_pct?: number
+          created_at?: string
+          current_age?: number | null
+          current_balance?: number
+          current_monthly_income?: number | null
+          debt_payment_amount?: number | null
+          debt_payoff_date?: string | null
+          employer_match_pct?: number | null
+          expected_return_pct?: number
+          household_id?: string
+          hsa_balance?: number
+          hsa_employer_contribution?: number
+          hsa_invested?: boolean
+          hsa_monthly_contribution?: number
+          hsa_return_pct?: number
+          id?: string
+          inflation_pct?: number
+          is_active?: boolean
+          monthly_employee_contribution?: number
+          monthly_employer_contribution?: number
+          name?: string
+          notes?: string | null
+          raise_redirect_pct?: number
+          retirement_age?: number | null
+          ss_claiming_age?: number | null
+          ss_invest_pct?: number
+          ss_invest_while_working?: boolean
+          ss_monthly_estimate?: number | null
+          target_amount?: number
+          updated_at?: string
+          use_future_dollars?: boolean
+        }
+        Relationships: []
+      }
+      investment_scenarios: {
+        Row: {
+          created_at: string
+          household_id: string
+          id: string
+          inputs: Json
+          name: string
+          plan_id: string | null
+          results: Json
+          return_pct: number
+          scenario_type: string
+        }
+        Insert: {
+          created_at?: string
+          household_id: string
+          id?: string
+          inputs?: Json
+          name: string
+          plan_id?: string | null
+          results?: Json
+          return_pct?: number
+          scenario_type?: string
+        }
+        Update: {
+          created_at?: string
+          household_id?: string
+          id?: string
+          inputs?: Json
+          name?: string
+          plan_id?: string | null
+          results?: Json
+          return_pct?: number
+          scenario_type?: string
+        }
+        Relationships: []
+      }
       investment_watchlist: {
         Row: {
           alert_sent: boolean
