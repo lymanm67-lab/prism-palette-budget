@@ -1695,6 +1695,316 @@ export type Database = {
           },
         ]
       }
+      method_accounts: {
+        Row: {
+          account_id: string | null
+          created_at: string
+          entity_id: string
+          household_id: string
+          id: string
+          mask: string | null
+          method_account_id: string
+          routing: string | null
+          status: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          account_id?: string | null
+          created_at?: string
+          entity_id: string
+          household_id: string
+          id?: string
+          mask?: string | null
+          method_account_id: string
+          routing?: string | null
+          status?: string
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string | null
+          created_at?: string
+          entity_id?: string
+          household_id?: string
+          id?: string
+          mask?: string | null
+          method_account_id?: string
+          routing?: string | null
+          status?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "method_accounts_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "method_accounts_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "method_entities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      method_autopay_rules: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          fixed_amount: number | null
+          household_id: string
+          id: string
+          lead_days: number
+          liability_id: string
+          max_amount_cap: number
+          source_method_account_id: string
+          strategy: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          fixed_amount?: number | null
+          household_id: string
+          id?: string
+          lead_days?: number
+          liability_id: string
+          max_amount_cap?: number
+          source_method_account_id: string
+          strategy?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          fixed_amount?: number | null
+          household_id?: string
+          id?: string
+          lead_days?: number
+          liability_id?: string
+          max_amount_cap?: number
+          source_method_account_id?: string
+          strategy?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "method_autopay_rules_liability_id_fkey"
+            columns: ["liability_id"]
+            isOneToOne: true
+            referencedRelation: "method_liabilities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "method_autopay_rules_source_method_account_id_fkey"
+            columns: ["source_method_account_id"]
+            isOneToOne: false
+            referencedRelation: "method_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      method_entities: {
+        Row: {
+          capabilities: Json
+          created_at: string
+          household_id: string
+          id: string
+          kyc_email: string | null
+          kyc_first_name: string | null
+          kyc_last_name: string | null
+          kyc_phone: string | null
+          method_entity_id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          capabilities?: Json
+          created_at?: string
+          household_id: string
+          id?: string
+          kyc_email?: string | null
+          kyc_first_name?: string | null
+          kyc_last_name?: string | null
+          kyc_phone?: string | null
+          method_entity_id: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          capabilities?: Json
+          created_at?: string
+          household_id?: string
+          id?: string
+          kyc_email?: string | null
+          kyc_first_name?: string | null
+          kyc_last_name?: string | null
+          kyc_phone?: string | null
+          method_entity_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      method_liabilities: {
+        Row: {
+          balance: number | null
+          created_at: string
+          entity_id: string
+          household_id: string
+          id: string
+          last_synced_at: string | null
+          liability_type: string | null
+          mask: string | null
+          mch_id: string | null
+          merchant_name: string
+          method_liability_id: string
+          next_payment_due_date: string | null
+          next_payment_minimum_amount: number | null
+          recurring_transaction_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          balance?: number | null
+          created_at?: string
+          entity_id: string
+          household_id: string
+          id?: string
+          last_synced_at?: string | null
+          liability_type?: string | null
+          mask?: string | null
+          mch_id?: string | null
+          merchant_name: string
+          method_liability_id: string
+          next_payment_due_date?: string | null
+          next_payment_minimum_amount?: number | null
+          recurring_transaction_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          balance?: number | null
+          created_at?: string
+          entity_id?: string
+          household_id?: string
+          id?: string
+          last_synced_at?: string | null
+          liability_type?: string | null
+          mask?: string | null
+          mch_id?: string | null
+          merchant_name?: string
+          method_liability_id?: string
+          next_payment_due_date?: string | null
+          next_payment_minimum_amount?: number | null
+          recurring_transaction_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "method_liabilities_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "method_entities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "method_liabilities_recurring_transaction_id_fkey"
+            columns: ["recurring_transaction_id"]
+            isOneToOne: false
+            referencedRelation: "recurring_transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      method_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          destination_method_liability_id: string
+          error_code: string | null
+          error_message: string | null
+          estimated_completion_date: string | null
+          household_id: string
+          id: string
+          idempotency_key: string
+          initiated_by_user_id: string | null
+          is_autopay: boolean
+          method_payment_id: string | null
+          source_method_account_id: string
+          status: string
+          transaction_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          destination_method_liability_id: string
+          error_code?: string | null
+          error_message?: string | null
+          estimated_completion_date?: string | null
+          household_id: string
+          id?: string
+          idempotency_key: string
+          initiated_by_user_id?: string | null
+          is_autopay?: boolean
+          method_payment_id?: string | null
+          source_method_account_id: string
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          destination_method_liability_id?: string
+          error_code?: string | null
+          error_message?: string | null
+          estimated_completion_date?: string | null
+          household_id?: string
+          id?: string
+          idempotency_key?: string
+          initiated_by_user_id?: string | null
+          is_autopay?: boolean
+          method_payment_id?: string | null
+          source_method_account_id?: string
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "method_payments_destination_method_liability_id_fkey"
+            columns: ["destination_method_liability_id"]
+            isOneToOne: false
+            referencedRelation: "method_liabilities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "method_payments_source_method_account_id_fkey"
+            columns: ["source_method_account_id"]
+            isOneToOne: false
+            referencedRelation: "method_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "method_payments_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       metro2_findings: {
         Row: {
           created_at: string
