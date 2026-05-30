@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Loader2, Landmark, Link2, RefreshCw, CreditCard, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -11,7 +10,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useHousehold } from '@/contexts/HouseholdContext';
 
 type PlaidItem = { id: string; institution_name: string | null };
-type PlaidAccount = { account_id: string; name: string; mask: string | null; subtype: string | null };
 type MethodAccount = { id: string; method_account_id: string; mask: string | null; type: string; status: string };
 type MethodLiability = {
   id: string;
@@ -26,17 +24,9 @@ type MethodLiability = {
 export default function MethodLinkPanel() {
   const { household } = useHousehold();
   const [entityReady, setEntityReady] = useState(false);
-  const [plaidItems, setPlaidItems] = useState<PlaidItem[]>([]);
   const [sources, setSources] = useState<MethodAccount[]>([]);
   const [liabilities, setLiabilities] = useState<MethodLiability[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // Source picker dialog state
-  const [pickerOpen, setPickerOpen] = useState(false);
-  const [pickerItem, setPickerItem] = useState<PlaidItem | null>(null);
-  const [pickerAccounts, setPickerAccounts] = useState<PlaidAccount[]>([]);
-  const [pickerLoading, setPickerLoading] = useState(false);
-  const [linking, setLinking] = useState<string | null>(null);
   const [connecting, setConnecting] = useState(false);
   const [syncing, setSyncing] = useState(false);
 
@@ -59,7 +49,6 @@ export default function MethodLinkPanel() {
     const items = (itemsRes.data ?? []).filter((it: any) => it.household_id === household.id);
     console.log('[MethodLinkPanel] loaded', { household: household.id, items: items.length, raw: itemsRes.data?.length });
     setEntityReady(!!entRes.data);
-    setPlaidItems(items as any);
     setSources(srcsRes.data ?? []);
     setLiabilities(liabsRes.data ?? []);
     setLoading(false);
@@ -76,39 +65,6 @@ export default function MethodLinkPanel() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [household?.id]);
-
-  const openPicker = async (item: PlaidItem) => {
-    if (!household?.id) return;
-    setPickerItem(item);
-    setPickerOpen(true);
-    setPickerLoading(true);
-    setPickerAccounts([]);
-    const { data, error } = await supabase.functions.invoke('method-list-plaid-accounts', {
-      body: { household_id: household.id, plaid_item_db_id: item.id },
-    });
-    setPickerLoading(false);
-    if (error || data?.error) {
-      toast.error(data?.error ?? error?.message ?? 'Failed to load accounts');
-      return;
-    }
-    setPickerAccounts(data.accounts ?? []);
-  };
-
-  const linkSource = async (acct: PlaidAccount) => {
-    if (!household?.id || !pickerItem) return;
-    setLinking(acct.account_id);
-    const { data, error } = await supabase.functions.invoke('method-link-source', {
-      body: { household_id: household.id, plaid_item_db_id: pickerItem.id, plaid_account_id: acct.account_id },
-    });
-    setLinking(null);
-    if (error || data?.error) {
-      toast.error(data?.error ?? error?.message ?? 'Failed to link account');
-      return;
-    }
-    toast.success(`Linked ${acct.name} as funding source`);
-    setPickerOpen(false);
-    load();
-  };
 
   const openConnect = async () => {
     if (!household?.id) return;
