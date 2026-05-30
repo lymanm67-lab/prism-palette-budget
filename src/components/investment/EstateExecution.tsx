@@ -14,7 +14,8 @@ export function EstateExecution({ planId }: { planId?: string }) {
   const { data: assets = [] } = useDigitalAssets();
   const upsert = useUpsertDigitalAsset();
   const del = useDeleteDigitalAsset();
-  const { data: legacyGoals = [] } = useInvestmentLegacy(planId);
+  const { data: legacy } = useInvestmentLegacy(planId);
+  const legacyGoals = legacy ? [legacy] : [];
 
   const [draft, setDraft] = useState({ asset_type: 'account', name: '', provider: '', username: '', beneficiary: '', vault_location: '', has_2fa: false });
 
