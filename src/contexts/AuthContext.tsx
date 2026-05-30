@@ -134,7 +134,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       subscribed: subscribed || isFounder,
       subscriptionTier: isFounder ? 'business' : subscriptionTier,
       subscriptionEnd,
-      isTrial,
+      isTrial: isFounder ? false : isTrial,
       isFounder,
       refreshSubscription: checkSubscription,
     }}>
