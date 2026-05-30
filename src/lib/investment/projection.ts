@@ -1,0 +1,289 @@
+/**
+ * Investment Planning projection engine.
+ * Pure functions — no React, no Supabase. Safe to unit-test.
+ *
+ * Monthly compounding over (retirement_age - current_age) years.
+ * Supports raise schedule, debt-payment redirect, additional contributions,
+ * and Social Security invest-while-working stream.
+ */
+
+export interface ProjectionInputs {
+  currentAge: number;
+  retirementAge: number;
+  currentBalance: number;
+  targetAmount: number;
+
+  monthlyEmployeeContribution: number;
+  monthlyEmployerContribution: number;
+
+  expectedReturnPct: number; // 7 = 7%
+  annualRaisePct: number;    // 3 = 3%
+  raiseRedirectPct: number;  // 100 = invest 100% of raise
+
+  currentMonthlyIncome?: number;
+
+  debtPaymentAmount?: number;
+  debtPayoffDate?: string | null; // ISO date — month from this date forward gets redirected
+
+  additionalMonthlyAmount?: number;
+  additionalStartDate?: string | null;
+
+  ssMonthlyEstimate?: number;
+  ssClaimingAge?: number;
+  ssInvestWhileWorking?: boolean;
+  ssInvestPct?: number;
+
+  hsaBalance?: number;
+  hsaMonthlyContribution?: number;
+  hsaEmployerContribution?: number;
+  hsaInvested?: boolean;
+  hsaReturnPct?: number;
+
+  useFutureDollars?: boolean;
+  inflationPct?: number;
+}
+
+export interface YearPoint {
+  age: number;
+  year: number;
+  balance: number;
+  hsaBalance: number;
+  totalEmployeeContrib: number;
+  totalEmployerContrib: number;
+  totalGrowth: number;
+}
+
+export interface ProjectionResult {
+  yearly: YearPoint[];
+  projectedBalance: number;
+  projectedHsaBalance: number;
+  totalEmployeeContrib: number;
+  totalEmployerContrib: number;
+  totalGrowth: number;
+  surplus: number; // projected - target (negative = shortfall)
+  onTrack: 'green' | 'yellow' | 'red';
+  confidenceScore: number; // 0–100
+  estimatedMonthlyIncome: number; // 4% rule + SS (post-claim)
+  legacyProjection: number;
+  requiredMonthlyContribution: number | null;
+  status: string; // plain-language summary
+}
+
+function monthsBetween(startISO: string | null | undefined, currentMonthIndex: number, startMonthIndex: number): boolean {
+  if (!startISO) return false;
+  // Just return whether current month index >= the start month index (relative).
+  return currentMonthIndex >= startMonthIndex;
+}
+
+function monthsFromNow(dateISO: string): number {
+  const now = new Date();
+  const d = new Date(dateISO);
+  return Math.max(0, (d.getFullYear() - now.getFullYear()) * 12 + (d.getMonth() - now.getMonth()));
+}
+
+export function runProjection(inputs: ProjectionInputs): ProjectionResult {
+  const years = Math.max(0, (inputs.retirementAge || 0) - (inputs.currentAge || 0));
+  const totalMonths = years * 12;
+  const monthlyRate = (inputs.expectedReturnPct || 0) / 100 / 12;
+  const hsaMonthlyRate = (inputs.hsaReturnPct ?? inputs.expectedReturnPct ?? 0) / 100 / 12;
+  const annualRaise = (inputs.annualRaisePct || 0) / 100;
+  const raiseRedirect = (inputs.raiseRedirectPct || 0) / 100;
+
+  const debtPaymentMonth = inputs.debtPayoffDate ? monthsFromNow(inputs.debtPayoffDate) : -1;
+  const additionalMonth = inputs.additionalStartDate ? monthsFromNow(inputs.additionalStartDate) : 0;
+  const ssClaimMonth = inputs.ssClaimingAge
+    ? Math.max(0, (inputs.ssClaimingAge - inputs.currentAge) * 12)
+    : Infinity;
+
+  let balance = inputs.currentBalance || 0;
+  let hsaBalance = inputs.hsaBalance || 0;
+  let employeeBase = inputs.monthlyEmployeeContribution || 0;
+  let employerBase = inputs.monthlyEmployerContribution || 0;
+  let totalEmp = 0;
+  let totalErp = 0;
+  let totalContribInput = inputs.currentBalance || 0;
+
+  const yearly: YearPoint[] = [{
+    age: inputs.currentAge,
+    year: new Date().getFullYear(),
+    balance,
+    hsaBalance,
+    totalEmployeeContrib: 0,
+    totalEmployerContrib: 0,
+    totalGrowth: 0,
+  }];
+
+  for (let m = 1; m <= totalMonths; m++) {
+    // Apply raise at start of each year (every 12 months)
+    if (m > 1 && m % 12 === 1) {
+      const raiseAmount = employeeBase * annualRaise * raiseRedirect;
+      employeeBase += raiseAmount;
+      // employer often scales with income too — only if employer_match_pct context, but keep simple
+    }
+
+    let monthly = employeeBase + employerBase;
+
+    if (debtPaymentMonth >= 0 && m >= debtPaymentMonth && inputs.debtPaymentAmount) {
+      monthly += inputs.debtPaymentAmount;
+    }
+
+    if (m >= additionalMonth && inputs.additionalMonthlyAmount) {
+      monthly += inputs.additionalMonthlyAmount;
+    }
+
+    if (
+      inputs.ssInvestWhileWorking &&
+      inputs.ssMonthlyEstimate &&
+      m >= ssClaimMonth
+    ) {
+      monthly += (inputs.ssMonthlyEstimate || 0) * ((inputs.ssInvestPct || 0) / 100);
+    }
+
+    // Compound retirement balance
+    balance = balance * (1 + monthlyRate) + monthly;
+    totalEmp += employeeBase;
+    totalErp += employerBase;
+
+    // HSA stream
+    const hsaMonthly = (inputs.hsaMonthlyContribution || 0) + (inputs.hsaEmployerContribution || 0);
+    if (inputs.hsaInvested) {
+      hsaBalance = hsaBalance * (1 + hsaMonthlyRate) + hsaMonthly;
+    } else {
+      hsaBalance += hsaMonthly;
+    }
+
+    if (m % 12 === 0) {
+      yearly.push({
+        age: inputs.currentAge + m / 12,
+        year: new Date().getFullYear() + m / 12,
+        balance,
+        hsaBalance,
+        totalEmployeeContrib: totalEmp,
+        totalEmployerContrib: totalErp,
+        totalGrowth: balance - totalContribInput - totalEmp - totalErp,
+      });
+    }
+  }
+
+  let projectedBalance = balance;
+  let projectedHsaBalance = hsaBalance;
+
+  // Today's-dollars adjustment
+  if (!inputs.useFutureDollars && inputs.inflationPct) {
+    const factor = Math.pow(1 + inputs.inflationPct / 100, years);
+    projectedBalance = projectedBalance / factor;
+    projectedHsaBalance = projectedHsaBalance / factor;
+  }
+
+  const surplus = projectedBalance - (inputs.targetAmount || 0);
+  const gapPct = inputs.targetAmount > 0 ? (projectedBalance / inputs.targetAmount) * 100 : 100;
+  const onTrack: 'green' | 'yellow' | 'red' =
+    gapPct >= 100 ? 'green' : gapPct >= 80 ? 'yellow' : 'red';
+  const confidenceScore = Math.max(0, Math.min(100, Math.round(gapPct)));
+
+  // 4% rule monthly + SS once claimed
+  const fourPctMonthly = (projectedBalance * 0.04) / 12;
+  const ssMonthly = inputs.ssMonthlyEstimate || 0;
+  const estimatedMonthlyIncome = fourPctMonthly + ssMonthly;
+
+  // Required monthly contribution (binary search)
+  let requiredMonthlyContribution: number | null = null;
+  if (inputs.targetAmount > 0 && years > 0) {
+    requiredMonthlyContribution = solveRequiredMonthly(inputs);
+  }
+
+  const totalGrowth = projectedBalance - totalContribInput - totalEmp - totalErp;
+  const legacyProjection = Math.max(0, projectedBalance - (estimatedMonthlyIncome * 12 * 25)); // rough estate after 25y of income
+
+  const status =
+    onTrack === 'green'
+      ? `On track. Projected ${formatCurrency(projectedBalance)} by age ${inputs.retirementAge}, surplus of ${formatCurrency(Math.abs(surplus))}.`
+      : onTrack === 'yellow'
+      ? `Close. Projected ${formatCurrency(projectedBalance)} — about ${formatCurrency(Math.abs(surplus))} short of your ${formatCurrency(inputs.targetAmount)} goal.`
+      : `Off track. Projected ${formatCurrency(projectedBalance)} vs. target ${formatCurrency(inputs.targetAmount)}. Increase contributions or extend timeline.`;
+
+  return {
+    yearly,
+    projectedBalance,
+    projectedHsaBalance,
+    totalEmployeeContrib: totalEmp,
+    totalEmployerContrib: totalErp,
+    totalGrowth,
+    surplus,
+    onTrack,
+    confidenceScore,
+    estimatedMonthlyIncome,
+    legacyProjection,
+    requiredMonthlyContribution,
+    status,
+  };
+}
+
+function solveRequiredMonthly(inputs: ProjectionInputs): number {
+  // Binary search monthly employee contribution to hit target
+  let lo = 0;
+  let hi = 50000;
+  for (let i = 0; i < 40; i++) {
+    const mid = (lo + hi) / 2;
+    const r = runProjection({
+      ...inputs,
+      monthlyEmployeeContribution: mid,
+      // strip raise + debt for clean solve
+      annualRaisePct: 0,
+      debtPaymentAmount: 0,
+      additionalMonthlyAmount: 0,
+      ssInvestWhileWorking: false,
+    });
+    if (r.projectedBalance < inputs.targetAmount) lo = mid;
+    else hi = mid;
+  }
+  return Math.round((lo + hi) / 2);
+}
+
+export function formatCurrency(n: number): string {
+  if (!isFinite(n)) return '$0';
+  const abs = Math.abs(n);
+  if (abs >= 1_000_000) return `$${(n / 1_000_000).toFixed(2)}M`;
+  if (abs >= 1_000) return `$${(n / 1_000).toFixed(1)}k`;
+  return `$${Math.round(n).toLocaleString()}`;
+}
+
+export function formatCurrencyFull(n: number): string {
+  if (!isFinite(n)) return '$0';
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 0,
+  }).format(n);
+}
+
+// Quick helpers for the standalone tools
+export function projectRaiseRedirect(opts: {
+  currentMonthlyIncome: number;
+  raisePct: number;
+  investPct: number;
+  yearsToRetirement: number;
+  returnPct: number;
+  annualRepeat?: boolean;
+}): { monthlyRaise: number; redirected: number; futureValue: number } {
+  const monthlyRaise = opts.currentMonthlyIncome * (opts.raisePct / 100);
+  const redirected = monthlyRaise * (opts.investPct / 100);
+  const r = opts.returnPct / 100 / 12;
+  const n = opts.yearsToRetirement * 12;
+  // FV of growing annuity (simplified: assume flat redirect amount each month)
+  const fv = r > 0 ? redirected * ((Math.pow(1 + r, n) - 1) / r) : redirected * n;
+  return { monthlyRaise, redirected, futureValue: fv };
+}
+
+export function projectDebtToWealth(opts: {
+  debtPayment: number;
+  redirectPct: number;
+  yearsAfterPayoff: number;
+  returnPct: number;
+}): { monthly: number; totalContrib: number; futureValue: number } {
+  const monthly = opts.debtPayment * (opts.redirectPct / 100);
+  const r = opts.returnPct / 100 / 12;
+  const n = opts.yearsAfterPayoff * 12;
+  const fv = r > 0 ? monthly * ((Math.pow(1 + r, n) - 1) / r) : monthly * n;
+  return { monthly, totalContrib: monthly * n, futureValue: fv };
+}
