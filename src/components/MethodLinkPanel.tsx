@@ -200,35 +200,6 @@ export default function MethodLinkPanel() {
         {loading && <p className="text-xs text-muted-foreground">Loading…</p>}
       </CardContent>
 
-      <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Pick a depository account</DialogTitle>
-          </DialogHeader>
-          {pickerLoading ? (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground py-6 justify-center">
-              <Loader2 className="h-4 w-4 animate-spin" /> Loading accounts…
-            </div>
-          ) : pickerAccounts.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-4">No depository accounts found in this Plaid item.</p>
-          ) : (
-            <ul className="space-y-2">
-              {pickerAccounts.map((a) => (
-                <li key={a.account_id} className="flex justify-between items-center rounded border p-2">
-                  <div className="text-sm">
-                    <div className="font-medium">{a.name}</div>
-                    <div className="text-xs text-muted-foreground">•••• {a.mask ?? '????'} · {a.subtype}</div>
-                  </div>
-                  <Button size="sm" onClick={() => linkSource(a)} disabled={linking === a.account_id}>
-                    {linking === a.account_id && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
-                    Use
-                  </Button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </DialogContent>
-      </Dialog>
     </Card>
   );
 }
