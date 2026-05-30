@@ -19,6 +19,10 @@ import { LegacyPlanner } from '@/components/investment/LegacyPlanner';
 import { MoneyRulesManager } from '@/components/investment/MoneyRulesManager';
 import { TaxPlanner } from '@/components/investment/TaxPlanner';
 import { RiskPlanner } from '@/components/investment/RiskPlanner';
+import { HealthcarePlanner } from '@/components/investment/HealthcarePlanner';
+import { IncomeEngineering } from '@/components/investment/IncomeEngineering';
+import { RealAssetsPlanner } from '@/components/investment/RealAssetsPlanner';
+import { BehaviorAccountability } from '@/components/investment/BehaviorAccountability';
 import { runProjection } from '@/lib/investment/projection';
 import { exportInvestmentPlanPDF } from '@/lib/investment/exportInvestmentPlanPDF';
 import { toast } from '@/hooks/use-toast';
@@ -117,6 +121,10 @@ export default function InvestmentPlanning() {
           <TabsTrigger value="rules">Money rules</TabsTrigger>
           <TabsTrigger value="tax">Tax</TabsTrigger>
           <TabsTrigger value="risk">Risk</TabsTrigger>
+          <TabsTrigger value="healthcare">Healthcare</TabsTrigger>
+          <TabsTrigger value="income">Income</TabsTrigger>
+          <TabsTrigger value="realassets">Real assets</TabsTrigger>
+          <TabsTrigger value="behavior">Coach</TabsTrigger>
           <TabsTrigger value="scenarios">Scenarios</TabsTrigger>
           <TabsTrigger value="milestones">Milestones</TabsTrigger>
         </TabsList>
@@ -153,6 +161,10 @@ export default function InvestmentPlanning() {
         <TabsContent value="rules" className="mt-4"><MoneyRulesManager planId={plan?.id} /></TabsContent>
         <TabsContent value="tax" className="mt-4"><TaxPlanner plan={plan ?? null} /></TabsContent>
         <TabsContent value="risk" className="mt-4"><RiskPlanner plan={plan ?? null} /></TabsContent>
+        <TabsContent value="healthcare" className="mt-4"><HealthcarePlanner plan={plan ?? null} /></TabsContent>
+        <TabsContent value="income" className="mt-4"><IncomeEngineering plan={plan ?? null} /></TabsContent>
+        <TabsContent value="realassets" className="mt-4"><RealAssetsPlanner /></TabsContent>
+        <TabsContent value="behavior" className="mt-4"><BehaviorAccountability /></TabsContent>
 
         <TabsContent value="scenarios" className="mt-4">
           <ScenarioComparison plan={plan ?? null} />
