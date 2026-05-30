@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
   const METHOD_ENV = Deno.env.get('METHOD_ENV') ?? 'dev';
   const PLAID_CLIENT_ID = Deno.env.get('PLAID_CLIENT_ID');
   const PLAID_SECRET = Deno.env.get('PLAID_SECRET');
-  const PLAID_ENV = Deno.env.get('PLAID_ENV') ?? 'sandbox';
+  const PLAID_ENV = Deno.env.get('PLAID_ENV') ?? 'production';
   if (!METHOD_API_KEY || !PLAID_CLIENT_ID || !PLAID_SECRET) {
     return new Response(JSON.stringify({ error: 'Missing API credentials' }), {
       status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
