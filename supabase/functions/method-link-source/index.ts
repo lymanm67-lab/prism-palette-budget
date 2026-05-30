@@ -70,12 +70,13 @@ Deno.serve(async (req) => {
 
     // Get Method entity for this household
     const { data: entity } = await service.from('method_entities')
-      .select('method_entity_id').eq('household_id', household_id).maybeSingle();
+      .select('id, method_entity_id').eq('household_id', household_id).maybeSingle();
     if (!entity?.method_entity_id) {
       return new Response(JSON.stringify({ error: 'Method entity not created. Complete KYC first.' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
 
     // Get Plaid access token
     const { data: pItem } = await service.from('plaid_items')
@@ -126,15 +127,15 @@ Deno.serve(async (req) => {
     }
 
     const acct = methodData.data ?? methodData;
-    const { data: saved, error: saveErr } = await service.from('method_accounts').insert({
+    const { data: saved, error: saveErr } = await service.from('method_accounts').upsert({
       household_id,
-      method_entity_id: entity.method_entity_id,
+      entity_id: entity.id,
       method_account_id: acct.id,
-      account_type: acct.type ?? 'ach',
+      type: acct.type ?? 'ach',
       status: acct.status ?? 'active',
       mask: acct.ach?.mask ?? null,
       routing: acct.ach?.routing ?? null,
-    }).select().single();
+    }, { onConflict: 'method_account_id' }).select().single();
     if (saveErr) {
       console.error('DB save failed:', saveErr);
       return new Response(JSON.stringify({ error: saveErr.message }), {

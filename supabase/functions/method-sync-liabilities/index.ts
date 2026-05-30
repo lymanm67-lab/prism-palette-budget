@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
 
     const service = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
     const { data: entity } = await service.from('method_entities')
-      .select('method_entity_id').eq('household_id', household_id).maybeSingle();
+      .select('id, method_entity_id').eq('household_id', household_id).maybeSingle();
     if (!entity?.method_entity_id) {
       return new Response(JSON.stringify({ error: 'Complete KYC first' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -72,20 +72,23 @@ Deno.serve(async (req) => {
 
     const rows = accounts.map((a) => ({
       household_id,
-      method_entity_id: entity.method_entity_id,
-      method_account_id: a.id,
-      merchant_name: a.liability?.mch_id ?? a.liability?.merchant?.name ?? a.merchant_name ?? 'Unknown',
+      entity_id: entity.id,
+      method_liability_id: a.id,
+      merchant_name: a.liability?.merchant?.name ?? a.liability?.mch_id ?? 'Unknown',
+      mch_id: a.liability?.mch_id ?? null,
       mask: a.liability?.mask ?? null,
-      balance: a.balance ?? a.liability?.balance ?? null,
+      liability_type: a.liability?.type ?? null,
+      balance: a.liability?.balance ?? null,
       next_payment_minimum_amount: a.liability?.next_payment_minimum_amount ?? null,
       next_payment_due_date: a.liability?.next_payment_due_date ?? null,
-      status: a.status ?? null,
+      status: a.status ?? 'active',
+      last_synced_at: new Date().toISOString(),
     }));
 
     let upserted = 0;
     if (rows.length) {
       const { error } = await service.from('method_liabilities')
-        .upsert(rows, { onConflict: 'method_account_id' });
+        .upsert(rows, { onConflict: 'method_liability_id' });
       if (error) {
         console.error('Upsert failed:', error);
         return new Response(JSON.stringify({ error: error.message }), {
