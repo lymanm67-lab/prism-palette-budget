@@ -44,10 +44,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const { data, error } = await supabase.functions.invoke('check-subscription');
       if (error) throw error;
+      const hasFullAccessRole = data.has_full_access_role ?? false;
+      setIsFounder(hasFullAccessRole);
       setSubscribed(data.subscribed ?? false);
-      setIsTrial(data.is_trial ?? false);
+      setIsTrial(hasFullAccessRole ? false : data.is_trial ?? false);
       setSubscriptionEnd(data.subscription_end ?? null);
-      if (data.product_id && PRODUCT_TO_TIER[data.product_id]) {
+      if (hasFullAccessRole) {
+        setSubscriptionTier('business');
+      } else if (data.product_id && PRODUCT_TO_TIER[data.product_id]) {
         setSubscriptionTier(PRODUCT_TO_TIER[data.product_id]);
       } else {
         setSubscriptionTier(null);
