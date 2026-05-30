@@ -158,6 +158,9 @@ const Recurring = () => {
             <button onClick={() => setView('calendar')} className={cn('px-2.5 py-1.5 text-xs sm:text-sm flex items-center gap-1 sm:gap-1.5 transition-colors', view === 'calendar' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}>
               <CalendarIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> <span className="hidden sm:inline">Calendar</span>
             </button>
+            <button onClick={() => setView('billpay')} className={cn('px-2.5 py-1.5 text-xs sm:text-sm flex items-center gap-1 sm:gap-1.5 transition-colors', view === 'billpay' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}>
+              <Receipt className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> <span className="hidden sm:inline">Bill Pay</span>
+            </button>
           </div>
           <Button onClick={() => setDialogOpen(true)} size="sm" className="gap-1.5 h-8">
             <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Add Recurring</span>
