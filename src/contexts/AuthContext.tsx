@@ -90,27 +90,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  // Check full-access role when session changes
-  useEffect(() => {
-    if (session?.user?.id) {
-      supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', session.user.id)
-        .in('role', ['founder', 'admin'])
-        .then(({ data, error }) => {
-          if (error) {
-            console.error('role check error:', error);
-            setIsFounder(false);
-            return;
-          }
-          setIsFounder((data ?? []).length > 0);
-        });
-    } else {
-      setIsFounder(false);
-    }
-  }, [session]);
-
   // Check subscription when session changes
   useEffect(() => {
     if (session) {
@@ -122,8 +101,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSubscriptionTier(null);
       setSubscriptionEnd(null);
       setIsTrial(false);
+      setIsFounder(false);
     }
-  }, [session, isFounder]);
+  }, [session]);
 
   const signOut = async () => {
     await supabase.auth.signOut();
