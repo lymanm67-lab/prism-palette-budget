@@ -14,7 +14,7 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
   const PLAID_CLIENT_ID = Deno.env.get('PLAID_CLIENT_ID');
   const PLAID_SECRET = Deno.env.get('PLAID_SECRET');
-  const PLAID_ENV = Deno.env.get('PLAID_ENV') ?? 'sandbox';
+  const PLAID_ENV = Deno.env.get('PLAID_ENV') ?? 'production';
   if (!PLAID_CLIENT_ID || !PLAID_SECRET) {
     return new Response(JSON.stringify({ error: 'Plaid creds missing' }), { status: 500, headers: corsHeaders });
   }
