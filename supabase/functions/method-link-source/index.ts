@@ -1,7 +1,6 @@
-// Phase 2: Convert an existing Plaid-linked account into a Method ACH funding source.
-// Flow: caller passes plaid_item (our PK) + plaid_account_id (Plaid's id string).
-// We mint a Plaid processor token for Method, POST /accounts to Method,
-// and persist in method_accounts.
+// Phase 2: Method does not accept Plaid processor tokens as ACH funding sources.
+// Keep this endpoint as a safe guard so older UI flows fail gracefully instead of
+// surfacing Plaid's INVALID_PROCESSOR as an app-level error.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
@@ -10,7 +9,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const PLAID_BASE_URL = 'https://production.plaid.com';
 const METHOD_BASE_URL = (env: string) =>
   env === 'production' ? 'https://production.methodfi.com' : 'https://dev.methodfi.com';
 
@@ -19,9 +17,7 @@ Deno.serve(async (req) => {
 
   const METHOD_API_KEY = Deno.env.get('METHOD_API_KEY');
   const METHOD_ENV = Deno.env.get('METHOD_ENV') ?? 'dev';
-  const PLAID_CLIENT_ID = Deno.env.get('PLAID_CLIENT_ID');
-  const PLAID_SECRET = Deno.env.get('PLAID_SECRET');
-  if (!METHOD_API_KEY || !PLAID_CLIENT_ID || !PLAID_SECRET) {
+  if (!METHOD_API_KEY) {
     return new Response(JSON.stringify({ error: 'Missing API credentials' }), {
       status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
@@ -76,40 +72,13 @@ Deno.serve(async (req) => {
     }
 
 
-    // Get Plaid access token
-    const { data: pItem } = await service.from('plaid_items')
-      .select('plaid_access_token').eq('id', plaid_item_db_id).eq('household_id', household_id).maybeSingle();
-    if (!pItem?.plaid_access_token) {
-      return new Response(JSON.stringify({ error: 'Plaid item not found' }), {
-        status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-    if (!pItem.plaid_access_token.startsWith('access-production-')) {
-      return new Response(JSON.stringify({ error: 'This bank connection must be reconnected before it can be used for bill pay.' }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // 1. Create Plaid processor token for Method
-    const procRes = await fetch(`${PLAID_BASE_URL}/processor/token/create`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        client_id: PLAID_CLIENT_ID, secret: PLAID_SECRET,
-        access_token: pItem.plaid_access_token,
-        account_id: plaid_account_id,
-        processor: 'method',
-      }),
+    return new Response(JSON.stringify({
+      error: 'Direct Plaid bank funding is not supported by Method. Use Connect Bills for biller linking; ACH funding must be added with verified routing and account details.',
+      error_code: 'METHOD_PLAID_FUNDING_UNSUPPORTED',
+    }), {
+      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
-    const procData = await procRes.json();
-    if (!procRes.ok) {
-      console.error('Plaid processor token failed:', procData);
-      return new Response(JSON.stringify({ error: 'Plaid processor token creation failed', details: procData }), {
-        status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
 
-    // 2. Create Method ACH account using processor token
     const methodRes = await fetch(`${METHOD_BASE_URL(METHOD_ENV)}/accounts`, {
       method: 'POST',
       headers: {
