@@ -43,19 +43,25 @@ export default function MethodLinkPanel() {
   const load = async () => {
     if (!household?.id) return;
     setLoading(true);
-    const [{ data: ent }, { data: items }, { data: srcs }, { data: liabs }] = await Promise.all([
+    const [entRes, itemsRes, srcsRes, liabsRes] = await Promise.all([
       supabase.from('method_entities').select('id').eq('household_id', household.id).maybeSingle(),
-      supabase.from('plaid_items').select('id, institution_name').eq('household_id', household.id),
+      supabase.rpc('get_plaid_items_safe'),
       supabase.from('method_accounts').select('id, method_account_id, mask, type, status').eq('household_id', household.id),
       supabase
         .from('method_liabilities')
         .select('id, merchant_name, mask, balance, next_payment_minimum_amount, next_payment_due_date, status')
         .eq('household_id', household.id),
     ]);
-    setEntityReady(!!ent);
-    setPlaidItems(items ?? []);
-    setSources(srcs ?? []);
-    setLiabilities(liabs ?? []);
+    if (itemsRes.error) {
+      console.error('[MethodLinkPanel] plaid_items error:', itemsRes.error);
+      toast.error(`Plaid items load failed: ${itemsRes.error.message}`);
+    }
+    const items = (itemsRes.data ?? []).filter((it: any) => it.household_id === household.id);
+    console.log('[MethodLinkPanel] loaded', { household: household.id, items: items.length, raw: itemsRes.data?.length });
+    setEntityReady(!!entRes.data);
+    setPlaidItems(items as any);
+    setSources(srcsRes.data ?? []);
+    setLiabilities(liabsRes.data ?? []);
     setLoading(false);
   };
 
