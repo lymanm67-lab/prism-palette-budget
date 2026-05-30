@@ -14,7 +14,8 @@ import { useAccounts, useCategories } from '@/hooks/use-finance-data';
 import CategoryCombobox from '@/components/CategoryCombobox';
 import { useCurrency } from '@/hooks/use-currency';
 import { format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, addMonths, subMonths } from 'date-fns';
-import { Loader2, Plus, Trash2, Pencil, CalendarIcon, List, ChevronLeft, ChevronRight, RepeatIcon, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
+import { Loader2, Plus, Trash2, Pencil, CalendarIcon, List, ChevronLeft, ChevronRight, RepeatIcon, ArrowDownLeft, ArrowUpRight, Receipt } from 'lucide-react';
+import BillPayPanel from '@/components/BillPayPanel';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import PageOverview from '@/components/PageOverview';
@@ -36,7 +37,7 @@ const Recurring = () => {
   const { data: categories } = useCategories();
   const { formatCurrency: formatAmount } = useCurrency();
 
-  const [view, setView] = useState<'list' | 'calendar'>('list');
+  const [view, setView] = useState<'list' | 'calendar' | 'billpay'>('list');
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
@@ -157,6 +158,9 @@ const Recurring = () => {
             <button onClick={() => setView('calendar')} className={cn('px-2.5 py-1.5 text-xs sm:text-sm flex items-center gap-1 sm:gap-1.5 transition-colors', view === 'calendar' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}>
               <CalendarIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> <span className="hidden sm:inline">Calendar</span>
             </button>
+            <button onClick={() => setView('billpay')} className={cn('px-2.5 py-1.5 text-xs sm:text-sm flex items-center gap-1 sm:gap-1.5 transition-colors', view === 'billpay' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}>
+              <Receipt className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> <span className="hidden sm:inline">Bill Pay</span>
+            </button>
           </div>
           <Button onClick={() => setDialogOpen(true)} size="sm" className="gap-1.5 h-8">
             <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Add Recurring</span>
@@ -200,6 +204,9 @@ const Recurring = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Bill Pay View */}
+      {view === 'billpay' && <BillPayPanel />}
 
       {/* List View */}
       {view === 'list' && (

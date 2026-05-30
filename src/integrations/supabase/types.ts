@@ -1898,6 +1898,8 @@ export type Database = {
         Row: {
           account_id: string
           amount: number
+          autopay_enabled: boolean
+          biller_url: string | null
           category_id: string | null
           created_at: string
           end_date: string | null
@@ -1905,15 +1907,19 @@ export type Database = {
           household_id: string
           id: string
           is_active: boolean
+          last_paid_date: string | null
           merchant: string | null
           next_due_date: string
           notes: string | null
+          reminder_days: number
           start_date: string
           updated_at: string
         }
         Insert: {
           account_id: string
           amount: number
+          autopay_enabled?: boolean
+          biller_url?: string | null
           category_id?: string | null
           created_at?: string
           end_date?: string | null
@@ -1921,15 +1927,19 @@ export type Database = {
           household_id: string
           id?: string
           is_active?: boolean
+          last_paid_date?: string | null
           merchant?: string | null
           next_due_date: string
           notes?: string | null
+          reminder_days?: number
           start_date: string
           updated_at?: string
         }
         Update: {
           account_id?: string
           amount?: number
+          autopay_enabled?: boolean
+          biller_url?: string | null
           category_id?: string | null
           created_at?: string
           end_date?: string | null
@@ -1937,9 +1947,11 @@ export type Database = {
           household_id?: string
           id?: string
           is_active?: boolean
+          last_paid_date?: string | null
           merchant?: string | null
           next_due_date?: string
           notes?: string | null
+          reminder_days?: number
           start_date?: string
           updated_at?: string
         }
