@@ -17,6 +17,8 @@ import { PensionPlanner } from '@/components/investment/PensionPlanner';
 import { HSAPlanner } from '@/components/investment/HSAPlanner';
 import { LegacyPlanner } from '@/components/investment/LegacyPlanner';
 import { MoneyRulesManager } from '@/components/investment/MoneyRulesManager';
+import { TaxPlanner } from '@/components/investment/TaxPlanner';
+import { RiskPlanner } from '@/components/investment/RiskPlanner';
 import { runProjection } from '@/lib/investment/projection';
 import { exportInvestmentPlanPDF } from '@/lib/investment/exportInvestmentPlanPDF';
 import { toast } from '@/hooks/use-toast';
@@ -113,6 +115,8 @@ export default function InvestmentPlanning() {
           <TabsTrigger value="hsa">HSA</TabsTrigger>
           <TabsTrigger value="legacy">Legacy</TabsTrigger>
           <TabsTrigger value="rules">Money rules</TabsTrigger>
+          <TabsTrigger value="tax">Tax</TabsTrigger>
+          <TabsTrigger value="risk">Risk</TabsTrigger>
           <TabsTrigger value="scenarios">Scenarios</TabsTrigger>
           <TabsTrigger value="milestones">Milestones</TabsTrigger>
         </TabsList>
@@ -147,6 +151,8 @@ export default function InvestmentPlanning() {
         <TabsContent value="hsa" className="mt-4"><HSAPlanner plan={plan ?? null} /></TabsContent>
         <TabsContent value="legacy" className="mt-4"><LegacyPlanner planId={plan?.id} /></TabsContent>
         <TabsContent value="rules" className="mt-4"><MoneyRulesManager planId={plan?.id} /></TabsContent>
+        <TabsContent value="tax" className="mt-4"><TaxPlanner plan={plan ?? null} /></TabsContent>
+        <TabsContent value="risk" className="mt-4"><RiskPlanner plan={plan ?? null} /></TabsContent>
 
         <TabsContent value="scenarios" className="mt-4">
           <ScenarioComparison plan={plan ?? null} />
