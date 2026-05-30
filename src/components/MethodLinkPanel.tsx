@@ -47,7 +47,9 @@ export default function MethodLinkPanel() {
       console.error('[MethodLinkPanel] plaid_items error:', itemsRes.error);
       toast.error(`Plaid items load failed: ${itemsRes.error.message}`);
     }
-    const items = (itemsRes.data ?? []).filter((it: any) => it.household_id === household.id);
+    const items = ((itemsRes.data ?? []) as Array<PlaidItem & { household_id: string }>).filter(
+      (it) => it.household_id === household.id,
+    );
     console.log('[MethodLinkPanel] loaded', { household: household.id, items: items.length, raw: itemsRes.data?.length });
     setEntityReady(!!entRes.data);
     setPlaidItems(items);
