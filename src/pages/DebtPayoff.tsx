@@ -25,7 +25,7 @@ import { useTTS } from '@/hooks/use-tts';
 import PageOverview from '@/components/PageOverview';
 import DebtInsights from '@/components/DebtInsights';
 import { RelatedToolsBar } from '@/components/planning/RelatedToolsBar';
-import { Sparkles as SparklesIcon, Target } from 'lucide-react';
+import { Target } from 'lucide-react';
 
 // ─── Types ───
 interface Debt {
