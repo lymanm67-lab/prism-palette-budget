@@ -83,7 +83,7 @@ export async function loadMontgomerySample(householdId: string) {
   await sb.from('investment_legacy_goals').insert({
     plan_id: planId,
     household_id: householdId,
-    name: 'Montgomery Legacy Trust',
+    name: 'Montgomery Family Legacy Trust',
     target_amount: 1000000,
     target_year: new Date().getFullYear() + 30,
     notes: 'Funded from primary user retirement assets only. Excludes OPERS pension, OPERS account value, and spouse deferred compensation.',
@@ -94,8 +94,13 @@ export async function loadMontgomerySample(householdId: string) {
   const rules = [
     { name: 'Add $100/mo to retirement', trigger_type: 'date', start_date: '2026-07-01', amount: 100, destination: 'Retirement', frequency: 'monthly' },
     { name: 'Redirect 3% raise to retirement', trigger_type: 'raise', start_date: '2026-07-01', amount: 172.19, amount_pct: 100, destination: 'Retirement', frequency: 'monthly' },
+    { name: 'Add $225/mo to retirement', trigger_type: 'date', start_date: '2027-01-01', amount: 225, destination: 'Retirement', frequency: 'monthly' },
+    { name: 'First Million Accelerator ($208/mo)', trigger_type: 'date', start_date: '2027-01-01', amount: 208, destination: 'HSA/Roth', frequency: 'monthly' },
     { name: 'Redirect debt payment to retirement', trigger_type: 'date', start_date: '2027-09-01', amount: 888, destination: 'Retirement', frequency: 'monthly' },
+    { name: 'Add $500/mo step-up', trigger_type: 'date', start_date: '2028-06-01', amount: 500, destination: 'Retirement', frequency: 'monthly' },
+    { name: 'Annual $3,000 tax refund lump', trigger_type: 'date', start_date: '2028-01-01', amount: 3000, destination: 'Brokerage', frequency: 'yearly' },
     { name: 'Add $200/mo to retirement', trigger_type: 'date', start_date: '2029-01-01', amount: 200, destination: 'Retirement', frequency: 'monthly' },
+    { name: 'Second $500/mo step-up', trigger_type: 'date', start_date: '2030-01-01', amount: 500, destination: 'Retirement', frequency: 'monthly' },
     { name: 'Invest Social Security while working', trigger_type: 'age', start_date: '2037-06-01', amount: 3540, amount_pct: 100, destination: 'Brokerage', frequency: 'monthly' },
     { name: 'Keep lifestyle flat after raises', trigger_type: 'recurring', start_date: null, amount: 0, destination: 'Retirement', frequency: 'monthly' },
   ];
