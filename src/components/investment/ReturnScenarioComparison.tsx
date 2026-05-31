@@ -77,14 +77,23 @@ export function ReturnScenarioComparison({ plan, onCreateRules, onReviewLegacy }
   return (
     <Card className="bg-gradient-to-br from-card to-muted/20">
       <CardHeader className="pb-3">
-        <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-start justify-between flex-wrap gap-3">
           <div>
             <CardTitle className="text-lg flex items-center gap-2">
               <Target className="h-4 w-4 text-primary" />
               Projected Retirement & Legacy Assets at Age {plan.retirement_age}
             </CardTitle>
             <p className="text-sm text-muted-foreground mt-1">{headline}</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Viewing in {useFuture ? 'nominal (future) dollars' : "today's dollars (inflation-adjusted)"}.
+            </p>
           </div>
+          <Tabs value={dollarMode} onValueChange={(v) => setDollarMode(v as 'today' | 'nominal')}>
+            <TabsList className="h-8">
+              <TabsTrigger value="today" className="text-xs h-6 px-2">Today's $</TabsTrigger>
+              <TabsTrigger value="nominal" className="text-xs h-6 px-2">Nominal $</TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
       </CardHeader>
       <CardContent className="space-y-5">
