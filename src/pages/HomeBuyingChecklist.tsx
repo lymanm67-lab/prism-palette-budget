@@ -31,6 +31,7 @@ const HomeBuyingChecklist = () => {
   });
 
   const checklistPct = ((checklist?.filter((p) => p.is_checked).length ?? 0) / 8) * 100;
+  const metrics = useHomeBuyingMetrics();
 
   const TABS = [
     { id: 'coach', label: 'AI Coach', icon: Bot },
