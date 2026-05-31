@@ -114,6 +114,14 @@ export function runProjection(inputs: ProjectionInputs): ProjectionResult {
     ? Math.max(0, (inputs.ssClaimingAge - inputs.currentAge) * 12)
     : Infinity;
 
+  const datedStepUpMonths = (inputs.datedStepUps || []).map((s) => ({
+    amount: s.amount,
+    startMonth: monthsFromNow(s.startDate),
+  }));
+  const lumpSum = inputs.annualLumpSum;
+  const nowYear = new Date().getFullYear();
+  const nowMonth = new Date().getMonth(); // 0-indexed
+
   let balance = inputs.currentBalance || 0;
   let hsaBalance = inputs.hsaBalance || 0;
   let salary = inputs.currentMonthlyIncome || 0;
