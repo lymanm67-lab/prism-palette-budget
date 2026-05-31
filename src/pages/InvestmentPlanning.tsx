@@ -49,33 +49,47 @@ export default function InvestmentPlanning() {
   const { household } = useHousehold();
   const qc = useQueryClient();
   const [loadingSample, setLoadingSample] = useState(false);
-  const [activeTab, setActiveTab] = useState<string>(plan ? 'snapshot' : 'wizard');
+  const [activeTab, setActiveTab] = useState<string>('snapshot');
+
+  // Sync default tab once the plan finishes loading (avoids flash of wizard for returning users)
+  useEffect(() => {
+    if (isLoading) return;
+    setActiveTab((current) => {
+      if (current !== 'snapshot' && current !== 'wizard') return current;
+      return plan ? 'snapshot' : 'wizard';
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading, plan?.id]);
 
   const TAB_GROUPS = [
-    { label: 'Income Engines', items: [
+    { label: 'Build Your Plan', items: [
       { value: 'raise', label: 'Raises' },
       { value: 'debt', label: 'Debt → Wealth' },
       { value: 'income', label: 'Retirement Income' },
       { value: 'rules', label: 'Money Rules' },
-    ]},
-    { label: 'Household', items: [
-      { value: 'spouse', label: 'Spouse' },
-      { value: 'pensions', label: 'Pensions' },
-      { value: 'hsa', label: 'HSA' },
     ]},
     { label: 'Tax & Risk', items: [
       { value: 'tax', label: 'Tax' },
       { value: 'risk', label: 'Risk' },
       { value: 'healthcare', label: 'Healthcare' },
     ]},
-    { label: 'Wealth & Assets', items: [
+    { label: 'Household', items: [
+      { value: 'spouse', label: 'Spouse' },
+      { value: 'pensions', label: 'Pensions' },
+      { value: 'hsa', label: 'HSA' },
+    ]},
+    { label: 'Assets & Goals', items: [
+      { value: 'assets', label: 'Asset Tags' },
       { value: 'realassets', label: 'Real Assets' },
       { value: 'college', label: 'College / 529' },
       { value: 'charitable', label: 'Charitable Giving' },
     ]},
-    { label: 'Legacy & Coaching', items: [
+    { label: 'Legacy & Estate', items: [
       { value: 'legacy', label: 'Legacy' },
       { value: 'estate', label: 'Estate Execution' },
+      { value: 'trust', label: 'Trust Funding' },
+    ]},
+    { label: 'Coaching', items: [
       { value: 'behavior', label: 'Behavior Coach' },
       { value: 'automation', label: 'Automation Log' },
     ]},
