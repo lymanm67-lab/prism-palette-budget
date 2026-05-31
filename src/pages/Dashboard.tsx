@@ -5,6 +5,7 @@ import { Tooltip as ShadcnTooltip, TooltipContent, TooltipProvider, TooltipTrigg
 import PageOverview from '@/components/PageOverview';
 import WeeklyRecap from '@/components/WeeklyRecap';
 import GettingStartedWidget from '@/components/GettingStartedWidget';
+import { EmptyStateChecklist } from '@/components/dashboard/EmptyStateChecklist';
 import FinancialHealthScore from '@/components/FinancialHealthScore';
 import GoalTrackerWidget from '@/components/GoalTrackerWidget';
 import SpendingAnomalyAlert from '@/components/SpendingAnomalyAlert';
@@ -59,7 +60,16 @@ const Dashboard = () => {
   const safeToSpend = useSafeToSpend();
   const navigate = useNavigate();
 
-  const [mode, setMode] = useState<DashboardMode>('personal');
+  const [mode, setMode] = useState<DashboardMode>(() => {
+    // Adaptive: seed from sidebar nav mode (prism_nav_mode). 'full' → 'combined'.
+    try {
+      const nav = localStorage.getItem('prism_nav_mode');
+      if (nav === 'personal') return 'personal';
+      if (nav === 'business') return 'business';
+      if (nav === 'full') return 'combined';
+    } catch { /* noop */ }
+    return 'personal';
+  });
   const [selectedBusiness, setSelectedBusiness] = useState<string>('all');
   const [manageOpen, setManageOpen] = useState(false);
   const [recapOpen, setRecapOpen] = useState(false);
@@ -169,7 +179,10 @@ const Dashboard = () => {
             <h1 className="font-display text-3xl font-extrabold tracking-tight">
               <span className="prism-gradient-text">Dashboard</span>
             </h1>
-            <p className="text-muted-foreground mt-1">Your financial control center.</p>
+            <p className="text-muted-foreground mt-1">
+              <span className="text-xs uppercase tracking-wider text-primary/80 mr-2">Today &amp; this month</span>
+              Your financial control center.
+            </p>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
             <TooltipProvider delayDuration={0}>
@@ -281,6 +294,13 @@ Your Safe-to-Spend updates in real time as you add transactions, pay bills, and 
           )}
         </div>
       </motion.div>
+
+      {/* ========== Empty-state 3-step checklist (only when no accounts) ========== */}
+      {(accounts?.length ?? 0) === 0 && (
+        <motion.div variants={item}>
+          <EmptyStateChecklist />
+        </motion.div>
+      )}
 
       {/* ========== SAFE-TO-SPEND HERO (Primary Focus) ========== */}
       <motion.div variants={item}>

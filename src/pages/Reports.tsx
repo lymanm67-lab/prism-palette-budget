@@ -358,7 +358,10 @@ const Reports = () => {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-display text-3xl font-bold prism-gradient-text">Reports</h1>
-          <p className="text-muted-foreground">Comprehensive financial insights and analytics.</p>
+          <p className="text-muted-foreground">
+            <span className="text-xs uppercase tracking-wider text-primary/80 mr-2">Year-to-date</span>
+            Comprehensive financial insights and analytics.
+          </p>
           <PageOverview
             title="Reports Overview"
             description="Deep financial analytics with spending trends, budget comparisons, net worth tracking, and export capabilities."

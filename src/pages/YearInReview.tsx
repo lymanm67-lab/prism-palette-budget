@@ -128,7 +128,10 @@ const YearInReview = () => {
           <h1 className="font-display text-3xl font-extrabold tracking-tight">
             <span className="prism-gradient-text">{selectedYear} Year in Review</span>
           </h1>
-          <p className="text-muted-foreground mt-1">Your annual financial summary</p>
+          <p className="text-muted-foreground mt-1">
+            <span className="text-xs uppercase tracking-wider text-primary/80 mr-2">Full year story</span>
+            Your annual financial summary
+          </p>
         </div>
         <PageOverview
           title="Year in Review"
