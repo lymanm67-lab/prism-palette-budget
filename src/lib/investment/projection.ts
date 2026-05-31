@@ -20,6 +20,8 @@ export interface ProjectionInputs {
   annualRaisePct: number;    // 3 = 3%
   raiseRedirectPct: number;  // 100 = invest 100% of raise
 
+  employerMatchPct?: number; // e.g. 9 = 9% of salary; when set, employer contribution grows with salary
+
   currentMonthlyIncome?: number;
 
   debtPaymentAmount?: number;
