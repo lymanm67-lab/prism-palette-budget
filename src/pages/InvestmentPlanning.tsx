@@ -275,6 +275,9 @@ export default function InvestmentPlanning() {
           <CollapsibleSection title="Today's vs future dollars">
             <DollarModeCard plan={plan ?? null} />
           </CollapsibleSection>
+          <CollapsibleSection title="Retirement allocation rules">
+            <AllocationRulesSection />
+          </CollapsibleSection>
           <CollapsibleSection title="Projection diagnostic">
             <ProjectionDiagnostic plan={plan ?? null} />
           </CollapsibleSection>
