@@ -45,7 +45,7 @@ function ProgramCard({ p }: { p: DpaProgram }) {
 }
 
 export default function StateAssistancePicker() {
-  const [state, setState] = useState('FL');
+  const [state, setState] = useState('OH');
   const programs = STATE_PROGRAMS[state] ?? [];
   const stateLabel = STATE_DATA[state]?.label ?? state;
 
