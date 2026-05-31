@@ -166,6 +166,13 @@ export function MixedReturnsScenario({ plan }: Props) {
   );
   const cagr = useMemo(() => geometricMean(sequence), [sequence]);
 
+  const stress = useMemo<StressResult | null>(() => {
+    if (!stressRunId || !plan || !plan.current_age) return null;
+    const goal = plan.target_amount || 4_000_000;
+    return runStressTest(plan, sequence, horizonYears, useFuture, goal, 500);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stressRunId]);
+
   if (!plan || !plan.current_age) return null;
 
   const goal = plan.target_amount || 4_000_000;
