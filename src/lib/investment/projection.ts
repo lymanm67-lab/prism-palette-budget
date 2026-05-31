@@ -211,7 +211,26 @@ export function runProjection(inputs: ProjectionInputs): ProjectionResult {
       monthly += ssThisMonth;
     }
 
-    // Compound retirement balance
+    // Dated monthly step-ups (e.g. $208 First Million Accelerator, $225 Jan 2027, $500 Jun 2028)
+    let stepUpThisMonth = 0;
+    for (const s of datedStepUpMonths) {
+      if (m >= s.startMonth) stepUpThisMonth += s.amount;
+    }
+    monthly += stepUpThisMonth;
+
+    // Annual lump sum (e.g. $3,000 tax refund every January from 2028+)
+    let lumpThisMonth = 0;
+    if (lumpSum && lumpSum.amount > 0) {
+      // current calendar month index relative to today
+      const monthsFromStart = m + nowMonth; // m=1 means next month
+      const calYear = nowYear + Math.floor(monthsFromStart / 12);
+      const calMonth = monthsFromStart % 12; // 0=Jan
+      if (calMonth === 0 && calYear >= lumpSum.startYear) {
+        lumpThisMonth = lumpSum.amount;
+        monthly += lumpThisMonth;
+      }
+    }
+
     balance = balance * (1 + currentMonthlyRate) + monthly;
     totalEmp += employeeBase;
     totalErp += employerBase;
