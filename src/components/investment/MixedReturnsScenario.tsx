@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Activity, Shuffle } from 'lucide-react';
+import { Activity, Shuffle, FlaskConical } from 'lucide-react';
 import { InvestmentPlan } from '@/hooks/use-investment-plan';
 import { runProjection, formatCurrencyFull, ProjectionInputs } from '@/lib/investment/projection';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell, ReferenceLine } from 'recharts';
