@@ -10,6 +10,7 @@ import { useHousehold } from '@/contexts/HouseholdContext';
 import { loadMontgomerySample } from '@/lib/investment/montgomery-sample';
 import { SnapshotDashboard } from '@/components/investment/SnapshotDashboard';
 import { ReturnScenarioComparison } from '@/components/investment/ReturnScenarioComparison';
+import { ProjectionDiagnostic } from '@/components/investment/ProjectionDiagnostic';
 import { InvestmentWizard } from '@/components/investment/InvestmentWizard';
 import { RaiseRedirectPlanner } from '@/components/investment/RaiseRedirectPlanner';
 import { DebtToWealthTool } from '@/components/investment/DebtToWealthTool';
@@ -232,6 +233,7 @@ export default function InvestmentPlanning() {
             onCreateRules={() => setActiveTab('money-rules')}
             onReviewLegacy={() => setActiveTab('legacy')}
           />
+          <ProjectionDiagnostic plan={plan ?? null} />
           {projection && <ProjectionCharts yearly={projection.yearly} target={plan!.target_amount} />}
         </TabsContent>
 

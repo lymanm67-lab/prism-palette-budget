@@ -14,10 +14,10 @@ interface Props {
   onReviewLegacy?: () => void;
 }
 
-function buildInputs(plan: InvestmentPlan, returnPct: number, useFutureDollars: boolean) {
+function buildInputs(plan: InvestmentPlan, returnPct: number, useFutureDollars: boolean, retirementAge: number) {
   return {
     currentAge: plan.current_age,
-    retirementAge: plan.retirement_age,
+    retirementAge,
     currentBalance: plan.current_balance,
     targetAmount: plan.target_amount,
     monthlyEmployeeContribution: plan.monthly_employee_contribution,
@@ -49,12 +49,14 @@ export function ReturnScenarioComparison({ plan, onCreateRules, onReviewLegacy }
   const [dollarMode, setDollarMode] = useState<'today' | 'nominal'>(
     plan?.use_future_dollars ? 'nominal' : 'today'
   );
+  const [targetAge, setTargetAge] = useState<string>('85');
   if (!plan || !plan.current_age || !plan.retirement_age) return null;
 
   const useFuture = dollarMode === 'nominal';
+  const ageNum = parseInt(targetAge, 10);
   const goal = plan.target_amount || 4_000_000;
-  const p7 = runProjection(buildInputs(plan, 7, useFuture)).projectedBalance;
-  const p8 = runProjection(buildInputs(plan, 8, useFuture)).projectedBalance;
+  const p7 = runProjection(buildInputs(plan, 7, useFuture, ageNum)).projectedBalance;
+  const p8 = runProjection(buildInputs(plan, 8, useFuture, ageNum)).projectedBalance;
 
   const surplus7 = p7 - goal;
   const surplus8 = p8 - goal;
@@ -72,8 +74,8 @@ export function ReturnScenarioComparison({ plan, onCreateRules, onReviewLegacy }
 
   const headline =
     surplus7 >= 0 && surplus8 >= 0
-      ? `Your plan is projected to clear the ${formatCurrencyFull(goal)} goal by age ${plan.retirement_age} at both 7% and 8% ROI.`
-      : `At 7% ROI you are ${surplus7 >= 0 ? 'on track' : 'short of'} your ${formatCurrencyFull(goal)} goal.`;
+      ? `Your plan is projected to clear the ${formatCurrencyFull(goal)} goal by age ${ageNum} at both 7% and 8% ROI.`
+      : `At 7% ROI you are ${surplus7 >= 0 ? 'on track' : 'short of'} your ${formatCurrencyFull(goal)} goal by age ${ageNum}.`;
 
   return (
     <Card className="bg-gradient-to-br from-card to-muted/20">
@@ -82,19 +84,27 @@ export function ReturnScenarioComparison({ plan, onCreateRules, onReviewLegacy }
           <div>
             <CardTitle className="text-lg flex items-center gap-2">
               <Target className="h-4 w-4 text-primary" />
-              Projected Retirement & Legacy Assets at Age {plan.retirement_age}
+              Am I On Track for {formatCurrencyFull(goal)} by Age {ageNum}?
             </CardTitle>
             <p className="text-sm text-muted-foreground mt-1">{headline}</p>
             <p className="text-xs text-muted-foreground mt-1">
               Viewing in {useFuture ? 'nominal (future) dollars' : "today's dollars (inflation-adjusted)"}.
             </p>
           </div>
-          <Tabs value={dollarMode} onValueChange={(v) => setDollarMode(v as 'today' | 'nominal')}>
-            <TabsList className="h-8">
-              <TabsTrigger value="today" className="text-xs h-6 px-2">Today's $</TabsTrigger>
-              <TabsTrigger value="nominal" className="text-xs h-6 px-2">Nominal $</TabsTrigger>
-            </TabsList>
-          </Tabs>
+          <div className="flex flex-col gap-2 items-end">
+            <Tabs value={targetAge} onValueChange={setTargetAge}>
+              <TabsList className="h-8">
+                <TabsTrigger value="85" className="text-xs h-6 px-2">Age 85</TabsTrigger>
+                <TabsTrigger value="88" className="text-xs h-6 px-2">Age 88</TabsTrigger>
+              </TabsList>
+            </Tabs>
+            <Tabs value={dollarMode} onValueChange={(v) => setDollarMode(v as 'today' | 'nominal')}>
+              <TabsList className="h-8">
+                <TabsTrigger value="today" className="text-xs h-6 px-2">Today's $</TabsTrigger>
+                <TabsTrigger value="nominal" className="text-xs h-6 px-2">Nominal $</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-5">
