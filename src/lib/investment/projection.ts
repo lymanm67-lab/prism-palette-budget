@@ -171,6 +171,9 @@ export function runProjection(inputs: ProjectionInputs): ProjectionResult {
     cumGrowth: 0,
   }];
 
+  const monthly: MonthlyPoint[] = [];
+  const today = new Date();
+
   const hasMixedReturns = Array.isArray(inputs.annualReturnsPct) && inputs.annualReturnsPct.length > 0;
   let currentMonthlyRate = monthlyRate;
   for (let m = 1; m <= totalMonths; m++) {
