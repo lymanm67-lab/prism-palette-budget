@@ -1,62 +1,142 @@
 
-# Investment Planning Snapshot Revision — Montgomery Plan
+# Home-Buying Readiness — Full Redesign
 
-Adds a First Million dashboard, updated age 85/88 projection table, $1M–$6M milestone table, contribution timeline, allocation pie, Montgomery Family Legacy Trust card, and a diagnostic checklist. Adds ~14 session-only "what-if" toggles. No DB migration.
+Turn the current 8-card checklist into a tabbed workspace where users can run scenarios, get AI coaching, estimate every cost, compare loan types, look up state programs, and search listings — with the existing checklist preserved as one tab.
 
-## Approach (locked from prior Q&A)
+## New page structure (`/home-buying`)
 
-1. **Toggles = session-only React state.** Persist only target age (85↔88) and default return scenario to the existing `investment_plans` row. Everything else is exploration UI.
-2. **All numbers computed live** by the projection engine. Each card shows a small "Expected reference" value (your spec) next to the computed value so you can visually QA drift.
-3. **Legacy Protection = static computed card.** No new asset-tagging UI. Pulls primary plan projection + a configurable $500K life insurance constant + SS-invested flag. Spouse/OPERS explicitly excluded with a visible exclusion list.
+Top-of-page **Readiness Hero** (always visible): one big composite score derived from
+- Checklist completion (existing)
+- Credit score (pulled from `credit_health` if present)
+- DTI (income vs debt from finance hooks)
+- Down-payment progress (a new goal)
+- Emergency fund coverage
 
-## Files
+Below the hero: **7 tabs**.
 
-### New
-- `src/components/investment/FirstMillionCard.tsx` — Goal $1M by Jun 2036, scenario bars (6/7/8/9/10%), interpretation text, expected-reference column.
-- `src/components/investment/MillionMilestonesTable.tsx` — $1M–$6M rows × 5 scenarios, computed dates with expected-reference column, "Not by 88" treatment.
-- `src/components/investment/ContributionTimelineChart.tsx` — Cumulative monthly step-ups (Jul 2026 $100 → Jan 2030 $2,621) as a stepped Recharts area.
-- `src/components/investment/AllocationPieChart.tsx` — Default new-dollar allocation (HSA / Roth 457(b) / Roth TDA / Taxable brokerage), 5% pie threshold rule applied.
-- `src/components/investment/LegacyTrustProtectionCard.tsx` — Montgomery Family Legacy Trust card: $500K life insurance + projected retirement assets by scenario at age 85, included/excluded lists, $0 warning, trust alignment checklist.
-- `src/components/investment/ProjectionDiagnosticChecklist.tsx` — All 18 checklist items, each green/grey based on whether the corresponding toggle/input is active.
-- `src/components/investment/PlanSnapshotToggles.tsx` — Grouped switches panel (Accelerators, Income strategy, Inflation view, Target age, Return scenario).
-- `src/hooks/use-plan-snapshot-toggles.ts` — Local state container with sensible defaults matching the Montgomery plan.
+### 1. AI Coach (`AiHomeBuyingCoach`)
+Guided conversational questionnaire powered by Lovable AI (Gemini, no API key from user). Asks ~10 adaptive questions (target city/state, household income, monthly debts, current savings, target purchase price, timeline, first-time buyer y/n, credit range, employment type, family plans). Streams back a personalized readiness report with:
+- Strengths / gaps
+- Recommended next 3 actions
+- Suggested loan type
+- Suggested DPA programs (links to State tab)
+Stored in a new `home_buying_coach_sessions` table so users can revisit.
 
-### Edited
-- `src/lib/investment/projection.ts` — Add optional inputs for: `firstMillionAccelerator` ($208/mo from Jan 2027), `annualLumpSum` ($3,000 starting 2028), explicit dated step-ups list, and per-scenario sweep helper `runScenarioSweep({rates:[6,7,8,9,10], plan, toggles})` returning `{ rate, projAt85, projAt88, firstMillionDate, milestones: Record<1..6, Date|null> }`. Employer contribution recalc already grows with salary — verify and patch if needed.
-- `src/lib/investment/montgomery-sample.ts` — Update sample plan to encode new dated step-ups ($225 Jan 2027, $500 Jun 2028, second $500 Jan 2030, $208 accelerator, $3K annual lump) via `investment_money_rules` rows. Trust name → "Montgomery Family Legacy Trust".
-- `src/components/investment/SnapshotDashboard.tsx` — Mount the new cards in order: FirstMillion → Updated age 85/88 table (replacing/augmenting existing snapshot cards) → MillionMilestonesTable → ContributionTimelineChart → AllocationPieChart → LegacyTrustProtectionCard → ProjectionDiagnosticChecklist. Top of dashboard renders `PlanSnapshotToggles`. Status logic: <$4M = "Needs additional accelerator or age 88 backup", $4M–$4.999M = "On track", ≥$5M = "Strongly on track".
-- `src/pages/InvestmentPlanning.tsx` — No structural change; SnapshotDashboard already mounted on the Snapshot tab. Pass-through of toggle state via context-free prop drilling kept inside SnapshotDashboard.
+### 2. Scenarios (`HomeBuyingScenarios`)
+Side-by-side comparator — up to 3 scenarios at once. Each scenario card has:
+- Purchase price, down %, rate, term, property tax %, insurance %, HOA, PMI
+- Auto-populates property tax + insurance from `STATE_DATA` (already in repo)
+- Outputs: monthly PITI, total interest, break-even vs renting, 5/10/30-yr equity curve (Recharts)
+Save scenarios to `home_buying_scenarios` table.
 
-### Not touched
-- No DB migration. No `supabase/types.ts` change. No edge functions. No changes to Milestones tab work (Stress Test, Wealth Milestones Chart) from prior turns.
+### 3. Calculators (`HomeBuyingCalculators`) — 4 stacked tools
+- **Down Payment Planner** — target price × down %, current savings, monthly contribution → months to goal, with a "Saving Techniques" accordion (automatic transfers, side income, windfalls, employer programs, IRA first-home withdrawal rules)
+- **Closing Cost Estimator** — itemized: lender fees, title, escrow, taxes, prepaid insurance, recording. State-aware via `STATE_DATA`
+- **Hidden Cost & Repair Budget** — annual maintenance (1–3% of price), utilities, HOA, lawn, pest, roof/HVAC/water-heater reserve sliders
+- **Credit & Debt Impact** — pulls user's credit score and debts, shows estimated rate by FICO band, total interest savings per +20 pt score; "Pay off X first → save $Y" suggestions
 
-## Toggle inventory (session-only unless noted)
+### 4. Loan Types (`LoanTypeComparator`)
+Card grid comparing Conventional, FHA, VA, USDA, Jumbo, Owner-Financed, Land Contract, Rent-to-Own. Each card: min down, min credit, pros, cons, best-for, mortgage-insurance rules, balloon/risk warnings. Plus a 4-column comparison table and a "Best fit for me" highlight based on AI Coach answers.
 
-Accelerators: First Million Accelerator, $208/mo, $3K annual lump, annual raise redirect, employer contribution growth, debt redirect, Social Security investing.
-HSA: medical reserve, legacy asset.
-Legacy: include life insurance.
-Display: future dollars / today's-dollar purchasing power, inflation rate (number input, default 2.5%).
-**Persisted to `investment_plans`:** target age (85 ↔ 88), default return scenario.
+### 5. State Assistance (`StateAssistancePicker`)
+Dropdown of all 50 states + DC (reuse `STATE_DATA` keys). Static curated dataset (`src/lib/home-buying/state-dpa-programs.ts`) of first-time-buyer / DPA programs per state — name, agency, max assistance, income limits, link. ~3–6 programs per state, sourced from official state housing-finance-agency sites. Includes federal programs (FHA, VA, USDA, HomeReady, Home Possible, Good Neighbor Next Door).
 
-## Status & legacy logic
+### 6. Home Search (`HomeSearchPanel`)
+Filters: city/ZIP, price range, beds, baths, garage, basement, sqft, style (ranch/colonial/etc.), lot size. Results show address, price, beds/baths/sqft, link to listing.
 
-- Status pill computed off the **selected scenario's age-85 projection** against $4M.
-- Legacy Protection total = (primary plan projected balance at selected target age, selected scenario) + ($500K life insurance if toggle on) + (SS-invested accumulated value if toggle on). Spouse OPERS pension, OPERS account value, spouse deferred comp, household checking, short-term savings always excluded and listed.
-- Warning banner renders when computed Legacy Protection = $0.
+**Data source: not Zillow.** Zillow blocks scraping and forbids it in ToS. Instead:
+- **Firecrawl connector** (already documented in this project) to scrape **Redfin / Realtor.com public listing pages** on demand.
+- Edge function `home-listings-search` accepts filters, builds a Redfin search URL, calls Firecrawl `scrape` with `formats: [{ type: 'json', schema }]` for structured extraction, returns normalized listings.
+- Falls back gracefully with an empty state + "Connect Firecrawl" CTA if the connector isn't linked.
 
-## Verification
+### 7. Readiness Checklist (existing 8 questions, unchanged)
+Move current page contents into `HomeBuyingChecklistTab.tsx` — zero behavior change.
 
-After build, on `/planning/investments` Snapshot tab:
-1. First Million card 7% bar reads ≈ $1.054M (±2%).
-2. Age 85 / 7% reads ≈ $4.635M.
-3. Milestone $4M / 7% reads ≈ Feb 2051.
-4. Toggling off "First Million Accelerator" drops Age 85 / 7% by ≈ $150–200K.
-5. Legacy Protection > $0 with default toggles; warning shows when life insurance toggle off AND projection toggles all off.
+## New files
 
-If any computed number is >2% off the reference, I'll patch the engine (likely the dated step-up timing) — not the display.
+```
+src/pages/HomeBuyingChecklist.tsx                    (gutted → becomes Tabs shell)
+src/components/home-buying/
+  ReadinessHero.tsx
+  AiHomeBuyingCoach.tsx
+  HomeBuyingScenarios.tsx
+  ScenarioCard.tsx
+  HomeBuyingCalculators.tsx
+  DownPaymentPlanner.tsx
+  ClosingCostEstimator.tsx
+  HiddenCostBudget.tsx
+  CreditDebtImpact.tsx
+  LoanTypeComparator.tsx
+  StateAssistancePicker.tsx
+  HomeSearchPanel.tsx
+  HomeBuyingChecklistTab.tsx          (existing checklist)
+src/lib/home-buying/
+  mortgage-math.ts                    (PITI, amortization, break-even)
+  state-dpa-programs.ts               (curated DPA data)
+  loan-types.ts                       (loan type metadata)
+supabase/functions/home-buying-coach/index.ts
+supabase/functions/home-listings-search/index.ts
+```
 
-## Out of scope (separate requests if you want them)
-- Real asset-tagging UI for legacy funding.
-- Persisting all 14 toggles to DB.
-- PDF export updates for the new cards.
-- Spouse-side dashboard parity.
+## Database (one migration)
+
+```sql
+-- AI coach sessions
+CREATE TABLE public.home_buying_coach_sessions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  household_id uuid NOT NULL,
+  user_id uuid NOT NULL,
+  answers jsonb NOT NULL DEFAULT '{}'::jsonb,
+  report jsonb,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
+);
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.home_buying_coach_sessions TO authenticated;
+GRANT ALL ON public.home_buying_coach_sessions TO service_role;
+ALTER TABLE public.home_buying_coach_sessions ENABLE ROW LEVEL SECURITY;
+-- household-scoped policies (same pattern as homebuyer_checklist)
+
+-- Saved scenarios
+CREATE TABLE public.home_buying_scenarios (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  household_id uuid NOT NULL,
+  user_id uuid NOT NULL,
+  name text NOT NULL,
+  inputs jsonb NOT NULL,
+  created_at timestamptz DEFAULT now()
+);
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.home_buying_scenarios TO authenticated;
+GRANT ALL ON public.home_buying_scenarios TO service_role;
+ALTER TABLE public.home_buying_scenarios ENABLE ROW LEVEL SECURITY;
+```
+
+## External services
+
+- **Lovable AI** (Gemini `google/gemini-3-flash-preview`) — coach questionnaire + report. No user key needed.
+- **Firecrawl connector** — for listing search. I'll add a "Connect Firecrawl" CTA inside the Home Search tab; if absent, the tab still renders with a helpful empty state. No upfront secret request.
+- **No Zillow.** Their ToS forbids it and they block scrapers.
+
+## Design notes
+
+- Reuse existing tokens: `prism-teal`, `prism-amber`, `prism-card-shine`, glassmorphism.
+- Tabs use existing `@/components/ui/tabs` shadcn component.
+- Charts via Recharts (already in project).
+- Mobile: tabs become a horizontally scrollable strip; calculators stack.
+- Trademark: keep PrismMoney™ usage where present.
+
+## What I am NOT doing in this build (out of scope unless you say otherwise)
+- No real-time MLS feed (requires paid IDX license).
+- No mortgage pre-approval submission (regulated activity).
+- No automatic Zillow scrape.
+- No new connector setup wizard outside the Home Search tab.
+
+## Implementation order
+1. Migration + DB grants
+2. `mortgage-math.ts`, `loan-types.ts`, `state-dpa-programs.ts`
+3. Tabs shell + `ReadinessHero` + move existing checklist into tab
+4. Calculators (4 components)
+5. Scenarios + Loan Types + State Assistance
+6. AI Coach + edge function
+7. Home Search + edge function (last, depends on Firecrawl)
+
+Approve and I'll switch to build mode and ship in this order.

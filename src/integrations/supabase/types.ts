@@ -1354,6 +1354,63 @@ export type Database = {
           },
         ]
       }
+      home_buying_coach_sessions: {
+        Row: {
+          answers: Json
+          created_at: string
+          household_id: string
+          id: string
+          report: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          answers?: Json
+          created_at?: string
+          household_id: string
+          id?: string
+          report?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          created_at?: string
+          household_id?: string
+          id?: string
+          report?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      home_buying_scenarios: {
+        Row: {
+          created_at: string
+          household_id: string
+          id: string
+          inputs: Json
+          name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          household_id: string
+          id?: string
+          inputs: Json
+          name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          household_id?: string
+          id?: string
+          inputs?: Json
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       homebuyer_checklist: {
         Row: {
           created_at: string
