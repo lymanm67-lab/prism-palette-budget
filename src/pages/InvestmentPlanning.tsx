@@ -337,7 +337,8 @@ export default function InvestmentPlanning() {
           <ScenarioComparison plan={plan ?? null} />
         </TabsContent>
 
-        <TabsContent value="milestones" className="mt-4">
+        <TabsContent value="milestones" className="mt-4 space-y-4">
+          <WealthMilestonesChart />
           <MilestoneTracker />
         </TabsContent>
       </Tabs>
