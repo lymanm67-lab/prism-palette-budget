@@ -1,21 +1,34 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { runProjection, formatCurrencyFull } from '@/lib/investment/projection';
 import { InvestmentPlan } from '@/hooks/use-investment-plan';
 import { DisclaimerBlock } from './DisclaimerBlock';
 
 interface Props { plan: InvestmentPlan | null }
 
-const SCENARIOS = [
-  { name: 'Conservative', rate: 5, color: 'bg-sky-500/10 border-sky-500/30' },
-  { name: 'Moderate', rate: 7, color: 'bg-primary/10 border-primary/30' },
-  { name: 'Growth', rate: 9, color: 'bg-emerald-500/10 border-emerald-500/30' },
-];
+type ReturnMode = 'nominal' | 'real';
+
+const SCENARIO_SETS: Record<ReturnMode, { name: string; rate: number; color: string }[]> = {
+  nominal: [
+    { name: 'Conservative', rate: 5, color: 'bg-sky-500/10 border-sky-500/30' },
+    { name: 'Moderate', rate: 8, color: 'bg-primary/10 border-primary/30' },
+    { name: 'Growth', rate: 10, color: 'bg-emerald-500/10 border-emerald-500/30' },
+  ],
+  real: [
+    { name: 'Conservative', rate: 3, color: 'bg-sky-500/10 border-sky-500/30' },
+    { name: 'Moderate', rate: 5, color: 'bg-primary/10 border-primary/30' },
+    { name: 'Growth', rate: 7, color: 'bg-emerald-500/10 border-emerald-500/30' },
+  ],
+};
 
 export function ScenarioComparison({ plan }: Props) {
+  const [mode, setMode] = useState<ReturnMode>('nominal');
+  const scenarios = SCENARIO_SETS[mode];
+
   const rows = useMemo(() => {
     if (!plan || !plan.current_age || !plan.retirement_age) return [];
-    return SCENARIOS.map((s) => {
+    return scenarios.map((s) => {
       const r = runProjection({
         currentAge: plan.current_age!,
         retirementAge: plan.retirement_age!,
@@ -41,7 +54,7 @@ export function ScenarioComparison({ plan }: Props) {
       });
       return { ...s, projection: r };
     });
-  }, [plan]);
+  }, [plan, scenarios]);
 
   if (!plan || rows.length === 0) {
     return <Card><CardContent className="p-6 text-sm text-muted-foreground">Save your plan first to compare scenarios.</CardContent></Card>;
@@ -49,6 +62,19 @@ export function ScenarioComparison({ plan }: Props) {
 
   return (
     <div className="space-y-4">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <p className="text-xs text-muted-foreground">
+          {mode === 'nominal'
+            ? 'Nominal returns — historical S&P 500 averages, pre-inflation.'
+            : 'Real returns — inflation-adjusted (today\'s purchasing power).'}
+        </p>
+        <Tabs value={mode} onValueChange={(v) => setMode(v as ReturnMode)}>
+          <TabsList className="h-8">
+            <TabsTrigger value="nominal" className="text-xs">Nominal</TabsTrigger>
+            <TabsTrigger value="real" className="text-xs">Real (inflation-adj.)</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
       <div className="grid gap-3 md:grid-cols-3">
         {rows.map((r) => (
           <Card key={r.name} className={r.color}>
