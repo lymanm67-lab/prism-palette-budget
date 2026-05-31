@@ -186,9 +186,9 @@ export function runProjection(inputs: ProjectionInputs): ProjectionResult {
   const ssMonthly = inputs.ssMonthlyEstimate || 0;
   const estimatedMonthlyIncome = fourPctMonthly + ssMonthly;
 
-  // Required monthly contribution (binary search)
+  // Required monthly contribution (binary search) — skip in recursive solve calls
   let requiredMonthlyContribution: number | null = null;
-  if (inputs.targetAmount > 0 && years > 0) {
+  if (inputs.targetAmount > 0 && years > 0 && !(inputs as any).__skipSolve) {
     requiredMonthlyContribution = solveRequiredMonthly(inputs);
   }
 
