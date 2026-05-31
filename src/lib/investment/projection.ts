@@ -238,7 +238,7 @@ export function runProjection(inputs: ProjectionInputs): ProjectionResult {
     cumEmployer += employerBase;
     cumRaiseRedirect += raiseRedirectThisMonth;
     cumDebtRedirect += debtThisMonth;
-    cumAdditional += additionalThisMonth;
+    cumAdditional += additionalThisMonth + stepUpThisMonth + lumpThisMonth;
     cumSS += ssThisMonth;
 
     // HSA stream
