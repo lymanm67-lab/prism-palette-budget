@@ -1,102 +1,63 @@
+## Goal
 
-# Retirement Allocation Rules — Investment Planning Snapshot
+Add a realistic "mixed market returns" scenario to the Investment Planning page that cycles annual returns through 6%, 7%, 8%, 9%, and 10% over **27** and **30** year horizons, instead of assuming one flat rate forever.
 
-Scope: **Large**. New DB table + 1 new section on `/planning/investments` (Snapshot tab) with ~6 sub-components, plus a projection engine. Recommend keeping it on the Snapshot tab inside a `CollapsibleSection` so it doesn't bloat the page.
+## Where it lands
 
-## What the user gets
+New section on the **Snapshot tab** of `/planning/investments`, mounted right under the existing `ReturnScenarioComparison` ("Am I On Track…") card. Same visual language: gradient card, badge status, two horizon toggles, Today's $ / Nominal $ toggle.
 
-A new "Retirement Allocation Rules" card on Snapshot that:
-1. Shows Montgomery's seeded baseline (salary, current EE/ER contributions, raise rule, SS estimate).
-2. Lists every future contribution event as an editable row.
-3. Routes each event to buckets (HSA / Roth 457(b) / Roth TDA / Pre-tax 457(b) / Pre-tax TDA / Taxable Brokerage) using the allocation logic below.
-4. Renders a projection table (monthly, annual, plan-limit flag, included-in-projection flag).
-5. Warns on HSA cap, 402(g)/415 plan limits, double-counting, and the Social Security → workplace-plan rule.
+## What the user sees
 
-## Data model (1 new table + 1 settings row)
+A card titled **"Mixed Market Returns Scenario"** with:
 
-**`retirement_allocation_events`** (per household)
-- `id`, `household_id`, `user_id`
-- `event_date` (date) · `event_label` (text) · `event_type` enum: `step_up | raise_redirect | debt_redirect | ss_invest`
-- `monthly_amount` (numeric) — null for `raise_redirect` (computed from salary × raise %)
-- `default_allocation` (jsonb) — `{ hsa, roth_457b, roth_tda, pretax_457b, pretax_tda, taxable }` summing to monthly_amount
-- `user_allocation` (jsonb, nullable) — overrides
-- `is_active` (bool, default true)
-- `notes` (text)
-- soft-delete (`deleted_at`), timestamps
+1. **Horizon tabs**: `27 years` | `30 years` (drives projection length from current age).
+2. **Dollar mode tabs**: `Today's $` | `Nominal $` (matches the existing card's pattern).
+3. **A bar chart** comparing 4 outcomes at the chosen horizon:
+   - Goal line (target_amount, default $4M)
+   - Flat 7% baseline
+   - Flat 8% baseline
+   - **Mixed Returns** projection (the new one)
+4. **A small "Sequence" strip** showing the rotating annual returns for the chosen horizon, e.g. `6% · 7% · 8% · 9% · 10% · 6% · 7% …` so the user understands what "mixed" means.
+5. **Two outcome tiles** for the Mixed scenario:
+   - Mixed Returns (27 or 30 yr): projected balance + Surplus/Gap vs goal.
+   - **Geometric average return** of the sequence (so they see it lands near ~7.97% CAGR for 6–10% rotating, which is the honest "realistic" headline number).
+6. Explanatory copy:
+   > Real markets don't return a flat rate. This scenario rotates annual returns through 6%, 7%, 8%, 9%, and 10% to show how sequence-of-returns risk smooths out (or doesn't) over long horizons. Educational only — not a forecast.
+7. Reuses the existing disclaimer style already present on the page.
 
-**`retirement_allocation_settings`** (1 row per household, upsert)
-- `hsa_eligible` (bool) · `hsa_coverage` enum `self | family` · `hsa_max_target` (numeric)
-- `roth_pct_default` (numeric 0–100) · `employer_contribution_rate` (numeric, default 9)
-- `annual_raise_pct` (numeric, default 3) · `inflation_mode` enum `today | future`
-- `current_monthly_salary`, `current_ee_contribution`, `current_er_contribution`, `ss_age70_estimate`
-- timestamps
+## Sequence definition
 
-RLS by household via `is_household_member`; GRANTs to `authenticated` + `service_role`. Seed Montgomery's 8 events on first load if table empty for the household.
+Deterministic 5-year cycle: **6, 7, 8, 9, 10** repeating. Year 1 of the projection = 6%, year 2 = 7%, … year 6 = 6%, etc.
 
-## Allocation engine (pure TS, no backend)
+- Over 27 years → ends mid-cycle at year-27 = 10%.
+- Over 30 years → ends on year-30 = 10%.
+- Geometric mean of one full 5-year cycle: ≈ **7.985%** CAGR — a credible "realistic" baseline that's a hair under the flat 8% benchmark but above the flat 7% benchmark.
 
-`src/lib/retirement/allocationEngine.ts`
-- Input: settings + ordered events + plan-year limits table (2026–2037 projected, with COLA at inflation_mode).
-- For each event in date order, compute the default allocation per rules 1–9. Spillover order when HSA caps: → Roth 457(b) → Roth TDA → pre-tax mirrors → taxable.
-- Output per event: `{ destinations[], countsTowardLimits, includedInProjection, warnings[] }`.
-- Aggregate per year: total to each bucket, plan-limit usage %, HSA usage %.
+No randomization. Deterministic = reproducible = no "why did the number change?" support tickets.
 
-Plan limits source: hardcoded constants file (2025 actuals, +2% COLA forward) — flagged "estimates" in UI.
+## Technical changes (small, surgical)
 
-## UI surface
+1. **`src/lib/investment/projection.ts`** — extend `ProjectionInputs` with an optional field:
+   ```ts
+   annualReturnsPct?: number[]; // overrides expectedReturnPct year-by-year
+   ```
+   In the monthly loop, when `annualReturnsPct` is provided, compute `monthlyRate` from `annualReturnsPct[yearIndex % annualReturnsPct.length] / 100 / 12` instead of the single rate. HSA rate continues to use `hsaReturnPct` (unchanged). No other behavior changes.
 
-`src/components/investment/AllocationRulesSection.tsx` (new, mounted inside Snapshot tab via existing `CollapsibleSection`)
+2. **New component `src/components/investment/MixedReturnsScenario.tsx`** — mirrors `ReturnScenarioComparison`'s structure. Uses `runProjection` three times per horizon (7% flat, 8% flat, mixed sequence) and renders the bar chart + tiles + sequence strip.
 
-Sub-components:
-- `AllocationSettingsPanel.tsx` — controls (HSA eligibility/coverage/target, Roth %, employer rate, raise %, inflation mode toggle)
-- `AllocationEventsList.tsx` — editable rows; toggle `is_active`, edit amount, override bucket split via sliders/inputs
-- `AllocationProjectionTable.tsx` — columns: Date · Event · Monthly · Annual · Destination(s) · Counts to plan limits? · Included in projection?
-- `AllocationWarningsBanner.tsx` — Social Security warning, HSA/plan-limit overage callouts
-- `AllocationDisclaimer.tsx` — educational-only disclaimer
+3. **`src/pages/InvestmentPlanning.tsx`** — import and mount `<MixedReturnsScenario plan={plan ?? null} />` immediately after `<ReturnScenarioComparison ... />` on the Snapshot tab. One added line + import.
 
-Hook: `src/hooks/useRetirementAllocation.ts` — fetches settings + events, runs engine, exposes mutate handlers and realtime refresh.
+## Out of scope (intentionally)
 
-## Guardrails encoded as engine checks
+- No Monte Carlo, no random sequence-of-returns simulator (that's a separate feature already noted as v4 in memory).
+- No DB schema changes — the cycle is hardcoded constants, not user-configurable.
+- No edits to `ScenarioComparison`, allocation engine, or any other planning component.
+- No changes to PDF export or coach mode.
 
-- HSA: cumulative HSA destinations per plan-year ≤ `hsa_limit[coverage]`; excess auto-spills.
-- Plan limits: sum of `roth_457b + pretax_457b` ≤ 457(b) annual limit; same for TDA (403(b) 402(g)).
-- Employer contribution: stored separately; never added to employee event totals — surfaced as a read-only line "Employer adds ~$X/mo (not editable here)".
-- $888 debt redirect: tagged `debt_redirect`; engine asserts it's not also added as a `step_up` for the same month.
-- Spouse OPERS: excluded from allocation engine entirely; rendered as info-only chip "Household income protection — not a liquid asset".
-- Social Security event: forced to `taxable` by default; warning banner shown; optional "cash-flow replacement" toggle that re-routes to Roth 457(b) up to remaining 402(g) headroom.
+## Files touched
 
-## Projection integration
+- Edit: `src/lib/investment/projection.ts` (~5 lines)
+- Create: `src/components/investment/MixedReturnsScenario.tsx`
+- Edit: `src/pages/InvestmentPlanning.tsx` (2 lines: import + render)
 
-- `includedInProjection` toggle per event writes into `user_allocation.included` flag.
-- Existing `ProjectionCharts` reads a new selector `useActiveAllocationContributions()` that adds the active events to the monthly contribution stream — future-dollar by default, today's-dollar when `inflation_mode = today` (discounts by raise_pct).
-- No change to current Snapshot projection math when zero events are active — purely additive.
-
-## Out of scope (call out, don't build)
-
-- Editing the seeded Montgomery baseline numbers (those come from existing Snapshot inputs).
-- Backdoor Roth, Mega Backdoor, after-tax 401(a), QCDs — not in spec.
-- Spouse pension modeling beyond exclusion.
-
-## File summary
-
-New (8):
-- `supabase/migrations/<ts>_retirement_allocation.sql`
-- `src/lib/retirement/allocationEngine.ts`
-- `src/lib/retirement/planLimits.ts`
-- `src/hooks/useRetirementAllocation.ts`
-- `src/components/investment/AllocationRulesSection.tsx`
-- `src/components/investment/allocation/AllocationSettingsPanel.tsx`
-- `src/components/investment/allocation/AllocationEventsList.tsx`
-- `src/components/investment/allocation/AllocationProjectionTable.tsx`
-
-Edited (2):
-- `src/pages/InvestmentPlanning.tsx` — mount `AllocationRulesSection` in Snapshot tab
-- `src/components/investment/ProjectionCharts.tsx` — read allocation contributions into projection stream
-
-## Confirmations before I build
-
-1. Mount on **Snapshot tab** (collapsed by default) — OK, or do you want it as its own tab?
-2. **Seed Montgomery's 8 events** on first load for any household with no events — OK, or only for your account?
-3. Plan-limit constants: I'll hardcode 2025 IRS values + 2% COLA forward. OK?
-
-Reply "go" (with answers to the 3 above if non-default) and I'll switch to build mode.
+Scope: **Medium** (3 files, no logic risk beyond the projection extension, no schema).
