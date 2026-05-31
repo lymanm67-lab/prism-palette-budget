@@ -49,33 +49,47 @@ export default function InvestmentPlanning() {
   const { household } = useHousehold();
   const qc = useQueryClient();
   const [loadingSample, setLoadingSample] = useState(false);
-  const [activeTab, setActiveTab] = useState<string>(plan ? 'snapshot' : 'wizard');
+  const [activeTab, setActiveTab] = useState<string>('snapshot');
+
+  // Sync default tab once the plan finishes loading (avoids flash of wizard for returning users)
+  useEffect(() => {
+    if (isLoading) return;
+    setActiveTab((current) => {
+      if (current !== 'snapshot' && current !== 'wizard') return current;
+      return plan ? 'snapshot' : 'wizard';
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading, plan?.id]);
 
   const TAB_GROUPS = [
-    { label: 'Income Engines', items: [
+    { label: 'Build Your Plan', items: [
       { value: 'raise', label: 'Raises' },
       { value: 'debt', label: 'Debt → Wealth' },
       { value: 'income', label: 'Retirement Income' },
       { value: 'rules', label: 'Money Rules' },
-    ]},
-    { label: 'Household', items: [
-      { value: 'spouse', label: 'Spouse' },
-      { value: 'pensions', label: 'Pensions' },
-      { value: 'hsa', label: 'HSA' },
     ]},
     { label: 'Tax & Risk', items: [
       { value: 'tax', label: 'Tax' },
       { value: 'risk', label: 'Risk' },
       { value: 'healthcare', label: 'Healthcare' },
     ]},
-    { label: 'Wealth & Assets', items: [
+    { label: 'Household', items: [
+      { value: 'spouse', label: 'Spouse' },
+      { value: 'pensions', label: 'Pensions' },
+      { value: 'hsa', label: 'HSA' },
+    ]},
+    { label: 'Assets & Goals', items: [
+      { value: 'assets', label: 'Asset Tags' },
       { value: 'realassets', label: 'Real Assets' },
       { value: 'college', label: 'College / 529' },
       { value: 'charitable', label: 'Charitable Giving' },
     ]},
-    { label: 'Legacy & Coaching', items: [
+    { label: 'Legacy & Estate', items: [
       { value: 'legacy', label: 'Legacy' },
       { value: 'estate', label: 'Estate Execution' },
+      { value: 'trust', label: 'Trust Funding' },
+    ]},
+    { label: 'Coaching', items: [
       { value: 'behavior', label: 'Behavior Coach' },
       { value: 'automation', label: 'Automation Log' },
     ]},
@@ -178,6 +192,9 @@ export default function InvestmentPlanning() {
               <h2 className="text-lg font-semibold">Build your investment plan</h2>
               <p className="text-sm text-muted-foreground mt-1">Run the setup wizard to get your projection and scenario comparison.</p>
             </div>
+            <Button onClick={() => setActiveTab('wizard')} size="sm">
+              Start setup wizard
+            </Button>
           </CardContent>
         </Card>
       ) : null}
@@ -185,11 +202,11 @@ export default function InvestmentPlanning() {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className="flex items-center gap-2 flex-wrap rounded-xl border border-border bg-card/40 backdrop-blur p-2">
           <TabsList className="bg-transparent gap-1 p-0 h-auto">
-            <TabsTrigger value="snapshot" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg">
-              <Sparkles className="h-3.5 w-3.5 mr-1.5" /> Snapshot
-            </TabsTrigger>
             <TabsTrigger value="wizard" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg">
               Setup
+            </TabsTrigger>
+            <TabsTrigger value="snapshot" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg">
+              <Sparkles className="h-3.5 w-3.5 mr-1.5" /> Snapshot
             </TabsTrigger>
             <TabsTrigger value="scenarios" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg">
               Scenarios
@@ -235,41 +252,22 @@ export default function InvestmentPlanning() {
 
         <TabsContent value="snapshot" className="mt-4 space-y-3">
           <SnapshotDashboard plan={plan ?? null} />
-          <CollapsibleSection title="Return scenario comparison" defaultOpen>
-            <ReturnScenarioComparison
-              plan={plan ?? null}
-              onCreateRules={() => setActiveTab('money-rules')}
-              onReviewLegacy={() => setActiveTab('legacy')}
-            />
-          </CollapsibleSection>
-          <CollapsibleSection title="Today's vs future dollars">
-            <DollarModeCard plan={plan ?? null} />
-          </CollapsibleSection>
-          <CollapsibleSection title="Legacy protection">
-            <LegacyProtectionCard plan={plan ?? null} />
-          </CollapsibleSection>
-          <CollapsibleSection title="Trust funding tracker">
-            <TrustFundingTracker plan={plan ?? null} />
-          </CollapsibleSection>
-          <CollapsibleSection title="Asset tags">
-            <AssetTagManager plan={plan ?? null} />
-          </CollapsibleSection>
-          <CollapsibleSection title="Money rules">
-            <MoneyRulesToggles plan={plan ?? null} />
-          </CollapsibleSection>
-          <CollapsibleSection title="Projection diagnostic">
-            <ProjectionDiagnostic plan={plan ?? null} />
-          </CollapsibleSection>
+          {projection && (
+            <CollapsibleSection title="Projection charts" defaultOpen>
+              <ProjectionCharts yearly={projection.yearly} target={plan!.target_amount} />
+            </CollapsibleSection>
+          )}
           {projection && (
             <CollapsibleSection title="Contribution sources">
               <ContributionSourcesChart yearly={projection.yearly} />
             </CollapsibleSection>
           )}
-          {projection && (
-            <CollapsibleSection title="Projection charts">
-              <ProjectionCharts yearly={projection.yearly} target={plan!.target_amount} />
-            </CollapsibleSection>
-          )}
+          <CollapsibleSection title="Today's vs future dollars">
+            <DollarModeCard plan={plan ?? null} />
+          </CollapsibleSection>
+          <CollapsibleSection title="Projection diagnostic">
+            <ProjectionDiagnostic plan={plan ?? null} />
+          </CollapsibleSection>
         </TabsContent>
 
         <TabsContent value="wizard" className="mt-4">
@@ -295,7 +293,12 @@ export default function InvestmentPlanning() {
         <TabsContent value="spouse" className="mt-4"><SpouseHouseholdPanel planId={plan?.id} /></TabsContent>
         <TabsContent value="pensions" className="mt-4"><PensionPlanner planId={plan?.id} /></TabsContent>
         <TabsContent value="hsa" className="mt-4"><HSAPlanner plan={plan ?? null} /></TabsContent>
-        <TabsContent value="legacy" className="mt-4"><LegacyPlanner planId={plan?.id} /></TabsContent>
+        <TabsContent value="legacy" className="mt-4 space-y-3">
+          <LegacyProtectionCard plan={plan ?? null} />
+          <LegacyPlanner planId={plan?.id} />
+        </TabsContent>
+        <TabsContent value="trust" className="mt-4"><TrustFundingTracker plan={plan ?? null} /></TabsContent>
+        <TabsContent value="assets" className="mt-4"><AssetTagManager plan={plan ?? null} /></TabsContent>
         <TabsContent value="rules" className="mt-4"><MoneyRulesManager planId={plan?.id} /></TabsContent>
         <TabsContent value="tax" className="mt-4"><TaxPlanner plan={plan ?? null} /></TabsContent>
         <TabsContent value="risk" className="mt-4"><RiskPlanner plan={plan ?? null} /></TabsContent>
@@ -308,7 +311,12 @@ export default function InvestmentPlanning() {
         <TabsContent value="college" className="mt-4"><CollegePlanner /></TabsContent>
         <TabsContent value="automation" className="mt-4"><AutomationLog planId={plan?.id} /></TabsContent>
 
-        <TabsContent value="scenarios" className="mt-4">
+        <TabsContent value="scenarios" className="mt-4 space-y-3">
+          <ReturnScenarioComparison
+            plan={plan ?? null}
+            onCreateRules={() => setActiveTab('rules')}
+            onReviewLegacy={() => setActiveTab('legacy')}
+          />
           <ScenarioComparison plan={plan ?? null} />
         </TabsContent>
 
