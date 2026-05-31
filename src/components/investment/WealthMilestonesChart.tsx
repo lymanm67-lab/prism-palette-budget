@@ -58,6 +58,7 @@ function buildInputs(plan: any, returnPct: number, useFuture: boolean) {
     inflationPct: plan.inflation_pct,
     datedStepUps: MONTGOMERY_STEP_UPS,
     annualLumpSum: { amount: 3000, startYear: 2028 },
+    includeMonthly: true,
     __skipSolve: true,
   } as any;
 }
