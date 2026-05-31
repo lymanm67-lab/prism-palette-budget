@@ -5,6 +5,7 @@ import { Tooltip as ShadcnTooltip, TooltipContent, TooltipProvider, TooltipTrigg
 import PageOverview from '@/components/PageOverview';
 import WeeklyRecap from '@/components/WeeklyRecap';
 import GettingStartedWidget from '@/components/GettingStartedWidget';
+import { EmptyStateChecklist } from '@/components/dashboard/EmptyStateChecklist';
 import FinancialHealthScore from '@/components/FinancialHealthScore';
 import GoalTrackerWidget from '@/components/GoalTrackerWidget';
 import SpendingAnomalyAlert from '@/components/SpendingAnomalyAlert';
@@ -293,6 +294,13 @@ Your Safe-to-Spend updates in real time as you add transactions, pay bills, and 
           )}
         </div>
       </motion.div>
+
+      {/* ========== Empty-state 3-step checklist (only when no accounts) ========== */}
+      {(accounts?.length ?? 0) === 0 && (
+        <motion.div variants={item}>
+          <EmptyStateChecklist />
+        </motion.div>
+      )}
 
       {/* ========== SAFE-TO-SPEND HERO (Primary Focus) ========== */}
       <motion.div variants={item}>
