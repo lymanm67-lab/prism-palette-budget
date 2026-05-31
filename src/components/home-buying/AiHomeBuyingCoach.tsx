@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
-import { Sparkles, Loader2, Bot, ArrowLeft, ArrowRight, CheckCircle2, Printer, Download } from 'lucide-react';
+import { Sparkles, Loader2, Bot, ArrowLeft, ArrowRight, CheckCircle2, Printer, Download, ChevronDown } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { renderToStaticMarkup } from 'react-dom/server';
 import remarkGfm from 'remark-gfm';
