@@ -233,7 +233,8 @@ function solveRequiredMonthly(inputs: ProjectionInputs): number {
       debtPaymentAmount: 0,
       additionalMonthlyAmount: 0,
       ssInvestWhileWorking: false,
-    });
+      __skipSolve: true,
+    } as any);
     if (r.projectedBalance < inputs.targetAmount) lo = mid;
     else hi = mid;
   }
