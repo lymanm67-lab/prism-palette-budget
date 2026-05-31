@@ -56,7 +56,8 @@ const LandingPage = () => {
       <BenefitsSection />
       <GuardrailSystemSection />
       <FeaturesSection />
-      <ComparisonSection />
+        <ComparisonSection />
+        <AdvisorComparisonSection />
       <TestimonialsSection />
       <PrePricingBridge />
       <PricingSection />
