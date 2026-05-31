@@ -17,6 +17,12 @@ interface Answers {
   city: string;
   income: number;
   monthlyDebt: number;
+  debtCreditCards: number;
+  debtAutoLoans: number;
+  debtStudentLoans: number;
+  debtPersonal: number;
+  debtChildAlimony: number;
+  debtOther: number;
   savings: number;
   targetPrice: number;
   timelineMonths: number;
@@ -29,6 +35,8 @@ interface Answers {
 
 const DEFAULT: Answers = {
   state: 'FL', city: '', income: 7500, monthlyDebt: 600, savings: 15000,
+  debtCreditCards: 100, debtAutoLoans: 400, debtStudentLoans: 100,
+  debtPersonal: 0, debtChildAlimony: 0, debtOther: 0,
   targetPrice: 350000, timelineMonths: 12, firstTime: 'yes', creditRange: '700-739',
   employment: 'W-2 employee', familyPlans: '', veteranStatus: 'no',
 };
@@ -65,13 +73,51 @@ const STEPS: StepDef[] = [
   },
   {
     title: 'What does your income & debt look like?',
-    subtitle: 'Used for the 28/36 affordability rule and DTI.',
-    render: (a, u) => (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div><Label className="text-xs">Gross Monthly Income ($)</Label><Input type="number" value={a.income} onChange={(e) => u('income', +e.target.value)} /></div>
-        <div><Label className="text-xs">Other Monthly Debt ($)</Label><Input type="number" value={a.monthlyDebt} onChange={(e) => u('monthlyDebt', +e.target.value)} /></div>
-      </div>
-    ),
+    subtitle: 'Itemize every recurring debt — lenders count all of these in your DTI. Do not include rent or utilities.',
+    render: (a, u) => {
+      const items: { key: keyof Answers; label: string; hint: string }[] = [
+        { key: 'debtCreditCards', label: 'Credit cards (min. payments)', hint: 'Sum of all card minimums' },
+        { key: 'debtAutoLoans', label: 'Auto loans / leases', hint: 'All vehicles' },
+        { key: 'debtStudentLoans', label: 'Student loans', hint: 'Federal + private (even if deferred)' },
+        { key: 'debtPersonal', label: 'Personal / installment loans', hint: 'Affirm, Klarna, SoFi, etc.' },
+        { key: 'debtChildAlimony', label: 'Child support / alimony', hint: 'Court-ordered only' },
+        { key: 'debtOther', label: 'Other recurring debt', hint: 'HELOC, 401k loan, IRS plan' },
+      ];
+      const total = items.reduce((sum, it) => sum + (Number(a[it.key]) || 0), 0);
+      return (
+        <div className="space-y-4">
+          <div>
+            <Label className="text-xs">Gross Monthly Income ($)</Label>
+            <Input type="number" value={a.income} onChange={(e) => u('income', +e.target.value)} />
+          </div>
+          <div className="rounded-lg border border-border/50 p-3 space-y-2 bg-muted/20">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-semibold">Monthly Debt Breakdown</Label>
+              <span className="text-xs text-muted-foreground">Total: <span className="font-semibold text-prism-teal">${total.toLocaleString()}</span>/mo</span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              {items.map((it) => (
+                <div key={it.key as string}>
+                  <Label className="text-[11px] text-muted-foreground">{it.label}</Label>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    value={(a[it.key] as number) || ''}
+                    onChange={(e) => {
+                      const next = +e.target.value || 0;
+                      u(it.key, next as never);
+                      const newTotal = items.reduce((s, x) => s + (x.key === it.key ? next : (Number(a[x.key]) || 0)), 0);
+                      u('monthlyDebt', newTotal);
+                    }}
+                  />
+                  <p className="text-[10px] text-muted-foreground/70 mt-0.5">{it.hint}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    },
   },
   {
     title: 'How much have you saved & what\'s your target?',
