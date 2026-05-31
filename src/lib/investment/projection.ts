@@ -186,9 +186,9 @@ export function runProjection(inputs: ProjectionInputs): ProjectionResult {
   const ssMonthly = inputs.ssMonthlyEstimate || 0;
   const estimatedMonthlyIncome = fourPctMonthly + ssMonthly;
 
-  // Required monthly contribution (binary search)
+  // Required monthly contribution (binary search) — skip in recursive solve calls
   let requiredMonthlyContribution: number | null = null;
-  if (inputs.targetAmount > 0 && years > 0) {
+  if (inputs.targetAmount > 0 && years > 0 && !(inputs as any).__skipSolve) {
     requiredMonthlyContribution = solveRequiredMonthly(inputs);
   }
 
@@ -233,7 +233,8 @@ function solveRequiredMonthly(inputs: ProjectionInputs): number {
       debtPaymentAmount: 0,
       additionalMonthlyAmount: 0,
       ssInvestWhileWorking: false,
-    });
+      __skipSolve: true,
+    } as any);
     if (r.projectedBalance < inputs.targetAmount) lo = mid;
     else hi = mid;
   }
