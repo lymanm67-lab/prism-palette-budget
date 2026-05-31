@@ -10,9 +10,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Progress } from '@/components/ui/progress';
 import { useCurrency } from '@/hooks/use-currency';
 import { useGoals, useCreateGoal, useUpdateGoal, useDeleteGoal } from '@/hooks/use-goals';
-import { Plus, Target, Loader2, Trash2, Pencil, Trophy, Wallet, CreditCard, TrendingUp } from 'lucide-react';
+import { Plus, Target, Loader2, Trash2, Pencil, Trophy, Wallet, CreditCard, TrendingUp, TrendingDown, Sparkles } from 'lucide-react';
 import PageOverview from '@/components/PageOverview';
 import { EmptyState } from '@/components/EmptyState';
+import { RelatedToolsBar } from '@/components/planning/RelatedToolsBar';
 
 const GOAL_TYPES = [
   { value: 'savings', label: 'Savings Goal', icon: Wallet },
@@ -177,6 +178,13 @@ const Goals = () => {
           </DialogContent>
         </Dialog>
       </div>
+
+      <RelatedToolsBar
+        tools={[
+          { to: '/planning/investments', icon: Sparkles, label: 'Investment Planning', description: 'Long-term retirement & wealth milestones' },
+          { to: '/debt-payoff', icon: TrendingDown, label: 'Debt Payoff', description: 'Track debt elimination targets' },
+        ]}
+      />
 
       {(!goals || goals.length === 0) ? (
         <Card className="prism-card-shine border-border/50">

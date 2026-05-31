@@ -24,6 +24,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTTS } from '@/hooks/use-tts';
 import PageOverview from '@/components/PageOverview';
 import DebtInsights from '@/components/DebtInsights';
+import { RelatedToolsBar } from '@/components/planning/RelatedToolsBar';
+import { Target } from 'lucide-react';
 
 // ─── Types ───
 interface Debt {
@@ -297,6 +299,14 @@ const DebtPayoff = () => {
           </Dialog>
         </div>
       </div>
+
+      <RelatedToolsBar
+        tools={[
+          { to: '/planning/investments', icon: Sparkles, label: 'Debt → Wealth tool', description: 'Project what your debt payments become when redirected to investments' },
+          { to: '/goals', icon: Target, label: 'Goals', description: 'Set savings goals alongside payoff targets' },
+        ]}
+      />
+
 
       {/* No plan state */}
       {(!plans || plans.length === 0) ? (
