@@ -64,7 +64,7 @@ const HomeBuyingChecklist = () => {
               { label: 'Readiness', value: '72%', badge: 'Almost ready', color: '#22c55e' },
               { label: 'Down Payment', value: '$42k', badge: '12%', color: '#14b8a6' },
               { label: 'Best Loan', value: 'FHA', badge: 'First-time', color: '#f59e0b' },
-              { label: 'Programs', value: '4 in FL', badge: 'Eligible', color: '#3b82f6' },
+              { label: 'Programs', value: '4 in OH', badge: 'Eligible', color: '#3b82f6' },
             ]}
           />
         </div>
