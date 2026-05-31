@@ -1,6 +1,7 @@
 import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { CreditCard, RepeatIcon } from 'lucide-react';
+import { CreditCard, RepeatIcon, Scissors, PiggyBank, Wallet, TrendingDown } from 'lucide-react';
+import RelatedToolsBar from '@/components/RelatedToolsBar';
 import Subscriptions from './Subscriptions';
 import Recurring from './Recurring';
 
@@ -17,6 +18,15 @@ const SubscriptionsHub = () => {
 
   return (
     <div className="container max-w-7xl mx-auto px-4 pt-4">
+      <RelatedToolsBar
+        className="mb-3"
+        tools={[
+          { to: '/bill-negotiation', icon: Scissors, label: 'Bill Negotiation' },
+          { to: '/budgets', icon: PiggyBank, label: 'Budgets' },
+          { to: '/cash-flow', icon: Wallet, label: 'Cash Flow' },
+          { to: '/debt-payoff', icon: TrendingDown, label: 'Debt Payoff' },
+        ]}
+      />
       <Tabs value={tab} onValueChange={onChange} className="w-full">
         <TabsList className="mb-2">
           <TabsTrigger value="subscriptions" className="gap-2">
