@@ -256,7 +256,7 @@ export function runProjection(inputs: ProjectionInputs): ProjectionResult {
   }
 
   const totalGrowth = projectedBalance - totalContribInput - totalEmp - totalErp;
-  const legacyProjection = Math.max(0, projectedBalance - (estimatedMonthlyIncome * 12 * 25)); // rough estate after 25y of income
+  const legacyProjection = Math.max(0, surplus);
 
   const status =
     onTrack === 'green'
