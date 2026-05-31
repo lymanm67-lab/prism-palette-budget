@@ -291,14 +291,59 @@ export default function AiHomeBuyingCoach() {
 
   const restart = () => { setReport(''); setStep(0); };
 
+  const handlePrint = () => {
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>My Home-Buying Plan</title>
+<style>
+@page { size: letter; margin: 0.75in; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #111827; line-height: 1.55; max-width: 720px; margin: 0 auto; padding: 24px; }
+h1,h2,h3 { color: #0f766e; }
+h1 { border-bottom: 3px solid #14b8a6; padding-bottom: 8px; }
+table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 12px; }
+th, td { border: 1px solid #e5e7eb; padding: 6px 10px; text-align: left; }
+th { background: #f0fdfa; }
+a { color: #0d9488; }
+.header { font-size: 11px; color: #6b7280; text-align: right; margin-bottom: 12px; }
+@media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+</style></head><body>
+<div class="header">PrismMoney — Home-Buying Plan · ${new Date().toLocaleDateString()}</div>
+<h1>My Home-Buying Plan</h1>
+${markdownToHtml(report)}
+</body></html>`;
+    const w = window.open('', '_blank', 'width=820,height=900');
+    if (!w) return;
+    w.document.write(html);
+    w.document.close();
+    w.focus();
+    setTimeout(() => w.print(), 400);
+  };
+
+  const handleDownload = () => {
+    const blob = new Blob([`# My Home-Buying Plan\n\n_Generated ${new Date().toLocaleDateString()}_\n\n${report}`], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `home-buying-plan-${new Date().toISOString().slice(0, 10)}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('Plan downloaded');
+  };
+
   if (report) {
     return (
       <Card className="prism-card-shine border-prism-teal/30">
-        <CardHeader className="pb-3 flex flex-row items-center justify-between">
+        <CardHeader className="pb-3 flex flex-row items-center justify-between flex-wrap gap-2">
           <CardTitle className="font-display flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-prism-teal" /> Your Personalized Report
           </CardTitle>
-          <Button variant="outline" size="sm" onClick={restart}>Start Over</Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={handleDownload} className="gap-1.5">
+              <Download className="h-3.5 w-3.5" /> Save
+            </Button>
+            <Button variant="outline" size="sm" onClick={handlePrint} className="gap-1.5">
+              <Printer className="h-3.5 w-3.5" /> Print
+            </Button>
+            <Button variant="outline" size="sm" onClick={restart}>Start Over</Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="prose prose-sm max-w-none dark:prose-invert prose-table:text-xs prose-th:font-semibold prose-headings:font-display">
