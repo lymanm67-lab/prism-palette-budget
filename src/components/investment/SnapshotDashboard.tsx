@@ -10,6 +10,7 @@ import { FirstMillionCard } from './FirstMillionCard';
 import { MillionMilestonesTable } from './MillionMilestonesTable';
 import { ContributionTimelineChart } from './ContributionTimelineChart';
 import { AllocationPieChart } from './AllocationPieChart';
+import { CollapsibleSection } from './CollapsibleSection';
 
 interface Props { plan: InvestmentPlan | null }
 
