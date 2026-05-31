@@ -17,6 +17,12 @@ interface Answers {
   city: string;
   income: number;
   monthlyDebt: number;
+  debtCreditCards: number;
+  debtAutoLoans: number;
+  debtStudentLoans: number;
+  debtPersonal: number;
+  debtChildAlimony: number;
+  debtOther: number;
   savings: number;
   targetPrice: number;
   timelineMonths: number;
@@ -29,6 +35,8 @@ interface Answers {
 
 const DEFAULT: Answers = {
   state: 'FL', city: '', income: 7500, monthlyDebt: 600, savings: 15000,
+  debtCreditCards: 100, debtAutoLoans: 400, debtStudentLoans: 100,
+  debtPersonal: 0, debtChildAlimony: 0, debtOther: 0,
   targetPrice: 350000, timelineMonths: 12, firstTime: 'yes', creditRange: '700-739',
   employment: 'W-2 employee', familyPlans: '', veteranStatus: 'no',
 };
