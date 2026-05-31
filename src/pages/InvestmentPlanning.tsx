@@ -183,6 +183,15 @@ export default function InvestmentPlanning() {
         </div>
       </header>
 
+      <RelatedToolsBar
+        tools={[
+          { to: '/goals', icon: Target, label: 'Goals', description: 'Short-term savings & milestones' },
+          { to: '/debt-payoff', icon: TrendingDown, label: 'Debt Payoff', description: 'Build your payoff strategy first, then redirect payments here' },
+          { to: '/investments', icon: TrendingUp, label: 'Holdings', description: 'See current investment account balances' },
+        ]}
+      />
+
+
       {isLoading ? (
         <Card><CardContent className="p-8 text-center text-muted-foreground">Loading your plan…</CardContent></Card>
       ) : !plan ? (
