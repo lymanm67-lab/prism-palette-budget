@@ -46,6 +46,11 @@ export interface ProjectionInputs {
 
   /** Optional per-year annual return overrides (in %). Cycles via modulo if shorter than horizon. */
   annualReturnsPct?: number[];
+
+  /** Dated monthly step-ups: each adds `amount`/mo starting at `startDate`. Stacks with everything else. */
+  datedStepUps?: { amount: number; startDate: string }[];
+  /** Annual lump-sum contribution applied every January starting in `startYear`. */
+  annualLumpSum?: { amount: number; startYear: number };
 }
 
 export interface YearPoint {
