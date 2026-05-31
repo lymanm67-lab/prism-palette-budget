@@ -300,6 +300,14 @@ const DebtPayoff = () => {
         </div>
       </div>
 
+      <RelatedToolsBar
+        tools={[
+          { to: '/planning/investments', icon: Sparkles, label: 'Debt → Wealth tool', description: 'Project what your debt payments become when redirected to investments' },
+          { to: '/goals', icon: Target, label: 'Goals', description: 'Set savings goals alongside payoff targets' },
+        ]}
+      />
+
+
       {/* No plan state */}
       {(!plans || plans.length === 0) ? (
         <Card className="prism-card-shine border-border/50">
