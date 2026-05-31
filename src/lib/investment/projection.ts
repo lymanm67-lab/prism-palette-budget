@@ -99,8 +99,10 @@ export function runProjection(inputs: ProjectionInputs): ProjectionResult {
 
   let balance = inputs.currentBalance || 0;
   let hsaBalance = inputs.hsaBalance || 0;
+  let salary = inputs.currentMonthlyIncome || 0;
   let employeeBase = inputs.monthlyEmployeeContribution || 0;
   let employerBase = inputs.monthlyEmployerContribution || 0;
+  const employerMatchRate = (inputs.employerMatchPct || 0) / 100;
   let totalEmp = 0;
   let totalErp = 0;
   let totalContribInput = inputs.currentBalance || 0;
@@ -118,9 +120,16 @@ export function runProjection(inputs: ProjectionInputs): ProjectionResult {
   for (let m = 1; m <= totalMonths; m++) {
     // Apply raise at start of each year (every 12 months)
     if (m > 1 && m % 12 === 1) {
-      const raiseAmount = employeeBase * annualRaise * raiseRedirect;
-      employeeBase += raiseAmount;
-      // employer often scales with income too — only if employer_match_pct context, but keep simple
+      const raiseBase = salary > 0 ? salary : employeeBase;
+      const raiseAmount = raiseBase * annualRaise;
+      // Salary grows by full raise amount
+      salary = salary > 0 ? salary + raiseAmount : 0;
+      // Employee redirects configured % of the raise into retirement
+      employeeBase += raiseAmount * raiseRedirect;
+      // Employer contribution scales with salary when employer match % is provided
+      if (employerMatchRate > 0 && salary > 0) {
+        employerBase = salary * employerMatchRate;
+      }
     }
 
     let monthly = employeeBase + employerBase;
