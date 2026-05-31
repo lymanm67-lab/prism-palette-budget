@@ -135,15 +135,15 @@ const STEPS: StepDef[] = [
   },
   {
     title: 'Monthly debts (itemized)',
-    subtitle: 'Itemize every recurring debt — lenders count all of these in your DTI. Do not include rent or utilities.',
+    subtitle: 'Enter monthly payments (not balances). Lenders count all of these in your DTI. Skip rent & utilities.',
     render: (a, u) => {
       const items: { key: keyof Answers; label: string; hint: string }[] = [
         { key: 'debtCreditCards', label: 'Credit cards (min. payments)', hint: 'Sum of all card minimums' },
         { key: 'debtAutoLoans', label: 'Auto loans / leases', hint: 'All vehicles' },
-        { key: 'debtStudentLoans', label: 'Student loans', hint: 'Federal + private (even if deferred)' },
+        { key: 'debtStudentLoans', label: 'Student loans', hint: 'If deferred & no payment shows: use 1% of balance (Conv/FHA) or 0.5% (VA/USDA)' },
         { key: 'debtPersonal', label: 'Personal / installment loans', hint: 'Affirm, Klarna, SoFi, etc.' },
         { key: 'debtChildAlimony', label: 'Child support / alimony', hint: 'Court-ordered only' },
-        { key: 'debtOther', label: 'Other recurring debt', hint: 'HELOC, 401k loan, IRS plan' },
+        { key: 'debtOther', label: 'Other recurring debt', hint: 'HELOC, 401k loan, IRS plan. SBA/business loan: $0 if business-paid 12+ mo (need proof), else monthly payment' },
       ];
       const total = items.reduce((sum, it) => sum + (Number(a[it.key]) || 0), 0);
       return (
