@@ -1,63 +1,50 @@
 ## Goal
 
-Add a realistic "mixed market returns" scenario to the Investment Planning page that cycles annual returns through 6%, 7%, 8%, 9%, and 10% over **27** and **30** year horizons, instead of assuming one flat rate forever.
+Replace the unrealistic 6/7/8/9/10 cycle in the Mixed Returns scenario with **return patterns that actually match the last 50 years of US markets** — including down years, "lost decade" stretches, and >10% boom years. Keep horizons at 27 and 30 years.
 
-## Where it lands
+## What changes
 
-New section on the **Snapshot tab** of `/planning/investments`, mounted right under the existing `ReturnScenarioComparison` ("Am I On Track…") card. Same visual language: gradient card, badge status, two horizon toggles, Today's $ / Nominal $ toggle.
+Convert the single hardcoded cycle into a **preset selector** with 3 historically grounded patterns. User picks one; everything else (chart, CAGR, sequence strip, tiles) updates.
 
-## What the user sees
+### The 3 presets
 
-A card titled **"Mixed Market Returns Scenario"** with:
+All numbers are nominal S&P 500 total returns (with dividends), rounded to whole percents to keep the UI readable.
 
-1. **Horizon tabs**: `27 years` | `30 years` (drives projection length from current age).
-2. **Dollar mode tabs**: `Today's $` | `Nominal $` (matches the existing card's pattern).
-3. **A bar chart** comparing 4 outcomes at the chosen horizon:
-   - Goal line (target_amount, default $4M)
-   - Flat 7% baseline
-   - Flat 8% baseline
-   - **Mixed Returns** projection (the new one)
-4. **A small "Sequence" strip** showing the rotating annual returns for the chosen horizon, e.g. `6% · 7% · 8% · 9% · 10% · 6% · 7% …` so the user understands what "mixed" means.
-5. **Two outcome tiles** for the Mixed scenario:
-   - Mixed Returns (27 or 30 yr): projected balance + Surplus/Gap vs goal.
-   - **Geometric average return** of the sequence (so they see it lands near ~7.97% CAGR for 6–10% rotating, which is the honest "realistic" headline number).
-6. Explanatory copy:
-   > Real markets don't return a flat rate. This scenario rotates annual returns through 6%, 7%, 8%, 9%, and 10% to show how sequence-of-returns risk smooths out (or doesn't) over long horizons. Educational only — not a forecast.
-7. Reuses the existing disclaimer style already present on the page.
+**1. "Historical Average" (default)** — 7-year repeating cycle that geo-means to ~10.5%, the long-run nominal S&P average:
+`[-8, +22, +18, +12, -4, +28, +10]` → CAGR ≈ **10.4%**
+Pattern: 2 down years, 1 modest year, 4 strong years — matches the rough 70/30 up-year ratio.
 
-## Sequence definition
+**2. "Realistic Volatile" (heavy sequence-of-returns risk)** — 10-year cycle approximating 2000–2019 (lost decade then recovery):
+`[-9, -12, -22, +29, +11, +5, +16, +5, -37, +26]` → CAGR ≈ **+1.2%** for those 10, but cycled over 27–30 yrs blends in recoveries.
+Pattern: lets the user see what happens if their retirement *starts* in a bad decade.
 
-Deterministic 5-year cycle: **6, 7, 8, 9, 10** repeating. Year 1 of the projection = 6%, year 2 = 7%, … year 6 = 6%, etc.
+**3. "Strong Bull" (1980s–1990s style)** — 10-year cycle of the actual 1989–1998 sequence:
+`[+31, -3, +30, +7, +10, +1, +37, +23, +33, +28]` → CAGR ≈ **+19%**
+Pattern: shows the optimistic ceiling so the user sees they shouldn't bet on this.
 
-- Over 27 years → ends mid-cycle at year-27 = 10%.
-- Over 30 years → ends on year-30 = 10%.
-- Geometric mean of one full 5-year cycle: ≈ **7.985%** CAGR — a credible "realistic" baseline that's a hair under the flat 8% benchmark but above the flat 7% benchmark.
+### Sequence-of-returns toggle
 
-No randomization. Deterministic = reproducible = no "why did the number change?" support tickets.
+Add a small **"Sequence" toggle**: `Cycle from year 1` vs `Reverse (bad years late)`. Same returns, opposite order. Demonstrates that ending in bad years hurts way more than starting in them when contributing — and the reverse when withdrawing. Educationally this is the single most important concept in retirement math and is currently absent.
 
-## Technical changes (small, surgical)
+### UI changes (single card, no new routes)
 
-1. **`src/lib/investment/projection.ts`** — extend `ProjectionInputs` with an optional field:
-   ```ts
-   annualReturnsPct?: number[]; // overrides expectedReturnPct year-by-year
-   ```
-   In the monthly loop, when `annualReturnsPct` is provided, compute `monthlyRate` from `annualReturnsPct[yearIndex % annualReturnsPct.length] / 100 / 12` instead of the single rate. HSA rate continues to use `hsaReturnPct` (unchanged). No other behavior changes.
+In `src/components/investment/MixedReturnsScenario.tsx`:
 
-2. **New component `src/components/investment/MixedReturnsScenario.tsx`** — mirrors `ReturnScenarioComparison`'s structure. Uses `runProjection` three times per horizon (7% flat, 8% flat, mixed sequence) and renders the bar chart + tiles + sequence strip.
+1. **Preset tabs** (replace the implicit cycle): `Historical Avg` | `Volatile` | `Strong Bull`.
+2. **Sequence toggle** next to dollar-mode tabs: `Forward` | `Reverse`.
+3. **Bar chart bars** become: Goal · Flat 7% · Flat 10% · Selected Mixed. (Swap "Flat 8%" for "Flat 10%" since 10% is the real historical benchmark.)
+4. **Sequence strip** already shows year-by-year — keep, but color-code negatives in rose and >15% in emerald so the volatility is visually obvious.
+5. **Headline copy** updates with the preset: "Modeled on the long-run S&P 500 average (~10.5% CAGR)" / "Modeled on the 2000–2019 'lost decade then recovery' sequence" / "Modeled on the 1989–1998 bull market — shown as an optimistic ceiling, not a forecast."
+6. **Disclaimer** expands one line: "Past performance is not indicative of future results. Historical S&P 500 sequences are educational illustrations only."
 
-3. **`src/pages/InvestmentPlanning.tsx`** — import and mount `<MixedReturnsScenario plan={plan ?? null} />` immediately after `<ReturnScenarioComparison ... />` on the Snapshot tab. One added line + import.
+### What stays the same
 
-## Out of scope (intentionally)
-
-- No Monte Carlo, no random sequence-of-returns simulator (that's a separate feature already noted as v4 in memory).
-- No DB schema changes — the cycle is hardcoded constants, not user-configurable.
-- No edits to `ScenarioComparison`, allocation engine, or any other planning component.
-- No changes to PDF export or coach mode.
+- `runProjection` already accepts `annualReturnsPct: number[]` — no engine changes needed.
+- Card placement, horizon tabs (27/30), Today's $ / Nominal $ toggle, layout, gradient.
+- `ReturnScenarioComparison` and `ScenarioComparison` cards are untouched.
 
 ## Files touched
 
-- Edit: `src/lib/investment/projection.ts` (~5 lines)
-- Create: `src/components/investment/MixedReturnsScenario.tsx`
-- Edit: `src/pages/InvestmentPlanning.tsx` (2 lines: import + render)
+- Edit: `src/components/investment/MixedReturnsScenario.tsx` (only file)
 
-Scope: **Medium** (3 files, no logic risk beyond the projection extension, no schema).
+Scope: **Tiny** (1 file, no schema, no engine changes, all logic local to the component).
