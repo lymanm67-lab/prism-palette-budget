@@ -255,6 +255,16 @@ export function runProjection(inputs: ProjectionInputs): ProjectionResult {
     cumAdditional += additionalThisMonth + stepUpThisMonth + lumpThisMonth;
     cumSS += ssThisMonth;
 
+    if (inputs.includeMonthly) {
+      const d = new Date(today.getFullYear(), today.getMonth() + m, 1);
+      monthlySeries.push({
+        month: m,
+        date: d,
+        age: inputs.currentAge + m / 12,
+        balance,
+      });
+    }
+
     // HSA stream
     const hsaMonthly = (inputs.hsaMonthlyContribution || 0) + (inputs.hsaEmployerContribution || 0);
     if (inputs.hsaInvested) {
