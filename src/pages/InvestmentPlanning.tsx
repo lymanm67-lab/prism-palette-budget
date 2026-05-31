@@ -2,6 +2,7 @@ import { useMemo, useEffect, useState } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectGroup, SelectLabel, SelectItem } from '@/components/ui/select';
 import { Sparkles, Download, TrendingUp, Wand2 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useInvestmentPlan } from '@/hooks/use-investment-plan';
@@ -39,6 +40,41 @@ export default function InvestmentPlanning() {
   const { household } = useHousehold();
   const qc = useQueryClient();
   const [loadingSample, setLoadingSample] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>(plan ? 'snapshot' : 'wizard');
+
+  const TAB_GROUPS = [
+    { label: 'Income Engines', items: [
+      { value: 'raise', label: 'Raises' },
+      { value: 'debt', label: 'Debt → Wealth' },
+      { value: 'income', label: 'Retirement Income' },
+      { value: 'rules', label: 'Money Rules' },
+    ]},
+    { label: 'Household', items: [
+      { value: 'spouse', label: 'Spouse' },
+      { value: 'pensions', label: 'Pensions' },
+      { value: 'hsa', label: 'HSA' },
+    ]},
+    { label: 'Tax & Risk', items: [
+      { value: 'tax', label: 'Tax' },
+      { value: 'risk', label: 'Risk' },
+      { value: 'healthcare', label: 'Healthcare' },
+    ]},
+    { label: 'Wealth & Assets', items: [
+      { value: 'realassets', label: 'Real Assets' },
+      { value: 'college', label: 'College / 529' },
+      { value: 'charitable', label: 'Charitable Giving' },
+    ]},
+    { label: 'Legacy & Coaching', items: [
+      { value: 'legacy', label: 'Legacy' },
+      { value: 'estate', label: 'Estate Execution' },
+      { value: 'behavior', label: 'Behavior Coach' },
+      { value: 'automation', label: 'Automation Log' },
+    ]},
+  ];
+  const MORE_TAB_VALUES = TAB_GROUPS.flatMap(g => g.items.map(i => i.value));
+  const TAB_LABEL_LOOKUP: Record<string, string> = Object.fromEntries(
+    TAB_GROUPS.flatMap(g => g.items.map(i => [i.value, `${g.label} · ${i.label}`]))
+  );
 
   const handleLoadSample = async () => {
     if (!household) return;
@@ -137,30 +173,56 @@ export default function InvestmentPlanning() {
         </Card>
       ) : null}
 
-      <Tabs defaultValue={plan ? 'snapshot' : 'wizard'} className="w-full">
-        <TabsList className="flex flex-wrap h-auto gap-1">
-          <TabsTrigger value="snapshot">Snapshot</TabsTrigger>
-          <TabsTrigger value="wizard">Setup</TabsTrigger>
-          <TabsTrigger value="raise">Raises</TabsTrigger>
-          <TabsTrigger value="debt">Debt→Wealth</TabsTrigger>
-          <TabsTrigger value="spouse">Spouse</TabsTrigger>
-          <TabsTrigger value="pensions">Pensions</TabsTrigger>
-          <TabsTrigger value="hsa">HSA</TabsTrigger>
-          <TabsTrigger value="legacy">Legacy</TabsTrigger>
-          <TabsTrigger value="rules">Money rules</TabsTrigger>
-          <TabsTrigger value="tax">Tax</TabsTrigger>
-          <TabsTrigger value="risk">Risk</TabsTrigger>
-          <TabsTrigger value="healthcare">Healthcare</TabsTrigger>
-          <TabsTrigger value="income">Income</TabsTrigger>
-          <TabsTrigger value="realassets">Real assets</TabsTrigger>
-          <TabsTrigger value="behavior">Coach</TabsTrigger>
-          <TabsTrigger value="estate">Estate</TabsTrigger>
-          <TabsTrigger value="charitable">Giving</TabsTrigger>
-          <TabsTrigger value="college">College</TabsTrigger>
-          <TabsTrigger value="automation">Automation</TabsTrigger>
-          <TabsTrigger value="scenarios">Scenarios</TabsTrigger>
-          <TabsTrigger value="milestones">Milestones</TabsTrigger>
-        </TabsList>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <div className="flex items-center gap-2 flex-wrap rounded-xl border border-border bg-card/40 backdrop-blur p-2">
+          <TabsList className="bg-transparent gap-1 p-0 h-auto">
+            <TabsTrigger value="snapshot" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg">
+              <Sparkles className="h-3.5 w-3.5 mr-1.5" /> Snapshot
+            </TabsTrigger>
+            <TabsTrigger value="wizard" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg">
+              Setup
+            </TabsTrigger>
+            <TabsTrigger value="scenarios" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg">
+              Scenarios
+            </TabsTrigger>
+            <TabsTrigger value="milestones" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg">
+              Milestones
+            </TabsTrigger>
+          </TabsList>
+
+          <div className="ml-auto flex items-center gap-2">
+            <span className="text-xs text-muted-foreground hidden md:inline">More tools</span>
+            <Select value={MORE_TAB_VALUES.includes(activeTab) ? activeTab : ''} onValueChange={setActiveTab}>
+              <SelectTrigger className="w-[220px] h-9">
+                <SelectValue placeholder="Explore planning tools…" />
+              </SelectTrigger>
+              <SelectContent className="max-h-[420px]">
+                {TAB_GROUPS.map((group) => (
+                  <SelectGroup key={group.label}>
+                    <SelectLabel className="text-xs uppercase tracking-wider text-muted-foreground">{group.label}</SelectLabel>
+                    {group.items.map((item) => (
+                      <SelectItem key={item.value} value={item.value}>
+                        {item.label}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {MORE_TAB_VALUES.includes(activeTab) && (
+          <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-primary/10 text-primary">
+              {TAB_LABEL_LOOKUP[activeTab]}
+            </span>
+            <button onClick={() => setActiveTab('snapshot')} className="hover:text-foreground underline-offset-2 hover:underline">
+              ← Back to Snapshot
+            </button>
+          </div>
+        )}
+
 
         <TabsContent value="snapshot" className="mt-4 space-y-4">
           <SnapshotDashboard plan={plan ?? null} />
