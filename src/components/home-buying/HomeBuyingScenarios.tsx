@@ -13,7 +13,7 @@ interface Scenario extends MortgageInputs { id: string; name: string; state: str
 
 const COLORS = ['hsl(var(--prism-teal))', 'hsl(var(--prism-amber))', 'hsl(var(--prism-indigo))'];
 
-const makeScenario = (n: number, state = 'FL'): Scenario => {
+const makeScenario = (n: number, state = 'OH'): Scenario => {
   const s = STATE_DATA[state];
   return {
     id: crypto.randomUUID(),
