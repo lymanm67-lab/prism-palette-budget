@@ -2151,6 +2151,45 @@ export type Database = {
           },
         ]
       }
+      legacy_trust_contributions: {
+        Row: {
+          amount: number
+          contribution_date: string
+          created_at: string
+          household_id: string
+          id: string
+          note: string | null
+          plan_id: string
+          source_asset_key: string | null
+          source_label: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          contribution_date?: string
+          created_at?: string
+          household_id: string
+          id?: string
+          note?: string | null
+          plan_id: string
+          source_asset_key?: string | null
+          source_label?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          contribution_date?: string
+          created_at?: string
+          household_id?: string
+          id?: string
+          note?: string | null
+          plan_id?: string
+          source_asset_key?: string | null
+          source_label?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       loan_readiness_items: {
         Row: {
           created_at: string
