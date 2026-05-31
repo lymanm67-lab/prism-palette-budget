@@ -1,9 +1,12 @@
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Sparkles, Download, TrendingUp } from 'lucide-react';
+import { Sparkles, Download, TrendingUp, Wand2 } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useInvestmentPlan } from '@/hooks/use-investment-plan';
+import { useHousehold } from '@/contexts/HouseholdContext';
+import { loadMontgomerySample } from '@/lib/investment/montgomery-sample';
 import { SnapshotDashboard } from '@/components/investment/SnapshotDashboard';
 import { InvestmentWizard } from '@/components/investment/InvestmentWizard';
 import { RaiseRedirectPlanner } from '@/components/investment/RaiseRedirectPlanner';
@@ -33,6 +36,25 @@ import { toast } from '@/hooks/use-toast';
 
 export default function InvestmentPlanning() {
   const { data: plan, isLoading } = useInvestmentPlan();
+  const { household } = useHousehold();
+  const qc = useQueryClient();
+  const [loadingSample, setLoadingSample] = useState(false);
+
+  const handleLoadSample = async () => {
+    if (!household) return;
+    if (plan && !window.confirm('This replaces your current active plan, spouse, pension, legacy, and money rules with the Montgomery sample. Continue?')) return;
+    setLoadingSample(true);
+    try {
+      await loadMontgomerySample(household.id);
+      await qc.invalidateQueries();
+      toast({ title: 'Montgomery sample loaded', description: 'Snapshot, spouse, pension, legacy, and money rules are populated.' });
+    } catch (e: any) {
+      toast({ title: 'Load failed', description: e.message, variant: 'destructive' });
+    } finally {
+      setLoadingSample(false);
+    }
+  };
+
 
   const projection = useMemo(() => {
     if (!plan || !plan.current_age || !plan.retirement_age) return null;
@@ -90,6 +112,9 @@ export default function InvestmentPlanning() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={handleLoadSample} disabled={loadingSample || !household}>
+            <Wand2 className="h-4 w-4 mr-1" /> {loadingSample ? 'Loading…' : 'Load Montgomery sample'}
+          </Button>
           {plan && (
             <Button variant="outline" size="sm" onClick={handleExport}>
               <Download className="h-4 w-4 mr-1" /> Export PDF
