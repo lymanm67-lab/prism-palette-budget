@@ -40,6 +40,41 @@ export default function InvestmentPlanning() {
   const { household } = useHousehold();
   const qc = useQueryClient();
   const [loadingSample, setLoadingSample] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>(plan ? 'snapshot' : 'wizard');
+
+  const TAB_GROUPS = [
+    { label: 'Income Engines', items: [
+      { value: 'raise', label: 'Raises' },
+      { value: 'debt', label: 'Debt → Wealth' },
+      { value: 'income', label: 'Retirement Income' },
+      { value: 'rules', label: 'Money Rules' },
+    ]},
+    { label: 'Household', items: [
+      { value: 'spouse', label: 'Spouse' },
+      { value: 'pensions', label: 'Pensions' },
+      { value: 'hsa', label: 'HSA' },
+    ]},
+    { label: 'Tax & Risk', items: [
+      { value: 'tax', label: 'Tax' },
+      { value: 'risk', label: 'Risk' },
+      { value: 'healthcare', label: 'Healthcare' },
+    ]},
+    { label: 'Wealth & Assets', items: [
+      { value: 'realassets', label: 'Real Assets' },
+      { value: 'college', label: 'College / 529' },
+      { value: 'charitable', label: 'Charitable Giving' },
+    ]},
+    { label: 'Legacy & Coaching', items: [
+      { value: 'legacy', label: 'Legacy' },
+      { value: 'estate', label: 'Estate Execution' },
+      { value: 'behavior', label: 'Behavior Coach' },
+      { value: 'automation', label: 'Automation Log' },
+    ]},
+  ];
+  const MORE_TAB_VALUES = TAB_GROUPS.flatMap(g => g.items.map(i => i.value));
+  const TAB_LABEL_LOOKUP: Record<string, string> = Object.fromEntries(
+    TAB_GROUPS.flatMap(g => g.items.map(i => [i.value, `${g.label} · ${i.label}`]))
+  );
 
   const handleLoadSample = async () => {
     if (!household) return;
