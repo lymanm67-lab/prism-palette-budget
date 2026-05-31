@@ -253,11 +253,14 @@ const STEPS: StepDef[] = [
             placeholder="Tell us what matters: family size & changes, work-from-home, pets, schools, commute, accessibility, hobbies, yard/space needs…"
             className="flex min-h-[90px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
-          <div className="rounded-md border border-prism-teal/20 bg-prism-teal/5 p-2.5 space-y-2">
-            <p className="text-[11px] font-semibold text-prism-teal flex items-center gap-1">
-              <Sparkles className="h-3 w-3" /> Quick-add lifestyle factors (tap to append)
-            </p>
-            <div className="flex flex-wrap gap-1.5">
+          <details open className="group rounded-md border border-prism-teal/20 bg-prism-teal/5 p-2.5 space-y-2 [&[open]>summary>svg.chev]:rotate-180">
+            <summary className="flex items-center justify-between cursor-pointer list-none select-none">
+              <span className="text-[11px] font-semibold text-prism-teal flex items-center gap-1">
+                <Sparkles className="h-3 w-3" /> Quick-add lifestyle factors (tap to append)
+              </span>
+              <ChevronDown className="chev h-4 w-4 text-prism-teal transition-transform" />
+            </summary>
+            <div className="flex flex-wrap gap-1.5 pt-2">
               {[
                 'Planning kids in 2–3 years — need 3+ bedrooms',
                 'Already have kids — top-rated school district is critical',
@@ -290,7 +293,7 @@ const STEPS: StepDef[] = [
             <p className="text-[10px] text-muted-foreground/80 pt-1">
               <strong>Prompt ideas:</strong> mention <em>timeline for life changes</em> (kids, marriage, retirement), <em>must-haves vs nice-to-haves</em>, <em>deal-breakers</em> (e.g., HOA, stairs, busy road), and <em>5-year plan</em> (stay vs upgrade). The more specific, the better your tailored report.
             </p>
-          </div>
+          </details>
         </div>
       </div>
     ),
