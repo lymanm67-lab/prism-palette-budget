@@ -9,6 +9,16 @@ import { runProjection, formatCurrencyFull } from '@/lib/investment/projection';
 const THRESHOLDS = [1, 2, 3, 4, 5, 6].map((m) => m * 1_000_000);
 const SENSITIVITY_RATES = [6, 8, 10];
 
+// Montgomery dated step-ups (mirrors SnapshotDashboard) so milestones reflect the full plan
+const MONTGOMERY_STEP_UPS = [
+  { amount: 100, startDate: '2026-07-01' },
+  { amount: 225, startDate: '2027-01-01' },
+  { amount: 208, startDate: '2027-01-01' },
+  { amount: 500, startDate: '2028-06-01' },
+  { amount: 200, startDate: '2029-01-01' },
+  { amount: 500, startDate: '2030-01-01' },
+];
+
 interface Crossing {
   threshold: number;
   yearsFromNow: number | null; // null = not reached
@@ -46,6 +56,8 @@ function buildInputs(plan: any, returnPct: number, useFuture: boolean) {
     hsaReturnPct: plan.hsa_return_pct,
     useFutureDollars: useFuture,
     inflationPct: plan.inflation_pct,
+    datedStepUps: MONTGOMERY_STEP_UPS,
+    annualLumpSum: { amount: 3000, startYear: 2028 },
     __skipSolve: true,
   } as any;
 }
