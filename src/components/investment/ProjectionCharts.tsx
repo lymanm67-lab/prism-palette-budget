@@ -55,8 +55,9 @@ export function ProjectionCharts({ yearly, target }: { yearly: YearPoint[]; targ
               />
               <Legend wrapperStyle={{ fontSize: 11 }} />
               <Bar dataKey="Employee" stackId="a" fill="hsl(var(--primary))" />
-              <Bar dataKey="Employer" stackId="a" fill="hsl(var(--accent))" />
-              <Bar dataKey="Growth" stackId="a" fill="hsl(var(--chart-3, 200 80% 60%))" />
+              <Bar dataKey="Employer" stackId="a" fill="hsl(38 92% 55%)" />
+              <Bar dataKey="Growth" stackId="a" fill="hsl(280 70% 60%)" />
+
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
