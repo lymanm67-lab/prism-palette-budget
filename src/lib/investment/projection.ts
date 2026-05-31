@@ -72,8 +72,17 @@ export interface YearPoint {
   cumGrowth: number;
 }
 
+export interface MonthlyPoint {
+  month: number; // months from now (1-indexed)
+  date: Date;
+  age: number;
+  balance: number;
+}
+
 export interface ProjectionResult {
   yearly: YearPoint[];
+  /** Populated only when `includeMonthly` input is true. */
+  monthly?: MonthlyPoint[];
   projectedBalance: number;
   projectedHsaBalance: number;
   totalEmployeeContrib: number;
