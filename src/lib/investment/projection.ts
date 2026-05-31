@@ -335,6 +335,7 @@ export function runProjection(inputs: ProjectionInputs): ProjectionResult {
 
   return {
     yearly,
+    monthly: inputs.includeMonthly ? monthlySeries : undefined,
     projectedBalance,
     projectedHsaBalance,
     totalEmployeeContrib: totalEmp,
