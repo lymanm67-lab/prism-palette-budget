@@ -15,6 +15,8 @@ import {
   BarChart, Bar, Cell, PieChart, Pie, ReferenceLine,
 } from 'recharts';
 import PageOverview from '@/components/PageOverview';
+import RelatedToolsBar from '@/components/RelatedToolsBar';
+import { Sparkles as SparklesIcon, Target as TargetIcon, TrendingUp as TrendingUpIcon, Home as HomeIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
 const tooltipStyle = { background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' };
@@ -193,6 +195,15 @@ const NetWorth = () => {
       <div>
         <h1 className="font-display text-3xl font-bold prism-gradient-text">Net Worth</h1>
         <p className="text-muted-foreground">Track your total assets vs liabilities over time.</p>
+        <RelatedToolsBar
+          className="my-3"
+          tools={[
+            { to: '/investments', icon: TrendingUpIcon, label: 'Holdings' },
+            { to: '/planning/investments', icon: SparklesIcon, label: 'Investment Planning' },
+            { to: '/goals', icon: TargetIcon, label: 'Goals' },
+            { to: '/home-buying', icon: HomeIcon, label: 'Home Buying' },
+          ]}
+        />
         <PageOverview
           title="Net Worth Tracker"
           description="Visualize your financial position with assets vs liabilities charted over time."

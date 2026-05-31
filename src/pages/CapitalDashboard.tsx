@@ -11,6 +11,8 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import PageOverview from '@/components/PageOverview';
+import RelatedToolsBar from '@/components/RelatedToolsBar';
+import { Heart as HeartIcon, Building2 as Building2Icon, Lock as LockIcon, Bot as BotIcon } from 'lucide-react';
 import { useCreditAccounts } from '@/hooks/use-credit-accounts';
 import { useMetro2Findings } from '@/hooks/use-metro2-findings';
 import { useDisputes } from '@/hooks/use-disputes';
@@ -225,6 +227,14 @@ const CapitalDashboard = () => {
 
   return (
     <div className="space-y-6 pb-8">
+      <RelatedToolsBar
+        tools={[
+          { to: '/capital/credit-health', icon: HeartIcon, label: 'Credit Health' },
+          { to: '/capital/business-credit', icon: Building2Icon, label: 'Business Credit' },
+          { to: '/capital/vault', icon: LockIcon, label: 'Document Vault' },
+          { to: '/capital/ai-coach', icon: BotIcon, label: 'AI Coach' },
+        ]}
+      />
       <PageOverview
         title="FocusOS Capital"
         description="Credit Intelligence & Agency Financial Command Center"

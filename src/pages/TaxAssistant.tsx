@@ -21,6 +21,8 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import ReactMarkdown from 'react-markdown';
 import PageOverview from '@/components/PageOverview';
+import RelatedToolsBar from '@/components/RelatedToolsBar';
+import { BarChart3 as BarChart3Icon, Building2 as Building2Icon, FileSearch as FileSearchIcon, Calculator as CalculatorIcon } from 'lucide-react';
 
 type Msg = { role: 'user' | 'assistant'; content: string };
 
@@ -242,6 +244,15 @@ const TaxAssistant = () => {
             <p className="text-white/70 text-sm mt-1 max-w-lg">
               Expert guidance on business deductions, audit prevention, and multi-entity tax strategies — powered by AI with voice walkthroughs.
             </p>
+            <RelatedToolsBar
+              className="mb-3"
+              tools={[
+                { to: '/reports', icon: BarChart3Icon, label: 'Reports' },
+                { to: '/reconciliation', icon: FileSearchIcon, label: 'Reconciliation' },
+                { to: '/capital/business-credit', icon: Building2Icon, label: 'Business Credit' },
+                { to: '/calculators', icon: CalculatorIcon, label: 'Calculators' },
+              ]}
+            />
             <PageOverview
               title="AI Tax Assistant"
               description="Get AI-powered answers to tax questions, generate voice walkthroughs, and save responses for reference."
