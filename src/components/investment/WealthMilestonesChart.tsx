@@ -58,6 +58,7 @@ function buildInputs(plan: any, returnPct: number, useFuture: boolean) {
     inflationPct: plan.inflation_pct,
     datedStepUps: MONTGOMERY_STEP_UPS,
     annualLumpSum: { amount: 3000, startYear: 2028 },
+    includeMonthly: true,
     __skipSolve: true,
   } as any;
 }
@@ -65,7 +66,7 @@ function buildInputs(plan: any, returnPct: number, useFuture: boolean) {
 function findCrossings(plan: any, returnPct: number, useFuture: boolean): Crossing[] {
   const result = runProjection(buildInputs(plan, returnPct, useFuture));
   const startBalance = plan.current_balance || 0;
-  const yearly = result.yearly;
+  const monthly = result.monthly ?? [];
   const inflationFactor = (yearsOut: number) =>
     !useFuture && plan.inflation_pct
       ? Math.pow(1 + plan.inflation_pct / 100, yearsOut)
@@ -75,15 +76,15 @@ function findCrossings(plan: any, returnPct: number, useFuture: boolean): Crossi
     if (startBalance >= threshold) {
       return { threshold, yearsFromNow: 0, age: plan.current_age, calendarYear: new Date().getFullYear(), achieved: true };
     }
-    for (const pt of yearly) {
-      const yearsOut = pt.age - plan.current_age;
+    for (const pt of monthly) {
+      const yearsOut = pt.month / 12;
       const adjBalance = useFuture ? pt.balance : pt.balance / inflationFactor(yearsOut);
       if (adjBalance >= threshold) {
         return {
           threshold,
           yearsFromNow: yearsOut,
-          age: Math.round(pt.age),
-          calendarYear: Math.round(pt.year),
+          age: Math.floor(pt.age),
+          calendarYear: pt.date.getFullYear(),
           achieved: false,
         };
       }
@@ -171,7 +172,7 @@ export function WealthMilestonesChart() {
                       <span className="tabular-nums">
                         Age <strong className="text-foreground">{c.age}</strong> · Year{' '}
                         <strong className="text-foreground">{c.calendarYear}</strong>{' '}
-                        <span className="opacity-60">(+{c.yearsFromNow.toFixed(0)} yrs)</span>
+                        <span className="opacity-60">(+{c.yearsFromNow.toFixed(1)} yrs)</span>
                       </span>
                     ) : (
                       <span className="text-muted-foreground/80">Not reached in 60 yrs</span>
