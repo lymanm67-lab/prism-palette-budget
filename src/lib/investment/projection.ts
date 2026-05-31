@@ -43,6 +43,9 @@ export interface ProjectionInputs {
 
   useFutureDollars?: boolean;
   inflationPct?: number;
+
+  /** Optional per-year annual return overrides (in %). Cycles via modulo if shorter than horizon. */
+  annualReturnsPct?: number[];
 }
 
 export interface YearPoint {
@@ -144,7 +147,16 @@ export function runProjection(inputs: ProjectionInputs): ProjectionResult {
     cumGrowth: 0,
   }];
 
+  const hasMixedReturns = Array.isArray(inputs.annualReturnsPct) && inputs.annualReturnsPct.length > 0;
+  let currentMonthlyRate = monthlyRate;
   for (let m = 1; m <= totalMonths; m++) {
+    if (hasMixedReturns) {
+      const yearIdx = Math.floor((m - 1) / 12);
+      const cycle = inputs.annualReturnsPct!;
+      currentMonthlyRate = (cycle[yearIdx % cycle.length] || 0) / 100 / 12;
+    } else {
+      currentMonthlyRate = monthlyRate;
+    }
     // Apply raise at start of each year (every 12 months)
     if (m > 1 && m % 12 === 1) {
       const raiseBase = salary > 0 ? salary : employeeBase;
@@ -187,7 +199,7 @@ export function runProjection(inputs: ProjectionInputs): ProjectionResult {
     }
 
     // Compound retirement balance
-    balance = balance * (1 + monthlyRate) + monthly;
+    balance = balance * (1 + currentMonthlyRate) + monthly;
     totalEmp += employeeBase;
     totalErp += employerBase;
     cumEmployee += baseEmployeeThisMonth;
