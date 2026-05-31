@@ -51,6 +51,8 @@ export interface ProjectionInputs {
   datedStepUps?: { amount: number; startDate: string }[];
   /** Annual lump-sum contribution applied every January starting in `startYear`. */
   annualLumpSum?: { amount: number; startYear: number };
+  /** When true, returns a monthly balance series in `result.monthly`. */
+  includeMonthly?: boolean;
 }
 
 export interface YearPoint {
