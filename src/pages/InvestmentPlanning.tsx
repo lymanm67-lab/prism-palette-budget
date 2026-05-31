@@ -233,6 +233,7 @@ export default function InvestmentPlanning() {
             onCreateRules={() => setActiveTab('money-rules')}
             onReviewLegacy={() => setActiveTab('legacy')}
           />
+          <ProjectionDiagnostic plan={plan ?? null} />
           {projection && <ProjectionCharts yearly={projection.yearly} target={plan!.target_amount} />}
         </TabsContent>
 
