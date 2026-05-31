@@ -308,7 +308,7 @@ a { color: #0d9488; }
 </style></head><body>
 <div class="header">PrismMoney — Home-Buying Plan · ${new Date().toLocaleDateString()}</div>
 <h1>My Home-Buying Plan</h1>
-${markdownToHtml(report)}
+${renderToStaticMarkup(<ReactMarkdown remarkPlugins={[remarkGfm]}>{report}</ReactMarkdown>)}
 </body></html>`;
     const w = window.open('', '_blank', 'width=820,height=900');
     if (!w) return;
