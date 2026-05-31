@@ -14,6 +14,7 @@ import LoanTypeComparator from '@/components/home-buying/LoanTypeComparator';
 import StateAssistancePicker from '@/components/home-buying/StateAssistancePicker';
 import HomeSearchPanel from '@/components/home-buying/HomeSearchPanel';
 import HomeBuyingChecklistTab from '@/components/home-buying/HomeBuyingChecklistTab';
+import { useHomeBuyingMetrics } from '@/hooks/use-home-buying-metrics';
 
 const HomeBuyingChecklist = () => {
   const { household } = useHousehold();
@@ -30,6 +31,7 @@ const HomeBuyingChecklist = () => {
   });
 
   const checklistPct = ((checklist?.filter((p) => p.is_checked).length ?? 0) / 8) * 100;
+  const metrics = useHomeBuyingMetrics();
 
   const TABS = [
     { id: 'coach', label: 'AI Coach', icon: Bot },
@@ -68,15 +70,7 @@ const HomeBuyingChecklist = () => {
         </div>
       </div>
 
-      <ReadinessHero
-        checklistPct={checklistPct}
-        metrics={[
-          { label: 'Down Payment', value: '—', pct: 0, color: 'prism-teal' },
-          { label: 'Credit', value: '—', pct: 0, color: 'prism-amber' },
-          { label: 'DTI', value: '—', pct: 0, color: 'prism-indigo' },
-          { label: 'Emergency Fund', value: '—', pct: 0, color: 'prism-orange' },
-        ]}
-      />
+      <ReadinessHero checklistPct={checklistPct} metrics={metrics} />
 
       <Tabs value={tab} onValueChange={setTab} className="w-full">
         <TabsList className="w-full grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 h-auto p-1 gap-1">
