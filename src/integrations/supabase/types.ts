@@ -1486,6 +1486,48 @@ export type Database = {
         }
         Relationships: []
       }
+      investment_asset_tags: {
+        Row: {
+          amount_override: number | null
+          asset_key: string
+          created_at: string
+          custom_label: string | null
+          household_id: string
+          id: string
+          include_in_legacy: boolean
+          notes: string | null
+          plan_id: string
+          tag: string
+          updated_at: string
+        }
+        Insert: {
+          amount_override?: number | null
+          asset_key: string
+          created_at?: string
+          custom_label?: string | null
+          household_id: string
+          id?: string
+          include_in_legacy?: boolean
+          notes?: string | null
+          plan_id: string
+          tag?: string
+          updated_at?: string
+        }
+        Update: {
+          amount_override?: number | null
+          asset_key?: string
+          created_at?: string
+          custom_label?: string | null
+          household_id?: string
+          id?: string
+          include_in_legacy?: boolean
+          notes?: string | null
+          plan_id?: string
+          tag?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       investment_holdings: {
         Row: {
           account_id: string
@@ -1892,12 +1934,18 @@ export type Database = {
           id: string
           inflation_pct: number
           is_active: boolean
+          legacy_calculation_method: string
+          legacy_goal_name: string
+          legacy_percentage: number
           monthly_employee_contribution: number
           monthly_employer_contribution: number
           name: string
           notes: string | null
           raise_redirect_pct: number
           retirement_age: number | null
+          spouse_deferred_comp_value: number
+          spouse_pension_account_value: number
+          spouse_pension_monthly: number
           ss_claiming_age: number | null
           ss_invest_pct: number
           ss_invest_while_working: boolean
@@ -1927,12 +1975,18 @@ export type Database = {
           id?: string
           inflation_pct?: number
           is_active?: boolean
+          legacy_calculation_method?: string
+          legacy_goal_name?: string
+          legacy_percentage?: number
           monthly_employee_contribution?: number
           monthly_employer_contribution?: number
           name?: string
           notes?: string | null
           raise_redirect_pct?: number
           retirement_age?: number | null
+          spouse_deferred_comp_value?: number
+          spouse_pension_account_value?: number
+          spouse_pension_monthly?: number
           ss_claiming_age?: number | null
           ss_invest_pct?: number
           ss_invest_while_working?: boolean
@@ -1962,12 +2016,18 @@ export type Database = {
           id?: string
           inflation_pct?: number
           is_active?: boolean
+          legacy_calculation_method?: string
+          legacy_goal_name?: string
+          legacy_percentage?: number
           monthly_employee_contribution?: number
           monthly_employer_contribution?: number
           name?: string
           notes?: string | null
           raise_redirect_pct?: number
           retirement_age?: number | null
+          spouse_deferred_comp_value?: number
+          spouse_pension_account_value?: number
+          spouse_pension_monthly?: number
           ss_claiming_age?: number | null
           ss_invest_pct?: number
           ss_invest_while_working?: boolean
