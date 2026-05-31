@@ -2,6 +2,7 @@ import { useMemo, useEffect, useState } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectGroup, SelectLabel, SelectItem } from '@/components/ui/select';
 import { Sparkles, Download, TrendingUp, Wand2 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useInvestmentPlan } from '@/hooks/use-investment-plan';
