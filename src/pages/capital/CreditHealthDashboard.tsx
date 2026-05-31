@@ -9,6 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import PageOverview from '@/components/PageOverview';
+import RelatedToolsBar from '@/components/RelatedToolsBar';
+import { FileSearch as FileSearchIcon, Gauge as GaugeIcon, FileText as FileTextIcon, Lock as LockIcon } from 'lucide-react';
 import ScoreGauge from '@/components/credit-health/ScoreGauge';
 import FactorCard, { type FactorStatus } from '@/components/credit-health/FactorCard';
 import NextBestStep from '@/components/credit-health/NextBestStep';
@@ -137,6 +139,14 @@ const CreditHealthDashboard = () => {
 
   return (
     <div className="space-y-6 pb-8">
+      <RelatedToolsBar
+        tools={[
+          { to: '/capital/credit-overview', icon: FileSearchIcon, label: 'Credit Reports' },
+          { to: '/capital/metro2-scanner', icon: GaugeIcon, label: 'Metro2 Scanner' },
+          { to: '/capital/disputes', icon: FileTextIcon, label: 'Disputes' },
+          { to: '/capital/vault', icon: LockIcon, label: 'Document Vault' },
+        ]}
+      />
       <PageOverview
         title="Credit Health"
         description="Understand your score, find what's hurting it, and follow a clear plan to improve"
