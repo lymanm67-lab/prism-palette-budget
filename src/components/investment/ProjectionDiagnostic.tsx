@@ -107,6 +107,9 @@ export function ProjectionDiagnostic({ plan }: Props) {
       included: plan.use_future_dollars === true,
       detail: plan.use_future_dollars ? 'Goal compared against nominal projection' : "Currently set to today's dollars",
     },
+  ];
+
+
 
   const includedCount = checks.filter((c) => c.included).length;
   const missingCritical = checks.filter((c) => c.critical && !c.included);
