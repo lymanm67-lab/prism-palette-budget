@@ -338,8 +338,12 @@ export default function InvestmentPlanning() {
         </TabsContent>
 
         <TabsContent value="milestones" className="mt-4 space-y-4">
-          <WealthMilestonesChart />
-          <MilestoneTracker />
+          <CollapsibleSection title="Wealth Milestones Chart" defaultOpen>
+            <WealthMilestonesChart />
+          </CollapsibleSection>
+          <CollapsibleSection title="Retirement Milestones" defaultOpen>
+            <MilestoneTracker />
+          </CollapsibleSection>
         </TabsContent>
       </Tabs>
 
