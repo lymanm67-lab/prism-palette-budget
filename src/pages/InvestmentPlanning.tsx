@@ -137,30 +137,56 @@ export default function InvestmentPlanning() {
         </Card>
       ) : null}
 
-      <Tabs defaultValue={plan ? 'snapshot' : 'wizard'} className="w-full">
-        <TabsList className="flex flex-wrap h-auto gap-1">
-          <TabsTrigger value="snapshot">Snapshot</TabsTrigger>
-          <TabsTrigger value="wizard">Setup</TabsTrigger>
-          <TabsTrigger value="raise">Raises</TabsTrigger>
-          <TabsTrigger value="debt">Debt→Wealth</TabsTrigger>
-          <TabsTrigger value="spouse">Spouse</TabsTrigger>
-          <TabsTrigger value="pensions">Pensions</TabsTrigger>
-          <TabsTrigger value="hsa">HSA</TabsTrigger>
-          <TabsTrigger value="legacy">Legacy</TabsTrigger>
-          <TabsTrigger value="rules">Money rules</TabsTrigger>
-          <TabsTrigger value="tax">Tax</TabsTrigger>
-          <TabsTrigger value="risk">Risk</TabsTrigger>
-          <TabsTrigger value="healthcare">Healthcare</TabsTrigger>
-          <TabsTrigger value="income">Income</TabsTrigger>
-          <TabsTrigger value="realassets">Real assets</TabsTrigger>
-          <TabsTrigger value="behavior">Coach</TabsTrigger>
-          <TabsTrigger value="estate">Estate</TabsTrigger>
-          <TabsTrigger value="charitable">Giving</TabsTrigger>
-          <TabsTrigger value="college">College</TabsTrigger>
-          <TabsTrigger value="automation">Automation</TabsTrigger>
-          <TabsTrigger value="scenarios">Scenarios</TabsTrigger>
-          <TabsTrigger value="milestones">Milestones</TabsTrigger>
-        </TabsList>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <div className="flex items-center gap-2 flex-wrap rounded-xl border border-border bg-card/40 backdrop-blur p-2">
+          <TabsList className="bg-transparent gap-1 p-0 h-auto">
+            <TabsTrigger value="snapshot" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg">
+              <Sparkles className="h-3.5 w-3.5 mr-1.5" /> Snapshot
+            </TabsTrigger>
+            <TabsTrigger value="wizard" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg">
+              Setup
+            </TabsTrigger>
+            <TabsTrigger value="scenarios" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg">
+              Scenarios
+            </TabsTrigger>
+            <TabsTrigger value="milestones" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg">
+              Milestones
+            </TabsTrigger>
+          </TabsList>
+
+          <div className="ml-auto flex items-center gap-2">
+            <span className="text-xs text-muted-foreground hidden md:inline">More tools</span>
+            <Select value={MORE_TAB_VALUES.includes(activeTab) ? activeTab : ''} onValueChange={setActiveTab}>
+              <SelectTrigger className="w-[220px] h-9">
+                <SelectValue placeholder="Explore planning tools…" />
+              </SelectTrigger>
+              <SelectContent className="max-h-[420px]">
+                {TAB_GROUPS.map((group) => (
+                  <SelectGroup key={group.label}>
+                    <SelectLabel className="text-xs uppercase tracking-wider text-muted-foreground">{group.label}</SelectLabel>
+                    {group.items.map((item) => (
+                      <SelectItem key={item.value} value={item.value}>
+                        {item.label}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {MORE_TAB_VALUES.includes(activeTab) && (
+          <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-primary/10 text-primary">
+              {TAB_LABEL_LOOKUP[activeTab]}
+            </span>
+            <button onClick={() => setActiveTab('snapshot')} className="hover:text-foreground underline-offset-2 hover:underline">
+              ← Back to Snapshot
+            </button>
+          </div>
+        )}
+
 
         <TabsContent value="snapshot" className="mt-4 space-y-4">
           <SnapshotDashboard plan={plan ?? null} />
