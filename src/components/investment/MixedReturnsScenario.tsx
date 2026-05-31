@@ -324,6 +324,78 @@ export function MixedReturnsScenario({ plan }: Props) {
           </div>
         </div>
 
+        <div className="rounded-lg border bg-card/60 p-4 space-y-3">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <FlaskConical className="h-4 w-4 text-primary" />
+              <p className="text-sm font-medium">Sequence-of-returns stress test</p>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setStressRunId((id) => id + 1)}
+              className="h-8 text-xs"
+            >
+              <Shuffle className="h-3 w-3 mr-1.5" />
+              {stress ? 'Re-run' : 'Run'} stress test (500 shuffles)
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Same returns, different order. The spread shows sequence-of-returns risk for{' '}
+            <strong>{presetCfg.label}</strong> over {horizonYears} years.
+          </p>
+
+          {stress ? (
+            <>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                <StressStat label="P10 (unlucky)" value={formatCurrencyFull(stress.p10)} tone="warn" />
+                <StressStat label="P50 (median)" value={formatCurrencyFull(stress.p50)} tone="neutral" />
+                <StressStat label="P90 (lucky)" value={formatCurrencyFull(stress.p90)} tone="good" />
+                <StressStat
+                  label="Reaching goal"
+                  value={`${stress.pctReachingGoal.toFixed(0)}%`}
+                  tone={stress.pctReachingGoal >= 80 ? 'good' : stress.pctReachingGoal >= 50 ? 'neutral' : 'warn'}
+                />
+              </div>
+              <div className="h-32 w-full">
+                <ResponsiveContainer>
+                  <BarChart data={stress.histogram} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
+                    <XAxis dataKey="bucket" stroke="hsl(var(--muted-foreground))" fontSize={9} interval={1} />
+                    <YAxis stroke="hsl(var(--muted-foreground))" fontSize={10} allowDecimals={false} />
+                    <Tooltip
+                      cursor={{ fill: 'hsl(var(--muted) / 0.3)' }}
+                      contentStyle={{
+                        background: 'hsl(var(--popover))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: 8,
+                        fontSize: 11,
+                      }}
+                      formatter={(v: number) => [`${v} runs`, 'Count']}
+                    />
+                    <ReferenceLine
+                      x={stress.histogram.find((h) => h.midpoint >= (plan.target_amount || 4_000_000))?.bucket}
+                      stroke="hsl(var(--primary))"
+                      strokeDasharray="3 3"
+                      label={{ value: 'Goal', fill: 'hsl(var(--primary))', fontSize: 10, position: 'top' }}
+                    />
+                    <Bar dataKey="count" radius={[3, 3, 0, 0]} fill="hsl(var(--prism-teal, var(--primary)))" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              <p className="text-[10px] text-muted-foreground">
+                Distribution of {stress.runs} runs. Wider spread = order matters more. P10 means 10% of runs ended below
+                this value — that's your "bad luck" outcome.
+              </p>
+            </>
+          ) : (
+            <p className="text-xs text-muted-foreground/80 italic">
+              Click "Run stress test" to shuffle the return sequence 500 times and see the spread of outcomes.
+            </p>
+          )}
+        </div>
+
+
+
         <div className="rounded-lg bg-muted/40 p-4 text-sm space-y-2">
           <p>
             Real markets don't return a flat rate. These presets are drawn from actual S&P 500 nominal total-return
