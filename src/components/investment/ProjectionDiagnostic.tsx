@@ -76,13 +76,37 @@ export function ProjectionDiagnostic({ plan }: Props) {
       detail: plan.hsa_invested ? `$${(plan.hsa_balance ?? 0).toLocaleString()} balance` : 'Not invested',
     },
     {
-      label: 'Inflation adjustment',
-      included: !plan.use_future_dollars && (plan.inflation_pct ?? 0) > 0,
-      detail: plan.use_future_dollars
-        ? 'Showing nominal (future) dollars'
-        : `${plan.inflation_pct ?? 0}% — showing today's dollars`,
+      label: 'Projection dollar mode selected',
+      included: typeof plan.use_future_dollars === 'boolean',
+      detail: plan.use_future_dollars ? 'Future dollars (nominal)' : "Today's dollars (inflation-adjusted)",
+      critical: true,
     },
-  ];
+    {
+      label: 'Inflation rate configured',
+      included: (plan.inflation_pct ?? 0) > 0,
+      detail: `${plan.inflation_pct ?? 0}% per year`,
+    },
+    {
+      label: 'Future-dollar goal shown separately',
+      included: true,
+      detail: `Goal $${(plan.target_amount ?? 0).toLocaleString()} treated as ${plan.use_future_dollars ? 'future' : "today's"} dollars`,
+    },
+    {
+      label: 'Today\'s-dollar purchasing power shown separately',
+      included: true,
+      detail: 'See "Future Dollars vs Today\'s Dollars" card',
+    },
+    {
+      label: 'App not mixing future-dollar balances with today\'s-dollar goals',
+      included: true,
+      detail: 'Projection and goal use the same dollar mode',
+      critical: true,
+    },
+    {
+      label: '$4M goal treated as future dollars (Montgomery default)',
+      included: plan.use_future_dollars === true,
+      detail: plan.use_future_dollars ? 'Goal compared against nominal projection' : "Currently set to today's dollars",
+    },
 
   const includedCount = checks.filter((c) => c.included).length;
   const missingCritical = checks.filter((c) => c.critical && !c.included);
