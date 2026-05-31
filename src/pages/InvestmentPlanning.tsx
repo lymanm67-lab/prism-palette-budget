@@ -15,6 +15,7 @@ import { ContributionSourcesChart } from '@/components/investment/ContributionSo
 import { MoneyRulesToggles } from '@/components/investment/MoneyRulesToggles';
 import { DollarModeCard } from '@/components/investment/DollarModeCard';
 import { LegacyProtectionCard } from '@/components/investment/LegacyProtectionCard';
+import { AssetTagManager } from '@/components/investment/AssetTagManager';
 import { InvestmentWizard } from '@/components/investment/InvestmentWizard';
 import { RaiseRedirectPlanner } from '@/components/investment/RaiseRedirectPlanner';
 import { DebtToWealthTool } from '@/components/investment/DebtToWealthTool';
@@ -239,6 +240,7 @@ export default function InvestmentPlanning() {
           />
           <DollarModeCard plan={plan ?? null} />
           <LegacyProtectionCard plan={plan ?? null} />
+          <AssetTagManager plan={plan ?? null} />
           <MoneyRulesToggles plan={plan ?? null} />
           <ProjectionDiagnostic plan={plan ?? null} />
           {projection && <ContributionSourcesChart yearly={projection.yearly} />}

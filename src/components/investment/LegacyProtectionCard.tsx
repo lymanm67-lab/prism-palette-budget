@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -7,8 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Heart, AlertTriangle, ShieldCheck } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from 'recharts';
-import { InvestmentPlan } from '@/hooks/use-investment-plan';
-import { runProjection, formatCurrencyFull } from '@/lib/investment/projection';
+import { InvestmentPlan, useUpsertInvestmentPlan } from '@/hooks/use-investment-plan';
+import { runProjection, formatCurrencyFull, ProjectionResult } from '@/lib/investment/projection';
+import { useAssetTags, AssetKey } from '@/hooks/use-asset-tags';
 
 type Method = 'total' | 'surplus' | 'percent';
 
@@ -17,8 +18,8 @@ interface Props { plan: InvestmentPlan | null }
 const LEGACY_AGE = 85;
 const PCT_PRESETS = [10, 25, 50, 75, 100];
 
-function projectToAge(plan: InvestmentPlan, returnPct: number, toAge: number): number {
-  const projection = runProjection({
+function project(plan: InvestmentPlan, returnPct: number): ProjectionResult {
+  return runProjection({
     currentAge: plan.current_age!,
     retirementAge: plan.retirement_age!,
     currentBalance: plan.current_balance,
@@ -43,51 +44,55 @@ function projectToAge(plan: InvestmentPlan, returnPct: number, toAge: number): n
     hsaEmployerContribution: plan.hsa_employer_contribution,
     hsaInvested: plan.hsa_invested,
     hsaReturnPct: plan.hsa_return_pct,
-    useFutureDollars: true, // legacy always in future dollars
+    useFutureDollars: true,
     inflationPct: plan.inflation_pct,
   });
+}
 
-  // Grow projected balance from retirement age to legacy age (no further contributions).
-  const extraYears = Math.max(0, toAge - (plan.retirement_age || 0));
-  const grown = projection.projectedBalance * Math.pow(1 + returnPct / 100, extraYears);
-  return grown;
+/**
+ * Break the final projected balance into a value per asset_key by distributing growth
+ * proportional to contributions, then growing each bucket from retirement age to 85.
+ */
+function bucketValuesAt85(plan: InvestmentPlan, returnPct: number): Record<AssetKey, number> {
+  const proj = project(plan, returnPct);
+  const last = proj.yearly[proj.yearly.length - 1];
+  const growYears = Math.max(0, LEGACY_AGE - (plan.retirement_age || 0));
+  const growth = Math.pow(1 + returnPct / 100, growYears);
+
+  const contribs = last.cumStarting + last.cumEmployee + last.cumEmployer
+    + last.cumRaiseRedirect + last.cumDebtRedirect + last.cumAdditional + last.cumSocialSecurity;
+  const cumGrowth = Math.max(0, last.balance - contribs);
+
+  const allocate = (cum: number) =>
+    (cum + (contribs > 0 ? cumGrowth * (cum / contribs) : 0)) * growth;
+
+  return {
+    primary_balance: allocate(last.cumStarting),
+    employee_contrib: allocate(last.cumEmployee),
+    employer_contrib: allocate(last.cumEmployer),
+    raise_redirect: allocate(last.cumRaiseRedirect),
+    debt_redirect: allocate(last.cumDebtRedirect),
+    additional_contrib: allocate(last.cumAdditional),
+    invested_ss: allocate(last.cumSocialSecurity),
+    hsa: last.hsaBalance * growth,
+    spouse_pension: 0, // income stream — not a liquid asset
+    spouse_opers_value: plan.spouse_pension_account_value ?? 0,
+    spouse_deferred_comp: plan.spouse_deferred_comp_value ?? 0,
+  };
 }
 
 export function LegacyProtectionCard({ plan }: Props) {
-  const planId = plan?.id ?? 'no-plan';
-  const storageKey = `legacy_protection_${planId}`;
-
-  const [method, setMethod] = useState<Method>('total');
-  const [percent, setPercent] = useState<number>(25);
-  const [customPct, setCustomPct] = useState<string>('');
-
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(storageKey);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed.method) setMethod(parsed.method);
-        if (typeof parsed.percent === 'number') setPercent(parsed.percent);
-      }
-    } catch {}
-  }, [storageKey]);
-
-  useEffect(() => {
-    try { localStorage.setItem(storageKey, JSON.stringify({ method, percent })); } catch {}
-  }, [storageKey, method, percent]);
+  const upsert = useUpsertInvestmentPlan();
+  const { data: tags = [] } = useAssetTags(plan?.id);
 
   const projections = useMemo(() => {
     if (!plan || !plan.current_age || !plan.retirement_age) return null;
-    const at7 = projectToAge(plan, 7, LEGACY_AGE);
-    const at8 = projectToAge(plan, 8, LEGACY_AGE);
+    const buckets7 = bucketValuesAt85(plan, 7);
+    const buckets8 = bucketValuesAt85(plan, 8);
+    const total7 = Object.values(buckets7).reduce((s, v) => s + v, 0);
+    const total8 = Object.values(buckets8).reduce((s, v) => s + v, 0);
     const goal = plan.target_amount || 0;
-    return {
-      at7,
-      at8,
-      surplus7: at7 - goal,
-      surplus8: at8 - goal,
-      goal,
-    };
+    return { buckets7, buckets8, total7, total8, surplus7: total7 - goal, surplus8: total8 - goal, goal };
   }, [plan]);
 
   if (!plan || !projections) {
@@ -101,36 +106,48 @@ export function LegacyProtectionCard({ plan }: Props) {
     );
   }
 
-  const { at7, at8, surplus7, surplus8, goal } = projections;
+  const method: Method = (plan.legacy_calculation_method as Method) || 'total';
+  const percent = plan.legacy_percentage ?? 25;
+  const goalName = plan.legacy_goal_name || 'Legacy Trust';
 
-  const effectivePct = customPct ? Math.max(0, Math.min(100, Number(customPct) || 0)) : percent;
+  const setMethod = (m: Method) => upsert.mutate({ id: plan.id, legacy_calculation_method: m } as any);
+  const setPercent = (p: number) => upsert.mutate({ id: plan.id, legacy_percentage: p } as any);
 
-  // Compute displayed legacy value(s) per method
+  const { buckets7, buckets8, total7, total8, surplus7, surplus8, goal } = projections;
+
+  // Sum included assets per tag toggle
+  const includedKeys = new Set(tags.filter((t) => t.include_in_legacy).map((t) => t.asset_key));
+  const sumIncluded = (b: Record<AssetKey, number>) =>
+    Array.from(includedKeys).reduce((s, k) => s + (b[k as AssetKey] || 0), 0);
+  const tagged7 = sumIncluded(buckets7);
+  const tagged8 = sumIncluded(buckets8);
+
   let legacyLabel = '';
   let legacy7 = 0;
   let legacy8 = 0;
   if (method === 'total') {
-    legacyLabel = 'Total projected legacy assets';
-    legacy7 = at7;
-    legacy8 = at8;
+    legacyLabel = 'Tagged legacy assets';
+    legacy7 = tagged7;
+    legacy8 = tagged8;
   } else if (method === 'surplus') {
     legacyLabel = `Surplus above ${formatCurrencyFull(goal)} goal`;
     legacy7 = Math.max(0, surplus7);
     legacy8 = Math.max(0, surplus8);
   } else {
-    legacyLabel = `${effectivePct}% of projected assets`;
-    legacy7 = at7 * (effectivePct / 100);
-    legacy8 = at8 * (effectivePct / 100);
+    legacyLabel = `${percent}% of projected assets`;
+    legacy7 = total7 * (percent / 100);
+    legacy8 = total8 * (percent / 100);
   }
 
   const isZero = legacy7 <= 0 && legacy8 <= 0;
-  const hasAssets = at7 > 0 || at8 > 0;
+  const hasAssets = total7 > 0 || total8 > 0;
+  const noTags = tags.length === 0 || includedKeys.size === 0;
   const shortfall = method === 'surplus' && (surplus7 < 0 || surplus8 < 0);
 
   const chartData = [
-    { name: '7% Total', value: Math.round(at7), fill: 'hsl(var(--primary))' },
+    { name: '7% Total', value: Math.round(total7), fill: 'hsl(var(--primary))' },
     { name: '7% Surplus', value: Math.round(Math.max(0, surplus7)), fill: 'hsl(var(--chart-2, var(--primary)))' },
-    { name: '8% Total', value: Math.round(at8), fill: 'hsl(var(--primary))' },
+    { name: '8% Total', value: Math.round(total8), fill: 'hsl(var(--primary))' },
     { name: '8% Surplus', value: Math.round(Math.max(0, surplus8)), fill: 'hsl(var(--chart-2, var(--primary)))' },
   ];
 
@@ -155,19 +172,21 @@ export function LegacyProtectionCard({ plan }: Props) {
       </CardHeader>
 
       <CardContent className="space-y-5">
-        {/* Plan summary */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-          <div className="space-y-0.5">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+          <div>
             <p className="text-muted-foreground text-xs">Legacy goal</p>
-            <p className="font-medium">Montgomery Legacy Trust</p>
+            <p className="font-medium">{goalName}</p>
           </div>
-          <div className="space-y-0.5">
+          <div>
             <p className="text-muted-foreground text-xs">Funding source</p>
             <p className="font-medium">Primary user's retirement assets</p>
           </div>
+          <div>
+            <p className="text-muted-foreground text-xs">Method</p>
+            <p className="font-medium capitalize">{method === 'total' ? 'Projected legacy assets' : method === 'surplus' ? 'Surplus above goal' : `${percent}% of assets`}</p>
+          </div>
         </div>
 
-        {/* Method toggle */}
         <div className="space-y-2">
           <Label className="text-xs text-muted-foreground">Calculation method</Label>
           <ToggleGroup
@@ -186,10 +205,9 @@ export function LegacyProtectionCard({ plan }: Props) {
               {PCT_PRESETS.map((p) => (
                 <Button
                   key={p}
-                  type="button"
                   size="sm"
-                  variant={!customPct && percent === p ? 'default' : 'outline'}
-                  onClick={() => { setCustomPct(''); setPercent(p); }}
+                  variant={percent === p ? 'default' : 'outline'}
+                  onClick={() => setPercent(p)}
                 >
                   {p}%
                 </Button>
@@ -198,16 +216,18 @@ export function LegacyProtectionCard({ plan }: Props) {
                 type="number"
                 min={0}
                 max={100}
-                placeholder="Custom %"
-                value={customPct}
-                onChange={(e) => setCustomPct(e.target.value)}
+                placeholder="Custom"
+                value={PCT_PRESETS.includes(percent) ? '' : String(percent)}
+                onChange={(e) => {
+                  const n = Math.max(0, Math.min(100, Number(e.target.value) || 0));
+                  setPercent(n);
+                }}
                 className="w-28 h-9"
               />
             </div>
           )}
         </div>
 
-        {/* Result rows */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div className="rounded-lg border border-border/50 p-3 bg-background/40">
             <p className="text-xs text-muted-foreground">{legacyLabel} @ 7%</p>
@@ -219,15 +239,14 @@ export function LegacyProtectionCard({ plan }: Props) {
           </div>
         </div>
 
-        {/* Always-on context: both totals + surplus */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
           <div className="rounded-md bg-muted/40 p-2">
             <p className="text-muted-foreground">Total @ 7%</p>
-            <p className="font-medium tabular-nums">{formatCurrencyFull(at7)}</p>
+            <p className="font-medium tabular-nums">{formatCurrencyFull(total7)}</p>
           </div>
           <div className="rounded-md bg-muted/40 p-2">
             <p className="text-muted-foreground">Total @ 8%</p>
-            <p className="font-medium tabular-nums">{formatCurrencyFull(at8)}</p>
+            <p className="font-medium tabular-nums">{formatCurrencyFull(total8)}</p>
           </div>
           <div className="rounded-md bg-muted/40 p-2">
             <p className="text-muted-foreground">Surplus @ 7%</p>
@@ -239,22 +258,24 @@ export function LegacyProtectionCard({ plan }: Props) {
           </div>
         </div>
 
-        {/* Warnings */}
         {isZero && hasAssets && (
           <div className="flex gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 p-3 text-sm">
             <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
             <div className="space-y-1">
               <p>
-                You have projected retirement assets, but legacy protection is showing $0.
-                Switch to <strong>Total projected</strong> or set a percentage to tag your
-                primary retirement assets as Legacy Funding Assets.
+                {noTags
+                  ? 'Legacy Protection is showing $0 because no assets have been tagged as legacy funding assets. Tag retirement assets, invested Social Security, or projected surplus as legacy funding assets to calculate legacy protection.'
+                  : 'You have projected retirement assets, but no assets are tagged for legacy. Use the Asset Tags panel below to mark assets "In Legacy", or pick a different calculation method.'}
               </p>
               <div className="flex flex-wrap gap-2 pt-1">
                 <Button size="sm" variant="outline" onClick={() => setMethod('total')}>
-                  Use total projected
+                  Use tagged total
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => { setMethod('percent'); setPercent(25); setCustomPct(''); }}>
-                  Use percentage
+                <Button size="sm" variant="outline" onClick={() => setMethod('surplus')}>
+                  Use surplus only
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => { setMethod('percent'); setPercent(25); }}>
+                  Use 25%
                 </Button>
               </div>
             </div>
@@ -271,7 +292,6 @@ export function LegacyProtectionCard({ plan }: Props) {
           </div>
         )}
 
-        {/* Chart */}
         <div className="space-y-2">
           <p className="text-xs font-medium text-muted-foreground">Legacy Protection by Scenario</p>
           <div className="h-56">
@@ -292,7 +312,6 @@ export function LegacyProtectionCard({ plan }: Props) {
           </div>
         </div>
 
-        {/* Explanations */}
         <div className="space-y-2 text-xs text-muted-foreground">
           <p>
             <strong className="text-foreground">What this means:</strong> Legacy Protection represents
