@@ -42,12 +42,12 @@ interface Answers {
 }
 
 const DEFAULT: Answers = {
-  state: 'FL', city: '', income: 7500, coBorrowerIncome: 0,
+  state: 'OH', city: 'Akron', income: 7500, coBorrowerIncome: 0,
   monthlyDebt: 600,
   debtCreditCards: 100, debtAutoLoans: 400, debtStudentLoans: 100,
   debtPersonal: 0, debtChildAlimony: 0, debtOther: 0,
   savings: 15000, giftFunds: 0,
-  targetPrice: 350000, timelineMonths: 12,
+  targetPrice: 150000, timelineMonths: 24,
   firstTime: 'yes', creditRange: '700-739', derogatories24mo: 'no',
   employment: 'W-2 employee', incomeType: 'W-2 only',
   veteranStatus: 'no',
