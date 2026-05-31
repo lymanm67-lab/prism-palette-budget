@@ -1,88 +1,102 @@
-# Investment Planning Module
 
-**Scope: Large.** New top-level feature with ~12 sub-tools, 1 new DB table group, projection engine, PDF export. Estimating 15–20 new files. I'll keep it tightly scoped to this spec — no drive-by polish elsewhere.
+# Retirement Allocation Rules — Investment Planning Snapshot
 
-## Route & Navigation
-- New route: `/planning/investments` (parent `/planning` shell if not present)
-- Add nav entry under **Planning** group in sidebar + Command Palette (G+I)
-- Page guard: requires active household (uses existing `HouseholdContext`)
+Scope: **Large**. New DB table + 1 new section on `/planning/investments` (Snapshot tab) with ~6 sub-components, plus a projection engine. Recommend keeping it on the Snapshot tab inside a `CollapsibleSection` so it doesn't bloat the page.
 
-## Database (1 migration)
-New tables, all household-scoped with standard RLS (`is_household_member`) + GRANTs to `authenticated` + `service_role`:
+## What the user gets
 
-1. `investment_plans` — one active plan per household; stores all snapshot inputs (ages, balances, contributions, raise %, debt redirect, SS, HSA, return assumptions, today-vs-future-dollars flag)
-2. `investment_plan_spouse` — optional 1:1 spouse block
-3. `investment_pensions` — N pensions per plan (provider, monthly, COLA, survivor, taxable, use=income|invest|lump)
-4. `investment_legacy_goals` — legacy goal + included/excluded asset tags + beneficiary/advisor contacts
-5. `investment_money_rules` — automation rules (name, trigger, start_date, amount/pct, destination, frequency, reminder, status)
-6. `investment_milestones` — age-based review checklist items (seeded defaults, user-editable)
-7. `investment_scenarios` — saved scenario runs (conservative/moderate/growth/custom + computed snapshot JSON)
+A new "Retirement Allocation Rules" card on Snapshot that:
+1. Shows Montgomery's seeded baseline (salary, current EE/ER contributions, raise rule, SS estimate).
+2. Lists every future contribution event as an editable row.
+3. Routes each event to buckets (HSA / Roth 457(b) / Roth TDA / Pre-tax 457(b) / Pre-tax TDA / Taxable Brokerage) using the allocation logic below.
+4. Renders a projection table (monthly, annual, plan-limit flag, included-in-projection flag).
+5. Warns on HSA cap, 402(g)/415 plan limits, double-counting, and the Social Security → workplace-plan rule.
 
-No edits to existing finance tables. Legacy "asset included/excluded" is stored as account-id tags inside `investment_legacy_goals.included_account_ids[]` — no schema change to `accounts`.
+## Data model (1 new table + 1 settings row)
 
-## Projection Engine (pure TS, unit-testable)
-`src/lib/investment/projection.ts`:
-- Monthly compounding loop from current age → target age
-- Inputs: balances, employee + employer contributions, raise schedule, debt-redirect event, additional-contribution event, SS invest stream, HSA stream, spouse stream, return rate
-- Outputs: yearly balance series, totals (employee, employer, growth), projected balance, surplus/shortfall, required monthly contribution (binary search), estimated monthly retirement income (4% rule + pension + SS), legacy projection, confidence score (deterministic from gap %)
-- Today-vs-future-dollars toggle applies 2.5% inflation discount
+**`retirement_allocation_events`** (per household)
+- `id`, `household_id`, `user_id`
+- `event_date` (date) · `event_label` (text) · `event_type` enum: `step_up | raise_redirect | debt_redirect | ss_invest`
+- `monthly_amount` (numeric) — null for `raise_redirect` (computed from salary × raise %)
+- `default_allocation` (jsonb) — `{ hsa, roth_457b, roth_tda, pretax_457b, pretax_tda, taxable }` summing to monthly_amount
+- `user_allocation` (jsonb, nullable) — overrides
+- `is_active` (bool, default true)
+- `notes` (text)
+- soft-delete (`deleted_at`), timestamps
 
-## UI Structure
-`src/pages/InvestmentPlanning.tsx` — tabbed shell:
+**`retirement_allocation_settings`** (1 row per household, upsert)
+- `hsa_eligible` (bool) · `hsa_coverage` enum `self | family` · `hsa_max_target` (numeric)
+- `roth_pct_default` (numeric 0–100) · `employer_contribution_rate` (numeric, default 9)
+- `annual_raise_pct` (numeric, default 3) · `inflation_mode` enum `today | future`
+- `current_monthly_salary`, `current_ee_contribution`, `current_er_contribution`, `ss_age70_estimate`
+- timestamps
 
-1. **Snapshot** — dashboard cards (current balance, projected balance, gap, monthly income, legacy, confidence) + status pill (green/yellow/red) + plain-language summary
-2. **Setup Wizard** — 9-step guided flow (`InvestmentWizard.tsx`) saving to `investment_plans`
-3. **Raise Redirect Planner** — form + result card + 100/75/50/custom toggles
-4. **Debt → Wealth** — pulls user's `debt_plans` payoff date as default
-5. **Social Security Strategy** — invest-while-working calc
-6. **Pension Income** — list + add/edit; warning about non-liquid pension balances
-7. **Spouse / Household** — collapsible; mirrors core inputs
-8. **HSA Long-Term** — projection with optional medical drawdown
-9. **Legacy Planning** — goal + asset include/exclude picker (lists existing accounts) + beneficiary/advisor contacts + checklist
-10. **Scenarios** — 3 preset cards (5/7/9%) + custom; side-by-side comparison table
-11. **Money Rules** — CRUD list; statuses scheduled/active/paused
-12. **Milestones** — age cards 60/62/65/67/70/75/80/85, checkable, editable
+RLS by household via `is_household_member`; GRANTs to `authenticated` + `service_role`. Seed Montgomery's 8 events on first load if table empty for the household.
 
-## Charts (Recharts, existing dep)
-Reusable `ProjectionChart`, `ContribVsGrowthChart`, `CurrentVsOptimizedChart`, `IncomeSourcesChart`, `LegacyFundingChart` — all responsive, semantic tokens only.
+## Allocation engine (pure TS, no backend)
 
-## PDF Export
-`exportInvestmentPlanPDF.ts` using existing jsPDF pattern (follow `WeeklyRecap` export if present, otherwise add jsPDF). 12 sections per spec + disclaimers.
+`src/lib/retirement/allocationEngine.ts`
+- Input: settings + ordered events + plan-year limits table (2026–2037 projected, with COLA at inflation_mode).
+- For each event in date order, compute the default allocation per rules 1–9. Spillover order when HSA caps: → Roth 457(b) → Roth TDA → pre-tax mirrors → taxable.
+- Output per event: `{ destinations[], countsTowardLimits, includedInProjection, warnings[] }`.
+- Aggregate per year: total to each bucket, plan-limit usage %, HSA usage %.
 
-## Components (~ file list)
-```
-src/pages/InvestmentPlanning.tsx
-src/components/investment/SnapshotDashboard.tsx
-src/components/investment/InvestmentWizard.tsx
-src/components/investment/RaiseRedirectPlanner.tsx
-src/components/investment/DebtToWealthTool.tsx
-src/components/investment/SocialSecurityPlanner.tsx
-src/components/investment/PensionPlanner.tsx
-src/components/investment/SpouseHouseholdPanel.tsx
-src/components/investment/HSAPlanner.tsx
-src/components/investment/LegacyPlanner.tsx
-src/components/investment/ScenarioComparison.tsx
-src/components/investment/MoneyRulesManager.tsx
-src/components/investment/MilestoneTracker.tsx
-src/components/investment/ProjectionCharts.tsx
-src/components/investment/DisclaimerBlock.tsx
-src/hooks/useInvestmentPlan.ts
-src/lib/investment/projection.ts
-src/lib/investment/exportInvestmentPlanPDF.ts
-```
+Plan limits source: hardcoded constants file (2025 actuals, +2% COLA forward) — flagged "estimates" in UI.
 
-## Compliance
-Persistent disclaimer footer on the page + inline disclaimer near every projection number, copy verbatim from spec sections 15.
+## UI surface
 
-## Demo / Test
-Seed button (founder-only) to load the section-17 sample case into the active household for verification — output expected $3.5M–$4M @ 85.
+`src/components/investment/AllocationRulesSection.tsx` (new, mounted inside Snapshot tab via existing `CollapsibleSection`)
 
-## What I will NOT touch
-- Existing budgets, transactions, accounts, debt plans (read-only references only)
-- HouseholdContext, auth, RLS helpers
-- Any unrelated pages or styling
+Sub-components:
+- `AllocationSettingsPanel.tsx` — controls (HSA eligibility/coverage/target, Roth %, employer rate, raise %, inflation mode toggle)
+- `AllocationEventsList.tsx` — editable rows; toggle `is_active`, edit amount, override bucket split via sliders/inputs
+- `AllocationProjectionTable.tsx` — columns: Date · Event · Monthly · Annual · Destination(s) · Counts to plan limits? · Included in projection?
+- `AllocationWarningsBanner.tsx` — Social Security warning, HSA/plan-limit overage callouts
+- `AllocationDisclaimer.tsx` — educational-only disclaimer
 
-## Open question (one)
-Do you want **spouse + pension + legacy + money-rules** all in v1, or should I ship **v1 = Snapshot + Wizard + Retirement Goal + Raise Redirect + Debt→Wealth + Scenarios + Milestones + PDF**, then a v2 PR for Spouse/Pension/HSA/Legacy/Money Rules? V2 split would roughly halve credits for v1 and let you validate the projection engine before layering household complexity.
+Hook: `src/hooks/useRetirementAllocation.ts` — fetches settings + events, runs engine, exposes mutate handlers and realtime refresh.
 
-Reply "all v1" or "split v1/v2" (or give your own split) and I'll implement.
+## Guardrails encoded as engine checks
+
+- HSA: cumulative HSA destinations per plan-year ≤ `hsa_limit[coverage]`; excess auto-spills.
+- Plan limits: sum of `roth_457b + pretax_457b` ≤ 457(b) annual limit; same for TDA (403(b) 402(g)).
+- Employer contribution: stored separately; never added to employee event totals — surfaced as a read-only line "Employer adds ~$X/mo (not editable here)".
+- $888 debt redirect: tagged `debt_redirect`; engine asserts it's not also added as a `step_up` for the same month.
+- Spouse OPERS: excluded from allocation engine entirely; rendered as info-only chip "Household income protection — not a liquid asset".
+- Social Security event: forced to `taxable` by default; warning banner shown; optional "cash-flow replacement" toggle that re-routes to Roth 457(b) up to remaining 402(g) headroom.
+
+## Projection integration
+
+- `includedInProjection` toggle per event writes into `user_allocation.included` flag.
+- Existing `ProjectionCharts` reads a new selector `useActiveAllocationContributions()` that adds the active events to the monthly contribution stream — future-dollar by default, today's-dollar when `inflation_mode = today` (discounts by raise_pct).
+- No change to current Snapshot projection math when zero events are active — purely additive.
+
+## Out of scope (call out, don't build)
+
+- Editing the seeded Montgomery baseline numbers (those come from existing Snapshot inputs).
+- Backdoor Roth, Mega Backdoor, after-tax 401(a), QCDs — not in spec.
+- Spouse pension modeling beyond exclusion.
+
+## File summary
+
+New (8):
+- `supabase/migrations/<ts>_retirement_allocation.sql`
+- `src/lib/retirement/allocationEngine.ts`
+- `src/lib/retirement/planLimits.ts`
+- `src/hooks/useRetirementAllocation.ts`
+- `src/components/investment/AllocationRulesSection.tsx`
+- `src/components/investment/allocation/AllocationSettingsPanel.tsx`
+- `src/components/investment/allocation/AllocationEventsList.tsx`
+- `src/components/investment/allocation/AllocationProjectionTable.tsx`
+
+Edited (2):
+- `src/pages/InvestmentPlanning.tsx` — mount `AllocationRulesSection` in Snapshot tab
+- `src/components/investment/ProjectionCharts.tsx` — read allocation contributions into projection stream
+
+## Confirmations before I build
+
+1. Mount on **Snapshot tab** (collapsed by default) — OK, or do you want it as its own tab?
+2. **Seed Montgomery's 8 events** on first load for any household with no events — OK, or only for your account?
+3. Plan-limit constants: I'll hardcode 2025 IRS values + 2% COLA forward. OK?
+
+Reply "go" (with answers to the 3 above if non-default) and I'll switch to build mode.
