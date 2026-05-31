@@ -2922,6 +2922,111 @@ export type Database = {
           },
         ]
       }
+      retirement_allocation_events: {
+        Row: {
+          created_at: string
+          default_allocation: Json
+          deleted_at: string | null
+          event_date: string
+          event_label: string
+          event_type: string
+          household_id: string
+          id: string
+          is_active: boolean
+          monthly_amount: number | null
+          notes: string | null
+          updated_at: string
+          user_allocation: Json | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          default_allocation?: Json
+          deleted_at?: string | null
+          event_date: string
+          event_label: string
+          event_type: string
+          household_id: string
+          id?: string
+          is_active?: boolean
+          monthly_amount?: number | null
+          notes?: string | null
+          updated_at?: string
+          user_allocation?: Json | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          default_allocation?: Json
+          deleted_at?: string | null
+          event_date?: string
+          event_label?: string
+          event_type?: string
+          household_id?: string
+          id?: string
+          is_active?: boolean
+          monthly_amount?: number | null
+          notes?: string | null
+          updated_at?: string
+          user_allocation?: Json | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      retirement_allocation_settings: {
+        Row: {
+          annual_raise_pct: number
+          created_at: string
+          current_ee_contribution: number
+          current_er_contribution: number
+          current_monthly_salary: number
+          employer_contribution_rate: number
+          household_id: string
+          hsa_coverage: string
+          hsa_eligible: boolean
+          hsa_max_target: number
+          id: string
+          inflation_mode: string
+          roth_pct_default: number
+          ss_age70_estimate: number
+          updated_at: string
+        }
+        Insert: {
+          annual_raise_pct?: number
+          created_at?: string
+          current_ee_contribution?: number
+          current_er_contribution?: number
+          current_monthly_salary?: number
+          employer_contribution_rate?: number
+          household_id: string
+          hsa_coverage?: string
+          hsa_eligible?: boolean
+          hsa_max_target?: number
+          id?: string
+          inflation_mode?: string
+          roth_pct_default?: number
+          ss_age70_estimate?: number
+          updated_at?: string
+        }
+        Update: {
+          annual_raise_pct?: number
+          created_at?: string
+          current_ee_contribution?: number
+          current_er_contribution?: number
+          current_monthly_salary?: number
+          employer_contribution_rate?: number
+          household_id?: string
+          hsa_coverage?: string
+          hsa_eligible?: boolean
+          hsa_max_target?: number
+          id?: string
+          inflation_mode?: string
+          roth_pct_default?: number
+          ss_age70_estimate?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       roadmap_progress: {
         Row: {
           completed_at: string | null

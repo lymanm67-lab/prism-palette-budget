@@ -26,6 +26,7 @@ import { MilestoneTracker } from '@/components/investment/MilestoneTracker';
 import { ProjectionCharts } from '@/components/investment/ProjectionCharts';
 import { DisclaimerBlock } from '@/components/investment/DisclaimerBlock';
 import { CollapsibleSection } from '@/components/investment/CollapsibleSection';
+import { AllocationRulesSection } from '@/components/investment/AllocationRulesSection';
 import { SpouseHouseholdPanel } from '@/components/investment/SpouseHouseholdPanel';
 import { PensionPlanner } from '@/components/investment/PensionPlanner';
 import { HSAPlanner } from '@/components/investment/HSAPlanner';
@@ -274,6 +275,9 @@ export default function InvestmentPlanning() {
           )}
           <CollapsibleSection title="Today's vs future dollars">
             <DollarModeCard plan={plan ?? null} />
+          </CollapsibleSection>
+          <CollapsibleSection title="Retirement allocation rules">
+            <AllocationRulesSection />
           </CollapsibleSection>
           <CollapsibleSection title="Projection diagnostic">
             <ProjectionDiagnostic plan={plan ?? null} />
