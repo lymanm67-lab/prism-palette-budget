@@ -44,24 +44,21 @@ const NAV_SECTIONS: NavSection[] = [
       { to: '/accounts', icon: Landmark, label: 'Accounts', color: 'text-prism-sky', essential: true },
       { to: '/transactions', icon: ArrowLeftRight, label: 'Transactions', color: 'text-prism-orange', essential: true },
       { to: '/categories', icon: Tags, label: 'Categories', color: 'text-prism-lime' },
-      { to: '/recurring', icon: RepeatIcon, label: 'Recurring', color: 'text-prism-teal', essential: true },
       { to: '/reconciliation', icon: FileSearch, label: 'Reconciliation', color: 'text-prism-violet' },
     ],
   },
   {
     label: 'Plan & Budget',
     items: [
-      { to: '/spending-trends', icon: TrendingUp, label: 'Spending Trends', color: 'text-prism-lime' },
       { to: '/budgets', icon: PiggyBank, label: 'Budgets', color: 'text-prism-amber', essential: true },
       { to: '/cash-flow', icon: Wallet, label: 'Cash Flow', color: 'text-prism-teal' },
       { to: '/forecast', icon: LineChart, label: 'Forecast', color: 'text-prism-sky' },
-      { to: '/calculators', icon: Calculator, label: 'Calculators', color: 'text-prism-indigo' },
     ],
   },
   {
     label: 'Save & Optimize',
     items: [
-      { to: '/subscriptions', icon: CreditCard, label: 'Subscriptions', color: 'text-prism-violet' },
+      { to: '/subscriptions', icon: CreditCard, label: 'Subscriptions & Recurring', color: 'text-prism-violet', essential: true },
       { to: '/bill-negotiation', icon: Scissors, label: 'Bill Negotiation', color: 'text-prism-rose' },
       { to: '/debt-payoff', icon: TrendingDown, label: 'Debt Payoff', color: 'text-prism-rose' },
     ],
@@ -73,7 +70,6 @@ const NAV_SECTIONS: NavSection[] = [
       { to: '/goals', icon: Target, label: 'Goals', color: 'text-prism-lime', essential: true },
       { to: '/investments', icon: TrendingUp, label: 'Investment Holdings', color: 'text-prism-indigo' },
       { to: '/planning/investments', icon: Sparkles, label: 'Investment Planning', color: 'text-prism-amber' },
-      { to: '/crossover-tracker', icon: Target, label: 'Crossover Tracker', color: 'text-prism-lime' },
       { to: '/home-buying', icon: Home, label: 'Home Buying', color: 'text-prism-amber' },
     ],
   },
@@ -81,6 +77,7 @@ const NAV_SECTIONS: NavSection[] = [
     label: 'Insights',
     items: [
       { to: '/reports', icon: BarChart3, label: 'Reports', color: 'text-prism-orange', essential: true },
+      { to: '/spending-trends', icon: TrendingUp, label: 'Spending Trends', color: 'text-prism-lime' },
       { to: '/tax-assistant', icon: Bot, label: 'Tax Assistant', color: 'text-prism-indigo' },
       { to: '/year-in-review', icon: Sparkles, label: 'Year in Review', color: 'text-prism-amber' },
     ],
