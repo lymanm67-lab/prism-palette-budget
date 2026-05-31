@@ -411,3 +411,18 @@ export function MixedReturnsScenario({ plan }: Props) {
     </Card>
   );
 }
+
+function StressStat({ label, value, tone }: { label: string; value: string; tone: 'good' | 'neutral' | 'warn' }) {
+  const toneClass =
+    tone === 'good'
+      ? 'border-emerald-500/30 bg-emerald-500/10'
+      : tone === 'warn'
+      ? 'border-rose-500/30 bg-rose-500/10'
+      : 'border-border/50 bg-background';
+  return (
+    <div className={cn('rounded-md border px-3 py-2', toneClass)}>
+      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</p>
+      <p className="text-sm font-semibold tabular-nums mt-0.5">{value}</p>
+    </div>
+  );
+}
