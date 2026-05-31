@@ -24,6 +24,8 @@ export function ScenarioComparison({ plan }: Props) {
         monthlyEmployeeContribution: plan.monthly_employee_contribution,
         monthlyEmployerContribution: plan.monthly_employer_contribution,
         expectedReturnPct: s.rate,
+        employerMatchPct: plan.employer_match_pct ?? undefined,
+        currentMonthlyIncome: plan.current_monthly_income ?? undefined,
         annualRaisePct: plan.annual_raise_pct,
         raiseRedirectPct: plan.raise_redirect_pct,
         debtPaymentAmount: plan.debt_payment_amount ?? undefined,
