@@ -31,12 +31,13 @@ export async function loadMontgomerySample(householdId: string) {
     ss_invest_pct: 100,
     hsa_balance: 0,
     hsa_monthly_contribution: 116.66,
-    hsa_employer_contribution: 83.33, // ~$1000/yr
+    hsa_employer_contribution: 83.33,
     hsa_invested: true,
     hsa_return_pct: 7,
-    use_future_dollars: false,
+    use_future_dollars: true,
     inflation_pct: 2.5,
-    notes: 'Sample plan — employee contributions: Tax-Deferred $100, IU 457(b) $75, Roth TDA $85, Roth 457(b) $75, HSA $116.66. Default planning range 6–8%.',
+    legacy_goal_name: 'Montgomery Family Legacy Trust',
+    notes: 'Sample plan — employee contributions: Tax-Deferred $100, IU 457(b) $75, Roth TDA $85, Roth 457(b) $75, HSA $116.66. Default planning range 6–10%. First Million target $1M by Jun 2036. $500K life insurance names Montgomery Family Legacy Trust as beneficiary.',
   };
 
   const { data: planRow, error: planErr } = await sb
