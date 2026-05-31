@@ -46,6 +46,13 @@ export interface ProjectionInputs {
 
   /** Optional per-year annual return overrides (in %). Cycles via modulo if shorter than horizon. */
   annualReturnsPct?: number[];
+
+  /** Dated monthly step-ups: each adds `amount`/mo starting at `startDate`. Stacks with everything else. */
+  datedStepUps?: { amount: number; startDate: string }[];
+  /** Annual lump-sum contribution applied every January starting in `startYear`. */
+  annualLumpSum?: { amount: number; startYear: number };
+  /** When true, returns a monthly balance series in `result.monthly`. */
+  includeMonthly?: boolean;
 }
 
 export interface YearPoint {
@@ -67,8 +74,17 @@ export interface YearPoint {
   cumGrowth: number;
 }
 
+export interface MonthlyPoint {
+  month: number; // months from now (1-indexed)
+  date: Date;
+  age: number;
+  balance: number;
+}
+
 export interface ProjectionResult {
   yearly: YearPoint[];
+  /** Populated only when `includeMonthly` input is true. */
+  monthly?: MonthlyPoint[];
   projectedBalance: number;
   projectedHsaBalance: number;
   totalEmployeeContrib: number;
@@ -109,6 +125,14 @@ export function runProjection(inputs: ProjectionInputs): ProjectionResult {
     ? Math.max(0, (inputs.ssClaimingAge - inputs.currentAge) * 12)
     : Infinity;
 
+  const datedStepUpMonths = (inputs.datedStepUps || []).map((s) => ({
+    amount: s.amount,
+    startMonth: monthsFromNow(s.startDate),
+  }));
+  const lumpSum = inputs.annualLumpSum;
+  const nowYear = new Date().getFullYear();
+  const nowMonth = new Date().getMonth(); // 0-indexed
+
   let balance = inputs.currentBalance || 0;
   let hsaBalance = inputs.hsaBalance || 0;
   let salary = inputs.currentMonthlyIncome || 0;
@@ -146,6 +170,9 @@ export function runProjection(inputs: ProjectionInputs): ProjectionResult {
     cumSocialSecurity: 0,
     cumGrowth: 0,
   }];
+
+  const monthlySeries: MonthlyPoint[] = [];
+  const today = new Date();
 
   const hasMixedReturns = Array.isArray(inputs.annualReturnsPct) && inputs.annualReturnsPct.length > 0;
   let currentMonthlyRate = monthlyRate;
@@ -198,7 +225,26 @@ export function runProjection(inputs: ProjectionInputs): ProjectionResult {
       monthly += ssThisMonth;
     }
 
-    // Compound retirement balance
+    // Dated monthly step-ups (e.g. $208 First Million Accelerator, $225 Jan 2027, $500 Jun 2028)
+    let stepUpThisMonth = 0;
+    for (const s of datedStepUpMonths) {
+      if (m >= s.startMonth) stepUpThisMonth += s.amount;
+    }
+    monthly += stepUpThisMonth;
+
+    // Annual lump sum (e.g. $3,000 tax refund every January from 2028+)
+    let lumpThisMonth = 0;
+    if (lumpSum && lumpSum.amount > 0) {
+      // current calendar month index relative to today
+      const monthsFromStart = m + nowMonth; // m=1 means next month
+      const calYear = nowYear + Math.floor(monthsFromStart / 12);
+      const calMonth = monthsFromStart % 12; // 0=Jan
+      if (calMonth === 0 && calYear >= lumpSum.startYear) {
+        lumpThisMonth = lumpSum.amount;
+        monthly += lumpThisMonth;
+      }
+    }
+
     balance = balance * (1 + currentMonthlyRate) + monthly;
     totalEmp += employeeBase;
     totalErp += employerBase;
@@ -206,8 +252,18 @@ export function runProjection(inputs: ProjectionInputs): ProjectionResult {
     cumEmployer += employerBase;
     cumRaiseRedirect += raiseRedirectThisMonth;
     cumDebtRedirect += debtThisMonth;
-    cumAdditional += additionalThisMonth;
+    cumAdditional += additionalThisMonth + stepUpThisMonth + lumpThisMonth;
     cumSS += ssThisMonth;
+
+    if (inputs.includeMonthly) {
+      const d = new Date(today.getFullYear(), today.getMonth() + m, 1);
+      monthlySeries.push({
+        month: m,
+        date: d,
+        age: inputs.currentAge + m / 12,
+        balance,
+      });
+    }
 
     // HSA stream
     const hsaMonthly = (inputs.hsaMonthlyContribution || 0) + (inputs.hsaEmployerContribution || 0);
@@ -279,6 +335,7 @@ export function runProjection(inputs: ProjectionInputs): ProjectionResult {
 
   return {
     yearly,
+    monthly: inputs.includeMonthly ? monthlySeries : undefined,
     projectedBalance,
     projectedHsaBalance,
     totalEmployeeContrib: totalEmp,
