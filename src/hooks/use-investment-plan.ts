@@ -33,6 +33,12 @@ export type InvestmentPlan = {
   hsa_return_pct: number;
   use_future_dollars: boolean;
   inflation_pct: number;
+  legacy_calculation_method: 'total' | 'surplus' | 'percent';
+  legacy_percentage: number;
+  legacy_goal_name: string;
+  spouse_pension_monthly: number;
+  spouse_pension_account_value: number;
+  spouse_deferred_comp_value: number;
   notes: string | null;
   created_at: string;
   updated_at: string;
