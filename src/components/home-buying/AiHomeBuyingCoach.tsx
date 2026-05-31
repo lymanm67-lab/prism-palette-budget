@@ -7,6 +7,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 import { Progress } from '@/components/ui/progress';
 import { Sparkles, Loader2, Bot, ArrowLeft, ArrowRight, CheckCircle2, Printer, Download } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import { renderToStaticMarkup } from 'react-dom/server';
 import remarkGfm from 'remark-gfm';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { supabase } from '@/integrations/supabase/client';
