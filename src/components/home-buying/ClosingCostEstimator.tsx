@@ -9,7 +9,7 @@ import { fmt$ } from '@/lib/home-buying/mortgage-math';
 
 export default function ClosingCostEstimator() {
   const [price, setPrice] = useState(350000);
-  const [state, setState] = useState('FL');
+  const [state, setState] = useState('OH');
   const stateInfo = STATE_DATA[state] ?? STATE_DATA[''];
 
   const breakdown = useMemo(() => {
