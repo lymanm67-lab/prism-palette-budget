@@ -35,7 +35,7 @@ const SubscriptionsHub = lazy(() => import("@/pages/SubscriptionsHub"));
 const GettingStarted = lazy(() => import("@/pages/GettingStarted"));
 const SpendingTrends = lazy(() => import("@/pages/SpendingTrends"));
 const NetWorth = lazy(() => import("@/pages/NetWorth"));
-const Subscriptions = lazy(() => import("@/pages/Subscriptions"));
+
 const Forecast = lazy(() => import("@/pages/Forecast"));
 const YearInReview = lazy(() => import("@/pages/YearInReview"));
 const BillNegotiation = lazy(() => import("@/pages/BillNegotiation"));
@@ -147,8 +147,8 @@ const App = () => (
               <Route path="/debt-payoff" element={<Suspense fallback={<PageLoader />}><DebtPayoff /></Suspense>} />
               <Route path="/investments" element={<Suspense fallback={<PageLoader />}><Investments /></Suspense>} />
               <Route path="/net-worth" element={<Suspense fallback={<PageLoader />}><NetWorth /></Suspense>} />
-              <Route path="/recurring" element={<Suspense fallback={<PageLoader />}><Recurring /></Suspense>} />
-              <Route path="/subscriptions" element={<Suspense fallback={<PageLoader />}><Subscriptions /></Suspense>} />
+              <Route path="/recurring" element={<Navigate to="/subscriptions?tab=recurring" replace />} />
+              <Route path="/subscriptions" element={<Suspense fallback={<PageLoader />}><SubscriptionsHub /></Suspense>} />
               <Route path="/forecast" element={<Suspense fallback={<PageLoader />}><Forecast /></Suspense>} />
               <Route path="/year-in-review" element={<Suspense fallback={<PageLoader />}><YearInReview /></Suspense>} />
               <Route path="/bill-negotiation" element={<Suspense fallback={<PageLoader />}><BillNegotiation /></Suspense>} />
