@@ -1,0 +1,1 @@
+UPDATE public.investment_plans SET current_balance = 175345.69, updated_at = now() WHERE household_id = '22b0f75a-82f2-4b56-85b9-1db72b95da1b';
