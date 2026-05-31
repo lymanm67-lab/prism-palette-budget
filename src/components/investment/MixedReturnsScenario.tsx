@@ -85,6 +85,68 @@ function sequenceForHorizon(cycle: number[], years: number, reverse: boolean): n
   return reverse ? base.slice().reverse() : base;
 }
 
+interface StressResult {
+  p10: number;
+  p50: number;
+  p90: number;
+  pctReachingGoal: number;
+  runs: number;
+  histogram: { bucket: string; count: number; midpoint: number }[];
+}
+
+function shuffle<T>(arr: T[]): T[] {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function runStressTest(
+  plan: InvestmentPlan,
+  baseSequence: number[],
+  horizonYears: number,
+  useFuture: boolean,
+  goal: number,
+  runs = 500,
+): StressResult {
+  const ends: number[] = [];
+  let reached = 0;
+  for (let i = 0; i < runs; i++) {
+    const shuffled = shuffle(baseSequence);
+    const r = runProjection(buildInputs(plan, horizonYears, useFuture, 7, shuffled));
+    ends.push(r.projectedBalance);
+    if (r.projectedBalance >= goal) reached++;
+  }
+  ends.sort((a, b) => a - b);
+  const pick = (q: number) => ends[Math.min(ends.length - 1, Math.floor(q * ends.length))];
+
+  const min = ends[0];
+  const max = ends[ends.length - 1];
+  const buckets = 10;
+  const width = Math.max(1, (max - min) / buckets);
+  const histogram = Array.from({ length: buckets }, (_, i) => {
+    const lo = min + i * width;
+    const hi = i === buckets - 1 ? max + 1 : lo + width;
+    const count = ends.filter((v) => v >= lo && v < hi).length;
+    return {
+      bucket: `$${(lo / 1_000_000).toFixed(1)}M`,
+      count,
+      midpoint: lo + width / 2,
+    };
+  });
+
+  return {
+    p10: pick(0.1),
+    p50: pick(0.5),
+    p90: pick(0.9),
+    pctReachingGoal: (reached / runs) * 100,
+    runs,
+    histogram,
+  };
+}
+
 export function MixedReturnsScenario({ plan }: Props) {
   const [horizon, setHorizon] = useState<'27' | '30'>('30');
   const [preset, setPreset] = useState<PresetKey>('historical');
@@ -92,6 +154,7 @@ export function MixedReturnsScenario({ plan }: Props) {
   const [dollarMode, setDollarMode] = useState<'today' | 'nominal'>(
     plan?.use_future_dollars ? 'nominal' : 'today'
   );
+  const [stressRunId, setStressRunId] = useState(0);
 
   const horizonYears = parseInt(horizon, 10);
   const useFuture = dollarMode === 'nominal';
