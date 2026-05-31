@@ -56,6 +56,8 @@ function buildInputs(plan: any, returnPct: number, useFuture: boolean) {
     hsaReturnPct: plan.hsa_return_pct,
     useFutureDollars: useFuture,
     inflationPct: plan.inflation_pct,
+    datedStepUps: MONTGOMERY_STEP_UPS,
+    annualLumpSum: { amount: 3000, startYear: 2028 },
     __skipSolve: true,
   } as any;
 }
