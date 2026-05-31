@@ -192,6 +192,9 @@ export default function InvestmentPlanning() {
               <h2 className="text-lg font-semibold">Build your investment plan</h2>
               <p className="text-sm text-muted-foreground mt-1">Run the setup wizard to get your projection and scenario comparison.</p>
             </div>
+            <Button onClick={() => setActiveTab('wizard')} size="sm">
+              Start setup wizard
+            </Button>
           </CardContent>
         </Card>
       ) : null}
@@ -199,11 +202,11 @@ export default function InvestmentPlanning() {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className="flex items-center gap-2 flex-wrap rounded-xl border border-border bg-card/40 backdrop-blur p-2">
           <TabsList className="bg-transparent gap-1 p-0 h-auto">
-            <TabsTrigger value="snapshot" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg">
-              <Sparkles className="h-3.5 w-3.5 mr-1.5" /> Snapshot
-            </TabsTrigger>
             <TabsTrigger value="wizard" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg">
               Setup
+            </TabsTrigger>
+            <TabsTrigger value="snapshot" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg">
+              <Sparkles className="h-3.5 w-3.5 mr-1.5" /> Snapshot
             </TabsTrigger>
             <TabsTrigger value="scenarios" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg">
               Scenarios
