@@ -147,69 +147,79 @@ export function SnapshotDashboard({ plan }: Props) {
       </div>
 
       {/* First Million card */}
-      <FirstMillionCard plan={plan} />
+      <CollapsibleSection title="First Million by 10-Year Mark" defaultOpen>
+        <FirstMillionCard plan={plan} />
+      </CollapsibleSection>
 
       {/* Age 85 / 88 scenario table */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Target className="h-5 w-5 text-primary" />
-            Age 85 & Age 88 Projection by Scenario
-          </CardTitle>
-          <p className="text-xs text-muted-foreground mt-1">
-            Computed with all step-ups, $208 accelerator, and $3K annual lump sum. "Ref" = Montgomery target.
-          </p>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="border-b border-border/50 text-muted-foreground">
-                  <th className="text-left py-2 font-medium">Scenario</th>
-                  <th className="text-right py-2 font-medium">Age 85</th>
-                  <th className="text-right py-2 font-medium text-muted-foreground/70">ref 85</th>
-                  <th className="text-right py-2 font-medium">Age 88</th>
-                  <th className="text-right py-2 font-medium text-muted-foreground/70">ref 88</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(sweep ?? []).map((s) => {
-                  const hit85 = s.at85 >= 4_000_000;
-                  return (
-                    <tr key={s.rate} className="border-b border-border/30">
-                      <td className="py-2">
-                        <span className="font-medium">{s.rate}%</span>{' '}
-                        <span className="text-muted-foreground">{s.label}</span>
-                      </td>
-                      <td className={`text-right py-2 tabular-nums font-medium ${hit85 ? 'text-emerald-500' : 'text-amber-500'}`}>
-                        {formatCurrencyFull(s.at85)}
-                      </td>
-                      <td className="text-right py-2 tabular-nums text-muted-foreground/70">
-                        {formatCurrencyFull(s.ref85)}
-                      </td>
-                      <td className="text-right py-2 tabular-nums font-medium">
-                        {formatCurrencyFull(s.at88)}
-                      </td>
-                      <td className="text-right py-2 tabular-nums text-muted-foreground/70">
-                        {formatCurrencyFull(s.ref88)}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-          <p className="text-xs text-muted-foreground mt-3">
-            <strong className="text-foreground">Interpretation:</strong> 6% Conservative is near goal at age 85
-            and clears by age 88. 7% Average clears the $4M goal at age 85. 8% Growth strongly clears it.
-            9% and 10% are upside scenarios — not lifestyle-spending assumptions.
-          </p>
-        </CardContent>
-      </Card>
+      <CollapsibleSection title="Age 85 & Age 88 Projection by Scenario" defaultOpen>
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Target className="h-5 w-5 text-primary" />
+              Age 85 & Age 88 Projection by Scenario
+            </CardTitle>
+            <p className="text-xs text-muted-foreground mt-1">
+              Computed with all step-ups, $208 accelerator, and $3K annual lump sum. "Ref" = Montgomery target.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b border-border/50 text-muted-foreground">
+                    <th className="text-left py-2 font-medium">Scenario</th>
+                    <th className="text-right py-2 font-medium">Age 85</th>
+                    <th className="text-right py-2 font-medium text-muted-foreground/70">ref 85</th>
+                    <th className="text-right py-2 font-medium">Age 88</th>
+                    <th className="text-right py-2 font-medium text-muted-foreground/70">ref 88</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(sweep ?? []).map((s) => {
+                    const hit85 = s.at85 >= 4_000_000;
+                    return (
+                      <tr key={s.rate} className="border-b border-border/30">
+                        <td className="py-2">
+                          <span className="font-medium">{s.rate}%</span>{' '}
+                          <span className="text-muted-foreground">{s.label}</span>
+                        </td>
+                        <td className={`text-right py-2 tabular-nums font-medium ${hit85 ? 'text-emerald-500' : 'text-amber-500'}`}>
+                          {formatCurrencyFull(s.at85)}
+                        </td>
+                        <td className="text-right py-2 tabular-nums text-muted-foreground/70">
+                          {formatCurrencyFull(s.ref85)}
+                        </td>
+                        <td className="text-right py-2 tabular-nums font-medium">
+                          {formatCurrencyFull(s.at88)}
+                        </td>
+                        <td className="text-right py-2 tabular-nums text-muted-foreground/70">
+                          {formatCurrencyFull(s.ref88)}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <p className="text-xs text-muted-foreground mt-3">
+              <strong className="text-foreground">Interpretation:</strong> 6% Conservative is near goal at age 85
+              and clears by age 88. 7% Average clears the $4M goal at age 85. 8% Growth strongly clears it.
+              9% and 10% are upside scenarios — not lifestyle-spending assumptions.
+            </p>
+          </CardContent>
+        </Card>
+      </CollapsibleSection>
 
-      <MillionMilestonesTable plan={plan} />
-      <ContributionTimelineChart />
-      <AllocationPieChart />
+      <CollapsibleSection title="Million-Dollar Milestones" defaultOpen>
+        <MillionMilestonesTable plan={plan} />
+      </CollapsibleSection>
+      <CollapsibleSection title="Contribution Timeline" defaultOpen>
+        <ContributionTimelineChart />
+      </CollapsibleSection>
+      <CollapsibleSection title="Default New-Dollar Allocation" defaultOpen>
+        <AllocationPieChart />
+      </CollapsibleSection>
 
       <DisclaimerBlock variant="short" />
     </div>
