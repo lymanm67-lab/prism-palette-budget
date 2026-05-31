@@ -233,21 +233,43 @@ export default function InvestmentPlanning() {
         )}
 
 
-        <TabsContent value="snapshot" className="mt-4 space-y-4">
+        <TabsContent value="snapshot" className="mt-4 space-y-3">
           <SnapshotDashboard plan={plan ?? null} />
-          <ReturnScenarioComparison
-            plan={plan ?? null}
-            onCreateRules={() => setActiveTab('money-rules')}
-            onReviewLegacy={() => setActiveTab('legacy')}
-          />
-          <DollarModeCard plan={plan ?? null} />
-          <LegacyProtectionCard plan={plan ?? null} />
-          <TrustFundingTracker plan={plan ?? null} />
-          <AssetTagManager plan={plan ?? null} />
-          <MoneyRulesToggles plan={plan ?? null} />
-          <ProjectionDiagnostic plan={plan ?? null} />
-          {projection && <ContributionSourcesChart yearly={projection.yearly} />}
-          {projection && <ProjectionCharts yearly={projection.yearly} target={plan!.target_amount} />}
+          <CollapsibleSection title="Return scenario comparison" defaultOpen>
+            <ReturnScenarioComparison
+              plan={plan ?? null}
+              onCreateRules={() => setActiveTab('money-rules')}
+              onReviewLegacy={() => setActiveTab('legacy')}
+            />
+          </CollapsibleSection>
+          <CollapsibleSection title="Today's vs future dollars">
+            <DollarModeCard plan={plan ?? null} />
+          </CollapsibleSection>
+          <CollapsibleSection title="Legacy protection">
+            <LegacyProtectionCard plan={plan ?? null} />
+          </CollapsibleSection>
+          <CollapsibleSection title="Trust funding tracker">
+            <TrustFundingTracker plan={plan ?? null} />
+          </CollapsibleSection>
+          <CollapsibleSection title="Asset tags">
+            <AssetTagManager plan={plan ?? null} />
+          </CollapsibleSection>
+          <CollapsibleSection title="Money rules">
+            <MoneyRulesToggles plan={plan ?? null} />
+          </CollapsibleSection>
+          <CollapsibleSection title="Projection diagnostic">
+            <ProjectionDiagnostic plan={plan ?? null} />
+          </CollapsibleSection>
+          {projection && (
+            <CollapsibleSection title="Contribution sources">
+              <ContributionSourcesChart yearly={projection.yearly} />
+            </CollapsibleSection>
+          )}
+          {projection && (
+            <CollapsibleSection title="Projection charts">
+              <ProjectionCharts yearly={projection.yearly} target={plan!.target_amount} />
+            </CollapsibleSection>
+          )}
         </TabsContent>
 
         <TabsContent value="wizard" className="mt-4">
