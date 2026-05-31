@@ -31,7 +31,7 @@ const About = lazy(() => import("@/pages/About"));
 const HomeBuyingChecklist = lazy(() => import("@/pages/HomeBuyingChecklist"));
 const CashFlow = lazy(() => import("@/pages/CashFlow"));
 const Investments = lazy(() => import("@/pages/Investments"));
-const Recurring = lazy(() => import("@/pages/Recurring"));
+const SubscriptionsHub = lazy(() => import("@/pages/SubscriptionsHub"));
 const GettingStarted = lazy(() => import("@/pages/GettingStarted"));
 const SpendingTrends = lazy(() => import("@/pages/SpendingTrends"));
 const NetWorth = lazy(() => import("@/pages/NetWorth"));
