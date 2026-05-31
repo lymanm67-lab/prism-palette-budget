@@ -14,6 +14,7 @@ import LoanTypeComparator from '@/components/home-buying/LoanTypeComparator';
 import StateAssistancePicker from '@/components/home-buying/StateAssistancePicker';
 import HomeSearchPanel from '@/components/home-buying/HomeSearchPanel';
 import HomeBuyingChecklistTab from '@/components/home-buying/HomeBuyingChecklistTab';
+import { useHomeBuyingMetrics } from '@/hooks/use-home-buying-metrics';
 
 const HomeBuyingChecklist = () => {
   const { household } = useHousehold();
