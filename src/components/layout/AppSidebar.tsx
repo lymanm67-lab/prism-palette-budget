@@ -16,6 +16,7 @@ import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { useSidebarBadges } from '@/hooks/use-sidebar-badges';
 import type { LucideIcon } from 'lucide-react';
+import ToolsDrawer from '@/components/layout/ToolsDrawer';
 
 type NavMode = 'personal' | 'business' | 'full';
 type SidebarDepth = 'essentials' | 'all';
@@ -240,7 +241,7 @@ const AppSidebar = () => {
   };
 
   const badgeMap: Record<string, number> = {
-    '/recurring': badges.recurring,
+    '/subscriptions': badges.recurring,
     '/transactions': badges.transactions,
     '/budgets': badges.budgets,
   };
@@ -454,6 +455,7 @@ const AppSidebar = () => {
       </nav>
 
       <div className="relative border-t border-sidebar-border p-3 space-y-1">
+        <ToolsDrawer collapsed={collapsed} />
         {/* Sidebar depth toggle */}
         {!collapsed ? (
           <button
