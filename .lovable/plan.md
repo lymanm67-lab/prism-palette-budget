@@ -1,50 +1,42 @@
-## Goal
+## Two additions to Investment Planning
 
-Replace the unrealistic 6/7/8/9/10 cycle in the Mixed Returns scenario with **return patterns that actually match the last 50 years of US markets** — including down years, "lost decade" stretches, and >10% boom years. Keep horizons at 27 and 30 years.
+### 1. Stress Test button in MixedReturnsScenario
 
-## What changes
+Add a "Run Stress Test" button to the existing MixedReturnsScenario card. When clicked, it shuffles the **currently selected preset's annual return sequence** ~500 times, runs `runProjection` on each shuffle for the active horizon (27 or 30 yr), collects the ending `projectedBalance`, and renders:
 
-Convert the single hardcoded cycle into a **preset selector** with 3 historically grounded patterns. User picks one; everything else (chart, CAGR, sequence strip, tiles) updates.
+- **Three percentile pills:** P10 (unlucky), P50 (median), P90 (lucky) ending balances
+- **A "% reaching goal" stat** — share of runs ending ≥ `target_amount`
+- **A small distribution bar chart** (10 buckets) so the spread is visible
 
-### The 3 presets
+Result is purely client-side, no DB writes. Runs in a `useMemo` triggered by a `runId` state so user explicitly clicks to compute (avoids re-running 500 projections on every render). Adds a fresh shuffle each click.
 
-All numbers are nominal S&P 500 total returns (with dividends), rounded to whole percents to keep the UI readable.
+**Educational framing:** Helper text — "Same returns, different order. Spread shows sequence-of-returns risk." Plus the standard not-financial-advice disclaimer (already in the card).
 
-**1. "Historical Average" (default)** — 7-year repeating cycle that geo-means to ~10.5%, the long-run nominal S&P average:
-`[-8, +22, +18, +12, -4, +28, +10]` → CAGR ≈ **10.4%**
-Pattern: 2 down years, 1 modest year, 4 strong years — matches the rough 70/30 up-year ratio.
+**File:** `src/components/investment/MixedReturnsScenario.tsx` only. No engine changes (`runProjection` already accepts `annualReturnsPct: number[]`).
 
-**2. "Realistic Volatile" (heavy sequence-of-returns risk)** — 10-year cycle approximating 2000–2019 (lost decade then recovery):
-`[-9, -12, -22, +29, +11, +5, +16, +5, -37, +26]` → CAGR ≈ **+1.2%** for those 10, but cycled over 27–30 yrs blends in recoveries.
-Pattern: lets the user see what happens if their retirement *starts* in a bad decade.
+---
 
-**3. "Strong Bull" (1980s–1990s style)** — 10-year cycle of the actual 1989–1998 sequence:
-`[+31, -3, +30, +7, +10, +1, +37, +23, +33, +28]` → CAGR ≈ **+19%**
-Pattern: shows the optimistic ceiling so the user sees they shouldn't bet on this.
+### 2. Wealth Milestones chart ($1M–$6M crossing dates)
 
-### Sequence-of-returns toggle
+New component **`WealthMilestonesChart.tsx`** mounted on the Milestones tab next to `MilestoneTracker`.
 
-Add a small **"Sequence" toggle**: `Cycle from year 1` vs `Reverse (bad years late)`. Same returns, opposite order. Demonstrates that ending in bad years hurts way more than starting in them when contributing — and the reverse when withdrawing. Educationally this is the single most important concept in retirement math and is currently absent.
+Runs a single projection at the plan's `expected_return_pct` and walks the **monthly balance series** to find the first month the balance crosses each threshold: **$1M, $2M, $3M, $4M, $5M, $6M** (today's dollars by default, with a Future $ toggle).
 
-### UI changes (single card, no new routes)
+Renders:
+- **Horizontal bar/timeline** — one row per milestone, bar length = years from today to crossing date, label shows age + calendar year (e.g. "$3M → Age 54, Year 2042")
+- Crossed-already milestones get a "Achieved" badge
+- Milestones not reached by retirement age show "Not reached at current pace" in muted text
+- Small `+/- return sensitivity` line: "At 6% you'd hit $1M at age X; at 10% age Y"
 
-In `src/components/investment/MixedReturnsScenario.tsx`:
+**Requires one engine tweak:** `runProjection` currently returns only end-state values. Need it to optionally return the monthly balance series so we can scan for threshold crossings. Add an opt-in `returnSeries?: boolean` input that, when true, includes `monthlySeries: { age, balance }[]` in the result. No behavior change when omitted. ~10 lines added to `projection.ts`.
 
-1. **Preset tabs** (replace the implicit cycle): `Historical Avg` | `Volatile` | `Strong Bull`.
-2. **Sequence toggle** next to dollar-mode tabs: `Forward` | `Reverse`.
-3. **Bar chart bars** become: Goal · Flat 7% · Flat 10% · Selected Mixed. (Swap "Flat 8%" for "Flat 10%" since 10% is the real historical benchmark.)
-4. **Sequence strip** already shows year-by-year — keep, but color-code negatives in rose and >15% in emerald so the volatility is visually obvious.
-5. **Headline copy** updates with the preset: "Modeled on the long-run S&P 500 average (~10.5% CAGR)" / "Modeled on the 2000–2019 'lost decade then recovery' sequence" / "Modeled on the 1989–1998 bull market — shown as an optimistic ceiling, not a forecast."
-6. **Disclaimer** expands one line: "Past performance is not indicative of future results. Historical S&P 500 sequences are educational illustrations only."
+**Files:**
+- New: `src/components/investment/WealthMilestonesChart.tsx`
+- Edit: `src/lib/investment/projection.ts` (add optional series output)
+- Edit: `src/pages/InvestmentPlanning.tsx` (mount chart on Milestones tab)
 
-### What stays the same
+---
 
-- `runProjection` already accepts `annualReturnsPct: number[]` — no engine changes needed.
-- Card placement, horizon tabs (27/30), Today's $ / Nominal $ toggle, layout, gradient.
-- `ReturnScenarioComparison` and `ScenarioComparison` cards are untouched.
-
-## Files touched
-
-- Edit: `src/components/investment/MixedReturnsScenario.tsx` (only file)
-
-Scope: **Tiny** (1 file, no schema, no engine changes, all logic local to the component).
+### Out of scope
+- No new DB tables, no Monte Carlo on real assets, no edits to other scenario components.
+- Stress Test reuses the existing Mixed preset cycles — no new preset library.

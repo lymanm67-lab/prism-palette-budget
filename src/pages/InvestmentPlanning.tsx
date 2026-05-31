@@ -24,6 +24,7 @@ import { RaiseRedirectPlanner } from '@/components/investment/RaiseRedirectPlann
 import { DebtToWealthTool } from '@/components/investment/DebtToWealthTool';
 import { ScenarioComparison } from '@/components/investment/ScenarioComparison';
 import { MilestoneTracker } from '@/components/investment/MilestoneTracker';
+import { WealthMilestonesChart } from '@/components/investment/WealthMilestonesChart';
 import { ProjectionCharts } from '@/components/investment/ProjectionCharts';
 import { DisclaimerBlock } from '@/components/investment/DisclaimerBlock';
 import { CollapsibleSection } from '@/components/investment/CollapsibleSection';
@@ -336,7 +337,8 @@ export default function InvestmentPlanning() {
           <ScenarioComparison plan={plan ?? null} />
         </TabsContent>
 
-        <TabsContent value="milestones" className="mt-4">
+        <TabsContent value="milestones" className="mt-4 space-y-4">
+          <WealthMilestonesChart />
           <MilestoneTracker />
         </TabsContent>
       </Tabs>

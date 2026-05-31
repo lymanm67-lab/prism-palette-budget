@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Activity, Shuffle } from 'lucide-react';
+import { Activity, Shuffle, FlaskConical } from 'lucide-react';
 import { InvestmentPlan } from '@/hooks/use-investment-plan';
 import { runProjection, formatCurrencyFull, ProjectionInputs } from '@/lib/investment/projection';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell, ReferenceLine } from 'recharts';
@@ -84,6 +85,68 @@ function sequenceForHorizon(cycle: number[], years: number, reverse: boolean): n
   return reverse ? base.slice().reverse() : base;
 }
 
+interface StressResult {
+  p10: number;
+  p50: number;
+  p90: number;
+  pctReachingGoal: number;
+  runs: number;
+  histogram: { bucket: string; count: number; midpoint: number }[];
+}
+
+function shuffle<T>(arr: T[]): T[] {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function runStressTest(
+  plan: InvestmentPlan,
+  baseSequence: number[],
+  horizonYears: number,
+  useFuture: boolean,
+  goal: number,
+  runs = 500,
+): StressResult {
+  const ends: number[] = [];
+  let reached = 0;
+  for (let i = 0; i < runs; i++) {
+    const shuffled = shuffle(baseSequence);
+    const r = runProjection(buildInputs(plan, horizonYears, useFuture, 7, shuffled));
+    ends.push(r.projectedBalance);
+    if (r.projectedBalance >= goal) reached++;
+  }
+  ends.sort((a, b) => a - b);
+  const pick = (q: number) => ends[Math.min(ends.length - 1, Math.floor(q * ends.length))];
+
+  const min = ends[0];
+  const max = ends[ends.length - 1];
+  const buckets = 10;
+  const width = Math.max(1, (max - min) / buckets);
+  const histogram = Array.from({ length: buckets }, (_, i) => {
+    const lo = min + i * width;
+    const hi = i === buckets - 1 ? max + 1 : lo + width;
+    const count = ends.filter((v) => v >= lo && v < hi).length;
+    return {
+      bucket: `$${(lo / 1_000_000).toFixed(1)}M`,
+      count,
+      midpoint: lo + width / 2,
+    };
+  });
+
+  return {
+    p10: pick(0.1),
+    p50: pick(0.5),
+    p90: pick(0.9),
+    pctReachingGoal: (reached / runs) * 100,
+    runs,
+    histogram,
+  };
+}
+
 export function MixedReturnsScenario({ plan }: Props) {
   const [horizon, setHorizon] = useState<'27' | '30'>('30');
   const [preset, setPreset] = useState<PresetKey>('historical');
@@ -91,6 +154,7 @@ export function MixedReturnsScenario({ plan }: Props) {
   const [dollarMode, setDollarMode] = useState<'today' | 'nominal'>(
     plan?.use_future_dollars ? 'nominal' : 'today'
   );
+  const [stressRunId, setStressRunId] = useState(0);
 
   const horizonYears = parseInt(horizon, 10);
   const useFuture = dollarMode === 'nominal';
@@ -101,6 +165,13 @@ export function MixedReturnsScenario({ plan }: Props) {
     [presetCfg, horizonYears, direction],
   );
   const cagr = useMemo(() => geometricMean(sequence), [sequence]);
+
+  const stress = useMemo<StressResult | null>(() => {
+    if (!stressRunId || !plan || !plan.current_age) return null;
+    const goal = plan.target_amount || 4_000_000;
+    return runStressTest(plan, sequence, horizonYears, useFuture, goal, 500);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stressRunId]);
 
   if (!plan || !plan.current_age) return null;
 
@@ -253,6 +324,78 @@ export function MixedReturnsScenario({ plan }: Props) {
           </div>
         </div>
 
+        <div className="rounded-lg border bg-card/60 p-4 space-y-3">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <FlaskConical className="h-4 w-4 text-primary" />
+              <p className="text-sm font-medium">Sequence-of-returns stress test</p>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setStressRunId((id) => id + 1)}
+              className="h-8 text-xs"
+            >
+              <Shuffle className="h-3 w-3 mr-1.5" />
+              {stress ? 'Re-run' : 'Run'} stress test (500 shuffles)
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Same returns, different order. The spread shows sequence-of-returns risk for{' '}
+            <strong>{presetCfg.label}</strong> over {horizonYears} years.
+          </p>
+
+          {stress ? (
+            <>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                <StressStat label="P10 (unlucky)" value={formatCurrencyFull(stress.p10)} tone="warn" />
+                <StressStat label="P50 (median)" value={formatCurrencyFull(stress.p50)} tone="neutral" />
+                <StressStat label="P90 (lucky)" value={formatCurrencyFull(stress.p90)} tone="good" />
+                <StressStat
+                  label="Reaching goal"
+                  value={`${stress.pctReachingGoal.toFixed(0)}%`}
+                  tone={stress.pctReachingGoal >= 80 ? 'good' : stress.pctReachingGoal >= 50 ? 'neutral' : 'warn'}
+                />
+              </div>
+              <div className="h-32 w-full">
+                <ResponsiveContainer>
+                  <BarChart data={stress.histogram} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
+                    <XAxis dataKey="bucket" stroke="hsl(var(--muted-foreground))" fontSize={9} interval={1} />
+                    <YAxis stroke="hsl(var(--muted-foreground))" fontSize={10} allowDecimals={false} />
+                    <Tooltip
+                      cursor={{ fill: 'hsl(var(--muted) / 0.3)' }}
+                      contentStyle={{
+                        background: 'hsl(var(--popover))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: 8,
+                        fontSize: 11,
+                      }}
+                      formatter={(v: number) => [`${v} runs`, 'Count']}
+                    />
+                    <ReferenceLine
+                      x={stress.histogram.find((h) => h.midpoint >= (plan.target_amount || 4_000_000))?.bucket}
+                      stroke="hsl(var(--primary))"
+                      strokeDasharray="3 3"
+                      label={{ value: 'Goal', fill: 'hsl(var(--primary))', fontSize: 10, position: 'top' }}
+                    />
+                    <Bar dataKey="count" radius={[3, 3, 0, 0]} fill="hsl(var(--prism-teal, var(--primary)))" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              <p className="text-[10px] text-muted-foreground">
+                Distribution of {stress.runs} runs. Wider spread = order matters more. P10 means 10% of runs ended below
+                this value — that's your "bad luck" outcome.
+              </p>
+            </>
+          ) : (
+            <p className="text-xs text-muted-foreground/80 italic">
+              Click "Run stress test" to shuffle the return sequence 500 times and see the spread of outcomes.
+            </p>
+          )}
+        </div>
+
+
+
         <div className="rounded-lg bg-muted/40 p-4 text-sm space-y-2">
           <p>
             Real markets don't return a flat rate. These presets are drawn from actual S&P 500 nominal total-return
@@ -266,5 +409,20 @@ export function MixedReturnsScenario({ plan }: Props) {
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function StressStat({ label, value, tone }: { label: string; value: string; tone: 'good' | 'neutral' | 'warn' }) {
+  const toneClass =
+    tone === 'good'
+      ? 'border-emerald-500/30 bg-emerald-500/10'
+      : tone === 'warn'
+      ? 'border-rose-500/30 bg-rose-500/10'
+      : 'border-border/50 bg-background';
+  return (
+    <div className={cn('rounded-md border px-3 py-2', toneClass)}>
+      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</p>
+      <p className="text-sm font-semibold tabular-nums mt-0.5">{value}</p>
+    </div>
   );
 }
