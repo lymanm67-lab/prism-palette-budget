@@ -13,6 +13,7 @@ import { ReturnScenarioComparison } from '@/components/investment/ReturnScenario
 import { ProjectionDiagnostic } from '@/components/investment/ProjectionDiagnostic';
 import { ContributionSourcesChart } from '@/components/investment/ContributionSourcesChart';
 import { MoneyRulesToggles } from '@/components/investment/MoneyRulesToggles';
+import { DollarModeCard } from '@/components/investment/DollarModeCard';
 import { InvestmentWizard } from '@/components/investment/InvestmentWizard';
 import { RaiseRedirectPlanner } from '@/components/investment/RaiseRedirectPlanner';
 import { DebtToWealthTool } from '@/components/investment/DebtToWealthTool';
@@ -235,6 +236,7 @@ export default function InvestmentPlanning() {
             onCreateRules={() => setActiveTab('money-rules')}
             onReviewLegacy={() => setActiveTab('legacy')}
           />
+          <DollarModeCard plan={plan ?? null} />
           <MoneyRulesToggles plan={plan ?? null} />
           <ProjectionDiagnostic plan={plan ?? null} />
           {projection && <ContributionSourcesChart yearly={projection.yearly} />}
