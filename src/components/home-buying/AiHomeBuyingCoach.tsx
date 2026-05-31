@@ -378,7 +378,7 @@ ${renderToStaticMarkup(<ReactMarkdown remarkPlugins={[remarkGfm]}>{report}</Reac
   if (report) {
     return (
       <Card className="prism-card-shine border-prism-teal/30">
-        <CardHeader className="pb-3 flex flex-row items-center justify-between flex-wrap gap-2">
+        <CardHeader className="pb-4 flex flex-row items-center justify-between flex-wrap gap-2 border-b border-prism-teal/20">
           <CardTitle className="font-display flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-prism-teal" /> Your Personalized Report
           </CardTitle>
@@ -392,9 +392,41 @@ ${renderToStaticMarkup(<ReactMarkdown remarkPlugins={[remarkGfm]}>{report}</Reac
             <Button variant="outline" size="sm" onClick={restart}>Start Over</Button>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="prose prose-sm max-w-none dark:prose-invert prose-table:text-xs prose-th:font-semibold prose-headings:font-display">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{report}</ReactMarkdown>
+        <CardContent className="pt-6 px-6 sm:px-8">
+          <div className="max-w-none text-[15px] leading-relaxed
+            [&_h1]:font-display [&_h1]:text-2xl [&_h1]:font-semibold [&_h1]:text-prism-teal [&_h1]:mt-8 [&_h1]:mb-3 [&_h1]:pb-2 [&_h1]:border-b [&_h1]:border-prism-teal/20 [&_h1:first-child]:mt-0
+            [&_h2]:font-display [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-prism-teal [&_h2]:mt-8 [&_h2]:mb-3 [&_h2]:flex [&_h2]:items-center [&_h2]:gap-2 [&_h2]:before:content-[''] [&_h2]:before:w-1 [&_h2]:before:h-5 [&_h2]:before:bg-prism-teal [&_h2]:before:rounded-full [&_h2:first-child]:mt-0
+            [&_h3]:font-display [&_h3]:text-base [&_h3]:font-semibold [&_h3]:text-foreground [&_h3]:mt-6 [&_h3]:mb-2
+            [&_p]:my-3 [&_p]:text-foreground/90
+            [&_strong]:text-foreground [&_strong]:font-semibold
+            [&_ul]:my-3 [&_ul]:space-y-1.5 [&_ul]:pl-5 [&_ul]:list-disc [&_ul]:marker:text-prism-teal
+            [&_ol]:my-3 [&_ol]:space-y-1.5 [&_ol]:pl-5 [&_ol]:list-decimal [&_ol]:marker:text-prism-teal
+            [&_li]:pl-1
+            [&_a]:text-prism-teal [&_a]:underline [&_a]:underline-offset-2 hover:[&_a]:text-prism-teal/80
+            [&_blockquote]:border-l-4 [&_blockquote]:border-prism-teal/40 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-muted-foreground [&_blockquote]:my-4
+            [&_hr]:my-8 [&_hr]:border-border/50">
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={{
+                table: ({ node, ...props }) => (
+                  <div className="my-5 overflow-x-auto rounded-lg border border-border/60 bg-card/50">
+                    <table className="w-full text-sm border-collapse" {...props} />
+                  </div>
+                ),
+                thead: ({ node, ...props }) => (
+                  <thead className="bg-prism-teal/10 border-b border-prism-teal/30" {...props} />
+                ),
+                tr: ({ node, ...props }) => (
+                  <tr className="border-b border-border/40 last:border-0 hover:bg-muted/30 transition-colors" {...props} />
+                ),
+                th: ({ node, ...props }) => (
+                  <th className="text-left font-semibold text-foreground px-4 py-3 text-xs uppercase tracking-wide" {...props} />
+                ),
+                td: ({ node, ...props }) => (
+                  <td className="px-4 py-3 text-foreground/90 align-top" {...props} />
+                ),
+              }}
+            >{report}</ReactMarkdown>
           </div>
         </CardContent>
       </Card>
