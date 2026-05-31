@@ -179,6 +179,13 @@ const Goals = () => {
         </Dialog>
       </div>
 
+      <RelatedToolsBar
+        tools={[
+          { to: '/planning/investments', icon: Sparkles, label: 'Investment Planning', description: 'Long-term retirement & wealth milestones' },
+          { to: '/debt-payoff', icon: TrendingDown, label: 'Debt Payoff', description: 'Track debt elimination targets' },
+        ]}
+      />
+
       {(!goals || goals.length === 0) ? (
         <Card className="prism-card-shine border-border/50">
           <CardContent className="flex flex-col items-center justify-center p-12 text-center">
