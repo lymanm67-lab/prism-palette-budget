@@ -9,6 +9,7 @@ import BenefitsSection from '@/components/landing/BenefitsSection';
 import GuardrailSystemSection from '@/components/landing/GuardrailSystemSection';
 import FeaturesSection from '@/components/landing/FeaturesSection';
 import ComparisonSection from '@/components/landing/ComparisonSection';
+import AdvisorComparisonSection from '@/components/landing/AdvisorComparisonSection';
 import TestimonialsSection from '@/components/landing/TestimonialsSection';
 import PrePricingBridge from '@/components/landing/PrePricingBridge';
 import PricingSection from '@/components/landing/PricingSection';
