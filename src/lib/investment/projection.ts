@@ -53,6 +53,15 @@ export interface YearPoint {
   totalEmployeeContrib: number;
   totalEmployerContrib: number;
   totalGrowth: number;
+  // Cumulative contribution sources (for stacked chart)
+  cumStarting: number;
+  cumEmployee: number;
+  cumEmployer: number;
+  cumRaiseRedirect: number;
+  cumDebtRedirect: number;
+  cumAdditional: number;
+  cumSocialSecurity: number;
+  cumGrowth: number;
 }
 
 export interface ProjectionResult {
