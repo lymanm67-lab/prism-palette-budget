@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Target, TrendingUp, Sparkles } from 'lucide-react';
 import { InvestmentPlan } from '@/hooks/use-investment-plan';
 import { runProjection, formatCurrencyFull } from '@/lib/investment/projection';
@@ -12,7 +14,7 @@ interface Props {
   onReviewLegacy?: () => void;
 }
 
-function buildInputs(plan: InvestmentPlan, returnPct: number) {
+function buildInputs(plan: InvestmentPlan, returnPct: number, useFutureDollars: boolean) {
   return {
     currentAge: plan.current_age,
     retirementAge: plan.retirement_age,
@@ -37,17 +39,21 @@ function buildInputs(plan: InvestmentPlan, returnPct: number) {
     hsaEmployerContribution: plan.hsa_employer_contribution,
     hsaInvested: plan.hsa_invested,
     hsaReturnPct: plan.hsa_return_pct,
-    useFutureDollars: plan.use_future_dollars,
+    useFutureDollars,
     inflationPct: plan.inflation_pct,
   };
 }
 
 export function ReturnScenarioComparison({ plan, onCreateRules, onReviewLegacy }: Props) {
+  const [dollarMode, setDollarMode] = useState<'today' | 'nominal'>(
+    plan?.use_future_dollars ? 'nominal' : 'today'
+  );
   if (!plan || !plan.current_age || !plan.retirement_age) return null;
 
+  const useFuture = dollarMode === 'nominal';
   const goal = plan.target_amount || 4_000_000;
-  const p7 = runProjection(buildInputs(plan, 7)).projectedBalance;
-  const p8 = runProjection(buildInputs(plan, 8)).projectedBalance;
+  const p7 = runProjection(buildInputs(plan, 7, useFuture)).projectedBalance;
+  const p8 = runProjection(buildInputs(plan, 8, useFuture)).projectedBalance;
 
   const surplus7 = p7 - goal;
   const surplus8 = p8 - goal;
