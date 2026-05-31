@@ -245,9 +245,52 @@ const STEPS: StepDef[] = [
             <SelectContent><SelectItem value="yes">Yes (primary residence)</SelectItem><SelectItem value="no">No (investment)</SelectItem></SelectContent>
           </Select>
         </div>
-        <div className="md:col-span-2">
+        <div className="md:col-span-2 space-y-2">
           <Label className="text-xs">Family / lifestyle plans (optional)</Label>
-          <Input value={a.familyPlans} onChange={(e) => u('familyPlans', e.target.value)} placeholder="e.g., planning kids in 2-3 yrs, work from home, need a yard" />
+          <textarea
+            value={a.familyPlans}
+            onChange={(e) => u('familyPlans', e.target.value)}
+            placeholder="Tell us what matters: family size & changes, work-from-home, pets, schools, commute, accessibility, hobbies, yard/space needs…"
+            className="flex min-h-[90px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          />
+          <div className="rounded-md border border-prism-teal/20 bg-prism-teal/5 p-2.5 space-y-2">
+            <p className="text-[11px] font-semibold text-prism-teal flex items-center gap-1">
+              <Sparkles className="h-3 w-3" /> Quick-add lifestyle factors (tap to append)
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                'Planning kids in 2–3 years — need 3+ bedrooms',
+                'Already have kids — top-rated school district is critical',
+                'Work from home full-time — need a dedicated office',
+                'Both spouses WFH — need 2 offices / quiet spaces',
+                'Have pets — need fenced yard',
+                'Aging parent may move in — single-story or in-law suite',
+                'Short commute (<30 min) matters more than size',
+                'Want walkability to shops/parks',
+                'Plan to entertain — open kitchen / outdoor space',
+                'Prefer turnkey — no major renovations',
+                'Open to fixer-upper for the right price',
+                'Need garage / workshop / storage',
+                'Low-maintenance lifestyle — HOA is fine',
+                'Want acreage / privacy / rural feel',
+              ].map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => {
+                    const current = a.familyPlans.trim();
+                    u('familyPlans', current ? `${current}; ${s}` : s);
+                  }}
+                  className="text-[11px] px-2 py-1 rounded-full bg-background border border-border hover:border-prism-teal hover:bg-prism-teal/10 transition-colors"
+                >
+                  + {s}
+                </button>
+              ))}
+            </div>
+            <p className="text-[10px] text-muted-foreground/80 pt-1">
+              <strong>Prompt ideas:</strong> mention <em>timeline for life changes</em> (kids, marriage, retirement), <em>must-haves vs nice-to-haves</em>, <em>deal-breakers</em> (e.g., HOA, stairs, busy road), and <em>5-year plan</em> (stay vs upgrade). The more specific, the better your tailored report.
+            </p>
+          </div>
         </div>
       </div>
     ),
