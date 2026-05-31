@@ -116,6 +116,16 @@ export function runProjection(inputs: ProjectionInputs): ProjectionResult {
   let totalErp = 0;
   let totalContribInput = inputs.currentBalance || 0;
 
+  const startBalance = inputs.currentBalance || 0;
+  let cumEmployee = 0;
+  let cumEmployer = 0;
+  let cumRaiseRedirect = 0;
+  let cumDebtRedirect = 0;
+  let cumAdditional = 0;
+  let cumSS = 0;
+  // Track raise-redirect portion separately from base employee contribution
+  const employeeBaseStart = inputs.monthlyEmployeeContribution || 0;
+
   const yearly: YearPoint[] = [{
     age: inputs.currentAge,
     year: new Date().getFullYear(),
@@ -124,6 +134,14 @@ export function runProjection(inputs: ProjectionInputs): ProjectionResult {
     totalEmployeeContrib: 0,
     totalEmployerContrib: 0,
     totalGrowth: 0,
+    cumStarting: startBalance,
+    cumEmployee: 0,
+    cumEmployer: 0,
+    cumRaiseRedirect: 0,
+    cumDebtRedirect: 0,
+    cumAdditional: 0,
+    cumSocialSecurity: 0,
+    cumGrowth: 0,
   }];
 
   for (let m = 1; m <= totalMonths; m++) {
@@ -142,27 +160,42 @@ export function runProjection(inputs: ProjectionInputs): ProjectionResult {
     }
 
     let monthly = employeeBase + employerBase;
+    // Allocate the employee piece into base vs raise-redirect buckets
+    const raiseRedirectThisMonth = Math.max(0, employeeBase - employeeBaseStart);
+    const baseEmployeeThisMonth = employeeBase - raiseRedirectThisMonth;
 
+    let debtThisMonth = 0;
     if (debtPaymentMonth >= 0 && m >= debtPaymentMonth && inputs.debtPaymentAmount) {
-      monthly += inputs.debtPaymentAmount;
+      debtThisMonth = inputs.debtPaymentAmount;
+      monthly += debtThisMonth;
     }
 
+    let additionalThisMonth = 0;
     if (m >= additionalMonth && inputs.additionalMonthlyAmount) {
-      monthly += inputs.additionalMonthlyAmount;
+      additionalThisMonth = inputs.additionalMonthlyAmount;
+      monthly += additionalThisMonth;
     }
 
+    let ssThisMonth = 0;
     if (
       inputs.ssInvestWhileWorking &&
       inputs.ssMonthlyEstimate &&
       m >= ssClaimMonth
     ) {
-      monthly += (inputs.ssMonthlyEstimate || 0) * ((inputs.ssInvestPct || 0) / 100);
+      ssThisMonth = (inputs.ssMonthlyEstimate || 0) * ((inputs.ssInvestPct || 0) / 100);
+      monthly += ssThisMonth;
     }
 
     // Compound retirement balance
     balance = balance * (1 + monthlyRate) + monthly;
     totalEmp += employeeBase;
     totalErp += employerBase;
+    cumEmployee += baseEmployeeThisMonth;
+    cumEmployer += employerBase;
+    cumRaiseRedirect += raiseRedirectThisMonth;
+    cumDebtRedirect += debtThisMonth;
+    cumAdditional += additionalThisMonth;
+    cumSS += ssThisMonth;
 
     // HSA stream
     const hsaMonthly = (inputs.hsaMonthlyContribution || 0) + (inputs.hsaEmployerContribution || 0);
@@ -173,6 +206,8 @@ export function runProjection(inputs: ProjectionInputs): ProjectionResult {
     }
 
     if (m % 12 === 0) {
+      const cumContribAll = startBalance + cumEmployee + cumEmployer + cumRaiseRedirect + cumDebtRedirect + cumAdditional + cumSS;
+      const cumGrowth = Math.max(0, balance - cumContribAll);
       yearly.push({
         age: inputs.currentAge + m / 12,
         year: new Date().getFullYear() + m / 12,
@@ -181,6 +216,14 @@ export function runProjection(inputs: ProjectionInputs): ProjectionResult {
         totalEmployeeContrib: totalEmp,
         totalEmployerContrib: totalErp,
         totalGrowth: balance - totalContribInput - totalEmp - totalErp,
+        cumStarting: startBalance,
+        cumEmployee,
+        cumEmployer,
+        cumRaiseRedirect,
+        cumDebtRedirect,
+        cumAdditional,
+        cumSocialSecurity: cumSS,
+        cumGrowth,
       });
     }
   }
