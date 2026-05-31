@@ -293,7 +293,12 @@ export default function InvestmentPlanning() {
         <TabsContent value="spouse" className="mt-4"><SpouseHouseholdPanel planId={plan?.id} /></TabsContent>
         <TabsContent value="pensions" className="mt-4"><PensionPlanner planId={plan?.id} /></TabsContent>
         <TabsContent value="hsa" className="mt-4"><HSAPlanner plan={plan ?? null} /></TabsContent>
-        <TabsContent value="legacy" className="mt-4"><LegacyPlanner planId={plan?.id} /></TabsContent>
+        <TabsContent value="legacy" className="mt-4 space-y-3">
+          <LegacyProtectionCard plan={plan ?? null} />
+          <LegacyPlanner planId={plan?.id} />
+        </TabsContent>
+        <TabsContent value="trust" className="mt-4"><TrustFundingTracker plan={plan ?? null} /></TabsContent>
+        <TabsContent value="assets" className="mt-4"><AssetTagManager plan={plan ?? null} /></TabsContent>
         <TabsContent value="rules" className="mt-4"><MoneyRulesManager planId={plan?.id} /></TabsContent>
         <TabsContent value="tax" className="mt-4"><TaxPlanner plan={plan ?? null} /></TabsContent>
         <TabsContent value="risk" className="mt-4"><RiskPlanner plan={plan ?? null} /></TabsContent>
@@ -306,7 +311,12 @@ export default function InvestmentPlanning() {
         <TabsContent value="college" className="mt-4"><CollegePlanner /></TabsContent>
         <TabsContent value="automation" className="mt-4"><AutomationLog planId={plan?.id} /></TabsContent>
 
-        <TabsContent value="scenarios" className="mt-4">
+        <TabsContent value="scenarios" className="mt-4 space-y-3">
+          <ReturnScenarioComparison
+            plan={plan ?? null}
+            onCreateRules={() => setActiveTab('rules')}
+            onReviewLegacy={() => setActiveTab('legacy')}
+          />
           <ScenarioComparison plan={plan ?? null} />
         </TabsContent>
 
