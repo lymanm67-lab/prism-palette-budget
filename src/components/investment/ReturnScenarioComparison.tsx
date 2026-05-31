@@ -23,6 +23,7 @@ function buildInputs(plan: InvestmentPlan, returnPct: number, useFutureDollars: 
     monthlyEmployeeContribution: plan.monthly_employee_contribution,
     monthlyEmployerContribution: plan.monthly_employer_contribution,
     expectedReturnPct: returnPct,
+    employerMatchPct: plan.employer_match_pct ?? undefined,
     annualRaisePct: plan.annual_raise_pct,
     raiseRedirectPct: plan.raise_redirect_pct,
     currentMonthlyIncome: plan.current_monthly_income ?? undefined,
