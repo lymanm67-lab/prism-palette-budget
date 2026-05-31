@@ -172,7 +172,7 @@ export function WealthMilestonesChart() {
                       <span className="tabular-nums">
                         Age <strong className="text-foreground">{c.age}</strong> · Year{' '}
                         <strong className="text-foreground">{c.calendarYear}</strong>{' '}
-                        <span className="opacity-60">(+{c.yearsFromNow.toFixed(0)} yrs)</span>
+                        <span className="opacity-60">(+{c.yearsFromNow.toFixed(1)} yrs)</span>
                       </span>
                     ) : (
                       <span className="text-muted-foreground/80">Not reached in 60 yrs</span>
