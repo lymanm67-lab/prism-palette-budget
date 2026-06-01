@@ -1,6 +1,8 @@
 import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { PaystubUploader } from '@/components/PaystubUploader';
+
 import { BillScanner } from '@/components/BillScanner';
 import { toast } from 'sonner';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend, Tooltip as RTooltip } from 'recharts';
