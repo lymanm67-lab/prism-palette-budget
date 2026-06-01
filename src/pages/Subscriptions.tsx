@@ -196,12 +196,17 @@ const Subscriptions = () => {
     } catch { toast.error('Failed to add subscription'); }
   };
   const openEdit = (sub: any) => {
-    setEditSub({ id: sub.id, merchant: sub.merchant || '', average_amount: String(sub.average_amount || ''), frequency: sub.frequency || 'monthly', notes: sub.notes || '', category_id: sub.category_id || '' });
+    setEditSub({ id: sub.id, merchant: sub.merchant || '', average_amount: String(sub.average_amount || ''), frequency: sub.frequency || 'monthly', notes: sub.notes || '', category_id: sub.category_id || '', business_split_pct: Number(sub.business_split_pct || 0), business_category_id: sub.business_category_id || '' });
   };
   const handleEditSubscription = async () => {
     if (!editSub) return;
     try {
-      await updateSub.mutateAsync({ id: editSub.id, merchant: editSub.merchant, average_amount: parseFloat(editSub.average_amount), frequency: editSub.frequency, notes: editSub.notes || null, category_id: editSub.category_id || null });
+      await updateSub.mutateAsync({
+        id: editSub.id, merchant: editSub.merchant, average_amount: parseFloat(editSub.average_amount),
+        frequency: editSub.frequency, notes: editSub.notes || null, category_id: editSub.category_id || null,
+        business_split_pct: editSub.business_split_pct,
+        business_category_id: editSub.business_category_id || null,
+      });
       toast.success('Subscription updated'); setEditSub(null);
     } catch { toast.error('Failed to update subscription'); }
   };
