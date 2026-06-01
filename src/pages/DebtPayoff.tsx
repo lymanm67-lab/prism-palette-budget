@@ -512,10 +512,9 @@ const DebtPayoff = () => {
                     <Label className="text-xs uppercase tracking-wider text-muted-foreground">Loan status (optional)</Label>
                     <div className="space-y-2">
                       <Label className="text-sm">Deferred until</Label>
-                      <Input
-                        type="date"
+                      <DueDatePicker
                         value={form.deferred_until}
-                        onChange={e => setForm(f => ({ ...f, deferred_until: e.target.value }))}
+                        onChange={(v) => setForm(f => ({ ...f, deferred_until: v }))}
                       />
                       <p className="text-[11px] text-muted-foreground">No payments required before this date — payoff calc skips minimums while deferred.</p>
                     </div>
