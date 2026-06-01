@@ -143,11 +143,11 @@ export default function MoneyCoach() {
 
         {/* ─── COLUMN 1 — Intelligence & Review ─── */}
         <div className="lg:border-r border-border/40 flex flex-col">
-          <div className="px-4 py-2.5 bg-muted/30 border-b border-border/40 flex items-center justify-between">
-            <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+          <div className="px-4 py-3 bg-muted/40 border-b border-border/40 flex items-center justify-between">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
               Intelligence & Review
             </h3>
-            <span className="text-[10px] text-muted-foreground/70 font-mono">01–04</span>
+            <span className="text-[11px] text-muted-foreground/70 font-mono">01–04</span>
           </div>
 
         {/* CARD 1 — What Happened */}
@@ -436,11 +436,11 @@ export default function MoneyCoach() {
 
         {/* ─── COLUMN 2 — Live Protection ─── */}
         <div className="lg:border-r border-border/40 border-t lg:border-t-0 flex flex-col">
-          <div className="px-4 py-2.5 bg-muted/30 border-b border-border/40 flex items-center justify-between">
-            <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+          <div className="px-4 py-3 bg-muted/40 border-b border-border/40 flex items-center justify-between">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
               Live Protection
             </h3>
-            <span className="text-[10px] text-muted-foreground/70 font-mono">05–07</span>
+            <span className="text-[11px] text-muted-foreground/70 font-mono">05–07</span>
           </div>
 
           {/* CARD 5 — Purchase Guard (extended) */}
@@ -456,11 +456,11 @@ export default function MoneyCoach() {
 
         {/* ─── COLUMN 3 — Strategy & Flow ─── */}
         <div className="border-t lg:border-t-0 flex flex-col">
-          <div className="px-4 py-2.5 bg-muted/30 border-b border-border/40 flex items-center justify-between">
-            <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+          <div className="px-4 py-3 bg-muted/40 border-b border-border/40 flex items-center justify-between">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
               Strategy & Flow
             </h3>
-            <span className="text-[10px] text-muted-foreground/70 font-mono">08–10</span>
+            <span className="text-[11px] text-muted-foreground/70 font-mono">08–10</span>
           </div>
 
           {/* CARD 8 — Paycheck Deployment */}

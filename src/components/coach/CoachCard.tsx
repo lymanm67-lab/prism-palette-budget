@@ -62,7 +62,7 @@ export function CoachCard({
     >
       <div
         className={cn(
-          'flex items-start gap-3 px-4 py-3',
+          'flex items-start gap-3 px-4 py-3.5',
           collapsible && 'cursor-pointer select-none',
         )}
         onClick={collapsible ? () => setOpen(o => !o) : undefined}
@@ -73,17 +73,17 @@ export function CoachCard({
           if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpen(o => !o); }
         } : undefined}
       >
-        <Icon className={cn('h-4 w-4 mt-0.5 shrink-0', iconColor)} />
+        <Icon className={cn('h-[18px] w-[18px] mt-0.5 shrink-0', iconColor)} />
 
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="text-[13px] font-semibold leading-tight text-foreground truncate">
+            <h3 className="text-[15px] font-semibold leading-tight text-foreground truncate">
               {title}
             </h3>
             {momentBadge}
           </div>
           {subtitle && (
-            <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug line-clamp-1">
+            <p className="text-xs text-muted-foreground mt-1 leading-snug line-clamp-1">
               {open ? subtitle : (summary || subtitle)}
             </p>
           )}
