@@ -26,11 +26,11 @@ export function Step01({ value, onChange }: StepProps) {
         setStatus({ paycheck: false, bills: false, debts: false, loading: false });
         return;
       }
-      const [p, b, d] = await Promise.all([
-        supabase.from('paycheck_deployments').select('id', { head: true, count: 'exact' }).eq('household_id', household.id).limit(1),
-        supabase.from('subscriptions').select('id', { head: true, count: 'exact' }).eq('household_id', household.id).is('deleted_at', null).limit(1),
-        supabase.from('debts').select('id', { head: true, count: 'exact' }).eq('household_id', household.id).is('deleted_at', null).limit(1),
-      ]);
+      const hh = household.id;
+      const sb: any = supabase;
+      const p = await sb.from('paycheck_deployments').select('id', { head: true, count: 'exact' }).eq('household_id', hh).limit(1);
+      const b = await sb.from('subscriptions').select('id', { head: true, count: 'exact' }).eq('household_id', hh).is('deleted_at', null).limit(1);
+      const d = await sb.from('debt_items').select('id', { head: true, count: 'exact' }).eq('household_id', hh).is('deleted_at', null).limit(1);
       if (cancel) return;
       const next = {
         paycheck: (p.count ?? 0) > 0,
