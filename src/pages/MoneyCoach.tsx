@@ -22,6 +22,7 @@ import { WealthRedirector } from '@/components/coach/WealthRedirector';
 import { CoachOnboardingTour } from '@/components/coach/CoachOnboardingTour';
 import { CoachNudges } from '@/components/coach/CoachNudges';
 import { MoneySnapshotBar } from '@/components/coach/MoneySnapshotBar';
+import { CoachHowToUse } from '@/components/coach/CoachHowToUse';
 import { CoachCard, type Confidence } from '@/components/coach/CoachCard';
 import { SituationRoom } from '@/components/coach/SituationRoom';
 import { MomentTabs } from '@/components/coach/MomentTabs';
@@ -121,6 +122,8 @@ export default function MoneyCoach() {
   return (
     <div className="space-y-4 p-3 sm:p-5 max-w-7xl mx-auto">
       <CoachOnboardingTour />
+
+      <CoachHowToUse />
 
       <SituationRoom
         monthlyStS={sts.monthly}
