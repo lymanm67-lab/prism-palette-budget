@@ -14,8 +14,11 @@ import { usePurchaseGuardChecks, useOverridePattern } from '@/hooks/use-purchase
 import { useMoneyLeaks, useScanMoneyLeaks, useUpdateMoneyLeak, type MoneyLeak } from '@/hooks/use-money-leaks';
 import { useAdaptiveBuffer, useApplyAdaptiveBuffer } from '@/hooks/use-adaptive-buffer';
 import { useModeSettings } from '@/hooks/use-financial-mode';
+import { usePaycheckDeployments, useBuildPaycheckDeployment } from '@/hooks/use-paycheck-deploy';
 import { PurchaseGuardDialog } from '@/components/coach/PurchaseGuardDialog';
 import { PurchaseGuardReviewPrompts } from '@/components/coach/PurchaseGuardReviewPrompts';
+import { BillTimingOptimizer } from '@/components/coach/BillTimingOptimizer';
+import { WealthRedirector } from '@/components/coach/WealthRedirector';
 import { CoachCard, type Confidence } from '@/components/coach/CoachCard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -25,6 +28,7 @@ import {
   Activity, Brain, Sparkles, Shield, ShoppingBag, Droplets,
   Wallet, ArrowRight, AlertTriangle, CheckCircle2, Clock, Info,
   Zap, Scale, Settings2, TrendingUp, Loader2, X, RefreshCw, CheckCheck, ArrowRightCircle,
+  CalendarClock, CalendarDays, Target,
 } from 'lucide-react';
 
 const PLAN_META: Record<string, { label: string; icon: any; color: string }> = {
