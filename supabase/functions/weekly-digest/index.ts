@@ -327,14 +327,6 @@ function buildEmailHtml(data: {
   </div>` : ""}
 
   ${data.upcomingBills.length > 0 ? `
-  <!-- Upcoming Bills -->
-  <div style="background:#fffbeb;border-radius:12px;padding:20px;margin-bottom:24px;">
-    <h2 style="font-size:16px;color:#1f2937;margin:0 0 12px;">🔔 Upcoming Bills (Next 7 Days)</h2>
-    <table style="width:100%;border-collapse:collapse;">
-      <tr><th style="text-align:left;padding:8px 12px;color:#6b7280;font-size:12px;">Bill</th>
-          <th style="text-align:center;padding:8px 12px;color:#6b7280;font-size:12px;">Due</th>
-          <th style="text-align:right;padding:8px 12px;color:#6b7280;font-size:12px;">Amount</th></tr>
-  ${data.upcomingBills.length > 0 ? `
   <!-- Upcoming Bills (manual / reminders) -->
   <div style="background:#fffbeb;border-radius:12px;padding:20px;margin-bottom:24px;">
     <h2 style="font-size:16px;color:#1f2937;margin:0 0 4px;">🔔 Bills Needing Your Attention</h2>
