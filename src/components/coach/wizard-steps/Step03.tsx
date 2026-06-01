@@ -19,10 +19,26 @@ const AREAS = ['Dining', 'Subscriptions', 'Shopping', 'Groceries', 'Entertainmen
 export function Step03({ value, onChange }: StepProps) {
   const threshold = typeof value?.threshold === 'number' ? value.threshold : 50;
   const selected: string[] = Array.isArray(value?.areas) ? value.areas : [];
+  const customAreas: string[] = Array.isArray(value?.customAreas) ? value.customAreas : [];
+  const [draft, setDraft] = useState('');
   const toggle = (a: string) => {
     onChange({
       ...value,
       areas: selected.includes(a) ? selected.filter(x => x !== a) : [...selected, a],
+    });
+  };
+  const addCustom = () => {
+    const v = draft.trim();
+    if (!v) return;
+    const all = [...customAreas, v];
+    onChange({ ...value, customAreas: all, areas: [...selected, v] });
+    setDraft('');
+  };
+  const removeCustom = (a: string) => {
+    onChange({
+      ...value,
+      customAreas: customAreas.filter(x => x !== a),
+      areas: selected.filter(x => x !== a),
     });
   };
 
