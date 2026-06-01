@@ -77,22 +77,9 @@ export default function MoneyCoach() {
     },
   });
 
-  // Money leaks: zombie/unused subscriptions
-  const leaks = useMemo(() => {
-    if (!subs) return [];
-    return subs
-      .filter((s: any) => s.is_active && !s.is_cancelled)
-      .map((s: any) => {
-        const monthly = Math.abs(s.average_amount || 0);
-        const lastSeen = s.last_charged_date ? new Date(s.last_charged_date).getTime() : null;
-        const daysSince = lastSeen ? Math.floor((Date.now() - lastSeen) / 86400000) : 999;
-        const isZombie = daysSince > 60;
-        return { id: s.id, merchant: s.merchant, monthly, annual: monthly * 12, isZombie, daysSince };
-      })
-      .filter(l => l.isZombie)
-      .sort((a, b) => b.annual - a.annual)
-      .slice(0, 5);
-  }, [subs]);
+  // Money leaks (live from engine table)
+  const { data: leaksOpen } = useMoneyLeaks('open');
+  const leakCount = leaksOpen?.length ?? 0;
 
   // Data freshness for confidence
   const lastTxnDate = useMemo(() => {
@@ -103,9 +90,6 @@ export default function MoneyCoach() {
     ? Math.floor((Date.now() - new Date(lastTxnDate).getTime()) / 86400000)
     : 999;
   const dataConfidence: Confidence = daysSinceLastTxn <= 7 ? 'high' : daysSinceLastTxn <= 21 ? 'medium' : 'low';
-
-  const totalLeakMonthly = leaks.reduce((s, l) => s + l.monthly, 0);
-  const totalLeakAnnual = leaks.reduce((s, l) => s + l.annual, 0);
 
   const hasIssue = (overBudget?.length || 0) > 0 || anomalies.length > 0;
 
@@ -134,9 +118,9 @@ export default function MoneyCoach() {
             <Badge variant="outline" className="bg-background/40 border-border/40">
               Buffer: <span className="ml-1 font-bold">{sts.bufferPercent}%</span>
             </Badge>
-            {leaks.length > 0 && (
+            {leakCount > 0 && (
               <Badge variant="outline" className="bg-prism-amber/10 border-prism-amber/30 text-prism-amber">
-                {leaks.length} potential leak{leaks.length === 1 ? '' : 's'}
+                {leakCount} potential leak{leakCount === 1 ? '' : 's'}
               </Badge>
             )}
           </div>
