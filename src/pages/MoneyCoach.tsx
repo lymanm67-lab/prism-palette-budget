@@ -113,6 +113,11 @@ export default function MoneyCoach() {
     }, 80);
   };
 
+  // Default-open: hero trio when "all", else cards matching selected moment.
+  const HERO_DEFAULT = [1, 5, 7];
+  const isOpenByDefault = (card: number) =>
+    moment === 'all' ? HERO_DEFAULT.includes(card) : CARD_MOMENT[card] === moment;
+
   return (
     <div className="space-y-4 p-3 sm:p-5 max-w-7xl mx-auto">
       <CoachOnboardingTour />
@@ -124,14 +129,14 @@ export default function MoneyCoach() {
         onJump={jumpTo}
       />
 
+      <MomentTabs value={moment} onChange={setMoment} />
+
       <CoachNudges />
 
       <MoneySnapshotBar />
 
-      <MomentTabs value={moment} onChange={setMoment} />
-
-      {/* Cards */}
-      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+      {/* Cards — keyed by moment so defaultOpen re-applies on moment change */}
+      <div key={`grid-${moment}`} className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
 
 
         {/* CARD 1 — What Happened */}
@@ -139,7 +144,7 @@ export default function MoneyCoach() {
         <CoachCard
           number={1}
           collapsible
-          defaultOpen={true}
+          defaultOpen={isOpenByDefault(1)}
           title="What happened"
           subtitle="Spending issues, budget status, and surprises this month"
           icon={Activity}
@@ -188,7 +193,7 @@ export default function MoneyCoach() {
         <CoachCard
           number={2}
           collapsible
-          defaultOpen={false}
+          defaultOpen={isOpenByDefault(2)}
           title="Why it happened"
           subtitle="Root cause, trend vs outlier"
           icon={Brain}
@@ -237,7 +242,7 @@ export default function MoneyCoach() {
               <CoachCard
                 number={3}
                 collapsible
-                defaultOpen={false}
+                defaultOpen={isOpenByDefault(3)}
                 title="Recovery plan"
                 subtitle={topOver ? `For ${topOver.name} — ${fmt(topOver.overBy)} over` : 'Fast, balanced, system, or wealth recovery'}
                 icon={Sparkles}
@@ -374,7 +379,7 @@ export default function MoneyCoach() {
               <CoachCard
                 number={4}
                 collapsible
-                defaultOpen={false}
+                defaultOpen={isOpenByDefault(4)}
                 title="Prevention rule"
                 subtitle="So it stops repeating"
                 icon={Shield}
@@ -418,22 +423,22 @@ export default function MoneyCoach() {
 
 
         {/* CARD 5 — Purchase Guard (extended) */}
-        <CoachSlot card={5} moment={moment}><PurchaseGuardCardSection /></CoachSlot>
+        <CoachSlot card={5} moment={moment}><PurchaseGuardCardSection defaultOpen={isOpenByDefault(5)} /></CoachSlot>
 
         {/* CARD 6 — Money Leak Stopper (engine) */}
-        <CoachSlot card={6} moment={moment} span="md2"><MoneyLeakStopperCard /></CoachSlot>
+        <CoachSlot card={6} moment={moment} span="md2"><MoneyLeakStopperCard defaultOpen={isOpenByDefault(6)} /></CoachSlot>
 
         {/* CARD 7 — Safe-to-Spend Shield + Adaptive Buffer */}
-        <CoachSlot card={7} moment={moment} span="md2lg3"><SafeToSpendShieldCard /></CoachSlot>
+        <CoachSlot card={7} moment={moment} span="md2lg3"><SafeToSpendShieldCard defaultOpen={isOpenByDefault(7)} /></CoachSlot>
 
         {/* CARD 8 — Paycheck Deployment */}
-        <CoachSlot card={8} moment={moment} span="md2"><PaycheckDeploymentCard /></CoachSlot>
+        <CoachSlot card={8} moment={moment} span="md2"><PaycheckDeploymentCard defaultOpen={isOpenByDefault(8)} /></CoachSlot>
 
         {/* CARD 9 — Bill Timing Optimizer */}
-        <CoachSlot card={9} moment={moment}><BillTimingCard /></CoachSlot>
+        <CoachSlot card={9} moment={moment}><BillTimingCard defaultOpen={isOpenByDefault(9)} /></CoachSlot>
 
         {/* CARD 10 — Wealth Redirector */}
-        <CoachSlot card={10} moment={moment} span="md2lg3"><WealthRedirectorCard /></CoachSlot>
+        <CoachSlot card={10} moment={moment} span="md2lg3"><WealthRedirectorCard defaultOpen={isOpenByDefault(10)} /></CoachSlot>
       </div>
 
 
@@ -450,7 +455,7 @@ export default function MoneyCoach() {
   );
 }
 
-function PurchaseGuardCardSection() {
+function PurchaseGuardCardSection({ defaultOpen = true }: { defaultOpen?: boolean }) {
   const [open, setOpen] = useState(false);
   const { data: checks } = usePurchaseGuardChecks(20);
   const overrides = useOverridePattern();
@@ -470,7 +475,7 @@ function PurchaseGuardCardSection() {
       <CoachCard
         number={5}
         collapsible
-        defaultOpen={true}
+        defaultOpen={defaultOpen}
         title="Purchase Guard"
         subtitle="Decide before you buy"
         icon={ShoppingBag}
@@ -541,7 +546,7 @@ const REDIRECT_LABEL: Record<string, string> = {
   none: 'No redirect',
 };
 
-function MoneyLeakStopperCard() {
+function MoneyLeakStopperCard({ defaultOpen = false }: { defaultOpen?: boolean }) {
   const { data: leaks, isLoading } = useMoneyLeaks('open');
   const scan = useScanMoneyLeaks();
   const update = useUpdateMoneyLeak();
@@ -555,7 +560,7 @@ function MoneyLeakStopperCard() {
     <CoachCard
       number={6}
       collapsible
-      defaultOpen={false}
+      defaultOpen={defaultOpen}
       title="Money leak stopper"
       subtitle="Quiet costs that weaken your plan"
       icon={Droplets}
@@ -660,7 +665,7 @@ function MoneyLeakStopperCard() {
   );
 }
 
-function SafeToSpendShieldCard() {
+function SafeToSpendShieldCard({ defaultOpen = true }: { defaultOpen?: boolean }) {
   const sts = useSafeToSpend('personal');
   const { data: accounts } = useAccounts();
   const { data: mode } = useModeSettings();
@@ -673,7 +678,7 @@ function SafeToSpendShieldCard() {
     <CoachCard
       number={7}
       collapsible
-      defaultOpen={true}
+      defaultOpen={defaultOpen}
       title="Safe-to-Spend Shield"
       subtitle="What's truly available after bills, pending, and buffer"
       icon={Wallet}
@@ -773,7 +778,7 @@ function SafeToSpendShieldCard() {
   );
 }
 
-function PaycheckDeploymentCard() {
+function PaycheckDeploymentCard({ defaultOpen = false }: { defaultOpen?: boolean }) {
   const { data: deployments } = usePaycheckDeployments(3);
   const build = useBuildPaycheckDeployment();
   const next = (deployments || []).find(d => d.status !== 'applied' && d.status !== 'skipped') || deployments?.[0];
@@ -782,7 +787,7 @@ function PaycheckDeploymentCard() {
     <CoachCard
       number={8}
       collapsible
-      defaultOpen={false}
+      defaultOpen={defaultOpen}
       title="Paycheck deployment"
       subtitle="Every dollar gets a job before it lands"
       icon={CalendarClock}
@@ -849,12 +854,12 @@ function PaycheckDeploymentCard() {
   );
 }
 
-function BillTimingCard() {
+function BillTimingCard({ defaultOpen = false }: { defaultOpen?: boolean }) {
   return (
     <CoachCard
       number={9}
       collapsible
-      defaultOpen={false}
+      defaultOpen={defaultOpen}
       title="Bill timing optimizer"
       subtitle="Spread the load before bills pile up"
       icon={CalendarDays}
@@ -867,12 +872,12 @@ function BillTimingCard() {
   );
 }
 
-function WealthRedirectorCard() {
+function WealthRedirectorCard({ defaultOpen = false }: { defaultOpen?: boolean }) {
   return (
     <CoachCard
       number={10}
       collapsible
-      defaultOpen={false}
+      defaultOpen={defaultOpen}
       title="Wealth redirector"
       subtitle="Turn recovered dollars into a 3-year payoff"
       icon={Target}
