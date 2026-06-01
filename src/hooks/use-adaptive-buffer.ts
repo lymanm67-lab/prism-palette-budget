@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { useTransactions, useAccounts } from '@/hooks/use-finance-data';
 import { useSubscriptions } from '@/hooks/use-subscriptions';
-import { useRecurringTransactions } from '@/hooks/use-recurring-transactions';
+import { useRecurringTransactions } from '@/hooks/use-recurring';
 import { useModeSettings } from '@/hooks/use-financial-mode';
 import { toast } from 'sonner';
 
@@ -44,13 +44,13 @@ export function useAdaptiveBuffer(): AdaptiveBufferResult {
     const recent = (txns || []).filter(t => !t.is_transfer && new Date(t.date).getTime() >= cutoff90);
 
     // 1) Overdraft / NSF history (last 90d)
-    const overdrafts = recent.filter(t => /overdraft|nsf|insufficient/i.test(`${t.merchant || ''} ${t.description || ''}`));
+    const overdrafts = recent.filter(t => /overdraft|nsf|insufficient/i.test(`${t.merchant || ''}`));
     if (overdrafts.length > 0) {
       triggers.push({ key: 'overdraft', label: 'Recent overdraft activity', weight: 12, detail: `${overdrafts.length} in 90d` });
     }
 
     // 2) Late fees (last 90d)
-    const lateFees = recent.filter(t => /late\s*fee|past\s*due/i.test(`${t.merchant || ''} ${t.description || ''}`));
+    const lateFees = recent.filter(t => /late\s*fee|past\s*due/i.test(`${t.merchant || ''}`));
     if (lateFees.length > 0) {
       triggers.push({ key: 'late_fee', label: 'Recent late fees', weight: 8, detail: `${lateFees.length} in 90d` });
     }
