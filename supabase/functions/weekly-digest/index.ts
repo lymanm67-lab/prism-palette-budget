@@ -76,14 +76,15 @@ serve(async (req) => {
           .gte("date", currentMonth)
           .lte("date", todayStr);
 
-        // Fetch upcoming recurring bills
+        // Fetch upcoming recurring bills (next 14 days so reminder_days windows are honored)
+        const twoWeeksStr = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
         const { data: recurring } = await supabase
           .from("recurring_transactions")
-          .select("amount, merchant, next_due_date, categories(name)")
+          .select("amount, merchant, next_due_date, autopay_enabled, reminder_days, biller_url, categories(name)")
           .eq("household_id", householdId)
           .eq("is_active", true)
           .gte("next_due_date", todayStr)
-          .lte("next_due_date", nextWeekStr)
+          .lte("next_due_date", twoWeeksStr)
           .order("next_due_date");
 
         // Calculate spending summary
@@ -126,13 +127,31 @@ serve(async (req) => {
           };
         }).sort((a: any, b: any) => b.pct - a.pct);
 
-        // Upcoming bills
-        const upcomingBills = (recurring || []).map((r: any) => ({
-          merchant: r.merchant || r.categories?.name || "Bill",
-          amount: Math.abs(r.amount),
-          dueDate: r.next_due_date,
-        }));
+        // Upcoming bills — split manual (reminders) vs autopay (informational)
+        const msPerDay = 86400000;
+        const reminderBills = (recurring || [])
+          .filter((r: any) => !r.autopay_enabled && Number(r.amount) < 0)
+          .filter((r: any) => {
+            const daysOut = Math.ceil((new Date(r.next_due_date + "T00:00:00Z").getTime() - now.getTime()) / msPerDay);
+            return daysOut <= Math.max(Number(r.reminder_days ?? 3), 7);
+          })
+          .map((r: any) => ({
+            merchant: r.merchant || r.categories?.name || "Bill",
+            amount: Math.abs(r.amount),
+            dueDate: r.next_due_date,
+            billerUrl: r.biller_url || null,
+          }));
 
+        const autopayBills = (recurring || [])
+          .filter((r: any) => r.autopay_enabled && Number(r.amount) < 0)
+          .filter((r: any) => r.next_due_date <= nextWeekStr)
+          .map((r: any) => ({
+            merchant: r.merchant || r.categories?.name || "Bill",
+            amount: Math.abs(r.amount),
+            dueDate: r.next_due_date,
+          }));
+
+        const upcomingBills = reminderBills;
         const totalUpcoming = upcomingBills.reduce((s: number, b: any) => s + b.amount, 0);
 
         // Build email HTML
@@ -142,6 +161,7 @@ serve(async (req) => {
           topCategories,
           budgetItems,
           upcomingBills,
+          autopayBills,
           totalUpcoming,
           weekStart: weekAgoStr,
           weekEnd: todayStr,
@@ -216,6 +236,7 @@ function buildEmailHtml(data: {
   topCategories: [string, number][];
   budgetItems: any[];
   upcomingBills: any[];
+  autopayBills?: any[];
   totalUpcoming: number;
   weekStart: string;
   weekEnd: string;
@@ -243,10 +264,20 @@ function buildEmailHtml(data: {
     }).join("");
 
   const billRows = data.upcomingBills
-    .map((b: any) =>
-      `<tr><td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;color:#374151;">${b.merchant}</td>
+    .map((b: any) => {
+      const nameCell = b.billerUrl
+        ? `<a href="${b.billerUrl}" style="color:#7c5cf5;text-decoration:none;">${b.merchant} →</a>`
+        : b.merchant;
+      return `<tr><td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;color:#374151;">${nameCell}</td>
        <td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;text-align:center;color:#6b7280;">${formatDate(b.dueDate)}</td>
-       <td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;text-align:right;font-weight:600;color:#1f2937;">${formatCurrency(b.amount)}</td></tr>`
+       <td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;text-align:right;font-weight:600;color:#1f2937;">${formatCurrency(b.amount)}</td></tr>`;
+    }).join("");
+
+  const autopayRows = (data.autopayBills || [])
+    .map((b: any) =>
+      `<tr><td style="padding:6px 12px;border-bottom:1px solid #f0f0f0;color:#374151;font-size:13px;">⚡ ${b.merchant}</td>
+       <td style="padding:6px 12px;border-bottom:1px solid #f0f0f0;text-align:center;color:#6b7280;font-size:13px;">${formatDate(b.dueDate)}</td>
+       <td style="padding:6px 12px;border-bottom:1px solid #f0f0f0;text-align:right;color:#1f2937;font-size:13px;">${formatCurrency(b.amount)}</td></tr>`
     ).join("");
 
   return `<!DOCTYPE html>
@@ -296,9 +327,10 @@ function buildEmailHtml(data: {
   </div>` : ""}
 
   ${data.upcomingBills.length > 0 ? `
-  <!-- Upcoming Bills -->
+  <!-- Upcoming Bills (manual / reminders) -->
   <div style="background:#fffbeb;border-radius:12px;padding:20px;margin-bottom:24px;">
-    <h2 style="font-size:16px;color:#1f2937;margin:0 0 12px;">🔔 Upcoming Bills (Next 7 Days)</h2>
+    <h2 style="font-size:16px;color:#1f2937;margin:0 0 4px;">🔔 Bills Needing Your Attention</h2>
+    <p style="font-size:12px;color:#92400e;margin:0 0 12px;">Not on autopay — pay these before they go late.</p>
     <table style="width:100%;border-collapse:collapse;">
       <tr><th style="text-align:left;padding:8px 12px;color:#6b7280;font-size:12px;">Bill</th>
           <th style="text-align:center;padding:8px 12px;color:#6b7280;font-size:12px;">Due</th>
@@ -306,6 +338,16 @@ function buildEmailHtml(data: {
       ${billRows}
       <tr><td colspan="2" style="padding:12px;font-weight:600;color:#374151;">Total Due</td>
           <td style="padding:12px;text-align:right;font-weight:700;color:#b45309;">${formatCurrency(data.totalUpcoming)}</td></tr>
+    </table>
+  </div>` : ""}
+
+  ${(data.autopayBills && data.autopayBills.length > 0) ? `
+  <!-- Autopay scheduled -->
+  <div style="background:#f0fdfa;border-radius:12px;padding:20px;margin-bottom:24px;">
+    <h2 style="font-size:16px;color:#1f2937;margin:0 0 4px;">⚡ Autopay Scheduled (Next 7 Days)</h2>
+    <p style="font-size:12px;color:#0f766e;margin:0 0 12px;">Heads-up — make sure your account is funded.</p>
+    <table style="width:100%;border-collapse:collapse;">
+      ${autopayRows}
     </table>
   </div>` : ""}
 
