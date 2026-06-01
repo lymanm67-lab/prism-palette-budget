@@ -652,6 +652,45 @@ export type Database = {
           },
         ]
       }
+      coach_plans: {
+        Row: {
+          answers: Json
+          created_at: string
+          current_step: number
+          generated_at: string | null
+          generated_plan: Json | null
+          household_id: string
+          id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          answers?: Json
+          created_at?: string
+          current_step?: number
+          generated_at?: string | null
+          generated_plan?: Json | null
+          household_id: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          created_at?: string
+          current_step?: number
+          generated_at?: string | null
+          generated_plan?: Json | null
+          household_id?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       credit_accounts: {
         Row: {
           account_name: string
