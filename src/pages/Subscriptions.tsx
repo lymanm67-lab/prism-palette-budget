@@ -189,7 +189,7 @@ const Subscriptions = () => {
       });
       if (error) throw error;
       toast.success('Subscription added'); setAddOpen(false);
-      setNewSub({ merchant: '', average_amount: '', frequency: 'monthly', category_id: '' });
+      setNewSub({ merchant: '', average_amount: '', frequency: 'monthly', category_id: '', business_split_pct: 0, business_category_id: '' });
       qc.invalidateQueries({ queryKey: ['subscriptions'] });
     } catch { toast.error('Failed to add subscription'); }
   };
