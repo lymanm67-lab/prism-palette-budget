@@ -125,7 +125,7 @@ export function Step01({ value, onChange }: StepProps) {
                 ) : (
                   <div className="flex gap-1.5">
                     <Button asChild size="sm" variant={t.done ? 'ghost' : 'outline'} className="h-7 text-[11px] flex-1">
-                      <Link to={t.done ? (t.key === 'bills' ? '/budgets' : '/debt-payoff') : t.href}>
+                      <Link to={t.done ? (t.key === 'bills' ? '/subscriptions' : '/debt-payoff') : t.href}>
                         {t.done ? 'Manage' : `Scan ${t.title.toLowerCase()}`}
                       </Link>
                     </Button>
