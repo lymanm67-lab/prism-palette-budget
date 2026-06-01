@@ -379,7 +379,7 @@ export default function MoneyCoach() {
               <CoachCard
                 number={4}
                 collapsible
-                defaultOpen={false}
+                defaultOpen={isOpenByDefault(4)}
                 title="Prevention rule"
                 subtitle="So it stops repeating"
                 icon={Shield}
