@@ -101,6 +101,7 @@ export default function MoneyCoach() {
 
   return (
     <div className="space-y-6 p-4 sm:p-6 max-w-7xl mx-auto">
+      <CoachOnboardingTour />
       {/* Hero */}
       <div className="relative overflow-hidden rounded-2xl border border-prism-teal/20 bg-gradient-to-br from-prism-navy/80 via-prism-navy/60 to-prism-teal/10 p-6 sm:p-8 backdrop-blur-sm">
         <div className="absolute -top-12 -right-12 h-48 w-48 rounded-full bg-prism-amber/10 blur-3xl" />
@@ -147,6 +148,8 @@ export default function MoneyCoach() {
           'Every recommendation includes a confidence level.',
         ]}
       />
+
+      <CoachNudges />
 
 
       {/* Cards */}
