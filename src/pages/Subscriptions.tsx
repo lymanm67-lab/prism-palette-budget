@@ -89,7 +89,7 @@ const Subscriptions = () => {
   const [reminderDialog, setReminderDialog] = useState<string | null>(null);
   const [reminderDate, setReminderDate] = useState('');
   const [addOpen, setAddOpen] = useState(false);
-  const [newSub, setNewSub] = useState({ merchant: '', average_amount: '', frequency: 'monthly', category_id: '' });
+  const [newSub, setNewSub] = useState({ merchant: '', average_amount: '', frequency: 'monthly', category_id: '', business_split_pct: 0, business_category_id: '' });
   const [editSub, setEditSub] = useState<any>(null);
   const [selectedSubId, setSelectedSubId] = useState<string | null>(null);
   const [reallocationSub, setReallocationSub] = useState<any>(null);
@@ -104,12 +104,22 @@ const Subscriptions = () => {
   };
 
   const isBusiness = (sub: any) => {
+    const pct = Number(sub.business_split_pct || 0);
+    if (pct >= 100) return true;
+    if (pct > 0) return false; // split: handled separately so it appears in both
     const group = sub.categories?.category_groups;
     return group?.budget_type === 'business' || !!group?.business_profile_id;
   };
+  const isSplit = (sub: any) => {
+    const pct = Number(sub.business_split_pct || 0);
+    return pct > 0 && pct < 100;
+  };
 
   const filteredSubs = useMemo(() => {
-    return (subscriptions || []).filter(s => viewMode === 'business' ? isBusiness(s) : !isBusiness(s));
+    return (subscriptions || []).filter(s => {
+      if (isSplit(s)) return true; // splits appear in both Personal and Business views
+      return viewMode === 'business' ? isBusiness(s) : !isBusiness(s);
+    });
   }, [subscriptions, viewMode]);
 
   const activeSubs = useMemo(() => filteredSubs.filter(s => !s.is_cancelled), [filteredSubs]);
@@ -176,20 +186,27 @@ const Subscriptions = () => {
       const { error } = await supabase.from('subscriptions' as any).insert({
         household_id: household.id, merchant: newSub.merchant, average_amount: parseFloat(newSub.average_amount),
         frequency: newSub.frequency, category_id: newSub.category_id || null, is_active: true, is_cancelled: false,
+        business_split_pct: newSub.business_split_pct,
+        business_category_id: newSub.business_category_id || null,
       });
       if (error) throw error;
       toast.success('Subscription added'); setAddOpen(false);
-      setNewSub({ merchant: '', average_amount: '', frequency: 'monthly', category_id: '' });
+      setNewSub({ merchant: '', average_amount: '', frequency: 'monthly', category_id: '', business_split_pct: 0, business_category_id: '' });
       qc.invalidateQueries({ queryKey: ['subscriptions'] });
     } catch { toast.error('Failed to add subscription'); }
   };
   const openEdit = (sub: any) => {
-    setEditSub({ id: sub.id, merchant: sub.merchant || '', average_amount: String(sub.average_amount || ''), frequency: sub.frequency || 'monthly', notes: sub.notes || '', category_id: sub.category_id || '' });
+    setEditSub({ id: sub.id, merchant: sub.merchant || '', average_amount: String(sub.average_amount || ''), frequency: sub.frequency || 'monthly', notes: sub.notes || '', category_id: sub.category_id || '', business_split_pct: Number(sub.business_split_pct || 0), business_category_id: sub.business_category_id || '' });
   };
   const handleEditSubscription = async () => {
     if (!editSub) return;
     try {
-      await updateSub.mutateAsync({ id: editSub.id, merchant: editSub.merchant, average_amount: parseFloat(editSub.average_amount), frequency: editSub.frequency, notes: editSub.notes || null, category_id: editSub.category_id || null });
+      await updateSub.mutateAsync({
+        id: editSub.id, merchant: editSub.merchant, average_amount: parseFloat(editSub.average_amount),
+        frequency: editSub.frequency, notes: editSub.notes || null, category_id: editSub.category_id || null,
+        business_split_pct: editSub.business_split_pct,
+        business_category_id: editSub.business_category_id || null,
+      });
       toast.success('Subscription updated'); setEditSub(null);
     } catch { toast.error('Failed to update subscription'); }
   };
@@ -655,7 +672,7 @@ const Subscriptions = () => {
 
       {/* Add Subscription Dialog */}
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Add Subscription</DialogTitle></DialogHeader>
           <div className="space-y-4 pt-2">
             <div><Label>Service Name</Label><Input placeholder="e.g. Netflix" value={newSub.merchant} onChange={e => setNewSub(prev => ({ ...prev, merchant: e.target.value }))} /></div>
@@ -672,6 +689,29 @@ const Subscriptions = () => {
               </Select>
             </div>
             <div><Label>Category</Label><CategoryCombobox value={newSub.category_id} onValueChange={v => setNewSub(prev => ({ ...prev, category_id: v }))} placeholder="Select category (optional)" /></div>
+
+            <div className="space-y-2 rounded-lg border p-3">
+              <Label className="text-xs uppercase tracking-wide text-muted-foreground">Personal / Business</Label>
+              <div className="flex rounded-md border overflow-hidden">
+                <button type="button" onClick={() => setNewSub(p => ({ ...p, business_split_pct: 0, business_category_id: '' }))} className={cn('flex-1 px-3 py-1.5 text-xs font-medium transition-colors flex items-center justify-center gap-1', newSub.business_split_pct === 0 ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}><User className="h-3 w-3" /> Personal</button>
+                <button type="button" onClick={() => setNewSub(p => ({ ...p, business_split_pct: 100, business_category_id: '' }))} className={cn('flex-1 px-3 py-1.5 text-xs font-medium transition-colors flex items-center justify-center gap-1', newSub.business_split_pct === 100 ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}><Building2 className="h-3 w-3" /> Business</button>
+                <button type="button" onClick={() => setNewSub(p => ({ ...p, business_split_pct: p.business_split_pct > 0 && p.business_split_pct < 100 ? p.business_split_pct : 50 }))} className={cn('flex-1 px-3 py-1.5 text-xs font-medium transition-colors', newSub.business_split_pct > 0 && newSub.business_split_pct < 100 ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}>Split</button>
+              </div>
+              {newSub.business_split_pct > 0 && newSub.business_split_pct < 100 && (
+                <div className="space-y-2 pt-1">
+                  <div className="flex justify-between">
+                    <Label className="text-xs">Business: {newSub.business_split_pct}%</Label>
+                    <span className="text-[11px] text-muted-foreground">Personal: {100 - newSub.business_split_pct}%</span>
+                  </div>
+                  <Input type="range" min={1} max={99} value={newSub.business_split_pct} onChange={e => setNewSub(p => ({ ...p, business_split_pct: parseInt(e.target.value) }))} />
+                  <div>
+                    <Label className="text-xs">Business category (e.g. Dues & Subscriptions)</Label>
+                    <CategoryCombobox value={newSub.business_category_id} onValueChange={v => setNewSub(p => ({ ...p, business_category_id: v }))} placeholder="Search business categories..." />
+                  </div>
+                </div>
+              )}
+            </div>
+
             <Button onClick={handleAddSubscription} disabled={!newSub.merchant || !newSub.average_amount} className="w-full prism-gradient text-white">
               <Plus className="h-4 w-4 mr-2" /> Add Subscription
             </Button>
@@ -681,7 +721,7 @@ const Subscriptions = () => {
 
       {/* Edit Subscription Dialog */}
       <Dialog open={!!editSub} onOpenChange={(o) => !o && setEditSub(null)}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Edit Subscription</DialogTitle></DialogHeader>
           {editSub && (
             <div className="space-y-4 pt-2">
@@ -700,6 +740,29 @@ const Subscriptions = () => {
               </div>
               <div><Label>Category</Label><CategoryCombobox value={editSub.category_id} onValueChange={v => setEditSub((p: any) => ({ ...p, category_id: v }))} placeholder="Select category" /></div>
               <div><Label>Notes</Label><Input placeholder="Optional notes" value={editSub.notes} onChange={e => setEditSub((p: any) => ({ ...p, notes: e.target.value }))} /></div>
+
+              <div className="space-y-2 rounded-lg border p-3">
+                <Label className="text-xs uppercase tracking-wide text-muted-foreground">Personal / Business</Label>
+                <div className="flex rounded-md border overflow-hidden">
+                  <button type="button" onClick={() => setEditSub((p: any) => ({ ...p, business_split_pct: 0, business_category_id: '' }))} className={cn('flex-1 px-3 py-1.5 text-xs font-medium transition-colors flex items-center justify-center gap-1', editSub.business_split_pct === 0 ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}><User className="h-3 w-3" /> Personal</button>
+                  <button type="button" onClick={() => setEditSub((p: any) => ({ ...p, business_split_pct: 100, business_category_id: '' }))} className={cn('flex-1 px-3 py-1.5 text-xs font-medium transition-colors flex items-center justify-center gap-1', editSub.business_split_pct === 100 ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}><Building2 className="h-3 w-3" /> Business</button>
+                  <button type="button" onClick={() => setEditSub((p: any) => ({ ...p, business_split_pct: p.business_split_pct > 0 && p.business_split_pct < 100 ? p.business_split_pct : 50 }))} className={cn('flex-1 px-3 py-1.5 text-xs font-medium transition-colors', editSub.business_split_pct > 0 && editSub.business_split_pct < 100 ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}>Split</button>
+                </div>
+                {editSub.business_split_pct > 0 && editSub.business_split_pct < 100 && (
+                  <div className="space-y-2 pt-1">
+                    <div className="flex justify-between">
+                      <Label className="text-xs">Business: {editSub.business_split_pct}%</Label>
+                      <span className="text-[11px] text-muted-foreground">Personal: {100 - editSub.business_split_pct}%</span>
+                    </div>
+                    <Input type="range" min={1} max={99} value={editSub.business_split_pct} onChange={e => setEditSub((p: any) => ({ ...p, business_split_pct: parseInt(e.target.value) }))} />
+                    <div>
+                      <Label className="text-xs">Business category (e.g. Dues & Subscriptions)</Label>
+                      <CategoryCombobox value={editSub.business_category_id} onValueChange={v => setEditSub((p: any) => ({ ...p, business_category_id: v }))} placeholder="Search business categories..." />
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <Button onClick={handleEditSubscription} disabled={!editSub.merchant || !editSub.average_amount} className="w-full prism-gradient text-white">
                 Save Changes
               </Button>

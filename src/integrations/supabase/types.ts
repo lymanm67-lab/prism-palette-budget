@@ -3629,6 +3629,8 @@ export type Database = {
       subscriptions: {
         Row: {
           average_amount: number
+          business_category_id: string | null
+          business_split_pct: number
           cancel_reminder_date: string | null
           cancellation_confirmed_at: string | null
           cancellation_difficulty: string
@@ -3654,6 +3656,8 @@ export type Database = {
         }
         Insert: {
           average_amount?: number
+          business_category_id?: string | null
+          business_split_pct?: number
           cancel_reminder_date?: string | null
           cancellation_confirmed_at?: string | null
           cancellation_difficulty?: string
@@ -3679,6 +3683,8 @@ export type Database = {
         }
         Update: {
           average_amount?: number
+          business_category_id?: string | null
+          business_split_pct?: number
           cancel_reminder_date?: string | null
           cancellation_confirmed_at?: string | null
           cancellation_difficulty?: string
@@ -3703,6 +3709,13 @@ export type Database = {
           user_usage_override?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "subscriptions_business_category_id_fkey"
+            columns: ["business_category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "subscriptions_category_id_fkey"
             columns: ["category_id"]
