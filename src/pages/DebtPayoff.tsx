@@ -591,6 +591,9 @@ const DebtPayoff = () => {
                   forgiveness_note: '',
                   due_day: '',
                   due_date: '',
+                  in_settlement_plan: false,
+
+
 
                 });
                 setEditId(null);
