@@ -462,6 +462,20 @@ const DebtPayoff = () => {
                     </div>
                   )}
 
+                  {/* Payment due day */}
+                  <div className="space-y-2">
+                    <Label className="text-sm">Payment due day of month</Label>
+                    <Input
+                      type="number"
+                      min={1}
+                      max={31}
+                      placeholder="e.g. 15"
+                      value={form.due_day}
+                      onChange={e => setForm(f => ({ ...f, due_day: e.target.value }))}
+                    />
+                    <p className="text-[11px] text-muted-foreground">Day of the month the minimum payment is due (1–31).</p>
+                  </div>
+
                   {/* Loan status: deferment & forgiveness */}
                   <div className="space-y-3 pt-2 border-t border-border/50">
                     <Label className="text-xs uppercase tracking-wider text-muted-foreground">Loan status (optional)</Label>
