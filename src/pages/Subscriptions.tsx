@@ -104,12 +104,22 @@ const Subscriptions = () => {
   };
 
   const isBusiness = (sub: any) => {
+    const pct = Number(sub.business_split_pct || 0);
+    if (pct >= 100) return true;
+    if (pct > 0) return false; // split: handled separately so it appears in both
     const group = sub.categories?.category_groups;
     return group?.budget_type === 'business' || !!group?.business_profile_id;
   };
+  const isSplit = (sub: any) => {
+    const pct = Number(sub.business_split_pct || 0);
+    return pct > 0 && pct < 100;
+  };
 
   const filteredSubs = useMemo(() => {
-    return (subscriptions || []).filter(s => viewMode === 'business' ? isBusiness(s) : !isBusiness(s));
+    return (subscriptions || []).filter(s => {
+      if (isSplit(s)) return true; // splits appear in both Personal and Business views
+      return viewMode === 'business' ? isBusiness(s) : !isBusiness(s);
+    });
   }, [subscriptions, viewMode]);
 
   const activeSubs = useMemo(() => filteredSubs.filter(s => !s.is_cancelled), [filteredSubs]);
