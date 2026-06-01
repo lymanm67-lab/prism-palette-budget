@@ -40,7 +40,12 @@ interface Debt {
   account_id?: string;
   business_split_pct: number;
   business_name?: string;
+  deferred_until?: string;
+  forgiveness_eligible?: boolean;
+  forgiveness_date?: string;
+  forgiveness_note?: string;
 }
+
 
 
 type Strategy = 'snowball' | 'avalanche' | 'hybrid';
