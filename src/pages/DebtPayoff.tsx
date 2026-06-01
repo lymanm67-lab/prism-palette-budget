@@ -214,6 +214,7 @@ const DebtPayoff = () => {
       forgiveness_eligible: !!form.forgiveness_eligible,
       forgiveness_date: form.forgiveness_eligible ? (form.forgiveness_date || null) : null,
       forgiveness_note: form.forgiveness_eligible ? (form.forgiveness_note.trim() || null) : null,
+      due_day: form.due_day ? Math.max(1, Math.min(31, parseInt(form.due_day, 10))) : null,
     };
     try {
       if (editId) {
