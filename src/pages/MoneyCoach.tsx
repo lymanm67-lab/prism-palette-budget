@@ -113,10 +113,10 @@ export default function MoneyCoach() {
     }, 80);
   };
 
-  // Default-open: hero trio when "all", else cards matching selected moment.
-  const HERO_DEFAULT = [1, 5, 7];
+  // All rows collapsed by default — matches the chosen column-command prototype.
+  // When a specific moment is selected, only that moment's cards auto-expand.
   const isOpenByDefault = (card: number) =>
-    moment === 'all' ? HERO_DEFAULT.includes(card) : CARD_MOMENT[card] === moment;
+    moment !== 'all' && CARD_MOMENT[card] === moment;
 
   return (
     <div className="space-y-4 p-3 sm:p-5 max-w-7xl mx-auto">
