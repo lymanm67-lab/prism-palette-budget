@@ -364,6 +364,26 @@ const DebtPayoff = () => {
               </DialogContent>
             </Dialog>
 
+            <Button variant="outline" className="gap-2" onClick={() => setScanOpen(true)}>
+              <FileUp className="h-4 w-4" /> Scan Statement
+            </Button>
+
+            <DebtStatementScanner
+              open={scanOpen}
+              onOpenChange={setScanOpen}
+              onResult={(d) => {
+                setForm({
+                  name: d.creditor,
+                  balance: d.balance ? String(d.balance) : '',
+                  minimum_payment: d.minimum_payment ? String(d.minimum_payment) : '',
+                  interest_rate: d.apr ? String(d.apr) : '',
+                  account_id: '',
+                });
+                setEditId(null);
+                setDialogOpen(true);
+              }}
+            />
+
             {importableAccounts.length > 0 && (
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-xs text-muted-foreground flex items-center gap-1"><CreditCard className="h-3.5 w-3.5" /> Import:</span>
