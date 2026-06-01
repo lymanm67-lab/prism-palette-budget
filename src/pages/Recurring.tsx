@@ -396,6 +396,27 @@ const Recurring = () => {
                 <Input type="date" value={form.next_due_date} onChange={e => setForm(f => ({ ...f, next_due_date: e.target.value }))} />
               </div>
             </div>
+            {form.type === 'expense' && (
+              <div className="space-y-3 rounded-lg border border-border/40 bg-muted/20 p-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="space-y-0.5">
+                    <Label className="text-sm flex items-center gap-1.5"><Zap className="h-3.5 w-3.5 text-prism-teal" /> Autopay enabled</Label>
+                    <p className="text-[11px] text-muted-foreground">Bill is paid automatically — skip the reminder.</p>
+                  </div>
+                  <Switch checked={form.autopay_enabled} onCheckedChange={v => setForm(f => ({ ...f, autopay_enabled: v }))} />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs flex items-center gap-1"><Bell className="h-3 w-3" /> Remind days before</Label>
+                    <Input type="number" min={0} max={14} value={form.reminder_days} disabled={form.autopay_enabled} onChange={e => setForm(f => ({ ...f, reminder_days: Math.max(0, Math.min(14, parseInt(e.target.value) || 0)) }))} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Biller URL (optional)</Label>
+                    <Input type="url" value={form.biller_url} onChange={e => setForm(f => ({ ...f, biller_url: e.target.value }))} placeholder="https://..." />
+                  </div>
+                </div>
+              </div>
+            )}
             <Button onClick={handleCreate} disabled={createRecurring.isPending} className="w-full gap-2">
               {createRecurring.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
               Add Recurring
@@ -468,6 +489,27 @@ const Recurring = () => {
               <Label>Next Due Date</Label>
               <Input type="date" value={editForm.next_due_date} onChange={e => setEditForm(f => ({ ...f, next_due_date: e.target.value }))} />
             </div>
+            {editForm.type === 'expense' && (
+              <div className="space-y-3 rounded-lg border border-border/40 bg-muted/20 p-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="space-y-0.5">
+                    <Label className="text-sm flex items-center gap-1.5"><Zap className="h-3.5 w-3.5 text-prism-teal" /> Autopay enabled</Label>
+                    <p className="text-[11px] text-muted-foreground">Bill is paid automatically — skip the reminder.</p>
+                  </div>
+                  <Switch checked={editForm.autopay_enabled} onCheckedChange={v => setEditForm(f => ({ ...f, autopay_enabled: v }))} />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs flex items-center gap-1"><Bell className="h-3 w-3" /> Remind days before</Label>
+                    <Input type="number" min={0} max={14} value={editForm.reminder_days} disabled={editForm.autopay_enabled} onChange={e => setEditForm(f => ({ ...f, reminder_days: Math.max(0, Math.min(14, parseInt(e.target.value) || 0)) }))} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Biller URL (optional)</Label>
+                    <Input type="url" value={editForm.biller_url} onChange={e => setEditForm(f => ({ ...f, biller_url: e.target.value }))} placeholder="https://..." />
+                  </div>
+                </div>
+              </div>
+            )}
             <Button onClick={handleEdit} disabled={updateRecurring.isPending} className="w-full gap-2">
               {updateRecurring.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Pencil className="h-4 w-4" />}
               Save Changes
