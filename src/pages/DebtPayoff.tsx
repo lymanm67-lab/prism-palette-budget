@@ -523,15 +523,23 @@ const DebtPayoff = () => {
                   <Card key={d.id} className="prism-card-shine border-border/50 group hover-lift">
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <CreditCard className="h-4 w-4 text-prism-rose" />
                           <span className="font-medium text-sm">{d.name}</span>
+                          {d.business_split_pct === 0 ? (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">👤 Personal</span>
+                          ) : d.business_split_pct === 100 ? (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-prism-teal/20 text-prism-teal">💼 Business{d.business_name ? ` · ${d.business_name}` : ''}</span>
+                          ) : (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-prism-amber/20 text-prism-amber">⚖️ {100 - d.business_split_pct}/{d.business_split_pct} Split{d.business_name ? ` · ${d.business_name}` : ''}</span>
+                          )}
                         </div>
                         <div className="flex gap-1">
                           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(d)} aria-label="Edit debt"><Pencil className="h-3.5 w-3.5" /></Button>
                           <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDeleteDebt(d.id)} aria-label="Delete debt"><Trash2 className="h-3.5 w-3.5" /></Button>
                         </div>
                       </div>
+
                       <div className="mt-2 grid grid-cols-3 gap-2 text-xs text-muted-foreground">
                         <div><p className="font-display text-base font-bold text-foreground">{formatCurrency(d.balance)}</p><p>Balance</p></div>
                         <div><p className="font-display text-base font-bold text-foreground">{d.interest_rate}%</p><p>APR</p></div>
