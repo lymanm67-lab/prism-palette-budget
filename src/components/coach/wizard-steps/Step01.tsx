@@ -122,10 +122,11 @@ export function Step01({ value, onChange }: StepProps) {
                 ) : (
                   <Button asChild size="sm" variant={t.done ? 'ghost' : 'outline'} className="h-7 text-[11px]">
                     <Link to={t.href}>
-                      {t.done ? 'Manage' : 'Add now'}
+                      {t.done ? 'Manage' : `Scan ${t.title.toLowerCase()}`}
                     </Link>
                   </Button>
                 )}
+
               </div>
             );
           })}
