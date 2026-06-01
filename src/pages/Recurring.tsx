@@ -391,7 +391,7 @@ const Recurring = () => {
 
       {/* Add Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle className="font-display">Add Recurring Transaction</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
