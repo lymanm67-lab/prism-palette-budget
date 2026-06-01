@@ -423,91 +423,11 @@ export default function MoneyCoach() {
         <PurchaseGuardCardSection />
 
 
-        {/* CARD 6 — Money Leak Stopper */}
-        <CoachCard
-          number={6}
-          title="Money leak stopper"
-          subtitle="Quiet costs that weaken your plan"
-          icon={Droplets}
-          iconColor="text-prism-rose"
-          confidence={subs ? 'high' : 'medium'}
-          status={leaks.length > 0 ? 'warn' : 'ok'}
-          action={
-            <Button asChild size="sm" variant="ghost" className="h-7 text-xs">
-              <Link to="/subscriptions">All leaks <ArrowRight className="ml-1 h-3 w-3" /></Link>
-            </Button>
-          }
-        >
-          {leaks.length === 0 ? (
-            <div className="flex items-center gap-2 text-prism-teal text-sm">
-              <CheckCircle2 className="h-4 w-4" />
-              <span>No obvious leaks. Coach will keep watching.</span>
-            </div>
-          ) : (
-            <>
-              <div className="rounded-lg bg-prism-rose/5 border border-prism-rose/20 p-2.5 mb-3">
-                <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Potential recovery</div>
-                <div className="flex items-baseline gap-2 mt-0.5">
-                  <span className="font-mono text-lg font-bold text-prism-rose">{fmt(totalLeakMonthly)}/mo</span>
-                  <span className="text-xs text-muted-foreground">≈ {fmt(totalLeakAnnual)}/yr</span>
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                {leaks.slice(0, 3).map(l => (
-                  <div key={l.id} className="flex items-center justify-between text-sm">
-                    <span className="truncate capitalize">{l.merchant}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {fmt(l.monthly)}/mo · idle {l.daysSince}d
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-        </CoachCard>
+        {/* CARD 6 — Money Leak Stopper (engine) */}
+        <MoneyLeakStopperCard />
 
-        {/* CARD 7 — Safe-to-Spend Shield (spans 2 cols on lg) */}
-        <CoachCard
-          number={7}
-          title="Safe-to-Spend Shield"
-          subtitle="What's truly available after bills, pending, and buffer"
-          icon={Wallet}
-          iconColor="text-prism-teal"
-          confidence={accounts && accounts.length > 0 ? 'high' : 'low'}
-          status="ok"
-          className="md:col-span-2 lg:col-span-3"
-        >
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">True monthly Safe-to-Spend</div>
-              <div className="font-mono text-3xl font-extrabold text-prism-teal mt-1">{fmt(sts.monthly)}</div>
-              <div className="text-xs text-muted-foreground mt-1">
-                ≈ {fmt(sts.weekly)}/wk · {fmt(sts.daily)}/day
-              </div>
-              <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-                <div className="rounded-md bg-background/40 border border-border/40 px-2 py-1.5">
-                  <div className="text-muted-foreground text-[10px]">Available cash</div>
-                  <div className="font-mono font-bold">{fmt(sts.totalAvailableCash)}</div>
-                </div>
-                <div className="rounded-md bg-background/40 border border-border/40 px-2 py-1.5">
-                  <div className="text-muted-foreground text-[10px]">Smart Buffer</div>
-                  <div className="font-mono font-bold">{sts.bufferPercent}%</div>
-                </div>
-                <div className="rounded-md bg-background/40 border border-border/40 px-2 py-1.5">
-                  <div className="text-muted-foreground text-[10px]">Monthly income</div>
-                  <div className="font-mono font-bold">{fmt(sts.monthlyIncome)}</div>
-                </div>
-                <div className="rounded-md bg-background/40 border border-border/40 px-2 py-1.5">
-                  <div className="text-muted-foreground text-[10px]">Obligations</div>
-                  <div className="font-mono font-bold">{fmt(sts.effectiveExpenses)}</div>
-                </div>
-              </div>
-            </div>
-            <div>
-              <StsEquationView />
-            </div>
-          </div>
-        </CoachCard>
+        {/* CARD 7 — Safe-to-Spend Shield + Adaptive Buffer */}
+        <SafeToSpendShieldCard accountsLength={accounts?.length || 0} />
       </div>
 
       {/* Educational disclaimer */}
