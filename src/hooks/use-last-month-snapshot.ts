@@ -47,7 +47,14 @@ export function useLastMonthSnapshot(): LastMonthSnapshot {
     // Spending = sum of negative amounts (or positive expenses depending on convention).
     // Project convention: expenses are stored as negative; income positive.
     const expenses = txns.filter((t: any) => Number(t.amount) < 0);
-    const spent = expenses.reduce((s: number, t: any) => s + Math.abs(Number(t.amount)), 0);
+
+    // Wife reimburses for groceries — net "Wife Contribution" income against grocery expense.
+    const wifeReimbursement = txns
+      .filter((t: any) => Number(t.amount) > 0 && (t.categories?.name || '').toLowerCase().includes('wife contribution'))
+      .reduce((s: number, t: any) => s + Number(t.amount), 0);
+
+    const grossSpent = expenses.reduce((s: number, t: any) => s + Math.abs(Number(t.amount)), 0);
+    const spent = Math.max(0, grossSpent - wifeReimbursement);
     const budgeted = budgets.reduce((s: number, b: any) => s + Number(b.planned_amount || 0), 0);
     const overBy = spent - budgeted;
     const overPct = budgeted > 0 ? (overBy / budgeted) * 100 : 0;
@@ -66,10 +73,18 @@ export function useLastMonthSnapshot(): LastMonthSnapshot {
       cur.spent += Math.abs(Number(t.amount));
       catMap.set(id, cur);
     }
+    // Subtract wife reimbursement from the Groceries category spent
+    for (const [id, cur] of catMap.entries()) {
+      if (cur.name.toLowerCase().includes('grocer')) {
+        cur.spent = Math.max(0, cur.spent - wifeReimbursement);
+        catMap.set(id, cur);
+      }
+    }
     const topCategories = Array.from(catMap.values())
       .map((c) => ({ ...c, over: c.spent - c.budgeted }))
       .sort((a, b) => b.over - a.over)
       .slice(0, 3);
+
 
     // Largest single expense
     const biggest = expenses.reduce<any>((max, t) => {
