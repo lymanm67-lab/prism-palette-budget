@@ -180,12 +180,15 @@ const DebtPayoff = () => {
 
   const handleSaveDebt = async () => {
     if (!activePlanId) return;
+    const pct = Math.max(0, Math.min(100, Number(form.business_split_pct) || 0));
     const payload = {
       name: form.name,
       balance: parseFloat(form.balance) || 0,
       minimum_payment: parseFloat(form.minimum_payment) || 0,
       interest_rate: parseFloat(form.interest_rate) || 0,
       account_id: form.account_id || null,
+      business_split_pct: pct,
+      business_name: pct > 0 ? (form.business_name.trim() || null) : null,
     };
     try {
       if (editId) {
@@ -196,7 +199,7 @@ const DebtPayoff = () => {
         toast.success('Debt added');
       }
       setEditId(null);
-      setForm({ name: '', balance: '', minimum_payment: '', interest_rate: '', account_id: '' });
+      setForm({ name: '', balance: '', minimum_payment: '', interest_rate: '', account_id: '', business_split_pct: 0, business_name: '' });
       setDialogOpen(false);
     } catch (err: any) {
       console.error('Save debt error:', err);
@@ -206,9 +209,10 @@ const DebtPayoff = () => {
 
   const openEdit = (d: Debt) => {
     setEditId(d.id);
-    setForm({ name: d.name, balance: String(d.balance), minimum_payment: String(d.minimum_payment), interest_rate: String(d.interest_rate), account_id: d.account_id || '' });
+    setForm({ name: d.name, balance: String(d.balance), minimum_payment: String(d.minimum_payment), interest_rate: String(d.interest_rate), account_id: d.account_id || '', business_split_pct: d.business_split_pct || 0, business_name: d.business_name || '' });
     setDialogOpen(true);
   };
+
 
   const handleDeleteDebt = async (id: string) => {
     if (!activePlanId) return;
