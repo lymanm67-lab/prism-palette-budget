@@ -89,7 +89,7 @@ const Subscriptions = () => {
   const [reminderDialog, setReminderDialog] = useState<string | null>(null);
   const [reminderDate, setReminderDate] = useState('');
   const [addOpen, setAddOpen] = useState(false);
-  const [newSub, setNewSub] = useState({ merchant: '', average_amount: '', frequency: 'monthly', category_id: '' });
+  const [newSub, setNewSub] = useState({ merchant: '', average_amount: '', frequency: 'monthly', category_id: '', business_split_pct: 0, business_category_id: '' });
   const [editSub, setEditSub] = useState<any>(null);
   const [selectedSubId, setSelectedSubId] = useState<string | null>(null);
   const [reallocationSub, setReallocationSub] = useState<any>(null);
