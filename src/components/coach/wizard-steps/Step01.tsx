@@ -32,12 +32,15 @@ export function Step01({ value, onChange }: StepProps) {
       }
       const hh = household.id;
       const sb: any = supabase;
-      const p = await sb.from('paycheck_deployments').select('id', { head: true, count: 'exact' }).eq('household_id', hh).limit(1);
-      const b = await sb.from('subscriptions').select('id', { head: true, count: 'exact' }).eq('household_id', hh).is('deleted_at', null).limit(1);
-      const d = await sb.from('debt_items').select('id', { head: true, count: 'exact' }).eq('household_id', hh).is('deleted_at', null).limit(1);
+      const [p, pd, b, d] = await Promise.all([
+        sb.from('paycheck_deployments').select('id', { head: true, count: 'exact' }).eq('household_id', hh).limit(1),
+        sb.from('budgets').select('id', { head: true, count: 'exact' }).eq('household_id', hh).limit(1),
+        sb.from('subscriptions').select('id', { head: true, count: 'exact' }).eq('household_id', hh).limit(1),
+        sb.from('debt_items').select('id', { head: true, count: 'exact' }).eq('household_id', hh).limit(1),
+      ]);
       if (cancel) return;
       const next = {
-        paycheck: (p.count ?? 0) > 0,
+        paycheck: (p.count ?? 0) > 0 || (pd.count ?? 0) > 0,
         bills: (b.count ?? 0) > 0,
         debts: (d.count ?? 0) > 0,
         loading: false,
