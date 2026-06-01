@@ -194,8 +194,10 @@ export default function MoneyCoach() {
             </div>
           )}
         </CoachCard>
+        </CoachSlot>
 
         {/* CARD 2 — Why It Happened */}
+        <CoachSlot card={2} moment={moment}>
         <CoachCard
           number={2}
           title="Why it happened"
