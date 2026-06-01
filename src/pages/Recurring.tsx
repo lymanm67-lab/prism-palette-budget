@@ -44,14 +44,21 @@ const Recurring = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [editTarget, setEditTarget] = useState<any | null>(null);
-  const [editForm, setEditForm] = useState({ merchant: '', amount: '', frequency: 'monthly', account_id: '', category_id: '', next_due_date: '', type: 'expense' as 'income' | 'expense', autopay_enabled: false, reminder_days: 3, biller_url: '' });
+  const [editForm, setEditForm] = useState({ merchant: '', amount: '', frequency: 'monthly', account_id: '', category_id: '', next_due_date: '', type: 'expense' as 'income' | 'expense', autopay_enabled: false, reminder_days: 3, biller_url: '', business_split_pct: 0, business_category_id: '' });
 
   const isBusiness = (r: any) => {
     const group = r.categories?.category_groups;
     return group?.budget_type === 'business' || !!group?.business_profile_id;
   };
+  const isSplit = (r: any) => {
+    const pct = Number(r.business_split_pct || 0);
+    return pct > 0 && pct < 100;
+  };
   const recurring = useMemo(
-    () => (recurringAll || []).filter(r => viewMode === 'business' ? isBusiness(r) : !isBusiness(r)),
+    () => (recurringAll || []).filter(r => {
+      if (isSplit(r)) return true; // splits show in both views
+      return viewMode === 'business' ? isBusiness(r) : !isBusiness(r);
+    }),
     [recurringAll, viewMode]
   );
 
@@ -67,6 +74,8 @@ const Recurring = () => {
     autopay_enabled: false,
     reminder_days: 3,
     biller_url: '',
+    business_split_pct: 0,
+    business_category_id: '',
   });
 
   const totalIncome = useMemo(() => {
@@ -96,10 +105,12 @@ const Recurring = () => {
       autopay_enabled: form.autopay_enabled,
       reminder_days: form.reminder_days,
       biller_url: form.biller_url || null,
+      business_split_pct: form.business_split_pct,
+      business_category_id: form.business_category_id || null,
     }, {
       onSuccess: () => {
         setDialogOpen(false);
-        setForm({ merchant: '', amount: '', frequency: 'monthly', account_id: '', category_id: '', start_date: format(new Date(), 'yyyy-MM-dd'), next_due_date: format(new Date(), 'yyyy-MM-dd'), type: 'expense', autopay_enabled: false, reminder_days: 3, biller_url: '' });
+        setForm({ merchant: '', amount: '', frequency: 'monthly', account_id: '', category_id: '', start_date: format(new Date(), 'yyyy-MM-dd'), next_due_date: format(new Date(), 'yyyy-MM-dd'), type: 'expense', autopay_enabled: false, reminder_days: 3, biller_url: '', business_split_pct: 0, business_category_id: '' });
       }
     });
   };
@@ -117,6 +128,8 @@ const Recurring = () => {
       autopay_enabled: !!r.autopay_enabled,
       reminder_days: r.reminder_days ?? 3,
       biller_url: r.biller_url || '',
+      business_split_pct: Number(r.business_split_pct || 0),
+      business_category_id: r.business_category_id || '',
     });
   };
 
@@ -134,6 +147,8 @@ const Recurring = () => {
       autopay_enabled: editForm.autopay_enabled,
       reminder_days: editForm.reminder_days,
       biller_url: editForm.biller_url || null,
+      business_split_pct: editForm.business_split_pct,
+      business_category_id: editForm.business_category_id || null,
     }, {
       onSuccess: () => { setEditTarget(null); toast.success('Updated!'); },
     });
@@ -284,6 +299,11 @@ const Recurring = () => {
                         {Number(r.amount) < 0 && !r.autopay_enabled && r.reminder_days != null && (
                           <Badge variant="outline" className="text-[10px] px-1 py-0 gap-0.5">
                             <Bell className="h-2.5 w-2.5" /> {r.reminder_days}d
+                          </Badge>
+                        )}
+                        {isSplit(r) && (
+                          <Badge variant="outline" className="text-[10px] px-1 py-0 gap-0.5 border-prism-violet/30 text-prism-violet">
+                            <Building2 className="h-2.5 w-2.5" /> Split {Math.round(Number(r.business_split_pct))}% biz
                           </Badge>
                         )}
                         <span className="hidden sm:inline">{r.accounts && (r.accounts as any).name}</span>
@@ -447,6 +467,30 @@ const Recurring = () => {
                 </div>
               </div>
             )}
+            {form.type === 'expense' && (
+              <div className="space-y-3 rounded-lg border border-border/40 bg-muted/20 p-3">
+                <Label className="text-sm flex items-center gap-1.5"><Building2 className="h-3.5 w-3.5 text-prism-violet" /> Personal / Business</Label>
+                <div className="flex border rounded-lg overflow-hidden">
+                  <button type="button" onClick={() => setForm(f => ({ ...f, business_split_pct: 0, business_category_id: '' }))} className={cn('flex-1 px-3 py-1.5 text-xs font-medium transition-colors flex items-center justify-center gap-1', form.business_split_pct === 0 ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}><User className="h-3 w-3" /> Personal</button>
+                  <button type="button" onClick={() => setForm(f => ({ ...f, business_split_pct: 100, business_category_id: '' }))} className={cn('flex-1 px-3 py-1.5 text-xs font-medium transition-colors flex items-center justify-center gap-1', form.business_split_pct === 100 ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}><Building2 className="h-3 w-3" /> Business</button>
+                  <button type="button" onClick={() => setForm(f => ({ ...f, business_split_pct: f.business_split_pct > 0 && f.business_split_pct < 100 ? f.business_split_pct : 30 }))} className={cn('flex-1 px-3 py-1.5 text-xs font-medium transition-colors', form.business_split_pct > 0 && form.business_split_pct < 100 ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}>Split</button>
+                </div>
+                {form.business_split_pct > 0 && form.business_split_pct < 100 && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <Label className="text-xs">Business: {form.business_split_pct}%</Label>
+                      <span className="text-[11px] text-muted-foreground">Personal: {100 - form.business_split_pct}%</span>
+                    </div>
+                    <Input type="range" min={1} max={99} value={form.business_split_pct} onChange={e => setForm(f => ({ ...f, business_split_pct: parseInt(e.target.value) }))} />
+                    <div className="space-y-1">
+                      <Label className="text-xs">Business category (e.g. Home Office)</Label>
+                      <CategoryCombobox value={form.business_category_id} onValueChange={v => setForm(f => ({ ...f, business_category_id: v }))} placeholder="Search business categories..." />
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">When this bill posts, the transaction is auto-split between business and personal.</p>
+                  </div>
+                )}
+              </div>
+            )}
             <Button onClick={handleCreate} disabled={createRecurring.isPending} className="w-full gap-2">
               {createRecurring.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
               Add Recurring
@@ -538,6 +582,30 @@ const Recurring = () => {
                     <Input type="url" value={editForm.biller_url} onChange={e => setEditForm(f => ({ ...f, biller_url: e.target.value }))} placeholder="https://..." />
                   </div>
                 </div>
+              </div>
+            )}
+            {editForm.type === 'expense' && (
+              <div className="space-y-3 rounded-lg border border-border/40 bg-muted/20 p-3">
+                <Label className="text-sm flex items-center gap-1.5"><Building2 className="h-3.5 w-3.5 text-prism-violet" /> Personal / Business</Label>
+                <div className="flex border rounded-lg overflow-hidden">
+                  <button type="button" onClick={() => setEditForm(f => ({ ...f, business_split_pct: 0, business_category_id: '' }))} className={cn('flex-1 px-3 py-1.5 text-xs font-medium transition-colors flex items-center justify-center gap-1', editForm.business_split_pct === 0 ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}><User className="h-3 w-3" /> Personal</button>
+                  <button type="button" onClick={() => setEditForm(f => ({ ...f, business_split_pct: 100, business_category_id: '' }))} className={cn('flex-1 px-3 py-1.5 text-xs font-medium transition-colors flex items-center justify-center gap-1', editForm.business_split_pct === 100 ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}><Building2 className="h-3 w-3" /> Business</button>
+                  <button type="button" onClick={() => setEditForm(f => ({ ...f, business_split_pct: f.business_split_pct > 0 && f.business_split_pct < 100 ? f.business_split_pct : 30 }))} className={cn('flex-1 px-3 py-1.5 text-xs font-medium transition-colors', editForm.business_split_pct > 0 && editForm.business_split_pct < 100 ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}>Split</button>
+                </div>
+                {editForm.business_split_pct > 0 && editForm.business_split_pct < 100 && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <Label className="text-xs">Business: {editForm.business_split_pct}%</Label>
+                      <span className="text-[11px] text-muted-foreground">Personal: {100 - editForm.business_split_pct}%</span>
+                    </div>
+                    <Input type="range" min={1} max={99} value={editForm.business_split_pct} onChange={e => setEditForm(f => ({ ...f, business_split_pct: parseInt(e.target.value) }))} />
+                    <div className="space-y-1">
+                      <Label className="text-xs">Business category (e.g. Home Office)</Label>
+                      <CategoryCombobox value={editForm.business_category_id} onValueChange={v => setEditForm(f => ({ ...f, business_category_id: v }))} placeholder="Search business categories..." />
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">When this bill posts, the transaction is auto-split between business and personal.</p>
+                  </div>
+                )}
               </div>
             )}
             <Button onClick={handleEdit} disabled={updateRecurring.isPending} className="w-full gap-2">
