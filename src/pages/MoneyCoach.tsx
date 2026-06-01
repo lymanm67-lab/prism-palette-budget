@@ -788,7 +788,8 @@ function SafeToSpendShieldCard({ defaultOpen = true }: { defaultOpen?: boolean }
       status="ok"
       className=""
     >
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="space-y-3">
+        {/* Headline number + key stats */}
         <div>
           <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">True monthly Safe-to-Spend</div>
           <div className="font-mono text-3xl font-extrabold text-prism-teal mt-1">{fmt(sts.monthly)}</div>
@@ -815,7 +816,7 @@ function SafeToSpendShieldCard({ defaultOpen = true }: { defaultOpen?: boolean }
           </div>
         </div>
 
-        {/* Adaptive Buffer Panel */}
+        {/* Adaptive Buffer Panel — compact */}
         <div className="rounded-xl border border-prism-sky/20 bg-prism-sky/5 p-3">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-1.5">
@@ -831,24 +832,7 @@ function SafeToSpendShieldCard({ defaultOpen = true }: { defaultOpen?: boolean }
             <span className="font-mono text-2xl font-extrabold">{adaptive.tier}%</span>
             <span className="text-[11px] text-muted-foreground">recommended</span>
           </div>
-          <p className="text-[11px] text-muted-foreground mt-1">{adaptive.explanation}</p>
-
-          {adaptive.triggers.length > 0 ? (
-            <ul className="mt-2 space-y-1">
-              {adaptive.triggers.map(t => (
-                <li key={t.key} className="flex items-start gap-1.5 text-[11px]">
-                  <span className="text-prism-amber">›</span>
-                  <span className="flex-1">
-                    <span className="font-medium">{t.label}</span>
-                    {t.detail && <span className="text-muted-foreground"> — {t.detail}</span>}
-                  </span>
-                  <span className="font-mono text-[10px] text-muted-foreground">+{t.weight}</span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="mt-2 text-[11px] text-muted-foreground italic">No risk signals — minimum buffer applies.</p>
-          )}
+          <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2">{adaptive.explanation}</p>
 
           <div className="flex gap-1.5 mt-3">
             {!isAdaptive || sts.bufferPercent !== adaptive.tier ? (
@@ -871,9 +855,32 @@ function SafeToSpendShieldCard({ defaultOpen = true }: { defaultOpen?: boolean }
           </div>
         </div>
 
-        <div>
-          <StsEquationView />
-        </div>
+        {/* Math + risk signals — tucked behind disclosure to keep card height balanced */}
+        <details className="group rounded-md border border-border/40 bg-background/30">
+          <summary className="cursor-pointer list-none px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground flex items-center justify-between">
+            <span>Show math & risk signals</span>
+            <ArrowRight className="h-3 w-3 transition-transform group-open:rotate-90" />
+          </summary>
+          <div className="px-3 pb-3 pt-1 space-y-3">
+            {adaptive.triggers.length > 0 ? (
+              <ul className="space-y-1">
+                {adaptive.triggers.map(t => (
+                  <li key={t.key} className="flex items-start gap-1.5 text-[11px]">
+                    <span className="text-prism-amber">›</span>
+                    <span className="flex-1">
+                      <span className="font-medium">{t.label}</span>
+                      {t.detail && <span className="text-muted-foreground"> — {t.detail}</span>}
+                    </span>
+                    <span className="font-mono text-[10px] text-muted-foreground">+{t.weight}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-[11px] text-muted-foreground italic">No risk signals — minimum buffer applies.</p>
+            )}
+            <StsEquationView />
+          </div>
+        </details>
       </div>
     </CoachCard>
   );
