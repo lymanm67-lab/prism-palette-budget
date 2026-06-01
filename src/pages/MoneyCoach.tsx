@@ -244,6 +244,7 @@ export default function MoneyCoach() {
 
           return (
             <>
+              <CoachSlot card={3} moment={moment}>
               <CoachCard
                 number={3}
                 title="Recovery plan"
@@ -252,6 +253,8 @@ export default function MoneyCoach() {
                 iconColor="text-prism-lime"
                 confidence={plansForTop.length ? 'high' : 'medium'}
                 status={activePlan ? 'ok' : topOver ? 'warn' : 'ok'}
+                pitfall="Going 'cold turkey' on a category — drastic cuts collapse by week two."
+                tryThis="Pick the Balanced plan first. Sustainable beats heroic every month."
               >
                 {!topOver && (
                   <div className="flex items-center gap-2 text-prism-teal text-sm">
