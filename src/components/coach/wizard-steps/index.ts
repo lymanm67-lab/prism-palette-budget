@@ -7,10 +7,6 @@ import { Step05 } from './Step05';
 import { Step06 } from './Step06';
 import { Step07 } from './Step07';
 import { Step08 } from './Step08';
-import { Step09 } from './Step09';
-import { Step10 } from './Step10';
-import { Step11 } from './Step11';
-import { Step12 } from './Step12';
 
 export interface StepProps {
   value: any;
@@ -23,24 +19,71 @@ export interface StepDef {
   title: string;
   why: string;
   Component: ComponentType<StepProps>;
-  // Return true if this step should be skipped given prior answers
   shouldSkip?: (answers: Record<string, any>) => boolean;
   isValid?: (value: any) => boolean;
 }
 
 export const STEPS: StepDef[] = [
-  { n: 1, title: 'What happened', why: 'Set the baseline for last month so the plan starts from reality, not assumptions.', Component: Step01, isValid: (v) => !!v?.feeling },
-  { n: 2, title: 'Why it happened', why: 'Knowing the root cause lets us fix the system, not the symptom.', Component: Step02, isValid: (v) => !!v?.cause },
-  { n: 3, title: 'Recovery plan', why: 'Choose a recovery style that you can actually stick to.', Component: Step03, isValid: (v) => !!v?.style },
-  { n: 4, title: 'Prevention rules', why: 'Stop the same overage from happening twice.', Component: Step04, isValid: (v) => Array.isArray(v?.areas) },
-  { n: 5, title: 'Purchase Guard', why: 'A cooling-off threshold prevents impulse buys without feeling restrictive.', Component: Step05, isValid: (v) => typeof v?.threshold === 'number' },
-  { n: 6, title: 'Money Leaks', why: 'Decide upfront how aggressively Coach should kill silent subscriptions.', Component: Step06, isValid: (v) => !!v?.mode },
-  { n: 7, title: 'Safe-to-Spend buffer', why: 'A comfort buffer turns Safe-to-Spend from a number into peace of mind.', Component: Step07, isValid: (v) => typeof v?.bufferPct === 'number' },
-  { n: 8, title: 'Adaptive Buffer', why: 'Let Coach widen or tighten your buffer as life changes.', Component: Step08, isValid: (v) => !!v?.adaptive },
-  { n: 9, title: 'Paycheck Deployment', why: 'Every dollar gets a job the moment it arrives.', Component: Step09, isValid: (v) => !!v?.frequency },
-  { n: 10, title: 'Bill Timing', why: 'Shift due dates so no week feels like a crisis.', Component: Step10, isValid: (v) => !!v?.stressWeek },
-  { n: 11, title: 'Wealth Redirector', why: 'When surplus shows up, it goes where you said — not where you noticed it last.', Component: Step11, isValid: (v) => !!v?.target },
-  { n: 12, title: 'Operating Mode', why: 'Pick the level of friction Coach should apply day-to-day.', Component: Step12, isValid: (v) => !!v?.mode },
+  {
+    n: 1,
+    title: 'Connect your money',
+    why: 'The more Coach knows up front, the sharper your plan. Add any of these — or skip and come back.',
+    Component: Step01,
+    // Auto-skip when paycheck, bills, and debts are already present.
+    shouldSkip: (answers) => {
+      const a = answers?.['1'];
+      return !!(a && a.paycheck && a.bills && a.debts);
+    },
+  },
+  {
+    n: 2,
+    title: 'Last month check-in',
+    why: 'Set the baseline from reality, not assumptions — then name the root cause.',
+    Component: Step02,
+    isValid: (v) => !!v?.feeling && !!v?.cause,
+  },
+  {
+    n: 3,
+    title: 'Spending guardrails',
+    why: 'Three "stop the bleeding" rules in one screen: cooling-off threshold, leak aggressiveness, prevention areas.',
+    Component: Step03,
+    isValid: (v) => typeof v?.threshold === 'number' && !!v?.leakMode && Array.isArray(v?.areas),
+  },
+  {
+    n: 4,
+    title: 'Your buffer',
+    why: 'A comfort buffer turns Safe-to-Spend from a number into peace of mind.',
+    Component: Step04,
+    isValid: (v) => typeof v?.bufferPct === 'number' && typeof v?.adaptive === 'boolean',
+  },
+  {
+    n: 5,
+    title: 'Paycheck plan',
+    why: 'Every dollar gets a job the moment it arrives, and bills shift away from your hardest week.',
+    Component: Step05,
+    isValid: (v) => !!v?.frequency && !!v?.stressWeek,
+  },
+  {
+    n: 6,
+    title: 'Wealth Redirector',
+    why: 'When surplus shows up, it goes where you said — not where you noticed it last.',
+    Component: Step06,
+    isValid: (v) => !!v?.target,
+  },
+  {
+    n: 7,
+    title: 'Operating Mode',
+    why: 'Pick the level of friction Coach should apply day-to-day.',
+    Component: Step07,
+    isValid: (v) => !!v?.mode,
+  },
+  {
+    n: 8,
+    title: 'Recovery style',
+    why: 'One last call — how should Coach pace the climb back?',
+    Component: Step08,
+    isValid: (v) => !!v?.style,
+  },
 ];
 
 export function nextActiveStep(current: number, answers: Record<string, any>): number {

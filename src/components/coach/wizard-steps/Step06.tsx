@@ -3,18 +3,19 @@ import { Label } from '@/components/ui/label';
 import type { StepProps } from './index';
 
 const OPTS = [
-  { v: 'auto_cancel', label: 'Auto-flag for cancel', sub: 'Coach surfaces every detected leak with a one-click action' },
-  { v: 'review_each', label: 'Review each one', sub: 'Coach alerts me — I decide what to keep' },
-  { v: 'leave_alone', label: 'Leave them alone', sub: 'I want full control' },
+  { v: 'debt', label: 'Pay down debt', sub: 'High-interest balances first' },
+  { v: 'emergency', label: 'Emergency fund', sub: 'Until I hit my target reserve' },
+  { v: 'invest', label: 'Investments', sub: 'Brokerage, retirement, or HSA' },
+  { v: 'split', label: 'Split evenly', sub: 'A bit to each priority' },
 ];
 
 export function Step06({ value, onChange }: StepProps) {
   return (
     <div className="space-y-3">
-      <Label className="text-sm font-semibold">How aggressive should Coach be with money leaks?</Label>
+      <Label className="text-sm font-semibold">When surplus appears, where should it go first?</Label>
       <RadioGroup
-        value={value?.mode || ''}
-        onValueChange={(v) => onChange({ ...value, mode: v })}
+        value={value?.target || ''}
+        onValueChange={(v) => onChange({ ...value, target: v })}
         className="space-y-2"
       >
         {OPTS.map(o => (

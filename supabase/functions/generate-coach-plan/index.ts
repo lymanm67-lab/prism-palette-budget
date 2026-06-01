@@ -56,10 +56,15 @@ Deno.serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY not configured');
 
-    const systemPrompt = `You are a personal money coach. The user just completed a 12-step questionnaire tied to their Money Coach cards. Each answer key (1-12) maps to a card:
-1=What happened, 2=Why it happened, 3=Recovery plan, 4=Prevention rules,
-5=Purchase Guard, 6=Money Leaks, 7=Safe-to-Spend buffer, 8=Adaptive Buffer,
-9=Paycheck Deployment, 10=Bill Timing, 11=Wealth Redirector, 12=Operating Mode.
+    const systemPrompt = `You are a personal money coach. The user just completed an 8-step questionnaire. Each answer key (1-8) maps to:
+1=Foundation data (which sources they've connected: paycheck/bills/debts),
+2=Last month check-in (feeling + root cause),
+3=Spending guardrails (Purchase Guard threshold + Money Leak mode + Prevention areas),
+4=Safe-to-Spend buffer (buffer % + whether to adapt automatically),
+5=Paycheck plan (pay frequency, next paycheck date, hardest week of month),
+6=Wealth Redirector (where surplus goes),
+7=Operating Mode (Guardrail / Balanced / Green Light),
+8=Recovery style (Fast / Balanced / System / Wealth).
 Produce a concrete, encouraging plan in their own context. Be specific. No filler.`;
 
     const userPrompt = `Here are the user's answers as JSON:\n${JSON.stringify(plan.answers, null, 2)}\n\nReturn a structured plan via the build_plan tool.`;
@@ -95,7 +100,7 @@ Produce a concrete, encouraging plan in their own context. Be specific. No fille
                 ninety_day: { type: 'array', items: { type: 'string' }, description: 'Actions for days 61-90' },
                 per_card: {
                   type: 'object',
-                  description: 'Recommendation per card number (keys "1" through "12")',
+                  description: 'Recommendation per step number (keys "1" through "8")',
                   additionalProperties: {
                     type: 'object',
                     properties: {

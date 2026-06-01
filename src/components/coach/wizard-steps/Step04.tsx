@@ -1,29 +1,47 @@
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Slider } from '@/components/ui/slider';
+import { Switch } from '@/components/ui/switch';
 import type { StepProps } from './index';
 
-const AREAS = ['Dining', 'Subscriptions', 'Shopping', 'Groceries', 'Entertainment', 'Travel', 'Rideshare', 'Coffee'];
-
 export function Step04({ value, onChange }: StepProps) {
-  const selected: string[] = Array.isArray(value?.areas) ? value.areas : [];
-  const toggle = (a: string) => {
-    onChange({
-      ...value,
-      areas: selected.includes(a) ? selected.filter(x => x !== a) : [...selected, a],
-    });
-  };
+  const bufferPct = typeof value?.bufferPct === 'number' ? value.bufferPct : 20;
+  const adaptive = value?.adaptive ?? true;
+
   return (
-    <div className="space-y-3">
-      <Label className="text-sm font-semibold">Where should Coach enforce prevention rules?</Label>
-      <p className="text-xs text-muted-foreground">Pick the categories most likely to slip. You can change these later.</p>
-      <div className="grid grid-cols-2 gap-2">
-        {AREAS.map(a => (
-          <label key={a} className="flex items-center gap-2 rounded-md border border-border/40 p-2 cursor-pointer hover:bg-muted/40">
-            <Checkbox checked={selected.includes(a)} onCheckedChange={() => toggle(a)} />
-            <span className="text-sm">{a}</span>
-          </label>
-        ))}
+    <div className="space-y-5">
+      <div>
+        <Label className="text-sm font-semibold">Comfort buffer</Label>
+        <p className="text-xs text-muted-foreground mt-1">How much of your spendable money should Coach hold back as cushion?</p>
+        <div className="rounded-lg border border-border/40 p-4 bg-muted/30 mt-2">
+          <div className="text-3xl font-bold font-mono text-prism-lime text-center mb-3">{bufferPct}%</div>
+          <Slider
+            value={[bufferPct]}
+            min={5}
+            max={35}
+            step={5}
+            onValueChange={(v) => onChange({ ...value, bufferPct: v[0] })}
+          />
+          <div className="flex justify-between text-[11px] text-muted-foreground mt-2">
+            <span>5% — tight</span>
+            <span>35% — conservative</span>
+          </div>
+        </div>
       </div>
+
+      <label className="flex items-start gap-3 rounded-lg border border-border/40 p-3 cursor-pointer hover:bg-muted/40">
+        <Switch
+          checked={!!adaptive}
+          onCheckedChange={(v) => onChange({ ...value, adaptive: v })}
+          className="mt-0.5"
+        />
+        <div>
+          <div className="text-sm font-medium">Let Coach adapt this buffer automatically</div>
+          <div className="text-[11px] text-muted-foreground">
+            Coach widens the buffer when risk signals appear (volatile income, recent overdrafts) and tightens it when things are calm.
+            Turn off if you want to set it manually.
+          </div>
+        </div>
+      </label>
     </div>
   );
 }

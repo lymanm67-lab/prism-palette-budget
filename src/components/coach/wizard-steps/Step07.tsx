@@ -1,29 +1,32 @@
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { Slider } from '@/components/ui/slider';
 import type { StepProps } from './index';
 
+const OPTS = [
+  { v: 'guardrail', label: 'Guardrail', sub: 'Maximum protection — confirm before big spends, strict alerts' },
+  { v: 'balanced', label: 'Balanced', sub: 'Default — nudges when something drifts, otherwise hands-off' },
+  { v: 'green_light', label: 'Green Light', sub: 'Trust me — just show data, no friction' },
+];
+
 export function Step07({ value, onChange }: StepProps) {
-  const b = typeof value?.bufferPct === 'number' ? value.bufferPct : 20;
   return (
-    <div className="space-y-4">
-      <div>
-        <Label className="text-sm font-semibold">Comfort buffer (%)</Label>
-        <p className="text-xs text-muted-foreground mt-1">How much of your spendable money should Coach hold back as a safety cushion?</p>
-      </div>
-      <div className="rounded-lg border border-border/40 p-4 bg-muted/30">
-        <div className="text-3xl font-bold font-mono text-prism-lime text-center mb-3">{b}%</div>
-        <Slider
-          value={[b]}
-          min={5}
-          max={35}
-          step={5}
-          onValueChange={(v) => onChange({ ...value, bufferPct: v[0] })}
-        />
-        <div className="flex justify-between text-[11px] text-muted-foreground mt-2">
-          <span>5% — tight</span>
-          <span>35% — conservative</span>
-        </div>
-      </div>
+    <div className="space-y-3">
+      <Label className="text-sm font-semibold">Pick your operating mode</Label>
+      <RadioGroup
+        value={value?.mode || ''}
+        onValueChange={(v) => onChange({ ...value, mode: v })}
+        className="space-y-2"
+      >
+        {OPTS.map(o => (
+          <label key={o.v} className="flex items-start gap-3 rounded-lg border border-border/40 p-3 cursor-pointer hover:bg-muted/40">
+            <RadioGroupItem value={o.v} id={`s7-${o.v}`} className="mt-0.5" />
+            <div>
+              <div className="text-sm font-medium">{o.label}</div>
+              <div className="text-xs text-muted-foreground">{o.sub}</div>
+            </div>
+          </label>
+        ))}
+      </RadioGroup>
     </div>
   );
 }
