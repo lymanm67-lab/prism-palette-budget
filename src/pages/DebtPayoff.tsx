@@ -369,7 +369,7 @@ const DebtPayoff = () => {
                   <Plus className="h-4 w-4" /> Add Debt
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="max-h-[90vh] overflow-y-auto">
                 <DialogHeader><DialogTitle className="font-display">{editId ? 'Edit Debt' : 'Add Debt'}</DialogTitle></DialogHeader>
                 <div className="space-y-4">
                   <div className="space-y-2"><Label>Debt Name</Label><Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. Chase Visa" /></div>
@@ -378,6 +378,63 @@ const DebtPayoff = () => {
                     <div className="space-y-2"><Label>Interest Rate (%)</Label><Input type="number" step="0.01" value={form.interest_rate} onChange={e => setForm(f => ({ ...f, interest_rate: e.target.value }))} placeholder="22.99" /></div>
                   </div>
                   <div className="space-y-2"><Label>Minimum Monthly Payment</Label><Input type="number" step="0.01" value={form.minimum_payment} onChange={e => setForm(f => ({ ...f, minimum_payment: e.target.value }))} placeholder="150" /></div>
+
+                  {/* Personal / Business / Split toggle */}
+                  <div className="space-y-2">
+                    <Label>Attribution</Label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {([
+                        { val: 0, label: '👤 Personal' },
+                        { val: 50, label: '⚖️ Split' },
+                        { val: 100, label: '💼 Business' },
+                      ] as const).map(opt => {
+                        const isSplit = opt.val === 50;
+                        const active = isSplit
+                          ? form.business_split_pct > 0 && form.business_split_pct < 100
+                          : form.business_split_pct === opt.val;
+                        return (
+                          <Button
+                            key={opt.label}
+                            type="button"
+                            variant={active ? 'default' : 'outline'}
+                            className={active ? 'prism-gradient text-white border-0' : ''}
+                            onClick={() => setForm(f => ({
+                              ...f,
+                              business_split_pct: isSplit ? (f.business_split_pct > 0 && f.business_split_pct < 100 ? f.business_split_pct : 50) : opt.val,
+                            }))}
+                          >
+                            {opt.label}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {form.business_split_pct > 0 && form.business_split_pct < 100 && (
+                    <div className="space-y-2">
+                      <Label>Business share: {form.business_split_pct}% (Personal: {100 - form.business_split_pct}%)</Label>
+                      <input
+                        type="range"
+                        min={1}
+                        max={99}
+                        value={form.business_split_pct}
+                        onChange={e => setForm(f => ({ ...f, business_split_pct: Number(e.target.value) }))}
+                        className="w-full accent-primary"
+                      />
+                    </div>
+                  )}
+
+                  {form.business_split_pct > 0 && (
+                    <div className="space-y-2">
+                      <Label>Business name</Label>
+                      <Input
+                        value={form.business_name}
+                        onChange={e => setForm(f => ({ ...f, business_name: e.target.value }))}
+                        placeholder="e.g. Dove Love Travels"
+                      />
+                    </div>
+                  )}
+
                   <Button onClick={handleSaveDebt} disabled={!form.name || !form.balance || createItem.isPending || updateItem.isPending} className="w-full prism-gradient text-white border-0 hover:opacity-90">
                     {(createItem.isPending || updateItem.isPending) ? 'Saving…' : editId ? 'Update' : 'Add Debt'}
                   </Button>
@@ -399,10 +456,13 @@ const DebtPayoff = () => {
                   minimum_payment: d.minimum_payment ? String(d.minimum_payment) : '',
                   interest_rate: d.apr ? String(d.apr) : '',
                   account_id: '',
+                  business_split_pct: 0,
+                  business_name: '',
                 });
                 setEditId(null);
                 setDialogOpen(true);
               }}
+
             />
 
             {importableAccounts.length > 0 && (
