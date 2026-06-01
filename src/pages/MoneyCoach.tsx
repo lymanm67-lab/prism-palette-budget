@@ -665,7 +665,7 @@ function MoneyLeakStopperCard({ defaultOpen = false }: { defaultOpen?: boolean }
   );
 }
 
-function SafeToSpendShieldCard() {
+function SafeToSpendShieldCard({ defaultOpen = true }: { defaultOpen?: boolean }) {
   const sts = useSafeToSpend('personal');
   const { data: accounts } = useAccounts();
   const { data: mode } = useModeSettings();
