@@ -25,7 +25,8 @@ import { useTTS } from '@/hooks/use-tts';
 import PageOverview from '@/components/PageOverview';
 import DebtInsights from '@/components/DebtInsights';
 import { RelatedToolsBar } from '@/components/planning/RelatedToolsBar';
-import { Target } from 'lucide-react';
+import { DebtStatementScanner } from '@/components/DebtStatementScanner';
+import { Target, FileUp } from 'lucide-react';
 
 // ─── Types ───
 interface Debt {
