@@ -413,39 +413,9 @@ export default function MoneyCoach() {
         })()}
 
 
-        {/* CARD 5 — Purchase Guard (links to existing Guardrails) */}
-        <CoachCard
-          number={5}
-          title="Purchase Guard"
-          subtitle="Decide before you buy"
-          icon={ShoppingBag}
-          iconColor="text-prism-amber"
-          confidence="high"
-          status="ok"
-          action={
-            <Button asChild size="sm" variant="ghost" className="h-7 text-xs">
-              <Link to="/settings">Open <ArrowRight className="ml-1 h-3 w-3" /></Link>
-            </Button>
-          }
-        >
-          <p className="text-sm text-muted-foreground mb-3">
-            Coach helps you pause before spending. It asks: is this a need, want, or strategic investment? Can it wait 24 hours?
-            Does it protect or weaken your plan?
-          </p>
-          <div className="grid grid-cols-2 gap-2 text-[11px]">
-            <div className="rounded-md bg-background/40 border border-border/40 px-2 py-1.5">
-              <div className="font-bold">$50+</div>
-              <div className="text-muted-foreground">Auto trigger</div>
-            </div>
-            <div className="rounded-md bg-background/40 border border-border/40 px-2 py-1.5">
-              <div className="font-bold">48h</div>
-              <div className="text-muted-foreground">Cool-off period</div>
-            </div>
-          </div>
-          <p className="mt-3 text-[10px] text-muted-foreground italic">
-            Fit Score, FOMO detection, and override tracking arrive in the next phase.
-          </p>
-        </CoachCard>
+        {/* CARD 5 — Purchase Guard (extended) */}
+        <PurchaseGuardCardSection />
+
 
         {/* CARD 6 — Money Leak Stopper */}
         <CoachCard
