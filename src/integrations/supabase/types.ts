@@ -2894,6 +2894,81 @@ export type Database = {
           },
         ]
       }
+      recovery_plans: {
+        Row: {
+          applied_at: string | null
+          category_id: string | null
+          category_name: string | null
+          created_at: string
+          household_id: string
+          id: string
+          month: string
+          overage_amount: number
+          pattern_type: string | null
+          plan_type: string
+          prevention_rule: string | null
+          status: string
+          steps: Json
+          summary: string | null
+          target_amount: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          applied_at?: string | null
+          category_id?: string | null
+          category_name?: string | null
+          created_at?: string
+          household_id: string
+          id?: string
+          month: string
+          overage_amount?: number
+          pattern_type?: string | null
+          plan_type: string
+          prevention_rule?: string | null
+          status?: string
+          steps?: Json
+          summary?: string | null
+          target_amount?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          applied_at?: string | null
+          category_id?: string | null
+          category_name?: string | null
+          created_at?: string
+          household_id?: string
+          id?: string
+          month?: string
+          overage_amount?: number
+          pattern_type?: string | null
+          plan_type?: string
+          prevention_rule?: string | null
+          status?: string
+          steps?: Json
+          summary?: string | null
+          target_amount?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recovery_plans_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recovery_plans_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recurring_transactions: {
         Row: {
           account_id: string
