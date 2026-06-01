@@ -854,7 +854,7 @@ function PaycheckDeploymentCard({ defaultOpen = false }: { defaultOpen?: boolean
   );
 }
 
-function BillTimingCard() {
+function BillTimingCard({ defaultOpen = false }: { defaultOpen?: boolean }) {
   return (
     <CoachCard
       number={9}
