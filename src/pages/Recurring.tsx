@@ -14,7 +14,7 @@ import { useAccounts, useCategories } from '@/hooks/use-finance-data';
 import CategoryCombobox from '@/components/CategoryCombobox';
 import { useCurrency } from '@/hooks/use-currency';
 import { format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, addMonths, subMonths } from 'date-fns';
-import { Loader2, Plus, Trash2, Pencil, CalendarIcon, List, ChevronLeft, ChevronRight, RepeatIcon, ArrowDownLeft, ArrowUpRight, Receipt, Zap, Bell } from 'lucide-react';
+import { Loader2, Plus, Trash2, Pencil, CalendarIcon, List, ChevronLeft, ChevronRight, RepeatIcon, ArrowDownLeft, ArrowUpRight, Receipt, Zap, Bell, User, Building2 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import BillPayPanel from '@/components/BillPayPanel';
 import { toast } from 'sonner';
