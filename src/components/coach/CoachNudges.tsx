@@ -115,17 +115,6 @@ export function CoachNudges() {
           cta: 'Review',
         });
       }
-    } else if (deployments && deployments.length === 0) {
-      out.push({
-        id: 'no-paycheck',
-        priority: 5,
-        icon: CalendarClock,
-        color: 'text-prism-sky',
-        title: 'No paycheck plan yet',
-        detail: 'Deploy your next paycheck — give every dollar a job before it lands.',
-        href: '/coach/paycheck',
-        cta: 'Deploy',
-      });
     }
 
     // 4. Purchase Guard reviews due
