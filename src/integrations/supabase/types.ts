@@ -2847,6 +2847,101 @@ export type Database = {
         }
         Relationships: []
       }
+      purchase_guard_checks: {
+        Row: {
+          amount: number
+          classification: string | null
+          created_at: string
+          decided_at: string | null
+          decision: string | null
+          fit_breakdown: Json
+          fit_score: number | null
+          fomo_detected: boolean
+          fomo_signals: string[]
+          household_id: string
+          id: string
+          merchant: string | null
+          override_reason: string | null
+          planned_goal_id: string | null
+          planned_target_date: string | null
+          post_review_completed_at: string | null
+          post_review_due_at: string | null
+          post_review_notes: string | null
+          post_review_worth_it: boolean | null
+          purpose: string | null
+          strategic_proof: Json | null
+          swap_subscription_id: string | null
+          updated_at: string
+          user_id: string
+          wait_required_hours: number
+          wait_until: string | null
+        }
+        Insert: {
+          amount: number
+          classification?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decision?: string | null
+          fit_breakdown?: Json
+          fit_score?: number | null
+          fomo_detected?: boolean
+          fomo_signals?: string[]
+          household_id: string
+          id?: string
+          merchant?: string | null
+          override_reason?: string | null
+          planned_goal_id?: string | null
+          planned_target_date?: string | null
+          post_review_completed_at?: string | null
+          post_review_due_at?: string | null
+          post_review_notes?: string | null
+          post_review_worth_it?: boolean | null
+          purpose?: string | null
+          strategic_proof?: Json | null
+          swap_subscription_id?: string | null
+          updated_at?: string
+          user_id: string
+          wait_required_hours?: number
+          wait_until?: string | null
+        }
+        Update: {
+          amount?: number
+          classification?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decision?: string | null
+          fit_breakdown?: Json
+          fit_score?: number | null
+          fomo_detected?: boolean
+          fomo_signals?: string[]
+          household_id?: string
+          id?: string
+          merchant?: string | null
+          override_reason?: string | null
+          planned_goal_id?: string | null
+          planned_target_date?: string | null
+          post_review_completed_at?: string | null
+          post_review_due_at?: string | null
+          post_review_notes?: string | null
+          post_review_worth_it?: boolean | null
+          purpose?: string | null
+          strategic_proof?: Json | null
+          swap_subscription_id?: string | null
+          updated_at?: string
+          user_id?: string
+          wait_required_hours?: number
+          wait_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_guard_checks_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reconciliation_audits: {
         Row: {
           ai_narrative: string | null
