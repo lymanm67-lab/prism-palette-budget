@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { format, startOfMonth } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
@@ -23,6 +23,10 @@ import { CoachOnboardingTour } from '@/components/coach/CoachOnboardingTour';
 import { CoachNudges } from '@/components/coach/CoachNudges';
 import { MoneySnapshotBar } from '@/components/coach/MoneySnapshotBar';
 import { CoachCard, type Confidence } from '@/components/coach/CoachCard';
+import { SituationRoom } from '@/components/coach/SituationRoom';
+import { MomentTabs } from '@/components/coach/MomentTabs';
+import { CARD_MOMENT, type Moment } from '@/components/coach/moment-types';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { StsEquationView } from '@/components/StsEquationView';
