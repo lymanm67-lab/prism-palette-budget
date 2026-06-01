@@ -14,7 +14,7 @@ import { useAccounts, useCategories } from '@/hooks/use-finance-data';
 import CategoryCombobox from '@/components/CategoryCombobox';
 import { useCurrency } from '@/hooks/use-currency';
 import { format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, addMonths, subMonths } from 'date-fns';
-import { Loader2, Plus, Trash2, Pencil, CalendarIcon, List, ChevronLeft, ChevronRight, RepeatIcon, ArrowDownLeft, ArrowUpRight, Receipt, Zap, Bell } from 'lucide-react';
+import { Loader2, Plus, Trash2, Pencil, CalendarIcon, List, ChevronLeft, ChevronRight, RepeatIcon, ArrowDownLeft, ArrowUpRight, Receipt, Zap, Bell, User, Building2 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import BillPayPanel from '@/components/BillPayPanel';
 import { toast } from 'sonner';
@@ -30,7 +30,7 @@ const FREQUENCIES = [
 ];
 
 const Recurring = () => {
-  const { data: recurring, isLoading } = useRecurringTransactions();
+  const { data: recurringAll, isLoading } = useRecurringTransactions();
   const createRecurring = useCreateRecurring();
   const updateRecurring = useUpdateRecurring();
   const deleteRecurring = useDeleteRecurring();
@@ -39,11 +39,21 @@ const Recurring = () => {
   const { formatCurrency: formatAmount } = useCurrency();
 
   const [view, setView] = useState<'list' | 'calendar' | 'billpay'>('list');
+  const [viewMode, setViewMode] = useState<'personal' | 'business'>('personal');
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [editTarget, setEditTarget] = useState<any | null>(null);
   const [editForm, setEditForm] = useState({ merchant: '', amount: '', frequency: 'monthly', account_id: '', category_id: '', next_due_date: '', type: 'expense' as 'income' | 'expense', autopay_enabled: false, reminder_days: 3, biller_url: '' });
+
+  const isBusiness = (r: any) => {
+    const group = r.categories?.category_groups;
+    return group?.budget_type === 'business' || !!group?.business_profile_id;
+  };
+  const recurring = useMemo(
+    () => (recurringAll || []).filter(r => viewMode === 'business' ? isBusiness(r) : !isBusiness(r)),
+    [recurringAll, viewMode]
+  );
 
   const [form, setForm] = useState({
     merchant: '',
@@ -170,6 +180,26 @@ const Recurring = () => {
           <p className="text-sm text-muted-foreground truncate">Manage recurring expenses and income.</p>
         </div>
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <div className="flex items-center rounded-lg border border-border bg-muted/30 p-0.5">
+            <button
+              onClick={() => setViewMode('personal')}
+              className={cn(
+                'flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition-all',
+                viewMode === 'personal' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              <User className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Personal</span>
+            </button>
+            <button
+              onClick={() => setViewMode('business')}
+              className={cn(
+                'flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition-all',
+                viewMode === 'business' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              <Building2 className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Business</span>
+            </button>
+          </div>
           <div className="flex border rounded-lg overflow-hidden">
             <button onClick={() => setView('list')} className={cn('px-2.5 py-1.5 text-xs sm:text-sm flex items-center gap-1 sm:gap-1.5 transition-colors', view === 'list' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}>
               <List className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> <span className="hidden sm:inline">List</span>
