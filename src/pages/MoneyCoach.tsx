@@ -25,6 +25,7 @@ import { MoneySnapshotBar } from '@/components/coach/MoneySnapshotBar';
 import { CoachCard, type Confidence } from '@/components/coach/CoachCard';
 import { SituationRoom } from '@/components/coach/SituationRoom';
 import { MomentTabs } from '@/components/coach/MomentTabs';
+import { CoachSlot } from '@/components/coach/CoachSlot';
 import { CARD_MOMENT, type Moment } from '@/components/coach/moment-types';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -407,24 +408,24 @@ export default function MoneyCoach() {
 
 
         {/* CARD 5 — Purchase Guard (extended) */}
-        <PurchaseGuardCardSection />
-
+        <CoachSlot card={5} moment={moment}><PurchaseGuardCardSection /></CoachSlot>
 
         {/* CARD 6 — Money Leak Stopper (engine) */}
-        <MoneyLeakStopperCard />
+        <CoachSlot card={6} moment={moment} span="md2"><MoneyLeakStopperCard /></CoachSlot>
 
         {/* CARD 7 — Safe-to-Spend Shield + Adaptive Buffer */}
-        <SafeToSpendShieldCard />
+        <CoachSlot card={7} moment={moment} span="md2lg3"><SafeToSpendShieldCard /></CoachSlot>
 
         {/* CARD 8 — Paycheck Deployment */}
-        <PaycheckDeploymentCard />
+        <CoachSlot card={8} moment={moment} span="md2"><PaycheckDeploymentCard /></CoachSlot>
 
         {/* CARD 9 — Bill Timing Optimizer */}
-        <BillTimingCard />
+        <CoachSlot card={9} moment={moment}><BillTimingCard /></CoachSlot>
 
         {/* CARD 10 — Wealth Redirector */}
-        <WealthRedirectorCard />
+        <CoachSlot card={10} moment={moment} span="md2lg3"><WealthRedirectorCard /></CoachSlot>
       </div>
+
 
       {/* Educational disclaimer */}
       <div className="rounded-lg border border-border/40 bg-muted/20 p-3 flex gap-2 text-[11px] text-muted-foreground">
