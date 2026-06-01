@@ -144,7 +144,7 @@ export default function MoneyCoach() {
         <CoachCard
           number={1}
           collapsible
-          defaultOpen={true}
+          defaultOpen={isOpenByDefault(1)}
           title="What happened"
           subtitle="Spending issues, budget status, and surprises this month"
           icon={Activity}
