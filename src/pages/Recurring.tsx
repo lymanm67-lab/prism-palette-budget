@@ -105,10 +105,12 @@ const Recurring = () => {
       autopay_enabled: form.autopay_enabled,
       reminder_days: form.reminder_days,
       biller_url: form.biller_url || null,
+      business_split_pct: form.business_split_pct,
+      business_category_id: form.business_category_id || null,
     }, {
       onSuccess: () => {
         setDialogOpen(false);
-        setForm({ merchant: '', amount: '', frequency: 'monthly', account_id: '', category_id: '', start_date: format(new Date(), 'yyyy-MM-dd'), next_due_date: format(new Date(), 'yyyy-MM-dd'), type: 'expense', autopay_enabled: false, reminder_days: 3, biller_url: '' });
+        setForm({ merchant: '', amount: '', frequency: 'monthly', account_id: '', category_id: '', start_date: format(new Date(), 'yyyy-MM-dd'), next_due_date: format(new Date(), 'yyyy-MM-dd'), type: 'expense', autopay_enabled: false, reminder_days: 3, biller_url: '', business_split_pct: 0, business_category_id: '' });
       }
     });
   };
@@ -126,6 +128,8 @@ const Recurring = () => {
       autopay_enabled: !!r.autopay_enabled,
       reminder_days: r.reminder_days ?? 3,
       biller_url: r.biller_url || '',
+      business_split_pct: Number(r.business_split_pct || 0),
+      business_category_id: r.business_category_id || '',
     });
   };
 
@@ -143,6 +147,8 @@ const Recurring = () => {
       autopay_enabled: editForm.autopay_enabled,
       reminder_days: editForm.reminder_days,
       biller_url: editForm.biller_url || null,
+      business_split_pct: editForm.business_split_pct,
+      business_category_id: editForm.business_category_id || null,
     }, {
       onSuccess: () => { setEditTarget(null); toast.success('Updated!'); },
     });
