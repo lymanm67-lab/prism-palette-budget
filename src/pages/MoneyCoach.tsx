@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { format, startOfMonth } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
@@ -10,6 +10,9 @@ import { useSubscriptions } from '@/hooks/use-subscriptions';
 import { useTransactions } from '@/hooks/use-finance-data';
 import { useAccounts } from '@/hooks/use-finance-data';
 import { useRecoveryPlans, useBuildRecoveryPlan, useUpdateRecoveryPlan } from '@/hooks/use-recovery-plans';
+import { usePurchaseGuardChecks, useOverridePattern } from '@/hooks/use-purchase-guard';
+import { PurchaseGuardDialog } from '@/components/coach/PurchaseGuardDialog';
+import { PurchaseGuardReviewPrompts } from '@/components/coach/PurchaseGuardReviewPrompts';
 import { CoachCard, type Confidence } from '@/components/coach/CoachCard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
