@@ -242,7 +242,7 @@ export default function MoneyCoach() {
               <CoachCard
                 number={3}
                 collapsible
-                defaultOpen={false}
+                defaultOpen={isOpenByDefault(3)}
                 title="Recovery plan"
                 subtitle={topOver ? `For ${topOver.name} — ${fmt(topOver.overBy)} over` : 'Fast, balanced, system, or wealth recovery'}
                 icon={Sparkles}
