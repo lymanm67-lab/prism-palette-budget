@@ -11,6 +11,9 @@ import { useTransactions } from '@/hooks/use-finance-data';
 import { useAccounts } from '@/hooks/use-finance-data';
 import { useRecoveryPlans, useBuildRecoveryPlan, useUpdateRecoveryPlan } from '@/hooks/use-recovery-plans';
 import { usePurchaseGuardChecks, useOverridePattern } from '@/hooks/use-purchase-guard';
+import { useMoneyLeaks, useScanMoneyLeaks, useUpdateMoneyLeak, type MoneyLeak } from '@/hooks/use-money-leaks';
+import { useAdaptiveBuffer, useApplyAdaptiveBuffer } from '@/hooks/use-adaptive-buffer';
+import { useModeSettings } from '@/hooks/use-financial-mode';
 import { PurchaseGuardDialog } from '@/components/coach/PurchaseGuardDialog';
 import { PurchaseGuardReviewPrompts } from '@/components/coach/PurchaseGuardReviewPrompts';
 import { CoachCard, type Confidence } from '@/components/coach/CoachCard';
@@ -21,7 +24,7 @@ import PageOverview from '@/components/PageOverview';
 import {
   Activity, Brain, Sparkles, Shield, ShoppingBag, Droplets,
   Wallet, ArrowRight, AlertTriangle, CheckCircle2, Clock, Info,
-  Zap, Scale, Settings2, TrendingUp, Loader2, X,
+  Zap, Scale, Settings2, TrendingUp, Loader2, X, RefreshCw, CheckCheck, ArrowRightCircle,
 } from 'lucide-react';
 
 const PLAN_META: Record<string, { label: string; icon: any; color: string }> = {
@@ -37,7 +40,7 @@ export default function MoneyCoach() {
   const { household } = useHousehold();
   const sts = useSafeToSpend('personal');
   const anomalies = useSpendingAnomalies(0.5);
-  const { data: subs } = useSubscriptions();
+  useSubscriptions(); // prime cache for downstream cards
   const { data: txns } = useTransactions();
   const { data: accounts } = useAccounts();
   const currentMonth = format(startOfMonth(new Date()), 'yyyy-MM-dd');
@@ -74,22 +77,9 @@ export default function MoneyCoach() {
     },
   });
 
-  // Money leaks: zombie/unused subscriptions
-  const leaks = useMemo(() => {
-    if (!subs) return [];
-    return subs
-      .filter((s: any) => s.is_active && !s.is_cancelled)
-      .map((s: any) => {
-        const monthly = Math.abs(s.average_amount || 0);
-        const lastSeen = s.last_charged_date ? new Date(s.last_charged_date).getTime() : null;
-        const daysSince = lastSeen ? Math.floor((Date.now() - lastSeen) / 86400000) : 999;
-        const isZombie = daysSince > 60;
-        return { id: s.id, merchant: s.merchant, monthly, annual: monthly * 12, isZombie, daysSince };
-      })
-      .filter(l => l.isZombie)
-      .sort((a, b) => b.annual - a.annual)
-      .slice(0, 5);
-  }, [subs]);
+  // Money leaks (live from engine table)
+  const { data: leaksOpen } = useMoneyLeaks('open');
+  const leakCount = leaksOpen?.length ?? 0;
 
   // Data freshness for confidence
   const lastTxnDate = useMemo(() => {
@@ -100,9 +90,6 @@ export default function MoneyCoach() {
     ? Math.floor((Date.now() - new Date(lastTxnDate).getTime()) / 86400000)
     : 999;
   const dataConfidence: Confidence = daysSinceLastTxn <= 7 ? 'high' : daysSinceLastTxn <= 21 ? 'medium' : 'low';
-
-  const totalLeakMonthly = leaks.reduce((s, l) => s + l.monthly, 0);
-  const totalLeakAnnual = leaks.reduce((s, l) => s + l.annual, 0);
 
   const hasIssue = (overBudget?.length || 0) > 0 || anomalies.length > 0;
 
@@ -131,9 +118,9 @@ export default function MoneyCoach() {
             <Badge variant="outline" className="bg-background/40 border-border/40">
               Buffer: <span className="ml-1 font-bold">{sts.bufferPercent}%</span>
             </Badge>
-            {leaks.length > 0 && (
+            {leakCount > 0 && (
               <Badge variant="outline" className="bg-prism-amber/10 border-prism-amber/30 text-prism-amber">
-                {leaks.length} potential leak{leaks.length === 1 ? '' : 's'}
+                {leakCount} potential leak{leakCount === 1 ? '' : 's'}
               </Badge>
             )}
           </div>
@@ -420,91 +407,11 @@ export default function MoneyCoach() {
         <PurchaseGuardCardSection />
 
 
-        {/* CARD 6 — Money Leak Stopper */}
-        <CoachCard
-          number={6}
-          title="Money leak stopper"
-          subtitle="Quiet costs that weaken your plan"
-          icon={Droplets}
-          iconColor="text-prism-rose"
-          confidence={subs ? 'high' : 'medium'}
-          status={leaks.length > 0 ? 'warn' : 'ok'}
-          action={
-            <Button asChild size="sm" variant="ghost" className="h-7 text-xs">
-              <Link to="/subscriptions">All leaks <ArrowRight className="ml-1 h-3 w-3" /></Link>
-            </Button>
-          }
-        >
-          {leaks.length === 0 ? (
-            <div className="flex items-center gap-2 text-prism-teal text-sm">
-              <CheckCircle2 className="h-4 w-4" />
-              <span>No obvious leaks. Coach will keep watching.</span>
-            </div>
-          ) : (
-            <>
-              <div className="rounded-lg bg-prism-rose/5 border border-prism-rose/20 p-2.5 mb-3">
-                <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Potential recovery</div>
-                <div className="flex items-baseline gap-2 mt-0.5">
-                  <span className="font-mono text-lg font-bold text-prism-rose">{fmt(totalLeakMonthly)}/mo</span>
-                  <span className="text-xs text-muted-foreground">≈ {fmt(totalLeakAnnual)}/yr</span>
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                {leaks.slice(0, 3).map(l => (
-                  <div key={l.id} className="flex items-center justify-between text-sm">
-                    <span className="truncate capitalize">{l.merchant}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {fmt(l.monthly)}/mo · idle {l.daysSince}d
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-        </CoachCard>
+        {/* CARD 6 — Money Leak Stopper (engine) */}
+        <MoneyLeakStopperCard />
 
-        {/* CARD 7 — Safe-to-Spend Shield (spans 2 cols on lg) */}
-        <CoachCard
-          number={7}
-          title="Safe-to-Spend Shield"
-          subtitle="What's truly available after bills, pending, and buffer"
-          icon={Wallet}
-          iconColor="text-prism-teal"
-          confidence={accounts && accounts.length > 0 ? 'high' : 'low'}
-          status="ok"
-          className="md:col-span-2 lg:col-span-3"
-        >
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">True monthly Safe-to-Spend</div>
-              <div className="font-mono text-3xl font-extrabold text-prism-teal mt-1">{fmt(sts.monthly)}</div>
-              <div className="text-xs text-muted-foreground mt-1">
-                ≈ {fmt(sts.weekly)}/wk · {fmt(sts.daily)}/day
-              </div>
-              <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-                <div className="rounded-md bg-background/40 border border-border/40 px-2 py-1.5">
-                  <div className="text-muted-foreground text-[10px]">Available cash</div>
-                  <div className="font-mono font-bold">{fmt(sts.totalAvailableCash)}</div>
-                </div>
-                <div className="rounded-md bg-background/40 border border-border/40 px-2 py-1.5">
-                  <div className="text-muted-foreground text-[10px]">Smart Buffer</div>
-                  <div className="font-mono font-bold">{sts.bufferPercent}%</div>
-                </div>
-                <div className="rounded-md bg-background/40 border border-border/40 px-2 py-1.5">
-                  <div className="text-muted-foreground text-[10px]">Monthly income</div>
-                  <div className="font-mono font-bold">{fmt(sts.monthlyIncome)}</div>
-                </div>
-                <div className="rounded-md bg-background/40 border border-border/40 px-2 py-1.5">
-                  <div className="text-muted-foreground text-[10px]">Obligations</div>
-                  <div className="font-mono font-bold">{fmt(sts.effectiveExpenses)}</div>
-                </div>
-              </div>
-            </div>
-            <div>
-              <StsEquationView />
-            </div>
-          </div>
-        </CoachCard>
+        {/* CARD 7 — Safe-to-Spend Shield + Adaptive Buffer */}
+        <SafeToSpendShieldCard />
       </div>
 
       {/* Educational disclaimer */}
@@ -597,6 +504,243 @@ function PurchaseGuardCardSection() {
 
       <PurchaseGuardDialog open={open} onOpenChange={setOpen} />
     </>
+  );
+}
+
+const REDIRECT_LABEL: Record<string, string> = {
+  debt: 'High-interest debt',
+  hsa: 'HSA',
+  roth: 'Roth IRA',
+  savings: 'Savings',
+  ef: 'Emergency Fund',
+  none: 'No redirect',
+};
+
+function MoneyLeakStopperCard() {
+  const { data: leaks, isLoading } = useMoneyLeaks('open');
+  const scan = useScanMoneyLeaks();
+  const update = useUpdateMoneyLeak();
+
+  const list = (leaks || []) as MoneyLeak[];
+  const totalMonthly = list.reduce((s, l) => s + Number(l.monthly_cost || 0), 0);
+  const totalAnnual = list.reduce((s, l) => s + Number(l.annual_cost || 0), 0);
+  const total3yr = list.reduce((s, l) => s + Number(l.three_year_cost || 0), 0);
+
+  return (
+    <CoachCard
+      number={6}
+      title="Money leak stopper"
+      subtitle="Quiet costs that weaken your plan"
+      icon={Droplets}
+      iconColor="text-prism-rose"
+      confidence={list.length > 0 ? 'high' : 'medium'}
+      status={list.length > 0 ? 'warn' : 'ok'}
+      className="md:col-span-2"
+      action={
+        <Button size="sm" variant="ghost" className="h-7 text-xs"
+          onClick={() => scan.mutate()} disabled={scan.isPending}>
+          {scan.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+          <span className="ml-1">Scan now</span>
+        </Button>
+      }
+    >
+      {isLoading && (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Loader2 className="h-3 w-3 animate-spin" /> Loading…
+        </div>
+      )}
+
+      {!isLoading && list.length === 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 text-prism-teal text-sm">
+            <CheckCircle2 className="h-4 w-4" />
+            <span>No leaks detected. Run a scan to check fresh data.</span>
+          </div>
+          <Button size="sm" onClick={() => scan.mutate()} disabled={scan.isPending} className="w-full">
+            {scan.isPending ? (<><Loader2 className="mr-2 h-3 w-3 animate-spin" /> Scanning…</>) : (<>Run leak scan <Sparkles className="ml-2 h-3 w-3" /></>)}
+          </Button>
+        </div>
+      )}
+
+      {list.length > 0 && (
+        <>
+          <div className="grid grid-cols-3 gap-2 mb-3">
+            <div className="rounded-md bg-prism-rose/5 border border-prism-rose/20 px-2 py-1.5">
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Monthly</div>
+              <div className="font-mono text-sm font-bold text-prism-rose">{fmt(totalMonthly)}</div>
+            </div>
+            <div className="rounded-md bg-prism-rose/5 border border-prism-rose/20 px-2 py-1.5">
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Annual</div>
+              <div className="font-mono text-sm font-bold text-prism-rose">{fmt(totalAnnual)}</div>
+            </div>
+            <div className="rounded-md bg-prism-amber/5 border border-prism-amber/20 px-2 py-1.5">
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">3-yr</div>
+              <div className="font-mono text-sm font-bold text-prism-amber">{fmt(total3yr)}</div>
+            </div>
+          </div>
+
+          <div className="space-y-2 max-h-[320px] overflow-auto pr-1">
+            {list.slice(0, 8).map(l => (
+              <div key={l.id} className="rounded-lg border border-border/40 bg-background/40 p-2.5">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <Badge variant="outline" className="text-[9px] py-0 px-1.5 capitalize">
+                        {l.leak_type.replace(/_/g, ' ')}
+                      </Badge>
+                      {l.risk_level === 'high' && (
+                        <Badge variant="outline" className="text-[9px] py-0 px-1.5 bg-prism-rose/10 border-prism-rose/30 text-prism-rose">
+                          High risk
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-sm font-semibold mt-1 truncate">{l.title}</p>
+                    {l.recommended_fix && (
+                      <p className="text-[11px] text-muted-foreground mt-0.5">{l.recommended_fix}</p>
+                    )}
+                  </div>
+                  <div className="text-right shrink-0">
+                    <div className="font-mono text-sm font-bold">{fmt(Number(l.monthly_cost))}/mo</div>
+                    <div className="font-mono text-[10px] text-muted-foreground">{fmt(Number(l.annual_cost))}/yr</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                  <Button size="sm" variant="outline" className="h-6 text-[10px] px-2"
+                    onClick={() => update.mutate({ id: l.id, status: 'fixed' })}>
+                    <CheckCheck className="h-3 w-3 mr-1" /> Fixed
+                  </Button>
+                  {l.suggested_redirect && l.suggested_redirect !== 'none' && (
+                    <Button size="sm" variant="outline" className="h-6 text-[10px] px-2 border-prism-lime/40 text-prism-lime hover:bg-prism-lime/10"
+                      onClick={() => update.mutate({ id: l.id, status: 'redirected' })}>
+                      <ArrowRightCircle className="h-3 w-3 mr-1" />
+                      Redirect → {REDIRECT_LABEL[l.suggested_redirect] || l.suggested_redirect}
+                    </Button>
+                  )}
+                  <Button size="sm" variant="ghost" className="h-6 text-[10px] px-2 text-muted-foreground"
+                    onClick={() => update.mutate({ id: l.id, status: 'dismissed' })}>
+                    <X className="h-3 w-3 mr-1" /> Dismiss
+                  </Button>
+                </div>
+              </div>
+            ))}
+            {list.length > 8 && (
+              <p className="text-[11px] text-muted-foreground text-center pt-1">+ {list.length - 8} more leaks</p>
+            )}
+          </div>
+        </>
+      )}
+    </CoachCard>
+  );
+}
+
+function SafeToSpendShieldCard() {
+  const sts = useSafeToSpend('personal');
+  const { data: accounts } = useAccounts();
+  const { data: mode } = useModeSettings();
+  const adaptive = useAdaptiveBuffer();
+  const apply = useApplyAdaptiveBuffer();
+
+  const isAdaptive = (mode as any)?.buffer_mode === 'adaptive';
+
+  return (
+    <CoachCard
+      number={7}
+      title="Safe-to-Spend Shield"
+      subtitle="What's truly available after bills, pending, and buffer"
+      icon={Wallet}
+      iconColor="text-prism-teal"
+      confidence={accounts && accounts.length > 0 ? 'high' : 'low'}
+      status="ok"
+      className="md:col-span-2 lg:col-span-3"
+    >
+      <div className="grid gap-4 lg:grid-cols-3">
+        <div>
+          <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">True monthly Safe-to-Spend</div>
+          <div className="font-mono text-3xl font-extrabold text-prism-teal mt-1">{fmt(sts.monthly)}</div>
+          <div className="text-xs text-muted-foreground mt-1">
+            ≈ {fmt(sts.weekly)}/wk · {fmt(sts.daily)}/day
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+            <div className="rounded-md bg-background/40 border border-border/40 px-2 py-1.5">
+              <div className="text-muted-foreground text-[10px]">Available cash</div>
+              <div className="font-mono font-bold">{fmt(sts.totalAvailableCash)}</div>
+            </div>
+            <div className="rounded-md bg-background/40 border border-border/40 px-2 py-1.5">
+              <div className="text-muted-foreground text-[10px]">Smart Buffer</div>
+              <div className="font-mono font-bold">{sts.bufferPercent}%</div>
+            </div>
+            <div className="rounded-md bg-background/40 border border-border/40 px-2 py-1.5">
+              <div className="text-muted-foreground text-[10px]">Monthly income</div>
+              <div className="font-mono font-bold">{fmt(sts.monthlyIncome)}</div>
+            </div>
+            <div className="rounded-md bg-background/40 border border-border/40 px-2 py-1.5">
+              <div className="text-muted-foreground text-[10px]">Obligations</div>
+              <div className="font-mono font-bold">{fmt(sts.effectiveExpenses)}</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Adaptive Buffer Panel */}
+        <div className="rounded-xl border border-prism-sky/20 bg-prism-sky/5 p-3">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-1.5">
+              <Shield className="h-3.5 w-3.5 text-prism-sky" />
+              <span className="text-[11px] font-bold uppercase tracking-wider text-prism-sky">Why this buffer?</span>
+            </div>
+            <Badge variant="outline" className="text-[9px] py-0 px-1.5">
+              {isAdaptive ? 'Adaptive' : 'Manual'}
+            </Badge>
+          </div>
+
+          <div className="flex items-baseline gap-2">
+            <span className="font-mono text-2xl font-extrabold">{adaptive.tier}%</span>
+            <span className="text-[11px] text-muted-foreground">recommended</span>
+          </div>
+          <p className="text-[11px] text-muted-foreground mt-1">{adaptive.explanation}</p>
+
+          {adaptive.triggers.length > 0 ? (
+            <ul className="mt-2 space-y-1">
+              {adaptive.triggers.map(t => (
+                <li key={t.key} className="flex items-start gap-1.5 text-[11px]">
+                  <span className="text-prism-amber">›</span>
+                  <span className="flex-1">
+                    <span className="font-medium">{t.label}</span>
+                    {t.detail && <span className="text-muted-foreground"> — {t.detail}</span>}
+                  </span>
+                  <span className="font-mono text-[10px] text-muted-foreground">+{t.weight}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-2 text-[11px] text-muted-foreground italic">No risk signals — minimum buffer applies.</p>
+          )}
+
+          <div className="flex gap-1.5 mt-3">
+            {!isAdaptive || sts.bufferPercent !== adaptive.tier ? (
+              <Button size="sm" className="h-7 text-[11px] flex-1"
+                onClick={() => apply.mutate({ mode: 'adaptive', percent: adaptive.tier, triggers: adaptive.triggers })}
+                disabled={apply.isPending}>
+                {apply.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <>Apply {adaptive.tier}% adaptive</>}
+              </Button>
+            ) : (
+              <Badge variant="outline" className="text-[10px] bg-prism-teal/10 border-prism-teal/30 text-prism-teal">
+                <CheckCircle2 className="h-3 w-3 mr-1" /> Active
+              </Badge>
+            )}
+            {isAdaptive && (
+              <Button size="sm" variant="ghost" className="h-7 text-[11px]"
+                onClick={() => apply.mutate({ mode: 'manual' })}>
+                Back to manual
+              </Button>
+            )}
+          </div>
+        </div>
+
+        <div>
+          <StsEquationView />
+        </div>
+      </div>
+    </CoachCard>
   );
 }
 

@@ -1135,7 +1135,10 @@ export type Database = {
       }
       financial_mode_settings: {
         Row: {
+          buffer_last_computed_at: string | null
+          buffer_mode: string
           buffer_percent: number
+          buffer_triggers: Json
           created_at: string
           current_mode: string
           greenlight_unlocked: boolean
@@ -1144,7 +1147,10 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          buffer_last_computed_at?: string | null
+          buffer_mode?: string
           buffer_percent?: number
+          buffer_triggers?: Json
           created_at?: string
           current_mode?: string
           greenlight_unlocked?: boolean
@@ -1153,7 +1159,10 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          buffer_last_computed_at?: string | null
+          buffer_mode?: string
           buffer_percent?: number
+          buffer_triggers?: Json
           created_at?: string
           current_mode?: string
           greenlight_unlocked?: boolean
@@ -2748,6 +2757,83 @@ export type Database = {
           },
           {
             foreignKeyName: "metro2_findings_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      money_leaks: {
+        Row: {
+          annual_cost: number
+          created_at: string
+          detail: Json
+          detected_at: string
+          dismissed_at: string | null
+          fixed_at: string | null
+          household_id: string
+          id: string
+          leak_type: string
+          merchant: string | null
+          monthly_cost: number
+          recommended_fix: string | null
+          risk_level: string
+          source_id: string | null
+          source_type: string | null
+          status: string
+          suggested_redirect: string | null
+          three_year_cost: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          annual_cost?: number
+          created_at?: string
+          detail?: Json
+          detected_at?: string
+          dismissed_at?: string | null
+          fixed_at?: string | null
+          household_id: string
+          id?: string
+          leak_type: string
+          merchant?: string | null
+          monthly_cost?: number
+          recommended_fix?: string | null
+          risk_level?: string
+          source_id?: string | null
+          source_type?: string | null
+          status?: string
+          suggested_redirect?: string | null
+          three_year_cost?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          annual_cost?: number
+          created_at?: string
+          detail?: Json
+          detected_at?: string
+          dismissed_at?: string | null
+          fixed_at?: string | null
+          household_id?: string
+          id?: string
+          leak_type?: string
+          merchant?: string | null
+          monthly_cost?: number
+          recommended_fix?: string | null
+          risk_level?: string
+          source_id?: string | null
+          source_type?: string | null
+          status?: string
+          suggested_redirect?: string | null
+          three_year_cost?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "money_leaks_household_id_fkey"
             columns: ["household_id"]
             isOneToOne: false
             referencedRelation: "households"
