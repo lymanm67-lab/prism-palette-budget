@@ -9,6 +9,7 @@ import { useSpendingAnomalies } from '@/hooks/use-spending-anomalies';
 import { useSubscriptions } from '@/hooks/use-subscriptions';
 import { useTransactions } from '@/hooks/use-finance-data';
 import { useAccounts } from '@/hooks/use-finance-data';
+import { useRecoveryPlans, useBuildRecoveryPlan, useUpdateRecoveryPlan } from '@/hooks/use-recovery-plans';
 import { CoachCard, type Confidence } from '@/components/coach/CoachCard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,7 +18,15 @@ import PageOverview from '@/components/PageOverview';
 import {
   Activity, Brain, Sparkles, Shield, ShoppingBag, Droplets,
   Wallet, ArrowRight, AlertTriangle, CheckCircle2, Clock, Info,
+  Zap, Scale, Settings2, TrendingUp, Loader2, X,
 } from 'lucide-react';
+
+const PLAN_META: Record<string, { label: string; icon: any; color: string }> = {
+  fast: { label: 'Fast', icon: Zap, color: 'text-prism-orange' },
+  balanced: { label: 'Balanced', icon: Scale, color: 'text-prism-teal' },
+  system: { label: 'System', icon: Settings2, color: 'text-prism-sky' },
+  wealth: { label: 'Wealth', icon: TrendingUp, color: 'text-prism-lime' },
+};
 
 const fmt = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
 
