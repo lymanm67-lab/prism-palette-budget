@@ -547,6 +547,17 @@ const DebtPayoff = () => {
                     )}
                   </div>
 
+                  <label className="flex items-center gap-2 text-sm cursor-pointer pt-2 border-t border-border/50">
+                    <input
+                      type="checkbox"
+                      checked={!!form.in_settlement_plan}
+                      onChange={e => setForm(f => ({ ...f, in_settlement_plan: e.target.checked }))}
+                      className="h-4 w-4 accent-primary"
+                    />
+                    In Debt Settlement Plan — Gitmeidlaw
+                  </label>
+
+
 
 
                   <Button onClick={handleSaveDebt} disabled={!form.name || !form.balance || createItem.isPending || updateItem.isPending} className="w-full prism-gradient text-white border-0 hover:opacity-90">
