@@ -836,13 +836,18 @@ function PaycheckDeploymentCard({ defaultOpen = false }: { defaultOpen?: boolean
       }
     >
       {!next && (
-        <div className="space-y-3">
-          <p className="text-sm text-muted-foreground">
-            Build a paycheck plan and Coach will assign each dollar to bills, debt, goals, buffer, and Safe-to-Spend.
-          </p>
-          <Button size="sm" className="w-full" disabled={build.isPending}
-            onClick={() => build.mutate({})}>
-            {build.isPending ? <><Loader2 className="mr-2 h-3 w-3 animate-spin" /> Deploying…</> : <>Deploy next paycheck <Sparkles className="ml-2 h-3 w-3" /></>}
+        <div className="rounded-lg border border-dashed border-border/50 bg-background/30 px-4 py-5 flex flex-col items-center text-center gap-3">
+          <div className="h-9 w-9 rounded-full bg-prism-amber/10 ring-1 ring-prism-amber/30 flex items-center justify-center">
+            <CalendarClock className="h-4 w-4 text-prism-amber" />
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm font-semibold text-foreground">No paycheck plan yet</p>
+            <p className="text-[12px] text-muted-foreground leading-snug max-w-[28ch] mx-auto">
+              Coach will assign each dollar to bills, debt, goals, buffer, and Safe-to-Spend.
+            </p>
+          </div>
+          <Button size="sm" disabled={build.isPending} onClick={() => build.mutate({})} className="h-8 text-xs px-4">
+            {build.isPending ? <><Loader2 className="mr-2 h-3 w-3 animate-spin" /> Deploying…</> : <>Deploy next paycheck <Sparkles className="ml-1.5 h-3 w-3" /></>}
           </Button>
         </div>
       )}
