@@ -440,7 +440,7 @@ export default function MoneyCoach() {
             <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
               Live Protection
             </h3>
-            <span className="text-[11px] text-muted-foreground/70 font-mono">05–07</span>
+            <span className="text-[11px] text-muted-foreground/70 font-mono">05–08</span>
           </div>
 
           {/* CARD 5 — Purchase Guard (extended) */}
@@ -451,6 +451,36 @@ export default function MoneyCoach() {
 
           {/* CARD 7 — Safe-to-Spend Shield + Adaptive Buffer */}
           <CoachSlot card={7} moment={moment}><SafeToSpendShieldCard defaultOpen={isOpenByDefault(7)} /></CoachSlot>
+
+          {/* CARD 11 — Protection Pulse (weekly snapshot) */}
+          <CoachCard
+            number={11}
+            collapsible
+            defaultOpen={false}
+            title="Protection pulse"
+            subtitle="Weekly snapshot of every guardrail in play"
+            icon={Shield}
+            iconColor="text-prism-sky"
+            status={leakCount > 0 || hasIssue ? 'warn' : 'ok'}
+          >
+            <div className="grid grid-cols-3 gap-2">
+              <div className="rounded-md bg-background/40 border border-border/40 px-2 py-2 text-center">
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Open leaks</div>
+                <div className={cn('font-mono text-lg font-extrabold mt-0.5', leakCount > 0 ? 'text-prism-rose' : 'text-prism-teal')}>{leakCount}</div>
+              </div>
+              <div className="rounded-md bg-background/40 border border-border/40 px-2 py-2 text-center">
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Over budget</div>
+                <div className={cn('font-mono text-lg font-extrabold mt-0.5', (overBudget?.length || 0) > 0 ? 'text-prism-amber' : 'text-prism-teal')}>{overBudget?.length || 0}</div>
+              </div>
+              <div className="rounded-md bg-background/40 border border-border/40 px-2 py-2 text-center">
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Buffer</div>
+                <div className="font-mono text-lg font-extrabold mt-0.5 text-prism-sky">{sts.bufferPercent}%</div>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground mt-3">
+              Coach watches Purchase Guard decisions, money leaks, and your Safe-to-Spend buffer continuously. Tap a card above to act.
+            </p>
+          </CoachCard>
         </div>
         {/* ─── END COLUMN 2 ─── */}
 
@@ -460,7 +490,7 @@ export default function MoneyCoach() {
             <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
               Strategy & Flow
             </h3>
-            <span className="text-[11px] text-muted-foreground/70 font-mono">08–10</span>
+            <span className="text-[11px] text-muted-foreground/70 font-mono">08–12</span>
           </div>
 
           {/* CARD 8 — Paycheck Deployment */}
@@ -471,6 +501,40 @@ export default function MoneyCoach() {
 
           {/* CARD 10 — Wealth Redirector */}
           <CoachSlot card={10} moment={moment}><WealthRedirectorCard defaultOpen={isOpenByDefault(10)} /></CoachSlot>
+
+          {/* CARD 12 — 30-Day Cash Outlook */}
+          <CoachCard
+            number={12}
+            collapsible
+            defaultOpen={false}
+            title="30-day cash outlook"
+            subtitle="Where your money lands across the next 4 weeks"
+            icon={TrendingUp}
+            iconColor="text-prism-lime"
+            status="ok"
+          >
+            <div className="grid grid-cols-2 gap-2">
+              <div className="rounded-md bg-background/40 border border-border/40 px-3 py-2">
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Monthly income</div>
+                <div className="font-mono text-base font-bold text-prism-teal mt-0.5">{fmt(sts.monthlyIncome)}</div>
+              </div>
+              <div className="rounded-md bg-background/40 border border-border/40 px-3 py-2">
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Obligations</div>
+                <div className="font-mono text-base font-bold text-prism-rose mt-0.5">{fmt(sts.effectiveExpenses)}</div>
+              </div>
+              <div className="rounded-md bg-background/40 border border-border/40 px-3 py-2">
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Safe-to-Spend</div>
+                <div className="font-mono text-base font-bold text-prism-amber mt-0.5">{fmt(sts.monthly)}</div>
+              </div>
+              <div className="rounded-md bg-background/40 border border-border/40 px-3 py-2">
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Weekly pace</div>
+                <div className="font-mono text-base font-bold text-prism-sky mt-0.5">{fmt(sts.weekly)}</div>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground mt-3">
+              Coach projects this monthly rhythm forward. Use Paycheck Deployment and Bill Timing above to shape the next four weeks.
+            </p>
+          </CoachCard>
         </div>
         {/* ─── END COLUMN 3 ─── */}
       </div>
