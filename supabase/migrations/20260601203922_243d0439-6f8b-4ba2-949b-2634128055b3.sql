@@ -1,0 +1,1 @@
+ALTER TABLE public.debt_items ADD COLUMN IF NOT EXISTS due_day smallint CHECK (due_day BETWEEN 1 AND 31);
