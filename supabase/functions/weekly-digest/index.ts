@@ -76,14 +76,15 @@ serve(async (req) => {
           .gte("date", currentMonth)
           .lte("date", todayStr);
 
-        // Fetch upcoming recurring bills
+        // Fetch upcoming recurring bills (next 14 days so reminder_days windows are honored)
+        const twoWeeksStr = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
         const { data: recurring } = await supabase
           .from("recurring_transactions")
-          .select("amount, merchant, next_due_date, categories(name)")
+          .select("amount, merchant, next_due_date, autopay_enabled, reminder_days, biller_url, categories(name)")
           .eq("household_id", householdId)
           .eq("is_active", true)
           .gte("next_due_date", todayStr)
-          .lte("next_due_date", nextWeekStr)
+          .lte("next_due_date", twoWeeksStr)
           .order("next_due_date");
 
         // Calculate spending summary
@@ -126,13 +127,31 @@ serve(async (req) => {
           };
         }).sort((a: any, b: any) => b.pct - a.pct);
 
-        // Upcoming bills
-        const upcomingBills = (recurring || []).map((r: any) => ({
-          merchant: r.merchant || r.categories?.name || "Bill",
-          amount: Math.abs(r.amount),
-          dueDate: r.next_due_date,
-        }));
+        // Upcoming bills — split manual (reminders) vs autopay (informational)
+        const msPerDay = 86400000;
+        const reminderBills = (recurring || [])
+          .filter((r: any) => !r.autopay_enabled && Number(r.amount) < 0)
+          .filter((r: any) => {
+            const daysOut = Math.ceil((new Date(r.next_due_date + "T00:00:00Z").getTime() - now.getTime()) / msPerDay);
+            return daysOut <= Math.max(Number(r.reminder_days ?? 3), 7);
+          })
+          .map((r: any) => ({
+            merchant: r.merchant || r.categories?.name || "Bill",
+            amount: Math.abs(r.amount),
+            dueDate: r.next_due_date,
+            billerUrl: r.biller_url || null,
+          }));
 
+        const autopayBills = (recurring || [])
+          .filter((r: any) => r.autopay_enabled && Number(r.amount) < 0)
+          .filter((r: any) => r.next_due_date <= nextWeekStr)
+          .map((r: any) => ({
+            merchant: r.merchant || r.categories?.name || "Bill",
+            amount: Math.abs(r.amount),
+            dueDate: r.next_due_date,
+          }));
+
+        const upcomingBills = reminderBills;
         const totalUpcoming = upcomingBills.reduce((s: number, b: any) => s + b.amount, 0);
 
         // Build email HTML
@@ -142,6 +161,7 @@ serve(async (req) => {
           topCategories,
           budgetItems,
           upcomingBills,
+          autopayBills,
           totalUpcoming,
           weekStart: weekAgoStr,
           weekEnd: todayStr,
