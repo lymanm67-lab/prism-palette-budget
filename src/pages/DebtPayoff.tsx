@@ -44,6 +44,7 @@ interface Debt {
   forgiveness_eligible?: boolean;
   forgiveness_date?: string;
   forgiveness_note?: string;
+  due_day?: number;
 }
 
 
@@ -155,13 +156,14 @@ const DebtPayoff = () => {
       forgiveness_eligible: !!item.forgiveness_eligible,
       forgiveness_date: item.forgiveness_date || undefined,
       forgiveness_note: item.forgiveness_note || undefined,
+      due_day: item.due_day ? Number(item.due_day) : undefined,
     })),
     [dbItems]
   );
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
-  const [form, setForm] = useState({ name: '', balance: '', minimum_payment: '', interest_rate: '', account_id: '', business_split_pct: 0, business_name: '', deferred_until: '', forgiveness_eligible: false, forgiveness_date: '', forgiveness_note: '' });
+  const [form, setForm] = useState({ name: '', balance: '', minimum_payment: '', interest_rate: '', account_id: '', business_split_pct: 0, business_name: '', deferred_until: '', forgiveness_eligible: false, forgiveness_date: '', forgiveness_note: '', due_day: '' });
 
 
   const [planDialogOpen, setPlanDialogOpen] = useState(false);
@@ -212,6 +214,7 @@ const DebtPayoff = () => {
       forgiveness_eligible: !!form.forgiveness_eligible,
       forgiveness_date: form.forgiveness_eligible ? (form.forgiveness_date || null) : null,
       forgiveness_note: form.forgiveness_eligible ? (form.forgiveness_note.trim() || null) : null,
+      due_day: form.due_day ? Math.max(1, Math.min(31, parseInt(form.due_day, 10))) : null,
     };
     try {
       if (editId) {
@@ -222,7 +225,7 @@ const DebtPayoff = () => {
         toast.success('Debt added');
       }
       setEditId(null);
-      setForm({ name: '', balance: '', minimum_payment: '', interest_rate: '', account_id: '', business_split_pct: 0, business_name: '', deferred_until: '', forgiveness_eligible: false, forgiveness_date: '', forgiveness_note: '' });
+      setForm({ name: '', balance: '', minimum_payment: '', interest_rate: '', account_id: '', business_split_pct: 0, business_name: '', deferred_until: '', forgiveness_eligible: false, forgiveness_date: '', forgiveness_note: '', due_day: '' });
       setDialogOpen(false);
     } catch (err: any) {
       console.error('Save debt error:', err);
@@ -232,7 +235,7 @@ const DebtPayoff = () => {
 
   const openEdit = (d: Debt) => {
     setEditId(d.id);
-    setForm({ name: d.name, balance: String(d.balance), minimum_payment: String(d.minimum_payment), interest_rate: String(d.interest_rate), account_id: d.account_id || '', business_split_pct: d.business_split_pct || 0, business_name: d.business_name || '', deferred_until: d.deferred_until || '', forgiveness_eligible: !!d.forgiveness_eligible, forgiveness_date: d.forgiveness_date || '', forgiveness_note: d.forgiveness_note || '' });
+    setForm({ name: d.name, balance: String(d.balance), minimum_payment: String(d.minimum_payment), interest_rate: String(d.interest_rate), account_id: d.account_id || '', business_split_pct: d.business_split_pct || 0, business_name: d.business_name || '', deferred_until: d.deferred_until || '', forgiveness_eligible: !!d.forgiveness_eligible, forgiveness_date: d.forgiveness_date || '', forgiveness_note: d.forgiveness_note || '', due_day: d.due_day ? String(d.due_day) : '' });
     setDialogOpen(true);
   };
 
@@ -459,6 +462,20 @@ const DebtPayoff = () => {
                     </div>
                   )}
 
+                  {/* Payment due day */}
+                  <div className="space-y-2">
+                    <Label className="text-sm">Payment due day of month</Label>
+                    <Input
+                      type="number"
+                      min={1}
+                      max={31}
+                      placeholder="e.g. 15"
+                      value={form.due_day}
+                      onChange={e => setForm(f => ({ ...f, due_day: e.target.value }))}
+                    />
+                    <p className="text-[11px] text-muted-foreground">Day of the month the minimum payment is due (1–31).</p>
+                  </div>
+
                   {/* Loan status: deferment & forgiveness */}
                   <div className="space-y-3 pt-2 border-t border-border/50">
                     <Label className="text-xs uppercase tracking-wider text-muted-foreground">Loan status (optional)</Label>
@@ -531,6 +548,7 @@ const DebtPayoff = () => {
                   forgiveness_eligible: false,
                   forgiveness_date: '',
                   forgiveness_note: '',
+                  due_day: '',
 
                 });
                 setEditId(null);
@@ -615,6 +633,11 @@ const DebtPayoff = () => {
                           {d.forgiveness_eligible && (
                             <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-prism-teal/20 text-prism-teal" title={d.forgiveness_note || 'Forgiveness eligible'}>
                               🎓 Forgiveness{d.forgiveness_date ? ` · ${new Date(d.forgiveness_date).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}` : ''}
+                            </span>
+                          )}
+                          {d.due_day && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground" title="Monthly payment due day">
+                              📅 Due {d.due_day}{['st','nd','rd'][((d.due_day + 90) % 100 - 10) % 10 - 1] || 'th'}
                             </span>
                           )}
                         </div>
