@@ -678,7 +678,7 @@ function SafeToSpendShieldCard({ defaultOpen = true }: { defaultOpen?: boolean }
     <CoachCard
       number={7}
       collapsible
-      defaultOpen={true}
+      defaultOpen={defaultOpen}
       title="Safe-to-Spend Shield"
       subtitle="What's truly available after bills, pending, and buffer"
       icon={Wallet}
