@@ -52,7 +52,7 @@ export function Step01({ value, onChange }: StepProps) {
       icon: Upload,
       title: 'Paycheck',
       desc: 'Upload a recent stub so Coach knows your real take-home and deductions.',
-      href: '/income',
+      href: '/budgets',
       color: 'text-prism-teal',
       done: status.paycheck,
     },
