@@ -66,9 +66,9 @@ export function Step01({ value, onChange }: StepProps) {
     {
       key: 'bills',
       icon: Receipt,
-      title: 'Bills',
-      desc: 'Scan or import recurring bills so Coach can time them around payday.',
-      href: '/budgets?scan=bill',
+      title: 'Bills & Subscriptions',
+      desc: 'Track recurring bills (autopay, reminders) and subscriptions (cancel tools) in one place.',
+      href: '/subscriptions?tab=recurring',
       color: 'text-prism-amber',
       done: status.bills,
     },
@@ -126,7 +126,7 @@ export function Step01({ value, onChange }: StepProps) {
                   <div className="flex gap-1.5">
                     <Button asChild size="sm" variant={t.done ? 'ghost' : 'outline'} className="h-7 text-[11px] flex-1">
                       <Link to={t.done ? (t.key === 'bills' ? '/subscriptions' : '/debt-payoff') : t.href}>
-                        {t.done ? 'Manage' : `Scan ${t.title.toLowerCase()}`}
+                        {t.done ? 'Manage' : (t.key === 'bills' ? 'Add bill or subscription' : `Scan ${t.title.toLowerCase()}`)}
                       </Link>
                     </Button>
                     {!t.done && (
