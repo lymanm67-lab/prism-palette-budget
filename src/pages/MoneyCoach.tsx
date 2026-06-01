@@ -160,7 +160,7 @@ export default function MoneyCoach() {
           title="What happened"
           subtitle="Spending issues, budget status, and surprises this month"
           icon={Activity}
-          iconColor="text-prism-orange"
+          iconColor="text-prism-amber"
           confidence={dataConfidence}
           status={hasIssue ? 'warn' : 'ok'}
           pitfall="Reacting to a single bad week with guilt instead of data."
@@ -209,7 +209,7 @@ export default function MoneyCoach() {
           title="Why it happened"
           subtitle="Root cause, trend vs outlier"
           icon={Brain}
-          iconColor="text-prism-violet"
+          iconColor="text-prism-amber"
           confidence={hasIssue ? 'medium' : 'high'}
           status={hasIssue ? 'warn' : 'ok'}
           action={hasIssue ? (
@@ -258,7 +258,7 @@ export default function MoneyCoach() {
                 title="Recovery plan"
                 subtitle={topOver ? `For ${topOver.name} — ${fmt(topOver.overBy)} over` : 'Fast, balanced, system, or wealth recovery'}
                 icon={Sparkles}
-                iconColor="text-prism-lime"
+                iconColor="text-prism-amber"
                 confidence={plansForTop.length ? 'high' : 'medium'}
                 status={activePlan ? 'ok' : topOver ? 'warn' : 'ok'}
                 pitfall="Going 'cold turkey' on a category — drastic cuts collapse by week two."
@@ -395,7 +395,7 @@ export default function MoneyCoach() {
                 title="Prevention rule"
                 subtitle="So it stops repeating"
                 icon={Shield}
-                iconColor="text-prism-sky"
+                iconColor="text-prism-amber"
                 confidence={preventionRule ? 'high' : 'medium'}
                 status={preventionRule ? 'ok' : topOver ? 'warn' : 'ok'}
                 pitfall="Fixing the symptom (a refund, a transfer) without changing the system."
@@ -461,7 +461,7 @@ export default function MoneyCoach() {
             title="Protection pulse"
             subtitle="Weekly snapshot of every guardrail in play"
             icon={Shield}
-            iconColor="text-prism-sky"
+            iconColor="text-prism-amber"
             status={leakCount > 0 || hasIssue ? 'warn' : 'ok'}
           >
             <div className="grid grid-cols-3 gap-2">
@@ -511,7 +511,7 @@ export default function MoneyCoach() {
             title="30-day cash outlook"
             subtitle="Where your money lands across the next 4 weeks"
             icon={TrendingUp}
-            iconColor="text-prism-lime"
+            iconColor="text-prism-amber"
             status="ok"
           >
             <div className="grid grid-cols-2 gap-2">
@@ -663,7 +663,7 @@ function MoneyLeakStopperCard({ defaultOpen = false }: { defaultOpen?: boolean }
       title="Money leak stopper"
       subtitle="Quiet costs that weaken your plan"
       icon={Droplets}
-      iconColor="text-prism-rose"
+      iconColor="text-prism-amber"
       confidence={list.length > 0 ? 'high' : 'medium'}
       status={list.length > 0 ? 'warn' : 'ok'}
       className=""
@@ -781,7 +781,7 @@ function SafeToSpendShieldCard({ defaultOpen = true }: { defaultOpen?: boolean }
       title="Safe-to-Spend Shield"
       subtitle="What's truly available after bills, pending, and buffer"
       icon={Wallet}
-      iconColor="text-prism-teal"
+      iconColor="text-prism-amber"
       confidence={accounts && accounts.length > 0 ? 'high' : 'low'}
       status="ok"
       className=""
@@ -974,7 +974,7 @@ function BillTimingCard({ defaultOpen = false }: { defaultOpen?: boolean }) {
       title="Bill timing optimizer"
       subtitle="Spread the load before bills pile up"
       icon={CalendarDays}
-      iconColor="text-prism-sky"
+      iconColor="text-prism-amber"
       confidence="medium"
       status="ok"
     >
@@ -992,7 +992,7 @@ function WealthRedirectorCard({ defaultOpen = false }: { defaultOpen?: boolean }
       title="Wealth redirector"
       subtitle="Turn recovered dollars into a 3-year payoff"
       icon={Target}
-      iconColor="text-prism-lime"
+      iconColor="text-prism-amber"
       confidence="high"
       status="ok"
       className=""
