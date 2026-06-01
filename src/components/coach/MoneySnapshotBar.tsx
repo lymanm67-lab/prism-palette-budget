@@ -7,7 +7,7 @@ import { useRecurringTransactions } from '@/hooks/use-recurring';
 import { PaystubUploader } from '@/components/PaystubUploader';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Upload, CreditCard, Receipt, Percent, CalendarClock, ArrowRight, Plus } from 'lucide-react';
+import { Upload, CreditCard, Receipt, Percent, CalendarClock, ArrowRight, Plus, ChevronDown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const fmt = (n: number) =>
@@ -24,6 +24,7 @@ interface DebtRow {
 export function MoneySnapshotBar() {
   const { household } = useHousehold();
   const [stubOpen, setStubOpen] = useState(false);
+  const [open, setOpen] = useState(false);
 
   const { data: debts } = useQuery({
     queryKey: ['coach-debt-items', household?.id],
@@ -73,30 +74,46 @@ export function MoneySnapshotBar() {
 
   return (
     <>
-      <div className="rounded-2xl border border-border/40 bg-gradient-to-br from-background/60 to-background/30 backdrop-blur-sm overflow-hidden">
+      <div className="rounded-xl border border-border/40 bg-gradient-to-br from-background/60 to-background/30 backdrop-blur-sm overflow-hidden">
         {/* Action strip */}
-        <div className="flex flex-wrap items-center gap-2 px-4 py-3 border-b border-border/30 bg-background/40">
+        <div className="flex flex-wrap items-center gap-2 px-3 py-2 bg-background/40">
           <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mr-1">Feed Coach</span>
-          <Button size="sm" variant="outline" className="h-8 gap-1.5 bg-prism-teal/10 border-prism-teal/30 hover:bg-prism-teal/20" onClick={() => setStubOpen(true)}>
+          <Button size="sm" variant="outline" className="h-7 gap-1.5 text-xs bg-prism-teal/10 border-prism-teal/30 hover:bg-prism-teal/20" onClick={() => setStubOpen(true)}>
             <Upload className="h-3.5 w-3.5" />
             <span>Upload Paycheck</span>
           </Button>
-          <Button asChild size="sm" variant="outline" className="h-8 gap-1.5 bg-prism-amber/10 border-prism-amber/30 hover:bg-prism-amber/20">
+          <Button asChild size="sm" variant="outline" className="h-7 gap-1.5 text-xs bg-prism-amber/10 border-prism-amber/30 hover:bg-prism-amber/20">
             <Link to="/debts">
               <CreditCard className="h-3.5 w-3.5" />
-              <span>Manage Debts</span>
+              <span>Debts</span>
             </Link>
           </Button>
-          <Button asChild size="sm" variant="outline" className="h-8 gap-1.5 bg-prism-orange/10 border-prism-orange/30 hover:bg-prism-orange/20">
+          <Button asChild size="sm" variant="outline" className="h-7 gap-1.5 text-xs bg-prism-orange/10 border-prism-orange/30 hover:bg-prism-orange/20">
             <Link to="/budget">
               <Receipt className="h-3.5 w-3.5" />
-              <span>Bills & Recurring</span>
+              <span>Bills</span>
             </Link>
           </Button>
+          <div className="ml-auto flex items-center gap-2 text-[11px] text-muted-foreground">
+            <span className="hidden sm:inline">
+              {fmt(totalDebt)} owed · {upcomingBills.length} bill{upcomingBills.length === 1 ? '' : 's'} soon
+            </span>
+            <button
+              type="button"
+              onClick={() => setOpen(o => !o)}
+              aria-label={open ? 'Hide details' : 'Show details'}
+              aria-expanded={open}
+              className="h-7 w-7 rounded-md inline-flex items-center justify-center hover:bg-background/60 hover:text-foreground transition"
+            >
+              <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+            </button>
+          </div>
         </div>
 
         {/* Snapshot grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-border/30">
+        {open && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-border/30 border-t border-border/30 animate-in fade-in-0 slide-in-from-top-1 duration-200">
+
           {/* DEBTS */}
           <div className="p-4 space-y-3">
             <div className="flex items-center justify-between">
@@ -200,6 +217,7 @@ export function MoneySnapshotBar() {
             )}
           </div>
         </div>
+        )}
       </div>
 
       <PaystubUploader open={stubOpen} onOpenChange={setStubOpen} />
