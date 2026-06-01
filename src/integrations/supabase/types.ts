@@ -2841,6 +2841,83 @@ export type Database = {
           },
         ]
       }
+      paycheck_deployments: {
+        Row: {
+          applied_at: string | null
+          bills_amount: number
+          bills_breakdown: Json
+          buffer_amount: number
+          confidence: string
+          created_at: string
+          extra_debt_amount: number
+          frequency: string
+          household_id: string
+          id: string
+          investment_amount: number
+          min_debt_amount: number
+          net_amount: number
+          pay_date: string
+          rationale: string | null
+          safe_to_spend_amount: number
+          savings_amount: number
+          source: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          applied_at?: string | null
+          bills_amount?: number
+          bills_breakdown?: Json
+          buffer_amount?: number
+          confidence?: string
+          created_at?: string
+          extra_debt_amount?: number
+          frequency?: string
+          household_id: string
+          id?: string
+          investment_amount?: number
+          min_debt_amount?: number
+          net_amount?: number
+          pay_date: string
+          rationale?: string | null
+          safe_to_spend_amount?: number
+          savings_amount?: number
+          source?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          applied_at?: string | null
+          bills_amount?: number
+          bills_breakdown?: Json
+          buffer_amount?: number
+          confidence?: string
+          created_at?: string
+          extra_debt_amount?: number
+          frequency?: string
+          household_id?: string
+          id?: string
+          investment_amount?: number
+          min_debt_amount?: number
+          net_amount?: number
+          pay_date?: string
+          rationale?: string | null
+          safe_to_spend_amount?: number
+          savings_amount?: number
+          source?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "paycheck_deployments_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       plaid_items: {
         Row: {
           consent_expiration: string | null
