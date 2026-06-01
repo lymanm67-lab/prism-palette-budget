@@ -14,7 +14,8 @@ import { useAccounts, useCategories } from '@/hooks/use-finance-data';
 import CategoryCombobox from '@/components/CategoryCombobox';
 import { useCurrency } from '@/hooks/use-currency';
 import { format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, addMonths, subMonths } from 'date-fns';
-import { Loader2, Plus, Trash2, Pencil, CalendarIcon, List, ChevronLeft, ChevronRight, RepeatIcon, ArrowDownLeft, ArrowUpRight, Receipt } from 'lucide-react';
+import { Loader2, Plus, Trash2, Pencil, CalendarIcon, List, ChevronLeft, ChevronRight, RepeatIcon, ArrowDownLeft, ArrowUpRight, Receipt, Zap, Bell } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import BillPayPanel from '@/components/BillPayPanel';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -42,7 +43,7 @@ const Recurring = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [editTarget, setEditTarget] = useState<any | null>(null);
-  const [editForm, setEditForm] = useState({ merchant: '', amount: '', frequency: 'monthly', account_id: '', category_id: '', next_due_date: '', type: 'expense' as 'income' | 'expense' });
+  const [editForm, setEditForm] = useState({ merchant: '', amount: '', frequency: 'monthly', account_id: '', category_id: '', next_due_date: '', type: 'expense' as 'income' | 'expense', autopay_enabled: false, reminder_days: 3, biller_url: '' });
 
   const [form, setForm] = useState({
     merchant: '',
@@ -53,6 +54,9 @@ const Recurring = () => {
     start_date: format(new Date(), 'yyyy-MM-dd'),
     next_due_date: format(new Date(), 'yyyy-MM-dd'),
     type: 'expense' as 'income' | 'expense',
+    autopay_enabled: false,
+    reminder_days: 3,
+    biller_url: '',
   });
 
   const totalIncome = useMemo(() => {
@@ -79,10 +83,13 @@ const Recurring = () => {
       category_id: form.category_id || null,
       start_date: form.start_date,
       next_due_date: form.next_due_date,
+      autopay_enabled: form.autopay_enabled,
+      reminder_days: form.reminder_days,
+      biller_url: form.biller_url || null,
     }, {
       onSuccess: () => {
         setDialogOpen(false);
-        setForm({ merchant: '', amount: '', frequency: 'monthly', account_id: '', category_id: '', start_date: format(new Date(), 'yyyy-MM-dd'), next_due_date: format(new Date(), 'yyyy-MM-dd'), type: 'expense' });
+        setForm({ merchant: '', amount: '', frequency: 'monthly', account_id: '', category_id: '', start_date: format(new Date(), 'yyyy-MM-dd'), next_due_date: format(new Date(), 'yyyy-MM-dd'), type: 'expense', autopay_enabled: false, reminder_days: 3, biller_url: '' });
       }
     });
   };
@@ -97,6 +104,9 @@ const Recurring = () => {
       category_id: r.category_id || '',
       next_due_date: r.next_due_date || '',
       type: Number(r.amount) >= 0 ? 'income' : 'expense',
+      autopay_enabled: !!r.autopay_enabled,
+      reminder_days: r.reminder_days ?? 3,
+      biller_url: r.biller_url || '',
     });
   };
 
@@ -111,8 +121,17 @@ const Recurring = () => {
       account_id: editForm.account_id,
       category_id: editForm.category_id || null,
       next_due_date: editForm.next_due_date,
+      autopay_enabled: editForm.autopay_enabled,
+      reminder_days: editForm.reminder_days,
+      biller_url: editForm.biller_url || null,
     }, {
       onSuccess: () => { setEditTarget(null); toast.success('Updated!'); },
+    });
+  };
+
+  const toggleAutopay = (r: any) => {
+    updateRecurring.mutate({ id: r.id, autopay_enabled: !r.autopay_enabled }, {
+      onSuccess: () => toast.success(r.autopay_enabled ? 'Autopay off' : 'Autopay on'),
     });
   };
 
