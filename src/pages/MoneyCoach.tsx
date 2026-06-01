@@ -21,6 +21,7 @@ import { BillTimingOptimizer } from '@/components/coach/BillTimingOptimizer';
 import { WealthRedirector } from '@/components/coach/WealthRedirector';
 import { CoachOnboardingTour } from '@/components/coach/CoachOnboardingTour';
 import { CoachNudges } from '@/components/coach/CoachNudges';
+import { MoneySnapshotBar } from '@/components/coach/MoneySnapshotBar';
 import { CoachCard, type Confidence } from '@/components/coach/CoachCard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
