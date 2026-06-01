@@ -493,18 +493,14 @@ const DebtPayoff = () => {
                     </div>
                   )}
 
-                  {/* Payment due day */}
+                  {/* Payment due date */}
                   <div className="space-y-2">
-                    <Label className="text-sm">Payment due day of month</Label>
-                    <Input
-                      type="number"
-                      min={1}
-                      max={31}
-                      placeholder="e.g. 15"
-                      value={form.due_day}
-                      onChange={e => setForm(f => ({ ...f, due_day: e.target.value }))}
+                    <Label className="text-sm">Next payment due date</Label>
+                    <DueDatePicker
+                      value={form.due_date}
+                      onChange={(v) => setForm(f => ({ ...f, due_date: v }))}
                     />
-                    <p className="text-[11px] text-muted-foreground">Day of the month the minimum payment is due (1–31).</p>
+                    <p className="text-[11px] text-muted-foreground">Pick the next date the minimum payment is due.</p>
                   </div>
 
                   {/* Loan status: deferment & forgiveness */}
