@@ -942,6 +942,8 @@ export type Database = {
         Row: {
           account_id: string | null
           balance: number
+          business_name: string | null
+          business_split_pct: number
           created_at: string
           id: string
           interest_rate: number
@@ -953,6 +955,8 @@ export type Database = {
         Insert: {
           account_id?: string | null
           balance?: number
+          business_name?: string | null
+          business_split_pct?: number
           created_at?: string
           id?: string
           interest_rate?: number
@@ -964,6 +968,8 @@ export type Database = {
         Update: {
           account_id?: string | null
           balance?: number
+          business_name?: string | null
+          business_split_pct?: number
           created_at?: string
           id?: string
           interest_rate?: number
