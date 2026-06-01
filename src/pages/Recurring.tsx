@@ -467,6 +467,30 @@ const Recurring = () => {
                 </div>
               </div>
             )}
+            {form.type === 'expense' && (
+              <div className="space-y-3 rounded-lg border border-border/40 bg-muted/20 p-3">
+                <Label className="text-sm flex items-center gap-1.5"><Building2 className="h-3.5 w-3.5 text-prism-violet" /> Personal / Business</Label>
+                <div className="flex border rounded-lg overflow-hidden">
+                  <button type="button" onClick={() => setForm(f => ({ ...f, business_split_pct: 0, business_category_id: '' }))} className={cn('flex-1 px-3 py-1.5 text-xs font-medium transition-colors flex items-center justify-center gap-1', form.business_split_pct === 0 ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}><User className="h-3 w-3" /> Personal</button>
+                  <button type="button" onClick={() => setForm(f => ({ ...f, business_split_pct: 100, business_category_id: '' }))} className={cn('flex-1 px-3 py-1.5 text-xs font-medium transition-colors flex items-center justify-center gap-1', form.business_split_pct === 100 ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}><Building2 className="h-3 w-3" /> Business</button>
+                  <button type="button" onClick={() => setForm(f => ({ ...f, business_split_pct: f.business_split_pct > 0 && f.business_split_pct < 100 ? f.business_split_pct : 30 }))} className={cn('flex-1 px-3 py-1.5 text-xs font-medium transition-colors', form.business_split_pct > 0 && form.business_split_pct < 100 ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}>Split</button>
+                </div>
+                {form.business_split_pct > 0 && form.business_split_pct < 100 && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <Label className="text-xs">Business: {form.business_split_pct}%</Label>
+                      <span className="text-[11px] text-muted-foreground">Personal: {100 - form.business_split_pct}%</span>
+                    </div>
+                    <Input type="range" min={1} max={99} value={form.business_split_pct} onChange={e => setForm(f => ({ ...f, business_split_pct: parseInt(e.target.value) }))} />
+                    <div className="space-y-1">
+                      <Label className="text-xs">Business category (e.g. Home Office)</Label>
+                      <CategoryCombobox value={form.business_category_id} onValueChange={v => setForm(f => ({ ...f, business_category_id: v }))} placeholder="Search business categories..." />
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">When this bill posts, the transaction is auto-split between business and personal.</p>
+                  </div>
+                )}
+              </div>
+            )}
             <Button onClick={handleCreate} disabled={createRecurring.isPending} className="w-full gap-2">
               {createRecurring.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
               Add Recurring
