@@ -236,6 +236,7 @@ function buildEmailHtml(data: {
   topCategories: [string, number][];
   budgetItems: any[];
   upcomingBills: any[];
+  autopayBills?: any[];
   totalUpcoming: number;
   weekStart: string;
   weekEnd: string;
@@ -263,10 +264,20 @@ function buildEmailHtml(data: {
     }).join("");
 
   const billRows = data.upcomingBills
-    .map((b: any) =>
-      `<tr><td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;color:#374151;">${b.merchant}</td>
+    .map((b: any) => {
+      const nameCell = b.billerUrl
+        ? `<a href="${b.billerUrl}" style="color:#7c5cf5;text-decoration:none;">${b.merchant} →</a>`
+        : b.merchant;
+      return `<tr><td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;color:#374151;">${nameCell}</td>
        <td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;text-align:center;color:#6b7280;">${formatDate(b.dueDate)}</td>
-       <td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;text-align:right;font-weight:600;color:#1f2937;">${formatCurrency(b.amount)}</td></tr>`
+       <td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;text-align:right;font-weight:600;color:#1f2937;">${formatCurrency(b.amount)}</td></tr>`;
+    }).join("");
+
+  const autopayRows = (data.autopayBills || [])
+    .map((b: any) =>
+      `<tr><td style="padding:6px 12px;border-bottom:1px solid #f0f0f0;color:#374151;font-size:13px;">⚡ ${b.merchant}</td>
+       <td style="padding:6px 12px;border-bottom:1px solid #f0f0f0;text-align:center;color:#6b7280;font-size:13px;">${formatDate(b.dueDate)}</td>
+       <td style="padding:6px 12px;border-bottom:1px solid #f0f0f0;text-align:right;color:#1f2937;font-size:13px;">${formatCurrency(b.amount)}</td></tr>`
     ).join("");
 
   return `<!DOCTYPE html>
@@ -323,9 +334,28 @@ function buildEmailHtml(data: {
       <tr><th style="text-align:left;padding:8px 12px;color:#6b7280;font-size:12px;">Bill</th>
           <th style="text-align:center;padding:8px 12px;color:#6b7280;font-size:12px;">Due</th>
           <th style="text-align:right;padding:8px 12px;color:#6b7280;font-size:12px;">Amount</th></tr>
+  ${data.upcomingBills.length > 0 ? `
+  <!-- Upcoming Bills (manual / reminders) -->
+  <div style="background:#fffbeb;border-radius:12px;padding:20px;margin-bottom:24px;">
+    <h2 style="font-size:16px;color:#1f2937;margin:0 0 4px;">🔔 Bills Needing Your Attention</h2>
+    <p style="font-size:12px;color:#92400e;margin:0 0 12px;">Not on autopay — pay these before they go late.</p>
+    <table style="width:100%;border-collapse:collapse;">
+      <tr><th style="text-align:left;padding:8px 12px;color:#6b7280;font-size:12px;">Bill</th>
+          <th style="text-align:center;padding:8px 12px;color:#6b7280;font-size:12px;">Due</th>
+          <th style="text-align:right;padding:8px 12px;color:#6b7280;font-size:12px;">Amount</th></tr>
       ${billRows}
       <tr><td colspan="2" style="padding:12px;font-weight:600;color:#374151;">Total Due</td>
           <td style="padding:12px;text-align:right;font-weight:700;color:#b45309;">${formatCurrency(data.totalUpcoming)}</td></tr>
+    </table>
+  </div>` : ""}
+
+  ${(data.autopayBills && data.autopayBills.length > 0) ? `
+  <!-- Autopay scheduled -->
+  <div style="background:#f0fdfa;border-radius:12px;padding:20px;margin-bottom:24px;">
+    <h2 style="font-size:16px;color:#1f2937;margin:0 0 4px;">⚡ Autopay Scheduled (Next 7 Days)</h2>
+    <p style="font-size:12px;color:#0f766e;margin:0 0 12px;">Heads-up — make sure your account is funded.</p>
+    <table style="width:100%;border-collapse:collapse;">
+      ${autopayRows}
     </table>
   </div>` : ""}
 
