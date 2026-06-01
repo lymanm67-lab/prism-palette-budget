@@ -48,7 +48,7 @@ export function useLastMonthSnapshot(): LastMonthSnapshot {
     // Project convention: expenses are stored as negative; income positive.
     const expenses = txns.filter((t: any) => Number(t.amount) < 0);
     const spent = expenses.reduce((s: number, t: any) => s + Math.abs(Number(t.amount)), 0);
-    const budgeted = budgets.reduce((s: number, b: any) => s + Number(b.amount || 0), 0);
+    const budgeted = budgets.reduce((s: number, b: any) => s + Number(b.planned_amount || 0), 0);
     const overBy = spent - budgeted;
     const overPct = budgeted > 0 ? (overBy / budgeted) * 100 : 0;
 
@@ -57,7 +57,7 @@ export function useLastMonthSnapshot(): LastMonthSnapshot {
     for (const b of budgets) {
       const id = b.category_id;
       const name = b.categories?.name || 'Uncategorized';
-      catMap.set(id, { name, budgeted: Number(b.amount || 0), spent: 0 });
+      catMap.set(id, { name, budgeted: Number(b.planned_amount || 0), spent: 0 });
     }
     for (const t of expenses) {
       const id = t.category_id || 'none';
