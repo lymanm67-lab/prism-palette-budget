@@ -143,7 +143,7 @@ export default function MoneyCoach() {
 
         {/* ─── COLUMN 1 — Intelligence & Review ─── */}
         <div className="lg:border-r border-border/40 flex flex-col">
-          <div className="px-4 py-2.5 bg-muted/30 border-b border-border/40 flex items-center justify-between">
+          <div className="px-4 py-3 bg-muted/40 border-b border-border/40 flex items-center justify-between">
             <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
               Intelligence & Review
             </h3>
@@ -436,7 +436,7 @@ export default function MoneyCoach() {
 
         {/* ─── COLUMN 2 — Live Protection ─── */}
         <div className="lg:border-r border-border/40 border-t lg:border-t-0 flex flex-col">
-          <div className="px-4 py-2.5 bg-muted/30 border-b border-border/40 flex items-center justify-between">
+          <div className="px-4 py-3 bg-muted/40 border-b border-border/40 flex items-center justify-between">
             <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
               Live Protection
             </h3>
@@ -456,7 +456,7 @@ export default function MoneyCoach() {
 
         {/* ─── COLUMN 3 — Strategy & Flow ─── */}
         <div className="border-t lg:border-t-0 flex flex-col">
-          <div className="px-4 py-2.5 bg-muted/30 border-b border-border/40 flex items-center justify-between">
+          <div className="px-4 py-3 bg-muted/40 border-b border-border/40 flex items-center justify-between">
             <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
               Strategy & Flow
             </h3>
