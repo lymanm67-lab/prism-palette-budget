@@ -607,6 +607,16 @@ const DebtPayoff = () => {
                           ) : (
                             <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-prism-amber/20 text-prism-amber">⚖️ {100 - d.business_split_pct}/{d.business_split_pct} Split{d.business_name ? ` · ${d.business_name}` : ''}</span>
                           )}
+                          {d.deferred_until && new Date(d.deferred_until) > new Date() && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-prism-sky/20 text-prism-sky" title={`No payments due until ${new Date(d.deferred_until).toLocaleDateString()}`}>
+                              ⏸ Deferred until {new Date(d.deferred_until).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}
+                            </span>
+                          )}
+                          {d.forgiveness_eligible && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-prism-teal/20 text-prism-teal" title={d.forgiveness_note || 'Forgiveness eligible'}>
+                              🎓 Forgiveness{d.forgiveness_date ? ` · ${new Date(d.forgiveness_date).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}` : ''}
+                            </span>
+                          )}
                         </div>
                         <div className="flex gap-1">
                           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(d)} aria-label="Edit debt"><Pencil className="h-3.5 w-3.5" /></Button>
