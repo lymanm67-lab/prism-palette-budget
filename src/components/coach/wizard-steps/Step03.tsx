@@ -86,12 +86,37 @@ export function Step03({ value, onChange }: StepProps) {
         <Label className="text-sm font-semibold">Prevention areas</Label>
         <p className="text-xs text-muted-foreground mt-1">Categories most likely to slip — change anytime.</p>
         <div className="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-2">
-          {AREAS.map(a => (
-            <label key={a} className="flex items-center gap-2 rounded-md border border-border/40 p-2 cursor-pointer hover:bg-muted/40">
-              <Checkbox checked={selected.includes(a)} onCheckedChange={() => toggle(a)} />
-              <span className="text-sm">{a}</span>
-            </label>
-          ))}
+          {[...AREAS, ...customAreas].map(a => {
+            const isCustom = customAreas.includes(a);
+            return (
+              <label key={a} className="flex items-center gap-2 rounded-md border border-border/40 p-2 cursor-pointer hover:bg-muted/40">
+                <Checkbox checked={selected.includes(a)} onCheckedChange={() => toggle(a)} />
+                <span className="text-sm flex-1 truncate">{a}</span>
+                {isCustom && (
+                  <button
+                    type="button"
+                    onClick={(e) => { e.preventDefault(); removeCustom(a); }}
+                    className="text-muted-foreground hover:text-destructive"
+                    aria-label={`Remove ${a}`}
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
+              </label>
+            );
+          })}
+        </div>
+        <div className="mt-2 flex gap-2">
+          <Input
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addCustom(); } }}
+            placeholder="Add your own (e.g. App development)"
+            className="h-9 text-sm"
+          />
+          <Button type="button" size="sm" variant="outline" onClick={addCustom} disabled={!draft.trim()}>
+            <Plus className="h-3.5 w-3.5 mr-1" /> Add
+          </Button>
         </div>
       </div>
     </div>
