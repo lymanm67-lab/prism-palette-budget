@@ -77,17 +77,26 @@ function calculatePayoff(debts: Debt[], extraPayment: number, strategy: Strategy
   const steps: PayoffStep[] = [];
   let month = 0;
   const MAX_MONTHS = 600;
+  const startDate = new Date();
+  const isDeferred = (d: Debt, monthOffset: number) => {
+    if (!d.deferred_until) return false;
+    const until = new Date(d.deferred_until);
+    const cur = new Date(startDate.getFullYear(), startDate.getMonth() + monthOffset, startDate.getDate());
+    return cur < until;
+  };
   while (Array.from(balances.values()).some(b => b > 0.01) && month < MAX_MONTHS) {
     month++;
     let availableExtra = extraPayment;
     const monthDebts: PayoffStep['debts'] = [];
     for (const d of sorted) { const bal = balances.get(d.id)!; if (bal <= 0) continue; balances.set(d.id, bal * (1 + d.interest_rate / 100 / 12)); }
-    for (const d of sorted) { const bal = balances.get(d.id)!; if (bal <= 0) continue; const payment = Math.min(d.minimum_payment, bal); balances.set(d.id, bal - payment); }
-    for (const d of sorted) { if (availableExtra <= 0) break; const bal = balances.get(d.id)!; if (bal <= 0) continue; const extra = Math.min(availableExtra, bal); balances.set(d.id, bal - extra); availableExtra -= extra; }
-    for (const d of sorted) { const bal = Math.max(0, balances.get(d.id)!); monthDebts.push({ name: d.name, payment: d.minimum_payment, balance: bal, paid_off: bal < 0.01 }); }
-    steps.push({ month, debts: monthDebts, total_payment: sorted.reduce((s, d) => s + d.minimum_payment, 0) + extraPayment - availableExtra, total_balance: Array.from(balances.values()).reduce((s, b) => s + Math.max(0, b), 0) });
+    for (const d of sorted) { const bal = balances.get(d.id)!; if (bal <= 0) continue; if (isDeferred(d, month - 1)) continue; const payment = Math.min(d.minimum_payment, bal); balances.set(d.id, bal - payment); }
+    for (const d of sorted) { if (availableExtra <= 0) break; const bal = balances.get(d.id)!; if (bal <= 0) continue; if (isDeferred(d, month - 1)) continue; const extra = Math.min(availableExtra, bal); balances.set(d.id, bal - extra); availableExtra -= extra; }
+    for (const d of sorted) { const bal = Math.max(0, balances.get(d.id)!); monthDebts.push({ name: d.name, payment: isDeferred(d, month - 1) ? 0 : d.minimum_payment, balance: bal, paid_off: bal < 0.01 }); }
+    const activeMin = sorted.reduce((s, d) => s + (isDeferred(d, month - 1) ? 0 : d.minimum_payment), 0);
+    steps.push({ month, debts: monthDebts, total_payment: activeMin + extraPayment - availableExtra, total_balance: Array.from(balances.values()).reduce((s, b) => s + Math.max(0, b), 0) });
     if (steps[steps.length - 1].total_balance < 0.01) break;
   }
+
   return steps;
 }
 
