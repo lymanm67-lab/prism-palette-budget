@@ -122,6 +122,8 @@ export default function MoneyCoach() {
     <div className="space-y-4 p-3 sm:p-5 max-w-7xl mx-auto">
       <CoachOnboardingTour />
 
+      <CoachHowToUse />
+
       <SituationRoom
         monthlyStS={sts.monthly}
         bufferPercent={sts.bufferPercent}
