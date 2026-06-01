@@ -8,8 +8,6 @@ import { usePaycheckDeployments } from '@/hooks/use-paycheck-deploy';
 import { usePurchaseGuardChecks } from '@/hooks/use-purchase-guard';
 import { useTransactions } from '@/hooks/use-finance-data';
 import { format, startOfMonth, differenceInDays, parseISO } from 'date-fns';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, Droplets, CalendarClock, ShoppingBag, ArrowRight, Sparkles } from 'lucide-react';
 
@@ -157,12 +155,20 @@ export function CoachNudges() {
 
   if (nudges.length === 0) return null;
 
+  const singleNudge = nudges.length === 1;
+
   return (
-    <div className="grid gap-2 sm:grid-cols-3">
+    <div className={singleNudge ? "grid gap-2 sm:grid-cols-[1fr_minmax(260px,360px)_1fr]" : "grid gap-2 sm:grid-cols-3"}>
       {nudges.map(n => {
         const Icon = n.icon;
         return (
-          <Card key={n.id} className="p-3 bg-card/60 backdrop-blur-sm border-border/60 hover:border-prism-teal/40 transition-colors">
+          <div
+            key={n.id}
+            className={singleNudge
+              ? "sm:col-start-2 rounded-lg border border-border/45 bg-muted/20 px-4 py-3 text-center backdrop-blur-sm transition-colors hover:border-prism-teal/40"
+              : "rounded-lg border border-border/45 bg-muted/20 px-3 py-3 backdrop-blur-sm transition-colors hover:border-prism-teal/40"
+            }
+          >
             <div className="flex items-start gap-2 mb-2">
               <Icon className={`h-4 w-4 shrink-0 mt-0.5 ${n.color}`} />
               <div className="min-w-0 flex-1">
@@ -173,10 +179,10 @@ export function CoachNudges() {
             <Button asChild size="sm" variant="outline" className="h-7 w-full text-[11px]">
               <Link to={n.href}>{n.cta} <ArrowRight className="h-3 w-3 ml-1" /></Link>
             </Button>
-          </Card>
+          </div>
         );
       })}
-      <div className="sm:col-span-3 flex justify-end">
+      <div className={singleNudge ? "sm:col-span-3 flex justify-center sm:justify-end" : "sm:col-span-3 flex justify-end"}>
         <Button asChild size="sm" variant="ghost" className="h-7 text-[11px] gap-1 text-prism-amber">
           <Link to="/coach/chat">
             <Sparkles className="h-3 w-3" /> Ask Coach a question
