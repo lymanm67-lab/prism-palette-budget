@@ -38,7 +38,10 @@ interface Debt {
   minimum_payment: number;
   interest_rate: number;
   account_id?: string;
+  business_split_pct: number;
+  business_name?: string;
 }
+
 
 type Strategy = 'snowball' | 'avalanche' | 'hybrid';
 
