@@ -150,6 +150,7 @@ export default function MoneyCoach() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 
         {/* CARD 1 — What Happened */}
+        <CoachSlot card={1} moment={moment}>
         <CoachCard
           number={1}
           title="What happened"
@@ -158,6 +159,8 @@ export default function MoneyCoach() {
           iconColor="text-prism-orange"
           confidence={dataConfidence}
           status={hasIssue ? 'warn' : 'ok'}
+          pitfall="Reacting to a single bad week with guilt instead of data."
+          tryThis="Treat overages as signals — find the category, not the character flaw."
         >
           {!hasIssue && (
             <div className="flex items-center gap-2 text-prism-teal">
