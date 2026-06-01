@@ -546,7 +546,7 @@ const REDIRECT_LABEL: Record<string, string> = {
   none: 'No redirect',
 };
 
-function MoneyLeakStopperCard() {
+function MoneyLeakStopperCard({ defaultOpen = false }: { defaultOpen?: boolean }) {
   const { data: leaks, isLoading } = useMoneyLeaks('open');
   const scan = useScanMoneyLeaks();
   const update = useUpdateMoneyLeak();
