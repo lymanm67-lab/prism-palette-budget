@@ -1,0 +1,1 @@
+ALTER TABLE public.debt_items ADD COLUMN IF NOT EXISTS in_settlement_plan boolean NOT NULL DEFAULT false;

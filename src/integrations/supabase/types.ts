@@ -952,6 +952,7 @@ export type Database = {
           forgiveness_eligible: boolean
           forgiveness_note: string | null
           id: string
+          in_settlement_plan: boolean
           interest_rate: number
           minimum_payment: number
           name: string
@@ -971,6 +972,7 @@ export type Database = {
           forgiveness_eligible?: boolean
           forgiveness_note?: string | null
           id?: string
+          in_settlement_plan?: boolean
           interest_rate?: number
           minimum_payment?: number
           name: string
@@ -990,6 +992,7 @@ export type Database = {
           forgiveness_eligible?: boolean
           forgiveness_note?: string | null
           id?: string
+          in_settlement_plan?: boolean
           interest_rate?: number
           minimum_payment?: number
           name?: string
