@@ -47,6 +47,7 @@ const NAV_SECTIONS: NavSection[] = [
       { to: '/transactions', icon: ArrowLeftRight, label: 'Transactions', color: 'text-prism-orange', essential: true },
       { to: '/categories', icon: Tags, label: 'Categories', color: 'text-prism-lime' },
       { to: '/reconciliation', icon: FileSearch, label: 'Reconciliation', color: 'text-prism-violet' },
+      { to: '/cleanup', icon: Sparkles, label: 'Data Cleanup', color: 'text-prism-amber' },
     ],
   },
   {
