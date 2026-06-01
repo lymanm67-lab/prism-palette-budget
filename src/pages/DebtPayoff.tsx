@@ -142,13 +142,18 @@ const DebtPayoff = () => {
       account_id: item.account_id || undefined,
       business_split_pct: Number(item.business_split_pct ?? 0),
       business_name: item.business_name || undefined,
+      deferred_until: item.deferred_until || undefined,
+      forgiveness_eligible: !!item.forgiveness_eligible,
+      forgiveness_date: item.forgiveness_date || undefined,
+      forgiveness_note: item.forgiveness_note || undefined,
     })),
     [dbItems]
   );
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
-  const [form, setForm] = useState({ name: '', balance: '', minimum_payment: '', interest_rate: '', account_id: '', business_split_pct: 0, business_name: '' });
+  const [form, setForm] = useState({ name: '', balance: '', minimum_payment: '', interest_rate: '', account_id: '', business_split_pct: 0, business_name: '', deferred_until: '', forgiveness_eligible: false, forgiveness_date: '', forgiveness_note: '' });
+
 
   const [planDialogOpen, setPlanDialogOpen] = useState(false);
   const [scanOpen, setScanOpen] = useState(false);
