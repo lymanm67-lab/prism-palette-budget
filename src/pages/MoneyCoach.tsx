@@ -423,22 +423,22 @@ export default function MoneyCoach() {
 
 
         {/* CARD 5 — Purchase Guard (extended) */}
-        <CoachSlot card={5} moment={moment}><PurchaseGuardCardSection /></CoachSlot>
+        <CoachSlot card={5} moment={moment}><PurchaseGuardCardSection defaultOpen={isOpenByDefault(5)} /></CoachSlot>
 
         {/* CARD 6 — Money Leak Stopper (engine) */}
-        <CoachSlot card={6} moment={moment} span="md2"><MoneyLeakStopperCard /></CoachSlot>
+        <CoachSlot card={6} moment={moment} span="md2"><MoneyLeakStopperCard defaultOpen={isOpenByDefault(6)} /></CoachSlot>
 
         {/* CARD 7 — Safe-to-Spend Shield + Adaptive Buffer */}
-        <CoachSlot card={7} moment={moment} span="md2lg3"><SafeToSpendShieldCard /></CoachSlot>
+        <CoachSlot card={7} moment={moment} span="md2lg3"><SafeToSpendShieldCard defaultOpen={isOpenByDefault(7)} /></CoachSlot>
 
         {/* CARD 8 — Paycheck Deployment */}
-        <CoachSlot card={8} moment={moment} span="md2"><PaycheckDeploymentCard /></CoachSlot>
+        <CoachSlot card={8} moment={moment} span="md2"><PaycheckDeploymentCard defaultOpen={isOpenByDefault(8)} /></CoachSlot>
 
         {/* CARD 9 — Bill Timing Optimizer */}
-        <CoachSlot card={9} moment={moment}><BillTimingCard /></CoachSlot>
+        <CoachSlot card={9} moment={moment}><BillTimingCard defaultOpen={isOpenByDefault(9)} /></CoachSlot>
 
         {/* CARD 10 — Wealth Redirector */}
-        <CoachSlot card={10} moment={moment} span="md2lg3"><WealthRedirectorCard /></CoachSlot>
+        <CoachSlot card={10} moment={moment} span="md2lg3"><WealthRedirectorCard defaultOpen={isOpenByDefault(10)} /></CoachSlot>
       </div>
 
 
