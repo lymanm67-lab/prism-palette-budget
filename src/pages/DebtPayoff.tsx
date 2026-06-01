@@ -450,6 +450,51 @@ const DebtPayoff = () => {
                     </div>
                   )}
 
+                  {/* Loan status: deferment & forgiveness */}
+                  <div className="space-y-3 pt-2 border-t border-border/50">
+                    <Label className="text-xs uppercase tracking-wider text-muted-foreground">Loan status (optional)</Label>
+                    <div className="space-y-2">
+                      <Label className="text-sm">Deferred until</Label>
+                      <Input
+                        type="date"
+                        value={form.deferred_until}
+                        onChange={e => setForm(f => ({ ...f, deferred_until: e.target.value }))}
+                      />
+                      <p className="text-[11px] text-muted-foreground">No payments required before this date — payoff calc skips minimums while deferred.</p>
+                    </div>
+                    <label className="flex items-center gap-2 text-sm cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={form.forgiveness_eligible}
+                        onChange={e => setForm(f => ({ ...f, forgiveness_eligible: e.target.checked }))}
+                        className="h-4 w-4 accent-primary"
+                      />
+                      Eligible for forgiveness (e.g. PSLF)
+                    </label>
+                    {form.forgiveness_eligible && (
+                      <div className="space-y-2 pl-6">
+                        <div className="space-y-2">
+                          <Label className="text-sm">Expected forgiveness date</Label>
+                          <Input
+                            type="date"
+                            value={form.forgiveness_date}
+                            onChange={e => setForm(f => ({ ...f, forgiveness_date: e.target.value }))}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-sm">Note</Label>
+                          <Input
+                            value={form.forgiveness_note}
+                            onChange={e => setForm(f => ({ ...f, forgiveness_note: e.target.value }))}
+                            placeholder="e.g. PSLF — 10 yrs of govt service"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+
+
                   <Button onClick={handleSaveDebt} disabled={!form.name || !form.balance || createItem.isPending || updateItem.isPending} className="w-full prism-gradient text-white border-0 hover:opacity-90">
                     {(createItem.isPending || updateItem.isPending) ? 'Saving…' : editId ? 'Update' : 'Add Debt'}
                   </Button>
