@@ -43,7 +43,6 @@ export default function MoneyCoach() {
   const updatePlan = useUpdateRecoveryPlan();
 
   // Over-budget categories this month
-  const currentMonth = format(startOfMonth(new Date()), 'yyyy-MM-dd');
   const { data: overBudget } = useQuery({
     queryKey: ['coach-over-budget', household?.id, currentMonth],
     enabled: !!household,
