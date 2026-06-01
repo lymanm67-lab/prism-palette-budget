@@ -534,6 +534,7 @@ const DebtPayoff = () => {
                   forgiveness_eligible: false,
                   forgiveness_date: '',
                   forgiveness_note: '',
+                  due_day: '',
 
                 });
                 setEditId(null);
