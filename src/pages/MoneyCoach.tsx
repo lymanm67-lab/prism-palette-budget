@@ -872,7 +872,7 @@ function BillTimingCard({ defaultOpen = false }: { defaultOpen?: boolean }) {
   );
 }
 
-function WealthRedirectorCard() {
+function WealthRedirectorCard({ defaultOpen = false }: { defaultOpen?: boolean }) {
   return (
     <CoachCard
       number={10}
