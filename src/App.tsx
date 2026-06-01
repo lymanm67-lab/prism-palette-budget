@@ -75,6 +75,7 @@ const ReconciliationAudit = lazy(() => import("@/pages/ReconciliationAudit"));
 const AppStoreReadiness = lazy(() => import("@/pages/AppStoreReadiness"));
 const CrossoverTracker = lazy(() => import("@/pages/CrossoverTracker"));
 const InvestmentPlanning = lazy(() => import("@/pages/InvestmentPlanning"));
+const MoneyCoach = lazy(() => import("@/pages/MoneyCoach"));
 
 const queryClient = new QueryClient();
 
@@ -136,6 +137,7 @@ const App = () => (
               </ProtectedRoute>
             }>
               <Route index path="/dashboard" element={<Suspense fallback={<PageLoader />}><Dashboard /></Suspense>} />
+              <Route path="/coach" element={<Suspense fallback={<PageLoader />}><MoneyCoach /></Suspense>} />
               <Route path="/accounts" element={<Suspense fallback={<PageLoader />}><Accounts /></Suspense>} />
               <Route path="/transactions" element={<Suspense fallback={<PageLoader />}><Transactions /></Suspense>} />
               <Route path="/cash-flow" element={<Suspense fallback={<PageLoader />}><CashFlow /></Suspense>} />

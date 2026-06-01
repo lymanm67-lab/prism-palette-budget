@@ -36,6 +36,7 @@ const NAV_SECTIONS: NavSection[] = [
     label: 'Home',
     items: [
       { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', color: 'text-prism-teal', essential: true },
+      { to: '/coach', icon: Sparkles, label: 'Money Coach', color: 'text-prism-amber', essential: true },
       { to: '/getting-started', icon: ClipboardCheck, label: 'Get Started', color: 'text-prism-lime', essential: true },
     ],
   },
