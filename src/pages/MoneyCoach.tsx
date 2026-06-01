@@ -135,9 +135,20 @@ export default function MoneyCoach() {
 
       <MoneySnapshotBar />
 
-      {/* Cards — keyed by moment so defaultOpen re-applies on moment change */}
-      <div key={`grid-${moment}`} className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+      {/* Equal-width column command grid — themed lanes, row-style modules */}
+      <div
+        key={`grid-${moment}`}
+        className="grid grid-cols-1 lg:grid-cols-3 gap-0 rounded-xl border border-border/40 overflow-hidden backdrop-blur-md bg-card/30"
+      >
 
+        {/* ─── COLUMN 1 — Intelligence & Review ─── */}
+        <div className="lg:border-r border-border/40 flex flex-col">
+          <div className="px-4 py-2.5 bg-muted/30 border-b border-border/40 flex items-center justify-between">
+            <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+              Intelligence & Review
+            </h3>
+            <span className="text-[10px] text-muted-foreground/70 font-mono">01–04</span>
+          </div>
 
         {/* CARD 1 — What Happened */}
         <CoachSlot card={1} moment={moment}>
