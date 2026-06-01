@@ -682,6 +682,12 @@ const DebtPayoff = () => {
                               🎓 Forgiveness{d.forgiveness_date ? ` · ${new Date(d.forgiveness_date).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}` : ''}
                             </span>
                           )}
+                          {(d as any).in_settlement_plan && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-prism-amber/20 text-prism-amber" title="Included in Gitmeidlaw Debt Settlement Plan">
+                              🤝 Settlement · Gitmeidlaw
+                            </span>
+                          )}
+
                           {(d.due_date || d.due_day) && (
                             <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground" title="Payment due">
                               📅 Due {d.due_date
