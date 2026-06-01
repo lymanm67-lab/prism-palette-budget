@@ -757,3 +757,114 @@ function SafeToSpendShieldCard() {
   );
 }
 
+function PaycheckDeploymentCard() {
+  const { data: deployments } = usePaycheckDeployments(3);
+  const build = useBuildPaycheckDeployment();
+  const next = (deployments || []).find(d => d.status !== 'applied' && d.status !== 'skipped') || deployments?.[0];
+
+  return (
+    <CoachCard
+      number={8}
+      title="Paycheck deployment"
+      subtitle="Every dollar gets a job before it lands"
+      icon={CalendarClock}
+      iconColor="text-prism-amber"
+      confidence={next ? (next.confidence as Confidence) : 'medium'}
+      status={next ? 'ok' : 'soon'}
+      className="md:col-span-2"
+      action={
+        <Button asChild size="sm" variant="ghost" className="h-7 text-xs">
+          <Link to="/coach/paycheck">Open <ArrowRight className="ml-1 h-3 w-3" /></Link>
+        </Button>
+      }
+    >
+      {!next && (
+        <div className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Build a paycheck plan and Coach will assign each dollar to bills, debt, goals, buffer, and Safe-to-Spend.
+          </p>
+          <Button size="sm" className="w-full" disabled={build.isPending}
+            onClick={() => build.mutate({})}>
+            {build.isPending ? <><Loader2 className="mr-2 h-3 w-3 animate-spin" /> Deploying…</> : <>Deploy next paycheck <Sparkles className="ml-2 h-3 w-3" /></>}
+          </Button>
+        </div>
+      )}
+      {next && (
+        <div className="space-y-3">
+          <div className="flex items-baseline justify-between">
+            <div>
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Next pay</div>
+              <div className="font-display text-lg font-bold">{format(new Date(next.pay_date), 'EEE, MMM d')}</div>
+            </div>
+            <div className="text-right">
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Net</div>
+              <div className="font-mono text-lg font-bold text-prism-teal">{fmt(Number(next.net_amount))}</div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-4 gap-1.5 text-[10px]">
+            {[
+              { l: 'Bills', v: next.bills_amount, c: 'text-prism-sky' },
+              { l: 'Debt', v: Number(next.min_debt_amount) + Number(next.extra_debt_amount), c: 'text-prism-rose' },
+              { l: 'Save+Invest', v: Number(next.savings_amount) + Number(next.investment_amount), c: 'text-prism-lime' },
+              { l: 'Safe-to-Spend', v: next.safe_to_spend_amount, c: 'text-prism-amber' },
+            ].map(b => (
+              <div key={b.l} className="rounded-md bg-background/40 border border-border/40 px-1.5 py-1.5 text-center">
+                <div className="text-muted-foreground truncate">{b.l}</div>
+                <div className={`font-mono text-xs font-bold ${b.c}`}>{fmt(Number(b.v))}</div>
+              </div>
+            ))}
+          </div>
+
+          {next.rationale && (
+            <p className="text-[11px] text-muted-foreground italic flex gap-1.5">
+              <Info className="h-3 w-3 shrink-0 mt-0.5" /> <span>{next.rationale}</span>
+            </p>
+          )}
+
+          <Button asChild size="sm" variant="outline" className="w-full h-8 text-[11px]">
+            <Link to="/coach/paycheck">See full timeline <ArrowRight className="ml-1 h-3 w-3" /></Link>
+          </Button>
+        </div>
+      )}
+    </CoachCard>
+  );
+}
+
+function BillTimingCard() {
+  return (
+    <CoachCard
+      number={9}
+      title="Bill timing optimizer"
+      subtitle="Spread the load before bills pile up"
+      icon={CalendarDays}
+      iconColor="text-prism-sky"
+      confidence="medium"
+      status="ok"
+    >
+      <BillTimingOptimizer />
+    </CoachCard>
+  );
+}
+
+function WealthRedirectorCard() {
+  return (
+    <CoachCard
+      number={10}
+      title="Wealth redirector"
+      subtitle="Turn recovered dollars into a 3-year payoff"
+      icon={Target}
+      iconColor="text-prism-lime"
+      confidence="high"
+      status="ok"
+      className="md:col-span-2 lg:col-span-3"
+    >
+      <p className="text-sm text-muted-foreground mb-3">
+        Found money? Canceled a subscription? Fixed a leak? Project what redirecting it monthly could become.
+      </p>
+      <WealthRedirector initialMonthly={50} />
+    </CoachCard>
+  );
+}
+
+
