@@ -65,7 +65,7 @@ export function Step01({ value, onChange }: StepProps) {
       icon: Receipt,
       title: 'Bills',
       desc: 'Scan or import recurring bills so Coach can time them around payday.',
-      href: '/subscriptions',
+      href: '/budgets?scan=bill',
       color: 'text-prism-amber',
       done: status.bills,
     },
@@ -74,10 +74,11 @@ export function Step01({ value, onChange }: StepProps) {
       icon: CreditCard,
       title: 'Debts',
       desc: 'Drop in a statement — Coach extracts APR, balance, and minimum.',
-      href: '/debt-payoff',
+      href: '/debt-payoff?scan=debt',
       color: 'text-prism-rose',
       done: status.debts,
     },
+
   ];
 
   return (
@@ -121,10 +122,11 @@ export function Step01({ value, onChange }: StepProps) {
                 ) : (
                   <Button asChild size="sm" variant={t.done ? 'ghost' : 'outline'} className="h-7 text-[11px]">
                     <Link to={t.href}>
-                      {t.done ? 'Manage' : 'Add now'}
+                      {t.done ? 'Manage' : `Scan ${t.title.toLowerCase()}`}
                     </Link>
                   </Button>
                 )}
+
               </div>
             );
           })}
