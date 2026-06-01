@@ -683,10 +683,11 @@ const DebtPayoff = () => {
                             </span>
                           )}
                           {(d as any).in_settlement_plan && (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-prism-amber/20 text-prism-amber" title="Included in Gitmeidlaw Debt Settlement Plan">
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-prism-violet/20 text-prism-violet" title="Included in Gitmeidlaw Debt Settlement Plan">
                               🤝 Settlement · Gitmeidlaw
                             </span>
                           )}
+
 
                           {(d.due_date || d.due_day) && (
                             <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground" title="Payment due">
