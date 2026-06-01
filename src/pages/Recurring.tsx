@@ -515,7 +515,7 @@ const Recurring = () => {
 
       {/* Edit Dialog */}
       <Dialog open={!!editTarget} onOpenChange={o => !o && setEditTarget(null)}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle className="font-display">Edit Recurring Transaction</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
