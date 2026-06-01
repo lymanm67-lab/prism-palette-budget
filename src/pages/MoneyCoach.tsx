@@ -11,6 +11,9 @@ import { useTransactions } from '@/hooks/use-finance-data';
 import { useAccounts } from '@/hooks/use-finance-data';
 import { useRecoveryPlans, useBuildRecoveryPlan, useUpdateRecoveryPlan } from '@/hooks/use-recovery-plans';
 import { usePurchaseGuardChecks, useOverridePattern } from '@/hooks/use-purchase-guard';
+import { useMoneyLeaks, useScanMoneyLeaks, useUpdateMoneyLeak, type MoneyLeak } from '@/hooks/use-money-leaks';
+import { useAdaptiveBuffer, useApplyAdaptiveBuffer } from '@/hooks/use-adaptive-buffer';
+import { useModeSettings } from '@/hooks/use-financial-mode';
 import { PurchaseGuardDialog } from '@/components/coach/PurchaseGuardDialog';
 import { PurchaseGuardReviewPrompts } from '@/components/coach/PurchaseGuardReviewPrompts';
 import { CoachCard, type Confidence } from '@/components/coach/CoachCard';
@@ -21,7 +24,7 @@ import PageOverview from '@/components/PageOverview';
 import {
   Activity, Brain, Sparkles, Shield, ShoppingBag, Droplets,
   Wallet, ArrowRight, AlertTriangle, CheckCircle2, Clock, Info,
-  Zap, Scale, Settings2, TrendingUp, Loader2, X,
+  Zap, Scale, Settings2, TrendingUp, Loader2, X, RefreshCw, CheckCheck, ArrowRightCircle,
 } from 'lucide-react';
 
 const PLAN_META: Record<string, { label: string; icon: any; color: string }> = {
