@@ -431,25 +431,48 @@ export default function MoneyCoach() {
           );
         })()}
 
+        </div>
+        {/* ─── END COLUMN 1 ─── */}
 
+        {/* ─── COLUMN 2 — Live Protection ─── */}
+        <div className="lg:border-r border-border/40 border-t lg:border-t-0 flex flex-col">
+          <div className="px-4 py-2.5 bg-muted/30 border-b border-border/40 flex items-center justify-between">
+            <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+              Live Protection
+            </h3>
+            <span className="text-[10px] text-muted-foreground/70 font-mono">05–07</span>
+          </div>
 
-        {/* CARD 5 — Purchase Guard (extended) */}
-        <CoachSlot card={5} moment={moment}><PurchaseGuardCardSection defaultOpen={isOpenByDefault(5)} /></CoachSlot>
+          {/* CARD 5 — Purchase Guard (extended) */}
+          <CoachSlot card={5} moment={moment}><PurchaseGuardCardSection defaultOpen={isOpenByDefault(5)} /></CoachSlot>
 
-        {/* CARD 6 — Money Leak Stopper (engine) */}
-        <CoachSlot card={6} moment={moment} span="md2"><MoneyLeakStopperCard defaultOpen={isOpenByDefault(6)} /></CoachSlot>
+          {/* CARD 6 — Money Leak Stopper (engine) */}
+          <CoachSlot card={6} moment={moment}><MoneyLeakStopperCard defaultOpen={isOpenByDefault(6)} /></CoachSlot>
 
-        {/* CARD 7 — Safe-to-Spend Shield + Adaptive Buffer */}
-        <CoachSlot card={7} moment={moment} span="md2lg3"><SafeToSpendShieldCard defaultOpen={isOpenByDefault(7)} /></CoachSlot>
+          {/* CARD 7 — Safe-to-Spend Shield + Adaptive Buffer */}
+          <CoachSlot card={7} moment={moment}><SafeToSpendShieldCard defaultOpen={isOpenByDefault(7)} /></CoachSlot>
+        </div>
+        {/* ─── END COLUMN 2 ─── */}
 
-        {/* CARD 8 — Paycheck Deployment */}
-        <CoachSlot card={8} moment={moment} span="md2"><PaycheckDeploymentCard defaultOpen={isOpenByDefault(8)} /></CoachSlot>
+        {/* ─── COLUMN 3 — Strategy & Flow ─── */}
+        <div className="border-t lg:border-t-0 flex flex-col">
+          <div className="px-4 py-2.5 bg-muted/30 border-b border-border/40 flex items-center justify-between">
+            <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+              Strategy & Flow
+            </h3>
+            <span className="text-[10px] text-muted-foreground/70 font-mono">08–10</span>
+          </div>
 
-        {/* CARD 9 — Bill Timing Optimizer */}
-        <CoachSlot card={9} moment={moment}><BillTimingCard defaultOpen={isOpenByDefault(9)} /></CoachSlot>
+          {/* CARD 8 — Paycheck Deployment */}
+          <CoachSlot card={8} moment={moment}><PaycheckDeploymentCard defaultOpen={isOpenByDefault(8)} /></CoachSlot>
 
-        {/* CARD 10 — Wealth Redirector */}
-        <CoachSlot card={10} moment={moment} span="md2lg3"><WealthRedirectorCard defaultOpen={isOpenByDefault(10)} /></CoachSlot>
+          {/* CARD 9 — Bill Timing Optimizer */}
+          <CoachSlot card={9} moment={moment}><BillTimingCard defaultOpen={isOpenByDefault(9)} /></CoachSlot>
+
+          {/* CARD 10 — Wealth Redirector */}
+          <CoachSlot card={10} moment={moment}><WealthRedirectorCard defaultOpen={isOpenByDefault(10)} /></CoachSlot>
+        </div>
+        {/* ─── END COLUMN 3 ─── */}
       </div>
 
 
