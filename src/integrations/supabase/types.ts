@@ -946,6 +946,7 @@ export type Database = {
           business_split_pct: number
           created_at: string
           deferred_until: string | null
+          due_date: string | null
           due_day: number | null
           forgiveness_date: string | null
           forgiveness_eligible: boolean
@@ -964,6 +965,7 @@ export type Database = {
           business_split_pct?: number
           created_at?: string
           deferred_until?: string | null
+          due_date?: string | null
           due_day?: number | null
           forgiveness_date?: string | null
           forgiveness_eligible?: boolean
@@ -982,6 +984,7 @@ export type Database = {
           business_split_pct?: number
           created_at?: string
           deferred_until?: string | null
+          due_date?: string | null
           due_day?: number | null
           forgiveness_date?: string | null
           forgiveness_eligible?: boolean
