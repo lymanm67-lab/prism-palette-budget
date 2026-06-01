@@ -246,6 +246,16 @@ const Recurring = () => {
                       <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-muted-foreground flex-wrap">
                         <span>{FREQUENCIES.find(f => f.value === r.frequency)?.label || r.frequency}</span>
                         {r.categories && <Badge variant="secondary" className="text-[10px] px-1 py-0">{(r.categories as any).name}</Badge>}
+                        {Number(r.amount) < 0 && r.autopay_enabled && (
+                          <Badge variant="outline" className="text-[10px] px-1 py-0 gap-0.5 border-prism-teal/30 text-prism-teal">
+                            <Zap className="h-2.5 w-2.5" /> Autopay
+                          </Badge>
+                        )}
+                        {Number(r.amount) < 0 && !r.autopay_enabled && r.reminder_days != null && (
+                          <Badge variant="outline" className="text-[10px] px-1 py-0 gap-0.5">
+                            <Bell className="h-2.5 w-2.5" /> {r.reminder_days}d
+                          </Badge>
+                        )}
                         <span className="hidden sm:inline">{r.accounts && (r.accounts as any).name}</span>
                       </div>
                     </div>
@@ -253,11 +263,25 @@ const Recurring = () => {
                       <p className={cn('font-semibold text-sm tabular-nums', Number(r.amount) > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400')}>
                         {formatAmount(Math.abs(Number(r.amount)))}
                       </p>
-                      <p className="text-[11px] sm:text-xs text-muted-foreground">
-                        {r.next_due_date ? format(parseISO(r.next_due_date), 'MMM d') : '—'}
-                      </p>
+                      {(() => {
+                        if (!r.next_due_date) return <p className="text-[11px] sm:text-xs text-muted-foreground">—</p>;
+                        const due = parseISO(r.next_due_date);
+                        const days = Math.round((due.getTime() - Date.now()) / 86400000);
+                        const remind = r.reminder_days ?? 3;
+                        const tone = days < 0
+                          ? 'text-rose-600 dark:text-rose-400 font-medium'
+                          : (!r.autopay_enabled && days <= remind)
+                            ? 'text-amber-600 dark:text-amber-400 font-medium'
+                            : 'text-muted-foreground';
+                        return <p className={cn('text-[11px] sm:text-xs', tone)}>{format(due, 'MMM d')}{days < 0 ? ` · ${Math.abs(days)}d late` : days === 0 ? ' · today' : ` · in ${days}d`}</p>;
+                      })()}
                     </div>
                     <div className="flex gap-0.5 shrink-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                      {Number(r.amount) < 0 && (
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => toggleAutopay(r)} title={r.autopay_enabled ? 'Turn autopay off' : 'Turn autopay on'}>
+                          <Zap className={cn('h-3.5 w-3.5', r.autopay_enabled ? 'text-prism-teal' : 'text-muted-foreground')} />
+                        </Button>
+                      )}
                       <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(r)}>
                         <Pencil className="h-3.5 w-3.5" />
                       </Button>
