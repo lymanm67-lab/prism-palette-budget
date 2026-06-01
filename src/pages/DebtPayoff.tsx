@@ -76,6 +76,7 @@ interface Debt {
   forgiveness_date?: string;
   forgiveness_note?: string;
   due_day?: number;
+  due_date?: string;
 }
 
 
@@ -188,13 +189,14 @@ const DebtPayoff = () => {
       forgiveness_date: item.forgiveness_date || undefined,
       forgiveness_note: item.forgiveness_note || undefined,
       due_day: item.due_day ? Number(item.due_day) : undefined,
+      due_date: (item as any).due_date || undefined,
     })),
     [dbItems]
   );
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
-  const [form, setForm] = useState({ name: '', balance: '', minimum_payment: '', interest_rate: '', account_id: '', business_split_pct: 0, business_name: '', deferred_until: '', forgiveness_eligible: false, forgiveness_date: '', forgiveness_note: '', due_day: '' });
+  const [form, setForm] = useState({ name: '', balance: '', minimum_payment: '', interest_rate: '', account_id: '', business_split_pct: 0, business_name: '', deferred_until: '', forgiveness_eligible: false, forgiveness_date: '', forgiveness_note: '', due_day: '', due_date: '' });
 
 
   const [planDialogOpen, setPlanDialogOpen] = useState(false);
@@ -245,7 +247,8 @@ const DebtPayoff = () => {
       forgiveness_eligible: !!form.forgiveness_eligible,
       forgiveness_date: form.forgiveness_eligible ? (form.forgiveness_date || null) : null,
       forgiveness_note: form.forgiveness_eligible ? (form.forgiveness_note.trim() || null) : null,
-      due_day: form.due_day ? Math.max(1, Math.min(31, parseInt(form.due_day, 10))) : null,
+      due_day: form.due_date ? (new Date(form.due_date + 'T00:00:00').getDate()) : (form.due_day ? Math.max(1, Math.min(31, parseInt(form.due_day, 10))) : null),
+      due_date: form.due_date || null,
     };
     try {
       if (editId) {
@@ -256,7 +259,7 @@ const DebtPayoff = () => {
         toast.success('Debt added');
       }
       setEditId(null);
-      setForm({ name: '', balance: '', minimum_payment: '', interest_rate: '', account_id: '', business_split_pct: 0, business_name: '', deferred_until: '', forgiveness_eligible: false, forgiveness_date: '', forgiveness_note: '', due_day: '' });
+      setForm({ name: '', balance: '', minimum_payment: '', interest_rate: '', account_id: '', business_split_pct: 0, business_name: '', deferred_until: '', forgiveness_eligible: false, forgiveness_date: '', forgiveness_note: '', due_day: '', due_date: '' });
       setDialogOpen(false);
     } catch (err: any) {
       console.error('Save debt error:', err);
@@ -266,7 +269,7 @@ const DebtPayoff = () => {
 
   const openEdit = (d: Debt) => {
     setEditId(d.id);
-    setForm({ name: d.name, balance: String(d.balance), minimum_payment: String(d.minimum_payment), interest_rate: String(d.interest_rate), account_id: d.account_id || '', business_split_pct: d.business_split_pct || 0, business_name: d.business_name || '', deferred_until: d.deferred_until || '', forgiveness_eligible: !!d.forgiveness_eligible, forgiveness_date: d.forgiveness_date || '', forgiveness_note: d.forgiveness_note || '', due_day: d.due_day ? String(d.due_day) : '' });
+    setForm({ name: d.name, balance: String(d.balance), minimum_payment: String(d.minimum_payment), interest_rate: String(d.interest_rate), account_id: d.account_id || '', business_split_pct: d.business_split_pct || 0, business_name: d.business_name || '', deferred_until: d.deferred_until || '', forgiveness_eligible: !!d.forgiveness_eligible, forgiveness_date: d.forgiveness_date || '', forgiveness_note: d.forgiveness_note || '', due_day: d.due_day ? String(d.due_day) : '', due_date: d.due_date || '' });
     setDialogOpen(true);
   };
 
@@ -574,6 +577,7 @@ const DebtPayoff = () => {
                   forgiveness_date: '',
                   forgiveness_note: '',
                   due_day: '',
+                  due_date: '',
 
                 });
                 setEditId(null);
