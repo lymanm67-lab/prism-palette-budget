@@ -13,7 +13,7 @@ import { CoachCard, type Confidence } from '@/components/coach/CoachCard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { StsEquationView } from '@/components/StsEquationView';
-import { PageOverview } from '@/components/PageOverview';
+import PageOverview from '@/components/PageOverview';
 import {
   Activity, Brain, Sparkles, Shield, ShoppingBag, Droplets,
   Wallet, ArrowRight, AlertTriangle, CheckCircle2, Clock, Info,
@@ -127,13 +127,19 @@ export default function MoneyCoach() {
 
       <PageOverview
         title="How Coach works"
-        bullets={[
-          'Cards 1–2 explain what shifted and why.',
-          'Cards 3–4 build a recovery plan and prevention rule.',
-          'Card 5 helps you decide before you buy. Card 6 stops money leaks. Card 7 shows what is truly safe to spend.',
-          'Every recommendation includes a confidence level so you know how trustworthy the data is.',
+        description="Coach turns your data into the next play — what changed, why, what to do, and how to prevent it."
+        icon={Sparkles}
+        iconColor="text-prism-amber"
+        ttsScript="PrismMoney Coach explains what happened with your money, why it happened, what to do next, and how to prevent the same issue from repeating. Each card is wired to your live data."
+        features={[
+          'Cards 1 and 2 explain what shifted and why.',
+          'Cards 3 and 4 build a recovery plan and prevention rule.',
+          'Card 5 is Purchase Guard — decide before you buy.',
+          'Card 6 finds money leaks. Card 7 shows true Safe-to-Spend.',
+          'Every recommendation includes a confidence level.',
         ]}
       />
+
 
       {/* Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
