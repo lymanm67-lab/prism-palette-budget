@@ -300,6 +300,10 @@ const Recurring = () => {
                           <Badge variant="outline" className="text-[10px] px-1 py-0 gap-0.5">
                             <Bell className="h-2.5 w-2.5" /> {r.reminder_days}d
                           </Badge>
+                        {isSplit(r) && (
+                          <Badge variant="outline" className="text-[10px] px-1 py-0 gap-0.5 border-prism-violet/30 text-prism-violet">
+                            <Building2 className="h-2.5 w-2.5" /> Split {Math.round(Number(r.business_split_pct))}% biz
+                          </Badge>
                         )}
                         <span className="hidden sm:inline">{r.accounts && (r.accounts as any).name}</span>
                       </div>
