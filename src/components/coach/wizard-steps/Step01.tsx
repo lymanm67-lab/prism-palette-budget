@@ -1,45 +1,124 @@
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { CheckCircle2, Upload, Receipt, CreditCard, Loader2, ExternalLink } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useHousehold } from '@/contexts/HouseholdContext';
 import type { StepProps } from './index';
 
-const OPTS = [
-  { v: 'on_track', label: 'On track', sub: 'Spending matched the plan' },
-  { v: 'a_little_off', label: 'A little off', sub: 'A category or two went over' },
-  { v: 'way_off', label: 'Way off', sub: 'Several budgets blew up' },
-];
+interface Status {
+  paycheck: boolean;
+  bills: boolean;
+  debts: boolean;
+  loading: boolean;
+}
 
 export function Step01({ value, onChange }: StepProps) {
+  const { household } = useHousehold();
+  const [status, setStatus] = useState<Status>({ paycheck: false, bills: false, debts: false, loading: true });
+
+  useEffect(() => {
+    let cancel = false;
+    async function check() {
+      if (!household?.id) {
+        setStatus({ paycheck: false, bills: false, debts: false, loading: false });
+        return;
+      }
+      const hh = household.id;
+      const sb: any = supabase;
+      const p = await sb.from('paycheck_deployments').select('id', { head: true, count: 'exact' }).eq('household_id', hh).limit(1);
+      const b = await sb.from('subscriptions').select('id', { head: true, count: 'exact' }).eq('household_id', hh).is('deleted_at', null).limit(1);
+      const d = await sb.from('debt_items').select('id', { head: true, count: 'exact' }).eq('household_id', hh).is('deleted_at', null).limit(1);
+      if (cancel) return;
+      const next = {
+        paycheck: (p.count ?? 0) > 0,
+        bills: (b.count ?? 0) > 0,
+        debts: (d.count ?? 0) > 0,
+        loading: false,
+      };
+      setStatus(next);
+      onChange({ ...value, ...next, loading: undefined });
+    }
+    check();
+    return () => { cancel = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [household?.id]);
+
+  const tiles = [
+    {
+      key: 'paycheck',
+      icon: Upload,
+      title: 'Paycheck',
+      desc: 'Upload a recent stub so Coach knows your real take-home and deductions.',
+      href: '/budgets',
+      color: 'text-prism-teal',
+      done: status.paycheck,
+    },
+    {
+      key: 'bills',
+      icon: Receipt,
+      title: 'Bills',
+      desc: 'Scan or import recurring bills so Coach can time them around payday.',
+      href: '/subscriptions',
+      color: 'text-prism-amber',
+      done: status.bills,
+    },
+    {
+      key: 'debts',
+      icon: CreditCard,
+      title: 'Debts',
+      desc: 'Drop in a statement — Coach extracts APR, balance, and minimum.',
+      href: '/debt-payoff',
+      color: 'text-prism-rose',
+      done: status.debts,
+    },
+  ];
+
   return (
     <div className="space-y-4">
-      <div>
-        <Label className="text-sm font-semibold">How did last month feel?</Label>
-        <RadioGroup
-          value={value?.feeling || ''}
-          onValueChange={(v) => onChange({ ...value, feeling: v })}
-          className="mt-2 space-y-2"
-        >
-          {OPTS.map(o => (
-            <label key={o.v} className="flex items-start gap-3 rounded-lg border border-border/40 p-3 cursor-pointer hover:bg-muted/40">
-              <RadioGroupItem value={o.v} id={`s1-${o.v}`} className="mt-0.5" />
-              <div>
-                <div className="text-sm font-medium">{o.label}</div>
-                <div className="text-xs text-muted-foreground">{o.sub}</div>
+      <Label className="text-sm font-semibold">Give Coach something to work with</Label>
+      <p className="text-xs text-muted-foreground">
+        Add any of these now — or skip. You can always come back. The more Coach knows, the sharper the plan.
+      </p>
+
+      {status.loading ? (
+        <div className="flex items-center justify-center py-8 text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin mr-2" /> Checking what you've already added…
+        </div>
+      ) : (
+        <div className="grid gap-3 sm:grid-cols-3">
+          {tiles.map(t => {
+            const Icon = t.icon;
+            return (
+              <div key={t.key} className="rounded-lg border border-border/40 p-3 flex flex-col gap-2 bg-muted/20">
+                <div className="flex items-center justify-between">
+                  <Icon className={`h-5 w-5 ${t.color}`} />
+                  {t.done ? (
+                    <Badge variant="outline" className="text-[10px] bg-prism-teal/10 border-prism-teal/30 text-prism-teal">
+                      <CheckCircle2 className="h-3 w-3 mr-1" /> Found
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-[10px]">Not yet</Badge>
+                  )}
+                </div>
+                <div className="text-sm font-semibold">{t.title}</div>
+                <p className="text-[11px] text-muted-foreground flex-1">{t.desc}</p>
+                <Button asChild size="sm" variant={t.done ? 'ghost' : 'outline'} className="h-7 text-[11px]">
+                  <Link to={t.href} target="_blank" rel="noopener">
+                    {t.done ? 'Manage' : 'Add now'} <ExternalLink className="h-3 w-3 ml-1" />
+                  </Link>
+                </Button>
               </div>
-            </label>
-          ))}
-        </RadioGroup>
-      </div>
-      <div>
-        <Label className="text-sm font-semibold">Anything specific worth noting? (optional)</Label>
-        <Textarea
-          value={value?.notes || ''}
-          onChange={(e) => onChange({ ...value, notes: e.target.value })}
-          placeholder="e.g. dining out got out of hand the last two weeks"
-          className="mt-2"
-          rows={2}
-        />
-      </div>
+            );
+          })}
+        </div>
+      )}
+
+      <p className="text-[11px] text-muted-foreground italic">
+        Tip: any link opens in a new tab so your wizard progress stays put. Hit Next whenever you're ready.
+      </p>
     </div>
   );
 }

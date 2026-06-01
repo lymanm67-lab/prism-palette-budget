@@ -3,18 +3,20 @@ import { Label } from '@/components/ui/label';
 import type { StepProps } from './index';
 
 const OPTS = [
-  { v: 'yes', label: 'Yes, adapt automatically', sub: 'Coach widens or tightens my buffer as income/expenses change' },
-  { v: 'suggest', label: 'Only suggest changes', sub: 'I want to approve every adjustment' },
-  { v: 'no', label: 'Keep buffer fixed', sub: 'Use exactly what I set in step 7' },
+  { v: 'fast', label: 'Fast', sub: 'Catch up this month with aggressive cuts' },
+  { v: 'balanced', label: 'Balanced', sub: 'Spread the recovery over 2–3 months' },
+  { v: 'system', label: 'System', sub: 'Redesign the budget so it actually fits' },
+  { v: 'wealth', label: 'Wealth', sub: 'Pause recovery, protect long-term saving instead' },
 ];
 
 export function Step08({ value, onChange }: StepProps) {
   return (
     <div className="space-y-3">
-      <Label className="text-sm font-semibold">Adaptive buffer?</Label>
+      <Label className="text-sm font-semibold">Which recovery style fits you best?</Label>
+      <p className="text-xs text-muted-foreground">After you hit Generate, Coach will turn all of these answers into your personalized plan.</p>
       <RadioGroup
-        value={value?.adaptive || ''}
-        onValueChange={(v) => onChange({ ...value, adaptive: v })}
+        value={value?.style || ''}
+        onValueChange={(v) => onChange({ ...value, style: v })}
         className="space-y-2"
       >
         {OPTS.map(o => (
