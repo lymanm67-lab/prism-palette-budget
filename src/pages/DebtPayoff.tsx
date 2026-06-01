@@ -40,7 +40,12 @@ interface Debt {
   account_id?: string;
   business_split_pct: number;
   business_name?: string;
+  deferred_until?: string;
+  forgiveness_eligible?: boolean;
+  forgiveness_date?: string;
+  forgiveness_note?: string;
 }
+
 
 
 type Strategy = 'snowball' | 'avalanche' | 'hybrid';
@@ -72,17 +77,26 @@ function calculatePayoff(debts: Debt[], extraPayment: number, strategy: Strategy
   const steps: PayoffStep[] = [];
   let month = 0;
   const MAX_MONTHS = 600;
+  const startDate = new Date();
+  const isDeferred = (d: Debt, monthOffset: number) => {
+    if (!d.deferred_until) return false;
+    const until = new Date(d.deferred_until);
+    const cur = new Date(startDate.getFullYear(), startDate.getMonth() + monthOffset, startDate.getDate());
+    return cur < until;
+  };
   while (Array.from(balances.values()).some(b => b > 0.01) && month < MAX_MONTHS) {
     month++;
     let availableExtra = extraPayment;
     const monthDebts: PayoffStep['debts'] = [];
     for (const d of sorted) { const bal = balances.get(d.id)!; if (bal <= 0) continue; balances.set(d.id, bal * (1 + d.interest_rate / 100 / 12)); }
-    for (const d of sorted) { const bal = balances.get(d.id)!; if (bal <= 0) continue; const payment = Math.min(d.minimum_payment, bal); balances.set(d.id, bal - payment); }
-    for (const d of sorted) { if (availableExtra <= 0) break; const bal = balances.get(d.id)!; if (bal <= 0) continue; const extra = Math.min(availableExtra, bal); balances.set(d.id, bal - extra); availableExtra -= extra; }
-    for (const d of sorted) { const bal = Math.max(0, balances.get(d.id)!); monthDebts.push({ name: d.name, payment: d.minimum_payment, balance: bal, paid_off: bal < 0.01 }); }
-    steps.push({ month, debts: monthDebts, total_payment: sorted.reduce((s, d) => s + d.minimum_payment, 0) + extraPayment - availableExtra, total_balance: Array.from(balances.values()).reduce((s, b) => s + Math.max(0, b), 0) });
+    for (const d of sorted) { const bal = balances.get(d.id)!; if (bal <= 0) continue; if (isDeferred(d, month - 1)) continue; const payment = Math.min(d.minimum_payment, bal); balances.set(d.id, bal - payment); }
+    for (const d of sorted) { if (availableExtra <= 0) break; const bal = balances.get(d.id)!; if (bal <= 0) continue; if (isDeferred(d, month - 1)) continue; const extra = Math.min(availableExtra, bal); balances.set(d.id, bal - extra); availableExtra -= extra; }
+    for (const d of sorted) { const bal = Math.max(0, balances.get(d.id)!); monthDebts.push({ name: d.name, payment: isDeferred(d, month - 1) ? 0 : d.minimum_payment, balance: bal, paid_off: bal < 0.01 }); }
+    const activeMin = sorted.reduce((s, d) => s + (isDeferred(d, month - 1) ? 0 : d.minimum_payment), 0);
+    steps.push({ month, debts: monthDebts, total_payment: activeMin + extraPayment - availableExtra, total_balance: Array.from(balances.values()).reduce((s, b) => s + Math.max(0, b), 0) });
     if (steps[steps.length - 1].total_balance < 0.01) break;
   }
+
   return steps;
 }
 
@@ -137,13 +151,18 @@ const DebtPayoff = () => {
       account_id: item.account_id || undefined,
       business_split_pct: Number(item.business_split_pct ?? 0),
       business_name: item.business_name || undefined,
+      deferred_until: item.deferred_until || undefined,
+      forgiveness_eligible: !!item.forgiveness_eligible,
+      forgiveness_date: item.forgiveness_date || undefined,
+      forgiveness_note: item.forgiveness_note || undefined,
     })),
     [dbItems]
   );
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
-  const [form, setForm] = useState({ name: '', balance: '', minimum_payment: '', interest_rate: '', account_id: '', business_split_pct: 0, business_name: '' });
+  const [form, setForm] = useState({ name: '', balance: '', minimum_payment: '', interest_rate: '', account_id: '', business_split_pct: 0, business_name: '', deferred_until: '', forgiveness_eligible: false, forgiveness_date: '', forgiveness_note: '' });
+
 
   const [planDialogOpen, setPlanDialogOpen] = useState(false);
   const [scanOpen, setScanOpen] = useState(false);
@@ -189,6 +208,10 @@ const DebtPayoff = () => {
       account_id: form.account_id || null,
       business_split_pct: pct,
       business_name: pct > 0 ? (form.business_name.trim() || null) : null,
+      deferred_until: form.deferred_until || null,
+      forgiveness_eligible: !!form.forgiveness_eligible,
+      forgiveness_date: form.forgiveness_eligible ? (form.forgiveness_date || null) : null,
+      forgiveness_note: form.forgiveness_eligible ? (form.forgiveness_note.trim() || null) : null,
     };
     try {
       if (editId) {
@@ -199,7 +222,7 @@ const DebtPayoff = () => {
         toast.success('Debt added');
       }
       setEditId(null);
-      setForm({ name: '', balance: '', minimum_payment: '', interest_rate: '', account_id: '', business_split_pct: 0, business_name: '' });
+      setForm({ name: '', balance: '', minimum_payment: '', interest_rate: '', account_id: '', business_split_pct: 0, business_name: '', deferred_until: '', forgiveness_eligible: false, forgiveness_date: '', forgiveness_note: '' });
       setDialogOpen(false);
     } catch (err: any) {
       console.error('Save debt error:', err);
@@ -209,9 +232,10 @@ const DebtPayoff = () => {
 
   const openEdit = (d: Debt) => {
     setEditId(d.id);
-    setForm({ name: d.name, balance: String(d.balance), minimum_payment: String(d.minimum_payment), interest_rate: String(d.interest_rate), account_id: d.account_id || '', business_split_pct: d.business_split_pct || 0, business_name: d.business_name || '' });
+    setForm({ name: d.name, balance: String(d.balance), minimum_payment: String(d.minimum_payment), interest_rate: String(d.interest_rate), account_id: d.account_id || '', business_split_pct: d.business_split_pct || 0, business_name: d.business_name || '', deferred_until: d.deferred_until || '', forgiveness_eligible: !!d.forgiveness_eligible, forgiveness_date: d.forgiveness_date || '', forgiveness_note: d.forgiveness_note || '' });
     setDialogOpen(true);
   };
+
 
 
   const handleDeleteDebt = async (id: string) => {
@@ -435,6 +459,51 @@ const DebtPayoff = () => {
                     </div>
                   )}
 
+                  {/* Loan status: deferment & forgiveness */}
+                  <div className="space-y-3 pt-2 border-t border-border/50">
+                    <Label className="text-xs uppercase tracking-wider text-muted-foreground">Loan status (optional)</Label>
+                    <div className="space-y-2">
+                      <Label className="text-sm">Deferred until</Label>
+                      <Input
+                        type="date"
+                        value={form.deferred_until}
+                        onChange={e => setForm(f => ({ ...f, deferred_until: e.target.value }))}
+                      />
+                      <p className="text-[11px] text-muted-foreground">No payments required before this date — payoff calc skips minimums while deferred.</p>
+                    </div>
+                    <label className="flex items-center gap-2 text-sm cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={form.forgiveness_eligible}
+                        onChange={e => setForm(f => ({ ...f, forgiveness_eligible: e.target.checked }))}
+                        className="h-4 w-4 accent-primary"
+                      />
+                      Eligible for forgiveness (e.g. PSLF)
+                    </label>
+                    {form.forgiveness_eligible && (
+                      <div className="space-y-2 pl-6">
+                        <div className="space-y-2">
+                          <Label className="text-sm">Expected forgiveness date</Label>
+                          <Input
+                            type="date"
+                            value={form.forgiveness_date}
+                            onChange={e => setForm(f => ({ ...f, forgiveness_date: e.target.value }))}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-sm">Note</Label>
+                          <Input
+                            value={form.forgiveness_note}
+                            onChange={e => setForm(f => ({ ...f, forgiveness_note: e.target.value }))}
+                            placeholder="e.g. PSLF — 10 yrs of govt service"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+
+
                   <Button onClick={handleSaveDebt} disabled={!form.name || !form.balance || createItem.isPending || updateItem.isPending} className="w-full prism-gradient text-white border-0 hover:opacity-90">
                     {(createItem.isPending || updateItem.isPending) ? 'Saving…' : editId ? 'Update' : 'Add Debt'}
                   </Button>
@@ -458,6 +527,11 @@ const DebtPayoff = () => {
                   account_id: '',
                   business_split_pct: 0,
                   business_name: '',
+                  deferred_until: '',
+                  forgiveness_eligible: false,
+                  forgiveness_date: '',
+                  forgiveness_note: '',
+
                 });
                 setEditId(null);
                 setDialogOpen(true);
@@ -532,6 +606,16 @@ const DebtPayoff = () => {
                             <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-prism-teal/20 text-prism-teal">💼 Business{d.business_name ? ` · ${d.business_name}` : ''}</span>
                           ) : (
                             <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-prism-amber/20 text-prism-amber">⚖️ {100 - d.business_split_pct}/{d.business_split_pct} Split{d.business_name ? ` · ${d.business_name}` : ''}</span>
+                          )}
+                          {d.deferred_until && new Date(d.deferred_until) > new Date() && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-prism-sky/20 text-prism-sky" title={`No payments due until ${new Date(d.deferred_until).toLocaleDateString()}`}>
+                              ⏸ Deferred until {new Date(d.deferred_until).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}
+                            </span>
+                          )}
+                          {d.forgiveness_eligible && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-prism-teal/20 text-prism-teal" title={d.forgiveness_note || 'Forgiveness eligible'}>
+                              🎓 Forgiveness{d.forgiveness_date ? ` · ${new Date(d.forgiveness_date).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}` : ''}
+                            </span>
                           )}
                         </div>
                         <div className="flex gap-1">

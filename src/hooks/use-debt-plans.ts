@@ -104,7 +104,7 @@ export function useDebtItems(planId: string | null) {
 export function useCreateDebtItem() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (item: { plan_id: string; name: string; balance: number; interest_rate: number; minimum_payment: number; account_id?: string | null; sort_order?: number; business_split_pct?: number; business_name?: string | null }) => {
+    mutationFn: async (item: { plan_id: string; name: string; balance: number; interest_rate: number; minimum_payment: number; account_id?: string | null; sort_order?: number; business_split_pct?: number; business_name?: string | null; deferred_until?: string | null; forgiveness_eligible?: boolean; forgiveness_date?: string | null; forgiveness_note?: string | null }) => {
       const { data, error } = await supabase
         .from('debt_items')
         .insert(item as any)
@@ -120,7 +120,7 @@ export function useCreateDebtItem() {
 export function useUpdateDebtItem() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, plan_id, ...updates }: { id: string; plan_id: string; name?: string; balance?: number; interest_rate?: number; minimum_payment?: number; business_split_pct?: number; business_name?: string | null }) => {
+    mutationFn: async ({ id, plan_id, ...updates }: { id: string; plan_id: string; name?: string; balance?: number; interest_rate?: number; minimum_payment?: number; business_split_pct?: number; business_name?: string | null; deferred_until?: string | null; forgiveness_eligible?: boolean; forgiveness_date?: string | null; forgiveness_note?: string | null }) => {
       const { data, error } = await supabase
         .from('debt_items')
         .update(updates as any)

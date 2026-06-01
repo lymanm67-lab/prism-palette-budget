@@ -945,6 +945,10 @@ export type Database = {
           business_name: string | null
           business_split_pct: number
           created_at: string
+          deferred_until: string | null
+          forgiveness_date: string | null
+          forgiveness_eligible: boolean
+          forgiveness_note: string | null
           id: string
           interest_rate: number
           minimum_payment: number
@@ -958,6 +962,10 @@ export type Database = {
           business_name?: string | null
           business_split_pct?: number
           created_at?: string
+          deferred_until?: string | null
+          forgiveness_date?: string | null
+          forgiveness_eligible?: boolean
+          forgiveness_note?: string | null
           id?: string
           interest_rate?: number
           minimum_payment?: number
@@ -971,6 +979,10 @@ export type Database = {
           business_name?: string | null
           business_split_pct?: number
           created_at?: string
+          deferred_until?: string | null
+          forgiveness_date?: string | null
+          forgiveness_eligible?: boolean
+          forgiveness_note?: string | null
           id?: string
           interest_rate?: number
           minimum_payment?: number
