@@ -138,6 +138,7 @@ const DebtPayoff = () => {
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState({ name: '', balance: '', minimum_payment: '', interest_rate: '', account_id: '' });
   const [planDialogOpen, setPlanDialogOpen] = useState(false);
+  const [scanOpen, setScanOpen] = useState(false);
   const [planName, setPlanName] = useState('');
 
   // Import from accounts
