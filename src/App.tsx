@@ -78,6 +78,7 @@ const InvestmentPlanning = lazy(() => import("@/pages/InvestmentPlanning"));
 const MoneyCoach = lazy(() => import("@/pages/MoneyCoach"));
 const PaycheckDeployment = lazy(() => import("@/pages/PaycheckDeployment"));
 const CoachChat = lazy(() => import("@/pages/CoachChat"));
+const CoachPlan = lazy(() => import("@/pages/CoachPlan"));
 
 const queryClient = new QueryClient();
 
@@ -142,6 +143,7 @@ const App = () => (
               <Route path="/coach" element={<Suspense fallback={<PageLoader />}><MoneyCoach /></Suspense>} />
               <Route path="/coach/paycheck" element={<Suspense fallback={<PageLoader />}><PaycheckDeployment /></Suspense>} />
               <Route path="/coach/chat" element={<Suspense fallback={<PageLoader />}><CoachChat /></Suspense>} />
+              <Route path="/coach/plan" element={<Suspense fallback={<PageLoader />}><CoachPlan /></Suspense>} />
               <Route path="/accounts" element={<Suspense fallback={<PageLoader />}><Accounts /></Suspense>} />
               <Route path="/transactions" element={<Suspense fallback={<PageLoader />}><Transactions /></Suspense>} />
               <Route path="/cash-flow" element={<Suspense fallback={<PageLoader />}><CashFlow /></Suspense>} />
