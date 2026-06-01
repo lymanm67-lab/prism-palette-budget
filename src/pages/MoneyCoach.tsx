@@ -9,6 +9,7 @@ import { useSpendingAnomalies } from '@/hooks/use-spending-anomalies';
 import { useSubscriptions } from '@/hooks/use-subscriptions';
 import { useTransactions } from '@/hooks/use-finance-data';
 import { useAccounts } from '@/hooks/use-finance-data';
+import { useRecoveryPlans, useBuildRecoveryPlan, useUpdateRecoveryPlan } from '@/hooks/use-recovery-plans';
 import { CoachCard, type Confidence } from '@/components/coach/CoachCard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,7 +18,15 @@ import PageOverview from '@/components/PageOverview';
 import {
   Activity, Brain, Sparkles, Shield, ShoppingBag, Droplets,
   Wallet, ArrowRight, AlertTriangle, CheckCircle2, Clock, Info,
+  Zap, Scale, Settings2, TrendingUp, Loader2, X,
 } from 'lucide-react';
+
+const PLAN_META: Record<string, { label: string; icon: any; color: string }> = {
+  fast: { label: 'Fast', icon: Zap, color: 'text-prism-orange' },
+  balanced: { label: 'Balanced', icon: Scale, color: 'text-prism-teal' },
+  system: { label: 'System', icon: Settings2, color: 'text-prism-sky' },
+  wealth: { label: 'Wealth', icon: TrendingUp, color: 'text-prism-lime' },
+};
 
 const fmt = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
 
@@ -28,9 +37,12 @@ export default function MoneyCoach() {
   const { data: subs } = useSubscriptions();
   const { data: txns } = useTransactions();
   const { data: accounts } = useAccounts();
+  const currentMonth = format(startOfMonth(new Date()), 'yyyy-MM-dd');
+  const { data: recoveryPlans } = useRecoveryPlans(currentMonth);
+  const buildPlan = useBuildRecoveryPlan();
+  const updatePlan = useUpdateRecoveryPlan();
 
   // Over-budget categories this month
-  const currentMonth = format(startOfMonth(new Date()), 'yyyy-MM-dd');
   const { data: overBudget } = useQuery({
     queryKey: ['coach-over-budget', household?.id, currentMonth],
     enabled: !!household,
@@ -216,39 +228,190 @@ export default function MoneyCoach() {
           )}
         </CoachCard>
 
-        {/* CARD 3 — Recovery Plan (Phase 2 placeholder) */}
-        <CoachCard
-          number={3}
-          title="Recovery plan"
-          subtitle="Fast, balanced, system, or wealth recovery"
-          icon={Sparkles}
-          iconColor="text-prism-lime"
-          status="soon"
-        >
-          <div className="rounded-lg border border-dashed border-border/60 bg-muted/20 p-3 text-xs text-muted-foreground space-y-1">
-            <div className="flex items-center gap-1.5 text-prism-amber font-semibold">
-              <Clock className="h-3 w-3" /> Coming next
-            </div>
-            <p>When a category goes over plan, Coach will build four recovery options: Fast (cut Safe-to-Spend), Balanced (spread over weeks), System (fix bill timing), Wealth (redirect recovered $ to debt or savings).</p>
-          </div>
-        </CoachCard>
+        {/* CARD 3 — Recovery Plan */}
+        {(() => {
+          const topOver = overBudget?.[0];
+          const plansForTop = (recoveryPlans || []).filter(
+            (p: any) => topOver && p.category_name === topOver.name,
+          );
+          const activePlan = plansForTop.find((p: any) => p.status === 'active');
+          const suggestedPlans = plansForTop.filter((p: any) => p.status === 'suggested');
+          const dismissedAll = plansForTop.length > 0 && suggestedPlans.length === 0 && !activePlan;
+          const preventionRule = plansForTop[0]?.prevention_rule;
+          const patternType = plansForTop[0]?.pattern_type;
 
-        {/* CARD 4 — Prevention Rule (Phase 2 placeholder) */}
-        <CoachCard
-          number={4}
-          title="Prevention rule"
-          subtitle="System changes so it stops repeating"
-          icon={Shield}
-          iconColor="text-prism-sky"
-          status="soon"
-        >
-          <div className="rounded-lg border border-dashed border-border/60 bg-muted/20 p-3 text-xs text-muted-foreground space-y-1">
-            <div className="flex items-center gap-1.5 text-prism-amber font-semibold">
-              <Clock className="h-3 w-3" /> Coming next
-            </div>
-            <p>Coach will suggest due-date changes, category caps, alerts, sinking funds, or buffer adjustments to prevent the same issue next month.</p>
-          </div>
-        </CoachCard>
+          return (
+            <>
+              <CoachCard
+                number={3}
+                title="Recovery plan"
+                subtitle={topOver ? `For ${topOver.name} — ${fmt(topOver.overBy)} over` : 'Fast, balanced, system, or wealth recovery'}
+                icon={Sparkles}
+                iconColor="text-prism-lime"
+                confidence={plansForTop.length ? 'high' : 'medium'}
+                status={activePlan ? 'ok' : topOver ? 'warn' : 'ok'}
+              >
+                {!topOver && (
+                  <div className="flex items-center gap-2 text-prism-teal text-sm">
+                    <CheckCircle2 className="h-4 w-4" />
+                    <span>Nothing over plan right now.</span>
+                  </div>
+                )}
+
+                {topOver && plansForTop.length === 0 && (
+                  <div className="space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      Coach can build four recovery options for <span className="font-semibold text-foreground">{topOver.name}</span> — Fast, Balanced, System, or Wealth.
+                    </p>
+                    <Button
+                      size="sm"
+                      onClick={() => buildPlan.mutate({
+                        category_id: undefined,
+                        category_name: topOver.name,
+                        month: currentMonth,
+                        overage_amount: Math.round(topOver.overBy * 100) / 100,
+                        budget_amount: topOver.planned,
+                        spent_amount: topOver.spent,
+                      })}
+                      disabled={buildPlan.isPending}
+                      className="w-full"
+                    >
+                      {buildPlan.isPending ? (
+                        <><Loader2 className="mr-2 h-3 w-3 animate-spin" /> Building plan…</>
+                      ) : (
+                        <>Build recovery plan <Sparkles className="ml-2 h-3 w-3" /></>
+                      )}
+                    </Button>
+                  </div>
+                )}
+
+                {topOver && activePlan && (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      {(() => {
+                        const meta = PLAN_META[activePlan.plan_type] || PLAN_META.balanced;
+                        const Icon = meta.icon;
+                        return (
+                          <>
+                            <Icon className={`h-4 w-4 ${meta.color}`} />
+                            <span className="text-xs font-bold uppercase tracking-wider">{meta.label} plan active</span>
+                          </>
+                        );
+                      })()}
+                    </div>
+                    <p className="text-sm font-semibold">{activePlan.title}</p>
+                    <p className="text-xs text-muted-foreground">{activePlan.summary}</p>
+                    <ul className="space-y-1 text-xs">
+                      {(activePlan.steps as string[]).map((s, i) => (
+                        <li key={i} className="flex gap-2"><span className="text-prism-teal">›</span><span>{s}</span></li>
+                      ))}
+                    </ul>
+                    <div className="flex gap-2 pt-1">
+                      <Button size="sm" variant="outline" className="h-7 text-xs flex-1"
+                        onClick={() => updatePlan.mutate({ id: activePlan.id, status: 'completed' })}>
+                        Mark complete
+                      </Button>
+                      <Button size="sm" variant="ghost" className="h-7 text-xs"
+                        onClick={() => updatePlan.mutate({ id: activePlan.id, status: 'dismissed' })}>
+                        Switch plan
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {topOver && !activePlan && suggestedPlans.length > 0 && (
+                  <div className="space-y-2">
+                    {patternType && (
+                      <Badge variant="outline" className="text-[10px] capitalize">
+                        {patternType === 'repeated' ? 'Repeated pattern' : patternType === 'developing' ? 'Developing pattern' : 'One-time outlier'}
+                      </Badge>
+                    )}
+                    <div className="space-y-1.5">
+                      {suggestedPlans.map((p: any) => {
+                        const meta = PLAN_META[p.plan_type] || PLAN_META.balanced;
+                        const Icon = meta.icon;
+                        return (
+                          <button
+                            key={p.id}
+                            onClick={() => updatePlan.mutate({ id: p.id, status: 'active' })}
+                            className="w-full text-left rounded-md border border-border/40 bg-background/40 hover:bg-background/70 hover:border-prism-teal/40 transition px-2.5 py-2"
+                          >
+                            <div className="flex items-start gap-2">
+                              <Icon className={`h-3.5 w-3.5 mt-0.5 shrink-0 ${meta.color}`} />
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center justify-between gap-2">
+                                  <span className="text-xs font-bold uppercase tracking-wider">{meta.label}</span>
+                                  <span className="font-mono text-[11px] text-muted-foreground">{fmt(p.target_amount)}</span>
+                                </div>
+                                <p className="text-xs font-medium mt-0.5 truncate">{p.title}</p>
+                                <p className="text-[11px] text-muted-foreground truncate">{p.summary}</p>
+                              </div>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <p className="text-[10px] text-muted-foreground italic">Tap a plan to apply it.</p>
+                  </div>
+                )}
+
+                {topOver && dismissedAll && (
+                  <div className="space-y-2">
+                    <p className="text-xs text-muted-foreground">All plans completed or dismissed.</p>
+                    <Button size="sm" variant="outline" className="w-full h-8 text-xs"
+                      onClick={() => buildPlan.mutate({
+                        category_name: topOver.name,
+                        month: currentMonth,
+                        overage_amount: Math.round(topOver.overBy * 100) / 100,
+                        budget_amount: topOver.planned,
+                        spent_amount: topOver.spent,
+                      })}>
+                      Rebuild plans
+                    </Button>
+                  </div>
+                )}
+              </CoachCard>
+
+              {/* CARD 4 — Prevention Rule */}
+              <CoachCard
+                number={4}
+                title="Prevention rule"
+                subtitle="So it stops repeating"
+                icon={Shield}
+                iconColor="text-prism-sky"
+                confidence={preventionRule ? 'high' : 'medium'}
+                status={preventionRule ? 'ok' : topOver ? 'warn' : 'ok'}
+              >
+                {preventionRule ? (
+                  <div className="space-y-2">
+                    <div className="rounded-lg bg-prism-sky/5 border border-prism-sky/20 p-3">
+                      <div className="flex items-center gap-1.5 mb-1.5">
+                        <Shield className="h-3 w-3 text-prism-sky" />
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-prism-sky">System change</span>
+                      </div>
+                      <p className="text-sm">{preventionRule}</p>
+                    </div>
+                    {patternType === 'repeated' && (
+                      <p className="text-[11px] text-muted-foreground italic">
+                        This category trended over 3+ months — a system fix is stronger than a one-time recovery.
+                      </p>
+                    )}
+                  </div>
+                ) : topOver ? (
+                  <p className="text-sm text-muted-foreground">
+                    Build a recovery plan first — Coach will generate a prevention rule alongside it.
+                  </p>
+                ) : (
+                  <div className="flex items-center gap-2 text-prism-teal text-sm">
+                    <CheckCircle2 className="h-4 w-4" />
+                    <span>No prevention needed right now.</span>
+                  </div>
+                )}
+              </CoachCard>
+            </>
+          );
+        })()}
+
 
         {/* CARD 5 — Purchase Guard (links to existing Guardrails) */}
         <CoachCard
