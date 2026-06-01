@@ -88,7 +88,7 @@ export function useSnapTradeConnections() {
     queryFn: async () => {
       const { data, error } = await (supabase
         .from('snaptrade_connections' as any)
-        .select('*')
+        .select('id, household_id, snaptrade_user_id, brokerage_authorization_id, institution_name, status, created_at, updated_at')
         .eq('household_id', household!.id)
         .order('created_at', { ascending: false }) as any);
       if (error) throw error;
@@ -96,7 +96,6 @@ export function useSnapTradeConnections() {
         id: string;
         household_id: string;
         snaptrade_user_id: string;
-        snaptrade_user_secret: string;
         brokerage_authorization_id: string | null;
         institution_name: string | null;
         status: string;
@@ -124,7 +123,7 @@ export function useSyncSnapTrade() {
       // Get active connections
       const { data: connections } = await (supabase
         .from('snaptrade_connections' as any)
-        .select('*')
+        .select('id, snaptrade_user_id, institution_name, status')
         .eq('household_id', household.id)
         .eq('status', 'active') as any);
 
