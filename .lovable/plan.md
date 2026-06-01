@@ -1,142 +1,101 @@
 
-# Home-Buying Readiness — Full Redesign
+# Prism Money Coach — Phased Build Plan
 
-Turn the current 8-card checklist into a tabbed workspace where users can run scenarios, get AI coaching, estimate every cost, compare loan types, look up state programs, and search listings — with the existing checklist preserved as one tab.
+## Recommended entry point
 
-## New page structure (`/home-buying`)
+New top-level route **`/coach`** with a sidebar entry "Money Coach" (prism-amber icon, between Dashboard and Budgets). The existing Dashboard stays as the data overview; Coach is the **action layer** — it answers "what happened, why, what now, how to prevent it." Coach also gets a persistent floating CTA on Dashboard ("Open Coach") and a Cmd+K shortcut (`G C`).
 
-Top-of-page **Readiness Hero** (always visible): one big composite score derived from
-- Checklist completion (existing)
-- Credit score (pulled from `credit_health` if present)
-- DTI (income vs debt from finance hooks)
-- Down-payment progress (a new goal)
-- Emergency fund coverage
+Why not replace Dashboard or add a tab: Dashboard is already split Personal/Business/Combined and is data-dense. Coach is narrative and decision-driven — different mental model, deserves its own surface. A separate route also lets us deep-link from notifications, anomaly alerts, and Purchase Guard flows.
 
-Below the hero: **7 tabs**.
+---
 
-### 1. AI Coach (`AiHomeBuyingCoach`)
-Guided conversational questionnaire powered by Lovable AI (Gemini, no API key from user). Asks ~10 adaptive questions (target city/state, household income, monthly debts, current savings, target purchase price, timeline, first-time buyer y/n, credit range, employment type, family plans). Streams back a personalized readiness report with:
-- Strengths / gaps
-- Recommended next 3 actions
-- Suggested loan type
-- Suggested DPA programs (links to State tab)
-Stored in a new `home_buying_coach_sessions` table so users can revisit.
+## Phase map (one phase per message)
 
-### 2. Scenarios (`HomeBuyingScenarios`)
-Side-by-side comparator — up to 3 scenarios at once. Each scenario card has:
-- Purchase price, down %, rate, term, property tax %, insurance %, HOA, PMI
-- Auto-populates property tax + insurance from `STATE_DATA` (already in repo)
-- Outputs: monthly PITI, total interest, break-even vs renting, 5/10/30-yr equity curve (Recharts)
-Save scenarios to `home_buying_scenarios` table.
+Each phase ends in a working, shippable state. You approve each before we start the next.
 
-### 3. Calculators (`HomeBuyingCalculators`) — 4 stacked tools
-- **Down Payment Planner** — target price × down %, current savings, monthly contribution → months to goal, with a "Saving Techniques" accordion (automatic transfers, side income, windfalls, employer programs, IRA first-home withdrawal rules)
-- **Closing Cost Estimator** — itemized: lender fees, title, escrow, taxes, prepaid insurance, recording. State-aware via `STATE_DATA`
-- **Hidden Cost & Repair Budget** — annual maintenance (1–3% of price), utilities, HOA, lawn, pest, roof/HVAC/water-heater reserve sliders
-- **Credit & Debt Impact** — pulls user's credit score and debts, shows estimated rate by FICO band, total interest savings per +20 pt score; "Pay off X first → save $Y" suggestions
+### Phase 1 — Coach shell + dashboard wiring (LOW credits)
+Build `/coach` page with the 7 cards, all wired to **existing data only**. No new DB, no new edge functions.
+- Card 1 What Happened — uses `useSpendingAnomalies` + over-budget categories from `budgets`
+- Card 2 Why It Happened — uses existing `spending-insights` edge function (already realtime)
+- Card 3 Recovery Plan — placeholder ("Coming next phase")
+- Card 4 Prevention Rule — placeholder
+- Card 5 Purchase Guard — links to existing Smart Spend Guardrails page
+- Card 6 Money Leak Stopper — pulls from `useSubscriptions` (Zombie Charges) + Bill Negotiation savings
+- Card 7 Safe-to-Spend Shield — reuses `useSafeToSpend` + `StsEquationView`, adds the Smart Buffer breakdown card
+- Add coaching tone wrapper component (`<CoachCard>`) with confidence-score badge (High/Medium/Low)
 
-### 4. Loan Types (`LoanTypeComparator`)
-Card grid comparing Conventional, FHA, VA, USDA, Jumbo, Owner-Financed, Land Contract, Rent-to-Own. Each card: min down, min credit, pros, cons, best-for, mortgage-insurance rules, balloon/risk warnings. Plus a 4-column comparison table and a "Best fit for me" highlight based on AI Coach answers.
+### Phase 2 — Recovery Plan Builder (MEDIUM)
+New engine that runs when any category is over budget.
+- New table `recovery_plans` (household_id, category_id, month, plan_type, target_amount, status, created_at)
+- New hook `useRecoveryPlans` + edge function `recovery-plan-builder` (Gemini Flash, returns Fast/Balanced/System/Wealth options)
+- Trend vs Outlier logic in TS (1 in 6mo = outlier, 2 in 3mo = developing, 3 in 6mo = repeated pattern)
+- Card 3 lights up with 4 recovery options + "Apply Plan" button
+- Card 4 lights up with system prevention rules
 
-### 5. State Assistance (`StateAssistancePicker`)
-Dropdown of all 50 states + DC (reuse `STATE_DATA` keys). Static curated dataset (`src/lib/home-buying/state-dpa-programs.ts`) of first-time-buyer / DPA programs per state — name, agency, max assistance, income limits, link. ~3–6 programs per state, sourced from official state housing-finance-agency sites. Includes federal programs (FHA, VA, USDA, HomeReady, Home Possible, Good Neighbor Next Door).
+### Phase 3 — Purchase Guard expansion (MEDIUM)
+**Extends** Smart Spend Guardrails (keeps current $50/48h logic intact). Additions:
+- New table `purchase_guard_checks` (purpose, classification need/want/strategic, fit_score, decision, fomo_detected, override_reason, planned_purchase_target_date, post_review_completed_at, post_review_worth_it)
+- Purchase Fit Score (0–100) computed client-side from existing Safe-to-Spend, buffer, goal, debt, recurring-cost data
+- FOMO keyword detector (regex over purpose text: "limited time", "sale ends", "I deserve it", etc.)
+- 24-hour wait UI with countdown
+- Override pattern detection (2 overrides in 6mo → suggest system rule)
+- Strategic Investment proof questionnaire
+- One-in-one-out picker (lists active subscriptions to swap)
+- Planned Purchase Mode (creates sinking fund row in existing `goals` table)
+- 7-day + 30-day post-purchase review prompt (notification)
 
-### 6. Home Search (`HomeSearchPanel`)
-Filters: city/ZIP, price range, beds, baths, garage, basement, sqft, style (ranch/colonial/etc.), lot size. Results show address, price, beds/baths/sqft, link to listing.
+### Phase 4 — Money Leak Stopper engine (MEDIUM)
+Promote leaks from "subscriptions only" to a full engine.
+- New edge function `money-leak-scan` (runs nightly + on-demand) detecting: subscription creep, duplicates, fee increases, overdrafts, late fees, ATM fees, interest charges, payday spending spikes, bill collisions, lifestyle creep, forgotten trials
+- New table `money_leaks` (type, monthly_cost, annual_cost, three_year_cost, risk_level, recommended_fix, suggested_redirect, status, dismissed_at)
+- Card 6 becomes interactive: dismiss, fix, redirect to debt/HSA/Roth/savings
 
-**Data source: not Zillow.** Zillow blocks scraping and forbids it in ToS. Instead:
-- **Firecrawl connector** (already documented in this project) to scrape **Redfin / Realtor.com public listing pages** on demand.
-- Edge function `home-listings-search` accepts filters, builds a Redfin search URL, calls Firecrawl `scrape` with `formats: [{ type: 'json', schema }]` for structured extraction, returns normalized listings.
-- Falls back gracefully with an empty state + "Connect Firecrawl" CTA if the connector isn't linked.
+### Phase 5 — Smart Buffer adaptive engine (LOW-MEDIUM)
+Replace fixed `buffer_percent` with adaptive logic.
+- New columns on `mode_settings`: `buffer_mode` ('manual'|'adaptive'), `buffer_triggers` (jsonb log)
+- Adaptive calculator scores: overdraft history, late fees, pending count, income variance, unconfirmed bills, subscription density, large upcoming bill, days-to-payday, recent spike
+- Tier output: 10–15 / 15–20 / 20–25 / 25–30 with explanation
+- Show "Why this buffer?" tooltip on Card 7
 
-### 7. Readiness Checklist (existing 8 questions, unchanged)
-Move current page contents into `HomeBuyingChecklistTab.tsx` — zero behavior change.
+### Phase 6 — Paycheck Deployment Plan (MEDIUM)
+- New edge function `paycheck-deploy` consuming latest paystub (`paystubs` table already exists) + bill calendar + goals
+- Returns: bills to reserve, min debt, extra debt attack, savings, investment, Smart Buffer, True Safe-to-Spend
+- New `/coach/paycheck` sub-route with timeline UI showing each paycheck's "job"
+- Card on main Coach with "Next paycheck (Fri Dec 5): see the plan"
 
-## New files
+### Phase 7 — Bill Timing Optimizer + Wealth Redirector (MEDIUM)
+- Bill collision detector reusing existing recurring/cash-flow data → suggests due-date changes
+- Wealth Redirector: one component that takes any recovered $ (leak fix, canceled sub, refund) and projects 3-yr impact across debt/EF/HSA/Roth/brokerage destinations
+- Integrates with existing `goals` and `debt_plans`
 
-```
-src/pages/HomeBuyingChecklist.tsx                    (gutted → becomes Tabs shell)
-src/components/home-buying/
-  ReadinessHero.tsx
-  AiHomeBuyingCoach.tsx
-  HomeBuyingScenarios.tsx
-  ScenarioCard.tsx
-  HomeBuyingCalculators.tsx
-  DownPaymentPlanner.tsx
-  ClosingCostEstimator.tsx
-  HiddenCostBudget.tsx
-  CreditDebtImpact.tsx
-  LoanTypeComparator.tsx
-  StateAssistancePicker.tsx
-  HomeSearchPanel.tsx
-  HomeBuyingChecklistTab.tsx          (existing checklist)
-src/lib/home-buying/
-  mortgage-math.ts                    (PITI, amortization, break-even)
-  state-dpa-programs.ts               (curated DPA data)
-  loan-types.ts                       (loan type metadata)
-supabase/functions/home-buying-coach/index.ts
-supabase/functions/home-listings-search/index.ts
-```
+### Phase 8 — Polish + onboarding + disclaimers (LOW)
+- Coach onboarding tour (3 steps)
+- Educational disclaimer footer on every Coach surface
+- Confidence-score legend
+- TTS walkthrough hook into existing `useTTS`
+- Update memory files for new architecture
+- Add to changelog + landing page feature mention
 
-## Database (one migration)
+---
 
-```sql
--- AI coach sessions
-CREATE TABLE public.home_buying_coach_sessions (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  household_id uuid NOT NULL,
-  user_id uuid NOT NULL,
-  answers jsonb NOT NULL DEFAULT '{}'::jsonb,
-  report jsonb,
-  created_at timestamptz DEFAULT now(),
-  updated_at timestamptz DEFAULT now()
-);
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.home_buying_coach_sessions TO authenticated;
-GRANT ALL ON public.home_buying_coach_sessions TO service_role;
-ALTER TABLE public.home_buying_coach_sessions ENABLE ROW LEVEL SECURITY;
--- household-scoped policies (same pattern as homebuyer_checklist)
+## Technical notes (for reference)
 
--- Saved scenarios
-CREATE TABLE public.home_buying_scenarios (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  household_id uuid NOT NULL,
-  user_id uuid NOT NULL,
-  name text NOT NULL,
-  inputs jsonb NOT NULL,
-  created_at timestamptz DEFAULT now()
-);
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.home_buying_scenarios TO authenticated;
-GRANT ALL ON public.home_buying_scenarios TO service_role;
-ALTER TABLE public.home_buying_scenarios ENABLE ROW LEVEL SECURITY;
-```
+**Reuse, don't rebuild:**
+- Safe-to-Spend math stays in `useSafeToSpend` — Coach just renders + explains
+- Spending anomalies stay in `useSpendingAnomalies` — Coach categorizes as trend/outlier
+- Existing `spending-insights` edge function powers "Why" narratives
+- Purchase Guard extends `useSpendGuardrails` rather than replacing
 
-## External services
+**New tables (across phases):** `recovery_plans`, `purchase_guard_checks`, `money_leaks`, `paycheck_deployments`. All household-scoped with RLS + GRANTs.
 
-- **Lovable AI** (Gemini `google/gemini-3-flash-preview`) — coach questionnaire + report. No user key needed.
-- **Firecrawl connector** — for listing search. I'll add a "Connect Firecrawl" CTA inside the Home Search tab; if absent, the tab still renders with a helpful empty state. No upfront secret request.
-- **No Zillow.** Their ToS forbids it and they block scrapers.
+**New edge functions:** `recovery-plan-builder`, `money-leak-scan` (+ nightly cron), `paycheck-deploy`. All use Lovable AI Gateway (Gemini Flash) — no new secrets.
 
-## Design notes
+**Coaching tone enforcement:** Central `coachTone.ts` util that wraps all AI prompts with the supportive language rules (no "you failed", use "trending above plan", etc.).
 
-- Reuse existing tokens: `prism-teal`, `prism-amber`, `prism-card-shine`, glassmorphism.
-- Tabs use existing `@/components/ui/tabs` shadcn component.
-- Charts via Recharts (already in project).
-- Mobile: tabs become a horizontally scrollable strip; calculators stack.
-- Trademark: keep PrismMoney™ usage where present.
+**Confidence scoring:** Shared `getConfidence()` util — High/Medium/Low based on data completeness (paystub present, bills confirmed, Plaid fresh < 7d, etc.).
 
-## What I am NOT doing in this build (out of scope unless you say otherwise)
-- No real-time MLS feed (requires paid IDX license).
-- No mortgage pre-approval submission (regulated activity).
-- No automatic Zillow scrape.
-- No new connector setup wizard outside the Home Search tab.
+---
 
-## Implementation order
-1. Migration + DB grants
-2. `mortgage-math.ts`, `loan-types.ts`, `state-dpa-programs.ts`
-3. Tabs shell + `ReadinessHero` + move existing checklist into tab
-4. Calculators (4 components)
-5. Scenarios + Loan Types + State Assistance
-6. AI Coach + edge function
-7. Home Search + edge function (last, depends on Firecrawl)
+## What you approve now
 
-Approve and I'll switch to build mode and ship in this order.
+Just **Phase 1** (Coach shell + dashboard wiring). After that ships and looks right, send "Phase 2" and we build Recovery Plans. Each phase is its own message so you control credit spend and can stop or reorder anytime.
