@@ -36,7 +36,7 @@ export function Step01({ value, onChange }: StepProps) {
         sb.from('paycheck_deployments').select('id', { head: true, count: 'exact' }).eq('household_id', hh).limit(1),
         sb.from('budgets').select('id', { head: true, count: 'exact' }).eq('household_id', hh).limit(1),
         sb.from('subscriptions').select('id', { head: true, count: 'exact' }).eq('household_id', hh).limit(1),
-        sb.from('debt_items').select('id', { head: true, count: 'exact' }).eq('household_id', hh).limit(1),
+        sb.from('debt_items').select('id, debt_plans!inner(household_id)', { head: true, count: 'exact' }).eq('debt_plans.household_id', hh).limit(1),
       ]);
       if (cancel) return;
       const next = {
