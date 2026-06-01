@@ -560,7 +560,7 @@ function MoneyLeakStopperCard({ defaultOpen = false }: { defaultOpen?: boolean }
     <CoachCard
       number={6}
       collapsible
-      defaultOpen={false}
+      defaultOpen={defaultOpen}
       title="Money leak stopper"
       subtitle="Quiet costs that weaken your plan"
       icon={Droplets}
