@@ -44,6 +44,7 @@ interface Debt {
   forgiveness_eligible?: boolean;
   forgiveness_date?: string;
   forgiveness_note?: string;
+  due_day?: number;
 }
 
 
