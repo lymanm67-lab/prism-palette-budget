@@ -139,5 +139,3 @@ export function Step01({ value, onChange }: StepProps) {
     </div>
   );
 }
-
-}
