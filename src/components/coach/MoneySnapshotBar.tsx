@@ -83,7 +83,7 @@ export function MoneySnapshotBar() {
             <span>Upload Paycheck</span>
           </Button>
           <Button asChild size="sm" variant="outline" className="h-7 gap-1.5 text-xs bg-prism-amber/10 border-prism-amber/30 hover:bg-prism-amber/20">
-            <Link to="/debts">
+            <Link to="/debt-payoff">
               <CreditCard className="h-3.5 w-3.5" />
               <span>Debts</span>
             </Link>
@@ -130,7 +130,7 @@ export function MoneySnapshotBar() {
 
             {(!debts || debts.length === 0) ? (
               <Link
-                to="/debts"
+                to="/debt-payoff"
                 className="flex items-center justify-center gap-2 py-6 px-4 rounded-lg border border-dashed border-border/50 hover:border-prism-amber/40 hover:bg-prism-amber/5 transition-colors text-sm text-muted-foreground hover:text-foreground"
               >
                 <Plus className="h-4 w-4" />
@@ -167,7 +167,7 @@ export function MoneySnapshotBar() {
                   ))}
                 </ul>
                 {debts.length > 4 && (
-                  <Link to="/debts" className="text-xs text-prism-teal hover:underline inline-flex items-center gap-1">
+                  <Link to="/debt-payoff" className="text-xs text-prism-teal hover:underline inline-flex items-center gap-1">
                     View all {debts.length} <ArrowRight className="h-3 w-3" />
                   </Link>
                 )}
