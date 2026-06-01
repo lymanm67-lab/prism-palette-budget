@@ -106,8 +106,8 @@ export function Step01({ value, onChange }: StepProps) {
                 <div className="text-sm font-semibold">{t.title}</div>
                 <p className="text-[11px] text-muted-foreground flex-1">{t.desc}</p>
                 <Button asChild size="sm" variant={t.done ? 'ghost' : 'outline'} className="h-7 text-[11px]">
-                  <Link to={t.href} target="_blank" rel="noopener">
-                    {t.done ? 'Manage' : 'Add now'} <ExternalLink className="h-3 w-3 ml-1" />
+                  <Link to={t.href}>
+                    {t.done ? 'Manage' : 'Add now'}
                   </Link>
                 </Button>
               </div>
@@ -117,8 +117,9 @@ export function Step01({ value, onChange }: StepProps) {
       )}
 
       <p className="text-[11px] text-muted-foreground italic">
-        Tip: any link opens in a new tab so your wizard progress stays put. Hit Next whenever you're ready.
+        Tip: links open in-app. Use your browser's back button to return to the wizard.
       </p>
+
     </div>
   );
 }
