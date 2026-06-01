@@ -376,8 +376,10 @@ export default function MoneyCoach() {
                   </div>
                 )}
               </CoachCard>
+              </CoachSlot>
 
               {/* CARD 4 — Prevention Rule */}
+              <CoachSlot card={4} moment={moment}>
               <CoachCard
                 number={4}
                 title="Prevention rule"
@@ -386,6 +388,8 @@ export default function MoneyCoach() {
                 iconColor="text-prism-sky"
                 confidence={preventionRule ? 'high' : 'medium'}
                 status={preventionRule ? 'ok' : topOver ? 'warn' : 'ok'}
+                pitfall="Fixing the symptom (a refund, a transfer) without changing the system."
+                tryThis="A small standing rule beats a big monthly cleanup. Automate the boring part."
               >
                 {preventionRule ? (
                   <div className="space-y-2">
@@ -413,9 +417,11 @@ export default function MoneyCoach() {
                   </div>
                 )}
               </CoachCard>
+              </CoachSlot>
             </>
           );
         })()}
+
 
 
         {/* CARD 5 — Purchase Guard (extended) */}
