@@ -531,10 +531,9 @@ const DebtPayoff = () => {
                       <div className="space-y-2 pl-6">
                         <div className="space-y-2">
                           <Label className="text-sm">Expected forgiveness date</Label>
-                          <Input
-                            type="date"
+                          <DueDatePicker
                             value={form.forgiveness_date}
-                            onChange={e => setForm(f => ({ ...f, forgiveness_date: e.target.value }))}
+                            onChange={(v) => setForm(f => ({ ...f, forgiveness_date: v }))}
                           />
                         </div>
                         <div className="space-y-2">
