@@ -30,7 +30,7 @@ const FREQUENCIES = [
 ];
 
 const Recurring = () => {
-  const { data: recurring, isLoading } = useRecurringTransactions();
+  const { data: recurringAll, isLoading } = useRecurringTransactions();
   const createRecurring = useCreateRecurring();
   const updateRecurring = useUpdateRecurring();
   const deleteRecurring = useDeleteRecurring();
@@ -39,11 +39,21 @@ const Recurring = () => {
   const { formatCurrency: formatAmount } = useCurrency();
 
   const [view, setView] = useState<'list' | 'calendar' | 'billpay'>('list');
+  const [viewMode, setViewMode] = useState<'personal' | 'business'>('personal');
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [editTarget, setEditTarget] = useState<any | null>(null);
   const [editForm, setEditForm] = useState({ merchant: '', amount: '', frequency: 'monthly', account_id: '', category_id: '', next_due_date: '', type: 'expense' as 'income' | 'expense', autopay_enabled: false, reminder_days: 3, biller_url: '' });
+
+  const isBusiness = (r: any) => {
+    const group = r.categories?.category_groups;
+    return group?.budget_type === 'business' || !!group?.business_profile_id;
+  };
+  const recurring = useMemo(
+    () => (recurringAll || []).filter(r => viewMode === 'business' ? isBusiness(r) : !isBusiness(r)),
+    [recurringAll, viewMode]
+  );
 
   const [form, setForm] = useState({
     merchant: '',
