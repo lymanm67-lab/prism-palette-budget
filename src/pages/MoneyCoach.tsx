@@ -40,7 +40,7 @@ export default function MoneyCoach() {
   const { household } = useHousehold();
   const sts = useSafeToSpend('personal');
   const anomalies = useSpendingAnomalies(0.5);
-  const { data: subs } = useSubscriptions();
+  useSubscriptions(); // prime cache for downstream cards
   const { data: txns } = useTransactions();
   const { data: accounts } = useAccounts();
   const currentMonth = format(startOfMonth(new Date()), 'yyyy-MM-dd');
