@@ -95,31 +95,31 @@ export function SituationRoom({ monthlyStS, bufferPercent, leakCount, onJump }: 
       <div className="absolute -bottom-16 -left-16 h-56 w-56 rounded-full bg-prism-teal/10 blur-3xl" />
 
       <div className="relative">
-        <div className="flex items-center gap-2 mb-3">
-          <Sparkles className="h-4 w-4 text-prism-amber" />
+        <div className="flex items-center gap-2 mb-2">
+          <Sparkles className="h-3.5 w-3.5 text-prism-amber" />
           <span className="text-[10px] font-bold uppercase tracking-widest text-prism-amber">
             PrismMoney™ Coach · Situation Room
           </span>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
+        <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
           <div key={s.id} className="animate-in fade-in slide-in-from-bottom-2 duration-500">
             <Badge
               variant="outline"
-              className={cn('mb-3 gap-1.5 bg-background/40 border-border/40', s.color)}
+              className={cn('mb-2 gap-1.5 bg-background/40 border-border/40', s.color)}
             >
               <Icon className="h-3 w-3" />
               {s.tag}
             </Badge>
-            <h1 className="font-display text-2xl sm:text-3xl font-extrabold tracking-tight">
+            <h1 className="font-display text-xl sm:text-2xl font-extrabold tracking-tight leading-tight">
               {s.headline}
             </h1>
-            <p className="text-sm text-muted-foreground mt-2 max-w-2xl">{s.body}</p>
-            <div className="mt-4 flex flex-wrap gap-2 items-center">
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1.5 max-w-2xl">{s.body}</p>
+            <div className="mt-3 flex flex-wrap gap-2 items-center">
               <Button
                 size="sm"
                 onClick={() => onJump(s.targetMoment, s.targetCard)}
-                className="bg-prism-teal hover:bg-prism-teal/90 text-prism-navy font-semibold"
+                className="h-8 bg-prism-teal hover:bg-prism-teal/90 text-prism-navy font-semibold"
               >
                 {s.cta} <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
               </Button>
@@ -130,21 +130,21 @@ export function SituationRoom({ monthlyStS, bufferPercent, leakCount, onJump }: 
           </div>
 
           {/* Live stat strip */}
-          <div className="grid grid-cols-3 lg:grid-cols-1 gap-2 lg:min-w-[180px]">
-            <div className="rounded-lg bg-background/40 border border-border/40 px-3 py-2">
-              <div className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Safe to spend</div>
-              <div className="font-mono text-sm font-bold text-prism-teal">{fmt.format(monthlyStS)}/mo</div>
+          <div className="grid grid-cols-3 lg:grid-cols-1 gap-1.5 lg:min-w-[160px]">
+            <div className="rounded-md bg-background/40 border border-border/40 px-2.5 py-1.5">
+              <div className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Safe/mo</div>
+              <div className="font-mono text-xs font-bold text-prism-teal">{fmt.format(monthlyStS)}</div>
             </div>
-            <div className="rounded-lg bg-background/40 border border-border/40 px-3 py-2">
+            <div className="rounded-md bg-background/40 border border-border/40 px-2.5 py-1.5">
               <div className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Buffer</div>
-              <div className="font-mono text-sm font-bold">{bufferPercent}%</div>
+              <div className="font-mono text-xs font-bold">{bufferPercent}%</div>
             </div>
             <div className={cn(
-              'rounded-lg border px-3 py-2',
+              'rounded-md border px-2.5 py-1.5',
               leakCount > 0 ? 'bg-prism-amber/10 border-prism-amber/30' : 'bg-background/40 border-border/40',
             )}>
               <div className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Leaks</div>
-              <div className={cn('font-mono text-sm font-bold', leakCount > 0 && 'text-prism-amber')}>
+              <div className={cn('font-mono text-xs font-bold', leakCount > 0 && 'text-prism-amber')}>
                 {leakCount}
               </div>
             </div>
@@ -152,7 +152,7 @@ export function SituationRoom({ monthlyStS, bufferPercent, leakCount, onJump }: 
         </div>
 
         {/* Dots */}
-        <div className="mt-5 flex items-center gap-1.5">
+        <div className="mt-3 flex items-center gap-1.5">
           {SCENARIOS.map((sc, i) => (
             <button
               key={sc.id}
