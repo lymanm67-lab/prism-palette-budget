@@ -104,40 +104,25 @@ export default function MoneyCoach() {
 
   const hasIssue = (overBudget?.length || 0) > 0 || anomalies.length > 0;
 
+  const [moment, setMoment] = useState<Moment>('all');
+
+  const jumpTo = (m: Moment, card: number) => {
+    setMoment(m);
+    setTimeout(() => {
+      document.getElementById(`coach-card-${card}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 80);
+  };
+
   return (
     <div className="space-y-6 p-4 sm:p-6 max-w-7xl mx-auto">
       <CoachOnboardingTour />
-      {/* Hero */}
-      <div className="relative overflow-hidden rounded-2xl border border-prism-teal/20 bg-gradient-to-br from-prism-navy/80 via-prism-navy/60 to-prism-teal/10 p-6 sm:p-8 backdrop-blur-sm">
-        <div className="absolute -top-12 -right-12 h-48 w-48 rounded-full bg-prism-amber/10 blur-3xl" />
-        <div className="absolute -bottom-12 -left-12 h-48 w-48 rounded-full bg-prism-teal/10 blur-3xl" />
-        <div className="relative">
-          <div className="flex items-center gap-2 mb-2">
-            <Sparkles className="h-4 w-4 text-prism-amber" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-prism-amber">PrismMoney™ Coach</span>
-          </div>
-          <h1 className="font-display text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
-            What happened, why, and what to do next.
-          </h1>
-          <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
-            Most apps tell you the score. Coach calls the next play — explaining patterns, protecting your next paycheck,
-            and turning leaks into wealth.
-          </p>
-          <div className="mt-4 flex flex-wrap gap-2 text-xs">
-            <Badge variant="outline" className="bg-background/40 border-border/40">
-              True Safe-to-Spend: <span className="ml-1 font-bold text-prism-teal">{fmt(sts.monthly)}</span>/mo
-            </Badge>
-            <Badge variant="outline" className="bg-background/40 border-border/40">
-              Buffer: <span className="ml-1 font-bold">{sts.bufferPercent}%</span>
-            </Badge>
-            {leakCount > 0 && (
-              <Badge variant="outline" className="bg-prism-amber/10 border-prism-amber/30 text-prism-amber">
-                {leakCount} potential leak{leakCount === 1 ? '' : 's'}
-              </Badge>
-            )}
-          </div>
-        </div>
-      </div>
+
+      <SituationRoom
+        monthlyStS={sts.monthly}
+        bufferPercent={sts.bufferPercent}
+        leakCount={leakCount}
+        onJump={jumpTo}
+      />
 
       <PageOverview
         title="How Coach works"
@@ -158,11 +143,11 @@ export default function MoneyCoach() {
 
       <MoneySnapshotBar />
 
-
-
+      <MomentTabs value={moment} onChange={setMoment} />
 
       {/* Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+
         {/* CARD 1 — What Happened */}
         <CoachCard
           number={1}
