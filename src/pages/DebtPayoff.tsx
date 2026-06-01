@@ -199,6 +199,10 @@ const DebtPayoff = () => {
       account_id: form.account_id || null,
       business_split_pct: pct,
       business_name: pct > 0 ? (form.business_name.trim() || null) : null,
+      deferred_until: form.deferred_until || null,
+      forgiveness_eligible: !!form.forgiveness_eligible,
+      forgiveness_date: form.forgiveness_eligible ? (form.forgiveness_date || null) : null,
+      forgiveness_note: form.forgiveness_eligible ? (form.forgiveness_note.trim() || null) : null,
     };
     try {
       if (editId) {
@@ -209,7 +213,7 @@ const DebtPayoff = () => {
         toast.success('Debt added');
       }
       setEditId(null);
-      setForm({ name: '', balance: '', minimum_payment: '', interest_rate: '', account_id: '', business_split_pct: 0, business_name: '' });
+      setForm({ name: '', balance: '', minimum_payment: '', interest_rate: '', account_id: '', business_split_pct: 0, business_name: '', deferred_until: '', forgiveness_eligible: false, forgiveness_date: '', forgiveness_note: '' });
       setDialogOpen(false);
     } catch (err: any) {
       console.error('Save debt error:', err);
@@ -219,9 +223,10 @@ const DebtPayoff = () => {
 
   const openEdit = (d: Debt) => {
     setEditId(d.id);
-    setForm({ name: d.name, balance: String(d.balance), minimum_payment: String(d.minimum_payment), interest_rate: String(d.interest_rate), account_id: d.account_id || '', business_split_pct: d.business_split_pct || 0, business_name: d.business_name || '' });
+    setForm({ name: d.name, balance: String(d.balance), minimum_payment: String(d.minimum_payment), interest_rate: String(d.interest_rate), account_id: d.account_id || '', business_split_pct: d.business_split_pct || 0, business_name: d.business_name || '', deferred_until: d.deferred_until || '', forgiveness_eligible: !!d.forgiveness_eligible, forgiveness_date: d.forgiveness_date || '', forgiveness_note: d.forgiveness_note || '' });
     setDialogOpen(true);
   };
+
 
 
   const handleDeleteDebt = async (id: string) => {
