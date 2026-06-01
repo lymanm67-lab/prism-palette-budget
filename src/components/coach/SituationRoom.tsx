@@ -89,7 +89,7 @@ export function SituationRoom({ monthlyStS, bufferPercent, leakCount, onJump }: 
     <div
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
-      className="relative overflow-hidden rounded-2xl border border-prism-teal/20 bg-gradient-to-br from-prism-navy/80 via-prism-navy/60 to-prism-teal/10 p-6 sm:p-8 backdrop-blur-sm"
+      className="relative overflow-hidden rounded-xl border border-prism-teal/20 bg-gradient-to-br from-prism-navy/80 via-prism-navy/60 to-prism-teal/10 p-4 sm:p-5 backdrop-blur-sm"
     >
       <div className="absolute -top-16 -right-16 h-56 w-56 rounded-full bg-prism-amber/10 blur-3xl animate-pulse" />
       <div className="absolute -bottom-16 -left-16 h-56 w-56 rounded-full bg-prism-teal/10 blur-3xl" />
