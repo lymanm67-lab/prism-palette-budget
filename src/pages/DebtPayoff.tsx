@@ -196,7 +196,7 @@ const DebtPayoff = () => {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
-  const [form, setForm] = useState({ name: '', balance: '', minimum_payment: '', interest_rate: '', account_id: '', business_split_pct: 0, business_name: '', deferred_until: '', forgiveness_eligible: false, forgiveness_date: '', forgiveness_note: '', due_day: '', due_date: '' });
+  const [form, setForm] = useState({ name: '', balance: '', minimum_payment: '', interest_rate: '', account_id: '', business_split_pct: 0, business_name: '', deferred_until: '', forgiveness_eligible: false, forgiveness_date: '', forgiveness_note: '', due_day: '', due_date: '', in_settlement_plan: false });
 
 
   const [planDialogOpen, setPlanDialogOpen] = useState(false);
@@ -249,6 +249,8 @@ const DebtPayoff = () => {
       forgiveness_note: form.forgiveness_eligible ? (form.forgiveness_note.trim() || null) : null,
       due_day: form.due_date ? (new Date(form.due_date + 'T00:00:00').getDate()) : (form.due_day ? Math.max(1, Math.min(31, parseInt(form.due_day, 10))) : null),
       due_date: form.due_date || null,
+      in_settlement_plan: !!form.in_settlement_plan,
+
     };
     try {
       if (editId) {
@@ -259,7 +261,7 @@ const DebtPayoff = () => {
         toast.success('Debt added');
       }
       setEditId(null);
-      setForm({ name: '', balance: '', minimum_payment: '', interest_rate: '', account_id: '', business_split_pct: 0, business_name: '', deferred_until: '', forgiveness_eligible: false, forgiveness_date: '', forgiveness_note: '', due_day: '', due_date: '' });
+      setForm({ name: '', balance: '', minimum_payment: '', interest_rate: '', account_id: '', business_split_pct: 0, business_name: '', deferred_until: '', forgiveness_eligible: false, forgiveness_date: '', forgiveness_note: '', due_day: '', due_date: '', in_settlement_plan: false });
       setDialogOpen(false);
     } catch (err: any) {
       console.error('Save debt error:', err);
@@ -269,7 +271,7 @@ const DebtPayoff = () => {
 
   const openEdit = (d: Debt) => {
     setEditId(d.id);
-    setForm({ name: d.name, balance: String(d.balance), minimum_payment: String(d.minimum_payment), interest_rate: String(d.interest_rate), account_id: d.account_id || '', business_split_pct: d.business_split_pct || 0, business_name: d.business_name || '', deferred_until: d.deferred_until || '', forgiveness_eligible: !!d.forgiveness_eligible, forgiveness_date: d.forgiveness_date || '', forgiveness_note: d.forgiveness_note || '', due_day: d.due_day ? String(d.due_day) : '', due_date: d.due_date || '' });
+    setForm({ name: d.name, balance: String(d.balance), minimum_payment: String(d.minimum_payment), interest_rate: String(d.interest_rate), account_id: d.account_id || '', business_split_pct: d.business_split_pct || 0, business_name: d.business_name || '', deferred_until: d.deferred_until || '', forgiveness_eligible: !!d.forgiveness_eligible, forgiveness_date: d.forgiveness_date || '', forgiveness_note: d.forgiveness_note || '', due_day: d.due_day ? String(d.due_day) : '', due_date: d.due_date || '', in_settlement_plan: !!(d as any).in_settlement_plan });
     setDialogOpen(true);
   };
 
@@ -547,6 +549,17 @@ const DebtPayoff = () => {
                     )}
                   </div>
 
+                  <label className="flex items-center gap-2 text-sm cursor-pointer pt-2 border-t border-border/50">
+                    <input
+                      type="checkbox"
+                      checked={!!form.in_settlement_plan}
+                      onChange={e => setForm(f => ({ ...f, in_settlement_plan: e.target.checked }))}
+                      className="h-4 w-4 accent-primary"
+                    />
+                    In Debt Settlement Plan — Gitmeidlaw
+                  </label>
+
+
 
 
                   <Button onClick={handleSaveDebt} disabled={!form.name || !form.balance || createItem.isPending || updateItem.isPending} className="w-full prism-gradient text-white border-0 hover:opacity-90">
@@ -578,6 +591,9 @@ const DebtPayoff = () => {
                   forgiveness_note: '',
                   due_day: '',
                   due_date: '',
+                  in_settlement_plan: false,
+
+
 
                 });
                 setEditId(null);
