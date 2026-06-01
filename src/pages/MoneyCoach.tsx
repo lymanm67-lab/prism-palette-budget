@@ -455,7 +455,7 @@ export default function MoneyCoach() {
   );
 }
 
-function PurchaseGuardCardSection() {
+function PurchaseGuardCardSection({ defaultOpen = true }: { defaultOpen?: boolean }) {
   const [open, setOpen] = useState(false);
   const { data: checks } = usePurchaseGuardChecks(20);
   const overrides = useOverridePattern();
