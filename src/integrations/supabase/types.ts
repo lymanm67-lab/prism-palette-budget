@@ -3272,6 +3272,8 @@ export type Database = {
           amount: number
           autopay_enabled: boolean
           biller_url: string | null
+          business_category_id: string | null
+          business_split_pct: number
           category_id: string | null
           created_at: string
           end_date: string | null
@@ -3292,6 +3294,8 @@ export type Database = {
           amount: number
           autopay_enabled?: boolean
           biller_url?: string | null
+          business_category_id?: string | null
+          business_split_pct?: number
           category_id?: string | null
           created_at?: string
           end_date?: string | null
@@ -3312,6 +3316,8 @@ export type Database = {
           amount?: number
           autopay_enabled?: boolean
           biller_url?: string | null
+          business_category_id?: string | null
+          business_split_pct?: number
           category_id?: string | null
           created_at?: string
           end_date?: string | null
@@ -3333,6 +3339,13 @@ export type Database = {
             columns: ["account_id"]
             isOneToOne: false
             referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recurring_transactions_business_category_id_fkey"
+            columns: ["business_category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
             referencedColumns: ["id"]
           },
           {
