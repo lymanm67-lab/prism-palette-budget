@@ -142,6 +142,15 @@ const DebtPayoff = () => {
   const [planDialogOpen, setPlanDialogOpen] = useState(false);
   const [scanOpen, setScanOpen] = useState(false);
   const [planName, setPlanName] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
+  useEffect(() => {
+    if (searchParams.get('scan') === 'debt') {
+      setScanOpen(true);
+      searchParams.delete('scan');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
 
   // Import from accounts
   const importableAccounts = useMemo(() => {
