@@ -89,7 +89,7 @@ export function MoneySnapshotBar() {
             </Link>
           </Button>
           <Button asChild size="sm" variant="outline" className="h-7 gap-1.5 text-xs bg-prism-orange/10 border-prism-orange/30 hover:bg-prism-orange/20">
-            <Link to="/budget">
+            <Link to="/budgets">
               <Receipt className="h-3.5 w-3.5" />
               <span>Bills</span>
             </Link>
@@ -191,7 +191,7 @@ export function MoneySnapshotBar() {
 
             {upcomingBills.length === 0 ? (
               <Link
-                to="/budget"
+                to="/budgets"
                 className="flex items-center justify-center gap-2 py-6 px-4 rounded-lg border border-dashed border-border/50 hover:border-prism-orange/40 hover:bg-prism-orange/5 transition-colors text-sm text-muted-foreground hover:text-foreground"
               >
                 <Plus className="h-4 w-4" />
