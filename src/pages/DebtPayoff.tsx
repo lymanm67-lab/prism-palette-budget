@@ -664,9 +664,11 @@ const DebtPayoff = () => {
                               🎓 Forgiveness{d.forgiveness_date ? ` · ${new Date(d.forgiveness_date).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}` : ''}
                             </span>
                           )}
-                          {d.due_day && (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground" title="Monthly payment due day">
-                              📅 Due {d.due_day}{['st','nd','rd'][((d.due_day + 90) % 100 - 10) % 10 - 1] || 'th'}
+                          {(d.due_date || d.due_day) && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground" title="Payment due">
+                              📅 Due {d.due_date
+                                ? format(parse(d.due_date, 'yyyy-MM-dd', new Date()), 'MM/dd/yyyy')
+                                : `${d.due_day}${['st','nd','rd'][((d.due_day! + 90) % 100 - 10) % 10 - 1] || 'th'}`}
                             </span>
                           )}
                         </div>
