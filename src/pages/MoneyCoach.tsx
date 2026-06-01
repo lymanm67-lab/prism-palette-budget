@@ -113,6 +113,11 @@ export default function MoneyCoach() {
     }, 80);
   };
 
+  // Default-open: hero trio when "all", else cards matching selected moment.
+  const HERO_DEFAULT = [1, 5, 7];
+  const isOpenByDefault = (card: number) =>
+    moment === 'all' ? HERO_DEFAULT.includes(card) : CARD_MOMENT[card] === moment;
+
   return (
     <div className="space-y-4 p-3 sm:p-5 max-w-7xl mx-auto">
       <CoachOnboardingTour />
@@ -124,14 +129,14 @@ export default function MoneyCoach() {
         onJump={jumpTo}
       />
 
+      <MomentTabs value={moment} onChange={setMoment} />
+
       <CoachNudges />
 
       <MoneySnapshotBar />
 
-      <MomentTabs value={moment} onChange={setMoment} />
-
-      {/* Cards */}
-      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+      {/* Cards — keyed by moment so defaultOpen re-applies on moment change */}
+      <div key={`grid-${moment}`} className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
 
 
         {/* CARD 1 — What Happened */}
