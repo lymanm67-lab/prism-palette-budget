@@ -475,7 +475,7 @@ function PurchaseGuardCardSection({ defaultOpen = true }: { defaultOpen?: boolea
       <CoachCard
         number={5}
         collapsible
-        defaultOpen={true}
+        defaultOpen={defaultOpen}
         title="Purchase Guard"
         subtitle="Decide before you buy"
         icon={ShoppingBag}
