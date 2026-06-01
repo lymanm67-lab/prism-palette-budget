@@ -787,7 +787,7 @@ function PaycheckDeploymentCard({ defaultOpen = false }: { defaultOpen?: boolean
     <CoachCard
       number={8}
       collapsible
-      defaultOpen={false}
+      defaultOpen={defaultOpen}
       title="Paycheck deployment"
       subtitle="Every dollar gets a job before it lands"
       icon={CalendarClock}
