@@ -427,7 +427,7 @@ export default function MoneyCoach() {
         <MoneyLeakStopperCard />
 
         {/* CARD 7 — Safe-to-Spend Shield + Adaptive Buffer */}
-        <SafeToSpendShieldCard accountsLength={accounts?.length || 0} />
+        <SafeToSpendShieldCard />
       </div>
 
       {/* Educational disclaimer */}
