@@ -44,14 +44,21 @@ const Recurring = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [editTarget, setEditTarget] = useState<any | null>(null);
-  const [editForm, setEditForm] = useState({ merchant: '', amount: '', frequency: 'monthly', account_id: '', category_id: '', next_due_date: '', type: 'expense' as 'income' | 'expense', autopay_enabled: false, reminder_days: 3, biller_url: '' });
+  const [editForm, setEditForm] = useState({ merchant: '', amount: '', frequency: 'monthly', account_id: '', category_id: '', next_due_date: '', type: 'expense' as 'income' | 'expense', autopay_enabled: false, reminder_days: 3, biller_url: '', business_split_pct: 0, business_category_id: '' });
 
   const isBusiness = (r: any) => {
     const group = r.categories?.category_groups;
     return group?.budget_type === 'business' || !!group?.business_profile_id;
   };
+  const isSplit = (r: any) => {
+    const pct = Number(r.business_split_pct || 0);
+    return pct > 0 && pct < 100;
+  };
   const recurring = useMemo(
-    () => (recurringAll || []).filter(r => viewMode === 'business' ? isBusiness(r) : !isBusiness(r)),
+    () => (recurringAll || []).filter(r => {
+      if (isSplit(r)) return true; // splits show in both views
+      return viewMode === 'business' ? isBusiness(r) : !isBusiness(r);
+    }),
     [recurringAll, viewMode]
   );
 
@@ -67,6 +74,8 @@ const Recurring = () => {
     autopay_enabled: false,
     reminder_days: 3,
     biller_url: '',
+    business_split_pct: 0,
+    business_category_id: '',
   });
 
   const totalIncome = useMemo(() => {
