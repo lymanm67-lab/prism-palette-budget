@@ -859,7 +859,7 @@ function BillTimingCard({ defaultOpen = false }: { defaultOpen?: boolean }) {
     <CoachCard
       number={9}
       collapsible
-      defaultOpen={false}
+      defaultOpen={defaultOpen}
       title="Bill timing optimizer"
       subtitle="Spread the load before bills pile up"
       icon={CalendarDays}
