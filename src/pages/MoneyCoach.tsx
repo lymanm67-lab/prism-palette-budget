@@ -211,6 +211,8 @@ export default function MoneyCoach() {
               <Link to="/spending-trends">Analyze <ArrowRight className="ml-1 h-3 w-3" /></Link>
             </Button>
           ) : undefined}
+          pitfall="Blaming yourself before checking timing — a delayed paycheck looks like overspending."
+          tryThis="Ask: was this an outlier, a trend, or a budget that no longer fits real life?"
         >
           {!hasIssue ? (
             <p className="text-sm text-muted-foreground">No patterns to explain right now. Coach will check again as new transactions land.</p>
@@ -226,6 +228,7 @@ export default function MoneyCoach() {
             </div>
           )}
         </CoachCard>
+        </CoachSlot>
 
         {/* CARD 3 — Recovery Plan */}
         {(() => {
