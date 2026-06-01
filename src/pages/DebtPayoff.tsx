@@ -25,7 +25,8 @@ import { useTTS } from '@/hooks/use-tts';
 import PageOverview from '@/components/PageOverview';
 import DebtInsights from '@/components/DebtInsights';
 import { RelatedToolsBar } from '@/components/planning/RelatedToolsBar';
-import { Target } from 'lucide-react';
+import { DebtStatementScanner } from '@/components/DebtStatementScanner';
+import { Target, FileUp } from 'lucide-react';
 
 // ─── Types ───
 interface Debt {
@@ -137,6 +138,7 @@ const DebtPayoff = () => {
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState({ name: '', balance: '', minimum_payment: '', interest_rate: '', account_id: '' });
   const [planDialogOpen, setPlanDialogOpen] = useState(false);
+  const [scanOpen, setScanOpen] = useState(false);
   const [planName, setPlanName] = useState('');
 
   // Import from accounts
@@ -361,6 +363,26 @@ const DebtPayoff = () => {
                 </div>
               </DialogContent>
             </Dialog>
+
+            <Button variant="outline" className="gap-2" onClick={() => setScanOpen(true)}>
+              <FileUp className="h-4 w-4" /> Scan Statement
+            </Button>
+
+            <DebtStatementScanner
+              open={scanOpen}
+              onOpenChange={setScanOpen}
+              onResult={(d) => {
+                setForm({
+                  name: d.creditor,
+                  balance: d.balance ? String(d.balance) : '',
+                  minimum_payment: d.minimum_payment ? String(d.minimum_payment) : '',
+                  interest_rate: d.apr ? String(d.apr) : '',
+                  account_id: '',
+                });
+                setEditId(null);
+                setDialogOpen(true);
+              }}
+            />
 
             {importableAccounts.length > 0 && (
               <div className="flex items-center gap-2 flex-wrap">
