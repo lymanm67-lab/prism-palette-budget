@@ -186,6 +186,8 @@ const Subscriptions = () => {
       const { error } = await supabase.from('subscriptions' as any).insert({
         household_id: household.id, merchant: newSub.merchant, average_amount: parseFloat(newSub.average_amount),
         frequency: newSub.frequency, category_id: newSub.category_id || null, is_active: true, is_cancelled: false,
+        business_split_pct: newSub.business_split_pct,
+        business_category_id: newSub.business_category_id || null,
       });
       if (error) throw error;
       toast.success('Subscription added'); setAddOpen(false);
