@@ -31,7 +31,6 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { StsEquationView } from '@/components/StsEquationView';
-import PageOverview from '@/components/PageOverview';
 import {
   Activity, Brain, Sparkles, Shield, ShoppingBag, Droplets,
   Wallet, ArrowRight, AlertTriangle, CheckCircle2, Clock, Info,
@@ -139,6 +138,8 @@ export default function MoneyCoach() {
         <CoachSlot card={1} moment={moment}>
         <CoachCard
           number={1}
+          collapsible
+          defaultOpen={true}
           title="What happened"
           subtitle="Spending issues, budget status, and surprises this month"
           icon={Activity}
@@ -186,6 +187,8 @@ export default function MoneyCoach() {
         <CoachSlot card={2} moment={moment}>
         <CoachCard
           number={2}
+          collapsible
+          defaultOpen={false}
           title="Why it happened"
           subtitle="Root cause, trend vs outlier"
           icon={Brain}
@@ -233,6 +236,8 @@ export default function MoneyCoach() {
               <CoachSlot card={3} moment={moment}>
               <CoachCard
                 number={3}
+                collapsible
+                defaultOpen={false}
                 title="Recovery plan"
                 subtitle={topOver ? `For ${topOver.name} — ${fmt(topOver.overBy)} over` : 'Fast, balanced, system, or wealth recovery'}
                 icon={Sparkles}
@@ -368,6 +373,8 @@ export default function MoneyCoach() {
               <CoachSlot card={4} moment={moment}>
               <CoachCard
                 number={4}
+                collapsible
+                defaultOpen={false}
                 title="Prevention rule"
                 subtitle="So it stops repeating"
                 icon={Shield}
@@ -462,6 +469,8 @@ function PurchaseGuardCardSection() {
     <>
       <CoachCard
         number={5}
+        collapsible
+        defaultOpen={true}
         title="Purchase Guard"
         subtitle="Decide before you buy"
         icon={ShoppingBag}
@@ -545,6 +554,8 @@ function MoneyLeakStopperCard() {
   return (
     <CoachCard
       number={6}
+      collapsible
+      defaultOpen={false}
       title="Money leak stopper"
       subtitle="Quiet costs that weaken your plan"
       icon={Droplets}
@@ -661,6 +672,8 @@ function SafeToSpendShieldCard() {
   return (
     <CoachCard
       number={7}
+      collapsible
+      defaultOpen={true}
       title="Safe-to-Spend Shield"
       subtitle="What's truly available after bills, pending, and buffer"
       icon={Wallet}
@@ -768,6 +781,8 @@ function PaycheckDeploymentCard() {
   return (
     <CoachCard
       number={8}
+      collapsible
+      defaultOpen={false}
       title="Paycheck deployment"
       subtitle="Every dollar gets a job before it lands"
       icon={CalendarClock}
@@ -838,6 +853,8 @@ function BillTimingCard() {
   return (
     <CoachCard
       number={9}
+      collapsible
+      defaultOpen={false}
       title="Bill timing optimizer"
       subtitle="Spread the load before bills pile up"
       icon={CalendarDays}
@@ -854,6 +871,8 @@ function WealthRedirectorCard() {
   return (
     <CoachCard
       number={10}
+      collapsible
+      defaultOpen={false}
       title="Wealth redirector"
       subtitle="Turn recovered dollars into a 3-year payoff"
       icon={Target}
