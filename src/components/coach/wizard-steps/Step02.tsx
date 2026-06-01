@@ -132,20 +132,41 @@ export function Step02({ value, onChange }: StepProps) {
           onValueChange={(v) => onChange({ ...value, cause: v, _suggested: false })}
           className="mt-2 space-y-2"
         >
-          {CAUSE.map(o => (
-            <label key={o.v} className="flex items-start gap-3 rounded-lg border border-border/40 p-3 cursor-pointer hover:bg-muted/40">
-              <RadioGroupItem value={o.v} id={`s2c-${o.v}`} className="mt-0.5" />
-              <div>
-                <div className="text-sm font-medium flex items-center gap-1">
-                  {o.label}
-                  {snap.hasData && snap.cause === o.v && (
-                    <span className="text-[9px] px-1 rounded bg-prism-violet/20 text-prism-violet">data</span>
+          {CAUSE.map(o => {
+            const isSuggested = snap.hasData && snap.cause === o.v;
+            let detail: string | null = null;
+            if (isSuggested) {
+              const overCats = snap.topCategories.filter(c => c.over > 0);
+              if (o.v === 'one_time' && snap.largestExpense) {
+                detail = `${snap.largestExpense.merchant} — $${snap.largestExpense.amount.toFixed(0)}${snap.largestExpense.category ? ` (${snap.largestExpense.category})` : ''}`;
+              } else if (o.v === 'lifestyle_creep' && overCats.length > 0) {
+                detail = overCats.slice(0, 3).map(c => `${c.name} +$${c.over.toFixed(0)}`).join(' · ');
+              } else if (o.v === 'unrealistic_budget' && overCats[0]?.budgeted > 0) {
+                const c = overCats[0];
+                detail = `${c.name}: $${c.spent.toFixed(0)} spent vs $${c.budgeted.toFixed(0)} budgeted (${Math.round((c.over / c.budgeted) * 100)}% over)`;
+              } else if (o.v === 'income_timing') {
+                detail = `Spent $${snap.spent.toFixed(0)} vs $${snap.budgeted.toFixed(0)} budgeted — check paycheck dates`;
+              }
+            }
+            return (
+              <label key={o.v} className="flex items-start gap-3 rounded-lg border border-border/40 p-3 cursor-pointer hover:bg-muted/40">
+                <RadioGroupItem value={o.v} id={`s2c-${o.v}`} className="mt-0.5" />
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-medium flex items-center gap-1">
+                    {o.label}
+                    {isSuggested && (
+                      <span className="text-[9px] px-1 rounded bg-prism-violet/20 text-prism-violet">data</span>
+                    )}
+                  </div>
+                  <div className="text-xs text-muted-foreground">{o.sub}</div>
+                  {detail && (
+                    <div className="text-[11px] text-prism-violet/90 mt-1 font-medium break-words">{detail}</div>
                   )}
                 </div>
-                <div className="text-xs text-muted-foreground">{o.sub}</div>
-              </div>
-            </label>
-          ))}
+              </label>
+            );
+          })}
+
         </RadioGroup>
       </div>
 
