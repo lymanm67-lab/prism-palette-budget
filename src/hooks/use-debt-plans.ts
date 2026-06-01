@@ -104,7 +104,7 @@ export function useDebtItems(planId: string | null) {
 export function useCreateDebtItem() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (item: { plan_id: string; name: string; balance: number; interest_rate: number; minimum_payment: number; account_id?: string | null; sort_order?: number; business_split_pct?: number; business_name?: string | null; deferred_until?: string | null; forgiveness_eligible?: boolean; forgiveness_date?: string | null; forgiveness_note?: string | null; due_day?: number | null; due_date?: string | null }) => {
+    mutationFn: async (item: { plan_id: string; name: string; balance: number; interest_rate: number; minimum_payment: number; account_id?: string | null; sort_order?: number; business_split_pct?: number; business_name?: string | null; deferred_until?: string | null; forgiveness_eligible?: boolean; forgiveness_date?: string | null; forgiveness_note?: string | null; due_day?: number | null; due_date?: string | null; in_settlement_plan?: boolean }) => {
       const { data, error } = await supabase
         .from('debt_items')
         .insert(item as any)
