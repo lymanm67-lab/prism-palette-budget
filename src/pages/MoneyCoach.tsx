@@ -877,7 +877,7 @@ function WealthRedirectorCard({ defaultOpen = false }: { defaultOpen?: boolean }
     <CoachCard
       number={10}
       collapsible
-      defaultOpen={false}
+      defaultOpen={defaultOpen}
       title="Wealth redirector"
       subtitle="Turn recovered dollars into a 3-year payoff"
       icon={Target}
