@@ -180,6 +180,26 @@ const Recurring = () => {
           <p className="text-sm text-muted-foreground truncate">Manage recurring expenses and income.</p>
         </div>
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <div className="flex items-center rounded-lg border border-border bg-muted/30 p-0.5">
+            <button
+              onClick={() => setViewMode('personal')}
+              className={cn(
+                'flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition-all',
+                viewMode === 'personal' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              <User className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Personal</span>
+            </button>
+            <button
+              onClick={() => setViewMode('business')}
+              className={cn(
+                'flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition-all',
+                viewMode === 'business' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              <Building2 className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Business</span>
+            </button>
+          </div>
           <div className="flex border rounded-lg overflow-hidden">
             <button onClick={() => setView('list')} className={cn('px-2.5 py-1.5 text-xs sm:text-sm flex items-center gap-1 sm:gap-1.5 transition-colors', view === 'list' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}>
               <List className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> <span className="hidden sm:inline">List</span>
