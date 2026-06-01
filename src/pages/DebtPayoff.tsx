@@ -128,20 +128,23 @@ const DebtPayoff = () => {
 
   // Map DB items to local Debt shape
   const debts: Debt[] = useMemo(() =>
-    (dbItems || []).map(item => ({
+    (dbItems || []).map((item: any) => ({
       id: item.id,
       name: item.name,
       balance: Number(item.balance),
       minimum_payment: Number(item.minimum_payment),
       interest_rate: Number(item.interest_rate),
       account_id: item.account_id || undefined,
+      business_split_pct: Number(item.business_split_pct ?? 0),
+      business_name: item.business_name || undefined,
     })),
     [dbItems]
   );
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
-  const [form, setForm] = useState({ name: '', balance: '', minimum_payment: '', interest_rate: '', account_id: '' });
+  const [form, setForm] = useState({ name: '', balance: '', minimum_payment: '', interest_rate: '', account_id: '', business_split_pct: 0, business_name: '' });
+
   const [planDialogOpen, setPlanDialogOpen] = useState(false);
   const [scanOpen, setScanOpen] = useState(false);
   const [planName, setPlanName] = useState('');
