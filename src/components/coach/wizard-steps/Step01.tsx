@@ -20,6 +20,8 @@ interface Status {
 export function Step01({ value, onChange }: StepProps) {
   const { household } = useHousehold();
   const [status, setStatus] = useState<Status>({ paycheck: false, bills: false, debts: false, loading: true });
+  const [paystubOpen, setPaystubOpen] = useState(false);
+
 
   useEffect(() => {
     let cancel = false;
