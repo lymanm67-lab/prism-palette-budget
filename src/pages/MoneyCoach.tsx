@@ -114,10 +114,8 @@ export default function MoneyCoach() {
     }, 80);
   };
 
-  // All rows collapsed by default — matches the chosen column-command prototype.
-  // When a specific moment is selected, only that moment's cards auto-expand.
-  const isOpenByDefault = (card: number) =>
-    moment !== 'all' && CARD_MOMENT[card] === moment;
+  // All rows always start collapsed, regardless of selected moment tab.
+  const isOpenByDefault = (_card: number) => false;
 
   return (
     <div className="space-y-4 p-3 sm:p-5 max-w-7xl mx-auto">
