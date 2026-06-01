@@ -19,6 +19,8 @@ import { PurchaseGuardDialog } from '@/components/coach/PurchaseGuardDialog';
 import { PurchaseGuardReviewPrompts } from '@/components/coach/PurchaseGuardReviewPrompts';
 import { BillTimingOptimizer } from '@/components/coach/BillTimingOptimizer';
 import { WealthRedirector } from '@/components/coach/WealthRedirector';
+import { CoachOnboardingTour } from '@/components/coach/CoachOnboardingTour';
+import { CoachNudges } from '@/components/coach/CoachNudges';
 import { CoachCard, type Confidence } from '@/components/coach/CoachCard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
