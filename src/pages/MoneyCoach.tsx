@@ -37,6 +37,10 @@ export default function MoneyCoach() {
   const { data: subs } = useSubscriptions();
   const { data: txns } = useTransactions();
   const { data: accounts } = useAccounts();
+  const currentMonth = format(startOfMonth(new Date()), 'yyyy-MM-dd');
+  const { data: recoveryPlans } = useRecoveryPlans(currentMonth);
+  const buildPlan = useBuildRecoveryPlan();
+  const updatePlan = useUpdateRecoveryPlan();
 
   // Over-budget categories this month
   const currentMonth = format(startOfMonth(new Date()), 'yyyy-MM-dd');
