@@ -156,6 +156,7 @@ const DebtPayoff = () => {
       forgiveness_eligible: !!item.forgiveness_eligible,
       forgiveness_date: item.forgiveness_date || undefined,
       forgiveness_note: item.forgiveness_note || undefined,
+      due_day: item.due_day ? Number(item.due_day) : undefined,
     })),
     [dbItems]
   );
