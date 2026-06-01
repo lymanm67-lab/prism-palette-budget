@@ -519,3 +519,84 @@ export default function MoneyCoach() {
     </div>
   );
 }
+
+function PurchaseGuardCardSection() {
+  const [open, setOpen] = useState(false);
+  const { data: checks } = usePurchaseGuardChecks(20);
+  const overrides = useOverridePattern();
+
+  const recent = checks || [];
+  const decided = recent.filter((c: any) => c.decision && c.decision !== 'pending');
+  const skipped = decided.filter((c: any) => c.decision === 'skipped');
+  const waiting = recent.filter((c: any) => c.decision === 'waiting' && c.wait_until && new Date(c.wait_until).getTime() > Date.now());
+
+  const savedFromSkips = skipped.reduce((s: number, c: any) => s + Number(c.amount || 0), 0);
+  const avgFit = decided.length
+    ? Math.round(decided.reduce((s: number, c: any) => s + (c.fit_score || 0), 0) / decided.length)
+    : null;
+
+  return (
+    <>
+      <CoachCard
+        number={5}
+        title="Purchase Guard"
+        subtitle="Decide before you buy"
+        icon={ShoppingBag}
+        iconColor="text-prism-amber"
+        confidence={decided.length >= 3 ? 'high' : 'medium'}
+        status={overrides.hasPattern ? 'warn' : 'ok'}
+        action={
+          <Button size="sm" className="h-7 text-xs" onClick={() => setOpen(true)}>
+            Run check <Sparkles className="ml-1 h-3 w-3" />
+          </Button>
+        }
+      >
+        <p className="text-sm text-muted-foreground mb-3">
+          Coach checks Fit Score, FOMO signals, and 24h wait — then logs the decision so patterns surface over time.
+        </p>
+
+        <div className="grid grid-cols-3 gap-2 text-[11px]">
+          <div className="rounded-md bg-background/40 border border-border/40 px-2 py-1.5">
+            <div className="text-muted-foreground text-[10px]">Skipped</div>
+            <div className="font-mono font-bold">{fmt(savedFromSkips)}</div>
+          </div>
+          <div className="rounded-md bg-background/40 border border-border/40 px-2 py-1.5">
+            <div className="text-muted-foreground text-[10px]">Avg Fit</div>
+            <div className="font-mono font-bold">{avgFit ?? '—'}</div>
+          </div>
+          <div className="rounded-md bg-background/40 border border-border/40 px-2 py-1.5">
+            <div className="text-muted-foreground text-[10px]">Waiting</div>
+            <div className="font-mono font-bold">{waiting.length}</div>
+          </div>
+        </div>
+
+        {overrides.hasPattern && (
+          <div className="mt-3 rounded-md bg-prism-amber/10 border border-prism-amber/30 px-2.5 py-1.5 text-[11px] text-prism-amber">
+            <AlertTriangle className="h-3 w-3 inline mr-1" />
+            {overrides.count} overrides in 6 months — Coach will suggest a system rule.
+          </div>
+        )}
+
+        {recent.length > 0 && (
+          <div className="mt-3 space-y-1">
+            <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Recent checks</div>
+            {recent.slice(0, 3).map((c: any) => (
+              <div key={c.id} className="flex items-center justify-between text-xs">
+                <span className="truncate capitalize">{c.merchant || c.purpose?.slice(0, 28) || 'Purchase'}</span>
+                <span className="flex items-center gap-1.5 shrink-0">
+                  <Badge variant="outline" className="text-[9px] py-0 px-1.5">{c.decision}</Badge>
+                  <span className="font-mono text-muted-foreground">{fmt(Number(c.amount))}</span>
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <PurchaseGuardReviewPrompts />
+      </CoachCard>
+
+      <PurchaseGuardDialog open={open} onOpenChange={setOpen} />
+    </>
+  );
+}
+
