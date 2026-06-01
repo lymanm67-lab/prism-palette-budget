@@ -547,7 +547,7 @@ function MoneyLeakStopperCard() {
       iconColor="text-prism-rose"
       confidence={list.length > 0 ? 'high' : 'medium'}
       status={list.length > 0 ? 'warn' : 'ok'}
-      className="md:col-span-2"
+      className=""
       action={
         <Button size="sm" variant="ghost" className="h-7 text-xs"
           onClick={() => scan.mutate()} disabled={scan.isPending}>
@@ -663,7 +663,7 @@ function SafeToSpendShieldCard() {
       iconColor="text-prism-teal"
       confidence={accounts && accounts.length > 0 ? 'high' : 'low'}
       status="ok"
-      className="md:col-span-2 lg:col-span-3"
+      className=""
     >
       <div className="grid gap-4 lg:grid-cols-3">
         <div>
@@ -770,7 +770,7 @@ function PaycheckDeploymentCard() {
       iconColor="text-prism-amber"
       confidence={next ? (next.confidence as Confidence) : 'medium'}
       status={next ? 'ok' : 'soon'}
-      className="md:col-span-2"
+      className=""
       action={
         <Button asChild size="sm" variant="ghost" className="h-7 text-xs">
           <Link to="/coach/paycheck">Open <ArrowRight className="ml-1 h-3 w-3" /></Link>
@@ -856,7 +856,7 @@ function WealthRedirectorCard() {
       iconColor="text-prism-lime"
       confidence="high"
       status="ok"
-      className="md:col-span-2 lg:col-span-3"
+      className=""
     >
       <p className="text-sm text-muted-foreground mb-3">
         Found money? Canceled a subscription? Fixed a leak? Project what redirecting it monthly could become.
