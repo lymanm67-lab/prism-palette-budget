@@ -10,7 +10,7 @@ export function useRecurringTransactions() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('recurring_transactions' as any)
-        .select('*, categories(name, color, group_id, category_groups(budget_type, business_profile_id)), accounts(name)')
+        .select('*, categories!recurring_transactions_category_id_fkey(name, color, group_id, category_groups(budget_type, business_profile_id)), business_category:categories!recurring_transactions_business_category_id_fkey(name, color), accounts(name)')
         .eq('household_id', household!.id)
         .order('next_due_date');
       if (error) throw error;
