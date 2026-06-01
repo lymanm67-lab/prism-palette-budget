@@ -416,6 +416,15 @@ export default function MoneyCoach() {
 
         {/* CARD 7 — Safe-to-Spend Shield + Adaptive Buffer */}
         <SafeToSpendShieldCard />
+
+        {/* CARD 8 — Paycheck Deployment */}
+        <PaycheckDeploymentCard />
+
+        {/* CARD 9 — Bill Timing Optimizer */}
+        <BillTimingCard />
+
+        {/* CARD 10 — Wealth Redirector */}
+        <WealthRedirectorCard />
       </div>
 
       {/* Educational disclaimer */}
