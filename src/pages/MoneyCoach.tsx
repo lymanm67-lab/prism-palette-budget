@@ -193,7 +193,7 @@ export default function MoneyCoach() {
         <CoachCard
           number={2}
           collapsible
-          defaultOpen={false}
+          defaultOpen={isOpenByDefault(2)}
           title="Why it happened"
           subtitle="Root cause, trend vs outlier"
           icon={Brain}
