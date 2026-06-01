@@ -200,7 +200,14 @@ const Budgets = () => {
   const [printOrientation, setPrintOrientation] = useState<'portrait' | 'landscape'>('portrait');
   const [paystubOpen, setPaystubOpen] = useState(false);
   const [billScanOpen, setBillScanOpen] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  useEffect(() => {
+    const s = searchParams.get('scan');
+    if (s === 'bill') { setBillScanOpen(true); searchParams.delete('scan'); setSearchParams(searchParams, { replace: true }); }
+    else if (s === 'paystub') { setPaystubOpen(true); searchParams.delete('scan'); setSearchParams(searchParams, { replace: true }); }
+  }, [searchParams, setSearchParams]);
   const toggleSection = (key: string) => setOpenSections(s => ({ ...s, [key]: !s[key] }));
+
 
   
 
