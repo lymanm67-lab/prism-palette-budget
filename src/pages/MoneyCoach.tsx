@@ -115,7 +115,7 @@ export default function MoneyCoach() {
   };
 
   return (
-    <div className="space-y-6 p-4 sm:p-6 max-w-7xl mx-auto">
+    <div className="space-y-4 p-3 sm:p-5 max-w-7xl mx-auto">
       <CoachOnboardingTour />
 
       <SituationRoom
@@ -125,21 +125,6 @@ export default function MoneyCoach() {
         onJump={jumpTo}
       />
 
-      <PageOverview
-        title="How Coach works"
-        description="Coach turns your data into the next play — what changed, why, what to do, and how to prevent it."
-        icon={Sparkles}
-        iconColor="text-prism-amber"
-        ttsScript="PrismMoney Coach explains what happened with your money, why it happened, what to do next, and how to prevent the same issue from repeating. Each card is wired to your live data."
-        features={[
-          'Cards 1 and 2 explain what shifted and why.',
-          'Cards 3 and 4 build a recovery plan and prevention rule.',
-          'Card 5 is Purchase Guard — decide before you buy.',
-          'Card 6 finds money leaks. Card 7 shows true Safe-to-Spend.',
-          'Every recommendation includes a confidence level.',
-        ]}
-      />
-
       <CoachNudges />
 
       <MoneySnapshotBar />
@@ -147,7 +132,8 @@ export default function MoneyCoach() {
       <MomentTabs value={moment} onChange={setMoment} />
 
       {/* Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+
 
         {/* CARD 1 — What Happened */}
         <CoachSlot card={1} moment={moment}>
