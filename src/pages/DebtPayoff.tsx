@@ -38,7 +38,10 @@ interface Debt {
   minimum_payment: number;
   interest_rate: number;
   account_id?: string;
+  business_split_pct: number;
+  business_name?: string;
 }
+
 
 type Strategy = 'snowball' | 'avalanche' | 'hybrid';
 
@@ -125,20 +128,23 @@ const DebtPayoff = () => {
 
   // Map DB items to local Debt shape
   const debts: Debt[] = useMemo(() =>
-    (dbItems || []).map(item => ({
+    (dbItems || []).map((item: any) => ({
       id: item.id,
       name: item.name,
       balance: Number(item.balance),
       minimum_payment: Number(item.minimum_payment),
       interest_rate: Number(item.interest_rate),
       account_id: item.account_id || undefined,
+      business_split_pct: Number(item.business_split_pct ?? 0),
+      business_name: item.business_name || undefined,
     })),
     [dbItems]
   );
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
-  const [form, setForm] = useState({ name: '', balance: '', minimum_payment: '', interest_rate: '', account_id: '' });
+  const [form, setForm] = useState({ name: '', balance: '', minimum_payment: '', interest_rate: '', account_id: '', business_split_pct: 0, business_name: '' });
+
   const [planDialogOpen, setPlanDialogOpen] = useState(false);
   const [scanOpen, setScanOpen] = useState(false);
   const [planName, setPlanName] = useState('');
@@ -174,12 +180,15 @@ const DebtPayoff = () => {
 
   const handleSaveDebt = async () => {
     if (!activePlanId) return;
+    const pct = Math.max(0, Math.min(100, Number(form.business_split_pct) || 0));
     const payload = {
       name: form.name,
       balance: parseFloat(form.balance) || 0,
       minimum_payment: parseFloat(form.minimum_payment) || 0,
       interest_rate: parseFloat(form.interest_rate) || 0,
       account_id: form.account_id || null,
+      business_split_pct: pct,
+      business_name: pct > 0 ? (form.business_name.trim() || null) : null,
     };
     try {
       if (editId) {
@@ -190,7 +199,7 @@ const DebtPayoff = () => {
         toast.success('Debt added');
       }
       setEditId(null);
-      setForm({ name: '', balance: '', minimum_payment: '', interest_rate: '', account_id: '' });
+      setForm({ name: '', balance: '', minimum_payment: '', interest_rate: '', account_id: '', business_split_pct: 0, business_name: '' });
       setDialogOpen(false);
     } catch (err: any) {
       console.error('Save debt error:', err);
@@ -200,9 +209,10 @@ const DebtPayoff = () => {
 
   const openEdit = (d: Debt) => {
     setEditId(d.id);
-    setForm({ name: d.name, balance: String(d.balance), minimum_payment: String(d.minimum_payment), interest_rate: String(d.interest_rate), account_id: d.account_id || '' });
+    setForm({ name: d.name, balance: String(d.balance), minimum_payment: String(d.minimum_payment), interest_rate: String(d.interest_rate), account_id: d.account_id || '', business_split_pct: d.business_split_pct || 0, business_name: d.business_name || '' });
     setDialogOpen(true);
   };
+
 
   const handleDeleteDebt = async (id: string) => {
     if (!activePlanId) return;
@@ -359,7 +369,7 @@ const DebtPayoff = () => {
                   <Plus className="h-4 w-4" /> Add Debt
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="max-h-[90vh] overflow-y-auto">
                 <DialogHeader><DialogTitle className="font-display">{editId ? 'Edit Debt' : 'Add Debt'}</DialogTitle></DialogHeader>
                 <div className="space-y-4">
                   <div className="space-y-2"><Label>Debt Name</Label><Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. Chase Visa" /></div>
@@ -368,6 +378,63 @@ const DebtPayoff = () => {
                     <div className="space-y-2"><Label>Interest Rate (%)</Label><Input type="number" step="0.01" value={form.interest_rate} onChange={e => setForm(f => ({ ...f, interest_rate: e.target.value }))} placeholder="22.99" /></div>
                   </div>
                   <div className="space-y-2"><Label>Minimum Monthly Payment</Label><Input type="number" step="0.01" value={form.minimum_payment} onChange={e => setForm(f => ({ ...f, minimum_payment: e.target.value }))} placeholder="150" /></div>
+
+                  {/* Personal / Business / Split toggle */}
+                  <div className="space-y-2">
+                    <Label>Attribution</Label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {([
+                        { val: 0, label: '👤 Personal' },
+                        { val: 50, label: '⚖️ Split' },
+                        { val: 100, label: '💼 Business' },
+                      ] as const).map(opt => {
+                        const isSplit = opt.val === 50;
+                        const active = isSplit
+                          ? form.business_split_pct > 0 && form.business_split_pct < 100
+                          : form.business_split_pct === opt.val;
+                        return (
+                          <Button
+                            key={opt.label}
+                            type="button"
+                            variant={active ? 'default' : 'outline'}
+                            className={active ? 'prism-gradient text-white border-0' : ''}
+                            onClick={() => setForm(f => ({
+                              ...f,
+                              business_split_pct: isSplit ? (f.business_split_pct > 0 && f.business_split_pct < 100 ? f.business_split_pct : 50) : opt.val,
+                            }))}
+                          >
+                            {opt.label}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {form.business_split_pct > 0 && form.business_split_pct < 100 && (
+                    <div className="space-y-2">
+                      <Label>Business share: {form.business_split_pct}% (Personal: {100 - form.business_split_pct}%)</Label>
+                      <input
+                        type="range"
+                        min={1}
+                        max={99}
+                        value={form.business_split_pct}
+                        onChange={e => setForm(f => ({ ...f, business_split_pct: Number(e.target.value) }))}
+                        className="w-full accent-primary"
+                      />
+                    </div>
+                  )}
+
+                  {form.business_split_pct > 0 && (
+                    <div className="space-y-2">
+                      <Label>Business name</Label>
+                      <Input
+                        value={form.business_name}
+                        onChange={e => setForm(f => ({ ...f, business_name: e.target.value }))}
+                        placeholder="e.g. Dove Love Travels"
+                      />
+                    </div>
+                  )}
+
                   <Button onClick={handleSaveDebt} disabled={!form.name || !form.balance || createItem.isPending || updateItem.isPending} className="w-full prism-gradient text-white border-0 hover:opacity-90">
                     {(createItem.isPending || updateItem.isPending) ? 'Saving…' : editId ? 'Update' : 'Add Debt'}
                   </Button>
@@ -389,10 +456,13 @@ const DebtPayoff = () => {
                   minimum_payment: d.minimum_payment ? String(d.minimum_payment) : '',
                   interest_rate: d.apr ? String(d.apr) : '',
                   account_id: '',
+                  business_split_pct: 0,
+                  business_name: '',
                 });
                 setEditId(null);
                 setDialogOpen(true);
               }}
+
             />
 
             {importableAccounts.length > 0 && (
@@ -453,15 +523,23 @@ const DebtPayoff = () => {
                   <Card key={d.id} className="prism-card-shine border-border/50 group hover-lift">
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <CreditCard className="h-4 w-4 text-prism-rose" />
                           <span className="font-medium text-sm">{d.name}</span>
+                          {d.business_split_pct === 0 ? (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">👤 Personal</span>
+                          ) : d.business_split_pct === 100 ? (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-prism-teal/20 text-prism-teal">💼 Business{d.business_name ? ` · ${d.business_name}` : ''}</span>
+                          ) : (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-prism-amber/20 text-prism-amber">⚖️ {100 - d.business_split_pct}/{d.business_split_pct} Split{d.business_name ? ` · ${d.business_name}` : ''}</span>
+                          )}
                         </div>
                         <div className="flex gap-1">
                           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(d)} aria-label="Edit debt"><Pencil className="h-3.5 w-3.5" /></Button>
                           <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDeleteDebt(d.id)} aria-label="Delete debt"><Trash2 className="h-3.5 w-3.5" /></Button>
                         </div>
                       </div>
+
                       <div className="mt-2 grid grid-cols-3 gap-2 text-xs text-muted-foreground">
                         <div><p className="font-display text-base font-bold text-foreground">{formatCurrency(d.balance)}</p><p>Balance</p></div>
                         <div><p className="font-display text-base font-bold text-foreground">{d.interest_rate}%</p><p>APR</p></div>
