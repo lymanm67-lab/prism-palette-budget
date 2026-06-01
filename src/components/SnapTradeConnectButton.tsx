@@ -57,7 +57,7 @@ const SnapTradeConnectButton = forwardRef<SnapTradeConnectHandle, SnapTradeConne
       // Step 1: Check for existing SnapTrade connection or register user
       const { data: existingConnections } = await supabase
         .from('snaptrade_connections' as any)
-        .select('*')
+        .select('id, snaptrade_user_id, status')
         .eq('household_id', household.id)
         .eq('status', 'active')
         .limit(1);
