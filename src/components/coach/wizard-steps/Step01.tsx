@@ -3,10 +3,12 @@ import { Link } from 'react-router-dom';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, Upload, Receipt, CreditCard, Loader2, ExternalLink } from 'lucide-react';
+import { CheckCircle2, Upload, Receipt, CreditCard, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useHousehold } from '@/contexts/HouseholdContext';
+import { PaystubUploader } from '@/components/PaystubUploader';
 import type { StepProps } from './index';
+
 
 interface Status {
   paycheck: boolean;
