@@ -672,7 +672,7 @@ const Subscriptions = () => {
 
       {/* Add Subscription Dialog */}
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Add Subscription</DialogTitle></DialogHeader>
           <div className="space-y-4 pt-2">
             <div><Label>Service Name</Label><Input placeholder="e.g. Netflix" value={newSub.merchant} onChange={e => setNewSub(prev => ({ ...prev, merchant: e.target.value }))} /></div>
@@ -689,6 +689,29 @@ const Subscriptions = () => {
               </Select>
             </div>
             <div><Label>Category</Label><CategoryCombobox value={newSub.category_id} onValueChange={v => setNewSub(prev => ({ ...prev, category_id: v }))} placeholder="Select category (optional)" /></div>
+
+            <div className="space-y-2 rounded-lg border p-3">
+              <Label className="text-xs uppercase tracking-wide text-muted-foreground">Personal / Business</Label>
+              <div className="flex rounded-md border overflow-hidden">
+                <button type="button" onClick={() => setNewSub(p => ({ ...p, business_split_pct: 0, business_category_id: '' }))} className={cn('flex-1 px-3 py-1.5 text-xs font-medium transition-colors flex items-center justify-center gap-1', newSub.business_split_pct === 0 ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}><User className="h-3 w-3" /> Personal</button>
+                <button type="button" onClick={() => setNewSub(p => ({ ...p, business_split_pct: 100, business_category_id: '' }))} className={cn('flex-1 px-3 py-1.5 text-xs font-medium transition-colors flex items-center justify-center gap-1', newSub.business_split_pct === 100 ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}><Building2 className="h-3 w-3" /> Business</button>
+                <button type="button" onClick={() => setNewSub(p => ({ ...p, business_split_pct: p.business_split_pct > 0 && p.business_split_pct < 100 ? p.business_split_pct : 50 }))} className={cn('flex-1 px-3 py-1.5 text-xs font-medium transition-colors', newSub.business_split_pct > 0 && newSub.business_split_pct < 100 ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}>Split</button>
+              </div>
+              {newSub.business_split_pct > 0 && newSub.business_split_pct < 100 && (
+                <div className="space-y-2 pt-1">
+                  <div className="flex justify-between">
+                    <Label className="text-xs">Business: {newSub.business_split_pct}%</Label>
+                    <span className="text-[11px] text-muted-foreground">Personal: {100 - newSub.business_split_pct}%</span>
+                  </div>
+                  <Input type="range" min={1} max={99} value={newSub.business_split_pct} onChange={e => setNewSub(p => ({ ...p, business_split_pct: parseInt(e.target.value) }))} />
+                  <div>
+                    <Label className="text-xs">Business category (e.g. Dues & Subscriptions)</Label>
+                    <CategoryCombobox value={newSub.business_category_id} onValueChange={v => setNewSub(p => ({ ...p, business_category_id: v }))} placeholder="Search business categories..." />
+                  </div>
+                </div>
+              )}
+            </div>
+
             <Button onClick={handleAddSubscription} disabled={!newSub.merchant || !newSub.average_amount} className="w-full prism-gradient text-white">
               <Plus className="h-4 w-4 mr-2" /> Add Subscription
             </Button>
