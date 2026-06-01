@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import type { LucideIcon } from 'lucide-react';
-import { ShieldCheck, ShieldAlert, ShieldQuestion } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, ShieldQuestion, AlertTriangle, Target } from 'lucide-react';
 
 export type Confidence = 'high' | 'medium' | 'low';
 
@@ -24,6 +24,8 @@ interface Props {
   action?: ReactNode;
   children: ReactNode;
   className?: string;
+  pitfall?: string;
+  tryThis?: string;
 }
 
 const STATUS_DOT: Record<NonNullable<Props['status']>, string> = {
@@ -35,16 +37,17 @@ const STATUS_DOT: Record<NonNullable<Props['status']>, string> = {
 
 export function CoachCard({
   number, title, subtitle, icon: Icon, iconColor = 'text-prism-amber',
-  confidence, status = 'ok', action, children, className,
+  confidence, status = 'ok', action, children, className, pitfall, tryThis,
 }: Props) {
   const conf = confidence ? CONFIDENCE_META[confidence] : null;
+  const pulse = status === 'warn' || status === 'alert';
   return (
     <Card className={cn(
-      'relative overflow-hidden border-border/60 bg-card/60 backdrop-blur-sm',
+      'group relative overflow-hidden border-border/60 bg-card/60 backdrop-blur-sm',
       'transition-all hover:border-prism-teal/40 hover:shadow-lg hover:shadow-prism-teal/5',
       className,
     )}>
-      <div className={cn('absolute left-0 top-0 h-full w-1', STATUS_DOT[status])} />
+      <div className={cn('absolute left-0 top-0 h-full w-1', STATUS_DOT[status], pulse && 'animate-pulse')} />
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3">
@@ -76,6 +79,22 @@ export function CoachCard({
       </CardHeader>
       <CardContent className="pt-0 text-sm">
         {children}
+        {(pitfall || tryThis) && (
+          <div className="pt-3 mt-3 border-t border-border/40 space-y-1.5">
+            {pitfall && (
+              <div className="flex items-start gap-1.5 text-[11px] text-prism-amber/90">
+                <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0" />
+                <span><span className="font-bold uppercase tracking-wider mr-1">Pitfall:</span>{pitfall}</span>
+              </div>
+            )}
+            {tryThis && (
+              <div className="flex items-start gap-1.5 text-[11px] text-prism-teal/90">
+                <Target className="h-3 w-3 mt-0.5 shrink-0" />
+                <span><span className="font-bold uppercase tracking-wider mr-1">Try this:</span>{tryThis}</span>
+              </div>
+            )}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

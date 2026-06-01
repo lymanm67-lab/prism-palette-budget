@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { format, startOfMonth } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
@@ -23,6 +23,11 @@ import { CoachOnboardingTour } from '@/components/coach/CoachOnboardingTour';
 import { CoachNudges } from '@/components/coach/CoachNudges';
 import { MoneySnapshotBar } from '@/components/coach/MoneySnapshotBar';
 import { CoachCard, type Confidence } from '@/components/coach/CoachCard';
+import { SituationRoom } from '@/components/coach/SituationRoom';
+import { MomentTabs } from '@/components/coach/MomentTabs';
+import { CoachSlot } from '@/components/coach/CoachSlot';
+import { CARD_MOMENT, type Moment } from '@/components/coach/moment-types';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { StsEquationView } from '@/components/StsEquationView';
@@ -100,40 +105,25 @@ export default function MoneyCoach() {
 
   const hasIssue = (overBudget?.length || 0) > 0 || anomalies.length > 0;
 
+  const [moment, setMoment] = useState<Moment>('all');
+
+  const jumpTo = (m: Moment, card: number) => {
+    setMoment(m);
+    setTimeout(() => {
+      document.getElementById(`coach-card-${card}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 80);
+  };
+
   return (
     <div className="space-y-6 p-4 sm:p-6 max-w-7xl mx-auto">
       <CoachOnboardingTour />
-      {/* Hero */}
-      <div className="relative overflow-hidden rounded-2xl border border-prism-teal/20 bg-gradient-to-br from-prism-navy/80 via-prism-navy/60 to-prism-teal/10 p-6 sm:p-8 backdrop-blur-sm">
-        <div className="absolute -top-12 -right-12 h-48 w-48 rounded-full bg-prism-amber/10 blur-3xl" />
-        <div className="absolute -bottom-12 -left-12 h-48 w-48 rounded-full bg-prism-teal/10 blur-3xl" />
-        <div className="relative">
-          <div className="flex items-center gap-2 mb-2">
-            <Sparkles className="h-4 w-4 text-prism-amber" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-prism-amber">PrismMoney™ Coach</span>
-          </div>
-          <h1 className="font-display text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
-            What happened, why, and what to do next.
-          </h1>
-          <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
-            Most apps tell you the score. Coach calls the next play — explaining patterns, protecting your next paycheck,
-            and turning leaks into wealth.
-          </p>
-          <div className="mt-4 flex flex-wrap gap-2 text-xs">
-            <Badge variant="outline" className="bg-background/40 border-border/40">
-              True Safe-to-Spend: <span className="ml-1 font-bold text-prism-teal">{fmt(sts.monthly)}</span>/mo
-            </Badge>
-            <Badge variant="outline" className="bg-background/40 border-border/40">
-              Buffer: <span className="ml-1 font-bold">{sts.bufferPercent}%</span>
-            </Badge>
-            {leakCount > 0 && (
-              <Badge variant="outline" className="bg-prism-amber/10 border-prism-amber/30 text-prism-amber">
-                {leakCount} potential leak{leakCount === 1 ? '' : 's'}
-              </Badge>
-            )}
-          </div>
-        </div>
-      </div>
+
+      <SituationRoom
+        monthlyStS={sts.monthly}
+        bufferPercent={sts.bufferPercent}
+        leakCount={leakCount}
+        onJump={jumpTo}
+      />
 
       <PageOverview
         title="How Coach works"
@@ -154,12 +144,13 @@ export default function MoneyCoach() {
 
       <MoneySnapshotBar />
 
-
-
+      <MomentTabs value={moment} onChange={setMoment} />
 
       {/* Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+
         {/* CARD 1 — What Happened */}
+        <CoachSlot card={1} moment={moment}>
         <CoachCard
           number={1}
           title="What happened"
@@ -168,6 +159,8 @@ export default function MoneyCoach() {
           iconColor="text-prism-orange"
           confidence={dataConfidence}
           status={hasIssue ? 'warn' : 'ok'}
+          pitfall="Reacting to a single bad week with guilt instead of data."
+          tryThis="Treat overages as signals — find the category, not the character flaw."
         >
           {!hasIssue && (
             <div className="flex items-center gap-2 text-prism-teal">
@@ -201,8 +194,10 @@ export default function MoneyCoach() {
             </div>
           )}
         </CoachCard>
+        </CoachSlot>
 
         {/* CARD 2 — Why It Happened */}
+        <CoachSlot card={2} moment={moment}>
         <CoachCard
           number={2}
           title="Why it happened"
@@ -216,6 +211,8 @@ export default function MoneyCoach() {
               <Link to="/spending-trends">Analyze <ArrowRight className="ml-1 h-3 w-3" /></Link>
             </Button>
           ) : undefined}
+          pitfall="Blaming yourself before checking timing — a delayed paycheck looks like overspending."
+          tryThis="Ask: was this an outlier, a trend, or a budget that no longer fits real life?"
         >
           {!hasIssue ? (
             <p className="text-sm text-muted-foreground">No patterns to explain right now. Coach will check again as new transactions land.</p>
@@ -231,6 +228,7 @@ export default function MoneyCoach() {
             </div>
           )}
         </CoachCard>
+        </CoachSlot>
 
         {/* CARD 3 — Recovery Plan */}
         {(() => {
@@ -246,6 +244,7 @@ export default function MoneyCoach() {
 
           return (
             <>
+              <CoachSlot card={3} moment={moment}>
               <CoachCard
                 number={3}
                 title="Recovery plan"
@@ -254,6 +253,8 @@ export default function MoneyCoach() {
                 iconColor="text-prism-lime"
                 confidence={plansForTop.length ? 'high' : 'medium'}
                 status={activePlan ? 'ok' : topOver ? 'warn' : 'ok'}
+                pitfall="Going 'cold turkey' on a category — drastic cuts collapse by week two."
+                tryThis="Pick the Balanced plan first. Sustainable beats heroic every month."
               >
                 {!topOver && (
                   <div className="flex items-center gap-2 text-prism-teal text-sm">
@@ -375,8 +376,10 @@ export default function MoneyCoach() {
                   </div>
                 )}
               </CoachCard>
+              </CoachSlot>
 
               {/* CARD 4 — Prevention Rule */}
+              <CoachSlot card={4} moment={moment}>
               <CoachCard
                 number={4}
                 title="Prevention rule"
@@ -385,6 +388,8 @@ export default function MoneyCoach() {
                 iconColor="text-prism-sky"
                 confidence={preventionRule ? 'high' : 'medium'}
                 status={preventionRule ? 'ok' : topOver ? 'warn' : 'ok'}
+                pitfall="Fixing the symptom (a refund, a transfer) without changing the system."
+                tryThis="A small standing rule beats a big monthly cleanup. Automate the boring part."
               >
                 {preventionRule ? (
                   <div className="space-y-2">
@@ -412,30 +417,32 @@ export default function MoneyCoach() {
                   </div>
                 )}
               </CoachCard>
+              </CoachSlot>
             </>
           );
         })()}
 
 
-        {/* CARD 5 — Purchase Guard (extended) */}
-        <PurchaseGuardCardSection />
 
+        {/* CARD 5 — Purchase Guard (extended) */}
+        <CoachSlot card={5} moment={moment}><PurchaseGuardCardSection /></CoachSlot>
 
         {/* CARD 6 — Money Leak Stopper (engine) */}
-        <MoneyLeakStopperCard />
+        <CoachSlot card={6} moment={moment} span="md2"><MoneyLeakStopperCard /></CoachSlot>
 
         {/* CARD 7 — Safe-to-Spend Shield + Adaptive Buffer */}
-        <SafeToSpendShieldCard />
+        <CoachSlot card={7} moment={moment} span="md2lg3"><SafeToSpendShieldCard /></CoachSlot>
 
         {/* CARD 8 — Paycheck Deployment */}
-        <PaycheckDeploymentCard />
+        <CoachSlot card={8} moment={moment} span="md2"><PaycheckDeploymentCard /></CoachSlot>
 
         {/* CARD 9 — Bill Timing Optimizer */}
-        <BillTimingCard />
+        <CoachSlot card={9} moment={moment}><BillTimingCard /></CoachSlot>
 
         {/* CARD 10 — Wealth Redirector */}
-        <WealthRedirectorCard />
+        <CoachSlot card={10} moment={moment} span="md2lg3"><WealthRedirectorCard /></CoachSlot>
       </div>
+
 
       {/* Educational disclaimer */}
       <div className="rounded-lg border border-border/40 bg-muted/20 p-3 flex gap-2 text-[11px] text-muted-foreground">
@@ -558,7 +565,7 @@ function MoneyLeakStopperCard() {
       iconColor="text-prism-rose"
       confidence={list.length > 0 ? 'high' : 'medium'}
       status={list.length > 0 ? 'warn' : 'ok'}
-      className="md:col-span-2"
+      className=""
       action={
         <Button size="sm" variant="ghost" className="h-7 text-xs"
           onClick={() => scan.mutate()} disabled={scan.isPending}>
@@ -674,7 +681,7 @@ function SafeToSpendShieldCard() {
       iconColor="text-prism-teal"
       confidence={accounts && accounts.length > 0 ? 'high' : 'low'}
       status="ok"
-      className="md:col-span-2 lg:col-span-3"
+      className=""
     >
       <div className="grid gap-4 lg:grid-cols-3">
         <div>
@@ -781,7 +788,7 @@ function PaycheckDeploymentCard() {
       iconColor="text-prism-amber"
       confidence={next ? (next.confidence as Confidence) : 'medium'}
       status={next ? 'ok' : 'soon'}
-      className="md:col-span-2"
+      className=""
       action={
         <Button asChild size="sm" variant="ghost" className="h-7 text-xs">
           <Link to="/coach/paycheck">Open <ArrowRight className="ml-1 h-3 w-3" /></Link>
@@ -867,7 +874,7 @@ function WealthRedirectorCard() {
       iconColor="text-prism-lime"
       confidence="high"
       status="ok"
-      className="md:col-span-2 lg:col-span-3"
+      className=""
     >
       <p className="text-sm text-muted-foreground mb-3">
         Found money? Canceled a subscription? Fixed a leak? Project what redirecting it monthly could become.
