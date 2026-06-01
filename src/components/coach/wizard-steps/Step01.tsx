@@ -3,10 +3,12 @@ import { Link } from 'react-router-dom';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, Upload, Receipt, CreditCard, Loader2, ExternalLink } from 'lucide-react';
+import { CheckCircle2, Upload, Receipt, CreditCard, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useHousehold } from '@/contexts/HouseholdContext';
+import { PaystubUploader } from '@/components/PaystubUploader';
 import type { StepProps } from './index';
+
 
 interface Status {
   paycheck: boolean;
@@ -18,6 +20,8 @@ interface Status {
 export function Step01({ value, onChange }: StepProps) {
   const { household } = useHousehold();
   const [status, setStatus] = useState<Status>({ paycheck: false, bills: false, debts: false, loading: true });
+  const [paystubOpen, setPaystubOpen] = useState(false);
+
 
   useEffect(() => {
     let cancel = false;
@@ -105,11 +109,22 @@ export function Step01({ value, onChange }: StepProps) {
                 </div>
                 <div className="text-sm font-semibold">{t.title}</div>
                 <p className="text-[11px] text-muted-foreground flex-1">{t.desc}</p>
-                <Button asChild size="sm" variant={t.done ? 'ghost' : 'outline'} className="h-7 text-[11px]">
-                  <Link to={t.href}>
-                    {t.done ? 'Manage' : 'Add now'}
-                  </Link>
-                </Button>
+                {t.key === 'paycheck' ? (
+                  <Button
+                    size="sm"
+                    variant={t.done ? 'ghost' : 'outline'}
+                    className="h-7 text-[11px]"
+                    onClick={() => setPaystubOpen(true)}
+                  >
+                    {t.done ? 'Upload another' : 'Upload paystub'}
+                  </Button>
+                ) : (
+                  <Button asChild size="sm" variant={t.done ? 'ghost' : 'outline'} className="h-7 text-[11px]">
+                    <Link to={t.href}>
+                      {t.done ? 'Manage' : 'Add now'}
+                    </Link>
+                  </Button>
+                )}
               </div>
             );
           })}
@@ -117,9 +132,10 @@ export function Step01({ value, onChange }: StepProps) {
       )}
 
       <p className="text-[11px] text-muted-foreground italic">
-        Tip: links open in-app. Use your browser's back button to return to the wizard.
+        Tip: Paycheck uploads happen right here. Bills & Debts open in-app — use Back to return.
       </p>
 
+      <PaystubUploader open={paystubOpen} onOpenChange={setPaystubOpen} />
     </div>
   );
 }
