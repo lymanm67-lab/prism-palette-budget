@@ -266,6 +266,111 @@ export type Database = {
           },
         ]
       }
+      app_dev_credit_log: {
+        Row: {
+          created_at: string
+          created_by: string
+          credits_used: number
+          date: string
+          deleted_at: string | null
+          household_id: string
+          id: string
+          note: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string
+          credits_used: number
+          date?: string
+          deleted_at?: string | null
+          household_id: string
+          id?: string
+          note?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          credits_used?: number
+          date?: string
+          deleted_at?: string | null
+          household_id?: string
+          id?: string
+          note?: string | null
+        }
+        Relationships: []
+      }
+      app_dev_limits: {
+        Row: {
+          created_at: string
+          household_id: string
+          id: string
+          is_enabled: boolean
+          monthly_credit_limit: number
+          monthly_spend_limit: number
+          period_start: string
+          tracked_category_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          household_id: string
+          id?: string
+          is_enabled?: boolean
+          monthly_credit_limit?: number
+          monthly_spend_limit?: number
+          period_start?: string
+          tracked_category_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          household_id?: string
+          id?: string
+          is_enabled?: boolean
+          monthly_credit_limit?: number
+          monthly_spend_limit?: number
+          period_start?: string
+          tracked_category_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      app_dev_overrides: {
+        Row: {
+          approved_by: string | null
+          created_at: string
+          expires_at: string
+          household_id: string
+          id: string
+          reason: string
+          requested_by: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          approved_by?: string | null
+          created_at?: string
+          expires_at?: string
+          household_id: string
+          id?: string
+          reason: string
+          requested_by?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          approved_by?: string | null
+          created_at?: string
+          expires_at?: string
+          household_id?: string
+          id?: string
+          reason?: string
+          requested_by?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string

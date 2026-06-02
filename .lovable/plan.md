@@ -1,118 +1,116 @@
 ## Goal
 
-Add a **Cleanup Hub** at `/cleanup` with four one-click flows. Each previews changes before applying — nothing auto-writes.
-
-## Page structure
-
-`src/pages/Cleanup.tsx` — four collapsible cards, each with a count badge + "Review" button:
-
-1. Transfer Detection
-2. Needs-Review Queue
-3. Duplicate Budget Merger
-4. Merchant Re-Categorization (Lovable fix)
-
-Sidebar item under Settings + a CTA tile on `/coach` when any count > 0.
+Keep monthly Lovable / app-dev spending under **$100** and **400 build credits**, whichever comes first. Soft guardrails only — warnings, recommendations, and an admin-approved override flow. No real charges are blocked (we can't), but PrismMoney surfaces the limit everywhere it matters.
 
 ---
 
-## Flow 1 — Mark transfers as transfers
+## Data model (1 migration)
 
-**Detection:** uncategorized + `is_transfer=false` + `deleted_at IS NULL`; merchant matches `/^(to|from)\s+(checking|savings|credit|loan|card)/i` or `/transfer|xfer|zelle to self/i`. Pair same-day opposite-sign equal-abs-amount rows; pre-fill `transfer_pair_id`.
+**`app_dev_limits`** — one row per household
+- `id`, `household_id` (unique), `monthly_spend_limit` numeric default `100`
+- `monthly_credit_limit` int default `400`
+- `period_start` date (1st of current month)
+- `is_enabled` bool default true
+- `updated_at`
 
-**UI:** checkbox table (all checked). **Action:** bulk `UPDATE transactions SET is_transfer=true, transfer_pair_id=...`.
+**`app_dev_credit_log`** — manual credit-use entries
+- `id`, `household_id`, `date`, `credits_used` int, `note` text, `created_by`, `created_at`, `deleted_at`
 
----
+**`app_dev_overrides`** — admin-approved emergency unlocks
+- `id`, `household_id`, `requested_by`, `approved_by` (nullable), `reason` text, `status` ('pending'|'approved'|'denied'), `expires_at` (default now+24h), `created_at`
 
-## Flow 2 — Bulk-clear needs-review
-
-**Detection:** `needs_review=true AND deleted_at IS NULL`, grouped:
-- **Refund pairs** — same merchant + day + opposite signs + equal abs(amount)
-- **Interest / ACH fee** — merchant matches `/interest credit|ach return|nsf fee|overdraft/i`
-- **Other** — manual review
-
-**UI:** three buckets, "Approve bucket" + per-row toggle. **Action:** `UPDATE transactions SET needs_review=false WHERE id IN (...)`.
-
----
-
-## Flow 3 — Merge duplicate budget categories
-
-**Detection:** group `categories` by normalized name within same `group_id` (lowercase, strip punctuation, expand `acc.→accident`, `ins.→insurance`, `ret→retirement`, alias `hsa↔health savings account`).
-
-**Preview:** survivor radio (default = most transactions), shows each duplicate's planned_amount and transaction count; sum-of-budgets becomes survivor's new amount.
-
-**Apply order (per merge):**
-1. `UPDATE transactions SET category_id=<survivor> WHERE category_id IN (<losers>)`
-2. `UPDATE transaction_splits SET category_id=<survivor> WHERE category_id IN (<losers>)`
-3. Per month: sum `planned_amount`, UPSERT into survivor's budget, delete loser budget rows
-4. Delete loser `categories` (only after verify reference count = 0)
+All three: RLS scoped by `is_household_member`, plus full GRANT block. Admin approval gated by `has_role(auth.uid(), 'admin')`.
 
 ---
 
-## Flow 4 — Merchant re-categorization + alias rules
+## Spend source
 
-**Real issue confirmed:** the bank/Plaid feed is mis-reading "Lovable" as "Movable Feast" on some statements. All 18 "Movable Feast" transactions in your data are actually Lovable App Development charges. Some are already in the Lovable category (10), some leaked into Restaurants (8).
+- **Auto $:** sum `transactions` where category name matches `/lovable|app dev/i` (or a configurable `category_id` set in limits row), `deleted_at IS NULL`, `is_transfer=false`, `date >= period_start`.
+- **Manual credits:** sum `app_dev_credit_log` for current period.
+- **Override:** user can edit either value inline on the dashboard card (writes a manual adjustment row, never mutates transactions).
 
-**Solution = two parts:**
+---
 
-### 4a. Merchant alias map (the fix)
+## UI
 
-A small `MERCHANT_ALIASES` array in `src/lib/cleanup-rules.ts`:
+**1. Settings → new section "App-Dev Cutoff"** (`src/pages/Settings.tsx` tab or inline card)
+- Edit `monthly_spend_limit`, `monthly_credit_limit`, pick the tracked category, enable/disable, manual reset button.
 
-```ts
-{ pattern: /^movable\s+feast/i,     canonical: 'Lovable', category: 'Lovable' }
-{ pattern: /^lovable(\s+dover)?\b/i, canonical: 'Lovable', category: 'Lovable' }
-```
+**2. Dashboard card** `src/components/dashboard/AppDevCutoffCard.tsx`
+- Two progress bars (spend $ / credits), green→yellow (≥70%)→red (≥100%).
+- "Log credits used" quick action.
+- "Request override" button when at/over limit.
+- Status copy: under 70% silent praise, 70–99% warning, ≥100% red banner with the three canned messages from your spec.
 
-Extensible — easy to add more aliases later (e.g. "AMZN MKTP" → Amazon).
+**3. Override modal** `src/components/app-dev/OverrideRequestModal.tsx`
+- Reason textarea, submit → row in `app_dev_overrides` status=pending.
+- Admins see pending requests on the same card and can approve/deny inline.
 
-### 4b. Detection + apply
+**4. Coach tile** on `/coach` when ≥70% — links to the dashboard card.
 
-For each alias, find transactions whose `merchant` matches `pattern` AND whose current `category_id` ≠ the target Lovable category id.
+---
 
-**UI:** one card per canonical merchant, e.g.:
-> **Lovable (App Development)** — 8 transactions currently in **Restaurants**, $130 total. Also normalizes display name from "Movable Feast" → "Lovable".
-> [Preview list] [Apply all] [Skip]
+## Logic
 
-**Action per row:**
-- `UPDATE transactions SET category_id=<lovable_id>, merchant=<canonical_name>, normalized_merchant=<canonical_lower> WHERE id IN (...)`
-- Skip rows with existing `transaction_splits` (surfaced in "Skipped" list).
+**Hook** `src/hooks/use-app-dev-cutoff.ts`
+- Loads limits row, current-period transactions matching tracked category, credit log sum, active approved override.
+- Returns `{ spendUsed, spendLimit, creditsUsed, creditLimit, spendPct, creditPct, status: 'ok'|'warn'|'over', overrideActive, daysLeft }`.
+- Memoized; subscribes via `useRealtimeRefresh` to all three tables.
 
-### 4c. Prevent recurrence
+**Recommendation strings** (static map in the hook, no AI in v1):
+- `over` → "You've reached your monthly limit. New requests are locked until next month."
+- `warn` → "You're close to your monthly limit. Finish planning before purchasing more credits."
+- `nice_to_have` (any new credit log when status=warn/over) → "This request appears nice-to-have. Move it to next month's backlog."
 
-Also write the alias map server-side so future imports auto-correct. Two options shown in the plan; pick one at build time:
+---
 
-- **Lightweight (chosen):** add a check in the existing transaction import path (wherever Plaid/MX writes rows) — apply `MERCHANT_ALIASES` before insert. Same constant file shared between client and edge function via duplicated literal (no new table).
-- **Heavy (deferred):** new `merchant_aliases` table with full CRUD UI — not in this build.
+## Monthly auto-reset (pg_cron + edge fn)
 
-Files touched for 4c: whichever edge function ingests Plaid/MX transactions (TBD during build — will read `supabase/functions/` first).
+- New edge fn `supabase/functions/app-dev-cutoff-reset/index.ts` — CRON_SECRET-protected, updates every `app_dev_limits` row to set `period_start = date_trunc('month', now())`. Soft-resets counters (computed off period_start, so this is the actual reset).
+- pg_cron job: `0 0 1 * *` UTC → POSTs to the edge fn with anon key + CRON_SECRET header.
+- Inserted via `supabase--insert` (per cron-job convention).
 
 ---
 
 ## Files
 
-- `src/pages/Cleanup.tsx`
-- `src/components/cleanup/TransferCleanup.tsx`
-- `src/components/cleanup/NeedsReviewCleanup.tsx`
-- `src/components/cleanup/DuplicateBudgetMerger.tsx`
-- `src/components/cleanup/MerchantRecategorize.tsx`
-- `src/hooks/use-cleanup-candidates.ts`
-- `src/lib/cleanup-rules.ts` — `MERCHANT_ALIASES`
-- `supabase/functions/<existing-import-fn>/index.ts` — apply aliases on insert (Flow 4c)
-- `src/App.tsx` — add `/cleanup` route (lazy)
-- `src/components/AppSidebar.tsx` — sidebar entry with badge
-- `src/pages/MoneyCoach.tsx` — "Data cleanup ready" tile when any count > 0
+**New**
+- `supabase/functions/app-dev-cutoff-reset/index.ts`
+- `src/hooks/use-app-dev-cutoff.ts`
+- `src/components/dashboard/AppDevCutoffCard.tsx`
+- `src/components/app-dev/OverrideRequestModal.tsx`
+- `src/components/app-dev/CreditLogQuickEntry.tsx`
+- `src/components/settings/AppDevCutoffSettings.tsx`
 
-## Out of scope
+**Edited**
+- `src/pages/Dashboard.tsx` — mount card
+- `src/pages/Settings.tsx` — mount settings section
+- `src/pages/MoneyCoach.tsx` — conditional tile at ≥70%
 
-- Refresh stale Plaid feed (separate flow)
-- User-editable alias table (deferred — hard-coded for now)
-- Scheduled auto-cleanup
-- Undo history
+**Migration**
+- 3 tables + RLS + GRANTs + triggers for `updated_at`
 
-## Risks / safeguards
+---
 
-- Two-step confirm on every flow (Preview → Apply).
-- No hard transaction deletes anywhere.
-- Flow 3 deletes loser categories only after reference-count verify.
-- Flow 4 skips transactions with existing splits.
-- Every apply ends with a toast showing exact row count changed.
+## Memory updates (after build)
+
+- New memory file `mem://features/app-dev-cutoff` describing limits, override flow, reset cron.
+- Add line to Core: "App-dev cutoff: $100 / 400 credits per month, soft guardrail, admin override 24h."
+
+---
+
+## Out of scope (v1)
+
+- AI recommendation engine (nice-to-have detection, postpone suggestions)
+- Locking manual entry forms
+- Multi-month historical chart
+- Per-category limits beyond app-dev
+- Notifications/email at 70%/100% (can add later via existing notification system)
+
+---
+
+## Risks
+
+- Auto $ tracking depends on transactions being tagged to the right category. Settings exposes the category picker so you can correct it.
+- Credit usage is fully manual — no Lovable API. The quick-entry button on the dashboard keeps friction low.
+- Override approval reuses `app_role='admin'`. If you're the only admin, the "friction" is effectively self-approval — flag if you want to add a typed-confirmation phrase as extra friction.

@@ -24,6 +24,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTTS } from '@/hooks/use-tts';
 import { useBiometricAuth } from '@/hooks/use-biometric-auth';
 import { useNavigate } from 'react-router-dom';
+import { AppDevCutoffSettings } from '@/components/settings/AppDevCutoffSettings';
 
 const CURRENCIES = [
   { code: 'USD', name: 'US Dollar', symbol: '$' },
@@ -849,8 +850,13 @@ const Settings = () => {
           <TabsTrigger value="business" className="gap-2"><Building2 className="h-4 w-4" /> Business</TabsTrigger>
           <TabsTrigger value="rules" className="gap-2"><Tag className="h-4 w-4" /> Rules</TabsTrigger>
           <TabsTrigger value="recurring" className="gap-2"><Calendar className="h-4 w-4" /> Recurring</TabsTrigger>
+          <TabsTrigger value="app-dev" className="gap-2"><Shield className="h-4 w-4" /> App-Dev</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="app-dev" className="space-y-6">
+          <AppDevCutoffSettings />
+        </TabsContent>
 
         {/* ==================== HOUSEHOLD ==================== */}
         <TabsContent value="household" className="space-y-6">

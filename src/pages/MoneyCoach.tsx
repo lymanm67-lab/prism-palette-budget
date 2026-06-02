@@ -21,6 +21,7 @@ import { BillTimingOptimizer } from '@/components/coach/BillTimingOptimizer';
 import { WealthRedirector } from '@/components/coach/WealthRedirector';
 import { CoachOnboardingTour } from '@/components/coach/CoachOnboardingTour';
 import { CoachNudges } from '@/components/coach/CoachNudges';
+import { AppDevCutoffNudge } from '@/components/coach/AppDevCutoffNudge';
 import { MoneySnapshotBar } from '@/components/coach/MoneySnapshotBar';
 import { CoachPlanBanner } from '@/components/coach/CoachPlanBanner';
 import { CoachCard, type Confidence } from '@/components/coach/CoachCard';
@@ -133,6 +134,8 @@ export default function MoneyCoach() {
       <MomentTabs value={moment} onChange={setMoment} />
 
       <CoachNudges />
+
+      <AppDevCutoffNudge />
 
       <MoneySnapshotBar />
 
