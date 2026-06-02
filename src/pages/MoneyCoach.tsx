@@ -134,6 +134,8 @@ export default function MoneyCoach() {
 
       <CoachNudges />
 
+      <AppDevCutoffNudge />
+
       <MoneySnapshotBar />
 
       {/* Equal-width column command grid — themed lanes, row-style modules */}
