@@ -22,6 +22,7 @@ const Budgets = lazy(() => import("@/pages/Budgets"));
 const Reports = lazy(() => import("@/pages/Reports"));
 const Categories = lazy(() => import("@/pages/Categories"));
 const Settings = lazy(() => import("@/pages/Settings"));
+const AutoSplitRules = lazy(() => import("@/pages/AutoSplitRules"));
 const TaxAssistant = lazy(() => import("@/pages/TaxAssistant"));
 const Goals = lazy(() => import("@/pages/Goals"));
 const DebtPayoff = lazy(() => import("@/pages/DebtPayoff"));
