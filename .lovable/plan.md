@@ -1,77 +1,75 @@
-# Plan: Monthly Budget Hygiene + Auto-Split Rules
+## 1. Safe-to-Spend fix (engine)
 
-## Goal
-A scheduled job that runs on the 1st of each month and keeps your budget, forecast, and categorization clean for tax/accounting. Plus a rules engine for transaction auto-splits (e.g., international travel → Dove Love Travel + Personal).
+**Problem:** STS shows $2,844 because it only subtracts bills + subscriptions, then applies the 20% buffer. It does NOT reserve money for Investing or Savings, so "safe to spend" overstates what's truly guilt-free.
 
-## Part 1 — Auto-Split Rules Engine (new feature)
+**Fix:** In `src/hooks/use-safe-to-spend.ts`, subtract a **Deployment Reserve** from `baseMonthlySafe` *before* the buffer multiplier:
 
-**New table: `auto_split_rules`** (household-scoped, RLS)
-- `id`, `household_id`, `name` (e.g., "International Travel → Dove Love Travel")
-- `match_type`: `merchant` | `category` | `description_keyword` | `mcc`
-- `match_value` (text, e.g., "Delta", "Hilton", "airfare")
-- `date_range_start`, `date_range_end` (nullable — e.g., Jan–Jun for Dove Love Travel trips)
-- `amount_min`, `amount_max` (nullable, e.g., apply only > $200)
-- `business_category_id` (FK), `business_split_pct` (e.g., 100, 50, 60)
-- `personal_category_id` (FK)
-- `business_profile_id` (FK → business_profiles)
-- `is_active`, `priority`
+```
+baseMonthlySafe = effectiveIncome
+                  − effectiveExpenses
+                  − deploymentReserve   ← NEW
+                  − spentAdjustment
+```
 
-**Trigger:** AFTER INSERT on `transactions` → match against active rules and auto-create `transaction_splits` rows (extends your existing `advance_recurring_next_due_date` pattern).
+`deploymentReserve = (investments_pct + savings_pct) × effectiveIncome`, pulled from the new `paycheck_deployment_rules` row (defaults 10% + 10% = 20% of income → ~$1,708 reserved). Result: STS drops from $2,844 → ~$1,990, matching your math.
 
-**Backfill UI:** "Apply rules to past transactions" button on `/settings/auto-split-rules` page — runs through historical transactions and creates splits where missing.
+Return two new fields (`deploymentReserve`, `investingPct`, `savingsPct`) so `StsEquationView` can show the new line.
 
-**Seed rule for Dove Love Travel:**
-- Name: "International Travel — Dove Love Travel (Jan–Jun)"
-- Match: category = Travel & Vacation (Flights + Hotels)
-- Date range: 2026-01-01 → 2026-06-30
-- Split: 100% → Dove Love Travel business profile (or % you specify)
+**StsEquationView:** add one row — *"− Investing + Savings reserve ($X)"* — between Expenses and Buffer.
 
-## Part 2 — Monthly Hygiene Edge Function + Cron
+## 2. Smart Allocation Card (Dashboard)
 
-**Edge function: `monthly-budget-hygiene`**
-Runs 1st of every month at 06:00 UTC. For each household:
+New component: `src/components/dashboard/SmartAllocationCard.tsx`, mounted at top of Personal dashboard.
 
-1. **Carry-forward income budgets** — if current month has no income budget line but previous month did, copy them forward (avoids the "income disappears" issue you hit with May→June).
-2. **Detect duplicate categories** — same name + same group → flag in a `data_quality_issues` table (don't auto-merge; surface in UI for review).
-3. **Detect orphaned budgets** — budget rows pointing to deleted/inactive categories → flag.
-4. **Detect uncategorized transactions > $50 from prior month** → flag for review.
-5. **Re-apply auto-split rules** to any prior-month transactions missing splits.
-6. **Reconcile owner-contribution plan** — if Business Funding budget exists for the new month but no matching transfer transaction posted last month, surface a "Pending owner contribution" reminder.
-7. **Notify** via existing notification system: "Monthly budget hygiene complete — N items need review."
+**Trigger:** last paycheck-tagged income transaction (positive, category group = Income, payroll source) within last 7 days that has NO matching `paycheck_deployments` row with `status='applied'`.
 
-**Cron:** `pg_cron` schedule on 1st of month 06:00 UTC, calls the function with `CRON_SECRET`.
+**Display (Conscious Spending bands, matching Budgets pill):**
 
-## Part 3 — UI
+| Bucket | Range | Default | $ This Paycheck | Pill |
+|---|---|---|---|---|
+| Fixed Costs | 50–60% | 60% | $X | In Range |
+| Investments | 5–10% | 10% | $X | In Range |
+| Savings Goals | 5–10% | 10% | $X | In Range |
+| Guilt-Free | 20–35% | 20% | $X | In Range |
 
-**New page: `/settings/auto-split-rules`**
-- List + Create/Edit/Delete rules
-- Filter chips (active / inactive, by business profile)
-- "Run now on past transactions" button
-- Preview: shows the next 5 transactions that would match before saving
+Each row: bucket label, target $, range badge, zone-colored progress bar (same component family as Budgets pill). One **"Apply Plan"** button → calls existing `useBuildPaycheckDeployment` with `persist: true`, then for each non-zero bucket creates a `transfers` row (or `transactions` with `is_transfer=true`) from checking → mapped destination account (savings goal account / investment account). Marks deployment `status='applied'`.
 
-**New panel on `/budgets`:**
-- "Budget Health" card surfacing the `data_quality_issues` flags with one-click resolve actions.
+**Empty / dismissed states:** "No paycheck detected yet" link to `/paycheck-deployment`; "Dismiss" hides for 24h via localStorage.
 
-## Technical Detail
+## 3. Paycheck Deployment Rules at `/coach` (Conscious Spending bands)
 
-- Migration creates `auto_split_rules`, `data_quality_issues` tables with GRANTs + RLS by household.
-- New trigger `apply_auto_split_rules()` on `transactions` AFTER INSERT, runs after `advance_recurring_next_due_date` (recurring takes precedence so existing splits aren't overwritten — check `NOT EXISTS` on transaction_splits).
-- Edge function uses service role to bypass RLS and process all households.
-- All splits respect existing pattern: 2-row `transaction_splits` summing to transaction amount, with notes "Auto-split via rule: {rule.name}".
+**New table** `paycheck_deployment_rules` (one row per household):
 
-## What I'll seed for you immediately
+- `fixed_min`, `fixed_max`, `fixed_target` (default 50/60/60)
+- `invest_min`, `invest_max`, `invest_target` (default 5/10/10)
+- `savings_min`, `savings_max`, `savings_target` (default 5/10/10)
+- `guiltfree_min`, `guiltfree_max`, `guiltfree_target` (default 20/35/20)
+- `nag_enabled` (default true), `nag_hours` (default 24)
+- destination account IDs: `savings_account_id`, `investment_account_id` (nullable)
 
-- Auto-split rule: **International Travel — Dove Love Travel (Jan–Jun 2026)** → 100% business (or whatever % you choose).
-- Run the backfill once so your existing 2026 travel transactions get split correctly.
+RLS: household members CRUD; auto-seed defaults on first read.
 
-## Questions before I build
+**New page** `src/pages/PaycheckDeploymentRules.tsx` at route `/coach/deployment-rules`:
 
-1. **Dove Love Travel split %** — is international travel 100% business, or some other split (e.g., 50/50 if your spouse travels with you for personal reasons)?
-2. **Which business profile** does Dove Love Travel map to? (You have 3: FDC `29935430`, `b1db41b1`, and `e3626567` — I need the right one or I'll ask you to pick.)
-3. **Other recurring split rules** to seed at the same time? Common ones:
-   - Cell phone (e.g., 60% business / 40% personal)
-   - Home office utilities (e.g., 15% business)
-   - Vehicle (your memory already notes 40% Holdings / 60% Personal — want this as a rule too?)
-4. **Hygiene flags** — auto-notify only, or also auto-fix the safe ones (carry-forward income, re-apply splits)? My recommendation: auto-fix the safe ones, notify on the rest.
+- 4 slider rows (one per bucket), each with min/max/target controls
+- Live total check: targets must sum to 100% (warning pill if not)
+- "In Range / Under / Over" preview using last paycheck
+- Destination account pickers (savings, investment)
+- Toggle: "Nag me within 24h if money hasn't moved"
+- Link from Money Coach card "Paycheck Deployment" → add secondary "Edit rules" button
 
-Reply with the answers and I'll build it end to end.
+**Nag logic** — extend the existing nightly Money Coach cron (`money-coach-nudges` edge function):
+- For each household with `nag_enabled=true`, find latest paycheck transaction in last 7d.
+- If no `paycheck_deployments` row with `status='applied'` exists ≥ `nag_hours` after pay_date → insert a `notifications` row: *"Your $X paycheck from {date} hasn't been deployed. [Review plan]"*.
+
+## Technical notes
+
+- DB: 1 new table (`paycheck_deployment_rules`) with GRANTs + RLS + auto-update trigger. No schema changes to existing tables.
+- Code changes: `use-safe-to-spend.ts` (+ reserve calc), `StsEquationView` (+1 row), new `SmartAllocationCard`, new `PaycheckDeploymentRules` page + route, `MoneyCoach.tsx` (link), `money-coach-nudges` edge function (nag branch), new hook `use-deployment-rules.ts`.
+- No new secrets, no new connectors. All within existing Money Coach + STS infrastructure.
+
+## Out of scope
+
+- Auto-creating transfers on a schedule (only fires when user clicks "Apply Plan").
+- Per-paycheck overrides (rules are household-level for now).
+- Multi-earner separate band sets (single household ruleset).

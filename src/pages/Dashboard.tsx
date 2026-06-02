@@ -15,6 +15,8 @@ import { SavingsImpactCounter } from '@/components/SavingsImpactCounter';
 import { CashFlowForecastChart } from '@/components/CashFlowForecastChart';
 import { PendingPurchasesList } from '@/components/guardrails/PendingPurchasesList';
 import AppDevCutoffCard from '@/components/dashboard/AppDevCutoffCard';
+import { SmartAllocationCard } from '@/components/dashboard/SmartAllocationCard';
+
 import AppDevPoolCard from '@/components/dashboard/AppDevPoolCard';
 import { ProgressTracker } from '@/components/ProgressTracker';
 import { ModeSettingsDialog } from '@/components/ModeSettingsDialog';
@@ -311,10 +313,16 @@ Your Safe-to-Spend updates in real time as you add transactions, pay bills, and 
         />
       </motion.div>
 
+      {/* ========== Smart Allocation (new paycheck → bucket plan) ========== */}
+      <motion.div variants={item}>
+        <SmartAllocationCard />
+      </motion.div>
+
       {/* ========== STS Equation View ========== */}
       <motion.div variants={item}>
         <StsEquationView scope={mode} />
       </motion.div>
+
 
       {/* ========== 90-Day Progress Tracker ========== */}
       <motion.div variants={item}>

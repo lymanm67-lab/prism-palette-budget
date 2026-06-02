@@ -30,8 +30,10 @@ Deno.serve(async (req) => {
     households_scanned: 0,
     leaks_inserted: 0,
     paycheck_plans_built: 0,
+    deployment_nags_sent: 0,
     errors: [] as string[],
   };
+
 
   try {
     const { data: households, error: hhErr } = await supabase
@@ -130,12 +132,64 @@ Deno.serve(async (req) => {
             console.error("paycheck-deploy call failed", e);
           }
         }
+
+        // 3. Paycheck deployment nag: any paycheck in last 7d that hasn't been "applied" after nag_hours
+        const { data: rules } = await supabase
+          .from("paycheck_deployment_rules")
+          .select("nag_enabled, nag_hours")
+          .eq("household_id", householdId)
+          .maybeSingle();
+        if (rules?.nag_enabled) {
+          const sevenAgo = new Date(Date.now() - 7 * 86400_000).toISOString().slice(0, 10);
+          const { data: paychecks } = await supabase
+            .from("transactions")
+            .select("id, date, amount, merchant")
+            .eq("household_id", householdId)
+            .gte("date", sevenAgo)
+            .gt("amount", 0)
+            .eq("is_transfer", false)
+            .is("deleted_at", null)
+            .order("date", { ascending: false })
+            .limit(5);
+          for (const pc of (paychecks || [])) {
+            const hoursSince = (Date.now() - new Date(pc.date).getTime()) / 3_600_000;
+            if (hoursSince < (rules.nag_hours || 24)) continue;
+            const { data: applied } = await supabase
+              .from("paycheck_deployments")
+              .select("id")
+              .eq("household_id", householdId)
+              .eq("pay_date", pc.date)
+              .eq("status", "applied")
+              .limit(1);
+            if ((applied?.length ?? 0) > 0) continue;
+            // Dedupe: skip if we already nagged for this pay_date
+            const { data: existingInsight } = await supabase
+              .from("financial_insights")
+              .select("id")
+              .eq("household_id", householdId)
+              .eq("insight_type", "paycheck_deployment_nag")
+              .contains("metadata", { pay_date: pc.date })
+              .limit(1);
+            if ((existingInsight?.length ?? 0) > 0) continue;
+            await supabase.from("financial_insights").insert({
+              household_id: householdId,
+              insight_type: "paycheck_deployment_nag",
+              severity: "medium",
+              message: `Your $${Math.round(pc.amount)} paycheck from ${pc.date} hasn't been deployed yet. Review your Smart Allocation plan.`,
+              metadata: { pay_date: pc.date, amount: pc.amount, merchant: pc.merchant },
+              is_read: false,
+            });
+            summary.deployment_nags_sent++;
+            break; // one nag per household per run
+          }
+        }
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
         summary.errors.push(`${householdId}: ${msg}`);
         console.error(`Household ${householdId}:`, msg);
       }
     }
+
 
     return new Response(JSON.stringify({ ok: true, ...summary, finished_at: new Date().toISOString() }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

@@ -27,10 +27,14 @@ export interface SafeToSpendResult {
   budgetIncome: number;
   budgetExpenses: number;
   effectiveExpenses: number;
+  deploymentReserve: number;
+  investingPct: number;
+  savingsPct: number;
   bufferPercent: number;
   mode: FinancialMode;
   isLoading: boolean;
 }
+
 
 export type StsScope = 'combined' | 'personal' | 'business';
 
@@ -57,6 +61,21 @@ export function useSafeToSpend(scope: StsScope = 'combined'): SafeToSpendResult 
       return data as any[];
     },
   });
+
+  // Fetch paycheck deployment rules (investing + savings reserve %)
+  const { data: deploymentRules } = useQuery({
+    queryKey: ['paycheck_deployment_rules', household?.id],
+    enabled: !!household,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('paycheck_deployment_rules')
+        .select('invest_target, savings_target')
+        .eq('household_id', household!.id)
+        .maybeSingle();
+      return data as { invest_target: number; savings_target: number } | null;
+    },
+  });
+
 
   return useMemo(() => {
     const mode: FinancialMode = (modeSettings?.current_mode as FinancialMode) || 'guardrail';
@@ -135,9 +154,14 @@ export function useSafeToSpend(scope: StsScope = 'combined'): SafeToSpendResult 
     // Only subtract already-spent when no budget expense baseline exists.
     const spentAdjustment = budgetExpenses > 0 ? 0 : monthlySpent;
 
-    // Base monthly safe-to-spend: income - expenses - optional spent adjustment
-    const baseMonthlySafe = effectiveIncome - effectiveExpenses - spentAdjustment;
-    
+    // Investing + Savings reserve from deployment rules (defaults 10/10 if unset)
+    const investingPct = deploymentRules?.invest_target ?? 10;
+    const savingsPct = deploymentRules?.savings_target ?? 10;
+    const deploymentReserve = effectiveIncome * ((investingPct + savingsPct) / 100);
+
+    // Base monthly safe-to-spend: income - expenses - deployment reserve - optional spent adjustment
+    const baseMonthlySafe = effectiveIncome - effectiveExpenses - deploymentReserve - spentAdjustment;
+
     // Apply buffer
     const bufferMultiplier = 1 - (bufferPercent / 100);
     const monthlySafe = Math.max(0, baseMonthlySafe * bufferMultiplier);
@@ -159,9 +183,13 @@ export function useSafeToSpend(scope: StsScope = 'combined'): SafeToSpendResult 
       budgetIncome,
       budgetExpenses,
       effectiveExpenses,
+      deploymentReserve,
+      investingPct,
+      savingsPct,
       bufferPercent,
       mode,
       isLoading: !accounts,
     };
-  }, [accounts, transactions, recurring, subscriptions, modeSettings, budgetsWithGroups, scope]);
+  }, [accounts, transactions, recurring, subscriptions, modeSettings, budgetsWithGroups, deploymentRules, scope]);
+
 }

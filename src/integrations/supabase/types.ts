@@ -3262,6 +3262,75 @@ export type Database = {
           },
         ]
       }
+      paycheck_deployment_rules: {
+        Row: {
+          created_at: string
+          fixed_max: number
+          fixed_min: number
+          fixed_target: number
+          guiltfree_max: number
+          guiltfree_min: number
+          guiltfree_target: number
+          household_id: string
+          id: string
+          invest_max: number
+          invest_min: number
+          invest_target: number
+          investment_account_id: string | null
+          nag_enabled: boolean
+          nag_hours: number
+          savings_account_id: string | null
+          savings_max: number
+          savings_min: number
+          savings_target: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          fixed_max?: number
+          fixed_min?: number
+          fixed_target?: number
+          guiltfree_max?: number
+          guiltfree_min?: number
+          guiltfree_target?: number
+          household_id: string
+          id?: string
+          invest_max?: number
+          invest_min?: number
+          invest_target?: number
+          investment_account_id?: string | null
+          nag_enabled?: boolean
+          nag_hours?: number
+          savings_account_id?: string | null
+          savings_max?: number
+          savings_min?: number
+          savings_target?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          fixed_max?: number
+          fixed_min?: number
+          fixed_target?: number
+          guiltfree_max?: number
+          guiltfree_min?: number
+          guiltfree_target?: number
+          household_id?: string
+          id?: string
+          invest_max?: number
+          invest_min?: number
+          invest_target?: number
+          investment_account_id?: string | null
+          nag_enabled?: boolean
+          nag_hours?: number
+          savings_account_id?: string | null
+          savings_max?: number
+          savings_min?: number
+          savings_target?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       paycheck_deployments: {
         Row: {
           applied_at: string | null
