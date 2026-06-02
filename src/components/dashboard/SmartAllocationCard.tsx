@@ -23,34 +23,41 @@ export function SmartAllocationCard() {
     return until ? Date.now() < Number(until) : false;
   });
 
-  // Detect last paycheck: aggregate payroll-like deposits within a 4-day window.
-  // Splits commonly land on different dates across IU/USAA/SoFi/EverBank.
+  // Detect last paycheck: find an anchor payroll-like deposit, then include
+  // ALL positive non-transfer deposits within a 4-day window (splits often
+  // route to different banks under different descriptors — EverBank, SoFi, etc.).
   const lastPaycheck = useMemo(() => {
     if (!transactions) return null;
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - 10);
     const PAYROLL_RE = /(payroll|paycheck|salary|wage|direct\s?dep|adp|gusto|paychex|indiana\s?univ|employer|ach\/)/i;
-    const income = transactions.filter((t: any) => {
+    const recentDeposits = transactions.filter((t: any) => {
       if (t.amount <= 0 || t.is_transfer) return false;
       if (new Date(t.date) < cutoff) return false;
-      const m = (t.merchant || '') + ' ' + (t.categories?.name || '');
-      // Must look like payroll (not interest/dividend/refunds/random deposits)
-      return PAYROLL_RE.test(m) && t.amount >= 100;
+      return true;
     });
-    if (!income.length) return null;
-    // Sort newest → oldest, then cluster into a 4-day window from the most recent
-    const sorted = [...income].sort((a, b) => b.date.localeCompare(a.date));
-    const anchor = new Date(sorted[0].date);
-    const windowStart = new Date(anchor);
-    windowStart.setDate(windowStart.getDate() - 4);
-    const cluster = sorted.filter((t: any) => {
+    if (!recentDeposits.length) return null;
+    // Find the most recent payroll anchor
+    const anchor = [...recentDeposits]
+      .sort((a, b) => b.date.localeCompare(a.date))
+      .find((t: any) => {
+        const m = (t.merchant || '') + ' ' + (t.categories?.name || '');
+        return PAYROLL_RE.test(m) && t.amount >= 100;
+      });
+    if (!anchor) return null;
+    const anchorDate = new Date(anchor.date);
+    const windowStart = new Date(anchorDate); windowStart.setDate(windowStart.getDate() - 4);
+    const windowEnd = new Date(anchorDate); windowEnd.setDate(windowEnd.getDate() + 4);
+    // Include any deposit ≥$50 in the window (catches small split routes like EverBank $300)
+    const cluster = recentDeposits.filter((t: any) => {
       const d = new Date(t.date);
-      return d >= windowStart && d <= anchor;
+      return d >= windowStart && d <= windowEnd && Number(t.amount) >= 50;
     });
     const amount = cluster.reduce((s, t: any) => s + Number(t.amount), 0);
     if (amount <= 500) return null;
-    return { date: sorted[0].date, amount };
+    return { date: anchor.date, amount };
   }, [transactions]);
+
 
 
   // Has it already been deployed?
