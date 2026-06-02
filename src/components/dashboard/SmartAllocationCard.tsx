@@ -80,12 +80,19 @@ export function SmartAllocationCard() {
     const n = typeof v === 'number' ? v : Number(v);
     return Number.isFinite(n) ? n : d;
   };
+  // Known monthly actuals (from paystub + reconciled bills). Replace with calc once
+  // category groups get conscious_bucket tagging (see plan).
+  const ACTUAL_FIXED = 2709;        // personal bills + personal subscriptions
+  const ACTUAL_INVEST_SELF = 451.66;   // TDA + 457(b) + Roth-TDA + Roth-457(b) + HSA payroll deductions
+  const ACTUAL_INVEST_EMPLOYER = 516.56; // employer contribution from paystub
+  const ACTUAL_INVEST = ACTUAL_INVEST_SELF + ACTUAL_INVEST_EMPLOYER; // 968.22
+
   const buckets = [
-    { key: 'fixed', label: 'Fixed Costs', min: num(rules.fixed_min, DEFAULT_RULES.fixed_min), max: num(rules.fixed_max, DEFAULT_RULES.fixed_max), target: num(rules.fixed_target, DEFAULT_RULES.fixed_target) },
-    { key: 'invest', label: 'Investments', min: num(rules.invest_min, DEFAULT_RULES.invest_min), max: num(rules.invest_max, DEFAULT_RULES.invest_max), target: num(rules.invest_target, DEFAULT_RULES.invest_target) },
+    { key: 'fixed', label: 'Fixed Costs', min: num(rules.fixed_min, DEFAULT_RULES.fixed_min), max: num(rules.fixed_max, DEFAULT_RULES.fixed_max), target: num(rules.fixed_target, DEFAULT_RULES.fixed_target), actual: ACTUAL_FIXED },
+    { key: 'invest', label: 'Investments', min: num(rules.invest_min, DEFAULT_RULES.invest_min), max: num(rules.invest_max, DEFAULT_RULES.invest_max), target: num(rules.invest_target, DEFAULT_RULES.invest_target), actual: ACTUAL_INVEST, actualNote: `$${ACTUAL_INVEST_SELF.toFixed(2)} you + $${ACTUAL_INVEST_EMPLOYER.toFixed(2)} employer` },
     { key: 'savings', label: 'Savings Goals', min: num(rules.savings_min, DEFAULT_RULES.savings_min), max: num(rules.savings_max, DEFAULT_RULES.savings_max), target: num(rules.savings_target, DEFAULT_RULES.savings_target) },
     { key: 'guiltfree', label: 'Guilt-Free', min: num(rules.guiltfree_min, DEFAULT_RULES.guiltfree_min), max: num(rules.guiltfree_max, DEFAULT_RULES.guiltfree_max), target: num(rules.guiltfree_target, DEFAULT_RULES.guiltfree_target) },
-  ];
+  ] as Array<{ key: string; label: string; min: number; max: number; target: number; actual?: number; actualNote?: string }>;
 
   const handleDismiss = () => {
     localStorage.setItem(DISMISS_KEY, String(Date.now() + 24 * 3600 * 1000));
@@ -131,7 +138,8 @@ export function SmartAllocationCard() {
       </CardHeader>
       <CardContent className="space-y-3">
         {buckets.map(b => {
-          const amount = net * (b.target / 100);
+          const targetAmount = net * (b.target / 100);
+          const actualPct = b.actual != null ? (b.actual / net) * 100 : null;
           const z = zoneFor(b.target, b.min, b.max);
           return (
             <div key={b.key} className="space-y-1.5">
@@ -144,12 +152,28 @@ export function SmartAllocationCard() {
                   </Badge>
                 </div>
                 <div className="text-right tabular-nums">
-                  <span className="font-semibold">{formatCurrency(amount)}</span>
-                  <span className="text-muted-foreground ml-1.5 text-xs">{b.target}%</span>
+                  {b.actual != null && actualPct != null ? (
+                    <>
+                      <span className="font-semibold">{formatCurrency(b.actual)}</span>
+                      <span className="text-muted-foreground ml-1.5 text-xs">{actualPct.toFixed(0)}% actual</span>
+                      <span className="text-muted-foreground/70 ml-1.5 text-[10px]">· {b.target}% target</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="font-semibold">{formatCurrency(targetAmount)}</span>
+                      <span className="text-muted-foreground ml-1.5 text-xs">{b.target}% target</span>
+                    </>
+                  )}
                 </div>
               </div>
-              <div className="h-1.5 rounded-full bg-muted/40 overflow-hidden">
-                <div className={`h-full ${zoneBarColor(z)}`} style={{ width: `${Math.min(100, b.target)}%` }} />
+              {b.actualNote && (
+                <p className="text-[10px] text-muted-foreground -mt-0.5">{b.actualNote}</p>
+              )}
+              <div className="h-1.5 rounded-full bg-muted/40 overflow-hidden relative">
+                <div className={`h-full ${zoneBarColor(z)} opacity-40`} style={{ width: `${Math.min(100, b.target)}%` }} />
+                {actualPct != null && (
+                  <div className={`h-full ${zoneBarColor(z)} absolute top-0 left-0`} style={{ width: `${Math.min(100, actualPct)}%` }} />
+                )}
               </div>
             </div>
           );
