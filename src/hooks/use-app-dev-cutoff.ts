@@ -281,7 +281,12 @@ export function useAppDevCutoff(): AppDevCutoffSummary {
         .reduce((sum, t) => sum + Math.abs(Number(t.amount) || 0), 0);
     }
 
-    const creditsUsed = (creditLog || []).reduce((s, e) => s + (e.credits_used || 0), 0);
+    const manualCredits = (creditLog || []).reduce((s, e) => s + (e.credits_used || 0), 0);
+    // Auto-derive credits from tracked spend at the spend→credit ratio when no manual entries exist.
+    const derivedCredits = manualCredits === 0 && spendLimit > 0
+      ? Math.round((spendUsed / spendLimit) * creditLimit)
+      : 0;
+    const creditsUsed = manualCredits + derivedCredits;
 
     const spendPct = spendLimit > 0 ? (spendUsed / spendLimit) * 100 : 0;
     const creditPct = creditLimit > 0 ? (creditsUsed / creditLimit) * 100 : 0;
