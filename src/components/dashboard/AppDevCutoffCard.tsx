@@ -90,10 +90,16 @@ export default function AppDevCutoffCard() {
 
         {/* Quick log */}
         <div className="pt-2 border-t border-border/40">
-          <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
-            <Sparkles className="h-3 w-3" /> Log credits used
-          </p>
-          <CreditLogQuickEntry />
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs text-muted-foreground flex items-center gap-1">
+              <Sparkles className="h-3 w-3" /> Log credits used
+            </p>
+            <p className="text-xs font-medium">
+              This month: <span className="text-foreground">{cutoff.creditsUsed.toLocaleString()}</span>
+              <span className="text-muted-foreground"> / {cutoff.creditLimit.toLocaleString()}</span>
+            </p>
+          </div>
+          <CreditLogQuickEntry monthTotal={cutoff.creditsUsed} />
         </div>
 
         {/* Recent log */}
