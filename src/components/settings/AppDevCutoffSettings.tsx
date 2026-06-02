@@ -5,10 +5,12 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, RotateCcw, Save } from 'lucide-react';
+import { Loader2, RotateCcw, Save, ExternalLink, ShieldAlert } from 'lucide-react';
 import { useAppDevLimits, useUpsertAppDevLimits, useResetAppDevPeriod } from '@/hooks/use-app-dev-cutoff';
 import { useCategories } from '@/hooks/use-finance-data';
 import { toast } from 'sonner';
+
+const LOVABLE_LIMITS_URL = 'https://lovable.dev/settings/plans';
 
 export function AppDevCutoffSettings() {
   const { data: limits, isLoading } = useAppDevLimits();
