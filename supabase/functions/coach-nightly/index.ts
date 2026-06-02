@@ -30,8 +30,10 @@ Deno.serve(async (req) => {
     households_scanned: 0,
     leaks_inserted: 0,
     paycheck_plans_built: 0,
+    deployment_nags_sent: 0,
     errors: [] as string[],
   };
+
 
   try {
     const { data: households, error: hhErr } = await supabase
