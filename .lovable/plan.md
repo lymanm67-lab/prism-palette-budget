@@ -1,59 +1,77 @@
-# Plan: Balance Business + Consolidate Categories
+# Plan: Monthly Budget Hygiene + Auto-Split Rules
 
-## Part B — Fund Business Shortfall (Owner Capital Contribution)
+## Goal
+A scheduled job that runs on the 1st of each month and keeps your budget, forecast, and categorization clean for tax/accounting. Plus a rules engine for transaction auto-splits (e.g., international travel → Dove Love Travel + Personal).
 
-**Method (keeps IRS / commingling clean):** Budget-only entries that mirror a real bank-to-bank transfer you'll make from your personal account to your business checking. No co-mingled cards. Each transfer should be documented in your records as "Owner Capital Contribution."
+## Part 1 — Auto-Split Rules Engine (new feature)
 
-**Budget changes (2026):**
-- Business side — add **Owner Capital Contribution** income line:
-  - Jan, Feb, Apr, May, Jul, Aug, Oct, Nov: **+$954**
-  - (Mar, Jun, Sep, Dec already net positive — skip)
-- Personal side — add matching **Owner Contribution to Business** expense line under a new "Business Funding" group (so personal Safe-to-Spend reflects the outflow):
-  - Same months, same amounts
-- Notes on every line: "Owner capital contribution — transfer personal→business; not a loan; record in business equity ledger."
+**New table: `auto_split_rules`** (household-scoped, RLS)
+- `id`, `household_id`, `name` (e.g., "International Travel → Dove Love Travel")
+- `match_type`: `merchant` | `category` | `description_keyword` | `mcc`
+- `match_value` (text, e.g., "Delta", "Hilton", "airfare")
+- `date_range_start`, `date_range_end` (nullable — e.g., Jan–Jun for Dove Love Travel trips)
+- `amount_min`, `amount_max` (nullable, e.g., apply only > $200)
+- `business_category_id` (FK), `business_split_pct` (e.g., 100, 50, 60)
+- `personal_category_id` (FK)
+- `business_profile_id` (FK → business_profiles)
+- `is_active`, `priority`
 
-**Result:** Business months net to ~$0; personal monthly surplus drops from ~$1,672 → ~$718 in those 8 months.
+**Trigger:** AFTER INSERT on `transactions` → match against active rules and auto-create `transaction_splits` rows (extends your existing `advance_recurring_next_due_date` pattern).
 
-## Part C — Category Consolidation
+**Backfill UI:** "Apply rules to past transactions" button on `/settings/auto-split-rules` page — runs through historical transactions and creates splits where missing.
 
-**Confirmed duplicates within personal scope (same group, same name — keep one, merge transactions/budgets into survivor, delete others):**
+**Seed rule for Dove Love Travel:**
+- Name: "International Travel — Dove Love Travel (Jan–Jun)"
+- Match: category = Travel & Vacation (Flights + Hotels)
+- Date range: 2026-01-01 → 2026-06-30
+- Split: 100% → Dove Love Travel business profile (or % you specify)
 
-| Category | Count | Action |
-|---|---|---|
-| Food & Drink → Groceries | 3 | Merge into 1 |
-| Food & Drink → Restaurants | 3 | Merge into 1 |
-| Health → Doctor | 3 | Merge into 1 |
-| Health → Pharmacy | 3 | Merge into 1 |
-| Entertainment → Movies & Games | 2 | Merge into 1 |
-| Entertainment → Subscriptions | 2 | Merge into 1 |
-| Housing (flexible) → Rent/Mortgage | 2 | Merge into 1 |
-| Housing (flexible) → Utilities | 2 | Merge into 1 |
-| Shopping → Clothing | 2 | Merge into 1 |
-| Shopping → Electronics | 2 | Merge into 1 |
-| Income → Salary | 2 | Merge into 1 |
-| Income → Freelance | 2 | Merge into 1 |
+## Part 2 — Monthly Hygiene Edge Function + Cron
 
-**Structural overlaps to resolve (need your call):**
+**Edge function: `monthly-budget-hygiene`**
+Runs 1st of every month at 06:00 UTC. For each household:
 
-1. **Housing fixed vs flexible** — "Housing (fixed)" has both **Mortgage** AND **Rent** AND **Utilities**, while "Housing (flexible)" also has **Rent/Mortgage** and **Utilities**. → Recommend: keep fixed Housing for Mortgage + Utilities (your real recurring bills); delete the flexible "Rent/Mortgage" and "Utilities" duplicates; delete fixed "Rent" (you have a mortgage, not rent).
-2. **Personal Spending group vs Shopping group** — both hold Clothing + Electronics. → Recommend: delete "Personal Spending" group, keep "Shopping".
-3. **Personal Insurance → "Home" vs "Home Insurance"** — same thing. → Merge into "Home Insurance".
-4. **Personal Subscriptions & Services** (Apple, Audible, YouTube, VidIQ, Cloud Storage, AI Services, Memberships) vs **Entertainment → Subscriptions** — overlap. → Recommend: keep itemized fixed subs in "Personal Subscriptions & Services"; "Entertainment → Subscriptions" becomes the catch-all for streaming/games only.
-5. **Household Spending** (Cleaning Supplies, Decor, Home Maintenance items, Household goods) vs **Housing → House Supplies** — overlap. → Recommend: collapse "House Supplies" into "Household Spending → Cleaning Supplies" or "Household goods"; or fold all of Household Spending into Housing. Your call.
+1. **Carry-forward income budgets** — if current month has no income budget line but previous month did, copy them forward (avoids the "income disappears" issue you hit with May→June).
+2. **Detect duplicate categories** — same name + same group → flag in a `data_quality_issues` table (don't auto-merge; surface in UI for review).
+3. **Detect orphaned budgets** — budget rows pointing to deleted/inactive categories → flag.
+4. **Detect uncategorized transactions > $50 from prior month** → flag for review.
+5. **Re-apply auto-split rules** to any prior-month transactions missing splits.
+6. **Reconcile owner-contribution plan** — if Business Funding budget exists for the new month but no matching transfer transaction posted last month, surface a "Pending owner contribution" reminder.
+7. **Notify** via existing notification system: "Monthly budget hygiene complete — N items need review."
 
-**Business side:** The 3× duplication of every business category is **intentional** — one per LLC profile (Multi-Business Accounting). Will NOT touch those.
+**Cron:** `pg_cron` schedule on 1st of month 06:00 UTC, calls the function with `CRON_SECRET`.
 
-## Execution order
+## Part 3 — UI
 
-1. Show you the proposed survivor IDs + merge map for confirmation.
-2. For each merge: UPDATE transactions, transaction_splits, budgets, categorization_rules, recurring_transactions, subscriptions, recovery_plans, guardrail_category_limits → point to survivor.
-3. DELETE the duplicate category rows.
-4. Apply Part B budget inserts.
+**New page: `/settings/auto-split-rules`**
+- List + Create/Edit/Delete rules
+- Filter chips (active / inactive, by business profile)
+- "Run now on past transactions" button
+- Preview: shows the next 5 transactions that would match before saving
 
-## Questions before I execute
+**New panel on `/budgets`:**
+- "Budget Health" card surfacing the `data_quality_issues` flags with one-click resolve actions.
 
-1. Approve the duplicate merges in the table above (yes/no)?
-2. For each numbered structural overlap (1–5), confirm my recommendation or give a different call?
-3. Approve Part B as described (owner contribution both sides, $954 × 8 months)?
+## Technical Detail
 
-I'll wait for your answers before any database writes.
+- Migration creates `auto_split_rules`, `data_quality_issues` tables with GRANTs + RLS by household.
+- New trigger `apply_auto_split_rules()` on `transactions` AFTER INSERT, runs after `advance_recurring_next_due_date` (recurring takes precedence so existing splits aren't overwritten — check `NOT EXISTS` on transaction_splits).
+- Edge function uses service role to bypass RLS and process all households.
+- All splits respect existing pattern: 2-row `transaction_splits` summing to transaction amount, with notes "Auto-split via rule: {rule.name}".
+
+## What I'll seed for you immediately
+
+- Auto-split rule: **International Travel — Dove Love Travel (Jan–Jun 2026)** → 100% business (or whatever % you choose).
+- Run the backfill once so your existing 2026 travel transactions get split correctly.
+
+## Questions before I build
+
+1. **Dove Love Travel split %** — is international travel 100% business, or some other split (e.g., 50/50 if your spouse travels with you for personal reasons)?
+2. **Which business profile** does Dove Love Travel map to? (You have 3: FDC `29935430`, `b1db41b1`, and `e3626567` — I need the right one or I'll ask you to pick.)
+3. **Other recurring split rules** to seed at the same time? Common ones:
+   - Cell phone (e.g., 60% business / 40% personal)
+   - Home office utilities (e.g., 15% business)
+   - Vehicle (your memory already notes 40% Holdings / 60% Personal — want this as a rule too?)
+4. **Hygiene flags** — auto-notify only, or also auto-fix the safe ones (carry-forward income, re-apply splits)? My recommendation: auto-fix the safe ones, notify on the rest.
+
+Reply with the answers and I'll build it end to end.
