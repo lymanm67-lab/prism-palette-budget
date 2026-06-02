@@ -372,23 +372,44 @@ async function syncHousehold(adminClient: any, household_id: string, mx_user_gui
       const accountId = accountGuidMap.get(t.account_guid);
       if (!accountId) continue;
 
+      const txDate = t.transacted_at?.split("T")[0] || t.date || endDate;
+      const txAmount = t.type === "DEBIT" ? -(t.amount || 0) : (t.amount || 0);
+      const txMerchant = t.merchant?.name || t.description || null;
+
+      // Layer 1: provider_transaction_id check
       const { data: exists } = await adminClient
         .from("transactions").select("id")
         .eq("provider_transaction_id", t.guid)
         .limit(1);
-
       if (exists?.length) continue;
 
-      await adminClient.from("transactions").insert({
+      // Layer 2: relink dedup — match against prior bank-sourced rows only.
+      // Manual entries (provider_transaction_id IS NULL) are excluded, so
+      // legitimate same-day repeats are never blocked.
+      const { data: priorMatch } = await adminClient
+        .from("transactions")
+        .select("id")
+        .eq("household_id", household_id)
+        .eq("account_id", accountId)
+        .eq("date", txDate)
+        .eq("amount", txAmount)
+        .ilike("merchant", txMerchant || "")
+        .not("provider_transaction_id", "is", null)
+        .is("deleted_at", null)
+        .limit(1);
+      if (priorMatch?.length) continue;
+
+      // Layer 3: upsert on unique (household_id, provider_transaction_id) index
+      await adminClient.from("transactions").upsert({
         household_id,
         account_id: accountId,
-        date: t.transacted_at?.split("T")[0] || t.date || endDate,
-        merchant: t.merchant?.name || t.description || null,
+        date: txDate,
+        merchant: txMerchant,
         normalized_merchant: t.merchant?.name || null,
-        amount: t.type === "DEBIT" ? -(t.amount || 0) : (t.amount || 0),
+        amount: txAmount,
         notes: t.description || null,
         provider_transaction_id: t.guid,
-      });
+      }, { onConflict: "household_id,provider_transaction_id", ignoreDuplicates: true });
       totalTxnsSynced++;
     }
 

@@ -282,18 +282,45 @@ Deno.serve(async (req) => {
       const defaultAccountId = dbAccounts?.[0]?.id;
 
       if (defaultAccountId && txnData.transactions && txnData.transactions.length > 0) {
-        // Check for existing provider_transaction_ids to avoid duplicates
+        // Layer 1: Check existing provider_transaction_ids
         const providerIds = txnData.transactions.map((t: any) => t.transaction_id);
         const { data: existing } = await serviceSupabase
           .from('transactions')
           .select('provider_transaction_id')
           .eq('household_id', household_id)
           .in('provider_transaction_id', providerIds);
-
         const existingIds = new Set((existing || []).map((e: any) => e.provider_transaction_id));
+
+        // Layer 2: Relink dedup — fetch bank-sourced rows in this account for the
+        // date range, keyed by (date|amount|normalized merchant). If a match
+        // already has a provider_transaction_id (from a prior link), skip the new one.
+        // Manual entries (provider_transaction_id IS NULL) are NOT used as match keys,
+        // so legitimate same-day repeats (e.g. Lovable top-offs) remain unblocked.
+        const { data: priorBankTxns } = await serviceSupabase
+          .from('transactions')
+          .select('date,amount,merchant,provider_transaction_id')
+          .eq('household_id', household_id)
+          .eq('account_id', defaultAccountId)
+          .gte('date', startDate)
+          .lte('date', endDate)
+          .not('provider_transaction_id', 'is', null)
+          .is('deleted_at', null);
+        const relinkKey = (d: string, a: number, m: string | null) =>
+          `${d}|${a.toFixed(2)}|${(m || '').trim().toLowerCase()}`;
+        const priorKeys = new Map<string, number>();
+        for (const r of priorBankTxns || []) {
+          const k = relinkKey(r.date, Number(r.amount), r.merchant);
+          priorKeys.set(k, (priorKeys.get(k) || 0) + 1);
+        }
 
         const txnInserts = txnData.transactions
           .filter((t: any) => !existingIds.has(t.transaction_id))
+          .filter((t: any) => {
+            const k = relinkKey(t.date, -t.amount, t.merchant_name || t.name || null);
+            const remaining = priorKeys.get(k) || 0;
+            if (remaining > 0) { priorKeys.set(k, remaining - 1); return false; }
+            return true;
+          })
           .map((t: any) => ({
             household_id,
             account_id: defaultAccountId,
@@ -305,7 +332,11 @@ Deno.serve(async (req) => {
           }));
 
         if (txnInserts.length > 0) {
-          await serviceSupabase.from('transactions').insert(txnInserts);
+          // Layer 3: upsert on the unique (household_id, provider_transaction_id) index
+          // to prevent race-condition dupes from rapid refresh clicks.
+          await serviceSupabase
+            .from('transactions')
+            .upsert(txnInserts, { onConflict: 'household_id,provider_transaction_id', ignoreDuplicates: true });
         }
       }
 
@@ -405,14 +436,13 @@ Deno.serve(async (req) => {
           const transactions = txnData.transactions || [];
 
           if (transactions.length > 0) {
-            // Get existing provider_transaction_ids to avoid duplicates
+            // Layer 1: existing provider_transaction_ids
             const providerIds = transactions.map((t: any) => t.transaction_id);
             const { data: existing } = await serviceSupabase
               .from('transactions')
               .select('provider_transaction_id')
               .eq('household_id', household_id)
               .in('provider_transaction_id', providerIds);
-
             const existingIds = new Set((existing || []).map(e => e.provider_transaction_id));
 
             // Get default account for this institution
@@ -426,8 +456,35 @@ Deno.serve(async (req) => {
             const accountId = dbAccounts?.[0]?.id;
             if (!accountId) continue;
 
+            // Layer 2: relink dedup — match against prior bank-sourced rows only
+            // (provider_transaction_id IS NOT NULL). Manual entries are never used
+            // as match keys, so legitimate same-day repeats stay intact.
+            const dates = transactions.map((t: any) => t.date).sort();
+            const { data: priorBankTxns } = await serviceSupabase
+              .from('transactions')
+              .select('date,amount,merchant,provider_transaction_id')
+              .eq('household_id', household_id)
+              .eq('account_id', accountId)
+              .gte('date', dates[0])
+              .lte('date', dates[dates.length - 1])
+              .not('provider_transaction_id', 'is', null)
+              .is('deleted_at', null);
+            const relinkKey = (d: string, a: number, m: string | null) =>
+              `${d}|${a.toFixed(2)}|${(m || '').trim().toLowerCase()}`;
+            const priorKeys = new Map<string, number>();
+            for (const r of priorBankTxns || []) {
+              const k = relinkKey(r.date, Number(r.amount), r.merchant);
+              priorKeys.set(k, (priorKeys.get(k) || 0) + 1);
+            }
+
             const newTxns = transactions
               .filter((t: any) => !existingIds.has(t.transaction_id))
+              .filter((t: any) => {
+                const k = relinkKey(t.date, -t.amount, t.merchant_name || t.name || null);
+                const remaining = priorKeys.get(k) || 0;
+                if (remaining > 0) { priorKeys.set(k, remaining - 1); return false; }
+                return true;
+              })
               .map((t: any) => ({
                 household_id,
                 account_id: accountId,
@@ -439,8 +496,12 @@ Deno.serve(async (req) => {
               }));
 
             if (newTxns.length > 0) {
-              const { data: inserted } = await serviceSupabase.from('transactions').insert(newTxns).select('id');
-              totalNewTransactions += newTxns.length;
+              // Layer 3: upsert on unique index to kill race-condition dupes
+              const { data: inserted } = await serviceSupabase
+                .from('transactions')
+                .upsert(newTxns, { onConflict: 'household_id,provider_transaction_id', ignoreDuplicates: true })
+                .select('id');
+              totalNewTransactions += inserted?.length || 0;
               if (inserted) allNewTransactionIds.push(...inserted.map((r: any) => r.id));
             }
           }
