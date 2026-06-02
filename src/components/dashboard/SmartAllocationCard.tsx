@@ -60,11 +60,15 @@ export function SmartAllocationCard() {
   if (dismissed || !rules || !lastPaycheck || alreadyApplied) return null;
 
   const net = Math.abs(lastPaycheck.amount);
+  const num = (v: any, d: number) => {
+    const n = typeof v === 'number' ? v : Number(v);
+    return Number.isFinite(n) ? n : d;
+  };
   const buckets = [
-    { key: 'fixed', label: 'Fixed Costs', min: rules.fixed_min, max: rules.fixed_max, target: rules.fixed_target },
-    { key: 'invest', label: 'Investments', min: rules.invest_min, max: rules.invest_max, target: rules.invest_target },
-    { key: 'savings', label: 'Savings Goals', min: rules.savings_min, max: rules.savings_max, target: rules.savings_target },
-    { key: 'guiltfree', label: 'Guilt-Free', min: rules.guiltfree_min, max: rules.guiltfree_max, target: rules.guiltfree_target },
+    { key: 'fixed', label: 'Fixed Costs', min: num(rules.fixed_min, DEFAULT_RULES.fixed_min), max: num(rules.fixed_max, DEFAULT_RULES.fixed_max), target: num(rules.fixed_target, DEFAULT_RULES.fixed_target) },
+    { key: 'invest', label: 'Investments', min: num(rules.invest_min, DEFAULT_RULES.invest_min), max: num(rules.invest_max, DEFAULT_RULES.invest_max), target: num(rules.invest_target, DEFAULT_RULES.invest_target) },
+    { key: 'savings', label: 'Savings Goals', min: num(rules.savings_min, DEFAULT_RULES.savings_min), max: num(rules.savings_max, DEFAULT_RULES.savings_max), target: num(rules.savings_target, DEFAULT_RULES.savings_target) },
+    { key: 'guiltfree', label: 'Guilt-Free', min: num(rules.guiltfree_min, DEFAULT_RULES.guiltfree_min), max: num(rules.guiltfree_max, DEFAULT_RULES.guiltfree_max), target: num(rules.guiltfree_target, DEFAULT_RULES.guiltfree_target) },
   ];
 
   const handleDismiss = () => {
