@@ -858,17 +858,43 @@ const Budgets = () => {
             {isOpen ? <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" /> : <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0 rotate-180" />}
             <span className={cn('flex-1 font-display font-semibold text-sm sm:text-base flex items-center gap-2', EXPENSE_TYPE_COLORS[type])}>
               {EXPENSE_TYPE_LABELS[type]}
-              {/* Percentage of net income badge */}
-              {!isIncome && netIncome > 0 && totals.budget > 0 && (
-                <span className={cn(
-                  'hidden sm:inline-flex items-center text-[10px] px-1.5 py-0.5 rounded-full font-medium',
-                  benchmarkStatus === 'good' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
-                  benchmarkStatus === 'high' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400' :
-                  benchmarkStatus === 'low' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' :
-                  'bg-muted text-muted-foreground'
-                )}>
-                  {pctOfNet}% of net{benchmark ? ` (target: ${benchmark.label})` : ''}
-                </span>
+              {/* Ramit Conscious Spending range pill + band visualizer */}
+              {!isIncome && netIncome > 0 && totals.budget > 0 && benchmark && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className={cn(
+                      'hidden sm:inline-flex items-center gap-1.5 text-[10px] px-2 py-0.5 rounded-full font-medium cursor-help',
+                      benchmarkStatus === 'good' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/30' :
+                      benchmarkStatus === 'high' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 ring-1 ring-rose-500/30' :
+                      'bg-amber-500/10 text-amber-600 dark:text-amber-400 ring-1 ring-amber-500/30'
+                    )}>
+                      <span className="tabular-nums">{pctOfNet}%</span>
+                      <span className="opacity-80">·</span>
+                      <span>
+                        {benchmarkStatus === 'good' ? 'In Range' : benchmarkStatus === 'high' ? 'Over' : 'Under'}
+                      </span>
+                      {/* Mini band: amber-emerald-amber zones with position dot */}
+                      <span className="relative inline-block w-12 h-1.5 rounded-full bg-muted overflow-hidden">
+                        <span
+                          className="absolute top-0 bottom-0 bg-emerald-500/40"
+                          style={{ left: `${benchmark.min}%`, width: `${benchmark.max - benchmark.min}%` }}
+                        />
+                        <span
+                          className={cn(
+                            'absolute top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full ring-1 ring-background',
+                            benchmarkStatus === 'good' ? 'bg-emerald-500' :
+                            benchmarkStatus === 'high' ? 'bg-rose-500' : 'bg-amber-500'
+                          )}
+                          style={{ left: `calc(${Math.min(Math.max(pctOfNet, 0), 100)}% - 3px)` }}
+                        />
+                      </span>
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="text-xs">{benchmark.label}</p>
+                    <p className="text-xs text-muted-foreground">Ramit Sethi Conscious Spending Plan</p>
+                  </TooltipContent>
+                </Tooltip>
               )}
               {isPayroll && grossIncomeBudget > 0 && totals.budget > 0 && (
                 <span className="hidden sm:inline-flex items-center text-[10px] px-1.5 py-0.5 rounded-full font-medium bg-sky-500/10 text-sky-600 dark:text-sky-400">
