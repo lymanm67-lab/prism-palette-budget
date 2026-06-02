@@ -154,9 +154,14 @@ export function useSafeToSpend(scope: StsScope = 'combined'): SafeToSpendResult 
     // Only subtract already-spent when no budget expense baseline exists.
     const spentAdjustment = budgetExpenses > 0 ? 0 : monthlySpent;
 
-    // Base monthly safe-to-spend: income - expenses - optional spent adjustment
-    const baseMonthlySafe = effectiveIncome - effectiveExpenses - spentAdjustment;
-    
+    // Investing + Savings reserve from deployment rules (defaults 10/10 if unset)
+    const investingPct = deploymentRules?.invest_target ?? 10;
+    const savingsPct = deploymentRules?.savings_target ?? 10;
+    const deploymentReserve = effectiveIncome * ((investingPct + savingsPct) / 100);
+
+    // Base monthly safe-to-spend: income - expenses - deployment reserve - optional spent adjustment
+    const baseMonthlySafe = effectiveIncome - effectiveExpenses - deploymentReserve - spentAdjustment;
+
     // Apply buffer
     const bufferMultiplier = 1 - (bufferPercent / 100);
     const monthlySafe = Math.max(0, baseMonthlySafe * bufferMultiplier);
@@ -178,9 +183,13 @@ export function useSafeToSpend(scope: StsScope = 'combined'): SafeToSpendResult 
       budgetIncome,
       budgetExpenses,
       effectiveExpenses,
+      deploymentReserve,
+      investingPct,
+      savingsPct,
       bufferPercent,
       mode,
       isLoading: !accounts,
     };
-  }, [accounts, transactions, recurring, subscriptions, modeSettings, budgetsWithGroups, scope]);
+  }, [accounts, transactions, recurring, subscriptions, modeSettings, budgetsWithGroups, deploymentRules, scope]);
+
 }
