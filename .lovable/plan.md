@@ -1,55 +1,45 @@
-# Port App-Dev Cutoff to 6 Other Apps (Founder-Gated)
+## Goal
 
-Target apps: **FocusOS, Coach Lyman App, FocusOSHR, Focused Driven Coach, Story Cast Academy, Montgomery Family Trust Vault**
+Re-record the June 2, 2026 "Lovable Top-Off" reconciliation transfers so each transfer row matches the date and amount of an actual Lovable charge on the same account.
 
-## Gating model (answers your question)
+## Current state
 
-In each target app the cutoff UI + data will be **hard-gated to your user_id** (`isFounder` check). Other users:
-- Won't see the nudge, settings panel, or dashboard card
-- Can't query the tables (RLS restricts SELECT/INSERT/UPDATE/DELETE to your user_id)
-- Won't even see the route if added
+5 transfers all dated 2026-06-02, totaling $5,772.10. Only 2 match Lovable charge totals; 3 do not.
 
-This is stricter than PrismMoney's current household-scoped model. PrismMoney itself stays household-scoped (your household has only you anyway).
+## What I'll do (one migration / data update)
 
-## Self-contained variant (no transaction reconciliation)
+1. **Soft-delete the 5 existing lump-sum transfers** (set `deleted_at = now()`). This safely reverses their balance adjustment via the existing `adjust_account_balance` trigger.
 
-The other apps don't have `transactions`/`accounts`/`categories` schemas. So each gets a **lite version**:
-- Manual credit log only (you log Lovable credits/$ spent per day)
-- No auto-derivation from transactions
-- Same status logic (ok / warn / over), same override flow, same monthly reset cron
+2. **Insert one new transfer row per Lovable charge**, per account, with:
+   - `date` = the charge date
+   - `amount` = the charge amount (positive — top-off is income side; same direction as today's lump sums which are positive)
+   - `merchant` = "Lovable Top-Off"
+   - `is_transfer` = true (keeps them out of spending totals)
+   - `notes` = "Reconciliation: top-off for Lovable charge on {date}"
+   - Same `account_id`, `household_id`, `category_id` as the current lump sum on that account
 
-## Per-app deliverables (×6, identical pattern)
+3. **Account-by-account result:**
 
-**Migration** (3 tables, founder-only RLS):
-- `app_dev_limits` (monthly_spend_limit, monthly_credit_limit, period_start, is_enabled, founder_user_id)
-- `app_dev_credit_log` (date, amount_usd, credits_used, note, soft-delete)
-- `app_dev_overrides` (reason, status, expires_at)
-- RLS: `USING (auth.uid() = '<your-user-id>')` on all three
-- GRANTs to `authenticated` + `service_role`
+```text
+BUSINESSFREE        60 charges  →  60 transfers   ($1,451.00 total, unchanged)
+SoFi Checking      110 charges  → 110 transfers   ($1,950.00 total, unchanged)
+MEMBERSHIP SAVINGS 158 charges  → 158 transfers   ($2,651.10 total, +$355.00 vs old $2,296.10)
+SoFi Self-directed   1 charge   →   1 transfer    ($15.00 total, -$15.00 vs old $30.00)
+SIMPLE CHECKING      0 charges  →   0 transfers   ($0 total, -$45.00 vs old $45.00)
+```
 
-**Frontend** (4 files per app):
-- `src/lib/founder.ts` — single hardcoded founder user_id constant
-- `src/hooks/use-app-dev-cutoff.ts` — lite version (no tx/category deps)
-- `src/components/AppDevCutoffNudge.tsx` — only renders if `isFounder`
-- `src/components/AppDevCutoffPanel.tsx` — settings + manual log entry form
-- Mount nudge in main dashboard, panel in settings (founder-gated)
+Net change to combined balances: **+$355 − $15 − $45 = +$295** across the 5 accounts. (The originals didn't fully reconcile; new rows do.)
 
-**Edge function + cron** (1 per app):
-- `app-dev-cutoff-reset` — rolls `period_start` on the 1st monthly
-- pg_cron entry calling it with `CRON_SECRET`
+## Technical details
 
-## Execution order
+- Single `supabase--insert` call: one `UPDATE` for soft-delete + one `INSERT ... SELECT` that joins each Lovable charge to its account's current top-off row to copy `account_id`, `household_id`, `category_id`.
+- `is_transfer=true` preserved → no impact on Safe-to-Spend or spending reports.
+- `adjust_account_balance` trigger handles balance math automatically on both delete and insert.
+- No schema changes, no code changes.
 
-1. Confirm your founder user_id (same across all 6 workspaces? — see Q below)
-2. For each app in parallel batches of 2: migration → hook → components → mount → edge fn + cron
-3. Verify nudge renders for you and is invisible when signed in as a test user
+## Verification
 
-## Questions before I build
-
-1. **Same user_id across all 6 apps?** Each Lovable Cloud project has its own auth.users table. I need to confirm your account email exists in each — or I'll add a fallback that checks email instead of user_id (slightly less strict but works cross-project).
-2. **Limits — same $100 / 400 credits per app**, or one **shared global pool** across all 7 apps? (Shared = much more work: needs a central API; I'd recommend per-app for now.)
-3. **Where to mount the nudge** in each app? Default: top of main dashboard/home route. Or only on a `/settings/app-dev` page?
-
-## Credit estimate
-
-Medium-Large. ~6 migrations + ~24 frontend files + 6 edge functions. Doing all 6 in one go is most efficient (shared patterns, parallel writes).
+After running, I'll query:
+- Sum of new transfers per account = sum of Lovable charges per account ✓
+- Old 5 rows have `deleted_at IS NOT NULL` ✓
+- New row count = 329 (60 + 110 + 158 + 1)
