@@ -23,33 +23,35 @@ export function SmartAllocationCard() {
     return until ? Date.now() < Number(until) : false;
   });
 
-  // Detect last paycheck: aggregate same-day positive deposits (split paychecks)
-  // within the last 7 days. Splits commonly route to multiple accounts on one day.
+  // Detect last paycheck: aggregate payroll-like deposits within a 4-day window.
+  // Splits commonly land on different dates across IU/USAA/SoFi/EverBank.
   const lastPaycheck = useMemo(() => {
     if (!transactions) return null;
     const cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() - 7);
+    cutoff.setDate(cutoff.getDate() - 10);
+    const PAYROLL_RE = /(payroll|paycheck|salary|wage|direct\s?dep|adp|gusto|paychex|indiana\s?univ|employer|ach\/)/i;
     const income = transactions.filter((t: any) => {
       if (t.amount <= 0 || t.is_transfer) return false;
       if (new Date(t.date) < cutoff) return false;
-      const m = (t.merchant || '').toLowerCase();
-      const cat = (t.categories?.name || '').toLowerCase();
-      return /(payroll|paycheck|salary|wage|direct\s?dep|adp|gusto|paychex|deposit)/i.test(m + ' ' + cat) || t.amount > 150;
+      const m = (t.merchant || '') + ' ' + (t.categories?.name || '');
+      // Must look like payroll (not interest/dividend/refunds/random deposits)
+      return PAYROLL_RE.test(m) && t.amount >= 100;
     });
     if (!income.length) return null;
-    // Group by date, sum amounts
-    const byDate = new Map<string, number>();
-    for (const t of income) {
-      byDate.set(t.date, (byDate.get(t.date) || 0) + Number(t.amount));
-    }
-    // Pick most recent date with a meaningful total (>$500)
-    const sorted = [...byDate.entries()]
-      .filter(([, amt]) => amt > 500)
-      .sort((a, b) => b[0].localeCompare(a[0]));
-    if (!sorted.length) return null;
-    const [date, amount] = sorted[0];
-    return { date, amount };
+    // Sort newest → oldest, then cluster into a 4-day window from the most recent
+    const sorted = [...income].sort((a, b) => b.date.localeCompare(a.date));
+    const anchor = new Date(sorted[0].date);
+    const windowStart = new Date(anchor);
+    windowStart.setDate(windowStart.getDate() - 4);
+    const cluster = sorted.filter((t: any) => {
+      const d = new Date(t.date);
+      return d >= windowStart && d <= anchor;
+    });
+    const amount = cluster.reduce((s, t: any) => s + Number(t.amount), 0);
+    if (amount <= 500) return null;
+    return { date: sorted[0].date, amount };
   }, [transactions]);
+
 
   // Has it already been deployed?
   const alreadyApplied = useMemo(() => {
