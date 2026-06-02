@@ -5,7 +5,7 @@ import { Plus, Loader2 } from 'lucide-react';
 import { useLogCredits } from '@/hooks/use-app-dev-cutoff';
 import { toast } from 'sonner';
 
-export function CreditLogQuickEntry() {
+export function CreditLogQuickEntry({ monthTotal }: { monthTotal?: number } = {}) {
   const [credits, setCredits] = useState('');
   const [note, setNote] = useState('');
   const log = useLogCredits();
