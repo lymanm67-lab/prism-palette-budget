@@ -11,6 +11,8 @@ import { useCurrency } from '@/hooks/use-currency';
 import { format, parseISO, differenceInDays } from 'date-fns';
 
 const DISMISS_KEY = 'smart-allocation-dismissed-until';
+const IU_MONTHLY_NET_PAY = 4362.78;
+const EVERBANK_PAYSTUB_SPLIT = 300;
 
 export function SmartAllocationCard() {
   const { data: transactions } = useTransactions();
@@ -53,7 +55,12 @@ export function SmartAllocationCard() {
       const d = new Date(t.date);
       return d >= windowStart && d <= windowEnd && Number(t.amount) >= 50;
     });
-    const amount = cluster.reduce((s, t: any) => s + Number(t.amount), 0);
+    let amount = cluster.reduce((s, t: any) => s + Number(t.amount), 0);
+    const anchorText = `${anchor.merchant || ''} ${anchor.categories?.name || ''}`;
+    const missingEverBankSplit = Math.abs(IU_MONTHLY_NET_PAY - amount - EVERBANK_PAYSTUB_SPLIT) < 1;
+    if (PAYROLL_RE.test(anchorText) && missingEverBankSplit) {
+      amount = IU_MONTHLY_NET_PAY;
+    }
     if (amount <= 500) return null;
     return { date: anchor.date, amount };
   }, [transactions]);
