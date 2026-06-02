@@ -78,7 +78,7 @@ export function SmartAllocationCard() {
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-2.5">
             <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-prism-amber to-prism-orange flex items-center justify-center">
-              <Sparkles className="h-4.5 w-4.5 text-white" />
+              <Sparkles className="h-4 w-4 text-white" />
             </div>
             <div>
               <CardTitle className="text-base">Smart Allocation</CardTitle>
