@@ -27,10 +27,14 @@ export interface SafeToSpendResult {
   budgetIncome: number;
   budgetExpenses: number;
   effectiveExpenses: number;
+  deploymentReserve: number;
+  investingPct: number;
+  savingsPct: number;
   bufferPercent: number;
   mode: FinancialMode;
   isLoading: boolean;
 }
+
 
 export type StsScope = 'combined' | 'personal' | 'business';
 
