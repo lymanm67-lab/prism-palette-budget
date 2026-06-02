@@ -16,14 +16,16 @@ export function StsEquationView({ scope = 'combined' }: { scope?: StsScope }) {
   if (sts.isLoading) return null;
 
   const config = MODE_CONFIG[sts.mode];
-  const baseMonthlySafe = sts.monthlyIncome - sts.effectiveExpenses;
+  const baseMonthlySafe = sts.monthlyIncome - sts.effectiveExpenses - sts.deploymentReserve;
   const bufferAmount = Math.max(0, baseMonthlySafe * (sts.bufferPercent / 100));
 
   const steps = [
     { label: 'Monthly Income', value: sts.monthlyIncome, color: 'text-prism-teal', prefix: '' },
     { label: 'Budget Expenses', value: sts.effectiveExpenses, color: 'text-prism-rose', prefix: '−' },
+    { label: `Investing + Savings reserve (${sts.investingPct + sts.savingsPct}%)`, value: sts.deploymentReserve, color: 'text-prism-lime', prefix: '−' },
     { label: `Safety Buffer (${sts.bufferPercent}%)`, value: bufferAmount, color: 'text-prism-sky', prefix: '−' },
   ];
+
 
   return (
     <Card className="border-border/50 overflow-hidden">
