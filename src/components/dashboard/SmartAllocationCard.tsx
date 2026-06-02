@@ -23,21 +23,32 @@ export function SmartAllocationCard() {
     return until ? Date.now() < Number(until) : false;
   });
 
-  // Detect last paycheck: positive transaction with income/payroll keywords within 7 days
+  // Detect last paycheck: aggregate same-day positive deposits (split paychecks)
+  // within the last 7 days. Splits commonly route to multiple accounts on one day.
   const lastPaycheck = useMemo(() => {
     if (!transactions) return null;
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - 7);
-    const income = transactions
-      .filter((t: any) => {
-        if (t.amount <= 0 || t.is_transfer) return false;
-        if (new Date(t.date) < cutoff) return false;
-        const m = (t.merchant || '').toLowerCase();
-        const cat = (t.categories?.name || '').toLowerCase();
-        return /(payroll|paycheck|salary|wage|direct\s?dep|adp|gusto|paychex)/i.test(m + ' ' + cat) || t.amount > 500;
-      })
-      .sort((a: any, b: any) => b.date.localeCompare(a.date));
-    return income[0] || null;
+    const income = transactions.filter((t: any) => {
+      if (t.amount <= 0 || t.is_transfer) return false;
+      if (new Date(t.date) < cutoff) return false;
+      const m = (t.merchant || '').toLowerCase();
+      const cat = (t.categories?.name || '').toLowerCase();
+      return /(payroll|paycheck|salary|wage|direct\s?dep|adp|gusto|paychex|deposit)/i.test(m + ' ' + cat) || t.amount > 150;
+    });
+    if (!income.length) return null;
+    // Group by date, sum amounts
+    const byDate = new Map<string, number>();
+    for (const t of income) {
+      byDate.set(t.date, (byDate.get(t.date) || 0) + Number(t.amount));
+    }
+    // Pick most recent date with a meaningful total (>$500)
+    const sorted = [...byDate.entries()]
+      .filter(([, amt]) => amt > 500)
+      .sort((a, b) => b[0].localeCompare(a[0]));
+    if (!sorted.length) return null;
+    const [date, amount] = sorted[0];
+    return { date, amount };
   }, [transactions]);
 
   // Has it already been deployed?
