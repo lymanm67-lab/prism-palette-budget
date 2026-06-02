@@ -5,10 +5,12 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, RotateCcw, Save } from 'lucide-react';
+import { Loader2, RotateCcw, Save, ExternalLink, ShieldAlert } from 'lucide-react';
 import { useAppDevLimits, useUpsertAppDevLimits, useResetAppDevPeriod } from '@/hooks/use-app-dev-cutoff';
 import { useCategories } from '@/hooks/use-finance-data';
 import { toast } from 'sonner';
+
+const LOVABLE_LIMITS_URL = 'https://lovable.dev/settings/plans';
 
 export function AppDevCutoffSettings() {
   const { data: limits, isLoading } = useAppDevLimits();
@@ -107,6 +109,28 @@ export function AppDevCutoffSettings() {
             {reset.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RotateCcw className="h-4 w-4 mr-2" />}
             Reset period now
           </Button>
+        </div>
+
+        <div className="rounded-lg border border-prism-amber/30 bg-prism-amber/5 p-3 mt-2">
+          <div className="flex items-start gap-2">
+            <ShieldAlert className="h-4 w-4 text-prism-amber shrink-0 mt-0.5" />
+            <div className="text-xs space-y-1">
+              <p className="font-medium text-foreground">Heads up: this is a soft guardrail</p>
+              <p className="text-muted-foreground">
+                PrismMoney™ can't block Lovable™ from auto-charging top-ups. To set a real hard stop,
+                configure a monthly spending limit or disable auto top-up directly in Lovable™.
+              </p>
+              <a
+                href={LOVABLE_LIMITS_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 font-medium text-prism-amber hover:underline underline-offset-2"
+              >
+                Open Lovable™ Plans &amp; Credits
+                <ExternalLink className="h-3 w-3" />
+              </a>
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>
