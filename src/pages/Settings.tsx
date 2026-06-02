@@ -24,6 +24,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTTS } from '@/hooks/use-tts';
 import { useBiometricAuth } from '@/hooks/use-biometric-auth';
 import { useNavigate } from 'react-router-dom';
+import { AppDevCutoffSettings } from '@/components/settings/AppDevCutoffSettings';
 
 const CURRENCIES = [
   { code: 'USD', name: 'US Dollar', symbol: '$' },
