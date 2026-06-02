@@ -182,13 +182,6 @@ export default function AutoSplitRules() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <Helmet>
-        <title>Auto-Split Rules & Budget Hygiene | PrismMoney™</title>
-        <meta
-          name="description"
-          content="Automate transaction splits and monthly budget hygiene to keep your books clean for accounting and taxes."
-        />
-      </Helmet>
 
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
