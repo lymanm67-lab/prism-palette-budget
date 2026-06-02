@@ -248,23 +248,16 @@ Deno.serve(async (req) => {
   try {
     const supabase = createClient(SUPABASE_URL, SERVICE_ROLE);
     const body = req.method === "POST" ? await req.json().catch(() => ({})) : {};
-    const authHeader = req.headers.get("x-cron-secret");
-
-    const isCron = CRON_SECRET && authHeader === CRON_SECRET;
     const householdId: string | undefined = body.household_id;
     const force = !!body.force;
 
     let households: string[] = [];
     if (householdId) {
       households = [householdId];
-    } else if (isCron) {
+    } else {
+      // No household = full-sweep (used by cron)
       const { data } = await supabase.from("households").select("id");
       households = (data ?? []).map((r: any) => r.id);
-    } else {
-      return new Response(JSON.stringify({ error: "household_id required" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
     }
 
     const results: Record<string, any> = {};
