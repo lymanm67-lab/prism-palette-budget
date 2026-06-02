@@ -36,7 +36,7 @@ export default function PaycheckDeploymentRules() {
   const sumOk = Math.abs(targetSum - 100) < 0.01;
 
   const savingsAccounts = (accounts || []).filter(a => a.account_type === 'savings' && a.is_active);
-  const investmentAccounts = (accounts || []).filter(a => (a.account_type === 'investment' || a.account_type === 'brokerage') && a.is_active);
+  const investmentAccounts = (accounts || []).filter(a => ((a.account_type as string) === 'investment' || (a.account_type as string) === 'brokerage') && a.is_active);
 
   const setField = (k: keyof DeploymentRules, v: any) => setRules(r => r ? { ...r, [k]: v } : r);
 
