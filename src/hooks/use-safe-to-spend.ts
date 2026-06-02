@@ -62,6 +62,21 @@ export function useSafeToSpend(scope: StsScope = 'combined'): SafeToSpendResult 
     },
   });
 
+  // Fetch paycheck deployment rules (investing + savings reserve %)
+  const { data: deploymentRules } = useQuery({
+    queryKey: ['paycheck_deployment_rules', household?.id],
+    enabled: !!household,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('paycheck_deployment_rules')
+        .select('invest_target, savings_target')
+        .eq('household_id', household!.id)
+        .maybeSingle();
+      return data as { invest_target: number; savings_target: number } | null;
+    },
+  });
+
+
   return useMemo(() => {
     const mode: FinancialMode = (modeSettings?.current_mode as FinancialMode) || 'guardrail';
     const bufferPercent = modeSettings?.buffer_percent ?? MODE_CONFIG[mode].bufferDefault;
