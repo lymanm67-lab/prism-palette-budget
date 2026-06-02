@@ -62,12 +62,10 @@ export function NeedsReviewCleanup({ items }: Props) {
           <div key={b} className="rounded-lg border border-border p-3">
             <div className="flex items-center justify-between mb-2">
               <h4 className="text-sm font-medium">{BUCKET_LABELS[b]} ({rows.length})</h4>
-              {b !== 'other' && (
-                <Button size="sm" variant="outline" onClick={() => clearBucket(b)} disabled={busyBucket === b}>
-                  {busyBucket === b && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
-                  Approve bucket
-                </Button>
-              )}
+              <Button size="sm" variant="outline" onClick={() => clearBucket(b)} disabled={busyBucket === b}>
+                {busyBucket === b && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
+                {b === 'other' ? 'Clear all' : 'Approve bucket'}
+              </Button>
             </div>
             <div className="max-h-48 overflow-auto text-sm">
               <table className="w-full">
@@ -77,6 +75,11 @@ export function NeedsReviewCleanup({ items }: Props) {
                       <td className="p-1.5 text-muted-foreground w-24">{r.date}</td>
                       <td className="p-1.5">{r.merchant || '—'}</td>
                       <td className="p-1.5 text-right font-mono">{r.amount.toFixed(2)}</td>
+                      <td className="p-1.5 w-16 text-right">
+                        <Button size="sm" variant="ghost" className="h-6 px-2 text-xs" onClick={() => clearOne(r.id)} disabled={busyBucket === r.id}>
+                          {busyBucket === r.id ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Clear'}
+                        </Button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
