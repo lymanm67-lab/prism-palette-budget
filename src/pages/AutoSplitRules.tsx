@@ -50,6 +50,10 @@ export default function AutoSplitRules() {
   const [editing, setEditing] = useState<Partial<Rule> | null>(null);
   const [running, setRunning] = useState(false);
 
+  useEffect(() => {
+    document.title = 'Auto-Split Rules & Budget Hygiene | PrismMoney™';
+  }, []);
+
   const { data: rules = [] } = useQuery({
     queryKey: ['auto_split_rules', household?.id],
     enabled: !!household,
