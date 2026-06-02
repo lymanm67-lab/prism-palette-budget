@@ -10,7 +10,7 @@ import { useAppDevLimits, useUpsertAppDevLimits, useResetAppDevPeriod } from '@/
 import { useCategories } from '@/hooks/use-finance-data';
 import { toast } from 'sonner';
 
-const LOVABLE_LIMITS_URL = 'https://lovable.dev/settings/plans';
+const LOVABLE_LIMITS_URL = 'https://docs.lovable.dev/introduction/plans-and-credits';
 
 export function AppDevCutoffSettings() {
   const { data: limits, isLoading } = useAppDevLimits();
