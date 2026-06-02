@@ -22,6 +22,7 @@ const Budgets = lazy(() => import("@/pages/Budgets"));
 const Reports = lazy(() => import("@/pages/Reports"));
 const Categories = lazy(() => import("@/pages/Categories"));
 const Settings = lazy(() => import("@/pages/Settings"));
+const AutoSplitRules = lazy(() => import("@/pages/AutoSplitRules"));
 const TaxAssistant = lazy(() => import("@/pages/TaxAssistant"));
 const Goals = lazy(() => import("@/pages/Goals"));
 const DebtPayoff = lazy(() => import("@/pages/DebtPayoff"));
@@ -166,6 +167,7 @@ const App = () => (
               <Route path="/about" element={<Suspense fallback={<PageLoader />}><About /></Suspense>} />
               <Route path="/home-buying" element={<Suspense fallback={<PageLoader />}><HomeBuyingChecklist /></Suspense>} />
               <Route path="/settings" element={<Suspense fallback={<PageLoader />}><Settings /></Suspense>} />
+              <Route path="/settings/auto-split-rules" element={<Suspense fallback={<PageLoader />}><AutoSplitRules /></Suspense>} />
               <Route path="/tax-assistant" element={<Suspense fallback={<PageLoader />}><TaxAssistant /></Suspense>} />
               <Route path="/legal" element={<Suspense fallback={<PageLoader />}><Legal /></Suspense>} />
               <Route path="/getting-started" element={<Suspense fallback={<PageLoader />}><GettingStarted /></Suspense>} />

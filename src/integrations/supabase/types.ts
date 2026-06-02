@@ -505,6 +505,104 @@ export type Database = {
           },
         ]
       }
+      auto_split_rules: {
+        Row: {
+          amount_max: number | null
+          amount_min: number | null
+          business_category_id: string | null
+          business_profile_id: string | null
+          business_split_pct: number
+          created_at: string
+          date_range_end: string | null
+          date_range_start: string | null
+          household_id: string
+          id: string
+          is_active: boolean
+          last_run_at: string | null
+          last_run_match_count: number
+          match_type: string
+          match_value: string
+          name: string
+          notes: string | null
+          personal_category_id: string | null
+          priority: number
+          updated_at: string
+        }
+        Insert: {
+          amount_max?: number | null
+          amount_min?: number | null
+          business_category_id?: string | null
+          business_profile_id?: string | null
+          business_split_pct?: number
+          created_at?: string
+          date_range_end?: string | null
+          date_range_start?: string | null
+          household_id: string
+          id?: string
+          is_active?: boolean
+          last_run_at?: string | null
+          last_run_match_count?: number
+          match_type: string
+          match_value: string
+          name: string
+          notes?: string | null
+          personal_category_id?: string | null
+          priority?: number
+          updated_at?: string
+        }
+        Update: {
+          amount_max?: number | null
+          amount_min?: number | null
+          business_category_id?: string | null
+          business_profile_id?: string | null
+          business_split_pct?: number
+          created_at?: string
+          date_range_end?: string | null
+          date_range_start?: string | null
+          household_id?: string
+          id?: string
+          is_active?: boolean
+          last_run_at?: string | null
+          last_run_match_count?: number
+          match_type?: string
+          match_value?: string
+          name?: string
+          notes?: string | null
+          personal_category_id?: string | null
+          priority?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auto_split_rules_business_category_id_fkey"
+            columns: ["business_category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "auto_split_rules_business_profile_id_fkey"
+            columns: ["business_profile_id"]
+            isOneToOne: false
+            referencedRelation: "business_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "auto_split_rules_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "auto_split_rules_personal_category_id_fkey"
+            columns: ["personal_category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       budgets: {
         Row: {
           category_id: string
@@ -1135,6 +1233,59 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "daily_progress_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      data_quality_issues: {
+        Row: {
+          created_at: string
+          description: string | null
+          detected_at: string
+          household_id: string
+          id: string
+          issue_type: string
+          payload: Json
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          detected_at?: string
+          household_id: string
+          id?: string
+          issue_type: string
+          payload?: Json
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          detected_at?: string
+          household_id?: string
+          id?: string
+          issue_type?: string
+          payload?: Json
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "data_quality_issues_household_id_fkey"
             columns: ["household_id"]
             isOneToOne: false
             referencedRelation: "households"
