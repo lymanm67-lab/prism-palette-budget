@@ -40,6 +40,19 @@ export function NeedsReviewCleanup({ items }: Props) {
     }
   };
 
+  const clearOne = async (id: string) => {
+    setBusyBucket(id);
+    try {
+      const { error } = await supabase.from('transactions').update({ needs_review: false }).eq('id', id);
+      if (error) throw error;
+      qc.invalidateQueries({ queryKey: ['cleanup-candidates'] });
+    } catch (e: any) {
+      toast({ title: 'Failed', description: e.message, variant: 'destructive' });
+    } finally {
+      setBusyBucket(null);
+    }
+  };
+
   return (
     <div className="space-y-4">
       {buckets.map(b => {
