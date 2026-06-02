@@ -3,7 +3,7 @@ import { ShieldAlert, ExternalLink } from 'lucide-react';
 import { useAppDevCutoff } from '@/hooks/use-app-dev-cutoff';
 import { cn } from '@/lib/utils';
 
-const LOVABLE_LIMITS_URL = 'https://lovable.dev/settings/plans';
+const LOVABLE_LIMITS_URL = 'https://docs.lovable.dev/introduction/plans-and-credits';
 
 export function AppDevCutoffNudge() {
   const cutoff = useAppDevCutoff();
