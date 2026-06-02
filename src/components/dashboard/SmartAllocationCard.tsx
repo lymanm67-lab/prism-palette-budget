@@ -138,7 +138,8 @@ export function SmartAllocationCard() {
       </CardHeader>
       <CardContent className="space-y-3">
         {buckets.map(b => {
-          const amount = net * (b.target / 100);
+          const targetAmount = net * (b.target / 100);
+          const actualPct = b.actual != null ? (b.actual / net) * 100 : null;
           const z = zoneFor(b.target, b.min, b.max);
           return (
             <div key={b.key} className="space-y-1.5">
@@ -151,12 +152,28 @@ export function SmartAllocationCard() {
                   </Badge>
                 </div>
                 <div className="text-right tabular-nums">
-                  <span className="font-semibold">{formatCurrency(amount)}</span>
-                  <span className="text-muted-foreground ml-1.5 text-xs">{b.target}%</span>
+                  {b.actual != null && actualPct != null ? (
+                    <>
+                      <span className="font-semibold">{formatCurrency(b.actual)}</span>
+                      <span className="text-muted-foreground ml-1.5 text-xs">{actualPct.toFixed(0)}% actual</span>
+                      <span className="text-muted-foreground/70 ml-1.5 text-[10px]">· {b.target}% target</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="font-semibold">{formatCurrency(targetAmount)}</span>
+                      <span className="text-muted-foreground ml-1.5 text-xs">{b.target}% target</span>
+                    </>
+                  )}
                 </div>
               </div>
-              <div className="h-1.5 rounded-full bg-muted/40 overflow-hidden">
-                <div className={`h-full ${zoneBarColor(z)}`} style={{ width: `${Math.min(100, b.target)}%` }} />
+              {b.actualNote && (
+                <p className="text-[10px] text-muted-foreground -mt-0.5">{b.actualNote}</p>
+              )}
+              <div className="h-1.5 rounded-full bg-muted/40 overflow-hidden relative">
+                <div className={`h-full ${zoneBarColor(z)} opacity-40`} style={{ width: `${Math.min(100, b.target)}%` }} />
+                {actualPct != null && (
+                  <div className={`h-full ${zoneBarColor(z)} absolute top-0 left-0`} style={{ width: `${Math.min(100, actualPct)}%` }} />
+                )}
               </div>
             </div>
           );
