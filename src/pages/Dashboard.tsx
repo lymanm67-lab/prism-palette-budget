@@ -15,6 +15,8 @@ import { SavingsImpactCounter } from '@/components/SavingsImpactCounter';
 import { CashFlowForecastChart } from '@/components/CashFlowForecastChart';
 import { PendingPurchasesList } from '@/components/guardrails/PendingPurchasesList';
 import AppDevCutoffCard from '@/components/dashboard/AppDevCutoffCard';
+import { SmartAllocationCard } from '@/components/dashboard/SmartAllocationCard';
+
 import AppDevPoolCard from '@/components/dashboard/AppDevPoolCard';
 import { ProgressTracker } from '@/components/ProgressTracker';
 import { ModeSettingsDialog } from '@/components/ModeSettingsDialog';
