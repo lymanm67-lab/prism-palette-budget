@@ -905,10 +905,16 @@ function PaycheckDeploymentCard({ defaultOpen = false }: { defaultOpen?: boolean
       status={next ? 'ok' : 'soon'}
       className=""
       action={
-        <Button asChild size="sm" variant="ghost" className="h-7 text-xs">
-          <Link to="/coach/paycheck">Open <ArrowRight className="ml-1 h-3 w-3" /></Link>
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button asChild size="sm" variant="ghost" className="h-7 text-xs">
+            <Link to="/coach/deployment-rules">Edit rules</Link>
+          </Button>
+          <Button asChild size="sm" variant="ghost" className="h-7 text-xs">
+            <Link to="/coach/paycheck">Open <ArrowRight className="ml-1 h-3 w-3" /></Link>
+          </Button>
+        </div>
       }
+
     >
       {!next && (
         <div className="rounded-lg border border-dashed border-border/50 bg-background/30 px-4 py-5 flex flex-col items-center text-center gap-3">
