@@ -79,6 +79,8 @@ const CrossoverTracker = lazy(() => import("@/pages/CrossoverTracker"));
 const InvestmentPlanning = lazy(() => import("@/pages/InvestmentPlanning"));
 const MoneyCoach = lazy(() => import("@/pages/MoneyCoach"));
 const PaycheckDeployment = lazy(() => import("@/pages/PaycheckDeployment"));
+const PaycheckDeploymentRules = lazy(() => import("@/pages/PaycheckDeploymentRules"));
+
 const CoachChat = lazy(() => import("@/pages/CoachChat"));
 const CoachPlan = lazy(() => import("@/pages/CoachPlan"));
 
