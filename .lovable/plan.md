@@ -1,116 +1,55 @@
-## Goal
+# Port App-Dev Cutoff to 6 Other Apps (Founder-Gated)
 
-Keep monthly Lovable / app-dev spending under **$100** and **400 build credits**, whichever comes first. Soft guardrails only — warnings, recommendations, and an admin-approved override flow. No real charges are blocked (we can't), but PrismMoney surfaces the limit everywhere it matters.
+Target apps: **FocusOS, Coach Lyman App, FocusOSHR, Focused Driven Coach, Story Cast Academy, Montgomery Family Trust Vault**
 
----
+## Gating model (answers your question)
 
-## Data model (1 migration)
+In each target app the cutoff UI + data will be **hard-gated to your user_id** (`isFounder` check). Other users:
+- Won't see the nudge, settings panel, or dashboard card
+- Can't query the tables (RLS restricts SELECT/INSERT/UPDATE/DELETE to your user_id)
+- Won't even see the route if added
 
-**`app_dev_limits`** — one row per household
-- `id`, `household_id` (unique), `monthly_spend_limit` numeric default `100`
-- `monthly_credit_limit` int default `400`
-- `period_start` date (1st of current month)
-- `is_enabled` bool default true
-- `updated_at`
+This is stricter than PrismMoney's current household-scoped model. PrismMoney itself stays household-scoped (your household has only you anyway).
 
-**`app_dev_credit_log`** — manual credit-use entries
-- `id`, `household_id`, `date`, `credits_used` int, `note` text, `created_by`, `created_at`, `deleted_at`
+## Self-contained variant (no transaction reconciliation)
 
-**`app_dev_overrides`** — admin-approved emergency unlocks
-- `id`, `household_id`, `requested_by`, `approved_by` (nullable), `reason` text, `status` ('pending'|'approved'|'denied'), `expires_at` (default now+24h), `created_at`
+The other apps don't have `transactions`/`accounts`/`categories` schemas. So each gets a **lite version**:
+- Manual credit log only (you log Lovable credits/$ spent per day)
+- No auto-derivation from transactions
+- Same status logic (ok / warn / over), same override flow, same monthly reset cron
 
-All three: RLS scoped by `is_household_member`, plus full GRANT block. Admin approval gated by `has_role(auth.uid(), 'admin')`.
+## Per-app deliverables (×6, identical pattern)
 
----
+**Migration** (3 tables, founder-only RLS):
+- `app_dev_limits` (monthly_spend_limit, monthly_credit_limit, period_start, is_enabled, founder_user_id)
+- `app_dev_credit_log` (date, amount_usd, credits_used, note, soft-delete)
+- `app_dev_overrides` (reason, status, expires_at)
+- RLS: `USING (auth.uid() = '<your-user-id>')` on all three
+- GRANTs to `authenticated` + `service_role`
 
-## Spend source
+**Frontend** (4 files per app):
+- `src/lib/founder.ts` — single hardcoded founder user_id constant
+- `src/hooks/use-app-dev-cutoff.ts` — lite version (no tx/category deps)
+- `src/components/AppDevCutoffNudge.tsx` — only renders if `isFounder`
+- `src/components/AppDevCutoffPanel.tsx` — settings + manual log entry form
+- Mount nudge in main dashboard, panel in settings (founder-gated)
 
-- **Auto $:** sum `transactions` where category name matches `/lovable|app dev/i` (or a configurable `category_id` set in limits row), `deleted_at IS NULL`, `is_transfer=false`, `date >= period_start`.
-- **Manual credits:** sum `app_dev_credit_log` for current period.
-- **Override:** user can edit either value inline on the dashboard card (writes a manual adjustment row, never mutates transactions).
+**Edge function + cron** (1 per app):
+- `app-dev-cutoff-reset` — rolls `period_start` on the 1st monthly
+- pg_cron entry calling it with `CRON_SECRET`
 
----
+## Execution order
 
-## UI
+1. Confirm your founder user_id (same across all 6 workspaces? — see Q below)
+2. For each app in parallel batches of 2: migration → hook → components → mount → edge fn + cron
+3. Verify nudge renders for you and is invisible when signed in as a test user
 
-**1. Settings → new section "App-Dev Cutoff"** (`src/pages/Settings.tsx` tab or inline card)
-- Edit `monthly_spend_limit`, `monthly_credit_limit`, pick the tracked category, enable/disable, manual reset button.
+## Questions before I build
 
-**2. Dashboard card** `src/components/dashboard/AppDevCutoffCard.tsx`
-- Two progress bars (spend $ / credits), green→yellow (≥70%)→red (≥100%).
-- "Log credits used" quick action.
-- "Request override" button when at/over limit.
-- Status copy: under 70% silent praise, 70–99% warning, ≥100% red banner with the three canned messages from your spec.
+1. **Same user_id across all 6 apps?** Each Lovable Cloud project has its own auth.users table. I need to confirm your account email exists in each — or I'll add a fallback that checks email instead of user_id (slightly less strict but works cross-project).
+2. **Limits — same $100 / 400 credits per app**, or one **shared global pool** across all 7 apps? (Shared = much more work: needs a central API; I'd recommend per-app for now.)
+3. **Where to mount the nudge** in each app? Default: top of main dashboard/home route. Or only on a `/settings/app-dev` page?
 
-**3. Override modal** `src/components/app-dev/OverrideRequestModal.tsx`
-- Reason textarea, submit → row in `app_dev_overrides` status=pending.
-- Admins see pending requests on the same card and can approve/deny inline.
+## Credit estimate
 
-**4. Coach tile** on `/coach` when ≥70% — links to the dashboard card.
-
----
-
-## Logic
-
-**Hook** `src/hooks/use-app-dev-cutoff.ts`
-- Loads limits row, current-period transactions matching tracked category, credit log sum, active approved override.
-- Returns `{ spendUsed, spendLimit, creditsUsed, creditLimit, spendPct, creditPct, status: 'ok'|'warn'|'over', overrideActive, daysLeft }`.
-- Memoized; subscribes via `useRealtimeRefresh` to all three tables.
-
-**Recommendation strings** (static map in the hook, no AI in v1):
-- `over` → "You've reached your monthly limit. New requests are locked until next month."
-- `warn` → "You're close to your monthly limit. Finish planning before purchasing more credits."
-- `nice_to_have` (any new credit log when status=warn/over) → "This request appears nice-to-have. Move it to next month's backlog."
-
----
-
-## Monthly auto-reset (pg_cron + edge fn)
-
-- New edge fn `supabase/functions/app-dev-cutoff-reset/index.ts` — CRON_SECRET-protected, updates every `app_dev_limits` row to set `period_start = date_trunc('month', now())`. Soft-resets counters (computed off period_start, so this is the actual reset).
-- pg_cron job: `0 0 1 * *` UTC → POSTs to the edge fn with anon key + CRON_SECRET header.
-- Inserted via `supabase--insert` (per cron-job convention).
-
----
-
-## Files
-
-**New**
-- `supabase/functions/app-dev-cutoff-reset/index.ts`
-- `src/hooks/use-app-dev-cutoff.ts`
-- `src/components/dashboard/AppDevCutoffCard.tsx`
-- `src/components/app-dev/OverrideRequestModal.tsx`
-- `src/components/app-dev/CreditLogQuickEntry.tsx`
-- `src/components/settings/AppDevCutoffSettings.tsx`
-
-**Edited**
-- `src/pages/Dashboard.tsx` — mount card
-- `src/pages/Settings.tsx` — mount settings section
-- `src/pages/MoneyCoach.tsx` — conditional tile at ≥70%
-
-**Migration**
-- 3 tables + RLS + GRANTs + triggers for `updated_at`
-
----
-
-## Memory updates (after build)
-
-- New memory file `mem://features/app-dev-cutoff` describing limits, override flow, reset cron.
-- Add line to Core: "App-dev cutoff: $100 / 400 credits per month, soft guardrail, admin override 24h."
-
----
-
-## Out of scope (v1)
-
-- AI recommendation engine (nice-to-have detection, postpone suggestions)
-- Locking manual entry forms
-- Multi-month historical chart
-- Per-category limits beyond app-dev
-- Notifications/email at 70%/100% (can add later via existing notification system)
-
----
-
-## Risks
-
-- Auto $ tracking depends on transactions being tagged to the right category. Settings exposes the category picker so you can correct it.
-- Credit usage is fully manual — no Lovable API. The quick-entry button on the dashboard keeps friction low.
-- Override approval reuses `app_role='admin'`. If you're the only admin, the "friction" is effectively self-approval — flag if you want to add a typed-confirmation phrase as extra friction.
+Medium-Large. ~6 migrations + ~24 frontend files + 6 edge functions. Doing all 6 in one go is most efficient (shared patterns, parallel writes).
