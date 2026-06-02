@@ -371,6 +371,105 @@ export type Database = {
         }
         Relationships: []
       }
+      app_dev_pool_log: {
+        Row: {
+          amount_usd: number
+          app_name: string
+          created_at: string
+          credits_used: number
+          date: string
+          deleted_at: string | null
+          founder_email: string
+          id: string
+          note: string | null
+          source: string
+        }
+        Insert: {
+          amount_usd?: number
+          app_name: string
+          created_at?: string
+          credits_used?: number
+          date?: string
+          deleted_at?: string | null
+          founder_email: string
+          id?: string
+          note?: string | null
+          source?: string
+        }
+        Update: {
+          amount_usd?: number
+          app_name?: string
+          created_at?: string
+          credits_used?: number
+          date?: string
+          deleted_at?: string | null
+          founder_email?: string
+          id?: string
+          note?: string | null
+          source?: string
+        }
+        Relationships: []
+      }
+      app_dev_pool_overrides: {
+        Row: {
+          created_at: string
+          expires_at: string
+          founder_email: string
+          id: string
+          reason: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          founder_email: string
+          id?: string
+          reason: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          founder_email?: string
+          id?: string
+          reason?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      app_dev_pool_settings: {
+        Row: {
+          created_at: string
+          founder_email: string
+          id: string
+          is_enabled: boolean
+          monthly_credit_limit: number
+          monthly_spend_limit: number
+          period_start: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          founder_email: string
+          id?: string
+          is_enabled?: boolean
+          monthly_credit_limit?: number
+          monthly_spend_limit?: number
+          period_start?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          founder_email?: string
+          id?: string
+          is_enabled?: boolean
+          monthly_credit_limit?: number
+          monthly_spend_limit?: number
+          period_start?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
