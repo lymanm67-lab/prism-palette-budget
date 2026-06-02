@@ -169,12 +169,10 @@ async function processHousehold(supabase: any, householdId: string, opts: { forc
     .is("resolved_at", null);
 
   // 3. Duplicate categories
-  const { data: dupCats } = await supabase.rpc("noop_placeholder", {}).select?.() ?? { data: null };
-  // Use raw query via PostgREST: fetch all categories and find dupes in JS
   const { data: cats } = await supabase
     .from("categories")
-    .select("id, name, group_id, category_groups!inner(household_id)")
-    .eq("category_groups.household_id", householdId);
+    .select("id, name, group_id")
+    .eq("household_id", householdId);
   const seen = new Map<string, string[]>();
   for (const c of cats ?? []) {
     const k = `${c.group_id}::${c.name.toLowerCase().trim()}`;
