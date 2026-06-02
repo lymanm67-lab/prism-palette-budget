@@ -15,6 +15,7 @@ import { SavingsImpactCounter } from '@/components/SavingsImpactCounter';
 import { CashFlowForecastChart } from '@/components/CashFlowForecastChart';
 import { PendingPurchasesList } from '@/components/guardrails/PendingPurchasesList';
 import AppDevCutoffCard from '@/components/dashboard/AppDevCutoffCard';
+import AppDevPoolCard from '@/components/dashboard/AppDevPoolCard';
 import { ProgressTracker } from '@/components/ProgressTracker';
 import { ModeSettingsDialog } from '@/components/ModeSettingsDialog';
 import MoMIndicator from '@/components/MoMIndicator';
@@ -338,6 +339,11 @@ Your Safe-to-Spend updates in real time as you add transactions, pay bills, and 
       {/* App-Dev Cutoff */}
       <motion.div variants={item}>
         <AppDevCutoffCard />
+      </motion.div>
+
+      {/* Shared App-Dev Pool (across all founder apps) */}
+      <motion.div variants={item}>
+        <AppDevPoolCard />
       </motion.div>
 
       {/* Getting Started Widget */}
