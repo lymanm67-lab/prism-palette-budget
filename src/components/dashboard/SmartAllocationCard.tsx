@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Sparkles, ArrowRight, X, Settings2 } from 'lucide-react';
 import { useTransactions } from '@/hooks/use-finance-data';
-import { useDeploymentRules, zoneFor, zoneColor, zoneBarColor, zoneLabel } from '@/hooks/use-deployment-rules';
+import { useDeploymentRules, zoneFor, zoneColor, zoneBarColor, zoneLabel, DEFAULT_RULES } from '@/hooks/use-deployment-rules';
 import { useBuildPaycheckDeployment, usePaycheckDeployments } from '@/hooks/use-paycheck-deploy';
 import { useCurrency } from '@/hooks/use-currency';
 import { format, parseISO, differenceInDays } from 'date-fns';
@@ -23,21 +23,32 @@ export function SmartAllocationCard() {
     return until ? Date.now() < Number(until) : false;
   });
 
-  // Detect last paycheck: positive transaction with income/payroll keywords within 7 days
+  // Detect last paycheck: aggregate same-day positive deposits (split paychecks)
+  // within the last 7 days. Splits commonly route to multiple accounts on one day.
   const lastPaycheck = useMemo(() => {
     if (!transactions) return null;
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - 7);
-    const income = transactions
-      .filter((t: any) => {
-        if (t.amount <= 0 || t.is_transfer) return false;
-        if (new Date(t.date) < cutoff) return false;
-        const m = (t.merchant || '').toLowerCase();
-        const cat = (t.categories?.name || '').toLowerCase();
-        return /(payroll|paycheck|salary|wage|direct\s?dep|adp|gusto|paychex)/i.test(m + ' ' + cat) || t.amount > 500;
-      })
-      .sort((a: any, b: any) => b.date.localeCompare(a.date));
-    return income[0] || null;
+    const income = transactions.filter((t: any) => {
+      if (t.amount <= 0 || t.is_transfer) return false;
+      if (new Date(t.date) < cutoff) return false;
+      const m = (t.merchant || '').toLowerCase();
+      const cat = (t.categories?.name || '').toLowerCase();
+      return /(payroll|paycheck|salary|wage|direct\s?dep|adp|gusto|paychex|deposit)/i.test(m + ' ' + cat) || t.amount > 150;
+    });
+    if (!income.length) return null;
+    // Group by date, sum amounts
+    const byDate = new Map<string, number>();
+    for (const t of income) {
+      byDate.set(t.date, (byDate.get(t.date) || 0) + Number(t.amount));
+    }
+    // Pick most recent date with a meaningful total (>$500)
+    const sorted = [...byDate.entries()]
+      .filter(([, amt]) => amt > 500)
+      .sort((a, b) => b[0].localeCompare(a[0]));
+    if (!sorted.length) return null;
+    const [date, amount] = sorted[0];
+    return { date, amount };
   }, [transactions]);
 
   // Has it already been deployed?
@@ -49,11 +60,15 @@ export function SmartAllocationCard() {
   if (dismissed || !rules || !lastPaycheck || alreadyApplied) return null;
 
   const net = Math.abs(lastPaycheck.amount);
+  const num = (v: any, d: number) => {
+    const n = typeof v === 'number' ? v : Number(v);
+    return Number.isFinite(n) ? n : d;
+  };
   const buckets = [
-    { key: 'fixed', label: 'Fixed Costs', min: rules.fixed_min, max: rules.fixed_max, target: rules.fixed_target },
-    { key: 'invest', label: 'Investments', min: rules.invest_min, max: rules.invest_max, target: rules.invest_target },
-    { key: 'savings', label: 'Savings Goals', min: rules.savings_min, max: rules.savings_max, target: rules.savings_target },
-    { key: 'guiltfree', label: 'Guilt-Free', min: rules.guiltfree_min, max: rules.guiltfree_max, target: rules.guiltfree_target },
+    { key: 'fixed', label: 'Fixed Costs', min: num(rules.fixed_min, DEFAULT_RULES.fixed_min), max: num(rules.fixed_max, DEFAULT_RULES.fixed_max), target: num(rules.fixed_target, DEFAULT_RULES.fixed_target) },
+    { key: 'invest', label: 'Investments', min: num(rules.invest_min, DEFAULT_RULES.invest_min), max: num(rules.invest_max, DEFAULT_RULES.invest_max), target: num(rules.invest_target, DEFAULT_RULES.invest_target) },
+    { key: 'savings', label: 'Savings Goals', min: num(rules.savings_min, DEFAULT_RULES.savings_min), max: num(rules.savings_max, DEFAULT_RULES.savings_max), target: num(rules.savings_target, DEFAULT_RULES.savings_target) },
+    { key: 'guiltfree', label: 'Guilt-Free', min: num(rules.guiltfree_min, DEFAULT_RULES.guiltfree_min), max: num(rules.guiltfree_max, DEFAULT_RULES.guiltfree_max), target: num(rules.guiltfree_target, DEFAULT_RULES.guiltfree_target) },
   ];
 
   const handleDismiss = () => {
