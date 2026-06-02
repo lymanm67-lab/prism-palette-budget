@@ -72,7 +72,7 @@ const Dashboard = () => {
       if (nav === 'business') return 'business';
       if (nav === 'full') return 'combined';
     } catch { /* noop */ }
-    return 'personal';
+    return 'combined';
   });
   const [selectedBusiness, setSelectedBusiness] = useState<string>('all');
   const [manageOpen, setManageOpen] = useState(false);
