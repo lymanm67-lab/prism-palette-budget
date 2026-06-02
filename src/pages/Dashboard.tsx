@@ -334,6 +334,11 @@ Your Safe-to-Spend updates in real time as you add transactions, pay bills, and 
         <PendingPurchasesList />
       </motion.div>
 
+      {/* App-Dev Cutoff */}
+      <motion.div variants={item}>
+        <AppDevCutoffCard />
+      </motion.div>
+
       {/* Getting Started Widget */}
       <motion.div variants={item}>
         <GettingStartedWidget />
