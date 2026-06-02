@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Sparkles, ArrowRight, X, Settings2 } from 'lucide-react';
 import { useTransactions } from '@/hooks/use-finance-data';
-import { useDeploymentRules, zoneFor, zoneColor, zoneBarColor, zoneLabel } from '@/hooks/use-deployment-rules';
+import { useDeploymentRules, zoneFor, zoneColor, zoneBarColor, zoneLabel, DEFAULT_RULES } from '@/hooks/use-deployment-rules';
 import { useBuildPaycheckDeployment, usePaycheckDeployments } from '@/hooks/use-paycheck-deploy';
 import { useCurrency } from '@/hooks/use-currency';
 import { format, parseISO, differenceInDays } from 'date-fns';
