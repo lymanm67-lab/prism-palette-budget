@@ -73,13 +73,12 @@ const BAR_COLORS: Record<ExpenseType, string> = {
   non_monthly: 'bg-purple-500',
 };
 
-// Budget benchmark percentages (60/20/10/10 model)
-// fixed=60% (bills, rent, insurance), flexible=20% (savings & investments),
-// non_monthly=10% (fun) + 10% (emergency) combined
+// Ramit Sethi's Conscious Spending Plan ranges (% of net income)
+// Fixed Costs 50-60%, Investments+Savings 15-20%, Guilt-Free 20-35%
 const BENCHMARK_RANGES: Partial<Record<ExpenseType, { min: number; max: number; label: string }>> = {
-  fixed: { min: 55, max: 65, label: '~60%' },
-  flexible: { min: 18, max: 22, label: '~20% Savings' },
-  non_monthly: { min: 18, max: 22, label: '~20% Fun + Emergency' },
+  fixed: { min: 50, max: 60, label: 'Fixed Costs 50–60%' },
+  flexible: { min: 15, max: 20, label: 'Investments + Savings 15–20%' },
+  non_monthly: { min: 20, max: 35, label: 'Guilt-Free 20–35%' },
 };
 
 interface BudgetRow {
