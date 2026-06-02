@@ -80,12 +80,19 @@ export function SmartAllocationCard() {
     const n = typeof v === 'number' ? v : Number(v);
     return Number.isFinite(n) ? n : d;
   };
+  // Known monthly actuals (from paystub + reconciled bills). Replace with calc once
+  // category groups get conscious_bucket tagging (see plan).
+  const ACTUAL_FIXED = 2709;        // personal bills + personal subscriptions
+  const ACTUAL_INVEST_SELF = 451.66;   // TDA + 457(b) + Roth-TDA + Roth-457(b) + HSA payroll deductions
+  const ACTUAL_INVEST_EMPLOYER = 516.56; // employer contribution from paystub
+  const ACTUAL_INVEST = ACTUAL_INVEST_SELF + ACTUAL_INVEST_EMPLOYER; // 968.22
+
   const buckets = [
-    { key: 'fixed', label: 'Fixed Costs', min: num(rules.fixed_min, DEFAULT_RULES.fixed_min), max: num(rules.fixed_max, DEFAULT_RULES.fixed_max), target: num(rules.fixed_target, DEFAULT_RULES.fixed_target) },
-    { key: 'invest', label: 'Investments', min: num(rules.invest_min, DEFAULT_RULES.invest_min), max: num(rules.invest_max, DEFAULT_RULES.invest_max), target: num(rules.invest_target, DEFAULT_RULES.invest_target) },
+    { key: 'fixed', label: 'Fixed Costs', min: num(rules.fixed_min, DEFAULT_RULES.fixed_min), max: num(rules.fixed_max, DEFAULT_RULES.fixed_max), target: num(rules.fixed_target, DEFAULT_RULES.fixed_target), actual: ACTUAL_FIXED },
+    { key: 'invest', label: 'Investments', min: num(rules.invest_min, DEFAULT_RULES.invest_min), max: num(rules.invest_max, DEFAULT_RULES.invest_max), target: num(rules.invest_target, DEFAULT_RULES.invest_target), actual: ACTUAL_INVEST, actualNote: `$${ACTUAL_INVEST_SELF.toFixed(2)} you + $${ACTUAL_INVEST_EMPLOYER.toFixed(2)} employer` },
     { key: 'savings', label: 'Savings Goals', min: num(rules.savings_min, DEFAULT_RULES.savings_min), max: num(rules.savings_max, DEFAULT_RULES.savings_max), target: num(rules.savings_target, DEFAULT_RULES.savings_target) },
     { key: 'guiltfree', label: 'Guilt-Free', min: num(rules.guiltfree_min, DEFAULT_RULES.guiltfree_min), max: num(rules.guiltfree_max, DEFAULT_RULES.guiltfree_max), target: num(rules.guiltfree_target, DEFAULT_RULES.guiltfree_target) },
-  ];
+  ] as Array<{ key: string; label: string; min: number; max: number; target: number; actual?: number; actualNote?: string }>;
 
   const handleDismiss = () => {
     localStorage.setItem(DISMISS_KEY, String(Date.now() + 24 * 3600 * 1000));
