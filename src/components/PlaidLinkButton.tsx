@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { usePlaidLink } from 'react-plaid-link';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -89,9 +89,11 @@ const PlaidLinkButton = () => {
   });
 
   // Auto-open Plaid Link when token is ready
-  if (linkToken && ready) {
-    open();
-  }
+  useEffect(() => {
+    if (linkToken && ready) {
+      open();
+    }
+  }, [linkToken, ready, open]);
 
   if (syncing) {
     return (
