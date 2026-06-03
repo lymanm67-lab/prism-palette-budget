@@ -77,6 +77,7 @@ interface Debt {
   forgiveness_note?: string;
   due_day?: number;
   due_date?: string;
+  target_payoff_date?: string;
 }
 
 
