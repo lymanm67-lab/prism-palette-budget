@@ -122,6 +122,38 @@ const PlaidLinkButton = forwardRef<PlaidLinkButtonHandle>((_, ref) => {
     }
   }, [linkToken, ready, open]);
 
+  // Add a dim backdrop behind Plaid's iframe so the modal is clearly visible in
+  // dark mode. Plaid Link inherits prefers-color-scheme and ships no scrim.
+  useEffect(() => {
+    if (!linkToken) return;
+
+    const backdropId = 'prism-plaid-backdrop';
+    const styleId = 'prism-plaid-color-scheme';
+
+    const backdrop = document.createElement('div');
+    backdrop.id = backdropId;
+    Object.assign(backdrop.style, {
+      position: 'fixed',
+      inset: '0',
+      background: 'rgba(0, 0, 0, 0.65)',
+      zIndex: '2147483646', // just below Plaid's iframe (2147483647)
+      pointerEvents: 'none',
+    } as CSSStyleDeclaration);
+    document.body.appendChild(backdrop);
+
+    // Force Plaid's iframe to render with a light color-scheme so the white
+    // modal stays readable on top of the dark app.
+    const style = document.createElement('style');
+    style.id = styleId;
+    style.textContent = `iframe[id^="plaid-link-iframe"]{color-scheme: light;}`;
+    document.head.appendChild(style);
+
+    return () => {
+      document.getElementById(backdropId)?.remove();
+      document.getElementById(styleId)?.remove();
+    };
+  }, [linkToken]);
+
   if (syncing) {
     return (
       <Button disabled className="gap-2">
