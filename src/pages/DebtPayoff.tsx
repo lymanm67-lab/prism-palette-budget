@@ -737,6 +737,13 @@ const DebtPayoff = () => {
                         <div><p className="font-display text-base font-bold text-foreground">{d.interest_rate}%</p><p>APR</p></div>
                         <div><p className="font-display text-base font-bold text-foreground">{formatCurrency(d.minimum_payment)}</p><p>Min. Payment</p></div>
                       </div>
+                      {payoffDateByDebt.get(d.name) && (
+                        <div className="mt-2 pt-2 border-t border-border/30 flex items-center justify-between text-xs">
+                          <span className="text-muted-foreground">Expected payoff</span>
+                          <span className="font-medium text-foreground">{payoffDateByDebt.get(d.name)}</span>
+                        </div>
+                      )}
+
                     </CardContent>
                   </Card>
                 ))}
