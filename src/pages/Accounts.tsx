@@ -550,7 +550,7 @@ const Accounts = () => {
 
         {/* Stale connection banner */}
         {(() => {
-          const staleAccounts = (accounts || []).filter(a => a.last_synced_at && isStale(a.last_synced_at));
+          const staleAccounts = (accounts || []).filter(a => a.last_synced_at && isStale(a.last_synced_at) && a.provider_type && a.provider_type !== 'manual');
           if (!staleAccounts.length) return null;
           const staleNames = staleAccounts.map(a => a.institution || a.name);
           const uniqueInstitutions = [...new Set(staleNames)];
