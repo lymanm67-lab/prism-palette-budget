@@ -431,9 +431,14 @@ Deno.serve(async (req) => {
           }),
         });
 
+        if (!txnResponse.ok) {
+          const errText = await txnResponse.text();
+          console.error(`[plaid sync-transactions] ${item.institution_name} status=${txnResponse.status} body=${errText}`);
+        }
         if (txnResponse.ok) {
           const txnData = await txnResponse.json();
           const transactions = txnData.transactions || [];
+          console.log(`[plaid sync-transactions] ${item.institution_name} returned ${transactions.length} txns (range ${startDate}..${endDate})`);
 
           if (transactions.length > 0) {
             // Layer 1: existing provider_transaction_ids
