@@ -193,8 +193,13 @@ const Accounts = () => {
 
       if (providerType === 'snaptrade') {
         await syncSnapTrade.mutateAsync();
+      } else if (!providerType || providerType === 'manual') {
+        // Manual accounts have no provider to sync — nothing to pull.
+        toast.info('This is a manual account — add transactions manually or connect it to a bank to enable auto-sync.');
+        setRefreshingAccountId(null);
+        return;
       } else {
-        // For Plaid and manual accounts, trigger Plaid sync
+        // For Plaid (and similar) connected accounts, trigger Plaid sync
         const res = await fetch(`${supabaseUrl}/functions/v1/plaid/sync-transactions`, {
           method: 'POST',
           headers: {
@@ -217,6 +222,7 @@ const Accounts = () => {
           toast.success('Account refreshed — no new transactions');
         }
       }
+
 
       qc.invalidateQueries({ queryKey: ['accounts'] });
       qc.invalidateQueries({ queryKey: ['transactions'] });
