@@ -1,0 +1,1 @@
+ALTER TABLE public.debt_items ADD COLUMN IF NOT EXISTS target_payoff_date DATE;

@@ -1313,6 +1313,7 @@ export type Database = {
           name: string
           plan_id: string
           sort_order: number
+          target_payoff_date: string | null
         }
         Insert: {
           account_id?: string | null
@@ -1333,6 +1334,7 @@ export type Database = {
           name: string
           plan_id: string
           sort_order?: number
+          target_payoff_date?: string | null
         }
         Update: {
           account_id?: string | null
@@ -1353,6 +1355,7 @@ export type Database = {
           name?: string
           plan_id?: string
           sort_order?: number
+          target_payoff_date?: string | null
         }
         Relationships: [
           {
