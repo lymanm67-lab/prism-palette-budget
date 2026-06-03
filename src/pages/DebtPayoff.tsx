@@ -262,6 +262,7 @@ const DebtPayoff = () => {
       forgiveness_note: form.forgiveness_eligible ? (form.forgiveness_note.trim() || null) : null,
       due_day: form.due_date ? (new Date(form.due_date + 'T00:00:00').getDate()) : (form.due_day ? Math.max(1, Math.min(31, parseInt(form.due_day, 10))) : null),
       due_date: form.due_date || null,
+      target_payoff_date: form.target_payoff_date || null,
       in_settlement_plan: !!form.in_settlement_plan,
 
     };
