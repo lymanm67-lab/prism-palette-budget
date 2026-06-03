@@ -17,7 +17,7 @@ import { formatDate } from '@/lib/seed-data';
 import { useCurrency } from '@/hooks/use-currency';
 import { Plus, Landmark, CreditCard, TrendingUp, PiggyBank, Car, Loader2, Trash2, Upload, Pencil, Check, X, MoreHorizontal, BookOpen, Link2, RefreshCw, AlertTriangle, Clock, Unlink, RotateCcw } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
-import PlaidLinkButton from '@/components/PlaidLinkButton';
+import PlaidLinkButton, { type PlaidLinkButtonHandle } from '@/components/PlaidLinkButton';
 import MxConnectButton from '@/components/MxConnectButton';
 import SnapTradeConnectButton, { type SnapTradeConnectHandle } from '@/components/SnapTradeConnectButton';
 import PageOverview from '@/components/PageOverview';
@@ -69,6 +69,7 @@ const Accounts = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [refreshingAccountId, setRefreshingAccountId] = useState<string | null>(null);
   const snapTradeRef = useRef<SnapTradeConnectHandle>(null);
+  const plaidLinkRef = useRef<PlaidLinkButtonHandle>(null);
 
   const [updateLinkToken, setUpdateLinkToken] = useState<string | null>(null);
   const [relinkingInstitution, setRelinkingInstitution] = useState<string | null>(null);
@@ -490,8 +491,7 @@ const Accounts = () => {
               </Tooltip>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem className="gap-2" onSelect={() => {
-                  const plaidBtn = document.querySelector('[data-plaid-trigger]') as HTMLButtonElement;
-                  plaidBtn?.click();
+                  plaidLinkRef.current?.connect();
                 }}>
                   <Landmark className="h-4 w-4" /> Connect Bank (Plaid)
                 </DropdownMenuItem>
@@ -518,7 +518,7 @@ const Accounts = () => {
 
         {/* Hidden triggers for Plaid/MX/SnapTrade accessed via dropdown */}
         <div className="hidden">
-          <PlaidLinkButton />
+          <PlaidLinkButton ref={plaidLinkRef} />
           <MxConnectButton />
           <SnapTradeConnectButton ref={snapTradeRef} />
         </div>
