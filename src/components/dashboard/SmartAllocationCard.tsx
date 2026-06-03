@@ -89,12 +89,18 @@ export function SmartAllocationCard() {
   const ACTUAL_SAVINGS_EF = 10;         // Emergency Fund monthly contribution
   const ACTUAL_SAVINGS_KIKOFF = 35;     // Kikoff credit builder monthly
   const ACTUAL_SAVINGS_CK = 20;         // Credit Karma credit builder monthly
-  const ACTUAL_SAVINGS = ACTUAL_SAVINGS_EF + ACTUAL_SAVINGS_KIKOFF + ACTUAL_SAVINGS_CK; // 65
+  // EverBank automatic savings: $300/mo starting July 2026
+  const _now = new Date();
+  const ACTUAL_SAVINGS_EVERBANK = (_now.getFullYear() > 2026 || (_now.getFullYear() === 2026 && _now.getMonth() >= 6)) ? 300 : 0;
+  const ACTUAL_SAVINGS = ACTUAL_SAVINGS_EF + ACTUAL_SAVINGS_KIKOFF + ACTUAL_SAVINGS_CK + ACTUAL_SAVINGS_EVERBANK;
+  const savingsNote = ACTUAL_SAVINGS_EVERBANK > 0
+    ? `$${ACTUAL_SAVINGS_EF} Emergency Fund + $${ACTUAL_SAVINGS_KIKOFF} Kikoff + $${ACTUAL_SAVINGS_CK} Credit Karma + $${ACTUAL_SAVINGS_EVERBANK} EverBank`
+    : `$${ACTUAL_SAVINGS_EF} Emergency Fund + $${ACTUAL_SAVINGS_KIKOFF} Kikoff + $${ACTUAL_SAVINGS_CK} Credit Karma (+ $300 EverBank starting Jul)`;
 
   const buckets = [
     { key: 'fixed', label: 'Fixed Costs', min: num(rules.fixed_min, DEFAULT_RULES.fixed_min), max: num(rules.fixed_max, DEFAULT_RULES.fixed_max), target: num(rules.fixed_target, DEFAULT_RULES.fixed_target), actual: ACTUAL_FIXED },
     { key: 'invest', label: 'Investments', min: num(rules.invest_min, DEFAULT_RULES.invest_min), max: num(rules.invest_max, DEFAULT_RULES.invest_max), target: num(rules.invest_target, DEFAULT_RULES.invest_target), actual: ACTUAL_INVEST, actualNote: `$${ACTUAL_INVEST_SELF.toFixed(2)} you + $${ACTUAL_INVEST_EMPLOYER.toFixed(2)} employer` },
-    { key: 'savings', label: 'Savings Goals', min: num(rules.savings_min, DEFAULT_RULES.savings_min), max: num(rules.savings_max, DEFAULT_RULES.savings_max), target: num(rules.savings_target, DEFAULT_RULES.savings_target), actual: ACTUAL_SAVINGS, actualNote: `$${ACTUAL_SAVINGS_EF} Emergency Fund + $${ACTUAL_SAVINGS_KIKOFF} Kikoff + $${ACTUAL_SAVINGS_CK} Credit Karma` },
+    { key: 'savings', label: 'Savings Goals', min: num(rules.savings_min, DEFAULT_RULES.savings_min), max: num(rules.savings_max, DEFAULT_RULES.savings_max), target: num(rules.savings_target, DEFAULT_RULES.savings_target), actual: ACTUAL_SAVINGS, actualNote: savingsNote },
     { key: 'guiltfree', label: 'Guilt-Free', min: num(rules.guiltfree_min, DEFAULT_RULES.guiltfree_min), max: num(rules.guiltfree_max, DEFAULT_RULES.guiltfree_max), target: num(rules.guiltfree_target, DEFAULT_RULES.guiltfree_target) },
   ] as Array<{ key: string; label: string; min: number; max: number; target: number; actual?: number; actualNote?: string }>;
 
