@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
-import { usePlaidLink } from 'react-plaid-link';
+import { usePlaidLink, type PlaidLinkOnSuccessMetadata } from 'react-plaid-link';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useHousehold } from '@/contexts/HouseholdContext';
@@ -19,7 +19,7 @@ const PlaidLinkButton = forwardRef<PlaidLinkButtonHandle>((_, ref) => {
   const [syncing, setSyncing] = useState(false);
   const { toast } = useToast();
   const { household } = useHousehold();
-  const { subscribed, subscriptionTier } = useAuth();
+  const { subscriptionTier } = useAuth();
   const qc = useQueryClient();
   const hasPlaidAccess = canUsePlaid(subscriptionTier);
 
@@ -43,13 +43,14 @@ const PlaidLinkButton = forwardRef<PlaidLinkButtonHandle>((_, ref) => {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Failed to create link token');
       setLinkToken(data.link_token);
-    } catch (err: any) {
-      toast({ title: 'Connection error', description: err.message, variant: 'destructive' });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to create link token';
+      toast({ title: 'Connection error', description: message, variant: 'destructive' });
     }
     setLoading(false);
   }, [toast]);
 
-  const onSuccess = useCallback(async (publicToken: string, metadata: any) => {
+  const onSuccess = useCallback(async (publicToken: string, metadata: PlaidLinkOnSuccessMetadata) => {
     setSyncing(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -80,8 +81,9 @@ const PlaidLinkButton = forwardRef<PlaidLinkButtonHandle>((_, ref) => {
       });
       qc.invalidateQueries({ queryKey: ['accounts'] });
       qc.invalidateQueries({ queryKey: ['transactions'] });
-    } catch (err: any) {
-      toast({ title: 'Sync error', description: err.message, variant: 'destructive' });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to sync accounts';
+      toast({ title: 'Sync error', description: message, variant: 'destructive' });
     }
     setSyncing(false);
     setLinkToken(null);
