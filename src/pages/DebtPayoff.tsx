@@ -624,6 +624,7 @@ const DebtPayoff = () => {
                   forgiveness_note: '',
                   due_day: '',
                   due_date: '',
+                  target_payoff_date: '',
                   in_settlement_plan: false,
 
 
