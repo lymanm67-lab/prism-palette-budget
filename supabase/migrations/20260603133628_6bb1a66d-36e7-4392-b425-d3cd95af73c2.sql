@@ -1,0 +1,3 @@
+UPDATE public.transactions SET transfer_pair_id = NULL WHERE account_id = '64f06e8d-9086-4316-85ec-d7dcb3d82f73' OR transfer_pair_id IN (SELECT id FROM public.transactions WHERE account_id = '64f06e8d-9086-4316-85ec-d7dcb3d82f73');
+DELETE FROM public.transactions WHERE account_id = '64f06e8d-9086-4316-85ec-d7dcb3d82f73';
+DELETE FROM public.accounts WHERE id = '64f06e8d-9086-4316-85ec-d7dcb3d82f73';
