@@ -1,75 +1,35 @@
-## 1. Safe-to-Spend fix (engine)
+## Goal
+Import the full BetrLink LLC account activity (Mar 2024 – Jun 2026) as a new manual account in your ledger, with every deposit, fee, and creditor payment posted as a transaction. The monthly $888 ACH from your IU Credit Union checking will be linked as a transfer.
 
-**Problem:** STS shows $2,844 because it only subtracts bills + subscriptions, then applies the 20% buffer. It does NOT reserve money for Investing or Savings, so "safe to spend" overstates what's truly guilt-free.
+## Approach
 
-**Fix:** In `src/hooks/use-safe-to-spend.ts`, subtract a **Deployment Reserve** from `baseMonthlySafe` *before* the buffer multiplier:
+### 1. Create the BetrLink account
+- **Name:** BetrLink Settlement (#54138865)
+- **Institution:** BetrLink LLC
+- **Type:** depository / checking (escrow-style)
+- **Provider:** manual
+- **Starting balance:** $0.00 (auto-adjusts as transactions post; statement ending balance is $150.15)
 
-```
-baseMonthlySafe = effectiveIncome
-                  − effectiveExpenses
-                  − deploymentReserve   ← NEW
-                  − spentAdjustment
-```
+### 2. Post every statement line as a transaction
+All ~130 rows from the PDF go in with proper sign convention:
+- **Deposits (ACH from you + creditor refunds + advances)** → positive amount
+- **Customer Fees** (Gitmeid Legal Fee, Settlement Fee, Advance Repayment) → negative, category **BetrLink Debt Settlement**
+- **Transaction Fees** (Monthly Service Charge, Phone Pay COM, Account Setup, Second Day Check Payment) → negative, category **Bank & Merchant Fees**
+- **Creditor Payments** (Second Round LP, Capital One Bank, NetCredit, USAA Savings Bank, Javitch Block LLC, Blitt and Gaines, Discover Financial) → negative, category **BetrLink Debt Settlement**, merchant = creditor name
+- **Withdrawal (ACH out)** → negative
 
-`deploymentReserve = (investments_pct + savings_pct) × effectiveIncome`, pulled from the new `paycheck_deployment_rules` row (defaults 10% + 10% = 20% of income → ~$1,708 reserved). Result: STS drops from $2,844 → ~$1,990, matching your math.
+### 3. Link the monthly ACH deposits as transfers
+For each ACH deposit into BetrLink, I'll mark `is_transfer = true` and (where a matching outflow exists in **SIMPLE CHECKING** at IU Credit Union on the same date and amount) wire them together via `transfer_pair_id` so they're excluded from spending totals on both sides.
 
-Return two new fields (`deploymentReserve`, `investingPct`, `savingsPct`) so `StsEquationView` can show the new line.
+If no matching outflow exists in checking yet for some deposits, those will still be flagged `is_transfer = true` on the BetrLink side so they don't inflate "income."
 
-**StsEquationView:** add one row — *"− Investing + Savings reserve ($X)"* — between Expenses and Buffer.
+### 4. Skip exact duplicates
+Before insert, I'll check for existing transactions on the BetrLink account with same date + amount + merchant to avoid double-posting if you re-run this.
 
-## 2. Smart Allocation Card (Dashboard)
+## One thing to confirm
+You said IU Credit Union Checking is the source. The closest match in your accounts is **SIMPLE CHECKING** (IU Credit Union). If that's wrong, tell me which account to use for the transfer-pair side; otherwise I'll use SIMPLE CHECKING.
 
-New component: `src/components/dashboard/SmartAllocationCard.tsx`, mounted at top of Personal dashboard.
-
-**Trigger:** last paycheck-tagged income transaction (positive, category group = Income, payroll source) within last 7 days that has NO matching `paycheck_deployments` row with `status='applied'`.
-
-**Display (Conscious Spending bands, matching Budgets pill):**
-
-| Bucket | Range | Default | $ This Paycheck | Pill |
-|---|---|---|---|---|
-| Fixed Costs | 50–60% | 60% | $X | In Range |
-| Investments | 5–10% | 10% | $X | In Range |
-| Savings Goals | 5–10% | 10% | $X | In Range |
-| Guilt-Free | 20–35% | 20% | $X | In Range |
-
-Each row: bucket label, target $, range badge, zone-colored progress bar (same component family as Budgets pill). One **"Apply Plan"** button → calls existing `useBuildPaycheckDeployment` with `persist: true`, then for each non-zero bucket creates a `transfers` row (or `transactions` with `is_transfer=true`) from checking → mapped destination account (savings goal account / investment account). Marks deployment `status='applied'`.
-
-**Empty / dismissed states:** "No paycheck detected yet" link to `/paycheck-deployment`; "Dismiss" hides for 24h via localStorage.
-
-## 3. Paycheck Deployment Rules at `/coach` (Conscious Spending bands)
-
-**New table** `paycheck_deployment_rules` (one row per household):
-
-- `fixed_min`, `fixed_max`, `fixed_target` (default 50/60/60)
-- `invest_min`, `invest_max`, `invest_target` (default 5/10/10)
-- `savings_min`, `savings_max`, `savings_target` (default 5/10/10)
-- `guiltfree_min`, `guiltfree_max`, `guiltfree_target` (default 20/35/20)
-- `nag_enabled` (default true), `nag_hours` (default 24)
-- destination account IDs: `savings_account_id`, `investment_account_id` (nullable)
-
-RLS: household members CRUD; auto-seed defaults on first read.
-
-**New page** `src/pages/PaycheckDeploymentRules.tsx` at route `/coach/deployment-rules`:
-
-- 4 slider rows (one per bucket), each with min/max/target controls
-- Live total check: targets must sum to 100% (warning pill if not)
-- "In Range / Under / Over" preview using last paycheck
-- Destination account pickers (savings, investment)
-- Toggle: "Nag me within 24h if money hasn't moved"
-- Link from Money Coach card "Paycheck Deployment" → add secondary "Edit rules" button
-
-**Nag logic** — extend the existing nightly Money Coach cron (`money-coach-nudges` edge function):
-- For each household with `nag_enabled=true`, find latest paycheck transaction in last 7d.
-- If no `paycheck_deployments` row with `status='applied'` exists ≥ `nag_hours` after pay_date → insert a `notifications` row: *"Your $X paycheck from {date} hasn't been deployed. [Review plan]"*.
-
-## Technical notes
-
-- DB: 1 new table (`paycheck_deployment_rules`) with GRANTs + RLS + auto-update trigger. No schema changes to existing tables.
-- Code changes: `use-safe-to-spend.ts` (+ reserve calc), `StsEquationView` (+1 row), new `SmartAllocationCard`, new `PaycheckDeploymentRules` page + route, `MoneyCoach.tsx` (link), `money-coach-nudges` edge function (nag branch), new hook `use-deployment-rules.ts`.
-- No new secrets, no new connectors. All within existing Money Coach + STS infrastructure.
-
-## Out of scope
-
-- Auto-creating transfers on a schedule (only fires when user clicks "Apply Plan").
-- Per-paycheck overrides (rules are household-level for now).
-- Multi-earner separate band sets (single household ruleset).
+## Result
+- New BetrLink Settlement account showing the full payment/fee history
+- Creditor payments and fees properly categorized for Debt Payoff and reporting
+- ACH funding flows treated as transfers (not double-counted as expenses)
