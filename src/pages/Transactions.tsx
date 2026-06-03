@@ -70,6 +70,23 @@ const EMPTY_FILTERS: FilterState = { dateFrom: '', dateTo: '', amountMin: '', am
 
 type TxnViewFilter = 'all' | 'personal' | 'business' | 'income' | 'expenses' | 'transfers' | 'duplicates' | 'uncategorized' | 'needs_review' | 'trash';
 
+const getDuplicateKey = (transaction: {
+  date: string;
+  amount: number;
+  merchant?: string | null;
+  account_id?: string | null;
+  provider_transaction_id?: string | null;
+  notes?: string | null;
+}) => {
+  const merchant = (transaction.merchant || '').toLowerCase().trim().replace(/\s+/g, ' ');
+  const accountId = transaction.account_id || 'no-account';
+  const source = transaction.provider_transaction_id
+    ? `provider:${transaction.provider_transaction_id}`
+    : `manual:${(transaction.notes || '').toLowerCase().trim().replace(/\s+/g, ' ')}`;
+
+  return `${transaction.date}|${Math.round(transaction.amount * 100)}|${merchant}|${accountId}|${source}`;
+};
+
 const Transactions = () => {
   const { formatCurrency } = useCurrency();
   const { data: transactions, isLoading } = useTransactions();
@@ -250,15 +267,14 @@ const Transactions = () => {
     setTagSearch('');
   };
 
-  // Compute duplicate transaction IDs (same date+amount+normalized merchant, more than 1 match)
+  // Compute duplicate transaction IDs (same date+amount+merchant+account+source, more than 1 match)
   // Excludes transactions tagged with 'not_duplicate'
   const duplicateIds = useMemo(() => {
     if (!transactions) return new Set<string>();
     const groups = new Map<string, string[]>();
     for (const t of transactions) {
       if ((t.tags || []).includes('not_duplicate')) continue;
-      const merchant = (t.merchant || '').toLowerCase().trim().replace(/\s+/g, ' ');
-      const key = `${t.date}|${Math.round(t.amount * 100)}|${merchant}`;
+      const key = getDuplicateKey(t);
       if (!groups.has(key)) groups.set(key, []);
       groups.get(key)!.push(t.id);
     }
@@ -341,12 +357,8 @@ const Transactions = () => {
 
     // When viewing duplicates, group matching entries together
     if (viewFilter === 'duplicates') {
-      const dupeKey = (t: typeof result[0]) => {
-        const merchant = (t.merchant || '').toLowerCase().trim().replace(/\s+/g, ' ');
-        return `${t.date}|${Math.round(t.amount * 100)}|${merchant}`;
-      };
       result.sort((a, b) => {
-        const groupCmp = dupeKey(a).localeCompare(dupeKey(b));
+        const groupCmp = getDuplicateKey(a).localeCompare(getDuplicateKey(b));
         if (groupCmp !== 0) return groupCmp;
         return a.id.localeCompare(b.id);
       });
