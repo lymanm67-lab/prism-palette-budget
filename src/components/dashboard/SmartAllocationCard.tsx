@@ -57,8 +57,9 @@ export function SmartAllocationCard() {
     });
     let amount = cluster.reduce((s, t: any) => s + Number(t.amount), 0);
     const anchorText = `${anchor.merchant || ''} ${anchor.categories?.name || ''}`;
-    const missingEverBankSplit = Math.abs(IU_MONTHLY_NET_PAY - amount - EVERBANK_PAYSTUB_SPLIT) < 1;
-    if (PAYROLL_RE.test(anchorText) && missingEverBankSplit) {
+    // If anchor is payroll and cluster total is short of the known monthly net,
+    // pin to the paystub total (splits to EverBank/SoFi/etc. may not be imported yet).
+    if (PAYROLL_RE.test(anchorText) && amount < IU_MONTHLY_NET_PAY - 1) {
       amount = IU_MONTHLY_NET_PAY;
     }
     if (amount <= 500) return null;
