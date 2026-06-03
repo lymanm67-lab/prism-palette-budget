@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { usePlaidLink } from 'react-plaid-link';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -82,15 +82,21 @@ const PlaidLinkButton = () => {
     setLinkToken(null);
   }, [household, toast, qc]);
 
+  const openedTokenRef = useRef<string | null>(null);
+
   const { open, ready } = usePlaidLink({
     token: linkToken,
     onSuccess,
-    onExit: () => setLinkToken(null),
+    onExit: () => {
+      openedTokenRef.current = null;
+      setLinkToken(null);
+    },
   });
 
-  // Auto-open Plaid Link when token is ready
+  // Auto-open Plaid Link once per token, only after it's ready
   useEffect(() => {
-    if (linkToken && ready) {
+    if (linkToken && ready && openedTokenRef.current !== linkToken) {
+      openedTokenRef.current = linkToken;
       open();
     }
   }, [linkToken, ready, open]);
