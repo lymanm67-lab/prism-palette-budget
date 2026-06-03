@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
 import { usePlaidLink } from 'react-plaid-link';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -9,7 +9,11 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Landmark, Loader2, Lock } from 'lucide-react';
 import { canUsePlaid } from '@/lib/stripe-plans';
 
-const PlaidLinkButton = () => {
+export type PlaidLinkButtonHandle = {
+  connect: () => void;
+};
+
+const PlaidLinkButton = forwardRef<PlaidLinkButtonHandle>((_, ref) => {
   const [linkToken, setLinkToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
@@ -17,6 +21,7 @@ const PlaidLinkButton = () => {
   const { household } = useHousehold();
   const { subscribed, subscriptionTier } = useAuth();
   const qc = useQueryClient();
+  const hasPlaidAccess = canUsePlaid(subscriptionTier);
 
   const createLinkToken = useCallback(async () => {
     setLoading(true);
@@ -84,12 +89,26 @@ const PlaidLinkButton = () => {
 
   const openedTokenRef = useRef<string | null>(null);
 
+  useImperativeHandle(ref, () => ({
+    connect: () => {
+      if (!hasPlaidAccess || loading || syncing) return;
+      createLinkToken();
+    },
+  }), [createLinkToken, hasPlaidAccess, loading, syncing]);
+
   const { open, ready } = usePlaidLink({
     token: linkToken,
     onSuccess,
-    onExit: () => {
+    onExit: (error) => {
       openedTokenRef.current = null;
       setLinkToken(null);
+      if (error?.display_message || error?.error_message) {
+        toast({
+          title: 'Plaid closed',
+          description: error.display_message || error.error_message,
+          variant: 'destructive',
+        });
+      }
     },
   });
 
@@ -109,8 +128,6 @@ const PlaidLinkButton = () => {
     );
   }
 
-  const hasPlaidAccess = canUsePlaid(subscriptionTier);
-
   if (!hasPlaidAccess) {
     return (
       <Button disabled className="gap-2 opacity-70" title="Requires Premium or Business Pro subscription">
@@ -125,6 +142,8 @@ const PlaidLinkButton = () => {
       Connect Bank Account
     </Button>
   );
-};
+});
+
+PlaidLinkButton.displayName = 'PlaidLinkButton';
 
 export default PlaidLinkButton;
