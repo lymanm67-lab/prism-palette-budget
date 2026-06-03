@@ -334,6 +334,26 @@ const DebtPayoff = () => {
 
   const activeResult = results?.[strategy];
 
+  const payoffDateByDebt = useMemo(() => {
+    const map = new Map<string, string>();
+    if (!activeResult) return map;
+    const now = new Date();
+    for (const d of debts) {
+      // Forgiveness wins if eligible
+      if (d.forgiveness_eligible && d.forgiveness_date) {
+        map.set(d.name, new Date(d.forgiveness_date).toLocaleDateString(undefined, { month: 'short', year: 'numeric' }) + ' · forgiven');
+        continue;
+      }
+      const step = activeResult.steps.find(s => s.debts.find(x => x.name === d.name && x.paid_off));
+      if (step) {
+        const dt = new Date(now.getFullYear(), now.getMonth() + step.month, now.getDate());
+        map.set(d.name, dt.toLocaleDateString(undefined, { month: 'short', year: 'numeric' }));
+      }
+    }
+    return map;
+  }, [activeResult, debts]);
+
+
   if (plansLoading || accountsLoading) return (
     <div className="flex items-center justify-center p-20">
       <div className="flex flex-col items-center gap-3">
@@ -717,6 +737,13 @@ const DebtPayoff = () => {
                         <div><p className="font-display text-base font-bold text-foreground">{d.interest_rate}%</p><p>APR</p></div>
                         <div><p className="font-display text-base font-bold text-foreground">{formatCurrency(d.minimum_payment)}</p><p>Min. Payment</p></div>
                       </div>
+                      {payoffDateByDebt.get(d.name) && (
+                        <div className="mt-2 pt-2 border-t border-border/30 flex items-center justify-between text-xs">
+                          <span className="text-muted-foreground">Expected payoff</span>
+                          <span className="font-medium text-foreground">{payoffDateByDebt.get(d.name)}</span>
+                        </div>
+                      )}
+
                     </CardContent>
                   </Card>
                 ))}
