@@ -542,6 +542,17 @@ const DebtPayoff = () => {
                     <p className="text-[11px] text-muted-foreground">Pick the next date the minimum payment is due.</p>
                   </div>
 
+                  {/* Target payoff date (manual goal) */}
+                  <div className="space-y-2">
+                    <Label className="text-sm">Target payoff date (optional)</Label>
+                    <DueDatePicker
+                      value={form.target_payoff_date}
+                      onChange={(v) => setForm(f => ({ ...f, target_payoff_date: v }))}
+                    />
+                    <p className="text-[11px] text-muted-foreground">Your personal goal date — shown alongside the calculated payoff on each debt card.</p>
+                  </div>
+
+
                   {/* Loan status: deferment & forgiveness */}
                   <div className="space-y-3 pt-2 border-t border-border/50">
                     <Label className="text-xs uppercase tracking-wider text-muted-foreground">Loan status (optional)</Label>
