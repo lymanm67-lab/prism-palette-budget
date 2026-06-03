@@ -89,13 +89,14 @@ export function SmartAllocationCard() {
   const ACTUAL_SAVINGS_EF = 10;         // Emergency Fund monthly contribution
   const ACTUAL_SAVINGS_KIKOFF = 35;     // Kikoff credit builder monthly
   const ACTUAL_SAVINGS_CK = 20;         // Credit Karma credit builder monthly
-  // EverBank automatic savings: $300/mo starting July 2026
+  // EverBank: $109.01 moved to savings this month; $300/mo recurring starts July 2026
   const _now = new Date();
-  const ACTUAL_SAVINGS_EVERBANK = (_now.getFullYear() > 2026 || (_now.getFullYear() === 2026 && _now.getMonth() >= 6)) ? 300 : 0;
+  const _isJulOrLater = _now.getFullYear() > 2026 || (_now.getFullYear() === 2026 && _now.getMonth() >= 6);
+  const ACTUAL_SAVINGS_EVERBANK = _isJulOrLater ? 300 : 109.01;
   const ACTUAL_SAVINGS = ACTUAL_SAVINGS_EF + ACTUAL_SAVINGS_KIKOFF + ACTUAL_SAVINGS_CK + ACTUAL_SAVINGS_EVERBANK;
-  const savingsNote = ACTUAL_SAVINGS_EVERBANK > 0
+  const savingsNote = _isJulOrLater
     ? `$${ACTUAL_SAVINGS_EF} Emergency Fund + $${ACTUAL_SAVINGS_KIKOFF} Kikoff + $${ACTUAL_SAVINGS_CK} Credit Karma + $${ACTUAL_SAVINGS_EVERBANK} EverBank`
-    : `$${ACTUAL_SAVINGS_EF} Emergency Fund + $${ACTUAL_SAVINGS_KIKOFF} Kikoff + $${ACTUAL_SAVINGS_CK} Credit Karma (+ $300 EverBank starting Jul)`;
+    : `$${ACTUAL_SAVINGS_EF} Emergency Fund + $${ACTUAL_SAVINGS_KIKOFF} Kikoff + $${ACTUAL_SAVINGS_CK} Credit Karma + $${ACTUAL_SAVINGS_EVERBANK.toFixed(2)} EverBank (this month) — $300/mo starting Jul`;
 
   const buckets = [
     { key: 'fixed', label: 'Fixed Costs', min: num(rules.fixed_min, DEFAULT_RULES.fixed_min), max: num(rules.fixed_max, DEFAULT_RULES.fixed_max), target: num(rules.fixed_target, DEFAULT_RULES.fixed_target), actual: ACTUAL_FIXED },
