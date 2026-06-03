@@ -77,6 +77,7 @@ interface Debt {
   forgiveness_note?: string;
   due_day?: number;
   due_date?: string;
+  target_payoff_date?: string;
 }
 
 
@@ -199,6 +200,7 @@ const DebtPayoff = () => {
       forgiveness_note: item.forgiveness_note || undefined,
       due_day: item.due_day ? Number(item.due_day) : undefined,
       due_date: (item as any).due_date || undefined,
+      target_payoff_date: (item as any).target_payoff_date || undefined,
       in_settlement_plan: !!(item as any).in_settlement_plan,
 
     })),
@@ -207,7 +209,7 @@ const DebtPayoff = () => {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
-  const [form, setForm] = useState({ name: '', balance: '', minimum_payment: '', interest_rate: '', account_id: '', business_split_pct: 0, business_name: '', deferred_until: '', forgiveness_eligible: false, forgiveness_date: '', forgiveness_note: '', due_day: '', due_date: '', in_settlement_plan: false });
+  const [form, setForm] = useState({ name: '', balance: '', minimum_payment: '', interest_rate: '', account_id: '', business_split_pct: 0, business_name: '', deferred_until: '', forgiveness_eligible: false, forgiveness_date: '', forgiveness_note: '', due_day: '', due_date: '', target_payoff_date: '', in_settlement_plan: false });
 
 
   const [planDialogOpen, setPlanDialogOpen] = useState(false);
@@ -260,6 +262,7 @@ const DebtPayoff = () => {
       forgiveness_note: form.forgiveness_eligible ? (form.forgiveness_note.trim() || null) : null,
       due_day: form.due_date ? (new Date(form.due_date + 'T00:00:00').getDate()) : (form.due_day ? Math.max(1, Math.min(31, parseInt(form.due_day, 10))) : null),
       due_date: form.due_date || null,
+      target_payoff_date: form.target_payoff_date || null,
       in_settlement_plan: !!form.in_settlement_plan,
 
     };
@@ -272,7 +275,7 @@ const DebtPayoff = () => {
         toast.success('Debt added');
       }
       setEditId(null);
-      setForm({ name: '', balance: '', minimum_payment: '', interest_rate: '', account_id: '', business_split_pct: 0, business_name: '', deferred_until: '', forgiveness_eligible: false, forgiveness_date: '', forgiveness_note: '', due_day: '', due_date: '', in_settlement_plan: false });
+      setForm({ name: '', balance: '', minimum_payment: '', interest_rate: '', account_id: '', business_split_pct: 0, business_name: '', deferred_until: '', forgiveness_eligible: false, forgiveness_date: '', forgiveness_note: '', due_day: '', due_date: '', target_payoff_date: '', in_settlement_plan: false });
       setDialogOpen(false);
     } catch (err: any) {
       console.error('Save debt error:', err);
@@ -282,7 +285,7 @@ const DebtPayoff = () => {
 
   const openEdit = (d: Debt) => {
     setEditId(d.id);
-    setForm({ name: d.name, balance: String(d.balance), minimum_payment: String(d.minimum_payment), interest_rate: String(d.interest_rate), account_id: d.account_id || '', business_split_pct: d.business_split_pct || 0, business_name: d.business_name || '', deferred_until: d.deferred_until || '', forgiveness_eligible: !!d.forgiveness_eligible, forgiveness_date: d.forgiveness_date || '', forgiveness_note: d.forgiveness_note || '', due_day: d.due_day ? String(d.due_day) : '', due_date: d.due_date || '', in_settlement_plan: !!(d as any).in_settlement_plan });
+    setForm({ name: d.name, balance: String(d.balance), minimum_payment: String(d.minimum_payment), interest_rate: String(d.interest_rate), account_id: d.account_id || '', business_split_pct: d.business_split_pct || 0, business_name: d.business_name || '', deferred_until: d.deferred_until || '', forgiveness_eligible: !!d.forgiveness_eligible, forgiveness_date: d.forgiveness_date || '', forgiveness_note: d.forgiveness_note || '', due_day: d.due_day ? String(d.due_day) : '', due_date: d.due_date || '', target_payoff_date: (d as any).target_payoff_date || '', in_settlement_plan: !!(d as any).in_settlement_plan });
     setDialogOpen(true);
   };
 
@@ -539,6 +542,17 @@ const DebtPayoff = () => {
                     <p className="text-[11px] text-muted-foreground">Pick the next date the minimum payment is due.</p>
                   </div>
 
+                  {/* Target payoff date (manual goal) */}
+                  <div className="space-y-2">
+                    <Label className="text-sm">Target payoff date (optional)</Label>
+                    <DueDatePicker
+                      value={form.target_payoff_date}
+                      onChange={(v) => setForm(f => ({ ...f, target_payoff_date: v }))}
+                    />
+                    <p className="text-[11px] text-muted-foreground">Your personal goal date — shown alongside the calculated payoff on each debt card.</p>
+                  </div>
+
+
                   {/* Loan status: deferment & forgiveness */}
                   <div className="space-y-3 pt-2 border-t border-border/50">
                     <Label className="text-xs uppercase tracking-wider text-muted-foreground">Loan status (optional)</Label>
@@ -622,6 +636,7 @@ const DebtPayoff = () => {
                   forgiveness_note: '',
                   due_day: '',
                   due_date: '',
+                  target_payoff_date: '',
                   in_settlement_plan: false,
 
 
