@@ -453,20 +453,37 @@ async function listAuthorizations(req: Request) {
 // Route: DELETE /revoke
 async function revokeConnection(req: Request) {
   const { user } = await getUser(req);
-  const { snaptrade_user_id, snaptrade_user_secret, authorization_id, connection_id } =
-    await req.json();
+  const body = await req.json();
+  let { snaptrade_user_id, snaptrade_user_secret } = body;
+  const { authorization_id, connection_id, household_id } = body;
 
   const admin = getSupabaseAdmin();
 
-  try {
-    await snaptradeRequest(
-      "DELETE",
-      `/authorizations/${authorization_id}`,
-      undefined,
-      { userId: snaptrade_user_id, userSecret: snaptrade_user_secret }
-    );
-  } catch (e) {
-    console.error("Error revoking SnapTrade authorization:", e);
+  // Always look up credentials server-side from the connection when possible
+  if (connection_id && household_id) {
+    const { data: conn } = await admin
+      .from("snaptrade_connections")
+      .select("snaptrade_user_id, snaptrade_user_secret")
+      .eq("id", connection_id)
+      .eq("household_id", household_id)
+      .single();
+    if (conn) {
+      snaptrade_user_id = conn.snaptrade_user_id;
+      snaptrade_user_secret = conn.snaptrade_user_secret;
+    }
+  }
+
+  if (authorization_id && snaptrade_user_id && snaptrade_user_secret) {
+    try {
+      await snaptradeRequest(
+        "DELETE",
+        `/authorizations/${authorization_id}`,
+        undefined,
+        { userId: snaptrade_user_id, userSecret: snaptrade_user_secret }
+      );
+    } catch (e) {
+      console.error("Error revoking SnapTrade authorization:", e);
+    }
   }
 
   // Mark connection as revoked
@@ -481,6 +498,7 @@ async function revokeConnection(req: Request) {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 }
+
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {

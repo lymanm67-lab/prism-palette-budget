@@ -967,8 +967,6 @@ const Accounts = () => {
                           disabled={reconnectSnapTrade.isPending}
                           onClick={() => reconnectSnapTrade.mutate({
                             connectionId: conn.id,
-                            snaptradeUserId: conn.snaptrade_user_id,
-                            snaptradeUserSecret: conn.snaptrade_user_secret,
                           })}
                         >
                           {reconnectSnapTrade.isPending ? (
@@ -1007,8 +1005,6 @@ const Accounts = () => {
                             onClick={() => {
                               revokeSnapTrade.mutate({
                                 connectionId: conn.id,
-                                snaptradeUserId: conn.snaptrade_user_id,
-                                snaptradeUserSecret: conn.snaptrade_user_secret,
                                 authorizationId: conn.brokerage_authorization_id || undefined,
                               });
                             }}
