@@ -242,23 +242,21 @@ export function useRevokeSnapTrade() {
 // ==================== RECONNECT SNAPTRADE ====================
 export function useReconnectSnapTrade() {
   const qc = useQueryClient();
+  const { household } = useHousehold();
 
   return useMutation({
     mutationFn: async ({
       connectionId,
-      snaptradeUserId,
-      snaptradeUserSecret,
     }: {
       connectionId: string;
-      snaptradeUserId: string;
-      snaptradeUserSecret: string;
     }) => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Not authenticated');
+      if (!household) throw new Error('No household');
 
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 
-      // Create a new redirect URL for re-authorization
+      // Create a new redirect URL for re-authorization (secrets resolved server-side)
       const res = await fetch(
         `${supabaseUrl}/functions/v1/snaptrade/create-redirect`,
         {
@@ -268,8 +266,8 @@ export function useReconnectSnapTrade() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            snaptrade_user_id: snaptradeUserId,
-            snaptrade_user_secret: snaptradeUserSecret,
+            connection_id: connectionId,
+            household_id: household.id,
             reconnect: true,
           }),
         }
@@ -292,7 +290,7 @@ export function useReconnectSnapTrade() {
               .update({ status: 'active', updated_at: new Date().toISOString() })
               .eq('id', connectionId) as any);
 
-            // Trigger a sync
+            // Trigger a sync (secrets resolved server-side via connection_id)
             try {
               await fetch(
                 `${supabaseUrl}/functions/v1/snaptrade/sync-accounts`,
@@ -303,8 +301,7 @@ export function useReconnectSnapTrade() {
                     'Content-Type': 'application/json',
                   },
                   body: JSON.stringify({
-                    snaptrade_user_id: snaptradeUserId,
-                    snaptrade_user_secret: snaptradeUserSecret,
+                    household_id: household.id,
                     connection_id: connectionId,
                   }),
                 }
