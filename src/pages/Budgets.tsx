@@ -1,5 +1,6 @@
 import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { PaystubUploader } from '@/components/PaystubUploader';
 
@@ -100,6 +101,28 @@ const Budgets = () => {
   const month = getMonth(monthOffset);
   const { data: budgets, isLoading: budgetsLoading } = useBudgets(month);
   const { data: transactions } = useTransactions();
+  const hh = household;
+  const monthStart = month;
+  const monthEnd = useMemo(() => {
+    const [y, m] = month.split('-').map(Number);
+    const d = new Date(y, m, 0);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }, [month]);
+  const { data: monthSplits } = useQuery({
+    queryKey: ['budget-splits', hh?.id, monthStart, monthEnd],
+    enabled: !!hh?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('transaction_splits')
+        .select('transaction_id, category_id, amount, transactions!inner(date, household_id, is_transfer, deleted_at)')
+        .eq('transactions.household_id', hh!.id)
+        .is('transactions.deleted_at', null)
+        .gte('transactions.date', monthStart)
+        .lte('transactions.date', monthEnd);
+      if (error) throw error;
+      return data || [];
+    },
+  });
   const { data: categories } = useCategories();
   const { data: categoryGroups } = useCategoryGroups();
   const upsertBudget = useUpsertBudget();
@@ -230,14 +253,16 @@ const Budgets = () => {
     return catMap;
   }, [categories, categoryGroups]);
 
-  // Spending & income by category for the month
+  // Spending & income by category for the month (respects transaction_splits)
   const { spentByCategory, receivedByCategory } = useMemo(() => {
     if (!transactions) return { spentByCategory: {} as Record<string, number>, receivedByCategory: {} as Record<string, number> };
     const monthPrefix = month.substring(0, 7);
     const spent: Record<string, number> = {};
     const received: Record<string, number> = {};
+    const splitTxnIds = new Set<string>((monthSplits || []).map((s: any) => s.transaction_id));
     for (const t of transactions) {
       if (t.is_transfer) continue;
+      if (splitTxnIds.has(t.id)) continue; // handled via splits below
       if (t.date.startsWith(monthPrefix) && t.category_id) {
         if (t.amount < 0) {
           spent[t.category_id] = (spent[t.category_id] || 0) + Math.abs(t.amount);
@@ -246,8 +271,17 @@ const Budgets = () => {
         }
       }
     }
+    for (const s of (monthSplits || []) as any[]) {
+      if (!s.category_id) continue;
+      const amt = Number(s.amount) || 0;
+      if (amt < 0) {
+        spent[s.category_id] = (spent[s.category_id] || 0) + Math.abs(amt);
+      } else if (amt > 0) {
+        received[s.category_id] = (received[s.category_id] || 0) + amt;
+      }
+    }
     return { spentByCategory: spent, receivedByCategory: received };
-  }, [transactions, month]);
+  }, [transactions, month, monthSplits]);
 
   // Previous month spending for MoM comparison
   const prevMonthSpending = useMemo(() => {
