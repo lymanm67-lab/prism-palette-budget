@@ -253,14 +253,16 @@ const Budgets = () => {
     return catMap;
   }, [categories, categoryGroups]);
 
-  // Spending & income by category for the month
+  // Spending & income by category for the month (respects transaction_splits)
   const { spentByCategory, receivedByCategory } = useMemo(() => {
     if (!transactions) return { spentByCategory: {} as Record<string, number>, receivedByCategory: {} as Record<string, number> };
     const monthPrefix = month.substring(0, 7);
     const spent: Record<string, number> = {};
     const received: Record<string, number> = {};
+    const splitTxnIds = new Set<string>((monthSplits || []).map((s: any) => s.transaction_id));
     for (const t of transactions) {
       if (t.is_transfer) continue;
+      if (splitTxnIds.has(t.id)) continue; // handled via splits below
       if (t.date.startsWith(monthPrefix) && t.category_id) {
         if (t.amount < 0) {
           spent[t.category_id] = (spent[t.category_id] || 0) + Math.abs(t.amount);
@@ -269,8 +271,17 @@ const Budgets = () => {
         }
       }
     }
+    for (const s of (monthSplits || []) as any[]) {
+      if (!s.category_id) continue;
+      const amt = Number(s.amount) || 0;
+      if (amt < 0) {
+        spent[s.category_id] = (spent[s.category_id] || 0) + Math.abs(amt);
+      } else if (amt > 0) {
+        received[s.category_id] = (received[s.category_id] || 0) + amt;
+      }
+    }
     return { spentByCategory: spent, receivedByCategory: received };
-  }, [transactions, month]);
+  }, [transactions, month, monthSplits]);
 
   // Previous month spending for MoM comparison
   const prevMonthSpending = useMemo(() => {
