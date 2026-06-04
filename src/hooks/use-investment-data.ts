@@ -192,21 +192,19 @@ export function useSyncSnapTrade() {
 // ==================== REVOKE SNAPTRADE ====================
 export function useRevokeSnapTrade() {
   const qc = useQueryClient();
+  const { household } = useHousehold();
 
   return useMutation({
     mutationFn: async ({
       connectionId,
-      snaptradeUserId,
-      snaptradeUserSecret,
       authorizationId,
     }: {
       connectionId: string;
-      snaptradeUserId: string;
-      snaptradeUserSecret: string;
       authorizationId?: string;
     }) => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Not authenticated');
+      if (!household) throw new Error('No household');
 
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const res = await fetch(
@@ -218,10 +216,9 @@ export function useRevokeSnapTrade() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            snaptrade_user_id: snaptradeUserId,
-            snaptrade_user_secret: snaptradeUserSecret,
-            authorization_id: authorizationId,
             connection_id: connectionId,
+            household_id: household.id,
+            authorization_id: authorizationId,
           }),
         }
       );
@@ -240,6 +237,7 @@ export function useRevokeSnapTrade() {
     },
   });
 }
+
 
 // ==================== RECONNECT SNAPTRADE ====================
 export function useReconnectSnapTrade() {
