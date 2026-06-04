@@ -332,11 +332,12 @@ Deno.serve(async (req) => {
           }));
 
         if (txnInserts.length > 0) {
-          // Layer 3: upsert on the unique (household_id, provider_transaction_id) index
-          // to prevent race-condition dupes from rapid refresh clicks.
-          await serviceSupabase
+          const { error: insertError } = await serviceSupabase
             .from('transactions')
-            .upsert(txnInserts, { onConflict: 'household_id,provider_transaction_id', ignoreDuplicates: true });
+            .insert(txnInserts);
+          if (insertError) {
+            console.error('[plaid exchange-token] transaction insert failed:', insertError.message);
+          }
         }
       }
 
@@ -501,13 +502,16 @@ Deno.serve(async (req) => {
               }));
 
             if (newTxns.length > 0) {
-              // Layer 3: upsert on unique index to kill race-condition dupes
-              const { data: inserted } = await serviceSupabase
+              const { data: inserted, error: insertError } = await serviceSupabase
                 .from('transactions')
-                .upsert(newTxns, { onConflict: 'household_id,provider_transaction_id', ignoreDuplicates: true })
+                .insert(newTxns)
                 .select('id');
-              totalNewTransactions += inserted?.length || 0;
-              if (inserted) allNewTransactionIds.push(...inserted.map((r: any) => r.id));
+              if (insertError) {
+                console.error(`[plaid sync-transactions] insert failed for ${item.institution_name}:`, insertError.message);
+              } else {
+                totalNewTransactions += inserted?.length || 0;
+                if (inserted) allNewTransactionIds.push(...inserted.map((r: any) => r.id));
+              }
             }
           }
         }
