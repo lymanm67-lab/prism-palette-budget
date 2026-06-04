@@ -397,6 +397,12 @@ const Budgets = () => {
   }, [monthSplits]);
 
   // Group budgets by expense type
+  const categoryNameById = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const c of categories) m.set(c.id, c.name || '');
+    return m;
+  }, [categories]);
+
   const groupBudgetsByExpenseType = useCallback((items: BudgetRow[]) => {
     const groups: Record<ExpenseType, BudgetRow[]> = { income: [], payroll_deduction: [], fixed: [], flexible: [], non_monthly: [] };
     for (const b of items) {
@@ -405,8 +411,13 @@ const Budgets = () => {
       const type = categoryExpenseType.get(b.category_id) || 'flexible';
       groups[type].push(b);
     }
+    for (const k of Object.keys(groups) as ExpenseType[]) {
+      groups[k].sort((a, b) =>
+        (categoryNameById.get(a.category_id) || '').localeCompare(categoryNameById.get(b.category_id) || '')
+      );
+    }
     return groups;
-  }, [categoryExpenseType, hideZeroAmounts, hiddenBudgetIds]);
+  }, [categoryExpenseType, hideZeroAmounts, hiddenBudgetIds, categoryNameById]);
 
   const groupedBudgets = useMemo(() => groupBudgetsByExpenseType(budgetItems), [groupBudgetsByExpenseType, budgetItems]);
 
