@@ -388,6 +388,14 @@ const Budgets = () => {
     received: receivedByCategory[b.category_id] || 0,
   })).filter(b => filteredCategoryIds.has(b.category_id));
 
+  const splitActualCategoryIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const s of (monthSplits || []) as any[]) {
+      if (s.category_id && Number(s.amount) < 0) ids.add(s.category_id);
+    }
+    return ids;
+  }, [monthSplits]);
+
   // Group budgets by expense type
   const groupBudgetsByExpenseType = useCallback((items: BudgetRow[]) => {
     const groups: Record<ExpenseType, BudgetRow[]> = { income: [], payroll_deduction: [], fixed: [], flexible: [], non_monthly: [] };
@@ -743,8 +751,8 @@ const Budgets = () => {
     const isIncome = type === 'income';
     const rawActual = isIncome ? b.received : b.spent;
     const bizOffset = businessOffsets.get(b.category_id);
-    // Apply the same business split to actual spend so the personal row reflects only its share
-    const actual = !isIncome && bizOffset ? rawActual * (1 - bizOffset.pct / 100) : rawActual;
+    // Apply fixed business offsets only when actuals have not already been split by transaction_splits.
+    const actual = !isIncome && bizOffset && !splitActualCategoryIds.has(b.category_id) ? rawActual * (1 - bizOffset.pct / 100) : rawActual;
     const rolloverAmt = rolloverAmounts.get(b.category_id) || 0;
     const effectiveBudget = b.planned_amount + rolloverAmt;
     const remaining = effectiveBudget - actual;
