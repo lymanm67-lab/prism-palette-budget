@@ -387,7 +387,7 @@ const Budgets = () => {
 
   // Fixed percentage overrides for items like debt settlement where business portion is known
   const FIXED_BIZ_PCT: Record<string, { pct: number; label: string }> = {
-    'gitmeid law': { pct: 60, label: 'Debt Settlement (Biz portion)' },
+    'betrlink': { pct: 60, label: 'Debt Settlement (Biz portion)' },
   };
 
   const businessOffsets = useMemo(() => {
