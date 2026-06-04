@@ -399,7 +399,7 @@ const Budgets = () => {
   // Group budgets by expense type
   const categoryNameById = useMemo(() => {
     const m = new Map<string, string>();
-    for (const c of categories) m.set(c.id, c.name || '');
+    for (const c of (categories || [])) m.set(c.id, c.name || '');
     return m;
   }, [categories]);
 
