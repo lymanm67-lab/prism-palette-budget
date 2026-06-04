@@ -101,7 +101,7 @@ const Budgets = () => {
   const month = getMonth(monthOffset);
   const { data: budgets, isLoading: budgetsLoading } = useBudgets(month);
   const { data: transactions } = useTransactions();
-  const { household: hh } = useHousehold();
+  const hh = household;
   const monthStart = month;
   const monthEnd = useMemo(() => {
     const [y, m] = month.split('-').map(Number);
