@@ -707,13 +707,15 @@ const Budgets = () => {
 
   const renderBudgetRow = (b: BudgetRow, type: ExpenseType) => {
     const isIncome = type === 'income';
-    const actual = isIncome ? b.received : b.spent;
+    const rawActual = isIncome ? b.received : b.spent;
+    const bizOffset = businessOffsets.get(b.category_id);
+    // Apply the same business split to actual spend so the personal row reflects only its share
+    const actual = !isIncome && bizOffset ? rawActual * (1 - bizOffset.pct / 100) : rawActual;
     const rolloverAmt = rolloverAmounts.get(b.category_id) || 0;
     const effectiveBudget = b.planned_amount + rolloverAmt;
     const remaining = effectiveBudget - actual;
     const pct = effectiveBudget > 0 ? Math.min((actual / effectiveBudget) * 100, 100) : 0;
     const overBudget = remaining < 0;
-    const bizOffset = businessOffsets.get(b.category_id);
 
     const offsetBadge = bizOffset ? (
       <Tooltip>
