@@ -768,7 +768,7 @@ const Budgets = () => {
     const effectiveBudget = b.planned_amount + rolloverAmt;
     const remaining = effectiveBudget - actual;
     const pct = effectiveBudget > 0 ? Math.min((actual / effectiveBudget) * 100, 100) : 0;
-    const overBudget = remaining < 0;
+    const overBudget = remaining < -0.005;
 
     const offsetBadge = bizOffset ? (
       <Tooltip>
