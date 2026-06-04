@@ -237,6 +237,7 @@ const Budgets = () => {
     const spent: Record<string, number> = {};
     const received: Record<string, number> = {};
     for (const t of transactions) {
+      if (t.is_transfer) continue;
       if (t.date.startsWith(monthPrefix) && t.category_id) {
         if (t.amount < 0) {
           spent[t.category_id] = (spent[t.category_id] || 0) + Math.abs(t.amount);
