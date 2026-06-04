@@ -1,0 +1,1 @@
+UPDATE public.categories SET name='Auto Insurance' WHERE id='5a7bda07-ab83-42d6-af76-1ee0f9f66b5b';
