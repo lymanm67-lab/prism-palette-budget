@@ -101,6 +101,28 @@ const Budgets = () => {
   const month = getMonth(monthOffset);
   const { data: budgets, isLoading: budgetsLoading } = useBudgets(month);
   const { data: transactions } = useTransactions();
+  const { household: hh } = useHousehold();
+  const monthStart = month;
+  const monthEnd = useMemo(() => {
+    const [y, m] = month.split('-').map(Number);
+    const d = new Date(y, m, 0);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }, [month]);
+  const { data: monthSplits } = useQuery({
+    queryKey: ['budget-splits', hh?.id, monthStart, monthEnd],
+    enabled: !!hh?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('transaction_splits')
+        .select('transaction_id, category_id, amount, transactions!inner(date, household_id, is_transfer, deleted_at)')
+        .eq('transactions.household_id', hh!.id)
+        .is('transactions.deleted_at', null)
+        .gte('transactions.date', monthStart)
+        .lte('transactions.date', monthEnd);
+      if (error) throw error;
+      return data || [];
+    },
+  });
   const { data: categories } = useCategories();
   const { data: categoryGroups } = useCategoryGroups();
   const upsertBudget = useUpsertBudget();
