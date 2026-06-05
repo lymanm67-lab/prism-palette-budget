@@ -610,12 +610,16 @@ const Budgets = () => {
   const businessIncomeBudget = businessSectionTotals.income.budget;
   const ownerContribution = Math.max(0, businessExpenseBudget - businessIncomeBudget);
 
+  const businessPayrollDeductionBudget = businessSectionTotals.payroll_deduction.budget;
+  const businessNetIncomeBudget = businessSectionTotals.income.budget - businessPayrollDeductionBudget;
+
   const unallocated =
     budgetType === 'business'
-      ? (totalIncomeBudget + ownerContribution) - netExpenseBudget
+      ? (businessNetIncomeBudget + ownerContribution) - netExpenseBudget
       : budgetType === 'personal'
       ? (netIncomeBudget - ownerContribution) - netExpenseBudget
       : netIncomeBudget - netExpenseBudget;
+
 
 
 
