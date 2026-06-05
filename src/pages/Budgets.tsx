@@ -382,12 +382,6 @@ const Budgets = () => {
     );
   }, [categories, categoryGroups]);
 
-  const budgetItems: BudgetRow[] = (budgets || []).map(b => ({
-    ...b,
-    spent: payrollCatIdsSet.has(b.category_id) ? b.planned_amount : (spentByCategory[b.category_id] || 0),
-    received: receivedByCategory[b.category_id] || 0,
-  })).filter(b => filteredCategoryIds.has(b.category_id));
-
   const splitActualCategoryIds = useMemo(() => {
     const ids = new Set<string>();
     for (const s of (monthSplits || []) as any[]) {
@@ -395,6 +389,105 @@ const Budgets = () => {
     }
     return ids;
   }, [monthSplits]);
+
+  // Business offset mapping: detect personal categories that have a matching business budget
+  const PERSONAL_TO_BIZ_MAP: Record<string, string[]> = {
+    'rent': ['rent'],
+    'utilities': ['utilities'],
+    'home insurance': ['insurance'],
+    'internet service': ['telephone & internet'],
+    'mobile phone': ['telephone & internet'],
+    'auto': ['vehicle expenses'],
+    'fuel': ['vehicle expenses'],
+  };
+
+  // Fixed percentage overrides for items like debt settlement where business portion is known
+  const FIXED_BIZ_PCT: Record<string, { pct: number; label: string }> = {
+    'betrlink': { pct: 60, label: 'Debt Settlement (Biz portion)' },
+  };
+
+  // businessOffsets: keyed by PERSONAL category id => { bizAmount, bizCategory, pct, bizCategoryId }
+  // bizActualsFromOffsets: keyed by BUSINESS category id => total $ to add to its actual (mirrors personal raw actual × pct)
+  const { businessOffsets, bizActualsFromOffsets } = useMemo(() => {
+    const offsets = new Map<string, { bizAmount: number; bizCategory: string; pct: number; bizCategoryId?: string }>();
+    const bizActuals = new Map<string, number>();
+    if (!categories || !categoryGroups || !budgets) return { businessOffsets: offsets, bizActualsFromOffsets: bizActuals };
+
+    const bizGroups = new Set((categoryGroups as any[]).filter((g: any) => g.budget_type === 'business').map((g: any) => g.id));
+    const bizCats = categories.filter(c => bizGroups.has(c.group_id));
+
+    const addBizActual = (bizCatId: string, amt: number) => {
+      bizActuals.set(bizCatId, (bizActuals.get(bizCatId) || 0) + amt);
+    };
+
+    // Category-to-category offsets
+    for (const [personalName, bizNames] of Object.entries(PERSONAL_TO_BIZ_MAP)) {
+      const personalCat = categories.find(c => c.name.toLowerCase() === personalName && !bizGroups.has(c.group_id));
+      if (!personalCat) continue;
+      const personalBudget = (budgets as any[]).find((b: any) => b.category_id === personalCat.id && b.month === month);
+      if (!personalBudget || personalBudget.planned_amount <= 0) continue;
+
+      for (const bizName of bizNames) {
+        const bizCat = bizCats.find(c => c.name.toLowerCase() === bizName);
+        if (!bizCat) continue;
+        const bizBudget = (budgets as any[]).find((b: any) => b.category_id === bizCat.id && b.month === month);
+        if (!bizBudget || bizBudget.planned_amount <= 0) continue;
+
+        const totalOriginal = personalBudget.planned_amount + bizBudget.planned_amount;
+        const pct = Math.round((bizBudget.planned_amount / totalOriginal) * 100);
+        offsets.set(personalCat.id, { bizAmount: bizBudget.planned_amount, bizCategory: bizCat.name, pct, bizCategoryId: bizCat.id });
+
+        // Mirror personal raw actual onto the business category if neither side has explicit splits
+        const personalRaw = spentByCategory[personalCat.id] || 0;
+        if (personalRaw > 0 && !splitActualCategoryIds.has(personalCat.id) && !splitActualCategoryIds.has(bizCat.id)) {
+          addBizActual(bizCat.id, personalRaw * (pct / 100));
+        }
+        break;
+      }
+    }
+
+    // Fixed percentage overrides (e.g. debt settlement with known business portion)
+    for (const [name, config] of Object.entries(FIXED_BIZ_PCT)) {
+      const cat = categories.find(c => c.name.toLowerCase() === name && !bizGroups.has(c.group_id));
+      if (!cat) continue;
+      const budget = (budgets as any[]).find((b: any) => b.category_id === cat.id && b.month === month);
+      if (!budget || budget.planned_amount <= 0) continue;
+      const bizAmount = Math.round(budget.planned_amount * (config.pct / 100) * 100) / 100;
+      // Find the matching business category by name (e.g. business "BetrLink") for actuals mirroring
+      const bizCat = bizCats.find(c => c.name.toLowerCase() === name);
+      offsets.set(cat.id, { bizAmount, bizCategory: bizCat?.name || config.label, pct: config.pct, bizCategoryId: bizCat?.id });
+      if (bizCat) {
+        const personalRaw = spentByCategory[cat.id] || 0;
+        if (personalRaw > 0 && !splitActualCategoryIds.has(cat.id) && !splitActualCategoryIds.has(bizCat.id)) {
+          addBizActual(bizCat.id, personalRaw * (config.pct / 100));
+        }
+      }
+    }
+
+    return { businessOffsets: offsets, bizActualsFromOffsets: bizActuals };
+  }, [categories, categoryGroups, budgets, month, spentByCategory, splitActualCategoryIds]);
+
+  // Build effective per-category spent that accounts for offsets so totals and rows agree
+  const effectiveSpentByCategory = useMemo(() => {
+    const m: Record<string, number> = { ...spentByCategory };
+    // Reduce personal categories that have an offset (and no explicit splits)
+    for (const [personalCatId, off] of businessOffsets.entries()) {
+      if (splitActualCategoryIds.has(personalCatId)) continue;
+      const raw = m[personalCatId] || 0;
+      if (raw > 0) m[personalCatId] = raw * (1 - off.pct / 100);
+    }
+    // Add mirrored amounts to business categories
+    for (const [bizCatId, addAmt] of bizActualsFromOffsets.entries()) {
+      m[bizCatId] = (m[bizCatId] || 0) + addAmt;
+    }
+    return m;
+  }, [spentByCategory, businessOffsets, bizActualsFromOffsets, splitActualCategoryIds]);
+
+  const budgetItems: BudgetRow[] = (budgets || []).map(b => ({
+    ...b,
+    spent: payrollCatIdsSet.has(b.category_id) ? b.planned_amount : (effectiveSpentByCategory[b.category_id] || 0),
+    received: receivedByCategory[b.category_id] || 0,
+  })).filter(b => filteredCategoryIds.has(b.category_id));
 
   // Group budgets by expense type
   const categoryNameById = useMemo(() => {
@@ -427,61 +520,8 @@ const Budgets = () => {
   const personalGroupedBudgets = useMemo(() => groupBudgetsByExpenseType(personalBudgetItems), [groupBudgetsByExpenseType, personalBudgetItems]);
   const businessGroupedBudgets = useMemo(() => groupBudgetsByExpenseType(businessBudgetItems), [groupBudgetsByExpenseType, businessBudgetItems]);
 
-  // Business offset mapping: detect personal categories that have a matching business budget
-  const PERSONAL_TO_BIZ_MAP: Record<string, string[]> = {
-    'rent': ['rent'],
-    'utilities': ['utilities'],
-    'home insurance': ['insurance'],
-    'internet service': ['telephone & internet'],
-    'mobile phone': ['telephone & internet'],
-    'auto': ['vehicle expenses'],
-    'fuel': ['vehicle expenses'],
-  };
+  // (offset logic moved above budgetItems so spent values can be adjusted at source)
 
-  // Fixed percentage overrides for items like debt settlement where business portion is known
-  const FIXED_BIZ_PCT: Record<string, { pct: number; label: string }> = {
-    'betrlink': { pct: 60, label: 'Debt Settlement (Biz portion)' },
-  };
-
-  const businessOffsets = useMemo(() => {
-    const offsets = new Map<string, { bizAmount: number; bizCategory: string; pct: number }>();
-    if (!categories || !categoryGroups || !budgets) return offsets;
-
-    const bizGroups = new Set((categoryGroups as any[]).filter((g: any) => g.budget_type === 'business').map((g: any) => g.id));
-    const bizCats = categories.filter(c => bizGroups.has(c.group_id));
-
-    // Category-to-category offsets
-    for (const [personalName, bizNames] of Object.entries(PERSONAL_TO_BIZ_MAP)) {
-      const personalCat = categories.find(c => c.name.toLowerCase() === personalName && !bizGroups.has(c.group_id));
-      if (!personalCat) continue;
-      const personalBudget = (budgets as any[]).find((b: any) => b.category_id === personalCat.id && b.month === month);
-      if (!personalBudget || personalBudget.planned_amount <= 0) continue;
-
-      for (const bizName of bizNames) {
-        const bizCat = bizCats.find(c => c.name.toLowerCase() === bizName);
-        if (!bizCat) continue;
-        const bizBudget = (budgets as any[]).find((b: any) => b.category_id === bizCat.id && b.month === month);
-        if (!bizBudget || bizBudget.planned_amount <= 0) continue;
-
-        const totalOriginal = personalBudget.planned_amount + bizBudget.planned_amount;
-        const pct = Math.round((bizBudget.planned_amount / totalOriginal) * 100);
-        offsets.set(personalCat.id, { bizAmount: bizBudget.planned_amount, bizCategory: bizCat.name, pct });
-        break;
-      }
-    }
-
-    // Fixed percentage overrides (e.g. debt settlement with known business portion)
-    for (const [name, config] of Object.entries(FIXED_BIZ_PCT)) {
-      const cat = categories.find(c => c.name.toLowerCase() === name && !bizGroups.has(c.group_id));
-      if (!cat) continue;
-      const budget = (budgets as any[]).find((b: any) => b.category_id === cat.id && b.month === month);
-      if (!budget || budget.planned_amount <= 0) continue;
-      const bizAmount = Math.round(budget.planned_amount * (config.pct / 100) * 100) / 100;
-      offsets.set(cat.id, { bizAmount, bizCategory: config.label, pct: config.pct });
-    }
-
-    return offsets;
-  }, [categories, categoryGroups, budgets, month]);
 
 
   // Section totals helper
@@ -559,7 +599,20 @@ const Budgets = () => {
 
   // Net expenses exclude payroll deductions for unallocated calc
   const netExpenseBudget = sectionTotals.fixed.budget + sectionTotals.flexible.budget + sectionTotals.non_monthly.budget;
-  const unallocated = totalIncomeBudget - netExpenseBudget;
+
+  // Owner Contribution: when Business expenses exceed Business income, Personal funds the gap.
+  // Treat it as an expense on Personal and as income on Business so each tab balances independently.
+  const businessExpenseBudget = businessSectionTotals.fixed.budget + businessSectionTotals.flexible.budget + businessSectionTotals.non_monthly.budget;
+  const businessIncomeBudget = businessSectionTotals.income.budget;
+  const ownerContribution = Math.max(0, businessExpenseBudget - businessIncomeBudget);
+
+  const unallocated =
+    budgetType === 'business'
+      ? (totalIncomeBudget + ownerContribution) - netExpenseBudget
+      : budgetType === 'personal'
+      ? (totalIncomeBudget - ownerContribution) - netExpenseBudget
+      : totalIncomeBudget - netExpenseBudget;
+
 
   // Unbudgeted categories
   const budgetedCategoryIds = new Set(budgetItems.map(b => b.category_id));
@@ -760,10 +813,10 @@ const Budgets = () => {
 
   const renderBudgetRow = (b: BudgetRow, type: ExpenseType) => {
     const isIncome = type === 'income';
-    const rawActual = isIncome ? b.received : b.spent;
+    // b.spent already reflects business-offset adjustment (see effectiveSpentByCategory)
+    const actual = isIncome ? b.received : b.spent;
     const bizOffset = businessOffsets.get(b.category_id);
-    // Apply fixed business offsets only when actuals have not already been split by transaction_splits.
-    const actual = !isIncome && bizOffset && !splitActualCategoryIds.has(b.category_id) ? rawActual * (1 - bizOffset.pct / 100) : rawActual;
+    const rawActual = actual;
     const rolloverAmt = rolloverAmounts.get(b.category_id) || 0;
     const effectiveBudget = b.planned_amount + rolloverAmt;
     const remaining = effectiveBudget - actual;
@@ -1119,6 +1172,9 @@ const Budgets = () => {
               <p className="text-[10px] font-medium text-muted-foreground uppercase">Unallocated</p>
               <p className={cn("text-lg font-bold tabular-nums", unallocated < 0 ? "text-amber-600" : unallocated === 0 ? "text-emerald-600" : "")}>{formatCurrency(Math.abs(unallocated))}</p>
               <p className="text-xs text-muted-foreground">{unallocated < 0 ? 'over-allocated' : unallocated === 0 ? 'fully allocated ✓' : 'to assign'}</p>
+              {ownerContribution > 0 && budgetType !== 'all' && (
+                <p className="text-[10px] text-sky-600 dark:text-sky-400 mt-0.5">{budgetType === 'business' ? '+' : '−'}{formatCurrency(ownerContribution)} owner contribution</p>
+              )}
             </CardContent>
           </Card>
           <Card className={cn("border-l-4", totalExpenseRemaining >= 0 ? "border-l-emerald-500" : "border-l-rose-500")}>
@@ -1616,6 +1672,9 @@ const Budgets = () => {
             <p className="text-[11px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">Unallocated</p>
             <p className={cn("text-lg sm:text-xl font-bold font-display tabular-nums mt-1", unallocated < 0 ? "text-amber-600 dark:text-amber-400" : unallocated === 0 ? "text-emerald-600 dark:text-emerald-400" : "text-foreground")}>{formatCurrency(Math.abs(unallocated))}</p>
             <p className="text-xs text-muted-foreground mt-0.5">{unallocated < 0 ? 'over-allocated' : unallocated === 0 ? 'fully allocated ✓' : 'to assign'}</p>
+            {ownerContribution > 0 && budgetType !== 'all' && (
+              <p className="text-[10px] text-sky-600 dark:text-sky-400 mt-0.5">{budgetType === 'business' ? '+' : '−'}{formatCurrency(ownerContribution)} owner contribution</p>
+            )}
           </CardContent>
         </Card>
         <Card className={cn("border-l-4", totalExpenseRemaining >= 0 ? "border-l-emerald-500" : "border-l-rose-500")}>
