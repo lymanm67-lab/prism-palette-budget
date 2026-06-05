@@ -1172,6 +1172,9 @@ const Budgets = () => {
               <p className="text-[10px] font-medium text-muted-foreground uppercase">Unallocated</p>
               <p className={cn("text-lg font-bold tabular-nums", unallocated < 0 ? "text-amber-600" : unallocated === 0 ? "text-emerald-600" : "")}>{formatCurrency(Math.abs(unallocated))}</p>
               <p className="text-xs text-muted-foreground">{unallocated < 0 ? 'over-allocated' : unallocated === 0 ? 'fully allocated ✓' : 'to assign'}</p>
+              {ownerContribution > 0 && budgetType !== 'all' && (
+                <p className="text-[10px] text-sky-600 dark:text-sky-400 mt-0.5">{budgetType === 'business' ? '+' : '−'}{formatCurrency(ownerContribution)} owner contribution</p>
+              )}
             </CardContent>
           </Card>
           <Card className={cn("border-l-4", totalExpenseRemaining >= 0 ? "border-l-emerald-500" : "border-l-rose-500")}>
