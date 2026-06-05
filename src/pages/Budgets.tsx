@@ -600,6 +600,10 @@ const Budgets = () => {
   // Net expenses exclude payroll deductions for unallocated calc
   const netExpenseBudget = sectionTotals.fixed.budget + sectionTotals.flexible.budget + sectionTotals.non_monthly.budget;
 
+  // Net income = gross income - payroll deductions (taxes, insurance, retirement)
+  const payrollDeductionBudget = sectionTotals.payroll_deduction.budget;
+  const netIncomeBudget = totalIncomeBudget - payrollDeductionBudget;
+
   // Owner Contribution: when Business expenses exceed Business income, Personal funds the gap.
   // Treat it as an expense on Personal and as income on Business so each tab balances independently.
   const businessExpenseBudget = businessSectionTotals.fixed.budget + businessSectionTotals.flexible.budget + businessSectionTotals.non_monthly.budget;
@@ -610,8 +614,9 @@ const Budgets = () => {
     budgetType === 'business'
       ? (totalIncomeBudget + ownerContribution) - netExpenseBudget
       : budgetType === 'personal'
-      ? (totalIncomeBudget - ownerContribution) - netExpenseBudget
-      : totalIncomeBudget - netExpenseBudget;
+      ? (netIncomeBudget - ownerContribution) - netExpenseBudget
+      : netIncomeBudget - netExpenseBudget;
+
 
 
   // Unbudgeted categories
