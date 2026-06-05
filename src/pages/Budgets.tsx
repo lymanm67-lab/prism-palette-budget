@@ -813,10 +813,10 @@ const Budgets = () => {
 
   const renderBudgetRow = (b: BudgetRow, type: ExpenseType) => {
     const isIncome = type === 'income';
-    const rawActual = isIncome ? b.received : b.spent;
+    // b.spent already reflects business-offset adjustment (see effectiveSpentByCategory)
+    const actual = isIncome ? b.received : b.spent;
     const bizOffset = businessOffsets.get(b.category_id);
-    // Apply fixed business offsets only when actuals have not already been split by transaction_splits.
-    const actual = !isIncome && bizOffset && !splitActualCategoryIds.has(b.category_id) ? rawActual * (1 - bizOffset.pct / 100) : rawActual;
+    const rawActual = actual;
     const rolloverAmt = rolloverAmounts.get(b.category_id) || 0;
     const effectiveBudget = b.planned_amount + rolloverAmt;
     const remaining = effectiveBudget - actual;
