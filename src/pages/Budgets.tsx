@@ -874,16 +874,17 @@ const Budgets = () => {
         </div>
         <div className="sm:hidden mt-1.5 ml-5">
           <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden mb-1.5">
-            <div className={cn('h-full rounded-full transition-all duration-500', overBudget ? 'bg-rose-500' : BAR_COLORS[type])} style={{ width: `${pct}%` }} />
+            <div className={cn('h-full rounded-full transition-all duration-500', overBudget && !isIncome ? 'bg-rose-500' : BAR_COLORS[type])} style={{ width: `${pct}%` }} />
           </div>
           <div className="flex justify-between text-xs text-muted-foreground">
             <span>{formatCurrency(effectiveBudget)} budget</span>
             <span>{formatCurrency(actual)} actual</span>
-            <span className={cn('font-medium', overBudget ? 'text-rose-600 dark:text-rose-400' : isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground')}>
-              {formatCurrency(Math.abs(remaining))}{overBudget ? ' over' : ' left'}
+            <span className={cn('font-medium', overBudget ? (isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400') : isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground')}>
+              {formatCurrency(Math.abs(remaining))}{overBudget ? (isIncome ? ' extra' : ' over') : ' left'}
             </span>
           </div>
         </div>
+
 
         {/* Desktop: table row layout */}
         <div className="hidden sm:flex items-center gap-3">
@@ -897,15 +898,16 @@ const Budgets = () => {
           </div>
           <div className="w-[200px]">
             <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
-              <div className={cn('h-full rounded-full transition-all duration-500', overBudget ? 'bg-rose-500' : BAR_COLORS[type])} style={{ width: `${pct}%` }} />
+              <div className={cn('h-full rounded-full transition-all duration-500', overBudget && !isIncome ? 'bg-rose-500' : BAR_COLORS[type])} style={{ width: `${pct}%` }} />
             </div>
           </div>
           <span className="w-[90px] text-right text-sm tabular-nums">{formatCurrency(effectiveBudget)}</span>
           <span className="w-[90px] text-right text-sm tabular-nums text-muted-foreground">{formatCurrency(actual)}</span>
-          <span className={cn('w-[90px] text-right text-sm font-medium tabular-nums', overBudget ? 'text-rose-600 dark:text-rose-400' : isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground')}>
+          <span className={cn('w-[90px] text-right text-sm font-medium tabular-nums', overBudget ? (isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400') : isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground')}>
             {formatCurrency(Math.abs(remaining))}
-            {overBudget && <span className="text-[10px] ml-0.5">over</span>}
+            {overBudget && <span className="text-[10px] ml-0.5">{isIncome ? 'extra' : 'over'}</span>}
           </span>
+
           <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
             {b.planned_amount === 0 && (
               <Tooltip>
@@ -1013,9 +1015,10 @@ const Budgets = () => {
             </span>
             <span className="text-right text-xs sm:text-sm font-semibold tabular-nums sm:w-[90px]">{formatCurrency(totals.budget)}</span>
             <span className="hidden sm:inline-block w-[90px] text-right text-sm tabular-nums text-muted-foreground">{formatCurrency(totals.actual)}</span>
-            <span className={cn('text-right text-xs sm:text-sm font-semibold tabular-nums sm:w-[90px]', totals.remaining < 0 ? 'text-rose-600 dark:text-rose-400' : isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground')}>
+            <span className={cn('text-right text-xs sm:text-sm font-semibold tabular-nums sm:w-[90px]', totals.remaining < 0 ? (isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400') : isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground')}>
               {formatCurrency(Math.abs(totals.remaining))}
             </span>
+
             <div className="hidden sm:block w-[62px]" />
           </button>
         </CollapsibleTrigger>
@@ -1082,7 +1085,7 @@ const Budgets = () => {
             <td className={cn('py-1.5 px-2', EXPENSE_TYPE_COLORS[type])}>{EXPENSE_TYPE_LABELS[type]}</td>
             <td className="py-1.5 px-2 text-right tabular-nums">{formatCurrency(totals.budget)}</td>
             <td className="py-1.5 px-2 text-right tabular-nums text-muted-foreground">{formatCurrency(totals.actual)}</td>
-            <td className={cn('py-1.5 px-2 text-right tabular-nums', totals.remaining < 0 ? 'text-rose-600' : '')}>{formatCurrency(Math.abs(totals.remaining))}</td>
+            <td className={cn('py-1.5 px-2 text-right tabular-nums', totals.remaining < 0 && type !== 'income' ? 'text-rose-600' : '')}>{formatCurrency(Math.abs(totals.remaining))}</td>
           </tr>
           {items.map(b => {
             const isIncome = type === 'income';
@@ -1098,7 +1101,8 @@ const Budgets = () => {
                 </td>
                 <td className="py-1 px-2 text-right tabular-nums">{formatCurrency(b.planned_amount)}</td>
                 <td className="py-1 px-2 text-right tabular-nums text-muted-foreground">{formatCurrency(actual)}</td>
-                <td className={cn('py-1 px-2 text-right tabular-nums', remaining < 0 ? 'text-rose-600' : '')}>{formatCurrency(Math.abs(remaining))}</td>
+                <td className={cn('py-1 px-2 text-right tabular-nums', remaining < 0 && !isIncome ? 'text-rose-600' : '')}>{formatCurrency(Math.abs(remaining))}</td>
+
               </tr>
             );
           })}
