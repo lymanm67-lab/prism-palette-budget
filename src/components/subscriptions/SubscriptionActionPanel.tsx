@@ -4,10 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCurrency } from '@/hooks/use-currency';
+import { useAccounts } from '@/hooks/use-finance-data';
 import { format, parseISO } from 'date-fns';
 import {
-  DollarSign, Calendar, AlertTriangle, X, Shield, ChevronRight,
+  DollarSign, Calendar, AlertTriangle, X, Shield, ChevronRight, Landmark,
 } from 'lucide-react';
 import { CancellationWorkflow } from './CancellationWorkflow';
 
