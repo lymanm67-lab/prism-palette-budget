@@ -4082,6 +4082,7 @@ export type Database = {
       }
       subscriptions: {
         Row: {
+          account_id: string | null
           average_amount: number
           business_category_id: string | null
           business_split_pct: number
@@ -4109,6 +4110,7 @@ export type Database = {
           user_usage_override: string | null
         }
         Insert: {
+          account_id?: string | null
           average_amount?: number
           business_category_id?: string | null
           business_split_pct?: number
@@ -4136,6 +4138,7 @@ export type Database = {
           user_usage_override?: string | null
         }
         Update: {
+          account_id?: string | null
           average_amount?: number
           business_category_id?: string | null
           business_split_pct?: number
@@ -4163,6 +4166,13 @@ export type Database = {
           user_usage_override?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "subscriptions_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "subscriptions_business_category_id_fkey"
             columns: ["business_category_id"]
