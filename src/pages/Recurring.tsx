@@ -198,6 +198,15 @@ const Recurring = () => {
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <div className="flex items-center rounded-lg border border-border bg-muted/30 p-0.5">
             <button
+              onClick={() => setViewMode('all')}
+              className={cn(
+                'flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition-all',
+                viewMode === 'all' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              <Layers className="h-3.5 w-3.5" /> <span className="hidden sm:inline">All</span>
+            </button>
+            <button
               onClick={() => setViewMode('personal')}
               className={cn(
                 'flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition-all',
