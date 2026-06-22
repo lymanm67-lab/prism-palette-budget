@@ -4,10 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCurrency } from '@/hooks/use-currency';
+import { useAccounts } from '@/hooks/use-finance-data';
 import { format, parseISO } from 'date-fns';
 import {
-  DollarSign, Calendar, AlertTriangle, X, Shield, ChevronRight,
+  DollarSign, Calendar, AlertTriangle, X, Shield, ChevronRight, Landmark,
 } from 'lucide-react';
 import { CancellationWorkflow } from './CancellationWorkflow';
 
@@ -35,9 +37,13 @@ function getMonthlyAmount(sub: any): number {
 
 export function SubscriptionActionPanel({ subscription: sub, onClose, onUpdate, formatCurrency }: Props) {
   const [showWorkflow, setShowWorkflow] = useState(false);
+  const { data: accounts = [] } = useAccounts();
   const monthly = getMonthlyAmount(sub);
   const yearly = monthly * 12;
   const diff = DIFFICULTY_CONFIG[sub.cancellation_difficulty] || DIFFICULTY_CONFIG.easy;
+  const accountLabel = sub.account?.name
+    ? `${sub.account.name}${sub.account.institution_name ? ` · ${sub.account.institution_name}` : ''}`
+    : accounts.find((a: any) => a.id === sub.account_id)?.name || null;
 
   if (showWorkflow) {
     return (
@@ -109,6 +115,29 @@ export function SubscriptionActionPanel({ subscription: sub, onClose, onUpdate, 
             {sub.cancellation_notes && (
               <p className="text-xs text-muted-foreground italic pl-5">{sub.cancellation_notes}</p>
             )}
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-muted-foreground flex items-center gap-1.5 shrink-0">
+                <Landmark className="h-3.5 w-3.5" /> Withdrawn from
+              </span>
+              <Select
+                value={sub.account_id || 'none'}
+                onValueChange={(v) => onUpdate(sub.id, { account_id: v === 'none' ? null : v })}
+              >
+                <SelectTrigger className="h-7 w-[180px] text-xs">
+                  <SelectValue placeholder="Select account">
+                    {accountLabel || 'Unknown'}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Unknown</SelectItem>
+                  {accounts.map((a: any) => (
+                    <SelectItem key={a.id} value={a.id}>
+                      {a.name}{a.institution_name ? ` · ${a.institution_name}` : ''}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <Separator />

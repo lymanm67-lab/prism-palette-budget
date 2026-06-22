@@ -51,7 +51,7 @@ serve(async (req) => {
 
     const { data: transactions } = await adminClient
       .from("transactions")
-      .select("id, merchant, normalized_merchant, amount, date, category_id")
+      .select("id, merchant, normalized_merchant, amount, date, category_id, account_id")
       .eq("household_id", household_id)
       .gte("date", startDate)
       .lt("amount", 0)
@@ -64,15 +64,20 @@ serve(async (req) => {
     }
 
     // Group by normalized_merchant or merchant
-    const merchantGroups = new Map<string, { amounts: number[]; dates: string[]; categoryId: string | null }>();
+    const merchantGroups = new Map<string, { amounts: number[]; dates: string[]; categoryId: string | null; accountId: string | null; lastDate: string }>();
 
     for (const t of transactions) {
       const key = (t.normalized_merchant || t.merchant || "").toLowerCase().trim();
       if (!key) continue;
-      const group = merchantGroups.get(key) || { amounts: [], dates: [], categoryId: null };
+      const group = merchantGroups.get(key) || { amounts: [], dates: [], categoryId: null, accountId: null, lastDate: "" };
       group.amounts.push(Math.abs(t.amount));
       group.dates.push(t.date);
       if (t.category_id) group.categoryId = t.category_id;
+      // Track account from the most recent transaction
+      if (t.account_id && t.date >= group.lastDate) {
+        group.accountId = t.account_id;
+        group.lastDate = t.date;
+      }
       merchantGroups.set(key, group);
     }
 
@@ -84,6 +89,7 @@ serve(async (req) => {
       last_charge_date: string;
       next_expected_date: string;
       category_id: string | null;
+      account_id: string | null;
     }[] = [];
 
     for (const [merchant, group] of merchantGroups) {
@@ -136,6 +142,7 @@ serve(async (req) => {
         last_charge_date: lastDate,
         next_expected_date: nextDate.toISOString().split("T")[0],
         category_id: group.categoryId,
+        account_id: group.accountId,
       });
     }
 
@@ -151,6 +158,7 @@ serve(async (req) => {
           last_charge_date: sub.last_charge_date,
           next_expected_date: sub.next_expected_date,
           category_id: sub.category_id,
+          account_id: sub.account_id,
           is_active: true,
         }, { onConflict: "household_id,merchant" });
       } catch {
