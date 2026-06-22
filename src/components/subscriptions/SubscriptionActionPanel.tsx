@@ -115,6 +115,29 @@ export function SubscriptionActionPanel({ subscription: sub, onClose, onUpdate, 
             {sub.cancellation_notes && (
               <p className="text-xs text-muted-foreground italic pl-5">{sub.cancellation_notes}</p>
             )}
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-muted-foreground flex items-center gap-1.5 shrink-0">
+                <Landmark className="h-3.5 w-3.5" /> Withdrawn from
+              </span>
+              <Select
+                value={sub.account_id || 'none'}
+                onValueChange={(v) => onUpdate(sub.id, { account_id: v === 'none' ? null : v })}
+              >
+                <SelectTrigger className="h-7 w-[180px] text-xs">
+                  <SelectValue placeholder="Select account">
+                    {accountLabel || 'Unknown'}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Unknown</SelectItem>
+                  {accounts.map((a: any) => (
+                    <SelectItem key={a.id} value={a.id}>
+                      {a.name}{a.institution_name ? ` · ${a.institution_name}` : ''}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <Separator />
