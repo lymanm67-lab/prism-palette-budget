@@ -56,7 +56,8 @@ const Recurring = () => {
   };
   const recurring = useMemo(
     () => (recurringAll || []).filter(r => {
-      if (isSplit(r)) return true; // splits show in both views
+      if (viewMode === 'all') return true;
+      if (isSplit(r)) return true; // splits show in both personal and business views
       return viewMode === 'business' ? isBusiness(r) : !isBusiness(r);
     }),
     [recurringAll, viewMode]
