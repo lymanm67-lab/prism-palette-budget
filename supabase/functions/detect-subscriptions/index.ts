@@ -51,7 +51,7 @@ serve(async (req) => {
 
     const { data: transactions } = await adminClient
       .from("transactions")
-      .select("id, merchant, normalized_merchant, amount, date, category_id")
+      .select("id, merchant, normalized_merchant, amount, date, category_id, account_id")
       .eq("household_id", household_id)
       .gte("date", startDate)
       .lt("amount", 0)
