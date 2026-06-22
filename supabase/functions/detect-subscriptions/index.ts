@@ -64,15 +64,20 @@ serve(async (req) => {
     }
 
     // Group by normalized_merchant or merchant
-    const merchantGroups = new Map<string, { amounts: number[]; dates: string[]; categoryId: string | null }>();
+    const merchantGroups = new Map<string, { amounts: number[]; dates: string[]; categoryId: string | null; accountId: string | null; lastDate: string }>();
 
     for (const t of transactions) {
       const key = (t.normalized_merchant || t.merchant || "").toLowerCase().trim();
       if (!key) continue;
-      const group = merchantGroups.get(key) || { amounts: [], dates: [], categoryId: null };
+      const group = merchantGroups.get(key) || { amounts: [], dates: [], categoryId: null, accountId: null, lastDate: "" };
       group.amounts.push(Math.abs(t.amount));
       group.dates.push(t.date);
       if (t.category_id) group.categoryId = t.category_id;
+      // Track account from the most recent transaction
+      if (t.account_id && t.date >= group.lastDate) {
+        group.accountId = t.account_id;
+        group.lastDate = t.date;
+      }
       merchantGroups.set(key, group);
     }
 
@@ -84,6 +89,7 @@ serve(async (req) => {
       last_charge_date: string;
       next_expected_date: string;
       category_id: string | null;
+      account_id: string | null;
     }[] = [];
 
     for (const [merchant, group] of merchantGroups) {
