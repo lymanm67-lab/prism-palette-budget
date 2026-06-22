@@ -142,6 +142,7 @@ serve(async (req) => {
         last_charge_date: lastDate,
         next_expected_date: nextDate.toISOString().split("T")[0],
         category_id: group.categoryId,
+        account_id: group.accountId,
       });
     }
 
@@ -157,6 +158,7 @@ serve(async (req) => {
           last_charge_date: sub.last_charge_date,
           next_expected_date: sub.next_expected_date,
           category_id: sub.category_id,
+          account_id: sub.account_id,
           is_active: true,
         }, { onConflict: "household_id,merchant" });
       } catch {
