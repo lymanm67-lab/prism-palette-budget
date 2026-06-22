@@ -37,9 +37,13 @@ function getMonthlyAmount(sub: any): number {
 
 export function SubscriptionActionPanel({ subscription: sub, onClose, onUpdate, formatCurrency }: Props) {
   const [showWorkflow, setShowWorkflow] = useState(false);
+  const { data: accounts = [] } = useAccounts();
   const monthly = getMonthlyAmount(sub);
   const yearly = monthly * 12;
   const diff = DIFFICULTY_CONFIG[sub.cancellation_difficulty] || DIFFICULTY_CONFIG.easy;
+  const accountLabel = sub.account?.name
+    ? `${sub.account.name}${sub.account.institution_name ? ` · ${sub.account.institution_name}` : ''}`
+    : accounts.find((a: any) => a.id === sub.account_id)?.name || null;
 
   if (showWorkflow) {
     return (
