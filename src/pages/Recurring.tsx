@@ -14,7 +14,7 @@ import { useAccounts, useCategories } from '@/hooks/use-finance-data';
 import CategoryCombobox from '@/components/CategoryCombobox';
 import { useCurrency } from '@/hooks/use-currency';
 import { format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, addMonths, subMonths } from 'date-fns';
-import { Loader2, Plus, Trash2, Pencil, CalendarIcon, List, ChevronLeft, ChevronRight, RepeatIcon, ArrowDownLeft, ArrowUpRight, Receipt, Zap, Bell, User, Building2 } from 'lucide-react';
+import { Loader2, Plus, Trash2, Pencil, CalendarIcon, List, ChevronLeft, ChevronRight, RepeatIcon, ArrowDownLeft, ArrowUpRight, Receipt, Zap, Bell, User, Building2, Layers } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import BillPayPanel from '@/components/BillPayPanel';
 import { toast } from 'sonner';
@@ -39,7 +39,7 @@ const Recurring = () => {
   const { formatCurrency: formatAmount } = useCurrency();
 
   const [view, setView] = useState<'list' | 'calendar' | 'billpay'>('list');
-  const [viewMode, setViewMode] = useState<'personal' | 'business'>('personal');
+  const [viewMode, setViewMode] = useState<'personal' | 'business' | 'all'>('all');
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
@@ -56,7 +56,8 @@ const Recurring = () => {
   };
   const recurring = useMemo(
     () => (recurringAll || []).filter(r => {
-      if (isSplit(r)) return true; // splits show in both views
+      if (viewMode === 'all') return true;
+      if (isSplit(r)) return true; // splits show in both personal and business views
       return viewMode === 'business' ? isBusiness(r) : !isBusiness(r);
     }),
     [recurringAll, viewMode]
@@ -196,6 +197,15 @@ const Recurring = () => {
         </div>
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <div className="flex items-center rounded-lg border border-border bg-muted/30 p-0.5">
+            <button
+              onClick={() => setViewMode('all')}
+              className={cn(
+                'flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition-all',
+                viewMode === 'all' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              <Layers className="h-3.5 w-3.5" /> <span className="hidden sm:inline">All</span>
+            </button>
             <button
               onClick={() => setViewMode('personal')}
               className={cn(
