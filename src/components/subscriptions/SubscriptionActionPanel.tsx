@@ -42,7 +42,7 @@ export function SubscriptionActionPanel({ subscription: sub, onClose, onUpdate, 
   const yearly = monthly * 12;
   const diff = DIFFICULTY_CONFIG[sub.cancellation_difficulty] || DIFFICULTY_CONFIG.easy;
   const accountLabel = sub.account?.name
-    ? `${sub.account.name}${sub.account.institution_name ? ` · ${sub.account.institution_name}` : ''}`
+    ? `${sub.account.name}${sub.account.institution ? ` · ${sub.account.institution}` : ''}`
     : accounts.find((a: any) => a.id === sub.account_id)?.name || null;
 
   if (showWorkflow) {
