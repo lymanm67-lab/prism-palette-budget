@@ -110,8 +110,6 @@ export default function MonthlyReport() {
 
   const printPDF = () => window.print();
 
-  const printPDF = () => window.print();
-
   const stripFirstHeading = useMemo(() => {
     // The message repeats the "Monthly Report — YYYY-MM" heading; strip it for cleaner render
     if (!active?.message) return '';
