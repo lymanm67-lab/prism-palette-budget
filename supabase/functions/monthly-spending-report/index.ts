@@ -70,7 +70,7 @@ async function processHousehold(supabase: any, householdId: string, monthOverrid
     .is("deleted_at", null)
     .eq("is_transfer", false)
     .gte("date", iso(prevMonth))
-    .lt("date", iso(currentMonth));
+    .lt("date", iso(monthAfter));
 
   // Prior month (for "new charges" detection)
   const { data: priorTxns } = await supabase
