@@ -437,9 +437,17 @@ const Budgets = () => {
         const pct = Math.round((bizBudget.planned_amount / totalOriginal) * 100);
         offsets.set(personalCat.id, { bizAmount: bizBudget.planned_amount, bizCategory: bizCat.name, pct, bizCategoryId: bizCat.id });
 
-        // Mirror personal raw actual onto the business category if neither side has explicit splits
+        // Mirror personal raw actual onto the business category ONLY when the
+        // business side has no direct transactions and no explicit splits — otherwise
+        // we double-count spending that was already recorded on the business category.
         const personalRaw = spentByCategory[personalCat.id] || 0;
-        if (personalRaw > 0 && !splitActualCategoryIds.has(personalCat.id) && !splitActualCategoryIds.has(bizCat.id)) {
+        const bizRaw = spentByCategory[bizCat.id] || 0;
+        if (
+          personalRaw > 0 &&
+          bizRaw === 0 &&
+          !splitActualCategoryIds.has(personalCat.id) &&
+          !splitActualCategoryIds.has(bizCat.id)
+        ) {
           addBizActual(bizCat.id, personalRaw * (pct / 100));
         }
         break;
@@ -458,7 +466,13 @@ const Budgets = () => {
       offsets.set(cat.id, { bizAmount, bizCategory: bizCat?.name || config.label, pct: config.pct, bizCategoryId: bizCat?.id });
       if (bizCat) {
         const personalRaw = spentByCategory[cat.id] || 0;
-        if (personalRaw > 0 && !splitActualCategoryIds.has(cat.id) && !splitActualCategoryIds.has(bizCat.id)) {
+        const bizRaw = spentByCategory[bizCat.id] || 0;
+        if (
+          personalRaw > 0 &&
+          bizRaw === 0 &&
+          !splitActualCategoryIds.has(cat.id) &&
+          !splitActualCategoryIds.has(bizCat.id)
+        ) {
           addBizActual(bizCat.id, personalRaw * (config.pct / 100));
         }
       }
