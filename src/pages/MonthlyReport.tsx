@@ -18,8 +18,47 @@ import {
   Wallet,
   Split,
   Sparkles,
+  Target,
+  Lightbulb,
+  CheckCircle2,
+  ArrowRight,
+  PiggyBank,
+  BarChart3,
 } from 'lucide-react';
 import { toast } from 'sonner';
+
+// Pick an accent + icon for a heading based on its text.
+const headingAccent = (text: string) => {
+  const t = text.toLowerCase();
+  if (/(win|great|good news|positive|success|on track|nailed)/.test(t))
+    return { grad: 'from-emerald-500/20 via-emerald-500/10 to-transparent', border: 'border-emerald-500/40', dot: 'bg-emerald-500', icon: CheckCircle2 };
+  if (/(watch|warning|over|concern|risk|attention|alert|issue)/.test(t))
+    return { grad: 'from-amber-500/20 via-amber-500/10 to-transparent', border: 'border-amber-500/40', dot: 'bg-amber-500', icon: AlertTriangle };
+  if (/(next step|action|recommend|do this|todo|plan|priority)/.test(t))
+    return { grad: 'from-prism-amber/25 via-prism-amber/10 to-transparent', border: 'border-prism-amber/50', dot: 'bg-prism-amber', icon: ArrowRight };
+  if (/(save|saving|invest|goal|opportunity|redirect)/.test(t))
+    return { grad: 'from-teal-500/20 via-teal-500/10 to-transparent', border: 'border-teal-500/40', dot: 'bg-teal-500', icon: PiggyBank };
+  if (/(spend|expense|category|budget|transaction)/.test(t))
+    return { grad: 'from-sky-500/20 via-sky-500/10 to-transparent', border: 'border-sky-500/40', dot: 'bg-sky-500', icon: BarChart3 };
+  if (/(insight|analysis|summary|overview|takeaway)/.test(t))
+    return { grad: 'from-violet-500/20 via-violet-500/10 to-transparent', border: 'border-violet-500/40', dot: 'bg-violet-500', icon: Lightbulb };
+  return { grad: 'from-primary/20 via-primary/10 to-transparent', border: 'border-primary/40', dot: 'bg-primary', icon: Target };
+};
+
+const AccentHeading = ({ level, children }: { level: 2 | 3; children: React.ReactNode }) => {
+  const text = String(Array.isArray(children) ? children.join(' ') : children ?? '');
+  const { grad, border, dot, icon: Icon } = headingAccent(text);
+  const size = level === 2 ? 'text-xl md:text-2xl' : 'text-lg md:text-xl';
+  return (
+    <div className={`not-prose mt-8 mb-4 rounded-xl border ${border} bg-gradient-to-r ${grad} px-4 py-3 flex items-center gap-3 print:bg-white print:border-black`}>
+      <span className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${dot} text-white shadow-sm`}>
+        <Icon className="h-4 w-4" />
+      </span>
+      <div className={`font-semibold tracking-tight ${size}`}>{children}</div>
+    </div>
+  );
+};
+
 
 interface ReportRow {
   id: string;
