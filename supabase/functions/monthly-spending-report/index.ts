@@ -81,7 +81,24 @@ async function processHousehold(supabase: any, householdId: string) {
     (priorTxns || []).map((t: any) => (t.merchant || "").toLowerCase().trim()).filter(Boolean),
   );
 
-  // Aggregate spending per category
+  // Load splits for these txns so multi-entity charges attribute to the right category
+  const txnIds = (txns || []).map((t: any) => t.id);
+  const splitsByTxn = new Map<string, any[]>();
+  if (txnIds.length) {
+    for (let i = 0; i < txnIds.length; i += 500) {
+      const chunk = txnIds.slice(i, i + 500);
+      const { data: splitRows } = await supabase
+        .from("transaction_splits")
+        .select("transaction_id, category_id, amount")
+        .in("transaction_id", chunk);
+      for (const s of splitRows || []) {
+        if (!splitsByTxn.has(s.transaction_id)) splitsByTxn.set(s.transaction_id, []);
+        splitsByTxn.get(s.transaction_id)!.push(s);
+      }
+    }
+  }
+
+  // Aggregate spending per category (respecting splits: only the portion for each category counts)
   const spendByCat = new Map<string, number>();
   const merchantByCat = new Map<string, Map<string, number>>();
   let totalSpend = 0;
@@ -92,14 +109,27 @@ async function processHousehold(supabase: any, householdId: string) {
     if (t.amount >= 0) continue; // spending only
     const spend = Math.abs(Number(t.amount));
     totalSpend += spend;
-    if (t.category_id) {
-      spendByCat.set(t.category_id, (spendByCat.get(t.category_id) || 0) + spend);
-      const m = (t.merchant || "Unknown").trim();
-      if (!merchantByCat.has(t.category_id)) merchantByCat.set(t.category_id, new Map());
-      const mm = merchantByCat.get(t.category_id)!;
-      mm.set(m, (mm.get(m) || 0) + spend);
 
-      // Wrong-account detection
+    const splits = splitsByTxn.get(t.id);
+    const allocs: Array<{ category_id: string | null; amount: number }> = [];
+    if (splits && splits.length) {
+      for (const s of splits) {
+        allocs.push({ category_id: s.category_id, amount: Math.abs(Number(s.amount)) });
+      }
+    } else if (t.category_id) {
+      allocs.push({ category_id: t.category_id, amount: spend });
+    }
+
+    for (const a of allocs) {
+      if (!a.category_id) continue;
+      spendByCat.set(a.category_id, (spendByCat.get(a.category_id) || 0) + a.amount);
+      const m = (t.merchant || "Unknown").trim();
+      if (!merchantByCat.has(a.category_id)) merchantByCat.set(a.category_id, new Map());
+      const mm = merchantByCat.get(a.category_id)!;
+      mm.set(m, (mm.get(m) || 0) + a.amount);
+    }
+
+    if (t.category_id) {
       const cat = catMap.get(t.category_id);
       if (cat?.default_account_id && cat.default_account_id !== t.account_id) {
         wrongAccountTxns.push({
@@ -110,6 +140,7 @@ async function processHousehold(supabase: any, householdId: string) {
         });
       }
     }
+
     const mkey = (t.merchant || "").toLowerCase().trim();
     if (mkey && !priorMerchants.has(mkey)) {
       newChargeMerchants.set(mkey, (newChargeMerchants.get(mkey) || 0) + spend);
