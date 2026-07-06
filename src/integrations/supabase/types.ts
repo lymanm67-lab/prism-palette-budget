@@ -808,6 +808,7 @@ export type Database = {
         Row: {
           color: string
           created_at: string
+          default_account_id: string | null
           group_id: string
           household_id: string
           id: string
@@ -817,6 +818,7 @@ export type Database = {
         Insert: {
           color?: string
           created_at?: string
+          default_account_id?: string | null
           group_id: string
           household_id: string
           id?: string
@@ -826,6 +828,7 @@ export type Database = {
         Update: {
           color?: string
           created_at?: string
+          default_account_id?: string | null
           group_id?: string
           household_id?: string
           id?: string
@@ -833,6 +836,13 @@ export type Database = {
           sort_order?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "categories_default_account_id_fkey"
+            columns: ["default_account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "categories_group_id_fkey"
             columns: ["group_id"]
