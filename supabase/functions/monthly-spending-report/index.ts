@@ -166,7 +166,10 @@ async function processHousehold(supabase: any, householdId: string, monthOverrid
 
     const mkey = normMerchant(t.merchant);
     const displayKey = (t.merchant || "").trim();
-    if (mkey && displayKey && !priorMerchants.has(mkey)) {
+    // Only flag as "new" when the merchant has no prior 6-month history AND the
+    // category isn't part of the current-month budget (i.e., truly unplanned spend).
+    const categoryIsBudgeted = t.category_id && budgetMap.has(t.category_id);
+    if (mkey && displayKey && !priorMerchants.has(mkey) && !categoryIsBudgeted) {
       newChargeMerchants.set(displayKey, (newChargeMerchants.get(displayKey) || 0) + spend);
     }
   }
