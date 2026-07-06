@@ -280,25 +280,40 @@ async function processHousehold(supabase: any, householdId: string, monthOverrid
   if (LOVABLE_API_KEY) {
     const prompt = `You are a household CFO. Analyze last month's spending report and produce a concise action-oriented brief.
 
-Data (JSON):
+STRICT RULES:
+- Use ONLY numbers, categories, merchants, and counts present in the DATA JSON below. Never invent figures.
+- Every dollar figure must appear exactly as in DATA (rounded to whole dollars is fine).
+- If a section has no data (e.g., overages is empty, wrong_account_count is 0), say so plainly. Do not fabricate.
+- Separate every paragraph and every bullet with a blank line. Do NOT cram sentences together.
+
+DATA (JSON):
 ${JSON.stringify(summary, null, 2)}
 
-Return markdown with these sections:
+Return well-spaced markdown with these sections (blank line between every paragraph, heading, and bullet):
+
 ### Month Summary
-One paragraph: total spend vs budget, headline number.
+
+One short paragraph stating: total_spend vs total_budget and the net_vs_budget figure. If net_vs_budget is positive the household is UNDER budget; if negative, OVER.
 
 ### Where You Went Over
-For each overage (up to 5), one line: "**Category** — over by $X (Y%). Driver: <top merchant> ($Z). Likely cause: <one-line hypothesis>."
+
+For each item in \`overages\` (max 5), write one bullet on its own line:
+
+- **<category>** — over by $<overage> (<overage_pct>%). Top merchant: <top_merchants[0].merchant> ($<top_merchants[0].amount>).
+
+If \`overages\` is empty, write: "No categories exceeded budget."
 
 ### Account & Entity Issues
-- If wrong_account_count > 0: list count + first 2 examples.
-- If unsplit_multi_entity_count > 0: list count + examples. Explain the tax/bookkeeping impact.
-- If both are 0: say "Accounts and splits clean this month."
 
-### 3-5 Steps for Next Month
-Numbered, specific, dollar-anchored steps. Focus on the biggest overages and any account/entity issues. No fluff.
+- If wrong_account_count > 0: one bullet with the count and the first 2 examples from wrong_account_sample.
+- If unsplit_multi_entity_count > 0: one bullet with the count and 2 examples from unsplit_multi_entity_sample, and one sentence on why splitting matters for taxes/bookkeeping.
+- If both counts are 0: write exactly "Accounts and splits are clean this month."
 
-Keep it under 400 words. Be direct, no compliments.`;
+### Next Month — 3 to 5 Steps
+
+Numbered list. Each step on its own line, separated by a blank line. Every step must reference a specific category or merchant from DATA and a dollar amount from DATA.
+
+Keep the entire output under 400 words. Be direct. No compliments, no filler.`;
 
     try {
       const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
