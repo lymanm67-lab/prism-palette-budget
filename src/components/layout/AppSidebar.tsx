@@ -80,6 +80,7 @@ const NAV_SECTIONS: NavSection[] = [
     label: 'Insights',
     items: [
       { to: '/reports', icon: BarChart3, label: 'Reports', color: 'text-prism-orange', essential: true },
+      { to: '/reports/monthly', icon: FileText, label: 'Monthly Spending Report', color: 'text-prism-orange' },
       { to: '/spending-trends', icon: TrendingUp, label: 'Spending Trends', color: 'text-prism-lime' },
       { to: '/tax-assistant', icon: Bot, label: 'Tax Assistant', color: 'text-prism-indigo' },
       { to: '/year-in-review', icon: Sparkles, label: 'Year in Review', color: 'text-prism-amber' },
