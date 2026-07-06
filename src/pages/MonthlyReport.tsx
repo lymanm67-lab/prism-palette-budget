@@ -144,6 +144,16 @@ export default function MonthlyReport() {
                 ))}
               </SelectContent>
             </Select>
+          )}
+          <div className="inline-flex rounded-md border overflow-hidden text-xs">
+            {(['combined','personal','business'] as EntityView[]).map((k) => (
+              <button
+                key={k}
+                onClick={() => setEntity(k)}
+                className={`px-3 py-2 capitalize ${entity===k ? 'bg-prism-orange text-white' : 'bg-transparent hover:bg-muted'}`}
+              >{k}</button>
+            ))}
+          </div>
           <div className="inline-flex rounded-md border overflow-hidden text-xs">
             {(['combined','personal','business'] as EntityView[]).map((k) => (
               <button
