@@ -164,9 +164,10 @@ async function processHousehold(supabase: any, householdId: string, monthOverrid
       }
     }
 
-    const mkey = (t.merchant || "").toLowerCase().trim();
-    if (mkey && !priorMerchants.has(mkey)) {
-      newChargeMerchants.set(mkey, (newChargeMerchants.get(mkey) || 0) + spend);
+    const mkey = normMerchant(t.merchant);
+    const displayKey = (t.merchant || "").trim();
+    if (mkey && displayKey && !priorMerchants.has(mkey)) {
+      newChargeMerchants.set(displayKey, (newChargeMerchants.get(displayKey) || 0) + spend);
     }
   }
 
