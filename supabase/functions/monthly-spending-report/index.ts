@@ -47,7 +47,7 @@ async function processHousehold(supabase: any, householdId: string, monthOverrid
   // Categories + groups + default account
   const { data: categories } = await supabase
     .from("categories")
-    .select("id, name, group_id, default_account_id, category_groups!inner(name, expense_type)")
+    .select("id, name, group_id, default_account_id, category_groups!inner(name, expense_type, business_profile_id)")
     .eq("household_id", householdId);
 
   const catMap = new Map<string, any>();
