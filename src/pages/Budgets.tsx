@@ -466,7 +466,13 @@ const Budgets = () => {
       offsets.set(cat.id, { bizAmount, bizCategory: bizCat?.name || config.label, pct: config.pct, bizCategoryId: bizCat?.id });
       if (bizCat) {
         const personalRaw = spentByCategory[cat.id] || 0;
-        if (personalRaw > 0 && !splitActualCategoryIds.has(cat.id) && !splitActualCategoryIds.has(bizCat.id)) {
+        const bizRaw = spentByCategory[bizCat.id] || 0;
+        if (
+          personalRaw > 0 &&
+          bizRaw === 0 &&
+          !splitActualCategoryIds.has(cat.id) &&
+          !splitActualCategoryIds.has(bizCat.id)
+        ) {
           addBizActual(bizCat.id, personalRaw * (config.pct / 100));
         }
       }
