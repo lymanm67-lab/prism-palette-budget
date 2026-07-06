@@ -34,11 +34,15 @@ function money(n: number) {
   return `$${(Math.round(n * 100) / 100).toFixed(2)}`;
 }
 
-async function processHousehold(supabase: any, householdId: string) {
+async function processHousehold(supabase: any, householdId: string, monthOverride?: string) {
   const now = new Date();
   const currentMonth = firstOfMonth(now);
-  const prevMonth = addMonths(currentMonth, -1);
-  const prevPrevMonth = addMonths(currentMonth, -2);
+  // monthOverride: "YYYY-MM" — generate report for that month
+  const prevMonth = monthOverride
+    ? new Date(Date.UTC(Number(monthOverride.slice(0, 4)), Number(monthOverride.slice(5, 7)) - 1, 1))
+    : addMonths(currentMonth, -1);
+  const prevPrevMonth = addMonths(prevMonth, -1);
+  const monthAfter = addMonths(prevMonth, 1);
 
   // Categories + groups + default account
   const { data: categories } = await supabase
