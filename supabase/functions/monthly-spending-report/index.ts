@@ -177,9 +177,13 @@ async function processHousehold(supabase: any, householdId: string, monthOverrid
   let totalBudget = 0;
   // Union of budgeted + spent categories so zero-budget spend still shows
   const catIds = new Set<string>([...budgetMap.keys(), ...spendByCat.keys()]);
+  const SPEND_TYPES = new Set(["fixed", "flexible"]);
   for (const catId of catIds) {
     const cat = catMap.get(catId);
     if (!cat) continue;
+    // Only include actual spending categories (skip income, payroll_deduction, non_monthly)
+    const expenseType = cat.category_groups?.expense_type;
+    if (!SPEND_TYPES.has(expenseType)) continue;
     const budget = budgetMap.get(catId) || 0;
     const spent = spendByCat.get(catId) || 0;
     totalBudget += budget;
