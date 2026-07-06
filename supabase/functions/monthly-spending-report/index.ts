@@ -284,7 +284,11 @@ Deno.serve(async (req) => {
     const body = req.method === "POST" ? await req.json().catch(() => ({})) : {};
     const householdId: string | undefined = body.household_id;
 
-    const isCron = CRON_SECRET && authHeader.includes(CRON_SECRET);
+    const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") || "";
+    const apikey = req.headers.get("apikey") || "";
+    const isCron =
+      (CRON_SECRET && authHeader.includes(CRON_SECRET)) ||
+      (ANON_KEY && (authHeader.includes(ANON_KEY) || apikey === ANON_KEY));
     if (!isCron && !householdId) {
       return new Response(JSON.stringify({ error: "unauthorized" }), {
         status: 401,
