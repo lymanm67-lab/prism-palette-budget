@@ -270,22 +270,68 @@ export default function MonthlyReport() {
                       </tr>
                     </thead>
                     <tbody>
-                      {byCategory.map((c, i) => {
-                        const variance = (c.budget || 0) - (c.spent || 0);
-                        const over = variance < 0;
-                        return (
-                          <tr key={i} className="border-t">
-                            <td className="px-4 py-2 font-medium">{c.category}</td>
-                            <td className="px-4 py-2 text-muted-foreground text-xs">{c.group}</td>
-                            <td className="px-4 py-2 text-xs capitalize">{c.entity}</td>
-                            <td className="px-4 py-2 text-right font-mono">{fmtMoney(c.budget)}</td>
-                            <td className="px-4 py-2 text-right font-mono">{fmtMoney(c.spent)}</td>
-                            <td className={`px-4 py-2 text-right font-mono ${over ? 'text-destructive' : 'text-emerald-500'}`}>
-                              {over ? '-' : '+'}{fmtMoney(Math.abs(variance))}
-                            </td>
-                          </tr>
-                        );
-                      })}
+                      {(() => {
+                        // In combined view, merge personal + business rows that share a category name.
+                        // In personal/business view, show rows as-is.
+                        let rows: any[] = byCategory;
+                        if (entity === 'combined') {
+                          const grouped = new Map<string, any>();
+                          for (const c of byCategory) {
+                            const key = (c.category || '').toLowerCase().trim();
+                            if (!grouped.has(key)) {
+                              grouped.set(key, {
+                                category: c.category,
+                                group: c.group,
+                                budget: 0,
+                                spent: 0,
+                                parts: [] as any[],
+                              });
+                            }
+                            const g = grouped.get(key)!;
+                            g.budget += c.budget || 0;
+                            g.spent += c.spent || 0;
+                            g.parts.push({ entity: c.entity, budget: c.budget || 0, spent: c.spent || 0 });
+                          }
+                          rows = Array.from(grouped.values()).sort(
+                            (a, b) => (b.spent - b.budget) - (a.spent - a.budget),
+                          );
+                        }
+                        return rows.map((c: any, i: number) => {
+                          const variance = (c.budget || 0) - (c.spent || 0);
+                          const over = variance < 0;
+                          const parts: any[] = c.parts || [];
+                          const showBreakdown = entity === 'combined' && parts.length > 1;
+                          return (
+                            <tr key={i} className="border-t align-top">
+                              <td className="px-4 py-2">
+                                <div className="font-medium">{c.category}</div>
+                                {showBreakdown && (
+                                  <div className="text-[11px] text-muted-foreground mt-1 space-y-0.5">
+                                    {parts.map((p, j) => (
+                                      <div key={j} className="capitalize">
+                                        {p.entity}: {fmtMoney(p.spent)} / {fmtMoney(p.budget)}
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </td>
+                              <td className="px-4 py-2 text-muted-foreground text-xs">{c.group}</td>
+                              <td className="px-4 py-2 text-xs capitalize">
+                                {entity === 'combined'
+                                  ? parts.length > 1
+                                    ? 'combined'
+                                    : parts[0]?.entity
+                                  : c.entity}
+                              </td>
+                              <td className="px-4 py-2 text-right font-mono">{fmtMoney(c.budget)}</td>
+                              <td className="px-4 py-2 text-right font-mono">{fmtMoney(c.spent)}</td>
+                              <td className={`px-4 py-2 text-right font-mono ${over ? 'text-destructive' : 'text-emerald-500'}`}>
+                                {over ? '-' : '+'}{fmtMoney(Math.abs(variance))}
+                              </td>
+                            </tr>
+                          );
+                        });
+                      })()}
                     </tbody>
                     <tfoot className="bg-muted/30 font-semibold">
                       <tr className="border-t">
