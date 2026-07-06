@@ -399,19 +399,73 @@ Deno.serve(async (req) => {
           }),
         });
 
+        // Build Plaid account_id → DB account id map (backfilling provider_account_id
+        // on existing rows so per-account transaction mapping works for older links too).
+        const plaidToDbAccount = new Map<string, string>();
         if (accountsResponse.ok) {
           const accountsData = await accountsResponse.json();
-          for (const acc of accountsData.accounts || []) {
-            const { error: updateErr } = await serviceSupabase
-              .from('accounts')
-              .update({
+          const plaidAccounts = accountsData.accounts || [];
+
+          // Load all DB accounts for this household once so we can match by
+          // provider_account_id first, then fall back to (institution, name).
+          const { data: dbHouseholdAccounts } = await serviceSupabase
+            .from('accounts')
+            .select('id, name, institution, provider_account_id')
+            .eq('household_id', household_id);
+
+          for (const acc of plaidAccounts) {
+            const displayName = acc.name || acc.official_name || '';
+
+            let match = (dbHouseholdAccounts || []).find(
+              (a: any) => a.provider_account_id === acc.account_id
+            );
+            if (!match) {
+              match = (dbHouseholdAccounts || []).find(
+                (a: any) =>
+                  !a.provider_account_id &&
+                  a.institution === item.institution_name &&
+                  (a.name || '').toLowerCase() === displayName.toLowerCase()
+              );
+            }
+
+            if (match) {
+              const patch: Record<string, unknown> = {
                 balance: acc.balances?.current || 0,
                 last_synced_at: new Date().toISOString(),
-              })
-              .eq('household_id', household_id)
-              .eq('institution', item.institution_name)
-              .ilike('name', acc.name || acc.official_name || '');
-            if (!updateErr) totalAccountsUpdated++;
+              };
+              if (!match.provider_account_id) patch.provider_account_id = acc.account_id;
+              const { error: updateErr } = await serviceSupabase
+                .from('accounts')
+                .update(patch)
+                .eq('id', match.id);
+              if (!updateErr) totalAccountsUpdated++;
+              plaidToDbAccount.set(acc.account_id, match.id);
+            } else {
+              // Auto-create missing account so its transactions land in the right place.
+              const { data: created } = await serviceSupabase
+                .from('accounts')
+                .insert({
+                  household_id,
+                  name: displayName || 'Unknown Account',
+                  institution: item.institution_name,
+                  account_type: acc.subtype === 'savings' ? 'savings'
+                    : acc.subtype === 'checking' ? 'checking'
+                    : acc.type === 'credit' ? 'credit'
+                    : acc.type === 'loan' ? 'loan'
+                    : acc.type === 'investment' ? 'investment'
+                    : 'other',
+                  balance: acc.balances?.current || 0,
+                  currency: acc.balances?.iso_currency_code || 'USD',
+                  provider_account_id: acc.account_id,
+                  last_synced_at: new Date().toISOString(),
+                })
+                .select('id')
+                .single();
+              if (created?.id) {
+                plaidToDbAccount.set(acc.account_id, created.id);
+                totalAccountsUpdated++;
+              }
+            }
           }
         }
 
@@ -440,7 +494,7 @@ Deno.serve(async (req) => {
           const transactions = txnData.transactions || [];
           console.log(`[plaid sync-transactions] ${item.institution_name} returned ${transactions.length} txns (range ${startDate}..${endDate})`);
 
-          if (transactions.length > 0) {
+          if (transactions.length > 0 && plaidToDbAccount.size > 0) {
             // Layer 1: existing provider_transaction_ids
             const providerIds = transactions.map((t: any) => t.transaction_id);
             const { data: existing } = await serviceSupabase
@@ -450,49 +504,39 @@ Deno.serve(async (req) => {
               .in('provider_transaction_id', providerIds);
             const existingIds = new Set((existing || []).map(e => e.provider_transaction_id));
 
-            // Get default account for this institution
-            const { data: dbAccounts } = await serviceSupabase
-              .from('accounts')
-              .select('id')
-              .eq('household_id', household_id)
-              .eq('institution', item.institution_name)
-              .limit(1);
-
-            const accountId = dbAccounts?.[0]?.id;
-            if (!accountId) continue;
-
-            // Layer 2: relink dedup — match against prior bank-sourced rows only
-            // (provider_transaction_id IS NOT NULL). Manual entries are never used
-            // as match keys, so legitimate same-day repeats stay intact.
+            // Layer 2: per-account relink dedup against prior bank-sourced rows.
+            const dbAccountIds = Array.from(plaidToDbAccount.values());
             const dates = transactions.map((t: any) => t.date).sort();
             const { data: priorBankTxns } = await serviceSupabase
               .from('transactions')
-              .select('date,amount,merchant,provider_transaction_id')
+              .select('account_id,date,amount,merchant,provider_transaction_id')
               .eq('household_id', household_id)
-              .eq('account_id', accountId)
+              .in('account_id', dbAccountIds)
               .gte('date', dates[0])
               .lte('date', dates[dates.length - 1])
               .not('provider_transaction_id', 'is', null)
               .is('deleted_at', null);
-            const relinkKey = (d: string, a: number, m: string | null) =>
-              `${d}|${a.toFixed(2)}|${(m || '').trim().toLowerCase()}`;
+            const relinkKey = (acctId: string, d: string, a: number, m: string | null) =>
+              `${acctId}|${d}|${a.toFixed(2)}|${(m || '').trim().toLowerCase()}`;
             const priorKeys = new Map<string, number>();
             for (const r of priorBankTxns || []) {
-              const k = relinkKey(r.date, Number(r.amount), r.merchant);
+              const k = relinkKey(r.account_id, r.date, Number(r.amount), r.merchant);
               priorKeys.set(k, (priorKeys.get(k) || 0) + 1);
             }
 
             const newTxns = transactions
               .filter((t: any) => !existingIds.has(t.transaction_id))
+              .filter((t: any) => plaidToDbAccount.has(t.account_id))
               .filter((t: any) => {
-                const k = relinkKey(t.date, -t.amount, t.merchant_name || t.name || null);
+                const acctId = plaidToDbAccount.get(t.account_id)!;
+                const k = relinkKey(acctId, t.date, -t.amount, t.merchant_name || t.name || null);
                 const remaining = priorKeys.get(k) || 0;
                 if (remaining > 0) { priorKeys.set(k, remaining - 1); return false; }
                 return true;
               })
               .map((t: any) => ({
                 household_id,
-                account_id: accountId,
+                account_id: plaidToDbAccount.get(t.account_id)!,
                 date: t.date,
                 merchant: t.merchant_name || t.name || null,
                 amount: -t.amount,
@@ -513,6 +557,7 @@ Deno.serve(async (req) => {
               }
             }
           }
+        }
         }
       }
 
