@@ -250,6 +250,60 @@ export default function MonthlyReport() {
             </Card>
           )}
 
+          {/* Budgeted vs Actual — full breakdown */}
+          {byCategory.length > 0 && (
+            <Card className="print:shadow-none print:border-black">
+              <CardHeader>
+                <CardTitle className="text-lg">Budgeted vs Actual ({entity})</CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-muted/40 text-xs uppercase tracking-wider">
+                      <tr>
+                        <th className="text-left px-4 py-2 font-medium">Category</th>
+                        <th className="text-left px-4 py-2 font-medium">Group</th>
+                        <th className="text-left px-4 py-2 font-medium">Entity</th>
+                        <th className="text-right px-4 py-2 font-medium">Budgeted</th>
+                        <th className="text-right px-4 py-2 font-medium">Actual</th>
+                        <th className="text-right px-4 py-2 font-medium">Variance</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {byCategory.map((c, i) => {
+                        const variance = (c.budget || 0) - (c.spent || 0);
+                        const over = variance < 0;
+                        return (
+                          <tr key={i} className="border-t">
+                            <td className="px-4 py-2 font-medium">{c.category}</td>
+                            <td className="px-4 py-2 text-muted-foreground text-xs">{c.group}</td>
+                            <td className="px-4 py-2 text-xs capitalize">{c.entity}</td>
+                            <td className="px-4 py-2 text-right font-mono">{fmtMoney(c.budget)}</td>
+                            <td className="px-4 py-2 text-right font-mono">{fmtMoney(c.spent)}</td>
+                            <td className={`px-4 py-2 text-right font-mono ${over ? 'text-destructive' : 'text-emerald-500'}`}>
+                              {over ? '-' : '+'}{fmtMoney(Math.abs(variance))}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                    <tfoot className="bg-muted/30 font-semibold">
+                      <tr className="border-t">
+                        <td className="px-4 py-2" colSpan={3}>Total</td>
+                        <td className="px-4 py-2 text-right font-mono">{fmtMoney(totalBudget)}</td>
+                        <td className="px-4 py-2 text-right font-mono">{fmtMoney(totalSpend)}</td>
+                        <td className={`px-4 py-2 text-right font-mono ${overBudget > 0 ? 'text-destructive' : 'text-emerald-500'}`}>
+                          {overBudget > 0 ? '-' : '+'}{fmtMoney(Math.abs(overBudget))}
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+
           {/* Two-col grid: Flags + New charges */}
           <div className="grid md:grid-cols-2 gap-6">
             <Card className="print:shadow-none print:border-black">
