@@ -95,11 +95,20 @@ export default function MonthlyReport() {
     runReport(['2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06']);
 
   const meta = active?.metadata ?? {};
-  const overBudget = (meta.total_spend ?? 0) - (meta.total_budget ?? 0);
-  const overages: any[] = meta.overages || [];
+  const rawByCategory: any[] = meta.by_category || [];
+  const rawOverages: any[] = meta.overages || [];
   const newCharges: any[] = meta.new_charges || [];
   const wrongAcct: any[] = meta.wrong_account_sample || [];
   const unsplit: any[] = meta.unsplit_multi_entity_sample || [];
+
+  const matchesEntity = (e?: string) => entity === 'combined' || e === entity;
+  const byCategory = rawByCategory.filter((c) => matchesEntity(c.entity));
+  const overages = rawOverages.filter((o) => matchesEntity(o.entity));
+  const totalSpend = byCategory.reduce((s, c) => s + (c.spent || 0), 0);
+  const totalBudget = byCategory.reduce((s, c) => s + (c.budget || 0), 0);
+  const overBudget = totalSpend - totalBudget;
+
+  const printPDF = () => window.print();
 
   const printPDF = () => window.print();
 
