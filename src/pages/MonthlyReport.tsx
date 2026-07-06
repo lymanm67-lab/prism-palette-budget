@@ -144,7 +144,15 @@ export default function MonthlyReport() {
                 ))}
               </SelectContent>
             </Select>
-          )}
+          <div className="inline-flex rounded-md border overflow-hidden text-xs">
+            {(['combined','personal','business'] as EntityView[]).map((k) => (
+              <button
+                key={k}
+                onClick={() => setEntity(k)}
+                className={`px-3 py-2 capitalize ${entity===k ? 'bg-prism-orange text-white' : 'bg-transparent hover:bg-muted'}`}
+              >{k}</button>
+            ))}
+          </div>
           <Button variant="outline" onClick={runH1} disabled={running || !household?.id}>
             {running ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
             Generate Jan–Jun 2026
