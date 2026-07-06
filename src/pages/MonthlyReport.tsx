@@ -467,14 +467,27 @@ export default function MonthlyReport() {
           </div>
 
           {/* AI narrative */}
-          <Card className="print:shadow-none print:border-black">
-            <CardHeader>
-              <CardTitle className="text-lg">Analysis & Next Steps</CardTitle>
+          <Card className="print:shadow-none print:border-black overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-primary/10 via-prism-amber/10 to-transparent border-b">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-prism-amber" />
+                Analysis & Next Steps
+              </CardTitle>
             </CardHeader>
-            <CardContent className="prose prose-base dark:prose-invert max-w-none leading-relaxed prose-headings:mt-8 prose-headings:mb-3 prose-p:my-4 prose-li:my-2 prose-ul:my-4 prose-ol:my-4 print:prose-neutral">
-              <ReactMarkdown>{stripFirstHeading}</ReactMarkdown>
+            <CardContent className="prose prose-base dark:prose-invert max-w-none leading-relaxed prose-p:my-4 prose-li:my-2 prose-ul:my-4 prose-ol:my-4 prose-p:pl-1 print:prose-neutral pt-6">
+              <ReactMarkdown
+                components={{
+                  h1: ({ children }) => <AccentHeading level={2}>{children}</AccentHeading>,
+                  h2: ({ children }) => <AccentHeading level={2}>{children}</AccentHeading>,
+                  h3: ({ children }) => <AccentHeading level={3}>{children}</AccentHeading>,
+                  h4: ({ children }) => <AccentHeading level={3}>{children}</AccentHeading>,
+                }}
+              >
+                {stripFirstHeading}
+              </ReactMarkdown>
             </CardContent>
           </Card>
+
 
           <div className="text-xs text-muted-foreground text-center print:block hidden">
             PrismMoney™ · Monthly Spending Report
