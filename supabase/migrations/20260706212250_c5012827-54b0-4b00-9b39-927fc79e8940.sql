@@ -1,0 +1,1 @@
+UPDATE public.transactions SET deleted_at = now() WHERE id = 'fca8aaa8-81d7-4ef8-9f6f-c40598ce75e1';
