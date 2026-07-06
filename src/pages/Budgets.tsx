@@ -524,7 +524,14 @@ const Budgets = () => {
 
 
 
-  // Section totals helper
+  // Section totals helper. Employer Match sits in the Payroll & Pre-Tax Deductions
+  // group for display, but it's a company contribution — NOT a deduction from gross
+  // pay — so exclude it from the payroll_deduction totals used in Gross → Net math.
+  const isEmployerMatchCategory = useCallback((categoryId: string) => {
+    const name = (categoryNameById.get(categoryId) || '').toLowerCase();
+    return name.includes('employer match');
+  }, [categoryNameById]);
+
   const calcSectionTotals = useCallback((grouped: Record<ExpenseType, BudgetRow[]>) => {
     const totals: Record<ExpenseType, { budget: number; actual: number; remaining: number }> = {
       income: { budget: 0, actual: 0, remaining: 0 },
@@ -536,13 +543,14 @@ const Budgets = () => {
     for (const [type, items] of Object.entries(grouped)) {
       const t = type as ExpenseType;
       for (const b of items) {
+        if (t === 'payroll_deduction' && isEmployerMatchCategory(b.category_id)) continue;
         totals[t].budget += b.planned_amount;
         totals[t].actual += t === 'income' ? b.received : b.spent;
         totals[t].remaining += b.planned_amount - (t === 'income' ? b.received : b.spent);
       }
     }
     return totals;
-  }, []);
+  }, [isEmployerMatchCategory]);
 
   const sectionTotals = useMemo(() => calcSectionTotals(groupedBudgets), [calcSectionTotals, groupedBudgets]);
   const personalSectionTotals = useMemo(() => calcSectionTotals(personalGroupedBudgets), [calcSectionTotals, personalGroupedBudgets]);
