@@ -1669,12 +1669,12 @@ const Budgets = () => {
         <Card className="border-l-4 border-l-emerald-500">
           <CardContent className="p-3 sm:p-4">
             <p className="text-[11px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">Income</p>
-            <p className="text-lg sm:text-xl font-bold font-display tabular-nums mt-1">{formatCurrency(grossIncomeBudget)}</p>
+            <p className="text-lg sm:text-xl font-bold font-display tabular-nums mt-1">{formatCurrency(totalIncomeBudget)}</p>
             <p className="text-[10px] text-muted-foreground mt-0.5">gross budgeted</p>
             {payrollDeductionBudget > 0 && (
               <p className="text-[10px] text-sky-600 dark:text-sky-400 mt-0.5 tabular-nums">− {formatCurrency(payrollDeductionBudget)} deductions</p>
             )}
-            <p className="text-xs text-muted-foreground mt-0.5 tabular-nums">= {formatCurrency(totalIncomeBudget)} net</p>
+            <p className="text-xs text-muted-foreground mt-0.5 tabular-nums">= {formatCurrency(totalIncomeBudget - payrollDeductionBudget)} net</p>
             <p className="text-[10px] text-muted-foreground mt-0.5">{formatCurrency(totalIncomeActual)} received</p>
           </CardContent>
         </Card>
