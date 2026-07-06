@@ -41,11 +41,14 @@ const monthLabel = (m?: string) => {
   });
 };
 
+type EntityView = 'combined' | 'personal' | 'business';
+
 export default function MonthlyReport() {
   const { household } = useHousehold();
   const qc = useQueryClient();
   const [running, setRunning] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [entity, setEntity] = useState<EntityView>('combined');
 
   const { data: reports = [], isLoading } = useQuery({
     queryKey: ['monthly_reports', household?.id],
