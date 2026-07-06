@@ -386,7 +386,7 @@ export default function MonthlyReport() {
             <CardHeader>
               <CardTitle className="text-lg">Analysis & Next Steps</CardTitle>
             </CardHeader>
-            <CardContent className="prose prose-sm dark:prose-invert max-w-none prose-headings:mt-4 prose-headings:mb-2 print:prose-neutral">
+            <CardContent className="prose prose-base dark:prose-invert max-w-none leading-relaxed prose-headings:mt-8 prose-headings:mb-3 prose-p:my-4 prose-li:my-2 prose-ul:my-4 prose-ol:my-4 print:prose-neutral">
               <ReactMarkdown>{stripFirstHeading}</ReactMarkdown>
             </CardContent>
           </Card>
