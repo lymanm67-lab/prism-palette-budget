@@ -72,18 +72,37 @@ async function processHousehold(supabase: any, householdId: string, monthOverrid
     .gte("date", iso(prevMonth))
     .lt("date", iso(monthAfter));
 
-  // Prior month (for "new charges" detection)
+  // Prior activity (for "new charges" detection) — look back 6 months and normalize merchant names
+  const lookbackStart = addMonths(prevMonth, -6);
+  const normMerchant = (s: string) =>
+    (s || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9 ]+/g, " ")
+      .replace(/\b(llc|inc|co|corp|ltd|the)\b/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
   const { data: priorTxns } = await supabase
     .from("transactions")
     .select("merchant")
     .eq("household_id", householdId)
     .is("deleted_at", null)
     .eq("is_transfer", false)
-    .gte("date", iso(prevPrevMonth))
+    .gte("date", iso(lookbackStart))
     .lt("date", iso(prevMonth));
   const priorMerchants = new Set(
-    (priorTxns || []).map((t: any) => (t.merchant || "").toLowerCase().trim()).filter(Boolean),
+    (priorTxns || []).map((t: any) => normMerchant(t.merchant)).filter(Boolean),
   );
+
+  // Also treat recurring templates as "known" merchants
+  const { data: recTemplates } = await supabase
+    .from("recurring_transactions")
+    .select("merchant")
+    .eq("household_id", householdId);
+  for (const r of recTemplates || []) {
+    const n = normMerchant(r.merchant);
+    if (n) priorMerchants.add(n);
+  }
+
 
   // Load splits for these txns so multi-entity charges attribute to the right category
   const txnIds = (txns || []).map((t: any) => t.id);
