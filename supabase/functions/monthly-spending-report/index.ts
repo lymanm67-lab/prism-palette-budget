@@ -267,9 +267,8 @@ Keep it under 400 words. Be direct, no compliments.`;
   await supabase.from("financial_insights").insert({
     household_id: householdId,
     insight_type: "monthly_report",
-    title: `Monthly Report — ${summary.month}`,
-    content: narrative,
-    metadata: summary,
+    message: `Monthly Report — ${summary.month}\n\n${narrative}`,
+    metadata: { ...summary, title: `Monthly Report — ${summary.month}` },
   });
 
   return { household_id: householdId, month: summary.month, overages: overages.length, wrong_account_count: wrongAccountTxns.length, unsplit: unsplitCharges.length };
