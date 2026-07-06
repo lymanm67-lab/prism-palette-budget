@@ -41,11 +41,14 @@ const monthLabel = (m?: string) => {
   });
 };
 
+type EntityView = 'combined' | 'personal' | 'business';
+
 export default function MonthlyReport() {
   const { household } = useHousehold();
   const qc = useQueryClient();
   const [running, setRunning] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [entity, setEntity] = useState<EntityView>('combined');
 
   const { data: reports = [], isLoading } = useQuery({
     queryKey: ['monthly_reports', household?.id],
@@ -92,11 +95,18 @@ export default function MonthlyReport() {
     runReport(['2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06']);
 
   const meta = active?.metadata ?? {};
-  const overBudget = (meta.total_spend ?? 0) - (meta.total_budget ?? 0);
-  const overages: any[] = meta.overages || [];
+  const rawByCategory: any[] = meta.by_category || [];
+  const rawOverages: any[] = meta.overages || [];
   const newCharges: any[] = meta.new_charges || [];
   const wrongAcct: any[] = meta.wrong_account_sample || [];
   const unsplit: any[] = meta.unsplit_multi_entity_sample || [];
+
+  const matchesEntity = (e?: string) => entity === 'combined' || e === entity;
+  const byCategory = rawByCategory.filter((c) => matchesEntity(c.entity));
+  const overages = rawOverages.filter((o) => matchesEntity(o.entity));
+  const totalSpend = byCategory.reduce((s, c) => s + (c.spent || 0), 0);
+  const totalBudget = byCategory.reduce((s, c) => s + (c.budget || 0), 0);
+  const overBudget = totalSpend - totalBudget;
 
   const printPDF = () => window.print();
 
@@ -135,6 +145,15 @@ export default function MonthlyReport() {
               </SelectContent>
             </Select>
           )}
+          <div className="inline-flex rounded-md border overflow-hidden text-xs">
+            {(['combined','personal','business'] as EntityView[]).map((k) => (
+              <button
+                key={k}
+                onClick={() => setEntity(k)}
+                className={`px-3 py-2 capitalize ${entity===k ? 'bg-prism-orange text-white' : 'bg-transparent hover:bg-muted'}`}
+              >{k}</button>
+            ))}
+          </div>
           <Button variant="outline" onClick={runH1} disabled={running || !household?.id}>
             {running ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
             Generate Jan–Jun 2026
@@ -230,6 +249,60 @@ export default function MonthlyReport() {
               </CardContent>
             </Card>
           )}
+
+          {/* Budgeted vs Actual — full breakdown */}
+          {byCategory.length > 0 && (
+            <Card className="print:shadow-none print:border-black">
+              <CardHeader>
+                <CardTitle className="text-lg">Budgeted vs Actual ({entity})</CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-muted/40 text-xs uppercase tracking-wider">
+                      <tr>
+                        <th className="text-left px-4 py-2 font-medium">Category</th>
+                        <th className="text-left px-4 py-2 font-medium">Group</th>
+                        <th className="text-left px-4 py-2 font-medium">Entity</th>
+                        <th className="text-right px-4 py-2 font-medium">Budgeted</th>
+                        <th className="text-right px-4 py-2 font-medium">Actual</th>
+                        <th className="text-right px-4 py-2 font-medium">Variance</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {byCategory.map((c, i) => {
+                        const variance = (c.budget || 0) - (c.spent || 0);
+                        const over = variance < 0;
+                        return (
+                          <tr key={i} className="border-t">
+                            <td className="px-4 py-2 font-medium">{c.category}</td>
+                            <td className="px-4 py-2 text-muted-foreground text-xs">{c.group}</td>
+                            <td className="px-4 py-2 text-xs capitalize">{c.entity}</td>
+                            <td className="px-4 py-2 text-right font-mono">{fmtMoney(c.budget)}</td>
+                            <td className="px-4 py-2 text-right font-mono">{fmtMoney(c.spent)}</td>
+                            <td className={`px-4 py-2 text-right font-mono ${over ? 'text-destructive' : 'text-emerald-500'}`}>
+                              {over ? '-' : '+'}{fmtMoney(Math.abs(variance))}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                    <tfoot className="bg-muted/30 font-semibold">
+                      <tr className="border-t">
+                        <td className="px-4 py-2" colSpan={3}>Total</td>
+                        <td className="px-4 py-2 text-right font-mono">{fmtMoney(totalBudget)}</td>
+                        <td className="px-4 py-2 text-right font-mono">{fmtMoney(totalSpend)}</td>
+                        <td className={`px-4 py-2 text-right font-mono ${overBudget > 0 ? 'text-destructive' : 'text-emerald-500'}`}>
+                          {overBudget > 0 ? '-' : '+'}{fmtMoney(Math.abs(overBudget))}
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
 
           {/* Two-col grid: Flags + New charges */}
           <div className="grid md:grid-cols-2 gap-6">

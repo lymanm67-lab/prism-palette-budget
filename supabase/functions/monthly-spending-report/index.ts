@@ -47,7 +47,7 @@ async function processHousehold(supabase: any, householdId: string, monthOverrid
   // Categories + groups + default account
   const { data: categories } = await supabase
     .from("categories")
-    .select("id, name, group_id, default_account_id, category_groups!inner(name, expense_type)")
+    .select("id, name, group_id, default_account_id, category_groups!inner(name, expense_type, business_profile_id)")
     .eq("household_id", householdId);
 
   const catMap = new Map<string, any>();
@@ -151,22 +151,39 @@ async function processHousehold(supabase: any, householdId: string, monthOverrid
     }
   }
 
-  // Overage analysis
+  // Full category breakdown + overage analysis
+  const byCategory: any[] = [];
   const overages: any[] = [];
   let totalBudget = 0;
-  for (const [catId, budget] of budgetMap.entries()) {
-    totalBudget += budget;
+  // Union of budgeted + spent categories so zero-budget spend still shows
+  const catIds = new Set<string>([...budgetMap.keys(), ...spendByCat.keys()]);
+  for (const catId of catIds) {
+    const cat = catMap.get(catId);
+    if (!cat) continue;
+    const budget = budgetMap.get(catId) || 0;
     const spent = spendByCat.get(catId) || 0;
+    totalBudget += budget;
+    const entity: "personal" | "business" =
+      cat.category_groups?.business_profile_id ? "business" : "personal";
+    const merchants = Array.from(merchantByCat.get(catId)?.entries() || [])
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([m, amt]) => ({ merchant: m, amount: amt }));
+    byCategory.push({
+      category_id: catId,
+      category: cat.name,
+      group: cat.category_groups?.name,
+      entity,
+      budget,
+      spent,
+      variance: budget - spent,
+      top_merchants: merchants,
+    });
     if (spent > budget && budget > 0) {
-      const cat = catMap.get(catId);
-      if (!cat) continue;
-      const merchants = Array.from(merchantByCat.get(catId)?.entries() || [])
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 3)
-        .map(([m, amt]) => ({ merchant: m, amount: amt }));
       overages.push({
         category: cat.name,
         group: cat.category_groups?.name,
+        entity,
         budget,
         spent,
         overage: spent - budget,
@@ -175,6 +192,7 @@ async function processHousehold(supabase: any, householdId: string, monthOverrid
       });
     }
   }
+  byCategory.sort((a, b) => (b.spent - b.budget) - (a.spent - a.budget));
   overages.sort((a, b) => b.overage - a.overage);
 
   // Top new merchants ($25+)
@@ -228,7 +246,8 @@ async function processHousehold(supabase: any, householdId: string, monthOverrid
     total_spend: totalSpend,
     total_budget: totalBudget,
     net_vs_budget: totalBudget - totalSpend,
-    overages: overages.slice(0, 8),
+    overages: overages,
+    by_category: byCategory,
     new_charges: newCharges,
     wrong_account_count: wrongAccountTxns.length,
     wrong_account_sample: wrongAccountTxns.slice(0, 5),
