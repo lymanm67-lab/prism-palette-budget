@@ -157,6 +157,7 @@ const App = () => (
               <Route path="/budgets" element={<Suspense fallback={<PageLoader />}><Budgets /></Suspense>} />
               <Route path="/categories" element={<Suspense fallback={<PageLoader />}><Categories /></Suspense>} />
               <Route path="/reports" element={<Suspense fallback={<PageLoader />}><Reports /></Suspense>} />
+              <Route path="/reports/monthly" element={<Suspense fallback={<PageLoader />}><MonthlyReport /></Suspense>} />
               <Route path="/spending-trends" element={<Suspense fallback={<PageLoader />}><SpendingTrends /></Suspense>} />
               <Route path="/goals" element={<Suspense fallback={<PageLoader />}><Goals /></Suspense>} />
               <Route path="/debt-payoff" element={<Suspense fallback={<PageLoader />}><DebtPayoff /></Suspense>} />
