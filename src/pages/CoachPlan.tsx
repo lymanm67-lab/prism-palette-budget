@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLatestCoachPlan, useRestartCoachPlan } from '@/hooks/use-coach-plan';
 import { Button } from '@/components/ui/button';
@@ -5,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { ArrowLeft, Download, RefreshCw, Sparkles, Target, CalendarDays, CheckCircle2, Printer } from 'lucide-react';
 import { format } from 'date-fns';
 import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import { STEPS } from '@/components/coach/wizard-steps';
 import { toast } from 'sonner';
 
