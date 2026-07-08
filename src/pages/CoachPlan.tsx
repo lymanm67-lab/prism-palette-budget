@@ -210,6 +210,120 @@ export default function CoachPlan() {
           ))}
         </div>
       </Card>
+
+      {/* Hidden print/PDF layout — light theme, inline styles for html2canvas fidelity */}
+      <div
+        ref={printRef}
+        aria-hidden
+        style={{
+          position: 'fixed',
+          left: '-10000px',
+          top: 0,
+          width: '816px',
+          opacity: 0,
+          pointerEvents: 'none',
+          background: '#ffffff',
+          color: '#111827',
+          fontFamily: 'Arial, Helvetica, sans-serif',
+          fontSize: '13px',
+          lineHeight: 1.5,
+        }}
+      >
+        <div style={{ background: '#0f172a', padding: '32px 48px 28px', borderBottom: '4px solid #ff8a4c' }}>
+          <div style={{ color: '#ffffff', fontSize: '26px', fontWeight: 700, letterSpacing: '-0.01em' }}>
+            Your Money Coach Plan
+          </div>
+          <div style={{ color: '#cbd5e1', fontSize: '12px', marginTop: '6px' }}>
+            {plan.generated_at ? `Generated ${format(new Date(plan.generated_at), 'PPP')}` : ''} · PrismMoney™
+          </div>
+        </div>
+
+        <div style={{ padding: '32px 48px 48px' }}>
+          <PdfSection title="Summary" accent="#ff8a4c">
+            <p style={{ margin: 0, color: '#1f2937' }}>{g.summary}</p>
+          </PdfSection>
+
+          <PdfSection title="Top Priorities" accent="#ff8a4c">
+            <ol style={{ margin: 0, paddingLeft: 0, listStyle: 'none' }}>
+              {g.top_priorities.map((p, i) => (
+                <li key={i} style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+                  <span style={{ color: '#ff8a4c', fontWeight: 700, minWidth: '20px' }}>{i + 1}.</span>
+                  <span style={{ color: '#1f2937' }}>{p}</span>
+                </li>
+              ))}
+            </ol>
+          </PdfSection>
+
+          <PdfSection title="Next 30 Days" accent="#0ea5a4">
+            <PdfBullets items={g.thirty_day} color="#0ea5a4" />
+          </PdfSection>
+
+          <PdfSection title="Days 31–60" accent="#3898e2">
+            <PdfBullets items={g.sixty_day} color="#3898e2" />
+          </PdfSection>
+
+          <PdfSection title="Days 61–90" accent="#8a6cd6">
+            <PdfBullets items={g.ninety_day} color="#8a6cd6" />
+          </PdfSection>
+
+          <PdfSection title="Per-Card Recommendations" accent="#ff8a4c">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {Object.entries(g.per_card).map(([k, v]) => (
+                <div
+                  key={k}
+                  style={{
+                    border: '1px solid #e5e7eb',
+                    borderLeft: '3px solid #ff8a4c',
+                    borderRadius: '6px',
+                    background: '#f9fafb',
+                    padding: '12px 16px',
+                  }}
+                >
+                  <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.12em', color: '#6b7280', fontWeight: 700 }}>
+                    Card {k} · {CARD_TITLES[k] || ''}
+                  </div>
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#111827', marginTop: '4px' }}>
+                    {v.headline}
+                  </div>
+                  <p style={{ margin: '4px 0 0', color: '#4b5563', fontSize: '12px' }}>{v.recommendation}</p>
+                </div>
+              ))}
+            </div>
+          </PdfSection>
+
+          <div style={{ marginTop: '32px', borderTop: '1px solid #e5e7eb', paddingTop: '12px', fontSize: '10px', color: '#9ca3af', textAlign: 'center' }}>
+            Your Money Coach Plan · PrismMoney™
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
+
+function PdfSection({ title, accent, children }: { title: string; accent: string; children: React.ReactNode }) {
+  return (
+    <section style={{ marginBottom: '24px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+        <span style={{ width: '4px', height: '18px', background: accent, borderRadius: '2px', display: 'inline-block' }} />
+        <h2 style={{ margin: 0, fontSize: '13px', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#111827' }}>
+          {title}
+        </h2>
+      </div>
+      <div>{children}</div>
+    </section>
+  );
+}
+
+function PdfBullets({ items, color }: { items: string[]; color: string }) {
+  return (
+    <ul style={{ margin: 0, paddingLeft: 0, listStyle: 'none' }}>
+      {items.map((it, i) => (
+        <li key={i} style={{ display: 'flex', gap: '10px', marginBottom: '8px', alignItems: 'flex-start' }}>
+          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: color, marginTop: '7px', flexShrink: 0 }} />
+          <span style={{ color: '#1f2937' }}>{it}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
