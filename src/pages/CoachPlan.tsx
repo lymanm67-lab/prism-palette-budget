@@ -19,6 +19,8 @@ export default function CoachPlan() {
   const navigate = useNavigate();
   const { data: plan, isLoading } = useLatestCoachPlan();
   const restart = useRestartCoachPlan();
+  const printRef = useRef<HTMLDivElement>(null);
+
 
   if (isLoading) {
     return <div className="p-6 text-sm text-muted-foreground">Loading your plan…</div>;
