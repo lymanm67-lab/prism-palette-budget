@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLatestCoachPlan, useRestartCoachPlan } from '@/hooks/use-coach-plan';
 import { Button } from '@/components/ui/button';
