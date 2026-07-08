@@ -300,7 +300,7 @@ export default function CoachPlan() {
   );
 }
 
-function PdfSection({ title, accent, children }: { title: string; accent: string; children: React.ReactNode }) {
+function PdfSection({ title, accent, children }: { title: string; accent: string; children: ReactNode }) {
   return (
     <section style={{ marginBottom: '24px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
