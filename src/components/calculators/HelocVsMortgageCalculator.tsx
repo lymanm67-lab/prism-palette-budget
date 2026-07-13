@@ -12,6 +12,7 @@ import CalculatorScenariosAndPitfalls from '@/components/CalculatorScenariosAndP
 import { QualificationBadge } from '@/components/FinancialProfileCard';
 import { useFinancialProfile, profileNumbers, qualifyFor } from '@/hooks/use-financial-profile';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { HELOC_LENDERS, US_STATES, lendersForState } from '@/data/heloc-lenders';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, ResponsiveContainer, Legend,
@@ -292,202 +293,193 @@ export default function HelocVsMortgageCalculator() {
         </CardContent>
       </Card>
 
-      <CalculatorGuide
-        title="How a 1st Lien HELOC works"
-        icon={Zap}
-        iconColor="text-prism-amber"
-        instructions={[
-          "Your HELOC replaces the mortgage in 1st lien position — it becomes your primary home loan.",
-          "Every paycheck is deposited to the HELOC, immediately lowering the balance.",
-          "Bills and expenses are paid from the HELOC as needed, raising the balance.",
-          "Interest is charged on the average daily balance — parking cash there beats a 0% checking account.",
-          "The net monthly surplus (income − expenses) is what actually pays the loan down.",
-        ]}
-        ttsScript="A 1st lien HELOC replaces your mortgage. Your paycheck lowers the balance, expenses raise it, and interest accrues on the average daily balance. The bigger your monthly surplus, the faster you pay off the home."
-      />
+      {/* Everything else lives behind tabs so the calculator stays the focus */}
+      <Tabs defaultValue="compare" className="w-full">
+        <TabsList className="grid grid-cols-4 w-full">
+          <TabsTrigger value="compare">Compare</TabsTrigger>
+          <TabsTrigger value="qualify">Qualify</TabsTrigger>
+          <TabsTrigger value="lenders">Lenders</TabsTrigger>
+          <TabsTrigger value="learn">Learn</TabsTrigger>
+        </TabsList>
 
-      <CalculatorScenariosAndPitfalls
-        scenarios={[
-          { title: 'Strong surplus', description: 'When income comfortably exceeds expenses, the HELOC shreds years off the payoff even at a higher rate.' },
-          { title: 'Rate-sensitive', description: 'HELOCs are variable. Stress-test by adding 1–2% to the HELOC rate and re-running.' },
-          { title: 'Discipline required', description: 'If lifestyle inflates to match the available credit line, the strategy fails.' },
-        ]}
-        pitfalls={[
-          { title: 'Variable rate risk', description: 'Payments and interest can rise with prime — a rate spike erases the daily-balance advantage.' },
-          { title: 'Needs a real surplus', description: 'Without income exceeding expenses, the balance grows instead of shrinking.' },
-          { title: 'Closing costs', description: 'Appraisal, origination, and title fees can eat into year-one savings.' },
-          { title: 'Product availability', description: 'Not all lenders offer true 1st-lien HELOCs; many are 2nd-lien only.' },
-        ]}
-      />
-
-      {/* Educational deep-dive: Two Products, Very Different Outcomes */}
-      <Card className="glass-card">
-        <CardHeader>
-          <CardTitle className="text-lg">Two Products, Very Different Outcomes</CardTitle>
-          <p className="text-sm text-muted-foreground mt-1">
-            Both a traditional mortgage and a 1st lien HELOC finance your home, but the mechanics differ fundamentally. The right choice depends on cash flow, discipline, risk tolerance, and how quickly you want to be debt-free.
-          </p>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Comparison table */}
-          <div className="overflow-x-auto rounded-lg border border-border/40">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/40">
-                <tr className="text-left">
-                  <th className="p-3 font-semibold">Feature</th>
-                  <th className="p-3 font-semibold">Traditional Mortgage</th>
-                  <th className="p-3 font-semibold text-prism-amber">1st Lien HELOC</th>
-                </tr>
-              </thead>
-              <tbody className="[&_tr:nth-child(even)]:bg-muted/20">
-                {[
-                  ['Interest type', 'Fixed or adjustable', 'Variable (prime-based)'],
-                  ['Interest calculation', 'Monthly amortization', 'Average daily balance'],
-                  ['Typical payoff', '15–30 years', '5–7 years*'],
-                  ['Equity access', 'Requires refi or 2nd lien', 'Built-in revolving access'],
-                  ['Payment flexibility', 'Fixed monthly payment', 'Interest-only min + surplus'],
-                  ['Checking features', 'None', 'Debit card, bill pay, checks'],
-                  ['Sweep functionality', 'Not available', 'Automatic fund optimization'],
-                  ['Emergency fund access', 'Separate account needed', 'Built-in via available equity'],
-                  ['Rate stability', 'Fixed for life of loan', 'Variable (index + margin)'],
-                  ['Minimum payment', 'Full P&I required', 'Interest-only option'],
-                  ['Typical total interest', '$380k–$500k', '$50k–$100k'],
-                ].map(([f, m, h]) => (
-                  <tr key={f} className="border-t border-border/30">
-                    <td className="p-3 font-medium">{f}</td>
-                    <td className="p-3 text-muted-foreground">{m}</td>
-                    <td className="p-3 text-prism-amber/90">{h}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="rounded-xl border border-border/40 bg-muted/20 p-4 space-y-2">
-              <h4 className="font-semibold text-foreground">The Interest Cost Reality</h4>
-              <p className="text-sm text-muted-foreground">
-                On a $300,000 balance, a 30-year mortgage at 7% generates ~$418,527 in total interest. Monthly payment is $1,996, and it takes until year 18 before more than half goes to principal.
+        {/* ─── Compare ─── */}
+        <TabsContent value="compare" className="mt-4">
+          <Card className="glass-card">
+            <CardHeader>
+              <CardTitle className="text-lg">Two Products, Very Different Outcomes</CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                The right choice depends on cash flow, discipline, risk tolerance, and how quickly you want to be debt-free.
               </p>
-              <p className="text-sm text-muted-foreground">
-                The same $300,000 on a 1st lien HELOC at 7.5% with $4,400/mo surplus generates ~$106,000 in interest and is paid off in ~8.5 years. Difference: <span className="text-prism-lime font-semibold">~$312,500</span> stays in your pocket.
-              </p>
-            </div>
-            <div className="rounded-xl border border-prism-sky/30 bg-prism-sky/5 p-4 space-y-2">
-              <h4 className="font-semibold text-foreground">What About Rate Risk?</h4>
-              <p className="text-sm text-muted-foreground">
-                HELOC rates are variable and can rise — but total exposure is 5–7 years vs. 30 on a mortgage. Even at 12%, the compressed timeline typically wins on total interest. Stress-test by bumping the HELOC rate above and re-running.
-              </p>
-            </div>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="rounded-xl border border-border/40 bg-muted/20 p-4 space-y-2">
-              <h4 className="font-semibold text-foreground">When a Mortgage Still Makes Sense</h4>
-              <ul className="text-sm text-muted-foreground space-y-1 list-disc pl-5">
-                <li>Cash flow is negative or break-even</li>
-                <li>No cushion — you need a predictable fixed payment</li>
-                <li>Less than ~10% equity available</li>
-                <li>You can't commit to discipline for 5–7 years</li>
-              </ul>
-              <p className="text-xs text-muted-foreground/80 italic">A mortgage is a safety net for those who need structure. There's no shame in predictability.</p>
-            </div>
-            <div className="rounded-xl border border-prism-amber/30 bg-prism-amber/5 p-4 space-y-2">
-              <h4 className="font-semibold text-foreground">When a HELOC Has the Clear Advantage</h4>
-              <ul className="text-sm text-muted-foreground space-y-1 list-disc pl-5">
-                <li>Consistent positive cash flow of $500+/mo</li>
-                <li>Goal: pay off the home in under 10 years</li>
-                <li>You value flexibility and equity access</li>
-                <li>You're intentional and comfortable with variable rates</li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-border/40 bg-gradient-to-br from-prism-teal/10 to-prism-amber/10 p-4">
-            <h4 className="font-semibold text-foreground mb-1">The Bottom Line</h4>
-            <p className="text-sm text-muted-foreground">
-              A mortgage optimizes for <span className="text-foreground font-medium">predictability</span>. A 1st lien HELOC optimizes for <span className="text-foreground font-medium">total cost and speed of payoff</span>. With the cash flow and discipline, the HELOC can save hundreds of thousands and decades of debt. Without them, a mortgage keeps you safe.
-            </p>
-            <p className="text-xs text-muted-foreground/70 mt-2">
-              Reference: <a href="https://firstlienheloc.com/calculator/" target="_blank" rel="noopener noreferrer" className="underline hover:text-prism-amber">firstlienheloc.com/calculator</a>
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Lenders & Qualification Requirements */}
-      <Card className="glass-card">
-        <CardHeader>
-          <CardTitle className="text-lg">Lenders &amp; Qualification Requirements</CardTitle>
-          <p className="text-sm text-muted-foreground mt-1">
-            First-lien HELOCs are a niche product — only a subset of banks and credit unions offer true 1st-position lines. Traditional mortgages are available from nearly every bank, credit union, and mortgage broker.
-          </p>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid md:grid-cols-2 gap-4">
-            {/* Traditional Mortgage requirements */}
-            <div className="rounded-xl border border-border/40 bg-muted/20 p-4 space-y-3">
-              <h4 className="font-semibold text-foreground flex items-center gap-2">
-                <Home className="w-4 h-4 text-prism-teal" /> Traditional Mortgage — Qualify
-              </h4>
-              <ul className="text-sm text-muted-foreground space-y-1.5">
-                <li><span className="text-foreground font-medium">Credit score:</span> 620+ (conventional), 580+ (FHA), 500 with 10% down (FHA)</li>
-                <li><span className="text-foreground font-medium">DTI:</span> ≤ 43% typical, up to 50% with compensating factors</li>
-                <li><span className="text-foreground font-medium">Down payment:</span> 3–5% conventional, 3.5% FHA, 0% VA/USDA</li>
-                <li><span className="text-foreground font-medium">LTV:</span> up to 97% conventional</li>
-                <li><span className="text-foreground font-medium">Reserves:</span> 0–6 months PITI depending on loan type</li>
-                <li><span className="text-foreground font-medium">Income docs:</span> 2 yrs W-2 / tax returns, 2 mo pay stubs, 2 mo bank statements</li>
-              </ul>
-              <div className="pt-2 border-t border-border/40">
-                <p className="text-xs font-semibold text-foreground mb-1.5">Common lenders</p>
-                <p className="text-xs text-muted-foreground">Rocket Mortgage, Chase, Wells Fargo, Bank of America, U.S. Bank, PenFed, Navy Federal, loanDepot, Better.com, local credit unions, and any licensed mortgage broker.</p>
-              </div>
-            </div>
-
-            {/* 1st Lien HELOC requirements */}
-            <div className="rounded-xl border border-prism-amber/30 bg-prism-amber/5 p-4 space-y-3">
-              <h4 className="font-semibold text-foreground flex items-center gap-2">
-                <Zap className="w-4 h-4 text-prism-amber" /> 1st Lien HELOC — Qualify
-              </h4>
-              <ul className="text-sm text-muted-foreground space-y-1.5">
-                <li><span className="text-foreground font-medium">Credit score:</span> 680+ typical, 700–740+ for best rates</li>
-                <li><span className="text-foreground font-medium">DTI:</span> ≤ 43–45%</li>
-                <li><span className="text-foreground font-medium">Equity / CLTV:</span> at least 10–20% equity; max CLTV 80–90%</li>
-                <li><span className="text-foreground font-medium">Positive cash flow:</span> lenders want to see net monthly surplus — the whole strategy depends on it</li>
-                <li><span className="text-foreground font-medium">Property:</span> primary residence (most), some allow 2nd home / investment at lower CLTV</li>
-                <li><span className="text-foreground font-medium">Docs:</span> mortgage payoff, appraisal or AVM, income + asset verification, homeowners insurance</li>
-              </ul>
-              <div className="pt-2 border-t border-prism-amber/30">
-                <p className="text-xs font-semibold text-foreground mb-1.5">Lenders that offer true 1st-lien HELOCs</p>
-                <p className="text-xs text-muted-foreground">
-                  See the filtered directory below — pick your state to view lenders licensed in your area with direct links to their sites.
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="overflow-x-auto rounded-lg border border-border/40">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/40">
+                    <tr className="text-left">
+                      <th className="p-3 font-semibold">Feature</th>
+                      <th className="p-3 font-semibold">Traditional Mortgage</th>
+                      <th className="p-3 font-semibold text-prism-amber">1st Lien HELOC</th>
+                    </tr>
+                  </thead>
+                  <tbody className="[&_tr:nth-child(even)]:bg-muted/20">
+                    {[
+                      ['Interest type', 'Fixed or adjustable', 'Variable (prime-based)'],
+                      ['Interest calculation', 'Monthly amortization', 'Average daily balance'],
+                      ['Typical payoff', '15–30 years', '5–7 years*'],
+                      ['Equity access', 'Requires refi or 2nd lien', 'Built-in revolving access'],
+                      ['Payment flexibility', 'Fixed monthly payment', 'Interest-only min + surplus'],
+                      ['Checking features', 'None', 'Debit card, bill pay, checks'],
+                      ['Sweep functionality', 'Not available', 'Automatic fund optimization'],
+                      ['Emergency fund access', 'Separate account needed', 'Built-in via available equity'],
+                      ['Rate stability', 'Fixed for life of loan', 'Variable (index + margin)'],
+                      ['Minimum payment', 'Full P&I required', 'Interest-only option'],
+                    ].map(([f, m, h]) => (
+                      <tr key={f} className="border-t border-border/30">
+                        <td className="p-3 font-medium">{f}</td>
+                        <td className="p-3 text-muted-foreground">{m}</td>
+                        <td className="p-3 text-prism-amber/90">{h}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <p className="text-[11px] text-muted-foreground/70 p-3 border-t border-border/30">
+                  *Payoff time on a 1st-lien HELOC depends on your monthly surplus. See your live results in the calculator above.
                 </p>
               </div>
-            </div>
-          </div>
 
-          <div className="rounded-xl border border-border/40 bg-gradient-to-br from-prism-sky/10 to-prism-teal/10 p-4 space-y-2">
-            <h4 className="font-semibold text-foreground text-sm">Before you apply — checklist</h4>
-            <ul className="text-sm text-muted-foreground space-y-1 list-disc pl-5">
-              <li>Pull your credit reports and know your middle FICO score.</li>
-              <li>Get a recent home value estimate (AVM or appraisal) and current mortgage payoff.</li>
-              <li>Calculate your current CLTV: (mortgage balance) ÷ (home value).</li>
-              <li>Document 2 months of pay stubs, 2 years W-2 / tax returns, and 2 months of asset statements.</li>
-              <li>For a 1st-lien HELOC, confirm the lender will pay off and replace your existing mortgage (not sit behind it).</li>
-              <li>Ask about draw period, repayment period, index (Prime), margin, floor rate, ceiling rate, and closing costs.</li>
-            </ul>
-            <p className="text-xs text-muted-foreground/70 pt-1">
-              Sources: Bankrate, NerdWallet, Quorum FCU product matrix, Spring EQ correspondent guidelines, rate.com.
-            </p>
-          </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="rounded-xl border border-border/40 bg-muted/20 p-4 space-y-2">
+                  <h4 className="font-semibold text-foreground">When a Mortgage Still Makes Sense</h4>
+                  <ul className="text-sm text-muted-foreground space-y-1 list-disc pl-5">
+                    <li>Cash flow is negative or break-even</li>
+                    <li>No cushion — you need a predictable fixed payment</li>
+                    <li>Less than ~10% equity available</li>
+                    <li>You can't commit to discipline for 5–7 years</li>
+                  </ul>
+                </div>
+                <div className="rounded-xl border border-prism-amber/30 bg-prism-amber/5 p-4 space-y-2">
+                  <h4 className="font-semibold text-foreground">When a HELOC Has the Clear Advantage</h4>
+                  <ul className="text-sm text-muted-foreground space-y-1 list-disc pl-5">
+                    <li>Consistent positive cash flow of $500+/mo</li>
+                    <li>Goal: pay off the home in under 10 years</li>
+                    <li>You value flexibility and equity access</li>
+                    <li>You're comfortable with variable rates</li>
+                  </ul>
+                </div>
+              </div>
 
-          <p className="text-[11px] text-muted-foreground/60 italic">
-            Informational only — not a loan offer, quote, or commitment to lend. Guidelines vary by lender, state, and market conditions. Always verify current requirements directly with the lender.
-          </p>
-        </CardContent>
-      </Card>
+              <div className="rounded-xl border border-prism-sky/30 bg-prism-sky/5 p-4">
+                <h4 className="font-semibold text-foreground text-sm">What About Rate Risk?</h4>
+                <p className="text-sm text-muted-foreground mt-1">
+                  HELOC rates are variable — but total exposure is 5–7 years vs. 30 on a mortgage. Even at 12%, the compressed timeline typically wins. Stress-test by bumping the HELOC rate in the calculator above.
+                </p>
+              </div>
 
-      <LenderDirectory />
+              <div className="rounded-xl border border-border/40 bg-gradient-to-br from-prism-teal/10 to-prism-amber/10 p-4">
+                <h4 className="font-semibold text-foreground mb-1">The Bottom Line</h4>
+                <p className="text-sm text-muted-foreground">
+                  A mortgage optimizes for <span className="text-foreground font-medium">predictability</span>. A 1st lien HELOC optimizes for <span className="text-foreground font-medium">total cost and speed of payoff</span>. With the cash flow and discipline, the HELOC can save hundreds of thousands and decades of debt.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ─── Qualify ─── */}
+        <TabsContent value="qualify" className="mt-4">
+          <Card className="glass-card">
+            <CardHeader>
+              <CardTitle className="text-lg">Qualification Requirements</CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                What most lenders look for. Guidelines vary — always verify with the lender.
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="rounded-xl border border-border/40 bg-muted/20 p-4 space-y-3">
+                  <h4 className="font-semibold text-foreground flex items-center gap-2">
+                    <Home className="w-4 h-4 text-prism-teal" /> Traditional Mortgage
+                  </h4>
+                  <ul className="text-sm text-muted-foreground space-y-1.5">
+                    <li><span className="text-foreground font-medium">Credit score:</span> 620+ (conventional), 580+ (FHA), 500 with 10% down (FHA)</li>
+                    <li><span className="text-foreground font-medium">DTI:</span> ≤ 43% typical, up to 50% with compensating factors</li>
+                    <li><span className="text-foreground font-medium">Down payment:</span> 3–5% conventional, 3.5% FHA, 0% VA/USDA</li>
+                    <li><span className="text-foreground font-medium">LTV:</span> up to 97% conventional</li>
+                    <li><span className="text-foreground font-medium">Reserves:</span> 0–6 months PITI depending on loan type</li>
+                    <li><span className="text-foreground font-medium">Income docs:</span> 2 yrs W-2 / tax returns, 2 mo pay stubs, 2 mo bank statements</li>
+                  </ul>
+                </div>
+
+                <div className="rounded-xl border border-prism-amber/30 bg-prism-amber/5 p-4 space-y-3">
+                  <h4 className="font-semibold text-foreground flex items-center gap-2">
+                    <Zap className="w-4 h-4 text-prism-amber" /> 1st Lien HELOC
+                  </h4>
+                  <ul className="text-sm text-muted-foreground space-y-1.5">
+                    <li><span className="text-foreground font-medium">Credit score:</span> 680+ typical, 700–740+ for best rates</li>
+                    <li><span className="text-foreground font-medium">DTI:</span> ≤ 43–45%</li>
+                    <li><span className="text-foreground font-medium">Equity / CLTV:</span> at least 10–20% equity; max CLTV 80–90%</li>
+                    <li><span className="text-foreground font-medium">Positive cash flow:</span> lenders want to see net monthly surplus</li>
+                    <li><span className="text-foreground font-medium">Property:</span> primary residence (most)</li>
+                    <li><span className="text-foreground font-medium">Docs:</span> mortgage payoff, appraisal or AVM, income + asset verification</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-border/40 bg-gradient-to-br from-prism-sky/10 to-prism-teal/10 p-4 space-y-2">
+                <h4 className="font-semibold text-foreground text-sm">Before you apply — checklist</h4>
+                <ul className="text-sm text-muted-foreground space-y-1 list-disc pl-5">
+                  <li>Pull your credit reports and know your middle FICO score.</li>
+                  <li>Get a recent home value estimate (AVM or appraisal) and current mortgage payoff.</li>
+                  <li>Calculate your current CLTV: (mortgage balance) ÷ (home value).</li>
+                  <li>Document 2 months of pay stubs, 2 years W-2 / tax returns, and 2 months of asset statements.</li>
+                  <li>For a 1st-lien HELOC, confirm the lender will pay off and replace your existing mortgage.</li>
+                  <li>Ask about draw period, repayment period, index (Prime), margin, floor rate, ceiling rate, and closing costs.</li>
+                </ul>
+              </div>
+
+              <p className="text-[11px] text-muted-foreground/60 italic">
+                Informational only — not a loan offer, quote, or commitment to lend. Guidelines vary by lender, state, and market conditions.
+              </p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ─── Lenders ─── */}
+        <TabsContent value="lenders" className="mt-4">
+          <LenderDirectory />
+        </TabsContent>
+
+        {/* ─── Learn ─── */}
+        <TabsContent value="learn" className="mt-4 space-y-4">
+          <CalculatorGuide
+            title="How a 1st Lien HELOC works"
+            icon={Zap}
+            iconColor="text-prism-amber"
+            instructions={[
+              "Your HELOC replaces the mortgage in 1st lien position — it becomes your primary home loan.",
+              "Every paycheck is deposited to the HELOC, immediately lowering the balance.",
+              "Bills and expenses are paid from the HELOC as needed, raising the balance.",
+              "Interest is charged on the average daily balance — parking cash there beats a 0% checking account.",
+              "The net monthly surplus (income − expenses) is what actually pays the loan down.",
+            ]}
+            ttsScript="A 1st lien HELOC replaces your mortgage. Your paycheck lowers the balance, expenses raise it, and interest accrues on the average daily balance. The bigger your monthly surplus, the faster you pay off the home."
+          />
+
+          <CalculatorScenariosAndPitfalls
+            scenarios={[
+              { title: 'Strong surplus', description: 'When income comfortably exceeds expenses, the HELOC shreds years off the payoff even at a higher rate.' },
+              { title: 'Rate-sensitive', description: 'HELOCs are variable. Stress-test by adding 1–2% to the HELOC rate and re-running.' },
+              { title: 'Discipline required', description: 'If lifestyle inflates to match the available credit line, the strategy fails.' },
+            ]}
+            pitfalls={[
+              { title: 'Variable rate risk', description: 'Payments and interest can rise with prime — a rate spike erases the daily-balance advantage.' },
+              { title: 'Needs a real surplus', description: 'Without income exceeding expenses, the balance grows instead of shrinking.' },
+              { title: 'Closing costs', description: 'Appraisal, origination, and title fees can eat into year-one savings.' },
+              { title: 'Product availability', description: 'Not all lenders offer true 1st-lien HELOCs; many are 2nd-lien only.' },
+            ]}
+          />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
