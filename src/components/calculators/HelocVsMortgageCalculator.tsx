@@ -321,42 +321,304 @@ export default function HelocVsMortgageCalculator() {
             ttsScript="How to use the 1st Lien HELOC versus Mortgage calculator. First, enter your current mortgage balance. Then set your current mortgage rate and remaining years, plus the HELOC variable rate you expect. Next, enter your monthly gross income that will be deposited into the HELOC account, and your monthly expenses excluding any mortgage payment because the HELOC replaces the payment. The live comparison will show your monthly surplus, payoff time, total interest, and whether the HELOC or mortgage wins. Review the qualification badges to see if your profile fits a mortgage or 1st-lien HELOC. Finally, explore the Compare, Qualify, Lenders, and Learn tabs for deeper details, local lenders, and requirements."
           />
 
-          {/* Mode toggle */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-border/40 bg-muted/20 p-3">
-            <div>
-              <div className="text-sm font-semibold text-foreground">Calculator mode</div>
-              <p className="text-xs text-muted-foreground">
-                {mode === 'standalone'
-                  ? 'Classic HELOC: interest-only during the draw period, then amortizing repayment.'
-                  : '1st-lien HELOC "all-in-one" strategy compared to a traditional mortgage.'}
-              </p>
+          {/* Mode + Scenario toggle */}
+          <div className="flex flex-col gap-3 rounded-xl border border-border/40 bg-muted/20 p-3">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+              <div>
+                <div className="text-sm font-semibold text-foreground">Comparison mode</div>
+                <p className="text-xs text-muted-foreground">
+                  {mode === 'mortgage-only' && 'Plain 30-yr amortized mortgage — payment, payoff time and total interest.'}
+                  {mode === 'compare' && 'Traditional mortgage vs. a 1st-lien HELOC "all-in-one" strategy.'}
+                  {mode === 'heloc-vs-heloc' && '1st-lien HELOC (replaces mortgage) vs. 2nd-lien HELOC (chunks against mortgage).'}
+                </p>
+              </div>
+              <div className="inline-flex flex-wrap rounded-lg border border-border/60 bg-background p-0.5 self-start">
+                <button type="button" onClick={() => setMode('mortgage-only')}
+                  className={cn('px-3 py-1.5 text-xs font-medium rounded-md transition-colors',
+                    mode === 'mortgage-only' ? 'bg-prism-amber text-background' : 'text-muted-foreground hover:text-foreground')}>
+                  Mortgage only
+                </button>
+                <button type="button" onClick={() => setMode('compare')}
+                  className={cn('px-3 py-1.5 text-xs font-medium rounded-md transition-colors',
+                    mode === 'compare' ? 'bg-prism-amber text-background' : 'text-muted-foreground hover:text-foreground')}>
+                  Mortgage vs 1st-lien
+                </button>
+                <button type="button" onClick={() => setMode('heloc-vs-heloc')}
+                  className={cn('px-3 py-1.5 text-xs font-medium rounded-md transition-colors',
+                    mode === 'heloc-vs-heloc' ? 'bg-prism-amber text-background' : 'text-muted-foreground hover:text-foreground')}>
+                  1st vs 2nd-lien HELOC
+                </button>
+              </div>
             </div>
-            <div className="inline-flex rounded-lg border border-border/60 bg-background p-0.5 self-start">
-              <button
-                type="button"
-                onClick={() => setMode('standalone')}
-                className={cn(
-                  'px-3 py-1.5 text-xs font-medium rounded-md transition-colors',
-                  mode === 'standalone' ? 'bg-prism-amber text-background' : 'text-muted-foreground hover:text-foreground',
-                )}
-              >
-                Standalone HELOC
-              </button>
-              <button
-                type="button"
-                onClick={() => setMode('compare')}
-                className={cn(
-                  'px-3 py-1.5 text-xs font-medium rounded-md transition-colors',
-                  mode === 'compare' ? 'bg-prism-amber text-background' : 'text-muted-foreground hover:text-foreground',
-                )}
-              >
-                HELOC vs Mortgage
-              </button>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pt-2 border-t border-border/40">
+              <div className="text-xs text-muted-foreground">
+                <span className="font-semibold text-foreground">Scenario:</span>{' '}
+                {scenario === 'purchase'
+                  ? 'Buying a home — which financing is cheapest overall?'
+                  : 'Already own — which strategy pays off fastest?'}
+              </div>
+              <div className="inline-flex rounded-lg border border-border/60 bg-background p-0.5 self-start">
+                <button type="button" onClick={() => setScenario('purchase')}
+                  className={cn('px-3 py-1.5 text-xs font-medium rounded-md transition-colors',
+                    scenario === 'purchase' ? 'bg-prism-teal text-background' : 'text-muted-foreground hover:text-foreground')}>
+                  Home purchase
+                </button>
+                <button type="button" onClick={() => setScenario('payoff')}
+                  className={cn('px-3 py-1.5 text-xs font-medium rounded-md transition-colors',
+                    scenario === 'payoff' ? 'bg-prism-teal text-background' : 'text-muted-foreground hover:text-foreground')}>
+                  Home payoff
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* Standalone HELOC inputs */}
-          {mode === 'standalone' && (
+          {/* Mortgage-only mode */}
+          {mode === 'mortgage-only' && (
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                  <Home className="w-3.5 h-3.5" /> Mortgage terms
+                </div>
+                <div className="space-y-2">
+                  <Label>{scenario === 'purchase' ? 'Loan amount' : 'Current balance'}</Label>
+                  <Input type="number" value={balance} onChange={(e) => setBalance(e.target.value)} />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label>Rate %</Label>
+                    <Input type="number" step="0.01" value={mortgageRate} onChange={(e) => setMortgageRate(e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Term (years)</Label>
+                    <Input type="number" value={termYears} onChange={(e) => setTermYears(e.target.value)} />
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <div className="rounded-xl border border-border/40 bg-muted/20 p-4">
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Monthly P&amp;I</div>
+                  <div className="text-2xl font-bold text-foreground">
+                    <AnimatedNumber value={result.mortgage.payment} formatFn={formatCurrency} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-xl border border-border/40 bg-muted/20 p-4">
+                    <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Payoff time</div>
+                    <div className="text-lg font-bold text-foreground">{(result.mortgage.months / 12).toFixed(1)} yrs</div>
+                  </div>
+                  <div className="rounded-xl border border-border/40 bg-muted/20 p-4">
+                    <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Total interest</div>
+                    <div className="text-lg font-bold text-prism-rose">
+                      <AnimatedNumber value={result.mortgage.totalInterest} formatFn={formatCurrency} />
+                    </div>
+                  </div>
+                </div>
+                <div className="rounded-lg border border-prism-teal/30 bg-prism-teal/5 p-3 text-xs text-muted-foreground">
+                  {scenario === 'purchase'
+                    ? 'Baseline for a home purchase. Switch to "Mortgage vs 1st-lien" or "1st vs 2nd-lien" to see if a HELOC-based strategy beats this.'
+                    : 'Baseline payoff. Switch modes to see how HELOC strategies could shorten this timeline and cut total interest.'}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* HELOC vs HELOC — 1st-lien "all-in-one" vs 2nd-lien "chunking" */}
+          {mode === 'heloc-vs-heloc' && (
+            <>
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                  <Zap className="w-3.5 h-3.5 text-prism-amber" /> Shared inputs
+                </div>
+                <div className="space-y-2">
+                  <Label>{scenario === 'purchase' ? 'Home price / loan amount' : 'Current mortgage balance'}</Label>
+                  <Input type="number" value={balance} onChange={(e) => setBalance(e.target.value)} />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label>Mortgage rate %</Label>
+                    <Input type="number" step="0.01" value={mortgageRate} onChange={(e) => setMortgageRate(e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Mortgage term (yrs)</Label>
+                    <Input type="number" value={termYears} onChange={(e) => setTermYears(e.target.value)} />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>HELOC rate % (variable)</Label>
+                  <Input type="number" step="0.01" value={helocRate} onChange={(e) => setHelocRate(e.target.value)} />
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                  <TrendingDown className="w-3.5 h-3.5" /> Monthly cash flow
+                </div>
+                <div className="space-y-2">
+                  <Label>Monthly gross income</Label>
+                  <Input type="number" value={income} onChange={(e) => setIncome(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Monthly expenses (excl. mortgage P&amp;I)</Label>
+                  <Input type="number" value={expenses} onChange={(e) => setExpenses(e.target.value)} />
+                  <p className="text-[11px] text-muted-foreground">
+                    For 1st-lien: HELOC replaces the mortgage payment. For 2nd-lien: mortgage payment is kept separate; surplus is what's left over.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* 1st vs 2nd side-by-side */}
+            <div className="grid md:grid-cols-2 gap-4">
+              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                className="rounded-xl border border-prism-amber/30 bg-gradient-to-br from-prism-amber/15 to-prism-amber/5 p-4">
+                <div className="flex items-center gap-2 text-sm mb-3">
+                  <Zap className="w-4 h-4 text-prism-amber" />
+                  <span className="font-semibold text-foreground">1st-lien HELOC</span>
+                  <span className="text-[11px] text-muted-foreground">(replaces mortgage)</span>
+                </div>
+                {helocWorks ? (
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between"><span className="text-muted-foreground">Net surplus / mo</span><span className="font-semibold">{formatCurrency(result.heloc.netSurplus)}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Payoff time</span><span className="font-semibold">{(result.heloc.months / 12).toFixed(1)} yrs</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Total interest</span><span className="font-semibold text-prism-lime"><AnimatedNumber value={result.heloc.totalInterest} formatFn={formatCurrency} /></span></div>
+                  </div>
+                ) : (
+                  <div className="flex items-start gap-2 text-sm text-prism-rose">
+                    <AlertTriangle className="w-4 h-4 mt-0.5" />
+                    <span>Income doesn't exceed expenses — a 1st-lien HELOC balance would grow.</span>
+                  </div>
+                )}
+              </motion.div>
+
+              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                className="rounded-xl border border-prism-teal/30 bg-gradient-to-br from-prism-teal/15 to-prism-teal/5 p-4">
+                <div className="flex items-center gap-2 text-sm mb-3">
+                  <TrendingDown className="w-4 h-4 text-prism-teal" />
+                  <span className="font-semibold text-foreground">2nd-lien HELOC</span>
+                  <span className="text-[11px] text-muted-foreground">(chunking on top of mortgage)</span>
+                </div>
+                {isFinite(result.lien2.months) ? (
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between"><span className="text-muted-foreground">Mortgage P&amp;I / mo</span><span className="font-semibold">{formatCurrency(result.lien2.mortgagePayment)}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Auto chunk size</span><span className="font-semibold">{formatCurrency(result.lien2.chunk)}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Payoff time</span><span className="font-semibold">{(result.lien2.months / 12).toFixed(1)} yrs</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Total interest</span><span className="font-semibold text-prism-lime"><AnimatedNumber value={result.lien2.totalInterest} formatFn={formatCurrency} /></span></div>
+                  </div>
+                ) : (
+                  <div className="flex items-start gap-2 text-sm text-prism-rose">
+                    <AlertTriangle className="w-4 h-4 mt-0.5" />
+                    <span>No monthly surplus after the mortgage P&amp;I — chunking needs positive leftover cash flow.</span>
+                  </div>
+                )}
+              </motion.div>
+            </div>
+
+            {/* Scenario-aware verdict */}
+            {(helocWorks || isFinite(result.lien2.months)) && (() => {
+              const l1Int = helocWorks ? result.heloc.totalInterest : Infinity;
+              const l2Int = isFinite(result.lien2.totalInterest) ? result.lien2.totalInterest : Infinity;
+              const l1Mo = helocWorks ? result.heloc.months : Infinity;
+              const l2Mo = isFinite(result.lien2.months) ? result.lien2.months : Infinity;
+              // Purchase = optimize total cost. Payoff = optimize speed.
+              const winner = scenario === 'purchase'
+                ? (l1Int <= l2Int ? '1st' : '2nd')
+                : (l1Mo <= l2Mo ? '1st' : '2nd');
+              const diff = scenario === 'purchase'
+                ? Math.abs(l1Int - l2Int)
+                : Math.abs(l1Mo - l2Mo) / 12;
+              return (
+                <div className="rounded-xl border border-prism-lime/30 bg-prism-lime/10 p-4 flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 mt-0.5 text-prism-lime" />
+                  <div className="text-sm">
+                    <p className="font-semibold text-foreground">
+                      Best for {scenario === 'purchase' ? 'home purchase' : 'home payoff'}:{' '}
+                      <span className={winner === '1st' ? 'text-prism-amber' : 'text-prism-teal'}>
+                        {winner === '1st' ? '1st-lien HELOC' : '2nd-lien HELOC'}
+                      </span>
+                    </p>
+                    <p className="text-muted-foreground mt-1">
+                      {scenario === 'purchase'
+                        ? <>Saves <span className="font-semibold text-prism-lime">{formatCurrency(diff)}</span> in total interest vs. the other HELOC strategy.</>
+                        : <>Pays off <span className="font-semibold text-prism-lime">{diff.toFixed(1)} years sooner</span> than the other HELOC strategy.</>}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground mt-2">
+                      1st-lien is best when income comfortably exceeds expenses and you're OK replacing your mortgage. 2nd-lien is best when you want to keep a low fixed mortgage rate and just accelerate principal.
+                    </p>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Payoff race chart: 1st vs 2nd */}
+            {(helocWorks || isFinite(result.lien2.months)) && (
+              <div className="h-72 w-full">
+                <ResponsiveContainer>
+                  <LineChart data={(() => {
+                    const maxLen = Math.max(
+                      isFinite(result.heloc.months) ? result.heloc.schedule.length : 0,
+                      isFinite(result.lien2.months) ? result.lien2.schedule.length : 0,
+                    );
+                    const step = Math.max(1, Math.floor(maxLen / 60));
+                    const rows: any[] = [];
+                    for (let i = 0; i < maxLen; i += step) {
+                      rows.push({
+                        month: i + 1,
+                        '1st-lien HELOC': helocWorks ? (result.heloc.schedule[i]?.balance ?? 0) : null,
+                        '2nd-lien HELOC': isFinite(result.lien2.months) ? (result.lien2.schedule[i]?.balance ?? 0) : null,
+                      });
+                    }
+                    return rows;
+                  })()}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="month" tick={{ fontSize: 11 }} tickFormatter={(m) => `${(m / 12).toFixed(0)}y`} />
+                    <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `${Math.round(v / 1000)}k`} />
+                    <RTooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8 }}
+                      formatter={(v: number) => v == null ? '—' : formatCurrency(v)} />
+                    <Legend />
+                    <Line type="monotone" dataKey="1st-lien HELOC" stroke="hsl(var(--prism-amber))" strokeWidth={2} dot={false} />
+                    <Line type="monotone" dataKey="2nd-lien HELOC" stroke="hsl(var(--prism-teal))" strokeWidth={2} dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+            </>
+          )}
+
+          {/* Legacy Standalone HELOC inputs — kept for detail/APR/schedule under HELOC-vs-HELOC mode */}
+          {mode === 'heloc-vs-heloc' && (
+            <div className="grid md:grid-cols-2 gap-6 pt-4 border-t border-border/40">
+              <div className="space-y-4">
+                <div className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                  <Zap className="w-3.5 h-3.5 text-prism-amber" /> Standalone HELOC terms (draw + repay)
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label>Draw period (yrs)</Label>
+                    <Input type="number" value={drawYears} onChange={(e) => setDrawYears(e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Repayment period (yrs)</Label>
+                    <Input type="number" value={repayYears} onChange={(e) => setRepayYears(e.target.value)} />
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <div className="rounded-lg border border-border/40 bg-muted/30 p-3 text-sm space-y-1">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Draw-period monthly pay</span>
+                    <span className="font-semibold">{formatCurrency(result.standalone.drawPayment)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Repayment monthly pay</span>
+                    <span className="font-semibold">{formatCurrency(result.standalone.repayPayment)}</span>
+                  </div>
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Interest-only during draw, fully amortizing during repayment.
+                </p>
+              </div>
+            </div>
+          )}
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <div className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2">
