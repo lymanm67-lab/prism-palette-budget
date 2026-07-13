@@ -224,8 +224,10 @@ export default function HelocVsMortgageCalculator() {
   const [expenses, setExpenses] = useState('5500');
   const [reportOpen, setReportOpen] = useState(false);
 
-  // Mode: 'standalone' (calculator.net-style single HELOC) or 'compare' (1st lien HELOC vs mortgage)
-  const [mode, setMode] = useState<'standalone' | 'compare'>('compare');
+  // Comparison mode: mortgage only · mortgage vs 1st-lien HELOC · 1st-lien vs 2nd-lien HELOC
+  const [mode, setMode] = useState<'mortgage-only' | 'compare' | 'heloc-vs-heloc'>('compare');
+  // Scenario: buying a new home vs paying off an existing balance
+  const [scenario, setScenario] = useState<'purchase' | 'payoff'>('payoff');
 
   // Standalone HELOC inputs (draw + repayment + closing costs)
   const [drawYears, setDrawYears] = useState('10');
