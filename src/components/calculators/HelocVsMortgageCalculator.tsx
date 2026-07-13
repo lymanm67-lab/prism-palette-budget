@@ -390,15 +390,53 @@ export default function HelocVsMortgageCalculator() {
             </div>
           )}
 
-          {/* Amortization schedule (standalone mode) */}
-          {mode === 'standalone' && (
-            <AmortizationSchedule
-              schedule={result.standalone.schedule}
-              view={scheduleView}
-              onViewChange={setScheduleView}
-              formatCurrency={formatCurrency}
-            />
-          )}
+          {/* Closing costs & fees — always visible in both modes */}
+          <div className="rounded-xl border border-border/40 bg-muted/20 p-4 space-y-3">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                <FileText className="w-3.5 h-3.5" /> Closing costs & fees
+              </div>
+              <label className="flex items-center gap-2 text-sm cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={includeClosing}
+                  onChange={(e) => setIncludeClosing(e.target.checked)}
+                  className="w-4 h-4 accent-prism-amber"
+                />
+                Include closing costs and fees
+              </label>
+            </div>
+            {includeClosing && (
+              <div className="grid sm:grid-cols-2 gap-3 items-start">
+                <div className="space-y-2">
+                  <Label>Closing costs & fees ($)</Label>
+                  <Input type="number" value={closingCosts} onChange={(e) => setClosingCosts(e.target.value)} />
+                  <p className="text-[11px] text-muted-foreground">
+                    Origination, appraisal, title, recording, etc. Affects APR and total cost.
+                  </p>
+                </div>
+                <div className="rounded-lg border border-border/40 bg-background/50 p-3 text-sm space-y-1">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Note rate</span>
+                    <span className="font-semibold">{(parseFloat(helocRate) || 0).toFixed(2)}%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Effective APR</span>
+                    <span className="font-semibold text-prism-amber">{result.standalone.apr.toFixed(3)}%</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Amortization schedule — always visible in both modes */}
+          <AmortizationSchedule
+            schedule={result.standalone.schedule}
+            view={scheduleView}
+            onViewChange={setScheduleView}
+            formatCurrency={formatCurrency}
+          />
+
 
           {/* HELOC vs Mortgage inputs */}
           {mode === 'compare' && (
