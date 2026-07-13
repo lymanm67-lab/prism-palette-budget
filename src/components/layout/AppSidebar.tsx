@@ -56,6 +56,7 @@ const NAV_SECTIONS: NavSection[] = [
       { to: '/budgets', icon: PiggyBank, label: 'Budgets', color: 'text-prism-amber', essential: true },
       { to: '/cash-flow', icon: Wallet, label: 'Cash Flow', color: 'text-prism-teal' },
       { to: '/forecast', icon: LineChart, label: 'Forecast', color: 'text-prism-sky' },
+      { to: '/calculators', icon: Calculator, label: 'Calculators', color: 'text-prism-indigo' },
     ],
   },
   {

@@ -37,6 +37,7 @@ import CarAffordabilityCalculator from '@/components/calculators/CarAffordabilit
 import TrueCostLoanCalculator from '@/components/calculators/TrueCostLoanCalculator';
 import PricingCalculator from '@/components/calculators/PricingCalculator';
 import CurrencyExchangeCalculator from '@/components/calculators/CurrencyExchangeCalculator';
+import HelocVsMortgageCalculator from '@/components/calculators/HelocVsMortgageCalculator';
 
 // ─── Calculation helpers ───
 
@@ -201,6 +202,7 @@ const CALCULATOR_GROUPS = [
     label: 'Loans & Debt',
     items: [
       { id: 'mortgage', label: 'Mortgage', icon: Home, color: 'text-prism-teal', bg: 'from-prism-teal/20 to-prism-teal/5' },
+      { id: 'heloc-vs-mortgage', label: 'HELOC vs Mortgage', icon: Home, color: 'text-prism-amber', bg: 'from-prism-amber/20 to-prism-amber/5' },
       { id: 'auto', label: 'Auto Loan', icon: Car, color: 'text-prism-sky', bg: 'from-prism-sky/20 to-prism-sky/5' },
       { id: 'credit', label: 'Credit Card Payoff', icon: CreditCard, color: 'text-prism-rose', bg: 'from-prism-rose/20 to-prism-rose/5' },
       { id: 'debt', label: 'General Debt', icon: DollarSign, color: 'text-prism-amber', bg: 'from-prism-amber/20 to-prism-amber/5' },
@@ -1998,6 +2000,7 @@ const Calculators = () => {
       {activeCalc === 'truecost' && (<div className="mt-6"><TrueCostLoanCalculator /></div>)}
       {activeCalc === 'pricing' && (<div className="mt-6"><PricingCalculator /></div>)}
       {activeCalc === 'currency' && <CurrencyExchangeCalculator />}
+      {activeCalc === 'heloc-vs-mortgage' && <HelocVsMortgageCalculator />}
       
       <CalculatorHistory open={historyOpen} onOpenChange={setHistoryOpen} onRestore={handleRestore} />
     </motion.div>
