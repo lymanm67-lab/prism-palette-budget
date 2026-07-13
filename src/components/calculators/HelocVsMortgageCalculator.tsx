@@ -451,12 +451,14 @@ export default function HelocVsMortgageCalculator() {
                     {formatCurrency(result.heloc.netSurplus)}
                   </span>
                 </div>
-              </div>
             </div>
           </div>
+          )}
 
-          {/* Results */}
+          {/* Results (compare mode only) */}
+          {mode === 'compare' && (
           <div className="grid md:grid-cols-2 gap-4">
+
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="rounded-xl border border-border/40 bg-gradient-to-br from-muted/60 to-muted/20 p-4">
               <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
                 <Home className="w-4 h-4" /> Traditional Mortgage
