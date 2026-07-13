@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Home, Zap, TrendingDown, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -9,9 +9,12 @@ import { cn } from '@/lib/utils';
 import AnimatedNumber from '@/components/AnimatedNumber';
 import CalculatorGuide from '@/components/CalculatorGuide';
 import CalculatorScenariosAndPitfalls from '@/components/CalculatorScenariosAndPitfalls';
+import { QualificationBadge } from '@/components/FinancialProfileCard';
+import { useFinancialProfile, profileNumbers, qualifyFor } from '@/hooks/use-financial-profile';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, ResponsiveContainer, Legend,
 } from 'recharts';
+
 
 // Amortize a traditional mortgage
 function amortizeMortgage(principal: number, annualRate: number, months: number) {
@@ -66,6 +69,8 @@ function simulateHeloc(
 
 export default function HelocVsMortgageCalculator() {
   const { formatCurrency } = useCurrency();
+  const { profile } = useFinancialProfile();
+  const pn = profileNumbers(profile);
 
   const [balance, setBalance] = useState('300000');
   const [mortgageRate, setMortgageRate] = useState('6.75');
@@ -75,7 +80,16 @@ export default function HelocVsMortgageCalculator() {
   // Note: expenses here should NOT include the mortgage payment — in a 1st lien HELOC there is no separate mortgage payment.
   const [expenses, setExpenses] = useState('5500');
 
+  // Auto-fill from profile whenever it has values
+  useEffect(() => {
+    if (pn.totalIncome > 0) setIncome(String(pn.totalIncome));
+    if (pn.expenses > 0 || pn.debts > 0) setExpenses(String(pn.expenses + pn.debts));
+    if (pn.mortgageBalance > 0) setBalance(String(pn.mortgageBalance));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile.primaryIncome, profile.partnerIncome, profile.monthlyExpenses, profile.monthlyDebts, profile.mortgageBalance]);
+
   const result = useMemo(() => {
+
     const P = parseFloat(balance) || 0;
     const mR = parseFloat(mortgageRate) || 0;
     const months = (parseInt(termYears) || 30) * 12;
@@ -229,6 +243,28 @@ export default function HelocVsMortgageCalculator() {
                   </>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* Qualification from profile */}
+          {pn.totalIncome > 0 && (
+            <div className="grid md:grid-cols-2 gap-3">
+              {(() => {
+                const mQ = qualifyFor(profile, result.mortgage.payment, 'mortgage');
+                const hQ = qualifyFor(profile, 0, 'heloc');
+                return (
+                  <>
+                    <div className="space-y-1">
+                      <div className="text-[11px] uppercase tracking-wider text-muted-foreground flex items-center gap-1"><Home className="w-3 h-3" /> Mortgage qualification</div>
+                      <QualificationBadge verdict={mQ.verdict} reasons={mQ.reasons} dti={mQ.dti} />
+                    </div>
+                    <div className="space-y-1">
+                      <div className="text-[11px] uppercase tracking-wider text-muted-foreground flex items-center gap-1"><Zap className="w-3 h-3" /> 1st Lien HELOC qualification</div>
+                      <QualificationBadge verdict={hQ.verdict} reasons={hQ.reasons} dti={hQ.dti} />
+                    </div>
+                  </>
+                );
+              })()}
             </div>
           )}
 

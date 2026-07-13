@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useFinancialProfile, profileNumbers } from '@/hooks/use-financial-profile';
 import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -38,6 +39,7 @@ import TrueCostLoanCalculator from '@/components/calculators/TrueCostLoanCalcula
 import PricingCalculator from '@/components/calculators/PricingCalculator';
 import CurrencyExchangeCalculator from '@/components/calculators/CurrencyExchangeCalculator';
 import HelocVsMortgageCalculator from '@/components/calculators/HelocVsMortgageCalculator';
+import FinancialProfileCard from '@/components/FinancialProfileCard';
 
 // ─── Calculation helpers ───
 
@@ -279,10 +281,18 @@ const Calculators = () => {
   const [pageGuideOpen, setPageGuideOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
 
-  // Safe-to-Spend calculator
+  // Shared household profile — auto-fills these calculators
+  const { profile: fp } = useFinancialProfile();
+  const fpN = useMemo(() => profileNumbers(fp), [fp]);
+
+  // Safe-to-Spend calculator (income auto-fills from profile)
   const [stsForm, setStsForm] = useState({
     income: '', recurringBills: '', subscriptions: '', alreadySpent: '', bufferPercent: '15',
   });
+  useEffect(() => {
+    if (fpN.totalIncome > 0) setStsForm(f => ({ ...f, income: String(fpN.totalIncome) }));
+    if (fpN.expenses > 0) setStsForm(f => ({ ...f, recurringBills: String(fpN.expenses) }));
+  }, [fpN.totalIncome, fpN.expenses]);
   const stsResult = useMemo(() => {
     const income = parseFloat(stsForm.income) || 0;
     const bills = parseFloat(stsForm.recurringBills) || 0;
@@ -702,6 +712,9 @@ const Calculators = () => {
           ]}
         />
       )}
+
+      {/* Shared household profile — auto-fills supported calculators */}
+      <FinancialProfileCard />
 
       {/* Calculator selector — flat grid, all calculators visible */}
       <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2">

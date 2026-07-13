@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Car, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -12,9 +12,12 @@ import AnimatedNumber from '@/components/AnimatedNumber';
 import CalculatorActions from '@/components/CalculatorActions';
 import CalculatorGuide from '@/components/CalculatorGuide';
 import CalculatorScenariosAndPitfalls from '@/components/CalculatorScenariosAndPitfalls';
+import { useFinancialProfile, profileNumbers } from '@/hooks/use-financial-profile';
 
 export default function CarAffordabilityCalculator() {
   const { formatCurrency } = useCurrency();
+  const { profile } = useFinancialProfile();
+  const pn = profileNumbers(profile);
   const [monthlyIncome, setMonthlyIncome] = useState('5000');
   const [existingDebt, setExistingDebt] = useState('500');
   const [downPayment, setDownPayment] = useState('3000');
@@ -22,6 +25,13 @@ export default function CarAffordabilityCalculator() {
   const [loanTerm, setLoanTerm] = useState([60]);
   const [insuranceMonthly, setInsuranceMonthly] = useState('150');
   const [gasMonthly, setGasMonthly] = useState('200');
+
+  useEffect(() => {
+    if (pn.totalIncome > 0) setMonthlyIncome(String(pn.totalIncome));
+    if (pn.debts > 0) setExistingDebt(String(pn.debts));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile.primaryIncome, profile.partnerIncome, profile.monthlyDebts]);
+
 
   const result = useMemo(() => {
     const income = parseFloat(monthlyIncome) || 1;
