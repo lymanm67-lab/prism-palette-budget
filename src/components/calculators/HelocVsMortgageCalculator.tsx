@@ -458,7 +458,7 @@ export default function HelocVsMortgageCalculator() {
               <div className="pt-2 border-t border-prism-amber/30">
                 <p className="text-xs font-semibold text-foreground mb-1.5">Lenders that offer true 1st-lien HELOCs</p>
                 <p className="text-xs text-muted-foreground">
-                  Quorum Federal Credit Union, Andrews Federal Credit Union, Signature Federal Credit Union, Hitch, CMG Financial "All In One Loan", Northpointe Bank, Aven, Figure (select markets), and various regional credit unions. Availability varies by state — call to confirm 1st-position eligibility.
+                  See the filtered directory below — pick your state to view lenders licensed in your area with direct links to their sites.
                 </p>
               </div>
             </div>
