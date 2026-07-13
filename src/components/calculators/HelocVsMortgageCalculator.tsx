@@ -19,6 +19,7 @@ import { HELOC_LENDERS, US_STATES, lendersForState } from '@/data/heloc-lenders'
 import DocumentUploadCard from '@/components/calculators/DocumentUploadCard';
 import CreditImprovementPlan from '@/components/calculators/CreditImprovementPlan';
 import HelocReportPreview, { type HelocReportData } from '@/components/calculators/HelocReportPreview';
+import PayoffAccelerator from '@/components/calculators/PayoffAccelerator';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, ResponsiveContainer, Legend,
 } from 'recharts';
