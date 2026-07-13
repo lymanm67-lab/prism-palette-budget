@@ -283,7 +283,10 @@ export default function HelocVsMortgageCalculator() {
       includeClosing ? (parseFloat(closingCosts) || 0) : 0,
     );
 
-    return { mortgage, heloc, interestSaved, monthsSaved, yearsSaved, chartData, standalone };
+    // 2nd-lien HELOC "chunking" strategy — keep the mortgage, use HELOC to accelerate principal
+    const lien2 = simulate2ndLienHeloc(P, mR, parseInt(termYears) || 30, hR, inc, exp);
+
+    return { mortgage, heloc, interestSaved, monthsSaved, yearsSaved, chartData, standalone, lien2 };
   }, [balance, mortgageRate, termYears, helocRate, income, expenses, drawYears, repayYears, includeClosing, closingCosts]);
 
   const helocWorks = isFinite(result.heloc.months) && result.heloc.netSurplus > 0;
