@@ -256,26 +256,29 @@ export default function HelocVsMortgageCalculator() {
 
       <CalculatorGuide
         title="How a 1st Lien HELOC works"
-        bullets={[
+        icon={Zap}
+        iconColor="text-prism-amber"
+        instructions={[
           "Your HELOC replaces the mortgage in 1st lien position — it becomes your primary home loan.",
           "Every paycheck is deposited to the HELOC, immediately lowering the balance.",
           "Bills and expenses are paid from the HELOC as needed, raising the balance.",
           "Interest is charged on the average daily balance — parking cash there beats a 0% checking account.",
           "The net monthly surplus (income − expenses) is what actually pays the loan down.",
         ]}
+        ttsScript="A 1st lien HELOC replaces your mortgage. Your paycheck lowers the balance, expenses raise it, and interest accrues on the average daily balance. The bigger your monthly surplus, the faster you pay off the home."
       />
 
       <CalculatorScenariosAndPitfalls
         scenarios={[
-          { title: 'Strong surplus', text: 'When income comfortably exceeds expenses, the HELOC shreds years off the payoff even at a higher rate.' },
-          { title: 'Rate-sensitive', text: 'HELOCs are variable. Stress-test by adding 1–2% to the HELOC rate and re-running.' },
-          { title: 'Discipline required', text: 'If lifestyle inflates to match the available credit line, the strategy fails.' },
+          { title: 'Strong surplus', description: 'When income comfortably exceeds expenses, the HELOC shreds years off the payoff even at a higher rate.' },
+          { title: 'Rate-sensitive', description: 'HELOCs are variable. Stress-test by adding 1–2% to the HELOC rate and re-running.' },
+          { title: 'Discipline required', description: 'If lifestyle inflates to match the available credit line, the strategy fails.' },
         ]}
         pitfalls={[
-          'Variable rate risk — payments and interest can rise with prime.',
-          'Requires a genuine monthly surplus; without it the balance grows.',
-          'Closing costs and appraisal fees can eat into year-one savings.',
-          'Not all lenders offer true 1st-lien HELOCs; some are 2nd-lien only.',
+          { title: 'Variable rate risk', description: 'Payments and interest can rise with prime — a rate spike erases the daily-balance advantage.' },
+          { title: 'Needs a real surplus', description: 'Without income exceeding expenses, the balance grows instead of shrinking.' },
+          { title: 'Closing costs', description: 'Appraisal, origination, and title fees can eat into year-one savings.' },
+          { title: 'Product availability', description: 'Not all lenders offer true 1st-lien HELOCs; many are 2nd-lien only.' },
         ]}
       />
     </div>
