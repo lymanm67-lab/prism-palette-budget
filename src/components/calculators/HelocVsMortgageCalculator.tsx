@@ -509,6 +509,46 @@ export default function HelocVsMortgageCalculator() {
           />
         </TabsContent>
       </Tabs>
+
+      {/* Report preview modal */}
+      <HelocReportPreview
+        open={reportOpen}
+        onOpenChange={setReportOpen}
+        householdId={household?.id ?? null}
+        data={{
+          inputs: {
+            balance: parseFloat(balance) || 0,
+            mortgageRate: parseFloat(mortgageRate) || 0,
+            termYears: parseInt(termYears) || 30,
+            helocRate: parseFloat(helocRate) || 0,
+            income: parseFloat(income) || 0,
+            expenses: parseFloat(expenses) || 0,
+          },
+          mortgage: {
+            payment: result.mortgage.payment,
+            totalInterest: result.mortgage.totalInterest,
+            months: result.mortgage.months,
+          },
+          heloc: {
+            netSurplus: result.heloc.netSurplus,
+            totalInterest: result.heloc.totalInterest,
+            months: result.heloc.months,
+          },
+          interestSaved: result.interestSaved,
+          yearsSaved: result.yearsSaved,
+          qualification: {
+            mortgage: (() => { const q = qualifyFor(profile, result.mortgage.payment, 'mortgage'); return { verdict: q.verdict, dti: q.dti, reasons: q.reasons }; })(),
+            heloc:    (() => { const q = qualifyFor(profile, 0, 'heloc');                        return { verdict: q.verdict, dti: q.dti, reasons: q.reasons }; })(),
+          },
+          profile: {
+            creditScore: profile.creditScore,
+            totalIncome: pn.totalIncome,
+            debts: pn.debts,
+            equity: pn.equity,
+            ltv: pn.ltv,
+          },
+        }}
+      />
     </div>
   );
 }
