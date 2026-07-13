@@ -19,6 +19,7 @@ import { HELOC_LENDERS, US_STATES, lendersForState } from '@/data/heloc-lenders'
 import DocumentUploadCard from '@/components/calculators/DocumentUploadCard';
 import CreditImprovementPlan from '@/components/calculators/CreditImprovementPlan';
 import HelocReportPreview, { type HelocReportData } from '@/components/calculators/HelocReportPreview';
+import PayoffAccelerator from '@/components/calculators/PayoffAccelerator';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, ResponsiveContainer, Legend,
 } from 'recharts';
@@ -579,6 +580,20 @@ export default function HelocVsMortgageCalculator() {
           )}
           </>
           )}
+
+          {/* Payoff Accelerator — beat a traditional 30-yr mortgage */}
+          {mode === 'compare' && (
+            <PayoffAccelerator
+              principal={parseFloat(balance) || 0}
+              mortgageRate={parseFloat(mortgageRate) || 0}
+              termYears={parseInt(termYears) || 30}
+              helocRate={parseFloat(helocRate) || 0}
+              monthlyIncome={parseFloat(income) || 0}
+              monthlyExpenses={parseFloat(expenses) || 0}
+              formatCurrency={formatCurrency}
+            />
+          )}
+
 
 
 
