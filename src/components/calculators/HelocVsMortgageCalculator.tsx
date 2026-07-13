@@ -1,9 +1,10 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Home, Zap, TrendingDown, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { Home, Zap, TrendingDown, CheckCircle2, AlertTriangle, Printer, Save, FileText } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { useCurrency } from '@/hooks/use-currency';
 import { cn } from '@/lib/utils';
 import AnimatedNumber from '@/components/AnimatedNumber';
@@ -11,9 +12,13 @@ import CalculatorGuide from '@/components/CalculatorGuide';
 import CalculatorScenariosAndPitfalls from '@/components/CalculatorScenariosAndPitfalls';
 import { QualificationBadge } from '@/components/FinancialProfileCard';
 import { useFinancialProfile, profileNumbers, qualifyFor } from '@/hooks/use-financial-profile';
+import { useHousehold } from '@/contexts/HouseholdContext';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { HELOC_LENDERS, US_STATES, lendersForState } from '@/data/heloc-lenders';
+import DocumentUploadCard from '@/components/calculators/DocumentUploadCard';
+import CreditImprovementPlan from '@/components/calculators/CreditImprovementPlan';
+import HelocReportPreview, { type HelocReportData } from '@/components/calculators/HelocReportPreview';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, ResponsiveContainer, Legend,
 } from 'recharts';
