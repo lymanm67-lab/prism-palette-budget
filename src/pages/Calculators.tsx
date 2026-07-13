@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useFinancialProfile, profileNumbers } from '@/hooks/use-financial-profile';
 import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
