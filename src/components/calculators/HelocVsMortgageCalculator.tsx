@@ -621,7 +621,7 @@ export default function HelocVsMortgageCalculator() {
           )}
 
           {/* Standalone HELOC results */}
-          {mode === 'standalone' && (
+          {mode === 'heloc-vs-heloc' && (
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-4">
                 <div className="rounded-xl border border-border/40 bg-muted/20 p-4">
