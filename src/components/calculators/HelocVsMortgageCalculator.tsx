@@ -76,6 +76,64 @@ function simulateHeloc(
   return { totalInterest, schedule, months: Infinity, netSurplus, payoffAmount: 0 };
 }
 
+// ── 2nd-lien HELOC "chunking" strategy ────────────────────────────────────────
+// Keep the existing 30-yr mortgage. Draw a chunk from a 2nd-lien HELOC, throw it
+// at mortgage principal, then pay the HELOC to zero with monthly surplus. Repeat.
+// Auto-optimal chunk = 4 × monthly surplus, rounded to nearest $2,500 (min $2,500).
+export function simulate2ndLienHeloc(
+  principal: number,
+  mortgageRate: number,
+  termYears: number,
+  helocRate: number,
+  monthlyIncome: number,
+  monthlyExpenses: number,
+  cap = 720,
+) {
+  const mR = mortgageRate / 100 / 12;
+  const hR = helocRate / 100 / 12;
+  const n = Math.max(1, Math.round(termYears * 12));
+  const mortgagePayment = mR === 0
+    ? principal / n
+    : (principal * mR * Math.pow(1 + mR, n)) / (Math.pow(1 + mR, n) - 1);
+  const surplus = monthlyIncome - monthlyExpenses - mortgagePayment;
+  const schedule: { month: number; balance: number; mortgage: number; heloc: number }[] = [
+    { month: 0, balance: principal, mortgage: principal, heloc: 0 },
+  ];
+  if (surplus <= 0) {
+    return { months: Infinity, totalInterest: NaN, schedule, chunk: 0, mortgagePayment, surplus };
+  }
+  const chunk = Math.max(2500, Math.round((surplus * 4) / 2500) * 2500);
+  let mBal = principal;
+  let hBal = 0;
+  let totalInterest = 0;
+  for (let m = 1; m <= cap; m++) {
+    // Mortgage: regular P&I
+    const mInt = mBal * mR;
+    const mPrin = Math.min(mBal, mortgagePayment - mInt);
+    mBal = Math.max(0, mBal - mPrin);
+    totalInterest += mInt;
+
+    if (hBal > 0.01) {
+      // Pay HELOC down with monthly surplus (avg daily balance approx)
+      const avg = Math.max(0, hBal - surplus / 2);
+      const hInt = avg * hR;
+      totalInterest += hInt;
+      hBal = Math.max(0, hBal + hInt - surplus);
+    } else if (mBal > 0.01) {
+      // HELOC clear → draw a fresh chunk and throw at mortgage principal
+      const draw = Math.min(chunk, mBal);
+      mBal = Math.max(0, mBal - draw);
+      hBal = draw;
+    }
+
+    schedule.push({ month: m, balance: mBal + hBal, mortgage: mBal, heloc: hBal });
+    if (mBal <= 0.01 && hBal <= 0.01) {
+      return { months: m, totalInterest, schedule, chunk, mortgagePayment, surplus };
+    }
+  }
+  return { months: Infinity, totalInterest: NaN, schedule, chunk, mortgagePayment, surplus };
+}
+
 // ── Standalone HELOC: interest-only during draw, then amortizing over repayment period.
 //    Mirrors calculator.net's HELOC model, with optional closing costs & fees toggled into APR/total cost.
 export function simulateStandaloneHeloc(
