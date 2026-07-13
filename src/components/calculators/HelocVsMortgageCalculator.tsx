@@ -257,7 +257,153 @@ export default function HelocVsMortgageCalculator() {
             ttsScript="How to use the 1st Lien HELOC versus Mortgage calculator. First, enter your current mortgage balance. Then set your current mortgage rate and remaining years, plus the HELOC variable rate you expect. Next, enter your monthly gross income that will be deposited into the HELOC account, and your monthly expenses excluding any mortgage payment because the HELOC replaces the payment. The live comparison will show your monthly surplus, payoff time, total interest, and whether the HELOC or mortgage wins. Review the qualification badges to see if your profile fits a mortgage or 1st-lien HELOC. Finally, explore the Compare, Qualify, Lenders, and Learn tabs for deeper details, local lenders, and requirements."
           />
 
+          {/* Mode toggle */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-border/40 bg-muted/20 p-3">
+            <div>
+              <div className="text-sm font-semibold text-foreground">Calculator mode</div>
+              <p className="text-xs text-muted-foreground">
+                {mode === 'standalone'
+                  ? 'Classic HELOC: interest-only during the draw period, then amortizing repayment.'
+                  : '1st-lien HELOC "all-in-one" strategy compared to a traditional mortgage.'}
+              </p>
+            </div>
+            <div className="inline-flex rounded-lg border border-border/60 bg-background p-0.5 self-start">
+              <button
+                type="button"
+                onClick={() => setMode('standalone')}
+                className={cn(
+                  'px-3 py-1.5 text-xs font-medium rounded-md transition-colors',
+                  mode === 'standalone' ? 'bg-prism-amber text-background' : 'text-muted-foreground hover:text-foreground',
+                )}
+              >
+                Standalone HELOC
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode('compare')}
+                className={cn(
+                  'px-3 py-1.5 text-xs font-medium rounded-md transition-colors',
+                  mode === 'compare' ? 'bg-prism-amber text-background' : 'text-muted-foreground hover:text-foreground',
+                )}
+              >
+                HELOC vs Mortgage
+              </button>
+            </div>
+          </div>
+
+          {/* Standalone HELOC inputs */}
+          {mode === 'standalone' && (
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                  <Zap className="w-3.5 h-3.5 text-prism-amber" /> HELOC terms
+                </div>
+                <div className="space-y-2">
+                  <Label>Loan amount</Label>
+                  <Input type="number" value={balance} onChange={(e) => setBalance(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Interest rate %</Label>
+                  <Input type="number" step="0.01" value={helocRate} onChange={(e) => setHelocRate(e.target.value)} />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label>Draw period (yrs)</Label>
+                    <Input type="number" value={drawYears} onChange={(e) => setDrawYears(e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Repayment period (yrs)</Label>
+                    <Input type="number" value={repayYears} onChange={(e) => setRepayYears(e.target.value)} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                  <FileText className="w-3.5 h-3.5" /> Closing costs & fees
+                </div>
+                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={includeClosing}
+                    onChange={(e) => setIncludeClosing(e.target.checked)}
+                    className="w-4 h-4 accent-prism-amber"
+                  />
+                  Include closing costs and fees
+                </label>
+                {includeClosing && (
+                  <div className="space-y-2">
+                    <Label>Closing costs & fees</Label>
+                    <Input type="number" value={closingCosts} onChange={(e) => setClosingCosts(e.target.value)} />
+                    <p className="text-[11px] text-muted-foreground">
+                      Origination, appraisal, title, recording, etc. These affect APR and total cost.
+                    </p>
+                  </div>
+                )}
+                <div className="rounded-lg border border-border/40 bg-muted/30 p-3 text-sm space-y-1">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Draw-period monthly pay</span>
+                    <span className="font-semibold">{formatCurrency(result.standalone.drawPayment)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Repayment monthly pay</span>
+                    <span className="font-semibold">{formatCurrency(result.standalone.repayPayment)}</span>
+                  </div>
+                  {includeClosing && (
+                    <div className="flex justify-between pt-1 border-t border-border/40">
+                      <span className="text-muted-foreground">Effective APR</span>
+                      <span className="font-semibold text-prism-amber">{result.standalone.apr.toFixed(3)}%</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Standalone HELOC results */}
+          {mode === 'standalone' && (
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="rounded-xl border border-border/40 bg-muted/20 p-4">
+                <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Total of payments</div>
+                <div className="text-lg font-bold text-foreground">
+                  <AnimatedNumber value={result.standalone.totalPayments} formatFn={formatCurrency} />
+                </div>
+                <div className="text-[11px] text-muted-foreground mt-1">
+                  {result.standalone.drawMonths + result.standalone.repayMonths} monthly payments{includeClosing ? ' + closing costs' : ''}
+                </div>
+              </div>
+              <div className="rounded-xl border border-border/40 bg-muted/20 p-4">
+                <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Total interest</div>
+                <div className="text-lg font-bold text-prism-rose">
+                  <AnimatedNumber value={result.standalone.totalInterest} formatFn={formatCurrency} />
+                </div>
+              </div>
+              <div className="rounded-xl border border-prism-amber/30 bg-prism-amber/5 p-4">
+                <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Loan lifetime</div>
+                <div className="text-lg font-bold text-prism-amber">
+                  {((result.standalone.drawMonths + result.standalone.repayMonths) / 12).toFixed(1)} yrs
+                </div>
+                <div className="text-[11px] text-muted-foreground mt-1">
+                  {(result.standalone.drawMonths / 12).toFixed(0)} yr draw + {(result.standalone.repayMonths / 12).toFixed(0)} yr repay
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Amortization schedule (standalone mode) */}
+          {mode === 'standalone' && (
+            <AmortizationSchedule
+              schedule={result.standalone.schedule}
+              view={scheduleView}
+              onViewChange={setScheduleView}
+              formatCurrency={formatCurrency}
+            />
+          )}
+
+          {/* HELOC vs Mortgage inputs */}
+          {mode === 'compare' && (
           <div className="grid md:grid-cols-2 gap-6">
+
 
             <div className="space-y-4">
               <div className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2">
