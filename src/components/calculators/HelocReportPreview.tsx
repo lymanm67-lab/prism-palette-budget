@@ -259,6 +259,95 @@ export default function HelocReportPreview({
             </table>
           </section>
 
+          {/* Visual Insights */}
+          <section className="space-y-4">
+            <h2 className="text-lg font-semibold">Visual Insights</h2>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="border border-border print:border-black rounded p-3">
+                <div className="text-xs font-semibold mb-1 text-muted-foreground print:text-gray-700">Total Interest Paid</div>
+                <div style={{ width: '100%', height: 180 }}>
+                  <ResponsiveContainer>
+                    <BarChart data={interestCompare} margin={{ top: 8, right: 8, left: 8, bottom: 4 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                      <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#374151' }} />
+                      <YAxis tick={{ fontSize: 10, fill: '#374151' }} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
+                      <Tooltip formatter={(v: number) => fmt(v)} />
+                      <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                        {interestCompare.map((e, i) => <Cell key={i} fill={e.fill} />)}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              <div className="border border-border print:border-black rounded p-3">
+                <div className="text-xs font-semibold mb-1 text-muted-foreground print:text-gray-700">Payoff Time (Years)</div>
+                <div style={{ width: '100%', height: 180 }}>
+                  <ResponsiveContainer>
+                    <BarChart data={payoffCompare} margin={{ top: 8, right: 8, left: 8, bottom: 4 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                      <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#374151' }} />
+                      <YAxis tick={{ fontSize: 10, fill: '#374151' }} unit="y" />
+                      <Tooltip formatter={(v: number) => `${v} yrs`} />
+                      <Bar dataKey="years" radius={[6, 6, 0, 0]}>
+                        {payoffCompare.map((e, i) => <Cell key={i} fill={e.fill} />)}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+
+            <div className="border border-border print:border-black rounded p-3">
+              <div className="text-xs font-semibold mb-1 text-muted-foreground print:text-gray-700">Loan Balance Over Time</div>
+              <div style={{ width: '100%', height: 220 }}>
+                <ResponsiveContainer>
+                  <LineChart data={balanceSeries} margin={{ top: 8, right: 16, left: 8, bottom: 4 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <XAxis dataKey="year" tick={{ fontSize: 10, fill: '#374151' }} unit="y" />
+                    <YAxis tick={{ fontSize: 10, fill: '#374151' }} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
+                    <Tooltip formatter={(v: number) => fmt(v)} labelFormatter={(y) => `Year ${y}`} />
+                    <Legend wrapperStyle={{ fontSize: 11 }} />
+                    <Line type="monotone" dataKey="Mortgage" stroke={CHART_COLORS.mortgage} strokeWidth={2.5} dot={false} />
+                    <Line type="monotone" dataKey="HELOC"    stroke={CHART_COLORS.heloc}    strokeWidth={2.5} dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="border border-border print:border-black rounded p-3">
+                <div className="text-xs font-semibold mb-1 text-muted-foreground print:text-gray-700">Mortgage — Principal vs. Interest</div>
+                <div style={{ width: '100%', height: 180 }}>
+                  <ResponsiveContainer>
+                    <PieChart>
+                      <Pie data={mortgageBreakdown} dataKey="value" nameKey="name" innerRadius={40} outerRadius={65} paddingAngle={2} label={(e: any) => `${e.name}`} labelLine={false}>
+                        {mortgageBreakdown.map((e, i) => <Cell key={i} fill={e.fill} />)}
+                      </Pie>
+                      <Tooltip formatter={(v: number) => fmt(v)} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+              <div className="border border-border print:border-black rounded p-3">
+                <div className="text-xs font-semibold mb-1 text-muted-foreground print:text-gray-700">HELOC — Principal vs. Interest</div>
+                <div style={{ width: '100%', height: 180 }}>
+                  <ResponsiveContainer>
+                    <PieChart>
+                      <Pie data={helocBreakdown} dataKey="value" nameKey="name" innerRadius={40} outerRadius={65} paddingAngle={2} label={(e: any) => `${e.name}`} labelLine={false}>
+                        {helocBreakdown.map((e, i) => <Cell key={i} fill={e.fill} />)}
+                      </Pie>
+                      <Tooltip formatter={(v: number) => fmt(v)} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+          </section>
+
+
+
           {/* Qualification */}
           {data.qualification && (
             <section>
