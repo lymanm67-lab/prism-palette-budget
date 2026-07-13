@@ -52,7 +52,37 @@ export default function HelocReportPreview({
 
   if (!data) return null;
 
-  const handlePrint = () => window.print();
+  const handlePrint = () => {
+    const el = document.getElementById('heloc-report-printable');
+    if (!el) {
+      toast.error('Report content not ready');
+      return;
+    }
+    const w = window.open('', '_blank', 'width=900,height=1000');
+    if (!w) {
+      toast.error('Please allow pop-ups to print the report.');
+      return;
+    }
+    // Copy stylesheets from current document so Tailwind styles apply
+    const styles = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'))
+      .map((n) => n.outerHTML)
+      .join('\n');
+    w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>HELOC vs Mortgage Report</title>${styles}
+      <style>
+        body { background:#fff !important; color:#000 !important; padding: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        table { width:100%; border-collapse: collapse; }
+        table, th, td { border: 1px solid #000; }
+        th, td { padding: 6px 8px; text-align: left; font-size: 13px; }
+        h1 { font-size: 22px; margin: 0 0 4px; }
+        h2 { font-size: 15px; margin: 16px 0 6px; }
+        section { margin-bottom: 14px; }
+        .muted { color:#555; font-size: 11px; }
+        @page { size: letter; margin: 0.5in; }
+      </style></head><body>${el.innerHTML}</body></html>`);
+    w.document.close();
+    w.focus();
+    setTimeout(() => { w.print(); }, 400);
+  };
 
   const handleSave = async () => {
     if (!householdId) {
