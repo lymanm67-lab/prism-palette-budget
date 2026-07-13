@@ -619,51 +619,6 @@ export default function HelocVsMortgageCalculator() {
               </div>
             </div>
           )}
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <div className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                  <Zap className="w-3.5 h-3.5 text-prism-amber" /> HELOC terms
-                </div>
-                <div className="space-y-2">
-                  <Label>Loan amount</Label>
-                  <Input type="number" value={balance} onChange={(e) => setBalance(e.target.value)} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Interest rate %</Label>
-                  <Input type="number" step="0.01" value={helocRate} onChange={(e) => setHelocRate(e.target.value)} />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-2">
-                    <Label>Draw period (yrs)</Label>
-                    <Input type="number" value={drawYears} onChange={(e) => setDrawYears(e.target.value)} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Repayment period (yrs)</Label>
-                    <Input type="number" value={repayYears} onChange={(e) => setRepayYears(e.target.value)} />
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                  <TrendingDown className="w-3.5 h-3.5" /> Payment preview
-                </div>
-                <div className="rounded-lg border border-border/40 bg-muted/30 p-3 text-sm space-y-1">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Draw-period monthly pay</span>
-                    <span className="font-semibold">{formatCurrency(result.standalone.drawPayment)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Repayment monthly pay</span>
-                    <span className="font-semibold">{formatCurrency(result.standalone.repayPayment)}</span>
-                  </div>
-                </div>
-                <p className="text-[11px] text-muted-foreground">
-                  Interest-only during the draw, fully amortizing during repayment. Toggle closing costs below to see effective APR.
-                </p>
-              </div>
-            </div>
-          )}
 
           {/* Standalone HELOC results */}
           {mode === 'standalone' && (
