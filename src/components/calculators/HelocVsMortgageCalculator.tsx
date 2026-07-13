@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Home, Zap, TrendingDown, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -9,9 +9,12 @@ import { cn } from '@/lib/utils';
 import AnimatedNumber from '@/components/AnimatedNumber';
 import CalculatorGuide from '@/components/CalculatorGuide';
 import CalculatorScenariosAndPitfalls from '@/components/CalculatorScenariosAndPitfalls';
+import { QualificationBadge } from '@/components/FinancialProfileCard';
+import { useFinancialProfile, profileNumbers, qualifyFor } from '@/hooks/use-financial-profile';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, ResponsiveContainer, Legend,
 } from 'recharts';
+
 
 // Amortize a traditional mortgage
 function amortizeMortgage(principal: number, annualRate: number, months: number) {
