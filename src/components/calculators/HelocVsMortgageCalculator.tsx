@@ -75,6 +75,81 @@ function simulateHeloc(
   return { totalInterest, schedule, months: Infinity, netSurplus, payoffAmount: 0 };
 }
 
+// ── Standalone HELOC: interest-only during draw, then amortizing over repayment period.
+//    Mirrors calculator.net's HELOC model, with optional closing costs & fees toggled into APR/total cost.
+export function simulateStandaloneHeloc(
+  loanAmount: number,
+  annualRate: number,
+  drawYears: number,
+  repayYears: number,
+  closingCosts: number = 0,
+) {
+  const r = annualRate / 100 / 12;
+  const drawMonths = Math.max(0, Math.round(drawYears * 12));
+  const repayMonths = Math.max(1, Math.round(repayYears * 12));
+  const drawPayment = loanAmount * r; // interest-only
+  const repayPayment = r === 0
+    ? loanAmount / repayMonths
+    : (loanAmount * r * Math.pow(1 + r, repayMonths)) / (Math.pow(1 + r, repayMonths) - 1);
+
+  const schedule: { month: number; phase: 'draw' | 'repay'; payment: number; interest: number; principal: number; balance: number }[] = [];
+  let balance = loanAmount;
+  let totalInterest = 0;
+
+  // Draw period: interest-only, balance stays flat
+  for (let m = 1; m <= drawMonths; m++) {
+    const interest = balance * r;
+    totalInterest += interest;
+    schedule.push({ month: m, phase: 'draw', payment: drawPayment, interest, principal: 0, balance });
+  }
+  // Repayment period: fully amortizing
+  for (let m = 1; m <= repayMonths; m++) {
+    const interest = balance * r;
+    const principal = Math.min(balance, repayPayment - interest);
+    balance = Math.max(0, balance - principal);
+    totalInterest += interest;
+    schedule.push({ month: drawMonths + m, phase: 'repay', payment: repayPayment, interest, principal, balance });
+    if (balance <= 0.01) break;
+  }
+
+  const totalPayments = drawPayment * drawMonths + repayPayment * schedule.filter(s => s.phase === 'repay').length + closingCosts;
+  // Simple APR approximation: solve rate that makes PV of payments equal (loanAmount - closingCosts)
+  // Iterative Newton-style approximation.
+  const apr = (() => {
+    if (closingCosts <= 0 || loanAmount <= 0) return annualRate;
+    const cashReceived = loanAmount - closingCosts;
+    const totalMonths = drawMonths + schedule.filter(s => s.phase === 'repay').length;
+    let guess = annualRate / 100 / 12;
+    for (let iter = 0; iter < 60; iter++) {
+      const g = guess;
+      // PV of interest-only draw + amortizing repayment
+      let pv = 0;
+      const drawPay = loanAmount * g;
+      const rp = g === 0
+        ? loanAmount / repayMonths
+        : (loanAmount * g * Math.pow(1 + g, repayMonths)) / (Math.pow(1 + g, repayMonths) - 1);
+      for (let k = 1; k <= drawMonths; k++) pv += drawPay / Math.pow(1 + g, k);
+      for (let k = 1; k <= repayMonths; k++) pv += rp / Math.pow(1 + g, drawMonths + k);
+      const diff = pv - cashReceived;
+      if (Math.abs(diff) < 0.5) break;
+      guess += diff > 0 ? 0.00005 : -0.00005;
+      if (guess < 0) guess = 0.00001;
+    }
+    return guess * 12 * 100;
+  })();
+
+  return {
+    drawPayment,
+    repayPayment,
+    totalInterest,
+    totalPayments,
+    schedule,
+    drawMonths,
+    repayMonths: schedule.filter(s => s.phase === 'repay').length,
+    apr,
+  };
+}
+
 export default function HelocVsMortgageCalculator() {
   const { formatCurrency } = useCurrency();
   const { profile } = useFinancialProfile();
@@ -89,6 +164,18 @@ export default function HelocVsMortgageCalculator() {
   // Note: expenses here should NOT include the mortgage payment — in a 1st lien HELOC there is no separate mortgage payment.
   const [expenses, setExpenses] = useState('5500');
   const [reportOpen, setReportOpen] = useState(false);
+
+  // Mode: 'standalone' (calculator.net-style single HELOC) or 'compare' (1st lien HELOC vs mortgage)
+  const [mode, setMode] = useState<'standalone' | 'compare'>('compare');
+
+  // Standalone HELOC inputs (draw + repayment + closing costs)
+  const [drawYears, setDrawYears] = useState('10');
+  const [repayYears, setRepayYears] = useState('20');
+  const [includeClosing, setIncludeClosing] = useState(false);
+  const [closingCosts, setClosingCosts] = useState('2500');
+
+  // Amortization schedule view toggle
+  const [scheduleView, setScheduleView] = useState<'annual' | 'monthly'>('annual');
 
   // Auto-fill from profile whenever it has values
   useEffect(() => {
@@ -126,8 +213,17 @@ export default function HelocVsMortgageCalculator() {
       });
     }
 
-    return { mortgage, heloc, interestSaved, monthsSaved, yearsSaved, chartData };
-  }, [balance, mortgageRate, termYears, helocRate, income, expenses]);
+    // Standalone HELOC (interest-only draw → amortizing repayment, w/ optional closing costs)
+    const standalone = simulateStandaloneHeloc(
+      P,
+      hR,
+      parseFloat(drawYears) || 0,
+      parseFloat(repayYears) || 1,
+      includeClosing ? (parseFloat(closingCosts) || 0) : 0,
+    );
+
+    return { mortgage, heloc, interestSaved, monthsSaved, yearsSaved, chartData, standalone };
+  }, [balance, mortgageRate, termYears, helocRate, income, expenses, drawYears, repayYears, includeClosing, closingCosts]);
 
   const helocWorks = isFinite(result.heloc.months) && result.heloc.netSurplus > 0;
   const helocBetter = helocWorks && result.interestSaved > 0;
@@ -161,7 +257,153 @@ export default function HelocVsMortgageCalculator() {
             ttsScript="How to use the 1st Lien HELOC versus Mortgage calculator. First, enter your current mortgage balance. Then set your current mortgage rate and remaining years, plus the HELOC variable rate you expect. Next, enter your monthly gross income that will be deposited into the HELOC account, and your monthly expenses excluding any mortgage payment because the HELOC replaces the payment. The live comparison will show your monthly surplus, payoff time, total interest, and whether the HELOC or mortgage wins. Review the qualification badges to see if your profile fits a mortgage or 1st-lien HELOC. Finally, explore the Compare, Qualify, Lenders, and Learn tabs for deeper details, local lenders, and requirements."
           />
 
+          {/* Mode toggle */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-border/40 bg-muted/20 p-3">
+            <div>
+              <div className="text-sm font-semibold text-foreground">Calculator mode</div>
+              <p className="text-xs text-muted-foreground">
+                {mode === 'standalone'
+                  ? 'Classic HELOC: interest-only during the draw period, then amortizing repayment.'
+                  : '1st-lien HELOC "all-in-one" strategy compared to a traditional mortgage.'}
+              </p>
+            </div>
+            <div className="inline-flex rounded-lg border border-border/60 bg-background p-0.5 self-start">
+              <button
+                type="button"
+                onClick={() => setMode('standalone')}
+                className={cn(
+                  'px-3 py-1.5 text-xs font-medium rounded-md transition-colors',
+                  mode === 'standalone' ? 'bg-prism-amber text-background' : 'text-muted-foreground hover:text-foreground',
+                )}
+              >
+                Standalone HELOC
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode('compare')}
+                className={cn(
+                  'px-3 py-1.5 text-xs font-medium rounded-md transition-colors',
+                  mode === 'compare' ? 'bg-prism-amber text-background' : 'text-muted-foreground hover:text-foreground',
+                )}
+              >
+                HELOC vs Mortgage
+              </button>
+            </div>
+          </div>
+
+          {/* Standalone HELOC inputs */}
+          {mode === 'standalone' && (
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                  <Zap className="w-3.5 h-3.5 text-prism-amber" /> HELOC terms
+                </div>
+                <div className="space-y-2">
+                  <Label>Loan amount</Label>
+                  <Input type="number" value={balance} onChange={(e) => setBalance(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Interest rate %</Label>
+                  <Input type="number" step="0.01" value={helocRate} onChange={(e) => setHelocRate(e.target.value)} />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label>Draw period (yrs)</Label>
+                    <Input type="number" value={drawYears} onChange={(e) => setDrawYears(e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Repayment period (yrs)</Label>
+                    <Input type="number" value={repayYears} onChange={(e) => setRepayYears(e.target.value)} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                  <FileText className="w-3.5 h-3.5" /> Closing costs & fees
+                </div>
+                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={includeClosing}
+                    onChange={(e) => setIncludeClosing(e.target.checked)}
+                    className="w-4 h-4 accent-prism-amber"
+                  />
+                  Include closing costs and fees
+                </label>
+                {includeClosing && (
+                  <div className="space-y-2">
+                    <Label>Closing costs & fees</Label>
+                    <Input type="number" value={closingCosts} onChange={(e) => setClosingCosts(e.target.value)} />
+                    <p className="text-[11px] text-muted-foreground">
+                      Origination, appraisal, title, recording, etc. These affect APR and total cost.
+                    </p>
+                  </div>
+                )}
+                <div className="rounded-lg border border-border/40 bg-muted/30 p-3 text-sm space-y-1">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Draw-period monthly pay</span>
+                    <span className="font-semibold">{formatCurrency(result.standalone.drawPayment)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Repayment monthly pay</span>
+                    <span className="font-semibold">{formatCurrency(result.standalone.repayPayment)}</span>
+                  </div>
+                  {includeClosing && (
+                    <div className="flex justify-between pt-1 border-t border-border/40">
+                      <span className="text-muted-foreground">Effective APR</span>
+                      <span className="font-semibold text-prism-amber">{result.standalone.apr.toFixed(3)}%</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Standalone HELOC results */}
+          {mode === 'standalone' && (
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="rounded-xl border border-border/40 bg-muted/20 p-4">
+                <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Total of payments</div>
+                <div className="text-lg font-bold text-foreground">
+                  <AnimatedNumber value={result.standalone.totalPayments} formatFn={formatCurrency} />
+                </div>
+                <div className="text-[11px] text-muted-foreground mt-1">
+                  {result.standalone.drawMonths + result.standalone.repayMonths} monthly payments{includeClosing ? ' + closing costs' : ''}
+                </div>
+              </div>
+              <div className="rounded-xl border border-border/40 bg-muted/20 p-4">
+                <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Total interest</div>
+                <div className="text-lg font-bold text-prism-rose">
+                  <AnimatedNumber value={result.standalone.totalInterest} formatFn={formatCurrency} />
+                </div>
+              </div>
+              <div className="rounded-xl border border-prism-amber/30 bg-prism-amber/5 p-4">
+                <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Loan lifetime</div>
+                <div className="text-lg font-bold text-prism-amber">
+                  {((result.standalone.drawMonths + result.standalone.repayMonths) / 12).toFixed(1)} yrs
+                </div>
+                <div className="text-[11px] text-muted-foreground mt-1">
+                  {(result.standalone.drawMonths / 12).toFixed(0)} yr draw + {(result.standalone.repayMonths / 12).toFixed(0)} yr repay
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Amortization schedule (standalone mode) */}
+          {mode === 'standalone' && (
+            <AmortizationSchedule
+              schedule={result.standalone.schedule}
+              view={scheduleView}
+              onViewChange={setScheduleView}
+              formatCurrency={formatCurrency}
+            />
+          )}
+
+          {/* HELOC vs Mortgage inputs */}
+          {mode === 'compare' && (
           <div className="grid md:grid-cols-2 gap-6">
+
 
             <div className="space-y-4">
               <div className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2">
@@ -212,9 +454,13 @@ export default function HelocVsMortgageCalculator() {
               </div>
             </div>
           </div>
+          )}
 
-          {/* Results */}
+          {/* Results (compare mode only) */}
+          {mode === 'compare' && (<>
+
           <div className="grid md:grid-cols-2 gap-4">
+
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="rounded-xl border border-border/40 bg-gradient-to-br from-muted/60 to-muted/20 p-4">
               <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
                 <Home className="w-4 h-4" /> Traditional Mortgage
@@ -314,6 +560,10 @@ export default function HelocVsMortgageCalculator() {
               </ResponsiveContainer>
             </div>
           )}
+          </>
+          )}
+
+
 
           {/* Save + Print report actions */}
           <div className="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-border/40">
@@ -680,4 +930,97 @@ function useLenderList(stateCode: string | 'all', query: string) {
     );
   }, [stateCode, query]);
 }
+
+// ── Amortization schedule table (annual + monthly toggle) ─────────────────
+function AmortizationSchedule({
+  schedule,
+  view,
+  onViewChange,
+  formatCurrency,
+}: {
+  schedule: { month: number; phase: 'draw' | 'repay'; payment: number; interest: number; principal: number; balance: number }[];
+  view: 'annual' | 'monthly';
+  onViewChange: (v: 'annual' | 'monthly') => void;
+  formatCurrency: (n: number) => string;
+}) {
+  const rows = useMemo(() => {
+    if (view === 'monthly') return schedule;
+    // Group by year (12-month chunks), summing interest + principal, ending balance = last month's balance
+    const yearly: { year: number; phase: string; interest: number; principal: number; balance: number }[] = [];
+    for (let i = 0; i < schedule.length; i += 12) {
+      const chunk = schedule.slice(i, i + 12);
+      const interest = chunk.reduce((s, r) => s + r.interest, 0);
+      const principal = chunk.reduce((s, r) => s + r.principal, 0);
+      const balance = chunk[chunk.length - 1].balance;
+      const phases = new Set(chunk.map(c => c.phase));
+      yearly.push({
+        year: Math.floor(i / 12) + 1,
+        phase: phases.size > 1 ? 'draw → repay' : (chunk[0].phase === 'draw' ? 'draw' : 'repay'),
+        interest,
+        principal,
+        balance,
+      });
+    }
+    return yearly;
+  }, [schedule, view]);
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h4 className="text-sm font-semibold text-foreground">Amortization schedule</h4>
+        <div className="inline-flex rounded-lg border border-border/60 bg-background p-0.5">
+          <button
+            type="button"
+            onClick={() => onViewChange('annual')}
+            className={cn(
+              'px-3 py-1 text-xs font-medium rounded-md transition-colors',
+              view === 'annual' ? 'bg-prism-amber text-background' : 'text-muted-foreground hover:text-foreground',
+            )}
+          >
+            Annual
+          </button>
+          <button
+            type="button"
+            onClick={() => onViewChange('monthly')}
+            className={cn(
+              'px-3 py-1 text-xs font-medium rounded-md transition-colors',
+              view === 'monthly' ? 'bg-prism-amber text-background' : 'text-muted-foreground hover:text-foreground',
+            )}
+          >
+            Monthly
+          </button>
+        </div>
+      </div>
+
+      <div className="overflow-auto max-h-96 rounded-lg border border-border/40">
+        <table className="w-full text-xs">
+          <thead className="bg-muted/40 sticky top-0">
+            <tr className="text-left">
+              <th className="p-2 font-semibold">{view === 'annual' ? 'Year' : 'Month'}</th>
+              <th className="p-2 font-semibold">Phase</th>
+              <th className="p-2 font-semibold text-right">Interest</th>
+              <th className="p-2 font-semibold text-right">Principal</th>
+              <th className="p-2 font-semibold text-right">Ending balance</th>
+            </tr>
+          </thead>
+          <tbody className="[&_tr:nth-child(even)]:bg-muted/20">
+            {rows.map((r: any, idx: number) => (
+              <tr key={idx} className="border-t border-border/30">
+                <td className="p-2 font-mono">{view === 'annual' ? r.year : r.month}</td>
+                <td className="p-2 capitalize text-muted-foreground">{r.phase}</td>
+                <td className="p-2 font-mono text-right text-prism-rose/90">{formatCurrency(r.interest)}</td>
+                <td className="p-2 font-mono text-right text-prism-lime/90">{formatCurrency(r.principal)}</td>
+                <td className="p-2 font-mono text-right">{formatCurrency(r.balance)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="text-[10px] text-muted-foreground/70 italic">
+        Interest-only during the draw period (principal = 0), then fully amortizing during repayment.
+      </p>
+    </div>
+  );
+}
+
 
