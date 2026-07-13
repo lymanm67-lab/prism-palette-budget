@@ -1,9 +1,20 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Printer, Save, Loader2, CheckCircle2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import {
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
+  LineChart, Line, Legend, CartesianGrid, PieChart, Pie,
+} from 'recharts';
+
+const CHART_COLORS = {
+  mortgage: '#f59e0b',   // amber
+  heloc: '#10b981',      // emerald
+  principal: '#6366f1',  // indigo
+  interest: '#ef4444',   // red
+};
 
 export type HelocReportData = {
   inputs: {
@@ -117,6 +128,46 @@ export default function HelocReportPreview({
 
   const helocWins = data.interestSaved > 0 && isFinite(data.heloc.months);
 
+  // ── Chart data ─────────────────────────────────────────────
+  const interestCompare = [
+    { name: 'Mortgage', value: Math.round(data.mortgage.totalInterest), fill: CHART_COLORS.mortgage },
+    { name: 'HELOC',    value: Math.round(data.heloc.totalInterest),    fill: CHART_COLORS.heloc },
+  ];
+  const payoffCompare = [
+    { name: 'Mortgage', years: +(data.mortgage.months / 12).toFixed(1), fill: CHART_COLORS.mortgage },
+    { name: 'HELOC',    years: isFinite(data.heloc.months) ? +(data.heloc.months / 12).toFixed(1) : 0, fill: CHART_COLORS.heloc },
+  ];
+  // Approximate balance-over-time curves (yearly points)
+  const balanceSeries = (() => {
+    const yrs = Math.max(
+      Math.ceil(data.mortgage.months / 12),
+      isFinite(data.heloc.months) ? Math.ceil(data.heloc.months / 12) : 0,
+    );
+    const mRate = data.inputs.mortgageRate / 100 / 12;
+    const hRate = data.inputs.helocRate / 100 / 12;
+    const mPay = data.mortgage.payment;
+    const hSurplus = Math.max(data.heloc.netSurplus, 0);
+    let mBal = data.inputs.balance;
+    let hBal = data.inputs.balance;
+    const rows: any[] = [{ year: 0, Mortgage: mBal, HELOC: hBal }];
+    for (let y = 1; y <= yrs; y++) {
+      for (let m = 0; m < 12; m++) {
+        if (mBal > 0) mBal = Math.max(0, mBal * (1 + mRate) - mPay);
+        if (hBal > 0) hBal = Math.max(0, hBal * (1 + hRate) - hSurplus);
+      }
+      rows.push({ year: y, Mortgage: Math.round(mBal), HELOC: Math.round(hBal) });
+    }
+    return rows;
+  })();
+  const mortgageBreakdown = [
+    { name: 'Principal', value: Math.round(data.inputs.balance),           fill: CHART_COLORS.principal },
+    { name: 'Interest',  value: Math.round(data.mortgage.totalInterest),   fill: CHART_COLORS.interest },
+  ];
+  const helocBreakdown = [
+    { name: 'Principal', value: Math.round(data.inputs.balance),        fill: CHART_COLORS.principal },
+    { name: 'Interest',  value: Math.round(data.heloc.totalInterest),   fill: CHART_COLORS.interest },
+  ];
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto print:max-w-none print:max-h-none print:overflow-visible print:shadow-none">
@@ -207,6 +258,95 @@ export default function HelocReportPreview({
               </tbody>
             </table>
           </section>
+
+          {/* Visual Insights */}
+          <section className="space-y-4">
+            <h2 className="text-lg font-semibold">Visual Insights</h2>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="border border-border print:border-black rounded p-3">
+                <div className="text-xs font-semibold mb-1 text-muted-foreground print:text-gray-700">Total Interest Paid</div>
+                <div style={{ width: '100%', height: 180 }}>
+                  <ResponsiveContainer>
+                    <BarChart data={interestCompare} margin={{ top: 8, right: 8, left: 8, bottom: 4 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                      <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#374151' }} />
+                      <YAxis tick={{ fontSize: 10, fill: '#374151' }} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
+                      <Tooltip formatter={(v: number) => fmt(v)} />
+                      <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                        {interestCompare.map((e, i) => <Cell key={i} fill={e.fill} />)}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              <div className="border border-border print:border-black rounded p-3">
+                <div className="text-xs font-semibold mb-1 text-muted-foreground print:text-gray-700">Payoff Time (Years)</div>
+                <div style={{ width: '100%', height: 180 }}>
+                  <ResponsiveContainer>
+                    <BarChart data={payoffCompare} margin={{ top: 8, right: 8, left: 8, bottom: 4 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                      <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#374151' }} />
+                      <YAxis tick={{ fontSize: 10, fill: '#374151' }} unit="y" />
+                      <Tooltip formatter={(v: number) => `${v} yrs`} />
+                      <Bar dataKey="years" radius={[6, 6, 0, 0]}>
+                        {payoffCompare.map((e, i) => <Cell key={i} fill={e.fill} />)}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+
+            <div className="border border-border print:border-black rounded p-3">
+              <div className="text-xs font-semibold mb-1 text-muted-foreground print:text-gray-700">Loan Balance Over Time</div>
+              <div style={{ width: '100%', height: 220 }}>
+                <ResponsiveContainer>
+                  <LineChart data={balanceSeries} margin={{ top: 8, right: 16, left: 8, bottom: 4 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <XAxis dataKey="year" tick={{ fontSize: 10, fill: '#374151' }} unit="y" />
+                    <YAxis tick={{ fontSize: 10, fill: '#374151' }} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
+                    <Tooltip formatter={(v: number) => fmt(v)} labelFormatter={(y) => `Year ${y}`} />
+                    <Legend wrapperStyle={{ fontSize: 11 }} />
+                    <Line type="monotone" dataKey="Mortgage" stroke={CHART_COLORS.mortgage} strokeWidth={2.5} dot={false} />
+                    <Line type="monotone" dataKey="HELOC"    stroke={CHART_COLORS.heloc}    strokeWidth={2.5} dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="border border-border print:border-black rounded p-3">
+                <div className="text-xs font-semibold mb-1 text-muted-foreground print:text-gray-700">Mortgage — Principal vs. Interest</div>
+                <div style={{ width: '100%', height: 180 }}>
+                  <ResponsiveContainer>
+                    <PieChart>
+                      <Pie data={mortgageBreakdown} dataKey="value" nameKey="name" innerRadius={40} outerRadius={65} paddingAngle={2} label={(e: any) => `${e.name}`} labelLine={false}>
+                        {mortgageBreakdown.map((e, i) => <Cell key={i} fill={e.fill} />)}
+                      </Pie>
+                      <Tooltip formatter={(v: number) => fmt(v)} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+              <div className="border border-border print:border-black rounded p-3">
+                <div className="text-xs font-semibold mb-1 text-muted-foreground print:text-gray-700">HELOC — Principal vs. Interest</div>
+                <div style={{ width: '100%', height: 180 }}>
+                  <ResponsiveContainer>
+                    <PieChart>
+                      <Pie data={helocBreakdown} dataKey="value" nameKey="name" innerRadius={40} outerRadius={65} paddingAngle={2} label={(e: any) => `${e.name}`} labelLine={false}>
+                        {helocBreakdown.map((e, i) => <Cell key={i} fill={e.fill} />)}
+                      </Pie>
+                      <Tooltip formatter={(v: number) => fmt(v)} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+          </section>
+
+
 
           {/* Qualification */}
           {data.qualification && (
