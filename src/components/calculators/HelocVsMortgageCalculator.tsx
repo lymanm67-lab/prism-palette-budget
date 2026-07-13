@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Home, Zap, TrendingDown, CheckCircle2, AlertTriangle, Printer, Save, FileText } from 'lucide-react';
+import { Home, Zap, TrendingDown, CheckCircle2, AlertTriangle, Printer, Save, FileText, HelpCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
