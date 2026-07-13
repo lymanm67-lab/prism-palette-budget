@@ -465,6 +465,12 @@ export default function HelocVsMortgageCalculator() {
               </p>
             </CardContent>
           </Card>
+
+          {/* Credit improvement plan — always render; adapts to current score */}
+          <CreditImprovementPlan
+            currentScore={parseInt(profile.creditScore) || 0}
+            targetProduct="heloc"
+          />
         </TabsContent>
 
         {/* ─── Lenders ─── */}
