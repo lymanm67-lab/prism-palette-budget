@@ -257,50 +257,36 @@ export default function HelocVsMortgageCalculator() {
             ttsScript="How to use the 1st Lien HELOC versus Mortgage calculator. First, enter your current mortgage balance. Then set your current mortgage rate and remaining years, plus the HELOC variable rate you expect. Next, enter your monthly gross income that will be deposited into the HELOC account, and your monthly expenses excluding any mortgage payment because the HELOC replaces the payment. The live comparison will show your monthly surplus, payoff time, total interest, and whether the HELOC or mortgage wins. Review the qualification badges to see if your profile fits a mortgage or 1st-lien HELOC. Finally, explore the Compare, Qualify, Lenders, and Learn tabs for deeper details, local lenders, and requirements."
           />
 
-          {/* Mode toggle — prominent */}
-          <div className="rounded-xl border-2 border-prism-amber/40 bg-gradient-to-br from-prism-amber/10 to-transparent p-4 space-y-3">
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-              <div className="text-sm font-bold uppercase tracking-wider text-prism-amber">
-                ▸ Pick a calculator mode
-              </div>
-              <span className="text-[11px] text-muted-foreground">
-                Closing costs & amortization schedule live in <strong className="text-foreground">Standalone HELOC</strong>
-              </span>
+          {/* Mode toggle */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-border/40 bg-muted/20 p-3">
+            <div>
+              <div className="text-sm font-semibold text-foreground">Calculator mode</div>
+              <p className="text-xs text-muted-foreground">
+                {mode === 'standalone'
+                  ? 'Classic HELOC: interest-only during the draw period, then amortizing repayment.'
+                  : '1st-lien HELOC "all-in-one" strategy compared to a traditional mortgage.'}
+              </p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="inline-flex rounded-lg border border-border/60 bg-background p-0.5 self-start">
               <button
                 type="button"
                 onClick={() => setMode('standalone')}
                 className={cn(
-                  'text-left rounded-lg border-2 p-3 transition-all',
-                  mode === 'standalone'
-                    ? 'border-prism-amber bg-prism-amber/15 shadow-lg shadow-prism-amber/10'
-                    : 'border-border/60 bg-background hover:border-prism-amber/50',
+                  'px-3 py-1.5 text-xs font-medium rounded-md transition-colors',
+                  mode === 'standalone' ? 'bg-prism-amber text-background' : 'text-muted-foreground hover:text-foreground',
                 )}
               >
-                <div className={cn('text-sm font-semibold', mode === 'standalone' ? 'text-prism-amber' : 'text-foreground')}>
-                  Standalone HELOC {mode === 'standalone' && '✓'}
-                </div>
-                <p className="text-[11px] text-muted-foreground mt-1">
-                  Classic calc: draw period + repayment, closing costs, APR, full amortization schedule.
-                </p>
+                Standalone HELOC
               </button>
               <button
                 type="button"
                 onClick={() => setMode('compare')}
                 className={cn(
-                  'text-left rounded-lg border-2 p-3 transition-all',
-                  mode === 'compare'
-                    ? 'border-prism-amber bg-prism-amber/15 shadow-lg shadow-prism-amber/10'
-                    : 'border-border/60 bg-background hover:border-prism-amber/50',
+                  'px-3 py-1.5 text-xs font-medium rounded-md transition-colors',
+                  mode === 'compare' ? 'bg-prism-amber text-background' : 'text-muted-foreground hover:text-foreground',
                 )}
               >
-                <div className={cn('text-sm font-semibold', mode === 'compare' ? 'text-prism-amber' : 'text-foreground')}>
-                  HELOC vs Mortgage {mode === 'compare' && '✓'}
-                </div>
-                <p className="text-[11px] text-muted-foreground mt-1">
-                  1st-lien HELOC "all-in-one" strategy vs a traditional mortgage side-by-side.
-                </p>
+                HELOC vs Mortgage
               </button>
             </div>
           </div>
