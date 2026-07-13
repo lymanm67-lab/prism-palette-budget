@@ -213,8 +213,17 @@ export default function HelocVsMortgageCalculator() {
       });
     }
 
-    return { mortgage, heloc, interestSaved, monthsSaved, yearsSaved, chartData };
-  }, [balance, mortgageRate, termYears, helocRate, income, expenses]);
+    // Standalone HELOC (interest-only draw → amortizing repayment, w/ optional closing costs)
+    const standalone = simulateStandaloneHeloc(
+      P,
+      hR,
+      parseFloat(drawYears) || 0,
+      parseFloat(repayYears) || 1,
+      includeClosing ? (parseFloat(closingCosts) || 0) : 0,
+    );
+
+    return { mortgage, heloc, interestSaved, monthsSaved, yearsSaved, chartData, standalone };
+  }, [balance, mortgageRate, termYears, helocRate, income, expenses, drawYears, repayYears, includeClosing, closingCosts]);
 
   const helocWorks = isFinite(result.heloc.months) && result.heloc.netSurplus > 0;
   const helocBetter = helocWorks && result.interestSaved > 0;
