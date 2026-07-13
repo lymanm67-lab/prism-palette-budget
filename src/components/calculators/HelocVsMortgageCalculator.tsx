@@ -320,26 +320,8 @@ export default function HelocVsMortgageCalculator() {
 
               <div className="space-y-4">
                 <div className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                  <FileText className="w-3.5 h-3.5" /> Closing costs & fees
+                  <TrendingDown className="w-3.5 h-3.5" /> Payment preview
                 </div>
-                <label className="flex items-center gap-2 text-sm cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={includeClosing}
-                    onChange={(e) => setIncludeClosing(e.target.checked)}
-                    className="w-4 h-4 accent-prism-amber"
-                  />
-                  Include closing costs and fees
-                </label>
-                {includeClosing && (
-                  <div className="space-y-2">
-                    <Label>Closing costs & fees</Label>
-                    <Input type="number" value={closingCosts} onChange={(e) => setClosingCosts(e.target.value)} />
-                    <p className="text-[11px] text-muted-foreground">
-                      Origination, appraisal, title, recording, etc. These affect APR and total cost.
-                    </p>
-                  </div>
-                )}
                 <div className="rounded-lg border border-border/40 bg-muted/30 p-3 text-sm space-y-1">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Draw-period monthly pay</span>
@@ -349,13 +331,10 @@ export default function HelocVsMortgageCalculator() {
                     <span className="text-muted-foreground">Repayment monthly pay</span>
                     <span className="font-semibold">{formatCurrency(result.standalone.repayPayment)}</span>
                   </div>
-                  {includeClosing && (
-                    <div className="flex justify-between pt-1 border-t border-border/40">
-                      <span className="text-muted-foreground">Effective APR</span>
-                      <span className="font-semibold text-prism-amber">{result.standalone.apr.toFixed(3)}%</span>
-                    </div>
-                  )}
                 </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Interest-only during the draw, fully amortizing during repayment. Toggle closing costs below to see effective APR.
+                </p>
               </div>
             </div>
           )}
