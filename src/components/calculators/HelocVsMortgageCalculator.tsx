@@ -145,7 +145,24 @@ export default function HelocVsMortgageCalculator() {
           </p>
         </CardHeader>
         <CardContent className="space-y-6">
+          <CalculatorGuide
+            title="1st Lien HELOC vs Mortgage"
+            icon={Zap}
+            iconColor="text-prism-amber"
+            instructions={[
+              'Enter your current mortgage balance (or the home value if you want to model a new purchase).',
+              'Set your current mortgage rate and remaining years, plus the HELOC variable rate you can get.',
+              'Enter your monthly gross income that will be deposited into the HELOC account.',
+              'Enter your monthly expenses excluding any mortgage payment — the HELOC replaces that payment.',
+              'Watch the live comparison: monthly surplus, payoff time, total interest, and the winner badge.',
+              'Review the qualification badges to see if your profile fits a mortgage or 1st-lien HELOC.',
+              'Use the Compare, Qualify, Lenders, and Learn tabs for deeper details, local lenders, and requirements.',
+            ]}
+            ttsScript="How to use the 1st Lien HELOC versus Mortgage calculator. First, enter your current mortgage balance. Then set your current mortgage rate and remaining years, plus the HELOC variable rate you expect. Next, enter your monthly gross income that will be deposited into the HELOC account, and your monthly expenses excluding any mortgage payment because the HELOC replaces the payment. The live comparison will show your monthly surplus, payoff time, total interest, and whether the HELOC or mortgage wins. Review the qualification badges to see if your profile fits a mortgage or 1st-lien HELOC. Finally, explore the Compare, Qualify, Lenders, and Learn tabs for deeper details, local lenders, and requirements."
+          />
+
           <div className="grid md:grid-cols-2 gap-6">
+
             <div className="space-y-4">
               <div className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                 <Home className="w-3.5 h-3.5" /> Mortgage / Loan
