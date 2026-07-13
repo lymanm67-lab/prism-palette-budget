@@ -38,6 +38,7 @@ import TrueCostLoanCalculator from '@/components/calculators/TrueCostLoanCalcula
 import PricingCalculator from '@/components/calculators/PricingCalculator';
 import CurrencyExchangeCalculator from '@/components/calculators/CurrencyExchangeCalculator';
 import HelocVsMortgageCalculator from '@/components/calculators/HelocVsMortgageCalculator';
+import FinancialProfileCard from '@/components/FinancialProfileCard';
 
 // ─── Calculation helpers ───
 
