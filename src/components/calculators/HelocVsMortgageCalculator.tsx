@@ -165,6 +165,18 @@ export default function HelocVsMortgageCalculator() {
   const [expenses, setExpenses] = useState('5500');
   const [reportOpen, setReportOpen] = useState(false);
 
+  // Mode: 'standalone' (calculator.net-style single HELOC) or 'compare' (1st lien HELOC vs mortgage)
+  const [mode, setMode] = useState<'standalone' | 'compare'>('compare');
+
+  // Standalone HELOC inputs (draw + repayment + closing costs)
+  const [drawYears, setDrawYears] = useState('10');
+  const [repayYears, setRepayYears] = useState('20');
+  const [includeClosing, setIncludeClosing] = useState(false);
+  const [closingCosts, setClosingCosts] = useState('2500');
+
+  // Amortization schedule view toggle
+  const [scheduleView, setScheduleView] = useState<'annual' | 'monthly'>('annual');
+
   // Auto-fill from profile whenever it has values
   useEffect(() => {
     if (pn.totalIncome > 0) setIncome(String(pn.totalIncome));
