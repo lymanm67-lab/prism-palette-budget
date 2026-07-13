@@ -280,10 +280,18 @@ const Calculators = () => {
   const [pageGuideOpen, setPageGuideOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
 
-  // Safe-to-Spend calculator
+  // Shared household profile — auto-fills these calculators
+  const { profile: fp } = useFinancialProfile();
+  const fpN = useMemo(() => profileNumbers(fp), [fp]);
+
+  // Safe-to-Spend calculator (income auto-fills from profile)
   const [stsForm, setStsForm] = useState({
     income: '', recurringBills: '', subscriptions: '', alreadySpent: '', bufferPercent: '15',
   });
+  useEffect(() => {
+    if (fpN.totalIncome > 0) setStsForm(f => ({ ...f, income: String(fpN.totalIncome) }));
+    if (fpN.expenses > 0) setStsForm(f => ({ ...f, recurringBills: String(fpN.expenses) }));
+  }, [fpN.totalIncome, fpN.expenses]);
   const stsResult = useMemo(() => {
     const income = parseFloat(stsForm.income) || 0;
     const bills = parseFloat(stsForm.recurringBills) || 0;
