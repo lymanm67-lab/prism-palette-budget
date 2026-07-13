@@ -11,6 +11,8 @@ import CalculatorGuide from '@/components/CalculatorGuide';
 import CalculatorScenariosAndPitfalls from '@/components/CalculatorScenariosAndPitfalls';
 import { QualificationBadge } from '@/components/FinancialProfileCard';
 import { useFinancialProfile, profileNumbers, qualifyFor } from '@/hooks/use-financial-profile';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { HELOC_LENDERS, US_STATES, lendersForState } from '@/data/heloc-lenders';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, ResponsiveContainer, Legend,
 } from 'recharts';
@@ -458,7 +460,7 @@ export default function HelocVsMortgageCalculator() {
               <div className="pt-2 border-t border-prism-amber/30">
                 <p className="text-xs font-semibold text-foreground mb-1.5">Lenders that offer true 1st-lien HELOCs</p>
                 <p className="text-xs text-muted-foreground">
-                  Quorum Federal Credit Union, Andrews Federal Credit Union, Signature Federal Credit Union, Hitch, CMG Financial "All In One Loan", Northpointe Bank, Aven, Figure (select markets), and various regional credit unions. Availability varies by state — call to confirm 1st-position eligibility.
+                  See the filtered directory below — pick your state to view lenders licensed in your area with direct links to their sites.
                 </p>
               </div>
             </div>
@@ -484,6 +486,120 @@ export default function HelocVsMortgageCalculator() {
           </p>
         </CardContent>
       </Card>
+
+      <LenderDirectory />
     </div>
   );
 }
+
+// ─── Lender Directory (filterable by state, links to lender site) ───
+function LenderDirectory() {
+  const [stateCode, setStateCode] = useLenderState();
+  const [query, setQuery] = useLenderQuery();
+  const lenders = useLenderList(stateCode, query);
+  const stateName = stateCode === 'all' ? 'all states' : US_STATES.find(s => s.code === stateCode)?.name || stateCode;
+
+  return (
+    <Card className="glass-card">
+      <CardHeader>
+        <CardTitle className="text-lg flex items-center gap-2">
+          <Zap className="w-5 h-5 text-prism-amber" /> 1st Lien HELOC Lender Directory
+        </CardTitle>
+        <p className="text-sm text-muted-foreground mt-1">
+          Filter by your state to see lenders that operate there. Coverage is a best-effort snapshot — always call to confirm current availability and true 1st-position eligibility.
+        </p>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid sm:grid-cols-2 gap-3">
+          <div className="space-y-1">
+            <Label className="text-xs">State</Label>
+            <Select value={stateCode} onValueChange={(v) => setStateCode(v as any)}>
+              <SelectTrigger><SelectValue placeholder="Choose state" /></SelectTrigger>
+              <SelectContent className="max-h-72">
+                <SelectItem value="all">All states</SelectItem>
+                {US_STATES.map(s => (
+                  <SelectItem key={s.code} value={s.code}>{s.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">City or lender name (optional)</Label>
+            <Input
+              placeholder="e.g. Tampa, Quorum, credit union"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div className="text-xs text-muted-foreground">
+          {lenders.length} lender{lenders.length === 1 ? '' : 's'} available in <span className="text-foreground font-medium">{stateName}</span>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-3">
+          {lenders.map((l) => (
+            <a
+              key={l.name}
+              href={l.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group rounded-xl border border-border/40 bg-muted/20 p-4 hover:border-prism-amber/50 hover:bg-prism-amber/5 transition-all"
+            >
+              <div className="flex items-start justify-between gap-2 mb-1">
+                <div>
+                  <div className="font-semibold text-foreground group-hover:text-prism-amber transition-colors text-sm">{l.name}</div>
+                  {l.productName && <div className="text-[11px] text-muted-foreground">{l.productName}</div>}
+                </div>
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground border border-border/40 rounded px-1.5 py-0.5 shrink-0">
+                  {l.type}
+                </span>
+              </div>
+              {l.hq && <div className="text-[11px] text-muted-foreground mb-1">HQ: {l.hq}</div>}
+              <p className="text-xs text-muted-foreground/90">{l.notes}</p>
+              <div className="mt-2 flex items-center justify-between text-[11px]">
+                <span className="text-muted-foreground">
+                  {l.states === 'nationwide' ? 'Nationwide' : `${l.states.length} states`}
+                </span>
+                <span className="text-prism-amber group-hover:underline">Visit site →</span>
+              </div>
+            </a>
+          ))}
+          {lenders.length === 0 && (
+            <div className="col-span-full text-center text-sm text-muted-foreground py-8 rounded-xl border border-dashed border-border/40">
+              No lenders matched. Try clearing the search or selecting a different state.
+            </div>
+          )}
+        </div>
+
+        <p className="text-[11px] text-muted-foreground/60 italic">
+          Directory is not a paid placement or endorsement. State coverage and 1st-lien eligibility change frequently — verify with the lender before applying.
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
+
+// Tiny local hooks kept inline to avoid an extra file
+function useLenderState() {
+  const [stateCode, setStateCode] = useState<string | 'all'>('all');
+  return [stateCode, setStateCode] as const;
+}
+function useLenderQuery() {
+  const [query, setQuery] = useState('');
+  return [query, setQuery] as const;
+}
+function useLenderList(stateCode: string | 'all', query: string) {
+  return useMemo(() => {
+    const base = lendersForState(stateCode);
+    const q = query.trim().toLowerCase();
+    if (!q) return base;
+    return base.filter(l =>
+      l.name.toLowerCase().includes(q) ||
+      l.type.toLowerCase().includes(q) ||
+      (l.hq?.toLowerCase().includes(q) ?? false) ||
+      (l.productName?.toLowerCase().includes(q) ?? false),
+    );
+  }, [stateCode, query]);
+}
+
