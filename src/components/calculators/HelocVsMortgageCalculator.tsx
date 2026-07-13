@@ -281,6 +281,101 @@ export default function HelocVsMortgageCalculator() {
           { title: 'Product availability', description: 'Not all lenders offer true 1st-lien HELOCs; many are 2nd-lien only.' },
         ]}
       />
+
+      {/* Educational deep-dive: Two Products, Very Different Outcomes */}
+      <Card className="glass-card">
+        <CardHeader>
+          <CardTitle className="text-lg">Two Products, Very Different Outcomes</CardTitle>
+          <p className="text-sm text-muted-foreground mt-1">
+            Both a traditional mortgage and a 1st lien HELOC finance your home, but the mechanics differ fundamentally. The right choice depends on cash flow, discipline, risk tolerance, and how quickly you want to be debt-free.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Comparison table */}
+          <div className="overflow-x-auto rounded-lg border border-border/40">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/40">
+                <tr className="text-left">
+                  <th className="p-3 font-semibold">Feature</th>
+                  <th className="p-3 font-semibold">Traditional Mortgage</th>
+                  <th className="p-3 font-semibold text-prism-amber">1st Lien HELOC</th>
+                </tr>
+              </thead>
+              <tbody className="[&_tr:nth-child(even)]:bg-muted/20">
+                {[
+                  ['Interest type', 'Fixed or adjustable', 'Variable (prime-based)'],
+                  ['Interest calculation', 'Monthly amortization', 'Average daily balance'],
+                  ['Typical payoff', '15–30 years', '5–7 years*'],
+                  ['Equity access', 'Requires refi or 2nd lien', 'Built-in revolving access'],
+                  ['Payment flexibility', 'Fixed monthly payment', 'Interest-only min + surplus'],
+                  ['Checking features', 'None', 'Debit card, bill pay, checks'],
+                  ['Sweep functionality', 'Not available', 'Automatic fund optimization'],
+                  ['Emergency fund access', 'Separate account needed', 'Built-in via available equity'],
+                  ['Rate stability', 'Fixed for life of loan', 'Variable (index + margin)'],
+                  ['Minimum payment', 'Full P&I required', 'Interest-only option'],
+                  ['Typical total interest', '$380k–$500k', '$50k–$100k'],
+                ].map(([f, m, h]) => (
+                  <tr key={f} className="border-t border-border/30">
+                    <td className="p-3 font-medium">{f}</td>
+                    <td className="p-3 text-muted-foreground">{m}</td>
+                    <td className="p-3 text-prism-amber/90">{h}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="rounded-xl border border-border/40 bg-muted/20 p-4 space-y-2">
+              <h4 className="font-semibold text-foreground">The Interest Cost Reality</h4>
+              <p className="text-sm text-muted-foreground">
+                On a $300,000 balance, a 30-year mortgage at 7% generates ~$418,527 in total interest. Monthly payment is $1,996, and it takes until year 18 before more than half goes to principal.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                The same $300,000 on a 1st lien HELOC at 7.5% with $4,400/mo surplus generates ~$106,000 in interest and is paid off in ~8.5 years. Difference: <span className="text-prism-lime font-semibold">~$312,500</span> stays in your pocket.
+              </p>
+            </div>
+            <div className="rounded-xl border border-prism-sky/30 bg-prism-sky/5 p-4 space-y-2">
+              <h4 className="font-semibold text-foreground">What About Rate Risk?</h4>
+              <p className="text-sm text-muted-foreground">
+                HELOC rates are variable and can rise — but total exposure is 5–7 years vs. 30 on a mortgage. Even at 12%, the compressed timeline typically wins on total interest. Stress-test by bumping the HELOC rate above and re-running.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="rounded-xl border border-border/40 bg-muted/20 p-4 space-y-2">
+              <h4 className="font-semibold text-foreground">When a Mortgage Still Makes Sense</h4>
+              <ul className="text-sm text-muted-foreground space-y-1 list-disc pl-5">
+                <li>Cash flow is negative or break-even</li>
+                <li>No cushion — you need a predictable fixed payment</li>
+                <li>Less than ~10% equity available</li>
+                <li>You can't commit to discipline for 5–7 years</li>
+              </ul>
+              <p className="text-xs text-muted-foreground/80 italic">A mortgage is a safety net for those who need structure. There's no shame in predictability.</p>
+            </div>
+            <div className="rounded-xl border border-prism-amber/30 bg-prism-amber/5 p-4 space-y-2">
+              <h4 className="font-semibold text-foreground">When a HELOC Has the Clear Advantage</h4>
+              <ul className="text-sm text-muted-foreground space-y-1 list-disc pl-5">
+                <li>Consistent positive cash flow of $500+/mo</li>
+                <li>Goal: pay off the home in under 10 years</li>
+                <li>You value flexibility and equity access</li>
+                <li>You're intentional and comfortable with variable rates</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-border/40 bg-gradient-to-br from-prism-teal/10 to-prism-amber/10 p-4">
+            <h4 className="font-semibold text-foreground mb-1">The Bottom Line</h4>
+            <p className="text-sm text-muted-foreground">
+              A mortgage optimizes for <span className="text-foreground font-medium">predictability</span>. A 1st lien HELOC optimizes for <span className="text-foreground font-medium">total cost and speed of payoff</span>. With the cash flow and discipline, the HELOC can save hundreds of thousands and decades of debt. Without them, a mortgage keeps you safe.
+            </p>
+            <p className="text-xs text-muted-foreground/70 mt-2">
+              Reference: <a href="https://firstlienheloc.com/calculator/" target="_blank" rel="noopener noreferrer" className="underline hover:text-prism-amber">firstlienheloc.com/calculator</a>
+            </p>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
