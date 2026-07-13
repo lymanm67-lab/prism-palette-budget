@@ -69,6 +69,8 @@ function simulateHeloc(
 
 export default function HelocVsMortgageCalculator() {
   const { formatCurrency } = useCurrency();
+  const { profile } = useFinancialProfile();
+  const pn = profileNumbers(profile);
 
   const [balance, setBalance] = useState('300000');
   const [mortgageRate, setMortgageRate] = useState('6.75');
@@ -78,7 +80,16 @@ export default function HelocVsMortgageCalculator() {
   // Note: expenses here should NOT include the mortgage payment — in a 1st lien HELOC there is no separate mortgage payment.
   const [expenses, setExpenses] = useState('5500');
 
+  // Auto-fill from profile whenever it has values
+  useEffect(() => {
+    if (pn.totalIncome > 0) setIncome(String(pn.totalIncome));
+    if (pn.expenses > 0 || pn.debts > 0) setExpenses(String(pn.expenses + pn.debts));
+    if (pn.mortgageBalance > 0) setBalance(String(pn.mortgageBalance));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile.primaryIncome, profile.partnerIncome, profile.monthlyExpenses, profile.monthlyDebts, profile.mortgageBalance]);
+
   const result = useMemo(() => {
+
     const P = parseFloat(balance) || 0;
     const mR = parseFloat(mortgageRate) || 0;
     const months = (parseInt(termYears) || 30) * 12;
