@@ -297,8 +297,24 @@ export default function HelocVsMortgageCalculator() {
               </ResponsiveContainer>
             </div>
           )}
+
+          {/* Save + Print report actions */}
+          <div className="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-border/40">
+            <p className="text-xs text-muted-foreground mr-auto">
+              Save your scenario or generate a printable report.
+            </p>
+            <Button size="sm" variant="outline" onClick={() => setReportOpen(true)}>
+              <FileText className="w-4 h-4 mr-1" /> Preview report
+            </Button>
+            <Button size="sm" onClick={() => setReportOpen(true)}>
+              <Printer className="w-4 h-4 mr-1" /> Save / Print
+            </Button>
+          </div>
         </CardContent>
       </Card>
+
+      {/* Upload documents to auto-fill profile */}
+      <DocumentUploadCard />
 
       {/* Everything else lives behind tabs so the calculator stays the focus */}
       <Tabs defaultValue="compare" className="w-full">
