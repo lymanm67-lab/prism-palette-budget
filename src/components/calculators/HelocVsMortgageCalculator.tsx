@@ -558,6 +558,10 @@ export default function HelocVsMortgageCalculator() {
               </ResponsiveContainer>
             </div>
           )}
+          </>
+          )}
+
+
 
           {/* Save + Print report actions */}
           <div className="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-border/40">
