@@ -246,6 +246,28 @@ export default function HelocVsMortgageCalculator() {
             </div>
           )}
 
+          {/* Qualification from profile */}
+          {pn.totalIncome > 0 && (
+            <div className="grid md:grid-cols-2 gap-3">
+              {(() => {
+                const mQ = qualifyFor(profile, result.mortgage.payment, 'mortgage');
+                const hQ = qualifyFor(profile, 0, 'heloc');
+                return (
+                  <>
+                    <div className="space-y-1">
+                      <div className="text-[11px] uppercase tracking-wider text-muted-foreground flex items-center gap-1"><Home className="w-3 h-3" /> Mortgage qualification</div>
+                      <QualificationBadge verdict={mQ.verdict} reasons={mQ.reasons} dti={mQ.dti} />
+                    </div>
+                    <div className="space-y-1">
+                      <div className="text-[11px] uppercase tracking-wider text-muted-foreground flex items-center gap-1"><Zap className="w-3 h-3" /> 1st Lien HELOC qualification</div>
+                      <QualificationBadge verdict={hQ.verdict} reasons={hQ.reasons} dti={hQ.dti} />
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+          )}
+
           {/* Chart */}
           {helocWorks && (
             <div className="h-72 w-full">
