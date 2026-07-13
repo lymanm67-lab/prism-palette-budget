@@ -37,6 +37,7 @@ import CarAffordabilityCalculator from '@/components/calculators/CarAffordabilit
 import TrueCostLoanCalculator from '@/components/calculators/TrueCostLoanCalculator';
 import PricingCalculator from '@/components/calculators/PricingCalculator';
 import CurrencyExchangeCalculator from '@/components/calculators/CurrencyExchangeCalculator';
+import HelocVsMortgageCalculator from '@/components/calculators/HelocVsMortgageCalculator';
 
 // ─── Calculation helpers ───
 
