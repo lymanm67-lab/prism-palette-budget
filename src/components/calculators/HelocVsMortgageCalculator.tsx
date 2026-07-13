@@ -317,20 +317,6 @@ export default function HelocVsMortgageCalculator() {
                     <Input type="number" value={repayYears} onChange={(e) => setRepayYears(e.target.value)} />
                   </div>
                 </div>
-                <div className="rounded-lg border border-border/40 bg-muted/30 p-3 text-sm space-y-2">
-                  <div className="flex items-start gap-2">
-                    <HelpCircle className="w-4 h-4 text-prism-amber mt-0.5 shrink-0" />
-                    <div>
-                      <p className="font-medium text-foreground">What is the difference?</p>
-                      <p className="text-muted-foreground text-xs mt-1">
-                        <strong>Draw period:</strong> the window when you can borrow from the HELOC. Payments are usually interest-only, so the principal balance does not go down.
-                      </p>
-                      <p className="text-muted-foreground text-xs mt-1">
-                        <strong>Repayment period:</strong> the window when you can no longer draw funds and must pay both principal and interest until the loan is paid off.
-                      </p>
-                    </div>
-                  </div>
-                </div>
               </div>
 
               <div className="space-y-4">
