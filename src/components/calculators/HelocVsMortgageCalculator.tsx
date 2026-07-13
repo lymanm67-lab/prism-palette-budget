@@ -75,6 +75,81 @@ function simulateHeloc(
   return { totalInterest, schedule, months: Infinity, netSurplus, payoffAmount: 0 };
 }
 
+// ── Standalone HELOC: interest-only during draw, then amortizing over repayment period.
+//    Mirrors calculator.net's HELOC model, with optional closing costs & fees toggled into APR/total cost.
+export function simulateStandaloneHeloc(
+  loanAmount: number,
+  annualRate: number,
+  drawYears: number,
+  repayYears: number,
+  closingCosts: number = 0,
+) {
+  const r = annualRate / 100 / 12;
+  const drawMonths = Math.max(0, Math.round(drawYears * 12));
+  const repayMonths = Math.max(1, Math.round(repayYears * 12));
+  const drawPayment = loanAmount * r; // interest-only
+  const repayPayment = r === 0
+    ? loanAmount / repayMonths
+    : (loanAmount * r * Math.pow(1 + r, repayMonths)) / (Math.pow(1 + r, repayMonths) - 1);
+
+  const schedule: { month: number; phase: 'draw' | 'repay'; payment: number; interest: number; principal: number; balance: number }[] = [];
+  let balance = loanAmount;
+  let totalInterest = 0;
+
+  // Draw period: interest-only, balance stays flat
+  for (let m = 1; m <= drawMonths; m++) {
+    const interest = balance * r;
+    totalInterest += interest;
+    schedule.push({ month: m, phase: 'draw', payment: drawPayment, interest, principal: 0, balance });
+  }
+  // Repayment period: fully amortizing
+  for (let m = 1; m <= repayMonths; m++) {
+    const interest = balance * r;
+    const principal = Math.min(balance, repayPayment - interest);
+    balance = Math.max(0, balance - principal);
+    totalInterest += interest;
+    schedule.push({ month: drawMonths + m, phase: 'repay', payment: repayPayment, interest, principal, balance });
+    if (balance <= 0.01) break;
+  }
+
+  const totalPayments = drawPayment * drawMonths + repayPayment * schedule.filter(s => s.phase === 'repay').length + closingCosts;
+  // Simple APR approximation: solve rate that makes PV of payments equal (loanAmount - closingCosts)
+  // Iterative Newton-style approximation.
+  const apr = (() => {
+    if (closingCosts <= 0 || loanAmount <= 0) return annualRate;
+    const cashReceived = loanAmount - closingCosts;
+    const totalMonths = drawMonths + schedule.filter(s => s.phase === 'repay').length;
+    let guess = annualRate / 100 / 12;
+    for (let iter = 0; iter < 60; iter++) {
+      const g = guess;
+      // PV of interest-only draw + amortizing repayment
+      let pv = 0;
+      const drawPay = loanAmount * g;
+      const rp = g === 0
+        ? loanAmount / repayMonths
+        : (loanAmount * g * Math.pow(1 + g, repayMonths)) / (Math.pow(1 + g, repayMonths) - 1);
+      for (let k = 1; k <= drawMonths; k++) pv += drawPay / Math.pow(1 + g, k);
+      for (let k = 1; k <= repayMonths; k++) pv += rp / Math.pow(1 + g, drawMonths + k);
+      const diff = pv - cashReceived;
+      if (Math.abs(diff) < 0.5) break;
+      guess += diff > 0 ? 0.00005 : -0.00005;
+      if (guess < 0) guess = 0.00001;
+    }
+    return guess * 12 * 100;
+  })();
+
+  return {
+    drawPayment,
+    repayPayment,
+    totalInterest,
+    totalPayments,
+    schedule,
+    drawMonths,
+    repayMonths: schedule.filter(s => s.phase === 'repay').length,
+    apr,
+  };
+}
+
 export default function HelocVsMortgageCalculator() {
   const { formatCurrency } = useCurrency();
   const { profile } = useFinancialProfile();
