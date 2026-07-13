@@ -1,9 +1,10 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Home, Zap, TrendingDown, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { Home, Zap, TrendingDown, CheckCircle2, AlertTriangle, Printer, Save, FileText } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { useCurrency } from '@/hooks/use-currency';
 import { cn } from '@/lib/utils';
 import AnimatedNumber from '@/components/AnimatedNumber';
@@ -11,9 +12,13 @@ import CalculatorGuide from '@/components/CalculatorGuide';
 import CalculatorScenariosAndPitfalls from '@/components/CalculatorScenariosAndPitfalls';
 import { QualificationBadge } from '@/components/FinancialProfileCard';
 import { useFinancialProfile, profileNumbers, qualifyFor } from '@/hooks/use-financial-profile';
+import { useHousehold } from '@/contexts/HouseholdContext';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { HELOC_LENDERS, US_STATES, lendersForState } from '@/data/heloc-lenders';
+import DocumentUploadCard from '@/components/calculators/DocumentUploadCard';
+import CreditImprovementPlan from '@/components/calculators/CreditImprovementPlan';
+import HelocReportPreview, { type HelocReportData } from '@/components/calculators/HelocReportPreview';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, ResponsiveContainer, Legend,
 } from 'recharts';
@@ -73,6 +78,7 @@ function simulateHeloc(
 export default function HelocVsMortgageCalculator() {
   const { formatCurrency } = useCurrency();
   const { profile } = useFinancialProfile();
+  const { household } = useHousehold();
   const pn = profileNumbers(profile);
 
   const [balance, setBalance] = useState('300000');
@@ -82,6 +88,7 @@ export default function HelocVsMortgageCalculator() {
   const [income, setIncome] = useState('9000');
   // Note: expenses here should NOT include the mortgage payment — in a 1st lien HELOC there is no separate mortgage payment.
   const [expenses, setExpenses] = useState('5500');
+  const [reportOpen, setReportOpen] = useState(false);
 
   // Auto-fill from profile whenever it has values
   useEffect(() => {
@@ -290,8 +297,24 @@ export default function HelocVsMortgageCalculator() {
               </ResponsiveContainer>
             </div>
           )}
+
+          {/* Save + Print report actions */}
+          <div className="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-border/40">
+            <p className="text-xs text-muted-foreground mr-auto">
+              Save your scenario or generate a printable report.
+            </p>
+            <Button size="sm" variant="outline" onClick={() => setReportOpen(true)}>
+              <FileText className="w-4 h-4 mr-1" /> Preview report
+            </Button>
+            <Button size="sm" onClick={() => setReportOpen(true)}>
+              <Printer className="w-4 h-4 mr-1" /> Save / Print
+            </Button>
+          </div>
         </CardContent>
       </Card>
+
+      {/* Upload documents to auto-fill profile */}
+      <DocumentUploadCard />
 
       {/* Everything else lives behind tabs so the calculator stays the focus */}
       <Tabs defaultValue="compare" className="w-full">
@@ -442,6 +465,12 @@ export default function HelocVsMortgageCalculator() {
               </p>
             </CardContent>
           </Card>
+
+          {/* Credit improvement plan — always render; adapts to current score */}
+          <CreditImprovementPlan
+            currentScore={parseInt(profile.creditScore) || 0}
+            targetProduct="heloc"
+          />
         </TabsContent>
 
         {/* ─── Lenders ─── */}
@@ -480,6 +509,46 @@ export default function HelocVsMortgageCalculator() {
           />
         </TabsContent>
       </Tabs>
+
+      {/* Report preview modal */}
+      <HelocReportPreview
+        open={reportOpen}
+        onOpenChange={setReportOpen}
+        householdId={household?.id ?? null}
+        data={{
+          inputs: {
+            balance: parseFloat(balance) || 0,
+            mortgageRate: parseFloat(mortgageRate) || 0,
+            termYears: parseInt(termYears) || 30,
+            helocRate: parseFloat(helocRate) || 0,
+            income: parseFloat(income) || 0,
+            expenses: parseFloat(expenses) || 0,
+          },
+          mortgage: {
+            payment: result.mortgage.payment,
+            totalInterest: result.mortgage.totalInterest,
+            months: result.mortgage.months,
+          },
+          heloc: {
+            netSurplus: result.heloc.netSurplus,
+            totalInterest: result.heloc.totalInterest,
+            months: result.heloc.months,
+          },
+          interestSaved: result.interestSaved,
+          yearsSaved: result.yearsSaved,
+          qualification: {
+            mortgage: (() => { const q = qualifyFor(profile, result.mortgage.payment, 'mortgage'); return { verdict: q.verdict, dti: q.dti, reasons: q.reasons }; })(),
+            heloc:    (() => { const q = qualifyFor(profile, 0, 'heloc');                        return { verdict: q.verdict, dti: q.dti, reasons: q.reasons }; })(),
+          },
+          profile: {
+            creditScore: profile.creditScore,
+            totalIncome: pn.totalIncome,
+            debts: pn.debts,
+            equity: pn.equity,
+            ltv: pn.ltv,
+          },
+        }}
+      />
     </div>
   );
 }

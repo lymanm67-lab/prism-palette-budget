@@ -635,6 +635,16 @@
     display: none !important;
   }
 
+  /* Report isolation — when a printable report is open, hide everything else */
+  body:has(#heloc-report-printable) > *:not(:has(#heloc-report-printable)) {
+    display: none !important;
+  }
+  body:has(#heloc-report-printable) #heloc-report-printable {
+    color: #000 !important;
+    background: #fff !important;
+    padding: 0 !important;
+  }
+
   @page {
     margin: 0.4in 0.35in;
     size: 8.5in 11in;
