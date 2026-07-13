@@ -376,6 +376,78 @@ export default function HelocVsMortgageCalculator() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Lenders & Qualification Requirements */}
+      <Card className="glass-card">
+        <CardHeader>
+          <CardTitle className="text-lg">Lenders &amp; Qualification Requirements</CardTitle>
+          <p className="text-sm text-muted-foreground mt-1">
+            First-lien HELOCs are a niche product — only a subset of banks and credit unions offer true 1st-position lines. Traditional mortgages are available from nearly every bank, credit union, and mortgage broker.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid md:grid-cols-2 gap-4">
+            {/* Traditional Mortgage requirements */}
+            <div className="rounded-xl border border-border/40 bg-muted/20 p-4 space-y-3">
+              <h4 className="font-semibold text-foreground flex items-center gap-2">
+                <Home className="w-4 h-4 text-prism-teal" /> Traditional Mortgage — Qualify
+              </h4>
+              <ul className="text-sm text-muted-foreground space-y-1.5">
+                <li><span className="text-foreground font-medium">Credit score:</span> 620+ (conventional), 580+ (FHA), 500 with 10% down (FHA)</li>
+                <li><span className="text-foreground font-medium">DTI:</span> ≤ 43% typical, up to 50% with compensating factors</li>
+                <li><span className="text-foreground font-medium">Down payment:</span> 3–5% conventional, 3.5% FHA, 0% VA/USDA</li>
+                <li><span className="text-foreground font-medium">LTV:</span> up to 97% conventional</li>
+                <li><span className="text-foreground font-medium">Reserves:</span> 0–6 months PITI depending on loan type</li>
+                <li><span className="text-foreground font-medium">Income docs:</span> 2 yrs W-2 / tax returns, 2 mo pay stubs, 2 mo bank statements</li>
+              </ul>
+              <div className="pt-2 border-t border-border/40">
+                <p className="text-xs font-semibold text-foreground mb-1.5">Common lenders</p>
+                <p className="text-xs text-muted-foreground">Rocket Mortgage, Chase, Wells Fargo, Bank of America, U.S. Bank, PenFed, Navy Federal, loanDepot, Better.com, local credit unions, and any licensed mortgage broker.</p>
+              </div>
+            </div>
+
+            {/* 1st Lien HELOC requirements */}
+            <div className="rounded-xl border border-prism-amber/30 bg-prism-amber/5 p-4 space-y-3">
+              <h4 className="font-semibold text-foreground flex items-center gap-2">
+                <Zap className="w-4 h-4 text-prism-amber" /> 1st Lien HELOC — Qualify
+              </h4>
+              <ul className="text-sm text-muted-foreground space-y-1.5">
+                <li><span className="text-foreground font-medium">Credit score:</span> 680+ typical, 700–740+ for best rates</li>
+                <li><span className="text-foreground font-medium">DTI:</span> ≤ 43–45%</li>
+                <li><span className="text-foreground font-medium">Equity / CLTV:</span> at least 10–20% equity; max CLTV 80–90%</li>
+                <li><span className="text-foreground font-medium">Positive cash flow:</span> lenders want to see net monthly surplus — the whole strategy depends on it</li>
+                <li><span className="text-foreground font-medium">Property:</span> primary residence (most), some allow 2nd home / investment at lower CLTV</li>
+                <li><span className="text-foreground font-medium">Docs:</span> mortgage payoff, appraisal or AVM, income + asset verification, homeowners insurance</li>
+              </ul>
+              <div className="pt-2 border-t border-prism-amber/30">
+                <p className="text-xs font-semibold text-foreground mb-1.5">Lenders that offer true 1st-lien HELOCs</p>
+                <p className="text-xs text-muted-foreground">
+                  Quorum Federal Credit Union, Andrews Federal Credit Union, Signature Federal Credit Union, Hitch, CMG Financial "All In One Loan", Northpointe Bank, Aven, Figure (select markets), and various regional credit unions. Availability varies by state — call to confirm 1st-position eligibility.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-border/40 bg-gradient-to-br from-prism-sky/10 to-prism-teal/10 p-4 space-y-2">
+            <h4 className="font-semibold text-foreground text-sm">Before you apply — checklist</h4>
+            <ul className="text-sm text-muted-foreground space-y-1 list-disc pl-5">
+              <li>Pull your credit reports and know your middle FICO score.</li>
+              <li>Get a recent home value estimate (AVM or appraisal) and current mortgage payoff.</li>
+              <li>Calculate your current CLTV: (mortgage balance) ÷ (home value).</li>
+              <li>Document 2 months of pay stubs, 2 years W-2 / tax returns, and 2 months of asset statements.</li>
+              <li>For a 1st-lien HELOC, confirm the lender will pay off and replace your existing mortgage (not sit behind it).</li>
+              <li>Ask about draw period, repayment period, index (Prime), margin, floor rate, ceiling rate, and closing costs.</li>
+            </ul>
+            <p className="text-xs text-muted-foreground/70 pt-1">
+              Sources: Bankrate, NerdWallet, Quorum FCU product matrix, Spring EQ correspondent guidelines, rate.com.
+            </p>
+          </div>
+
+          <p className="text-[11px] text-muted-foreground/60 italic">
+            Informational only — not a loan offer, quote, or commitment to lend. Guidelines vary by lender, state, and market conditions. Always verify current requirements directly with the lender.
+          </p>
+        </CardContent>
+      </Card>
     </div>
   );
 }
