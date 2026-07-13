@@ -342,29 +342,48 @@ export default function HelocVsMortgageCalculator() {
 
           {/* Standalone HELOC results */}
           {mode === 'standalone' && (
-            <div className="grid md:grid-cols-3 gap-4">
-              <div className="rounded-xl border border-border/40 bg-muted/20 p-4">
-                <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Total of payments</div>
-                <div className="text-lg font-bold text-foreground">
-                  <AnimatedNumber value={result.standalone.totalPayments} formatFn={formatCurrency} />
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-4">
+                <div className="rounded-xl border border-border/40 bg-muted/20 p-4">
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Total of payments</div>
+                  <div className="text-lg font-bold text-foreground">
+                    <AnimatedNumber value={result.standalone.totalPayments} formatFn={formatCurrency} />
+                  </div>
+                  <div className="text-[11px] text-muted-foreground mt-1">
+                    {result.standalone.drawMonths + result.standalone.repayMonths} monthly payments{includeClosing ? ' + closing costs' : ''}
+                  </div>
                 </div>
-                <div className="text-[11px] text-muted-foreground mt-1">
-                  {result.standalone.drawMonths + result.standalone.repayMonths} monthly payments{includeClosing ? ' + closing costs' : ''}
+                <div className="rounded-xl border border-border/40 bg-muted/20 p-4">
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Total interest</div>
+                  <div className="text-lg font-bold text-prism-rose">
+                    <AnimatedNumber value={result.standalone.totalInterest} formatFn={formatCurrency} />
+                  </div>
                 </div>
               </div>
-              <div className="rounded-xl border border-border/40 bg-muted/20 p-4">
-                <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Total interest</div>
-                <div className="text-lg font-bold text-prism-rose">
-                  <AnimatedNumber value={result.standalone.totalInterest} formatFn={formatCurrency} />
+
+              <div className="space-y-4">
+                <div className="rounded-lg border border-border/40 bg-muted/30 p-3 text-sm space-y-2">
+                  <div className="flex items-start gap-2">
+                    <HelpCircle className="w-4 h-4 text-prism-amber mt-0.5 shrink-0" />
+                    <div>
+                      <p className="font-medium text-foreground">What is the difference?</p>
+                      <p className="text-muted-foreground text-xs mt-1">
+                        <strong>Draw period:</strong> the window when you can borrow from the HELOC. Payments are usually interest-only, so the principal balance does not go down.
+                      </p>
+                      <p className="text-muted-foreground text-xs mt-1">
+                        <strong>Repayment period:</strong> the window when you can no longer draw funds and must pay both principal and interest until the loan is paid off.
+                      </p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div className="rounded-xl border border-prism-amber/30 bg-prism-amber/5 p-4">
-                <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Loan lifetime</div>
-                <div className="text-lg font-bold text-prism-amber">
-                  {((result.standalone.drawMonths + result.standalone.repayMonths) / 12).toFixed(1)} yrs
-                </div>
-                <div className="text-[11px] text-muted-foreground mt-1">
-                  {(result.standalone.drawMonths / 12).toFixed(0)} yr draw + {(result.standalone.repayMonths / 12).toFixed(0)} yr repay
+                <div className="rounded-xl border border-prism-amber/30 bg-prism-amber/5 p-4">
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Loan lifetime</div>
+                  <div className="text-lg font-bold text-prism-amber">
+                    {((result.standalone.drawMonths + result.standalone.repayMonths) / 12).toFixed(1)} yrs
+                  </div>
+                  <div className="text-[11px] text-muted-foreground mt-1">
+                    {(result.standalone.drawMonths / 12).toFixed(0)} yr draw + {(result.standalone.repayMonths / 12).toFixed(0)} yr repay
+                  </div>
                 </div>
               </div>
             </div>
