@@ -128,6 +128,46 @@ export default function HelocReportPreview({
 
   const helocWins = data.interestSaved > 0 && isFinite(data.heloc.months);
 
+  // ── Chart data ─────────────────────────────────────────────
+  const interestCompare = [
+    { name: 'Mortgage', value: Math.round(data.mortgage.totalInterest), fill: CHART_COLORS.mortgage },
+    { name: 'HELOC',    value: Math.round(data.heloc.totalInterest),    fill: CHART_COLORS.heloc },
+  ];
+  const payoffCompare = [
+    { name: 'Mortgage', years: +(data.mortgage.months / 12).toFixed(1), fill: CHART_COLORS.mortgage },
+    { name: 'HELOC',    years: isFinite(data.heloc.months) ? +(data.heloc.months / 12).toFixed(1) : 0, fill: CHART_COLORS.heloc },
+  ];
+  // Approximate balance-over-time curves (yearly points)
+  const balanceSeries = (() => {
+    const yrs = Math.max(
+      Math.ceil(data.mortgage.months / 12),
+      isFinite(data.heloc.months) ? Math.ceil(data.heloc.months / 12) : 0,
+    );
+    const mRate = data.inputs.mortgageRate / 100 / 12;
+    const hRate = data.inputs.helocRate / 100 / 12;
+    const mPay = data.mortgage.payment;
+    const hSurplus = Math.max(data.heloc.netSurplus, 0);
+    let mBal = data.inputs.balance;
+    let hBal = data.inputs.balance;
+    const rows: any[] = [{ year: 0, Mortgage: mBal, HELOC: hBal }];
+    for (let y = 1; y <= yrs; y++) {
+      for (let m = 0; m < 12; m++) {
+        if (mBal > 0) mBal = Math.max(0, mBal * (1 + mRate) - mPay);
+        if (hBal > 0) hBal = Math.max(0, hBal * (1 + hRate) - hSurplus);
+      }
+      rows.push({ year: y, Mortgage: Math.round(mBal), HELOC: Math.round(hBal) });
+    }
+    return rows;
+  })();
+  const mortgageBreakdown = [
+    { name: 'Principal', value: Math.round(data.inputs.balance),           fill: CHART_COLORS.principal },
+    { name: 'Interest',  value: Math.round(data.mortgage.totalInterest),   fill: CHART_COLORS.interest },
+  ];
+  const helocBreakdown = [
+    { name: 'Principal', value: Math.round(data.inputs.balance),        fill: CHART_COLORS.principal },
+    { name: 'Interest',  value: Math.round(data.heloc.totalInterest),   fill: CHART_COLORS.interest },
+  ];
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto print:max-w-none print:max-h-none print:overflow-visible print:shadow-none">
