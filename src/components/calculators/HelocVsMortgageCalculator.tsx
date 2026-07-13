@@ -581,6 +581,20 @@ export default function HelocVsMortgageCalculator() {
           </>
           )}
 
+          {/* Payoff Accelerator — beat a traditional 30-yr mortgage */}
+          {mode === 'compare' && (
+            <PayoffAccelerator
+              principal={parseFloat(balance) || 0}
+              mortgageRate={parseFloat(mortgageRate) || 0}
+              termYears={parseInt(termYears) || 30}
+              helocRate={parseFloat(helocRate) || 0}
+              monthlyIncome={parseFloat(income) || 0}
+              monthlyExpenses={parseFloat(expenses) || 0}
+              formatCurrency={formatCurrency}
+            />
+          )}
+
+
 
 
           {/* Save + Print report actions */}
