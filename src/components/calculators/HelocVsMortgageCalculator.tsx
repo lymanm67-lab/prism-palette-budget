@@ -931,3 +931,96 @@ function useLenderList(stateCode: string | 'all', query: string) {
   }, [stateCode, query]);
 }
 
+// ── Amortization schedule table (annual + monthly toggle) ─────────────────
+function AmortizationSchedule({
+  schedule,
+  view,
+  onViewChange,
+  formatCurrency,
+}: {
+  schedule: { month: number; phase: 'draw' | 'repay'; payment: number; interest: number; principal: number; balance: number }[];
+  view: 'annual' | 'monthly';
+  onViewChange: (v: 'annual' | 'monthly') => void;
+  formatCurrency: (n: number) => string;
+}) {
+  const rows = useMemo(() => {
+    if (view === 'monthly') return schedule;
+    // Group by year (12-month chunks), summing interest + principal, ending balance = last month's balance
+    const yearly: { year: number; phase: string; interest: number; principal: number; balance: number }[] = [];
+    for (let i = 0; i < schedule.length; i += 12) {
+      const chunk = schedule.slice(i, i + 12);
+      const interest = chunk.reduce((s, r) => s + r.interest, 0);
+      const principal = chunk.reduce((s, r) => s + r.principal, 0);
+      const balance = chunk[chunk.length - 1].balance;
+      const phases = new Set(chunk.map(c => c.phase));
+      yearly.push({
+        year: Math.floor(i / 12) + 1,
+        phase: phases.size > 1 ? 'draw → repay' : (chunk[0].phase === 'draw' ? 'draw' : 'repay'),
+        interest,
+        principal,
+        balance,
+      });
+    }
+    return yearly;
+  }, [schedule, view]);
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h4 className="text-sm font-semibold text-foreground">Amortization schedule</h4>
+        <div className="inline-flex rounded-lg border border-border/60 bg-background p-0.5">
+          <button
+            type="button"
+            onClick={() => onViewChange('annual')}
+            className={cn(
+              'px-3 py-1 text-xs font-medium rounded-md transition-colors',
+              view === 'annual' ? 'bg-prism-amber text-background' : 'text-muted-foreground hover:text-foreground',
+            )}
+          >
+            Annual
+          </button>
+          <button
+            type="button"
+            onClick={() => onViewChange('monthly')}
+            className={cn(
+              'px-3 py-1 text-xs font-medium rounded-md transition-colors',
+              view === 'monthly' ? 'bg-prism-amber text-background' : 'text-muted-foreground hover:text-foreground',
+            )}
+          >
+            Monthly
+          </button>
+        </div>
+      </div>
+
+      <div className="overflow-auto max-h-96 rounded-lg border border-border/40">
+        <table className="w-full text-xs">
+          <thead className="bg-muted/40 sticky top-0">
+            <tr className="text-left">
+              <th className="p-2 font-semibold">{view === 'annual' ? 'Year' : 'Month'}</th>
+              <th className="p-2 font-semibold">Phase</th>
+              <th className="p-2 font-semibold text-right">Interest</th>
+              <th className="p-2 font-semibold text-right">Principal</th>
+              <th className="p-2 font-semibold text-right">Ending balance</th>
+            </tr>
+          </thead>
+          <tbody className="[&_tr:nth-child(even)]:bg-muted/20">
+            {rows.map((r: any, idx: number) => (
+              <tr key={idx} className="border-t border-border/30">
+                <td className="p-2 font-mono">{view === 'annual' ? r.year : r.month}</td>
+                <td className="p-2 capitalize text-muted-foreground">{r.phase}</td>
+                <td className="p-2 font-mono text-right text-prism-rose/90">{formatCurrency(r.interest)}</td>
+                <td className="p-2 font-mono text-right text-prism-lime/90">{formatCurrency(r.principal)}</td>
+                <td className="p-2 font-mono text-right">{formatCurrency(r.balance)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="text-[10px] text-muted-foreground/70 italic">
+        Interest-only during the draw period (principal = 0), then fully amortizing during repayment.
+      </p>
+    </div>
+  );
+}
+
+
