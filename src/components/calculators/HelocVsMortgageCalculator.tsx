@@ -320,10 +320,10 @@ export default function HelocVsMortgageCalculator() {
       </section>
 
 
-      {/* ─── Step 4 · Learn, qualify, and shop ─── */}
+      {/* ─── Step 3 · Learn, qualify, and shop ─── */}
       <section className="space-y-3">
         <div className="flex items-baseline gap-3">
-          <span className="text-xs font-mono uppercase tracking-widest text-primary">Step 4</span>
+          <span className="text-xs font-mono uppercase tracking-widest text-primary">Step 3</span>
           <h2 className="text-lg font-semibold text-foreground">Compare, qualify, and shop lenders</h2>
         </div>
         <p className="text-sm text-muted-foreground">
