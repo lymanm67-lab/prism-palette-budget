@@ -34,6 +34,9 @@ import PayoffGoalCalculator from './PayoffGoalCalculator';
 import RefinanceCheck from './RefinanceCheck';
 import PmiDropoff from './PmiDropoff';
 import RecastCard from './RecastCard';
+import EscrowBreakdown from './EscrowBreakdown';
+
+
 
 
 
@@ -220,6 +223,11 @@ export default function FreedomCenter() {
           grade={score.grade}
           formatCurrency={formatCurrency}
         />
+        <EscrowBreakdown
+          homeValue={p.homeValue || 500000}
+          principalInterest={monthlyPayment}
+        />
+
         <DashboardGauges
           dti={dti}
           ltv={ltv}
