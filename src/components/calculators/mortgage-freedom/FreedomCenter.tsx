@@ -238,15 +238,29 @@ export default function FreedomCenter() {
           creditScore={parseInt(profile.creditScore as any) || 0}
           helocRateShockSensitivity={helocShockSensitivity}
         />
+        <PmiDropoff
+          balance={p.mortgageBalance || 350000}
+          homeValue={p.homeValue || 500000}
+          rate={mortgageRate}
+          monthlyPayment={monthlyPayment}
+        />
       </JourneyStep>
 
       {/* ─── Step 3 · How fast can I pay it off? ─────────────── */}
       <JourneyStep
         step={3}
         title="How fast can I pay it off? — Payoff acceleration"
-        blurb="Your core goal. Set a target timeline, see the surplus needed, compare Extra Principal vs HELOC, and stress-test the plan."
+        blurb="Start with the refi check — a lower rate often beats every acceleration strategy. Then set a target timeline, compare methods, and stress-test."
       >
+        <RefinanceCheck
+          currentBalance={p.mortgageBalance || 350000}
+          currentRate={mortgageRate}
+          currentPayment={monthlyPayment}
+          remainingYears={remainingYears}
+        />
+
         <PayoffGoalCalculator />
+
 
         <AiRecommendationCard
           recommendation={rec}
