@@ -295,6 +295,22 @@ export default function HelocVsMortgageCalculator() {
 
   return (
     <div className="space-y-6 mt-6">
+      {/* ─── Mortgage Freedom Intelligence Center (primary experience) ─── */}
+      <Card className="glass-card border-primary/40 bg-gradient-to-br from-primary/5 to-transparent">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Zap className="w-5 h-5 text-primary" />
+            Mortgage Freedom Intelligence Center
+          </CardTitle>
+          <p className="text-sm text-muted-foreground mt-1">
+            AI-powered decision engine: compare payoff strategies, stress-test HELOC risk, and find the fastest, safest path to mortgage freedom based on your profile.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <FreedomCenter />
+        </CardContent>
+      </Card>
+
       <Card className="glass-card">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
