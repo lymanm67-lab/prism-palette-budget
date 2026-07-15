@@ -30,6 +30,9 @@ import WealthIntegration from './WealthIntegration';
 import SmartNotifications from './SmartNotifications';
 import AiCoachChat from './AiCoachChat';
 import AdvancedCharts from './AdvancedCharts';
+import PayoffGoalCalculator from './PayoffGoalCalculator';
+
+
 
 const COACH_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/mortgage-freedom-coach`;
 
@@ -180,120 +183,170 @@ export default function FreedomCenter() {
   };
 
   return (
-    <div className="space-y-4">
-      <OverviewDashboard
-        balance={p.mortgageBalance || 350000}
-        homeValue={p.homeValue || 500000}
-        equity={equity}
-        ltv={ltv}
-        rate={mortgageRate}
-        remainingYears={remainingYears}
-        payment={monthlyPayment}
-        payoffDate={strategies.traditional.payoffDate}
-        remainingInterest={remainingInterest}
-        score={score.total}
-        grade={score.grade}
-        formatCurrency={formatCurrency}
-      />
+    <div className="space-y-10">
+      {/* ─── Step 1 · Can I buy? ─────────────────────────────── */}
+      <JourneyStep
+        step={1}
+        title="Can I buy? — Readiness & affordability"
+        blurb="Start here if you're pre-purchase or want a readiness gauge. Programs, max price, and your Freedom Score."
+      >
+        <HomebuyerAssistance />
+        <AffordabilityPlanner />
+        <FreedomScoreCard score={score} formatCurrency={formatCurrency} />
+      </JourneyStep>
 
-      <DashboardGauges
-        dti={dti}
-        ltv={ltv}
-        emergencyMonths={emergencyMonths}
-        freedomAge={freedomAge}
-        currentAge={currentAge}
-      />
+      {/* ─── Step 2 · Where do I stand today? ────────────────── */}
+      <JourneyStep
+        step={2}
+        title="Where do I stand today? — Current snapshot"
+        blurb="Your mortgage overview, real-time health gauges, and any smart alerts based on your numbers."
+      >
+        <OverviewDashboard
+          balance={p.mortgageBalance || 350000}
+          homeValue={p.homeValue || 500000}
+          equity={equity}
+          ltv={ltv}
+          rate={mortgageRate}
+          remainingYears={remainingYears}
+          payment={monthlyPayment}
+          payoffDate={strategies.traditional.payoffDate}
+          remainingInterest={remainingInterest}
+          score={score.total}
+          grade={score.grade}
+          formatCurrency={formatCurrency}
+        />
+        <DashboardGauges
+          dti={dti}
+          ltv={ltv}
+          emergencyMonths={emergencyMonths}
+          freedomAge={freedomAge}
+          currentAge={currentAge}
+        />
+        <SmartNotifications
+          freedomScore={score.total}
+          dti={dti}
+          ltv={ltv}
+          emergencyMonths={emergencyMonths}
+          mortgageRate={mortgageRate}
+          marketRate={7.0}
+          monthlySurplus={p.netSurplus}
+          creditScore={parseInt(profile.creditScore as any) || 0}
+          helocRateShockSensitivity={helocShockSensitivity}
+        />
+      </JourneyStep>
 
-      <SmartNotifications
-        freedomScore={score.total}
-        dti={dti}
-        ltv={ltv}
-        emergencyMonths={emergencyMonths}
-        mortgageRate={mortgageRate}
-        marketRate={7.0}
-        monthlySurplus={p.netSurplus}
-        creditScore={parseInt(profile.creditScore as any) || 0}
-        helocRateShockSensitivity={helocShockSensitivity}
-      />
+      {/* ─── Step 3 · How fast can I pay it off? ─────────────── */}
+      <JourneyStep
+        step={3}
+        title="How fast can I pay it off? — Payoff acceleration"
+        blurb="Your core goal. Set a target timeline, see the surplus needed, compare Extra Principal vs HELOC, and stress-test the plan."
+      >
+        <PayoffGoalCalculator />
 
-      <AiRecommendationCard
-        recommendation={rec}
-        strategies={strategies}
-        score={score}
-        inputs={inputs}
-        formatCurrency={formatCurrency}
-      />
+        <AiRecommendationCard
+          recommendation={rec}
+          strategies={strategies}
+          score={score}
+          inputs={inputs}
+          formatCurrency={formatCurrency}
+        />
 
-      <StrategyGrid
-        strategies={strategies}
-        recommended={rec.winner}
-        formatCurrency={formatCurrency}
-        extraMonthly={extraMonthly} setExtraMonthly={setExtraMonthly}
-        quarterlyExtra={quarterlyExtra} setQuarterlyExtra={setQuarterlyExtra}
-        annualLump={annualLump} setAnnualLump={setAnnualLump}
-        taxRefund={taxRefund} setTaxRefund={setTaxRefund}
-        annualBonus={annualBonus} setAnnualBonus={setAnnualBonus}
-        biweekly={biweekly} setBiweekly={setBiweekly}
-        helocRate={helocRate} setHelocRate={setHelocRate}
-        helocLimit={helocLimit} setHelocLimit={setHelocLimit}
-        sweepPct={sweepPct} setSweepPct={setSweepPct}
-      />
+        <StrategyGrid
+          strategies={strategies}
+          recommended={rec.winner}
+          formatCurrency={formatCurrency}
+          extraMonthly={extraMonthly} setExtraMonthly={setExtraMonthly}
+          quarterlyExtra={quarterlyExtra} setQuarterlyExtra={setQuarterlyExtra}
+          annualLump={annualLump} setAnnualLump={setAnnualLump}
+          taxRefund={taxRefund} setTaxRefund={setTaxRefund}
+          annualBonus={annualBonus} setAnnualBonus={setAnnualBonus}
+          biweekly={biweekly} setBiweekly={setBiweekly}
+          helocRate={helocRate} setHelocRate={setHelocRate}
+          helocLimit={helocLimit} setHelocLimit={setHelocLimit}
+          sweepPct={sweepPct} setSweepPct={setSweepPct}
+        />
 
-      <PayoffRaceChart data={chartData} formatCurrency={formatCurrency} />
+        <PayoffRaceChart data={chartData} formatCurrency={formatCurrency} />
 
-      <AdvancedCharts
-        homeValue={p.homeValue || 500000}
-        schedule={strategies.traditional.schedule}
-        winnerSchedule={winnerResult.schedule}
-        winnerLabel={rec.label}
-        monthlyIncome={p.totalIncome}
-      />
+        <AdvancedCharts
+          homeValue={p.homeValue || 500000}
+          schedule={strategies.traditional.schedule}
+          winnerSchedule={winnerResult.schedule}
+          winnerLabel={rec.label}
+          monthlyIncome={p.totalIncome}
+        />
 
-      <FreedomSimulator
-        mortgageRate={mortgageRate} setMortgageRate={setMortgageRate}
-        remainingYears={remainingYears} setRemainingYears={setRemainingYears}
-        monthlyPayment={monthlyPayment} setMonthlyPayment={setMonthlyPayment}
-        helocRate={helocRate} setHelocRate={setHelocRate}
-        sweepPct={sweepPct} setSweepPct={setSweepPct}
-        extraMonthly={extraMonthly} setExtraMonthly={setExtraMonthly}
-      />
+        <FreedomSimulator
+          mortgageRate={mortgageRate} setMortgageRate={setMortgageRate}
+          remainingYears={remainingYears} setRemainingYears={setRemainingYears}
+          monthlyPayment={monthlyPayment} setMonthlyPayment={setMonthlyPayment}
+          helocRate={helocRate} setHelocRate={setHelocRate}
+          sweepPct={sweepPct} setSweepPct={setSweepPct}
+          extraMonthly={extraMonthly} setExtraMonthly={setExtraMonthly}
+        />
 
-      <StressTest
-        helocRate={helocRate}
-        helocBalance={Math.min(helocLimit, p.mortgageBalance * 0.15)}
-        monthlySurplus={p.netSurplus}
-        monthlyExpenses={p.expenses}
-      />
+        <StressTest
+          helocRate={helocRate}
+          helocBalance={Math.min(helocLimit, p.mortgageBalance * 0.15)}
+          monthlySurplus={p.netSurplus}
+          monthlyExpenses={p.expenses}
+        />
 
-      <WealthIntegration
-        monthlySurplus={p.netSurplus}
-        mortgageRate={mortgageRate}
-        yearsToPayoff={remainingYears}
-        currentAge={currentAge}
-        retirementAge={retirementAge}
-      />
+        <ScenarioLab
+          currentInputs={inputs}
+          currentSummary={{
+            winner: rec.label,
+            yearsSaved: winnerResult.yearsSaved,
+            interestSaved: winnerResult.interestSaved,
+            freedomScore: score.total,
+          }}
+          onLoad={loadScenario}
+        />
+      </JourneyStep>
 
-      <AffordabilityPlanner />
+      {/* ─── Step 4 · Is payoff the right move? ──────────────── */}
+      <JourneyStep
+        step={4}
+        title="Is payoff the right move? — Wealth tradeoff"
+        blurb="Before you funnel every dollar at the mortgage, compare payoff vs tax-advantaged investing."
+      >
+        <WealthIntegration
+          monthlySurplus={p.netSurplus}
+          mortgageRate={mortgageRate}
+          yearsToPayoff={remainingYears}
+          currentAge={currentAge}
+          retirementAge={retirementAge}
+        />
+      </JourneyStep>
 
-      <HomebuyerAssistance />
-
-      <ScenarioLab
-        currentInputs={inputs}
-        currentSummary={{
-          winner: rec.label,
-          yearsSaved: winnerResult.yearsSaved,
-          interestSaved: winnerResult.interestSaved,
-          freedomScore: score.total,
-        }}
-        onLoad={loadScenario}
-      />
-
-      <FreedomScoreCard score={score} formatCurrency={formatCurrency} />
-
-      <AiCoachChat snapshot={coachSnapshot} />
+      {/* ─── Step 5 · Ask the coach ──────────────────────────── */}
+      <JourneyStep
+        step={5}
+        title="Ask the coach — Personalized guidance"
+        blurb="Context-aware AI chat with your full snapshot loaded. Ask anything about your specific situation."
+      >
+        <AiCoachChat snapshot={coachSnapshot} />
+      </JourneyStep>
     </div>
   );
 }
+
+// ─── Journey step wrapper ───
+function JourneyStep({ step, title, blurb, children }: { step: number; title: string; blurb: string; children: React.ReactNode }) {
+  return (
+    <section className="space-y-4">
+      <div className="space-y-1 border-l-2 border-primary/40 pl-4">
+        <div className="flex items-baseline gap-3">
+          <span className="text-xs font-mono uppercase tracking-widest text-primary">Step {step}</span>
+          <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+        </div>
+        <p className="text-sm text-muted-foreground">{blurb}</p>
+      </div>
+      <div className="space-y-4">{children}</div>
+    </section>
+  );
+}
+
 
 // ─── Overview Dashboard ───
 function OverviewDashboard({ balance, homeValue, equity, ltv, rate, remainingYears, payment, payoffDate, remainingInterest, score, grade, formatCurrency }: any) {

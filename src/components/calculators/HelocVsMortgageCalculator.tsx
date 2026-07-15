@@ -20,7 +20,7 @@ import DocumentUploadCard from '@/components/calculators/DocumentUploadCard';
 import CreditImprovementPlan from '@/components/calculators/CreditImprovementPlan';
 import HelocReportPreview, { type HelocReportData } from '@/components/calculators/HelocReportPreview';
 import PayoffAccelerator from '@/components/calculators/PayoffAccelerator';
-import PayoffGoalCalculator from '@/components/calculators/mortgage-freedom/PayoffGoalCalculator';
+import FreedomCenter from '@/components/calculators/mortgage-freedom/FreedomCenter';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, ResponsiveContainer, Legend,
 } from 'recharts';
@@ -307,17 +307,18 @@ export default function HelocVsMortgageCalculator() {
         <DocumentUploadCard />
       </section>
 
-      {/* ─── Step 2 · Payoff goal calculator ─── */}
+      {/* ─── Step 2 · Mortgage Freedom journey ─── */}
       <section className="space-y-3">
         <div className="flex items-baseline gap-3">
           <span className="text-xs font-mono uppercase tracking-widest text-primary">Step 2</span>
-          <h2 className="text-lg font-semibold text-foreground">Set your payoff goal &amp; see what it costs</h2>
+          <h2 className="text-lg font-semibold text-foreground">Your Mortgage Freedom journey</h2>
         </div>
         <p className="text-sm text-muted-foreground">
-          One calculator, one question: "How do I pay off in 7 years?" Move the target slider and see the exact monthly extra cash needed, comparing extra-principal vs HELOC acceleration side-by-side.
+          A guided 5-step path from home-purchase readiness through payoff acceleration: check affordability → see your current health → set a payoff goal and stress-test it → weigh payoff vs investing → chat with the AI coach.
         </p>
-        <PayoffGoalCalculator />
+        <FreedomCenter />
       </section>
+
 
 
       {/* ─── Step 3 · Learn, qualify, and shop ─── */}
