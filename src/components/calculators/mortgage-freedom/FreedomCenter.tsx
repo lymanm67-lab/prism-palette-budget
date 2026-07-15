@@ -359,6 +359,15 @@ export default function FreedomCenter() {
       >
         <AiCoachChat snapshot={coachSnapshot} />
       </JourneyStep>
+
+      {/* ─── Reference · Glossary ─────────────────────────────── */}
+      <JourneyStep
+        step={6}
+        title="Glossary — Every term explained"
+        blurb="Don't know what LTV, PITI, recast, or 1st-lien HELOC mean? Search or browse plain-English definitions for every term on this page."
+      >
+        <Glossary />
+      </JourneyStep>
     </div>
   );
 }
