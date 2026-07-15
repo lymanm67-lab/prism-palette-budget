@@ -223,6 +223,11 @@ export default function FreedomCenter() {
           grade={score.grade}
           formatCurrency={formatCurrency}
         />
+        <EscrowBreakdown
+          homeValue={p.homeValue || 500000}
+          principalInterest={monthlyPayment}
+        />
+
         <DashboardGauges
           dti={dti}
           ltv={ltv}
