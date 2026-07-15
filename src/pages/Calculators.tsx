@@ -15,7 +15,7 @@ import { useCurrency } from '@/hooks/use-currency';
 import { cn } from '@/lib/utils';
 import {
   Home, Car, CreditCard, TrendingUp, Calculator, DollarSign, Percent, CalendarDays, PiggyBank, Sparkles, BookOpen, MoreHorizontal,
-  Target, Shield, Wallet, CheckCircle2, Scale, MapPin, Plane, Heart, Palmtree, ShoppingBag, Gift, Baby, Receipt, Tag, ArrowLeftRight,
+  Target, Shield, Wallet, CheckCircle2, Scale, MapPin, Plane, Heart, Palmtree, ShoppingBag, Gift, Baby, Receipt, Tag, ArrowLeftRight, Search, X,
 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import PageOverview from '@/components/PageOverview';
