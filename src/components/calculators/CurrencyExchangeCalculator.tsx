@@ -297,13 +297,30 @@ export default function CurrencyExchangeCalculator() {
           </CardContent>
         </Card>
 
-        {/* 30-day chart */}
+        {/* Rate trend chart */}
         <Card className="prism-card-shine border-border/50">
           <CardHeader>
-            <CardTitle className="font-display text-lg flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-prism-lime" />
-              30-Day Rate Trend
-            </CardTitle>
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <CardTitle className="font-display text-lg flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-prism-lime" />
+                Rate Trend
+              </CardTitle>
+              <div className="flex gap-1 rounded-lg border border-border/40 p-0.5 bg-muted/30">
+                {(['30D', '90D', '1Y'] as const).map(r => (
+                  <button
+                    key={r}
+                    type="button"
+                    onClick={() => setHistoryRange(r)}
+                    className={cn(
+                      'px-2.5 py-1 rounded-md text-[11px] font-semibold transition-colors',
+                      historyRange === r ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted/60',
+                    )}
+                  >
+                    {r}
+                  </button>
+                ))}
+              </div>
+            </div>
             <p className="text-xs text-muted-foreground">{fromCur?.flag} {fromCurrency} → {toCur?.flag} {toCurrency}</p>
           </CardHeader>
           <CardContent>
