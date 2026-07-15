@@ -721,11 +721,13 @@ const Calculators = () => {
       {(() => {
         const FEATURED_IDS = ['safetospend', 'mortgage', 'heloc-vs-mortgage'];
         const featured = CALCULATORS.filter(c => FEATURED_IDS.includes(c.id));
+        if (pickerSearch.trim()) return null;
         return (
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-[10px] font-mono uppercase tracking-widest text-primary">Featured</span>
-              <div className="h-px flex-1 bg-border/40" />
+              <Sparkles className="h-3.5 w-3.5 text-primary" />
+              <span className="text-[11px] font-semibold uppercase tracking-widest text-primary">Featured</span>
+              <div className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent" />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {featured.map(c => {
@@ -735,13 +737,18 @@ const Calculators = () => {
                     key={c.id}
                     onClick={() => setActiveCalc(c.id)}
                     className={cn(
-                      'flex items-center gap-3 rounded-xl border px-4 py-3.5 text-left transition-all',
+                      'group flex items-center gap-3 rounded-2xl border p-4 text-left transition-all duration-200',
                       isActive
-                        ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/25'
-                        : cn('bg-gradient-to-br border-border/40 hover:border-primary/40 hover:shadow-md', c.bg),
+                        ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/30 scale-[1.01]'
+                        : cn('bg-gradient-to-br border-border/40 hover:border-primary/50 hover:shadow-lg hover:-translate-y-0.5', c.bg),
                     )}
                   >
-                    <c.icon className={cn('h-6 w-6 flex-shrink-0', isActive ? 'text-primary-foreground' : c.color)} />
+                    <div className={cn(
+                      'flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl transition-transform group-hover:scale-110',
+                      isActive ? 'bg-primary-foreground/15' : 'bg-background/60 backdrop-blur-sm'
+                    )}>
+                      <c.icon className={cn('h-5 w-5', isActive ? 'text-primary-foreground' : c.color)} />
+                    </div>
                     <div className="min-w-0">
                       <div className="text-sm font-semibold truncate">{c.label}</div>
                       <div className={cn('text-[11px] truncate', isActive ? 'text-primary-foreground/80' : 'text-muted-foreground')}>
@@ -756,18 +763,49 @@ const Calculators = () => {
         );
       })()}
 
-      {/* Grouped calculator selector — categorized rows */}
-      <div className="space-y-4">
+      {/* Search bar */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+        <Input
+          value={pickerSearch}
+          onChange={(e) => setPickerSearch(e.target.value)}
+          placeholder="Search calculators…"
+          className="pl-9 pr-9 bg-background/50 backdrop-blur-sm border-border/50"
+        />
+        {pickerSearch && (
+          <button
+            onClick={() => setPickerSearch('')}
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-muted transition-colors"
+            aria-label="Clear search"
+          >
+            <X className="h-4 w-4 text-muted-foreground" />
+          </button>
+        )}
+      </div>
+
+      {/* Grouped calculator selector — categorized panels */}
+      <div className="space-y-3">
         {CALCULATOR_GROUPS.map(group => {
-          const items = group.items.filter(i => !['safetospend', 'mortgage', 'heloc-vs-mortgage'].includes(i.id));
+          const q = pickerSearch.trim().toLowerCase();
+          const featuredIds = q ? [] : ['safetospend', 'mortgage', 'heloc-vs-mortgage'];
+          const items = group.items.filter(i =>
+            !featuredIds.includes(i.id) &&
+            (!q || i.label.toLowerCase().includes(q))
+          );
           if (items.length === 0) return null;
+          const accent = items[0].color;
           return (
-            <div key={group.label}>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">{group.label}</span>
+            <div
+              key={group.label}
+              className="rounded-2xl border border-border/40 bg-gradient-to-br from-muted/20 to-transparent p-3 sm:p-4"
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <span className={cn('inline-block h-2 w-2 rounded-full', accent.replace('text-', 'bg-'))} />
+                <span className="text-[11px] font-semibold uppercase tracking-widest text-foreground/80">{group.label}</span>
+                <span className="text-[10px] text-muted-foreground">{items.length}</span>
                 <div className="h-px flex-1 bg-border/30" />
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                 {items.map(c => {
                   const isActive = activeCalc === c.id;
                   return (
@@ -775,14 +813,18 @@ const Calculators = () => {
                       key={c.id}
                       onClick={() => setActiveCalc(c.id)}
                       className={cn(
-                        'flex items-center gap-2 rounded-xl border px-3 py-2.5 text-left transition-all',
-                        'basis-[calc(50%-0.25rem)] sm:basis-[calc(33.333%-0.375rem)] lg:basis-[calc(25%-0.375rem)] xl:basis-[calc(20%-0.4rem)]',
+                        'group flex items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left transition-all duration-200',
                         isActive
-                          ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/25'
-                          : cn('bg-gradient-to-br border-border/40 hover:border-primary/40 hover:shadow-sm', c.bg)
+                          ? 'bg-primary text-primary-foreground border-primary shadow-md shadow-primary/25'
+                          : 'bg-background/40 backdrop-blur-sm border-border/40 hover:border-primary/40 hover:bg-background/70 hover:-translate-y-0.5 hover:shadow-md'
                       )}
                     >
-                      <c.icon className={cn('h-4 w-4 flex-shrink-0', isActive ? 'text-primary-foreground' : c.color)} />
+                      <div className={cn(
+                        'flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg transition-transform group-hover:scale-110',
+                        isActive ? 'bg-primary-foreground/15' : cn('bg-gradient-to-br', c.bg)
+                      )}>
+                        <c.icon className={cn('h-4 w-4', isActive ? 'text-primary-foreground' : c.color)} />
+                      </div>
                       <span className="text-xs font-medium leading-tight truncate">{c.label}</span>
                     </button>
                   );
@@ -791,6 +833,11 @@ const Calculators = () => {
             </div>
           );
         })}
+        {pickerSearch.trim() && CALCULATOR_GROUPS.every(g =>
+          g.items.filter(i => i.label.toLowerCase().includes(pickerSearch.trim().toLowerCase())).length === 0
+        ) && (
+          <p className="text-sm text-muted-foreground text-center py-6">No calculators match "{pickerSearch}"</p>
+        )}
       </div>
 
       {/* ─── Calculator content ─── */}
