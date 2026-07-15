@@ -297,9 +297,9 @@ export default function HelocVsMortgageCalculator() {
 
   return (
     <div className="space-y-8 mt-6">
-      {/* ─── Step 1 · Personalize your inputs ─── */}
+      {/* ─── Personalize your inputs ─── */}
       <CollapsibleSection
-        title="Step 1 · Personalize your inputs"
+        title="Personalize your inputs"
         subtitle="Upload a mortgage statement, pay stub, or HELOC offer to auto-fill your profile."
         defaultOpen
       >
@@ -308,10 +308,10 @@ export default function HelocVsMortgageCalculator() {
         </div>
       </CollapsibleSection>
 
-      {/* ─── Step 2 · Mortgage Freedom journey ─── */}
+      {/* ─── Mortgage Freedom journey ─── */}
       <CollapsibleSection
-        title="Step 2 · Your Mortgage Freedom journey"
-        subtitle="Guided 5-step path from home-purchase readiness through payoff acceleration."
+        title="Your Mortgage Freedom journey"
+        subtitle="Guided path from home-purchase readiness through payoff acceleration."
         defaultOpen
       >
         <div className="space-y-3">
@@ -324,9 +324,9 @@ export default function HelocVsMortgageCalculator() {
         </div>
       </CollapsibleSection>
 
-      {/* ─── Step 3 · Learn, qualify, and shop ─── */}
+      {/* ─── Learn, qualify, and shop ─── */}
       <CollapsibleSection
-        title="Step 3 · Compare, qualify, and shop lenders"
+        title="Compare, qualify, and shop lenders"
         subtitle="Side-by-side product comparison, qualification requirements, curated lenders, and education."
       >
         <div className="space-y-3">
