@@ -20,7 +20,7 @@ import DocumentUploadCard from '@/components/calculators/DocumentUploadCard';
 import CreditImprovementPlan from '@/components/calculators/CreditImprovementPlan';
 import HelocReportPreview, { type HelocReportData } from '@/components/calculators/HelocReportPreview';
 import PayoffAccelerator from '@/components/calculators/PayoffAccelerator';
-import FreedomCenter from '@/components/calculators/mortgage-freedom/FreedomCenter';
+import PayoffGoalCalculator from '@/components/calculators/mortgage-freedom/PayoffGoalCalculator';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, ResponsiveContainer, Legend,
 } from 'recharts';
