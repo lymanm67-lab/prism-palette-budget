@@ -957,11 +957,17 @@ export default function HelocVsMortgageCalculator() {
           </div>
         </CardContent>
       </Card>
+      </section>
 
-      {/* Upload documents to auto-fill profile */}
-      <DocumentUploadCard />
-
-      {/* Everything else lives behind tabs so the calculator stays the focus */}
+      {/* ─── Step 4 · Learn, qualify, and shop ─── */}
+      <section className="space-y-3">
+        <div className="flex items-baseline gap-3">
+          <span className="text-xs font-mono uppercase tracking-widest text-primary">Step 4</span>
+          <h2 className="text-lg font-semibold text-foreground">Compare, qualify, and shop lenders</h2>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Side-by-side product comparison, qualification requirements, curated lenders, and the education you need to move forward with confidence.
+        </p>
       <Tabs defaultValue="compare" className="w-full">
         <TabsList className="grid grid-cols-4 w-full">
           <TabsTrigger value="compare">Compare</TabsTrigger>
