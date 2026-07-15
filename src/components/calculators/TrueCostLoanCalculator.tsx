@@ -103,7 +103,7 @@ export default function TrueCostLoanCalculator() {
       payment, totalPaid, totalInterest, effectiveAPR, opportunityCost, trueCost,
       costMultiplier, origFees, chartData, months,
       early: { payoffMonths: early.months, monthsSaved, interestSaved, extra },
-      bt: { fee: btFee, postInterest: btTotalInterest, totalCost: btTotalCost, savings: btSavingsVsLoan, paidInPromo, period: btPeriod, balAtEnd: balAtEndBt },
+      bt: { fee: btFee, postInterest: btTotalInterest, totalCost: btTotalCost, savings: btSavingsVsLoan, paidInPromo: btPaidInPromo, period: btPeriod, balAtEnd: balAtEndBt },
     };
   }, [principal, apr, term, fees, investReturn, extraMonthly, btPeriodMonths, btFeePct, btPostRate]);
 
