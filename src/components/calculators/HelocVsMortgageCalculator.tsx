@@ -523,7 +523,8 @@ export default function HelocVsMortgageCalculator() {
           />
         </TabsContent>
       </Tabs>
-      </section>
+        </div>
+      </CollapsibleSection>
 
       {/* Report preview modal */}
       <HelocReportPreview
