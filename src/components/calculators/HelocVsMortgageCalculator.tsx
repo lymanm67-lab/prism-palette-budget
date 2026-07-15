@@ -21,6 +21,7 @@ import CreditImprovementPlan from '@/components/calculators/CreditImprovementPla
 import HelocReportPreview, { type HelocReportData } from '@/components/calculators/HelocReportPreview';
 import PayoffAccelerator from '@/components/calculators/PayoffAccelerator';
 import FreedomCenter from '@/components/calculators/mortgage-freedom/FreedomCenter';
+import HelocRiskAndFees from '@/components/calculators/HelocRiskAndFees';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, ResponsiveContainer, Legend,
 } from 'recharts';
