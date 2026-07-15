@@ -21,6 +21,7 @@ import CreditImprovementPlan from '@/components/calculators/CreditImprovementPla
 import HelocReportPreview, { type HelocReportData } from '@/components/calculators/HelocReportPreview';
 import PayoffAccelerator from '@/components/calculators/PayoffAccelerator';
 import FreedomCenter from '@/components/calculators/mortgage-freedom/FreedomCenter';
+import HelocRiskAndFees from '@/components/calculators/HelocRiskAndFees';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, ResponsiveContainer, Legend,
 } from 'recharts';
@@ -317,6 +318,11 @@ export default function HelocVsMortgageCalculator() {
           A guided 5-step path from home-purchase readiness through payoff acceleration: check affordability → see your current health → set a payoff goal and stress-test it → weigh payoff vs investing → chat with the AI coach.
         </p>
         <FreedomCenter />
+        <HelocRiskAndFees
+          helocBalance={parseFloat(balance) || 0}
+          helocRate={parseFloat(helocRate) || 0}
+          monthlySurplus={Math.max(0, (parseFloat(income) || 0) - (parseFloat(expenses) || 0))}
+        />
       </section>
 
 
