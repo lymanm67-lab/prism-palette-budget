@@ -53,6 +53,8 @@ export default function CurrencyExchangeCalculator() {
   const [toCurrency, setToCurrency] = useState('EUR');
   const [amount, setAmount] = useState('1000');
   const [travelBudget, setTravelBudget] = useState('');
+  const [historyRange, setHistoryRange] = useState<'30D' | '90D' | '1Y'>('30D');
+  const rangeDays = historyRange === '30D' ? 30 : historyRange === '90D' ? 90 : 365;
 
   // Fetch live rate
   const { data: rateData, isLoading: rateLoading, error: rateError } = useQuery({
@@ -67,17 +69,22 @@ export default function CurrencyExchangeCalculator() {
     retry: 2,
   });
 
-  // Fetch 30-day history
+  // Fetch history for the selected range
   const { data: historyData } = useQuery({
-    queryKey: ['exchange-history', fromCurrency, toCurrency],
+    queryKey: ['exchange-history', fromCurrency, toCurrency, rangeDays],
     queryFn: async () => {
       const end = new Date().toISOString().split('T')[0];
-      const start = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
+      const start = new Date(Date.now() - rangeDays * 86400000).toISOString().split('T')[0];
       const res = await fetch(`https://api.frankfurter.dev/v1/${start}..${end}?base=${fromCurrency}&symbols=${toCurrency}`);
       if (!res.ok) throw new Error('Failed to fetch history');
       const data = await res.json();
       return Object.entries(data.rates).map(([date, rates]: any) => ({
         date,
+        rate: rates[toCurrency],
+      }));
+    },
+    staleTime: 30 * 60 * 1000,
+  });
         rate: rates[toCurrency],
       }));
     },
