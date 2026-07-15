@@ -105,9 +105,28 @@ export default function FreedomCenter() {
   const equity = Math.max(0, p.homeValue - p.mortgageBalance);
   const ltv = p.homeValue > 0 ? (p.mortgageBalance / p.homeValue) * 100 : 0;
   const remainingInterest = strategies.traditional.totalInterest;
+  const dti = p.totalIncome > 0 ? ((p.debts + monthlyPayment) / p.totalIncome) * 100 : 0;
+  const emergencyMonths = p.expenses > 0
+    ? (parseFloat(profile.emergencyFund as any) || p.netSurplus * 3) / p.expenses
+    : 0;
+
+  const currentAge = parseInt(profile.age as any) || 40;
+  const retirementAge = parseInt(profile.retirementAge as any) || 65;
+  const winnerResult: StrategyResult =
+    rec.winner === 'traditional' ? strategies.traditional :
+    rec.winner === 'extra-principal' ? strategies.extraPrincipal :
+    rec.winner === 'heloc-accel' ? strategies.helocAccel :
+    strategies.firstLien;
+  const freedomAge = winnerResult.years ? Math.round(currentAge + winnerResult.years) : null;
+
+  // Naive HELOC shock sensitivity proxy for Smart Alerts
+  const helocShockSensitivity = Math.round(
+    Math.min(100, Math.max(0,
+      50 + (emergencyMonths - 3) * 10 + (p.netSurplus > 0 ? 20 : -30)
+    ))
+  );
 
   const chartData = useMemo(() => {
-    // Sample every 6 months for readability
     const step = 6;
     const maxLen = Math.max(
       strategies.traditional.schedule.length,
@@ -129,6 +148,37 @@ export default function FreedomCenter() {
     return out;
   }, [strategies]);
 
+  const coachSnapshot = {
+    recommendation: rec.label,
+    freedomScore: score.total,
+    grade: score.grade,
+    inputs: {
+      mortgageBalance: inputs.mortgageBalance,
+      mortgageRate,
+      monthlyPayment,
+      monthlySurplus: p.netSurplus,
+      helocRate,
+      homeValue: p.homeValue,
+      creditScore: profile.creditScore,
+    },
+    metrics: { dti, ltv, equity, emergencyMonths },
+  };
+
+  const loadScenario = (saved: any) => {
+    if (typeof saved.mortgageRate === 'number') setMortgageRate(saved.mortgageRate);
+    if (typeof saved.remainingMonths === 'number') setRemainingYears(saved.remainingMonths / 12);
+    if (typeof saved.monthlyPayment === 'number') setMonthlyPayment(saved.monthlyPayment);
+    if (typeof saved.extraMonthly === 'number') setExtraMonthly(saved.extraMonthly);
+    if (typeof saved.quarterlyExtra === 'number') setQuarterlyExtra(saved.quarterlyExtra);
+    if (typeof saved.annualLump === 'number') setAnnualLump(saved.annualLump);
+    if (typeof saved.taxRefund === 'number') setTaxRefund(saved.taxRefund);
+    if (typeof saved.annualBonus === 'number') setAnnualBonus(saved.annualBonus);
+    if (typeof saved.biweekly === 'boolean') setBiweekly(saved.biweekly);
+    if (typeof saved.helocRate === 'number') setHelocRate(saved.helocRate);
+    if (typeof saved.helocLimit === 'number') setHelocLimit(saved.helocLimit);
+    if (typeof saved.helocSweepPct === 'number') setSweepPct(saved.helocSweepPct);
+  };
+
   return (
     <div className="space-y-4">
       <OverviewDashboard
@@ -144,6 +194,26 @@ export default function FreedomCenter() {
         score={score.total}
         grade={score.grade}
         formatCurrency={formatCurrency}
+      />
+
+      <DashboardGauges
+        dti={dti}
+        ltv={ltv}
+        emergencyMonths={emergencyMonths}
+        freedomAge={freedomAge}
+        currentAge={currentAge}
+      />
+
+      <SmartNotifications
+        freedomScore={score.total}
+        dti={dti}
+        ltv={ltv}
+        emergencyMonths={emergencyMonths}
+        mortgageRate={mortgageRate}
+        marketRate={7.0}
+        monthlySurplus={p.netSurplus}
+        creditScore={parseInt(profile.creditScore as any) || 0}
+        helocRateShockSensitivity={helocShockSensitivity}
       />
 
       <AiRecommendationCard
@@ -171,6 +241,14 @@ export default function FreedomCenter() {
 
       <PayoffRaceChart data={chartData} formatCurrency={formatCurrency} />
 
+      <AdvancedCharts
+        homeValue={p.homeValue || 500000}
+        schedule={strategies.traditional.schedule}
+        winnerSchedule={winnerResult.schedule}
+        winnerLabel={rec.label}
+        monthlyIncome={p.totalIncome}
+      />
+
       <FreedomSimulator
         mortgageRate={mortgageRate} setMortgageRate={setMortgageRate}
         remainingYears={remainingYears} setRemainingYears={setRemainingYears}
@@ -180,7 +258,39 @@ export default function FreedomCenter() {
         extraMonthly={extraMonthly} setExtraMonthly={setExtraMonthly}
       />
 
+      <StressTest
+        helocRate={helocRate}
+        helocBalance={Math.min(helocLimit, p.mortgageBalance * 0.15)}
+        monthlySurplus={p.netSurplus}
+        monthlyExpenses={p.expenses}
+      />
+
+      <WealthIntegration
+        monthlySurplus={p.netSurplus}
+        mortgageRate={mortgageRate}
+        yearsToPayoff={remainingYears}
+        currentAge={currentAge}
+        retirementAge={retirementAge}
+      />
+
+      <AffordabilityPlanner />
+
+      <HomebuyerAssistance />
+
+      <ScenarioLab
+        currentInputs={inputs}
+        currentSummary={{
+          winner: rec.label,
+          yearsSaved: winnerResult.yearsSaved,
+          interestSaved: winnerResult.interestSaved,
+          freedomScore: score.total,
+        }}
+        onLoad={loadScenario}
+      />
+
       <FreedomScoreCard score={score} formatCurrency={formatCurrency} />
+
+      <AiCoachChat snapshot={coachSnapshot} />
     </div>
   );
 }
