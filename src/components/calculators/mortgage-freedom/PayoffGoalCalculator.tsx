@@ -327,10 +327,72 @@ export default function PayoffGoalCalculator({ initialBalance, initialRate }: Pr
             </ResponsiveContainer>
           </div>
         </div>
+
+        {/* ── Break-even readout ── */}
+        <BreakEvenLine
+          balance={balance}
+          mortgageRate={rate}
+          currentPayment={currentPayment}
+          surplus={surplus}
+          helocRate={helocRate}
+          methodATotalInterest={methodA.totalInterest}
+        />
       </CardContent>
     </Card>
   );
 }
+
+// ─── Break-even helper ─────────────────────────────────────────────────────
+function BreakEvenLine({ balance, mortgageRate, currentPayment, surplus, helocRate, methodATotalInterest }: {
+  balance: number; mortgageRate: number; currentPayment: number; surplus: number; helocRate: number; methodATotalInterest: number;
+}) {
+  const { formatCurrency } = useCurrency();
+  // Sweep HELOC rate downward from a very high value; find the rate at which HELOC total interest
+  // first crosses below extra-principal total interest at the same surplus.
+  const breakEven = useMemo(() => {
+    if (surplus <= 0 || !isFinite(methodATotalInterest)) return null;
+    let last = { rate: 20, interest: Infinity };
+    for (let hr = 20; hr >= 1; hr -= 0.25) {
+      const s = runHelocScenario(balance, mortgageRate, currentPayment, hr, surplus);
+      if (s.totalInterest < methodATotalInterest) {
+        // Crossover between hr (winner) and last.rate (loser)
+        return { helocRate: hr, spread: mortgageRate - hr };
+      }
+      last = { rate: hr, interest: s.totalInterest };
+    }
+    return null;
+  }, [balance, mortgageRate, currentPayment, surplus, methodATotalInterest]);
+
+  if (!breakEven) {
+    return (
+      <div className="rounded-lg border border-border/50 bg-muted/20 p-3 text-xs text-muted-foreground">
+        <span className="font-semibold text-foreground">Break-even:</span> At your surplus of {formatCurrency(surplus)}/mo, HELOC never beats extra-principal for this loan — the discipline risk isn't worth it.
+      </div>
+    );
+  }
+
+  const spreadNote = breakEven.spread >= 0
+    ? `HELOC only wins when its rate is at or below ${breakEven.helocRate.toFixed(2)}% (i.e., ≤ your mortgage rate).`
+    : `HELOC needs to be ${Math.abs(breakEven.spread).toFixed(2)}% higher than your mortgage to still beat extra-principal — unusual, but possible via paycheck-parking discipline.`;
+
+  const helocOk = helocRate <= breakEven.helocRate;
+  return (
+    <div className={cn(
+      'rounded-lg border p-3 text-xs',
+      helocOk ? 'border-emerald-500/40 bg-emerald-500/5' : 'border-amber-500/40 bg-amber-500/5'
+    )}>
+      <div className="font-semibold text-foreground mb-0.5">
+        Break-even: HELOC beats Extra Principal at {breakEven.helocRate.toFixed(2)}% or lower
+      </div>
+      <div className="text-muted-foreground">
+        Your HELOC rate is <span className="font-mono">{helocRate.toFixed(2)}%</span> · Mortgage rate <span className="font-mono">{mortgageRate.toFixed(2)}%</span>.
+        {' '}{spreadNote}
+      </div>
+    </div>
+  );
+}
+
+
 
 // ─── Sub-components ─────────────────────────────────────────────────────────
 
