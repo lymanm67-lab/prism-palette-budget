@@ -932,18 +932,14 @@ export default function HelocVsMortgageCalculator() {
       <DocumentUploadCard />
 
       {/* Everything else lives behind tabs so the calculator stays the focus */}
-      <Tabs defaultValue="freedom" className="w-full">
-        <TabsList className="grid grid-cols-5 w-full">
-          <TabsTrigger value="freedom" className="gap-1"><Zap className="h-3.5 w-3.5" />Freedom Center</TabsTrigger>
+      <Tabs defaultValue="compare" className="w-full">
+        <TabsList className="grid grid-cols-4 w-full">
           <TabsTrigger value="compare">Compare</TabsTrigger>
           <TabsTrigger value="qualify">Qualify</TabsTrigger>
           <TabsTrigger value="lenders">Lenders</TabsTrigger>
           <TabsTrigger value="learn">Learn</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="freedom" className="mt-4">
-          <FreedomCenter />
-        </TabsContent>
 
         {/* ─── Compare ─── */}
         <TabsContent value="compare" className="mt-4">
