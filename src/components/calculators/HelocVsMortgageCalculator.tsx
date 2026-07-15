@@ -296,38 +296,20 @@ export default function HelocVsMortgageCalculator() {
   const helocBetter = helocWorks && result.interestSaved > 0;
 
   return (
-    <div className="space-y-8 mt-6">
-      {/* ─── Personalize your inputs ─── */}
-      <CollapsibleSection
-        title="Personalize your inputs"
-        subtitle="Upload a mortgage statement, pay stub, or HELOC offer to auto-fill your profile."
-        defaultOpen
-      >
-        <div className="space-y-3">
-          <DocumentUploadCard />
-        </div>
-      </CollapsibleSection>
+    <div className="space-y-4 mt-6">
+      {/* Quick intro strip */}
+      <div className="rounded-xl border border-border/40 bg-gradient-to-br from-prism-teal/5 to-prism-amber/5 p-4">
+        <h2 className="font-display text-lg font-semibold">HELOC vs Mortgage — pick your path</h2>
+        <p className="text-sm text-muted-foreground mt-1">
+          Start with the comparison. Personalize your numbers when you're ready. Explore payoff strategies and risk when you want to go deeper.
+        </p>
+      </div>
 
-      {/* ─── Mortgage Freedom journey ─── */}
+      {/* ─── 1. Compare products (main content, open by default) ─── */}
       <CollapsibleSection
-        title="Your Mortgage Freedom journey"
-        subtitle="Guided path from home-purchase readiness through payoff acceleration."
+        title="1 · Compare products, qualifications & lenders"
+        subtitle="Side-by-side comparison, qualification requirements, curated lenders, and education."
         defaultOpen
-      >
-        <div className="space-y-3">
-          <FreedomCenter />
-          <HelocRiskAndFees
-            helocBalance={parseFloat(balance) || 0}
-            helocRate={parseFloat(helocRate) || 0}
-            monthlySurplus={Math.max(0, (parseFloat(income) || 0) - (parseFloat(expenses) || 0))}
-          />
-        </div>
-      </CollapsibleSection>
-
-      {/* ─── Learn, qualify, and shop ─── */}
-      <CollapsibleSection
-        title="Compare, qualify, and shop lenders"
-        subtitle="Side-by-side product comparison, qualification requirements, curated lenders, and education."
       >
         <div className="space-y-3">
       <Tabs defaultValue="compare" className="w-full">
