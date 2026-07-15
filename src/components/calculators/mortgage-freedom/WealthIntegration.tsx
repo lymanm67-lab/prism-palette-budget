@@ -23,33 +23,34 @@ export default function WealthIntegration({ monthlySurplus, mortgageRate, yearsT
   const { formatCurrency } = useCurrency();
   const [allocationPct, setAllocationPct] = useState(50); // % of surplus to mortgage; rest to investing
   const [investReturn, setInvestReturn] = useState(7);    // conservative real return
+  const [taxBracket, setTaxBracket] = useState(24);       // marginal federal + state
+  const [itemizes, setItemizes] = useState(true);         // deduct mortgage interest?
   const horizonYears = Math.max(1, retirementAge - currentAge);
+
+  // Effective mortgage rate after tax deduction
+  const effectiveMortgageRate = itemizes ? mortgageRate * (1 - taxBracket / 100) : mortgageRate;
 
   const result = useMemo(() => {
     const surplus = Math.max(0, monthlySurplus);
     const toMortgage = surplus * (allocationPct / 100);
     const toInvest   = surplus - toMortgage;
 
-    // Naive: assume mortgage benefit = avoided interest at mortgage rate on the extra principal over remaining term
-    // Approximate: FV of a monthly annuity of $toMortgage at mortgage rate over min(yearsToPayoff, horizon)
     const mortgageYears = Math.min(yearsToPayoff, horizonYears);
-    const mR = mortgageRate / 100 / 12;
+    const mR = effectiveMortgageRate / 100 / 12;
     const mN = mortgageYears * 12;
     const mortgageFV = mR === 0 ? toMortgage * mN : toMortgage * ((Math.pow(1 + mR, mN) - 1) / mR);
 
-    // Investing: FV of monthly annuity at investReturn over horizon
     const iR = investReturn / 100 / 12;
     const iN = horizonYears * 12;
     const investFV = iR === 0 ? toInvest * iN : toInvest * ((Math.pow(1 + iR, iN) - 1) / iR);
 
     const combined = mortgageFV + investFV;
 
-    // What if 100% to each?
     const allMortgageFV = mR === 0 ? surplus * mN : surplus * ((Math.pow(1 + mR, mN) - 1) / mR);
     const allInvestFV   = iR === 0 ? surplus * iN : surplus * ((Math.pow(1 + iR, iN) - 1) / iR);
 
     return { toMortgage, toInvest, mortgageFV, investFV, combined, allMortgageFV, allInvestFV };
-  }, [monthlySurplus, allocationPct, mortgageRate, investReturn, yearsToPayoff, horizonYears]);
+  }, [monthlySurplus, allocationPct, effectiveMortgageRate, investReturn, yearsToPayoff, horizonYears]);
 
   const chartData = [
     { name: 'All to mortgage', Mortgage: result.allMortgageFV, Investing: 0 },
@@ -57,11 +58,12 @@ export default function WealthIntegration({ monthlySurplus, mortgageRate, yearsT
     { name: 'All to investing', Mortgage: 0, Investing: result.allInvestFV },
   ];
 
-  const spread = investReturn - mortgageRate;
+  const spread = investReturn - effectiveMortgageRate;
   const advice =
-    spread >= 2 ? 'Investing has a meaningful edge over your mortgage rate — don\'t over-allocate to payoff.'
-    : spread <= -1 ? 'Your mortgage rate beats expected returns — payoff wins the math.'
+    spread >= 2 ? 'Investing has a meaningful edge over your effective mortgage rate — don\'t over-allocate to payoff.'
+    : spread <= -1 ? 'Your effective mortgage rate beats expected returns — payoff wins the math.'
     : 'It\'s a coin flip on the math — pick based on risk tolerance and liquidity needs.';
+
 
   return (
     <Card className="glass-card">
