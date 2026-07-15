@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import AnimatedNumber from '@/components/AnimatedNumber';
 import CalculatorGuide from '@/components/CalculatorGuide';
 import CalculatorScenariosAndPitfalls from '@/components/CalculatorScenariosAndPitfalls';
+import CollapsibleSection from '@/components/CollapsibleSection';
 import { QualificationBadge } from '@/components/FinancialProfileCard';
 import { useFinancialProfile, profileNumbers, qualifyFor } from '@/hooks/use-financial-profile';
 import { useHousehold } from '@/contexts/HouseholdContext';
@@ -297,45 +298,38 @@ export default function HelocVsMortgageCalculator() {
   return (
     <div className="space-y-8 mt-6">
       {/* ─── Step 1 · Personalize your inputs ─── */}
-      <section className="space-y-3">
-        <div className="flex items-baseline gap-3">
-          <span className="text-xs font-mono uppercase tracking-widest text-primary">Step 1</span>
-          <h2 className="text-lg font-semibold text-foreground">Personalize your inputs</h2>
+      <CollapsibleSection
+        title="Step 1 · Personalize your inputs"
+        subtitle="Upload a mortgage statement, pay stub, or HELOC offer to auto-fill your profile."
+        defaultOpen
+      >
+        <div className="space-y-3">
+          <DocumentUploadCard />
         </div>
-        <p className="text-sm text-muted-foreground">
-          Upload a mortgage statement, pay stub, or HELOC offer to auto-fill your profile. Everything below adapts to your numbers.
-        </p>
-        <DocumentUploadCard />
-      </section>
+      </CollapsibleSection>
 
       {/* ─── Step 2 · Mortgage Freedom journey ─── */}
-      <section className="space-y-3">
-        <div className="flex items-baseline gap-3">
-          <span className="text-xs font-mono uppercase tracking-widest text-primary">Step 2</span>
-          <h2 className="text-lg font-semibold text-foreground">Your Mortgage Freedom journey</h2>
+      <CollapsibleSection
+        title="Step 2 · Your Mortgage Freedom journey"
+        subtitle="Guided 5-step path from home-purchase readiness through payoff acceleration."
+        defaultOpen
+      >
+        <div className="space-y-3">
+          <FreedomCenter />
+          <HelocRiskAndFees
+            helocBalance={parseFloat(balance) || 0}
+            helocRate={parseFloat(helocRate) || 0}
+            monthlySurplus={Math.max(0, (parseFloat(income) || 0) - (parseFloat(expenses) || 0))}
+          />
         </div>
-        <p className="text-sm text-muted-foreground">
-          A guided 5-step path from home-purchase readiness through payoff acceleration: check affordability → see your current health → set a payoff goal and stress-test it → weigh payoff vs investing → chat with the AI coach.
-        </p>
-        <FreedomCenter />
-        <HelocRiskAndFees
-          helocBalance={parseFloat(balance) || 0}
-          helocRate={parseFloat(helocRate) || 0}
-          monthlySurplus={Math.max(0, (parseFloat(income) || 0) - (parseFloat(expenses) || 0))}
-        />
-      </section>
-
-
+      </CollapsibleSection>
 
       {/* ─── Step 3 · Learn, qualify, and shop ─── */}
-      <section className="space-y-3">
-        <div className="flex items-baseline gap-3">
-          <span className="text-xs font-mono uppercase tracking-widest text-primary">Step 3</span>
-          <h2 className="text-lg font-semibold text-foreground">Compare, qualify, and shop lenders</h2>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          Side-by-side product comparison, qualification requirements, curated lenders, and the education you need to move forward with confidence.
-        </p>
+      <CollapsibleSection
+        title="Step 3 · Compare, qualify, and shop lenders"
+        subtitle="Side-by-side product comparison, qualification requirements, curated lenders, and education."
+      >
+        <div className="space-y-3">
       <Tabs defaultValue="compare" className="w-full">
         <TabsList className="grid grid-cols-4 w-full">
           <TabsTrigger value="compare">Compare</TabsTrigger>
@@ -529,7 +523,8 @@ export default function HelocVsMortgageCalculator() {
           />
         </TabsContent>
       </Tabs>
-      </section>
+        </div>
+      </CollapsibleSection>
 
       {/* Report preview modal */}
       <HelocReportPreview
