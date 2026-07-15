@@ -36,6 +36,7 @@ import PmiDropoff from './PmiDropoff';
 import RecastCard from './RecastCard';
 import EscrowBreakdown from './EscrowBreakdown';
 import Glossary from './Glossary';
+import ArmModeling from './ArmModeling';
 
 
 
@@ -266,6 +267,12 @@ export default function FreedomCenter() {
           currentRate={mortgageRate}
           currentPayment={monthlyPayment}
           remainingYears={remainingYears}
+        />
+
+        <ArmModeling
+          loanAmount={p.mortgageBalance || 350000}
+          fixedRate={mortgageRate}
+          term={remainingYears}
         />
 
         <PayoffGoalCalculator />
