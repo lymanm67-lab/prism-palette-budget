@@ -278,6 +278,7 @@ const Calculators = () => {
   const { formatCurrency } = useCurrency();
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeCalc, setActiveCalc] = useState('safetospend');
+  const [pickerSearch, setPickerSearch] = useState('');
   const [pageGuideOpen, setPageGuideOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
 
