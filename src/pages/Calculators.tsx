@@ -716,24 +716,77 @@ const Calculators = () => {
       {/* Shared household profile — auto-fills supported calculators */}
       <FinancialProfileCard />
 
-      {/* Calculator selector — flat grid, all calculators visible */}
-      <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2">
-        {CALCULATORS.map(c => {
-          const isActive = activeCalc === c.id;
+      {/* Featured row — 3 promoted calculators */}
+      {(() => {
+        const FEATURED_IDS = ['safetospend', 'mortgage', 'heloc-vs-mortgage'];
+        const featured = CALCULATORS.filter(c => FEATURED_IDS.includes(c.id));
+        return (
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-[10px] font-mono uppercase tracking-widest text-primary">Featured</span>
+              <div className="h-px flex-1 bg-border/40" />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {featured.map(c => {
+                const isActive = activeCalc === c.id;
+                return (
+                  <button
+                    key={c.id}
+                    onClick={() => setActiveCalc(c.id)}
+                    className={cn(
+                      'flex items-center gap-3 rounded-xl border px-4 py-3.5 text-left transition-all',
+                      isActive
+                        ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/25'
+                        : cn('bg-gradient-to-br border-border/40 hover:border-primary/40 hover:shadow-md', c.bg),
+                    )}
+                  >
+                    <c.icon className={cn('h-6 w-6 flex-shrink-0', isActive ? 'text-primary-foreground' : c.color)} />
+                    <div className="min-w-0">
+                      <div className="text-sm font-semibold truncate">{c.label}</div>
+                      <div className={cn('text-[11px] truncate', isActive ? 'text-primary-foreground/80' : 'text-muted-foreground')}>
+                        {c.id === 'safetospend' ? 'Daily · weekly · monthly limits' : c.id === 'mortgage' ? 'Payment · amortization · PMI' : 'Payoff-speed strategy compare'}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Grouped calculator selector — categorized rows */}
+      <div className="space-y-4">
+        {CALCULATOR_GROUPS.map(group => {
+          const items = group.items.filter(i => !['safetospend', 'mortgage', 'heloc-vs-mortgage'].includes(i.id));
+          if (items.length === 0) return null;
           return (
-            <button
-              key={c.id}
-              onClick={() => setActiveCalc(c.id)}
-              className={cn(
-                'flex flex-col items-center gap-1.5 rounded-xl border px-2 py-3 text-center transition-all',
-                isActive
-                  ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/25 scale-[1.03]'
-                  : 'bg-gradient-to-br from-muted/60 to-muted/30 border-border/40 hover:border-primary/40 hover:shadow-sm hover:scale-[1.01]'
-              )}
-            >
-              <c.icon className={cn('h-5 w-5', isActive ? 'text-primary-foreground' : c.color)} />
-              <span className="text-[11px] sm:text-xs font-medium leading-tight truncate w-full">{c.label}</span>
-            </button>
+            <div key={group.label}>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">{group.label}</span>
+                <div className="h-px flex-1 bg-border/30" />
+              </div>
+              <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2">
+                {items.map(c => {
+                  const isActive = activeCalc === c.id;
+                  return (
+                    <button
+                      key={c.id}
+                      onClick={() => setActiveCalc(c.id)}
+                      className={cn(
+                        'flex flex-col items-center gap-1.5 rounded-xl border px-2 py-3 text-center transition-all',
+                        isActive
+                          ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/25 scale-[1.03]'
+                          : 'bg-gradient-to-br from-muted/60 to-muted/30 border-border/40 hover:border-primary/40 hover:shadow-sm hover:scale-[1.01]'
+                      )}
+                    >
+                      <c.icon className={cn('h-5 w-5', isActive ? 'text-primary-foreground' : c.color)} />
+                      <span className="text-[11px] sm:text-xs font-medium leading-tight truncate w-full">{c.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           );
         })}
       </div>
