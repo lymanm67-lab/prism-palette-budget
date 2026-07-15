@@ -85,11 +85,6 @@ export default function CurrencyExchangeCalculator() {
     },
     staleTime: 30 * 60 * 1000,
   });
-        rate: rates[toCurrency],
-      }));
-    },
-    staleTime: 30 * 60 * 1000,
-  });
 
   const swap = useCallback(() => {
     setFromCurrency(toCurrency);
