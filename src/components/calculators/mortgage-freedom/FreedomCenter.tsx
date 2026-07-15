@@ -21,6 +21,15 @@ import {
 import { runAllStrategies, type StrategyResult } from '@/lib/mortgage-freedom/simulators';
 import { computeFreedomScore } from '@/lib/mortgage-freedom/freedom-score';
 import { recommend } from '@/lib/mortgage-freedom/recommender';
+import AffordabilityPlanner from './AffordabilityPlanner';
+import StressTest from './StressTest';
+import ScenarioLab from './ScenarioLab';
+import DashboardGauges from './DashboardGauges';
+import HomebuyerAssistance from './HomebuyerAssistance';
+import WealthIntegration from './WealthIntegration';
+import SmartNotifications from './SmartNotifications';
+import AiCoachChat from './AiCoachChat';
+import AdvancedCharts from './AdvancedCharts';
 
 const COACH_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/mortgage-freedom-coach`;
 
