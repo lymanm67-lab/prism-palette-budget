@@ -294,23 +294,53 @@ export default function HelocVsMortgageCalculator() {
   const helocBetter = helocWorks && result.interestSaved > 0;
 
   return (
-    <div className="space-y-6 mt-6">
-      {/* ─── Mortgage Freedom Intelligence Center (primary experience) ─── */}
-      <Card className="glass-card border-primary/40 bg-gradient-to-br from-primary/5 to-transparent">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Zap className="w-5 h-5 text-primary" />
-            Mortgage Freedom Intelligence Center
-          </CardTitle>
-          <p className="text-sm text-muted-foreground mt-1">
-            AI-powered decision engine: compare payoff strategies, stress-test HELOC risk, and find the fastest, safest path to mortgage freedom based on your profile.
-          </p>
-        </CardHeader>
-        <CardContent>
-          <FreedomCenter />
-        </CardContent>
-      </Card>
+    <div className="space-y-8 mt-6">
+      {/* ─── Step 1 · Personalize your inputs ─── */}
+      <section className="space-y-3">
+        <div className="flex items-baseline gap-3">
+          <span className="text-xs font-mono uppercase tracking-widest text-primary">Step 1</span>
+          <h2 className="text-lg font-semibold text-foreground">Personalize your inputs</h2>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Upload a mortgage statement, pay stub, or HELOC offer to auto-fill your profile. Everything below adapts to your numbers.
+        </p>
+        <DocumentUploadCard />
+      </section>
 
+      {/* ─── Step 2 · Mortgage Freedom Intelligence Center ─── */}
+      <section className="space-y-3">
+        <div className="flex items-baseline gap-3">
+          <span className="text-xs font-mono uppercase tracking-widest text-primary">Step 2</span>
+          <h2 className="text-lg font-semibold text-foreground">Get your recommended path</h2>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Our AI compares every viable payoff strategy against your profile and highlights the fastest, safest route to mortgage freedom.
+        </p>
+        <Card className="glass-card border-primary/40 bg-gradient-to-br from-primary/5 to-transparent">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Zap className="w-5 h-5 text-primary" />
+              Mortgage Freedom Intelligence Center
+            </CardTitle>
+            <p className="text-sm text-muted-foreground mt-1">
+              Compare payoff strategies, stress-test HELOC risk, and see the winning plan for your situation.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <FreedomCenter />
+          </CardContent>
+        </Card>
+      </section>
+
+      {/* ─── Step 3 · Detailed scenario modeling ─── */}
+      <section className="space-y-3">
+        <div className="flex items-baseline gap-3">
+          <span className="text-xs font-mono uppercase tracking-widest text-primary">Step 3</span>
+          <h2 className="text-lg font-semibold text-foreground">Model it yourself</h2>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Hands-on calculator: tune the mortgage, HELOC, and cash-flow inputs to stress-test the recommendation and see the amortization schedule.
+        </p>
       <Card className="glass-card">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
