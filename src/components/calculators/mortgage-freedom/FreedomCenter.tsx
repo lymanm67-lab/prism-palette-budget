@@ -107,11 +107,11 @@ export default function FreedomCenter() {
   const remainingInterest = strategies.traditional.totalInterest;
   const dti = p.totalIncome > 0 ? ((p.debts + monthlyPayment) / p.totalIncome) * 100 : 0;
   const emergencyMonths = p.expenses > 0
-    ? (parseFloat(profile.emergencyFund as any) || p.netSurplus * 3) / p.expenses
+    ? Math.max(0, p.netSurplus * 3) / p.expenses
     : 0;
 
-  const currentAge = parseInt(profile.age as any) || 40;
-  const retirementAge = parseInt(profile.retirementAge as any) || 65;
+  const currentAge = 40;
+  const retirementAge = 65;
   const winnerResult: StrategyResult =
     rec.winner === 'traditional' ? strategies.traditional :
     rec.winner === 'extra-principal' ? strategies.extraPrincipal :
