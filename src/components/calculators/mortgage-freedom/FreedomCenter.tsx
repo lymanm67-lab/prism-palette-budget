@@ -30,6 +30,9 @@ import WealthIntegration from './WealthIntegration';
 import SmartNotifications from './SmartNotifications';
 import AiCoachChat from './AiCoachChat';
 import AdvancedCharts from './AdvancedCharts';
+import PayoffGoalCalculator from './PayoffGoalCalculator';
+
+
 
 const COACH_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/mortgage-freedom-coach`;
 
