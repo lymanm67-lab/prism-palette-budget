@@ -31,6 +31,11 @@ import SmartNotifications from './SmartNotifications';
 import AiCoachChat from './AiCoachChat';
 import AdvancedCharts from './AdvancedCharts';
 import PayoffGoalCalculator from './PayoffGoalCalculator';
+import RefinanceCheck from './RefinanceCheck';
+import PmiDropoff from './PmiDropoff';
+import RecastCard from './RecastCard';
+
+
 
 
 
