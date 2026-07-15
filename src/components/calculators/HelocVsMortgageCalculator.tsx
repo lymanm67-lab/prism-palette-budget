@@ -508,6 +508,36 @@ export default function HelocVsMortgageCalculator() {
         </div>
       </CollapsibleSection>
 
+      {/* ─── 2. Personalize your inputs ─── */}
+      <CollapsibleSection
+        title="2 · Personalize your inputs"
+        subtitle="Upload a mortgage statement, pay stub, or HELOC offer to auto-fill your profile."
+      >
+        <div className="space-y-3">
+          <DocumentUploadCard />
+        </div>
+      </CollapsibleSection>
+
+      {/* ─── 3. Payoff strategies (Freedom Center) ─── */}
+      <CollapsibleSection
+        title="3 · Payoff strategies & Mortgage Freedom journey"
+        subtitle="Guided path from home-purchase readiness through payoff acceleration."
+      >
+        <FreedomCenter />
+      </CollapsibleSection>
+
+      {/* ─── 4. HELOC risk & fees ─── */}
+      <CollapsibleSection
+        title="4 · HELOC risk, fees & tax treatment"
+        subtitle="Variable-rate stress test, closing costs, and TCJA deductibility check."
+      >
+        <HelocRiskAndFees
+          helocBalance={parseFloat(balance) || 0}
+          helocRate={parseFloat(helocRate) || 0}
+          monthlySurplus={Math.max(0, (parseFloat(income) || 0) - (parseFloat(expenses) || 0))}
+        />
+      </CollapsibleSection>
+
       {/* Report preview modal */}
       <HelocReportPreview
         open={reportOpen}
