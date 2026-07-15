@@ -35,6 +35,7 @@ import RefinanceCheck from './RefinanceCheck';
 import PmiDropoff from './PmiDropoff';
 import RecastCard from './RecastCard';
 import EscrowBreakdown from './EscrowBreakdown';
+import Glossary from './Glossary';
 
 
 
@@ -357,6 +358,15 @@ export default function FreedomCenter() {
         blurb="Context-aware AI chat with your full snapshot loaded. Ask anything about your specific situation."
       >
         <AiCoachChat snapshot={coachSnapshot} />
+      </JourneyStep>
+
+      {/* ─── Reference · Glossary ─────────────────────────────── */}
+      <JourneyStep
+        step={6}
+        title="Glossary — Every term explained"
+        blurb="Don't know what LTV, PITI, recast, or 1st-lien HELOC mean? Search or browse plain-English definitions for every term on this page."
+      >
+        <Glossary />
       </JourneyStep>
     </div>
   );
