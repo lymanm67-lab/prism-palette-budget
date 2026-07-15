@@ -311,6 +311,10 @@ export default function FreedomCenter() {
           monthlyExpenses={p.expenses}
         />
 
+        <RecastCard />
+
+
+
         <ScenarioLab
           currentInputs={inputs}
           currentSummary={{
