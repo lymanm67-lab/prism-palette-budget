@@ -23,33 +23,34 @@ export default function WealthIntegration({ monthlySurplus, mortgageRate, yearsT
   const { formatCurrency } = useCurrency();
   const [allocationPct, setAllocationPct] = useState(50); // % of surplus to mortgage; rest to investing
   const [investReturn, setInvestReturn] = useState(7);    // conservative real return
+  const [taxBracket, setTaxBracket] = useState(24);       // marginal federal + state
+  const [itemizes, setItemizes] = useState(true);         // deduct mortgage interest?
   const horizonYears = Math.max(1, retirementAge - currentAge);
+
+  // Effective mortgage rate after tax deduction
+  const effectiveMortgageRate = itemizes ? mortgageRate * (1 - taxBracket / 100) : mortgageRate;
 
   const result = useMemo(() => {
     const surplus = Math.max(0, monthlySurplus);
     const toMortgage = surplus * (allocationPct / 100);
     const toInvest   = surplus - toMortgage;
 
-    // Naive: assume mortgage benefit = avoided interest at mortgage rate on the extra principal over remaining term
-    // Approximate: FV of a monthly annuity of $toMortgage at mortgage rate over min(yearsToPayoff, horizon)
     const mortgageYears = Math.min(yearsToPayoff, horizonYears);
-    const mR = mortgageRate / 100 / 12;
+    const mR = effectiveMortgageRate / 100 / 12;
     const mN = mortgageYears * 12;
     const mortgageFV = mR === 0 ? toMortgage * mN : toMortgage * ((Math.pow(1 + mR, mN) - 1) / mR);
 
-    // Investing: FV of monthly annuity at investReturn over horizon
     const iR = investReturn / 100 / 12;
     const iN = horizonYears * 12;
     const investFV = iR === 0 ? toInvest * iN : toInvest * ((Math.pow(1 + iR, iN) - 1) / iR);
 
     const combined = mortgageFV + investFV;
 
-    // What if 100% to each?
     const allMortgageFV = mR === 0 ? surplus * mN : surplus * ((Math.pow(1 + mR, mN) - 1) / mR);
     const allInvestFV   = iR === 0 ? surplus * iN : surplus * ((Math.pow(1 + iR, iN) - 1) / iR);
 
     return { toMortgage, toInvest, mortgageFV, investFV, combined, allMortgageFV, allInvestFV };
-  }, [monthlySurplus, allocationPct, mortgageRate, investReturn, yearsToPayoff, horizonYears]);
+  }, [monthlySurplus, allocationPct, effectiveMortgageRate, investReturn, yearsToPayoff, horizonYears]);
 
   const chartData = [
     { name: 'All to mortgage', Mortgage: result.allMortgageFV, Investing: 0 },
@@ -57,11 +58,12 @@ export default function WealthIntegration({ monthlySurplus, mortgageRate, yearsT
     { name: 'All to investing', Mortgage: 0, Investing: result.allInvestFV },
   ];
 
-  const spread = investReturn - mortgageRate;
+  const spread = investReturn - effectiveMortgageRate;
   const advice =
-    spread >= 2 ? 'Investing has a meaningful edge over your mortgage rate — don\'t over-allocate to payoff.'
-    : spread <= -1 ? 'Your mortgage rate beats expected returns — payoff wins the math.'
+    spread >= 2 ? 'Investing has a meaningful edge over your effective mortgage rate — don\'t over-allocate to payoff.'
+    : spread <= -1 ? 'Your effective mortgage rate beats expected returns — payoff wins the math.'
     : 'It\'s a coin flip on the math — pick based on risk tolerance and liquidity needs.';
+
 
   return (
     <Card className="glass-card">
@@ -92,12 +94,44 @@ export default function WealthIntegration({ monthlySurplus, mortgageRate, yearsT
               <p className="text-[10px] text-muted-foreground">S&amp;P 500 long-term real ≈ 7%. Bonds ≈ 3–4%.</p>
             </div>
 
+            <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-semibold">Tax deduction adjustment</Label>
+                <button
+                  type="button"
+                  onClick={() => setItemizes(!itemizes)}
+                  className={cn(
+                    'text-[10px] px-2 py-0.5 rounded-full border transition',
+                    itemizes ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted text-muted-foreground border-border'
+                  )}
+                >
+                  {itemizes ? 'Itemizing' : 'Standard deduction'}
+                </button>
+              </div>
+              {itemizes && (
+                <div className="space-y-1">
+                  <Label className="text-[10px] flex justify-between">
+                    <span>Marginal tax bracket</span>
+                    <span className="text-primary font-mono">{taxBracket}%</span>
+                  </Label>
+                  <Slider value={[taxBracket]} min={0} max={45} step={1} onValueChange={(v) => setTaxBracket(v[0])} />
+                </div>
+              )}
+              <div className="text-[10px] text-muted-foreground pt-1 border-t border-border/50">
+                <span className="font-semibold text-foreground">Effective mortgage rate: </span>
+                <span className="font-mono text-primary">{effectiveMortgageRate.toFixed(2)}%</span>
+                {itemizes && <span> (was {mortgageRate.toFixed(2)}% before deduction)</span>}
+                {!itemizes && <span className="block mt-0.5">Standard deduction means no mortgage-interest write-off — rate is unchanged.</span>}
+              </div>
+            </div>
+
             <div className="grid grid-cols-2 gap-2 text-xs">
               <Split label="To mortgage" value={formatCurrency(result.toMortgage)} sub="per month" />
               <Split label="To investing" value={formatCurrency(result.toInvest)} sub="per month" />
-              <Split label="Mortgage FV" value={formatCurrency(result.mortgageFV)} sub={`${Math.min(yearsToPayoff, horizonYears).toFixed(0)}y at ${mortgageRate}%`} />
+              <Split label="Mortgage FV" value={formatCurrency(result.mortgageFV)} sub={`${Math.min(yearsToPayoff, horizonYears).toFixed(0)}y at ${effectiveMortgageRate.toFixed(2)}%`} />
               <Split label="Investing FV" value={formatCurrency(result.investFV)} sub={`${horizonYears}y at ${investReturn}%`} />
             </div>
+
 
             <div className={cn(
               'rounded-lg border p-3 text-xs',
