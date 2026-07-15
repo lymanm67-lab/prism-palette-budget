@@ -53,6 +53,8 @@ export default function CurrencyExchangeCalculator() {
   const [toCurrency, setToCurrency] = useState('EUR');
   const [amount, setAmount] = useState('1000');
   const [travelBudget, setTravelBudget] = useState('');
+  const [historyRange, setHistoryRange] = useState<'30D' | '90D' | '1Y'>('30D');
+  const rangeDays = historyRange === '30D' ? 30 : historyRange === '90D' ? 90 : 365;
 
   // Fetch live rate
   const { data: rateData, isLoading: rateLoading, error: rateError } = useQuery({
@@ -67,12 +69,12 @@ export default function CurrencyExchangeCalculator() {
     retry: 2,
   });
 
-  // Fetch 30-day history
+  // Fetch history for the selected range
   const { data: historyData } = useQuery({
-    queryKey: ['exchange-history', fromCurrency, toCurrency],
+    queryKey: ['exchange-history', fromCurrency, toCurrency, rangeDays],
     queryFn: async () => {
       const end = new Date().toISOString().split('T')[0];
-      const start = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
+      const start = new Date(Date.now() - rangeDays * 86400000).toISOString().split('T')[0];
       const res = await fetch(`https://api.frankfurter.dev/v1/${start}..${end}?base=${fromCurrency}&symbols=${toCurrency}`);
       if (!res.ok) throw new Error('Failed to fetch history');
       const data = await res.json();
@@ -295,13 +297,30 @@ export default function CurrencyExchangeCalculator() {
           </CardContent>
         </Card>
 
-        {/* 30-day chart */}
+        {/* Rate trend chart */}
         <Card className="prism-card-shine border-border/50">
           <CardHeader>
-            <CardTitle className="font-display text-lg flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-prism-lime" />
-              30-Day Rate Trend
-            </CardTitle>
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <CardTitle className="font-display text-lg flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-prism-lime" />
+                Rate Trend
+              </CardTitle>
+              <div className="flex gap-1 rounded-lg border border-border/40 p-0.5 bg-muted/30">
+                {(['30D', '90D', '1Y'] as const).map(r => (
+                  <button
+                    key={r}
+                    type="button"
+                    onClick={() => setHistoryRange(r)}
+                    className={cn(
+                      'px-2.5 py-1 rounded-md text-[11px] font-semibold transition-colors',
+                      historyRange === r ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted/60',
+                    )}
+                  >
+                    {r}
+                  </button>
+                ))}
+              </div>
+            </div>
             <p className="text-xs text-muted-foreground">{fromCur?.flag} {fromCurrency} → {toCur?.flag} {toCurrency}</p>
           </CardHeader>
           <CardContent>

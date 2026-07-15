@@ -13,6 +13,7 @@ import CalculatorActions from '@/components/CalculatorActions';
 import CalculatorGuide from '@/components/CalculatorGuide';
 import CalculatorScenariosAndPitfalls from '@/components/CalculatorScenariosAndPitfalls';
 import CollapsibleSection from '@/components/CollapsibleSection';
+import CarLeaseCompare from './CarLeaseCompare';
 import { useFinancialProfile, profileNumbers } from '@/hooks/use-financial-profile';
 
 export default function CarAffordabilityCalculator() {
@@ -276,6 +277,9 @@ export default function CarAffordabilityCalculator() {
             </table>
           </div>
         </CollapsibleSection>
+
+        {/* ─── New vs Used vs Lease ─── */}
+        <CarLeaseCompare yearsHeld={Math.min(10, Math.max(3, Math.round(loanTerm[0] / 12)))} />
 
         {/* ─── Scenarios ─── */}
         <CollapsibleSection title="Scenarios, pitfalls & tips" icon={Calculator}>
