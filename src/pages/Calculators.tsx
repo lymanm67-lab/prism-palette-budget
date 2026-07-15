@@ -766,7 +766,7 @@ const Calculators = () => {
                 <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">{group.label}</span>
                 <div className="h-px flex-1 bg-border/30" />
               </div>
-              <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2">
+              <div className="flex flex-wrap gap-2">
                 {items.map(c => {
                   const isActive = activeCalc === c.id;
                   return (
@@ -774,14 +774,15 @@ const Calculators = () => {
                       key={c.id}
                       onClick={() => setActiveCalc(c.id)}
                       className={cn(
-                        'flex flex-col items-center gap-1.5 rounded-xl border px-2 py-3 text-center transition-all',
+                        'flex items-center gap-2 rounded-xl border px-3 py-2.5 text-left transition-all',
+                        'basis-[calc(50%-0.25rem)] sm:basis-[calc(33.333%-0.375rem)] lg:basis-[calc(25%-0.375rem)] xl:basis-[calc(20%-0.4rem)]',
                         isActive
-                          ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/25 scale-[1.03]'
-                          : 'bg-gradient-to-br from-muted/60 to-muted/30 border-border/40 hover:border-primary/40 hover:shadow-sm hover:scale-[1.01]'
+                          ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/25'
+                          : cn('bg-gradient-to-br border-border/40 hover:border-primary/40 hover:shadow-sm', c.bg)
                       )}
                     >
-                      <c.icon className={cn('h-5 w-5', isActive ? 'text-primary-foreground' : c.color)} />
-                      <span className="text-[11px] sm:text-xs font-medium leading-tight truncate w-full">{c.label}</span>
+                      <c.icon className={cn('h-4 w-4 flex-shrink-0', isActive ? 'text-primary-foreground' : c.color)} />
+                      <span className="text-xs font-medium leading-tight truncate">{c.label}</span>
                     </button>
                   );
                 })}
