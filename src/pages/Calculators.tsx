@@ -277,7 +277,7 @@ const ResultCard = ({ label, value, sub, accent, numericValue, formatFn }: { lab
 const Calculators = () => {
   const { formatCurrency } = useCurrency();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [activeCalc, setActiveCalc] = useState('safetospend');
+  const [activeCalc, setActiveCalc] = useState<string | null>(null);
   const [pickerSearch, setPickerSearch] = useState('');
   const [pageGuideOpen, setPageGuideOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
