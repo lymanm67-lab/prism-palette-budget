@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useAccounts } from './use-finance-data';
 import { useCreditAccounts } from './use-credit-accounts';
 import { useSafeToSpend } from './use-safe-to-spend';
+import { useFinancialProfile } from './use-financial-profile';
 
 export interface HomeBuyingMetric {
   label: string;
