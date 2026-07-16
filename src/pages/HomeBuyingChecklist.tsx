@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Home, Bot, Calculator, Landmark, Search, CheckCircle2, LayoutDashboard } from 'lucide-react';
+import { Home, Bot, Calculator, Landmark, Search, CheckCircle2, LayoutDashboard, Printer } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import PageOverview from '@/components/PageOverview';
 import ReadinessHero from '@/components/home-buying/ReadinessHero';
 import AiHomeBuyingCoach from '@/components/home-buying/AiHomeBuyingCoach';
@@ -15,10 +17,28 @@ import AppreciationInfo from '@/components/home-buying/AppreciationInfo';
 import HomeBuyingChecklistTab from '@/components/home-buying/HomeBuyingChecklistTab';
 import PlannerRoot from '@/components/home-buying/planner/PlannerRoot';
 import { useHomeBuyingMetrics } from '@/hooks/use-home-buying-metrics';
+import { exportToPdf } from '@/lib/export-utils';
 
 const HomeBuyingChecklist = () => {
   const { household } = useHousehold();
   const [tab, setTab] = useState('planner');
+  const printRef = useRef<HTMLDivElement>(null);
+  const [printing, setPrinting] = useState(false);
+
+  const handlePrint = async () => {
+    if (!printRef.current) return;
+    setPrinting(true);
+    toast.info('Generating printable readiness report…');
+    try {
+      await exportToPdf(printRef.current, `home-buying-readiness-${new Date().toISOString().slice(0, 10)}`);
+      toast.success('Report downloaded');
+    } catch (e: any) {
+      toast.error(e.message || 'Export failed');
+    } finally {
+      setPrinting(false);
+    }
+  };
+
 
   const { data: checklist } = useQuery({
     queryKey: ['homebuyer_checklist', household?.id],
@@ -67,9 +87,14 @@ const HomeBuyingChecklist = () => {
             ]}
           />
         </div>
+        <Button onClick={handlePrint} disabled={printing} variant="outline" className="gap-2">
+          <Printer className="h-4 w-4" />
+          {printing ? 'Preparing…' : 'Print Readiness Report'}
+        </Button>
       </div>
 
-      <ReadinessHero checklistPct={checklistPct} metrics={metrics} />
+      <div ref={printRef} className="space-y-6">
+        <ReadinessHero checklistPct={checklistPct} metrics={metrics} />
 
       <Tabs value={tab} onValueChange={setTab} className="w-full">
         <TabsList className="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 h-auto p-1 gap-1">
@@ -91,6 +116,7 @@ const HomeBuyingChecklist = () => {
         <TabsContent value="search" className="mt-4 space-y-4"><AppreciationInfo /><HomeSearchPanel /></TabsContent>
         <TabsContent value="checklist" className="mt-4"><HomeBuyingChecklistTab /></TabsContent>
       </Tabs>
+      </div>
     </motion.div>
   );
 };

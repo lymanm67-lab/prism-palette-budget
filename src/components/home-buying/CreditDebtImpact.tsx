@@ -2,8 +2,10 @@ import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CreditCard, TrendingDown } from 'lucide-react';
 import { calcMortgage, estimateRateForFico, fmt$ } from '@/lib/home-buying/mortgage-math';
+import { LOAN_DTI_LIMITS, LOAN_PROGRAM_OPTIONS, type LoanProgram } from '@/lib/home-buying/loan-dti-limits';
 
 export default function CreditDebtImpact({ price: priceProp, onPriceChange }: { price?: number; onPriceChange?: (n: number) => void } = {}) {
   const [priceLocal, setPriceLocal] = useState(350000);
@@ -13,6 +15,9 @@ export default function CreditDebtImpact({ price: priceProp, onPriceChange }: { 
   const [fico, setFico] = useState(700);
   const [monthlyDebt, setMonthlyDebt] = useState(600);
   const [grossIncome, setGrossIncome] = useState(7500);
+  const [program, setProgram] = useState<LoanProgram>('conventional');
+
+  const limits = LOAN_DTI_LIMITS[program];
 
   const bands = useMemo(() => {
     return [620, 660, 700, 740, 760, 800].map((band) => {
@@ -26,9 +31,17 @@ export default function CreditDebtImpact({ price: priceProp, onPriceChange }: { 
   const at740 = useMemo(() => calcMortgage({ price, downPct, ratePct: estimateRateForFico(Math.max(fico, 740)), termYears: 30 }), [price, downPct, fico]);
   const savings = mine.totalInterest - at740.totalInterest;
 
-  const housingMax = grossIncome * 0.28;
-  const totalDtiMax = grossIncome * 0.36;
-  const remainingDtiRoom = Math.max(0, totalDtiMax - monthlyDebt - mine.monthlyPI);
+  // Approximate PITI = P&I × ~1.33 (adds tax/ins/PMI). Users can refine in the Affordability calc.
+  const estimatedPITI = mine.monthlyPI * 1.33;
+  const housingMax = grossIncome * (limits.frontEndPct / 100);
+  const totalDtiMax = grossIncome * (limits.backEndPct / 100);
+  const stretchDtiMax = grossIncome * (limits.backEndStretchPct / 100);
+  const frontEndActual = grossIncome > 0 ? (estimatedPITI / grossIncome) * 100 : 0;
+  const backEndActual = grossIncome > 0 ? ((estimatedPITI + monthlyDebt) / grossIncome) * 100 : 0;
+  const remainingDtiRoom = Math.max(0, totalDtiMax - monthlyDebt - estimatedPITI);
+  const frontEndOk = frontEndActual <= limits.frontEndPct;
+  const backEndOk = backEndActual <= limits.backEndPct;
+  const backEndStretch = backEndActual > limits.backEndPct && backEndActual <= limits.backEndStretchPct;
 
   return (
     <Card className="prism-card-shine border-border/50">
@@ -39,12 +52,23 @@ export default function CreditDebtImpact({ price: priceProp, onPriceChange }: { 
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-5">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
           <div><Label className="text-xs">Home Price</Label><Input type="number" value={price} onChange={(e) => setPrice(+e.target.value)} /></div>
           <div><Label className="text-xs">Down %</Label><Input type="number" value={downPct} onChange={(e) => setDownPct(+e.target.value)} /></div>
           <div><Label className="text-xs">Your FICO</Label><Input type="number" value={fico} onChange={(e) => setFico(+e.target.value)} /></div>
           <div><Label className="text-xs">Other Debts/mo</Label><Input type="number" value={monthlyDebt} onChange={(e) => setMonthlyDebt(+e.target.value)} /></div>
           <div><Label className="text-xs">Gross Income/mo</Label><Input type="number" value={grossIncome} onChange={(e) => setGrossIncome(+e.target.value)} /></div>
+          <div>
+            <Label className="text-xs">Loan Program</Label>
+            <Select value={program} onValueChange={(v) => setProgram(v as LoanProgram)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {LOAN_PROGRAM_OPTIONS.map((p) => (
+                  <SelectItem key={p} value={p}>{LOAN_DTI_LIMITS[p].label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {fico < 740 && savings > 0 && (
@@ -71,19 +95,41 @@ export default function CreditDebtImpact({ price: priceProp, onPriceChange }: { 
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-3">
-          <div className="rounded-lg border border-border/40 bg-card/40 p-3">
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Housing Max (28%)</p>
-            <p className="font-display text-lg font-bold">{fmt$(housingMax)}/mo</p>
+        {/* DTI panel — driven by selected loan program */}
+        <div className="rounded-lg border border-border/40 p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              {limits.label} DTI Guidelines
+            </p>
+            <span className="text-[10px] text-muted-foreground">
+              Front-end {limits.frontEndPct}% · Back-end {limits.backEndPct}% (stretch {limits.backEndStretchPct}%)
+            </span>
           </div>
-          <div className="rounded-lg border border-border/40 bg-card/40 p-3">
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Your P&I</p>
-            <p className="font-display text-lg font-bold">{fmt$(mine.monthlyPI)}/mo</p>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="rounded-lg border border-border/40 bg-card/40 p-3">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Housing Max ({limits.frontEndPct}%)</p>
+              <p className="font-display text-lg font-bold">{fmt$(housingMax)}/mo</p>
+              <p className="text-[10px] text-muted-foreground">P&amp;I + tax + ins + HOA</p>
+            </div>
+            <div className={`rounded-lg border p-3 ${frontEndOk ? 'border-prism-teal/30 bg-prism-teal/5' : 'border-prism-rose/40 bg-prism-rose/5'}`}>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Est. Front-end DTI</p>
+              <p className="font-display text-lg font-bold">{frontEndActual.toFixed(1)}%</p>
+              <p className="text-[10px] text-muted-foreground">~{fmt$(estimatedPITI)}/mo PITI</p>
+            </div>
+            <div className="rounded-lg border border-border/40 bg-card/40 p-3">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Back-end Max ({limits.backEndPct}%)</p>
+              <p className="font-display text-lg font-bold">{fmt$(totalDtiMax)}/mo</p>
+              <p className="text-[10px] text-muted-foreground">Stretch: {fmt$(stretchDtiMax)}</p>
+            </div>
+            <div className={`rounded-lg border p-3 ${backEndOk ? 'border-prism-teal/30 bg-prism-teal/5' : backEndStretch ? 'border-prism-amber/40 bg-prism-amber/5' : 'border-prism-rose/40 bg-prism-rose/5'}`}>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Est. Back-end DTI</p>
+              <p className="font-display text-lg font-bold">{backEndActual.toFixed(1)}%</p>
+              <p className="text-[10px] text-muted-foreground">Room: {fmt$(remainingDtiRoom)}/mo</p>
+            </div>
           </div>
-          <div className={`rounded-lg border p-3 ${remainingDtiRoom > 0 ? 'border-prism-teal/30 bg-prism-teal/5' : 'border-prism-rose/40 bg-prism-rose/5'}`}>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">DTI Room (36%)</p>
-            <p className="font-display text-lg font-bold">{fmt$(remainingDtiRoom)}/mo</p>
-          </div>
+
+          <p className="text-[11px] text-muted-foreground italic">{limits.notes}</p>
         </div>
 
         {monthlyDebt > 0 && (
