@@ -13,12 +13,14 @@ export default function DownPaymentDetailsEditor({ project }: { project: any }) 
   const [saved, setSaved] = useState<string>(project.down_payment_saved ?? '');
   const [source, setSource] = useState<string>(project.down_payment_source ?? '');
   const [dpa, setDpa] = useState<string>(project.dpa_program_note ?? '');
+  const [ef, setEf] = useState<string>(project.emergency_fund_balance ?? '');
 
   useEffect(() => {
     setSaved(project.down_payment_saved ?? '');
     setSource(project.down_payment_source ?? '');
     setDpa(project.dpa_program_note ?? '');
-  }, [project.id, project.down_payment_saved, project.down_payment_source, project.dpa_program_note]);
+    setEf(project.emergency_fund_balance ?? '');
+  }, [project.id, project.down_payment_saved, project.down_payment_source, project.dpa_program_note, project.emergency_fund_balance]);
 
   const handleSave = () => {
     updateProject.mutate(
@@ -28,10 +30,11 @@ export default function DownPaymentDetailsEditor({ project }: { project: any }) 
           down_payment_saved: saved === '' ? null : Number(saved),
           down_payment_source: source.trim() || null,
           dpa_program_note: dpa.trim() || null,
-        },
+          emergency_fund_balance: ef === '' ? null : Number(ef),
+        } as any,
       },
       {
-        onSuccess: () => toast.success('Down payment details saved — refresh the AI summary to update.'),
+        onSuccess: () => toast.success('Details saved — refresh the AI summary to update.'),
         onError: (e: any) => toast.error(e?.message || 'Save failed'),
       }
     );
@@ -48,7 +51,7 @@ export default function DownPaymentDetailsEditor({ project }: { project: any }) 
           Tell the AI coach about funds you already have earmarked (retirement loans, gifts, etc.) and any down-payment assistance program you qualify for.
         </p>
       </CardHeader>
-      <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <CardContent className="grid grid-cols-1 md:grid-cols-4 gap-3">
         <div>
           <Label className="text-xs">Already Saved / Earmarked ($)</Label>
           <Input
@@ -77,7 +80,17 @@ export default function DownPaymentDetailsEditor({ project }: { project: any }) 
             className="h-8 mt-1"
           />
         </div>
-        <div className="md:col-span-3 flex justify-end">
+        <div>
+          <Label className="text-xs">Emergency Fund Balance ($)</Label>
+          <Input
+            type="number"
+            value={ef}
+            onChange={(e) => setEf(e.target.value)}
+            placeholder="e.g. 18000"
+            className="h-8 mt-1"
+          />
+        </div>
+        <div className="md:col-span-4 flex justify-end">
           <Button size="sm" onClick={handleSave} disabled={updateProject.isPending}>
             <Save className="h-3.5 w-3.5 mr-1.5" />
             {updateProject.isPending ? 'Saving…' : 'Save details'}

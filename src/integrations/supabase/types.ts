@@ -2200,6 +2200,7 @@ export type Database = {
           down_payment_source: string | null
           down_payment_target: number | null
           dpa_program_note: string | null
+          emergency_fund_balance: number | null
           household_id: string
           id: string
           loan_type_preference: string | null
@@ -2218,6 +2219,7 @@ export type Database = {
           down_payment_source?: string | null
           down_payment_target?: number | null
           dpa_program_note?: string | null
+          emergency_fund_balance?: number | null
           household_id: string
           id?: string
           loan_type_preference?: string | null
@@ -2236,6 +2238,7 @@ export type Database = {
           down_payment_source?: string | null
           down_payment_target?: number | null
           dpa_program_note?: string | null
+          emergency_fund_balance?: number | null
           household_id?: string
           id?: string
           loan_type_preference?: string | null

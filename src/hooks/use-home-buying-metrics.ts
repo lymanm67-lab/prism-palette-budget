@@ -19,7 +19,7 @@ export interface HomeBuyingMetric {
  * - DTI: monthly debt obligations / monthly income (lower is better, target <36%)
  * - Emergency Fund: months of obligations covered by liquid savings (target 6mo)
  */
-export function useHomeBuyingMetrics() {
+export function useHomeBuyingMetrics(overrideEmergencyFund?: number | null) {
   const { data: accounts } = useAccounts();
   const { accounts: creditAccounts } = useCreditAccounts();
   const sts = useSafeToSpend('personal');
@@ -57,8 +57,9 @@ export function useHomeBuyingMetrics() {
     // Score 100% at 0% DTI, 0% at 50%+ DTI
     const dtiPct = income > 0 ? Math.max(0, Math.min(100, 100 - dti * 2)) : 0;
 
-    // Emergency Fund — months covered
-    const monthsCovered = obligations > 0 ? savings / obligations : 0;
+    // Emergency Fund — months covered. Use user-provided override when set.
+    const efBalance = overrideEmergencyFund != null && overrideEmergencyFund > 0 ? overrideEmergencyFund : savings;
+    const monthsCovered = obligations > 0 ? efBalance / obligations : 0;
     const efPct = Math.min(100, (monthsCovered / 6) * 100);
 
     return [
@@ -91,5 +92,5 @@ export function useHomeBuyingMetrics() {
         raw: monthsCovered,
       },
     ];
-  }, [accounts, creditAccounts, sts.monthlyIncome, sts.monthlyObligations, profile.creditScore]);
+  }, [accounts, creditAccounts, sts.monthlyIncome, sts.monthlyObligations, profile.creditScore, overrideEmergencyFund]);
 }
