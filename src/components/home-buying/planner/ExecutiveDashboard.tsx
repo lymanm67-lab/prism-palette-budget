@@ -169,10 +169,17 @@ export default function ExecutiveDashboard({ project, onNavigate }: { project: a
           })()}
           sub={(() => {
             const saved = Number(project.down_payment_saved ?? 0);
-            const target = fmt$(project.down_payment_target || 0);
+            const price = Number(project.target_price || 0);
+            const loan = (project.loan_type_preference || '').toString().toUpperCase();
+            const pctByLoan: Record<string, number> = { FHA: 0.035, VA: 0, USDA: 0, CONVENTIONAL: 0.05 };
+            const pct = pctByLoan[loan] ?? null;
+            const minReq = pct !== null && price ? price * pct : Number(project.down_payment_target || 0);
+            const label = pct !== null
+              ? `${loan} min (${(pct * 100).toFixed(1)}%): ${fmt$(minReq)}`
+              : `Target: ${fmt$(minReq)}`;
             return saved > 0
-              ? `Target: ${target} · Incl. ${fmt$(saved)} ${project.down_payment_source ? `(${project.down_payment_source})` : 'earmarked'}`
-              : `Target: ${target}`;
+              ? `${label} · Incl. ${fmt$(saved)} ${project.down_payment_source ? `(${project.down_payment_source})` : 'earmarked'}`
+              : label;
           })()}
           icon={DollarSign}
         />
