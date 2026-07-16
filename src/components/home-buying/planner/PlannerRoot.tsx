@@ -26,6 +26,7 @@ export default function PlannerRoot() {
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'timeline', label: 'Timeline', icon: GanttChart },
     { id: 'monthly', label: 'Monthly', icon: CalendarClock },
+    { id: 'tasks', label: 'Tasks', icon: ListChecks },
     { id: 'worksheets', label: 'Worksheets', icon: ClipboardList },
     { id: 'rules', label: 'Rules & Risks', icon: ShieldCheck },
     { id: 'scenarios', label: 'Scenarios', icon: GitCompare },
