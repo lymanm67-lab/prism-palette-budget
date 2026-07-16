@@ -123,6 +123,8 @@ export default function RulesEngine({ projectId }: { projectId: string }) {
         </CardContent>
       </Card>
 
+      <RisksPanel projectId={projectId} />
+
       <Card className="prism-card-shine border-border/50">
         <CardHeader className="pb-2">
           <CardTitle className="font-display text-sm">AI Rule Review</CardTitle>
