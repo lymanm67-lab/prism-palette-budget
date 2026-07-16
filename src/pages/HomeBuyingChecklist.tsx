@@ -35,10 +35,8 @@ const HomeBuyingChecklist = () => {
   const TABS = [
     { id: 'planner', label: 'Planner', icon: LayoutDashboard },
     { id: 'coach', label: 'AI Coach', icon: Bot },
-    { id: 'scenarios', label: 'Scenarios', icon: GitCompare },
     { id: 'calculators', label: 'Calculators', icon: Calculator },
-    { id: 'loans', label: 'Loan Types', icon: Landmark },
-    { id: 'assistance', label: 'State Assistance', icon: MapPin },
+    { id: 'loans', label: 'Loans & Assistance', icon: Landmark },
     { id: 'search', label: 'Home Search', icon: Search },
     { id: 'checklist', label: 'Checklist', icon: CheckCircle2 },
   ];
