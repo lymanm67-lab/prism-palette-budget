@@ -59,7 +59,7 @@ export default function PlannerRoot() {
           </Dialog>
         </div>
 
-        <TabsContent value="dashboard" className="mt-4"><ExecutiveDashboard project={project} /></TabsContent>
+        <TabsContent value="dashboard" className="mt-4"><ExecutiveDashboard project={project} onNavigate={setTab} /></TabsContent>
         <TabsContent value="timeline" className="mt-4">
           <TimelineViews projectId={project.id} onSelectMonth={(i) => { setMonthIndex(i); setTab('monthly'); }} />
         </TabsContent>
