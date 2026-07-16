@@ -11,6 +11,7 @@ import AiHomeBuyingCoach from '@/components/home-buying/AiHomeBuyingCoach';
 import HomeBuyingCalculators from '@/components/home-buying/HomeBuyingCalculators';
 import LoansAndAssistance from '@/components/home-buying/LoansAndAssistance';
 import HomeSearchPanel from '@/components/home-buying/HomeSearchPanel';
+import AppreciationInfo from '@/components/home-buying/AppreciationInfo';
 import HomeBuyingChecklistTab from '@/components/home-buying/HomeBuyingChecklistTab';
 import PlannerRoot from '@/components/home-buying/planner/PlannerRoot';
 import { useHomeBuyingMetrics } from '@/hooks/use-home-buying-metrics';
@@ -87,7 +88,7 @@ const HomeBuyingChecklist = () => {
         <TabsContent value="coach" className="mt-4"><AiHomeBuyingCoach /></TabsContent>
         <TabsContent value="calculators" className="mt-4"><HomeBuyingCalculators /></TabsContent>
         <TabsContent value="loans" className="mt-4"><LoansAndAssistance /></TabsContent>
-        <TabsContent value="search" className="mt-4"><HomeSearchPanel /></TabsContent>
+        <TabsContent value="search" className="mt-4 space-y-4"><AppreciationInfo /><HomeSearchPanel /></TabsContent>
         <TabsContent value="checklist" className="mt-4"><HomeBuyingChecklistTab /></TabsContent>
       </Tabs>
     </motion.div>
