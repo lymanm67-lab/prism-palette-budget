@@ -21,7 +21,7 @@ export default function DownPaymentPlanner({ price: priceProp, onPriceChange }: 
   const [priceLocal, setPriceLocal] = useState(350000);
   const price = priceProp ?? priceLocal;
   const setPrice = (n: number) => { onPriceChange ? onPriceChange(n) : setPriceLocal(n); };
-  const [downPct, setDownPct] = useState(10);
+  const [downPct, setDownPct] = useState(3.5);
   const [currentSaved, setCurrentSaved] = useState(8000);
   const [monthly, setMonthly] = useState(800);
   const [apy, setApy] = useState(4.5);
