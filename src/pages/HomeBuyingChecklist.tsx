@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Home, Bot, Calculator, Landmark, Search, CheckCircle2, LayoutDashboard } from 'lucide-react';
+import { Home, Bot, Calculator, Landmark, Search, CheckCircle2, LayoutDashboard, Printer } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import PageOverview from '@/components/PageOverview';
 import ReadinessHero from '@/components/home-buying/ReadinessHero';
 import AiHomeBuyingCoach from '@/components/home-buying/AiHomeBuyingCoach';
@@ -15,6 +17,7 @@ import AppreciationInfo from '@/components/home-buying/AppreciationInfo';
 import HomeBuyingChecklistTab from '@/components/home-buying/HomeBuyingChecklistTab';
 import PlannerRoot from '@/components/home-buying/planner/PlannerRoot';
 import { useHomeBuyingMetrics } from '@/hooks/use-home-buying-metrics';
+import { exportToPdf } from '@/lib/export-utils';
 
 const HomeBuyingChecklist = () => {
   const { household } = useHousehold();
