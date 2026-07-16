@@ -55,6 +55,14 @@ import StudentLoanCalculator from '@/components/calculators/StudentLoanCalculato
 import LifeInsuranceCalculator from '@/components/calculators/LifeInsuranceCalculator';
 import InflationCalculator from '@/components/calculators/InflationCalculator';
 import LeaseVsBuyCalculator from '@/components/calculators/LeaseVsBuyCalculator';
+import CapitalGainsCalculator from '@/components/calculators/CapitalGainsCalculator';
+import SelfEmployedTaxCalculator from '@/components/calculators/SelfEmployedTaxCalculator';
+import RothConversionLadderCalculator from '@/components/calculators/RothConversionLadderCalculator';
+import CDvsHYSACalculator from '@/components/calculators/CDvsHYSACalculator';
+import SalaryRaiseCalculator from '@/components/calculators/SalaryRaiseCalculator';
+import RMDCalculator from '@/components/calculators/RMDCalculator';
+import PMIRemovalCalculator from '@/components/calculators/PMIRemovalCalculator';
+import ExtraMortgagePaymentCalculator from '@/components/calculators/ExtraMortgagePaymentCalculator';
 import FinancialProfileCard from '@/components/FinancialProfileCard';
 
 // ─── Calculation helpers ───
@@ -217,6 +225,8 @@ const CALCULATOR_GROUPS = [
       { id: 'mortgage', label: 'Mortgage', icon: Home, color: 'text-prism-teal', bg: 'from-prism-teal/20 to-prism-teal/5' },
       { id: 'homeafford', label: 'Home Affordability', icon: Home, color: 'text-prism-lime', bg: 'from-prism-lime/20 to-prism-lime/5' },
       { id: 'refi', label: 'Refinance Break-Even', icon: Home, color: 'text-prism-sky', bg: 'from-prism-sky/20 to-prism-sky/5' },
+      { id: 'extramtg', label: 'Extra Payment Payoff', icon: Home, color: 'text-prism-rose', bg: 'from-prism-rose/20 to-prism-rose/5' },
+      { id: 'pmi', label: 'PMI Removal', icon: Home, color: 'text-prism-violet', bg: 'from-prism-violet/20 to-prism-violet/5' },
     ],
   },
   {
@@ -225,6 +235,9 @@ const CALCULATOR_GROUPS = [
       { id: 'paycheck', label: 'Paycheck / Take-Home', icon: Wallet, color: 'text-prism-lime', bg: 'from-prism-lime/20 to-prism-lime/5' },
       { id: 'rothtrad', label: 'Roth vs Traditional', icon: Scale, color: 'text-prism-teal', bg: 'from-prism-teal/20 to-prism-teal/5' },
       { id: 'inflation', label: 'Inflation & Purchasing Power', icon: TrendingUp, color: 'text-prism-amber', bg: 'from-prism-amber/20 to-prism-amber/5' },
+      { id: 'capgains', label: 'Capital Gains Tax', icon: Receipt, color: 'text-prism-rose', bg: 'from-prism-rose/20 to-prism-rose/5' },
+      { id: 'se1099', label: 'Self-Employed Quarterly Tax', icon: CalendarDays, color: 'text-prism-violet', bg: 'from-prism-violet/20 to-prism-violet/5' },
+      { id: 'salaryraise', label: 'Salary Raise Impact', icon: TrendingUp, color: 'text-prism-sky', bg: 'from-prism-sky/20 to-prism-sky/5' },
     ],
   },
   {
@@ -233,6 +246,7 @@ const CALCULATOR_GROUPS = [
       { id: 'compound', label: 'Compound Interest', icon: PiggyBank, color: 'text-prism-teal', bg: 'from-prism-teal/20 to-prism-teal/5' },
       { id: 'emergency', label: 'Emergency Fund', icon: Shield, color: 'text-prism-sky', bg: 'from-prism-sky/20 to-prism-sky/5' },
       { id: 'fire', label: 'FIRE Number', icon: Target, color: 'text-prism-lime', bg: 'from-prism-lime/20 to-prism-lime/5' },
+      { id: 'cdhysa', label: 'CD vs HYSA', icon: PiggyBank, color: 'text-prism-amber', bg: 'from-prism-amber/20 to-prism-amber/5' },
     ],
   },
   {
@@ -256,6 +270,8 @@ const CALCULATOR_GROUPS = [
       { id: 'wealth', label: 'Wealth Multiplier', icon: PiggyBank, color: 'text-prism-indigo', bg: 'from-prism-indigo/20 to-prism-indigo/5' },
       { id: 'match401k', label: '401(k) Match Optimizer', icon: TrendingUp, color: 'text-prism-teal', bg: 'from-prism-teal/20 to-prism-teal/5' },
       { id: 'ssclaim', label: 'Social Security Claiming', icon: CalendarDays, color: 'text-prism-sky', bg: 'from-prism-sky/20 to-prism-sky/5' },
+      { id: 'rothladder', label: 'Roth Conversion Ladder', icon: ArrowLeftRight, color: 'text-prism-violet', bg: 'from-prism-violet/20 to-prism-violet/5' },
+      { id: 'rmd', label: 'RMD Projection', icon: CalendarDays, color: 'text-prism-rose', bg: 'from-prism-rose/20 to-prism-rose/5' },
       { id: 'offers', label: 'Focus Offer', icon: Target, color: 'text-prism-lime', bg: 'from-prism-lime/20 to-prism-lime/5' },
       { id: 'pricing', label: 'Pricing', icon: Tag, color: 'text-prism-amber', bg: 'from-prism-amber/20 to-prism-amber/5' },
     ],
@@ -2185,6 +2201,14 @@ const Calculators = () => {
       {activeCalc === 'lifeins' && (<div className="mt-6"><LifeInsuranceCalculator /></div>)}
       {activeCalc === 'inflation' && (<div className="mt-6"><InflationCalculator /></div>)}
       {activeCalc === 'leasevsbuy' && (<div className="mt-6"><LeaseVsBuyCalculator /></div>)}
+      {activeCalc === 'capgains' && (<div className="mt-6"><CapitalGainsCalculator /></div>)}
+      {activeCalc === 'se1099' && (<div className="mt-6"><SelfEmployedTaxCalculator /></div>)}
+      {activeCalc === 'rothladder' && (<div className="mt-6"><RothConversionLadderCalculator /></div>)}
+      {activeCalc === 'cdhysa' && (<div className="mt-6"><CDvsHYSACalculator /></div>)}
+      {activeCalc === 'salaryraise' && (<div className="mt-6"><SalaryRaiseCalculator /></div>)}
+      {activeCalc === 'rmd' && (<div className="mt-6"><RMDCalculator /></div>)}
+      {activeCalc === 'pmi' && (<div className="mt-6"><PMIRemovalCalculator /></div>)}
+      {activeCalc === 'extramtg' && (<div className="mt-6"><ExtraMortgagePaymentCalculator /></div>)}
       
       
       <CalculatorHistory open={historyOpen} onOpenChange={setHistoryOpen} onRestore={handleRestore} />
