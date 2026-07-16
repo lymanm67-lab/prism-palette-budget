@@ -219,35 +219,13 @@ function calcMonthlyToMillion(currentAge: number, target: number = 1000000): num
 
 const CALCULATOR_GROUPS = [
   {
-    label: 'Housing',
-    items: [
-      { id: 'rentvsbuy', label: 'Rent vs Buy', icon: Scale, color: 'text-prism-violet', bg: 'from-prism-violet/20 to-prism-violet/5' },
-      { id: 'heloc-vs-mortgage', label: 'HELOC vs Mortgage', icon: Home, color: 'text-prism-amber', bg: 'from-prism-amber/20 to-prism-amber/5' },
-      { id: 'mortgage', label: 'Mortgage', icon: Home, color: 'text-prism-teal', bg: 'from-prism-teal/20 to-prism-teal/5' },
-      { id: 'homeafford', label: 'Home Affordability', icon: Home, color: 'text-prism-lime', bg: 'from-prism-lime/20 to-prism-lime/5' },
-      { id: 'refi', label: 'Refinance Break-Even', icon: Home, color: 'text-prism-sky', bg: 'from-prism-sky/20 to-prism-sky/5' },
-      { id: 'extramtg', label: 'Extra Payment Payoff', icon: Home, color: 'text-prism-rose', bg: 'from-prism-rose/20 to-prism-rose/5' },
-      { id: 'pmi', label: 'PMI Removal', icon: Home, color: 'text-prism-violet', bg: 'from-prism-violet/20 to-prism-violet/5' },
-    ],
-  },
-  {
     label: 'Taxes & Paycheck',
     items: [
       { id: 'paycheck', label: 'Paycheck / Take-Home', icon: Wallet, color: 'text-prism-lime', bg: 'from-prism-lime/20 to-prism-lime/5' },
       { id: 'rothtrad', label: 'Roth vs Traditional', icon: Scale, color: 'text-prism-teal', bg: 'from-prism-teal/20 to-prism-teal/5' },
-      { id: 'inflation', label: 'Inflation & Purchasing Power', icon: TrendingUp, color: 'text-prism-amber', bg: 'from-prism-amber/20 to-prism-amber/5' },
       { id: 'capgains', label: 'Capital Gains Tax', icon: Receipt, color: 'text-prism-rose', bg: 'from-prism-rose/20 to-prism-rose/5' },
       { id: 'se1099', label: 'Self-Employed Quarterly Tax', icon: CalendarDays, color: 'text-prism-violet', bg: 'from-prism-violet/20 to-prism-violet/5' },
       { id: 'salaryraise', label: 'Salary Raise Impact', icon: TrendingUp, color: 'text-prism-sky', bg: 'from-prism-sky/20 to-prism-sky/5' },
-    ],
-  },
-  {
-    label: 'Savings & Goals',
-    items: [
-      { id: 'compound', label: 'Compound Interest', icon: PiggyBank, color: 'text-prism-teal', bg: 'from-prism-teal/20 to-prism-teal/5' },
-      { id: 'emergency', label: 'Emergency Fund', icon: Shield, color: 'text-prism-sky', bg: 'from-prism-sky/20 to-prism-sky/5' },
-      { id: 'fire', label: 'FIRE Number', icon: Target, color: 'text-prism-lime', bg: 'from-prism-lime/20 to-prism-lime/5' },
-      { id: 'cdhysa', label: 'CD vs HYSA', icon: PiggyBank, color: 'text-prism-amber', bg: 'from-prism-amber/20 to-prism-amber/5' },
     ],
   },
   {
@@ -264,6 +242,28 @@ const CALCULATOR_GROUPS = [
     ],
   },
   {
+    label: 'Savings & Goals',
+    items: [
+      { id: 'compound', label: 'Compound Interest', icon: PiggyBank, color: 'text-prism-teal', bg: 'from-prism-teal/20 to-prism-teal/5' },
+      { id: 'emergency', label: 'Emergency Fund', icon: Shield, color: 'text-prism-sky', bg: 'from-prism-sky/20 to-prism-sky/5' },
+      { id: 'fire', label: 'FIRE Number', icon: Target, color: 'text-prism-lime', bg: 'from-prism-lime/20 to-prism-lime/5' },
+      { id: 'cdhysa', label: 'CD vs HYSA', icon: PiggyBank, color: 'text-prism-amber', bg: 'from-prism-amber/20 to-prism-amber/5' },
+      { id: 'inflation', label: 'Inflation & Purchasing Power', icon: TrendingUp, color: 'text-prism-amber', bg: 'from-prism-amber/20 to-prism-amber/5' },
+    ],
+  },
+  {
+    label: 'Housing',
+    items: [
+      { id: 'rentvsbuy', label: 'Rent vs Buy', icon: Scale, color: 'text-prism-violet', bg: 'from-prism-violet/20 to-prism-violet/5' },
+      { id: 'homeafford', label: 'Home Affordability', icon: Home, color: 'text-prism-lime', bg: 'from-prism-lime/20 to-prism-lime/5' },
+      { id: 'mortgage', label: 'Mortgage', icon: Home, color: 'text-prism-teal', bg: 'from-prism-teal/20 to-prism-teal/5' },
+      { id: 'heloc-vs-mortgage', label: 'HELOC vs Mortgage', icon: Home, color: 'text-prism-amber', bg: 'from-prism-amber/20 to-prism-amber/5' },
+      { id: 'refi', label: 'Refinance Break-Even', icon: Home, color: 'text-prism-sky', bg: 'from-prism-sky/20 to-prism-sky/5' },
+      { id: 'extramtg', label: 'Extra Payment Payoff', icon: Home, color: 'text-prism-rose', bg: 'from-prism-rose/20 to-prism-rose/5' },
+      { id: 'pmi', label: 'PMI Removal', icon: Home, color: 'text-prism-violet', bg: 'from-prism-violet/20 to-prism-violet/5' },
+    ],
+  },
+  {
     label: 'Investing & Retirement',
     items: [
       { id: 'investment', label: 'Investment', icon: TrendingUp, color: 'text-prism-lime', bg: 'from-prism-lime/20 to-prism-lime/5' },
@@ -273,6 +273,11 @@ const CALCULATOR_GROUPS = [
       { id: 'ssclaim', label: 'Social Security Claiming', icon: CalendarDays, color: 'text-prism-sky', bg: 'from-prism-sky/20 to-prism-sky/5' },
       { id: 'rothladder', label: 'Roth Conversion Ladder', icon: ArrowLeftRight, color: 'text-prism-violet', bg: 'from-prism-violet/20 to-prism-violet/5' },
       { id: 'rmd', label: 'RMD Projection', icon: CalendarDays, color: 'text-prism-rose', bg: 'from-prism-rose/20 to-prism-rose/5' },
+    ],
+  },
+  {
+    label: 'Business & Revenue',
+    items: [
       { id: 'offers', label: 'Focus Offer', icon: Target, color: 'text-prism-lime', bg: 'from-prism-lime/20 to-prism-lime/5' },
       { id: 'pricing', label: 'Pricing', icon: Tag, color: 'text-prism-amber', bg: 'from-prism-amber/20 to-prism-amber/5' },
     ],
