@@ -7,8 +7,10 @@ import { FileText } from 'lucide-react';
 import { STATE_DATA } from '@/lib/state-data';
 import { fmt$ } from '@/lib/home-buying/mortgage-math';
 
-export default function ClosingCostEstimator() {
-  const [price, setPrice] = useState(350000);
+export default function ClosingCostEstimator({ price: priceProp, onPriceChange }: { price?: number; onPriceChange?: (n: number) => void } = {}) {
+  const [priceLocal, setPriceLocal] = useState(350000);
+  const price = priceProp ?? priceLocal;
+  const setPrice = (n: number) => { onPriceChange ? onPriceChange(n) : setPriceLocal(n); };
   const [state, setState] = useState('OH');
   const stateInfo = STATE_DATA[state] ?? STATE_DATA[''];
 

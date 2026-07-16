@@ -1,15 +1,22 @@
+import { useState } from 'react';
+import { Info } from 'lucide-react';
 import DownPaymentPlanner from './DownPaymentPlanner';
 import ClosingCostEstimator from './ClosingCostEstimator';
 import HiddenCostBudget from './HiddenCostBudget';
 import CreditDebtImpact from './CreditDebtImpact';
 
 export default function HomeBuyingCalculators() {
+  const [price, setPrice] = useState(350000);
   return (
     <div className="space-y-4">
-      <DownPaymentPlanner />
-      <ClosingCostEstimator />
-      <HiddenCostBudget />
-      <CreditDebtImpact />
+      <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/30 border border-border/50 rounded-md px-3 py-2">
+        <Info className="h-3.5 w-3.5 text-prism-teal" />
+        Home Price is shared across all four calculators — change it once and it updates everywhere.
+      </div>
+      <DownPaymentPlanner price={price} onPriceChange={setPrice} />
+      <ClosingCostEstimator price={price} onPriceChange={setPrice} />
+      <HiddenCostBudget price={price} onPriceChange={setPrice} />
+      <CreditDebtImpact price={price} onPriceChange={setPrice} />
     </div>
   );
 }
