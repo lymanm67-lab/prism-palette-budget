@@ -201,7 +201,7 @@ const CALCULATOR_GROUPS = [
       { id: 'rentvsbuy', label: 'Rent vs Buy', icon: Scale, color: 'text-prism-violet', bg: 'from-prism-violet/20 to-prism-violet/5' },
       { id: 'heloc-vs-mortgage', label: 'HELOC vs Mortgage', icon: Home, color: 'text-prism-amber', bg: 'from-prism-amber/20 to-prism-amber/5' },
       { id: 'mortgage', label: 'Mortgage', icon: Home, color: 'text-prism-teal', bg: 'from-prism-teal/20 to-prism-teal/5' },
-      { id: 'mortgage-approval', label: 'Mortgage Approval Engine', icon: Shield, color: 'text-prism-violet', bg: 'from-prism-violet/20 to-prism-violet/5' },
+      
     ],
   },
   {
