@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { STATE_DATA } from '@/lib/state-data';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useCurrency } from '@/hooks/use-currency';
 import { cn } from '@/lib/utils';
@@ -200,7 +201,7 @@ const CALCULATOR_GROUPS = [
       { id: 'rentvsbuy', label: 'Rent vs Buy', icon: Scale, color: 'text-prism-violet', bg: 'from-prism-violet/20 to-prism-violet/5' },
       { id: 'heloc-vs-mortgage', label: 'HELOC vs Mortgage', icon: Home, color: 'text-prism-amber', bg: 'from-prism-amber/20 to-prism-amber/5' },
       { id: 'mortgage', label: 'Mortgage', icon: Home, color: 'text-prism-teal', bg: 'from-prism-teal/20 to-prism-teal/5' },
-      { id: 'mortgage-approval', label: 'Mortgage Approval Engine', icon: Shield, color: 'text-prism-violet', bg: 'from-prism-violet/20 to-prism-violet/5' },
+      
     ],
   },
   {
@@ -1123,6 +1124,12 @@ const Calculators = () => {
       </div>)}
 
       {activeCalc === 'mortgage' && (<div className="mt-6">
+        <Tabs defaultValue="payment" className="w-full">
+          <TabsList className="grid w-full max-w-md grid-cols-2 mb-4">
+            <TabsTrigger value="payment">Payment</TabsTrigger>
+            <TabsTrigger value="approval">Approval</TabsTrigger>
+          </TabsList>
+          <TabsContent value="payment" className="mt-0">
         <CalculatorGuide
           title="Mortgage Calculator"
           icon={Home}
@@ -1266,6 +1273,11 @@ const Calculators = () => {
           results={{ payment: mortgageResult.payment, totalInterest: mortgageResult.totalInterest, totalPaid: mortgageResult.totalPaid }}
           hasResults={mortgageResult.payment > 0}
         />
+          </TabsContent>
+          <TabsContent value="approval" className="mt-0">
+            <MortgageApprovalEngine />
+          </TabsContent>
+        </Tabs>
       </div>)}
       {activeCalc === 'auto' && (<div className="mt-6">
         <CalculatorGuide
@@ -2122,7 +2134,7 @@ const Calculators = () => {
       {activeCalc === 'pricing' && (<div className="mt-6"><PricingCalculator /></div>)}
       {activeCalc === 'currency' && <CurrencyExchangeCalculator />}
       {activeCalc === 'heloc-vs-mortgage' && <HelocVsMortgageCalculator />}
-      {activeCalc === 'mortgage-approval' && <MortgageApprovalEngine />}
+      
       
       <CalculatorHistory open={historyOpen} onOpenChange={setHistoryOpen} onRestore={handleRestore} />
     </motion.div>
