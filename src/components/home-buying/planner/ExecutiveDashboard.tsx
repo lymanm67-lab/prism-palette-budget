@@ -159,7 +159,7 @@ export default function ExecutiveDashboard({ project, onNavigate }: { project: a
         <StatCard label="Max Affordable Price" value={maxPrice > 0 ? fmt$(maxPrice) : '—'} sub="At your payment rule" icon={Home} />
         <StatCard label="Monthly Payment Rule" value={paymentRule?.value_numeric ? fmt$(Number(paymentRule.value_numeric)) : '—'} icon={Target} />
         <StatCard label="Est. Closing Costs" value={project.target_price ? fmt$(Number(project.target_price) * 0.03) : '—'} sub="~3% of price" icon={DollarSign} />
-        <StatCard label="Tasks Complete" value={`${tasksComplete}/${tasks.length}`} icon={CheckCircle2} />
+        <StatCard label="Tasks Complete" value={`${tasksComplete}/${tasks.length}`} sub={onNavigate ? 'Click to open list' : undefined} icon={CheckCircle2} onClick={onNavigate ? () => onNavigate('tasks') : undefined} />
       </div>
 
       {/* AI Executive Summary */}
