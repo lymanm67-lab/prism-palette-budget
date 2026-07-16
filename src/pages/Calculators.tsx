@@ -39,6 +39,7 @@ import TrueCostLoanCalculator from '@/components/calculators/TrueCostLoanCalcula
 import PricingCalculator from '@/components/calculators/PricingCalculator';
 import CurrencyExchangeCalculator from '@/components/calculators/CurrencyExchangeCalculator';
 import HelocVsMortgageCalculator from '@/components/calculators/HelocVsMortgageCalculator';
+import MortgageApprovalEngine from '@/components/calculators/MortgageApprovalEngine';
 import FinancialProfileCard from '@/components/FinancialProfileCard';
 
 // ─── Calculation helpers ───
@@ -198,6 +199,7 @@ const CALCULATOR_GROUPS = [
     items: [
       { id: 'safetospend', label: 'Safe-to-Spend', icon: Shield, color: 'text-prism-teal', bg: 'from-prism-teal/20 to-prism-teal/5' },
       { id: 'mortgage', label: 'Mortgage', icon: Home, color: 'text-prism-teal', bg: 'from-prism-teal/20 to-prism-teal/5' },
+      { id: 'mortgage-approval', label: 'Mortgage Approval Engine', icon: Shield, color: 'text-prism-violet', bg: 'from-prism-violet/20 to-prism-violet/5' },
       { id: 'heloc-vs-mortgage', label: 'HELOC vs Mortgage', icon: Home, color: 'text-prism-amber', bg: 'from-prism-amber/20 to-prism-amber/5' },
       { id: 'rentvsbuy', label: 'Rent vs Buy', icon: Scale, color: 'text-prism-violet', bg: 'from-prism-violet/20 to-prism-violet/5' },
     ],
@@ -2126,6 +2128,7 @@ const Calculators = () => {
       {activeCalc === 'pricing' && (<div className="mt-6"><PricingCalculator /></div>)}
       {activeCalc === 'currency' && <CurrencyExchangeCalculator />}
       {activeCalc === 'heloc-vs-mortgage' && <HelocVsMortgageCalculator />}
+      {activeCalc === 'mortgage-approval' && <MortgageApprovalEngine />}
       
       <CalculatorHistory open={historyOpen} onOpenChange={setHistoryOpen} onRestore={handleRestore} />
     </motion.div>
