@@ -5,6 +5,7 @@ interface Req {
   project_id: string;
   section_key: string;
   month_index: number | null;
+  force?: boolean;
 }
 
 Deno.serve(async (req) => {
