@@ -74,13 +74,20 @@ Deno.serve(async (req) => {
     const docsTotal = (docs || []).length;
     const activeRisks = (risks || []).filter((r: any) => r.status === 'open').length;
 
+    const dpSaved = Number(project.down_payment_saved ?? 0);
+    const totalDpFunds = Math.round(savings + dpSaved);
+
     const snapshot = {
       target_close_date: project.target_close_date,
       target_price: project.target_price,
       max_monthly_payment: project.max_monthly_payment,
       down_payment_target: project.down_payment_target,
       loan_type: project.loan_type_preference,
-      savings: Math.round(savings),
+      cash_savings: Math.round(savings),
+      down_payment_saved: dpSaved,
+      down_payment_source: project.down_payment_source || null,
+      dpa_program_note: project.dpa_program_note || null,
+      total_down_payment_funds_available: totalDpFunds,
       docs_missing: docsMissing,
       docs_total: docsTotal,
       open_risks: activeRisks,
