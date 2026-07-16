@@ -87,9 +87,14 @@ const HomeBuyingChecklist = () => {
             ]}
           />
         </div>
+        <Button onClick={handlePrint} disabled={printing} variant="outline" className="gap-2">
+          <Printer className="h-4 w-4" />
+          {printing ? 'Preparing…' : 'Print Readiness Report'}
+        </Button>
       </div>
 
-      <ReadinessHero checklistPct={checklistPct} metrics={metrics} />
+      <div ref={printRef} className="space-y-6">
+        <ReadinessHero checklistPct={checklistPct} metrics={metrics} />
 
       <Tabs value={tab} onValueChange={setTab} className="w-full">
         <TabsList className="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 h-auto p-1 gap-1">
