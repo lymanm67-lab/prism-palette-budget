@@ -1,10 +1,13 @@
 import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CalendarDays, TrendingUp, ShieldAlert, CheckCircle2, DollarSign, Home, Target, Sparkles } from 'lucide-react';
-import { useHpMilestones, useHpTasks, useHpDocuments, useHpRisks, useHpRules, useHpCoach } from '@/hooks/use-hp-planner';
+import { Button } from '@/components/ui/button';
+import { CalendarDays, TrendingUp, ShieldAlert, CheckCircle2, DollarSign, Home, Target, Sparkles, RefreshCw } from 'lucide-react';
+import { useHpMilestones, useHpTasks, useHpDocuments, useHpRisks, useHpRules, useHpCoach, useRefreshHpCoach } from '@/hooks/use-hp-planner';
 import { useHomeBuyingMetrics } from '@/hooks/use-home-buying-metrics';
 import { useSafeToSpend } from '@/hooks/use-safe-to-spend';
+import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
 
 const fmt$ = (n: number) => `$${Math.round(n).toLocaleString()}`;
