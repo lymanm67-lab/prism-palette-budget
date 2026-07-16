@@ -235,6 +235,9 @@ const CALCULATOR_GROUPS = [
       { id: 'paycheck', label: 'Paycheck / Take-Home', icon: Wallet, color: 'text-prism-lime', bg: 'from-prism-lime/20 to-prism-lime/5' },
       { id: 'rothtrad', label: 'Roth vs Traditional', icon: Scale, color: 'text-prism-teal', bg: 'from-prism-teal/20 to-prism-teal/5' },
       { id: 'inflation', label: 'Inflation & Purchasing Power', icon: TrendingUp, color: 'text-prism-amber', bg: 'from-prism-amber/20 to-prism-amber/5' },
+      { id: 'capgains', label: 'Capital Gains Tax', icon: Receipt, color: 'text-prism-rose', bg: 'from-prism-rose/20 to-prism-rose/5' },
+      { id: 'se1099', label: 'Self-Employed Quarterly Tax', icon: CalendarDays, color: 'text-prism-violet', bg: 'from-prism-violet/20 to-prism-violet/5' },
+      { id: 'salaryraise', label: 'Salary Raise Impact', icon: TrendingUp, color: 'text-prism-sky', bg: 'from-prism-sky/20 to-prism-sky/5' },
     ],
   },
   {
