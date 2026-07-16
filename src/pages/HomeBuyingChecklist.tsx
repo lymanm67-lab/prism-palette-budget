@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Home, Bot, GitCompare, Calculator, Landmark, MapPin, Search, CheckCircle2 } from 'lucide-react';
+import { Home, Bot, GitCompare, Calculator, Landmark, MapPin, Search, CheckCircle2, LayoutDashboard } from 'lucide-react';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,6 +14,7 @@ import LoanTypeComparator from '@/components/home-buying/LoanTypeComparator';
 import StateAssistancePicker from '@/components/home-buying/StateAssistancePicker';
 import HomeSearchPanel from '@/components/home-buying/HomeSearchPanel';
 import HomeBuyingChecklistTab from '@/components/home-buying/HomeBuyingChecklistTab';
+import PlannerRoot from '@/components/home-buying/planner/PlannerRoot';
 import { useHomeBuyingMetrics } from '@/hooks/use-home-buying-metrics';
 
 const HomeBuyingChecklist = () => {
