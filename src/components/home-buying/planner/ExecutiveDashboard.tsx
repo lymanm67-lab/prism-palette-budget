@@ -1,10 +1,13 @@
 import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CalendarDays, TrendingUp, ShieldAlert, CheckCircle2, DollarSign, Home, Target, Sparkles } from 'lucide-react';
-import { useHpMilestones, useHpTasks, useHpDocuments, useHpRisks, useHpRules, useHpCoach } from '@/hooks/use-hp-planner';
+import { Button } from '@/components/ui/button';
+import { CalendarDays, TrendingUp, ShieldAlert, CheckCircle2, DollarSign, Home, Target, Sparkles, RefreshCw } from 'lucide-react';
+import { useHpMilestones, useHpTasks, useHpDocuments, useHpRisks, useHpRules, useHpCoach, useRefreshHpCoach } from '@/hooks/use-hp-planner';
 import { useHomeBuyingMetrics } from '@/hooks/use-home-buying-metrics';
 import { useSafeToSpend } from '@/hooks/use-safe-to-spend';
+import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
 
 const fmt$ = (n: number) => `$${Math.round(n).toLocaleString()}`;
@@ -39,6 +42,27 @@ export default function ExecutiveDashboard({ project, onNavigate }: { project: a
   const metrics = useHomeBuyingMetrics();
   const sts = useSafeToSpend('personal');
   const coach = useHpCoach(project.id, 'executive_summary', null);
+  const refreshCoach = useRefreshHpCoach();
+  const qc = useQueryClient();
+
+  const handleRefresh = async () => {
+    await Promise.all([
+      qc.invalidateQueries({ queryKey: ['hp_milestones', project.id] }),
+      qc.invalidateQueries({ queryKey: ['hp_tasks', project.id] }),
+      qc.invalidateQueries({ queryKey: ['hp_documents', project.id] }),
+      qc.invalidateQueries({ queryKey: ['hp_risks', project.id] }),
+      qc.invalidateQueries({ queryKey: ['hp_rules', project.id] }),
+      qc.invalidateQueries({ queryKey: ['home-buying-metrics'] }),
+      qc.invalidateQueries({ queryKey: ['safe-to-spend'] }),
+    ]);
+    refreshCoach.mutate(
+      { projectId: project.id, sectionKey: 'executive_summary', monthIndex: null },
+      {
+        onSuccess: () => toast.success('Summary and figures refreshed'),
+        onError: (e: any) => toast.error(e?.message || 'Refresh failed'),
+      }
+    );
+  };
 
   const daysRemaining = useMemo(() => {
     const target = new Date(project.target_close_date);
@@ -140,11 +164,21 @@ export default function ExecutiveDashboard({ project, onNavigate }: { project: a
 
       {/* AI Executive Summary */}
       <Card className="prism-card-shine border-border/50">
-        <CardHeader className="pb-2">
+        <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
           <CardTitle className="font-display text-sm flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-prism-amber" />
             AI Coach: Executive Summary
           </CardTitle>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 text-xs"
+            onClick={handleRefresh}
+            disabled={refreshCoach.isPending}
+          >
+            <RefreshCw className={`h-3 w-3 mr-1.5 ${refreshCoach.isPending ? 'animate-spin' : ''}`} />
+            {refreshCoach.isPending ? 'Refreshing…' : 'Refresh'}
+          </Button>
         </CardHeader>
         <CardContent>
           {coach.isLoading ? (

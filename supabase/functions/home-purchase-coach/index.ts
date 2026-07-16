@@ -5,6 +5,7 @@ interface Req {
   project_id: string;
   section_key: string;
   month_index: number | null;
+  force?: boolean;
 }
 
 Deno.serve(async (req) => {
@@ -89,18 +90,20 @@ Deno.serve(async (req) => {
 
     const snapshotHash = await hashJson(snapshot);
 
-    // Check cache
-    const { data: cached } = await supabase
-      .from('hp_coach_narratives')
-      .select('*')
-      .eq('project_id', body.project_id)
-      .eq('section_key', body.section_key)
-      .eq('snapshot_hash', snapshotHash)
-      .maybeSingle();
-    if (cached) {
-      return new Response(JSON.stringify({ content_md: cached.content_md, cached: true }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    // Check cache (skip when force=true)
+    if (!body.force) {
+      const { data: cached } = await supabase
+        .from('hp_coach_narratives')
+        .select('*')
+        .eq('project_id', body.project_id)
+        .eq('section_key', body.section_key)
+        .eq('snapshot_hash', snapshotHash)
+        .maybeSingle();
+      if (cached) {
+        return new Response(JSON.stringify({ content_md: cached.content_md, cached: true }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
     }
 
     // Generate via Lovable AI Gateway
