@@ -17,8 +17,10 @@ const SAVING_TECHNIQUES = [
   { title: 'State / city DPA grants', detail: 'Check the State Assistance tab — many programs are forgivable if you stay in the home 5+ years.' },
 ];
 
-export default function DownPaymentPlanner() {
-  const [price, setPrice] = useState(350000);
+export default function DownPaymentPlanner({ price: priceProp, onPriceChange }: { price?: number; onPriceChange?: (n: number) => void } = {}) {
+  const [priceLocal, setPriceLocal] = useState(350000);
+  const price = priceProp ?? priceLocal;
+  const setPrice = (n: number) => { onPriceChange ? onPriceChange(n) : setPriceLocal(n); };
   const [downPct, setDownPct] = useState(10);
   const [currentSaved, setCurrentSaved] = useState(8000);
   const [monthly, setMonthly] = useState(800);
