@@ -164,11 +164,21 @@ export default function ExecutiveDashboard({ project, onNavigate }: { project: a
 
       {/* AI Executive Summary */}
       <Card className="prism-card-shine border-border/50">
-        <CardHeader className="pb-2">
+        <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
           <CardTitle className="font-display text-sm flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-prism-amber" />
             AI Coach: Executive Summary
           </CardTitle>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 text-xs"
+            onClick={handleRefresh}
+            disabled={refreshCoach.isPending}
+          >
+            <RefreshCw className={`h-3 w-3 mr-1.5 ${refreshCoach.isPending ? 'animate-spin' : ''}`} />
+            {refreshCoach.isPending ? 'Refreshing…' : 'Refresh'}
+          </Button>
         </CardHeader>
         <CardContent>
           {coach.isLoading ? (
