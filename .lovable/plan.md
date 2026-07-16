@@ -1,91 +1,150 @@
+# Home Purchase Success Planner
 
-# Mortgage Freedom Intelligence Center — Build Plan
+A month-by-month project management workbook that adapts to the user's target closing date, enforces personal rules, tracks tasks/documents/risks, and produces professional exports.
 
-Full spec (all 14 sections) added to `src/components/calculators/HelocVsMortgageCalculator.tsx` as a new top-level tab **"Freedom Center"** alongside the existing HELOC/Mortgage/Payoff Accelerator content. Data sourced from `useFinancialProfile` + page-local mortgage inputs already on the calculator. Delivered in 3 phases so we can ship value early and stop if scope drifts.
+## Where it lives
+New tab **"Planner"** added to `/home-buying-checklist`, alongside AI Coach, Scenarios, Calculators, Loan Types, State Assistance, Home Search, Checklist.
 
-## Architecture
+Entry point: `src/components/home-buying/planner/PlannerRoot.tsx`, with sub-routes handled by an internal sub-tab bar (Dashboard | Timeline | Monthly | Worksheets | Scenarios | Rules | Exports).
 
-- **New folder:** `src/components/calculators/mortgage-freedom/`
-- **Shared math lib:** `src/lib/mortgage-freedom/` — strategy simulators, freedom-score engine, stress-test engine, rules-based recommender.
-- **AI:** reuse existing `calculator-insights` edge function pattern; add a new `mortgage-freedom-coach` edge function that streams Gemini for the AI Coach narrative and score-improvement suggestions. Auto rules-based verdict renders instantly (free); AI narrative requires button click.
-- **State:** scenarios saved to `localStorage` under `prism.mortgage-freedom.scenarios.v1` (unlimited, no DB — keeps scope tight; can promote to Supabase later).
-- **Charts:** Recharts (already in use).
+## Database (single migration)
 
-## Phase 1 — Foundation & core intelligence (ship first)
+New tables (all household-scoped, RLS + GRANTs, `deleted_at` soft-delete, `updated_at` trigger):
 
-Sections 1, 2, 3, 5, 12, 14 (partial).
+- `hp_projects` — one active project per household. Fields: target_close_date, start_date, target_price, max_monthly_payment, down_payment_target, loan_type_preference, status.
+- `hp_milestones` — auto-seeded from target date. Fields: project_id, month_index, month_label, title, status (pending|in_progress|complete|delayed|blocked), completion_pct, dependencies (uuid[]), due_date.
+- `hp_tasks` — weekly action items under milestones. Fields: milestone_id, week_index (1–4), title, priority, estimated_hours, due_date, status, notes, completed_at.
+- `hp_documents` — doc tracker. Fields: project_id, doc_type (enum: driver_license, pay_stubs, tax_returns, bank_statements, investment_statements, retirement_statements, settlement_letters, student_loan_statements, employment_verification, insurance_quotes, preapproval_letter, closing_disclosure, other), status (missing|uploaded|verified), storage_path, expiration_date, notes. Reuses existing `credit-documents` bucket with `home-purchase/{household_id}/` prefix.
+- `hp_risks` — Fields: project_id, title, probability (low|med|high), impact (low|med|high), mitigation, owner, status.
+- `hp_rules` — personal non-negotiables. Fields: project_id, rule_type (max_payment|min_emergency_fund|no_new_debt|max_hoa|min_retirement_contribution|custom), value_numeric, value_text, is_active. Seeded with defaults on project creation.
+- `hp_scenarios` — Fields: project_id, name, inputs (jsonb: price, down_pct, rate, term, close_month_offset), computed (jsonb: monthly_payment, total_interest, cash_flow_impact, net_worth_10y, retirement_impact, risk_score).
+- `hp_coach_narratives` — cached AI outputs. Fields: project_id, section_key (e.g. `month_5_narrative`, `decision_points`, `rules_review`), month_index, content_md, financial_snapshot_hash, generated_at.
+- `hp_notes` — Fields: project_id, month_index (nullable = general), category (journal|lender|realtor|property|question), title, body.
+- `hp_worksheets` — flexible KV store for the 18 special worksheets. Fields: project_id, worksheet_type, data (jsonb).
 
-1. **Overview Dashboard** — Balance, value, equity, LTV, rate, term, monthly pmt, payoff date, remaining interest, **Freedom Score gauge**.
-2. **Strategy Comparison** — 4 cards side-by-side (Traditional / Extra Principal / HELOC Acceleration / 1st-Lien HELOC Purchase) with inline editable inputs on B, and expandable detail on each.
-3. **Freedom Simulator** — Sliders for all 17 inputs in spec; charts + strategy cards recompute live.
-4. **AI Recommendation Engine** — Rules-based winner + confidence auto-shown; "Explain in detail" button streams AI narrative.
-5. **Freedom Score (§12)** — 10-factor weighted score 0–100 with transparent breakdown drawer; "Improve my score" button → AI suggestions.
-6. **Core visualizations** — Balance-over-time, Equity growth, Interest vs Principal, Payoff timeline race chart.
+RLS: `is_household_member(auth.uid(), household_id)` on all. `service_role` all; `authenticated` CRUD.
 
-## Phase 2 — Decision tools
+## Timeline generator (client-side)
 
-Sections 4, 6, 13.
+`src/lib/home-buying/planner/timeline-generator.ts` — given `target_close_date` and today, returns 12-ish month blocks with default titles + weekly task templates. The 13-month sequence (Financial Assessment → Debt Reduction → Credit Optimization → Documentation → Savings → Settlement Completion → Credit Verification → Mortgage Planning → Lender Shopping → Preapproval → Home Search → Offer & Due Diligence → Closing) compresses/expands proportionally to fit the user's horizon (min 3 months, max 24 months). On project create, seed `hp_milestones` + `hp_tasks` from this.
 
-7. **Home Affordability Planner** — user-defined comfort payment (not lender max) → max/recommended/stretch purchase price + cushion analysis.
-8. **HELOC Stress Testing** — rate shocks (+1/2/3%), income drop, repair, medical, job loss, business decline. Verdict + risk level + adjustments per shock.
-9. **Scenario Comparison Lab** — save/load/name unlimited scenarios; comparison grid across payment, interest, payoff, 10-yr net worth, cash flow, retirement impact, risk, wealth score.
+## UI structure
 
-## Phase 3 — Coaching, integration, notifications
+```
+PlannerRoot.tsx
+├── PlannerOnboarding.tsx        (first-run: target date, price, max payment, rules)
+├── ExecutiveDashboard.tsx        (Page 1: countdown, scores, thermometer, next action)
+├── MasterTimeline.tsx            (Gantt: recharts custom bars, status colors, dependencies)
+├── MonthlyView.tsx               (month selector + all 10 sections A–J)
+│   ├── SectionNarrative.tsx      (AI-cached)
+│   ├── SectionGoals.tsx
+│   ├── SectionWeeklyPlan.tsx     (Week 1–4 checklists)
+│   ├── SectionFinancialDash.tsx  (line/bar/gauge from real Prism data)
+│   ├── SectionMortgageReadiness.tsx
+│   ├── SectionDocuments.tsx      (upload → credit-documents bucket)
+│   ├── SectionRisks.tsx
+│   ├── SectionDecisionPoints.tsx (AI reco)
+│   ├── SectionMilestoneReview.tsx
+│   └── SectionNotes.tsx
+├── Worksheets/                   (18 worksheets, each a card w/ form + save)
+│   ├── MortgageApprovalChecklist.tsx
+│   ├── MortgageUnderwritingChecklist.tsx
+│   ├── CreditImprovementTracker.tsx
+│   ├── DebtSettlementTracker.tsx
+│   ├── SavingsTracker.tsx
+│   ├── DownPaymentTracker.tsx
+│   ├── ClosingCostTracker.tsx
+│   ├── MovingBudget.tsx
+│   ├── UtilityTransferChecklist.tsx
+│   ├── HomeInspectionWorksheet.tsx
+│   ├── PropertyComparisonWorksheet.tsx
+│   ├── OfferEvaluationWorksheet.tsx
+│   ├── LoanEstimateComparison.tsx
+│   ├── ClosingDisclosureReview.tsx
+│   ├── FirstYearHomeownerBudget.tsx
+│   ├── MaintenancePlanner.tsx
+│   ├── WarrantyTracker.tsx
+│   └── EmergencyFundPlanner.tsx
+├── ScenarioPlanner.tsx           (extends existing HomeBuyingScenarios; adds retirement/net-worth impact)
+├── PersonalRulesEngine.tsx       (CRUD rules; live violation banner throughout planner)
+├── ProjectViews/
+│   ├── KanbanView.tsx            (tasks by status)
+│   ├── CalendarView.tsx          (tasks by due_date; react-day-picker)
+│   └── CriticalPathView.tsx      (blocked/overdue/upcoming)
+├── FinalDashboard.tsx            (last-mile summary)
+└── ExportCenter.tsx              (6 export formats)
+```
 
-Sections 7, 8, 9, 10, 11, 14 (remaining viz).
+Reuses existing hooks: `useHomeBuyingMetrics`, `useSafeToSpend`, `useAccounts`, `useCreditAccounts`, `useFinancialGoals`, `useDebtItems`.
 
-10. **Freedom Dashboard gauges** — 8 gauges (equity, progress, interest saved, years eliminated, net worth, freedom score, cash-flow health, DTI).
-11. **First-Time Homebuyer Assistance** — pulls from existing `src/lib/home-buying/state-dpa-programs.ts`; adds federal (FHA, VA, USDA, MCC) + placeholders for county/employer with "check with your HR / county" callouts. No new dataset scraping in Phase 3.
-12. **Wealth Integration panel** — "How this decision affects" cards linking Money Coach, Retirement Planner, Investment Dashboard, Emergency Fund, Tax Planner via existing routes. Read-only impact math; no new writes.
-13. **Smart Notifications** — derived from current inputs (rules engine); rendered inline as dismissible cards. No push/email in this phase.
-14. **AI Mortgage Coach chat surface** — single-shot Q&A input using the same edge function; not a full threaded chatbot.
-15. **Advanced viz completion** — HELOC balance curve, cash flow chart, wealth projection chart.
+## AI Coach (auto-generate + cache)
 
-## Files (approximate)
+Edge function `home-purchase-coach` (new):
+- Inputs: `project_id`, `section_key`, `month_index`.
+- Fetches project state, milestones, financial snapshot (income, obligations, DTI, savings, credit proxy, active rules).
+- Computes `financial_snapshot_hash`; if cached row in `hp_coach_narratives` matches, returns cached.
+- Else calls `google/gemini-2.5-flash` via Lovable AI Gateway with a section-specific system prompt (narrative / decision-points / rules-review / risk-commentary).
+- Writes cache row.
 
-**New**
-- `src/lib/mortgage-freedom/simulators.ts` — 4 strategy simulators (traditional, extra-principal, HELOC accel, 1st-lien purchase).
-- `src/lib/mortgage-freedom/freedom-score.ts` — 10-factor score + breakdown.
-- `src/lib/mortgage-freedom/stress-test.ts` — shock scenarios.
-- `src/lib/mortgage-freedom/recommender.ts` — rules-based winner + confidence.
-- `src/lib/mortgage-freedom/scenarios.ts` — localStorage CRUD.
-- `src/lib/mortgage-freedom/homebuyer-programs.ts` — federal + wraps existing DPA.
-- `src/components/calculators/mortgage-freedom/FreedomCenter.tsx` — tab shell.
-- `src/components/calculators/mortgage-freedom/OverviewDashboard.tsx`
-- `src/components/calculators/mortgage-freedom/StrategyComparison.tsx`
-- `src/components/calculators/mortgage-freedom/FreedomSimulator.tsx`
-- `src/components/calculators/mortgage-freedom/AffordabilityPlanner.tsx`
-- `src/components/calculators/mortgage-freedom/StressTest.tsx`
-- `src/components/calculators/mortgage-freedom/ScenarioLab.tsx`
-- `src/components/calculators/mortgage-freedom/FreedomScoreCard.tsx`
-- `src/components/calculators/mortgage-freedom/FreedomGauges.tsx`
-- `src/components/calculators/mortgage-freedom/HomebuyerAssistance.tsx`
-- `src/components/calculators/mortgage-freedom/WealthIntegration.tsx`
-- `src/components/calculators/mortgage-freedom/SmartNotifications.tsx`
-- `src/components/calculators/mortgage-freedom/AiCoach.tsx`
-- `src/components/calculators/mortgage-freedom/AdvancedCharts.tsx`
-- `supabase/functions/mortgage-freedom-coach/index.ts` — streams Gemini via Lovable AI Gateway.
+Auto-trigger points (client-side `useEffect`):
+- Month change on `MonthlyView`.
+- Rules edit → invalidate `rules_review` cache.
+- Material metric change (>5% delta in savings, income, DTI) → invalidate current-month narrative.
 
-**Edited**
-- `src/components/calculators/HelocVsMortgageCalculator.tsx` — add "Freedom Center" tab that renders `<FreedomCenter />`.
+## Personal Rules Engine
 
-## Technical notes (safe to skim if non-technical)
+- Rules stored per project, seeded with sensible defaults (max_payment=25% gross, min EF=6mo, no new debt, max HOA=$300).
+- `useRuleViolations(project)` hook returns live array of violations across pages: dashboard banner, decision-point AI prompts include rule context, offer-evaluation worksheet flags red on breach.
 
-- All money math is deterministic and unit-testable (pure functions in `src/lib/mortgage-freedom/`).
-- AI is opt-in (button) except for the rules-based winner verdict — keeps credit burn predictable.
-- Freedom Score factors: Housing affordability (DTI), LTV, credit tier, emergency-fund proxy (cash-flow surplus × months), retirement contribution rate (from profile if present, else neutral), monthly surplus %, mortgage-acceleration potential (surplus ÷ balance), interest-savings opportunity (rate delta vs market), overall stability composite, cash-flow health.
-- Stress test = re-run the recommended strategy simulator with perturbed inputs; classify PASS / MARGINAL / FAIL by whether payoff date drifts >12 months or cash flow goes negative >3 months.
-- Scenarios use a stable `id` + `name` + full input snapshot; comparison grid diffs snapshots.
-- No schema changes. No new secrets. `LOVABLE_API_KEY` already provisioned.
+## Exports (all 6 formats)
 
-## Out of scope for this build
+`src/lib/home-buying/planner/exports/`:
+- `exportPlannerPdf.ts` — html2canvas + jsPDF, multi-page: exec dashboard, timeline, each month page, worksheets. Reuses existing `exportToPdf` pattern.
+- `exportPlannerDocx.ts` — `docx` npm lib, structured document with headings, tables, checklists.
+- `exportChecklistXlsx.ts` — `xlsx` npm lib (already indirectly used), tabs: Timeline, Tasks, Docs, Risks, Rules, Scenarios.
+- `exportProjectPlan.ts` — MS Project–compatible XML (`.xml` MSProject 2003 schema) OR CSV fallback; tasks, dependencies, durations.
+- `exportMonthlyReport.ts` — one-page PDF: current-month status, completed vs pending, financial snapshot, AI narrative.
+- `exportLenderPacket.ts` — curated PDF: profile summary, income, debts, credit snapshot, doc index with links, preapproval letter placeholder.
 
-- Real-time market rate feeds (uses user-entered rates).
-- Live homebuyer program eligibility API integrations (uses static + placeholder guidance).
-- Push/email notifications delivery (in-app cards only).
-- Threaded AI chat history (single-shot Q&A only).
-- Promoting scenarios to Supabase (localStorage only).
+Adds npm deps: `docx`, `xlsx` (if not already present).
 
-## What you'll approve
+## Executive Dashboard (Page 1) details
+Real data pulled live:
+- Countdown from `target_close_date`.
+- Overall Readiness = weighted avg (checklist 20%, credit 20%, DTI 20%, savings 20%, docs 20%).
+- Mortgage Approval Score = existing `mortgage-underwriter` edge function response, cached.
+- Max Affordable Price = derived from max_monthly_payment rule + current rates.
+- Cash Available / EF / DTI = existing hooks.
+- Next Required Action = first pending task by due_date.
 
-Approving this plan starts **Phase 1** only. I'll pause after Phase 1 for review before starting Phase 2, and again before Phase 3. That gives you natural credit-checkpoint gates matching your discipline rules.
+## Master Timeline (Gantt)
+Custom recharts-free implementation: horizontal bars per milestone, colored by status, connected dependency arrows (SVG), current-week vertical line. Click bar → jump to that month.
+
+## Scope estimate
+- 1 migration (10 tables)
+- 1 edge function (`home-purchase-coach`)
+- 6 export utilities
+- ~55 new component files
+- 1 new bucket prefix reused (`credit-documents`)
+- Hook additions: `use-hp-project`, `use-hp-milestones`, `use-hp-tasks`, `use-hp-documents`, `use-hp-risks`, `use-hp-rules`, `use-hp-scenarios`, `use-rule-violations`, `use-hp-coach`.
+
+## Build order (single pass, one delivery)
+1. Migration + types regen
+2. Timeline generator + hooks
+3. PlannerRoot + Onboarding + ExecutiveDashboard
+4. MasterTimeline + MonthlyView (all 10 sections)
+5. 18 Worksheets
+6. Rules Engine + Scenario Planner extensions
+7. Kanban/Calendar/Critical Path views
+8. Coach edge function + cache wiring
+9. 6 Exports
+10. FinalDashboard, tab wiring into `HomeBuyingChecklist.tsx`
+
+## Non-goals
+- No real-time collaboration (household RLS only, no presence).
+- No live rate feeds — user enters current rate; existing scenario math applies.
+- Preapproval letter is a placeholder in the lender packet; no lender API integration.
+- No mobile-specific redesign beyond responsive Tailwind.
+
+## Credit warning
+This is the largest single feature in the app to date. Expect substantial credit spend and multiple follow-up iterations for polish. Confirming "full build in one go" acknowledges this.
