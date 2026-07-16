@@ -19,7 +19,7 @@ import { useHomeBuyingMetrics } from '@/hooks/use-home-buying-metrics';
 
 const HomeBuyingChecklist = () => {
   const { household } = useHousehold();
-  const [tab, setTab] = useState('coach');
+  const [tab, setTab] = useState('planner');
 
   const { data: checklist } = useQuery({
     queryKey: ['homebuyer_checklist', household?.id],
