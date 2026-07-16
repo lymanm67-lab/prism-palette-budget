@@ -722,7 +722,7 @@ const Calculators = () => {
 
           {/* Featured row — 3 promoted calculators */}
           {(() => {
-            const FEATURED_IDS = ['safetospend', 'mortgage', 'heloc-vs-mortgage'];
+            const FEATURED_IDS = ['safetospend'];
             const featured = CALCULATORS.filter(c => FEATURED_IDS.includes(c.id));
             if (pickerSearch.trim()) return null;
             return (
@@ -749,7 +749,7 @@ const Calculators = () => {
                       <div className="min-w-0">
                         <div className="text-sm font-semibold truncate">{c.label}</div>
                         <div className="text-[11px] truncate text-muted-foreground">
-                          {c.id === 'safetospend' ? 'Daily · weekly · monthly limits' : c.id === 'mortgage' ? 'Payment · amortization · PMI' : 'Payoff-speed strategy compare'}
+                          Daily · weekly · monthly limits
                         </div>
                       </div>
                     </button>
@@ -783,7 +783,7 @@ const Calculators = () => {
           <div className="space-y-3">
             {CALCULATOR_GROUPS.map(group => {
               const q = pickerSearch.trim().toLowerCase();
-              const featuredIds = q ? [] : ['safetospend', 'mortgage', 'heloc-vs-mortgage'];
+              const featuredIds = q ? [] : ['safetospend'];
               const items = group.items.filter(i =>
                 !featuredIds.includes(i.id) &&
                 (!q || i.label.toLowerCase().includes(q))
