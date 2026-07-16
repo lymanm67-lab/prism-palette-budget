@@ -7,7 +7,7 @@ import HiddenCostBudget from './HiddenCostBudget';
 import CreditDebtImpact from './CreditDebtImpact';
 
 export default function HomeBuyingCalculators() {
-  const [price, setPrice] = useState(350000);
+  const [price, setPrice] = useState(185000);
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/30 border border-border/50 rounded-md px-3 py-2">
