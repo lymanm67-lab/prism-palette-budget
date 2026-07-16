@@ -11,6 +11,7 @@ import { useHomeBuyingMetrics } from '@/hooks/use-home-buying-metrics';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
+import RisksPanel from './RisksPanel';
 
 const RULE_TYPES = [
   { value: 'max_payment', label: 'Max monthly payment ($)' },
