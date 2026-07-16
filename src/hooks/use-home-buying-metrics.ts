@@ -91,5 +91,5 @@ export function useHomeBuyingMetrics() {
         raw: monthsCovered,
       },
     ];
-  }, [accounts, creditAccounts, sts.monthlyIncome, sts.monthlyObligations]);
+  }, [accounts, creditAccounts, sts.monthlyIncome, sts.monthlyObligations, profile.creditScore]);
 }
