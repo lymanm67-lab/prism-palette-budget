@@ -179,6 +179,9 @@ export default function ExecutiveDashboard({ project, onNavigate }: { project: a
         <StatCard label="Tasks Complete" value={`${tasksComplete}/${tasks.length}`} sub={onNavigate ? 'Click to open list' : undefined} icon={CheckCircle2} onClick={onNavigate ? () => onNavigate('tasks') : undefined} />
       </div>
 
+      {/* Down Payment Details editor — feeds the coach snapshot */}
+      <DownPaymentDetailsEditor project={project} />
+
       {/* AI Executive Summary */}
       <Card className="prism-card-shine border-border/50">
         <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
