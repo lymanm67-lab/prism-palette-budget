@@ -64,6 +64,7 @@ import RMDCalculator from '@/components/calculators/RMDCalculator';
 import PMIRemovalCalculator from '@/components/calculators/PMIRemovalCalculator';
 import ExtraMortgagePaymentCalculator from '@/components/calculators/ExtraMortgagePaymentCalculator';
 import FinancialProfileCard from '@/components/FinancialProfileCard';
+import CalculatorQuiz from '@/components/CalculatorQuiz';
 
 // ─── Calculation helpers ───
 
@@ -769,6 +770,12 @@ const Calculators = () => {
         <>
           {/* Shared household profile — auto-fills supported calculators */}
           <FinancialProfileCard />
+
+          {/* Guided finder — recommends calculators based on user goal */}
+          {!pickerSearch.trim() && (
+            <CalculatorQuiz calculators={CALCULATORS} onPick={setActiveCalc} />
+          )}
+
 
           {/* Featured row — 3 promoted calculators */}
           {(() => {
