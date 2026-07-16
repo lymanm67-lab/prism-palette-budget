@@ -1124,6 +1124,12 @@ const Calculators = () => {
       </div>)}
 
       {activeCalc === 'mortgage' && (<div className="mt-6">
+        <Tabs defaultValue="payment" className="w-full">
+          <TabsList className="grid w-full max-w-md grid-cols-2 mb-4">
+            <TabsTrigger value="payment">Payment</TabsTrigger>
+            <TabsTrigger value="approval">Approval</TabsTrigger>
+          </TabsList>
+          <TabsContent value="payment" className="mt-0">
         <CalculatorGuide
           title="Mortgage Calculator"
           icon={Home}
