@@ -1,17 +1,15 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Home, Bot, GitCompare, Calculator, Landmark, MapPin, Search, CheckCircle2, LayoutDashboard } from 'lucide-react';
+import { Home, Bot, Calculator, Landmark, Search, CheckCircle2, LayoutDashboard } from 'lucide-react';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import PageOverview from '@/components/PageOverview';
 import ReadinessHero from '@/components/home-buying/ReadinessHero';
 import AiHomeBuyingCoach from '@/components/home-buying/AiHomeBuyingCoach';
-import HomeBuyingScenarios from '@/components/home-buying/HomeBuyingScenarios';
 import HomeBuyingCalculators from '@/components/home-buying/HomeBuyingCalculators';
-import LoanTypeComparator from '@/components/home-buying/LoanTypeComparator';
-import StateAssistancePicker from '@/components/home-buying/StateAssistancePicker';
+import LoansAndAssistance from '@/components/home-buying/LoansAndAssistance';
 import HomeSearchPanel from '@/components/home-buying/HomeSearchPanel';
 import HomeBuyingChecklistTab from '@/components/home-buying/HomeBuyingChecklistTab';
 import PlannerRoot from '@/components/home-buying/planner/PlannerRoot';
@@ -37,10 +35,8 @@ const HomeBuyingChecklist = () => {
   const TABS = [
     { id: 'planner', label: 'Planner', icon: LayoutDashboard },
     { id: 'coach', label: 'AI Coach', icon: Bot },
-    { id: 'scenarios', label: 'Scenarios', icon: GitCompare },
     { id: 'calculators', label: 'Calculators', icon: Calculator },
-    { id: 'loans', label: 'Loan Types', icon: Landmark },
-    { id: 'assistance', label: 'State Assistance', icon: MapPin },
+    { id: 'loans', label: 'Loans & Assistance', icon: Landmark },
     { id: 'search', label: 'Home Search', icon: Search },
     { id: 'checklist', label: 'Checklist', icon: CheckCircle2 },
   ];
@@ -75,7 +71,7 @@ const HomeBuyingChecklist = () => {
       <ReadinessHero checklistPct={checklistPct} metrics={metrics} />
 
       <Tabs value={tab} onValueChange={setTab} className="w-full">
-        <TabsList className="w-full grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 h-auto p-1 gap-1">
+        <TabsList className="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 h-auto p-1 gap-1">
           {TABS.map((t) => {
             const Icon = t.icon;
             return (
@@ -89,10 +85,8 @@ const HomeBuyingChecklist = () => {
 
         <TabsContent value="planner" className="mt-4"><PlannerRoot /></TabsContent>
         <TabsContent value="coach" className="mt-4"><AiHomeBuyingCoach /></TabsContent>
-        <TabsContent value="scenarios" className="mt-4"><HomeBuyingScenarios /></TabsContent>
         <TabsContent value="calculators" className="mt-4"><HomeBuyingCalculators /></TabsContent>
-        <TabsContent value="loans" className="mt-4"><LoanTypeComparator /></TabsContent>
-        <TabsContent value="assistance" className="mt-4"><StateAssistancePicker /></TabsContent>
+        <TabsContent value="loans" className="mt-4"><LoansAndAssistance /></TabsContent>
         <TabsContent value="search" className="mt-4"><HomeSearchPanel /></TabsContent>
         <TabsContent value="checklist" className="mt-4"><HomeBuyingChecklistTab /></TabsContent>
       </Tabs>
