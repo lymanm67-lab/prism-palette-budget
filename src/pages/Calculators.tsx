@@ -246,6 +246,7 @@ const CALCULATOR_GROUPS = [
       { id: 'compound', label: 'Compound Interest', icon: PiggyBank, color: 'text-prism-teal', bg: 'from-prism-teal/20 to-prism-teal/5' },
       { id: 'emergency', label: 'Emergency Fund', icon: Shield, color: 'text-prism-sky', bg: 'from-prism-sky/20 to-prism-sky/5' },
       { id: 'fire', label: 'FIRE Number', icon: Target, color: 'text-prism-lime', bg: 'from-prism-lime/20 to-prism-lime/5' },
+      { id: 'cdhysa', label: 'CD vs HYSA', icon: PiggyBank, color: 'text-prism-amber', bg: 'from-prism-amber/20 to-prism-amber/5' },
     ],
   },
   {
