@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { LayoutDashboard, GanttChart, CalendarClock, ClipboardList, ShieldCheck, GitCompare, FileDown } from 'lucide-react';
+import { LayoutDashboard, GanttChart, CalendarClock, ListChecks, ClipboardList, ShieldCheck, GitCompare, FileDown } from 'lucide-react';
 import { useHpProject } from '@/hooks/use-hp-planner';
 import PlannerOnboarding from './PlannerOnboarding';
 import ExecutiveDashboard from './ExecutiveDashboard';
@@ -11,6 +11,7 @@ import WorksheetsIndex from './WorksheetsIndex';
 import RulesEngine from './RulesEngine';
 import ExportCenter from './ExportCenter';
 import TimelineViews from './TimelineViews';
+import TasksMasterList from './TasksMasterList';
 import HomeBuyingScenarios from '@/components/home-buying/HomeBuyingScenarios';
 
 export default function PlannerRoot() {
@@ -25,6 +26,7 @@ export default function PlannerRoot() {
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'timeline', label: 'Timeline', icon: GanttChart },
     { id: 'monthly', label: 'Monthly', icon: CalendarClock },
+    { id: 'tasks', label: 'Tasks', icon: ListChecks },
     { id: 'worksheets', label: 'Worksheets', icon: ClipboardList },
     { id: 'rules', label: 'Rules & Risks', icon: ShieldCheck },
     { id: 'scenarios', label: 'Scenarios', icon: GitCompare },
@@ -34,7 +36,7 @@ export default function PlannerRoot() {
     <div id="planner-print-root" className="space-y-4">
       <Tabs value={tab} onValueChange={setTab}>
         <div className="flex items-start gap-2">
-          <TabsList className="flex-1 w-full grid grid-cols-3 sm:grid-cols-6 h-auto p-1 gap-1">
+          <TabsList className="flex-1 w-full grid grid-cols-3 sm:grid-cols-7 h-auto p-1 gap-1">
             {TABS.map((t) => {
               const Icon = t.icon;
               return (
@@ -67,6 +69,9 @@ export default function PlannerRoot() {
           <div id="monthly-view-root">
             <MonthlyView projectId={project.id} monthIndex={monthIndex} onChangeMonth={setMonthIndex} />
           </div>
+        </TabsContent>
+        <TabsContent value="tasks" className="mt-4">
+          <TasksMasterList projectId={project.id} onOpenMonth={(i) => { setMonthIndex(i); setTab('monthly'); }} />
         </TabsContent>
         <TabsContent value="worksheets" className="mt-4"><WorksheetsIndex projectId={project.id} /></TabsContent>
         <TabsContent value="rules" className="mt-4"><RulesEngine projectId={project.id} /></TabsContent>
