@@ -13,12 +13,14 @@ export default function DownPaymentDetailsEditor({ project }: { project: any }) 
   const [saved, setSaved] = useState<string>(project.down_payment_saved ?? '');
   const [source, setSource] = useState<string>(project.down_payment_source ?? '');
   const [dpa, setDpa] = useState<string>(project.dpa_program_note ?? '');
+  const [ef, setEf] = useState<string>(project.emergency_fund_balance ?? '');
 
   useEffect(() => {
     setSaved(project.down_payment_saved ?? '');
     setSource(project.down_payment_source ?? '');
     setDpa(project.dpa_program_note ?? '');
-  }, [project.id, project.down_payment_saved, project.down_payment_source, project.dpa_program_note]);
+    setEf(project.emergency_fund_balance ?? '');
+  }, [project.id, project.down_payment_saved, project.down_payment_source, project.dpa_program_note, project.emergency_fund_balance]);
 
   const handleSave = () => {
     updateProject.mutate(
@@ -28,10 +30,11 @@ export default function DownPaymentDetailsEditor({ project }: { project: any }) 
           down_payment_saved: saved === '' ? null : Number(saved),
           down_payment_source: source.trim() || null,
           dpa_program_note: dpa.trim() || null,
-        },
+          emergency_fund_balance: ef === '' ? null : Number(ef),
+        } as any,
       },
       {
-        onSuccess: () => toast.success('Down payment details saved — refresh the AI summary to update.'),
+        onSuccess: () => toast.success('Details saved — refresh the AI summary to update.'),
         onError: (e: any) => toast.error(e?.message || 'Save failed'),
       }
     );
