@@ -42,6 +42,27 @@ export default function ExecutiveDashboard({ project, onNavigate }: { project: a
   const metrics = useHomeBuyingMetrics();
   const sts = useSafeToSpend('personal');
   const coach = useHpCoach(project.id, 'executive_summary', null);
+  const refreshCoach = useRefreshHpCoach();
+  const qc = useQueryClient();
+
+  const handleRefresh = async () => {
+    await Promise.all([
+      qc.invalidateQueries({ queryKey: ['hp_milestones', project.id] }),
+      qc.invalidateQueries({ queryKey: ['hp_tasks', project.id] }),
+      qc.invalidateQueries({ queryKey: ['hp_documents', project.id] }),
+      qc.invalidateQueries({ queryKey: ['hp_risks', project.id] }),
+      qc.invalidateQueries({ queryKey: ['hp_rules', project.id] }),
+      qc.invalidateQueries({ queryKey: ['home-buying-metrics'] }),
+      qc.invalidateQueries({ queryKey: ['safe-to-spend'] }),
+    ]);
+    refreshCoach.mutate(
+      { projectId: project.id, sectionKey: 'executive_summary', monthIndex: null },
+      {
+        onSuccess: () => toast.success('Summary and figures refreshed'),
+        onError: (e: any) => toast.error(e?.message || 'Refresh failed'),
+      }
+    );
+  };
 
   const daysRemaining = useMemo(() => {
     const target = new Date(project.target_close_date);
