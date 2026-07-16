@@ -5,8 +5,10 @@ import { Label } from '@/components/ui/label';
 import { Wrench, AlertTriangle } from 'lucide-react';
 import { fmt$ } from '@/lib/home-buying/mortgage-math';
 
-export default function HiddenCostBudget() {
-  const [price, setPrice] = useState(350000);
+export default function HiddenCostBudget({ price: priceProp, onPriceChange }: { price?: number; onPriceChange?: (n: number) => void } = {}) {
+  const [priceLocal, setPriceLocal] = useState(350000);
+  const price = priceProp ?? priceLocal;
+  const setPrice = (n: number) => { onPriceChange ? onPriceChange(n) : setPriceLocal(n); };
   const [maintPct, setMaintPct] = useState(1.5);
   const [utilities, setUtilities] = useState(220);
   const [hoa, setHoa] = useState(0);
