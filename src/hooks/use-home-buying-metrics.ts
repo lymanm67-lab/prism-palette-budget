@@ -92,5 +92,5 @@ export function useHomeBuyingMetrics(overrideEmergencyFund?: number | null) {
         raw: monthsCovered,
       },
     ];
-  }, [accounts, creditAccounts, sts.monthlyIncome, sts.monthlyObligations, profile.creditScore]);
+  }, [accounts, creditAccounts, sts.monthlyIncome, sts.monthlyObligations, profile.creditScore, overrideEmergencyFund]);
 }
