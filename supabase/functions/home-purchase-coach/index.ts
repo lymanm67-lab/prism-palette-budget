@@ -203,7 +203,7 @@ function buildSystemPrompt(sectionKey: string): string {
     return `${base}\n\nSection: Rules Review. Check each active rule against the client's current numbers. Flag any at risk of being violated. Reinforce that the AI enforces these rules throughout the plan. Under 200 words.`;
   }
   if (sectionKey === 'executive_summary') {
-    return `${base}\n\nSection: Executive Summary. Give an at-a-glance picture: readiness level, biggest risk, next best action. 3 short paragraphs, under 200 words.`;
+    return `${base}\n\nSection: Executive Summary. Give an at-a-glance picture: readiness level, biggest risk, next best action. 3 short paragraphs, under 200 words.\n\nIMPORTANT — down payment funds: treat "total_down_payment_funds_available" as the client's real down-payment pool, NOT "cash_savings" alone. It includes cash_savings PLUS "down_payment_saved" (money already earmarked from other sources — see "down_payment_source", which may be a retirement-account loan, gift, or similar). Reference the down_payment_source by name when it exists. If "dpa_program_note" is present, acknowledge that the client qualifies for that down payment assistance program and factor it into readiness and next steps. Never say the client has $0 saved when down_payment_saved > 0.`;
   }
   if (sectionKey === 'mortgage_readiness') {
     return `${base}\n\nSection: Mortgage Readiness. Estimate approval probability (Low/Medium/High) with a one-line reason. List remaining requirements as bullets. Under 200 words.`;
