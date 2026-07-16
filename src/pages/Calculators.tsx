@@ -2201,6 +2201,14 @@ const Calculators = () => {
       {activeCalc === 'lifeins' && (<div className="mt-6"><LifeInsuranceCalculator /></div>)}
       {activeCalc === 'inflation' && (<div className="mt-6"><InflationCalculator /></div>)}
       {activeCalc === 'leasevsbuy' && (<div className="mt-6"><LeaseVsBuyCalculator /></div>)}
+      {activeCalc === 'capgains' && (<div className="mt-6"><CapitalGainsCalculator /></div>)}
+      {activeCalc === 'se1099' && (<div className="mt-6"><SelfEmployedTaxCalculator /></div>)}
+      {activeCalc === 'rothladder' && (<div className="mt-6"><RothConversionLadderCalculator /></div>)}
+      {activeCalc === 'cdhysa' && (<div className="mt-6"><CDvsHYSACalculator /></div>)}
+      {activeCalc === 'salaryraise' && (<div className="mt-6"><SalaryRaiseCalculator /></div>)}
+      {activeCalc === 'rmd' && (<div className="mt-6"><RMDCalculator /></div>)}
+      {activeCalc === 'pmi' && (<div className="mt-6"><PMIRemovalCalculator /></div>)}
+      {activeCalc === 'extramtg' && (<div className="mt-6"><ExtraMortgagePaymentCalculator /></div>)}
       
       
       <CalculatorHistory open={historyOpen} onOpenChange={setHistoryOpen} onRestore={handleRestore} />
