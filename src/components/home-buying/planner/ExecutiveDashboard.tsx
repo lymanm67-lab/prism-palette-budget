@@ -127,7 +127,7 @@ export default function ExecutiveDashboard({ project, onNavigate }: { project: a
         <StatCard label="Down Payment" value={dpMetric?.value ?? '—'} sub={`Target: ${fmt$(project.down_payment_target || 0)}`} icon={DollarSign} />
         <StatCard label="Emergency Fund" value={efMetric?.value ?? '—'} icon={CheckCircle2} />
         <StatCard label="Milestones" value={`${milestonesComplete}/${milestones.length}`} icon={Home} />
-        <StatCard label="Open Risks" value={String(openRisks)} icon={ShieldAlert} tone={openRisks > 5 ? 'warn' : 'default'} />
+        <StatCard label="Open Risks" value={String(openRisks)} sub={openRisks > 0 ? 'Click to review' : undefined} icon={ShieldAlert} tone={openRisks > 5 ? 'warn' : 'default'} onClick={onNavigate ? () => onNavigate('rules') : undefined} />
       </div>
 
       {/* Secondary numbers */}
