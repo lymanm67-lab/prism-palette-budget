@@ -160,26 +160,24 @@ export default function ExecutiveDashboard({ project, onNavigate }: { project: a
         <StatCard label="Credit" value={creditMetric?.value ?? '—'} icon={TrendingUp} tone="success" />
         <StatCard label="DTI" value={dtiMetric?.value ?? '—'} icon={Target} />
         <StatCard
-          label="Down Payment"
+          label="Down Payment Required"
           value={(() => {
-            const cash = dpMetric?.raw ?? 0;
-            const saved = Number(project.down_payment_saved ?? 0);
-            const total = cash + saved;
-            return total > 0 ? fmt$(total) : '—';
-          })()}
-          sub={(() => {
-            const saved = Number(project.down_payment_saved ?? 0);
             const price = Number(project.target_price || 0);
             const loan = (project.loan_type_preference || '').toString().toUpperCase();
             const pctByLoan: Record<string, number> = { FHA: 0.035, VA: 0, USDA: 0, CONVENTIONAL: 0.05 };
             const pct = pctByLoan[loan] ?? null;
             const minReq = pct !== null && price ? price * pct : Number(project.down_payment_target || 0);
-            const label = pct !== null
-              ? `${loan} min (${(pct * 100).toFixed(1)}%): ${fmt$(minReq)}`
-              : `Target: ${fmt$(minReq)}`;
-            return saved > 0
-              ? `${label} · Incl. ${fmt$(saved)} ${project.down_payment_source ? `(${project.down_payment_source})` : 'earmarked'}`
-              : label;
+            return minReq > 0 ? fmt$(minReq) : '—';
+          })()}
+          sub={(() => {
+            const loan = (project.loan_type_preference || '').toString().toUpperCase();
+            const pctByLoan: Record<string, number> = { FHA: 0.035, VA: 0, USDA: 0, CONVENTIONAL: 0.05 };
+            const pct = pctByLoan[loan] ?? null;
+            const cash = dpMetric?.raw ?? 0;
+            const saved = Number(project.down_payment_saved ?? 0);
+            const total = cash + saved;
+            const loanLabel = pct !== null ? `${loan} ${(pct * 100).toFixed(1)}%` : 'Target';
+            return `${loanLabel} · You have ${fmt$(total)}`;
           })()}
           icon={DollarSign}
         />
