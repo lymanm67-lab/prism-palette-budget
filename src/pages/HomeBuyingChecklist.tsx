@@ -35,6 +35,7 @@ const HomeBuyingChecklist = () => {
   const metrics = useHomeBuyingMetrics();
 
   const TABS = [
+    { id: 'planner', label: 'Planner', icon: LayoutDashboard },
     { id: 'coach', label: 'AI Coach', icon: Bot },
     { id: 'scenarios', label: 'Scenarios', icon: GitCompare },
     { id: 'calculators', label: 'Calculators', icon: Calculator },
