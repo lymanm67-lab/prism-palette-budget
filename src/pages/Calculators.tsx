@@ -2171,6 +2171,20 @@ const Calculators = () => {
       {activeCalc === 'pricing' && (<div className="mt-6"><PricingCalculator /></div>)}
       {activeCalc === 'currency' && <CurrencyExchangeCalculator />}
       {activeCalc === 'heloc-vs-mortgage' && <HelocVsMortgageCalculator />}
+      {activeCalc === 'paycheck' && (<div className="mt-6"><PaycheckCalculator /></div>)}
+      {activeCalc === 'match401k' && (<div className="mt-6"><Match401kCalculator /></div>)}
+      {activeCalc === 'rothtrad' && (<div className="mt-6"><RothVsTraditionalCalculator /></div>)}
+      {activeCalc === 'compound' && (<div className="mt-6"><CompoundInterestCalculator /></div>)}
+      {activeCalc === 'refi' && (<div className="mt-6"><RefinanceBreakEvenCalculator /></div>)}
+      {activeCalc === 'homeafford' && (<div className="mt-6"><HomeAffordabilityCalculator /></div>)}
+      {activeCalc === 'emergency' && (<div className="mt-6"><EmergencyFundCalculator /></div>)}
+      {activeCalc === 'snowvsava' && (<div className="mt-6"><SnowballVsAvalancheCalculator /></div>)}
+      {activeCalc === 'ssclaim' && (<div className="mt-6"><SocialSecurityCalculator /></div>)}
+      {activeCalc === 'fire' && (<div className="mt-6"><FireCalculator /></div>)}
+      {activeCalc === 'studentloan' && (<div className="mt-6"><StudentLoanCalculator /></div>)}
+      {activeCalc === 'lifeins' && (<div className="mt-6"><LifeInsuranceCalculator /></div>)}
+      {activeCalc === 'inflation' && (<div className="mt-6"><InflationCalculator /></div>)}
+      {activeCalc === 'leasevsbuy' && (<div className="mt-6"><LeaseVsBuyCalculator /></div>)}
       
       
       <CalculatorHistory open={historyOpen} onOpenChange={setHistoryOpen} onRestore={handleRestore} />
