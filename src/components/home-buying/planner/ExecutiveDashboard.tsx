@@ -6,7 +6,9 @@ import { CalendarDays, TrendingUp, ShieldAlert, CheckCircle2, DollarSign, Home, 
 import { useHpMilestones, useHpTasks, useHpDocuments, useHpRisks, useHpRules, useHpCoach, useRefreshHpCoach } from '@/hooks/use-hp-planner';
 import { useHomeBuyingMetrics } from '@/hooks/use-home-buying-metrics';
 import { useSafeToSpend } from '@/hooks/use-safe-to-spend';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useHousehold } from '@/contexts/HouseholdContext';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
 import DownPaymentDetailsEditor from './DownPaymentDetailsEditor';
@@ -76,17 +78,25 @@ export default function ExecutiveDashboard({ project, onNavigate }: { project: a
   const docsUploaded = docs.filter((d: any) => d.status !== 'missing').length;
   const openRisks = risks.filter((r: any) => r.status === 'open').length;
 
+  // Unified readiness score — MUST match the ReadinessHero formula on the page header
+  // so users don't see two different percentages. Formula: average of the 8-question
+  // checklist completion + the 4 hero metrics (Down Payment, Credit, DTI, Emergency Fund).
+  const { household } = useHousehold();
+  const { data: checklist = [] } = useQuery({
+    queryKey: ['homebuyer_checklist', household?.id],
+    enabled: !!household,
+    queryFn: async () => {
+      const { data, error } = await supabase.from('homebuyer_checklist').select('*').eq('household_id', household!.id);
+      if (error) throw error;
+      return data || [];
+    },
+  });
+  const checklistPct = ((checklist?.filter((p: any) => p.is_checked).length ?? 0) / 8) * 100;
+
   const readinessScore = useMemo(() => {
-    const parts: number[] = [];
-    const milestonePct = milestones.length ? (milestonesComplete / milestones.length) * 100 : 0;
-    parts.push(milestonePct);
-    const taskPct = tasks.length ? (tasksComplete / tasks.length) * 100 : 0;
-    parts.push(taskPct);
-    const docPct = docs.length ? (docsUploaded / docs.length) * 100 : 0;
-    parts.push(docPct);
-    parts.push(...metrics.map((m) => m.pct));
+    const parts: number[] = [checklistPct, ...metrics.map((m) => m.pct)];
     return parts.length ? Math.round(parts.reduce((a, b) => a + b, 0) / parts.length) : 0;
-  }, [milestones, milestonesComplete, tasks, tasksComplete, docs, docsUploaded, metrics]);
+  }, [checklistPct, metrics]);
 
   const nextTask = tasks.find((t: any) => t.status !== 'complete');
 
