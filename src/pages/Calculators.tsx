@@ -2134,7 +2134,7 @@ const Calculators = () => {
       {activeCalc === 'pricing' && (<div className="mt-6"><PricingCalculator /></div>)}
       {activeCalc === 'currency' && <CurrencyExchangeCalculator />}
       {activeCalc === 'heloc-vs-mortgage' && <HelocVsMortgageCalculator />}
-      {activeCalc === 'mortgage-approval' && <MortgageApprovalEngine />}
+      
       
       <CalculatorHistory open={historyOpen} onOpenChange={setHistoryOpen} onRestore={handleRestore} />
     </motion.div>
