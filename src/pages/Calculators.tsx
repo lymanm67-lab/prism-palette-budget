@@ -1273,6 +1273,11 @@ const Calculators = () => {
           results={{ payment: mortgageResult.payment, totalInterest: mortgageResult.totalInterest, totalPaid: mortgageResult.totalPaid }}
           hasResults={mortgageResult.payment > 0}
         />
+          </TabsContent>
+          <TabsContent value="approval" className="mt-0">
+            <MortgageApprovalEngine />
+          </TabsContent>
+        </Tabs>
       </div>)}
       {activeCalc === 'auto' && (<div className="mt-6">
         <CalculatorGuide
