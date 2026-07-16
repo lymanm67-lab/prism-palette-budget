@@ -1986,6 +1986,518 @@ export type Database = {
         }
         Relationships: []
       }
+      hp_coach_narratives: {
+        Row: {
+          content_md: string
+          created_at: string
+          generated_at: string
+          household_id: string
+          id: string
+          month_index: number | null
+          project_id: string
+          section_key: string
+          snapshot_hash: string
+          updated_at: string
+        }
+        Insert: {
+          content_md: string
+          created_at?: string
+          generated_at?: string
+          household_id: string
+          id?: string
+          month_index?: number | null
+          project_id: string
+          section_key: string
+          snapshot_hash: string
+          updated_at?: string
+        }
+        Update: {
+          content_md?: string
+          created_at?: string
+          generated_at?: string
+          household_id?: string
+          id?: string
+          month_index?: number | null
+          project_id?: string
+          section_key?: string
+          snapshot_hash?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hp_coach_narratives_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "hp_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hp_documents: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          doc_type: string
+          expiration_date: string | null
+          household_id: string
+          id: string
+          label: string | null
+          notes: string | null
+          project_id: string
+          status: string
+          storage_path: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          doc_type: string
+          expiration_date?: string | null
+          household_id: string
+          id?: string
+          label?: string | null
+          notes?: string | null
+          project_id: string
+          status?: string
+          storage_path?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          doc_type?: string
+          expiration_date?: string | null
+          household_id?: string
+          id?: string
+          label?: string | null
+          notes?: string | null
+          project_id?: string
+          status?: string
+          storage_path?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hp_documents_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "hp_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hp_milestones: {
+        Row: {
+          completion_pct: number
+          created_at: string
+          deleted_at: string | null
+          dependencies: string[]
+          description: string | null
+          due_date: string | null
+          household_id: string
+          id: string
+          month_index: number
+          month_label: string
+          project_id: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          completion_pct?: number
+          created_at?: string
+          deleted_at?: string | null
+          dependencies?: string[]
+          description?: string | null
+          due_date?: string | null
+          household_id: string
+          id?: string
+          month_index: number
+          month_label: string
+          project_id: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          completion_pct?: number
+          created_at?: string
+          deleted_at?: string | null
+          dependencies?: string[]
+          description?: string | null
+          due_date?: string | null
+          household_id?: string
+          id?: string
+          month_index?: number
+          month_label?: string
+          project_id?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hp_milestones_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "hp_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hp_notes: {
+        Row: {
+          body: string
+          category: string
+          created_at: string
+          deleted_at: string | null
+          household_id: string
+          id: string
+          month_index: number | null
+          project_id: string
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          category?: string
+          created_at?: string
+          deleted_at?: string | null
+          household_id: string
+          id?: string
+          month_index?: number | null
+          project_id: string
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          category?: string
+          created_at?: string
+          deleted_at?: string | null
+          household_id?: string
+          id?: string
+          month_index?: number | null
+          project_id?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hp_notes_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "hp_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hp_projects: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          down_payment_target: number | null
+          household_id: string
+          id: string
+          loan_type_preference: string | null
+          max_monthly_payment: number | null
+          name: string
+          start_date: string
+          status: string
+          target_close_date: string
+          target_price: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          down_payment_target?: number | null
+          household_id: string
+          id?: string
+          loan_type_preference?: string | null
+          max_monthly_payment?: number | null
+          name?: string
+          start_date?: string
+          status?: string
+          target_close_date: string
+          target_price?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          down_payment_target?: number | null
+          household_id?: string
+          id?: string
+          loan_type_preference?: string | null
+          max_monthly_payment?: number | null
+          name?: string
+          start_date?: string
+          status?: string
+          target_close_date?: string
+          target_price?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hp_projects_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hp_risks: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          household_id: string
+          id: string
+          impact: string
+          mitigation: string | null
+          owner: string | null
+          probability: string
+          project_id: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          household_id: string
+          id?: string
+          impact?: string
+          mitigation?: string | null
+          owner?: string | null
+          probability?: string
+          project_id: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          household_id?: string
+          id?: string
+          impact?: string
+          mitigation?: string | null
+          owner?: string | null
+          probability?: string
+          project_id?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hp_risks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "hp_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hp_rules: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          household_id: string
+          id: string
+          is_active: boolean
+          label: string
+          project_id: string
+          rule_type: string
+          updated_at: string
+          value_numeric: number | null
+          value_text: string | null
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          household_id: string
+          id?: string
+          is_active?: boolean
+          label: string
+          project_id: string
+          rule_type: string
+          updated_at?: string
+          value_numeric?: number | null
+          value_text?: string | null
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          household_id?: string
+          id?: string
+          is_active?: boolean
+          label?: string
+          project_id?: string
+          rule_type?: string
+          updated_at?: string
+          value_numeric?: number | null
+          value_text?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hp_rules_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "hp_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hp_scenarios: {
+        Row: {
+          computed: Json
+          created_at: string
+          deleted_at: string | null
+          household_id: string
+          id: string
+          inputs: Json
+          name: string
+          project_id: string
+          updated_at: string
+        }
+        Insert: {
+          computed?: Json
+          created_at?: string
+          deleted_at?: string | null
+          household_id: string
+          id?: string
+          inputs?: Json
+          name: string
+          project_id: string
+          updated_at?: string
+        }
+        Update: {
+          computed?: Json
+          created_at?: string
+          deleted_at?: string | null
+          household_id?: string
+          id?: string
+          inputs?: Json
+          name?: string
+          project_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hp_scenarios_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "hp_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hp_tasks: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          deleted_at: string | null
+          due_date: string | null
+          estimated_hours: number | null
+          household_id: string
+          id: string
+          milestone_id: string
+          notes: string | null
+          priority: string
+          project_id: string
+          status: string
+          title: string
+          updated_at: string
+          week_index: number
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          due_date?: string | null
+          estimated_hours?: number | null
+          household_id: string
+          id?: string
+          milestone_id: string
+          notes?: string | null
+          priority?: string
+          project_id: string
+          status?: string
+          title: string
+          updated_at?: string
+          week_index?: number
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          due_date?: string | null
+          estimated_hours?: number | null
+          household_id?: string
+          id?: string
+          milestone_id?: string
+          notes?: string | null
+          priority?: string
+          project_id?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          week_index?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hp_tasks_milestone_id_fkey"
+            columns: ["milestone_id"]
+            isOneToOne: false
+            referencedRelation: "hp_milestones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hp_worksheets: {
+        Row: {
+          created_at: string
+          data: Json
+          deleted_at: string | null
+          household_id: string
+          id: string
+          project_id: string
+          updated_at: string
+          worksheet_type: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json
+          deleted_at?: string | null
+          household_id: string
+          id?: string
+          project_id: string
+          updated_at?: string
+          worksheet_type: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          deleted_at?: string | null
+          household_id?: string
+          id?: string
+          project_id?: string
+          updated_at?: string
+          worksheet_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hp_worksheets_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "hp_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       investment_asset_tags: {
         Row: {
           amount_override: number | null
