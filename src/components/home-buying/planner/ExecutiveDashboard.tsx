@@ -9,10 +9,17 @@ import ReactMarkdown from 'react-markdown';
 
 const fmt$ = (n: number) => `$${Math.round(n).toLocaleString()}`;
 
-function StatCard({ label, value, sub, icon: Icon, tone = 'default' }: { label: string; value: string; sub?: string; icon: any; tone?: 'default' | 'success' | 'warn' | 'danger' }) {
+function StatCard({ label, value, sub, icon: Icon, tone = 'default', onClick }: { label: string; value: string; sub?: string; icon: any; tone?: 'default' | 'success' | 'warn' | 'danger'; onClick?: () => void }) {
   const toneClass = tone === 'success' ? 'text-prism-teal' : tone === 'warn' ? 'text-prism-amber' : tone === 'danger' ? 'text-prism-rose' : 'text-foreground';
+  const clickable = onClick ? 'cursor-pointer hover:border-prism-amber/60 hover:bg-card/70 transition' : '';
   return (
-    <div className="rounded-lg border border-border/40 bg-card/40 p-3 space-y-1">
+    <div
+      className={`rounded-lg border border-border/40 bg-card/40 p-3 space-y-1 ${clickable}`}
+      onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } } : undefined}
+    >
       <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground font-bold">
         <Icon className="h-3 w-3" />
         <span className="truncate">{label}</span>
@@ -23,7 +30,7 @@ function StatCard({ label, value, sub, icon: Icon, tone = 'default' }: { label: 
   );
 }
 
-export default function ExecutiveDashboard({ project }: { project: any }) {
+export default function ExecutiveDashboard({ project, onNavigate }: { project: any; onNavigate?: (tab: string) => void }) {
   const { data: milestones = [] } = useHpMilestones(project.id);
   const { data: tasks = [] } = useHpTasks(project.id);
   const { data: docs = [] } = useHpDocuments(project.id);
@@ -120,7 +127,7 @@ export default function ExecutiveDashboard({ project }: { project: any }) {
         <StatCard label="Down Payment" value={dpMetric?.value ?? '—'} sub={`Target: ${fmt$(project.down_payment_target || 0)}`} icon={DollarSign} />
         <StatCard label="Emergency Fund" value={efMetric?.value ?? '—'} icon={CheckCircle2} />
         <StatCard label="Milestones" value={`${milestonesComplete}/${milestones.length}`} icon={Home} />
-        <StatCard label="Open Risks" value={String(openRisks)} icon={ShieldAlert} tone={openRisks > 5 ? 'warn' : 'default'} />
+        <StatCard label="Open Risks" value={String(openRisks)} sub={openRisks > 0 ? 'Click to review' : undefined} icon={ShieldAlert} tone={openRisks > 5 ? 'warn' : 'default'} onClick={onNavigate ? () => onNavigate('rules') : undefined} />
       </div>
 
       {/* Secondary numbers */}
