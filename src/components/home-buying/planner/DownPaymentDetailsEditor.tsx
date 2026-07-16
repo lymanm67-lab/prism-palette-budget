@@ -51,7 +51,7 @@ export default function DownPaymentDetailsEditor({ project }: { project: any }) 
           Tell the AI coach about funds you already have earmarked (retirement loans, gifts, etc.) and any down-payment assistance program you qualify for.
         </p>
       </CardHeader>
-      <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <CardContent className="grid grid-cols-1 md:grid-cols-4 gap-3">
         <div>
           <Label className="text-xs">Already Saved / Earmarked ($)</Label>
           <Input
@@ -80,7 +80,17 @@ export default function DownPaymentDetailsEditor({ project }: { project: any }) 
             className="h-8 mt-1"
           />
         </div>
-        <div className="md:col-span-3 flex justify-end">
+        <div>
+          <Label className="text-xs">Emergency Fund Balance ($)</Label>
+          <Input
+            type="number"
+            value={ef}
+            onChange={(e) => setEf(e.target.value)}
+            placeholder="e.g. 18000"
+            className="h-8 mt-1"
+          />
+        </div>
+        <div className="md:col-span-4 flex justify-end">
           <Button size="sm" onClick={handleSave} disabled={updateProject.isPending}>
             <Save className="h-3.5 w-3.5 mr-1.5" />
             {updateProject.isPending ? 'Saving…' : 'Save details'}
