@@ -215,7 +215,24 @@ const CALCULATOR_GROUPS = [
       { id: 'rentvsbuy', label: 'Rent vs Buy', icon: Scale, color: 'text-prism-violet', bg: 'from-prism-violet/20 to-prism-violet/5' },
       { id: 'heloc-vs-mortgage', label: 'HELOC vs Mortgage', icon: Home, color: 'text-prism-amber', bg: 'from-prism-amber/20 to-prism-amber/5' },
       { id: 'mortgage', label: 'Mortgage', icon: Home, color: 'text-prism-teal', bg: 'from-prism-teal/20 to-prism-teal/5' },
-      
+      { id: 'homeafford', label: 'Home Affordability', icon: Home, color: 'text-prism-lime', bg: 'from-prism-lime/20 to-prism-lime/5' },
+      { id: 'refi', label: 'Refinance Break-Even', icon: Home, color: 'text-prism-sky', bg: 'from-prism-sky/20 to-prism-sky/5' },
+    ],
+  },
+  {
+    label: 'Taxes & Paycheck',
+    items: [
+      { id: 'paycheck', label: 'Paycheck / Take-Home', icon: Wallet, color: 'text-prism-lime', bg: 'from-prism-lime/20 to-prism-lime/5' },
+      { id: 'rothtrad', label: 'Roth vs Traditional', icon: Scale, color: 'text-prism-teal', bg: 'from-prism-teal/20 to-prism-teal/5' },
+      { id: 'inflation', label: 'Inflation & Purchasing Power', icon: TrendingUp, color: 'text-prism-amber', bg: 'from-prism-amber/20 to-prism-amber/5' },
+    ],
+  },
+  {
+    label: 'Savings & Goals',
+    items: [
+      { id: 'compound', label: 'Compound Interest', icon: PiggyBank, color: 'text-prism-teal', bg: 'from-prism-teal/20 to-prism-teal/5' },
+      { id: 'emergency', label: 'Emergency Fund', icon: Shield, color: 'text-prism-sky', bg: 'from-prism-sky/20 to-prism-sky/5' },
+      { id: 'fire', label: 'FIRE Number', icon: Target, color: 'text-prism-lime', bg: 'from-prism-lime/20 to-prism-lime/5' },
     ],
   },
   {
@@ -223,17 +240,22 @@ const CALCULATOR_GROUPS = [
     items: [
       { id: 'credit', label: 'Credit Card Payoff', icon: CreditCard, color: 'text-prism-rose', bg: 'from-prism-rose/20 to-prism-rose/5' },
       { id: 'debt', label: 'General Debt', icon: DollarSign, color: 'text-prism-amber', bg: 'from-prism-amber/20 to-prism-amber/5' },
+      { id: 'snowvsava', label: 'Snowball vs Avalanche', icon: DollarSign, color: 'text-prism-violet', bg: 'from-prism-violet/20 to-prism-violet/5' },
+      { id: 'studentloan', label: 'Student Loan', icon: BookOpen, color: 'text-prism-teal', bg: 'from-prism-teal/20 to-prism-teal/5' },
       { id: 'truecost', label: 'True Cost Loan', icon: Receipt, color: 'text-prism-rose', bg: 'from-prism-rose/20 to-prism-rose/5' },
       { id: 'carafford', label: 'Car Affordability', icon: Car, color: 'text-prism-sky', bg: 'from-prism-sky/20 to-prism-sky/5' },
       { id: 'auto', label: 'Auto Loan', icon: Car, color: 'text-prism-sky', bg: 'from-prism-sky/20 to-prism-sky/5' },
+      { id: 'leasevsbuy', label: 'Lease vs Buy (Auto)', icon: Car, color: 'text-prism-amber', bg: 'from-prism-amber/20 to-prism-amber/5' },
     ],
   },
   {
-    label: 'Investing & Business',
+    label: 'Investing & Retirement',
     items: [
       { id: 'investment', label: 'Investment', icon: TrendingUp, color: 'text-prism-lime', bg: 'from-prism-lime/20 to-prism-lime/5' },
       { id: 'retiregoal', label: 'Retirement Goal', icon: Target, color: 'text-prism-teal', bg: 'from-prism-teal/20 to-prism-teal/5' },
       { id: 'wealth', label: 'Wealth Multiplier', icon: PiggyBank, color: 'text-prism-indigo', bg: 'from-prism-indigo/20 to-prism-indigo/5' },
+      { id: 'match401k', label: '401(k) Match Optimizer', icon: TrendingUp, color: 'text-prism-teal', bg: 'from-prism-teal/20 to-prism-teal/5' },
+      { id: 'ssclaim', label: 'Social Security Claiming', icon: CalendarDays, color: 'text-prism-sky', bg: 'from-prism-sky/20 to-prism-sky/5' },
       { id: 'offers', label: 'Focus Offer', icon: Target, color: 'text-prism-lime', bg: 'from-prism-lime/20 to-prism-lime/5' },
       { id: 'pricing', label: 'Pricing', icon: Tag, color: 'text-prism-amber', bg: 'from-prism-amber/20 to-prism-amber/5' },
     ],
@@ -243,6 +265,7 @@ const CALCULATOR_GROUPS = [
     items: [
       { id: 'wedding', label: 'Wedding Budget', icon: Heart, color: 'text-prism-rose', bg: 'from-prism-rose/20 to-prism-rose/5' },
       { id: 'baby', label: 'Baby Cost', icon: Baby, color: 'text-prism-sky', bg: 'from-prism-sky/20 to-prism-sky/5' },
+      { id: 'lifeins', label: 'Life Insurance Need', icon: Shield, color: 'text-prism-violet', bg: 'from-prism-violet/20 to-prism-violet/5' },
       { id: 'holiday', label: 'Holiday & Gifts', icon: Gift, color: 'text-prism-rose', bg: 'from-prism-rose/20 to-prism-rose/5' },
       { id: 'bigpurchase', label: 'Big Purchase', icon: ShoppingBag, color: 'text-prism-amber', bg: 'from-prism-amber/20 to-prism-amber/5' },
     ],
