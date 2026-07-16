@@ -22,7 +22,7 @@ interface Listing {
   sources?: string[];
 }
 
-const STYLES = ['Any', 'Ranch', 'Colonial', 'Craftsman', 'Cape Cod', 'Contemporary', 'Tudor', 'Victorian', 'Townhouse', 'Condo'];
+const STYLES = ['Any', 'Ranch', 'Colonial', 'Craftsman', 'Cape Cod', 'Contemporary', 'Tudor', 'Victorian', 'Bi-level / Split-level', 'Townhouse', 'Condo'];
 
 export default function HomeSearchPanel() {
   const [location, setLocation] = useState('');
