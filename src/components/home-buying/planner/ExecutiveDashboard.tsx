@@ -9,6 +9,7 @@ import { useSafeToSpend } from '@/hooks/use-safe-to-spend';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
+import DownPaymentDetailsEditor from './DownPaymentDetailsEditor';
 
 const fmt$ = (n: number) => `$${Math.round(n).toLocaleString()}`;
 
@@ -148,7 +149,23 @@ export default function ExecutiveDashboard({ project, onNavigate }: { project: a
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
         <StatCard label="Credit" value={creditMetric?.value ?? '—'} icon={TrendingUp} tone="success" />
         <StatCard label="DTI" value={dtiMetric?.value ?? '—'} icon={Target} />
-        <StatCard label="Down Payment" value={dpMetric?.value ?? '—'} sub={`Target: ${fmt$(project.down_payment_target || 0)}`} icon={DollarSign} />
+        <StatCard
+          label="Down Payment"
+          value={(() => {
+            const cash = dpMetric?.raw ?? 0;
+            const saved = Number(project.down_payment_saved ?? 0);
+            const total = cash + saved;
+            return total > 0 ? fmt$(total) : '—';
+          })()}
+          sub={(() => {
+            const saved = Number(project.down_payment_saved ?? 0);
+            const target = fmt$(project.down_payment_target || 0);
+            return saved > 0
+              ? `Target: ${target} · Incl. ${fmt$(saved)} ${project.down_payment_source ? `(${project.down_payment_source})` : 'earmarked'}`
+              : `Target: ${target}`;
+          })()}
+          icon={DollarSign}
+        />
         <StatCard label="Emergency Fund" value={efMetric?.value ?? '—'} icon={CheckCircle2} />
         <StatCard label="Milestones" value={`${milestonesComplete}/${milestones.length}`} icon={Home} />
         <StatCard label="Open Risks" value={String(openRisks)} sub={openRisks > 0 ? 'Click to review' : undefined} icon={ShieldAlert} tone={openRisks > 5 ? 'warn' : 'default'} onClick={onNavigate ? () => onNavigate('rules') : undefined} />
@@ -161,6 +178,9 @@ export default function ExecutiveDashboard({ project, onNavigate }: { project: a
         <StatCard label="Est. Closing Costs" value={project.target_price ? fmt$(Number(project.target_price) * 0.03) : '—'} sub="~3% of price" icon={DollarSign} />
         <StatCard label="Tasks Complete" value={`${tasksComplete}/${tasks.length}`} sub={onNavigate ? 'Click to open list' : undefined} icon={CheckCircle2} onClick={onNavigate ? () => onNavigate('tasks') : undefined} />
       </div>
+
+      {/* Down Payment Details editor — feeds the coach snapshot */}
+      <DownPaymentDetailsEditor project={project} />
 
       {/* AI Executive Summary */}
       <Card className="prism-card-shine border-border/50">
