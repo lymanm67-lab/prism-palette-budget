@@ -6,7 +6,9 @@ import { CalendarDays, TrendingUp, ShieldAlert, CheckCircle2, DollarSign, Home, 
 import { useHpMilestones, useHpTasks, useHpDocuments, useHpRisks, useHpRules, useHpCoach, useRefreshHpCoach } from '@/hooks/use-hp-planner';
 import { useHomeBuyingMetrics } from '@/hooks/use-home-buying-metrics';
 import { useSafeToSpend } from '@/hooks/use-safe-to-spend';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useHousehold } from '@/contexts/HouseholdContext';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
 import DownPaymentDetailsEditor from './DownPaymentDetailsEditor';
