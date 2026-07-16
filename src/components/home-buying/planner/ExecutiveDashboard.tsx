@@ -9,6 +9,7 @@ import { useSafeToSpend } from '@/hooks/use-safe-to-spend';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
+import DownPaymentDetailsEditor from './DownPaymentDetailsEditor';
 
 const fmt$ = (n: number) => `$${Math.round(n).toLocaleString()}`;
 
