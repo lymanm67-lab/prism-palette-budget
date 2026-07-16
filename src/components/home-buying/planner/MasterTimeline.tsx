@@ -2,6 +2,8 @@ import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Info } from 'lucide-react';
 import { useHpMilestones, useHpTasks, useUpdateMilestone } from '@/hooks/use-hp-planner';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -53,9 +55,31 @@ export default function MasterTimeline({ projectId, onSelectMonth }: { projectId
                 style={{ gridTemplateColumns: '180px 100px 1fr 80px 80px' }}
                 onClick={() => onSelectMonth?.(m.month_index)}
               >
-                <div className="space-y-0.5 pl-2">
+                <div className="space-y-0.5 pl-2 min-w-0">
                   <div className="text-[10px] text-muted-foreground font-bold">{m.month_label}</div>
-                  <div className="text-sm font-display font-bold truncate">{m.title}</div>
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <div className="text-sm font-display font-bold truncate">{m.title}</div>
+                    {m.description && (
+                      <TooltipProvider delayDuration={0}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              onClick={(e) => e.stopPropagation()}
+                              className="shrink-0 rounded-full p-0.5 text-muted-foreground hover:text-prism-amber hover:bg-prism-amber/10 transition"
+                              aria-label={`What is ${m.title}?`}
+                            >
+                              <Info className="h-3.5 w-3.5" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="right" className="max-w-xs text-xs leading-relaxed">
+                            <div className="font-bold mb-1">{m.title}</div>
+                            <div className="text-muted-foreground">{m.description}</div>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
+                  </div>
                 </div>
                 <div onClick={(e) => e.stopPropagation()}>
                   <Select value={m.status} onValueChange={(v) => updateM.mutate({ id: m.id, patch: { status: v } })}>
