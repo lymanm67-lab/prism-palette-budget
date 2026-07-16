@@ -23,6 +23,7 @@ export function useHomeBuyingMetrics() {
   const { data: accounts } = useAccounts();
   const { accounts: creditAccounts } = useCreditAccounts();
   const sts = useSafeToSpend('personal');
+  const { profile } = useFinancialProfile();
 
   return useMemo<HomeBuyingMetric[]>(() => {
     // Down Payment — savings + checking surplus
@@ -36,7 +37,8 @@ export function useHomeBuyingMetrics() {
     const dpTarget = 50000;
     const dpPct = Math.min(100, (savings / dpTarget) * 100);
 
-    // Credit — revolving utilization → score proxy
+    // Credit — prefer user-entered FICO from Financial Profile; fall back to utilization proxy
+    const enteredFico = parseInt(profile.creditScore) || 0;
     const revolving = (creditAccounts || []).filter(
       (a) => (a.account_type || '').toLowerCase().includes('revolv') || (a.credit_limit ?? 0) > 0
     );
@@ -44,8 +46,9 @@ export function useHomeBuyingMetrics() {
     const totalBal = revolving.reduce((s, a) => s + Number(a.balance || 0), 0);
     const util = totalLimit > 0 ? (totalBal / totalLimit) * 100 : 0;
     // Score proxy: 850 if 0% util, 550 at 100%+ util
-    const scoreProxy = totalLimit > 0 ? Math.max(550, Math.round(850 - util * 3)) : 0;
-    const creditPct = totalLimit > 0 ? Math.min(100, ((scoreProxy - 550) / 300) * 100) : 0;
+    const proxyScore = totalLimit > 0 ? Math.max(550, Math.round(850 - util * 3)) : 0;
+    const scoreProxy = enteredFico > 0 ? enteredFico : proxyScore;
+    const creditPct = scoreProxy > 0 ? Math.min(100, Math.max(0, ((scoreProxy - 550) / 300) * 100)) : 0;
 
     // DTI — obligations / income
     const income = sts.monthlyIncome || 0;
