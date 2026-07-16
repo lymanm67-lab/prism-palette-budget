@@ -116,6 +116,7 @@ const HomeBuyingChecklist = () => {
         <TabsContent value="search" className="mt-4 space-y-4"><AppreciationInfo /><HomeSearchPanel /></TabsContent>
         <TabsContent value="checklist" className="mt-4"><HomeBuyingChecklistTab /></TabsContent>
       </Tabs>
+      </div>
     </motion.div>
   );
 };
