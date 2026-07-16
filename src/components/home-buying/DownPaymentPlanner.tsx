@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
-import { PiggyBank, Lightbulb } from 'lucide-react';
+import { PiggyBank, Lightbulb, Landmark } from 'lucide-react';
 import { fmt$ } from '@/lib/home-buying/mortgage-math';
 
 const SAVING_TECHNIQUES = [
@@ -22,9 +22,14 @@ export default function DownPaymentPlanner({ price: priceProp, onPriceChange }: 
   const price = priceProp ?? priceLocal;
   const setPrice = (n: number) => { onPriceChange ? onPriceChange(n) : setPriceLocal(n); };
   const [downPct, setDownPct] = useState(3.5);
-  const [currentSaved, setCurrentSaved] = useState(8000);
+  const [currentSaved, setCurrentSaved] = useState(7000);
   const [monthly, setMonthly] = useState(800);
   const [apy, setApy] = useState(4.5);
+
+  // Retirement-account loan repayment model
+  const [loanAmount, setLoanAmount] = useState(7000);
+  const [loanRate, setLoanRate] = useState(8.5);
+  const [loanTerm, setLoanTerm] = useState(60);
 
   const result = useMemo(() => {
     const target = price * (downPct / 100);
@@ -38,6 +43,17 @@ export default function DownPaymentPlanner({ price: priceProp, onPriceChange }: 
     }
     return { target, remaining, months, years: months / 12 };
   }, [price, downPct, currentSaved, monthly, apy]);
+
+  const loanResult = useMemo(() => {
+    const r = loanRate / 100 / 12;
+    const n = Math.max(1, loanTerm);
+    const monthlyPayment = r === 0
+      ? loanAmount / n
+      : (loanAmount * r) / (1 - Math.pow(1 + r, -n));
+    const totalRepaid = monthlyPayment * n;
+    const totalInterest = totalRepaid - loanAmount;
+    return { monthlyPayment, totalRepaid, totalInterest };
+  }, [loanAmount, loanRate, loanTerm]);
 
   return (
     <Card className="prism-card-shine border-border/50">
@@ -60,6 +76,7 @@ export default function DownPaymentPlanner({ price: priceProp, onPriceChange }: 
           <div>
             <Label className="text-xs">Already Saved</Label>
             <Input type="number" value={currentSaved} onChange={(e) => setCurrentSaved(+e.target.value)} />
+            <p className="text-[10px] text-muted-foreground mt-1">Retirement-account loan</p>
           </div>
           <div>
             <Label className="text-xs">Monthly</Label>
@@ -89,6 +106,50 @@ export default function DownPaymentPlanner({ price: priceProp, onPriceChange }: 
         </div>
 
         <Accordion type="single" collapsible>
+          <AccordionItem value="retirement-loan" className="border-border/40">
+            <AccordionTrigger className="text-sm">
+              <span className="flex items-center gap-2">
+                <Landmark className="h-4 w-4 text-prism-teal" />
+                Retirement-account loan repayment
+              </span>
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="space-y-4 text-sm">
+                <p className="text-xs text-muted-foreground">
+                  Models paying back a 401(k) or retirement-plan loan used for the down payment. Payments are typically payroll-deducted and paid back with after-tax dollars.
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div>
+                    <Label className="text-xs">Loan Amount</Label>
+                    <Input type="number" value={loanAmount} onChange={(e) => setLoanAmount(+e.target.value)} />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Interest Rate %</Label>
+                    <Input type="number" step="0.1" value={loanRate} onChange={(e) => setLoanRate(+e.target.value)} />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Term (months)</Label>
+                    <Input type="number" value={loanTerm} onChange={(e) => setLoanTerm(+e.target.value)} />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Monthly Payment</Label>
+                    <Input type="text" readOnly value={fmt$(loanResult.monthlyPayment)} className="bg-card/40" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-lg border border-border/40 bg-card/40 p-3">
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Total Interest</p>
+                    <p className="font-display text-base font-bold">{fmt$(loanResult.totalInterest)}</p>
+                  </div>
+                  <div className="rounded-lg border border-border/40 bg-card/40 p-3">
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Total Repaid</p>
+                    <p className="font-display text-base font-bold">{fmt$(loanResult.totalRepaid)}</p>
+                  </div>
+                </div>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+
           <AccordionItem value="techniques" className="border-border/40">
             <AccordionTrigger className="text-sm">
               <span className="flex items-center gap-2">
