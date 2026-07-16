@@ -1,0 +1,1 @@
+ALTER TABLE public.hp_projects ADD COLUMN IF NOT EXISTS emergency_fund_balance numeric;
