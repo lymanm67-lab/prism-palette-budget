@@ -70,6 +70,9 @@ export default function PlannerRoot() {
             <MonthlyView projectId={project.id} monthIndex={monthIndex} onChangeMonth={setMonthIndex} />
           </div>
         </TabsContent>
+        <TabsContent value="tasks" className="mt-4">
+          <TasksMasterList projectId={project.id} onOpenMonth={(i) => { setMonthIndex(i); setTab('monthly'); }} />
+        </TabsContent>
         <TabsContent value="worksheets" className="mt-4"><WorksheetsIndex projectId={project.id} /></TabsContent>
         <TabsContent value="rules" className="mt-4"><RulesEngine projectId={project.id} /></TabsContent>
         <TabsContent value="scenarios" className="mt-4"><HomeBuyingScenarios /></TabsContent>
