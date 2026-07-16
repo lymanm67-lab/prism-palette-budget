@@ -225,6 +225,8 @@ const CALCULATOR_GROUPS = [
       { id: 'mortgage', label: 'Mortgage', icon: Home, color: 'text-prism-teal', bg: 'from-prism-teal/20 to-prism-teal/5' },
       { id: 'homeafford', label: 'Home Affordability', icon: Home, color: 'text-prism-lime', bg: 'from-prism-lime/20 to-prism-lime/5' },
       { id: 'refi', label: 'Refinance Break-Even', icon: Home, color: 'text-prism-sky', bg: 'from-prism-sky/20 to-prism-sky/5' },
+      { id: 'extramtg', label: 'Extra Payment Payoff', icon: Home, color: 'text-prism-rose', bg: 'from-prism-rose/20 to-prism-rose/5' },
+      { id: 'pmi', label: 'PMI Removal', icon: Home, color: 'text-prism-violet', bg: 'from-prism-violet/20 to-prism-violet/5' },
     ],
   },
   {
