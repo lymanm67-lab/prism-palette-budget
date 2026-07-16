@@ -142,8 +142,16 @@ Deno.serve(async (req) => {
     const aiJson = await aiRes.json();
     const content = aiJson?.choices?.[0]?.message?.content || 'Unable to generate narrative.';
 
-    // Upsert cache
-    await supabase.from('hp_coach_narratives').upsert({
+    // Cache result — delete any previous rows for this key, then insert
+    let delQ = supabase
+      .from('hp_coach_narratives')
+      .delete()
+      .eq('project_id', body.project_id)
+      .eq('section_key', body.section_key);
+    delQ = body.month_index === null ? delQ.is('month_index', null) : delQ.eq('month_index', body.month_index);
+    await delQ;
+
+    await supabase.from('hp_coach_narratives').insert({
       project_id: body.project_id,
       household_id: project.household_id,
       section_key: body.section_key,
@@ -151,7 +159,7 @@ Deno.serve(async (req) => {
       content_md: content,
       snapshot_hash: snapshotHash,
       generated_at: new Date().toISOString(),
-    } as any, { onConflict: 'project_id,section_key,month_index' } as any);
+    } as any);
 
     return new Response(JSON.stringify({ content_md: content, cached: false }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
