@@ -773,73 +773,12 @@ const Calculators = () => {
       {/* Picker — hidden when a calculator is active */}
       {!activeCalc && (
         <>
-          {/* Shared household profile — auto-fills supported calculators */}
-          <FinancialProfileCard />
-
-          {/* Guided finder — recommends calculators based on user goal */}
+          {/* 1. Guided finder — recommends calculators based on user goal */}
           {!pickerSearch.trim() && (
             <CalculatorQuiz calculators={CALCULATORS} onPick={setActiveCalc} />
           )}
 
-          {/* Home Buying shortcut — full planner lives on its own page */}
-          {!pickerSearch.trim() && (
-            <a
-              href="/home-buying"
-              className="flex items-center gap-3 rounded-2xl border border-prism-amber/40 bg-gradient-to-br from-prism-amber/10 to-prism-amber/5 p-4 hover:border-prism-amber/60 hover:shadow-lg transition-all group"
-            >
-              <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-background/60 backdrop-blur-sm group-hover:scale-110 transition-transform">
-                <Home className="h-5 w-5 text-prism-amber" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="text-sm font-semibold">Buying a home?</div>
-                <div className="text-xs text-muted-foreground">Open the full Home-Buying Readiness planner — coach, scenarios, checklists, home search.</div>
-              </div>
-              <span className="text-xs font-medium text-prism-amber whitespace-nowrap">Open →</span>
-            </a>
-          )}
-
-
-
-          {/* Featured row — 3 promoted calculators */}
-          {(() => {
-            const FEATURED_IDS = ['safetospend'];
-            const featured = CALCULATORS.filter(c => FEATURED_IDS.includes(c.id));
-            if (pickerSearch.trim()) return null;
-            return (
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <Sparkles className="h-3.5 w-3.5 text-primary" />
-                  <span className="text-[11px] font-semibold uppercase tracking-widest text-primary">Featured</span>
-                  <div className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent" />
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {featured.map(c => (
-                    <button
-                      key={c.id}
-                      onClick={() => setActiveCalc(c.id)}
-                      className={cn(
-                        'group flex items-center gap-3 rounded-2xl border p-4 text-left transition-all duration-200',
-                        'bg-gradient-to-br border-border/40 hover:border-primary/50 hover:shadow-lg hover:-translate-y-0.5',
-                        c.bg,
-                      )}
-                    >
-                      <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-background/60 backdrop-blur-sm transition-transform group-hover:scale-110">
-                        <c.icon className={cn('h-5 w-5', c.color)} />
-                      </div>
-                      <div className="min-w-0">
-                        <div className="text-sm font-semibold truncate">{c.label}</div>
-                        <div className="text-[11px] truncate text-muted-foreground">
-                          Daily · weekly · monthly limits
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            );
-          })()}
-
-          {/* Search bar */}
+          {/* 2. Search bar */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
             <Input
@@ -859,17 +798,29 @@ const Calculators = () => {
             )}
           </div>
 
-          {/* Grouped calculator selector — categorized panels */}
+          {/* 3. Optional household profile (collapsed by default) */}
+          {!pickerSearch.trim() && (
+            <details className="group rounded-2xl border border-border/40 bg-gradient-to-br from-muted/20 to-transparent">
+              <summary className="flex items-center gap-2 cursor-pointer list-none p-3 sm:p-4 hover:bg-muted/20 rounded-2xl transition-colors">
+                <Sparkles className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium">Prefill from my finances</span>
+                <span className="text-xs text-muted-foreground">— auto-fills supported calculators</span>
+                <ChevronRight className="h-4 w-4 ml-auto text-muted-foreground transition-transform group-open:rotate-90" />
+              </summary>
+              <div className="px-3 pb-3 sm:px-4 sm:pb-4">
+                <FinancialProfileCard />
+              </div>
+            </details>
+          )}
+
+          {/* 4. Grouped calculator selector — categorized panels */}
           <div className="space-y-3">
             {CALCULATOR_GROUPS.map(group => {
               const q = pickerSearch.trim().toLowerCase();
-              const featuredIds = q ? [] : ['safetospend'];
-              const items = group.items.filter(i =>
-                !featuredIds.includes(i.id) &&
-                (!q || i.label.toLowerCase().includes(q))
-              );
+              const items = group.items.filter(i => !q || i.label.toLowerCase().includes(q));
               if (items.length === 0) return null;
               const accent = items[0].color;
+              const isHousing = group.label === 'Housing';
               return (
                 <div
                   key={group.label}
@@ -895,6 +846,23 @@ const Calculators = () => {
                       </button>
                     ))}
                   </div>
+
+                  {/* Home-Buying planner shortcut appended to Housing group */}
+                  {isHousing && !pickerSearch.trim() && (
+                    <a
+                      href="/home-buying"
+                      className="mt-3 flex items-center gap-3 rounded-xl border border-prism-amber/40 bg-gradient-to-br from-prism-amber/10 to-prism-amber/5 p-3 hover:border-prism-amber/60 hover:shadow-md transition-all group"
+                    >
+                      <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-background/60 backdrop-blur-sm group-hover:scale-110 transition-transform">
+                        <Home className="h-4 w-4 text-prism-amber" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-sm font-semibold">Buying a home? Open the full planner</div>
+                        <div className="text-xs text-muted-foreground truncate">Coach, scenarios, checklists, home search, state assistance.</div>
+                      </div>
+                      <span className="text-xs font-medium text-prism-amber whitespace-nowrap">Open →</span>
+                    </a>
+                  )}
                 </div>
               );
             })}
@@ -906,6 +874,7 @@ const Calculators = () => {
           </div>
         </>
       )}
+
 
       {/* Active calculator toolbar — shown when a calc is selected */}
       {activeCalc && (() => {
