@@ -5,8 +5,10 @@ import { Label } from '@/components/ui/label';
 import { CreditCard, TrendingDown } from 'lucide-react';
 import { calcMortgage, estimateRateForFico, fmt$ } from '@/lib/home-buying/mortgage-math';
 
-export default function CreditDebtImpact() {
-  const [price, setPrice] = useState(350000);
+export default function CreditDebtImpact({ price: priceProp, onPriceChange }: { price?: number; onPriceChange?: (n: number) => void } = {}) {
+  const [priceLocal, setPriceLocal] = useState(350000);
+  const price = priceProp ?? priceLocal;
+  const setPrice = (n: number) => { onPriceChange ? onPriceChange(n) : setPriceLocal(n); };
   const [downPct, setDownPct] = useState(10);
   const [fico, setFico] = useState(700);
   const [monthlyDebt, setMonthlyDebt] = useState(600);
