@@ -428,3 +428,19 @@ export function useHpCoach(projectId?: string, sectionKey?: string, monthIndex?:
     },
   });
 }
+
+export function useRefreshHpCoach() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ projectId, sectionKey, monthIndex }: { projectId: string; sectionKey: string; monthIndex?: number | null }) => {
+      const { data, error } = await supabase.functions.invoke('home-purchase-coach', {
+        body: { project_id: projectId, section_key: sectionKey, month_index: monthIndex ?? null, force: true },
+      });
+      if (error) throw error;
+      return data as { content_md: string; cached: boolean };
+    },
+    onSuccess: (data, v) => {
+      qc.setQueryData(['hp_coach', v.projectId, v.sectionKey, v.monthIndex ?? null], data);
+    },
+  });
+}
