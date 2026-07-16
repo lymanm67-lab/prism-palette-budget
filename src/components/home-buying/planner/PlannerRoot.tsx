@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { LayoutDashboard, GanttChart, CalendarClock, ClipboardList, ShieldCheck, GitCompare, FileDown } from 'lucide-react';
+import { LayoutDashboard, GanttChart, CalendarClock, ListChecks, ClipboardList, ShieldCheck, GitCompare, FileDown } from 'lucide-react';
 import { useHpProject } from '@/hooks/use-hp-planner';
 import PlannerOnboarding from './PlannerOnboarding';
 import ExecutiveDashboard from './ExecutiveDashboard';
@@ -11,6 +11,7 @@ import WorksheetsIndex from './WorksheetsIndex';
 import RulesEngine from './RulesEngine';
 import ExportCenter from './ExportCenter';
 import TimelineViews from './TimelineViews';
+import TasksMasterList from './TasksMasterList';
 import HomeBuyingScenarios from '@/components/home-buying/HomeBuyingScenarios';
 
 export default function PlannerRoot() {
