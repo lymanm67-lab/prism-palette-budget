@@ -71,7 +71,7 @@ const HomeBuyingChecklist = () => {
       <ReadinessHero checklistPct={checklistPct} metrics={metrics} />
 
       <Tabs value={tab} onValueChange={setTab} className="w-full">
-        <TabsList className="w-full grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 h-auto p-1 gap-1">
+        <TabsList className="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 h-auto p-1 gap-1">
           {TABS.map((t) => {
             const Icon = t.icon;
             return (
@@ -85,10 +85,8 @@ const HomeBuyingChecklist = () => {
 
         <TabsContent value="planner" className="mt-4"><PlannerRoot /></TabsContent>
         <TabsContent value="coach" className="mt-4"><AiHomeBuyingCoach /></TabsContent>
-        <TabsContent value="scenarios" className="mt-4"><HomeBuyingScenarios /></TabsContent>
         <TabsContent value="calculators" className="mt-4"><HomeBuyingCalculators /></TabsContent>
-        <TabsContent value="loans" className="mt-4"><LoanTypeComparator /></TabsContent>
-        <TabsContent value="assistance" className="mt-4"><StateAssistancePicker /></TabsContent>
+        <TabsContent value="loans" className="mt-4"><LoansAndAssistance /></TabsContent>
         <TabsContent value="search" className="mt-4"><HomeSearchPanel /></TabsContent>
         <TabsContent value="checklist" className="mt-4"><HomeBuyingChecklistTab /></TabsContent>
       </Tabs>
