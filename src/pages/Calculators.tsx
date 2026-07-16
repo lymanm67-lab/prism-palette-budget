@@ -270,6 +270,8 @@ const CALCULATOR_GROUPS = [
       { id: 'wealth', label: 'Wealth Multiplier', icon: PiggyBank, color: 'text-prism-indigo', bg: 'from-prism-indigo/20 to-prism-indigo/5' },
       { id: 'match401k', label: '401(k) Match Optimizer', icon: TrendingUp, color: 'text-prism-teal', bg: 'from-prism-teal/20 to-prism-teal/5' },
       { id: 'ssclaim', label: 'Social Security Claiming', icon: CalendarDays, color: 'text-prism-sky', bg: 'from-prism-sky/20 to-prism-sky/5' },
+      { id: 'rothladder', label: 'Roth Conversion Ladder', icon: ArrowLeftRight, color: 'text-prism-violet', bg: 'from-prism-violet/20 to-prism-violet/5' },
+      { id: 'rmd', label: 'RMD Projection', icon: CalendarDays, color: 'text-prism-rose', bg: 'from-prism-rose/20 to-prism-rose/5' },
       { id: 'offers', label: 'Focus Offer', icon: Target, color: 'text-prism-lime', bg: 'from-prism-lime/20 to-prism-lime/5' },
       { id: 'pricing', label: 'Pricing', icon: Tag, color: 'text-prism-amber', bg: 'from-prism-amber/20 to-prism-amber/5' },
     ],
