@@ -22,6 +22,23 @@ import { exportToPdf } from '@/lib/export-utils';
 const HomeBuyingChecklist = () => {
   const { household } = useHousehold();
   const [tab, setTab] = useState('planner');
+  const printRef = useRef<HTMLDivElement>(null);
+  const [printing, setPrinting] = useState(false);
+
+  const handlePrint = async () => {
+    if (!printRef.current) return;
+    setPrinting(true);
+    toast.info('Generating printable readiness report…');
+    try {
+      await exportToPdf(printRef.current, `home-buying-readiness-${new Date().toISOString().slice(0, 10)}`);
+      toast.success('Report downloaded');
+    } catch (e: any) {
+      toast.error(e.message || 'Export failed');
+    } finally {
+      setPrinting(false);
+    }
+  };
+
 
   const { data: checklist } = useQuery({
     queryKey: ['homebuyer_checklist', household?.id],
