@@ -771,6 +771,12 @@ const Calculators = () => {
           {/* Shared household profile — auto-fills supported calculators */}
           <FinancialProfileCard />
 
+          {/* Guided finder — recommends calculators based on user goal */}
+          {!pickerSearch.trim() && (
+            <CalculatorQuiz calculators={CALCULATORS} onPick={setActiveCalc} />
+          )}
+
+
           {/* Featured row — 3 promoted calculators */}
           {(() => {
             const FEATURED_IDS = ['safetospend'];
