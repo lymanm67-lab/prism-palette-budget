@@ -64,6 +64,7 @@ import RMDCalculator from '@/components/calculators/RMDCalculator';
 import PMIRemovalCalculator from '@/components/calculators/PMIRemovalCalculator';
 import ExtraMortgagePaymentCalculator from '@/components/calculators/ExtraMortgagePaymentCalculator';
 import FinancialProfileCard from '@/components/FinancialProfileCard';
+import CalculatorQuiz from '@/components/CalculatorQuiz';
 
 // ─── Calculation helpers ───
 
