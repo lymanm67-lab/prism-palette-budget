@@ -36,7 +36,7 @@ export default function PlannerRoot() {
     <div id="planner-print-root" className="space-y-4">
       <Tabs value={tab} onValueChange={setTab}>
         <div className="flex items-start gap-2">
-          <TabsList className="flex-1 w-full grid grid-cols-3 sm:grid-cols-6 h-auto p-1 gap-1">
+          <TabsList className="flex-1 w-full grid grid-cols-3 sm:grid-cols-7 h-auto p-1 gap-1">
             {TABS.map((t) => {
               const Icon = t.icon;
               return (
