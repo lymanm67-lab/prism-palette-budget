@@ -776,6 +776,24 @@ const Calculators = () => {
             <CalculatorQuiz calculators={CALCULATORS} onPick={setActiveCalc} />
           )}
 
+          {/* Home Buying shortcut — full planner lives on its own page */}
+          {!pickerSearch.trim() && (
+            <a
+              href="/home-buying"
+              className="flex items-center gap-3 rounded-2xl border border-prism-amber/40 bg-gradient-to-br from-prism-amber/10 to-prism-amber/5 p-4 hover:border-prism-amber/60 hover:shadow-lg transition-all group"
+            >
+              <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-background/60 backdrop-blur-sm group-hover:scale-110 transition-transform">
+                <Home className="h-5 w-5 text-prism-amber" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-semibold">Buying a home?</div>
+                <div className="text-xs text-muted-foreground">Open the full Home-Buying Readiness planner — coach, scenarios, checklists, home search.</div>
+              </div>
+              <span className="text-xs font-medium text-prism-amber whitespace-nowrap">Open →</span>
+            </a>
+          )}
+
+
 
           {/* Featured row — 3 promoted calculators */}
           {(() => {
