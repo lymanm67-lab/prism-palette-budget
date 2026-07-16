@@ -19,7 +19,7 @@ export interface HomeBuyingMetric {
  * - DTI: monthly debt obligations / monthly income (lower is better, target <36%)
  * - Emergency Fund: months of obligations covered by liquid savings (target 6mo)
  */
-export function useHomeBuyingMetrics() {
+export function useHomeBuyingMetrics(overrideEmergencyFund?: number | null) {
   const { data: accounts } = useAccounts();
   const { accounts: creditAccounts } = useCreditAccounts();
   const sts = useSafeToSpend('personal');
