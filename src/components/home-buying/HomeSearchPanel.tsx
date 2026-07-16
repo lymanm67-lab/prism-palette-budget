@@ -126,6 +126,15 @@ export default function HomeSearchPanel() {
                 {l.beds} bd · {l.baths} ba · {l.sqft?.toLocaleString()} sqft
               </p>
               {l.style && <p className="text-xs text-muted-foreground">{l.style}</p>}
+              {(l.sources ?? (l.source ? [l.source] : [])).length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {(l.sources ?? [l.source!]).map((s) => (
+                    <span key={s} className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-prism-teal/10 text-prism-teal border border-prism-teal/20">
+                      {s}
+                    </span>
+                  ))}
+                </div>
+              )}
             </a>
           ))}
         </div>
