@@ -749,7 +749,7 @@ const Calculators = () => {
                       <div className="min-w-0">
                         <div className="text-sm font-semibold truncate">{c.label}</div>
                         <div className="text-[11px] truncate text-muted-foreground">
-                          {c.id === 'safetospend' ? 'Daily · weekly · monthly limits' : c.description}
+                          Daily · weekly · monthly limits
                         </div>
                       </div>
                     </button>
