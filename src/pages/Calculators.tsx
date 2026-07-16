@@ -55,6 +55,14 @@ import StudentLoanCalculator from '@/components/calculators/StudentLoanCalculato
 import LifeInsuranceCalculator from '@/components/calculators/LifeInsuranceCalculator';
 import InflationCalculator from '@/components/calculators/InflationCalculator';
 import LeaseVsBuyCalculator from '@/components/calculators/LeaseVsBuyCalculator';
+import CapitalGainsCalculator from '@/components/calculators/CapitalGainsCalculator';
+import SelfEmployedTaxCalculator from '@/components/calculators/SelfEmployedTaxCalculator';
+import RothConversionLadderCalculator from '@/components/calculators/RothConversionLadderCalculator';
+import CDvsHYSACalculator from '@/components/calculators/CDvsHYSACalculator';
+import SalaryRaiseCalculator from '@/components/calculators/SalaryRaiseCalculator';
+import RMDCalculator from '@/components/calculators/RMDCalculator';
+import PMIRemovalCalculator from '@/components/calculators/PMIRemovalCalculator';
+import ExtraMortgagePaymentCalculator from '@/components/calculators/ExtraMortgagePaymentCalculator';
 import FinancialProfileCard from '@/components/FinancialProfileCard';
 
 // ─── Calculation helpers ───
