@@ -42,7 +42,7 @@ export default function ExecutiveDashboard({ project, onNavigate }: { project: a
   const { data: docs = [] } = useHpDocuments(project.id);
   const { data: risks = [] } = useHpRisks(project.id);
   const { data: rules = [] } = useHpRules(project.id);
-  const metrics = useHomeBuyingMetrics();
+  const metrics = useHomeBuyingMetrics(project.emergency_fund_balance);
   const sts = useSafeToSpend('personal');
   const coach = useHpCoach(project.id, 'executive_summary', null);
   const refreshCoach = useRefreshHpCoach();
