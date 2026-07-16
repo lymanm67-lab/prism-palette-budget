@@ -18,6 +18,8 @@ interface Listing {
   url: string;
   style?: string;
   features?: string[];
+  source?: string;
+  sources?: string[];
 }
 
 const STYLES = ['Any', 'Ranch', 'Colonial', 'Craftsman', 'Cape Cod', 'Contemporary', 'Tudor', 'Victorian', 'Townhouse', 'Condo'];
