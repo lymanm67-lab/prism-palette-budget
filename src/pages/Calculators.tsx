@@ -41,6 +41,20 @@ import PricingCalculator from '@/components/calculators/PricingCalculator';
 import CurrencyExchangeCalculator from '@/components/calculators/CurrencyExchangeCalculator';
 import HelocVsMortgageCalculator from '@/components/calculators/HelocVsMortgageCalculator';
 import MortgageApprovalEngine from '@/components/calculators/MortgageApprovalEngine';
+import PaycheckCalculator from '@/components/calculators/PaycheckCalculator';
+import Match401kCalculator from '@/components/calculators/Match401kCalculator';
+import RothVsTraditionalCalculator from '@/components/calculators/RothVsTraditionalCalculator';
+import CompoundInterestCalculator from '@/components/calculators/CompoundInterestCalculator';
+import RefinanceBreakEvenCalculator from '@/components/calculators/RefinanceBreakEvenCalculator';
+import HomeAffordabilityCalculator from '@/components/calculators/HomeAffordabilityCalculator';
+import EmergencyFundCalculator from '@/components/calculators/EmergencyFundCalculator';
+import SnowballVsAvalancheCalculator from '@/components/calculators/SnowballVsAvalancheCalculator';
+import SocialSecurityCalculator from '@/components/calculators/SocialSecurityCalculator';
+import FireCalculator from '@/components/calculators/FireCalculator';
+import StudentLoanCalculator from '@/components/calculators/StudentLoanCalculator';
+import LifeInsuranceCalculator from '@/components/calculators/LifeInsuranceCalculator';
+import InflationCalculator from '@/components/calculators/InflationCalculator';
+import LeaseVsBuyCalculator from '@/components/calculators/LeaseVsBuyCalculator';
 import FinancialProfileCard from '@/components/FinancialProfileCard';
 
 // ─── Calculation helpers ───
