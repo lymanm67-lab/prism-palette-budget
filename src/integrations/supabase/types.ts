@@ -2196,7 +2196,10 @@ export type Database = {
         Row: {
           created_at: string
           deleted_at: string | null
+          down_payment_saved: number | null
+          down_payment_source: string | null
           down_payment_target: number | null
+          dpa_program_note: string | null
           household_id: string
           id: string
           loan_type_preference: string | null
@@ -2211,7 +2214,10 @@ export type Database = {
         Insert: {
           created_at?: string
           deleted_at?: string | null
+          down_payment_saved?: number | null
+          down_payment_source?: string | null
           down_payment_target?: number | null
+          dpa_program_note?: string | null
           household_id: string
           id?: string
           loan_type_preference?: string | null
@@ -2226,7 +2232,10 @@ export type Database = {
         Update: {
           created_at?: string
           deleted_at?: string | null
+          down_payment_saved?: number | null
+          down_payment_source?: string | null
           down_payment_target?: number | null
+          dpa_program_note?: string | null
           household_id?: string
           id?: string
           loan_type_preference?: string | null
