@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Lock, Upload, FileText, FolderOpen, Download, Trash2, Loader2 } from 'lucide-react';
+import { Lock, Upload, FileText, FolderOpen, Download, Trash2, Loader2, ArrowRight, ScanSearch, Gavel, Home } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
