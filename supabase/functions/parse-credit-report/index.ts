@@ -129,36 +129,43 @@ Deno.serve(async (req) => {
     }
 
     const aiData = await aiResponse.json();
-    let content = aiData.choices?.[0]?.message?.content || "[]";
+    let content = aiData.choices?.[0]?.message?.content || "{}";
 
     // Strip markdown code fences if present
     content = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
 
-    let accounts;
-    try {
-      accounts = JSON.parse(content);
-    } catch (parseErr) {
-      // AI response may have been truncated — attempt to recover valid JSON
-      // Find the last complete object by looking for the last "},"  or "}" before end
+    let accounts: any[] = [];
+    let score: number | null = null;
+    let score_model: string | null = null;
+    let as_of: string | null = null;
+
+    const tryParse = (s: string) => { try { return JSON.parse(s); } catch { return null; } };
+
+    let parsed: any = tryParse(content);
+    if (!parsed) {
+      // Recover from truncation
       const lastCloseBrace = content.lastIndexOf("}");
       if (lastCloseBrace > 0) {
         const trimmed = content.substring(0, lastCloseBrace + 1);
-        // Ensure it ends as a valid array
         const arrayCandidate = trimmed.endsWith("]") ? trimmed : trimmed + "]";
-        // Also handle case where trailing comma before our added "]"
-        const cleaned = arrayCandidate.replace(/,\s*\]/, "]");
-        try {
-          accounts = JSON.parse(cleaned);
-        } catch {
-          console.error("JSON recovery also failed, returning partial parse");
-          accounts = [];
-        }
-      } else {
-        accounts = [];
+        const cleaned = arrayCandidate.replace(/,\s*\]/, "]").replace(/,\s*\}/g, "}");
+        parsed = tryParse(cleaned) ?? tryParse(trimmed);
       }
     }
 
-    return new Response(JSON.stringify({ accounts, count: accounts.length }), {
+    if (Array.isArray(parsed)) {
+      // Legacy array response (score not extracted)
+      accounts = parsed;
+    } else if (parsed && typeof parsed === "object") {
+      accounts = Array.isArray(parsed.accounts) ? parsed.accounts : [];
+      if (typeof parsed.score === "number" && parsed.score >= 300 && parsed.score <= 850) {
+        score = Math.round(parsed.score);
+      }
+      score_model = typeof parsed.score_model === "string" ? parsed.score_model : null;
+      as_of = typeof parsed.as_of === "string" ? parsed.as_of : null;
+    }
+
+    return new Response(JSON.stringify({ accounts, count: accounts.length, score, score_model, as_of }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
