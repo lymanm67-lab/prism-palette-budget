@@ -5,9 +5,17 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const SYSTEM_PROMPT = `You are a credit report parser. Extract ALL credit accounts from the report into structured JSON.
+const SYSTEM_PROMPT = `You are a credit report parser. Extract the credit score AND all credit accounts from the report.
 
-Return a JSON array of accounts with these fields:
+Return a JSON object with this exact shape:
+{
+  "score": number | null,           // The 3-digit credit score shown on the report (300-850). null if not present.
+  "score_model": string | null,     // e.g. "FICO 8", "FICO 9", "VantageScore 3.0", "VantageScore 4.0", "FICO Bankcard 8". null if unclear.
+  "as_of": string | null,           // Report/score date in YYYY-MM-DD format, if shown.
+  "accounts": [ /* array of account objects, see below */ ]
+}
+
+Each account object has:
 - account_name (string, creditor name)
 - account_number (string or null, last 4 digits only)
 - account_type (string: "Revolving", "Installment", "Mortgage", "Collection", "Other")
@@ -25,7 +33,9 @@ Return a JSON array of accounts with these fields:
 - terms (string or null)
 - notes (string or null, any additional info)
 
-Return ONLY valid JSON array, no markdown or explanation.`;
+Look carefully for the score — it is usually on page 1 in a large font, labeled "FICO Score", "VantageScore", "Credit Score", or similar. If multiple scores are shown, pick the primary/most prominent one for this bureau.
+
+Return ONLY valid JSON (the object above), no markdown or explanation.`;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
