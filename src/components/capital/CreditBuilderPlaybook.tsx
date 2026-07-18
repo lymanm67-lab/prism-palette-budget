@@ -63,6 +63,10 @@ const STEPS: Step[] = [
     timing: 'Month 4–6',
     why: 'FICO rewards 2–3 revolving accounts. Increases total available credit → lowers utilization.',
     how: 'Apply for a store card (Target, Amazon) or a starter unsecured card (Petal, Mission Lane). Keep balance under 7%.',
+    links: [
+      { label: 'Target Circle™ Card', url: 'https://www.target.com/circle-card' },
+      { label: 'Mason Easy Pay', url: 'https://www.masoneasypay.com/' },
+    ],
   },
   {
     id: 'graduate',
@@ -82,6 +86,7 @@ export default function CreditBuilderPlaybook() {
     try { return JSON.parse(localStorage.getItem(LS_KEY) || '{}'); } catch { return {}; }
   });
   const [detected, setDetected] = useState<{ merchant: string; amount: number; count: number } | null>(null);
+  const [secondCard, setSecondCard] = useState<{ merchant: string; amount: number } | null>(null);
   const [rentReported, setRentReported] = useState<{ source: 'manual' | 'detected'; label: string } | null>(() => {
     try {
       const v = localStorage.getItem(LS_RENT_KEY);
@@ -103,11 +108,13 @@ export default function CreditBuilderPlaybook() {
         .select('merchant, amount, date')
         .eq('household_id', household.id)
         .gte('date', since.toISOString().slice(0, 10))
-        .or('merchant.ilike.%self inc%,merchant.ilike.%self lender%,merchant.ilike.%self financial%,merchant.ilike.%self credit%,merchant.ilike.%kikoff%,merchant.ilike.%rentreporters%,merchant.ilike.%rent report%,merchant.ilike.%experian boost%,merchant.ilike.%esusu%,merchant.ilike.%piñata%,merchant.ilike.%pinata%,merchant.ilike.%rental kharma%,merchant.ilike.%boom pay%');
+        .or('merchant.ilike.%self inc%,merchant.ilike.%self lender%,merchant.ilike.%self financial%,merchant.ilike.%self credit%,merchant.ilike.%kikoff%,merchant.ilike.%rentreporters%,merchant.ilike.%rent report%,merchant.ilike.%experian boost%,merchant.ilike.%esusu%,merchant.ilike.%piñata%,merchant.ilike.%pinata%,merchant.ilike.%rental kharma%,merchant.ilike.%boom pay%,merchant.ilike.%target%,merchant.ilike.%mason%');
       if (!data || data.length === 0) return;
       const rentSvc = data.find(t => /rent|boost|esusu|piñata|pinata|kharma|boom/i.test(t.merchant || ''));
       const builder = data.find(t => /self|kikoff/i.test(t.merchant || ''));
+      const storeCard = data.find(t => /target|mason/i.test(t.merchant || ''));
       if (builder) setDetected({ merchant: builder.merchant || 'Credit builder', amount: Math.abs(Number(builder.amount) || 0), count: data.length });
+      if (storeCard) setSecondCard({ merchant: storeCard.merchant || 'Store card', amount: Math.abs(Number(storeCard.amount) || 0) });
       if (rentSvc) {
         const info = { source: 'detected' as const, label: rentSvc.merchant || 'Rent reporting service' };
         setRentReported(info);
@@ -129,8 +136,9 @@ export default function CreditBuilderPlaybook() {
   const autoDone = useMemo(() => ({
     ...done,
     ...(detected ? { 'credit-builder-loan': true } : {}),
+    ...(secondCard ? { 'second-card': true } : {}),
     ...(rentReported ? { 'rent-reporting': true } : {}),
-  }), [done, detected, rentReported]);
+  }), [done, detected, secondCard, rentReported]);
   const completed = STEPS.filter(s => autoDone[s.id]).length;
   const pct = Math.round((completed / STEPS.length) * 100);
 
@@ -148,8 +156,9 @@ export default function CreditBuilderPlaybook() {
       </CardHeader>
       <CardContent className="space-y-3">
         {STEPS.map(step => {
-          const isDetected = (step.id === 'credit-builder-loan' && !!detected) || (step.id === 'rent-reporting' && !!rentReported);
+          const isDetected = (step.id === 'credit-builder-loan' && !!detected) || (step.id === 'rent-reporting' && !!rentReported) || (step.id === 'second-card' && !!secondCard);
           const isRent = step.id === 'rent-reporting';
+          const isSecondCard = step.id === 'second-card';
           const isDone = !!autoDone[step.id];
           return (
           <div key={step.id} className={`rounded-lg border p-3 space-y-2 ${isDetected ? 'border-emerald-500/40 bg-emerald-500/5' : ''}`}>
@@ -170,6 +179,12 @@ export default function CreditBuilderPlaybook() {
                     <Badge className="text-[10px] bg-emerald-500/15 text-emerald-600 border-emerald-500/30 gap-1">
                       <CheckCircle2 className="h-3 w-3" />
                       Detected: {detected.merchant} · ${detected.amount}/mo
+                    </Badge>
+                  )}
+                  {isSecondCard && secondCard && (
+                    <Badge className="text-[10px] bg-emerald-500/15 text-emerald-600 border-emerald-500/30 gap-1">
+                      <CheckCircle2 className="h-3 w-3" />
+                      Detected: {secondCard.merchant} · ${secondCard.amount}/mo
                     </Badge>
                   )}
                   {isRent && rentReported && (
