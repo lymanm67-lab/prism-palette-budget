@@ -66,7 +66,7 @@ const SECONDARY_BUREAUS: Bureau[] = [
     freezeUrl: 'https://www.consumerfinance.gov/consumer-tools/credit-reports-and-scores/consumer-reporting-companies/companies-list/advanced-resolution-services/',
     phone: '1-800-392-8911',
     mail: 'ARS Consumer Office, P.O. Box 201, Wilmington, DE 19899',
-    notes: 'Written request required. Include copy of ID and proof of address.',
+    notes: 'ARS is a Visa subsidiary. No live online freeze portal — the CFPB page above lists the official freeze contact info. Freeze by mail or fax (800-237-6526) with a copy of your ID and proof of address.',
     priority: 'medium',
   },
   {
