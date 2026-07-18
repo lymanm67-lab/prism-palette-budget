@@ -379,6 +379,9 @@ const CreditOverview = () => {
       })()}
 
 
+      {/* Multi-model scores + industry usage reference */}
+      <MultiModelScores />
+
       {/* Import Section */}
       <CreditReportImport onSuccess={refetch} />
 
