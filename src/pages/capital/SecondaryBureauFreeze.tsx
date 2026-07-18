@@ -136,6 +136,8 @@ const SecondaryBureauFreeze = () => {
         </AlertDescription>
       </Alert>
 
+      <FreezeVerificationDocs />
+
       <div className="grid gap-4 md:grid-cols-2">
         {SECONDARY_BUREAUS.map((b) => (
           <Card key={b.name} className="flex flex-col">
