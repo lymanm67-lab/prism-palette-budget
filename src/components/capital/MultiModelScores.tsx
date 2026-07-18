@@ -70,6 +70,22 @@ export default function MultiModelScores() {
     if (isNaN(v)) delete next[model][bureau];
     else next[model][bureau] = v;
     setScores(next);
+
+    // Sync VantageScore 3.0 entries back to the simple actual-scores store so
+    // the Credit Overview gauge and Home Buying readiness read the same number.
+    if (model === 'vs3') {
+      try {
+        const raw = localStorage.getItem(ACTUAL_SCORES_KEY);
+        const actual: Record<string, any> = raw ? JSON.parse(raw) : {};
+        if (isNaN(v)) {
+          delete actual[bureau];
+        } else {
+          actual[bureau] = v;
+          actual.model = 'VantageScore 3.0';
+        }
+        localStorage.setItem(ACTUAL_SCORES_KEY, JSON.stringify(actual));
+      } catch { /* ignore */ }
+    }
   };
 
   const hasAny = Object.values(scores).some(m => Object.values(m || {}).some(v => typeof v === 'number'));
