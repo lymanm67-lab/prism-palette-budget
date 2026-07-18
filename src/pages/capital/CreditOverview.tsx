@@ -12,6 +12,7 @@ import AddCreditAccountDialog from '@/components/capital/AddCreditAccountDialog'
 import CreditReportImport from '@/components/capital/CreditReportImport';
 import CreditScoreSimulator from '@/components/capital/CreditScoreSimulator';
 import AiCreditAnalysis from '@/components/capital/AiCreditAnalysis';
+import SixMonthScorePath from '@/components/capital/SixMonthScorePath';
 import { useCreditAccounts, CreditAccount } from '@/hooks/use-credit-accounts';
 import { format } from 'date-fns';
 
