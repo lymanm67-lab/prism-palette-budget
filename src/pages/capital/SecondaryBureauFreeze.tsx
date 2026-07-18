@@ -92,7 +92,7 @@ const SECONDARY_BUREAUS: Bureau[] = [
     order: 8,
     name: 'NCTUE (National Consumer Telecom & Utilities Exchange)',
     purpose: 'Used by phone, cable, and utility companies for new account decisions.',
-    freezeUrl: 'https://www.nctue.com/consumers',
+    freezeUrl: 'https://nctue.com/consumer/',
     phone: '1-866-349-5185',
     notes: 'Prevents ID thieves from opening utility accounts in your name.',
     priority: 'medium',
