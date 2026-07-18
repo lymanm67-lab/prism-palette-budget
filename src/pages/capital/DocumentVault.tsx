@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Lock, Upload, FileText, FolderOpen, Download, Trash2, Loader2 } from 'lucide-react';
+import { Lock, Upload, FileText, FolderOpen, Download, Trash2, Loader2, ArrowRight, ScanSearch, Gavel, Home } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -189,6 +189,38 @@ const DocumentVault = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* 1-2-3 Next Steps workflow */}
+      {docs.length > 0 && (
+        <Card className="border-prism-teal/40 bg-prism-teal/5">
+          <CardContent className="p-5 space-y-4">
+            <div>
+              <h3 className="font-semibold text-sm">You uploaded a credit report. Here's what to do next:</h3>
+              <p className="text-xs text-muted-foreground">Work through these in order — each one builds on the last.</p>
+            </div>
+            <ol className="grid gap-3 md:grid-cols-3">
+              {[
+                { n: 1, icon: ScanSearch, title: 'Import & review accounts', body: 'Parse the report so every tradeline, balance, and utilization shows up in Credit Health.', cta: 'Go to Credit Overview', href: '/capital/credit-overview' },
+                { n: 2, icon: Gavel, title: 'Flag errors & start disputes', body: 'Mark inaccurate items and generate Metro2-compliant dispute letters for each bureau.', cta: 'Open Dispute Manager', href: '/capital/disputes' },
+                { n: 3, icon: Home, title: 'Share with Home-Buying', body: 'Attach the report to your lender packet in Home-Buying Readiness → Calculators.', cta: 'Open Home-Buying', href: '/home-buying-readiness' },
+              ].map((s) => (
+                <li key={s.n} className="rounded-lg border border-border/60 bg-background/60 p-4 flex flex-col">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="h-6 w-6 rounded-full bg-prism-teal text-white text-xs font-bold flex items-center justify-center">{s.n}</span>
+                    <s.icon className="h-4 w-4 text-prism-teal" />
+                    <p className="text-sm font-medium">{s.title}</p>
+                  </div>
+                  <p className="text-xs text-muted-foreground flex-1">{s.body}</p>
+                  <Button asChild size="sm" variant="outline" className="mt-3 self-start">
+                    <Link to={s.href}>{s.cta} <ArrowRight className="h-3 w-3 ml-1" /></Link>
+                  </Button>
+                </li>
+              ))}
+            </ol>
+          </CardContent>
+        </Card>
+      )}
+
 
       {/* Other categories link out to their managers */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
