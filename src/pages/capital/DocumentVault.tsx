@@ -202,7 +202,7 @@ const DocumentVault = () => {
               {[
                 { n: 1, icon: ScanSearch, title: 'Import & review accounts', body: 'Parse the report so every tradeline, balance, and utilization shows up in Credit Health.', cta: 'Go to Credit Overview', href: '/capital/credit-overview' },
                 { n: 2, icon: Gavel, title: 'Flag errors & start disputes', body: 'Mark inaccurate items and generate Metro2-compliant dispute letters for each bureau.', cta: 'Open Dispute Manager', href: '/capital/disputes' },
-                { n: 3, icon: Home, title: 'Share with Home-Buying', body: 'Attach the report to your lender packet in Home-Buying Readiness → Calculators.', cta: 'Open Home-Buying', href: '/home-buying-readiness' },
+                { n: 3, icon: Home, title: 'Share with Home-Buying', body: 'Attach the report to your lender packet in Home-Buying Readiness → Calculators.', cta: 'Open Home-Buying', href: '/home-buying' },
               ].map((s) => (
                 <li key={s.n} className="rounded-lg border border-border/60 bg-background/60 p-4 flex flex-col">
                   <div className="flex items-center gap-2 mb-2">
