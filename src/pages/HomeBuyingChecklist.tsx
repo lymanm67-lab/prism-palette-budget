@@ -26,9 +26,11 @@ const HomeBuyingChecklist = () => {
   const [printing, setPrinting] = useState(false);
 
   const handlePrint = async () => {
-    if (!printRef.current) return;
     setPrinting(true);
     toast.info('Generating printable readiness report…');
+    // Wait a tick so the stacked print layout mounts before html2canvas snapshots it
+    await new Promise((r) => setTimeout(r, 300));
+    if (!printRef.current) { setPrinting(false); return; }
     try {
       await exportToPdf(printRef.current, `home-buying-readiness-${new Date().toISOString().slice(0, 10)}`);
       toast.success('Report downloaded');
@@ -96,26 +98,37 @@ const HomeBuyingChecklist = () => {
       <div ref={printRef} className="space-y-6">
         <ReadinessHero checklistPct={checklistPct} metrics={metrics} />
 
-      <Tabs value={tab} onValueChange={setTab} className="w-full">
-        <TabsList className="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 h-auto p-1 gap-1">
-          {TABS.map((t) => {
-            const Icon = t.icon;
-            return (
-              <TabsTrigger key={t.id} value={t.id} className="flex flex-col sm:flex-row gap-1 sm:gap-1.5 text-xs py-2">
-                <Icon className="h-3.5 w-3.5" />
-                <span>{t.label}</span>
-              </TabsTrigger>
-            );
-          })}
-        </TabsList>
+        {printing ? (
+          <div className="space-y-8">
+            <section><h2 className="font-display text-xl font-bold mb-3">Planner</h2><PlannerRoot /></section>
+            <section><h2 className="font-display text-xl font-bold mb-3">AI Coach</h2><AiHomeBuyingCoach /></section>
+            <section><h2 className="font-display text-xl font-bold mb-3">Calculators</h2><HomeBuyingCalculators /></section>
+            <section><h2 className="font-display text-xl font-bold mb-3">Loans & Assistance</h2><LoansAndAssistance /></section>
+            <section><h2 className="font-display text-xl font-bold mb-3">Home Search</h2><AppreciationInfo /><HomeSearchPanel /></section>
+            <section><h2 className="font-display text-xl font-bold mb-3">Checklist</h2><HomeBuyingChecklistTab /></section>
+          </div>
+        ) : (
+          <Tabs value={tab} onValueChange={setTab} className="w-full">
+            <TabsList className="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 h-auto p-1 gap-1">
+              {TABS.map((t) => {
+                const Icon = t.icon;
+                return (
+                  <TabsTrigger key={t.id} value={t.id} className="flex flex-col sm:flex-row gap-1 sm:gap-1.5 text-xs py-2">
+                    <Icon className="h-3.5 w-3.5" />
+                    <span>{t.label}</span>
+                  </TabsTrigger>
+                );
+              })}
+            </TabsList>
 
-        <TabsContent value="planner" className="mt-4"><PlannerRoot /></TabsContent>
-        <TabsContent value="coach" className="mt-4"><AiHomeBuyingCoach /></TabsContent>
-        <TabsContent value="calculators" className="mt-4"><HomeBuyingCalculators /></TabsContent>
-        <TabsContent value="loans" className="mt-4"><LoansAndAssistance /></TabsContent>
-        <TabsContent value="search" className="mt-4 space-y-4"><AppreciationInfo /><HomeSearchPanel /></TabsContent>
-        <TabsContent value="checklist" className="mt-4"><HomeBuyingChecklistTab /></TabsContent>
-      </Tabs>
+            <TabsContent value="planner" className="mt-4"><PlannerRoot /></TabsContent>
+            <TabsContent value="coach" className="mt-4"><AiHomeBuyingCoach /></TabsContent>
+            <TabsContent value="calculators" className="mt-4"><HomeBuyingCalculators /></TabsContent>
+            <TabsContent value="loans" className="mt-4"><LoansAndAssistance /></TabsContent>
+            <TabsContent value="search" className="mt-4 space-y-4"><AppreciationInfo /><HomeSearchPanel /></TabsContent>
+            <TabsContent value="checklist" className="mt-4"><HomeBuyingChecklistTab /></TabsContent>
+          </Tabs>
+        )}
       </div>
     </motion.div>
   );

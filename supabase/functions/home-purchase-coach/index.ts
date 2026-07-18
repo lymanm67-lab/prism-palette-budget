@@ -57,14 +57,13 @@ Deno.serve(async (req) => {
     // Financial snapshot (best effort — read what we can)
     const { data: accounts } = await supabase
       .from('accounts')
-      .select('current_balance, balance, account_type, account_subtype')
+      .select('balance, account_type')
       .eq('household_id', project.household_id)
       .is('deleted_at', null);
     const savings = (accounts || []).reduce((s: number, a: any) => {
       const t = (a.account_type || '').toLowerCase();
-      const st = (a.account_subtype || '').toLowerCase();
-      if (t === 'depository' || t === 'savings' || st.includes('saving') || st.includes('checking')) {
-        return s + Number(a.current_balance ?? a.balance ?? 0);
+      if (t === 'depository' || t === 'savings' || t === 'checking') {
+        return s + Number(a.balance ?? 0);
       }
       return s;
     }, 0);

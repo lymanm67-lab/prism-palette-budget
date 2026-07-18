@@ -30,10 +30,9 @@ export function useHomeBuyingMetrics(overrideEmergencyFund?: number | null) {
     const savings = (accounts || [])
       .filter((a: any) => {
         const t = (a.account_type || '').toLowerCase();
-        const st = (a.account_subtype || '').toLowerCase();
-        return t === 'depository' || t === 'savings' || st.includes('saving') || st.includes('checking') || st.includes('money');
+        return t === 'depository' || t === 'savings' || t === 'checking';
       })
-      .reduce((s: number, a: any) => s + Number(a.current_balance ?? a.balance ?? 0), 0);
+      .reduce((s: number, a: any) => s + Number(a.balance ?? 0), 0);
     const dpTarget = 50000;
     const dpPct = Math.min(100, (savings / dpTarget) * 100);
 
