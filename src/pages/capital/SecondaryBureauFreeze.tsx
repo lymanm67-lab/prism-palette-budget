@@ -101,9 +101,10 @@ const SECONDARY_BUREAUS: Bureau[] = [
     order: 9,
     name: 'MicroBilt / PRBC',
     purpose: 'Alternative credit reporting used by payday, auto, and subprime lenders.',
-    freezeUrl: 'https://www.microbilt.com/consumer',
+    freezeUrl: 'https://www.microbilt.com/consumer-affairs',
     phone: '1-800-884-4747',
-    notes: 'Written request required.',
+    mail: 'MicroBilt, P.O. Box 440693, Kennesaw, GA 30160',
+    notes: 'Select "Security Freeze / State Consumer Rights" on the Consumer Affairs page. If the online flow fails, download the Security Freeze form and mail it with copies of your ID and proof of address.',
     priority: 'low',
   },
   {
