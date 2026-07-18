@@ -110,20 +110,30 @@ export default function CreditBuilderPlaybook() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
-        {STEPS.map(step => (
-          <div key={step.id} className="rounded-lg border p-3 space-y-2">
+        {STEPS.map(step => {
+          const isDetected = step.id === 'credit-builder-loan' && !!detected;
+          const isDone = !!autoDone[step.id];
+          return (
+          <div key={step.id} className={`rounded-lg border p-3 space-y-2 ${isDetected ? 'border-emerald-500/40 bg-emerald-500/5' : ''}`}>
             <div className="flex items-start gap-3">
               <Checkbox
-                checked={!!done[step.id]}
+                checked={isDone}
+                disabled={isDetected}
                 onCheckedChange={(v) => setDone(d => ({ ...d, [step.id]: !!v }))}
                 className="mt-1"
               />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className={`font-semibold text-sm ${done[step.id] ? 'line-through text-muted-foreground' : ''}`}>
+                  <span className={`font-semibold text-sm ${isDone ? 'line-through text-muted-foreground' : ''}`}>
                     {step.title}
                   </span>
                   <Badge variant="secondary" className="text-[10px]">{step.timing}</Badge>
+                  {isDetected && (
+                    <Badge className="text-[10px] bg-emerald-500/15 text-emerald-600 border-emerald-500/30 gap-1">
+                      <CheckCircle2 className="h-3 w-3" />
+                      Detected: {detected!.merchant} · ${detected!.amount}/mo
+                    </Badge>
+                  )}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1"><strong>Why:</strong> {step.why}</p>
                 <p className="text-xs text-muted-foreground mt-1"><strong>How:</strong> {step.how}</p>
