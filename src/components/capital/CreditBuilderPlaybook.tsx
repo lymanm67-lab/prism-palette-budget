@@ -155,7 +155,8 @@ export default function CreditBuilderPlaybook() {
               </div>
             </div>
           </div>
-        ))}
+          );
+        })}
       </CardContent>
     </Card>
   );
