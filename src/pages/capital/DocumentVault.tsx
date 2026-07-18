@@ -23,9 +23,9 @@ type CreditDoc = {
 
 const OTHER_CATEGORIES = [
   { label: 'Dispute Documents', icon: FileText, href: '/capital/disputes' },
-  { label: 'Financial Statements', icon: FileText, href: '/capital/documents' },
-  { label: 'Funding Applications', icon: FileText, href: '/capital/funding' },
-  { label: 'Agency Formation Docs', icon: FolderOpen, href: '/capital/agencies' },
+  { label: 'Financial Statements', icon: FileText, href: '/capital/bank-analyzer' },
+  { label: 'Funding Applications', icon: FileText, href: '/capital/funding-readiness' },
+  { label: 'Agency Formation Docs', icon: FolderOpen, href: '/capital/business-credit' },
 ];
 
 const DocumentVault = () => {
