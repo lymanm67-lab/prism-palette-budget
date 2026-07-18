@@ -111,7 +111,7 @@ const HomeBuyingChecklist = () => {
           </div>
         ) : (
           <Tabs value={tab} onValueChange={setTab} className="w-full">
-            <TabsList className="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 h-auto p-1 gap-1">
+            <TabsList className="w-full grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 h-auto p-1 gap-1">
               {TABS.map((t) => {
                 const Icon = t.icon;
                 return (
@@ -124,6 +124,7 @@ const HomeBuyingChecklist = () => {
             </TabsList>
 
             <TabsContent value="planner" className="mt-4"><PlannerRoot /></TabsContent>
+            <TabsContent value="decision" className="mt-4"><DecisionRoot /></TabsContent>
             <TabsContent value="coach" className="mt-4"><AiHomeBuyingCoach /></TabsContent>
             <TabsContent value="calculators" className="mt-4"><HomeBuyingCalculators /></TabsContent>
             <TabsContent value="loans" className="mt-4"><LoansAndAssistance /></TabsContent>
