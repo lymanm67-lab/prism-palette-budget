@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import PageOverview from '@/components/PageOverview';
+import FreezeLetterGenerator from '@/components/capital/FreezeLetterGenerator';
 
 type Bureau = {
   name: string;
@@ -174,6 +175,7 @@ const SecondaryBureauFreeze = () => {
                 </div>
               )}
               <p className="text-xs text-muted-foreground border-l-2 border-primary/30 pl-2 mt-2">{b.notes}</p>
+              <FreezeLetterGenerator bureau={{ name: b.name, mail: b.mail }} />
             </CardContent>
           </Card>
         ))}
