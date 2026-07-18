@@ -6,6 +6,7 @@ import HousingBudgetPlanner from './HousingBudgetPlanner';
 import HiddenCostBudget from './HiddenCostBudget';
 import CreditDebtImpact from './CreditDebtImpact';
 import SharedCreditReports from './SharedCreditReports';
+import SharedVerificationDocs from './SharedVerificationDocs';
 
 export default function HomeBuyingCalculators() {
   const [price, setPrice] = useState(185000);
@@ -21,6 +22,7 @@ export default function HomeBuyingCalculators() {
       <HiddenCostBudget price={price} onPriceChange={setPrice} />
       <CreditDebtImpact price={price} onPriceChange={setPrice} />
       <SharedCreditReports />
+      <SharedVerificationDocs />
     </div>
   );
 }
