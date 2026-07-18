@@ -103,6 +103,8 @@ const NAV_SECTIONS: NavSection[] = [
           { to: '/capital/credit-health', icon: Heart, label: 'Score & Factors', color: 'text-prism-rose' },
           { to: '/capital/metro2-scanner', icon: Gauge, label: 'Metro2 Scanner', color: 'text-prism-amber' },
           { to: '/capital/disputes', icon: FileText, label: 'Disputes', color: 'text-prism-orange' },
+          { to: '/capital/secondary-freeze', icon: Shield, label: 'Bureau Freeze Hub', color: 'text-prism-sky' },
+          { to: '/capital/personal-info-correction', icon: FileText, label: 'Personal Info Fix', color: 'text-prism-teal' },
         ],
       },
       {
