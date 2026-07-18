@@ -157,7 +157,9 @@ const CreditOverview = () => {
         });
 
         return (
+          <>
           <div className="grid gap-4 lg:grid-cols-3">
+
             {/* VantageScore Card */}
             <Card className="lg:col-span-1 relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5" />
