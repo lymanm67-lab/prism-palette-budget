@@ -64,7 +64,7 @@ export default function SharedCreditReports() {
           <div className="text-sm text-muted-foreground border border-dashed border-border rounded-md p-4 flex items-center justify-between gap-3">
             <span>No credit reports uploaded yet.</span>
             <Button asChild size="sm" variant="outline">
-              <Link to="/capital/credit">
+              <Link to="/capital/credit-overview">
                 Upload in Credit <ExternalLink className="h-3 w-3 ml-1" />
               </Link>
             </Button>
@@ -90,7 +90,7 @@ export default function SharedCreditReports() {
           </ul>
         )}
         <div className="text-xs text-muted-foreground">
-          Need to add more? <Link to="/capital/credit" className="text-prism-teal underline">Go to Credit Reports</Link>.
+          Need to add more? <Link to="/capital/credit-overview" className="text-prism-teal underline">Go to Credit Reports</Link>.
         </div>
       </CardContent>
     </Card>
