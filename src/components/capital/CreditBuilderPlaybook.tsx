@@ -116,15 +116,14 @@ export default function CreditBuilderPlaybook() {
     })();
   }, [household?.id]);
 
-  const toggleRentReported = () => {
-    if (rentReported) {
-      setRentReported(null);
-      localStorage.removeItem(LS_RENT_KEY);
-    } else {
-      const info = { source: 'manual' as const, label: 'Rent reported to bureaus' };
-      setRentReported(info);
-      localStorage.setItem(LS_RENT_KEY, JSON.stringify(info));
-    }
+  const setRentSource = (label: string) => {
+    const info = { source: 'manual' as const, label };
+    setRentReported(info);
+    localStorage.setItem(LS_RENT_KEY, JSON.stringify(info));
+  };
+  const clearRentReported = () => {
+    setRentReported(null);
+    localStorage.removeItem(LS_RENT_KEY);
   };
 
   const autoDone = useMemo(() => ({
