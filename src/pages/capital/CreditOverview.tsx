@@ -27,9 +27,21 @@ const statusColor = (status: string) => {
   return 'destructive';
 };
 
+const ACTUAL_SCORES_KEY = 'prism.actualCreditScores.v1';
+type ActualScores = { Equifax?: number; Experian?: number; TransUnion?: number; model?: string; asOf?: string };
+
 const CreditOverview = () => {
   const { accounts, isLoading, deleteAccount, refetch } = useCreditAccounts();
   const [tab, setTab] = useState('all');
+  const [actualScores, setActualScoresState] = useState<ActualScores>(() => {
+    try { return JSON.parse(localStorage.getItem(ACTUAL_SCORES_KEY) || '{}'); } catch { return {}; }
+  });
+  const [editingScores, setEditingScores] = useState(false);
+  const setActualScores = (s: ActualScores) => {
+    setActualScoresState(s);
+    localStorage.setItem(ACTUAL_SCORES_KEY, JSON.stringify(s));
+  };
+  const hasActuals = !!(actualScores.Equifax || actualScores.Experian || actualScores.TransUnion);
 
   const filtered = tab === 'all' ? accounts : accounts.filter(a => a.bureau === tab);
 
@@ -167,51 +179,129 @@ const CreditOverview = () => {
             <Card className="lg:col-span-1 relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5" />
               <CardHeader className="relative pb-2">
-                <CardTitle className="text-lg flex items-center gap-2">
+                <CardTitle className="text-lg flex items-center gap-2 flex-wrap">
                   <Gauge className="h-5 w-5 text-primary" />
-                  VantageScore® Estimate
+                  {hasActuals ? 'Credit Score' : 'VantageScore® Estimate'}
+                  <Badge variant={hasActuals ? 'default' : 'secondary'} className="text-[10px]">
+                    {hasActuals ? (actualScores.model || 'Actual') : 'Estimate'}
+                  </Badge>
                 </CardTitle>
-                <CardDescription className="flex items-center gap-1">
-                  Based on your imported credit data
+                <CardDescription className="flex items-center gap-1 text-xs">
+                  {hasActuals
+                    ? `From your reports${actualScores.asOf ? ` · as of ${actualScores.asOf}` : ''}`
+                    : 'Educational estimate — not your real score'}
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger><Info className="h-3 w-3" /></TooltipTrigger>
                       <TooltipContent className="max-w-xs text-xs">
-                        This is an educational estimate using VantageScore 3.0 factor weights applied to your imported credit report data. It is not an official credit score.
+                        {hasActuals
+                          ? 'These are the scores you entered from your official credit reports. Update anytime.'
+                          : 'Rough estimate using VantageScore 3.0 factor weights on your imported tradeline data. Actual scores use proprietary models and may differ by ±30–40 points. Enter your real scores for accuracy.'}
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
                 </CardDescription>
               </CardHeader>
               <CardContent className="relative space-y-4">
-                <div className="text-center">
-                  <div className="relative inline-flex items-center justify-center">
-                    <svg className="w-36 h-36 -rotate-90" viewBox="0 0 120 120">
-                      <circle cx="60" cy="60" r="50" fill="none" stroke="hsl(var(--muted))" strokeWidth="10" />
-                      <circle cx="60" cy="60" r="50" fill="none" stroke={scoreColor} strokeWidth="10"
-                        strokeDasharray={`${scorePercent * 3.14} 314`} strokeLinecap="round" className="transition-all duration-1000" />
-                    </svg>
-                    <div className="absolute flex flex-col items-center">
-                      <span className="text-3xl font-bold" style={{ color: scoreColor }}>{clampedScore}</span>
-                      <span className="text-xs font-medium text-muted-foreground">{scoreLabel}</span>
+                {(() => {
+                  const displayScore = hasActuals
+                    ? Math.round(
+                        [actualScores.Equifax, actualScores.Experian, actualScores.TransUnion]
+                          .filter((n): n is number => typeof n === 'number' && n > 0)
+                          .reduce((a, b, _, arr) => a + b / arr.length, 0)
+                      )
+                    : clampedScore;
+                  const dPercent = ((displayScore - 300) / 550) * 100;
+                  const dColor = displayScore >= 750 ? 'hsl(var(--accent))' : displayScore >= 670 ? 'hsl(142 71% 45%)' : displayScore >= 580 ? 'hsl(48 96% 53%)' : 'hsl(var(--destructive))';
+                  const dLabel = displayScore >= 750 ? 'Excellent' : displayScore >= 670 ? 'Good' : displayScore >= 580 ? 'Fair' : 'Poor';
+                  return (
+                    <div className="text-center">
+                      <div className="relative inline-flex items-center justify-center">
+                        <svg className="w-36 h-36 -rotate-90" viewBox="0 0 120 120">
+                          <circle cx="60" cy="60" r="50" fill="none" stroke="hsl(var(--muted))" strokeWidth="10" />
+                          <circle cx="60" cy="60" r="50" fill="none" stroke={dColor} strokeWidth="10"
+                            strokeDasharray={`${dPercent * 3.14} 314`} strokeLinecap="round" className="transition-all duration-1000" />
+                        </svg>
+                        <div className="absolute flex flex-col items-center">
+                          <span className="text-3xl font-bold" style={{ color: dColor }}>{displayScore}</span>
+                          <span className="text-xs font-medium text-muted-foreground">{dLabel}</span>
+                        </div>
+                      </div>
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mt-1">
+                        {hasActuals ? 'Average of Actual' : 'Combined Estimate'}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground">Range: 300 – 850</p>
                     </div>
-                  </div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mt-1">Combined Estimate</p>
-                  <p className="text-[10px] text-muted-foreground">Range: 300 – 850</p>
-                </div>
+                  );
+                })()}
 
                 {/* Per-Bureau Scores */}
                 <div className="grid grid-cols-3 gap-2 pt-3 border-t border-border/50">
                   {bureauScores.map(b => {
-                    const color = b.score === 0 ? 'text-muted-foreground' : b.score >= 670 ? 'text-emerald-600' : b.score >= 580 ? 'text-amber-600' : 'text-destructive';
+                    const actual = actualScores[b.bureau];
+                    const shown = actual ?? b.score;
+                    const isActual = !!actual;
+                    const color = shown === 0 ? 'text-muted-foreground' : shown >= 670 ? 'text-emerald-600' : shown >= 580 ? 'text-amber-600' : 'text-destructive';
                     return (
                       <div key={b.bureau} className="text-center space-y-0.5">
                         <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{b.bureau}</p>
-                        <p className={`text-base font-bold ${color}`}>{b.score > 0 ? b.score : '—'}</p>
-                        <p className="text-[10px] text-muted-foreground">{b.count} acct{b.count !== 1 ? 's' : ''}</p>
+                        <p className={`text-base font-bold ${color}`}>{shown > 0 ? shown : '—'}</p>
+                        <p className="text-[9px] text-muted-foreground">{isActual ? 'Actual' : 'Est.'} · {b.count} acct{b.count !== 1 ? 's' : ''}</p>
                       </div>
                     );
                   })}
+                </div>
+
+                {/* Enter actual scores */}
+                <div className="pt-2 border-t border-border/50">
+                  {!editingScores ? (
+                    <Button variant="outline" size="sm" className="w-full text-xs" onClick={() => setEditingScores(true)}>
+                      {hasActuals ? 'Update actual scores' : 'Enter actual scores from your reports'}
+                    </Button>
+                  ) : (
+                    <div className="space-y-2">
+                      <p className="text-[11px] text-muted-foreground">Enter scores from Equifax.com, Experian.com, or your monitoring service.</p>
+                      <div className="grid grid-cols-3 gap-2">
+                        {BUREAUS.map(bureau => (
+                          <div key={bureau}>
+                            <label className="text-[10px] text-muted-foreground">{bureau}</label>
+                            <input
+                              type="number" min={300} max={850}
+                              defaultValue={actualScores[bureau] ?? ''}
+                              className="w-full h-8 px-2 rounded-md border bg-background text-sm"
+                              onChange={(e) => {
+                                const v = parseInt(e.target.value);
+                                setActualScores({ ...actualScores, [bureau]: isNaN(v) ? undefined : v });
+                              }}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <select
+                          className="h-8 px-2 rounded-md border bg-background text-xs"
+                          defaultValue={actualScores.model || 'VantageScore 3.0'}
+                          onChange={(e) => setActualScores({ ...actualScores, model: e.target.value })}
+                        >
+                          <option>VantageScore 3.0</option>
+                          <option>VantageScore 4.0</option>
+                          <option>FICO 8</option>
+                          <option>FICO 9</option>
+                          <option>Mortgage FICO</option>
+                        </select>
+                        <input
+                          type="date"
+                          defaultValue={actualScores.asOf || ''}
+                          className="h-8 px-2 rounded-md border bg-background text-xs"
+                          onChange={(e) => setActualScores({ ...actualScores, asOf: e.target.value })}
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="sm" className="flex-1 text-xs" onClick={() => setEditingScores(false)}>Save</Button>
+                        <Button size="sm" variant="ghost" className="text-xs" onClick={() => { setActualScores({}); setEditingScores(false); }}>Clear</Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-2">
