@@ -27,9 +27,21 @@ const statusColor = (status: string) => {
   return 'destructive';
 };
 
+const ACTUAL_SCORES_KEY = 'prism.actualCreditScores.v1';
+type ActualScores = { Equifax?: number; Experian?: number; TransUnion?: number; model?: string; asOf?: string };
+
 const CreditOverview = () => {
   const { accounts, isLoading, deleteAccount, refetch } = useCreditAccounts();
   const [tab, setTab] = useState('all');
+  const [actualScores, setActualScoresState] = useState<ActualScores>(() => {
+    try { return JSON.parse(localStorage.getItem(ACTUAL_SCORES_KEY) || '{}'); } catch { return {}; }
+  });
+  const [editingScores, setEditingScores] = useState(false);
+  const setActualScores = (s: ActualScores) => {
+    setActualScoresState(s);
+    localStorage.setItem(ACTUAL_SCORES_KEY, JSON.stringify(s));
+  };
+  const hasActuals = !!(actualScores.Equifax || actualScores.Experian || actualScores.TransUnion);
 
   const filtered = tab === 'all' ? accounts : accounts.filter(a => a.bureau === tab);
 
