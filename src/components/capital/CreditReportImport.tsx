@@ -305,8 +305,10 @@ const CreditReportImport = ({ onSuccess }: { onSuccess: () => void }) => {
       accounts = detectDuplicates(accounts, existingAccounts);
       accounts = detectIntraBatchDuplicates(accounts);
       setParsedAccounts(accounts);
+      saveExtractedScore(bureau, data);
       const dupeCount = accounts.filter((a: ParsedAccount) => a.isDuplicate).length;
-      toast.success(`AI extracted ${accounts.length} accounts${dupeCount ? ` (${dupeCount} duplicates found)` : ''}`);
+      const scoreMsg = data?.score ? ` · ${bureau} score ${data.score} captured` : '';
+      toast.success(`AI extracted ${accounts.length} accounts${dupeCount ? ` (${dupeCount} duplicates found)` : ''}${scoreMsg}`);
     } catch (e: any) {
       toast.error(`Parse failed: ${e.message}`);
     } finally {
