@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import PageOverview from '@/components/PageOverview';
 import FreezeLetterGenerator from '@/components/capital/FreezeLetterGenerator';
+import FreezeVerificationDocs from '@/components/capital/FreezeVerificationDocs';
 
 type Bureau = {
   name: string;
@@ -134,6 +135,8 @@ const SecondaryBureauFreeze = () => {
           subprime lenders routinely pull from these. Freezes are <strong>free</strong> and required by federal/state law.
         </AlertDescription>
       </Alert>
+
+      <FreezeVerificationDocs />
 
       <div className="grid gap-4 md:grid-cols-2">
         {SECONDARY_BUREAUS.map((b) => (
