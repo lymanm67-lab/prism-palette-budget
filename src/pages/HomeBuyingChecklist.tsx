@@ -16,6 +16,7 @@ import HomeSearchPanel from '@/components/home-buying/HomeSearchPanel';
 import AppreciationInfo from '@/components/home-buying/AppreciationInfo';
 import HomeBuyingChecklistTab from '@/components/home-buying/HomeBuyingChecklistTab';
 import PlannerRoot from '@/components/home-buying/planner/PlannerRoot';
+import DecisionRoot from '@/components/home-buying/decision/DecisionRoot';
 import { useHomeBuyingMetrics } from '@/hooks/use-home-buying-metrics';
 import { exportToPdf } from '@/lib/export-utils';
 
