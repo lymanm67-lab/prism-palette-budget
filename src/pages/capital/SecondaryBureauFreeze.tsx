@@ -116,6 +116,7 @@ const SecondaryBureauFreeze = () => {
         title="Secondary Bureau Freeze Hub"
         description="Freeze the 10+ hidden bureaus lenders check beyond Equifax, Experian, and TransUnion"
         icon={Snowflake}
+        ttsScript="Welcome to the Secondary Bureau Freeze Hub. Beyond Equifax, Experian, and TransUnion, at least ten additional bureaus feed your data to lenders, banks, insurers, and employers. Freezing only the Big 3 leaves these back-channels wide open. Start with LexisNexis, SageStream, ChexSystems, and Innovis — these are the highest-impact. All freezes are free under federal or state law."
         features={[
           'Direct freeze links, phone numbers, and mailing addresses',
           'Prioritized: freeze high-impact bureaus first (LexisNexis, ChexSystems, SageStream, Innovis)',
