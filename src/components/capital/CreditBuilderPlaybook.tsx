@@ -156,8 +156,9 @@ export default function CreditBuilderPlaybook() {
       </CardHeader>
       <CardContent className="space-y-3">
         {STEPS.map(step => {
-          const isDetected = (step.id === 'credit-builder-loan' && !!detected) || (step.id === 'rent-reporting' && !!rentReported);
+          const isDetected = (step.id === 'credit-builder-loan' && !!detected) || (step.id === 'rent-reporting' && !!rentReported) || (step.id === 'second-card' && !!secondCard);
           const isRent = step.id === 'rent-reporting';
+          const isSecondCard = step.id === 'second-card';
           const isDone = !!autoDone[step.id];
           return (
           <div key={step.id} className={`rounded-lg border p-3 space-y-2 ${isDetected ? 'border-emerald-500/40 bg-emerald-500/5' : ''}`}>
