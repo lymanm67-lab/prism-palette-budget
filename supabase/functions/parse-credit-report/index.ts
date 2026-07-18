@@ -5,9 +5,17 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const SYSTEM_PROMPT = `You are a credit report parser. Extract ALL credit accounts from the report into structured JSON.
+const SYSTEM_PROMPT = `You are a credit report parser. Extract the credit score AND all credit accounts from the report.
 
-Return a JSON array of accounts with these fields:
+Return a JSON object with this exact shape:
+{
+  "score": number | null,           // The 3-digit credit score shown on the report (300-850). null if not present.
+  "score_model": string | null,     // e.g. "FICO 8", "FICO 9", "VantageScore 3.0", "VantageScore 4.0", "FICO Bankcard 8". null if unclear.
+  "as_of": string | null,           // Report/score date in YYYY-MM-DD format, if shown.
+  "accounts": [ /* array of account objects, see below */ ]
+}
+
+Each account object has:
 - account_name (string, creditor name)
 - account_number (string or null, last 4 digits only)
 - account_type (string: "Revolving", "Installment", "Mortgage", "Collection", "Other")
@@ -25,7 +33,9 @@ Return a JSON array of accounts with these fields:
 - terms (string or null)
 - notes (string or null, any additional info)
 
-Return ONLY valid JSON array, no markdown or explanation.`;
+Look carefully for the score — it is usually on page 1 in a large font, labeled "FICO Score", "VantageScore", "Credit Score", or similar. If multiple scores are shown, pick the primary/most prominent one for this bureau.
+
+Return ONLY valid JSON (the object above), no markdown or explanation.`;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -119,36 +129,43 @@ Deno.serve(async (req) => {
     }
 
     const aiData = await aiResponse.json();
-    let content = aiData.choices?.[0]?.message?.content || "[]";
+    let content = aiData.choices?.[0]?.message?.content || "{}";
 
     // Strip markdown code fences if present
     content = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
 
-    let accounts;
-    try {
-      accounts = JSON.parse(content);
-    } catch (parseErr) {
-      // AI response may have been truncated — attempt to recover valid JSON
-      // Find the last complete object by looking for the last "},"  or "}" before end
+    let accounts: any[] = [];
+    let score: number | null = null;
+    let score_model: string | null = null;
+    let as_of: string | null = null;
+
+    const tryParse = (s: string) => { try { return JSON.parse(s); } catch { return null; } };
+
+    let parsed: any = tryParse(content);
+    if (!parsed) {
+      // Recover from truncation
       const lastCloseBrace = content.lastIndexOf("}");
       if (lastCloseBrace > 0) {
         const trimmed = content.substring(0, lastCloseBrace + 1);
-        // Ensure it ends as a valid array
         const arrayCandidate = trimmed.endsWith("]") ? trimmed : trimmed + "]";
-        // Also handle case where trailing comma before our added "]"
-        const cleaned = arrayCandidate.replace(/,\s*\]/, "]");
-        try {
-          accounts = JSON.parse(cleaned);
-        } catch {
-          console.error("JSON recovery also failed, returning partial parse");
-          accounts = [];
-        }
-      } else {
-        accounts = [];
+        const cleaned = arrayCandidate.replace(/,\s*\]/, "]").replace(/,\s*\}/g, "}");
+        parsed = tryParse(cleaned) ?? tryParse(trimmed);
       }
     }
 
-    return new Response(JSON.stringify({ accounts, count: accounts.length }), {
+    if (Array.isArray(parsed)) {
+      // Legacy array response (score not extracted)
+      accounts = parsed;
+    } else if (parsed && typeof parsed === "object") {
+      accounts = Array.isArray(parsed.accounts) ? parsed.accounts : [];
+      if (typeof parsed.score === "number" && parsed.score >= 300 && parsed.score <= 850) {
+        score = Math.round(parsed.score);
+      }
+      score_model = typeof parsed.score_model === "string" ? parsed.score_model : null;
+      as_of = typeof parsed.as_of === "string" ? parsed.as_of : null;
+    }
+
+    return new Response(JSON.stringify({ accounts, count: accounts.length, score, score_model, as_of }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
