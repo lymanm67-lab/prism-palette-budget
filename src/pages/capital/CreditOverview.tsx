@@ -29,6 +29,7 @@ const statusColor = (status: string) => {
 };
 
 const ACTUAL_SCORES_KEY = 'prism.actualCreditScores.v1';
+const MULTI_MODEL_KEY = 'prism.multiModelScores.v1';
 type ActualScores = { Equifax?: number; Experian?: number; TransUnion?: number; model?: string; asOf?: string };
 
 const CreditOverview = () => {
@@ -41,6 +42,20 @@ const CreditOverview = () => {
   const setActualScores = (s: ActualScores) => {
     setActualScoresState(s);
     localStorage.setItem(ACTUAL_SCORES_KEY, JSON.stringify(s));
+    // If the user entered VantageScore 3.0 scores, mirror them into the multi-model matrix
+    // so both score cards stay in sync.
+    if (s.model === 'VantageScore 3.0') {
+      try {
+        const raw = localStorage.getItem(MULTI_MODEL_KEY);
+        const multi: Record<string, any> = raw ? JSON.parse(raw) : {};
+        const vs3 = { ...(multi.vs3 || {}) };
+        (['Equifax', 'Experian', 'TransUnion'] as const).forEach(b => {
+          if (typeof s[b] === 'number') vs3[b] = s[b];
+          else if (s[b] === undefined) delete vs3[b];
+        });
+        localStorage.setItem(MULTI_MODEL_KEY, JSON.stringify({ ...multi, vs3 }));
+      } catch { /* ignore */ }
+    }
   };
   const hasActuals = !!(actualScores.Equifax || actualScores.Experian || actualScores.TransUnion);
 
