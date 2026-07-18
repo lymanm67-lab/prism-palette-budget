@@ -108,11 +108,13 @@ export default function CreditBuilderPlaybook() {
         .select('merchant, amount, date')
         .eq('household_id', household.id)
         .gte('date', since.toISOString().slice(0, 10))
-        .or('merchant.ilike.%self inc%,merchant.ilike.%self lender%,merchant.ilike.%self financial%,merchant.ilike.%self credit%,merchant.ilike.%kikoff%,merchant.ilike.%rentreporters%,merchant.ilike.%rent report%,merchant.ilike.%experian boost%,merchant.ilike.%esusu%,merchant.ilike.%piñata%,merchant.ilike.%pinata%,merchant.ilike.%rental kharma%,merchant.ilike.%boom pay%');
+        .or('merchant.ilike.%self inc%,merchant.ilike.%self lender%,merchant.ilike.%self financial%,merchant.ilike.%self credit%,merchant.ilike.%kikoff%,merchant.ilike.%rentreporters%,merchant.ilike.%rent report%,merchant.ilike.%experian boost%,merchant.ilike.%esusu%,merchant.ilike.%piñata%,merchant.ilike.%pinata%,merchant.ilike.%rental kharma%,merchant.ilike.%boom pay%,merchant.ilike.%target%,merchant.ilike.%mason%');
       if (!data || data.length === 0) return;
       const rentSvc = data.find(t => /rent|boost|esusu|piñata|pinata|kharma|boom/i.test(t.merchant || ''));
       const builder = data.find(t => /self|kikoff/i.test(t.merchant || ''));
+      const storeCard = data.find(t => /target|mason/i.test(t.merchant || ''));
       if (builder) setDetected({ merchant: builder.merchant || 'Credit builder', amount: Math.abs(Number(builder.amount) || 0), count: data.length });
+      if (storeCard) setSecondCard({ merchant: storeCard.merchant || 'Store card', amount: Math.abs(Number(storeCard.amount) || 0) });
       if (rentSvc) {
         const info = { source: 'detected' as const, label: rentSvc.merchant || 'Rent reporting service' };
         setRentReported(info);
