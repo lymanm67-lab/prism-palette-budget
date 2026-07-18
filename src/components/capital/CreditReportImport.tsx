@@ -125,6 +125,25 @@ function detectDuplicates(
   });
 }
 
+// Persist a score extracted from an uploaded credit report so the Credit Score
+// & Factor card on /capital/credit-health displays the real score automatically.
+const ACTUAL_SCORES_KEY = 'prism.actualCreditScores.v1';
+function saveExtractedScore(bureau: string, data: any) {
+  const score = Number(data?.score);
+  if (!score || score < 300 || score > 850) return;
+  if (!['Equifax', 'Experian', 'TransUnion'].includes(bureau)) return;
+  try {
+    const existing = JSON.parse(localStorage.getItem(ACTUAL_SCORES_KEY) || '{}');
+    const next = {
+      ...existing,
+      [bureau]: score,
+      model: data?.score_model || existing.model || 'From report',
+      asOf: data?.as_of || new Date().toISOString().slice(0, 10),
+    };
+    localStorage.setItem(ACTUAL_SCORES_KEY, JSON.stringify(next));
+  } catch { /* ignore */ }
+}
+
 // Detect intra-batch duplicates (same account appearing multiple times in the import)
 function detectIntraBatchDuplicates(accounts: ParsedAccount[]): ParsedAccount[] {
   const seen = new Map<string, number>();
