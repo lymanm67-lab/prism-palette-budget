@@ -20,9 +20,17 @@ import { useHomeSearchProfile, useFavorites } from '@/hooks/use-home-search-prof
 import { scoreListing, type Listing } from '@/lib/home-buying/match-engine';
 import { AKRON_NEIGHBORHOODS } from '@/lib/home-buying/akron-neighborhoods';
 
-/** Fill missing listing fields with reasonable heuristics so scoring works even with sparse feeds. */
+/**
+ * Only fills fields that can be legitimately derived from neighborhood/area data:
+ *   - neighborhoodId (matched from address)
+ *   - taxPct (Akron neighborhood avg property tax rate)
+ *   - insurancePct (Ohio state avg homeowners insurance rate)
+ * All other physical property attributes (yearBuilt, lotAcres, hoaMonthly,
+ * floodRisk, condition, roofAge, hvacAge) are left untouched — if the feed
+ * did not provide them, they stay undefined and scoring / the scorecard skip
+ * those checks rather than inventing values.
+ */
 function enrichListing(l: Listing): Listing {
-  // Match neighborhood from address (case-insensitive substring)
   const addr = l.address?.toLowerCase() ?? '';
   const n = AKRON_NEIGHBORHOODS.find((nb) => {
     if (addr.includes(nb.name.toLowerCase())) return true;
@@ -30,23 +38,11 @@ function enrichListing(l: Listing): Listing {
     return false;
   });
 
-  // Deterministic pseudo-random from address so re-renders don't flicker
-  let seed = 0;
-  for (const ch of l.address ?? '') seed = (seed * 31 + ch.charCodeAt(0)) & 0x7fffffff;
-  const rand = (min: number, max: number) => min + ((seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff) * (max - min);
-
   return {
     ...l,
     neighborhoodId: l.neighborhoodId ?? n?.id,
-    yearBuilt: l.yearBuilt ?? Math.floor(rand(1955, 2005)),
-    lotAcres: l.lotAcres ?? +rand(0.15, 0.45).toFixed(2),
-    hoaMonthly: l.hoaMonthly ?? (rand(0, 1) > 0.85 ? Math.floor(rand(15, 60)) : 0),
     taxPct: l.taxPct ?? n?.avgPropertyTaxPct ?? 1.85,
     insurancePct: l.insurancePct ?? 0.55,
-    floodRisk: l.floodRisk ?? (rand(0, 1) > 0.9 ? 'moderate' : 'low'),
-    condition: l.condition ?? (rand(0, 1) > 0.7 ? 'cosmetic_ok' : 'move_in'),
-    roofAge: l.roofAge ?? Math.floor(rand(2, 22)),
-    hvacAge: l.hvacAge ?? Math.floor(rand(2, 18)),
   };
 }
 
