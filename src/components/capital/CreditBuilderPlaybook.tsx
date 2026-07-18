@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Rocket, ExternalLink, CheckCircle2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useHousehold } from '@/contexts/HouseholdContext';
@@ -72,10 +73,25 @@ const STEPS: Step[] = [
   },
 ];
 
+const LS_KEY = 'prism.creditBuilderPlaybook.v1';
+const LS_RENT_KEY = 'prism.rentReportingActive.v1';
+
 export default function CreditBuilderPlaybook() {
   const { household } = useHousehold();
-  const [done, setDone] = useState<Record<string, boolean>>({});
+  const [done, setDone] = useState<Record<string, boolean>>(() => {
+    try { return JSON.parse(localStorage.getItem(LS_KEY) || '{}'); } catch { return {}; }
+  });
   const [detected, setDetected] = useState<{ merchant: string; amount: number; count: number } | null>(null);
+  const [rentReported, setRentReported] = useState<{ source: 'manual' | 'detected'; label: string } | null>(() => {
+    try {
+      const v = localStorage.getItem(LS_RENT_KEY);
+      return v ? JSON.parse(v) : null;
+    } catch { return null; }
+  });
+
+  useEffect(() => {
+    localStorage.setItem(LS_KEY, JSON.stringify(done));
+  }, [done]);
 
   useEffect(() => {
     if (!household?.id) return;
@@ -87,16 +103,38 @@ export default function CreditBuilderPlaybook() {
         .select('merchant, amount, date')
         .eq('household_id', household.id)
         .gte('date', since.toISOString().slice(0, 10))
-        .or('merchant.ilike.%self inc%,merchant.ilike.%self lender%,merchant.ilike.%self financial%,merchant.ilike.%self credit%,merchant.ilike.%kikoff%');
+        .or('merchant.ilike.%self inc%,merchant.ilike.%self lender%,merchant.ilike.%self financial%,merchant.ilike.%self credit%,merchant.ilike.%kikoff%,merchant.ilike.%rentreporters%,merchant.ilike.%rent report%,merchant.ilike.%experian boost%,merchant.ilike.%esusu%,merchant.ilike.%piñata%,merchant.ilike.%pinata%,merchant.ilike.%rental kharma%,merchant.ilike.%boom pay%');
       if (!data || data.length === 0) return;
-      const first = data[0];
-      setDetected({ merchant: first.merchant || 'Credit builder', amount: Math.abs(Number(first.amount) || 0), count: data.length });
+      const rentSvc = data.find(t => /rent|boost|esusu|piñata|pinata|kharma|boom/i.test(t.merchant || ''));
+      const builder = data.find(t => /self|kikoff/i.test(t.merchant || ''));
+      if (builder) setDetected({ merchant: builder.merchant || 'Credit builder', amount: Math.abs(Number(builder.amount) || 0), count: data.length });
+      if (rentSvc) {
+        const info = { source: 'detected' as const, label: rentSvc.merchant || 'Rent reporting service' };
+        setRentReported(info);
+        localStorage.setItem(LS_RENT_KEY, JSON.stringify(info));
+      }
     })();
   }, [household?.id]);
 
-  const autoDone = useMemo(() => ({ ...done, ...(detected ? { 'credit-builder-loan': true } : {}) }), [done, detected]);
+  const toggleRentReported = () => {
+    if (rentReported) {
+      setRentReported(null);
+      localStorage.removeItem(LS_RENT_KEY);
+    } else {
+      const info = { source: 'manual' as const, label: 'Rent reported to bureaus' };
+      setRentReported(info);
+      localStorage.setItem(LS_RENT_KEY, JSON.stringify(info));
+    }
+  };
+
+  const autoDone = useMemo(() => ({
+    ...done,
+    ...(detected ? { 'credit-builder-loan': true } : {}),
+    ...(rentReported ? { 'rent-reporting': true } : {}),
+  }), [done, detected, rentReported]);
   const completed = STEPS.filter(s => autoDone[s.id]).length;
   const pct = Math.round((completed / STEPS.length) * 100);
+
 
   return (
     <Card>
@@ -111,7 +149,8 @@ export default function CreditBuilderPlaybook() {
       </CardHeader>
       <CardContent className="space-y-3">
         {STEPS.map(step => {
-          const isDetected = step.id === 'credit-builder-loan' && !!detected;
+          const isDetected = (step.id === 'credit-builder-loan' && !!detected) || (step.id === 'rent-reporting' && !!rentReported);
+          const isRent = step.id === 'rent-reporting';
           const isDone = !!autoDone[step.id];
           return (
           <div key={step.id} className={`rounded-lg border p-3 space-y-2 ${isDetected ? 'border-emerald-500/40 bg-emerald-500/5' : ''}`}>
@@ -128,11 +167,22 @@ export default function CreditBuilderPlaybook() {
                     {step.title}
                   </span>
                   <Badge variant="secondary" className="text-[10px]">{step.timing}</Badge>
-                  {isDetected && (
+                  {step.id === 'credit-builder-loan' && detected && (
                     <Badge className="text-[10px] bg-emerald-500/15 text-emerald-600 border-emerald-500/30 gap-1">
                       <CheckCircle2 className="h-3 w-3" />
-                      Detected: {detected!.merchant} · ${detected!.amount}/mo
+                      Detected: {detected.merchant} · ${detected.amount}/mo
                     </Badge>
+                  )}
+                  {isRent && rentReported && (
+                    <Badge className="text-[10px] bg-emerald-500/15 text-emerald-600 border-emerald-500/30 gap-1">
+                      <CheckCircle2 className="h-3 w-3" />
+                      {rentReported.source === 'detected' ? `Detected: ${rentReported.label}` : 'Rent reported to bureaus'}
+                    </Badge>
+                  )}
+                  {isRent && (
+                    <Button size="sm" variant="outline" className="h-6 text-[10px] px-2" onClick={toggleRentReported}>
+                      {rentReported ? 'Unmark' : 'I have rent reporting active'}
+                    </Button>
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1"><strong>Why:</strong> {step.why}</p>
