@@ -86,6 +86,7 @@ export default function CreditBuilderPlaybook() {
     try { return JSON.parse(localStorage.getItem(LS_KEY) || '{}'); } catch { return {}; }
   });
   const [detected, setDetected] = useState<{ merchant: string; amount: number; count: number } | null>(null);
+  const [secondCard, setSecondCard] = useState<{ merchant: string; amount: number } | null>(null);
   const [rentReported, setRentReported] = useState<{ source: 'manual' | 'detected'; label: string } | null>(() => {
     try {
       const v = localStorage.getItem(LS_RENT_KEY);
