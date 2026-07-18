@@ -49,6 +49,8 @@ const CapitalDashboard = lazy(() => import("@/pages/CapitalDashboard"));
 const CreditOverview = lazy(() => import("@/pages/capital/CreditOverview"));
 const Metro2Scanner = lazy(() => import("@/pages/capital/Metro2Scanner"));
 const DisputeManager = lazy(() => import("@/pages/capital/DisputeManager"));
+const SecondaryBureauFreeze = lazy(() => import("@/pages/capital/SecondaryBureauFreeze"));
+const PersonalInfoCorrection = lazy(() => import("@/pages/capital/PersonalInfoCorrection"));
 const FundingReadiness = lazy(() => import("@/pages/capital/FundingReadiness"));
 const BusinessCredit = lazy(() => import("@/pages/capital/BusinessCredit"));
 const Receivables = lazy(() => import("@/pages/capital/Receivables"));
@@ -182,6 +184,8 @@ const App = () => (
               <Route path="/capital/credit-overview" element={<Suspense fallback={<PageLoader />}><CreditOverview /></Suspense>} />
               <Route path="/capital/metro2-scanner" element={<Suspense fallback={<PageLoader />}><Metro2Scanner /></Suspense>} />
               <Route path="/capital/disputes" element={<Suspense fallback={<PageLoader />}><DisputeManager /></Suspense>} />
+              <Route path="/capital/secondary-freeze" element={<Suspense fallback={<PageLoader />}><SecondaryBureauFreeze /></Suspense>} />
+              <Route path="/capital/personal-info-correction" element={<Suspense fallback={<PageLoader />}><PersonalInfoCorrection /></Suspense>} />
               <Route path="/capital/funding-readiness" element={<Suspense fallback={<PageLoader />}><FundingReadiness /></Suspense>} />
               <Route path="/capital/business-credit" element={<Suspense fallback={<PageLoader />}><BusinessCredit /></Suspense>} />
               <Route path="/capital/receivables" element={<Suspense fallback={<PageLoader />}><Receivables /></Suspense>} />
