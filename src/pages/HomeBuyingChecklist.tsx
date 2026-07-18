@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Home, Bot, Calculator, Landmark, Search, CheckCircle2, LayoutDashboard, Printer } from 'lucide-react';
+import { Home, Bot, Calculator, Landmark, Search, CheckCircle2, LayoutDashboard, Printer, ClipboardCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { useQuery } from '@tanstack/react-query';
@@ -16,6 +16,7 @@ import HomeSearchPanel from '@/components/home-buying/HomeSearchPanel';
 import AppreciationInfo from '@/components/home-buying/AppreciationInfo';
 import HomeBuyingChecklistTab from '@/components/home-buying/HomeBuyingChecklistTab';
 import PlannerRoot from '@/components/home-buying/planner/PlannerRoot';
+import DecisionRoot from '@/components/home-buying/decision/DecisionRoot';
 import { useHomeBuyingMetrics } from '@/hooks/use-home-buying-metrics';
 import { exportToPdf } from '@/lib/export-utils';
 
@@ -57,6 +58,7 @@ const HomeBuyingChecklist = () => {
 
   const TABS = [
     { id: 'planner', label: 'Planner', icon: LayoutDashboard },
+    { id: 'decision', label: 'Decision', icon: ClipboardCheck },
     { id: 'coach', label: 'AI Coach', icon: Bot },
     { id: 'calculators', label: 'Calculators', icon: Calculator },
     { id: 'loans', label: 'Loans & Assistance', icon: Landmark },
@@ -109,7 +111,7 @@ const HomeBuyingChecklist = () => {
           </div>
         ) : (
           <Tabs value={tab} onValueChange={setTab} className="w-full">
-            <TabsList className="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 h-auto p-1 gap-1">
+            <TabsList className="w-full grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 h-auto p-1 gap-1">
               {TABS.map((t) => {
                 const Icon = t.icon;
                 return (
@@ -122,6 +124,7 @@ const HomeBuyingChecklist = () => {
             </TabsList>
 
             <TabsContent value="planner" className="mt-4"><PlannerRoot /></TabsContent>
+            <TabsContent value="decision" className="mt-4"><DecisionRoot /></TabsContent>
             <TabsContent value="coach" className="mt-4"><AiHomeBuyingCoach /></TabsContent>
             <TabsContent value="calculators" className="mt-4"><HomeBuyingCalculators /></TabsContent>
             <TabsContent value="loans" className="mt-4"><LoansAndAssistance /></TabsContent>
