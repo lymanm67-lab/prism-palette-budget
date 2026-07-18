@@ -63,7 +63,7 @@ const SECONDARY_BUREAUS: Bureau[] = [
     order: 5,
     name: 'ARS (Advanced Resolution Services)',
     purpose: 'Consumer report used by lenders and financial institutions.',
-    freezeUrl: 'https://www.ars-consumeroffice.com/',
+    freezeUrl: 'https://www.ars-consumeroffice.com/add',
     phone: '1-800-392-8911',
     mail: 'ARS Consumer Office, P.O. Box 201, Wilmington, DE 19899',
     notes: 'Written request required. Include copy of ID and proof of address.',
