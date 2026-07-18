@@ -73,7 +73,7 @@ const SECONDARY_BUREAUS: Bureau[] = [
     order: 6,
     name: 'CoreLogic Credco',
     purpose: 'Mortgage lenders pull tri-merge reports through CoreLogic. Critical before a home purchase.',
-    freezeUrl: 'https://www.cotality.com/legal/credco-consumer-assistance',
+    freezeUrl: 'https://www.corelogic.com/legal/credco-consumer-assistance',
     phone: '1-800-637-2422',
     mail: 'CoreLogic Credco, P.O. Box 509124, San Diego, CA 92150',
     notes: 'Freeze BEFORE mortgage shopping is not recommended — but freeze immediately after closing.',
