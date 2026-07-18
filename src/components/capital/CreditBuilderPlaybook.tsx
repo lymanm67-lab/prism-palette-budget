@@ -149,7 +149,8 @@ export default function CreditBuilderPlaybook() {
       </CardHeader>
       <CardContent className="space-y-3">
         {STEPS.map(step => {
-          const isDetected = step.id === 'credit-builder-loan' && !!detected;
+          const isDetected = (step.id === 'credit-builder-loan' && !!detected) || (step.id === 'rent-reporting' && !!rentReported);
+          const isRent = step.id === 'rent-reporting';
           const isDone = !!autoDone[step.id];
           return (
           <div key={step.id} className={`rounded-lg border p-3 space-y-2 ${isDetected ? 'border-emerald-500/40 bg-emerald-500/5' : ''}`}>
@@ -166,11 +167,22 @@ export default function CreditBuilderPlaybook() {
                     {step.title}
                   </span>
                   <Badge variant="secondary" className="text-[10px]">{step.timing}</Badge>
-                  {isDetected && (
+                  {step.id === 'credit-builder-loan' && detected && (
                     <Badge className="text-[10px] bg-emerald-500/15 text-emerald-600 border-emerald-500/30 gap-1">
                       <CheckCircle2 className="h-3 w-3" />
-                      Detected: {detected!.merchant} · ${detected!.amount}/mo
+                      Detected: {detected.merchant} · ${detected.amount}/mo
                     </Badge>
+                  )}
+                  {isRent && rentReported && (
+                    <Badge className="text-[10px] bg-emerald-500/15 text-emerald-600 border-emerald-500/30 gap-1">
+                      <CheckCircle2 className="h-3 w-3" />
+                      {rentReported.source === 'detected' ? `Detected: ${rentReported.label}` : 'Rent reported to bureaus'}
+                    </Badge>
+                  )}
+                  {isRent && (
+                    <Button size="sm" variant="outline" className="h-6 text-[10px] px-2" onClick={toggleRentReported}>
+                      {rentReported ? 'Unmark' : 'I have rent reporting active'}
+                    </Button>
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1"><strong>Why:</strong> {step.why}</p>
