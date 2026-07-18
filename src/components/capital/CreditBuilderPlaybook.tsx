@@ -73,8 +73,29 @@ const STEPS: Step[] = [
 ];
 
 export default function CreditBuilderPlaybook() {
+  const { household } = useHousehold();
   const [done, setDone] = useState<Record<string, boolean>>({});
-  const completed = STEPS.filter(s => done[s.id]).length;
+  const [detected, setDetected] = useState<{ merchant: string; amount: number; count: number } | null>(null);
+
+  useEffect(() => {
+    if (!household?.id) return;
+    (async () => {
+      const since = new Date();
+      since.setMonth(since.getMonth() - 3);
+      const { data } = await supabase
+        .from('transactions')
+        .select('merchant, amount, date')
+        .eq('household_id', household.id)
+        .gte('date', since.toISOString().slice(0, 10))
+        .or('merchant.ilike.%self inc%,merchant.ilike.%self lender%,merchant.ilike.%self financial%,merchant.ilike.%self credit%,merchant.ilike.%kikoff%');
+      if (!data || data.length === 0) return;
+      const first = data[0];
+      setDetected({ merchant: first.merchant || 'Credit builder', amount: Math.abs(Number(first.amount) || 0), count: data.length });
+    })();
+  }, [household?.id]);
+
+  const autoDone = useMemo(() => ({ ...done, ...(detected ? { 'credit-builder-loan': true } : {}) }), [done, detected]);
+  const completed = STEPS.filter(s => autoDone[s.id]).length;
   const pct = Math.round((completed / STEPS.length) * 100);
 
   return (
