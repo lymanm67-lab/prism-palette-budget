@@ -63,6 +63,10 @@ const STEPS: Step[] = [
     timing: 'Month 4–6',
     why: 'FICO rewards 2–3 revolving accounts. Increases total available credit → lowers utilization.',
     how: 'Apply for a store card (Target, Amazon) or a starter unsecured card (Petal, Mission Lane). Keep balance under 7%.',
+    links: [
+      { label: 'Target Circle™ Card', url: 'https://www.target.com/circle-card' },
+      { label: 'Mason Easy Pay', url: 'https://www.masoneasypay.com/' },
+    ],
   },
   {
     id: 'graduate',
