@@ -8,6 +8,7 @@ import FreezeLetterGenerator from '@/components/capital/FreezeLetterGenerator';
 import FreezeVerificationDocs from '@/components/capital/FreezeVerificationDocs';
 
 type Bureau = {
+  order: number;
   name: string;
   purpose: string;
   freezeUrl?: string;
@@ -19,6 +20,7 @@ type Bureau = {
 
 const SECONDARY_BUREAUS: Bureau[] = [
   {
+    order: 1,
     name: 'LexisNexis Risk Solutions',
     purpose: 'Feeds insurance, banking, tenant screening, and background checks. High-impact freeze.',
     freezeUrl: 'https://consumer.risk.lexisnexis.com/freeze',
@@ -28,6 +30,17 @@ const SECONDARY_BUREAUS: Bureau[] = [
     priority: 'high',
   },
   {
+    order: 2,
+    name: 'SageStream (LexisNexis)',
+    purpose: 'Alternative credit data used by lenders for thin-file / subprime decisioning.',
+    freezeUrl: 'https://consumer.risk.lexisnexis.com/request',
+    phone: '1-888-395-0277',
+    mail: 'SageStream, LLC, Consumer Office, P.O. Box 503793, San Diego, CA 92150',
+    notes: 'SageStream is now managed by LexisNexis — freeze via the LexisNexis Consumer Portal (link above), selecting "SageStream" as the report type. Often overlooked; closes a common backdoor when the Big 3 are frozen.',
+    priority: 'high',
+  },
+  {
+    order: 3,
     name: 'ChexSystems',
     purpose: 'Used by banks/credit unions to approve new checking & savings accounts.',
     freezeUrl: 'https://www.chexsystems.com/security-freeze/place-freeze',
@@ -37,15 +50,7 @@ const SECONDARY_BUREAUS: Bureau[] = [
     priority: 'high',
   },
   {
-    name: 'SageStream (LexisNexis)',
-    purpose: 'Alternative credit data used by lenders for thin-file / subprime decisioning.',
-    freezeUrl: 'https://www.sagestreamllc.com/security-freeze/',
-    phone: '1-888-395-0277',
-    mail: 'SageStream, LLC, P.O. Box 503793, San Diego, CA 92150',
-    notes: 'Often overlooked. Freezing here blocks a common backdoor lenders use when Equifax/Experian/TransUnion are frozen.',
-    priority: 'high',
-  },
-  {
+    order: 4,
     name: 'Innovis',
     purpose: 'The "4th credit bureau." Used for pre-approved offers and identity verification.',
     freezeUrl: 'https://www.innovis.com/personal/securityFreeze',
@@ -55,6 +60,7 @@ const SECONDARY_BUREAUS: Bureau[] = [
     priority: 'high',
   },
   {
+    order: 5,
     name: 'ARS (Advanced Resolution Services)',
     purpose: 'Consumer report used by lenders and financial institutions.',
     freezeUrl: 'https://www.ars-consumeroffice.com/',
@@ -64,6 +70,7 @@ const SECONDARY_BUREAUS: Bureau[] = [
     priority: 'medium',
   },
   {
+    order: 6,
     name: 'CoreLogic Credco',
     purpose: 'Mortgage lenders pull tri-merge reports through CoreLogic. Critical before a home purchase.',
     freezeUrl: 'https://www.corelogic.com/solutions/credco.aspx',
@@ -73,6 +80,7 @@ const SECONDARY_BUREAUS: Bureau[] = [
     priority: 'medium',
   },
   {
+    order: 7,
     name: 'The Work Number (Equifax)',
     purpose: 'Employment & income verification database used by lenders and employers.',
     freezeUrl: 'https://theworknumber.com/employees/data-freeze',
@@ -81,6 +89,7 @@ const SECONDARY_BUREAUS: Bureau[] = [
     priority: 'medium',
   },
   {
+    order: 8,
     name: 'NCTUE (National Consumer Telecom & Utilities Exchange)',
     purpose: 'Used by phone, cable, and utility companies for new account decisions.',
     freezeUrl: 'https://www.nctue.com/consumers',
@@ -89,6 +98,7 @@ const SECONDARY_BUREAUS: Bureau[] = [
     priority: 'medium',
   },
   {
+    order: 9,
     name: 'MicroBilt / PRBC',
     purpose: 'Alternative credit reporting used by payday, auto, and subprime lenders.',
     freezeUrl: 'https://www.microbilt.com/consumer',
@@ -97,6 +107,7 @@ const SECONDARY_BUREAUS: Bureau[] = [
     priority: 'low',
   },
   {
+    order: 10,
     name: 'Teletrack (CoreLogic)',
     purpose: 'Subprime & payday lender reporting.',
     phone: '1-877-309-5226',
@@ -104,6 +115,7 @@ const SECONDARY_BUREAUS: Bureau[] = [
     priority: 'low',
   },
 ];
+
 
 const priorityColor: Record<Bureau['priority'], string> = {
   high: 'bg-destructive/15 text-destructive border-destructive/30',
@@ -139,11 +151,16 @@ const SecondaryBureauFreeze = () => {
       <FreezeVerificationDocs />
 
       <div className="grid gap-4 md:grid-cols-2">
-        {SECONDARY_BUREAUS.map((b) => (
+        {[...SECONDARY_BUREAUS].sort((a, b) => a.order - b.order).map((b) => (
           <Card key={b.name} className="flex flex-col">
             <CardHeader>
               <div className="flex items-start justify-between gap-2">
-                <CardTitle className="text-lg">{b.name}</CardTitle>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <span className="inline-flex items-center justify-center h-7 w-7 rounded-full bg-primary/15 text-primary text-sm font-bold border border-primary/30 shrink-0">
+                    {b.order}
+                  </span>
+                  {b.name}
+                </CardTitle>
                 <Badge variant="outline" className={priorityColor[b.priority]}>
                   {b.priority.toUpperCase()}
                 </Badge>
