@@ -116,15 +116,14 @@ export default function CreditBuilderPlaybook() {
     })();
   }, [household?.id]);
 
-  const toggleRentReported = () => {
-    if (rentReported) {
-      setRentReported(null);
-      localStorage.removeItem(LS_RENT_KEY);
-    } else {
-      const info = { source: 'manual' as const, label: 'Rent reported to bureaus' };
-      setRentReported(info);
-      localStorage.setItem(LS_RENT_KEY, JSON.stringify(info));
-    }
+  const setRentSource = (label: string) => {
+    const info = { source: 'manual' as const, label };
+    setRentReported(info);
+    localStorage.setItem(LS_RENT_KEY, JSON.stringify(info));
+  };
+  const clearRentReported = () => {
+    setRentReported(null);
+    localStorage.removeItem(LS_RENT_KEY);
   };
 
   const autoDone = useMemo(() => ({
@@ -176,12 +175,22 @@ export default function CreditBuilderPlaybook() {
                   {isRent && rentReported && (
                     <Badge className="text-[10px] bg-emerald-500/15 text-emerald-600 border-emerald-500/30 gap-1">
                       <CheckCircle2 className="h-3 w-3" />
-                      {rentReported.source === 'detected' ? `Detected: ${rentReported.label}` : 'Rent reported to bureaus'}
+                      {rentReported.source === 'detected' ? `Detected: ${rentReported.label}` : rentReported.label}
                     </Badge>
                   )}
-                  {isRent && (
-                    <Button size="sm" variant="outline" className="h-6 text-[10px] px-2" onClick={toggleRentReported}>
-                      {rentReported ? 'Unmark' : 'I have rent reporting active'}
+                  {isRent && !rentReported && (
+                    <div className="flex flex-wrap gap-2">
+                      <Button size="sm" variant="outline" className="h-6 text-[10px] px-2" onClick={() => setRentSource('Experian Boost active')}>
+                        I use Experian Boost
+                      </Button>
+                      <Button size="sm" variant="outline" className="h-6 text-[10px] px-2" onClick={() => setRentSource('Rent reported to bureaus')}>
+                        Other rent reporting
+                      </Button>
+                    </div>
+                  )}
+                  {isRent && rentReported && (
+                    <Button size="sm" variant="outline" className="h-6 text-[10px] px-2" onClick={clearRentReported}>
+                      Unmark
                     </Button>
                   )}
                 </div>
