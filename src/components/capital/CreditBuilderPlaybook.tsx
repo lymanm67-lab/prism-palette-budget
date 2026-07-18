@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { Rocket, ExternalLink } from 'lucide-react';
+import { Rocket, ExternalLink, CheckCircle2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useHousehold } from '@/contexts/HouseholdContext';
 
 type Step = {
   id: string;
@@ -71,8 +73,29 @@ const STEPS: Step[] = [
 ];
 
 export default function CreditBuilderPlaybook() {
+  const { household } = useHousehold();
   const [done, setDone] = useState<Record<string, boolean>>({});
-  const completed = STEPS.filter(s => done[s.id]).length;
+  const [detected, setDetected] = useState<{ merchant: string; amount: number; count: number } | null>(null);
+
+  useEffect(() => {
+    if (!household?.id) return;
+    (async () => {
+      const since = new Date();
+      since.setMonth(since.getMonth() - 3);
+      const { data } = await supabase
+        .from('transactions')
+        .select('merchant, amount, date')
+        .eq('household_id', household.id)
+        .gte('date', since.toISOString().slice(0, 10))
+        .or('merchant.ilike.%self inc%,merchant.ilike.%self lender%,merchant.ilike.%self financial%,merchant.ilike.%self credit%,merchant.ilike.%kikoff%');
+      if (!data || data.length === 0) return;
+      const first = data[0];
+      setDetected({ merchant: first.merchant || 'Credit builder', amount: Math.abs(Number(first.amount) || 0), count: data.length });
+    })();
+  }, [household?.id]);
+
+  const autoDone = useMemo(() => ({ ...done, ...(detected ? { 'credit-builder-loan': true } : {}) }), [done, detected]);
+  const completed = STEPS.filter(s => autoDone[s.id]).length;
   const pct = Math.round((completed / STEPS.length) * 100);
 
   return (
@@ -87,20 +110,30 @@ export default function CreditBuilderPlaybook() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
-        {STEPS.map(step => (
-          <div key={step.id} className="rounded-lg border p-3 space-y-2">
+        {STEPS.map(step => {
+          const isDetected = step.id === 'credit-builder-loan' && !!detected;
+          const isDone = !!autoDone[step.id];
+          return (
+          <div key={step.id} className={`rounded-lg border p-3 space-y-2 ${isDetected ? 'border-emerald-500/40 bg-emerald-500/5' : ''}`}>
             <div className="flex items-start gap-3">
               <Checkbox
-                checked={!!done[step.id]}
+                checked={isDone}
+                disabled={isDetected}
                 onCheckedChange={(v) => setDone(d => ({ ...d, [step.id]: !!v }))}
                 className="mt-1"
               />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className={`font-semibold text-sm ${done[step.id] ? 'line-through text-muted-foreground' : ''}`}>
+                  <span className={`font-semibold text-sm ${isDone ? 'line-through text-muted-foreground' : ''}`}>
                     {step.title}
                   </span>
                   <Badge variant="secondary" className="text-[10px]">{step.timing}</Badge>
+                  {isDetected && (
+                    <Badge className="text-[10px] bg-emerald-500/15 text-emerald-600 border-emerald-500/30 gap-1">
+                      <CheckCircle2 className="h-3 w-3" />
+                      Detected: {detected!.merchant} · ${detected!.amount}/mo
+                    </Badge>
+                  )}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1"><strong>Why:</strong> {step.why}</p>
                 <p className="text-xs text-muted-foreground mt-1"><strong>How:</strong> {step.how}</p>
@@ -122,7 +155,8 @@ export default function CreditBuilderPlaybook() {
               </div>
             </div>
           </div>
-        ))}
+          );
+        })}
       </CardContent>
     </Card>
   );
