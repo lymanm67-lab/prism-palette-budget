@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const STORAGE_KEY = 'prism.multiModelScores.v1';
+const ACTUAL_SCORES_KEY = 'prism.actualCreditScores.v1';
 
 // Bureau order matches the rest of the app
 const BUREAUS = ['Equifax', 'Experian', 'TransUnion'] as const;
