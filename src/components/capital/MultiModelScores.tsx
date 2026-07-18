@@ -62,6 +62,13 @@ export default function MultiModelScores() {
   const saveAsOf = (d: string) => {
     setAsOf(d);
     localStorage.setItem(STORAGE_KEY + '.asOf', d);
+    // Also stamp the simple actual-scores store so dates stay aligned.
+    try {
+      const raw = localStorage.getItem(ACTUAL_SCORES_KEY);
+      const actual: Record<string, any> = raw ? JSON.parse(raw) : {};
+      if (d) actual.asOf = d;
+      localStorage.setItem(ACTUAL_SCORES_KEY, JSON.stringify(actual));
+    } catch { /* ignore */ }
   };
 
   const updateScore = (model: string, bureau: Bureau, value: string) => {
