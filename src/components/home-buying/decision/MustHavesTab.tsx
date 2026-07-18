@@ -116,7 +116,14 @@ export default function MustHavesTab({ onChange }: { onChange?: (p: Preference[]
                     <Checkbox checked={!!p.checked} onCheckedChange={() => toggle(p.id)} className="mt-0.5" />
                     <div className="flex-1 min-w-0">
                       {editing === p.id ? (
-                        <Input value={p.name} onChange={(e) => setName(p.id, e.target.value)} onBlur={() => setEditing(null)} autoFocus className="h-6 text-xs" />
+                        <Input
+                          value={p.name}
+                          onChange={(e) => setName(p.id, e.target.value)}
+                          onBlur={() => setEditing(null)}
+                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') setEditing(null); }}
+                          autoFocus
+                          className="h-8 text-sm bg-background text-foreground border-prism-teal/50"
+                        />
                       ) : (
                         <div className="font-medium truncate">{p.name}</div>
                       )}
