@@ -29,39 +29,33 @@ export interface Preference {
 const LS_KEY = 'homeBuyingPreferences';
 
 const DEFAULT_SEEDS: Array<Omit<Preference, 'id'>> = [
-  // Home Style
-  ...['Bi-level','Split-level','Ranch','Cape Cod','Colonial','Two-story','Single-story living','Minimal stairs','First-floor bedroom']
-    .map(n => ({ name:n, category:'Home Style', tier:'like' as Tier })),
-  // Beds/Baths
-  ...['Minimum 3 bedrooms','Primary bathroom','Two full bathrooms','First-floor bathroom','First-floor laundry']
-    .map(n => ({ name:n, category:'Bedrooms & Bathrooms', tier:'must' as Tier })),
-  ...['Minimum 2 bedrooms','Half bathroom','Walk-in closet']
-    .map(n => ({ name:n, category:'Bedrooms & Bathrooms', tier:'like' as Tier })),
-  // Parking
-  ...['Two-car garage','Driveway','No shared driveway']
-    .map(n => ({ name:n, category:'Parking & Access', tier:'must' as Tier })),
-  ...['One-car garage','Three-car garage','Attached garage','Detached garage','Additional parking','Accessible entrance']
-    .map(n => ({ name:n, category:'Parking & Access', tier:'like' as Tier })),
-  // Interior
-  ...['Central air','Updated electrical panel']
-    .map(n => ({ name:n, category:'Interior', tier:'must' as Tier })),
-  ...['Finished basement','Unfinished basement','Fireplace','Updated kitchen','Updated bathrooms','Home office','Large living room','Dining room','Hardwood floors','Adequate storage','Energy-efficient windows']
-    .map(n => ({ name:n, category:'Interior', tier:'like' as Tier })),
-  // Exterior
-  ...['Deck','Patio','Front porch','Fenced yard','Large backyard','Storage shed','Low-maintenance exterior','Corner lot']
-    .map(n => ({ name:n, category:'Exterior', tier:'like' as Tier })),
-  ...['Hot tub','Pool']
-    .map(n => ({ name:n, category:'Exterior', tier:'wish' as Tier })),
-  // Condition
-  ...['No major foundation issues','No active roof leaks','No major water damage','No visible mold concerns','No major sewer issues']
-    .map(n => ({ name:n, category:'Property Condition', tier:'must' as Tier })),
-  ...['Move-in ready','Newer roof','Newer furnace','Newer central-air system','Updated plumbing']
-    .map(n => ({ name:n, category:'Property Condition', tier:'like' as Tier })),
-  // Location
-  ...['Preferred school district','Reliable internet access']
-    .map(n => ({ name:n, category:'Location', tier:'must' as Tier })),
-  ...['Ellet','Goodyear Heights','Firestone Park','Springfield Township','Quiet street','Low traffic','Near shopping','Near healthcare','Near parks','Short commute','Good street lighting']
-    .map(n => ({ name:n, category:'Location', tier:'like' as Tier })),
+  // MUST-HAVES — simple, concrete deal-breakers
+  { name: '3 bedrooms', category: 'Bedrooms', tier: 'must' },
+  { name: '2 bathrooms', category: 'Bathrooms', tier: 'must' },
+  { name: 'Central air', category: 'Systems', tier: 'must' },
+  { name: '2-car garage', category: 'Parking', tier: 'must' },
+  { name: 'Driveway', category: 'Parking', tier: 'must' },
+
+  // LIKE-TO-HAVE — nice upgrades
+  { name: '4 bedrooms', category: 'Bedrooms', tier: 'like' },
+  { name: 'Primary bathroom', category: 'Bathrooms', tier: 'like' },
+  { name: 'Half bathroom', category: 'Bathrooms', tier: 'like' },
+  { name: 'First-floor bedroom', category: 'Layout', tier: 'like' },
+  { name: 'First-floor laundry', category: 'Layout', tier: 'like' },
+  { name: 'Porch', category: 'Outdoor', tier: 'like' },
+  { name: 'Patio', category: 'Outdoor', tier: 'like' },
+  { name: 'Deck', category: 'Outdoor', tier: 'like' },
+  { name: 'Fenced yard', category: 'Outdoor', tier: 'like' },
+  { name: 'Finished basement', category: 'Interior', tier: 'like' },
+  { name: 'Updated kitchen', category: 'Interior', tier: 'like' },
+  { name: 'Fireplace', category: 'Interior', tier: 'like' },
+  { name: '3-car garage', category: 'Parking', tier: 'like' },
+
+  // WISH LIST — dream extras
+  { name: 'Hot tub', category: 'Outdoor', tier: 'wish' },
+  { name: 'Pool', category: 'Outdoor', tier: 'wish' },
+  { name: 'Home office', category: 'Interior', tier: 'wish' },
+  { name: 'Large backyard', category: 'Outdoor', tier: 'wish' },
 ];
 
 export function defaultPreferences(): Preference[] {
