@@ -20,7 +20,7 @@ export default function UtilizationGuardian({ accounts }: Props) {
   const uniqueCards = useMemo(() => {
     const map = new Map<string, CreditAccount>();
     for (const a of revolving) {
-      const key = `${(a.creditor_name || '').toLowerCase().trim()}::${a.account_number_last4 || ''}`;
+      const key = `${(a.account_name || '').toLowerCase().trim()}::${a.account_number || ''}`;
       const existing = map.get(key);
       if (!existing || Number(a.balance) > Number(existing.balance)) {
         map.set(key, a);
@@ -90,9 +90,9 @@ export default function UtilizationGuardian({ accounts }: Props) {
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 <div className="flex items-center gap-2 min-w-0">
                   <Icon className={`h-4 w-4 shrink-0 ${color}`} />
-                  <span className="font-medium text-sm truncate">{a.creditor_name || 'Card'}</span>
-                  {a.account_number_last4 && (
-                    <span className="text-xs text-muted-foreground">••{a.account_number_last4}</span>
+                  <span className="font-medium text-sm truncate">{a.account_name || 'Card'}</span>
+                  {a.account_number && (
+                    <span className="text-xs text-muted-foreground">••{a.account_number}</span>
                   )}
                 </div>
                 <Badge variant={status === 'danger' ? 'destructive' : status === 'warn' ? 'secondary' : 'default'} className="text-[10px]">
