@@ -181,6 +181,12 @@ export default function CreditBuilderPlaybook() {
                       Detected: {detected.merchant} · ${detected.amount}/mo
                     </Badge>
                   )}
+                  {isSecondCard && secondCard && (
+                    <Badge className="text-[10px] bg-emerald-500/15 text-emerald-600 border-emerald-500/30 gap-1">
+                      <CheckCircle2 className="h-3 w-3" />
+                      Detected: {secondCard.merchant} · ${secondCard.amount}/mo
+                    </Badge>
+                  )}
                   {isRent && rentReported && (
                     <Badge className="text-[10px] bg-emerald-500/15 text-emerald-600 border-emerald-500/30 gap-1">
                       <CheckCircle2 className="h-3 w-3" />
