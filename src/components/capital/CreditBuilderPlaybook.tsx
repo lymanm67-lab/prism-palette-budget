@@ -136,8 +136,9 @@ export default function CreditBuilderPlaybook() {
   const autoDone = useMemo(() => ({
     ...done,
     ...(detected ? { 'credit-builder-loan': true } : {}),
+    ...(secondCard ? { 'second-card': true } : {}),
     ...(rentReported ? { 'rent-reporting': true } : {}),
-  }), [done, detected, rentReported]);
+  }), [done, detected, secondCard, rentReported]);
   const completed = STEPS.filter(s => autoDone[s.id]).length;
   const pct = Math.round((completed / STEPS.length) * 100);
 
