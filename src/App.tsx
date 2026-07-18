@@ -49,6 +49,8 @@ const CapitalDashboard = lazy(() => import("@/pages/CapitalDashboard"));
 const CreditOverview = lazy(() => import("@/pages/capital/CreditOverview"));
 const Metro2Scanner = lazy(() => import("@/pages/capital/Metro2Scanner"));
 const DisputeManager = lazy(() => import("@/pages/capital/DisputeManager"));
+const SecondaryBureauFreeze = lazy(() => import("@/pages/capital/SecondaryBureauFreeze"));
+const PersonalInfoCorrection = lazy(() => import("@/pages/capital/PersonalInfoCorrection"));
 const FundingReadiness = lazy(() => import("@/pages/capital/FundingReadiness"));
 const BusinessCredit = lazy(() => import("@/pages/capital/BusinessCredit"));
 const Receivables = lazy(() => import("@/pages/capital/Receivables"));
