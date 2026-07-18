@@ -56,6 +56,31 @@ const CreditOverview = () => {
         features={['Upload PDF, CSV, or JSON credit reports', 'Track balances and utilization across all three bureaus', 'Simulate score changes with the Credit Score Simulator', 'Identify negative items dragging your score down']}
       />
 
+      <div className="grid gap-3 md:grid-cols-2">
+        <a href="/capital/secondary-freeze" className="block">
+          <Card className="hover:border-primary/50 transition-colors h-full">
+            <CardContent className="flex items-start gap-3 p-4">
+              <Shield className="h-5 w-5 text-primary mt-0.5" />
+              <div>
+                <div className="font-semibold text-sm">Secondary Bureau Freeze Hub</div>
+                <div className="text-xs text-muted-foreground">Freeze LexisNexis, ChexSystems, SageStream, Innovis + 6 more</div>
+              </div>
+            </CardContent>
+          </Card>
+        </a>
+        <a href="/capital/personal-info-correction" className="block">
+          <Card className="hover:border-primary/50 transition-colors h-full">
+            <CardContent className="flex items-start gap-3 p-4">
+              <FileText className="h-5 w-5 text-primary mt-0.5" />
+              <div>
+                <div className="font-semibold text-sm">Personal Info Correction Letters</div>
+                <div className="text-xs text-muted-foreground">Fix wrong name, address, DOB, SSN, or aliases (FCRA § 611)</div>
+              </div>
+            </CardContent>
+          </Card>
+        </a>
+      </div>
+
       {/* VantageScore Estimator + Quick Stats */}
       {accounts.length > 0 && (() => {
         // VantageScore 3.0 estimation based on credit data factors
