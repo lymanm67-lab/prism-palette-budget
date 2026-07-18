@@ -13,6 +13,8 @@ import CreditReportImport from '@/components/capital/CreditReportImport';
 import CreditScoreSimulator from '@/components/capital/CreditScoreSimulator';
 import AiCreditAnalysis from '@/components/capital/AiCreditAnalysis';
 import SixMonthScorePath from '@/components/capital/SixMonthScorePath';
+import CreditBuilderPlaybook from '@/components/capital/CreditBuilderPlaybook';
+import UtilizationGuardian from '@/components/capital/UtilizationGuardian';
 import { useCreditAccounts, CreditAccount } from '@/hooks/use-credit-accounts';
 import { format } from 'date-fns';
 
@@ -291,6 +293,12 @@ const CreditOverview = () => {
 
       {/* AI Credit Analysis */}
       {accounts.length > 0 && <AiCreditAnalysis />}
+
+      {/* Utilization Guardian (per-card <7% tracker) */}
+      {accounts.length > 0 && <UtilizationGuardian accounts={accounts} />}
+
+      {/* Credit Builder Playbook */}
+      <CreditBuilderPlaybook />
 
       {/* Credit Score Simulator */}
       {accounts.length > 0 && <CreditScoreSimulator accounts={accounts} />}
