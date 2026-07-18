@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import PageOverview from '@/components/PageOverview';
 import FreezeLetterGenerator from '@/components/capital/FreezeLetterGenerator';
+import FreezeVerificationDocs from '@/components/capital/FreezeVerificationDocs';
 
 type Bureau = {
   name: string;
