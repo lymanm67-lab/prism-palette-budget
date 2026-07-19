@@ -65,6 +65,7 @@ const HomeBuyingChecklist = () => {
     { id: 'loans', label: 'Loans & Assistance', icon: Landmark },
     { id: 'search', label: 'Home Search', icon: Search },
     { id: 'checklist', label: 'Checklist', icon: CheckCircle2 },
+    { id: 'cosigner', label: 'Co-Signer Docs', icon: Users },
   ];
 
   return (
