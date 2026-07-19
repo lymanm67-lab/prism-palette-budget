@@ -132,6 +132,7 @@ const HomeBuyingChecklist = () => {
             <TabsContent value="loans" className="mt-4"><LoansAndAssistance /></TabsContent>
             <TabsContent value="search" className="mt-4 space-y-4"><AppreciationInfo /><HomeSearchPanel /></TabsContent>
             <TabsContent value="checklist" className="mt-4"><HomeBuyingChecklistTab /></TabsContent>
+            <TabsContent value="cosigner" className="mt-4"><CoSignerDocPacket /></TabsContent>
           </Tabs>
         )}
       </div>
