@@ -127,6 +127,17 @@ export interface DecisionRecord {
 export function loadDecision(id: string): DecisionRecord { return ls<DecisionRecord>(KEYS.decision(id), {}); }
 export function saveDecision(id: string, d: DecisionRecord) { save(KEYS.decision(id), { ...d, savedAt: new Date().toISOString() }); }
 
-// Per-property preference checks: recordId -> checked boolean
-export function loadPrefChecks(id: string): Record<string, boolean> { return ls(KEYS.prefsByProp(id), {}); }
-export function savePrefChecks(id: string, m: Record<string, boolean>) { save(KEYS.prefsByProp(id), m); }
+export function removeProperty(id: string) {
+  const all = loadProperties().filter(p => p.id !== id);
+  saveProperties(all);
+  ['walk','repair','nbhd','decision','score','prefsByProp','uploads'].forEach(k => {
+    try { localStorage.removeItem((KEYS as any)[k](id)); } catch {}
+  });
+  return all;
+}
+
+// Uploads per property
+export function loadUploads(id: string): PropertyUploads {
+  return ls<PropertyUploads>(KEYS.uploads(id), { photos: [], docs: [] });
+}
+export function saveUploads(id: string, u: PropertyUploads) { save(KEYS.uploads(id), u); }
