@@ -255,6 +255,17 @@ const DisputeManager = () => {
                   )}
                   <Button size="sm" variant="destructive" onClick={() => deleteDispute(d.id)}><Trash2 className="h-3.5 w-3.5 mr-1" />Delete</Button>
                 </div>
+
+                {/* Escalation Cadence + Response Upload */}
+                <div className="grid gap-3 md:grid-cols-2 pt-3 border-t">
+                  <EscalationCadence dispute={d as any} onRefresh={() => setExpandedId(null)} />
+                  {(d.status === 'submitted' || d.status === 'in_progress') && (
+                    <ResponseUpload
+                      disputeId={d.id}
+                      currentRound={(d as any).round ?? 1}
+                    />
+                  )}
+                </div>
               </div>
             </TableCell>
           </TableRow>
