@@ -28,6 +28,8 @@ import DebtValidationTracker from '@/components/capital/DebtValidationTracker';
 import ReAgingDetector from '@/components/capital/ReAgingDetector';
 import AZEOOptimizer from '@/components/capital/AZEOOptimizer';
 import CFPBComplaintFiler from '@/components/capital/CFPBComplaintFiler';
+import StatementCloseTracker from '@/components/capital/StatementCloseTracker';
+import GoodwillCampaignTracker from '@/components/capital/GoodwillCampaignTracker';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import html2canvas from 'html2canvas';
