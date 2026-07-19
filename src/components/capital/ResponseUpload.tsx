@@ -8,6 +8,13 @@ import { useHousehold } from '@/contexts/HouseholdContext';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { recommendEscalationFromOutcome, type DisputeOutcome } from '@/lib/credit-repair/escalation-engine';
+import { LETTER_TEMPLATES, mergeTemplate } from '@/lib/credit-repair/letter-templates';
+
+const BUREAU_ADDR: Record<string, string> = {
+  Equifax: 'Equifax Information Services LLC\nP.O. Box 740256\nAtlanta, GA 30374',
+  Experian: 'Experian\nP.O. Box 4500\nAllen, TX 75013',
+  TransUnion: 'TransUnion LLC\nP.O. Box 2000\nChester, PA 19016',
+};
 
 interface Props {
   disputeId: string;
