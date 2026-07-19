@@ -416,21 +416,38 @@ const DisputeManager = () => {
         </CardContent>
       </Card>
 
-      <div className="flex justify-end">
-        <Button onClick={() => { resetForm(); setShowCreate(true); }}><Plus className="h-4 w-4 mr-2" />New Dispute</Button>
-      </div>
-
-      <Tabs defaultValue="all">
-        <TabsList>
-          <TabsTrigger value="all">All ({disputes.length})</TabsTrigger>
-          <TabsTrigger value="active">Active ({active.length})</TabsTrigger>
-          <TabsTrigger value="drafts">Drafts ({pending.length})</TabsTrigger>
-          <TabsTrigger value="resolved">Resolved ({resolved.length})</TabsTrigger>
+      <Tabs defaultValue="disputes" className="mt-2">
+        <TabsList className="flex-wrap h-auto">
+          <TabsTrigger value="disputes">Disputes ({disputes.length})</TabsTrigger>
+          <TabsTrigger value="letters">Letter Library</TabsTrigger>
+          <TabsTrigger value="inquiries">Inquiry Disputes</TabsTrigger>
         </TabsList>
-        <TabsContent value="all" className="mt-4">{renderTable(disputes)}</TabsContent>
-        <TabsContent value="active" className="mt-4">{renderTable(active)}</TabsContent>
-        <TabsContent value="drafts" className="mt-4">{renderTable(pending)}</TabsContent>
-        <TabsContent value="resolved" className="mt-4">{renderTable(resolved)}</TabsContent>
+
+        <TabsContent value="disputes" className="mt-4 space-y-4">
+          <div className="flex justify-end">
+            <Button onClick={() => { resetForm(); setShowCreate(true); }}><Plus className="h-4 w-4 mr-2" />New Dispute</Button>
+          </div>
+          <Tabs defaultValue="all">
+            <TabsList>
+              <TabsTrigger value="all">All ({disputes.length})</TabsTrigger>
+              <TabsTrigger value="active">Active ({active.length})</TabsTrigger>
+              <TabsTrigger value="drafts">Drafts ({pending.length})</TabsTrigger>
+              <TabsTrigger value="resolved">Resolved ({resolved.length})</TabsTrigger>
+            </TabsList>
+            <TabsContent value="all" className="mt-4">{renderTable(disputes)}</TabsContent>
+            <TabsContent value="active" className="mt-4">{renderTable(active)}</TabsContent>
+            <TabsContent value="drafts" className="mt-4">{renderTable(pending)}</TabsContent>
+            <TabsContent value="resolved" className="mt-4">{renderTable(resolved)}</TabsContent>
+          </Tabs>
+        </TabsContent>
+
+        <TabsContent value="letters" className="mt-4">
+          <LetterLibrary />
+        </TabsContent>
+
+        <TabsContent value="inquiries" className="mt-4">
+          <InquiryDisputes />
+        </TabsContent>
       </Tabs>
 
       {/* Create Dialog */}
