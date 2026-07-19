@@ -15,7 +15,7 @@ import PropertyUploadsTab from './PropertyUploadsTab';
 import { loadProperties, upsertProperty, removeProperty, type PropertyProfile } from '@/lib/home-buying/decision/walkthrough-store';
 
 export default function DecisionRoot() {
-  const [tab, setTab] = useState<'must' | 'walk' | 'score' | 'compare'>('must');
+  const [tab, setTab] = useState<'must' | 'uploads' | 'walk' | 'score' | 'compare'>('must');
   const [properties, setProperties] = useState<PropertyProfile[]>(() => loadProperties());
   const [activeId, setActiveId] = useState<string | null>(() => loadProperties()[0]?.id ?? null);
 
