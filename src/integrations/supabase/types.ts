@@ -964,6 +964,74 @@ export type Database = {
           },
         ]
       }
+      cfpb_complaints: {
+        Row: {
+          attachments: Json | null
+          cfpb_case_number: string | null
+          company_name: string
+          company_response: string | null
+          company_response_date: string | null
+          consumer_disputed_response: boolean | null
+          created_at: string
+          desired_resolution: string | null
+          household_id: string
+          id: string
+          issue: string
+          narrative: string
+          product: string
+          related_dispute_id: string | null
+          status: string
+          submitted_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          attachments?: Json | null
+          cfpb_case_number?: string | null
+          company_name: string
+          company_response?: string | null
+          company_response_date?: string | null
+          consumer_disputed_response?: boolean | null
+          created_at?: string
+          desired_resolution?: string | null
+          household_id: string
+          id?: string
+          issue: string
+          narrative: string
+          product: string
+          related_dispute_id?: string | null
+          status?: string
+          submitted_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          attachments?: Json | null
+          cfpb_case_number?: string | null
+          company_name?: string
+          company_response?: string | null
+          company_response_date?: string | null
+          consumer_disputed_response?: boolean | null
+          created_at?: string
+          desired_resolution?: string | null
+          household_id?: string
+          id?: string
+          issue?: string
+          narrative?: string
+          product?: string
+          related_dispute_id?: string | null
+          status?: string
+          submitted_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cfpb_complaints_related_dispute_id_fkey"
+            columns: ["related_dispute_id"]
+            isOneToOne: false
+            referencedRelation: "credit_disputes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coach_plans: {
         Row: {
           answers: Json
@@ -1023,7 +1091,10 @@ export type Database = {
           monthly_payment: number | null
           notes: string | null
           payment_history: string | null
+          reaging_notes: string | null
+          reaging_suspected: boolean | null
           remarks_codes: string | null
+          reported_first_delinquency: string | null
           responsibility: string | null
           terms: string | null
           updated_at: string
@@ -1047,7 +1118,10 @@ export type Database = {
           monthly_payment?: number | null
           notes?: string | null
           payment_history?: string | null
+          reaging_notes?: string | null
+          reaging_suspected?: boolean | null
           remarks_codes?: string | null
+          reported_first_delinquency?: string | null
           responsibility?: string | null
           terms?: string | null
           updated_at?: string
@@ -1071,7 +1145,10 @@ export type Database = {
           monthly_payment?: number | null
           notes?: string | null
           payment_history?: string | null
+          reaging_notes?: string | null
+          reaging_suspected?: boolean | null
           remarks_codes?: string | null
+          reported_first_delinquency?: string | null
           responsibility?: string | null
           terms?: string | null
           updated_at?: string
@@ -1089,6 +1166,12 @@ export type Database = {
       credit_disputes: {
         Row: {
           bureau: string
+          certified_carrier: string | null
+          certified_cost: number | null
+          certified_delivered_date: string | null
+          certified_mailed_date: string | null
+          certified_notes: string | null
+          certified_tracking_number: string | null
           created_at: string
           credit_account_id: string | null
           dispute_reason: string
@@ -1111,6 +1194,12 @@ export type Database = {
         }
         Insert: {
           bureau: string
+          certified_carrier?: string | null
+          certified_cost?: number | null
+          certified_delivered_date?: string | null
+          certified_mailed_date?: string | null
+          certified_notes?: string | null
+          certified_tracking_number?: string | null
           created_at?: string
           credit_account_id?: string | null
           dispute_reason: string
@@ -1133,6 +1222,12 @@ export type Database = {
         }
         Update: {
           bureau?: string
+          certified_carrier?: string | null
+          certified_cost?: number | null
+          certified_delivered_date?: string | null
+          certified_mailed_date?: string | null
+          certified_notes?: string | null
+          certified_tracking_number?: string | null
           created_at?: string
           credit_account_id?: string | null
           dispute_reason?: string
@@ -1491,6 +1586,83 @@ export type Database = {
             columns: ["household_id"]
             isOneToOne: false
             referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      debt_validation_requests: {
+        Row: {
+          account_reference: string | null
+          amount_claimed: number | null
+          collector_name: string
+          created_at: string
+          credit_account_id: string | null
+          dv_letter_sent_date: string | null
+          dv_response_deadline: string | null
+          first_contact_date: string | null
+          household_id: string
+          id: string
+          notes: string | null
+          original_creditor: string | null
+          response_received_date: string | null
+          response_type: string | null
+          sol_state: string | null
+          sol_years: number | null
+          status: string
+          statute_of_limitations_date: string | null
+          updated_at: string
+          validated: boolean | null
+        }
+        Insert: {
+          account_reference?: string | null
+          amount_claimed?: number | null
+          collector_name: string
+          created_at?: string
+          credit_account_id?: string | null
+          dv_letter_sent_date?: string | null
+          dv_response_deadline?: string | null
+          first_contact_date?: string | null
+          household_id: string
+          id?: string
+          notes?: string | null
+          original_creditor?: string | null
+          response_received_date?: string | null
+          response_type?: string | null
+          sol_state?: string | null
+          sol_years?: number | null
+          status?: string
+          statute_of_limitations_date?: string | null
+          updated_at?: string
+          validated?: boolean | null
+        }
+        Update: {
+          account_reference?: string | null
+          amount_claimed?: number | null
+          collector_name?: string
+          created_at?: string
+          credit_account_id?: string | null
+          dv_letter_sent_date?: string | null
+          dv_response_deadline?: string | null
+          first_contact_date?: string | null
+          household_id?: string
+          id?: string
+          notes?: string | null
+          original_creditor?: string | null
+          response_received_date?: string | null
+          response_type?: string | null
+          sol_state?: string | null
+          sol_years?: number | null
+          status?: string
+          statute_of_limitations_date?: string | null
+          updated_at?: string
+          validated?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "debt_validation_requests_credit_account_id_fkey"
+            columns: ["credit_account_id"]
+            isOneToOne: false
+            referencedRelation: "credit_accounts"
             referencedColumns: ["id"]
           },
         ]
