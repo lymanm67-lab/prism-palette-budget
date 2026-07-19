@@ -1,7 +1,8 @@
 import { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Home, Bot, Calculator, Landmark, Search, CheckCircle2, LayoutDashboard, Printer, ClipboardCheck } from 'lucide-react';
+import { Home, Bot, Calculator, Landmark, Search, CheckCircle2, LayoutDashboard, Printer, ClipboardCheck, Users } from 'lucide-react';
+import CoSignerDocPacket from '@/components/home-buying/CoSignerDocPacket';
 import { Button } from '@/components/ui/button';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { useQuery } from '@tanstack/react-query';
@@ -64,6 +65,7 @@ const HomeBuyingChecklist = () => {
     { id: 'loans', label: 'Loans & Assistance', icon: Landmark },
     { id: 'search', label: 'Home Search', icon: Search },
     { id: 'checklist', label: 'Checklist', icon: CheckCircle2 },
+    { id: 'cosigner', label: 'Co-Signer Docs', icon: Users },
   ];
 
   return (
@@ -111,7 +113,7 @@ const HomeBuyingChecklist = () => {
           </div>
         ) : (
           <Tabs value={tab} onValueChange={setTab} className="w-full">
-            <TabsList className="w-full grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 h-auto p-1 gap-1">
+            <TabsList className="w-full grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 h-auto p-1 gap-1">
               {TABS.map((t) => {
                 const Icon = t.icon;
                 return (
@@ -130,6 +132,7 @@ const HomeBuyingChecklist = () => {
             <TabsContent value="loans" className="mt-4"><LoansAndAssistance /></TabsContent>
             <TabsContent value="search" className="mt-4 space-y-4"><AppreciationInfo /><HomeSearchPanel /></TabsContent>
             <TabsContent value="checklist" className="mt-4"><HomeBuyingChecklistTab /></TabsContent>
+            <TabsContent value="cosigner" className="mt-4"><CoSignerDocPacket /></TabsContent>
           </Tabs>
         )}
       </div>
