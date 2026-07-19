@@ -170,7 +170,7 @@ export default function CertifiedMailTracker({ disputeId, initial }: Props) {
           </Button>
           <Button size="sm" variant="default" onClick={() => setBuyOpen(true)}>
             <ShoppingCart className="h-3.5 w-3.5 mr-1" />
-            Buy USPS Certified Label
+            Mail Certified (Manual Options)
           </Button>
           {form.label_url && (
             <Button size="sm" variant="outline" asChild>
