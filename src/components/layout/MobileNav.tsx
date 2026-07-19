@@ -64,21 +64,21 @@ const MobileNav = () => {
   return (
     <>
       {/* Top bar */}
-      <header className="flex md:hidden items-center justify-between px-4 h-14 border-b border-border bg-card/80 backdrop-blur-md sticky top-0 z-40">
+      <header className="flex lg:hidden items-center justify-between px-4 h-14 border-b border-border bg-card/80 backdrop-blur-md fixed top-0 left-0 right-0 z-[60]">
         <button
           onClick={() => setMenuOpen(prev => !prev)}
-          className="h-9 w-9 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-muted active:animate-haptic-press"
+          className="h-11 w-11 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-muted active:animate-haptic-press"
           aria-label="Open menu"
         >
-          <Menu className="h-5 w-5" />
+          <Menu className="h-6 w-6" />
         </button>
         <span className="font-display text-lg font-extrabold tracking-tight prism-gradient-text">PrismMoney</span>
         <button
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          className="h-9 w-9 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-muted active:animate-haptic-press"
+          className="h-11 w-11 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-muted active:animate-haptic-press"
           aria-label="Toggle theme"
         >
-          {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          {theme === 'dark' ? <Sun className="h-6 w-6" /> : <Moon className="h-6 w-6" />}
         </button>
       </header>
 
