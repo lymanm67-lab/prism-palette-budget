@@ -102,7 +102,7 @@ const AppLayout = () => {
           )}
           <PullToRefresh
             onRefresh={handleRefresh}
-            className="flex-1 overflow-y-auto bg-mesh pb-20 md:pb-0"
+            className="flex-1 overflow-y-auto bg-mesh pb-20 md:pb-0 pt-14 lg:pt-0"
           >
             <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-background focus:text-foreground">
               Skip to main content
