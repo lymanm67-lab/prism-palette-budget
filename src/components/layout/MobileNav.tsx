@@ -1,6 +1,7 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, ArrowLeftRight, PiggyBank, BarChart3, Grid3x3, X,
-  Settings, Target, Wallet, TrendingUp, Receipt, Calculator, Shield, Menu, Sun, Moon } from 'lucide-react';
+  Settings, Target, Wallet, TrendingUp, Receipt, Calculator, Shield, Menu, Sun, Moon,
+  Home, FileText, RefreshCw, CreditCard, Calendar, Tags, HeartHandshake } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState, useCallback } from 'react';
 import { useSidebarBadges } from '@/hooks/use-sidebar-badges';
@@ -16,13 +17,22 @@ const BOTTOM_NAV = [
 
 const MORE_ITEMS = [
   { to: '/accounts', icon: Wallet, label: 'Accounts' },
-  { to: '/recurring', icon: Receipt, label: 'Recurring' },
+  { to: '/recurring', icon: RefreshCw, label: 'Recurring' },
+  { to: '/subscriptions', icon: CreditCard, label: 'Subscriptions' },
   { to: '/goals', icon: Target, label: 'Goals' },
   { to: '/net-worth', icon: TrendingUp, label: 'Net Worth' },
   { to: '/investments', icon: TrendingUp, label: 'Investments' },
   { to: '/cash-flow', icon: Wallet, label: 'Cash Flow' },
+  { to: '/forecast', icon: Calendar, label: 'Forecast' },
+  { to: '/spending-trends', icon: BarChart3, label: 'Trends' },
+  { to: '/debt-payoff', icon: CreditCard, label: 'Debt Payoff' },
   { to: '/calculators', icon: Calculator, label: 'Calculators' },
+  { to: '/home-buying', icon: Home, label: 'Home Buying' },
   { to: '/capital', icon: Shield, label: 'Capital' },
+  { to: '/capital/credit-overview', icon: CreditCard, label: 'Credit' },
+  { to: '/coach', icon: HeartHandshake, label: 'Coach' },
+  { to: '/tax-assistant', icon: FileText, label: 'Tax' },
+  { to: '/categories', icon: Tags, label: 'Categories' },
   { to: '/settings', icon: Settings, label: 'Settings' },
 ];
 
