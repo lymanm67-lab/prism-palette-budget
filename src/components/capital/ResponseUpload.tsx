@@ -111,9 +111,35 @@ export default function ResponseUpload({ disputeId, currentRound, onProcessed }:
 
       await (supabase as any).from('credit_disputes').update(disputeUpdate).eq('id', disputeId);
 
-      // 5b. Auto-schedule next round as a draft dispute
+      // 5b. Auto-schedule next round as a draft dispute WITH pre-filled letter body
       if (scheduledNextRound && original) {
         const nextStep = recommendEscalationFromOutcome(parsed.outcome, currentRound)!;
+        // Pull creditor context for template merging
+        const { data: acct } = await (supabase as any)
+          .from('credit_accounts').select('creditor_name, account_number_last4')
+          .eq('id', original.credit_account_id).maybeSingle();
+        const tpl = LETTER_TEMPLATES.find(t => t.id === nextStep.actionType);
+        const today = format(new Date(), 'MMMM d, yyyy');
+        const priorDate = original.submitted_date
+          ? format(new Date(original.submitted_date), 'MMMM d, yyyy')
+          : format(new Date(), 'MMMM d, yyyy');
+        const stallNote = parsed.stall_tactics.length
+          ? `\n\nAdditional grounds — stall tactics identified in the prior response: ${parsed.stall_tactics.join('; ')}.`
+          : '';
+        const vars: Record<string, string> = {
+          today,
+          bureau: original.bureau ?? '',
+          bureauAddress: BUREAU_ADDR[original.bureau] ?? '',
+          creditorName: acct?.creditor_name ?? '',
+          creditorAddress: '',
+          accountLast4: acct?.account_number_last4 ?? '',
+          disputeReason: (original.dispute_reason ?? '') + stallNote,
+          priorDisputeDate: priorDate,
+          fullName: '', streetAddress: '', cityStateZip: '',
+        };
+        const letterBody = tpl ? mergeTemplate(tpl.body, vars) : '';
+        const letterSubject = tpl?.subject ? mergeTemplate(tpl.subject, vars) : nextStep.actionLabel;
+
         await (supabase as any).from('credit_disputes').insert({
           household_id: household.id,
           bureau: original.bureau,
@@ -128,8 +154,10 @@ export default function ResponseUpload({ disputeId, currentRound, onProcessed }:
           escalation_channel: nextStep.channel,
           next_action_type: nextStep.actionType,
           parent_dispute_id: disputeId,
+          draft_letter_subject: letterSubject,
+          draft_letter_body: letterBody,
         });
-        toast.success(`Next round drafted: ${nextStep.actionLabel}`);
+        toast.success(`Next round drafted with pre-filled letter: ${nextStep.actionLabel}`);
       }
 
       // 6. Log escalation entry
