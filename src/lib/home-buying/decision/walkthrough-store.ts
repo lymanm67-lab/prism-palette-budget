@@ -46,7 +46,33 @@ const KEYS = {
   score: (id: string) => `propertyPreferenceScore_${id}`,
   props: 'homeBuyingProperties',
   prefsByProp: (id: string) => `propertyPreferenceChecks_${id}`,
+  uploads: (id: string) => `propertyUploads_${id}`,
 };
+
+export interface PropertyPhoto {
+  id: string;
+  dataUrl: string;      // resized preview
+  caption?: string;
+  room?: string;
+  addedAt: string;
+}
+export interface PropertyDoc {
+  id: string;
+  name: string;
+  size: number;
+  mime: string;
+  dataUrl: string;      // base64 for small files, else undefined
+  kind?: 'listing' | 'disclosure' | 'inspection' | 'title' | 'other';
+  notes?: string;
+  addedAt: string;
+}
+export interface PropertyUploads {
+  photos: PropertyPhoto[];
+  docs: PropertyDoc[];
+  listingUrl?: string;
+  mlsNumber?: string;
+  listingNotes?: string;
+}
 
 // generic JSON LS
 function ls<T>(key: string, fallback: T): T {
@@ -74,14 +100,11 @@ export function upsertProperty(p: PropertyProfile) {
   saveProperties(all);
   return all;
 }
-export function removeProperty(id: string) {
-  const all = loadProperties().filter(p => p.id !== id);
-  saveProperties(all);
-  ['walk','repair','nbhd','decision','score','prefsByProp'].forEach(k => {
-    try { localStorage.removeItem((KEYS as any)[k](id)); } catch {}
-  });
-  return all;
-}
+
+// Per-property preference checks: recordId -> checked boolean
+export function loadPrefChecks(id: string): Record<string, boolean> { return ls(KEYS.prefsByProp(id), {}); }
+export function savePrefChecks(id: string, m: Record<string, boolean>) { save(KEYS.prefsByProp(id), m); }
+
 
 // Walkthrough per-item state map keyed by item id
 export type WalkMap = Record<string, WalkItemState>;
@@ -101,6 +124,17 @@ export interface DecisionRecord {
 export function loadDecision(id: string): DecisionRecord { return ls<DecisionRecord>(KEYS.decision(id), {}); }
 export function saveDecision(id: string, d: DecisionRecord) { save(KEYS.decision(id), { ...d, savedAt: new Date().toISOString() }); }
 
-// Per-property preference checks: recordId -> checked boolean
-export function loadPrefChecks(id: string): Record<string, boolean> { return ls(KEYS.prefsByProp(id), {}); }
-export function savePrefChecks(id: string, m: Record<string, boolean>) { save(KEYS.prefsByProp(id), m); }
+export function removeProperty(id: string) {
+  const all = loadProperties().filter(p => p.id !== id);
+  saveProperties(all);
+  ['walk','repair','nbhd','decision','score','prefsByProp','uploads'].forEach(k => {
+    try { localStorage.removeItem((KEYS as any)[k](id)); } catch {}
+  });
+  return all;
+}
+
+// Uploads per property
+export function loadUploads(id: string): PropertyUploads {
+  return ls<PropertyUploads>(KEYS.uploads(id), { photos: [], docs: [] });
+}
+export function saveUploads(id: string, u: PropertyUploads) { save(KEYS.uploads(id), u); }

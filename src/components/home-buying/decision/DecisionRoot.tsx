@@ -5,16 +5,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Home, ListChecks, ClipboardCheck, LayoutGrid, Plus, Trash2 } from 'lucide-react';
+import { Home, ListChecks, ClipboardCheck, LayoutGrid, Plus, Trash2, Images } from 'lucide-react';
 import { toast } from 'sonner';
 import MustHavesTab from './MustHavesTab';
 import WalkThroughTab from './WalkThroughTab';
 import DecisionScorecard from './DecisionScorecard';
 import DecisionComparison from './DecisionComparison';
+import PropertyUploadsTab from './PropertyUploadsTab';
 import { loadProperties, upsertProperty, removeProperty, type PropertyProfile } from '@/lib/home-buying/decision/walkthrough-store';
 
 export default function DecisionRoot() {
-  const [tab, setTab] = useState<'must' | 'walk' | 'score' | 'compare'>('must');
+  const [tab, setTab] = useState<'must' | 'uploads' | 'walk' | 'score' | 'compare'>('must');
   const [properties, setProperties] = useState<PropertyProfile[]>(() => loadProperties());
   const [activeId, setActiveId] = useState<string | null>(() => loadProperties()[0]?.id ?? null);
 
@@ -45,14 +46,19 @@ export default function DecisionRoot() {
       />
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
-        <TabsList className="grid grid-cols-2 sm:grid-cols-4 w-full h-auto">
+        <TabsList className="grid grid-cols-3 sm:grid-cols-5 w-full h-auto">
           <TabsTrigger value="must" className="text-xs gap-1.5"><ListChecks className="h-3.5 w-3.5" />Must-Haves</TabsTrigger>
+          <TabsTrigger value="uploads" className="text-xs gap-1.5"><Images className="h-3.5 w-3.5" />Uploads</TabsTrigger>
           <TabsTrigger value="walk" className="text-xs gap-1.5"><ClipboardCheck className="h-3.5 w-3.5" />Walk-Through</TabsTrigger>
           <TabsTrigger value="score" className="text-xs gap-1.5"><Home className="h-3.5 w-3.5" />Scorecard</TabsTrigger>
           <TabsTrigger value="compare" className="text-xs gap-1.5"><LayoutGrid className="h-3.5 w-3.5" />Comparison</TabsTrigger>
         </TabsList>
 
         <TabsContent value="must" className="mt-4"><MustHavesTab /></TabsContent>
+
+        <TabsContent value="uploads" className="mt-4">
+          {active ? <PropertyUploadsTab property={active} /> : <EmptyState message="Add a property above to upload listing photos and docs." action="Upload housing data — photos, listing sheets, disclosures, inspection reports." />}
+        </TabsContent>
 
         <TabsContent value="walk" className="mt-4">
           {active ? <WalkThroughTab property={active} /> : <EmptyState message="Add a property above to start a walk-through." action="Complete a property walk-through before making a final decision." />}
