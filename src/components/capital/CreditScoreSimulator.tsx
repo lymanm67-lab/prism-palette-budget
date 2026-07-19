@@ -8,6 +8,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { SlidersHorizontal, TrendingUp, TrendingDown, Minus, Info, RotateCcw, Sparkles, Zap, CreditCard, ShieldX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CreditAccount } from '@/hooks/use-credit-accounts';
+import SimulatorExtras from './SimulatorExtras';
 
 interface SimulatedAccount {
   id: string;
