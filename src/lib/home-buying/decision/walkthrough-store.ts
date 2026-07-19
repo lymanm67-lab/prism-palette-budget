@@ -46,7 +46,33 @@ const KEYS = {
   score: (id: string) => `propertyPreferenceScore_${id}`,
   props: 'homeBuyingProperties',
   prefsByProp: (id: string) => `propertyPreferenceChecks_${id}`,
+  uploads: (id: string) => `propertyUploads_${id}`,
 };
+
+export interface PropertyPhoto {
+  id: string;
+  dataUrl: string;      // resized preview
+  caption?: string;
+  room?: string;
+  addedAt: string;
+}
+export interface PropertyDoc {
+  id: string;
+  name: string;
+  size: number;
+  mime: string;
+  dataUrl: string;      // base64 for small files, else undefined
+  kind?: 'listing' | 'disclosure' | 'inspection' | 'title' | 'other';
+  notes?: string;
+  addedAt: string;
+}
+export interface PropertyUploads {
+  photos: PropertyPhoto[];
+  docs: PropertyDoc[];
+  listingUrl?: string;
+  mlsNumber?: string;
+  listingNotes?: string;
+}
 
 // generic JSON LS
 function ls<T>(key: string, fallback: T): T {
