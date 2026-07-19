@@ -8,6 +8,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { SlidersHorizontal, TrendingUp, TrendingDown, Minus, Info, RotateCcw, Sparkles, Zap, CreditCard, ShieldX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CreditAccount } from '@/hooks/use-credit-accounts';
+import SimulatorExtras from './SimulatorExtras';
 
 interface SimulatedAccount {
   id: string;
@@ -357,6 +358,25 @@ export default function CreditScoreSimulator({ accounts }: { accounts: CreditAcc
           <p className="text-sm text-muted-foreground text-center py-4">
             No revolving accounts with balances or negative items to simulate. Your credit profile looks clean! 🎉
           </p>
+        )}
+
+        {(scoreDiff !== 0 || simAccounts.some(a => a.removed || a.simBalance !== a.balance)) && (
+          <SimulatorExtras
+            baselineScore={currentResult.score}
+            projectedScore={simResult.score}
+            actions={[
+              ...simAccounts.filter(a => a.simBalance < a.balance).map(a => ({
+                label: a.account_name,
+                detail: `Pay down ${fmt(a.balance - a.simBalance)}`,
+                points: 0,
+              })),
+              ...simAccounts.filter(a => a.removed).map(a => ({
+                label: a.account_name,
+                detail: `Remove ${a.account_status.toLowerCase()}`,
+                points: 0,
+              })),
+            ]}
+          />
         )}
 
         <p className="text-[10px] text-muted-foreground text-center leading-relaxed">

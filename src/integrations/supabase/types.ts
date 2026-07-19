@@ -1181,10 +1181,15 @@ export type Database = {
           created_at: string
           credit_account_id: string | null
           dispute_reason: string
+          draft_letter_body: string | null
+          draft_letter_subject: string | null
           escalation_channel: string
           explanation: string | null
           household_id: string
           id: string
+          label_purchase_id: string | null
+          label_rate: number | null
+          label_url: string | null
           metro2_violation: string | null
           next_action_date: string | null
           next_action_type: string | null
@@ -1209,10 +1214,15 @@ export type Database = {
           created_at?: string
           credit_account_id?: string | null
           dispute_reason: string
+          draft_letter_body?: string | null
+          draft_letter_subject?: string | null
           escalation_channel?: string
           explanation?: string | null
           household_id: string
           id?: string
+          label_purchase_id?: string | null
+          label_rate?: number | null
+          label_url?: string | null
           metro2_violation?: string | null
           next_action_date?: string | null
           next_action_type?: string | null
@@ -1237,10 +1247,15 @@ export type Database = {
           created_at?: string
           credit_account_id?: string | null
           dispute_reason?: string
+          draft_letter_body?: string | null
+          draft_letter_subject?: string | null
           escalation_channel?: string
           explanation?: string | null
           household_id?: string
           id?: string
+          label_purchase_id?: string | null
+          label_rate?: number | null
+          label_url?: string | null
           metro2_violation?: string | null
           next_action_date?: string | null
           next_action_type?: string | null
@@ -4905,6 +4920,53 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      score_scenarios: {
+        Row: {
+          actions: Json
+          baseline_score: number
+          created_at: string
+          household_id: string
+          id: string
+          name: string
+          notes: string | null
+          projected_score: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          actions?: Json
+          baseline_score: number
+          created_at?: string
+          household_id: string
+          id?: string
+          name: string
+          notes?: string | null
+          projected_score: number
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          actions?: Json
+          baseline_score?: number
+          created_at?: string
+          household_id?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          projected_score?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "score_scenarios_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       snaptrade_connections: {
         Row: {
