@@ -5,12 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Home, ListChecks, ClipboardCheck, LayoutGrid, Plus, Trash2 } from 'lucide-react';
+import { Home, ListChecks, ClipboardCheck, LayoutGrid, Plus, Trash2, Images } from 'lucide-react';
 import { toast } from 'sonner';
 import MustHavesTab from './MustHavesTab';
 import WalkThroughTab from './WalkThroughTab';
 import DecisionScorecard from './DecisionScorecard';
 import DecisionComparison from './DecisionComparison';
+import PropertyUploadsTab from './PropertyUploadsTab';
 import { loadProperties, upsertProperty, removeProperty, type PropertyProfile } from '@/lib/home-buying/decision/walkthrough-store';
 
 export default function DecisionRoot() {
