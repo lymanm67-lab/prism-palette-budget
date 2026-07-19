@@ -32,6 +32,7 @@ const DEFAULT_SEEDS: Array<Omit<Preference, 'id'>> = [
   // MUST-HAVES — simple, concrete deal-breakers
   { name: '3 bedrooms', category: 'Bedrooms', tier: 'must' },
   { name: '2 bathrooms', category: 'Bathrooms', tier: 'must' },
+  { name: '1,500–2,000 sq ft', category: 'Size', tier: 'must' },
   { name: 'Central air', category: 'Systems', tier: 'must' },
   { name: '2-car garage', category: 'Parking', tier: 'must' },
   { name: 'Driveway', category: 'Parking', tier: 'must' },
