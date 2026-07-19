@@ -46,14 +46,19 @@ export default function DecisionRoot() {
       />
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
-        <TabsList className="grid grid-cols-2 sm:grid-cols-4 w-full h-auto">
+        <TabsList className="grid grid-cols-3 sm:grid-cols-5 w-full h-auto">
           <TabsTrigger value="must" className="text-xs gap-1.5"><ListChecks className="h-3.5 w-3.5" />Must-Haves</TabsTrigger>
+          <TabsTrigger value="uploads" className="text-xs gap-1.5"><Images className="h-3.5 w-3.5" />Uploads</TabsTrigger>
           <TabsTrigger value="walk" className="text-xs gap-1.5"><ClipboardCheck className="h-3.5 w-3.5" />Walk-Through</TabsTrigger>
           <TabsTrigger value="score" className="text-xs gap-1.5"><Home className="h-3.5 w-3.5" />Scorecard</TabsTrigger>
           <TabsTrigger value="compare" className="text-xs gap-1.5"><LayoutGrid className="h-3.5 w-3.5" />Comparison</TabsTrigger>
         </TabsList>
 
         <TabsContent value="must" className="mt-4"><MustHavesTab /></TabsContent>
+
+        <TabsContent value="uploads" className="mt-4">
+          {active ? <PropertyUploadsTab property={active} /> : <EmptyState message="Add a property above to upload listing photos and docs." action="Upload housing data — photos, listing sheets, disclosures, inspection reports." />}
+        </TabsContent>
 
         <TabsContent value="walk" className="mt-4">
           {active ? <WalkThroughTab property={active} /> : <EmptyState message="Add a property above to start a walk-through." action="Complete a property walk-through before making a final decision." />}
