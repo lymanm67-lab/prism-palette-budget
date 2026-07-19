@@ -19,6 +19,10 @@ import { format, differenceInDays, addDays, isPast } from 'date-fns';
 import { exportToPdf } from '@/lib/export-utils';
 import DisputeLetterGenerator from '@/components/capital/DisputeLetterGenerator';
 import { OSCAR_REASON_CODES } from '@/components/capital/DisputeLetterGenerator';
+import EscalationCadence from '@/components/capital/EscalationCadence';
+import LetterLibrary from '@/components/capital/LetterLibrary';
+import InquiryDisputes from '@/components/capital/InquiryDisputes';
+import ResponseUpload from '@/components/capital/ResponseUpload';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import html2canvas from 'html2canvas';
@@ -251,6 +255,17 @@ const DisputeManager = () => {
                   )}
                   <Button size="sm" variant="destructive" onClick={() => deleteDispute(d.id)}><Trash2 className="h-3.5 w-3.5 mr-1" />Delete</Button>
                 </div>
+
+                {/* Escalation Cadence + Response Upload */}
+                <div className="grid gap-3 md:grid-cols-2 pt-3 border-t">
+                  <EscalationCadence dispute={d as any} onRefresh={() => setExpandedId(null)} />
+                  {(d.status === 'submitted' || d.status === 'in_progress') && (
+                    <ResponseUpload
+                      disputeId={d.id}
+                      currentRound={(d as any).round ?? 1}
+                    />
+                  )}
+                </div>
               </div>
             </TableCell>
           </TableRow>
@@ -401,21 +416,38 @@ const DisputeManager = () => {
         </CardContent>
       </Card>
 
-      <div className="flex justify-end">
-        <Button onClick={() => { resetForm(); setShowCreate(true); }}><Plus className="h-4 w-4 mr-2" />New Dispute</Button>
-      </div>
-
-      <Tabs defaultValue="all">
-        <TabsList>
-          <TabsTrigger value="all">All ({disputes.length})</TabsTrigger>
-          <TabsTrigger value="active">Active ({active.length})</TabsTrigger>
-          <TabsTrigger value="drafts">Drafts ({pending.length})</TabsTrigger>
-          <TabsTrigger value="resolved">Resolved ({resolved.length})</TabsTrigger>
+      <Tabs defaultValue="disputes" className="mt-2">
+        <TabsList className="flex-wrap h-auto">
+          <TabsTrigger value="disputes">Disputes ({disputes.length})</TabsTrigger>
+          <TabsTrigger value="letters">Letter Library</TabsTrigger>
+          <TabsTrigger value="inquiries">Inquiry Disputes</TabsTrigger>
         </TabsList>
-        <TabsContent value="all" className="mt-4">{renderTable(disputes)}</TabsContent>
-        <TabsContent value="active" className="mt-4">{renderTable(active)}</TabsContent>
-        <TabsContent value="drafts" className="mt-4">{renderTable(pending)}</TabsContent>
-        <TabsContent value="resolved" className="mt-4">{renderTable(resolved)}</TabsContent>
+
+        <TabsContent value="disputes" className="mt-4 space-y-4">
+          <div className="flex justify-end">
+            <Button onClick={() => { resetForm(); setShowCreate(true); }}><Plus className="h-4 w-4 mr-2" />New Dispute</Button>
+          </div>
+          <Tabs defaultValue="all">
+            <TabsList>
+              <TabsTrigger value="all">All ({disputes.length})</TabsTrigger>
+              <TabsTrigger value="active">Active ({active.length})</TabsTrigger>
+              <TabsTrigger value="drafts">Drafts ({pending.length})</TabsTrigger>
+              <TabsTrigger value="resolved">Resolved ({resolved.length})</TabsTrigger>
+            </TabsList>
+            <TabsContent value="all" className="mt-4">{renderTable(disputes)}</TabsContent>
+            <TabsContent value="active" className="mt-4">{renderTable(active)}</TabsContent>
+            <TabsContent value="drafts" className="mt-4">{renderTable(pending)}</TabsContent>
+            <TabsContent value="resolved" className="mt-4">{renderTable(resolved)}</TabsContent>
+          </Tabs>
+        </TabsContent>
+
+        <TabsContent value="letters" className="mt-4">
+          <LetterLibrary />
+        </TabsContent>
+
+        <TabsContent value="inquiries" className="mt-4">
+          <InquiryDisputes />
+        </TabsContent>
       </Tabs>
 
       {/* Create Dialog */}

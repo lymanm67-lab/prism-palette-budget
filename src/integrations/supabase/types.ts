@@ -1092,14 +1092,19 @@ export type Database = {
           created_at: string
           credit_account_id: string | null
           dispute_reason: string
+          escalation_channel: string
           explanation: string | null
           household_id: string
           id: string
           metro2_violation: string | null
+          next_action_date: string | null
+          next_action_type: string | null
           outcome: string | null
           outcome_notes: string | null
+          parent_dispute_id: string | null
           response_due_date: string | null
           response_received_date: string | null
+          round: number
           status: string
           submitted_date: string | null
           updated_at: string
@@ -1109,14 +1114,19 @@ export type Database = {
           created_at?: string
           credit_account_id?: string | null
           dispute_reason: string
+          escalation_channel?: string
           explanation?: string | null
           household_id: string
           id?: string
           metro2_violation?: string | null
+          next_action_date?: string | null
+          next_action_type?: string | null
           outcome?: string | null
           outcome_notes?: string | null
+          parent_dispute_id?: string | null
           response_due_date?: string | null
           response_received_date?: string | null
+          round?: number
           status?: string
           submitted_date?: string | null
           updated_at?: string
@@ -1126,14 +1136,19 @@ export type Database = {
           created_at?: string
           credit_account_id?: string | null
           dispute_reason?: string
+          escalation_channel?: string
           explanation?: string | null
           household_id?: string
           id?: string
           metro2_violation?: string | null
+          next_action_date?: string | null
+          next_action_type?: string | null
           outcome?: string | null
           outcome_notes?: string | null
+          parent_dispute_id?: string | null
           response_due_date?: string | null
           response_received_date?: string | null
+          round?: number
           status?: string
           submitted_date?: string | null
           updated_at?: string
@@ -1151,6 +1166,13 @@ export type Database = {
             columns: ["household_id"]
             isOneToOne: false
             referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credit_disputes_parent_dispute_id_fkey"
+            columns: ["parent_dispute_id"]
+            isOneToOne: false
+            referencedRelation: "credit_disputes"
             referencedColumns: ["id"]
           },
         ]
@@ -1208,6 +1230,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      credit_inquiries: {
+        Row: {
+          bureau: string
+          created_at: string
+          creditor_name: string
+          dispute_outcome: string | null
+          dispute_status: string
+          dispute_submitted_date: string | null
+          household_id: string
+          id: string
+          inquiry_date: string
+          inquiry_type: string
+          is_authorized: boolean | null
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          bureau: string
+          created_at?: string
+          creditor_name: string
+          dispute_outcome?: string | null
+          dispute_status?: string
+          dispute_submitted_date?: string | null
+          household_id: string
+          id?: string
+          inquiry_date: string
+          inquiry_type?: string
+          is_authorized?: boolean | null
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          bureau?: string
+          created_at?: string
+          creditor_name?: string
+          dispute_outcome?: string | null
+          dispute_status?: string
+          dispute_submitted_date?: string | null
+          household_id?: string
+          id?: string
+          inquiry_date?: string
+          inquiry_type?: string
+          is_authorized?: boolean | null
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       daily_progress: {
         Row: {
@@ -1469,6 +1539,62 @@ export type Database = {
           vault_location?: string | null
         }
         Relationships: []
+      }
+      dispute_escalation_log: {
+        Row: {
+          action: string
+          channel: string
+          created_at: string
+          dispute_id: string
+          document_url: string | null
+          household_id: string
+          id: string
+          notes: string | null
+          outcome: string | null
+          response_date: string | null
+          round: number
+          sent_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          action: string
+          channel?: string
+          created_at?: string
+          dispute_id: string
+          document_url?: string | null
+          household_id: string
+          id?: string
+          notes?: string | null
+          outcome?: string | null
+          response_date?: string | null
+          round: number
+          sent_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          action?: string
+          channel?: string
+          created_at?: string
+          dispute_id?: string
+          document_url?: string | null
+          household_id?: string
+          id?: string
+          notes?: string | null
+          outcome?: string | null
+          response_date?: string | null
+          round?: number
+          sent_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dispute_escalation_log_dispute_id_fkey"
+            columns: ["dispute_id"]
+            isOneToOne: false
+            referencedRelation: "credit_disputes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       financial_goals: {
         Row: {
