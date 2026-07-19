@@ -170,7 +170,7 @@ export default function CertifiedMailTracker({ disputeId, initial }: Props) {
           </Button>
           <Button size="sm" variant="default" onClick={() => setBuyOpen(true)}>
             <ShoppingCart className="h-3.5 w-3.5 mr-1" />
-            Buy USPS Certified Label
+            Mail Certified (Manual Options)
           </Button>
           {form.label_url && (
             <Button size="sm" variant="outline" asChild>
@@ -195,41 +195,54 @@ export default function CertifiedMailTracker({ disputeId, initial }: Props) {
         </div>
 
         <Dialog open={buyOpen} onOpenChange={setBuyOpen}>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-xl">
             <DialogHeader>
-              <DialogTitle>Buy USPS Certified Mail Label</DialogTitle>
+              <DialogTitle>Send Certified Mail</DialogTitle>
             </DialogHeader>
-            <div className="grid gap-4 md:grid-cols-2 text-xs">
-              <div className="space-y-2">
-                <div className="font-semibold">From (You)</div>
-                {(['name','street1','street2','city','state','zip','phone'] as const).map((k) => (
-                  <div key={k}>
-                    <Label className="text-[10px] capitalize">{k}</Label>
-                    <Input value={(from as any)[k]} onChange={(e) => setFrom({ ...from, [k]: e.target.value })} />
-                  </div>
-                ))}
+            <div className="space-y-3 text-sm">
+              <p className="text-muted-foreground text-xs">
+                Pick a method below, mail your letter, then paste the USPS tracking number into the "Tracking #" field above and save.
+              </p>
+
+              <div className="rounded-md border p-3 space-y-1">
+                <div className="font-semibold text-sm">Option 1 — USPS Post Office (in person)</div>
+                <p className="text-xs text-muted-foreground">
+                  Bring your printed dispute letter. Ask for <strong>Certified Mail + Return Receipt (Green Card)</strong>. Cost ~$8–11. Keep the receipt — the tracking # is on it.
+                </p>
               </div>
-              <div className="space-y-2">
-                <div className="font-semibold">To (Bureau / Furnisher)</div>
-                {(['name','street1','street2','city','state','zip','phone'] as const).map((k) => (
-                  <div key={k}>
-                    <Label className="text-[10px] capitalize">{k}</Label>
-                    <Input value={(to as any)[k]} onChange={(e) => setTo({ ...to, [k]: e.target.value })} />
-                  </div>
-                ))}
+
+              <div className="rounded-md border p-3 space-y-2">
+                <div className="font-semibold text-sm">Option 2 — USPS Click-N-Ship (online, no API)</div>
+                <p className="text-xs text-muted-foreground">
+                  Print a Certified Mail label from home. Requires a USPS.com account.
+                </p>
+                <Button size="sm" variant="outline" asChild>
+                  <a href="https://cns.usps.com/labelInformation.shtml" target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="h-3.5 w-3.5 mr-1" /> Open USPS Click-N-Ship
+                  </a>
+                </Button>
+              </div>
+
+              <div className="rounded-md border p-3 space-y-2">
+                <div className="font-semibold text-sm">Option 3 — Online mail services (upload & send)</div>
+                <p className="text-xs text-muted-foreground">
+                  These services print, stuff, and mail Certified for you. No API key needed.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Button size="sm" variant="outline" asChild>
+                    <a href="https://www.letterstream.com/" target="_blank" rel="noopener noreferrer">LetterStream</a>
+                  </Button>
+                  <Button size="sm" variant="outline" asChild>
+                    <a href="https://www.certifiedmaillabels.com/" target="_blank" rel="noopener noreferrer">CertifiedMailLabels</a>
+                  </Button>
+                  <Button size="sm" variant="outline" asChild>
+                    <a href="https://www.onlinecertifiedmail.com/" target="_blank" rel="noopener noreferrer">OnlineCertifiedMail</a>
+                  </Button>
+                </div>
               </div>
             </div>
-            <p className="text-[10px] text-muted-foreground">
-              Purchase includes USPS First-Class Certified Mail with Return Receipt. Cost typically ~$8-11. Requires an EasyPost API key configured for this workspace.
-            </p>
             <DialogFooter>
-              <Button variant="outline" asChild>
-                <a href="https://cns.usps.com/labelInformation.shtml" target="_blank" rel="noopener noreferrer">USPS Click-N-Ship (manual)</a>
-              </Button>
-              <Button onClick={buyLabel} disabled={buying}>
-                {buying ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <ShoppingCart className="h-3.5 w-3.5 mr-1" />}
-                Purchase Label
-              </Button>
+              <Button variant="outline" onClick={() => setBuyOpen(false)}>Close</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
