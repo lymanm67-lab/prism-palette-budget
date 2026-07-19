@@ -128,7 +128,7 @@ const MobileNav = () => {
       <AnimatePresence>
         {sheetOpen && (
           <motion.div
-            className="fixed inset-0 z-50 bg-foreground/30 backdrop-blur-sm md:hidden"
+            className="fixed inset-0 z-[70] bg-foreground/30 backdrop-blur-sm lg:hidden"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -142,7 +142,7 @@ const MobileNav = () => {
       <AnimatePresence>
         {sheetOpen && (
           <motion.div
-            className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-card rounded-t-3xl shadow-2xl border-t border-border safe-area-bottom"
+            className="fixed bottom-0 left-0 right-0 z-[70] lg:hidden bg-card rounded-t-3xl shadow-2xl border-t border-border safe-area-bottom"
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
@@ -192,7 +192,7 @@ const MobileNav = () => {
 
       {/* Bottom navigation bar */}
       <nav
-        className="fixed bottom-0 left-0 right-0 z-40 md:hidden border-t border-border bg-card/95 backdrop-blur-md safe-area-bottom"
+        className="fixed bottom-0 left-0 right-0 z-50 lg:hidden border-t border-border bg-card/95 backdrop-blur-md safe-area-bottom"
         role="navigation"
         aria-label="Main navigation"
       >
