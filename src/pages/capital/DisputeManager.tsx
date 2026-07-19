@@ -23,6 +23,11 @@ import EscalationCadence from '@/components/capital/EscalationCadence';
 import LetterLibrary from '@/components/capital/LetterLibrary';
 import InquiryDisputes from '@/components/capital/InquiryDisputes';
 import ResponseUpload from '@/components/capital/ResponseUpload';
+import CertifiedMailTracker from '@/components/capital/CertifiedMailTracker';
+import DebtValidationTracker from '@/components/capital/DebtValidationTracker';
+import ReAgingDetector from '@/components/capital/ReAgingDetector';
+import AZEOOptimizer from '@/components/capital/AZEOOptimizer';
+import CFPBComplaintFiler from '@/components/capital/CFPBComplaintFiler';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import html2canvas from 'html2canvas';
@@ -266,6 +271,19 @@ const DisputeManager = () => {
                     />
                   )}
                 </div>
+
+                {/* Certified Mail Tracking */}
+                <CertifiedMailTracker
+                  disputeId={d.id}
+                  initial={{
+                    certified_tracking_number: (d as any).certified_tracking_number,
+                    certified_mailed_date: (d as any).certified_mailed_date,
+                    certified_delivered_date: (d as any).certified_delivered_date,
+                    certified_carrier: (d as any).certified_carrier,
+                    certified_cost: (d as any).certified_cost,
+                    certified_notes: (d as any).certified_notes,
+                  }}
+                />
               </div>
             </TableCell>
           </TableRow>
@@ -421,6 +439,10 @@ const DisputeManager = () => {
           <TabsTrigger value="disputes">Disputes ({disputes.length})</TabsTrigger>
           <TabsTrigger value="letters">Letter Library</TabsTrigger>
           <TabsTrigger value="inquiries">Inquiry Disputes</TabsTrigger>
+          <TabsTrigger value="dv">Debt Validation</TabsTrigger>
+          <TabsTrigger value="reaging">Re-Aging</TabsTrigger>
+          <TabsTrigger value="azeo">AZEO Optimizer</TabsTrigger>
+          <TabsTrigger value="cfpb">CFPB Complaints</TabsTrigger>
         </TabsList>
 
         <TabsContent value="disputes" className="mt-4 space-y-4">
@@ -441,13 +463,12 @@ const DisputeManager = () => {
           </Tabs>
         </TabsContent>
 
-        <TabsContent value="letters" className="mt-4">
-          <LetterLibrary />
-        </TabsContent>
-
-        <TabsContent value="inquiries" className="mt-4">
-          <InquiryDisputes />
-        </TabsContent>
+        <TabsContent value="letters" className="mt-4"><LetterLibrary /></TabsContent>
+        <TabsContent value="inquiries" className="mt-4"><InquiryDisputes /></TabsContent>
+        <TabsContent value="dv" className="mt-4"><DebtValidationTracker /></TabsContent>
+        <TabsContent value="reaging" className="mt-4"><ReAgingDetector /></TabsContent>
+        <TabsContent value="azeo" className="mt-4"><AZEOOptimizer /></TabsContent>
+        <TabsContent value="cfpb" className="mt-4"><CFPBComplaintFiler /></TabsContent>
       </Tabs>
 
       {/* Create Dialog */}
