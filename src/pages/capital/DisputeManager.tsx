@@ -445,6 +445,8 @@ const DisputeManager = () => {
           <TabsTrigger value="reaging">Re-Aging</TabsTrigger>
           <TabsTrigger value="azeo">AZEO Optimizer</TabsTrigger>
           <TabsTrigger value="cfpb">CFPB Complaints</TabsTrigger>
+          <TabsTrigger value="goodwill">Goodwill / PFD</TabsTrigger>
+          <TabsTrigger value="statement">Statement Close</TabsTrigger>
         </TabsList>
 
         <TabsContent value="disputes" className="mt-4 space-y-4">
@@ -471,6 +473,8 @@ const DisputeManager = () => {
         <TabsContent value="reaging" className="mt-4"><ReAgingDetector /></TabsContent>
         <TabsContent value="azeo" className="mt-4"><AZEOOptimizer /></TabsContent>
         <TabsContent value="cfpb" className="mt-4"><CFPBComplaintFiler /></TabsContent>
+        <TabsContent value="goodwill" className="mt-4"><GoodwillCampaignTracker /></TabsContent>
+        <TabsContent value="statement" className="mt-4"><StatementCloseTracker /></TabsContent>
       </Tabs>
 
       {/* Create Dialog */}
