@@ -1,90 +1,61 @@
+# Credit Repair Upgrades — Build Plan (Items 1, 2, 3, 5)
 
-# Home Buying Decision System — Build Plan
+Scope: Large. 4 features, ~14 files, 1 schema migration, 1 new edge function.
 
-**Scope: Large.** ~15 new files + wiring into existing `HomeBuyingChecklist.tsx` and `HomeSearchPanel.tsx`. All localStorage-based (no DB churn) to match the existing home-search pattern.
+---
 
-## Architecture
+## 1. Escalation Cadence Engine
 
-```
-src/lib/home-buying/decision/
-  preferences.ts        # tier types, defaults (preloaded list), CRUD, LS
-  walkthrough-defs.ts   # all checklist sections (basement, roof, foundation,
-                        # plumbing, electrical, HVAC, windows, attic,
-                        # neighborhood, insurance, disclosure) + risk levels
-  walkthrough-store.ts  # per-property state, photos (base64), notes, LS
-  repair-store.ts       # per-property repair estimates + totals
-  decision-engine.ts    # scoring rules, recommendation status, deal-breaker
-                        # logic, all-in payment (reuses mortgage-math.ts)
-  export-pdf.ts         # print/PDF helpers (reuse export-utils)
+Auto-schedule dispute rounds and escalation channels based on submission date and bureau response.
 
-src/components/home-buying/decision/
-  DecisionRoot.tsx           # tab shell (Must-Haves / Walk-Through /
-                             # Scorecard / Comparison) + property picker
-  MustHavesTab.tsx           # tier lists, drag/drop, move-tier, add custom
-  PreferenceRow.tsx          # checkbox, edit, delete, move, note
-  AddCustomForm.tsx          # validation, duplicate warning
-  WalkThroughTab.tsx         # section accordion, property selector,
-                             # "Needs Verification" panel
-  WalkThroughItem.tsx        # status, risk, note, photo upload, repair $,
-                             # seller response, inspector flag, questions
-  ScenarioAlerts.tsx         # 6 scenario warnings (fresh basement, air
-                             # freshener, hidden walls, flip, low price /
-                             # high tax, seller silent)
-  DecisionScorecard.tsx      # per-property score, recommendation, all-in
-                             # PITI, repair exposure, reserve after close
-  DecisionComparison.tsx     # cross-property table + mobile swipe cards
-  InspectorQuestions.tsx     # printable list
-  SellerQuestions.tsx        # printable list
-```
+**Schema (migration):**
+- Add columns to `credit_disputes`: `round` (int, default 1), `escalation_channel` (text: 'bureau'|'creditor'|'cfpb'|'state_ag'|'arbitration'), `next_action_date` (date), `next_action_type` (text), `parent_dispute_id` (uuid, self-ref)
+- New table `dispute_escalation_log` (dispute_id, round, action, sent_date, notes) with GRANTs + RLS by household
 
-## Tabs
+**Files:**
+- `src/lib/credit-repair/escalation-engine.ts` — computes next action: Round 1 (day 0), Round 2 MOV letter (day 35 if unresolved), Round 3 CFPB/AG complaint (day 65), Arbitration prep (day 95)
+- `src/components/capital/EscalationCadence.tsx` — timeline card per dispute showing rounds + "Advance to Round N" buttons
+- Wire into `src/pages/capital/DisputeManager.tsx`
 
-**1. Must-Haves** — Three tier columns (red/yellow/green). Preloaded items across 7 categories (Home Style, Beds/Baths, Parking, Interior, Exterior, Condition, Location). Drag-drop between tiers via `@dnd-kit` (already in project). Add-custom form with duplicate + blank guards. Reset / Clear buttons with confirm dialog.
+## 2. Goodwill + Pay-for-Delete Letter Library
 
-**2. Property Walk-Through** — Property picker (pulls from existing favorites in `HomeSearchPanel`). Sections rendered as accordions. Each item has: Good / Minor / Major / Unknown / N/A / Needs Pro Inspection status, risk level auto-assigned from `walkthrough-defs`, note, photo (base64 in LS with size cap warning), estimated repair (low/expected/high), seller response, verification source, date. "Needs Verification" panel aggregates all Unknown items. Auto-elevated risks (horizontal cracks, bowing walls, FPE panel, active knob-and-tube, etc.) enforced in defs. Scenario warning cards render conditionally.
+**Files:**
+- `src/lib/credit-repair/letter-templates.ts` — 18 templates in 4 categories:
+  - Creditor-direct: Goodwill (late payment), Goodwill (charge-off), PFD offer 25/50/100%, Debt validation (FDCPA §809), Cease-and-desist
+  - Bureau: MOV (Method of Verification), Reinvestigation demand, 15-day follow-up, Estoppel by silence
+  - Escalation: CFPB complaint template, State AG template, BBB complaint, Arbitration notice
+  - Specialty: Medical debt (HIPAA), Identity theft (FCRA §605B), Duplicate account, Re-aging violation
+- `src/components/capital/LetterLibrary.tsx` — searchable/filterable browser with variable substitution (name, address, account #, amount, date)
+- `src/components/capital/LetterGenerator.tsx` — form → merged text + copy/print/PDF export
+- Add "Letters" tab to `DisputeManager.tsx`
 
-**3. Scorecard** — Reuses `mortgage-math.ts` for all-in PITI (P&I + tax + ins + PMI/MIP + HOA + flood). Applies scoring:
-- Must-Have present +10 / missing −25 / unknown 0 + flag
-- Like-to-Have +5, Wish +2
-- Critical −40, High −20, Moderate −5
-- Pro inspection done +5, seller repair verified +5
-- In budget +10, over −20, reserve breach −25
+## 3. Inquiry Dispute Workflow
 
-Recommendation status derived per rules (Strong Match blocked when any critical unresolved, must-have missing, unverified flooding/foundation/insurance/FHA, reserve breach, or payment over max).
+**Schema:**
+- New table `credit_inquiries` (id, household_id, bureau, inquiry_date, creditor_name, inquiry_type ['hard'|'soft'], is_authorized bool, dispute_status, notes) + GRANTs + RLS
 
-**4. Comparison** — Column-per-property table (all fields from spec). Status icons (✓ ✗ ? 🔍 ⚠ 🛑). Mobile: swipeable cards via existing carousel pattern.
+**Files:**
+- `src/hooks/use-credit-inquiries.ts` — CRUD hook
+- `src/components/capital/InquiryDisputes.tsx` — list all hard inquiries, "Dispute unauthorized" button that auto-generates FCRA §604 letter, tracks 30-day removal window
+- Add to `CreditHealthIssues.tsx` as new section
+- Auto-extract inquiries from parsed credit reports in `parse-credit-report/index.ts`
 
-## Data (all localStorage — no DB migration)
+## 5. Bureau Response Letter Ingestion (OCR)
 
-- `homeBuyingPreferences` — tiers + items
-- `propertyWalkthrough_<id>` — per-property checklist
-- `propertyRepairEstimate_<id>` — repair line items
-- `propertyNeighborhoodReview_<id>` — neighborhood observations
-- `propertyDecision_<id>` — final recommendation + timestamp
-- `propertyPreferenceScore_<id>` — cached score (recomputed on any change via a shared hook)
+**Files:**
+- `supabase/functions/parse-dispute-response/index.ts` — new edge function using Lovable AI Gateway (Gemini vision) to OCR uploaded response letters, detect outcomes: verified/deleted/updated/frivolous/no-response, extract stall tactics ("results of investigation", "you have already disputed")
+- `src/components/capital/ResponseUpload.tsx` — drag-drop uploader tied to a specific dispute; stores in existing `credit-documents` bucket; auto-updates dispute status and triggers next escalation round via engine from #1
+- Wire into each dispute card in `DisputeManager.tsx` and `EscalationCadence.tsx`
 
-Property IDs come from the favorites list already stored by `HomeSearchPanel`; users can also add manual "off-market" properties for evaluation.
+---
 
-## Wiring
+## Integration Points
+- Escalation engine reads response outcomes from #5 to advance rounds
+- Letter Library (#2) auto-selects template based on current round + response type
+- Inquiry disputes (#3) use the same escalation cadence as tradeline disputes
+- All flows persist to `credit_disputes` / `credit_inquiries` with household RLS
 
-- New "Decision" tab added to `HomeBuyingChecklist.tsx` tabs array (7th tab).
-- Existing `PropertyScorecard.tsx` (Home Search) gets a small badge showing decision status if a walk-through exists — no logic change to that file beyond a read-only lookup.
-- Existing `PropertyComparison.tsx` untouched; new `DecisionComparison.tsx` is a richer separate view.
-- Print/PDF uses existing `exportToPdf` from `src/lib/export-utils.ts`.
+## Deliverable
+After approval: 1 migration → edge function → 12 UI/logic files → wire into DisputeManager + CreditHealthIssues. Prism credit score moves from 88 → ~95, effectively surpassing Dispute Beast in automation while retaining Prism's household/budget integration.
 
-## Accessibility & Mobile
-
-- All status uses icon + text label (not color alone).
-- Accordions collapse on mobile; sticky sub-tab nav; large tap targets; photo upload via `<input capture>`.
-
-## Acceptance criteria mapping
-
-All 15 criteria covered by the components above. Nothing in existing Home Search, Planner, or Calculators is modified beyond the new tab entry.
-
-## Out of scope (call out now)
-
-- No new Supabase tables — everything client-side per project convention for search/preferences. If you want cross-device sync, that's a follow-up migration.
-- Photos stored as base64 in localStorage with a 2MB/property soft cap; if you want a real photo bucket, that's a follow-up.
-- Crime data feed not included — the neighborhood section captures observations only; live crime API would be a separate integration.
-
-Confirm and I'll build it in one pass, or tell me to drop/defer any section.
+Approve to build.
