@@ -1,7 +1,8 @@
 import { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Home, Bot, Calculator, Landmark, Search, CheckCircle2, LayoutDashboard, Printer, ClipboardCheck } from 'lucide-react';
+import { Home, Bot, Calculator, Landmark, Search, CheckCircle2, LayoutDashboard, Printer, ClipboardCheck, Users } from 'lucide-react';
+import CoSignerDocPacket from '@/components/home-buying/CoSignerDocPacket';
 import { Button } from '@/components/ui/button';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { useQuery } from '@tanstack/react-query';
