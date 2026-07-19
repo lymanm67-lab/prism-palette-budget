@@ -100,14 +100,11 @@ export function upsertProperty(p: PropertyProfile) {
   saveProperties(all);
   return all;
 }
-export function removeProperty(id: string) {
-  const all = loadProperties().filter(p => p.id !== id);
-  saveProperties(all);
-  ['walk','repair','nbhd','decision','score','prefsByProp'].forEach(k => {
-    try { localStorage.removeItem((KEYS as any)[k](id)); } catch {}
-  });
-  return all;
-}
+
+// Per-property preference checks: recordId -> checked boolean
+export function loadPrefChecks(id: string): Record<string, boolean> { return ls(KEYS.prefsByProp(id), {}); }
+export function savePrefChecks(id: string, m: Record<string, boolean>) { save(KEYS.prefsByProp(id), m); }
+
 
 // Walkthrough per-item state map keyed by item id
 export type WalkMap = Record<string, WalkItemState>;
