@@ -87,7 +87,7 @@ const MobileNav = () => {
         {menuOpen && (
           <>
             <motion.div
-              className="fixed inset-0 z-50 bg-foreground/30 backdrop-blur-sm md:hidden"
+              className="fixed inset-0 z-[70] bg-foreground/30 backdrop-blur-sm lg:hidden"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -95,7 +95,7 @@ const MobileNav = () => {
               onClick={() => setMenuOpen(false)}
             />
             <motion.div
-              className="fixed top-14 left-0 right-0 z-50 md:hidden bg-card border-b border-border shadow-xl"
+              className="fixed top-14 left-0 right-0 z-[70] lg:hidden bg-card border-b border-border shadow-xl"
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
