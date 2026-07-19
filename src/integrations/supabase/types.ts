@@ -1085,6 +1085,7 @@ export type Database = {
           date_of_first_delinquency: string | null
           date_opened: string | null
           dispute_status: string | null
+          due_day: number | null
           high_balance: number | null
           household_id: string
           id: string
@@ -1096,6 +1097,7 @@ export type Database = {
           remarks_codes: string | null
           reported_first_delinquency: string | null
           responsibility: string | null
+          statement_close_day: number | null
           terms: string | null
           updated_at: string
         }
@@ -1112,6 +1114,7 @@ export type Database = {
           date_of_first_delinquency?: string | null
           date_opened?: string | null
           dispute_status?: string | null
+          due_day?: number | null
           high_balance?: number | null
           household_id: string
           id?: string
@@ -1123,6 +1126,7 @@ export type Database = {
           remarks_codes?: string | null
           reported_first_delinquency?: string | null
           responsibility?: string | null
+          statement_close_day?: number | null
           terms?: string | null
           updated_at?: string
         }
@@ -1139,6 +1143,7 @@ export type Database = {
           date_of_first_delinquency?: string | null
           date_opened?: string | null
           dispute_status?: string | null
+          due_day?: number | null
           high_balance?: number | null
           household_id?: string
           id?: string
@@ -1150,6 +1155,7 @@ export type Database = {
           remarks_codes?: string | null
           reported_first_delinquency?: string | null
           responsibility?: string | null
+          statement_close_day?: number | null
           terms?: string | null
           updated_at?: string
         }
@@ -1961,6 +1967,83 @@ export type Database = {
             columns: ["household_id"]
             isOneToOne: false
             referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      goodwill_campaigns: {
+        Row: {
+          attempt_number: number
+          campaign_type: string
+          contact_email: string | null
+          contact_method: string | null
+          created_at: string
+          credit_account_id: string | null
+          creditor_name: string
+          executive_name: string | null
+          executive_title: string | null
+          followup_due_date: string | null
+          household_id: string
+          id: string
+          notes: string | null
+          offer_amount: number | null
+          response_date: string | null
+          response_notes: string | null
+          response_type: string | null
+          sent_date: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          attempt_number?: number
+          campaign_type?: string
+          contact_email?: string | null
+          contact_method?: string | null
+          created_at?: string
+          credit_account_id?: string | null
+          creditor_name: string
+          executive_name?: string | null
+          executive_title?: string | null
+          followup_due_date?: string | null
+          household_id: string
+          id?: string
+          notes?: string | null
+          offer_amount?: number | null
+          response_date?: string | null
+          response_notes?: string | null
+          response_type?: string | null
+          sent_date?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          attempt_number?: number
+          campaign_type?: string
+          contact_email?: string | null
+          contact_method?: string | null
+          created_at?: string
+          credit_account_id?: string | null
+          creditor_name?: string
+          executive_name?: string | null
+          executive_title?: string | null
+          followup_due_date?: string | null
+          household_id?: string
+          id?: string
+          notes?: string | null
+          offer_amount?: number | null
+          response_date?: string | null
+          response_notes?: string | null
+          response_type?: string | null
+          sent_date?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goodwill_campaigns_credit_account_id_fkey"
+            columns: ["credit_account_id"]
+            isOneToOne: false
+            referencedRelation: "credit_accounts"
             referencedColumns: ["id"]
           },
         ]

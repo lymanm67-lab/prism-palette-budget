@@ -87,16 +87,43 @@ export default function ResponseUpload({ disputeId, currentRound, onProcessed }:
         outcome: parsed.outcome,
         outcome_notes: parsed.outcome_reason,
       };
+      let scheduledNextRound: number | null = null;
       if (parsed.outcome === 'deleted' || parsed.outcome === 'updated') {
         disputeUpdate.status = 'resolved';
-      } else if (parsed.outcome === 'verified' || parsed.outcome === 'frivolous') {
+      } else if (parsed.outcome === 'verified' || parsed.outcome === 'frivolous' || parsed.outcome === 'no_response') {
         disputeUpdate.status = 'in_progress';
         const nextStep = recommendEscalationFromOutcome(parsed.outcome, currentRound);
         if (nextStep) {
           disputeUpdate.next_action_type = nextStep.actionType;
+          scheduledNextRound = nextStep.round;
         }
       }
+      // Fetch original dispute to carry context into the follow-up
+      const { data: original } = await (supabase as any)
+        .from('credit_disputes').select('*').eq('id', disputeId).maybeSingle();
+
       await (supabase as any).from('credit_disputes').update(disputeUpdate).eq('id', disputeId);
+
+      // 5b. Auto-schedule next round as a draft dispute
+      if (scheduledNextRound && original) {
+        const nextStep = recommendEscalationFromOutcome(parsed.outcome, currentRound)!;
+        await (supabase as any).from('credit_disputes').insert({
+          household_id: household.id,
+          bureau: original.bureau,
+          credit_account_id: original.credit_account_id,
+          dispute_reason: `${nextStep.actionLabel} — follow-up to ${original.dispute_reason}`,
+          metro2_violation: original.metro2_violation,
+          explanation: `Auto-scheduled ${nextStep.actionLabel}. Prior outcome: ${parsed.outcome} — ${parsed.outcome_reason}${
+            parsed.stall_tactics.length ? `\n\nStall tactics detected: ${parsed.stall_tactics.join('; ')}` : ''
+          }\n\nStep: ${nextStep.description}`,
+          status: 'draft',
+          round: nextStep.round,
+          escalation_channel: nextStep.channel,
+          next_action_type: nextStep.actionType,
+          parent_dispute_id: disputeId,
+        });
+        toast.success(`Next round drafted: ${nextStep.actionLabel}`);
+      }
 
       // 6. Log escalation entry
       await (supabase as any).from('dispute_escalation_log').insert({
