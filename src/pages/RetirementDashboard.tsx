@@ -474,11 +474,16 @@ export default function RetirementDashboard() {
                 <Field label="Employer match %" step={0.01} value={emp.match401kPct} onChange={(v) => setEmp({ ...emp, match401kPct: v })} />
                 <Field label="Match requires you to contribute %" step={0.01} value={emp.matchLimitPct} onChange={(v) => setEmp({ ...emp, matchLimitPct: v })} />
                 <Field label="Employer non-elective % (no match required)" step={0.01} value={emp.nonElectiveEmployerPct ?? 0} onChange={(v) => setEmp({ ...emp, nonElectiveEmployerPct: v })} />
+                <Field label="ESPP discount %" step={0.01} value={emp.espp?.discountPct ?? 0} onChange={(v) => setEmp({ ...emp, espp: { ...(emp.espp ?? { maxPct: 0.1 }), discountPct: v } })} />
+                <Field label="ESPP max % of salary" step={0.01} value={emp.espp?.maxPct ?? 0} onChange={(v) => setEmp({ ...emp, espp: { ...(emp.espp ?? { discountPct: 0 }), maxPct: v } })} />
+                <Field label="RSU annual grant value" value={emp.rsu?.annualGrantValue ?? 0} onChange={(v) => setEmp({ ...emp, rsu: { ...(emp.rsu ?? { vestYears: 3 }), annualGrantValue: v } })} />
+                <Field label="RSU vest years" value={emp.rsu?.vestYears ?? 3} onChange={(v) => setEmp({ ...emp, rsu: { ...(emp.rsu ?? { annualGrantValue: 0 }), vestYears: Math.max(1, v) } })} />
               </div>
-              <p className="text-xs text-muted-foreground">
-                <b>No match?</b> Set both match fields to 0 and enter your employer's flat contribution % in "non-elective"
-                (e.g. 9% means they add 9% of your salary to your 401(k) regardless of what you contribute).
-              </p>
+              <div className="space-y-2 text-xs text-muted-foreground bg-muted/40 p-3 rounded border border-border/40">
+                <p><b>ESPP</b> = Employee Stock Purchase Plan. You buy company stock at a discount (often 5–15%) with after-tax paycheck deductions. The discount is free money, but the stock can go down.</p>
+                <p><b>RSU</b> = Restricted Stock Unit. A company promise to give you shares after they vest (e.g., over 3–4 years). Value is taxed as ordinary income when they vest. Enter the annual grant value and how many years it vests.</p>
+                <p><b>No match?</b> Set both match fields to 0 and enter your employer's flat contribution % in "non-elective" (e.g. 9% means they add 9% of your salary to your 401(k) regardless of what you contribute).</p>
+              </div>
               <div className="flex items-center justify-between gap-3 p-3 rounded border border-border/40">
                 <div className="flex items-center gap-2">
                   <Switch
