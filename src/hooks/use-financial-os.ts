@@ -26,15 +26,16 @@ export function useLegacyWorth() {
       const hid = household!.id;
       const [
         accounts, debts, holdings, insurance, estate, trust,
-        constitution, txns, plan, profile, progression, wealthEvents,
+        constitution, beneficiaries, txns, plan, profile, progression, wealthEvents,
       ] = await Promise.all([
         sb.from('accounts').select('id,account_type,balance,name').eq('household_id', hid).is('deleted_at', null),
-        sb.from('debt_items').select('balance,interest_rate,debt_plans!inner(household_id)').eq('debt_plans.household_id', hid),
+        sb.from('debt_items').select('balance,interest_rate,minimum_payment,debt_plans!inner(household_id)').eq('debt_plans.household_id', hid),
         sb.from('investment_holdings').select('symbol,market_value,cost_basis').eq('household_id', hid),
         sb.from('insurance_coverage').select('kind,coverage_amount').eq('household_id', hid).is('deleted_at', null),
         sb.from('estate_planning_checklist').select('item_key,is_complete').eq('household_id', hid),
         sb.from('family_legacy_trusts').select('current_assets,funding_target,readiness_score').eq('household_id', hid).is('deleted_at', null).maybeSingle(),
         sb.from('family_constitutions').select('is_published,published_at').eq('household_id', hid).is('deleted_at', null).maybeSingle(),
+        sb.from('family_beneficiaries').select('id').eq('household_id', hid).is('deleted_at', null),
         sb.from('transactions').select('amount,date,category_id,is_transfer').eq('household_id', hid).is('deleted_at', null).gte('date', new Date(Date.now() - 365 * 86400_000).toISOString().slice(0, 10)).limit(5000),
         sb.from('investment_plans').select('*').eq('household_id', hid).eq('is_active', true).maybeSingle(),
         sb.from('profiles').select('display_name,date_of_birth').eq('household_id', hid).limit(1),
@@ -60,6 +61,8 @@ export function useLegacyWorth() {
       const highInterestDebt = (debts.data || [])
         .filter((d: any) => Number(d.interest_rate || 0) >= 8)
         .reduce((s: number, d: any) => s + Number(d.balance || 0), 0);
+      const monthlyDebtPayments = (debts.data || [])
+        .reduce((s: number, d: any) => s + Number(d.minimum_payment || 0), 0);
 
       const holdingsValue = (holdings.data || []).reduce((s: number, h: any) => s + Number(h.market_value || 0), 0);
       const retirementAccounts = (accounts.data || [])
@@ -109,7 +112,7 @@ export function useLegacyWorth() {
       const inputs: LegacyWorthInputs = {
         age, annualIncome, monthlyExpenses, netWorth,
         liquidSavings: liquid, investableAssets: investable,
-        passiveMonthlyIncome, highInterestDebt, totalDebt: liab,
+        passiveMonthlyIncome, highInterestDebt, totalDebt: liab, monthlyDebtPayments,
         insuranceCoverageTotal: insTotal, insuranceKindsCount: insKinds,
         estateItemsComplete: estateComplete, estateItemsTotal: ESTATE_CHECKLIST_ITEMS.length,
         trustFunded: Number(trustRow.current_assets || 0) > 0,
@@ -118,6 +121,7 @@ export function useLegacyWorth() {
         charitableAnnual: 0,
         hasConstitution: !!(constitution.data as any)?.is_published,
         hadSummitLast12Months: (wealthEvents.data || []).some((e: any) => new Date(e.event_date) >= monthsBack12),
+        beneficiariesCount: (beneficiaries.data || []).length,
         hasBusinessOwnership: (accounts.data || []).some((a: any) => /business/i.test(String(a.name || ''))),
         realEstateEquity: (accounts.data || []).filter((a: any) => /real.?estate|home|house|property/i.test(String(a.name || ''))).reduce((s: number, a: any) => s + Number(a.balance || 0), 0),
         currentBelt: (progression.data as any)?.current_belt || 'white',
