@@ -151,6 +151,13 @@ export function LegacyLetterEditor() {
 
   return (
     <div className="grid md:grid-cols-3 gap-4">
+      <input
+        ref={fileRef}
+        type="file"
+        accept=".txt,.md,.pdf,.doc,.docx,.rtf,.png,.jpg,.jpeg"
+        className="hidden"
+        onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileUpload(f); }}
+      />
       <Card className="md:col-span-1">
         <CardHeader>
           <CardTitle className="text-base">Your Letters</CardTitle>
