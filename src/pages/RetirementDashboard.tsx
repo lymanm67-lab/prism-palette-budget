@@ -92,6 +92,22 @@ export default function RetirementDashboard() {
   const [loading, setLoading] = useState(false);
   const [parsing, setParsing] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [savedAt, setSavedAt] = useState<Record<string, string>>(() => {
+    try { return JSON.parse(localStorage.getItem(LS_KEY + "-savedAt") || "{}"); } catch { return {}; }
+  });
+  const saveTab = (key: "opt" | "emp" | "hsa" | "roth", data: unknown, label: string) => {
+    try {
+      const suffix = key === "opt" ? "" : `-${key}`;
+      localStorage.setItem(LS_KEY + suffix, JSON.stringify(data));
+      const ts = new Date().toLocaleString();
+      const next = { ...savedAt, [key]: ts };
+      setSavedAt(next);
+      localStorage.setItem(LS_KEY + "-savedAt", JSON.stringify(next));
+      toast.success(`${label} saved`);
+    } catch (e: any) {
+      toast.error(e?.message || "Failed to save");
+    }
+  };
 
   const handlePaystubUpload = async (file: File) => {
     if (!file) return;
