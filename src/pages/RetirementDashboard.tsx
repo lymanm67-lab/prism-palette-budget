@@ -468,10 +468,17 @@ export default function RetirementDashboard() {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="grid md:grid-cols-3 gap-3">
-                <Field label="Salary" value={emp.salary} onChange={(v) => setEmp({ ...emp, salary: v })} />
+                <Field label="Salary (annual)" value={emp.salary} onChange={(v) => setEmp({ ...emp, salary: v })} />
                 <Field label="Your 401(k) %" step={0.01} value={emp.currentUserContribPct} onChange={(v) => setEmp({ ...emp, currentUserContribPct: v })} />
                 <Field label="HSA Employer $/yr" value={emp.hsaEmployerContrib} onChange={(v) => setEmp({ ...emp, hsaEmployerContrib: v })} />
+                <Field label="Employer match %" step={0.01} value={emp.match401kPct} onChange={(v) => setEmp({ ...emp, match401kPct: v })} />
+                <Field label="Match requires you to contribute %" step={0.01} value={emp.matchLimitPct} onChange={(v) => setEmp({ ...emp, matchLimitPct: v })} />
+                <Field label="Employer non-elective % (no match required)" step={0.01} value={emp.nonElectiveEmployerPct ?? 0} onChange={(v) => setEmp({ ...emp, nonElectiveEmployerPct: v })} />
               </div>
+              <p className="text-xs text-muted-foreground">
+                <b>No match?</b> Set both match fields to 0 and enter your employer's flat contribution % in "non-elective"
+                (e.g. 9% means they add 9% of your salary to your 401(k) regardless of what you contribute).
+              </p>
               <div className="flex items-center justify-between gap-3 p-3 rounded border border-border/40">
                 <div className="flex items-center gap-2">
                   <Switch
