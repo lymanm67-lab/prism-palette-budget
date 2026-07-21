@@ -53,6 +53,50 @@ export default function LegacyMode() {
         Educational planning only. Not legal, tax, or investment advice — consult qualified professionals.
       </div>
 
+      <PageExplainer
+        title="How to read this page (with examples)"
+        sections={[
+          {
+            heading: 'What Legacy Worth™ measures',
+            body: (
+              <p>
+                A 0–1000 signature score across 14 factors — net worth, emergency fund, insurance, trust
+                readiness, family governance, debt health, and more. Higher = more resilient, transferable
+                wealth across generations.
+              </p>
+            ),
+          },
+          {
+            heading: 'The Belt & Stage badges',
+            body: (
+              <ul className="list-disc pl-5 space-y-1">
+                <li><b className="text-foreground">Stage</b> — where you are on the wealth journey (Builder → Steward → Multi-Gen).</li>
+                <li><b className="text-foreground">Belt</b> — martial-arts style rank tied to your score (White → Black).</li>
+              </ul>
+            ),
+          },
+          {
+            heading: 'How to update a factor',
+            body: (
+              <p>
+                Click the <b className="text-foreground">Edit</b> button on any factor tile — it deep-links
+                to the source page (Accounts, Debts, Net Worth, Insurance, Trust, etc.). Scores refresh
+                automatically once the underlying data changes.
+              </p>
+            ),
+          },
+          {
+            heading: 'Example',
+            body: (
+              <p>
+                Adding a $500k term life policy on the Insurance page bumps <i>Insurance Protection</i>{' '}
+                from 0 → ~64/100, which lifts your overall Legacy Worth™ by ~30–50 points.
+              </p>
+            ),
+          },
+        ]}
+      />
+
       {/* Hero */}
       <Card className="bg-gradient-to-br from-prism-teal/10 via-prism-amber/5 to-transparent border-prism-teal/30">
         <CardContent className="p-6 md:p-8">

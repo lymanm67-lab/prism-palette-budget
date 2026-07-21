@@ -15,6 +15,7 @@ import { projectHsa, type HsaInputs } from "@/lib/retirement/hsaIntelligence";
 import { analyzeRothVsTraditional, type RothInputs } from "@/lib/retirement/rothVsTraditional";
 import { supabase } from "@/integrations/supabase/client";
 import { useHousehold } from "@/contexts/HouseholdContext";
+import { PageExplainer } from "@/components/PageExplainer";
 
 const DEFAULT_OPT: OptimizerInputs = {
   age: 59,
@@ -192,6 +193,52 @@ export default function RetirementDashboard() {
 
   return (
     <div className="max-w-6xl mx-auto p-4 md:p-6 space-y-4">
+      <PageExplainer
+        title="How to read this page (with examples)"
+        sections={[
+          {
+            heading: 'What this tool does',
+            body: (
+              <p>
+                Ranks your <i>next dollar</i> across 401(k) match → HSA → Roth IRA → Traditional 401(k) →
+                taxable — so every paycheck flows to the highest-return account first.
+              </p>
+            ),
+          },
+          {
+            heading: 'The four tabs',
+            body: (
+              <ul className="list-disc pl-5 space-y-1">
+                <li><b className="text-foreground">Next Dollar</b> — the ranked waterfall using your age, income, and current balances.</li>
+                <li><b className="text-foreground">Employer</b> — 401(k) match, HSA contribution, ESPP discount, RSU value, pension.</li>
+                <li><b className="text-foreground">HSA</b> — triple-tax-advantaged projection to age 65 (Medicare + retirement asset).</li>
+                <li><b className="text-foreground">Roth vs Traditional</b> — which bucket wins given your bracket now vs later.</li>
+              </ul>
+            ),
+          },
+          {
+            heading: 'Key field meanings',
+            body: (
+              <ul className="list-disc pl-5 space-y-1">
+                <li><b className="text-foreground">Gross Income</b> — <i>annual</i> (e.g. $68,874/yr = $5,739.50/mo × 12).</li>
+                <li><b className="text-foreground">Current 401(k) %</b> — per-paycheck deferral rate, not a dollar amount.</li>
+                <li><b className="text-foreground">Emergency Balance</b> — total liquid cash; target ≈ 3 months of expenses.</li>
+                <li><b className="text-foreground">Retirement Balance</b> — 401(k) + IRA + Roth combined.</li>
+              </ul>
+            ),
+          },
+          {
+            heading: 'Save & re-upload',
+            body: (
+              <p>
+                Every tab auto-persists as you type; the <b className="text-foreground">Save</b> button
+                confirms with a timestamp. Use <b className="text-foreground">Upload Paycheck</b> to re-parse
+                any time your pay stub changes.
+              </p>
+            ),
+          },
+        ]}
+      />
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">

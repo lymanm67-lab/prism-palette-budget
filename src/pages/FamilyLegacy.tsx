@@ -7,6 +7,7 @@ import { LegacyLetterEditor } from '@/components/legacy/LegacyLetterEditor';
 import { EthicalWillEditor } from '@/components/legacy/EthicalWillEditor';
 import { AnnualMeetingPlanner } from '@/components/legacy/AnnualMeetingPlanner';
 import { Heart, ScrollText, ShieldCheck, TrendingUp, Users, PenLine, BookHeart, CalendarDays } from 'lucide-react';
+import { PageExplainer } from '@/components/PageExplainer';
 
 export default function FamilyLegacy() {
   return (
@@ -23,6 +24,44 @@ export default function FamilyLegacy() {
           Educational planning only. Not legal, tax, or investment advice — consult qualified professionals.
         </div>
       </div>
+
+      <PageExplainer
+        title="How to use the Family Legacy Suite"
+        sections={[
+          {
+            heading: 'Seven tools, one journey',
+            body: (
+              <ul className="list-disc pl-5 space-y-1">
+                <li><b className="text-foreground">Trust</b> — fund a revocable/irrevocable trust; track assets and funding target.</li>
+                <li><b className="text-foreground">Estate</b> — will, POA, healthcare directive, beneficiary audit.</li>
+                <li><b className="text-foreground">Constitution</b> — AI-drafted family values, decision rules, money principles.</li>
+                <li><b className="text-foreground">Letters</b> — legacy letters to heirs; upload or draft with AI; save to Trust Vault.</li>
+                <li><b className="text-foreground">Ethical Will</b> — pass down values and stories (not legal — the heart-version).</li>
+                <li><b className="text-foreground">Annual Meeting</b> — agenda, minutes, printable packet for the yearly family meeting.</li>
+                <li><b className="text-foreground">100-Year Simulator</b> — Monte Carlo of wealth across 3 generations.</li>
+              </ul>
+            ),
+          },
+          {
+            heading: 'Suggested order',
+            body: (
+              <p>
+                Estate → Trust → Constitution → Letters/Ethical Will → Annual Meeting → 100-Year Simulator.
+                Complete the legal foundation first, then the human documents, then the recurring cadence.
+              </p>
+            ),
+          },
+          {
+            heading: 'Example',
+            body: (
+              <p>
+                Draft the Family Constitution (AI assist) → export clean PDF → sign at the Annual Meeting →
+                store in Montgomery Family Trust Vault. Repeat yearly.
+              </p>
+            ),
+          },
+        ]}
+      />
 
       <Tabs defaultValue="trust">
         <TabsList className="flex flex-wrap h-auto">
