@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
-import { Sparkles, Target, Building2, HeartPulse, Scale, FileText, Upload, Loader2, Save } from "lucide-react";
+import { Sparkles, Target, Building2, HeartPulse, Scale, FileText, Upload, Loader2, Save, CheckCircle2 } from "lucide-react";
 import { optimizeNextDollar, scoreRetirementReadiness, type OptimizerInputs } from "@/lib/retirement/optimizerEngine";
 import { analyzeEmployerBenefits, type EmployerBenefits } from "@/lib/retirement/employerBenefits";
 import { projectHsa, type HsaInputs } from "@/lib/retirement/hsaIntelligence";
@@ -93,6 +93,32 @@ export default function RetirementDashboard() {
   const [loading, setLoading] = useState(false);
   const [parsing, setParsing] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  type PaycheckSnapshot = {
+    filename?: string;
+    parsedAt: string;
+    monthlyGross: number;
+    monthlyNet: number;
+    annualGross: number;
+    federalTax: number;
+    stateTax: number;
+    socialSecurity: number;
+    medicare: number;
+    retirement401k: number;
+    hsa: number;
+    healthInsurance: number;
+    otherDeductions: number;
+    effectiveTaxRate: number;
+  };
+  const [snapshot, setSnapshot] = useState<PaycheckSnapshot | null>(() => {
+    try { const r = localStorage.getItem(LS_KEY + "-paycheck"); return r ? JSON.parse(r) : null; } catch { return null; }
+  });
+  useEffect(() => {
+    try {
+      if (snapshot) localStorage.setItem(LS_KEY + "-paycheck", JSON.stringify(snapshot));
+    } catch {}
+  }, [snapshot]);
+
   const [savedAt, setSavedAt] = useState<Record<string, string>>(() => {
     try { return JSON.parse(localStorage.getItem(LS_KEY + "-savedAt") || "{}"); } catch { return {}; }
   });
@@ -122,40 +148,80 @@ export default function RetirementDashboard() {
         reader.onerror = reject;
         reader.readAsDataURL(file);
       });
-      console.log("[paystub] invoking parse-paystub", { name: file.name, size: file.size, type: file.type });
       const { data, error } = await supabase.functions.invoke("parse-paystub", {
         body: { image: b64, filename: file.name },
       });
-      if (error) {
-        console.error("[paystub] invoke error", error);
-        throw new Error(error.message || "Edge function failed");
-      }
+      if (error) throw new Error(error.message || "Edge function failed");
       if ((data as any)?.error) throw new Error((data as any).error);
-      console.log("[paystub] parsed", data);
-      const gross = data?.monthly_gross_pay ? Math.round(data.monthly_gross_pay * 12) : 0;
-      const retire = (data?.deductions || []).find((d: any) => d.category === "retirement_401k");
-      const hsaDed = (data?.deductions || []).find((d: any) => d.category === "hsa");
-      const contribPct = gross && retire?.monthly_amount ? (retire.monthly_amount * 12) / gross : opt.employer401k.currentContribPct;
-      if (!gross && !retire && !hsaDed) {
+
+      const monthlyGross = Number(data?.monthly_gross_pay || 0);
+      const monthlyNet = Number(data?.monthly_net_pay || 0);
+      const annualGross = Math.round(monthlyGross * 12);
+      const deds = (data?.deductions || []) as Array<{ category: string; monthly_amount: number }>;
+      const get = (c: string) => Number(deds.find((d) => d.category === c)?.monthly_amount || 0);
+      const federalTax = get("federal_tax");
+      const stateTax = get("state_tax");
+      const socialSecurity = get("social_security");
+      const medicare = get("medicare");
+      const retirement401k = get("retirement_401k");
+      const hsaDed = get("hsa");
+      const healthInsurance = get("health_insurance") + get("dental_insurance") + get("vision_insurance");
+      const otherDeductions = deds
+        .filter((d) => !["federal_tax","state_tax","social_security","medicare","retirement_401k","hsa","health_insurance","dental_insurance","vision_insurance"].includes(d.category))
+        .reduce((s, d) => s + Number(d.monthly_amount || 0), 0);
+      const totalTax = federalTax + stateTax + socialSecurity + medicare;
+      const effectiveTaxRate = monthlyGross > 0 ? totalTax / monthlyGross : 0;
+
+      if (!annualGross && !retirement401k && !hsaDed) {
         toast.dismiss(tId);
         toast.warning("Parsed, but no usable fields found. Try a clearer image.");
         return;
       }
+
+      const contribPct = annualGross && retirement401k ? (retirement401k * 12) / annualGross : opt.employer401k.currentContribPct;
+
+      // Rough federal marginal bracket (single/MFJ 2024 approximation)
+      const marginal = annualGross < 47150 ? 0.12
+        : annualGross < 100525 ? 0.22
+        : annualGross < 191950 ? 0.24
+        : annualGross < 243725 ? 0.32 : 0.35;
+
+      // Cascade into all tabs
       setOpt((prev) => ({
         ...prev,
-        grossIncome: gross || prev.grossIncome,
+        grossIncome: annualGross || prev.grossIncome,
         employer401k: { ...prev.employer401k, currentContribPct: contribPct ?? prev.employer401k.currentContribPct },
-        hsaContribYTD: hsaDed?.monthly_amount ? Math.round(hsaDed.monthly_amount * 12) : prev.hsaContribYTD,
+        hsaContribYTD: hsaDed ? Math.round(hsaDed * 12) : prev.hsaContribYTD,
+        hsaEligible: hsaDed > 0 ? true : prev.hsaEligible,
       }));
       setEmp((prev) => ({
         ...prev,
-        salary: gross || prev.salary,
+        salary: annualGross || prev.salary,
         currentUserContribPct: contribPct ?? prev.currentUserContribPct,
       }));
+      setHsa((prev) => ({
+        ...prev,
+        annualContribution: hsaDed ? Math.round(hsaDed * 12) : prev.annualContribution,
+        marginalTaxRate: marginal,
+      }));
+      setRoth((prev) => ({
+        ...prev,
+        currentMarginalRate: marginal,
+      }));
+
+      const snap: PaycheckSnapshot = {
+        filename: file.name,
+        parsedAt: new Date().toISOString(),
+        monthlyGross, monthlyNet, annualGross,
+        federalTax, stateTax, socialSecurity, medicare,
+        retirement401k, hsa: hsaDed, healthInsurance, otherDeductions,
+        effectiveTaxRate,
+      };
+      setSnapshot(snap);
+
       toast.dismiss(tId);
-      toast.success(`Paystub parsed · gross ~$${gross.toLocaleString()}/yr${retire ? ` · 401(k) ${((contribPct ?? 0) * 100).toFixed(1)}%` : ""}`);
+      toast.success(`Paystub applied to all tabs · $${annualGross.toLocaleString()}/yr gross`);
     } catch (e: any) {
-      console.error("[paystub] failed", e);
       toast.dismiss(tId);
       toast.error(e?.message || "Failed to parse paystub");
     } finally {
@@ -173,13 +239,29 @@ export default function RetirementDashboard() {
           period_month: new Date().toISOString().slice(0, 7) + "-01",
           metrics: {
             retirement_readiness: readiness,
-            total_retirement: opt.totalRetirementBalance,
-            income: opt.grossIncome,
-            emergency_fund: opt.emergencyBalance,
-            top_recommendations: recs.slice(0, 3).map((r) => r.target),
-            employer_match_missed: empAnalysis.match.missed,
-            hsa_projection_at_65: hsaProj.balanceAt65,
-            roth_recommendation: rothVerdict.recommendation,
+            paycheck_snapshot: snapshot,
+            next_dollar_inputs: opt,
+            next_dollar_recommendations: recs,
+            employer_inputs: emp,
+            employer_analysis: {
+              total_hidden_comp: empAnalysis.totalHiddenComp,
+              match_missed: empAnalysis.match.missed,
+              action: empAnalysis.action,
+            },
+            hsa_inputs: hsa,
+            hsa_projection: {
+              balance_at_65: hsaProj.balanceAt65,
+              triple_tax_savings: hsaProj.tripleTaxSavings,
+              strategy: hsaProj.strategy,
+            },
+            roth_inputs: roth,
+            roth_analysis: {
+              recommendation: rothVerdict.recommendation,
+              roth_pct: rothVerdict.rothPct,
+              fv_roth: rothVerdict.fvRoth,
+              fv_trad_after_tax: rothVerdict.fvTradAfterTax,
+              reasoning: rothVerdict.reasoning,
+            },
           },
         },
       });
@@ -264,10 +346,36 @@ export default function RetirementDashboard() {
             {parsing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
             Upload paycheck
           </Button>
-          <p className="text-[11px] text-muted-foreground mt-1 text-right">Auto-fills income, 401(k) %, HSA</p>
+          <p className="text-[11px] text-muted-foreground mt-1 text-right">Cascades to all 4 tabs</p>
         </div>
       </div>
 
+      {snapshot && (
+        <Card className="border-prism-amber/40 bg-prism-amber/5">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <CheckCircle2 className="h-4 w-4 text-prism-amber" />
+              Paycheck Snapshot
+              <span className="text-xs font-normal text-muted-foreground ml-auto">
+                {snapshot.filename} · parsed {new Date(snapshot.parsedAt).toLocaleDateString()}
+              </span>
+            </CardTitle>
+            <CardDescription className="text-xs">
+              These numbers are auto-applied to Next Dollar, Employer, HSA, and Roth vs Trad tabs.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+            <Stat label="Monthly gross" value={`$${snapshot.monthlyGross.toLocaleString()}`} />
+            <Stat label="Monthly net" value={`$${snapshot.monthlyNet.toLocaleString()}`} />
+            <Stat label="Annual gross" value={`$${snapshot.annualGross.toLocaleString()}`} />
+            <Stat label="Effective tax rate" value={`${(snapshot.effectiveTaxRate * 100).toFixed(1)}%`} />
+            <Stat label="Federal tax /mo" value={`$${snapshot.federalTax.toLocaleString()}`} />
+            <Stat label="State tax /mo" value={`$${snapshot.stateTax.toLocaleString()}`} />
+            <Stat label="401(k) /mo" value={`$${snapshot.retirement401k.toLocaleString()}`} />
+            <Stat label="HSA /mo" value={`$${snapshot.hsa.toLocaleString()}`} />
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader className="pb-3">
@@ -478,9 +586,27 @@ export default function RetirementDashboard() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2"><Sparkles className="h-5 w-5 text-prism-amber" /> Monthly CFO Review</CardTitle>
-              <CardDescription>AI-generated monthly summary — wins, concerns, and top 3 actions.</CardDescription>
+              <CardDescription>
+                Analyzes {snapshot ? "your parsed paycheck plus " : ""}all four tabs (Next Dollar, Employer, HSA, Roth vs Trad)
+                and returns wins, concerns, and top 3 actions.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                <Stat label="Readiness" value={`${readiness}/100`} />
+                <Stat label="Annual gross" value={`$${(snapshot?.annualGross ?? opt.grossIncome).toLocaleString()}`} />
+                <Stat label="Hidden comp" value={`$${empAnalysis.totalHiddenComp.toLocaleString()}/yr`} />
+                <Stat label="HSA @ 65" value={`$${hsaProj.balanceAt65.toLocaleString()}`} />
+                <Stat label="401(k) rate" value={`${((opt.employer401k.currentContribPct ?? 0) * 100).toFixed(1)}%`} />
+                <Stat label="Match missed" value={`$${empAnalysis.match.missed.toLocaleString()}/yr`} />
+                <Stat label="Roth verdict" value={rothVerdict.recommendation.toString()} />
+                <Stat label="Marginal rate" value={`${(roth.currentMarginalRate * 100).toFixed(0)}%`} />
+              </div>
+              {!snapshot && (
+                <div className="p-3 rounded-lg border border-dashed border-border/60 text-xs text-muted-foreground">
+                  Tip: upload a paystub above for the most accurate review — otherwise the AI uses your manual inputs.
+                </div>
+              )}
               <Button onClick={generateReview} disabled={loading}>
                 {loading ? "Generating…" : "Generate this month's review"}
               </Button>
@@ -502,6 +628,15 @@ function Field({ label, value, onChange, step = 1 }: { label: string; value: num
     <div>
       <Label className="text-xs">{label}</Label>
       <Input type="number" step={step} value={value} onChange={(e) => onChange(Number(e.target.value) || 0)} />
+    </div>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="p-2 rounded-md border border-border/50 bg-background/50">
+      <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className="font-mono text-sm font-semibold">{value}</div>
     </div>
   );
 }
