@@ -98,7 +98,7 @@ export function LegacyPlanner({ planId }: { planId?: string }) {
                     <div className="flex items-center gap-2">
                       <Checkbox checked={included} onCheckedChange={(v) => toggleAccount(a.id, !!v)} />
                       <span>{a.name}</span>
-                      <span className="text-xs text-muted-foreground">({a.type})</span>
+                      <span className="text-xs text-muted-foreground">({a.account_type})</span>
                     </div>
                     <span className="text-xs">${Number(a.balance || 0).toLocaleString()}</span>
                   </label>
