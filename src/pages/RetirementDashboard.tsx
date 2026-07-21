@@ -68,8 +68,9 @@ export default function RetirementDashboard() {
   const DEFAULT_HSA: HsaInputs = {
     age: 59, currentBalance: 8000, annualContribution: 6000, employerContribution: 2000,
     marginalTaxRate: 0.22, investedPct: 0.6, expectedReturn: 0.07,
-    annualQualifiedMedical: 2000, yearsUntil65: 25,
+    annualQualifiedMedical: 2000, yearsUntil65: 6,
   };
+
   const [hsa, setHsa] = useState<HsaInputs>(() => {
     try { const r = localStorage.getItem(LS_KEY + "-hsa"); if (r) return { ...DEFAULT_HSA, ...JSON.parse(r) }; } catch {}
     return DEFAULT_HSA;
