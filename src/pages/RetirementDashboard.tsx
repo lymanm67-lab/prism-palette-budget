@@ -586,9 +586,27 @@ export default function RetirementDashboard() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2"><Sparkles className="h-5 w-5 text-prism-amber" /> Monthly CFO Review</CardTitle>
-              <CardDescription>AI-generated monthly summary — wins, concerns, and top 3 actions.</CardDescription>
+              <CardDescription>
+                Analyzes {snapshot ? "your parsed paycheck plus " : ""}all four tabs (Next Dollar, Employer, HSA, Roth vs Trad)
+                and returns wins, concerns, and top 3 actions.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                <Stat label="Readiness" value={`${readiness}/100`} />
+                <Stat label="Annual gross" value={`$${(snapshot?.annualGross ?? opt.grossIncome).toLocaleString()}`} />
+                <Stat label="Hidden comp" value={`$${empAnalysis.totalHiddenComp.toLocaleString()}/yr`} />
+                <Stat label="HSA @ 65" value={`$${hsaProj.balanceAt65.toLocaleString()}`} />
+                <Stat label="401(k) rate" value={`${((opt.employer401k.currentContribPct ?? 0) * 100).toFixed(1)}%`} />
+                <Stat label="Match missed" value={`$${empAnalysis.match.missed.toLocaleString()}/yr`} />
+                <Stat label="Roth verdict" value={rothVerdict.recommendation.toString()} />
+                <Stat label="Marginal rate" value={`${(roth.currentMarginalRate * 100).toFixed(0)}%`} />
+              </div>
+              {!snapshot && (
+                <div className="p-3 rounded-lg border border-dashed border-border/60 text-xs text-muted-foreground">
+                  Tip: upload a paystub above for the most accurate review — otherwise the AI uses your manual inputs.
+                </div>
+              )}
               <Button onClick={generateReview} disabled={loading}>
                 {loading ? "Generating…" : "Generate this month's review"}
               </Button>
@@ -610,6 +628,15 @@ function Field({ label, value, onChange, step = 1 }: { label: string; value: num
     <div>
       <Label className="text-xs">{label}</Label>
       <Input type="number" step={step} value={value} onChange={(e) => onChange(Number(e.target.value) || 0)} />
+    </div>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="p-2 rounded-md border border-border/50 bg-background/50">
+      <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className="font-mono text-sm font-semibold">{value}</div>
     </div>
   );
 }
