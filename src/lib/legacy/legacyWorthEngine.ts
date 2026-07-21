@@ -158,10 +158,40 @@ export function projectEstateAt85(currentNetWorth: number, age: number | null | 
   return fvBase + fvContrib;
 }
 
-export function daysUntilFreedom(fiPercentage: number, monthlySavings: number, targetPortfolio: number, currentPortfolio: number): number | null {
+export function daysUntilFreedom(
+  fiPercentage: number,
+  monthlySavings: number,
+  targetPortfolio: number,
+  currentPortfolio: number,
+  annualGrowthRate = 0.07,
+): number | null {
   if (fiPercentage >= 1) return 0;
-  if (monthlySavings <= 0) return null;
-  const dailyProgress = (monthlySavings / 30);
-  const gap = Math.max(0, targetPortfolio - currentPortfolio);
-  return Math.round(gap / dailyProgress);
+  if (targetPortfolio <= 0) return null;
+  if (currentPortfolio >= targetPortfolio) return 0;
+
+  const annualContribution = Math.max(0, monthlySavings) * 12;
+  const r = annualGrowthRate;
+
+  // If no contribution and no growth possible, fall back to linear
+  if (annualContribution <= 0 && currentPortfolio <= 0) return null;
+
+  // Solve for t: FV = P*(1+r)^t + C*((1+r)^t - 1)/r = target
+  // (P + C/r) * (1+r)^t = target + C/r
+  // t = ln((target + C/r) / (P + C/r)) / ln(1+r)
+  let years: number;
+  if (r > 0) {
+    const cOverR = annualContribution / r;
+    const num = targetPortfolio + cOverR;
+    const den = currentPortfolio + cOverR;
+    if (den <= 0 || num <= 0) return null;
+    years = Math.log(num / den) / Math.log(1 + r);
+  } else {
+    // No growth: linear
+    if (annualContribution <= 0) return null;
+    years = (targetPortfolio - currentPortfolio) / annualContribution;
+  }
+
+  if (!isFinite(years) || years < 0) return null;
+  return Math.round(years * 365);
 }
+
