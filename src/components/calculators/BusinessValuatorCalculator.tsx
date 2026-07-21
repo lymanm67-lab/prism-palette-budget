@@ -20,6 +20,7 @@ export default function BusinessValuatorCalculator() {
   const [ebitda, setEbitda] = useState('90000');
   const [growth, setGrowth] = useState('12'); // % YoY
   const [industryMultiple, setIndustryMultiple] = useState('3.0'); // EBITDA multiple
+  const [ownerEstimate, setOwnerEstimate] = useState('850000'); // Owner's own valuation
 
   // Tangible assets
   const [equipment, setEquipment] = useState('25000');
