@@ -10,7 +10,7 @@ import { BELT_META } from '@/lib/progression/beltRules';
 import { Sparkles, Target, Clock, TrendingUp, Users, ScrollText, Layers, AlertCircle, Pencil, HelpCircle } from 'lucide-react';
 
 const FACTOR_EDIT_ROUTES: Record<string, { to: string; hint: string }> = {
-  net_worth:        { to: '/accounts',              hint: 'Add/update account balances' },
+  net_worth:        { to: '/net-worth',             hint: 'View Net Worth breakdown (Assets − Liabilities)' },
   retirement:       { to: '/planning/investments',  hint: 'Raise annual contribution or target' },
   passive_income:   { to: '/planning/investments',  hint: 'Add dividend / rental income sources' },
   emergency_fund:   { to: '/accounts',              hint: 'Grow liquid savings to 6× monthly expenses' },
