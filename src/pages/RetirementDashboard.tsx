@@ -346,10 +346,36 @@ export default function RetirementDashboard() {
             {parsing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
             Upload paycheck
           </Button>
-          <p className="text-[11px] text-muted-foreground mt-1 text-right">Auto-fills income, 401(k) %, HSA</p>
+          <p className="text-[11px] text-muted-foreground mt-1 text-right">Cascades to all 4 tabs</p>
         </div>
       </div>
 
+      {snapshot && (
+        <Card className="border-prism-amber/40 bg-prism-amber/5">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <CheckCircle2 className="h-4 w-4 text-prism-amber" />
+              Paycheck Snapshot
+              <span className="text-xs font-normal text-muted-foreground ml-auto">
+                {snapshot.filename} · parsed {new Date(snapshot.parsedAt).toLocaleDateString()}
+              </span>
+            </CardTitle>
+            <CardDescription className="text-xs">
+              These numbers are auto-applied to Next Dollar, Employer, HSA, and Roth vs Trad tabs.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+            <Stat label="Monthly gross" value={`$${snapshot.monthlyGross.toLocaleString()}`} />
+            <Stat label="Monthly net" value={`$${snapshot.monthlyNet.toLocaleString()}`} />
+            <Stat label="Annual gross" value={`$${snapshot.annualGross.toLocaleString()}`} />
+            <Stat label="Effective tax rate" value={`${(snapshot.effectiveTaxRate * 100).toFixed(1)}%`} />
+            <Stat label="Federal tax /mo" value={`$${snapshot.federalTax.toLocaleString()}`} />
+            <Stat label="State tax /mo" value={`$${snapshot.stateTax.toLocaleString()}`} />
+            <Stat label="401(k) /mo" value={`$${snapshot.retirement401k.toLocaleString()}`} />
+            <Stat label="HSA /mo" value={`$${snapshot.hsa.toLocaleString()}`} />
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader className="pb-3">
