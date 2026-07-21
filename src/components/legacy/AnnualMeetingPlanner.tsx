@@ -137,7 +137,10 @@ export function AnnualMeetingPlanner() {
           <Label className="text-sm font-semibold">Meeting Notes / Decisions</Label>
           <Textarea rows={6} value={notes} onChange={(e) => setNotes(e.target.value)} />
         </div>
-        <Button onClick={save}><Save className="h-3.5 w-3.5 mr-1.5" /> Save meeting</Button>
+        <div className="flex gap-2">
+          <Button onClick={save}><Save className="h-3.5 w-3.5 mr-1.5" /> Save meeting</Button>
+          <Button variant="outline" onClick={openPrintable}><Printer className="h-3.5 w-3.5 mr-1.5" /> Print / Save as PDF</Button>
+        </div>
       </CardContent>
     </Card>
   );
