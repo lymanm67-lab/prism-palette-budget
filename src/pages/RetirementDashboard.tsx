@@ -64,6 +64,46 @@ export default function RetirementDashboard() {
 
   const [reviewMd, setReviewMd] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const [parsing, setParsing] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const handlePaystubUpload = async (file: File) => {
+    if (!file) return;
+    if (file.size > 15 * 1024 * 1024) { toast.error("File too large (max 15 MB)"); return; }
+    setParsing(true);
+    try {
+      const reader = new FileReader();
+      const b64: string = await new Promise((resolve, reject) => {
+        reader.onload = () => resolve((reader.result as string));
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      const { data, error } = await supabase.functions.invoke("parse-paystub", { body: { image: b64 } });
+      if (error) throw error;
+      const gross = data?.monthly_gross_pay ? Math.round(data.monthly_gross_pay * 12) : 0;
+      const retire = (data?.deductions || []).find((d: any) => d.category === "retirement_401k");
+      const hsaDed = (data?.deductions || []).find((d: any) => d.category === "hsa");
+      const contribPct = gross && retire?.monthly_amount ? (retire.monthly_amount * 12) / gross : opt.employer401k.currentContribPct;
+      setOpt((prev) => ({
+        ...prev,
+        grossIncome: gross || prev.grossIncome,
+        employer401k: { ...prev.employer401k, currentContribPct: contribPct ?? prev.employer401k.currentContribPct },
+        hsaContribYTD: hsaDed?.monthly_amount ? Math.round(hsaDed.monthly_amount * 12) : prev.hsaContribYTD,
+      }));
+      setEmp((prev) => ({
+        ...prev,
+        salary: gross || prev.salary,
+        currentUserContribPct: contribPct ?? prev.currentUserContribPct,
+      }));
+      setRoth((prev) => ({ ...prev, annualContribution: prev.annualContribution }));
+      toast.success(`Paystub parsed · gross ~$${gross.toLocaleString()}/yr${retire ? ` · 401(k) ${((contribPct ?? 0) * 100).toFixed(1)}%` : ""}`);
+    } catch (e: any) {
+      toast.error(e.message || "Failed to parse paystub");
+    } finally {
+      setParsing(false);
+    }
+  };
+
   const generateReview = async () => {
     if (!household?.id) { toast.error("No household"); return; }
     setLoading(true);
