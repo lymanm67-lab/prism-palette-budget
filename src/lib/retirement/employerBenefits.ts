@@ -22,15 +22,25 @@ export interface BenefitsAnalysis {
 }
 
 export function analyzeEmployerBenefits(b: EmployerBenefits): BenefitsAnalysis {
-  const hasMatch = b.match401kPct > 0 && b.matchLimitPct > 0;
-  const fullMatch = hasMatch ? b.salary * b.match401kPct : 0;
+  // Normalize any pct that was entered as whole number (e.g. 9 meaning 9% -> 0.09)
+  const pct = (v: number | undefined) => {
+    const n = v ?? 0;
+    return n > 1 ? n / 100 : n;
+  };
+  const match401kPct = pct(b.match401kPct);
+  const matchLimitPct = pct(b.matchLimitPct);
+  const nonElectivePct = pct(b.nonElectiveEmployerPct);
+  const currentUserContribPct = pct(b.currentUserContribPct);
+
+  const hasMatch = match401kPct > 0 && matchLimitPct > 0;
+  const fullMatch = hasMatch ? b.salary * match401kPct : 0;
   const captured = hasMatch
-    ? Math.min(b.currentUserContribPct, b.matchLimitPct) / b.matchLimitPct * fullMatch
+    ? Math.min(currentUserContribPct, matchLimitPct) / matchLimitPct * fullMatch
     : 0;
   const missed = hasMatch ? fullMatch - captured : 0;
 
-  const nonElectivePct = b.nonElectiveEmployerPct ?? 0;
   const nonElective = b.salary * nonElectivePct;
+
 
   const breakdown: BenefitsAnalysis["breakdown"] = [];
   if (hasMatch) {
