@@ -316,6 +316,19 @@ export default function RetirementDashboard() {
                 <Field label="Your 401(k) %" step={0.01} value={emp.currentUserContribPct} onChange={(v) => setEmp({ ...emp, currentUserContribPct: v })} />
                 <Field label="HSA Employer $/yr" value={emp.hsaEmployerContrib} onChange={(v) => setEmp({ ...emp, hsaEmployerContrib: v })} />
               </div>
+              <div className="flex items-center justify-between gap-3 p-3 rounded border border-border/40">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="tuition-toggle"
+                    checked={emp.usesTuitionReimbursement}
+                    onCheckedChange={(c) => setEmp({ ...emp, usesTuitionReimbursement: c })}
+                  />
+                  <Label htmlFor="tuition-toggle" className="cursor-pointer">I use tuition reimbursement</Label>
+                </div>
+                {emp.usesTuitionReimbursement && (
+                  <Field label="Annual tuition reimbursement" value={emp.tuitionReimbursement} onChange={(v) => setEmp({ ...emp, tuitionReimbursement: v })} />
+                )}
+              </div>
               <div className="space-y-2">
                 {empAnalysis.breakdown.map((b, i) => (
                   <div key={i} className="flex items-center justify-between text-sm p-2 rounded border border-border/40">
