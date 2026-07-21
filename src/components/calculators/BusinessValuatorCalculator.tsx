@@ -1,10 +1,11 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Building2, Brain, TrendingUp, Info } from 'lucide-react';
+import { Building2, Brain, TrendingUp, Info, BookOpen } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useCurrency } from '@/hooks/use-currency';
 import AnimatedNumber from '@/components/AnimatedNumber';
 import CalculatorScenariosAndPitfalls from '@/components/CalculatorScenariosAndPitfalls';
@@ -221,6 +222,123 @@ export default function BusinessValuatorCalculator() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Glossary — What these terms mean */}
+      <Card className="glass-card border-prism-teal/20">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <BookOpen className="h-4 w-4 text-prism-teal" />
+            What these terms mean (with scenarios)
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-5 pt-2">
+          <Accordion type="multiple" className="w-full">
+            <AccordionItem value="ebitda">
+              <AccordionTrigger className="text-sm">EBITDA — Earnings Before Interest, Taxes, Depreciation & Amortization</AccordionTrigger>
+              <AccordionContent className="text-xs text-muted-foreground space-y-2">
+                <p>
+                  A "clean" profit number that strips out financing choices (interest), tax situations, and paper expenses
+                  (depreciation/amortization) so buyers can compare businesses apples-to-apples.
+                </p>
+                <p className="font-semibold text-foreground">Formula: Net Income + Interest + Taxes + Depreciation + Amortization</p>
+                <p><span className="font-semibold text-foreground">Scenario:</span> A business shows $60k net income, but paid $10k interest on an SBA loan, $15k taxes, and $5k depreciation on equipment. EBITDA = $90k. That's what a buyer cares about — it's the earning power before financing/tax decisions.</p>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="sde">
+              <AccordionTrigger className="text-sm">SDE — Seller's Discretionary Earnings</AccordionTrigger>
+              <AccordionContent className="text-xs text-muted-foreground space-y-2">
+                <p>
+                  EBITDA <em>plus</em> the owner's salary and personal perks run through the business. Used for small owner-operated
+                  businesses (usually under ~$1M EBITDA) because the buyer will replace the current owner.
+                </p>
+                <p className="font-semibold text-foreground">Formula: EBITDA + Owner Salary + Owner Benefits + One-time / Non-business expenses</p>
+                <p><span className="font-semibold text-foreground">Scenario:</span> A consulting LLC has $90k EBITDA. The owner pays herself $70k salary, runs a $6k car through the business, and had a one-time $4k legal fee. SDE = $90k + $70k + $6k + $4k = <strong>$170k</strong>. A buyer paying 2.5× SDE would offer ~$425k.</p>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="multiple">
+              <AccordionTrigger className="text-sm">Industry EBITDA Multiple</AccordionTrigger>
+              <AccordionContent className="text-xs text-muted-foreground space-y-2">
+                <p>
+                  A number that reflects how much a buyer will pay per $1 of earnings. Higher = more valuable / lower risk / faster growth.
+                  Set by industry norms, deal size, growth rate, and recurring-revenue mix.
+                </p>
+                <p className="font-semibold text-foreground">Typical ranges:</p>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>Local service / trades: <strong>2–3×</strong> SDE</li>
+                  <li>E-commerce: <strong>2.5–4×</strong> SDE</li>
+                  <li>Established services / consulting: <strong>3–5×</strong> EBITDA</li>
+                  <li>SaaS / recurring software: <strong>5–10×</strong> EBITDA (higher if growing 30%+)</li>
+                  <li>Content / media with audience: <strong>3–6×</strong> EBITDA</li>
+                </ul>
+                <p><span className="font-semibold text-foreground">Scenario:</span> Same $90k EBITDA. As a local HVAC shop (2.5×) → $225k. As a SaaS product with 40% growth (7×) → $630k. Multiple is often <em>more</em> important than earnings themselves.</p>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="dcf">
+              <AccordionTrigger className="text-sm">DCF — Discounted Cash Flow</AccordionTrigger>
+              <AccordionContent className="text-xs text-muted-foreground space-y-2">
+                <p>
+                  Projects future cash flows out several years, then "discounts" them back to today's dollars using a discount rate
+                  (your required return). Adds a "terminal value" for everything past the forecast window.
+                </p>
+                <p><span className="font-semibold text-foreground">Discount rate</span> = how risky the business is. Small businesses: 15–25%. Stable mid-market: 10–15%.</p>
+                <p><span className="font-semibold text-foreground">Scenario:</span> $90k EBITDA growing 12%/yr, discounted at 15% over 5 years + terminal value ≈ <strong>$800k–$1.1M</strong>. DCF rewards growth heavily — a shrinking business gets a much lower DCF than a growing one at the same earnings.</p>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="assetbased">
+              <AccordionTrigger className="text-sm">Asset-Based Value (Tangible + Intangible − Debt)</AccordionTrigger>
+              <AccordionContent className="text-xs text-muted-foreground space-y-2">
+                <p>
+                  Adds up everything the business owns (equipment, inventory, cash, IP, brand, customer list) minus what it owes.
+                  Sets a "floor" — a buyer usually won't pay less than net asset value.
+                </p>
+                <p><span className="font-semibold text-foreground">Scenario:</span> $75k in equipment + inventory + cash, $205k in IP/brand/software/contracts, minus $50k liabilities = <strong>$230k asset floor</strong>. If the market-multiple method says $600k, the buyer is paying ~$370k for goodwill / earning power on top of assets.</p>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="revenue">
+              <AccordionTrigger className="text-sm">Revenue Multiple (Sanity Check)</AccordionTrigger>
+              <AccordionContent className="text-xs text-muted-foreground space-y-2">
+                <p>
+                  A rough "top-line" check: value ≈ 1× annual revenue for most small businesses. Useful when profits are volatile or a business
+                  is reinvesting for growth. Not reliable alone — a $1M-revenue business losing money is worth far less than one earning $200k SDE.
+                </p>
+                <p><span className="font-semibold text-foreground">Scenario:</span> $500k revenue → $500k rough value. If your other methods say $800k+, you have strong margins. If they say $200k, revenue is bloated but not profitable.</p>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="intangible">
+              <AccordionTrigger className="text-sm">Intangible / IP Assets</AccordionTrigger>
+              <AccordionContent className="text-xs text-muted-foreground space-y-2">
+                <p>
+                  Non-physical things that generate value: brand recognition, customer/email lists, trademarks, patents, proprietary software,
+                  content libraries, locked-in contracts, and goodwill (reviews, SEO, community).
+                </p>
+                <p>In service and digital businesses, intangibles often make up <strong>60–80%</strong> of total value.</p>
+                <p><span className="font-semibold text-foreground">Scenario:</span> A course creator with $50k revenue but 20,000 email subscribers, a trademarked brand, and a library of 40 videos can sell for $200k+ — mostly on intangibles, not earnings.</p>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="blended">
+              <AccordionTrigger className="text-sm">Why we blend all methods</AccordionTrigger>
+              <AccordionContent className="text-xs text-muted-foreground space-y-2">
+                <p>No single method is right. Buyers, banks, and courts each weight them differently:</p>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li><strong>Buyers</strong> lean on SDE/EBITDA multiple + DCF</li>
+                  <li><strong>Banks / SBA lenders</strong> lean on asset-based + cash flow coverage</li>
+                  <li><strong>Courts / divorces</strong> often use a weighted blend</li>
+                </ul>
+                <p>The blended estimate at the top is a weighted average: 30% market multiple, 25% DCF, 20% asset-based, 20% owner estimate, 5% revenue.</p>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </CardContent>
+      </Card>
+
+
 
       <Tabs defaultValue="financials">
         <TabsList className="grid grid-cols-4 w-full">
