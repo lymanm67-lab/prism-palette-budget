@@ -90,6 +90,7 @@ const LegacyMode = lazy(() => import("@/pages/LegacyMode"));
 const KungFoo = lazy(() => import("@/pages/KungFoo"));
 const FamilyLegacy = lazy(() => import("@/pages/FamilyLegacy"));
 const BeltProgress = lazy(() => import("@/pages/BeltProgress"));
+const RetirementDashboard = lazy(() => import("@/pages/RetirementDashboard"));
 
 const queryClient = new QueryClient();
 
@@ -223,6 +224,7 @@ const App = () => (
               <Route path="/legacy/family" element={<Suspense fallback={<PageLoader />}><FamilyLegacy /></Suspense>} />
               <Route path="/legacy/belts" element={<Suspense fallback={<PageLoader />}><BeltProgress /></Suspense>} />
               <Route path="/kungfoo" element={<Suspense fallback={<PageLoader />}><KungFoo /></Suspense>} />
+              <Route path="/retirement-optimizer" element={<Suspense fallback={<PageLoader />}><RetirementDashboard /></Suspense>} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
