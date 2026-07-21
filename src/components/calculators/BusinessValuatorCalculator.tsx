@@ -190,7 +190,7 @@ export default function BusinessValuatorCalculator() {
           <div>
             <p className="text-xs text-muted-foreground">Estimated value (blended)</p>
             <p className="text-3xl font-bold text-prism-teal">
-              <AnimatedNumber value={results.blended} format={formatCurrency} />
+              <AnimatedNumber value={results.blended} formatFn={formatCurrency} />
             </p>
           </div>
           <div>
