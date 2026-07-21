@@ -76,7 +76,9 @@ const DEFAULT_OPT: OptimizerInputs = {
   hasEmergencyFund: true,
   monthlyExpenses: 5500,
   emergencyBalance: 15000,
-  employer401k: { available: true, matchPct: 0.05, matchLimitPct: 0.06, currentContribPct: 0.03, hasRoth: true },
+  // No employer match — employer contributes 9% non-elective (auto, not chased).
+  // Employee deferral ramps to 30% starting Dec 2026.
+  employer401k: { available: true, matchPct: 0, matchLimitPct: 0, currentContribPct: 0.30, hasRoth: true },
   hsaEligible: true,
   hsaBalance: 8000,
   hsaContribYTD: 2000,
@@ -86,7 +88,7 @@ const DEFAULT_OPT: OptimizerInputs = {
   totalRetirementBalance: 180000,
 };
 
-const LS_KEY = "retirement-optimizer-inputs-v4";
+const LS_KEY = "retirement-optimizer-inputs-v5";
 
 export default function RetirementDashboard() {
   const { household } = useHousehold();
