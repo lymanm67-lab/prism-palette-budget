@@ -332,6 +332,12 @@ export default function RetirementDashboard() {
               </div>
             </CardContent>
           </Card>
+          <div className="flex items-center justify-end gap-3">
+            {savedAt.emp && <span className="text-xs text-muted-foreground">Last saved {savedAt.emp}</span>}
+            <Button size="sm" onClick={() => saveTab("emp", emp, "Employer inputs")}>
+              <Save className="h-4 w-4 mr-2" /> Save Employer
+            </Button>
+          </div>
         </TabsContent>
 
         <TabsContent value="hsa" className="mt-4 space-y-4">
