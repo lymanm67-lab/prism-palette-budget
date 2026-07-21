@@ -90,6 +90,9 @@ export default function LegacyMode() {
         </CardContent>
       </Card>
 
+      {/* Live Net Worth (Assets − Liabilities) */}
+      <NetWorthSummaryCard />
+
       {/* KPI tiles */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <KpiTile icon={TrendingUp} label="Net Worth" value={fmt(lw.netWorth)} />
