@@ -151,6 +151,13 @@ export function LegacyLetterEditor() {
 
   return (
     <div className="grid md:grid-cols-3 gap-4">
+      <input
+        ref={fileRef}
+        type="file"
+        accept=".txt,.md,.pdf,.doc,.docx,.rtf,.png,.jpg,.jpeg"
+        className="hidden"
+        onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileUpload(f); }}
+      />
       <Card className="md:col-span-1">
         <CardHeader>
           <CardTitle className="text-base">Your Letters</CardTitle>
@@ -168,6 +175,23 @@ export function LegacyLetterEditor() {
           <Button variant="outline" size="sm" className="w-full" onClick={() => startNew()}>
             <Plus className="h-3.5 w-3.5 mr-1.5" /> Blank letter
           </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            className="w-full"
+            onClick={() => {
+              if (!current) startNew();
+              // defer to allow render, then open picker
+              setTimeout(() => fileRef.current?.click(), 0);
+            }}
+            disabled={uploading}
+          >
+            <Upload className="h-3.5 w-3.5 mr-1.5" />
+            {uploading ? "Uploading…" : "Upload letter file"}
+          </Button>
+          <p className="text-[11px] text-muted-foreground leading-snug">
+            .txt/.md loads into the editor. PDF/DOC/image saves as an attachment.
+          </p>
           <div className="space-y-1 pt-2">
             {letters.map((l) => (
               <button key={l.id} onClick={() => setCurrent(l)} className="w-full text-left p-2 rounded border border-border/40 hover:bg-muted/40 text-sm">
@@ -212,13 +236,6 @@ export function LegacyLetterEditor() {
 
               {/* Upload row */}
               <div className="flex items-center gap-2 flex-wrap p-3 rounded-lg border border-dashed border-border/60 bg-muted/20">
-                <input
-                  ref={fileRef}
-                  type="file"
-                  accept=".txt,.md,.pdf,.doc,.docx,.rtf,.png,.jpg,.jpeg"
-                  className="hidden"
-                  onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileUpload(f); }}
-                />
                 <Button size="sm" variant="outline" onClick={() => fileRef.current?.click()} disabled={uploading}>
                   <Upload className="h-3.5 w-3.5 mr-1.5" />
                   {uploading ? "Uploading…" : "Upload letter file"}
