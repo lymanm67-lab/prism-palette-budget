@@ -250,6 +250,13 @@ export default function BusinessValuatorCalculator() {
                 suffix="×"
                 hint="Typical: services 2–4×, SaaS 5–10×, e-com 2.5–4×"
               />
+              <Field
+                label="Your estimated valuation (owner's estimate)"
+                value={ownerEstimate}
+                onChange={setOwnerEstimate}
+                suffix="$"
+                hint="Included in the blend at 20% weight when > 0. Set 0 to exclude."
+              />
             </CardContent>
           </Card>
         </TabsContent>
