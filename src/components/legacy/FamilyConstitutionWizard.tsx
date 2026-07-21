@@ -54,17 +54,43 @@ export function FamilyConstitutionWizard() {
     });
   };
 
+  const escapeHtml = (s: string) =>
+    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  const cleanMarkdown = (raw: string) => {
+    if (!raw) return '';
+    // Strip markdown asterisks/underscores while keeping structure clean
+    let t = raw;
+    // Remove bold/italic markers: **text**, __text__, *text*, _text_
+    t = t.replace(/\*\*\*(.+?)\*\*\*/g, '$1');
+    t = t.replace(/\*\*(.+?)\*\*/g, '$1');
+    t = t.replace(/__(.+?)__/g, '$1');
+    t = t.replace(/(^|[^*])\*(?!\s)([^*\n]+?)\*(?!\*)/g, '$1$2');
+    t = t.replace(/(^|[^_])_(?!\s)([^_\n]+?)_(?!_)/g, '$1$2');
+    // Convert leading list markers to clean bullets
+    t = t.replace(/^\s*[*\-+]\s+/gm, '• ');
+    // Remove markdown headings hashes
+    t = t.replace(/^#{1,6}\s+/gm, '');
+    // Collapse any stray asterisks left
+    t = t.replace(/\*/g, '');
+    return t;
+  };
+
   const exportPdf = () => {
-    // Simple print-to-PDF via browser print
     const w = window.open('', '_blank');
     if (!w) return;
+    const body = SECTIONS.map(s => {
+      const raw = sections[s.key];
+      if (!raw) return '';
+      return `<h2>${escapeHtml(s.label)}</h2><p>${escapeHtml(cleanMarkdown(raw))}</p>`;
+    }).join('');
     w.document.write(`
-      <html><head><title>${familyName} Family Constitution</title>
+      <html><head><title>${escapeHtml(familyName)} Family Constitution</title>
       <style>body{font-family:Georgia,serif;max-width:720px;margin:40px auto;padding:0 20px;line-height:1.6;color:#111}h1{text-align:center;font-size:2rem}h2{border-bottom:1px solid #ccc;padding-bottom:4px;margin-top:2rem}p{white-space:pre-wrap}</style>
       </head><body>
-      <h1>${familyName} Family Constitution</h1>
+      <h1>${escapeHtml(familyName)} Family Constitution</h1>
       <p style="text-align:center;font-style:italic;color:#666">Published ${new Date().toLocaleDateString()}</p>
-      ${SECTIONS.map(s => sections[s.key] ? `<h2>${s.label}</h2><p>${sections[s.key]}</p>` : '').join('')}
+      ${body}
       </body></html>
     `);
     w.document.close();
