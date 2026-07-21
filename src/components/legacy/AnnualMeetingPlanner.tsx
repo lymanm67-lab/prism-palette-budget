@@ -62,6 +62,55 @@ export function AnnualMeetingPlanner() {
     toast.success("Meeting saved");
   };
 
+  const escapeHtml = (s: string) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+  const mdToHtml = (raw: string) => {
+    if (!raw) return "";
+    const lines = raw.split("\n");
+    let html = "";
+    let inList = false;
+    const closeList = () => { if (inList) { html += "</ul>"; inList = false; } };
+    for (const line of lines) {
+      let t = line.replace(/\*\*(.+?)\*\*/g, "$1").replace(/\*(.+?)\*/g, "$1");
+      if (/^#\s+/.test(t)) { closeList(); html += `<h1>${escapeHtml(t.replace(/^#\s+/, ""))}</h1>`; }
+      else if (/^##\s+/.test(t)) { closeList(); html += `<h2>${escapeHtml(t.replace(/^##\s+/, ""))}</h2>`; }
+      else if (/^###\s+/.test(t)) { closeList(); html += `<h3>${escapeHtml(t.replace(/^###\s+/, ""))}</h3>`; }
+      else if (/^\s*-\s+/.test(t)) {
+        if (!inList) { html += "<ul>"; inList = true; }
+        html += `<li>${escapeHtml(t.replace(/^\s*-\s+/, ""))}</li>`;
+      } else if (t.trim() === "") { closeList(); }
+      else { closeList(); html += `<p>${escapeHtml(t)}</p>`; }
+    }
+    closeList();
+    return html;
+  };
+
+  const openPrintable = () => {
+    const w = window.open("", "_blank");
+    if (!w) return;
+    w.document.write(`
+      <html><head><title>Annual Family Wealth Meeting — ${escapeHtml(meetingDate)}</title>
+      <style>
+        body{font-family:Georgia,serif;max-width:720px;margin:40px auto;padding:0 24px;line-height:1.7;color:#111}
+        h1{text-align:center;font-size:1.75rem;margin-bottom:4px}
+        h2{border-bottom:1px solid #ccc;padding-bottom:4px;margin-top:1.75rem;font-size:1.2rem}
+        h3{margin-top:1.25rem;font-size:1rem}
+        ul{margin:0.5rem 0 0.75rem 1.25rem}
+        p{margin:0.5rem 0}
+        .date{text-align:center;color:#555;font-style:italic;margin-bottom:1.5rem}
+        .notes{margin-top:2rem;border-top:1px solid #eee;padding-top:1rem}
+      </style>
+      </head><body>
+      <div class="date">Meeting date: ${escapeHtml(meetingDate)}</div>
+      ${mdToHtml(agenda) || "<p><em>No agenda yet.</em></p>"}
+      ${notes?.trim() ? `<div class="notes"><h2>Meeting Notes / Decisions</h2>${mdToHtml(notes)}</div>` : ""}
+      </body></html>
+    `);
+    w.document.close();
+    setTimeout(() => w.print(), 300);
+  };
+
   return (
     <Card>
       <CardHeader>
