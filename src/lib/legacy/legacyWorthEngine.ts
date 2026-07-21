@@ -105,7 +105,7 @@ export function computeLegacyWorth(i: LegacyWorthInputs): {
     { key: 'passive_income', label: 'Passive Income Coverage', weight: 10, score: passiveIncomeScore,
       contribution: 0, next: 'Add dividend-paying ETF or rental unit.' },
     { key: 'emergency_fund', label: 'Emergency Fund', weight: 8, score: emergencyFundScore,
-      contribution: 0, next: 'Auto-transfer to hit 6 months of expenses.' },
+      contribution: 0, next: 'Auto-transfer to hit 3 months of expenses (dual stable income).' },
     { key: 'insurance', label: 'Insurance Protection', weight: 7, score: insuranceScore,
       contribution: 0, next: 'Add term life or umbrella policy.' },
     { key: 'debt', label: 'Debt Health', weight: 8, score: debtScore,
