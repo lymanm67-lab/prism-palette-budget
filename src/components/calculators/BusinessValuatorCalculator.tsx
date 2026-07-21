@@ -129,6 +129,7 @@ export default function BusinessValuatorCalculator() {
     ebitda,
     growth,
     industryMultiple,
+    ownerEstimate,
     equipment,
     inventory,
     cashAr,
