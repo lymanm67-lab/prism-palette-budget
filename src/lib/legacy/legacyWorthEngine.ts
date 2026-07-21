@@ -79,7 +79,7 @@ export function computeLegacyWorth(i: LegacyWorthInputs): {
 
   const retirementReadiness = clamp(i.fiPercentage * 100);
   const passiveIncomeScore = clamp(passiveCoverage * 100);
-  const emergencyFundScore = clamp((monthsCovered / 6) * 100);
+  const emergencyFundScore = clamp((monthsCovered / 3) * 100);
   const insuranceScore = clamp(
     (i.insuranceKindsCount / 5) * 60 +
     (i.insuranceCoverageTotal / Math.max(i.annualIncome * 10, 1)) * 40
