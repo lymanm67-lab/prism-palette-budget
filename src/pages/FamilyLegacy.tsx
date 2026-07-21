@@ -3,7 +3,10 @@ import { HundredYearSimulator } from '@/components/legacy/HundredYearSimulator';
 import { FamilyConstitutionWizard } from '@/components/legacy/FamilyConstitutionWizard';
 import { EstateChecklist } from '@/components/legacy/EstateChecklist';
 import { TrustDashboard } from '@/components/legacy/TrustDashboard';
-import { Heart, ScrollText, ShieldCheck, TrendingUp, Users } from 'lucide-react';
+import { LegacyLetterEditor } from '@/components/legacy/LegacyLetterEditor';
+import { EthicalWillEditor } from '@/components/legacy/EthicalWillEditor';
+import { AnnualMeetingPlanner } from '@/components/legacy/AnnualMeetingPlanner';
+import { Heart, ScrollText, ShieldCheck, TrendingUp, Users, PenLine, BookHeart, CalendarDays } from 'lucide-react';
 
 export default function FamilyLegacy() {
   return (
@@ -22,15 +25,21 @@ export default function FamilyLegacy() {
       </div>
 
       <Tabs defaultValue="trust">
-        <TabsList className="grid grid-cols-2 md:grid-cols-4">
+        <TabsList className="flex flex-wrap h-auto">
           <TabsTrigger value="trust"><ShieldCheck className="h-3.5 w-3.5 mr-1.5" /> Trust</TabsTrigger>
           <TabsTrigger value="estate"><Users className="h-3.5 w-3.5 mr-1.5" /> Estate</TabsTrigger>
           <TabsTrigger value="constitution"><ScrollText className="h-3.5 w-3.5 mr-1.5" /> Constitution</TabsTrigger>
+          <TabsTrigger value="letters"><PenLine className="h-3.5 w-3.5 mr-1.5" /> Letters</TabsTrigger>
+          <TabsTrigger value="ethical"><BookHeart className="h-3.5 w-3.5 mr-1.5" /> Ethical Will</TabsTrigger>
+          <TabsTrigger value="meeting"><CalendarDays className="h-3.5 w-3.5 mr-1.5" /> Annual Meeting</TabsTrigger>
           <TabsTrigger value="simulator"><TrendingUp className="h-3.5 w-3.5 mr-1.5" /> 100-Year</TabsTrigger>
         </TabsList>
         <TabsContent value="trust" className="mt-4"><TrustDashboard /></TabsContent>
         <TabsContent value="estate" className="mt-4"><EstateChecklist /></TabsContent>
         <TabsContent value="constitution" className="mt-4"><FamilyConstitutionWizard /></TabsContent>
+        <TabsContent value="letters" className="mt-4"><LegacyLetterEditor /></TabsContent>
+        <TabsContent value="ethical" className="mt-4"><EthicalWillEditor /></TabsContent>
+        <TabsContent value="meeting" className="mt-4"><AnnualMeetingPlanner /></TabsContent>
         <TabsContent value="simulator" className="mt-4"><HundredYearSimulator /></TabsContent>
       </Tabs>
     </div>

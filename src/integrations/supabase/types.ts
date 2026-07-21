@@ -266,6 +266,45 @@ export type Database = {
           },
         ]
       }
+      annual_family_meetings: {
+        Row: {
+          agenda_md: string | null
+          attendees: Json | null
+          created_at: string
+          decisions: Json | null
+          household_id: string
+          id: string
+          meeting_date: string
+          notes_md: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          agenda_md?: string | null
+          attendees?: Json | null
+          created_at?: string
+          decisions?: Json | null
+          household_id: string
+          id?: string
+          meeting_date: string
+          notes_md?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          agenda_md?: string | null
+          attendees?: Json | null
+          created_at?: string
+          decisions?: Json | null
+          household_id?: string
+          id?: string
+          meeting_date?: string
+          notes_md?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       app_dev_credit_log: {
         Row: {
           created_at: string
@@ -1838,6 +1877,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      ethical_wills: {
+        Row: {
+          blessings_md: string | null
+          created_at: string
+          household_id: string
+          id: string
+          lessons_md: string | null
+          updated_at: string
+          user_id: string
+          values_md: string | null
+          wisdom_md: string | null
+        }
+        Insert: {
+          blessings_md?: string | null
+          created_at?: string
+          household_id: string
+          id?: string
+          lessons_md?: string | null
+          updated_at?: string
+          user_id: string
+          values_md?: string | null
+          wisdom_md?: string | null
+        }
+        Update: {
+          blessings_md?: string | null
+          created_at?: string
+          household_id?: string
+          id?: string
+          lessons_md?: string | null
+          updated_at?: string
+          user_id?: string
+          values_md?: string | null
+          wisdom_md?: string | null
+        }
+        Relationships: []
       }
       family_beneficiaries: {
         Row: {
@@ -4045,6 +4120,39 @@ export type Database = {
           },
         ]
       }
+      legacy_letters: {
+        Row: {
+          body: string | null
+          created_at: string
+          household_id: string
+          id: string
+          recipient: string
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          household_id: string
+          id?: string
+          recipient: string
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          household_id?: string
+          id?: string
+          recipient?: string
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       legacy_trust_contributions: {
         Row: {
           amount: number
@@ -4721,6 +4829,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      monthly_financial_reviews: {
+        Row: {
+          concerns: Json | null
+          created_at: string
+          household_id: string
+          id: string
+          metrics: Json | null
+          model_used: string | null
+          period_month: string
+          recommendations: Json | null
+          summary_md: string | null
+          updated_at: string
+          user_id: string
+          wins: Json | null
+        }
+        Insert: {
+          concerns?: Json | null
+          created_at?: string
+          household_id: string
+          id?: string
+          metrics?: Json | null
+          model_used?: string | null
+          period_month: string
+          recommendations?: Json | null
+          summary_md?: string | null
+          updated_at?: string
+          user_id: string
+          wins?: Json | null
+        }
+        Update: {
+          concerns?: Json | null
+          created_at?: string
+          household_id?: string
+          id?: string
+          metrics?: Json | null
+          model_used?: string | null
+          period_month?: string
+          recommendations?: Json | null
+          summary_md?: string | null
+          updated_at?: string
+          user_id?: string
+          wins?: Json | null
+        }
+        Relationships: []
       }
       paycheck_deployment_rules: {
         Row: {
@@ -5407,6 +5560,51 @@ export type Database = {
           roth_pct_default?: number
           ss_age70_estimate?: number
           updated_at?: string
+        }
+        Relationships: []
+      }
+      retirement_recommendations: {
+        Row: {
+          allocations: Json | null
+          created_at: string
+          employer_benefits: Json | null
+          household_id: string
+          hsa_analysis: Json | null
+          id: string
+          next_dollar_target: string | null
+          reasoning_md: string | null
+          roth_vs_trad: Json | null
+          score: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          allocations?: Json | null
+          created_at?: string
+          employer_benefits?: Json | null
+          household_id: string
+          hsa_analysis?: Json | null
+          id?: string
+          next_dollar_target?: string | null
+          reasoning_md?: string | null
+          roth_vs_trad?: Json | null
+          score?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          allocations?: Json | null
+          created_at?: string
+          employer_benefits?: Json | null
+          household_id?: string
+          hsa_analysis?: Json | null
+          id?: string
+          next_dollar_target?: string | null
+          reasoning_md?: string | null
+          roth_vs_trad?: Json | null
+          score?: number | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
