@@ -236,13 +236,6 @@ export function LegacyLetterEditor() {
 
               {/* Upload row */}
               <div className="flex items-center gap-2 flex-wrap p-3 rounded-lg border border-dashed border-border/60 bg-muted/20">
-                <input
-                  ref={fileRef}
-                  type="file"
-                  accept=".txt,.md,.pdf,.doc,.docx,.rtf,.png,.jpg,.jpeg"
-                  className="hidden"
-                  onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileUpload(f); }}
-                />
                 <Button size="sm" variant="outline" onClick={() => fileRef.current?.click()} disabled={uploading}>
                   <Upload className="h-3.5 w-3.5 mr-1.5" />
                   {uploading ? "Uploading…" : "Upload letter file"}
