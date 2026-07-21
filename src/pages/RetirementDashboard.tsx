@@ -17,9 +17,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useHousehold } from "@/contexts/HouseholdContext";
 
 const DEFAULT_OPT: OptimizerInputs = {
-  age: 40,
+  age: 59,
   filingStatus: "married",
-  grossIncome: 120000,
+  grossIncome: 68874,
   hasEmergencyFund: true,
   monthlyExpenses: 5500,
   emergencyBalance: 15000,
@@ -33,7 +33,7 @@ const DEFAULT_OPT: OptimizerInputs = {
   totalRetirementBalance: 180000,
 };
 
-const LS_KEY = "retirement-optimizer-inputs-v1";
+const LS_KEY = "retirement-optimizer-inputs-v2";
 
 export default function RetirementDashboard() {
   const { household } = useHousehold();
@@ -51,7 +51,7 @@ export default function RetirementDashboard() {
   const readiness = scoreRetirementReadiness(opt.totalRetirementBalance, opt.age, opt.grossIncome);
 
   const DEFAULT_EMP: EmployerBenefits = {
-    salary: 120000, match401kPct: 0.05, matchLimitPct: 0.06,
+    salary: 68874, match401kPct: 0.05, matchLimitPct: 0.06,
     hsaEmployerContrib: 1200, espp: { discountPct: 0.15, maxPct: 0.1 },
     rsu: { annualGrantValue: 20000, vestYears: 4 }, pension: false,
     tuitionReimbursement: 5000, currentUserContribPct: 0.03,
@@ -64,7 +64,7 @@ export default function RetirementDashboard() {
   const empAnalysis = analyzeEmployerBenefits(emp);
 
   const DEFAULT_HSA: HsaInputs = {
-    age: 40, currentBalance: 8000, annualContribution: 6000, employerContribution: 1200,
+    age: 59, currentBalance: 8000, annualContribution: 6000, employerContribution: 1200,
     marginalTaxRate: 0.22, investedPct: 0.6, expectedReturn: 0.07,
     annualQualifiedMedical: 2000, yearsUntil65: 25,
   };
@@ -76,7 +76,7 @@ export default function RetirementDashboard() {
   const hsaProj = projectHsa(hsa);
 
   const DEFAULT_ROTH: RothInputs = {
-    currentAge: 40, retirementAge: 65, currentMarginalRate: 0.22, expectedRetirementRate: 0.24,
+    currentAge: 59, retirementAge: 67, currentMarginalRate: 0.22, expectedRetirementRate: 0.24,
     annualContribution: 7500, expectedReturn: 0.07, currentTaxableBalance: 25000,
     currentRothBalance: 30000, currentTraditionalBalance: 150000,
     hasStateIncomeTax: true, stateRateNow: 0.04, stateRateRetirement: 0.0,
