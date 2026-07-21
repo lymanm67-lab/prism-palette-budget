@@ -1,10 +1,11 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Building2, Brain, TrendingUp, Info } from 'lucide-react';
+import { Building2, Brain, TrendingUp, Info, BookOpen } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useCurrency } from '@/hooks/use-currency';
 import AnimatedNumber from '@/components/AnimatedNumber';
 import CalculatorScenariosAndPitfalls from '@/components/CalculatorScenariosAndPitfalls';
