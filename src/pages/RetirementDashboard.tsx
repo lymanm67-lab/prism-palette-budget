@@ -665,10 +665,10 @@ export default function RetirementDashboard() {
                 <Stat label="Annual gross" value={`$${(snapshot?.annualGross ?? opt.grossIncome).toLocaleString()}`} />
                 <Stat label="Hidden comp" value={`$${empAnalysis.totalHiddenComp.toLocaleString()}/yr`} />
                 <Stat label="HSA @ 65" value={`$${hsaProj.balanceAt65.toLocaleString()}`} />
-                <Stat label="401(k) rate" value={`${((opt.employer401k.currentContribPct ?? 0) * 100).toFixed(1)}%`} />
+                <Stat label="401(k) rate" value={formatPct(opt.employer401k.currentContribPct ?? 0)} />
                 <Stat label="Match missed" value={`$${empAnalysis.match.missed.toLocaleString()}/yr`} />
                 <Stat label="Roth verdict" value={rothVerdict.recommendation.toString()} />
-                <Stat label="Marginal rate" value={`${(roth.currentMarginalRate * 100).toFixed(0)}%`} />
+                <Stat label="Marginal rate" value={formatPct(roth.currentMarginalRate)} />
               </div>
               {!snapshot && (
                 <div className="p-3 rounded-lg border border-dashed border-border/60 text-xs text-muted-foreground">
