@@ -24,12 +24,18 @@ export function useLegacyWorth() {
     staleTime: 60_000,
     queryFn: async () => {
       const hid = household!.id;
+      // Look up plan IDs first so we can filter debt_items by plan_id (debt_items has no household_id column)
+      const { data: planRows } = await sb.from('debt_plans').select('id').eq('household_id', hid);
+      const planIds = (planRows || []).map((p: any) => p.id);
+
       const [
         accounts, debts, holdings, insurance, estate, trust,
         constitution, beneficiaries, txns, plan, profile, progression, wealthEvents,
       ] = await Promise.all([
         sb.from('accounts').select('id,account_type,balance,name').eq('household_id', hid).is('deleted_at', null),
-        sb.from('debt_items').select('balance,interest_rate,minimum_payment,debt_plans!inner(household_id)').eq('debt_plans.household_id', hid),
+        planIds.length
+          ? sb.from('debt_items').select('balance,interest_rate,minimum_payment,plan_id').in('plan_id', planIds)
+          : Promise.resolve({ data: [] }),
         sb.from('investment_holdings').select('symbol,market_value,cost_basis').eq('household_id', hid),
         sb.from('insurance_coverage').select('kind,coverage_amount').eq('household_id', hid).is('deleted_at', null),
         sb.from('estate_planning_checklist').select('item_key,is_complete').eq('household_id', hid),
@@ -38,10 +44,11 @@ export function useLegacyWorth() {
         sb.from('family_beneficiaries').select('id').eq('household_id', hid).is('deleted_at', null),
         sb.from('transactions').select('amount,date,category_id,is_transfer').eq('household_id', hid).is('deleted_at', null).gte('date', new Date(Date.now() - 365 * 86400_000).toISOString().slice(0, 10)).limit(5000),
         sb.from('investment_plans').select('*').eq('household_id', hid).eq('is_active', true).maybeSingle(),
-        sb.from('profiles').select('display_name,date_of_birth').eq('household_id', hid).limit(1),
+        sb.from('profiles').select('display_name').limit(1),
         sb.from('user_progression').select('current_belt,milestones_completed').eq('household_id', hid).maybeSingle(),
         sb.from('family_wealth_events').select('event_date').eq('household_id', hid).is('deleted_at', null),
       ]);
+
 
       const LIAB_TYPES = new Set(['credit', 'loan', 'credit_card', 'mortgage']);
       const acctAssets = (accounts.data || [])
@@ -93,11 +100,8 @@ export function useLegacyWorth() {
       const rothPct = plan.data ? Number((plan.data as any).roth_pct || 30) : 30;
       const hsaContribution = plan.data ? Number((plan.data as any).annual_contribution || 0) * 0.1 : 0;
 
-      const age = (() => {
-        const dob = (profile.data as any)?.[0]?.date_of_birth;
-        if (!dob) return 40;
-        return Math.floor((Date.now() - new Date(dob).getTime()) / (365.25 * 86400_000));
-      })();
+      const age = 40;
+
 
       const passiveMonthlyIncome = investable * 0.02 / 12; // rough dividend yield 2%
 

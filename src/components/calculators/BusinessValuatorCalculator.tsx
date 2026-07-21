@@ -12,7 +12,42 @@ import CalculatorScenariosAndPitfalls from '@/components/CalculatorScenariosAndP
 
 const num = (v: string) => (isFinite(parseFloat(v)) ? parseFloat(v) : 0);
 
+function Field({
+  label,
+  value,
+  onChange,
+  hint,
+  suffix,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  hint?: string;
+  suffix?: string;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-xs text-muted-foreground">{label}</Label>
+      <div className="relative">
+        <Input
+          type="number"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="pr-10"
+        />
+        {suffix && (
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+            {suffix}
+          </span>
+        )}
+      </div>
+      {hint && <p className="text-[10px] text-muted-foreground/70">{hint}</p>}
+    </div>
+  );
+}
+
 export default function BusinessValuatorCalculator() {
+
   const { formatCurrency } = useCurrency();
 
   // Financials
@@ -148,37 +183,8 @@ export default function BusinessValuatorCalculator() {
     years,
   ]);
 
-  const Field = ({
-    label,
-    value,
-    onChange,
-    hint,
-    suffix,
-  }: {
-    label: string;
-    value: string;
-    onChange: (v: string) => void;
-    hint?: string;
-    suffix?: string;
-  }) => (
-    <div className="space-y-1.5">
-      <Label className="text-xs text-muted-foreground">{label}</Label>
-      <div className="relative">
-        <Input
-          type="number"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="pr-10"
-        />
-        {suffix && (
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-            {suffix}
-          </span>
-        )}
-      </div>
-      {hint && <p className="text-[10px] text-muted-foreground/70">{hint}</p>}
-    </div>
-  );
+
+
 
   return (
     <motion.div
