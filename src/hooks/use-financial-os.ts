@@ -100,11 +100,8 @@ export function useLegacyWorth() {
       const rothPct = plan.data ? Number((plan.data as any).roth_pct || 30) : 30;
       const hsaContribution = plan.data ? Number((plan.data as any).annual_contribution || 0) * 0.1 : 0;
 
-      const age = (() => {
-        const dob = (profile.data as any)?.[0]?.date_of_birth;
-        if (!dob) return 40;
-        return Math.floor((Date.now() - new Date(dob).getTime()) / (365.25 * 86400_000));
-      })();
+      const age = 40;
+
 
       const passiveMonthlyIncome = investable * 0.02 / 12; // rough dividend yield 2%
 
