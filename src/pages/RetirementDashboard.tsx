@@ -134,14 +134,35 @@ export default function RetirementDashboard() {
 
   return (
     <div className="max-w-6xl mx-auto p-4 md:p-6 space-y-4">
-      <div>
-        <h1 className="text-3xl font-bold flex items-center gap-2">
-          <Target className="h-7 w-7 text-prism-amber" /> Retirement & Wealth Optimizer
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          AI-guided "next dollar" decisions across retirement, employer benefits, HSA, and Roth strategy.
-        </p>
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h1 className="text-3xl font-bold flex items-center gap-2">
+            <Target className="h-7 w-7 text-prism-amber" /> Retirement & Wealth Optimizer
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            AI-guided "next dollar" decisions across retirement, employer benefits, HSA, and Roth strategy.
+          </p>
+        </div>
+        <div>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*,application/pdf"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) handlePaystubUpload(f);
+              e.currentTarget.value = "";
+            }}
+          />
+          <Button variant="outline" onClick={() => fileRef.current?.click()} disabled={parsing}>
+            {parsing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
+            Upload paycheck
+          </Button>
+          <p className="text-[11px] text-muted-foreground mt-1 text-right">Auto-fills income, 401(k) %, HSA</p>
+        </div>
       </div>
+
 
       <Card>
         <CardHeader className="pb-3">
