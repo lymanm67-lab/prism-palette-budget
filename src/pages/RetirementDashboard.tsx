@@ -406,6 +406,12 @@ export default function RetirementDashboard() {
               </ul>
             </CardContent>
           </Card>
+          <div className="flex items-center justify-end gap-3">
+            {savedAt.roth && <span className="text-xs text-muted-foreground">Last saved {savedAt.roth}</span>}
+            <Button size="sm" onClick={() => saveTab("roth", roth, "Roth vs Traditional inputs")}>
+              <Save className="h-4 w-4 mr-2" /> Save Roth
+            </Button>
+          </div>
         </TabsContent>
 
         <TabsContent value="cfo" className="mt-4 space-y-4">
