@@ -119,6 +119,7 @@ Return the data using the extract_paystub tool. For each deduction, use a clear 
     });
 
     if (!response.ok) {
+      const errText = await response.text().catch(() => "");
       if (response.status === 429) {
         return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }), {
           status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -129,13 +130,16 @@ Return the data using the extract_paystub tool. For each deduction, use a clear 
           status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      console.error("AI gateway error:", response.status);
-      throw new Error("AI gateway error");
+      console.error("AI gateway error:", response.status, errText);
+      throw new Error(`AI gateway error ${response.status}: ${errText.slice(0, 300)}`);
     }
 
     const data = await response.json();
     const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
-    if (!toolCall) throw new Error("No structured data returned from AI");
+    if (!toolCall) {
+      console.error("No tool call in response:", JSON.stringify(data).slice(0, 500));
+      throw new Error("AI could not extract paystub data — try a clearer image or the original PDF");
+    }
 
     const extracted = JSON.parse(toolCall.function.arguments);
 
