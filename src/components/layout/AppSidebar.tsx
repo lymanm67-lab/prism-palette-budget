@@ -78,6 +78,15 @@ const NAV_SECTIONS: NavSection[] = [
     ],
   },
   {
+    label: 'Legacy',
+    items: [
+      { to: '/legacy', icon: Sparkles, label: 'Legacy Mode', color: 'text-prism-amber', essential: true },
+      { to: '/kungfoo', icon: Layers, label: 'KUNG FOO Plan', color: 'text-prism-teal' },
+      { to: '/legacy/family', icon: Heart, label: 'Family Legacy', color: 'text-prism-rose' },
+      { to: '/legacy/belts', icon: Target, label: 'Belt Progress', color: 'text-prism-lime' },
+    ],
+  },
+  {
     label: 'Insights',
     items: [
       { to: '/reports', icon: BarChart3, label: 'Reports', color: 'text-prism-orange', essential: true },
