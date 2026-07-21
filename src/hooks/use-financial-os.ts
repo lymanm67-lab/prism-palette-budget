@@ -28,7 +28,7 @@ export function useLegacyWorth() {
         accounts, debts, holdings, insurance, estate, trust,
         constitution, txns, plan, profile, progression, wealthEvents,
       ] = await Promise.all([
-        sb.from('accounts').select('id,type,balance,category').eq('household_id', hid).is('deleted_at', null),
+        sb.from('accounts').select('id,account_type,balance,name').eq('household_id', hid).is('deleted_at', null),
         sb.from('debt_items').select('balance,interest_rate').eq('household_id', hid).is('deleted_at', null),
         sb.from('investment_holdings').select('symbol,market_value,cost_basis').eq('household_id', hid),
         sb.from('insurance_coverage').select('kind,coverage_amount').eq('household_id', hid).is('deleted_at', null),
@@ -42,14 +42,19 @@ export function useLegacyWorth() {
         sb.from('family_wealth_events').select('event_date').eq('household_id', hid).is('deleted_at', null),
       ]);
 
-      const netAssets = (accounts.data || [])
-        .filter((a: any) => !['credit_card', 'loan', 'mortgage'].includes((a.type || '').toLowerCase()))
+      const LIAB_TYPES = new Set(['credit', 'loan', 'credit_card', 'mortgage']);
+      const acctAssets = (accounts.data || [])
+        .filter((a: any) => !LIAB_TYPES.has(String(a.account_type || '').toLowerCase()))
         .reduce((s: number, a: any) => s + Number(a.balance || 0), 0);
-      const liab = (debts.data || []).reduce((s: number, d: any) => s + Number(d.balance || 0), 0);
-      const netWorth = netAssets - liab;
+      const acctLiab = (accounts.data || [])
+        .filter((a: any) => LIAB_TYPES.has(String(a.account_type || '').toLowerCase()))
+        .reduce((s: number, a: any) => s + Math.abs(Number(a.balance || 0)), 0);
+      const debtLiab = (debts.data || []).reduce((s: number, d: any) => s + Number(d.balance || 0), 0);
+      const liab = acctLiab + debtLiab;
+      const netWorth = acctAssets - liab;
 
       const liquid = (accounts.data || [])
-        .filter((a: any) => ['checking', 'savings', 'cash'].includes((a.type || '').toLowerCase()))
+        .filter((a: any) => ['checking', 'savings', 'cash'].includes(String(a.account_type || '').toLowerCase()))
         .reduce((s: number, a: any) => s + Number(a.balance || 0), 0);
 
       const highInterestDebt = (debts.data || [])
@@ -57,12 +62,8 @@ export function useLegacyWorth() {
         .reduce((s: number, d: any) => s + Number(d.balance || 0), 0);
 
       const holdingsValue = (holdings.data || []).reduce((s: number, h: any) => s + Number(h.market_value || 0), 0);
-      // Include retirement/investment account balances that aren't tracked as individual holdings
       const retirementAccounts = (accounts.data || [])
-        .filter((a: any) => {
-          const t = (a.type || '').toLowerCase();
-          return ['401k','403b','457','ira','roth_ira','roth','sep_ira','simple_ira','hsa','investment','brokerage','retirement','pension'].some(k => t.includes(k));
-        })
+        .filter((a: any) => String(a.account_type || '').toLowerCase() === 'investment')
         .reduce((s: number, a: any) => s + Number(a.balance || 0), 0);
       const investable = holdingsValue + retirementAccounts;
       const totalHoldingsVal = holdingsValue || 1;
@@ -107,8 +108,8 @@ export function useLegacyWorth() {
         charitableAnnual: 0,
         hasConstitution: !!(constitution.data as any)?.is_published,
         hadSummitLast12Months: (wealthEvents.data || []).some((e: any) => new Date(e.event_date) >= monthsBack12),
-        hasBusinessOwnership: (accounts.data || []).some((a: any) => (a.category || '').includes('business')),
-        realEstateEquity: (accounts.data || []).filter((a: any) => a.type === 'real_estate').reduce((s: number, a: any) => s + Number(a.balance || 0), 0),
+        hasBusinessOwnership: (accounts.data || []).some((a: any) => /business/i.test(String(a.name || ''))),
+        realEstateEquity: (accounts.data || []).filter((a: any) => /real.?estate|home|house|property/i.test(String(a.name || ''))).reduce((s: number, a: any) => s + Number(a.balance || 0), 0),
         currentBelt: (progression.data as any)?.current_belt || 'white',
         fiPercentage: Math.min(1, investable / Math.max(monthlyExpenses * 12 * 25, 1)),
       };
