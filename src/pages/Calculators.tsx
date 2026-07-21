@@ -57,6 +57,7 @@ import InflationCalculator from '@/components/calculators/InflationCalculator';
 import LeaseVsBuyCalculator from '@/components/calculators/LeaseVsBuyCalculator';
 import CapitalGainsCalculator from '@/components/calculators/CapitalGainsCalculator';
 import SelfEmployedTaxCalculator from '@/components/calculators/SelfEmployedTaxCalculator';
+import BusinessValuatorCalculator from '@/components/calculators/BusinessValuatorCalculator';
 import RothConversionLadderCalculator from '@/components/calculators/RothConversionLadderCalculator';
 import CDvsHYSACalculator from '@/components/calculators/CDvsHYSACalculator';
 import SalaryRaiseCalculator from '@/components/calculators/SalaryRaiseCalculator';
