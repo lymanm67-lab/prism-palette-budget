@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,7 +11,14 @@ import { useKungFooPlan, useSaveKungFooPlan, useFinancialFreedom } from '@/hooks
 const fmt = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
 
 export default function KungFoo() {
-  const [paycheck, setPaycheck] = useState<number>(2500);
+  const [paycheck, setPaycheck] = useState<number>(() => {
+    const saved = typeof window !== 'undefined' ? window.localStorage.getItem('kungfoo:paycheck') : null;
+    const n = saved ? Number(saved) : NaN;
+    return Number.isFinite(n) && n > 0 ? n : 4362.77;
+  });
+  useEffect(() => {
+    if (paycheck > 0) window.localStorage.setItem('kungfoo:paycheck', String(paycheck));
+  }, [paycheck]);
   const { data, isLoading } = useKungFooPlan(paycheck);
   const save = useSaveKungFooPlan();
   const ff = useFinancialFreedom();
