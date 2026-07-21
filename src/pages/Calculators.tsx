@@ -16,7 +16,7 @@ import { useCurrency } from '@/hooks/use-currency';
 import { cn } from '@/lib/utils';
 import {
   Home, Car, CreditCard, TrendingUp, Calculator, DollarSign, Percent, CalendarDays, PiggyBank, Sparkles, BookOpen, MoreHorizontal,
-  Target, Shield, Wallet, CheckCircle2, Scale, MapPin, Plane, Heart, Palmtree, ShoppingBag, Gift, Baby, Receipt, Tag, ArrowLeftRight, Search, X, ChevronRight,
+  Target, Shield, Wallet, CheckCircle2, Scale, MapPin, Plane, Heart, Palmtree, ShoppingBag, Gift, Baby, Receipt, Tag, ArrowLeftRight, Search, X, ChevronRight, Building2,
 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import PageOverview from '@/components/PageOverview';
@@ -57,6 +57,7 @@ import InflationCalculator from '@/components/calculators/InflationCalculator';
 import LeaseVsBuyCalculator from '@/components/calculators/LeaseVsBuyCalculator';
 import CapitalGainsCalculator from '@/components/calculators/CapitalGainsCalculator';
 import SelfEmployedTaxCalculator from '@/components/calculators/SelfEmployedTaxCalculator';
+import BusinessValuatorCalculator from '@/components/calculators/BusinessValuatorCalculator';
 import RothConversionLadderCalculator from '@/components/calculators/RothConversionLadderCalculator';
 import CDvsHYSACalculator from '@/components/calculators/CDvsHYSACalculator';
 import SalaryRaiseCalculator from '@/components/calculators/SalaryRaiseCalculator';
@@ -280,6 +281,7 @@ const CALCULATOR_GROUPS = [
     items: [
       { id: 'offers', label: 'Focus Offer', icon: Target, color: 'text-prism-lime', bg: 'from-prism-lime/20 to-prism-lime/5' },
       { id: 'pricing', label: 'Pricing', icon: Tag, color: 'text-prism-amber', bg: 'from-prism-amber/20 to-prism-amber/5' },
+      { id: 'bizvalue', label: 'Business & IP Valuator', icon: Building2, color: 'text-prism-teal', bg: 'from-prism-teal/20 to-prism-teal/5' },
     ],
   },
   {
@@ -2208,6 +2210,7 @@ const Calculators = () => {
       {activeCalc === 'rmd' && (<div className="mt-6"><RMDCalculator /></div>)}
       {activeCalc === 'pmi' && (<div className="mt-6"><PMIRemovalCalculator /></div>)}
       {activeCalc === 'extramtg' && (<div className="mt-6"><ExtraMortgagePaymentCalculator /></div>)}
+      {activeCalc === 'bizvalue' && (<div className="mt-6"><BusinessValuatorCalculator /></div>)}
       
       
       <CalculatorHistory open={historyOpen} onOpenChange={setHistoryOpen} onRestore={handleRestore} />
