@@ -64,7 +64,7 @@ export default function RetirementDashboard() {
   const empAnalysis = analyzeEmployerBenefits(emp);
 
   const DEFAULT_HSA: HsaInputs = {
-    age: 40, currentBalance: 8000, annualContribution: 6000, employerContribution: 1200,
+    age: 59, currentBalance: 8000, annualContribution: 6000, employerContribution: 1200,
     marginalTaxRate: 0.22, investedPct: 0.6, expectedReturn: 0.07,
     annualQualifiedMedical: 2000, yearsUntil65: 25,
   };
