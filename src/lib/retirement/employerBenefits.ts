@@ -74,12 +74,13 @@ export function analyzeEmployerBenefits(b: EmployerBenefits): BenefitsAnalysis {
   const totalHiddenComp = breakdown.reduce((s, r) => s + r.annualValue, 0);
   let action: string;
   if (hasMatch && missed > 100) {
-    action = `Increase 401(k) contribution to ${(b.matchLimitPct * 100).toFixed(0)}% immediately — you're leaving $${missed.toFixed(0)}/yr on the table.`;
+    action = `Increase 401(k) contribution to ${(matchLimitPct * 100).toFixed(0)}% immediately — you're leaving $${missed.toFixed(0)}/yr on the table.`;
   } else if (nonElective > 0 && !hasMatch) {
     action = `Employer contributes $${nonElective.toFixed(0)}/yr (${(nonElectivePct * 100).toFixed(1)}%) automatically. Since there's no match to chase, prioritize your own Roth IRA or HSA next.`;
   } else {
     action = "You're capturing full employer match. Consider ESPP and HSA next.";
   }
+
 
   return { totalHiddenComp, match: { captured, missed }, breakdown, action };
 }
