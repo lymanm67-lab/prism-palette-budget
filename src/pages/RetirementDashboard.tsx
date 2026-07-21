@@ -368,6 +368,12 @@ export default function RetirementDashboard() {
               <div className="p-3 rounded-lg bg-muted/30 text-sm">{hsaProj.recommendation}</div>
             </CardContent>
           </Card>
+          <div className="flex items-center justify-end gap-3">
+            {savedAt.hsa && <span className="text-xs text-muted-foreground">Last saved {savedAt.hsa}</span>}
+            <Button size="sm" onClick={() => saveTab("hsa", hsa, "HSA inputs")}>
+              <Save className="h-4 w-4 mr-2" /> Save HSA
+            </Button>
+          </div>
         </TabsContent>
 
         <TabsContent value="roth" className="mt-4 space-y-4">
