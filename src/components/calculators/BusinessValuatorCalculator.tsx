@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCurrency } from '@/hooks/use-currency';
 import AnimatedNumber from '@/components/AnimatedNumber';
-import CalculatorGuide from '@/components/CalculatorGuide';
+import CalculatorScenariosAndPitfalls from '@/components/CalculatorScenariosAndPitfalls';
 
 const num = (v: string) => (isFinite(parseFloat(v)) ? parseFloat(v) : 0);
 
