@@ -88,15 +88,26 @@ export default function BusinessValuatorCalculator() {
       dr > terminalGrowth ? terminalCF / (dr - terminalGrowth) : 0;
     const dcfValue = dcf + terminal / Math.pow(1 + dr, n);
 
-    // Weighted estimate (blend)
-    const blended =
-      assetBased * 0.25 +
-      marketBased * 0.35 +
-      revenueValue * 0.1 +
-      dcfValue * 0.3;
+    // Owner's own estimate
+    const ownerVal = num(ownerEstimate);
 
-    const low = Math.min(assetBased, marketBased, dcfValue, revenueValue);
-    const high = Math.max(assetBased, marketBased, dcfValue, revenueValue);
+    // Weighted estimate (blend) — includes owner's estimate when > 0
+    const hasOwner = ownerVal > 0;
+    const blended = hasOwner
+      ? assetBased * 0.2 +
+        marketBased * 0.3 +
+        revenueValue * 0.05 +
+        dcfValue * 0.25 +
+        ownerVal * 0.2
+      : assetBased * 0.25 +
+        marketBased * 0.35 +
+        revenueValue * 0.1 +
+        dcfValue * 0.3;
+
+    const methodValues = [assetBased, marketBased, dcfValue, revenueValue];
+    if (hasOwner) methodValues.push(ownerVal);
+    const low = Math.min(...methodValues);
+    const high = Math.max(...methodValues);
 
     return {
       tangible,
@@ -107,6 +118,7 @@ export default function BusinessValuatorCalculator() {
       marketBased,
       revenueValue,
       dcfValue,
+      ownerVal,
       blended,
       low,
       high,
