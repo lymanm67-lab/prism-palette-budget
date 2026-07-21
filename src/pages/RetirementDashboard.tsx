@@ -33,9 +33,20 @@ const DEFAULT_OPT: OptimizerInputs = {
   totalRetirementBalance: 180000,
 };
 
+const LS_KEY = "retirement-optimizer-inputs-v1";
+
 export default function RetirementDashboard() {
   const { household } = useHousehold();
-  const [opt, setOpt] = useState<OptimizerInputs>(DEFAULT_OPT);
+  const [opt, setOpt] = useState<OptimizerInputs>(() => {
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (raw) return { ...DEFAULT_OPT, ...JSON.parse(raw) };
+    } catch {}
+    return DEFAULT_OPT;
+  });
+  useEffect(() => {
+    try { localStorage.setItem(LS_KEY, JSON.stringify(opt)); } catch {}
+  }, [opt]);
   const recs = optimizeNextDollar(opt);
   const readiness = scoreRetirementReadiness(opt.totalRetirementBalance, opt.age, opt.grossIncome);
 
