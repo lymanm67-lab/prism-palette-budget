@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
-import { Sparkles, Target, Building2, HeartPulse, Scale, FileText } from "lucide-react";
+import { Sparkles, Target, Building2, HeartPulse, Scale, FileText, Upload, Loader2 } from "lucide-react";
 import { optimizeNextDollar, scoreRetirementReadiness, type OptimizerInputs } from "@/lib/retirement/optimizerEngine";
 import { analyzeEmployerBenefits, type EmployerBenefits } from "@/lib/retirement/employerBenefits";
 import { projectHsa, type HsaInputs } from "@/lib/retirement/hsaIntelligence";
@@ -64,6 +64,46 @@ export default function RetirementDashboard() {
 
   const [reviewMd, setReviewMd] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const [parsing, setParsing] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const handlePaystubUpload = async (file: File) => {
+    if (!file) return;
+    if (file.size > 15 * 1024 * 1024) { toast.error("File too large (max 15 MB)"); return; }
+    setParsing(true);
+    try {
+      const reader = new FileReader();
+      const b64: string = await new Promise((resolve, reject) => {
+        reader.onload = () => resolve((reader.result as string));
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      const { data, error } = await supabase.functions.invoke("parse-paystub", { body: { image: b64 } });
+      if (error) throw error;
+      const gross = data?.monthly_gross_pay ? Math.round(data.monthly_gross_pay * 12) : 0;
+      const retire = (data?.deductions || []).find((d: any) => d.category === "retirement_401k");
+      const hsaDed = (data?.deductions || []).find((d: any) => d.category === "hsa");
+      const contribPct = gross && retire?.monthly_amount ? (retire.monthly_amount * 12) / gross : opt.employer401k.currentContribPct;
+      setOpt((prev) => ({
+        ...prev,
+        grossIncome: gross || prev.grossIncome,
+        employer401k: { ...prev.employer401k, currentContribPct: contribPct ?? prev.employer401k.currentContribPct },
+        hsaContribYTD: hsaDed?.monthly_amount ? Math.round(hsaDed.monthly_amount * 12) : prev.hsaContribYTD,
+      }));
+      setEmp((prev) => ({
+        ...prev,
+        salary: gross || prev.salary,
+        currentUserContribPct: contribPct ?? prev.currentUserContribPct,
+      }));
+      setRoth((prev) => ({ ...prev, annualContribution: prev.annualContribution }));
+      toast.success(`Paystub parsed · gross ~$${gross.toLocaleString()}/yr${retire ? ` · 401(k) ${((contribPct ?? 0) * 100).toFixed(1)}%` : ""}`);
+    } catch (e: any) {
+      toast.error(e.message || "Failed to parse paystub");
+    } finally {
+      setParsing(false);
+    }
+  };
+
   const generateReview = async () => {
     if (!household?.id) { toast.error("No household"); return; }
     setLoading(true);
@@ -94,14 +134,35 @@ export default function RetirementDashboard() {
 
   return (
     <div className="max-w-6xl mx-auto p-4 md:p-6 space-y-4">
-      <div>
-        <h1 className="text-3xl font-bold flex items-center gap-2">
-          <Target className="h-7 w-7 text-prism-amber" /> Retirement & Wealth Optimizer
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          AI-guided "next dollar" decisions across retirement, employer benefits, HSA, and Roth strategy.
-        </p>
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h1 className="text-3xl font-bold flex items-center gap-2">
+            <Target className="h-7 w-7 text-prism-amber" /> Retirement & Wealth Optimizer
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            AI-guided "next dollar" decisions across retirement, employer benefits, HSA, and Roth strategy.
+          </p>
+        </div>
+        <div>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*,application/pdf"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) handlePaystubUpload(f);
+              e.currentTarget.value = "";
+            }}
+          />
+          <Button variant="outline" onClick={() => fileRef.current?.click()} disabled={parsing}>
+            {parsing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
+            Upload paycheck
+          </Button>
+          <p className="text-[11px] text-muted-foreground mt-1 text-right">Auto-fills income, 401(k) %, HSA</p>
+        </div>
       </div>
+
 
       <Card>
         <CardHeader className="pb-3">
