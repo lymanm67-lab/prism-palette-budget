@@ -110,7 +110,7 @@ export default function RetirementDashboard() {
     nonElectiveEmployerPct: 0.09,
     hsaEmployerContrib: 2000, espp: null,
     rsu: null, pension: false,
-    tuitionReimbursement: 5000, usesTuitionReimbursement: false, currentUserContribPct: 0.03,
+    tuitionReimbursement: 5000, usesTuitionReimbursement: false, currentUserContribPct: 0.30,
   };
   const [emp, setEmp] = useState<EmployerBenefits>(() => {
     try { const r = localStorage.getItem(LS_KEY + "-emp"); if (r) return normalizeEmployer({ ...DEFAULT_EMP, ...JSON.parse(r) }); } catch {}
