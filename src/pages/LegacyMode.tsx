@@ -7,7 +7,24 @@ import { Progress } from '@/components/ui/progress';
 import { useLegacyWorth, useLegacyWorthHistory, useFinancialFreedom, useUserProgression } from '@/hooks/use-financial-os';
 import { LIFE_STAGE_LABELS } from '@/lib/legacy/legacyWorthEngine';
 import { BELT_META } from '@/lib/progression/beltRules';
-import { Sparkles, Target, Clock, TrendingUp, Users, ScrollText, Layers, AlertCircle } from 'lucide-react';
+import { Sparkles, Target, Clock, TrendingUp, Users, ScrollText, Layers, AlertCircle, Pencil, HelpCircle } from 'lucide-react';
+
+const FACTOR_EDIT_ROUTES: Record<string, { to: string; hint: string }> = {
+  net_worth:        { to: '/accounts',              hint: 'Add/update account balances' },
+  retirement:       { to: '/planning/investments',  hint: 'Raise annual contribution or target' },
+  passive_income:   { to: '/planning/investments',  hint: 'Add dividend / rental income sources' },
+  emergency_fund:   { to: '/accounts',              hint: 'Grow liquid savings to 6× monthly expenses' },
+  insurance:        { to: '/legacy/family',         hint: 'Insurance Coverage tab — add policies' },
+  debt:             { to: '/debts',                 hint: 'Update balances & APR; attack high-APR first' },
+  estate:           { to: '/legacy/family',         hint: 'Estate Checklist tab — check off items' },
+  trust:            { to: '/legacy/family',         hint: 'Family Trust tab — draft & fund' },
+  tax:              { to: '/retirement-optimizer',  hint: 'Roth advisor + HSA intelligence' },
+  diversification:  { to: '/investments',           hint: 'Reduce single-position concentration' },
+  giving:           { to: '/transactions',          hint: 'Tag charitable transactions' },
+  literacy:         { to: '/kungfoo',               hint: 'Earn the next belt — complete milestones' },
+  governance:       { to: '/legacy/family',         hint: 'Constitution + Annual Meeting tabs' },
+  real_estate_biz:  { to: '/accounts',              hint: 'Add real estate equity / business assets' },
+};
 import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, LineChart, Line, Tooltip, XAxis, YAxis } from 'recharts';
 
 const fmt = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
@@ -115,22 +132,45 @@ export default function LegacyMode() {
         </Card>
       </div>
 
-      {/* Factor drilldown */}
+      {/* How to use */}
+      <Card className="border-prism-sky/30 bg-prism-sky/5">
+        <CardContent className="p-4 flex gap-3">
+          <HelpCircle className="h-5 w-5 text-prism-sky shrink-0 mt-0.5" />
+          <div className="text-sm space-y-1">
+            <p className="font-semibold">How to raise your Legacy Worth</p>
+            <p className="text-xs text-muted-foreground">
+              This score is auto-calculated from data across the app. To update any factor, click its <span className="font-medium text-foreground">Edit</span> button below — it takes you to the exact page where that data lives. Your score refreshes on your next visit and a daily snapshot feeds the 90-day trend.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Factor drilldown — all 14, editable */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Next-best moves — biggest lift opportunities</CardTitle>
+          <CardTitle className="text-base">All 14 factors — edit any source</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {[...lw.factors].sort((a, b) => a.score - b.score).slice(0, 5).map(f => (
-            <div key={f.key} className="space-y-1.5">
-              <div className="flex items-center justify-between text-sm">
-                <div className="font-medium">{f.label}</div>
-                <div className="text-xs text-muted-foreground">{Math.round(f.score)}/100 · +{f.weight} pts available</div>
+          {[...lw.factors].sort((a, b) => a.score - b.score).map(f => {
+            const route = FACTOR_EDIT_ROUTES[f.key];
+            return (
+              <div key={f.key} className="space-y-1.5 rounded-md border border-border/40 p-3">
+                <div className="flex items-center justify-between gap-2 text-sm">
+                  <div className="font-medium">{f.label}</div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">{Math.round(f.score)}/100 · +{f.weight} pts</span>
+                    {route && (
+                      <Button asChild size="sm" variant="outline" className="h-7 px-2 text-xs">
+                        <Link to={route.to}><Pencil className="h-3 w-3 mr-1" />Edit</Link>
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                <Progress value={f.score} className="h-1.5" />
+                <p className="text-xs text-muted-foreground pl-1">→ {route?.hint ?? f.next}</p>
               </div>
-              <Progress value={f.score} className="h-1.5" />
-              <p className="text-xs text-muted-foreground pl-1">→ {f.next}</p>
-            </div>
-          ))}
+            );
+          })}
         </CardContent>
       </Card>
 
