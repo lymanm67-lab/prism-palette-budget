@@ -9,6 +9,7 @@ export interface EmployerBenefits {
   rsu: { annualGrantValue: number; vestYears: number } | null;
   pension: boolean;
   tuitionReimbursement: number; // annual $
+  usesTuitionReimbursement: boolean;
   currentUserContribPct: number;
 }
 
@@ -27,8 +28,10 @@ export function analyzeEmployerBenefits(b: EmployerBenefits): BenefitsAnalysis {
   const breakdown: BenefitsAnalysis["breakdown"] = [
     { label: "401(k) employer match", annualValue: fullMatch, captured: missed < 1, note: missed > 0 ? `Missing $${missed.toFixed(0)}/yr` : undefined },
     { label: "HSA employer contribution", annualValue: b.hsaEmployerContrib, captured: true },
-    { label: "Tuition reimbursement", annualValue: b.tuitionReimbursement, captured: false, note: "Only if used" },
   ];
+  if (b.usesTuitionReimbursement) {
+    breakdown.push({ label: "Tuition reimbursement", annualValue: b.tuitionReimbursement, captured: false, note: "Only if used" });
+  }
   if (b.espp) {
     const esppValue = b.salary * b.espp.maxPct * b.espp.discountPct;
     breakdown.push({ label: `ESPP (${(b.espp.discountPct * 100).toFixed(0)}% discount)`, annualValue: esppValue, captured: false });
