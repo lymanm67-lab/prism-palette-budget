@@ -132,22 +132,45 @@ export default function LegacyMode() {
         </Card>
       </div>
 
-      {/* Factor drilldown */}
+      {/* How to use */}
+      <Card className="border-prism-sky/30 bg-prism-sky/5">
+        <CardContent className="p-4 flex gap-3">
+          <HelpCircle className="h-5 w-5 text-prism-sky shrink-0 mt-0.5" />
+          <div className="text-sm space-y-1">
+            <p className="font-semibold">How to raise your Legacy Worth</p>
+            <p className="text-xs text-muted-foreground">
+              This score is auto-calculated from data across the app. To update any factor, click its <span className="font-medium text-foreground">Edit</span> button below — it takes you to the exact page where that data lives. Your score refreshes on your next visit and a daily snapshot feeds the 90-day trend.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Factor drilldown — all 14, editable */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Next-best moves — biggest lift opportunities</CardTitle>
+          <CardTitle className="text-base">All 14 factors — edit any source</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {[...lw.factors].sort((a, b) => a.score - b.score).slice(0, 5).map(f => (
-            <div key={f.key} className="space-y-1.5">
-              <div className="flex items-center justify-between text-sm">
-                <div className="font-medium">{f.label}</div>
-                <div className="text-xs text-muted-foreground">{Math.round(f.score)}/100 · +{f.weight} pts available</div>
+          {[...lw.factors].sort((a, b) => a.score - b.score).map(f => {
+            const route = FACTOR_EDIT_ROUTES[f.key];
+            return (
+              <div key={f.key} className="space-y-1.5 rounded-md border border-border/40 p-3">
+                <div className="flex items-center justify-between gap-2 text-sm">
+                  <div className="font-medium">{f.label}</div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">{Math.round(f.score)}/100 · +{f.weight} pts</span>
+                    {route && (
+                      <Button asChild size="sm" variant="outline" className="h-7 px-2 text-xs">
+                        <Link to={route.to}><Pencil className="h-3 w-3 mr-1" />Edit</Link>
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                <Progress value={f.score} className="h-1.5" />
+                <p className="text-xs text-muted-foreground pl-1">→ {route?.hint ?? f.next}</p>
               </div>
-              <Progress value={f.score} className="h-1.5" />
-              <p className="text-xs text-muted-foreground pl-1">→ {f.next}</p>
-            </div>
-          ))}
+            );
+          })}
         </CardContent>
       </Card>
 
