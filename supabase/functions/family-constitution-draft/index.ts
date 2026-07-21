@@ -20,6 +20,10 @@ const SECTION_PROMPTS: Record<string, string> = {
   summit_agenda: "Draft an agenda for an annual Family Wealth Summit (half day): review net worth, review trust, teach one financial concept, hear from each family member, celebrate wins.",
   legacy_letter: "Draft a legacy letter template — a personal letter to future generations sharing life lessons, hopes, prayers. 2–3 paragraphs, first person.",
   ethical_will: "Draft an ethical will template — values, beliefs, and life lessons the writer wants to pass on (distinct from a legal will). 2–3 paragraphs.",
+  ew_values: "Draft the 'Values' section of an ethical will in first person (\"I believe…\", \"I have tried to live by…\"). Name 4–6 principles with a short reason each. Warm, specific, not preachy.",
+  ew_wisdom: "Draft the 'Wisdom & Life Lessons' section of an ethical will in first person. 2–3 short paragraphs of hard-won lessons the writer wishes someone had told them at 25.",
+  ew_lessons: "Draft the 'Failures I Learned From' section of an ethical will in first person. Honest, humble, 2 short paragraphs — mistakes that shaped the writer and what they would do differently.",
+  ew_blessings: "Draft the 'Blessings & Hopes' section of an ethical will in first person, addressed to children/grandchildren. 2 short paragraphs of hopes and blessings for the family and future generations.",
 };
 
 serve(async (req) => {
