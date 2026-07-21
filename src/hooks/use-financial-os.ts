@@ -108,8 +108,8 @@ export function useLegacyWorth() {
         charitableAnnual: 0,
         hasConstitution: !!(constitution.data as any)?.is_published,
         hadSummitLast12Months: (wealthEvents.data || []).some((e: any) => new Date(e.event_date) >= monthsBack12),
-        hasBusinessOwnership: (accounts.data || []).some((a: any) => (a.category || '').includes('business')),
-        realEstateEquity: (accounts.data || []).filter((a: any) => a.type === 'real_estate').reduce((s: number, a: any) => s + Number(a.balance || 0), 0),
+        hasBusinessOwnership: (accounts.data || []).some((a: any) => /business/i.test(String(a.name || ''))),
+        realEstateEquity: (accounts.data || []).filter((a: any) => /real.?estate|home|house|property/i.test(String(a.name || ''))).reduce((s: number, a: any) => s + Number(a.balance || 0), 0),
         currentBelt: (progression.data as any)?.current_belt || 'white',
         fiPercentage: Math.min(1, investable / Math.max(monthlyExpenses * 12 * 25, 1)),
       };
