@@ -29,7 +29,7 @@ export function useLegacyWorth() {
         constitution, txns, plan, profile, progression, wealthEvents,
       ] = await Promise.all([
         sb.from('accounts').select('id,account_type,balance,name').eq('household_id', hid).is('deleted_at', null),
-        sb.from('debt_items').select('balance,interest_rate').eq('household_id', hid).is('deleted_at', null),
+        sb.from('debt_items').select('balance,interest_rate,debt_plans!inner(household_id)').eq('debt_plans.household_id', hid),
         sb.from('investment_holdings').select('symbol,market_value,cost_basis').eq('household_id', hid),
         sb.from('insurance_coverage').select('kind,coverage_amount').eq('household_id', hid).is('deleted_at', null),
         sb.from('estate_planning_checklist').select('item_key,is_complete').eq('household_id', hid),
@@ -82,7 +82,9 @@ export function useLegacyWorth() {
       const yearTxns = (txns.data || []).filter((t: any) => new Date(t.date) >= monthsBack12 && !t.is_transfer);
       const income = yearTxns.filter((t: any) => Number(t.amount) > 0).reduce((s: number, t: any) => s + Number(t.amount), 0);
       const spend = yearTxns.filter((t: any) => Number(t.amount) < 0).reduce((s: number, t: any) => s + Math.abs(Number(t.amount)), 0);
-      const annualIncome = income;
+      // Prefer investment_plan configured monthly income (household) when transaction-derived income is low
+      const planMonthlyIncome = plan.data ? Number((plan.data as any).current_monthly_income || 0) : 0;
+      const annualIncome = Math.max(income, planMonthlyIncome * 12);
       const monthlyExpenses = spend / 12;
 
       const rothPct = plan.data ? Number((plan.data as any).roth_pct || 30) : 30;
@@ -96,14 +98,22 @@ export function useLegacyWorth() {
 
       const passiveMonthlyIncome = investable * 0.02 / 12; // rough dividend yield 2%
 
+      // Trust readiness: use stored readiness_score, but fall back to funding ratio
+      // (current_assets can be seeded by life insurance + retirement designations).
+      const trustRow: any = trust.data || {};
+      const fundingPct = trustRow.funding_target > 0
+        ? Math.min(100, (Number(trustRow.current_assets || 0) / Number(trustRow.funding_target)) * 100)
+        : 0;
+      const trustReadinessPct = Math.max(Number(trustRow.readiness_score || 0), fundingPct);
+
       const inputs: LegacyWorthInputs = {
         age, annualIncome, monthlyExpenses, netWorth,
         liquidSavings: liquid, investableAssets: investable,
         passiveMonthlyIncome, highInterestDebt, totalDebt: liab,
         insuranceCoverageTotal: insTotal, insuranceKindsCount: insKinds,
         estateItemsComplete: estateComplete, estateItemsTotal: ESTATE_CHECKLIST_ITEMS.length,
-        trustFunded: (trust.data as any)?.current_assets > 0,
-        trustReadinessPct: Number((trust.data as any)?.readiness_score || 0),
+        trustFunded: Number(trustRow.current_assets || 0) > 0,
+        trustReadinessPct,
         rothPct, hsaContribution, holdingsHHI: hhi,
         charitableAnnual: 0,
         hasConstitution: !!(constitution.data as any)?.is_published,
