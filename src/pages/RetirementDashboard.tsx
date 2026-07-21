@@ -71,6 +71,7 @@ export default function RetirementDashboard() {
     if (!file) return;
     if (file.size > 15 * 1024 * 1024) { toast.error("File too large (max 15 MB)"); return; }
     setParsing(true);
+    const tId = toast.loading(`Parsing ${file.name}…`);
     try {
       const reader = new FileReader();
       const b64: string = await new Promise((resolve, reject) => {
@@ -78,12 +79,25 @@ export default function RetirementDashboard() {
         reader.onerror = reject;
         reader.readAsDataURL(file);
       });
-      const { data, error } = await supabase.functions.invoke("parse-paystub", { body: { image: b64 } });
-      if (error) throw error;
+      console.log("[paystub] invoking parse-paystub", { name: file.name, size: file.size, type: file.type });
+      const { data, error } = await supabase.functions.invoke("parse-paystub", {
+        body: { image: b64, filename: file.name },
+      });
+      if (error) {
+        console.error("[paystub] invoke error", error);
+        throw new Error(error.message || "Edge function failed");
+      }
+      if ((data as any)?.error) throw new Error((data as any).error);
+      console.log("[paystub] parsed", data);
       const gross = data?.monthly_gross_pay ? Math.round(data.monthly_gross_pay * 12) : 0;
       const retire = (data?.deductions || []).find((d: any) => d.category === "retirement_401k");
       const hsaDed = (data?.deductions || []).find((d: any) => d.category === "hsa");
       const contribPct = gross && retire?.monthly_amount ? (retire.monthly_amount * 12) / gross : opt.employer401k.currentContribPct;
+      if (!gross && !retire && !hsaDed) {
+        toast.dismiss(tId);
+        toast.warning("Parsed, but no usable fields found. Try a clearer image.");
+        return;
+      }
       setOpt((prev) => ({
         ...prev,
         grossIncome: gross || prev.grossIncome,
@@ -95,10 +109,12 @@ export default function RetirementDashboard() {
         salary: gross || prev.salary,
         currentUserContribPct: contribPct ?? prev.currentUserContribPct,
       }));
-      setRoth((prev) => ({ ...prev, annualContribution: prev.annualContribution }));
+      toast.dismiss(tId);
       toast.success(`Paystub parsed · gross ~$${gross.toLocaleString()}/yr${retire ? ` · 401(k) ${((contribPct ?? 0) * 100).toFixed(1)}%` : ""}`);
     } catch (e: any) {
-      toast.error(e.message || "Failed to parse paystub");
+      console.error("[paystub] failed", e);
+      toast.dismiss(tId);
+      toast.error(e?.message || "Failed to parse paystub");
     } finally {
       setParsing(false);
     }
