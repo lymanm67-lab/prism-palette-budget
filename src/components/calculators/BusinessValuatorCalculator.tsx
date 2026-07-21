@@ -328,8 +328,7 @@ export default function BusinessValuatorCalculator() {
         </CardContent>
       </Card>
 
-      <CalculatorGuide
-        title="How to use the Business & IP Valuator"
+      <CalculatorScenariosAndPitfalls
         scenarios={[
           { title: 'Service / Consulting', description: 'Weight SDE multiple higher — buyers pay for owner earnings. Typical multiple: 2–3×.' },
           { title: 'SaaS / Digital Product', description: 'Recurring revenue and proprietary code dominate. Use 4–8× EBITDA and full contract value.' },
