@@ -53,7 +53,48 @@ export default function KungFoo() {
         </CardContent>
       </Card>
 
-      {isLoading && <div className="text-sm text-muted-foreground">Building your order of operations…</div>}
+      {/* How this works */}
+      <Card className="border-prism-sky/30 bg-prism-sky/5">
+        <CardContent className="p-4">
+          <Accordion type="single" collapsible defaultValue="how">
+            <AccordionItem value="how" className="border-0">
+              <AccordionTrigger className="py-1 hover:no-underline">
+                <span className="flex items-center gap-2 text-sm font-semibold">
+                  <HelpCircle className="h-4 w-4 text-prism-sky" />
+                  How to read this page (with examples)
+                </span>
+              </AccordionTrigger>
+              <AccordionContent className="text-xs text-muted-foreground space-y-3 pt-2">
+                <div>
+                  <p className="font-semibold text-foreground">The two numbers are different things:</p>
+                  <ul className="list-disc pl-5 mt-1 space-y-1">
+                    <li><b className="text-foreground">Net paycheck amount</b> — one paycheck (e.g. $4,357). Used to size <i>this paycheck's</i> marching orders below.</li>
+                    <li><b className="text-foreground">Financial Freedom in X years</b> — timeline to hit your retirement target. Uses your <i>annual</i> contribution from your Investment Plan + current portfolio + 7% growth. It is <b>not</b> derived from this paycheck field.</li>
+                  </ul>
+                </div>
+                <div>
+                  <p className="font-semibold text-foreground">Scenarios — what changes each number:</p>
+                  <ul className="list-disc pl-5 mt-1 space-y-1">
+                    <li><b className="text-foreground">Change the paycheck field to $3,000</b> → step dollar amounts shrink (23% of $3,000 = $690 to emergency fund). Freedom years <i>don't</i> change.</li>
+                    <li><b className="text-foreground">Raise annual contribution in Investment Plan</b> (e.g. +$500/mo) → freedom years drop; paycheck steps unchanged.</li>
+                    <li><b className="text-foreground">Grow portfolio $50k (deposit, market gains)</b> → freedom years drop.</li>
+                    <li><b className="text-foreground">Lower retirement target</b> in Investment Plan → freedom years drop.</li>
+                  </ul>
+                </div>
+                <div>
+                  <p className="font-semibold text-foreground">To edit your freedom timeline:</p>
+                  <p className="pl-1">Go to <b>Planning → Investments</b> and update annual contribution, target portfolio, or current age. Freedom years recompute automatically.</p>
+                </div>
+                <div>
+                  <p className="font-semibold text-foreground">To edit this paycheck plan:</p>
+                  <p className="pl-1">Change the "Net paycheck amount" field above. Steps re-rank instantly. Click <b>Save plan</b> to lock it in.</p>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </CardContent>
+      </Card>
+
 
       {data && (
         <div className="space-y-3">
