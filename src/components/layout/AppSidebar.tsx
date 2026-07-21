@@ -82,6 +82,7 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { to: '/legacy', icon: Sparkles, label: 'Legacy Mode', color: 'text-prism-amber', essential: true },
       { to: '/kungfoo', icon: Layers, label: 'KUNG FOO Plan', color: 'text-prism-teal' },
+      { to: '/retirement-optimizer', icon: Layers, label: 'Retirement Optimizer', color: 'text-prism-amber' },
       { to: '/legacy/family', icon: Heart, label: 'Family Legacy', color: 'text-prism-rose' },
       { to: '/legacy/belts', icon: Target, label: 'Belt Progress', color: 'text-prism-lime' },
     ],
