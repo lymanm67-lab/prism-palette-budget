@@ -328,8 +328,9 @@ export default function BusinessValuatorCalculator() {
             { label: 'Market multiple (SDE 2.5× & EBITDA × industry)', value: results.marketBased },
             { label: 'Revenue (1× annual)', value: results.revenueValue },
             { label: 'Discounted Cash Flow', value: results.dcfValue },
+            ...(results.ownerVal > 0 ? [{ label: "Owner's estimate", value: results.ownerVal }] : []),
           ].map((r) => {
-            const max = Math.max(results.assetBased, results.marketBased, results.revenueValue, results.dcfValue, 1);
+            const max = Math.max(results.assetBased, results.marketBased, results.revenueValue, results.dcfValue, results.ownerVal, 1);
             const pct = Math.max(4, (r.value / max) * 100);
             return (
               <div key={r.label}>
