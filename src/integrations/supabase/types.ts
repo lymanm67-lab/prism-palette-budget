@@ -1789,6 +1789,330 @@ export type Database = {
           },
         ]
       }
+      estate_planning_checklist: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          document_url: string | null
+          household_id: string
+          id: string
+          is_complete: boolean
+          item_key: string
+          next_review_date: string | null
+          notes: string | null
+          professional_name: string | null
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          document_url?: string | null
+          household_id: string
+          id?: string
+          is_complete?: boolean
+          item_key: string
+          next_review_date?: string | null
+          notes?: string | null
+          professional_name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          document_url?: string | null
+          household_id?: string
+          id?: string
+          is_complete?: boolean
+          item_key?: string
+          next_review_date?: string | null
+          notes?: string | null
+          professional_name?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estate_planning_checklist_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      family_beneficiaries: {
+        Row: {
+          allocation_pct: number | null
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          date_of_birth: string | null
+          deleted_at: string | null
+          household_id: string
+          id: string
+          is_contingent: boolean
+          linked_account_id: string | null
+          name: string
+          notes: string | null
+          relationship: string | null
+          updated_at: string
+        }
+        Insert: {
+          allocation_pct?: number | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          deleted_at?: string | null
+          household_id: string
+          id?: string
+          is_contingent?: boolean
+          linked_account_id?: string | null
+          name: string
+          notes?: string | null
+          relationship?: string | null
+          updated_at?: string
+        }
+        Update: {
+          allocation_pct?: number | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          deleted_at?: string | null
+          household_id?: string
+          id?: string
+          is_contingent?: boolean
+          linked_account_id?: string | null
+          name?: string
+          notes?: string | null
+          relationship?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_beneficiaries_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      family_cfo_reports: {
+        Row: {
+          cash_flow: number | null
+          created_at: string
+          debt_reduction: number | null
+          emailed_at: string | null
+          household_id: string
+          id: string
+          investment_growth: number | null
+          legacy_worth: number | null
+          legacy_worth_delta: number | null
+          net_worth: number | null
+          report_month: string
+          sections: Json
+        }
+        Insert: {
+          cash_flow?: number | null
+          created_at?: string
+          debt_reduction?: number | null
+          emailed_at?: string | null
+          household_id: string
+          id?: string
+          investment_growth?: number | null
+          legacy_worth?: number | null
+          legacy_worth_delta?: number | null
+          net_worth?: number | null
+          report_month: string
+          sections?: Json
+        }
+        Update: {
+          cash_flow?: number | null
+          created_at?: string
+          debt_reduction?: number | null
+          emailed_at?: string | null
+          household_id?: string
+          id?: string
+          investment_growth?: number | null
+          legacy_worth?: number | null
+          legacy_worth_delta?: number | null
+          net_worth?: number | null
+          report_month?: string
+          sections?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_cfo_reports_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      family_constitutions: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          family_name: string
+          household_id: string
+          id: string
+          is_published: boolean
+          published_at: string | null
+          sections: Json
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          family_name?: string
+          household_id: string
+          id?: string
+          is_published?: boolean
+          published_at?: string | null
+          sections?: Json
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          family_name?: string
+          household_id?: string
+          id?: string
+          is_published?: boolean
+          published_at?: string | null
+          sections?: Json
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_constitutions_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      family_legacy_trusts: {
+        Row: {
+          annual_contribution: number | null
+          created_at: string
+          current_assets: number | null
+          deleted_at: string | null
+          funding_target: number | null
+          household_id: string
+          id: string
+          life_insurance_funding: number | null
+          name: string
+          notes: string | null
+          readiness_score: number | null
+          successor_trustee: string | null
+          trust_type: string | null
+          trustee: string | null
+          updated_at: string
+        }
+        Insert: {
+          annual_contribution?: number | null
+          created_at?: string
+          current_assets?: number | null
+          deleted_at?: string | null
+          funding_target?: number | null
+          household_id: string
+          id?: string
+          life_insurance_funding?: number | null
+          name?: string
+          notes?: string | null
+          readiness_score?: number | null
+          successor_trustee?: string | null
+          trust_type?: string | null
+          trustee?: string | null
+          updated_at?: string
+        }
+        Update: {
+          annual_contribution?: number | null
+          created_at?: string
+          current_assets?: number | null
+          deleted_at?: string | null
+          funding_target?: number | null
+          household_id?: string
+          id?: string
+          life_insurance_funding?: number | null
+          name?: string
+          notes?: string | null
+          readiness_score?: number | null
+          successor_trustee?: string | null
+          trust_type?: string | null
+          trustee?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_legacy_trusts_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      family_wealth_events: {
+        Row: {
+          amount: number | null
+          created_at: string
+          deleted_at: string | null
+          description: string | null
+          event_date: string
+          event_type: string
+          generation: number | null
+          household_id: string
+          id: string
+          is_projected: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          event_date: string
+          event_type: string
+          generation?: number | null
+          household_id: string
+          id?: string
+          is_projected?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          event_date?: string
+          event_type?: string
+          generation?: number | null
+          household_id?: string
+          id?: string
+          is_projected?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_wealth_events_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       financial_goals: {
         Row: {
           color: string | null
@@ -2906,6 +3230,109 @@ export type Database = {
           },
         ]
       }
+      hundred_year_scenarios: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          horizon_years: number
+          household_id: string
+          id: string
+          inputs: Json
+          is_baseline: boolean
+          name: string
+          results: Json | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          horizon_years?: number
+          household_id: string
+          id?: string
+          inputs?: Json
+          is_baseline?: boolean
+          name?: string
+          results?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          horizon_years?: number
+          household_id?: string
+          id?: string
+          inputs?: Json
+          is_baseline?: boolean
+          name?: string
+          results?: Json | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hundred_year_scenarios_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      insurance_coverage: {
+        Row: {
+          annual_premium: number | null
+          beneficiary: string | null
+          carrier: string | null
+          coverage_amount: number | null
+          created_at: string
+          deleted_at: string | null
+          household_id: string
+          id: string
+          kind: string
+          notes: string | null
+          policy_number: string | null
+          renewal_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          annual_premium?: number | null
+          beneficiary?: string | null
+          carrier?: string | null
+          coverage_amount?: number | null
+          created_at?: string
+          deleted_at?: string | null
+          household_id: string
+          id?: string
+          kind: string
+          notes?: string | null
+          policy_number?: string | null
+          renewal_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          annual_premium?: number | null
+          beneficiary?: string | null
+          carrier?: string | null
+          coverage_amount?: number | null
+          created_at?: string
+          deleted_at?: string | null
+          household_id?: string
+          id?: string
+          kind?: string
+          notes?: string | null
+          policy_number?: string | null
+          renewal_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "insurance_coverage_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       investment_asset_tags: {
         Row: {
           amount_override: number | null
@@ -3571,6 +3998,53 @@ export type Database = {
           },
         ]
       }
+      kungfoo_plans: {
+        Row: {
+          ai_rationale: string | null
+          computed_at: string
+          context: Json
+          created_at: string
+          household_id: string
+          id: string
+          is_active: boolean
+          next_action: string | null
+          ordered_steps: Json
+          updated_at: string
+        }
+        Insert: {
+          ai_rationale?: string | null
+          computed_at?: string
+          context?: Json
+          created_at?: string
+          household_id: string
+          id?: string
+          is_active?: boolean
+          next_action?: string | null
+          ordered_steps?: Json
+          updated_at?: string
+        }
+        Update: {
+          ai_rationale?: string | null
+          computed_at?: string
+          context?: Json
+          created_at?: string
+          household_id?: string
+          id?: string
+          is_active?: boolean
+          next_action?: string | null
+          ordered_steps?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kungfoo_plans_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       legacy_trust_contributions: {
         Row: {
           amount: number
@@ -3609,6 +4083,59 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      legacy_worth_snapshots: {
+        Row: {
+          created_at: string
+          days_until_freedom: number | null
+          factor_scores: Json
+          fi_percentage: number | null
+          household_id: string
+          id: string
+          life_stage: string | null
+          net_worth: number | null
+          passive_income_coverage: number | null
+          projected_estate_at_85: number | null
+          score: number
+          snapshot_date: string
+        }
+        Insert: {
+          created_at?: string
+          days_until_freedom?: number | null
+          factor_scores?: Json
+          fi_percentage?: number | null
+          household_id: string
+          id?: string
+          life_stage?: string | null
+          net_worth?: number | null
+          passive_income_coverage?: number | null
+          projected_estate_at_85?: number | null
+          score?: number
+          snapshot_date?: string
+        }
+        Update: {
+          created_at?: string
+          days_until_freedom?: number | null
+          factor_scores?: Json
+          fi_percentage?: number | null
+          household_id?: string
+          id?: string
+          life_stage?: string | null
+          net_worth?: number | null
+          passive_income_coverage?: number | null
+          projected_estate_at_85?: number | null
+          score?: number
+          snapshot_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "legacy_worth_snapshots_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       loan_readiness_items: {
         Row: {
@@ -4197,7 +4724,9 @@ export type Database = {
       }
       paycheck_deployment_rules: {
         Row: {
+          ai_rationale: string | null
           created_at: string
+          dynamic_priority: number | null
           fixed_max: number
           fixed_min: number
           fixed_target: number
@@ -4210,6 +4739,7 @@ export type Database = {
           invest_min: number
           invest_target: number
           investment_account_id: string | null
+          kungfoo_step: string | null
           nag_enabled: boolean
           nag_hours: number
           savings_account_id: string | null
@@ -4219,7 +4749,9 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          ai_rationale?: string | null
           created_at?: string
+          dynamic_priority?: number | null
           fixed_max?: number
           fixed_min?: number
           fixed_target?: number
@@ -4232,6 +4764,7 @@ export type Database = {
           invest_min?: number
           invest_target?: number
           investment_account_id?: string | null
+          kungfoo_step?: string | null
           nag_enabled?: boolean
           nag_hours?: number
           savings_account_id?: string | null
@@ -4241,7 +4774,9 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          ai_rationale?: string | null
           created_at?: string
+          dynamic_priority?: number | null
           fixed_max?: number
           fixed_min?: number
           fixed_target?: number
@@ -4254,6 +4789,7 @@ export type Database = {
           invest_min?: number
           invest_target?: number
           investment_account_id?: string | null
+          kungfoo_step?: string | null
           nag_enabled?: boolean
           nag_hours?: number
           savings_account_id?: string | null
@@ -4438,15 +4974,22 @@ export type Database = {
           amount: number
           classification: string | null
           created_at: string
+          days_delayed_freedom: number | null
           decided_at: string | null
           decision: string | null
           fit_breakdown: Json
           fit_score: number | null
           fomo_detected: boolean
           fomo_signals: string[]
+          future_you_answer: string | null
           household_id: string
           id: string
+          is_emotional: boolean | null
+          legacy_impact_ack: boolean | null
+          legacy_worth_delta: number | null
           merchant: string | null
+          needwant: string | null
+          override_pattern_flag: boolean | null
           override_reason: string | null
           planned_goal_id: string | null
           planned_target_date: string | null
@@ -4466,15 +5009,22 @@ export type Database = {
           amount: number
           classification?: string | null
           created_at?: string
+          days_delayed_freedom?: number | null
           decided_at?: string | null
           decision?: string | null
           fit_breakdown?: Json
           fit_score?: number | null
           fomo_detected?: boolean
           fomo_signals?: string[]
+          future_you_answer?: string | null
           household_id: string
           id?: string
+          is_emotional?: boolean | null
+          legacy_impact_ack?: boolean | null
+          legacy_worth_delta?: number | null
           merchant?: string | null
+          needwant?: string | null
+          override_pattern_flag?: boolean | null
           override_reason?: string | null
           planned_goal_id?: string | null
           planned_target_date?: string | null
@@ -4494,15 +5044,22 @@ export type Database = {
           amount?: number
           classification?: string | null
           created_at?: string
+          days_delayed_freedom?: number | null
           decided_at?: string | null
           decision?: string | null
           fit_breakdown?: Json
           fit_score?: number | null
           fomo_detected?: boolean
           fomo_signals?: string[]
+          future_you_answer?: string | null
           household_id?: string
           id?: string
+          is_emotional?: boolean | null
+          legacy_impact_ack?: boolean | null
+          legacy_worth_delta?: number | null
           merchant?: string | null
+          needwant?: string | null
+          override_pattern_flag?: boolean | null
           override_reason?: string | null
           planned_goal_id?: string | null
           planned_target_date?: string | null
@@ -5303,6 +5860,56 @@ export type Database = {
             columns: ["transfer_pair_id"]
             isOneToOne: false
             referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_progression: {
+        Row: {
+          belt_earned_at: string
+          celebration_seen: boolean
+          created_at: string
+          current_belt: string
+          history: Json
+          household_id: string
+          id: string
+          milestones_completed: Json
+          next_requirements: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          belt_earned_at?: string
+          celebration_seen?: boolean
+          created_at?: string
+          current_belt?: string
+          history?: Json
+          household_id: string
+          id?: string
+          milestones_completed?: Json
+          next_requirements?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          belt_earned_at?: string
+          celebration_seen?: boolean
+          created_at?: string
+          current_belt?: string
+          history?: Json
+          household_id?: string
+          id?: string
+          milestones_completed?: Json
+          next_requirements?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_progression_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
             referencedColumns: ["id"]
           },
         ]

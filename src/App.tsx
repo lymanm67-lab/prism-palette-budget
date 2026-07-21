@@ -86,6 +86,10 @@ const PaycheckDeploymentRules = lazy(() => import("@/pages/PaycheckDeploymentRul
 
 const CoachChat = lazy(() => import("@/pages/CoachChat"));
 const CoachPlan = lazy(() => import("@/pages/CoachPlan"));
+const LegacyMode = lazy(() => import("@/pages/LegacyMode"));
+const KungFoo = lazy(() => import("@/pages/KungFoo"));
+const FamilyLegacy = lazy(() => import("@/pages/FamilyLegacy"));
+const BeltProgress = lazy(() => import("@/pages/BeltProgress"));
 
 const queryClient = new QueryClient();
 
@@ -215,6 +219,10 @@ const App = () => (
               <Route path="/app-store-readiness" element={<Suspense fallback={<PageLoader />}><AppStoreReadiness /></Suspense>} />
               <Route path="/crossover-tracker" element={<Suspense fallback={<PageLoader />}><CrossoverTracker /></Suspense>} />
               <Route path="/planning/investments" element={<Suspense fallback={<PageLoader />}><InvestmentPlanning /></Suspense>} />
+              <Route path="/legacy" element={<Suspense fallback={<PageLoader />}><LegacyMode /></Suspense>} />
+              <Route path="/legacy/family" element={<Suspense fallback={<PageLoader />}><FamilyLegacy /></Suspense>} />
+              <Route path="/legacy/belts" element={<Suspense fallback={<PageLoader />}><BeltProgress /></Suspense>} />
+              <Route path="/kungfoo" element={<Suspense fallback={<PageLoader />}><KungFoo /></Suspense>} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
