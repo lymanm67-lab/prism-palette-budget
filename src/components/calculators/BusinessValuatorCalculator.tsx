@@ -234,7 +234,7 @@ export default function BusinessValuatorCalculator() {
         <CardContent className="p-5 pt-2">
           <Accordion type="multiple" className="w-full">
             <AccordionItem value="ebitda">
-              <AccordionTrigger className="text-sm">EBITDA — Earnings Before Interest, Taxes, Depreciation & Amortization</AccordionTrigger>
+              <AccordionTrigger className="text-sm [&>svg]:text-prism-teal [&>svg]:h-5 [&>svg]:w-5">EBITDA — Earnings Before Interest, Taxes, Depreciation & Amortization</AccordionTrigger>
               <AccordionContent className="text-xs text-muted-foreground space-y-2">
                 <p>
                   A "clean" profit number that strips out financing choices (interest), tax situations, and paper expenses
@@ -246,7 +246,7 @@ export default function BusinessValuatorCalculator() {
             </AccordionItem>
 
             <AccordionItem value="sde">
-              <AccordionTrigger className="text-sm">SDE — Seller's Discretionary Earnings</AccordionTrigger>
+              <AccordionTrigger className="text-sm [&>svg]:text-prism-teal [&>svg]:h-5 [&>svg]:w-5">SDE — Seller's Discretionary Earnings</AccordionTrigger>
               <AccordionContent className="text-xs text-muted-foreground space-y-2">
                 <p>
                   EBITDA <em>plus</em> the owner's salary and personal perks run through the business. Used for small owner-operated
@@ -258,7 +258,7 @@ export default function BusinessValuatorCalculator() {
             </AccordionItem>
 
             <AccordionItem value="multiple">
-              <AccordionTrigger className="text-sm">Industry EBITDA Multiple</AccordionTrigger>
+              <AccordionTrigger className="text-sm [&>svg]:text-prism-teal [&>svg]:h-5 [&>svg]:w-5">Industry EBITDA Multiple</AccordionTrigger>
               <AccordionContent className="text-xs text-muted-foreground space-y-2">
                 <p>
                   A number that reflects how much a buyer will pay per $1 of earnings. Higher = more valuable / lower risk / faster growth.
@@ -277,7 +277,7 @@ export default function BusinessValuatorCalculator() {
             </AccordionItem>
 
             <AccordionItem value="dcf">
-              <AccordionTrigger className="text-sm">DCF — Discounted Cash Flow</AccordionTrigger>
+              <AccordionTrigger className="text-sm [&>svg]:text-prism-teal [&>svg]:h-5 [&>svg]:w-5">DCF — Discounted Cash Flow</AccordionTrigger>
               <AccordionContent className="text-xs text-muted-foreground space-y-2">
                 <p>
                   Projects future cash flows out several years, then "discounts" them back to today's dollars using a discount rate
@@ -289,7 +289,7 @@ export default function BusinessValuatorCalculator() {
             </AccordionItem>
 
             <AccordionItem value="assetbased">
-              <AccordionTrigger className="text-sm">Asset-Based Value (Tangible + Intangible − Debt)</AccordionTrigger>
+              <AccordionTrigger className="text-sm [&>svg]:text-prism-teal [&>svg]:h-5 [&>svg]:w-5">Asset-Based Value (Tangible + Intangible − Debt)</AccordionTrigger>
               <AccordionContent className="text-xs text-muted-foreground space-y-2">
                 <p>
                   Adds up everything the business owns (equipment, inventory, cash, IP, brand, customer list) minus what it owes.
@@ -300,7 +300,7 @@ export default function BusinessValuatorCalculator() {
             </AccordionItem>
 
             <AccordionItem value="revenue">
-              <AccordionTrigger className="text-sm">Revenue Multiple (Sanity Check)</AccordionTrigger>
+              <AccordionTrigger className="text-sm [&>svg]:text-prism-teal [&>svg]:h-5 [&>svg]:w-5">Revenue Multiple (Sanity Check)</AccordionTrigger>
               <AccordionContent className="text-xs text-muted-foreground space-y-2">
                 <p>
                   A rough "top-line" check: value ≈ 1× annual revenue for most small businesses. Useful when profits are volatile or a business
@@ -311,7 +311,7 @@ export default function BusinessValuatorCalculator() {
             </AccordionItem>
 
             <AccordionItem value="intangible">
-              <AccordionTrigger className="text-sm">Intangible / IP Assets</AccordionTrigger>
+              <AccordionTrigger className="text-sm [&>svg]:text-prism-teal [&>svg]:h-5 [&>svg]:w-5">Intangible / IP Assets</AccordionTrigger>
               <AccordionContent className="text-xs text-muted-foreground space-y-2">
                 <p>
                   Non-physical things that generate value: brand recognition, customer/email lists, trademarks, patents, proprietary software,
@@ -323,7 +323,7 @@ export default function BusinessValuatorCalculator() {
             </AccordionItem>
 
             <AccordionItem value="blended">
-              <AccordionTrigger className="text-sm">Why we blend all methods</AccordionTrigger>
+              <AccordionTrigger className="text-sm [&>svg]:text-prism-teal [&>svg]:h-5 [&>svg]:w-5">Why we blend all methods</AccordionTrigger>
               <AccordionContent className="text-xs text-muted-foreground space-y-2">
                 <p>No single method is right. Buyers, banks, and courts each weight them differently:</p>
                 <ul className="list-disc pl-5 space-y-1">
