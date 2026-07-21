@@ -7,7 +7,24 @@ import { Progress } from '@/components/ui/progress';
 import { useLegacyWorth, useLegacyWorthHistory, useFinancialFreedom, useUserProgression } from '@/hooks/use-financial-os';
 import { LIFE_STAGE_LABELS } from '@/lib/legacy/legacyWorthEngine';
 import { BELT_META } from '@/lib/progression/beltRules';
-import { Sparkles, Target, Clock, TrendingUp, Users, ScrollText, Layers, AlertCircle } from 'lucide-react';
+import { Sparkles, Target, Clock, TrendingUp, Users, ScrollText, Layers, AlertCircle, Pencil, HelpCircle } from 'lucide-react';
+
+const FACTOR_EDIT_ROUTES: Record<string, { to: string; hint: string }> = {
+  net_worth:        { to: '/accounts',              hint: 'Add/update account balances' },
+  retirement:       { to: '/planning/investments',  hint: 'Raise annual contribution or target' },
+  passive_income:   { to: '/planning/investments',  hint: 'Add dividend / rental income sources' },
+  emergency_fund:   { to: '/accounts',              hint: 'Grow liquid savings to 6× monthly expenses' },
+  insurance:        { to: '/legacy/family',         hint: 'Insurance Coverage tab — add policies' },
+  debt:             { to: '/debts',                 hint: 'Update balances & APR; attack high-APR first' },
+  estate:           { to: '/legacy/family',         hint: 'Estate Checklist tab — check off items' },
+  trust:            { to: '/legacy/family',         hint: 'Family Trust tab — draft & fund' },
+  tax:              { to: '/retirement-optimizer',  hint: 'Roth advisor + HSA intelligence' },
+  diversification:  { to: '/investments',           hint: 'Reduce single-position concentration' },
+  giving:           { to: '/transactions',          hint: 'Tag charitable transactions' },
+  literacy:         { to: '/kungfoo',               hint: 'Earn the next belt — complete milestones' },
+  governance:       { to: '/legacy/family',         hint: 'Constitution + Annual Meeting tabs' },
+  real_estate_biz:  { to: '/accounts',              hint: 'Add real estate equity / business assets' },
+};
 import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, LineChart, Line, Tooltip, XAxis, YAxis } from 'recharts';
 
 const fmt = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
