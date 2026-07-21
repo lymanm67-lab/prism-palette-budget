@@ -8,6 +8,7 @@ import { useLegacyWorth, useLegacyWorthHistory, useFinancialFreedom, useUserProg
 import { LIFE_STAGE_LABELS } from '@/lib/legacy/legacyWorthEngine';
 import { BELT_META } from '@/lib/progression/beltRules';
 import { Sparkles, Target, Clock, TrendingUp, Users, ScrollText, Layers, AlertCircle, Pencil, HelpCircle } from 'lucide-react';
+import { PageExplainer } from '@/components/PageExplainer';
 
 const FACTOR_EDIT_ROUTES: Record<string, { to: string; hint: string }> = {
   net_worth:        { to: '/net-worth',             hint: 'View Net Worth breakdown (Assets − Liabilities)' },
