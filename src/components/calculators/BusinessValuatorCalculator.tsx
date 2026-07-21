@@ -20,6 +20,7 @@ export default function BusinessValuatorCalculator() {
   const [ebitda, setEbitda] = useState('90000');
   const [growth, setGrowth] = useState('12'); // % YoY
   const [industryMultiple, setIndustryMultiple] = useState('3.0'); // EBITDA multiple
+  const [ownerEstimate, setOwnerEstimate] = useState('850000'); // Owner's own valuation
 
   // Tangible assets
   const [equipment, setEquipment] = useState('25000');
@@ -87,15 +88,26 @@ export default function BusinessValuatorCalculator() {
       dr > terminalGrowth ? terminalCF / (dr - terminalGrowth) : 0;
     const dcfValue = dcf + terminal / Math.pow(1 + dr, n);
 
-    // Weighted estimate (blend)
-    const blended =
-      assetBased * 0.25 +
-      marketBased * 0.35 +
-      revenueValue * 0.1 +
-      dcfValue * 0.3;
+    // Owner's own estimate
+    const ownerVal = num(ownerEstimate);
 
-    const low = Math.min(assetBased, marketBased, dcfValue, revenueValue);
-    const high = Math.max(assetBased, marketBased, dcfValue, revenueValue);
+    // Weighted estimate (blend) — includes owner's estimate when > 0
+    const hasOwner = ownerVal > 0;
+    const blended = hasOwner
+      ? assetBased * 0.2 +
+        marketBased * 0.3 +
+        revenueValue * 0.05 +
+        dcfValue * 0.25 +
+        ownerVal * 0.2
+      : assetBased * 0.25 +
+        marketBased * 0.35 +
+        revenueValue * 0.1 +
+        dcfValue * 0.3;
+
+    const methodValues = [assetBased, marketBased, dcfValue, revenueValue];
+    if (hasOwner) methodValues.push(ownerVal);
+    const low = Math.min(...methodValues);
+    const high = Math.max(...methodValues);
 
     return {
       tangible,
@@ -106,6 +118,7 @@ export default function BusinessValuatorCalculator() {
       marketBased,
       revenueValue,
       dcfValue,
+      ownerVal,
       blended,
       low,
       high,
@@ -116,6 +129,7 @@ export default function BusinessValuatorCalculator() {
     ebitda,
     growth,
     industryMultiple,
+    ownerEstimate,
     equipment,
     inventory,
     cashAr,
@@ -236,6 +250,13 @@ export default function BusinessValuatorCalculator() {
                 suffix="×"
                 hint="Typical: services 2–4×, SaaS 5–10×, e-com 2.5–4×"
               />
+              <Field
+                label="Your estimated valuation (owner's estimate)"
+                value={ownerEstimate}
+                onChange={setOwnerEstimate}
+                suffix="$"
+                hint="Included in the blend at 20% weight when > 0. Set 0 to exclude."
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -307,8 +328,9 @@ export default function BusinessValuatorCalculator() {
             { label: 'Market multiple (SDE 2.5× & EBITDA × industry)', value: results.marketBased },
             { label: 'Revenue (1× annual)', value: results.revenueValue },
             { label: 'Discounted Cash Flow', value: results.dcfValue },
+            ...(results.ownerVal > 0 ? [{ label: "Owner's estimate", value: results.ownerVal }] : []),
           ].map((r) => {
-            const max = Math.max(results.assetBased, results.marketBased, results.revenueValue, results.dcfValue, 1);
+            const max = Math.max(results.assetBased, results.marketBased, results.revenueValue, results.dcfValue, results.ownerVal, 1);
             const pct = Math.max(4, (r.value / max) * 100);
             return (
               <div key={r.label}>
