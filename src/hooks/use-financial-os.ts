@@ -114,9 +114,12 @@ export function useLegacyWorth() {
       };
 
       const result = computeLegacyWorth(inputs);
-      const estateAt85 = projectEstateAt85(netWorth, age, annualIncome * 0.1);
+      const planAnnualContribution = plan.data ? Number((plan.data as any).annual_contribution || 0) : 0;
+      const estateAt85 = projectEstateAt85(netWorth, age, Math.max(planAnnualContribution, annualIncome * 0.1));
       const targetPortfolio = monthlyExpenses * 12 * 25;
-      const days = daysUntilFreedom(inputs.fiPercentage, monthlyExpenses * 0.2, targetPortfolio, investable);
+      // Use actual retirement contribution rate; fall back to 20% of expenses if none configured
+      const monthlySavings = planAnnualContribution > 0 ? planAnnualContribution / 12 : monthlyExpenses * 0.2;
+      const days = daysUntilFreedom(inputs.fiPercentage, monthlySavings, targetPortfolio, investable);
 
       // Upsert daily snapshot (best-effort)
       const today = new Date().toISOString().slice(0, 10);
