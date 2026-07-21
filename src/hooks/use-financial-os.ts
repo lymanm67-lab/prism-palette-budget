@@ -56,8 +56,16 @@ export function useLegacyWorth() {
         .filter((d: any) => Number(d.interest_rate || 0) >= 8)
         .reduce((s: number, d: any) => s + Number(d.balance || 0), 0);
 
-      const investable = (holdings.data || []).reduce((s: number, h: any) => s + Number(h.market_value || 0), 0);
-      const totalHoldingsVal = investable || 1;
+      const holdingsValue = (holdings.data || []).reduce((s: number, h: any) => s + Number(h.market_value || 0), 0);
+      // Include retirement/investment account balances that aren't tracked as individual holdings
+      const retirementAccounts = (accounts.data || [])
+        .filter((a: any) => {
+          const t = (a.type || '').toLowerCase();
+          return ['401k','403b','457','ira','roth_ira','roth','sep_ira','simple_ira','hsa','investment','brokerage','retirement','pension'].some(k => t.includes(k));
+        })
+        .reduce((s: number, a: any) => s + Number(a.balance || 0), 0);
+      const investable = holdingsValue + retirementAccounts;
+      const totalHoldingsVal = holdingsValue || 1;
       const hhi = (holdings.data || []).reduce((s: number, h: any) => {
         const share = Number(h.market_value || 0) / totalHoldingsVal;
         return s + share * share;
@@ -106,9 +114,12 @@ export function useLegacyWorth() {
       };
 
       const result = computeLegacyWorth(inputs);
-      const estateAt85 = projectEstateAt85(netWorth, age, annualIncome * 0.1);
+      const planAnnualContribution = plan.data ? Number((plan.data as any).annual_contribution || 0) : 0;
+      const estateAt85 = projectEstateAt85(netWorth, age, Math.max(planAnnualContribution, annualIncome * 0.1));
       const targetPortfolio = monthlyExpenses * 12 * 25;
-      const days = daysUntilFreedom(inputs.fiPercentage, monthlyExpenses * 0.2, targetPortfolio, investable);
+      // Use actual retirement contribution rate; fall back to 20% of expenses if none configured
+      const monthlySavings = planAnnualContribution > 0 ? planAnnualContribution / 12 : monthlyExpenses * 0.2;
+      const days = daysUntilFreedom(inputs.fiPercentage, monthlySavings, targetPortfolio, investable);
 
       // Upsert daily snapshot (best-effort)
       const today = new Date().toISOString().slice(0, 10);
