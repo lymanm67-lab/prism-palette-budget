@@ -692,10 +692,25 @@ export default function RetirementDashboard() {
 }
 
 function Field({ label, value, onChange, step = 1 }: { label: string; value: number; onChange: (v: number) => void; step?: number }) {
+  const isPct = step < 1;
+  const display = isPct ? (value >= 1 ? value : value * 100) : value;
   return (
     <div>
       <Label className="text-xs">{label}</Label>
-      <Input type="number" step={step} value={value} onChange={(e) => onChange(Number(e.target.value) || 0)} />
+      <Input
+        type="number"
+        step={isPct ? 1 : step}
+        value={display}
+        onChange={(e) => {
+          const raw = e.target.value === "" ? 0 : Number(e.target.value);
+          const val = Number.isNaN(raw) ? 0 : raw;
+          if (isPct && val >= 1) {
+            onChange(val / 100);
+          } else {
+            onChange(val);
+          }
+        }}
+      />
     </div>
   );
 }
