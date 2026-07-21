@@ -17,7 +17,7 @@ function useAccounts() {
     queryKey: ['accounts-for-legacy', household?.id],
     enabled: !!household,
     queryFn: async () => {
-      const { data } = await supabase.from('accounts').select('id,name,type,balance').eq('household_id', household!.id).is('deleted_at', null);
+      const { data } = await supabase.from('accounts').select('id,name,account_type,balance').eq('household_id', household!.id).is('deleted_at', null);
       return data || [];
     },
   });
