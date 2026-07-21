@@ -166,6 +166,7 @@ export type Database = {
           balance: number
           created_at: string
           currency: string
+          deleted_at: string | null
           household_id: string
           id: string
           institution: string | null
@@ -181,6 +182,7 @@ export type Database = {
           balance?: number
           created_at?: string
           currency?: string
+          deleted_at?: string | null
           household_id: string
           id?: string
           institution?: string | null
@@ -196,6 +198,7 @@ export type Database = {
           balance?: number
           created_at?: string
           currency?: string
+          deleted_at?: string | null
           household_id?: string
           id?: string
           institution?: string | null

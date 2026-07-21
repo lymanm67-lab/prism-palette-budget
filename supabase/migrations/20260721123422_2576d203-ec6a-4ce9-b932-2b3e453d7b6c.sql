@@ -1,0 +1,1 @@
+ALTER TABLE public.accounts ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ; CREATE INDEX IF NOT EXISTS accounts_deleted_at_idx ON public.accounts (deleted_at) WHERE deleted_at IS NULL;
