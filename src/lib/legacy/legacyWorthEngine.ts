@@ -22,6 +22,7 @@ export interface LegacyWorthInputs {
   passiveMonthlyIncome: number;
   highInterestDebt: number; // APR >= 8%
   totalDebt: number;
+  monthlyDebtPayments?: number;
   insuranceCoverageTotal: number;
   insuranceKindsCount: number; // life+disability+health+umbrella etc.
   estateItemsComplete: number; // 0..22
@@ -34,6 +35,7 @@ export interface LegacyWorthInputs {
   charitableAnnual: number;
   hasConstitution: boolean;
   hadSummitLast12Months: boolean;
+  beneficiariesCount?: number;
   hasBusinessOwnership: boolean;
   realEstateEquity: number;
   currentBelt: string;
@@ -64,7 +66,7 @@ export function computeLegacyWorth(i: LegacyWorthInputs): {
   const monthlyIncome = i.annualIncome / 12;
   const monthsCovered = i.monthlyExpenses > 0 ? i.liquidSavings / i.monthlyExpenses : 0;
   const passiveCoverage = i.monthlyExpenses > 0 ? i.passiveMonthlyIncome / i.monthlyExpenses : 0;
-  const debtToIncome = i.annualIncome > 0 ? i.totalDebt / i.annualIncome : 0;
+  const monthlyDebtToIncome = monthlyIncome > 0 ? (i.monthlyDebtPayments ?? 0) / monthlyIncome : 0;
 
   // Age-adjusted net worth (rough Kitces target: age*income/10 by 40, 2x by 50, 4x by 60)
   const ageTarget = (() => {
@@ -84,7 +86,11 @@ export function computeLegacyWorth(i: LegacyWorthInputs): {
     (i.insuranceKindsCount / 5) * 60 +
     (i.insuranceCoverageTotal / Math.max(i.annualIncome * 10, 1)) * 40
   );
-  const debtScore = clamp(100 - (i.highInterestDebt / Math.max(i.annualIncome, 1)) * 200 - debtToIncome * 30);
+  const debtScore = clamp(
+    100 -
+    (i.highInterestDebt / Math.max(i.annualIncome, 1)) * 200 -
+    Math.max(0, monthlyDebtToIncome - 0.36) * 160
+  );
   const estateScore = i.estateItemsTotal > 0 ? clamp((i.estateItemsComplete / i.estateItemsTotal) * 100) : 0;
   const trustScore = clamp(i.trustReadinessPct);
   const taxEfficiencyScore = clamp(i.rothPct * 0.6 + (i.hsaContribution > 0 ? 25 : 0) + 15);
@@ -92,7 +98,14 @@ export function computeLegacyWorth(i: LegacyWorthInputs): {
   const givingPct = i.annualIncome > 0 ? (i.charitableAnnual / i.annualIncome) * 100 : 0;
   const givingScore = clamp(givingPct * 10); // 10% = 100
   const literacyScore = BELT_TO_LITERACY[i.currentBelt] ?? 10;
-  const governanceScore = clamp((i.hasConstitution ? 60 : 0) + (i.hadSummitLast12Months ? 40 : 0));
+  const estateChecklistPct = i.estateItemsTotal > 0 ? i.estateItemsComplete / i.estateItemsTotal : 0;
+  const governanceScore = clamp(
+    (i.hasConstitution ? 35 : 0) +
+    (i.hadSummitLast12Months ? 25 : 0) +
+    (i.trustFunded ? 20 : 0) +
+    Math.min(10, estateChecklistPct * 10) +
+    (Number(i.beneficiariesCount || 0) > 0 ? 10 : 0)
+  );
   const realEstateBusinessScore = clamp(
     (i.realEstateEquity / Math.max(i.annualIncome, 1)) * 30 + (i.hasBusinessOwnership ? 40 : 0) + 20
   );
