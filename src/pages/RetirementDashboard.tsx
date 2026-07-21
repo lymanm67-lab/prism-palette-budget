@@ -51,7 +51,7 @@ export default function RetirementDashboard() {
   const readiness = scoreRetirementReadiness(opt.totalRetirementBalance, opt.age, opt.grossIncome);
 
   const DEFAULT_EMP: EmployerBenefits = {
-    salary: 120000, match401kPct: 0.05, matchLimitPct: 0.06,
+    salary: 68874, match401kPct: 0.05, matchLimitPct: 0.06,
     hsaEmployerContrib: 1200, espp: { discountPct: 0.15, maxPct: 0.1 },
     rsu: { annualGrantValue: 20000, vestYears: 4 }, pension: false,
     tuitionReimbursement: 5000, currentUserContribPct: 0.03,
