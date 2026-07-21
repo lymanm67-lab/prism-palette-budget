@@ -204,8 +204,10 @@ export default function RetirementDashboard() {
       setHsa((prev) => ({
         ...prev,
         annualContribution: hsaDed ? Math.round(hsaDed * 12) : prev.annualContribution,
+        employerContribution: prev.employerContribution || 2000,
         marginalTaxRate: marginal,
       }));
+
       setRoth((prev) => ({
         ...prev,
         currentMarginalRate: marginal,
