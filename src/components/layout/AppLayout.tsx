@@ -90,8 +90,6 @@ const AppLayout = () => {
         {!isMobile && <AppSidebar />}
         <main className="flex-1 flex flex-col overflow-hidden" role="main" aria-label="Application content">
           {isMobile && <MobileNav />}
-          <OfflineBanner />
-          <TrialCountdownBanner />
           {!isMobile && (
             <div className="flex items-center justify-end gap-2 px-4 py-2 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
               <kbd className="hidden sm:inline-flex h-6 items-center gap-1 rounded border border-border bg-muted px-2 text-[10px] font-medium text-muted-foreground">
@@ -102,11 +100,13 @@ const AppLayout = () => {
           )}
           <PullToRefresh
             onRefresh={handleRefresh}
-            className="flex-1 overflow-y-auto bg-mesh pb-20 md:pb-0 pt-14 lg:pt-0"
+            className="flex-1 overflow-y-auto bg-mesh pb-20 lg:pb-0 pt-14 lg:pt-0"
           >
             <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-background focus:text-foreground">
               Skip to main content
             </a>
+            <OfflineBanner />
+            <TrialCountdownBanner />
             <div id="main-content" className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
               <Outlet />
             </div>
