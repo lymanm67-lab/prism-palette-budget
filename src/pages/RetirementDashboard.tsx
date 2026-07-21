@@ -17,6 +17,58 @@ import { supabase } from "@/integrations/supabase/client";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { PageExplainer } from "@/components/PageExplainer";
 
+function normalizePct(v: number): number {
+  return v >= 1 ? v / 100 : v;
+}
+
+function normalizeOptimizerInputs(o: OptimizerInputs): OptimizerInputs {
+  return {
+    ...o,
+    employer401k: {
+      ...o.employer401k,
+      matchPct: normalizePct(o.employer401k.matchPct ?? 0),
+      matchLimitPct: normalizePct(o.employer401k.matchLimitPct ?? 0),
+      currentContribPct: normalizePct(o.employer401k.currentContribPct ?? 0),
+    },
+  };
+}
+
+function normalizeEmployer(e: EmployerBenefits): EmployerBenefits {
+  return {
+    ...e,
+    match401kPct: normalizePct(e.match401kPct),
+    matchLimitPct: normalizePct(e.matchLimitPct),
+    currentUserContribPct: normalizePct(e.currentUserContribPct),
+    nonElectiveEmployerPct: normalizePct(e.nonElectiveEmployerPct ?? 0),
+    espp: e.espp
+      ? { discountPct: normalizePct(e.espp.discountPct), maxPct: normalizePct(e.espp.maxPct) }
+      : null,
+  };
+}
+
+function normalizeHsa(h: HsaInputs): HsaInputs {
+  return {
+    ...h,
+    marginalTaxRate: normalizePct(h.marginalTaxRate),
+    investedPct: normalizePct(h.investedPct),
+  };
+}
+
+function normalizeRoth(r: RothInputs): RothInputs {
+  return {
+    ...r,
+    currentMarginalRate: normalizePct(r.currentMarginalRate),
+    expectedRetirementRate: normalizePct(r.expectedRetirementRate),
+    stateRateNow: normalizePct(r.stateRateNow),
+    stateRateRetirement: normalizePct(r.stateRateRetirement),
+  };
+}
+
+function formatPct(v: number): string {
+  const n = v >= 1 ? v : v * 100;
+  return `${n.toFixed(1).replace(/\.0$/, "")}%`;
+}
+
 const DEFAULT_OPT: OptimizerInputs = {
   age: 59,
   filingStatus: "married",
@@ -41,7 +93,7 @@ export default function RetirementDashboard() {
   const [opt, setOpt] = useState<OptimizerInputs>(() => {
     try {
       const raw = localStorage.getItem(LS_KEY);
-      if (raw) return { ...DEFAULT_OPT, ...JSON.parse(raw) };
+      if (raw) return normalizeOptimizerInputs({ ...DEFAULT_OPT, ...JSON.parse(raw) });
     } catch {}
     return DEFAULT_OPT;
   });
@@ -59,7 +111,7 @@ export default function RetirementDashboard() {
     tuitionReimbursement: 5000, usesTuitionReimbursement: false, currentUserContribPct: 0.03,
   };
   const [emp, setEmp] = useState<EmployerBenefits>(() => {
-    try { const r = localStorage.getItem(LS_KEY + "-emp"); if (r) return { ...DEFAULT_EMP, ...JSON.parse(r) }; } catch {}
+    try { const r = localStorage.getItem(LS_KEY + "-emp"); if (r) return normalizeEmployer({ ...DEFAULT_EMP, ...JSON.parse(r) }); } catch {}
     return DEFAULT_EMP;
   });
   useEffect(() => { try { localStorage.setItem(LS_KEY + "-emp", JSON.stringify(emp)); } catch {} }, [emp]);
@@ -72,7 +124,7 @@ export default function RetirementDashboard() {
   };
 
   const [hsa, setHsa] = useState<HsaInputs>(() => {
-    try { const r = localStorage.getItem(LS_KEY + "-hsa"); if (r) return { ...DEFAULT_HSA, ...JSON.parse(r) }; } catch {}
+    try { const r = localStorage.getItem(LS_KEY + "-hsa"); if (r) return normalizeHsa({ ...DEFAULT_HSA, ...JSON.parse(r) }); } catch {}
     return DEFAULT_HSA;
   });
   useEffect(() => { try { localStorage.setItem(LS_KEY + "-hsa", JSON.stringify(hsa)); } catch {} }, [hsa]);
@@ -85,7 +137,7 @@ export default function RetirementDashboard() {
     hasStateIncomeTax: true, stateRateNow: 0.0275, stateRateRetirement: 0.015,
   };
   const [roth, setRoth] = useState<RothInputs>(() => {
-    try { const r = localStorage.getItem(LS_KEY + "-roth"); if (r) return { ...DEFAULT_ROTH, ...JSON.parse(r) }; } catch {}
+    try { const r = localStorage.getItem(LS_KEY + "-roth"); if (r) return normalizeRoth({ ...DEFAULT_ROTH, ...JSON.parse(r) }); } catch {}
     return DEFAULT_ROTH;
   });
   useEffect(() => { try { localStorage.setItem(LS_KEY + "-roth", JSON.stringify(roth)); } catch {} }, [roth]);
@@ -613,10 +665,10 @@ export default function RetirementDashboard() {
                 <Stat label="Annual gross" value={`$${(snapshot?.annualGross ?? opt.grossIncome).toLocaleString()}`} />
                 <Stat label="Hidden comp" value={`$${empAnalysis.totalHiddenComp.toLocaleString()}/yr`} />
                 <Stat label="HSA @ 65" value={`$${hsaProj.balanceAt65.toLocaleString()}`} />
-                <Stat label="401(k) rate" value={`${((opt.employer401k.currentContribPct ?? 0) * 100).toFixed(1)}%`} />
+                <Stat label="401(k) rate" value={formatPct(opt.employer401k.currentContribPct ?? 0)} />
                 <Stat label="Match missed" value={`$${empAnalysis.match.missed.toLocaleString()}/yr`} />
                 <Stat label="Roth verdict" value={rothVerdict.recommendation.toString()} />
-                <Stat label="Marginal rate" value={`${(roth.currentMarginalRate * 100).toFixed(0)}%`} />
+                <Stat label="Marginal rate" value={formatPct(roth.currentMarginalRate)} />
               </div>
               {!snapshot && (
                 <div className="p-3 rounded-lg border border-dashed border-border/60 text-xs text-muted-foreground">
@@ -640,10 +692,25 @@ export default function RetirementDashboard() {
 }
 
 function Field({ label, value, onChange, step = 1 }: { label: string; value: number; onChange: (v: number) => void; step?: number }) {
+  const isPct = step < 1;
+  const display = isPct ? (value >= 1 ? value : value * 100) : value;
   return (
     <div>
       <Label className="text-xs">{label}</Label>
-      <Input type="number" step={step} value={value} onChange={(e) => onChange(Number(e.target.value) || 0)} />
+      <Input
+        type="number"
+        step={isPct ? 1 : step}
+        value={display}
+        onChange={(e) => {
+          const raw = e.target.value === "" ? 0 : Number(e.target.value);
+          const val = Number.isNaN(raw) ? 0 : raw;
+          if (isPct && val >= 1) {
+            onChange(val / 100);
+          } else {
+            onChange(val);
+          }
+        }}
+      />
     </div>
   );
 }
