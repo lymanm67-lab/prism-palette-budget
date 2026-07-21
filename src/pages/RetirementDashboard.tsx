@@ -34,7 +34,7 @@ const DEFAULT_OPT: OptimizerInputs = {
   totalRetirementBalance: 180000,
 };
 
-const LS_KEY = "retirement-optimizer-inputs-v3";
+const LS_KEY = "retirement-optimizer-inputs-v4";
 
 export default function RetirementDashboard() {
   const { household } = useHousehold();
