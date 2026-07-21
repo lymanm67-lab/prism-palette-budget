@@ -4125,31 +4125,40 @@ export type Database = {
       }
       legacy_letters: {
         Row: {
+          attachment_name: string | null
+          attachment_path: string | null
           body: string | null
           created_at: string
           household_id: string
           id: string
           recipient: string
+          shared_with_trust_vault: boolean
           title: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          attachment_name?: string | null
+          attachment_path?: string | null
           body?: string | null
           created_at?: string
           household_id: string
           id?: string
           recipient: string
+          shared_with_trust_vault?: boolean
           title?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          attachment_name?: string | null
+          attachment_path?: string | null
           body?: string | null
           created_at?: string
           household_id?: string
           id?: string
           recipient?: string
+          shared_with_trust_vault?: boolean
           title?: string | null
           updated_at?: string
           user_id?: string
