@@ -17,9 +17,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useHousehold } from "@/contexts/HouseholdContext";
 
 const DEFAULT_OPT: OptimizerInputs = {
-  age: 40,
+  age: 59,
   filingStatus: "married",
-  grossIncome: 120000,
+  grossIncome: 68874,
   hasEmergencyFund: true,
   monthlyExpenses: 5500,
   emergencyBalance: 15000,
