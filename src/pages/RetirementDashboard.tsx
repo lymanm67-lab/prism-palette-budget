@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
-import { Sparkles, Target, Building2, HeartPulse, Scale, FileText, Upload, Loader2 } from "lucide-react";
+import { Sparkles, Target, Building2, HeartPulse, Scale, FileText, Upload, Loader2, Save } from "lucide-react";
 import { optimizeNextDollar, scoreRetirementReadiness, type OptimizerInputs } from "@/lib/retirement/optimizerEngine";
 import { analyzeEmployerBenefits, type EmployerBenefits } from "@/lib/retirement/employerBenefits";
 import { projectHsa, type HsaInputs } from "@/lib/retirement/hsaIntelligence";
@@ -92,6 +92,22 @@ export default function RetirementDashboard() {
   const [loading, setLoading] = useState(false);
   const [parsing, setParsing] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [savedAt, setSavedAt] = useState<Record<string, string>>(() => {
+    try { return JSON.parse(localStorage.getItem(LS_KEY + "-savedAt") || "{}"); } catch { return {}; }
+  });
+  const saveTab = (key: "opt" | "emp" | "hsa" | "roth", data: unknown, label: string) => {
+    try {
+      const suffix = key === "opt" ? "" : `-${key}`;
+      localStorage.setItem(LS_KEY + suffix, JSON.stringify(data));
+      const ts = new Date().toLocaleString();
+      const next = { ...savedAt, [key]: ts };
+      setSavedAt(next);
+      localStorage.setItem(LS_KEY + "-savedAt", JSON.stringify(next));
+      toast.success(`${label} saved`);
+    } catch (e: any) {
+      toast.error(e?.message || "Failed to save");
+    }
+  };
 
   const handlePaystubUpload = async (file: File) => {
     if (!file) return;
@@ -280,6 +296,12 @@ export default function RetirementDashboard() {
               ))}
             </CardContent>
           </Card>
+          <div className="flex items-center justify-end gap-3">
+            {savedAt.opt && <span className="text-xs text-muted-foreground">Last saved {savedAt.opt}</span>}
+            <Button size="sm" onClick={() => saveTab("opt", opt, "Next Dollar inputs")}>
+              <Save className="h-4 w-4 mr-2" /> Save Next Dollar
+            </Button>
+          </div>
         </TabsContent>
 
         <TabsContent value="employer" className="mt-4 space-y-4">
@@ -310,6 +332,12 @@ export default function RetirementDashboard() {
               </div>
             </CardContent>
           </Card>
+          <div className="flex items-center justify-end gap-3">
+            {savedAt.emp && <span className="text-xs text-muted-foreground">Last saved {savedAt.emp}</span>}
+            <Button size="sm" onClick={() => saveTab("emp", emp, "Employer inputs")}>
+              <Save className="h-4 w-4 mr-2" /> Save Employer
+            </Button>
+          </div>
         </TabsContent>
 
         <TabsContent value="hsa" className="mt-4 space-y-4">
@@ -340,6 +368,12 @@ export default function RetirementDashboard() {
               <div className="p-3 rounded-lg bg-muted/30 text-sm">{hsaProj.recommendation}</div>
             </CardContent>
           </Card>
+          <div className="flex items-center justify-end gap-3">
+            {savedAt.hsa && <span className="text-xs text-muted-foreground">Last saved {savedAt.hsa}</span>}
+            <Button size="sm" onClick={() => saveTab("hsa", hsa, "HSA inputs")}>
+              <Save className="h-4 w-4 mr-2" /> Save HSA
+            </Button>
+          </div>
         </TabsContent>
 
         <TabsContent value="roth" className="mt-4 space-y-4">
@@ -372,6 +406,12 @@ export default function RetirementDashboard() {
               </ul>
             </CardContent>
           </Card>
+          <div className="flex items-center justify-end gap-3">
+            {savedAt.roth && <span className="text-xs text-muted-foreground">Last saved {savedAt.roth}</span>}
+            <Button size="sm" onClick={() => saveTab("roth", roth, "Roth vs Traditional inputs")}>
+              <Save className="h-4 w-4 mr-2" /> Save Roth
+            </Button>
+          </div>
         </TabsContent>
 
         <TabsContent value="cfo" className="mt-4 space-y-4">
