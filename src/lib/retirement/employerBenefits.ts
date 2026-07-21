@@ -64,9 +64,10 @@ export function analyzeEmployerBenefits(b: EmployerBenefits): BenefitsAnalysis {
     breakdown.push({ label: "Tuition reimbursement", annualValue: b.tuitionReimbursement, captured: false, note: "Only if used" });
   }
   if (b.espp) {
-    const esppValue = b.salary * b.espp.maxPct * b.espp.discountPct;
-    breakdown.push({ label: `ESPP (${(b.espp.discountPct * 100).toFixed(0)}% discount)`, annualValue: esppValue, captured: false });
+    const esppValue = b.salary * pct(b.espp.maxPct) * pct(b.espp.discountPct);
+    breakdown.push({ label: `ESPP (${(pct(b.espp.discountPct) * 100).toFixed(0)}% discount)`, annualValue: esppValue, captured: false });
   }
+
   if (b.rsu) breakdown.push({ label: "RSU annual vest value", annualValue: b.rsu.annualGrantValue / b.rsu.vestYears, captured: true });
   if (b.pension) breakdown.push({ label: "Pension accrual", annualValue: b.salary * 0.05, captured: true, note: "Estimated" });
 
