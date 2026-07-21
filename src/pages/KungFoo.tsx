@@ -95,6 +95,7 @@ export default function KungFoo() {
         </CardContent>
       </Card>
 
+      {isLoading && <div className="text-sm text-muted-foreground">Building your order of operations…</div>}
 
       {data && (
         <div className="space-y-3">
