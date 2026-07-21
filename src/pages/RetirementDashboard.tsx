@@ -208,7 +208,18 @@ export default function RetirementDashboard() {
 
         <TabsContent value="optimizer" className="mt-4 space-y-4">
           <Card>
-            <CardHeader><CardTitle>Your Inputs</CardTitle></CardHeader>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center justify-between gap-3 flex-wrap">
+                <span>Your Inputs</span>
+                <Button size="sm" variant="outline" onClick={() => fileRef.current?.click()} disabled={parsing}>
+                  {parsing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
+                  Upload paycheck
+                </Button>
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Upload a paystub image or PDF to auto-fill gross income, 401(k) %, and HSA.
+              </CardDescription>
+            </CardHeader>
             <CardContent className="grid md:grid-cols-3 gap-3">
               <Field label="Age" value={opt.age} onChange={(v) => setOpt({ ...opt, age: v })} />
               <Field label="Gross Income" value={opt.grossIncome} onChange={(v) => setOpt({ ...opt, grossIncome: v })} />
