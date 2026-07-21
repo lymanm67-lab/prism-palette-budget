@@ -36,8 +36,20 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const { image } = await req.json();
+    const { image, filename } = await req.json();
     if (!image) throw new Error("No image provided");
+
+    // Detect whether the data URL is a PDF vs image so we send the right content block
+    const isPdf = typeof image === "string" && image.startsWith("data:application/pdf");
+    const userContent = isPdf
+      ? [
+          { type: "text", text: "Extract all payroll information from this paycheck stub." },
+          { type: "file", file: { filename: filename || "paystub.pdf", file_data: image } },
+        ]
+      : [
+          { type: "text", text: "Extract all payroll information from this paycheck stub." },
+          { type: "image_url", image_url: { url: image } },
+        ];
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -50,7 +62,7 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are a paycheck stub parser. Extract all payroll details from the image. Focus on:
+            content: `You are a paycheck stub parser. Extract all payroll details from the document. Focus on:
 - Gross pay (total earnings before deductions)
 - Net pay (take-home pay after all deductions)
 - All individual deductions with their names and amounts (federal tax, state tax, Social Security, Medicare, 401k, health insurance, dental, vision, HSA, FSA, life insurance, disability, union dues, garnishments, etc.)
@@ -60,13 +72,7 @@ serve(async (req) => {
 
 Return the data using the extract_paystub tool. For each deduction, use a clear short name. Amounts should be positive numbers representing per-pay-period amounts. If you cannot read a field, use null.`,
           },
-          {
-            role: "user",
-            content: [
-              { type: "text", text: "Extract all payroll information from this paycheck stub." },
-              { type: "image_url", image_url: { url: image } },
-            ],
-          },
+          { role: "user", content: userContent },
         ],
         tools: [
           {
@@ -113,6 +119,7 @@ Return the data using the extract_paystub tool. For each deduction, use a clear 
     });
 
     if (!response.ok) {
+      const errText = await response.text().catch(() => "");
       if (response.status === 429) {
         return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }), {
           status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -123,13 +130,16 @@ Return the data using the extract_paystub tool. For each deduction, use a clear 
           status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      console.error("AI gateway error:", response.status);
-      throw new Error("AI gateway error");
+      console.error("AI gateway error:", response.status, errText);
+      throw new Error(`AI gateway error ${response.status}: ${errText.slice(0, 300)}`);
     }
 
     const data = await response.json();
     const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
-    if (!toolCall) throw new Error("No structured data returned from AI");
+    if (!toolCall) {
+      console.error("No tool call in response:", JSON.stringify(data).slice(0, 500));
+      throw new Error("AI could not extract paystub data — try a clearer image or the original PDF");
+    }
 
     const extracted = JSON.parse(toolCall.function.arguments);
 
