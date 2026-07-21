@@ -93,6 +93,32 @@ export default function RetirementDashboard() {
   const [loading, setLoading] = useState(false);
   const [parsing, setParsing] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  type PaycheckSnapshot = {
+    filename?: string;
+    parsedAt: string;
+    monthlyGross: number;
+    monthlyNet: number;
+    annualGross: number;
+    federalTax: number;
+    stateTax: number;
+    socialSecurity: number;
+    medicare: number;
+    retirement401k: number;
+    hsa: number;
+    healthInsurance: number;
+    otherDeductions: number;
+    effectiveTaxRate: number;
+  };
+  const [snapshot, setSnapshot] = useState<PaycheckSnapshot | null>(() => {
+    try { const r = localStorage.getItem(LS_KEY + "-paycheck"); return r ? JSON.parse(r) : null; } catch { return null; }
+  });
+  useEffect(() => {
+    try {
+      if (snapshot) localStorage.setItem(LS_KEY + "-paycheck", JSON.stringify(snapshot));
+    } catch {}
+  }, [snapshot]);
+
   const [savedAt, setSavedAt] = useState<Record<string, string>>(() => {
     try { return JSON.parse(localStorage.getItem(LS_KEY + "-savedAt") || "{}"); } catch { return {}; }
   });
@@ -122,40 +148,80 @@ export default function RetirementDashboard() {
         reader.onerror = reject;
         reader.readAsDataURL(file);
       });
-      console.log("[paystub] invoking parse-paystub", { name: file.name, size: file.size, type: file.type });
       const { data, error } = await supabase.functions.invoke("parse-paystub", {
         body: { image: b64, filename: file.name },
       });
-      if (error) {
-        console.error("[paystub] invoke error", error);
-        throw new Error(error.message || "Edge function failed");
-      }
+      if (error) throw new Error(error.message || "Edge function failed");
       if ((data as any)?.error) throw new Error((data as any).error);
-      console.log("[paystub] parsed", data);
-      const gross = data?.monthly_gross_pay ? Math.round(data.monthly_gross_pay * 12) : 0;
-      const retire = (data?.deductions || []).find((d: any) => d.category === "retirement_401k");
-      const hsaDed = (data?.deductions || []).find((d: any) => d.category === "hsa");
-      const contribPct = gross && retire?.monthly_amount ? (retire.monthly_amount * 12) / gross : opt.employer401k.currentContribPct;
-      if (!gross && !retire && !hsaDed) {
+
+      const monthlyGross = Number(data?.monthly_gross_pay || 0);
+      const monthlyNet = Number(data?.monthly_net_pay || 0);
+      const annualGross = Math.round(monthlyGross * 12);
+      const deds = (data?.deductions || []) as Array<{ category: string; monthly_amount: number }>;
+      const get = (c: string) => Number(deds.find((d) => d.category === c)?.monthly_amount || 0);
+      const federalTax = get("federal_tax");
+      const stateTax = get("state_tax");
+      const socialSecurity = get("social_security");
+      const medicare = get("medicare");
+      const retirement401k = get("retirement_401k");
+      const hsaDed = get("hsa");
+      const healthInsurance = get("health_insurance") + get("dental_insurance") + get("vision_insurance");
+      const otherDeductions = deds
+        .filter((d) => !["federal_tax","state_tax","social_security","medicare","retirement_401k","hsa","health_insurance","dental_insurance","vision_insurance"].includes(d.category))
+        .reduce((s, d) => s + Number(d.monthly_amount || 0), 0);
+      const totalTax = federalTax + stateTax + socialSecurity + medicare;
+      const effectiveTaxRate = monthlyGross > 0 ? totalTax / monthlyGross : 0;
+
+      if (!annualGross && !retirement401k && !hsaDed) {
         toast.dismiss(tId);
         toast.warning("Parsed, but no usable fields found. Try a clearer image.");
         return;
       }
+
+      const contribPct = annualGross && retirement401k ? (retirement401k * 12) / annualGross : opt.employer401k.currentContribPct;
+
+      // Rough federal marginal bracket (single/MFJ 2024 approximation)
+      const marginal = annualGross < 47150 ? 0.12
+        : annualGross < 100525 ? 0.22
+        : annualGross < 191950 ? 0.24
+        : annualGross < 243725 ? 0.32 : 0.35;
+
+      // Cascade into all tabs
       setOpt((prev) => ({
         ...prev,
-        grossIncome: gross || prev.grossIncome,
+        grossIncome: annualGross || prev.grossIncome,
         employer401k: { ...prev.employer401k, currentContribPct: contribPct ?? prev.employer401k.currentContribPct },
-        hsaContribYTD: hsaDed?.monthly_amount ? Math.round(hsaDed.monthly_amount * 12) : prev.hsaContribYTD,
+        hsaContribYTD: hsaDed ? Math.round(hsaDed * 12) : prev.hsaContribYTD,
+        hsaEligible: hsaDed > 0 ? true : prev.hsaEligible,
       }));
       setEmp((prev) => ({
         ...prev,
-        salary: gross || prev.salary,
+        salary: annualGross || prev.salary,
         currentUserContribPct: contribPct ?? prev.currentUserContribPct,
       }));
+      setHsa((prev) => ({
+        ...prev,
+        annualContribution: hsaDed ? Math.round(hsaDed * 12) : prev.annualContribution,
+        marginalTaxRate: marginal,
+      }));
+      setRoth((prev) => ({
+        ...prev,
+        currentMarginalRate: marginal,
+      }));
+
+      const snap: PaycheckSnapshot = {
+        filename: file.name,
+        parsedAt: new Date().toISOString(),
+        monthlyGross, monthlyNet, annualGross,
+        federalTax, stateTax, socialSecurity, medicare,
+        retirement401k, hsa: hsaDed, healthInsurance, otherDeductions,
+        effectiveTaxRate,
+      };
+      setSnapshot(snap);
+
       toast.dismiss(tId);
-      toast.success(`Paystub parsed · gross ~$${gross.toLocaleString()}/yr${retire ? ` · 401(k) ${((contribPct ?? 0) * 100).toFixed(1)}%` : ""}`);
+      toast.success(`Paystub applied to all tabs · $${annualGross.toLocaleString()}/yr gross`);
     } catch (e: any) {
-      console.error("[paystub] failed", e);
       toast.dismiss(tId);
       toast.error(e?.message || "Failed to parse paystub");
     } finally {
@@ -173,13 +239,29 @@ export default function RetirementDashboard() {
           period_month: new Date().toISOString().slice(0, 7) + "-01",
           metrics: {
             retirement_readiness: readiness,
-            total_retirement: opt.totalRetirementBalance,
-            income: opt.grossIncome,
-            emergency_fund: opt.emergencyBalance,
-            top_recommendations: recs.slice(0, 3).map((r) => r.target),
-            employer_match_missed: empAnalysis.match.missed,
-            hsa_projection_at_65: hsaProj.balanceAt65,
-            roth_recommendation: rothVerdict.recommendation,
+            paycheck_snapshot: snapshot,
+            next_dollar_inputs: opt,
+            next_dollar_recommendations: recs,
+            employer_inputs: emp,
+            employer_analysis: {
+              total_hidden_comp: empAnalysis.totalHiddenComp,
+              match_missed: empAnalysis.match.missed,
+              action: empAnalysis.action,
+            },
+            hsa_inputs: hsa,
+            hsa_projection: {
+              balance_at_65: hsaProj.balanceAt65,
+              triple_tax_savings: hsaProj.tripleTaxSavings,
+              strategy: hsaProj.strategy,
+            },
+            roth_inputs: roth,
+            roth_analysis: {
+              recommendation: rothVerdict.recommendation,
+              roth_pct: rothVerdict.rothPct,
+              fv_roth: rothVerdict.fvRoth,
+              fv_trad_after_tax: rothVerdict.fvTradAfterTax,
+              reasoning: rothVerdict.reasoning,
+            },
           },
         },
       });
