@@ -54,7 +54,7 @@ export default function RetirementDashboard() {
     salary: 68874, match401kPct: 0.05, matchLimitPct: 0.06,
     hsaEmployerContrib: 1200, espp: { discountPct: 0.15, maxPct: 0.1 },
     rsu: { annualGrantValue: 20000, vestYears: 4 }, pension: false,
-    tuitionReimbursement: 5000, currentUserContribPct: 0.03,
+    tuitionReimbursement: 5000, usesTuitionReimbursement: false, currentUserContribPct: 0.03,
   };
   const [emp, setEmp] = useState<EmployerBenefits>(() => {
     try { const r = localStorage.getItem(LS_KEY + "-emp"); if (r) return { ...DEFAULT_EMP, ...JSON.parse(r) }; } catch {}
