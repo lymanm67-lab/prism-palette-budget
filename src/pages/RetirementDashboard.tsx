@@ -34,7 +34,7 @@ const DEFAULT_OPT: OptimizerInputs = {
   totalRetirementBalance: 180000,
 };
 
-const LS_KEY = "retirement-optimizer-inputs-v2";
+const LS_KEY = "retirement-optimizer-inputs-v3";
 
 export default function RetirementDashboard() {
   const { household } = useHousehold();
@@ -54,7 +54,7 @@ export default function RetirementDashboard() {
   const DEFAULT_EMP: EmployerBenefits = {
     salary: 68874, match401kPct: 0, matchLimitPct: 0,
     nonElectiveEmployerPct: 0.09,
-    hsaEmployerContrib: 1200, espp: null,
+    hsaEmployerContrib: 2000, espp: null,
     rsu: null, pension: false,
     tuitionReimbursement: 5000, usesTuitionReimbursement: false, currentUserContribPct: 0.03,
   };
@@ -66,7 +66,7 @@ export default function RetirementDashboard() {
   const empAnalysis = analyzeEmployerBenefits(emp);
 
   const DEFAULT_HSA: HsaInputs = {
-    age: 59, currentBalance: 8000, annualContribution: 6000, employerContribution: 1200,
+    age: 59, currentBalance: 8000, annualContribution: 6000, employerContribution: 2000,
     marginalTaxRate: 0.22, investedPct: 0.6, expectedReturn: 0.07,
     annualQualifiedMedical: 2000, yearsUntil65: 25,
   };
