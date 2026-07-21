@@ -32,12 +32,17 @@ export function Step01({ value, onChange }: StepProps) {
       }
       const hh = household.id;
       const sb: any = supabase;
+      const { data: planRows } = await sb.from('debt_plans').select('id').eq('household_id', hh);
+      const planIds = (planRows || []).map((r: any) => r.id);
       const [p, pd, b, d] = await Promise.all([
         sb.from('paycheck_deployments').select('id', { head: true, count: 'exact' }).eq('household_id', hh).limit(1),
         sb.from('budgets').select('id', { head: true, count: 'exact' }).eq('household_id', hh).limit(1),
         sb.from('subscriptions').select('id', { head: true, count: 'exact' }).eq('household_id', hh).limit(1),
-        sb.from('debt_items').select('id, debt_plans!inner(household_id)', { head: true, count: 'exact' }).eq('debt_plans.household_id', hh).limit(1),
+        planIds.length
+          ? sb.from('debt_items').select('id', { head: true, count: 'exact' }).in('plan_id', planIds).limit(1)
+          : Promise.resolve({ count: 0 }),
       ]);
+
       if (cancel) return;
       const next = {
         paycheck: (p.count ?? 0) > 0 || (pd.count ?? 0) > 0,
