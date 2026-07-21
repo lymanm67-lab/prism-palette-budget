@@ -36,6 +36,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuLabel } from '@/components/ui/dropdown-menu';
 import { EmptyState } from '@/components/EmptyState';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import NetWorthSummaryCard from '@/components/NetWorthSummaryCard';
 
 const getMonth = (offset: number) => {
   const d = new Date();
@@ -1425,6 +1426,7 @@ const Budgets = () => {
     <>
     <TooltipProvider delayDuration={300}>
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+      <div className="no-print"><NetWorthSummaryCard /></div>
       {/* Print-only repeating header — position:fixed repeats on every printed page in Chrome */}
       <div className="hidden print:block fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-300 px-4 py-2">
         <div className="flex items-center justify-between text-xs font-semibold text-gray-700">

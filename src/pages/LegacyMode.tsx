@@ -26,6 +26,7 @@ const FACTOR_EDIT_ROUTES: Record<string, { to: string; hint: string }> = {
   real_estate_biz:  { to: '/accounts',              hint: 'Add real estate equity / business assets' },
 };
 import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, LineChart, Line, Tooltip, XAxis, YAxis } from 'recharts';
+import NetWorthSummaryCard from '@/components/NetWorthSummaryCard';
 
 const fmt = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
 
@@ -88,6 +89,9 @@ export default function LegacyMode() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Live Net Worth (Assets − Liabilities) */}
+      <NetWorthSummaryCard />
 
       {/* KPI tiles */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
