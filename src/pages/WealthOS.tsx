@@ -368,61 +368,61 @@ export default function WealthOS() {
       </section>
 
       {/* PAGE 1 */}
-      <Page n={1} title="Family Office Executive Summary">
+      <Page n={1} title="Household Executive Summary — Montgomery Family Office">
+        <SectionLabel>Household Wealth Snapshot</SectionLabel>
         <div className="wos-grid3">
-          {[
-            ['Faith', 'Stewardship as an act of obedience and gratitude.'],
-            ['Family', 'Shared understanding, shared discipline, shared benefit.'],
-            ['Financial Independence', 'Income from assets exceeds income from labor.'],
-            ['Retirement', '28.66% combined savings rate; 30% employee target.'],
-            ['Business', '$550K valuation, $50K IP, ~$25K annual revenue.'],
-            ['Real Estate', '$255K market value; ~$142K ownership interest.'],
-            ['Insurance', '$750K life, 70% disability, LTC in force.'],
-            ['Estate Planning', '60% readiness; trust funding is the gating item.'],
-            ['Legacy', 'Each generation stronger than the one before it.'],
-          ].map(([t, d]) => (
-            <div key={t} className="wos-card" style={{ borderLeft: `3px solid ${GOLD}` }}>
-              <div style={{ fontWeight: 800, color: NAVY, fontSize: 11.5 }}>{t}</div>
-              <div style={{ fontSize: 9.5, color: SLATE, marginTop: 3, lineHeight: 1.55 }}>{d}</div>
-            </div>
-          ))}
+          <Kpi label="Lyman Montgomery — Assets" value={money(lymanTotal)} tone="navy" />
+          <Kpi label="Kateri Montgomery — Assets" value={money(kateriTotal)} tone="gold" />
+          <Kpi label="Combined Household Assets" value={money(householdTotal)} tone="green" />
         </div>
 
-        <div className="wos-grid2" style={{ marginTop: 16 }}>
+        <div className="wos-grid2" style={{ marginTop: 14 }}>
           <div>
-            <SectionLabel>Guiding Principles &amp; Mission</SectionLabel>
-            <div className="wos-card" style={{ fontSize: 10.5, lineHeight: 1.65, color: '#374151' }}>
-              Honor God through faithful stewardship, intentional wealth building, responsible
-              risk management, and leaving a legacy that strengthens future generations.
-            </div>
-          </div>
-          <div>
-            <SectionLabel>Current Priorities</SectionLabel>
+            <SectionLabel>Lyman Montgomery</SectionLabel>
             <div className="wos-card">
-              <Row label="Rebuild emergency fund" value="From $350" />
-              <Row label="Reach 30% employee deferral" value="Dec 2026" />
-              <Row label="Eliminate consumer debt" value="Aug 2027" />
+              <Row label="Salary (annual)" value="$70,940.04" />
+              <Row label="Retirement Assets" value={money(lymanB.retirement)} />
+              <Row label="Brokerage" value={money(lymanB.brokerage)} />
+              <Row label="HSA" value={money(lymanB.hsa)} />
+              <Row label="Business Interests" value={money(lymanB.business)} />
+              <Row label="Intellectual Property" value={money(lymanB.intellectualProperty)} />
+              <Row label="Personal Property" value={money(lymanB.personalProperty)} />
+              <Row label="Vehicles (2023 Jaguar)" value={money(lymanB.vehicles)} />
+              <Row label="Real Estate Interests" value={money(lymanB.realEstate)} />
+              <Row label="Individual Total" value={money(lymanTotal)} bold />
+            </div>
+          </div>
+          <div>
+            <SectionLabel>Kateri Montgomery</SectionLabel>
+            <div className="wos-card">
+              <Row label="OPERS Pension Account" value={money(OPERS)} />
+              <Row label="Ohio Deferred Compensation" value={money(OHIO_DC)} />
+              <Row label="Real Estate — 213 Allies Street" value={money(ALLIES)} />
+              <Row label="Vehicle — 2018 Chevrolet Equinox" value={money(EQUINOX)} />
+              <Row label="Other Individual Assets" value={money(Math.max(kateriTotal - OPERS - OHIO_DC - ALLIES - EQUINOX, 0))} />
+              <Row label="Projected Pension Income" value="$6,559 / mo" />
+              <Row label="Separate Property Total" value={money(kateriTotal)} bold />
             </div>
           </div>
         </div>
 
-        <SectionLabel>Next Milestones</SectionLabel>
+        <SectionLabel>Combined Household Totals</SectionLabel>
         <div className="wos-grid4">
-          <Kpi label="Jul 2026" value="3% Raise" tone="plain" />
-          <Kpi label="May 2027" value="$500/mo Redirect" tone="gold" />
-          <Kpi label="Aug 2027" value="Debt Free" tone="green" />
-          <Kpi label="Annual Review" value="December" tone="navy" />
+          <Kpi label="Retirement (Combined)" value={money(combinedRetirement)} tone="navy" />
+          <Kpi label="Real Estate (Combined)" value={money(B.realEstate)} tone="plain" />
+          <Kpi label="Vehicles (Combined)" value={money(B.vehicles)} tone="plain" />
+          <Kpi label="Household Net Worth" value={money(live?.netWorth ?? householdTotal)} tone="gold" />
         </div>
 
-        <div className="wos-quote" style={{ marginTop: 18 }}>
+        <div className="wos-quote" style={{ marginTop: 16 }}>
           “Every dollar has a purpose. Every asset has a plan.<br />
           Every generation leaves the next stronger than the last.”
         </div>
       </Page>
 
       {/* PAGE 2 */}
-      <Page n={2} title="Mission Control Dashboard">
-        <SectionLabel>Employment</SectionLabel>
+      <Page n={2} title="Mission Control Dashboard — Household">
+        <SectionLabel>Lyman Montgomery — Employment</SectionLabel>
         <div className="wos-grid3">
           <Kpi label="Annual Salary" value="$70,940.04" tone="navy" />
           <Kpi label="Monthly Gross" value="$5,911.67" tone="plain" />
@@ -432,26 +432,26 @@ export default function WealthOS() {
           <Kpi label="Employer Contribution" value="$532.05" sub="per month • 9% non-elective" tone="plain" />
         </div>
 
-        <SectionLabel>Retirement</SectionLabel>
+        <SectionLabel>Household Retirement</SectionLabel>
         <div className="wos-grid3">
-          <Kpi label="Current Retirement Assets" value="$175,346" tone="navy" />
-          <Kpi label="Combined Savings Rate" value="28.66%" sub="Employee + Employer" tone="gold" />
-          <Kpi label="Employee Goal" value="30%" sub="Target by Dec 2026" tone="plain" />
+          <Kpi label="Lyman Retirement Assets" value={money(lymanB.retirement)} tone="navy" />
+          <Kpi label="Kateri Retirement Assets" value={money(kateriB.retirement)} sub="OPERS + Ohio DC" tone="gold" />
+          <Kpi label="Combined Retirement" value={money(combinedRetirement)} tone="green" />
         </div>
         <div style={{ marginTop: 12 }}>
-          <Bar label="Progress to 30% Employee Savings Goal" pct={95.5} value="28.66% of 30%" />
+          <Bar label="Progress to 30% Employee Savings Goal (Lyman)" pct={95.5} value="28.66% of 30%" />
         </div>
 
-        <SectionLabel>Wealth Snapshot</SectionLabel>
+        <SectionLabel>Household Wealth Snapshot</SectionLabel>
         <div className="wos-grid4">
-          <Kpi label="Brokerage" value="$5,000" tone="plain" />
-          <Kpi label="Emergency Fund" value="$350" tone="plain" />
-          <Kpi label="HSA" value="$1,200" tone="plain" />
-          <Kpi label="Business Value" value="$550,000" tone="navy" />
-          <Kpi label="Intellectual Property" value="$50,000" tone="gold" />
-          <Kpi label="Business Revenue" value="~$25,000" sub="per year" tone="plain" />
-          <Kpi label="Real Estate Interest" value="~$142,000" tone="plain" />
-          <Kpi label="Personal Property" value="$57,000" tone="plain" />
+          <Kpi label="Brokerage" value={money(B.brokerage)} tone="plain" />
+          <Kpi label="Emergency Fund" value={money(B.emergency)} tone="plain" />
+          <Kpi label="HSA" value={money(B.hsa)} tone="plain" />
+          <Kpi label="Business Value" value={money(B.business)} tone="navy" />
+          <Kpi label="Intellectual Property" value={money(B.intellectualProperty)} tone="gold" />
+          <Kpi label="Real Estate Interest" value={money(B.realEstate)} tone="plain" />
+          <Kpi label="Vehicles" value={money(B.vehicles)} sub="Jaguar + Equinox" tone="plain" />
+          <Kpi label="Personal Property" value={money(B.personalProperty)} tone="plain" />
         </div>
 
         <SectionLabel>Mission Statement</SectionLabel>
@@ -463,65 +463,63 @@ export default function WealthOS() {
 
       {/* PAGE 3 */}
       <Page n={3} title="Household Asset Dashboard">
-        <SectionLabel>Asset Allocation</SectionLabel>
+        <SectionLabel>Household Asset Allocation</SectionLabel>
         <Donut slices={ASSETS} total={ASSET_TOTAL} />
 
-        <SectionLabel>Asset Categories</SectionLabel>
+        <SectionLabel>Asset Categories (Both Spouses)</SectionLabel>
         <div className="wos-grid2">
           <div className="wos-card">
-            <Row label="Retirement Assets" value="$175,346" />
-            <Row label="Real Estate (Interest)" value="$142,000" />
-            <Row label="Business Interests" value="$550,000" />
-            <Row label="Intellectual Property" value="$50,000" />
-            <Row label="Brokerage Account" value="$5,000" />
+            <Row label="Retirement Assets" value={money(B.retirement)} />
+            <Row label="Real Estate (Interest)" value={money(B.realEstate)} />
+            <Row label="Business Interests" value={money(B.business)} />
+            <Row label="Intellectual Property" value={money(B.intellectualProperty)} />
+            <Row label="Brokerage" value={money(B.brokerage)} />
           </div>
           <div className="wos-card">
-            <Row label="HSA" value="$1,200" />
-            <Row label="Emergency Fund" value="$350" />
-            <Row label="Personal Property" value="$32,000" />
-            <Row label="Vehicles" value="$25,000" />
-            <Row label="Total Household Assets" value={money(ASSET_TOTAL)} bold />
+            <Row label="HSA" value={money(B.hsa)} />
+            <Row label="Emergency Fund" value={money(B.emergency)} />
+            <Row label="Cash" value={money(B.cash)} />
+            <Row label="Personal Property" value={money(B.personalProperty)} />
+            <Row label="Vehicles" value={money(B.vehicles)} />
+            <Row label="Total Household Assets" value={money(householdTotal)} bold />
           </div>
         </div>
 
-        <SectionLabel>Personal Property Detail</SectionLabel>
-        <div className="wos-grid4">
-          <Kpi label="Jewelry" value="$25,000" tone="plain" />
-          <Kpi label="Firearms" value="$7,000" tone="plain" />
-          <Kpi label="2023 Jaguar" value="$25,000" tone="plain" />
-          <Kpi label="Total Personal Property" value="$57,000" tone="navy" />
+        <SectionLabel>Ownership Classification</SectionLabel>
+        <div className="wos-grid3">
+          <Kpi label="Individually Owned (Lyman)" value={money(lymanTotal)} tone="navy" />
+          <Kpi label="Separate Property (Kateri)" value={money(kateriTotal)} tone="gold" />
+          <Kpi label="Joint Household" value={money(live?.byOwner.joint.total || 0)} tone="plain" />
         </div>
       </Page>
 
       {/* PAGE 4 */}
-      <Page n={4} title="Real Estate Dashboard">
+      <Page n={4} title="Household Real Estate Dashboard">
         <SectionLabel>Property Portfolio</SectionLabel>
         <div className="wos-grid3">
-          {[
-            { addr: '124 Cambridge Avenue', own: '20% ownership', mv: '$85,000', oi: '$17,000' },
-            { addr: '152–154 Cambridge Avenue', own: '50% ownership', mv: '$90,000', oi: '$45,000' },
-            { addr: '213 Allies Street', own: 'Kateri Montgomery', mv: '$80,000', oi: '$80,000' },
-          ].map((p) => (
+          {REAL_ESTATE.map((p) => (
             <div key={p.addr} className="wos-card" style={{ borderTop: `4px solid ${GOLD}` }}>
               <div style={{ fontWeight: 800, color: NAVY, fontSize: 12.5, lineHeight: 1.3 }}>{p.addr}</div>
               <div style={{ fontSize: 9.5, color: SLATE, marginTop: 3, marginBottom: 8 }}>{p.own}</div>
               <Row label="Est. Market Value" value={p.mv} />
               <Row label="Ownership Interest" value={p.oi} bold />
+              <Row label="Classification" value={p.cls} />
             </div>
           ))}
         </div>
 
         <SectionLabel>Portfolio Totals</SectionLabel>
         <div className="wos-grid2">
-          <Kpi label="Total Household Market Value" value="$255,000" tone="navy" />
-          <Kpi label="Household Ownership Interest" value="~$142,000" tone="gold" />
+          <Kpi label="Total Household Market Value" value={money(275000)} tone="navy" />
+          <Kpi label="Household Ownership Interest" value={money(B.realEstate)} tone="gold" />
         </div>
 
         <SectionLabel>Ownership Interest by Property</SectionLabel>
-        <Bar label="124 Cambridge Avenue" pct={12} value="$17,000" />
-        <Bar label="152–154 Cambridge Avenue" pct={32} value="$45,000" />
-        <Bar label="213 Allies Street" pct={56} value="$80,000" />
+        <Bar label="124 Cambridge Avenue (Lyman, 20%)" pct={(17000 / 162000) * 100} value="$17,000" />
+        <Bar label="152–154 Cambridge Avenue (Lyman, 50%)" pct={(45000 / 162000) * 100} value="$45,000" />
+        <Bar label="213 Allies Street (Kateri, separate property)" pct={(100000 / 162000) * 100} value="$100,000" />
       </Page>
+
 
       {/* PAGE 5 */}
       <Page n={5} title="Retirement & Income Strategy">
