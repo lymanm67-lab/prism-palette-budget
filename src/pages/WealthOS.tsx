@@ -322,11 +322,18 @@ export default function WealthOS() {
             {String(i + 1).padStart(2, '0')} {p}
           </button>
         ))}
-        <div style={{ marginLeft: 'auto', paddingLeft: 10 }}>
+        <div style={{ marginLeft: 'auto', paddingLeft: 10, display: 'flex', gap: 6 }}>
+          <Button size="sm" variant="secondary" disabled={!!busy} onClick={() => runExport('png')} className="gap-1.5 h-7 text-xs">
+            {busy === 'png' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ImageDown className="h-3.5 w-3.5" />} PNG Stack
+          </Button>
+          <Button size="sm" variant="secondary" disabled={!!busy} onClick={() => runExport('pdf')} className="gap-1.5 h-7 text-xs">
+            {busy === 'pdf' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileDown className="h-3.5 w-3.5" />} PDF
+          </Button>
           <Button size="sm" variant="secondary" onClick={() => window.print()} className="gap-1.5 h-7 text-xs">
             <Printer className="h-3.5 w-3.5" /> Print Binder
           </Button>
         </div>
+
       </div>
 
       {/* COVER */}
