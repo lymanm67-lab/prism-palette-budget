@@ -251,6 +251,22 @@ export default function LegacyMode() {
             </CardContent>
           </Card>
         </Link>
+        <Link to="/legacy/family?tab=philosophy" className="block">
+          <Card className="hover:border-prism-teal/60 transition-colors border-prism-teal/40 bg-prism-teal/5">
+            <CardContent className="p-4 flex items-start gap-3">
+              <ScrollText className="h-5 w-5 shrink-0 mt-0.5 text-prism-teal" />
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-semibold">Trust Philosophy</p>
+                  <Badge variant="outline" className="text-[10px] border-prism-teal/40 text-prism-teal">Adopted</Badge>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                  Lyman Montgomery Family Trust · review July 23, 2027
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
         <Link to="/kungfoo" className="block">
           <Card className="hover:border-prism-teal/60 transition-colors">
             <CardContent className="p-4 flex items-start gap-3">
