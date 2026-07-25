@@ -215,7 +215,7 @@ const FALLBACK_ASSETS = [
   { key: 'retirement', label: 'Retirement Assets', value: 175346, color: NAVY },
   { key: 'business', label: 'Business Interests', value: 550000, color: GOLD },
   { key: 'realEstate', label: 'Real Estate (Ownership Interest)', value: 162000, color: '#1D4E89' },
-  { key: 'intellectualProperty', label: 'Intellectual Property', value: 50000, color: '#8A7420' },
+  { key: 'intellectualProperty', label: 'Intellectual Property', value: 175000, color: '#8A7420' },
   { key: 'personalProperty', label: 'Personal Property', value: 32000, color: '#3F6E9C' },
   { key: 'vehicles', label: 'Vehicles', value: 40000, color: '#6B8CAE' },
   { key: 'brokerage', label: 'Brokerage', value: 5000, color: GREEN },
@@ -656,7 +656,7 @@ export default function WealthOS() {
         <div className="wos-grid3">
           <Kpi label="Annual Revenue" value="~$25,000" tone="plain" />
           <Kpi label="Business Valuation" value="~$550,000" tone="navy" />
-          <Kpi label="Intellectual Property" value="~$50,000" tone="gold" />
+          <Kpi label="Intellectual Property" value="~$175,000" tone="gold" />
         </div>
 
         <SectionLabel>Revenue Pillars</SectionLabel>
@@ -677,11 +677,11 @@ export default function WealthOS() {
         </div>
 
         <SectionLabel>Enterprise Value Composition</SectionLabel>
-        <Bar label="Operating business value" pct={92} value="$550,000" />
-        <Bar label="Intellectual property" pct={8} value="$50,000" />
+        <Bar label="Operating business value" pct={76} value="$550,000" />
+        <Bar label="Intellectual property" pct={24} value="$175,000" />
         <div className="wos-grid2" style={{ marginTop: 14 }}>
-          <Kpi label="Total Enterprise Value" value="$600,000" tone="navy" />
-          <Kpi label="Revenue-to-Value Multiple" value="24x" sub="Growth of revenue is the primary lever" tone="gold" />
+          <Kpi label="Total Enterprise Value" value="$725,000" tone="navy" />
+          <Kpi label="Revenue-to-Value Multiple" value="29x" sub="Growth of revenue is the primary lever" tone="gold" />
         </div>
       </Page>
 
