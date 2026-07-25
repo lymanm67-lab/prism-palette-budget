@@ -1,6 +1,10 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { Printer } from 'lucide-react';
+import { Printer, ImageDown, FileDown, Loader2 } from 'lucide-react';
+import { useWealthOSData } from '@/hooks/use-wealth-os';
+import { simulate } from '@/lib/legacy/monteCarloSim';
+import { exportBinderPNGs, exportBinderPDF } from '@/lib/legacy/wealthOsExport';
+
 
 /**
  * Montgomery Family Wealth Operating System — Binder Edition
