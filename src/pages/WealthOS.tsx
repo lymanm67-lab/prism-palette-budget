@@ -409,6 +409,7 @@ export default function WealthOS() {
             <SectionLabel>Lyman Montgomery</SectionLabel>
             <div className="wos-card">
               <Row label="Salary (annual)" value="$70,940.04" />
+              <Row label="Business Consulting Income (annual)" value="$25,000.00" />
               <Row label="Retirement Assets" value={money(lymanB.retirement)} />
               <Row label="Brokerage" value={money(lymanB.brokerage)} />
               <Row label="HSA" value={money(lymanB.hsa)} />
@@ -452,21 +453,23 @@ export default function WealthOS() {
       {/* PAGE 2 */}
       <Page n={2} title="Mission Control Dashboard — Household">
         <SectionLabel>Household Employment Income</SectionLabel>
-        <div className="wos-grid3">
+        <div className="wos-grid4">
           <Kpi label="Lyman — Annual Salary" value="$70,940.04" tone="navy" />
+          <Kpi label="Lyman — Consulting Income" value="$25,000.00" sub="business consulting / 1099" tone="plain" />
           <Kpi label="Kateri — Annual Salary" value="$103,000.00" tone="gold" />
-          <Kpi label="Combined Household Income" value="$173,940.04" sub="$14,495.00 / mo gross" tone="green" />
+          <Kpi label="Combined Household Income" value="$198,940.04" sub="$16,578.34 / mo gross" tone="green" />
         </div>
 
-        <SectionLabel>Lyman Montgomery — Employment</SectionLabel>
+        <SectionLabel>Lyman Montgomery — Employment & Consulting</SectionLabel>
         <div className="wos-grid3">
           <Kpi label="Annual Salary" value="$70,940.04" tone="navy" />
-          <Kpi label="Monthly Gross" value="$5,911.67" tone="plain" />
-          <Kpi label="Monthly Net" value="$4,464.91" tone="plain" />
-          <Kpi label="Annual Raise" value="3%" tone="gold" />
-          <Kpi label="Status" value="Verified" sub="Paystub confirmed" tone="green" />
+          <Kpi label="Consulting Income" value="$25,000.00" sub="~$2,083.33 / mo" tone="gold" />
+          <Kpi label="Total Annual Income" value="$95,940.04" sub="$7,995.00 / mo gross" tone="green" />
+          <Kpi label="Monthly Gross (W-2)" value="$5,911.67" tone="plain" />
+          <Kpi label="Monthly Net (W-2)" value="$4,464.91" tone="plain" />
           <Kpi label="Employer Contribution" value="$532.05" sub="per month • 9% non-elective" tone="plain" />
         </div>
+
 
         <SectionLabel>Household Retirement</SectionLabel>
         <div className="wos-grid3">

@@ -130,6 +130,7 @@ export default function HouseholdWealth() {
               <CardHeader><CardTitle className="flex items-center gap-2"><Briefcase className="h-4 w-4" /> Lyman Montgomery</CardTitle></CardHeader>
               <CardContent className="space-y-2 text-sm">
                 <Line label="Salary (annual)" value="$70,940.04" />
+                <Line label="Business Consulting Income (annual)" value="$25,000.00" />
                 <Line label="Retirement Assets" value={money2(lymanB.retirement)} />
                 <Line label="Brokerage" value={money2(lymanB.brokerage)} />
                 <Line label="HSA" value={money2(lymanB.hsa)} />
@@ -389,6 +390,7 @@ export default function HouseholdWealth() {
               <CardHeader><CardTitle className="flex items-center gap-2"><Briefcase className="h-4 w-4" /> Lyman Montgomery</CardTitle></CardHeader>
               <CardContent className="space-y-2 text-sm">
                 <Line label="Employment" value="$70,940.04 salary" />
+                <Line label="Consulting Income" value="$25,000.00 / yr (~$2,083/mo)" />
                 <Line label="Business" value={money2(lymanB.business)} />
                 <Line label="Retirement" value={money2(lymanB.retirement)} />
                 <Line label="Investments (brokerage + HSA)" value={money2(lymanB.brokerage + lymanB.hsa)} />
