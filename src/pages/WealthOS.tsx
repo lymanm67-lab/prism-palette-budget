@@ -589,9 +589,13 @@ export default function WealthOS() {
         <SectionLabel>Income Sources in Retirement</SectionLabel>
         <div className="wos-grid4">
           <Kpi label="Employer Contributions" value="$532.05/mo" sub="9% non-elective" tone="plain" />
-          <Kpi label="Social Security" value="Scheduled" sub="Claim strategy under review" tone="plain" />
+          <Kpi label="Social Security (Lyman @ 70)" value="$3,500/mo" sub="$42,000 / yr projected" tone="gold" />
           <Kpi label="OPERS Pension" value="$6,559/mo" sub="Kateri Montgomery" tone="gold" />
           <Kpi label="Ohio Deferred Comp" value={money(OHIO_DC)} sub="Supplemental" tone="plain" />
+        </div>
+        <div className="wos-grid2" style={{ marginTop: 10 }}>
+          <Kpi label="Guaranteed Household Income (Age 70)" value="$10,059/mo" sub="Social Security $3,500 + OPERS Pension $6,559" tone="green" />
+          <Kpi label="Annualized Guaranteed Income" value="$120,708/yr" sub="Before portfolio withdrawals" tone="navy" />
         </div>
 
 
