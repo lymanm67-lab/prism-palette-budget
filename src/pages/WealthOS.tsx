@@ -667,25 +667,37 @@ export default function WealthOS() {
         <Bar label="2027 objectives" pct={45} value="In progress" />
         <Bar label="2028 objectives" pct={10} value="Planned" />
         <Bar label="2030+ objectives" pct={0} value="Future" />
+
+        <SectionLabel>Net Worth Trend</SectionLabel>
+        <LineChart points={live?.history || []} label="Household net worth" />
       </Page>
 
       {/* PAGE 11 */}
       <Page n={11} title="Annual Family Wealth Scorecard">
         <SectionLabel>Tracked Annually</SectionLabel>
         <div className="wos-grid3">
-          <Kpi label="Net Worth" value={money(ASSET_TOTAL)} tone="navy" />
-          <Kpi label="Retirement Assets" value="$175,346" tone="navy" />
-          <Kpi label="Business Value" value="$550,000" tone="gold" />
+          <Kpi label="Net Worth" value={money(live?.netWorth ?? ASSET_TOTAL)} tone="navy" />
+          <Kpi label="Retirement Assets" value={money(live?.buckets.retirement ?? 175346)} tone="navy" />
+          <Kpi label="Business Value" value={money(live?.buckets.business ?? 550000)} tone="gold" />
           <Kpi label="Business Revenue" value="~$25,000" tone="plain" />
-          <Kpi label="Real Estate Equity" value="~$142,000" tone="plain" />
-          <Kpi label="Brokerage" value="$5,000" tone="plain" />
-          <Kpi label="HSA" value="$1,200" tone="plain" />
-          <Kpi label="Emergency Fund" value="$350" sub="Rebuild priority" tone="gold" />
-          <Kpi label="Debt Remaining" value="$3,500" sub="Vacation loan" tone="plain" />
+          <Kpi label="Real Estate Equity" value={money(live?.buckets.realEstate ?? 142000)} tone="plain" />
+          <Kpi label="Brokerage" value={money(live?.buckets.brokerage ?? 5000)} tone="plain" />
+          <Kpi label="HSA" value={money(live?.buckets.hsa ?? 1200)} tone="plain" />
+          <Kpi label="Emergency Fund" value={money(live?.buckets.emergency ?? 350)} sub="Rebuild priority" tone="gold" />
+          <Kpi label="Debt Remaining" value={money(live?.totalLiabilities ?? 3500)} tone="plain" />
           <Kpi label="Savings Rate" value="28.66%" tone="green" />
-          <Kpi label="Estate Readiness" value="60%" tone="green" />
+          <Kpi label="Estate Readiness" value={`${Math.round(live?.estate.pct ?? 60)}%`} tone="green" />
           <Kpi label="Annual Review Date" value="December" tone="plain" />
         </div>
+
+        <SectionLabel>30-Year Wealth Projection (Monte Carlo, 300 runs)</SectionLabel>
+        <BandChart mean={sim.meanPath} p10={sim.p10Path} p90={sim.p90Path} />
+        <div className="wos-grid3" style={{ marginTop: 10 }}>
+          <Kpi label="Median Outcome (30 yr)" value={money(Math.round(sim.meanPath[sim.meanPath.length - 1] || 0))} tone="navy" />
+          <Kpi label="Downside (10th pct)" value={money(Math.round(sim.p10Path[sim.p10Path.length - 1] || 0))} tone="plain" />
+          <Kpi label="Upside (90th pct)" value={money(Math.round(sim.p90Path[sim.p90Path.length - 1] || 0))} tone="gold" />
+        </div>
+
 
         <SectionLabel>Year-Over-Year Tracking Grid</SectionLabel>
         <div className="wos-card">
