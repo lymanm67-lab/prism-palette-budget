@@ -139,10 +139,10 @@ export default function RetirementDashboard() {
     hasStateIncomeTax: true, stateRateNow: 0.0275, stateRateRetirement: 0.015,
   };
   const [roth, setRoth] = useState<RothInputs>(() => {
-    try { const r = localStorage.getItem(LS_KEY + "-roth"); if (r) return normalizeRoth({ ...DEFAULT_ROTH, ...JSON.parse(r) }); } catch {}
+    try { const r = localStorage.getItem(LS_KEY + "-roth-v6"); if (r) return normalizeRoth({ ...DEFAULT_ROTH, ...JSON.parse(r) }); } catch {}
     return DEFAULT_ROTH;
   });
-  useEffect(() => { try { localStorage.setItem(LS_KEY + "-roth", JSON.stringify(roth)); } catch {} }, [roth]);
+  useEffect(() => { try { localStorage.setItem(LS_KEY + "-roth-v6", JSON.stringify(roth)); } catch {} }, [roth]);
   const rothVerdict = analyzeRothVsTraditional(roth);
 
   const [reviewMd, setReviewMd] = useState<string>("");
