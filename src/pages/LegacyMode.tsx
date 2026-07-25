@@ -225,7 +225,31 @@ export default function LegacyMode() {
       </Card>
 
       {/* Quick links */}
-      <div className="grid gap-3 md:grid-cols-3">
+      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+        <Link to="/legacy/family?tab=constitution" className="block">
+          <Card className={cn('hover:border-prism-teal/60 transition-colors', constitution?.is_published && 'border-prism-teal/40 bg-prism-teal/5')}>
+            <CardContent className="p-4 flex items-start gap-3">
+              <ScrollText className={cn('h-5 w-5 shrink-0 mt-0.5', constitution?.is_published ? 'text-prism-teal' : 'text-muted-foreground')} />
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-semibold">Family Constitution</p>
+                  {constitution?.is_published ? (
+                    <Badge variant="outline" className="text-[10px] border-prism-teal/40 text-prism-teal">Completed</Badge>
+                  ) : constitution ? (
+                    <Badge variant="outline" className="text-[10px]">Draft</Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-[10px] text-muted-foreground">Not started</Badge>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                  {constitution?.is_published
+                    ? `Published ${new Date(constitution.published_at!).toLocaleDateString()}`
+                    : 'Draft your family values, decision rules, and governance.'}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
         <Link to="/kungfoo" className="block">
           <Card className="hover:border-prism-teal/60 transition-colors">
             <CardContent className="p-4 flex items-start gap-3">
@@ -240,7 +264,7 @@ export default function LegacyMode() {
         <Link to="/legacy/family" className="block">
           <Card className="hover:border-prism-teal/60 transition-colors">
             <CardContent className="p-4 flex items-start gap-3">
-              <ScrollText className="h-5 w-5 text-prism-amber shrink-0 mt-0.5" />
+              <Users className="h-5 w-5 text-prism-amber shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm font-semibold">Family Legacy Suite</p>
                 <p className="text-xs text-muted-foreground mt-0.5">Trust · Constitution · Estate · Simulator.</p>
