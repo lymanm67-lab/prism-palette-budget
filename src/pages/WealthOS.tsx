@@ -232,7 +232,7 @@ export default function WealthOS() {
   const ASSETS = useMemo(
     () => FALLBACK_ASSETS.map((a) => ({
       ...a,
-      value: live?.buckets ? ((live.buckets as any)[a.key] || 0) : a.value,
+      value: live?.buckets ? ((live.buckets as any)[a.key] || a.value) : a.value,
     })).filter((a) => a.value > 0),
     [live],
   );
