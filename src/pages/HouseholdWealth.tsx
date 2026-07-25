@@ -90,13 +90,20 @@ export default function HouseholdWealth() {
         </p>
       </header>
 
-      <PageExplainer title="How to use this dashboard">
-        <p>
-          Every figure here is pulled live from your household accounts. Ownership is read from each account's owner label,
-          so assets are grouped as <strong>Individual</strong> (Lyman), <strong>Separate Property</strong> (Kateri), or{' '}
-          <strong>Joint Household</strong>. Update an account in Accounts and the totals, charts, and the Wealth OS Binder all follow.
-        </p>
-      </PageExplainer>
+      <PageExplainer
+        title="How to use this dashboard"
+        sections={[
+          {
+            heading: 'Where the numbers come from',
+            body: "Every figure is pulled live from your household accounts. Update an account under Accounts and these totals, the charts, and the Wealth OS Binder all follow.",
+          },
+          {
+            heading: 'Ownership labels',
+            body: "Assets are grouped by owner label as Individual (Lyman), Separate Property (Kateri), or Joint Household — used for estate planning, insurance review, and legacy planning.",
+          },
+        ]}
+      />
+
 
       <div className="grid gap-4 md:grid-cols-4">
         <Stat label="Lyman — Assets" value={money(lymanTotal)} sub="Individually owned" />
