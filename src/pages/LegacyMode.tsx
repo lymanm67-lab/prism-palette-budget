@@ -36,6 +36,7 @@ export default function LegacyMode() {
   const { data: history } = useLegacyWorthHistory(90);
   const ff = useFinancialFreedom();
   const { data: progression } = useUserProgression();
+  const { data: constitution } = useFamilyConstitution();
 
   const radarData = useMemo(() => (lw?.factors || []).map(f => ({ factor: f.label.split(' ')[0], score: f.score })), [lw]);
   const trendData = useMemo(() => (history || []).map((h: any) => ({ date: h.snapshot_date.slice(5), score: Number(h.score) })), [history]);
