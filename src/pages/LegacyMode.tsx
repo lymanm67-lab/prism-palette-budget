@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { useLegacyWorth, useLegacyWorthHistory, useFinancialFreedom, useUserProgression } from '@/hooks/use-financial-os';
+import { useLegacyWorth, useLegacyWorthHistory, useFinancialFreedom, useUserProgression, useFamilyConstitution } from '@/hooks/use-financial-os';
 import { LIFE_STAGE_LABELS } from '@/lib/legacy/legacyWorthEngine';
 import { BELT_META } from '@/lib/progression/beltRules';
 import { Sparkles, Target, Clock, TrendingUp, Users, ScrollText, Layers, AlertCircle, Pencil, HelpCircle } from 'lucide-react';

@@ -1,3 +1,4 @@
+import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { HundredYearSimulator } from '@/components/legacy/HundredYearSimulator';
 import { FamilyConstitutionWizard } from '@/components/legacy/FamilyConstitutionWizard';
