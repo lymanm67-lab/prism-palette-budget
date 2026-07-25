@@ -89,6 +89,7 @@ const CoachPlan = lazy(() => import("@/pages/CoachPlan"));
 const LegacyMode = lazy(() => import("@/pages/LegacyMode"));
 const KungFoo = lazy(() => import("@/pages/KungFoo"));
 const FamilyLegacy = lazy(() => import("@/pages/FamilyLegacy"));
+const WealthOS = lazy(() => import("@/pages/WealthOS"));
 const BeltProgress = lazy(() => import("@/pages/BeltProgress"));
 const RetirementDashboard = lazy(() => import("@/pages/RetirementDashboard"));
 
@@ -223,6 +224,7 @@ const App = () => (
               <Route path="/legacy" element={<Suspense fallback={<PageLoader />}><LegacyMode /></Suspense>} />
               <Route path="/legacy/family" element={<Suspense fallback={<PageLoader />}><FamilyLegacy /></Suspense>} />
               <Route path="/legacy/belts" element={<Suspense fallback={<PageLoader />}><BeltProgress /></Suspense>} />
+              <Route path="/legacy/wealth-os" element={<Suspense fallback={<PageLoader />}><WealthOS /></Suspense>} />
               <Route path="/kungfoo" element={<Suspense fallback={<PageLoader />}><KungFoo /></Suspense>} />
               <Route path="/retirement-optimizer" element={<Suspense fallback={<PageLoader />}><RetirementDashboard /></Suspense>} />
             </Route>
