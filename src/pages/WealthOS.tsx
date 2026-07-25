@@ -656,7 +656,7 @@ export default function WealthOS() {
         <div className="wos-grid3">
           <Kpi label="Annual Revenue" value="~$25,000" tone="plain" />
           <Kpi label="Business Valuation" value="~$550,000" tone="navy" />
-          <Kpi label="Intellectual Property" value="~$50,000" tone="gold" />
+          <Kpi label="Intellectual Property" value="~$175,000" tone="gold" />
         </div>
 
         <SectionLabel>Revenue Pillars</SectionLabel>
@@ -677,11 +677,11 @@ export default function WealthOS() {
         </div>
 
         <SectionLabel>Enterprise Value Composition</SectionLabel>
-        <Bar label="Operating business value" pct={92} value="$550,000" />
-        <Bar label="Intellectual property" pct={8} value="$50,000" />
+        <Bar label="Operating business value" pct={76} value="$550,000" />
+        <Bar label="Intellectual property" pct={24} value="$175,000" />
         <div className="wos-grid2" style={{ marginTop: 14 }}>
-          <Kpi label="Total Enterprise Value" value="$600,000" tone="navy" />
-          <Kpi label="Revenue-to-Value Multiple" value="24x" sub="Growth of revenue is the primary lever" tone="gold" />
+          <Kpi label="Total Enterprise Value" value="$725,000" tone="navy" />
+          <Kpi label="Revenue-to-Value Multiple" value="29x" sub="Growth of revenue is the primary lever" tone="gold" />
         </div>
       </Page>
 
