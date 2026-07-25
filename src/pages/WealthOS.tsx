@@ -214,13 +214,32 @@ function BandChart({ mean, p10, p90 }: { mean: number[]; p10: number[]; p90: num
 const FALLBACK_ASSETS = [
   { key: 'retirement', label: 'Retirement Assets', value: 175346, color: NAVY },
   { key: 'business', label: 'Business Interests', value: 550000, color: GOLD },
-  { key: 'realEstate', label: 'Real Estate (Ownership Interest)', value: 142000, color: '#1D4E89' },
+  { key: 'realEstate', label: 'Real Estate (Ownership Interest)', value: 162000, color: '#1D4E89' },
   { key: 'intellectualProperty', label: 'Intellectual Property', value: 50000, color: '#8A7420' },
-  { key: 'personalProperty', label: 'Personal Property & Vehicles', value: 57000, color: '#3F6E9C' },
+  { key: 'personalProperty', label: 'Personal Property', value: 32000, color: '#3F6E9C' },
+  { key: 'vehicles', label: 'Vehicles', value: 40000, color: '#6B8CAE' },
   { key: 'brokerage', label: 'Brokerage', value: 5000, color: GREEN },
   { key: 'hsa', label: 'HSA', value: 1200, color: '#9AA7B5' },
   { key: 'emergency', label: 'Emergency Fund', value: 350, color: '#C4CBD3' },
+  { key: 'cash', label: 'Cash', value: 1500, color: '#E1E6EB' },
 ];
+
+export const OPERS = 328948.74;
+export const OHIO_DC = 35447.45;
+export const ALLIES = 100000;
+export const EQUINOX = 15000;
+export const JAGUAR = 25000;
+
+const REAL_ESTATE = [
+  { addr: '124 Cambridge Avenue', own: 'Lyman Montgomery • 20% ownership', mv: '$85,000', oi: '$17,000', cls: 'Individual' },
+  { addr: '152–154 Cambridge Avenue', own: 'Lyman Montgomery • 50% ownership', mv: '$90,000', oi: '$45,000', cls: 'Individual' },
+  { addr: '213 Allies Street', own: 'Kateri Montgomery • 100% ownership', mv: '$100,000', oi: '$100,000', cls: 'Separate Property' },
+];
+
+const EMPTY_B: any = {
+  retirement: 0, business: 0, realEstate: 0, intellectualProperty: 0,
+  personalProperty: 0, vehicles: 0, brokerage: 0, hsa: 0, emergency: 0, cash: 0,
+};
 
 /* ---------- main ---------- */
 
@@ -237,6 +256,15 @@ export default function WealthOS() {
     [live],
   );
   const ASSET_TOTAL = ASSETS.reduce((a, b) => a + b.value, 0) || 1;
+
+  const B: any = live?.buckets ?? Object.fromEntries(FALLBACK_ASSETS.map((a) => [a.key, a.value]));
+  const lymanB: any = live?.byOwner.lyman.buckets ?? EMPTY_B;
+  const kateriB: any = live?.byOwner.kateri.buckets ?? { ...EMPTY_B, retirement: OPERS + OHIO_DC, realEstate: ALLIES, vehicles: EQUINOX };
+  const lymanTotal = live?.byOwner.lyman.total ?? 0;
+  const kateriTotal = live?.byOwner.kateri.total ?? OPERS + OHIO_DC + ALLIES + EQUINOX;
+  const householdTotal = live?.totalAssets ?? ASSET_TOTAL;
+  const combinedRetirement = (lymanB.retirement || 0) + (kateriB.retirement || 0);
+
 
   const sim = useMemo(() => simulate({
     startingPrincipal: Math.max(live?.netWorth ?? ASSET_TOTAL, 1000),
