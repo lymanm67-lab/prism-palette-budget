@@ -133,16 +133,16 @@ export default function RetirementDashboard() {
   const hsaProj = projectHsa(hsa);
 
   const DEFAULT_ROTH: RothInputs = {
-    currentAge: 59, retirementAge: 67, currentMarginalRate: 0.22, expectedRetirementRate: 0.24,
+    currentAge: 59, retirementAge: 75, currentMarginalRate: 0.22, expectedRetirementRate: 0.24,
     annualContribution: 7500, expectedReturn: 0.07, currentTaxableBalance: 25000,
     currentRothBalance: 30000, currentTraditionalBalance: 150000,
     hasStateIncomeTax: true, stateRateNow: 0.0275, stateRateRetirement: 0.015,
   };
   const [roth, setRoth] = useState<RothInputs>(() => {
-    try { const r = localStorage.getItem(LS_KEY + "-roth"); if (r) return normalizeRoth({ ...DEFAULT_ROTH, ...JSON.parse(r) }); } catch {}
+    try { const r = localStorage.getItem(LS_KEY + "-roth-v6"); if (r) return normalizeRoth({ ...DEFAULT_ROTH, ...JSON.parse(r) }); } catch {}
     return DEFAULT_ROTH;
   });
-  useEffect(() => { try { localStorage.setItem(LS_KEY + "-roth", JSON.stringify(roth)); } catch {} }, [roth]);
+  useEffect(() => { try { localStorage.setItem(LS_KEY + "-roth-v6", JSON.stringify(roth)); } catch {} }, [roth]);
   const rothVerdict = analyzeRothVsTraditional(roth);
 
   const [reviewMd, setReviewMd] = useState<string>("");
