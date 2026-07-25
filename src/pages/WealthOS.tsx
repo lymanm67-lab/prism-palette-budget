@@ -630,12 +630,24 @@ export default function WealthOS() {
         </div>
 
 
-        <SectionLabel>Salary Growth Timeline (3% Annual)</SectionLabel>
-        <Milestone date="JULY 2026" tone="gold" items={[{ label: 'Annual Salary', value: '$70,940.04' }, { label: 'Monthly Gross', value: '$5,911.67' }]} />
-        <Milestone date="JULY 2027" items={[{ label: 'Annual Salary (3% raise)', value: '$73,068.24' }]} />
-        <Milestone date="JULY 2028" items={[{ label: 'Annual Salary (3% raise)', value: '$75,260.29' }]} />
-        <Milestone date="JULY 2029" items={[{ label: 'Annual Salary (3% raise)', value: '$77,518.10' }]} />
-        <Milestone date="JULY 2030" tone="green" items={[{ label: 'Annual Salary (3% raise)', value: '$79,843.64' }]} />
+        <SectionLabel>Salary Growth Timeline (3% Annual) — Age 59 → 75</SectionLabel>
+        {SALARY_GROWTH.map((r, i) => (
+          <Milestone
+            key={r.year}
+            date={`JULY ${r.year} — AGE ${r.age}`}
+            tone={i === 0 ? 'gold' : i === SALARY_GROWTH.length - 1 ? 'green' : undefined}
+            items={[
+              { label: i === 0 ? 'Annual Salary' : 'Annual Salary (3% raise)', value: money(r.salary) },
+              { label: 'Monthly Gross', value: money(r.salary / 12) },
+              { label: 'With Consulting ($25,000)', value: money(r.total) },
+            ]}
+          />
+        ))}
+        <div className="wos-grid2" style={{ marginTop: 10 }}>
+          <Kpi label="Final Year Salary (Age 75)" value={money(SALARY_GROWTH[SALARY_GROWTH.length - 1].salary)} sub="July 2042" tone="gold" />
+          <Kpi label="Cumulative Earnings 2026–2042" value={money(SALARY_CUMULATIVE)} sub="Salary + consulting income" tone="navy" />
+        </div>
+
       </Page>
 
       {/* PAGE 6 */}
