@@ -89,6 +89,7 @@ const CoachPlan = lazy(() => import("@/pages/CoachPlan"));
 const LegacyMode = lazy(() => import("@/pages/LegacyMode"));
 const KungFoo = lazy(() => import("@/pages/KungFoo"));
 const FamilyLegacy = lazy(() => import("@/pages/FamilyLegacy"));
+const WealthOS = lazy(() => import("@/pages/WealthOS"));
 const BeltProgress = lazy(() => import("@/pages/BeltProgress"));
 const RetirementDashboard = lazy(() => import("@/pages/RetirementDashboard"));
 
