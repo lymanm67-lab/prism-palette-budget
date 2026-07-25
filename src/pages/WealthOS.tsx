@@ -1,9 +1,9 @@
 import { useState, useMemo } from 'react';
-import { Button } from '/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { Printer, ImageDown, FileDown, Loader2 } from 'lucide-react';
-import { useWealthOSData } from '/hooks/use-wealth-os';
-import { simulate } from '/lib/legacy/monteCarloSim';
-import { exportBinderPNGs, exportBinderPDF } from '/lib/legacy/wealthOsExport';
+import { useWealthOSData } from '@/hooks/use-wealth-os';
+import { simulate } from '@/lib/legacy/monteCarloSim';
+import { exportBinderPNGs, exportBinderPDF } from '@/lib/legacy/wealthOsExport';
 
 
 /**
