@@ -1,9 +1,9 @@
 import { useState, useMemo } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from '/components/ui/button';
 import { Printer, ImageDown, FileDown, Loader2 } from 'lucide-react';
-import { useWealthOSData } from '@/hooks/use-wealth-os';
-import { simulate } from '@/lib/legacy/monteCarloSim';
-import { exportBinderPNGs, exportBinderPDF } from '@/lib/legacy/wealthOsExport';
+import { useWealthOSData } from '/hooks/use-wealth-os';
+import { simulate } from '/lib/legacy/monteCarloSim';
+import { exportBinderPNGs, exportBinderPDF } from '/lib/legacy/wealthOsExport';
 
 
 /**
@@ -21,9 +21,9 @@ const GREEN = '#1F7A5A';
 const money = (n: number) => `$${n.toLocaleString('en-US', { maximumFractionDigits: 2 })}`;
 
 const PAGES = [
-  'Mission Control', 'Household Assets', 'Real Estate', 'Retirement & Income',
-  'Debt Freedom', 'Investment Priority', 'Business', 'Insurance & Risk',
-  'Legacy Planning', 'Financial Roadmap', 'Wealth Scorecard', 'Executive Summary',
+  'Executive Summary', 'Mission Control', 'Household Assets', 'Real Estate',
+  'Retirement & Income', 'Debt Freedom', 'Investment Priority', 'Business',
+  'Insurance & Risk', 'Legacy Planning', 'Financial Roadmap', 'Wealth Scorecard',
 ];
 
 /* ---------- primitives ---------- */
@@ -305,11 +305,11 @@ export default function WealthOS() {
         .wos-nav button { color:#fff; font-size:10px; font-weight:700; padding:5px 9px; border-radius:6px;
           white-space:nowrap; opacity:.7; }
         .wos-nav button.on { background:${GOLD}; color:${NAVY}; opacity:1; }
-        @media print {
+        media print {
           .wos-root { background:#fff; padding:0; }
           .wos-noprint { display:none !important; }
           .wos-page { box-shadow:none; margin:0; page-break-after:always; width:auto; min-height:auto; }
-          @page { size: letter portrait; margin: 0.4in; }
+          page { size: letter portrait; margin: 0.4in; }
           body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
       `}</style>
@@ -368,352 +368,7 @@ export default function WealthOS() {
       </section>
 
       {/* PAGE 1 */}
-      <Page n={1} title="Mission Control Dashboard">
-        <SectionLabel>Employment</SectionLabel>
-        <div className="wos-grid3">
-          <Kpi label="Annual Salary" value="$70,940.04" tone="navy" />
-          <Kpi label="Monthly Gross" value="$5,911.67" tone="plain" />
-          <Kpi label="Monthly Net" value="$4,464.91" tone="plain" />
-          <Kpi label="Annual Raise" value="3%" tone="gold" />
-          <Kpi label="Status" value="Verified" sub="Paystub confirmed" tone="green" />
-          <Kpi label="Employer Contribution" value="$532.05" sub="per month • 9% non-elective" tone="plain" />
-        </div>
-
-        <SectionLabel>Retirement</SectionLabel>
-        <div className="wos-grid3">
-          <Kpi label="Current Retirement Assets" value="$175,346" tone="navy" />
-          <Kpi label="Combined Savings Rate" value="28.66%" sub="Employee + Employer" tone="gold" />
-          <Kpi label="Employee Goal" value="30%" sub="Target by Dec 2026" tone="plain" />
-        </div>
-        <div style={{ marginTop: 12 }}>
-          <Bar label="Progress to 30% Employee Savings Goal" pct={95.5} value="28.66% of 30%" />
-        </div>
-
-        <SectionLabel>Wealth Snapshot</SectionLabel>
-        <div className="wos-grid4">
-          <Kpi label="Brokerage" value="$5,000" tone="plain" />
-          <Kpi label="Emergency Fund" value="$350" tone="plain" />
-          <Kpi label="HSA" value="$1,200" tone="plain" />
-          <Kpi label="Business Value" value="$550,000" tone="navy" />
-          <Kpi label="Intellectual Property" value="$50,000" tone="gold" />
-          <Kpi label="Business Revenue" value="~$25,000" sub="per year" tone="plain" />
-          <Kpi label="Real Estate Interest" value="~$142,000" tone="plain" />
-          <Kpi label="Personal Property" value="$57,000" tone="plain" />
-        </div>
-
-        <SectionLabel>Mission Statement</SectionLabel>
-        <div className="wos-quote">
-          Honor God through faithful stewardship, intentional wealth building, responsible risk
-          management, and leaving a legacy that strengthens future generations.
-        </div>
-      </Page>
-
-      {/* PAGE 2 */}
-      <Page n={2} title="Household Asset Dashboard">
-        <SectionLabel>Asset Allocation</SectionLabel>
-        <Donut slices={ASSETS} total={ASSET_TOTAL} />
-
-        <SectionLabel>Asset Categories</SectionLabel>
-        <div className="wos-grid2">
-          <div className="wos-card">
-            <Row label="Retirement Assets" value="$175,346" />
-            <Row label="Real Estate (Interest)" value="$142,000" />
-            <Row label="Business Interests" value="$550,000" />
-            <Row label="Intellectual Property" value="$50,000" />
-            <Row label="Brokerage Account" value="$5,000" />
-          </div>
-          <div className="wos-card">
-            <Row label="HSA" value="$1,200" />
-            <Row label="Emergency Fund" value="$350" />
-            <Row label="Personal Property" value="$32,000" />
-            <Row label="Vehicles" value="$25,000" />
-            <Row label="Total Household Assets" value={money(ASSET_TOTAL)} bold />
-          </div>
-        </div>
-
-        <SectionLabel>Personal Property Detail</SectionLabel>
-        <div className="wos-grid4">
-          <Kpi label="Jewelry" value="$25,000" tone="plain" />
-          <Kpi label="Firearms" value="$7,000" tone="plain" />
-          <Kpi label="2023 Jaguar" value="$25,000" tone="plain" />
-          <Kpi label="Total Personal Property" value="$57,000" tone="navy" />
-        </div>
-      </Page>
-
-      {/* PAGE 3 */}
-      <Page n={3} title="Real Estate Dashboard">
-        <SectionLabel>Property Portfolio</SectionLabel>
-        <div className="wos-grid3">
-          {[
-            { addr: '124 Cambridge Avenue', own: '20% ownership', mv: '$85,000', oi: '$17,000' },
-            { addr: '152–154 Cambridge Avenue', own: '50% ownership', mv: '$90,000', oi: '$45,000' },
-            { addr: '213 Allies Street', own: 'Kateri Montgomery', mv: '$80,000', oi: '$80,000' },
-          ].map((p) => (
-            <div key={p.addr} className="wos-card" style={{ borderTop: `4px solid ${GOLD}` }}>
-              <div style={{ fontWeight: 800, color: NAVY, fontSize: 12.5, lineHeight: 1.3 }}>{p.addr}</div>
-              <div style={{ fontSize: 9.5, color: SLATE, marginTop: 3, marginBottom: 8 }}>{p.own}</div>
-              <Row label="Est. Market Value" value={p.mv} />
-              <Row label="Ownership Interest" value={p.oi} bold />
-            </div>
-          ))}
-        </div>
-
-        <SectionLabel>Portfolio Totals</SectionLabel>
-        <div className="wos-grid2">
-          <Kpi label="Total Household Market Value" value="$255,000" tone="navy" />
-          <Kpi label="Household Ownership Interest" value="~$142,000" tone="gold" />
-        </div>
-
-        <SectionLabel>Ownership Interest by Property</SectionLabel>
-        <Bar label="124 Cambridge Avenue" pct={12} value="$17,000" />
-        <Bar label="152–154 Cambridge Avenue" pct={32} value="$45,000" />
-        <Bar label="213 Allies Street" pct={56} value="$80,000" />
-      </Page>
-
-      {/* PAGE 4 */}
-      <Page n={4} title="Retirement & Income Strategy">
-        <div className="wos-grid3">
-          <Kpi label="Current Salary" value="$70,940.04" tone="navy" />
-          <Kpi label="Current Savings Rate" value="28.66%" tone="gold" />
-          <Kpi label="Projected Retirement Portfolio" value="$1.2M+" sub="At current trajectory" tone="green" />
-        </div>
-
-        <SectionLabel>Income Sources in Retirement</SectionLabel>
-        <div className="wos-grid4">
-          <Kpi label="Employer Contributions" value="$532.05/mo" sub="9% non-elective" tone="plain" />
-          <Kpi label="Social Security" value="Scheduled" sub="Claim strategy under review" tone="plain" />
-          <Kpi label="OPERS" value="Pension" sub="Spousal benefit" tone="plain" />
-          <Kpi label="Deferred Compensation" value="Active" sub="Supplemental" tone="plain" />
-        </div>
-
-        <SectionLabel>Salary Growth Timeline (3% Annual)</SectionLabel>
-        <Milestone date="JULY 2026" tone="gold" items={[{ label: 'Annual Salary', value: '$70,940.04' }, { label: 'Monthly Gross', value: '$5,911.67' }]} />
-        <Milestone date="JULY 2027" items={[{ label: 'Annual Salary (3% raise)', value: '$73,068.24' }]} />
-        <Milestone date="JULY 2028" items={[{ label: 'Annual Salary (3% raise)', value: '$75,260.29' }]} />
-        <Milestone date="JULY 2029" items={[{ label: 'Annual Salary (3% raise)', value: '$77,518.10' }]} />
-        <Milestone date="JULY 2030" tone="green" items={[{ label: 'Annual Salary (3% raise)', value: '$79,843.64' }]} />
-      </Page>
-
-      {/* PAGE 5 */}
-      <Page n={5} title="Debt Freedom & Cash Flow Acceleration">
-        <Kpi label="Monthly Cash Flow Redirected" value="$1,373 / month" sub="Fully deployed to retirement and wealth building by August 2027" tone="navy" />
-
-        <SectionLabel>Acceleration Timeline</SectionLabel>
-        <Milestone date="MAY 2027" tone="gold" items={[
-          { label: 'Marketing & Education obligation ends', value: '$500/mo' },
-          { label: 'Redirect to Retirement', value: '$500/mo' },
-        ]} />
-        <Milestone date="MAY – AUGUST 2027" items={[
-          { label: 'Vacation Loan balance', value: '$3,500' },
-          { label: 'Loan 1 payment', value: '$220/mo' },
-          { label: 'Loan 2 payment', value: '$155/mo' },
-          { label: 'Redirect on payoff', value: '$375/mo' },
-        ]} />
-        <Milestone date="AUGUST 2027" tone="green" items={[
-          { label: 'Consumer Debt Eliminated', value: '✓' },
-          { label: 'Redirect', value: '$498/mo' },
-        ]} />
-
-        <SectionLabel>Redirect Composition</SectionLabel>
-        <Bar label="Marketing & Education redirect" pct={36} value="$500/mo" />
-        <Bar label="Vacation loan redirect" pct={27} value="$375/mo" />
-        <Bar label="Consumer debt redirect" pct={36} value="$498/mo" />
-        <div className="wos-grid3" style={{ marginTop: 14 }}>
-          <Kpi label="Annualized Redirect" value="$16,476" tone="gold" />
-          <Kpi label="Debt-Free Target" value="Aug 2027" tone="plain" />
-          <Kpi label="Destination" value="Retirement" sub="To 30% employee deferral" tone="plain" />
-        </div>
-      </Page>
-
-      {/* PAGE 6 */}
-      <Page n={6} title="Investment Priority Dashboard">
-        <SectionLabel>The Priority Ladder</SectionLabel>
-        {[
-          ['Employer Match', 'Capture every available employer dollar first', 'Complete'],
-          ['Retirement Contributions to 30%', 'Employee deferral target by December 2026', 'In Progress'],
-          ['Fully Fund HSA', 'Triple-tax-advantaged; invest above cash floor', 'In Progress'],
-          ['Emergency Fund', 'Current balance $350 — rebuild to 3–6 months', 'Priority'],
-          ['Brokerage Investments', 'Taxable flexibility bridge before retirement age', 'Next'],
-          ['Business Growth', 'Reinvest into revenue-producing IP and services', 'Next'],
-          ['Legacy Investments', 'Trust-funded, multi-generational allocations', 'Future'],
-        ].map(([t, d, s], i) => (
-          <div key={t} className="wos-card" style={{ display: 'flex', gap: 14, alignItems: 'center', marginBottom: 8, borderLeft: `4px solid ${i < 1 ? GREEN : i < 4 ? GOLD : NAVY}` }}>
-            <div style={{ width: 30, height: 30, borderRadius: 8, background: NAVY, color: GOLD, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 13, flex: 'none' }}>
-              {i + 1}
-            </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 800, color: NAVY, fontSize: 12 }}>{t}</div>
-              <div style={{ fontSize: 10, color: SLATE, marginTop: 2 }}>{d}</div>
-            </div>
-            <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', color: i < 1 ? GREEN : i < 4 ? GOLD : SLATE }}>{s}</div>
-          </div>
-        ))}
-        <div className="wos-quote" style={{ marginTop: 14 }}>
-          Every dollar is assigned before it is spent. The ladder is worked top to bottom, and never skipped.
-        </div>
-      </Page>
-
-      {/* PAGE 7 */}
-      <Page n={7} title="Business Dashboard">
-        <div className="wos-grid3">
-          <Kpi label="Annual Revenue" value="~$25,000" tone="plain" />
-          <Kpi label="Business Valuation" value="~$550,000" tone="navy" />
-          <Kpi label="Intellectual Property" value="~$50,000" tone="gold" />
-        </div>
-
-        <SectionLabel>Revenue Pillars</SectionLabel>
-        <div className="wos-grid3">
-          {[
-            ['Books', 'Published works and royalties'],
-            ['Courses', 'Structured curriculum and cohorts'],
-            ['Speaking', 'Keynotes, workshops, panels'],
-            ['Consulting', 'Advisory and implementation'],
-            ['Digital Products', 'Templates, tools, subscriptions'],
-            ['Intellectual Property', 'Licensing and brand equity'],
-          ].map(([t, d]) => (
-            <div key={t} className="wos-card" style={{ borderTop: `3px solid ${NAVY}` }}>
-              <div style={{ fontWeight: 800, color: NAVY, fontSize: 11.5 }}>{t}</div>
-              <div style={{ fontSize: 9.5, color: SLATE, marginTop: 3, lineHeight: 1.5 }}>{d}</div>
-            </div>
-          ))}
-        </div>
-
-        <SectionLabel>Enterprise Value Composition</SectionLabel>
-        <Bar label="Operating business value" pct={92} value="$550,000" />
-        <Bar label="Intellectual property" pct={8} value="$50,000" />
-        <div className="wos-grid2" style={{ marginTop: 14 }}>
-          <Kpi label="Total Enterprise Value" value="$600,000" tone="navy" />
-          <Kpi label="Revenue-to-Value Multiple" value="24x" sub="Growth of revenue is the primary lever" tone="gold" />
-        </div>
-      </Page>
-
-      {/* PAGE 8 */}
-      <Page n={8} title="Insurance & Risk Protection">
-        <SectionLabel>Coverage in Force</SectionLabel>
-        <div className="wos-grid2">
-          <Kpi label="Life Insurance — Personal Policy" value="$500,000" tone="navy" />
-          <Kpi label="Employer Group Life" value="$250,000" tone="plain" />
-          <Kpi label="Disability" value="~70% Salary Replacement" tone="gold" />
-          <Kpi label="Long-Term Care" value="In Place" tone="green" />
-        </div>
-
-        <SectionLabel>Beneficiaries</SectionLabel>
-        <div className="wos-card">
-          <Row label="Primary Beneficiary" value="Spouse" />
-          <Row label="Contingent Beneficiaries" value="Children" />
-          <Row label="Trust Named as Beneficiary" value="Montgomery Family Legacy Trust" />
-          <Row label="Last Beneficiary Audit" value="Annual review required" bold />
-        </div>
-
-        <SectionLabel>Protection Coverage Level</SectionLabel>
-        <Bar label="Life insurance vs. 10x income benchmark" pct={106} value="$750,000 total" />
-        <Bar label="Disability income replacement" pct={70} value="70%" />
-        <Bar label="Long-term care readiness" pct={100} value="Covered" />
-        <Bar label="Emergency liquidity (3-month target)" pct={3} value="$350" />
-
-        <div className="wos-quote" style={{ marginTop: 16 }}>
-          Protection precedes accumulation. A plan without insurance is a plan with a single point of failure.
-        </div>
-      </Page>
-
-      {/* PAGE 9 */}
-      <Page n={9} title="Legacy Planning Dashboard">
-        <SectionLabel>Estate Document Status</SectionLabel>
-        {[
-          ['Trust', true], ['Will', true], ['Powers of Attorney', true], ['Healthcare Directives', true],
-          ['Beneficiary Designations', true], ['Family Constitution', false],
-          ['Family Wealth Operating System', true], ['Annual Review', false],
-          ['Estate Review', false], ['Trust Funding', false],
-        ].map(([l, d]) => <Check key={l as string} label={l as string} done={d as boolean} />)}
-
-        <SectionLabel>Overall Estate Readiness</SectionLabel>
-        <Bar label="Documents complete" pct={60} value="6 of 10" />
-        <div className="wos-grid3" style={{ marginTop: 12 }}>
-          <Kpi label="Complete" value="6" tone="green" />
-          <Kpi label="In Progress" value="4" tone="gold" />
-          <Kpi label="Estate Readiness" value="60%" tone="navy" />
-        </div>
-        <div className="wos-card" style={{ marginTop: 14 }}>
-          <div style={{ fontWeight: 800, color: NAVY, fontSize: 11.5, marginBottom: 6 }}>Immediate Next Steps</div>
-          <Row label="1. Fund the trust — retitle qualifying assets" value="Priority" />
-          <Row label="2. Draft and ratify the Family Constitution" value="Q3" />
-          <Row label="3. Schedule annual estate review with counsel" value="Q4" />
-        </div>
-      </Page>
-
-      {/* PAGE 10 */}
-      <Page n={10} title="Financial Roadmap">
-        <SectionLabel>Multi-Year Execution Timeline</SectionLabel>
-        <Milestone date="2026" tone="green" items={[{ label: 'Salary Increase — 3%', value: 'Completed' }]} />
-        <Milestone date="2027" tone="gold" items={[
-          { label: 'Marketing Redirect', value: 'Completed' },
-          { label: 'Vacation Loan', value: 'Paid' },
-          { label: 'Consumer Debt', value: 'Paid' },
-          { label: 'Increase Retirement Contributions', value: 'To 30%' },
-        ]} />
-        <Milestone date="2028" items={[
-          { label: 'Increase Brokerage', value: 'Scale' },
-          { label: 'Increase Business Revenue', value: 'Scale' },
-          { label: 'Increase Retirement Contributions', value: 'Maintain 30%' },
-        ]} />
-        <Milestone date="2030 +" items={[
-          { label: 'Net Worth Expansion', value: 'Compound' },
-          { label: 'Estate Growth', value: 'Fund trust' },
-          { label: 'Legacy Planning', value: 'Multi-generational' },
-        ]} />
-
-        <SectionLabel>Roadmap Progress</SectionLabel>
-        <Bar label="2026 objectives" pct={100} value="Complete" />
-        <Bar label="2027 objectives" pct={45} value="In progress" />
-        <Bar label="2028 objectives" pct={10} value="Planned" />
-        <Bar label="2030+ objectives" pct={0} value="Future" />
-
-        <SectionLabel>Net Worth Trend</SectionLabel>
-        <LineChart points={live?.history || []} label="Household net worth" />
-      </Page>
-
-      {/* PAGE 11 */}
-      <Page n={11} title="Annual Family Wealth Scorecard">
-        <SectionLabel>Tracked Annually</SectionLabel>
-        <div className="wos-grid3">
-          <Kpi label="Net Worth" value={money(live?.netWorth ?? ASSET_TOTAL)} tone="navy" />
-          <Kpi label="Retirement Assets" value={money(live?.buckets.retirement || 175346)} tone="navy" />
-          <Kpi label="Business Value" value={money(live?.buckets.business || 550000)} tone="gold" />
-          <Kpi label="Business Revenue" value="~$25,000" tone="plain" />
-          <Kpi label="Real Estate Equity" value={money(live?.buckets.realEstate || 142000)} tone="plain" />
-          <Kpi label="Brokerage" value={money(live?.buckets.brokerage || 5000)} tone="plain" />
-          <Kpi label="HSA" value={money(live?.buckets.hsa || 1200)} tone="plain" />
-          <Kpi label="Emergency Fund" value={money(live?.buckets.emergency || 350)} sub="Rebuild priority" tone="gold" />
-          <Kpi label="Debt Remaining" value={money(live?.totalLiabilities ?? 3500)} tone="plain" />
-          <Kpi label="Savings Rate" value="28.66%" tone="green" />
-          <Kpi label="Estate Readiness" value={`${Math.round(live?.estate.pct ?? 60)}%`} tone="green" />
-          <Kpi label="Annual Review Date" value="December" tone="plain" />
-        </div>
-
-        <SectionLabel>30-Year Wealth Projection (Monte Carlo, 300 runs)</SectionLabel>
-        <BandChart mean={sim.meanPath} p10={sim.p10Path} p90={sim.p90Path} />
-        <div className="wos-grid3" style={{ marginTop: 10 }}>
-          <Kpi label="Median Outcome (30 yr)" value={money(Math.round(sim.meanPath[sim.meanPath.length - 1] || 0))} tone="navy" />
-          <Kpi label="Downside (10th pct)" value={money(Math.round(sim.p10Path[sim.p10Path.length - 1] || 0))} tone="plain" />
-          <Kpi label="Upside (90th pct)" value={money(Math.round(sim.p90Path[sim.p90Path.length - 1] || 0))} tone="gold" />
-        </div>
-
-
-        <SectionLabel>Year-Over-Year Tracking Grid</SectionLabel>
-        <div className="wos-card">
-          {['Net Worth', 'Retirement Assets', 'Business Value', 'Real Estate Equity', 'Debt Remaining', 'Savings Rate', 'Estate Readiness'].map((m) => (
-            <div key={m} className="wos-row">
-              <span style={{ flex: 1 }}>{m}</span>
-              <span style={{ width: 90, textAlign: 'right', color: SLATE }}>Prior Year ____</span>
-              <span style={{ width: 90, textAlign: 'right', color: SLATE }}>This Year ____</span>
-              <span style={{ width: 70, textAlign: 'right', color: SLATE }}>Δ ____</span>
-            </div>
-          ))}
-        </div>
-      </Page>
-
-      {/* PAGE 12 */}
-      <Page n={12} title="Family Office Executive Summary">
+      <Page n={1} title="Family Office Executive Summary">
         <div className="wos-grid3">
           {[
             ['Faith', 'Stewardship as an act of obedience and gratitude.'],
@@ -764,6 +419,352 @@ export default function WealthOS() {
           Every generation leaves the next stronger than the last.”
         </div>
       </Page>
+
+      {/* PAGE 2 */}
+      <Page n={2} title="Mission Control Dashboard">
+        <SectionLabel>Employment</SectionLabel>
+        <div className="wos-grid3">
+          <Kpi label="Annual Salary" value="$70,940.04" tone="navy" />
+          <Kpi label="Monthly Gross" value="$5,911.67" tone="plain" />
+          <Kpi label="Monthly Net" value="$4,464.91" tone="plain" />
+          <Kpi label="Annual Raise" value="3%" tone="gold" />
+          <Kpi label="Status" value="Verified" sub="Paystub confirmed" tone="green" />
+          <Kpi label="Employer Contribution" value="$532.05" sub="per month • 9% non-elective" tone="plain" />
+        </div>
+
+        <SectionLabel>Retirement</SectionLabel>
+        <div className="wos-grid3">
+          <Kpi label="Current Retirement Assets" value="$175,346" tone="navy" />
+          <Kpi label="Combined Savings Rate" value="28.66%" sub="Employee + Employer" tone="gold" />
+          <Kpi label="Employee Goal" value="30%" sub="Target by Dec 2026" tone="plain" />
+        </div>
+        <div style={{ marginTop: 12 }}>
+          <Bar label="Progress to 30% Employee Savings Goal" pct={95.5} value="28.66% of 30%" />
+        </div>
+
+        <SectionLabel>Wealth Snapshot</SectionLabel>
+        <div className="wos-grid4">
+          <Kpi label="Brokerage" value="$5,000" tone="plain" />
+          <Kpi label="Emergency Fund" value="$350" tone="plain" />
+          <Kpi label="HSA" value="$1,200" tone="plain" />
+          <Kpi label="Business Value" value="$550,000" tone="navy" />
+          <Kpi label="Intellectual Property" value="$50,000" tone="gold" />
+          <Kpi label="Business Revenue" value="~$25,000" sub="per year" tone="plain" />
+          <Kpi label="Real Estate Interest" value="~$142,000" tone="plain" />
+          <Kpi label="Personal Property" value="$57,000" tone="plain" />
+        </div>
+
+        <SectionLabel>Mission Statement</SectionLabel>
+        <div className="wos-quote">
+          Honor God through faithful stewardship, intentional wealth building, responsible risk
+          management, and leaving a legacy that strengthens future generations.
+        </div>
+      </Page>
+
+      {/* PAGE 3 */}
+      <Page n={3} title="Household Asset Dashboard">
+        <SectionLabel>Asset Allocation</SectionLabel>
+        <Donut slices={ASSETS} total={ASSET_TOTAL} />
+
+        <SectionLabel>Asset Categories</SectionLabel>
+        <div className="wos-grid2">
+          <div className="wos-card">
+            <Row label="Retirement Assets" value="$175,346" />
+            <Row label="Real Estate (Interest)" value="$142,000" />
+            <Row label="Business Interests" value="$550,000" />
+            <Row label="Intellectual Property" value="$50,000" />
+            <Row label="Brokerage Account" value="$5,000" />
+          </div>
+          <div className="wos-card">
+            <Row label="HSA" value="$1,200" />
+            <Row label="Emergency Fund" value="$350" />
+            <Row label="Personal Property" value="$32,000" />
+            <Row label="Vehicles" value="$25,000" />
+            <Row label="Total Household Assets" value={money(ASSET_TOTAL)} bold />
+          </div>
+        </div>
+
+        <SectionLabel>Personal Property Detail</SectionLabel>
+        <div className="wos-grid4">
+          <Kpi label="Jewelry" value="$25,000" tone="plain" />
+          <Kpi label="Firearms" value="$7,000" tone="plain" />
+          <Kpi label="2023 Jaguar" value="$25,000" tone="plain" />
+          <Kpi label="Total Personal Property" value="$57,000" tone="navy" />
+        </div>
+      </Page>
+
+      {/* PAGE 4 */}
+      <Page n={4} title="Real Estate Dashboard">
+        <SectionLabel>Property Portfolio</SectionLabel>
+        <div className="wos-grid3">
+          {[
+            { addr: '124 Cambridge Avenue', own: '20% ownership', mv: '$85,000', oi: '$17,000' },
+            { addr: '152–154 Cambridge Avenue', own: '50% ownership', mv: '$90,000', oi: '$45,000' },
+            { addr: '213 Allies Street', own: 'Kateri Montgomery', mv: '$80,000', oi: '$80,000' },
+          ].map((p) => (
+            <div key={p.addr} className="wos-card" style={{ borderTop: `4px solid ${GOLD}` }}>
+              <div style={{ fontWeight: 800, color: NAVY, fontSize: 12.5, lineHeight: 1.3 }}>{p.addr}</div>
+              <div style={{ fontSize: 9.5, color: SLATE, marginTop: 3, marginBottom: 8 }}>{p.own}</div>
+              <Row label="Est. Market Value" value={p.mv} />
+              <Row label="Ownership Interest" value={p.oi} bold />
+            </div>
+          ))}
+        </div>
+
+        <SectionLabel>Portfolio Totals</SectionLabel>
+        <div className="wos-grid2">
+          <Kpi label="Total Household Market Value" value="$255,000" tone="navy" />
+          <Kpi label="Household Ownership Interest" value="~$142,000" tone="gold" />
+        </div>
+
+        <SectionLabel>Ownership Interest by Property</SectionLabel>
+        <Bar label="124 Cambridge Avenue" pct={12} value="$17,000" />
+        <Bar label="152–154 Cambridge Avenue" pct={32} value="$45,000" />
+        <Bar label="213 Allies Street" pct={56} value="$80,000" />
+      </Page>
+
+      {/* PAGE 5 */}
+      <Page n={5} title="Retirement & Income Strategy">
+        <div className="wos-grid3">
+          <Kpi label="Current Salary" value="$70,940.04" tone="navy" />
+          <Kpi label="Current Savings Rate" value="28.66%" tone="gold" />
+          <Kpi label="Projected Retirement Portfolio" value="$1.2M+" sub="At current trajectory" tone="green" />
+        </div>
+
+        <SectionLabel>Income Sources in Retirement</SectionLabel>
+        <div className="wos-grid4">
+          <Kpi label="Employer Contributions" value="$532.05/mo" sub="9% non-elective" tone="plain" />
+          <Kpi label="Social Security" value="Scheduled" sub="Claim strategy under review" tone="plain" />
+          <Kpi label="OPERS" value="Pension" sub="Spousal benefit" tone="plain" />
+          <Kpi label="Deferred Compensation" value="Active" sub="Supplemental" tone="plain" />
+        </div>
+
+        <SectionLabel>Salary Growth Timeline (3% Annual)</SectionLabel>
+        <Milestone date="JULY 2026" tone="gold" items={[{ label: 'Annual Salary', value: '$70,940.04' }, { label: 'Monthly Gross', value: '$5,911.67' }]} />
+        <Milestone date="JULY 2027" items={[{ label: 'Annual Salary (3% raise)', value: '$73,068.24' }]} />
+        <Milestone date="JULY 2028" items={[{ label: 'Annual Salary (3% raise)', value: '$75,260.29' }]} />
+        <Milestone date="JULY 2029" items={[{ label: 'Annual Salary (3% raise)', value: '$77,518.10' }]} />
+        <Milestone date="JULY 2030" tone="green" items={[{ label: 'Annual Salary (3% raise)', value: '$79,843.64' }]} />
+      </Page>
+
+      {/* PAGE 6 */}
+      <Page n={6} title="Debt Freedom & Cash Flow Acceleration">
+        <Kpi label="Monthly Cash Flow Redirected" value="$1,373 / month" sub="Fully deployed to retirement and wealth building by August 2027" tone="navy" />
+
+        <SectionLabel>Acceleration Timeline</SectionLabel>
+        <Milestone date="MAY 2027" tone="gold" items={[
+          { label: 'Marketing & Education obligation ends', value: '$500/mo' },
+          { label: 'Redirect to Retirement', value: '$500/mo' },
+        ]} />
+        <Milestone date="MAY – AUGUST 2027" items={[
+          { label: 'Vacation Loan balance', value: '$3,500' },
+          { label: 'Loan 1 payment', value: '$220/mo' },
+          { label: 'Loan 2 payment', value: '$155/mo' },
+          { label: 'Redirect on payoff', value: '$375/mo' },
+        ]} />
+        <Milestone date="AUGUST 2027" tone="green" items={[
+          { label: 'Consumer Debt Eliminated', value: '✓' },
+          { label: 'Redirect', value: '$498/mo' },
+        ]} />
+
+        <SectionLabel>Redirect Composition</SectionLabel>
+        <Bar label="Marketing & Education redirect" pct={36} value="$500/mo" />
+        <Bar label="Vacation loan redirect" pct={27} value="$375/mo" />
+        <Bar label="Consumer debt redirect" pct={36} value="$498/mo" />
+        <div className="wos-grid3" style={{ marginTop: 14 }}>
+          <Kpi label="Annualized Redirect" value="$16,476" tone="gold" />
+          <Kpi label="Debt-Free Target" value="Aug 2027" tone="plain" />
+          <Kpi label="Destination" value="Retirement" sub="To 30% employee deferral" tone="plain" />
+        </div>
+      </Page>
+
+      {/* PAGE 7 */}
+      <Page n={7} title="Investment Priority Dashboard">
+        <SectionLabel>The Priority Ladder</SectionLabel>
+        {[
+          ['Employer Match', 'Capture every available employer dollar first', 'Complete'],
+          ['Retirement Contributions to 30%', 'Employee deferral target by December 2026', 'In Progress'],
+          ['Fully Fund HSA', 'Triple-tax-advantaged; invest above cash floor', 'In Progress'],
+          ['Emergency Fund', 'Current balance $350 — rebuild to 3–6 months', 'Priority'],
+          ['Brokerage Investments', 'Taxable flexibility bridge before retirement age', 'Next'],
+          ['Business Growth', 'Reinvest into revenue-producing IP and services', 'Next'],
+          ['Legacy Investments', 'Trust-funded, multi-generational allocations', 'Future'],
+        ].map(([t, d, s], i) => (
+          <div key={t} className="wos-card" style={{ display: 'flex', gap: 14, alignItems: 'center', marginBottom: 8, borderLeft: `4px solid ${i < 1 ? GREEN : i < 4 ? GOLD : NAVY}` }}>
+            <div style={{ width: 30, height: 30, borderRadius: 8, background: NAVY, color: GOLD, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 13, flex: 'none' }}>
+              {i + 1}
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 800, color: NAVY, fontSize: 12 }}>{t}</div>
+              <div style={{ fontSize: 10, color: SLATE, marginTop: 2 }}>{d}</div>
+            </div>
+            <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', color: i < 1 ? GREEN : i < 4 ? GOLD : SLATE }}>{s}</div>
+          </div>
+        ))}
+        <div className="wos-quote" style={{ marginTop: 14 }}>
+          Every dollar is assigned before it is spent. The ladder is worked top to bottom, and never skipped.
+        </div>
+      </Page>
+
+      {/* PAGE 8 */}
+      <Page n={8} title="Business Dashboard">
+        <div className="wos-grid3">
+          <Kpi label="Annual Revenue" value="~$25,000" tone="plain" />
+          <Kpi label="Business Valuation" value="~$550,000" tone="navy" />
+          <Kpi label="Intellectual Property" value="~$50,000" tone="gold" />
+        </div>
+
+        <SectionLabel>Revenue Pillars</SectionLabel>
+        <div className="wos-grid3">
+          {[
+            ['Books', 'Published works and royalties'],
+            ['Courses', 'Structured curriculum and cohorts'],
+            ['Speaking', 'Keynotes, workshops, panels'],
+            ['Consulting', 'Advisory and implementation'],
+            ['Digital Products', 'Templates, tools, subscriptions'],
+            ['Intellectual Property', 'Licensing and brand equity'],
+          ].map(([t, d]) => (
+            <div key={t} className="wos-card" style={{ borderTop: `3px solid ${NAVY}` }}>
+              <div style={{ fontWeight: 800, color: NAVY, fontSize: 11.5 }}>{t}</div>
+              <div style={{ fontSize: 9.5, color: SLATE, marginTop: 3, lineHeight: 1.5 }}>{d}</div>
+            </div>
+          ))}
+        </div>
+
+        <SectionLabel>Enterprise Value Composition</SectionLabel>
+        <Bar label="Operating business value" pct={92} value="$550,000" />
+        <Bar label="Intellectual property" pct={8} value="$50,000" />
+        <div className="wos-grid2" style={{ marginTop: 14 }}>
+          <Kpi label="Total Enterprise Value" value="$600,000" tone="navy" />
+          <Kpi label="Revenue-to-Value Multiple" value="24x" sub="Growth of revenue is the primary lever" tone="gold" />
+        </div>
+      </Page>
+
+      {/* PAGE 9 */}
+      <Page n={9} title="Insurance & Risk Protection">
+        <SectionLabel>Coverage in Force</SectionLabel>
+        <div className="wos-grid2">
+          <Kpi label="Life Insurance — Personal Policy" value="$500,000" tone="navy" />
+          <Kpi label="Employer Group Life" value="$250,000" tone="plain" />
+          <Kpi label="Disability" value="~70% Salary Replacement" tone="gold" />
+          <Kpi label="Long-Term Care" value="In Place" tone="green" />
+        </div>
+
+        <SectionLabel>Beneficiaries</SectionLabel>
+        <div className="wos-card">
+          <Row label="Primary Beneficiary" value="Spouse" />
+          <Row label="Contingent Beneficiaries" value="Children" />
+          <Row label="Trust Named as Beneficiary" value="Montgomery Family Legacy Trust" />
+          <Row label="Last Beneficiary Audit" value="Annual review required" bold />
+        </div>
+
+        <SectionLabel>Protection Coverage Level</SectionLabel>
+        <Bar label="Life insurance vs. 10x income benchmark" pct={106} value="$750,000 total" />
+        <Bar label="Disability income replacement" pct={70} value="70%" />
+        <Bar label="Long-term care readiness" pct={100} value="Covered" />
+        <Bar label="Emergency liquidity (3-month target)" pct={3} value="$350" />
+
+        <div className="wos-quote" style={{ marginTop: 16 }}>
+          Protection precedes accumulation. A plan without insurance is a plan with a single point of failure.
+        </div>
+      </Page>
+
+      {/* PAGE 10 */}
+      <Page n={10} title="Legacy Planning Dashboard">
+        <SectionLabel>Estate Document Status</SectionLabel>
+        {[
+          ['Trust', true], ['Will', true], ['Powers of Attorney', true], ['Healthcare Directives', true],
+          ['Beneficiary Designations', true], ['Family Constitution', false],
+          ['Family Wealth Operating System', true], ['Annual Review', false],
+          ['Estate Review', false], ['Trust Funding', false],
+        ].map(([l, d]) => <Check key={l as string} label={l as string} done={d as boolean} />)}
+
+        <SectionLabel>Overall Estate Readiness</SectionLabel>
+        <Bar label="Documents complete" pct={60} value="6 of 10" />
+        <div className="wos-grid3" style={{ marginTop: 12 }}>
+          <Kpi label="Complete" value="6" tone="green" />
+          <Kpi label="In Progress" value="4" tone="gold" />
+          <Kpi label="Estate Readiness" value="60%" tone="navy" />
+        </div>
+        <div className="wos-card" style={{ marginTop: 14 }}>
+          <div style={{ fontWeight: 800, color: NAVY, fontSize: 11.5, marginBottom: 6 }}>Immediate Next Steps</div>
+          <Row label="1. Fund the trust — retitle qualifying assets" value="Priority" />
+          <Row label="2. Draft and ratify the Family Constitution" value="Q3" />
+          <Row label="3. Schedule annual estate review with counsel" value="Q4" />
+        </div>
+      </Page>
+
+      {/* PAGE 11 */}
+      <Page n={11} title="Financial Roadmap">
+        <SectionLabel>Multi-Year Execution Timeline</SectionLabel>
+        <Milestone date="2026" tone="green" items={[{ label: 'Salary Increase — 3%', value: 'Completed' }]} />
+        <Milestone date="2027" tone="gold" items={[
+          { label: 'Marketing Redirect', value: 'Completed' },
+          { label: 'Vacation Loan', value: 'Paid' },
+          { label: 'Consumer Debt', value: 'Paid' },
+          { label: 'Increase Retirement Contributions', value: 'To 30%' },
+        ]} />
+        <Milestone date="2028" items={[
+          { label: 'Increase Brokerage', value: 'Scale' },
+          { label: 'Increase Business Revenue', value: 'Scale' },
+          { label: 'Increase Retirement Contributions', value: 'Maintain 30%' },
+        ]} />
+        <Milestone date="2030 +" items={[
+          { label: 'Net Worth Expansion', value: 'Compound' },
+          { label: 'Estate Growth', value: 'Fund trust' },
+          { label: 'Legacy Planning', value: 'Multi-generational' },
+        ]} />
+
+        <SectionLabel>Roadmap Progress</SectionLabel>
+        <Bar label="2026 objectives" pct={100} value="Complete" />
+        <Bar label="2027 objectives" pct={45} value="In progress" />
+        <Bar label="2028 objectives" pct={10} value="Planned" />
+        <Bar label="2030+ objectives" pct={0} value="Future" />
+
+        <SectionLabel>Net Worth Trend</SectionLabel>
+        <LineChart points={live?.history || []} label="Household net worth" />
+      </Page>
+
+      {/* PAGE 12 */}
+      <Page n={12} title="Annual Family Wealth Scorecard">
+        <SectionLabel>Tracked Annually</SectionLabel>
+        <div className="wos-grid3">
+          <Kpi label="Net Worth" value={money(live?.netWorth ?? ASSET_TOTAL)} tone="navy" />
+          <Kpi label="Retirement Assets" value={money(live?.buckets.retirement || 175346)} tone="navy" />
+          <Kpi label="Business Value" value={money(live?.buckets.business || 550000)} tone="gold" />
+          <Kpi label="Business Revenue" value="~$25,000" tone="plain" />
+          <Kpi label="Real Estate Equity" value={money(live?.buckets.realEstate || 142000)} tone="plain" />
+          <Kpi label="Brokerage" value={money(live?.buckets.brokerage || 5000)} tone="plain" />
+          <Kpi label="HSA" value={money(live?.buckets.hsa || 1200)} tone="plain" />
+          <Kpi label="Emergency Fund" value={money(live?.buckets.emergency || 350)} sub="Rebuild priority" tone="gold" />
+          <Kpi label="Debt Remaining" value={money(live?.totalLiabilities ?? 3500)} tone="plain" />
+          <Kpi label="Savings Rate" value="28.66%" tone="green" />
+          <Kpi label="Estate Readiness" value={`${Math.round(live?.estate.pct ?? 60)}%`} tone="green" />
+          <Kpi label="Annual Review Date" value="December" tone="plain" />
+        </div>
+
+        <SectionLabel>30-Year Wealth Projection (Monte Carlo, 300 runs)</SectionLabel>
+        <BandChart mean={sim.meanPath} p10={sim.p10Path} p90={sim.p90Path} />
+        <div className="wos-grid3" style={{ marginTop: 10 }}>
+          <Kpi label="Median Outcome (30 yr)" value={money(Math.round(sim.meanPath[sim.meanPath.length - 1] || 0))} tone="navy" />
+          <Kpi label="Downside (10th pct)" value={money(Math.round(sim.p10Path[sim.p10Path.length - 1] || 0))} tone="plain" />
+          <Kpi label="Upside (90th pct)" value={money(Math.round(sim.p90Path[sim.p90Path.length - 1] || 0))} tone="gold" />
+        </div>
+
+
+        <SectionLabel>Year-Over-Year Tracking Grid</SectionLabel>
+        <div className="wos-card">
+          {['Net Worth', 'Retirement Assets', 'Business Value', 'Real Estate Equity', 'Debt Remaining', 'Savings Rate', 'Estate Readiness'].map((m) => (
+            <div key={m} className="wos-row">
+              <span style={{ flex: 1 }}>{m}</span>
+              <span style={{ width: 90, textAlign: 'right', color: SLATE }}>Prior Year ____</span>
+              <span style={{ width: 90, textAlign: 'right', color: SLATE }}>This Year ____</span>
+              <span style={{ width: 70, textAlign: 'right', color: SLATE }}>Δ ____</span>
+            </div>
+          ))}
+        </div>
+      </Page>
+
     </div>
   );
 }
