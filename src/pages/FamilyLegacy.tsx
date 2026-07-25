@@ -67,7 +67,7 @@ export default function FamilyLegacy() {
         ]}
       />
 
-      <Tabs defaultValue="trust">
+      <Tabs defaultValue={validTab}>
         <TabsList className="flex flex-wrap h-auto">
           <TabsTrigger value="trust"><ShieldCheck className="h-3.5 w-3.5 mr-1.5" /> Trust</TabsTrigger>
           <TabsTrigger value="estate"><Users className="h-3.5 w-3.5 mr-1.5" /> Estate</TabsTrigger>
