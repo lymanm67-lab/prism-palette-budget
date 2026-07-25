@@ -111,18 +111,20 @@ export function simulate(inputs: SimInputs): SimResult {
     Math.max(1, Math.round((realFv / Math.max(inputs.startingPrincipal, 1)) * inputs.generations * 0.5))
   );
 
-  // Tornado (one-at-a-time ±20%)
+  // Tornado (one-at-a-time ±20%) — skipped in nested runs to avoid infinite recursion
   const baselineFv = nominalFv;
   const tornado: SimResult['tornado'] = [];
-  const oat = (key: keyof SimInputs, deltaLow: number, deltaHigh: number) => {
-    const lo = simulateSingle({ ...inputs, [key]: (inputs[key] as number) * (1 + deltaLow), runs: 100 });
-    const hi = simulateSingle({ ...inputs, [key]: (inputs[key] as number) * (1 + deltaHigh), runs: 100 });
-    tornado.push({ input: String(key), impactLow: lo - baselineFv, impactHigh: hi - baselineFv });
-  };
-  oat('expectedReturn', -0.2, 0.2);
-  oat('inflation', -0.2, 0.2);
-  oat('annualDistributionPct', -0.5, 0.5);
-  oat('additionalContribution', -0.5, 0.5);
+  if (!(inputs as any).__skipTornado) {
+    const oat = (key: keyof SimInputs, deltaLow: number, deltaHigh: number) => {
+      const lo = simulateSingle({ ...inputs, [key]: (inputs[key] as number) * (1 + deltaLow), runs: 100 });
+      const hi = simulateSingle({ ...inputs, [key]: (inputs[key] as number) * (1 + deltaHigh), runs: 100 });
+      tornado.push({ input: String(key), impactLow: lo - baselineFv, impactHigh: hi - baselineFv });
+    };
+    oat('expectedReturn', -0.2, 0.2);
+    oat('inflation', -0.2, 0.2);
+    oat('annualDistributionPct', -0.5, 0.5);
+    oat('additionalContribution', -0.5, 0.5);
+  }
 
   return {
     nominalFv, realFv, purchasingPowerToday,
@@ -133,6 +135,7 @@ export function simulate(inputs: SimInputs): SimResult {
 }
 
 function simulateSingle(inputs: SimInputs): number {
-  const r = simulate({ ...inputs, runs: inputs.runs ?? 100 });
+  const r = simulate({ ...inputs, runs: inputs.runs ?? 100, __skipTornado: true } as SimInputs);
   return r.nominalFv;
 }
+
