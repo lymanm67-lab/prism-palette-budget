@@ -470,6 +470,28 @@ export default function WealthOS() {
           <Kpi label="Employer Contribution" value="$532.05" sub="per month • 9% non-elective" tone="plain" />
         </div>
 
+        <SectionLabel>Lyman — Salary Growth Projection to Age 75 (3% annual)</SectionLabel>
+        <div className="wos-card">
+          {SALARY_GROWTH.filter((r) => [59, 62, 65, 67, 70, 72, 75].includes(r.age)).map((r) => (
+            <Row
+              key={r.age}
+              label={`Age ${r.age} (${r.year})`}
+              value={`${money(r.salary)} salary • ${money(r.total)} total w/ consulting`}
+              bold={r.age === 75}
+            />
+          ))}
+          <Row label="Cumulative Earnings, Age 59–75" value={money(SALARY_CUMULATIVE)} bold />
+        </div>
+        <div style={{ marginTop: 10 }}>
+          <Bar
+            label="Salary Growth: Age 59 → 75"
+            pct={100}
+            value={`${money(SALARY_GROWTH[0].salary)} → ${money(SALARY_GROWTH[SALARY_GROWTH.length - 1].salary)}`}
+          />
+        </div>
+
+
+
 
         <SectionLabel>Household Retirement</SectionLabel>
         <div className="wos-grid3">
