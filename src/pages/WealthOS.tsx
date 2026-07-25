@@ -215,7 +215,7 @@ const FALLBACK_ASSETS = [
   { key: 'retirement', label: 'Retirement Assets', value: 175346, color: NAVY },
   { key: 'business', label: 'Business Interests', value: 550000, color: GOLD },
   { key: 'realEstate', label: 'Real Estate (Ownership Interest)', value: 162000, color: '#1D4E89' },
-  { key: 'intellectualProperty', label: 'Intellectual Property', value: 50000, color: '#8A7420' },
+  { key: 'intellectualProperty', label: 'Intellectual Property', value: 175000, color: '#8A7420' },
   { key: 'personalProperty', label: 'Personal Property', value: 32000, color: '#3F6E9C' },
   { key: 'vehicles', label: 'Vehicles', value: 40000, color: '#6B8CAE' },
   { key: 'brokerage', label: 'Brokerage', value: 5000, color: GREEN },
