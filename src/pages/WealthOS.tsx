@@ -409,6 +409,7 @@ export default function WealthOS() {
             <SectionLabel>Lyman Montgomery</SectionLabel>
             <div className="wos-card">
               <Row label="Salary (annual)" value="$70,940.04" />
+              <Row label="Business Consulting Income (annual)" value="$25,000.00" />
               <Row label="Retirement Assets" value={money(lymanB.retirement)} />
               <Row label="Brokerage" value={money(lymanB.brokerage)} />
               <Row label="HSA" value={money(lymanB.hsa)} />
