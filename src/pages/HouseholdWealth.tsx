@@ -9,7 +9,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
 } from 'recharts';
 import { useWealthOSData, BUCKET_LABELS, type Buckets } from '@/hooks/use-wealth-os';
-import { PageExplainer } from '@/components/common/PageExplainer';
+import { PageExplainer } from '@/components/PageExplainer';
 
 const OPERS = 328948.74;
 const OHIO_DC = 35447.45;
