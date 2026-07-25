@@ -133,7 +133,7 @@ export default function RetirementDashboard() {
   const hsaProj = projectHsa(hsa);
 
   const DEFAULT_ROTH: RothInputs = {
-    currentAge: 59, retirementAge: 67, currentMarginalRate: 0.22, expectedRetirementRate: 0.24,
+    currentAge: 59, retirementAge: 75, currentMarginalRate: 0.22, expectedRetirementRate: 0.24,
     annualContribution: 7500, expectedReturn: 0.07, currentTaxableBalance: 25000,
     currentRothBalance: 30000, currentTraditionalBalance: 150000,
     hasStateIncomeTax: true, stateRateNow: 0.0275, stateRateRetirement: 0.015,
