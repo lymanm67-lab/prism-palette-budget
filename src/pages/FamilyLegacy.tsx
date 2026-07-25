@@ -1,3 +1,4 @@
+import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { HundredYearSimulator } from '@/components/legacy/HundredYearSimulator';
 import { FamilyConstitutionWizard } from '@/components/legacy/FamilyConstitutionWizard';
@@ -10,6 +11,9 @@ import { Heart, ScrollText, ShieldCheck, TrendingUp, Users, PenLine, BookHeart, 
 import { PageExplainer } from '@/components/PageExplainer';
 
 export default function FamilyLegacy() {
+  const [searchParams] = useSearchParams();
+  const defaultTab = searchParams.get('tab') || 'trust';
+  const validTab = ['trust', 'estate', 'constitution', 'letters', 'ethical', 'meeting', 'simulator'].includes(defaultTab) ? defaultTab : 'trust';
   return (
     <div className="max-w-6xl mx-auto p-4 md:p-6 space-y-4">
       <div>
@@ -63,7 +67,7 @@ export default function FamilyLegacy() {
         ]}
       />
 
-      <Tabs defaultValue="trust">
+      <Tabs defaultValue={validTab}>
         <TabsList className="flex flex-wrap h-auto">
           <TabsTrigger value="trust"><ShieldCheck className="h-3.5 w-3.5 mr-1.5" /> Trust</TabsTrigger>
           <TabsTrigger value="estate"><Users className="h-3.5 w-3.5 mr-1.5" /> Estate</TabsTrigger>
