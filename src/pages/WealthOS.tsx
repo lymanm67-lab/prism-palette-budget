@@ -20,6 +20,15 @@ const GREEN = '#1F7A5A';
 
 const money = (n: number) => `$${n.toLocaleString('en-US', { maximumFractionDigits: 2 })}`;
 
+/* Lyman salary growth: age 59 (2026) → 75 (2042) at 3% annual, plus $25k consulting */
+const BASE_SALARY = 70940.04;
+const CONSULTING = 25000;
+const SALARY_GROWTH = Array.from({ length: 17 }, (_, i) => {
+  const salary = BASE_SALARY * Math.pow(1.03, i);
+  return { age: 59 + i, year: 2026 + i, salary, total: salary + CONSULTING };
+});
+const SALARY_CUMULATIVE = SALARY_GROWTH.reduce((s, r) => s + r.total, 0);
+
 const PAGES = [
   'Executive Summary', 'Mission Control', 'Household Assets', 'Real Estate',
   'Retirement & Income', 'Debt Freedom', 'Investment Priority', 'Business',
