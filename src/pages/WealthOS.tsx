@@ -677,13 +677,13 @@ export default function WealthOS() {
         <SectionLabel>Tracked Annually</SectionLabel>
         <div className="wos-grid3">
           <Kpi label="Net Worth" value={money(live?.netWorth ?? ASSET_TOTAL)} tone="navy" />
-          <Kpi label="Retirement Assets" value={money(live?.buckets.retirement ?? 175346)} tone="navy" />
-          <Kpi label="Business Value" value={money(live?.buckets.business ?? 550000)} tone="gold" />
+          <Kpi label="Retirement Assets" value={money(live?.buckets.retirement || 175346)} tone="navy" />
+          <Kpi label="Business Value" value={money(live?.buckets.business || 550000)} tone="gold" />
           <Kpi label="Business Revenue" value="~$25,000" tone="plain" />
-          <Kpi label="Real Estate Equity" value={money(live?.buckets.realEstate ?? 142000)} tone="plain" />
-          <Kpi label="Brokerage" value={money(live?.buckets.brokerage ?? 5000)} tone="plain" />
-          <Kpi label="HSA" value={money(live?.buckets.hsa ?? 1200)} tone="plain" />
-          <Kpi label="Emergency Fund" value={money(live?.buckets.emergency ?? 350)} sub="Rebuild priority" tone="gold" />
+          <Kpi label="Real Estate Equity" value={money(live?.buckets.realEstate || 142000)} tone="plain" />
+          <Kpi label="Brokerage" value={money(live?.buckets.brokerage || 5000)} tone="plain" />
+          <Kpi label="HSA" value={money(live?.buckets.hsa || 1200)} tone="plain" />
+          <Kpi label="Emergency Fund" value={money(live?.buckets.emergency || 350)} sub="Rebuild priority" tone="gold" />
           <Kpi label="Debt Remaining" value={money(live?.totalLiabilities ?? 3500)} tone="plain" />
           <Kpi label="Savings Rate" value="28.66%" tone="green" />
           <Kpi label="Estate Readiness" value={`${Math.round(live?.estate.pct ?? 60)}%`} tone="green" />
