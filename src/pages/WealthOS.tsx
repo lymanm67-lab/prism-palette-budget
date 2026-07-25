@@ -749,7 +749,7 @@ export default function WealthOS() {
         <div className="wos-grid2">
           <Kpi label="Life Insurance — Personal Policy" value="$500,000" tone="navy" />
           <Kpi label="Employer Group Life" value="$250,000" tone="plain" />
-          <Kpi label="Disability" value="~70% Salary Replacement" tone="gold" />
+          <Kpi label="Disability" value="~60% Salary Replacement" tone="gold" />
           <Kpi label="Long-Term Care" value="In Place" tone="green" />
         </div>
 
@@ -763,7 +763,7 @@ export default function WealthOS() {
 
         <SectionLabel>Protection Coverage Level</SectionLabel>
         <Bar label="Life insurance vs. 10x income benchmark" pct={106} value="$750,000 total" />
-        <Bar label="Disability income replacement" pct={70} value="70%" />
+        <Bar label="Disability income replacement" pct={60} value="60%" />
         <Bar label="Long-term care readiness" pct={100} value="Covered" />
         <Bar label="Emergency liquidity (3-month target)" pct={3} value="$350" />
 
