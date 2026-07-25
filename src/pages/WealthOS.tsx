@@ -550,20 +550,39 @@ export default function WealthOS() {
 
 
       {/* PAGE 5 */}
-      <Page n={5} title="Retirement & Income Strategy">
+      <Page n={5} title="Household Retirement & Income Strategy">
         <div className="wos-grid3">
-          <Kpi label="Current Salary" value="$70,940.04" tone="navy" />
-          <Kpi label="Current Savings Rate" value="28.66%" tone="gold" />
-          <Kpi label="Projected Retirement Portfolio" value="$1.2M+" sub="At current trajectory" tone="green" />
+          <Kpi label="Lyman — Retirement Assets" value={money(lymanB.retirement)} tone="navy" />
+          <Kpi label="Kateri — Retirement Assets" value={money(kateriB.retirement)} sub="OPERS + Ohio DC" tone="gold" />
+          <Kpi label="Combined Household Retirement" value={money(combinedRetirement)} tone="green" />
+        </div>
+
+        <SectionLabel>Retirement Accounts by Owner</SectionLabel>
+        <div className="wos-grid2">
+          <div className="wos-card">
+            <div style={{ fontWeight: 800, color: NAVY, fontSize: 11.5, marginBottom: 6 }}>Lyman Montgomery</div>
+            <Row label="Current Salary" value="$70,940.04" />
+            <Row label="Current Savings Rate" value="28.66%" />
+            <Row label="Employer Contribution" value="$532.05 / mo" />
+            <Row label="Retirement Assets" value={money(lymanB.retirement)} bold />
+          </div>
+          <div className="wos-card">
+            <div style={{ fontWeight: 800, color: NAVY, fontSize: 11.5, marginBottom: 6 }}>Kateri Montgomery</div>
+            <Row label="OPERS Account Balance" value={money(OPERS)} />
+            <Row label="Ohio Deferred Compensation" value={money(OHIO_DC)} />
+            <Row label="Estimated OPERS Pension" value="$6,559 / mo" />
+            <Row label="Retirement Assets" value={money(kateriB.retirement)} bold />
+          </div>
         </div>
 
         <SectionLabel>Income Sources in Retirement</SectionLabel>
         <div className="wos-grid4">
           <Kpi label="Employer Contributions" value="$532.05/mo" sub="9% non-elective" tone="plain" />
           <Kpi label="Social Security" value="Scheduled" sub="Claim strategy under review" tone="plain" />
-          <Kpi label="OPERS" value="Pension" sub="Spousal benefit" tone="plain" />
-          <Kpi label="Deferred Compensation" value="Active" sub="Supplemental" tone="plain" />
+          <Kpi label="OPERS Pension" value="$6,559/mo" sub="Kateri Montgomery" tone="gold" />
+          <Kpi label="Ohio Deferred Comp" value={money(OHIO_DC)} sub="Supplemental" tone="plain" />
         </div>
+
 
         <SectionLabel>Salary Growth Timeline (3% Annual)</SectionLabel>
         <Milestone date="JULY 2026" tone="gold" items={[{ label: 'Annual Salary', value: '$70,940.04' }, { label: 'Monthly Gross', value: '$5,911.67' }]} />
