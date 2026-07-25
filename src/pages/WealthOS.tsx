@@ -305,11 +305,11 @@ export default function WealthOS() {
         .wos-nav button { color:#fff; font-size:10px; font-weight:700; padding:5px 9px; border-radius:6px;
           white-space:nowrap; opacity:.7; }
         .wos-nav button.on { background:${GOLD}; color:${NAVY}; opacity:1; }
-        media print {
+        @media print {
           .wos-root { background:#fff; padding:0; }
           .wos-noprint { display:none !important; }
           .wos-page { box-shadow:none; margin:0; page-break-after:always; width:auto; min-height:auto; }
-          page { size: letter portrait; margin: 0.4in; }
+          @page { size: letter portrait; margin: 0.4in; }
           body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
       `}</style>
