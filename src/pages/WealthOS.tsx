@@ -219,7 +219,7 @@ const FALLBACK_ASSETS = [
   { key: 'personalProperty', label: 'Personal Property', value: 32000, color: '#3F6E9C' },
   { key: 'vehicles', label: 'Vehicles', value: 40000, color: '#6B8CAE' },
   { key: 'brokerage', label: 'Brokerage', value: 5000, color: GREEN },
-  { key: 'hsa', label: 'HSA', value: 1200, color: '#9AA7B5' },
+  { key: 'hsa', label: 'HSA', value: 1500, color: '#9AA7B5' },
   { key: 'emergency', label: 'Emergency Fund', value: 350, color: '#C4CBD3' },
   { key: 'cash', label: 'Cash', value: 1500, color: '#E1E6EB' },
 ];
@@ -791,7 +791,7 @@ export default function WealthOS() {
           <Kpi label="Business Revenue" value="~$25,000" tone="plain" />
           <Kpi label="Real Estate Equity" value={money(live?.buckets.realEstate || 142000)} tone="plain" />
           <Kpi label="Brokerage" value={money(live?.buckets.brokerage || 5000)} tone="plain" />
-          <Kpi label="HSA" value={money(live?.buckets.hsa || 1200)} tone="plain" />
+          <Kpi label="HSA" value={money(live?.buckets.hsa || 1500)} tone="plain" />
           <Kpi label="Emergency Fund" value={money(live?.buckets.emergency || 350)} sub="Rebuild priority" tone="gold" />
           <Kpi label="Debt Remaining" value={money(live?.totalLiabilities ?? 3500)} tone="plain" />
           <Kpi label="Savings Rate" value="28.66%" tone="green" />
