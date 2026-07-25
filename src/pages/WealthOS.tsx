@@ -589,7 +589,7 @@ export default function WealthOS() {
         <SectionLabel>Income Sources in Retirement</SectionLabel>
         <div className="wos-grid4">
           <Kpi label="Employer Contributions" value="$532.05/mo" sub="9% non-elective" tone="plain" />
-          <Kpi label="Social Security" value="Scheduled" sub="Claim strategy under review" tone="plain" />
+          <Kpi label="Social Security (Lyman @ 70)" value="$3,500/mo" sub="$42,000 / yr projected" tone="gold" />
           <Kpi label="OPERS Pension" value="$6,559/mo" sub="Kateri Montgomery" tone="gold" />
           <Kpi label="Ohio Deferred Comp" value={money(OHIO_DC)} sub="Supplemental" tone="plain" />
         </div>
