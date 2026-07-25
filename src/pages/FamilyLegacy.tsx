@@ -4,16 +4,17 @@ import { HundredYearSimulator } from '@/components/legacy/HundredYearSimulator';
 import { FamilyConstitutionWizard } from '@/components/legacy/FamilyConstitutionWizard';
 import { EstateChecklist } from '@/components/legacy/EstateChecklist';
 import { TrustDashboard } from '@/components/legacy/TrustDashboard';
+import { TrustPhilosophy } from '@/components/legacy/TrustPhilosophy';
 import { LegacyLetterEditor } from '@/components/legacy/LegacyLetterEditor';
 import { EthicalWillEditor } from '@/components/legacy/EthicalWillEditor';
 import { AnnualMeetingPlanner } from '@/components/legacy/AnnualMeetingPlanner';
-import { Heart, ScrollText, ShieldCheck, TrendingUp, Users, PenLine, BookHeart, CalendarDays } from 'lucide-react';
+import { Heart, ScrollText, ShieldCheck, TrendingUp, Users, PenLine, BookHeart, CalendarDays, Landmark } from 'lucide-react';
 import { PageExplainer } from '@/components/PageExplainer';
 
 export default function FamilyLegacy() {
   const [searchParams] = useSearchParams();
   const defaultTab = searchParams.get('tab') || 'trust';
-  const validTab = ['trust', 'estate', 'constitution', 'letters', 'ethical', 'meeting', 'simulator'].includes(defaultTab) ? defaultTab : 'trust';
+  const validTab = ['trust', 'philosophy', 'estate', 'constitution', 'letters', 'ethical', 'meeting', 'simulator'].includes(defaultTab) ? defaultTab : 'trust';
   return (
     <div className="max-w-6xl mx-auto p-4 md:p-6 space-y-4">
       <div>
@@ -37,6 +38,7 @@ export default function FamilyLegacy() {
             body: (
               <ul className="list-disc pl-5 space-y-1">
                 <li><b className="text-foreground">Trust</b> — fund a revocable/irrevocable trust; track assets and funding target.</li>
+                <li><b className="text-foreground">Trust Philosophy</b> — the Lyman Montgomery Family Trust intent statement, values, and trustee expectations.</li>
                 <li><b className="text-foreground">Estate</b> — will, POA, healthcare directive, beneficiary audit.</li>
                 <li><b className="text-foreground">Constitution</b> — AI-drafted family values, decision rules, money principles.</li>
                 <li><b className="text-foreground">Letters</b> — legacy letters to heirs; upload or draft with AI; save to Trust Vault.</li>
@@ -70,6 +72,7 @@ export default function FamilyLegacy() {
       <Tabs defaultValue={validTab}>
         <TabsList className="flex flex-wrap h-auto">
           <TabsTrigger value="trust"><ShieldCheck className="h-3.5 w-3.5 mr-1.5" /> Trust</TabsTrigger>
+          <TabsTrigger value="philosophy"><Landmark className="h-3.5 w-3.5 mr-1.5" /> Trust Philosophy</TabsTrigger>
           <TabsTrigger value="estate"><Users className="h-3.5 w-3.5 mr-1.5" /> Estate</TabsTrigger>
           <TabsTrigger value="constitution"><ScrollText className="h-3.5 w-3.5 mr-1.5" /> Constitution</TabsTrigger>
           <TabsTrigger value="letters"><PenLine className="h-3.5 w-3.5 mr-1.5" /> Letters</TabsTrigger>
@@ -78,6 +81,7 @@ export default function FamilyLegacy() {
           <TabsTrigger value="simulator"><TrendingUp className="h-3.5 w-3.5 mr-1.5" /> 100-Year</TabsTrigger>
         </TabsList>
         <TabsContent value="trust" className="mt-4"><TrustDashboard /></TabsContent>
+        <TabsContent value="philosophy" className="mt-4"><TrustPhilosophy /></TabsContent>
         <TabsContent value="estate" className="mt-4"><EstateChecklist /></TabsContent>
         <TabsContent value="constitution" className="mt-4"><FamilyConstitutionWizard /></TabsContent>
         <TabsContent value="letters" className="mt-4"><LegacyLetterEditor /></TabsContent>
