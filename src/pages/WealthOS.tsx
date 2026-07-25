@@ -150,29 +150,113 @@ function Check({ label, done }: { label: string; done: boolean }) {
   );
 }
 
+/* ---------- charts ---------- */
+
+function LineChart({ points, label }: { points: { date: string; netWorth: number }[]; label: string }) {
+  const W = 640, H = 190, P = 34;
+  if (points.length < 2) {
+    return <div className="wos-card" style={{ color: SLATE, fontSize: 10.5, textAlign: 'center', padding: 24 }}>
+      Not enough history yet — this chart fills in as daily net-worth snapshots accumulate.
+    </div>;
+  }
+  const vals = points.map((p) => p.netWorth);
+  const min = Math.min(...vals) * 0.97, max = Math.max(...vals) * 1.03;
+  const x = (i: number) => P + (i / (points.length - 1)) * (W - P * 2);
+  const y = (v: number) => H - P - ((v - min) / Math.max(max - min, 1)) * (H - P * 2);
+  const d = points.map((p, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(p.netWorth).toFixed(1)}`).join(' ');
+  const area = `${d} L${x(points.length - 1)},${H - P} L${x(0)},${H - P} Z`;
+  return (
+    <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ display: 'block' }}>
+      {[0, 0.5, 1].map((f) => (
+        <line key={f} x1={P} x2={W - P} y1={P + f * (H - P * 2)} y2={P + f * (H - P * 2)} stroke={GRAY} strokeWidth={1} />
+      ))}
+      <path d={area} fill="rgba(11,35,65,.08)" />
+      <path d={d} fill="none" stroke={NAVY} strokeWidth={2.5} />
+      <circle cx={x(points.length - 1)} cy={y(vals[vals.length - 1])} r={4} fill={GOLD} />
+      <text x={P} y={16} fontSize={9} fill={SLATE} letterSpacing={1}>{label.toUpperCase()}</text>
+      <text x={W - P} y={16} fontSize={11} fontWeight={700} fill={NAVY} textAnchor="end">{money(vals[vals.length - 1])}</text>
+      <text x={P} y={H - 10} fontSize={8.5} fill={SLATE}>{points[0].date}</text>
+      <text x={W - P} y={H - 10} fontSize={8.5} fill={SLATE} textAnchor="end">{points[points.length - 1].date}</text>
+    </svg>
+  );
+}
+
+function BandChart({ mean, p10, p90 }: { mean: number[]; p10: number[]; p90: number[] }) {
+  const W = 640, H = 200, P = 34;
+  const n = mean.length;
+  const max = Math.max(...p90) * 1.05 || 1;
+  const x = (i: number) => P + (i / Math.max(n - 1, 1)) * (W - P * 2);
+  const y = (v: number) => H - P - (v / max) * (H - P * 2);
+  const path = (arr: number[]) => arr.map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+  const band = `${path(p90)} L${x(n - 1)},${y(p10[n - 1])} ${p10.slice().reverse().map((v, i) => `L${x(n - 1 - i).toFixed(1)},${y(v).toFixed(1)}`).join(' ')} Z`;
+  const fmt = (v: number) => v >= 1e6 ? `$${(v / 1e6).toFixed(1)}M` : `$${Math.round(v / 1000)}k`;
+  return (
+    <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ display: 'block' }}>
+      {[0, 0.5, 1].map((f) => (
+        <line key={f} x1={P} x2={W - P} y1={P + f * (H - P * 2)} y2={P + f * (H - P * 2)} stroke={GRAY} strokeWidth={1} />
+      ))}
+      <path d={band} fill="rgba(201,162,39,.22)" />
+      <path d={path(mean)} fill="none" stroke={NAVY} strokeWidth={2.5} />
+      <text x={P} y={16} fontSize={9} fill={SLATE} letterSpacing={1}>PROJECTED ESTATE — 10TH / MEAN / 90TH PERCENTILE</text>
+      <text x={W - P} y={16} fontSize={11} fontWeight={700} fill={NAVY} textAnchor="end">{fmt(mean[n - 1] || 0)}</text>
+      <text x={P} y={H - 10} fontSize={8.5} fill={SLATE}>Today</text>
+      <text x={W - P} y={H - 10} fontSize={8.5} fill={SLATE} textAnchor="end">{n - 1} years</text>
+    </svg>
+  );
+}
+
 /* ---------- data ---------- */
 
-const ASSETS = [
-  { label: 'Retirement Assets', value: 175346, color: NAVY },
-  { label: 'Business Interests', value: 550000, color: GOLD },
-  { label: 'Real Estate (Ownership Interest)', value: 142000, color: '#1D4E89' },
-  { label: 'Intellectual Property', value: 50000, color: '#8A7420' },
-  { label: 'Personal Property & Vehicles', value: 57000, color: '#3F6E9C' },
-  { label: 'Brokerage', value: 5000, color: GREEN },
-  { label: 'HSA', value: 1200, color: '#9AA7B5' },
-  { label: 'Emergency Fund', value: 350, color: '#C4CBD3' },
+const FALLBACK_ASSETS = [
+  { key: 'retirement', label: 'Retirement Assets', value: 175346, color: NAVY },
+  { key: 'business', label: 'Business Interests', value: 550000, color: GOLD },
+  { key: 'realEstate', label: 'Real Estate (Ownership Interest)', value: 142000, color: '#1D4E89' },
+  { key: 'intellectualProperty', label: 'Intellectual Property', value: 50000, color: '#8A7420' },
+  { key: 'personalProperty', label: 'Personal Property & Vehicles', value: 57000, color: '#3F6E9C' },
+  { key: 'brokerage', label: 'Brokerage', value: 5000, color: GREEN },
+  { key: 'hsa', label: 'HSA', value: 1200, color: '#9AA7B5' },
+  { key: 'emergency', label: 'Emergency Fund', value: 350, color: '#C4CBD3' },
 ];
-const ASSET_TOTAL = ASSETS.reduce((a, b) => a + b.value, 0);
 
 /* ---------- main ---------- */
 
 export default function WealthOS() {
   const [active, setActive] = useState(0);
+  const [busy, setBusy] = useState<'png' | 'pdf' | null>(null);
+  const { data: live } = useWealthOSData();
+
+  const ASSETS = useMemo(
+    () => FALLBACK_ASSETS.map((a) => ({
+      ...a,
+      value: live?.buckets ? ((live.buckets as any)[a.key] || 0) : a.value,
+    })).filter((a) => a.value > 0),
+    [live],
+  );
+  const ASSET_TOTAL = ASSETS.reduce((a, b) => a + b.value, 0) || 1;
+
+  const sim = useMemo(() => simulate({
+    startingPrincipal: Math.max(live?.netWorth ?? ASSET_TOTAL, 1000),
+    horizonYears: 30, expectedReturn: 0.07, returnStdDev: 0.15, inflation: 0.03,
+    taxRate: 0.15, annualDistributionPct: 0, charitablePct: 0,
+    additionalContribution: 24000, contributionGrowth: 0.03, businessGrowth: 0,
+    lifeInsuranceProceeds: 0, generations: 1, runs: 300,
+  }), [live?.netWorth, ASSET_TOTAL]);
 
   const jump = (i: number) => {
     setActive(i);
     document.getElementById(`page-${i + 1}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
+
+  const runExport = async (kind: 'png' | 'pdf') => {
+    setBusy(kind);
+    try {
+      if (kind === 'png') await exportBinderPNGs();
+      else await exportBinderPDF();
+    } finally {
+      setBusy(null);
+    }
+  };
+
 
   return (
     <div className="wos-root">
