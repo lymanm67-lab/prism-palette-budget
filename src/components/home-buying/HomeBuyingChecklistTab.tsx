@@ -164,7 +164,9 @@ export default function HomeBuyingChecklistTab({ onProgressChange }: Props) {
           );
         })}
       </div>
+      </>)}
     </div>
+
   );
 }
 
