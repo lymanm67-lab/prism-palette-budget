@@ -4,6 +4,8 @@ const NAVY = '#0B2341';
 const GOLD = '#C9A227';
 const GREEN = '#1F7A5A';
 const SLATE = '#64748B';
+const CONTROL_BG = '#F8FAFC';
+const CONTROL_BORDER = '#CBD5E1';
 
 const money = (n: number) => `$${Math.round(n).toLocaleString('en-US')}`;
 
@@ -35,16 +37,16 @@ function project(opts: {
 
 function Num({ label, value, onChange, suffix }: { label: string; value: number; onChange: (n: number) => void; suffix?: string }) {
   return (
-    <label style={{ display: 'flex', flexDirection: 'column', gap: 2, fontSize: 9, color: SLATE, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.4 }}>
+    <label style={{ display: 'flex', flexDirection: 'column', gap: 2, fontSize: 9, color: NAVY, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.4 }}>
       {label}
       <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
         <input
           type="number"
           value={value}
           onChange={(e) => onChange(Number(e.target.value))}
-          style={{ width: 62, border: `1px solid ${'#E5E7EB'}`, borderRadius: 4, padding: '2px 4px', fontSize: 11, color: NAVY, fontWeight: 700 }}
+          style={{ width: 62, background: CONTROL_BG, border: `1px solid ${CONTROL_BORDER}`, borderRadius: 4, padding: '2px 4px', fontSize: 11, color: NAVY, fontWeight: 800 }}
         />
-        {suffix ? <span style={{ fontSize: 10, color: SLATE }}>{suffix}</span> : null}
+        {suffix ? <span style={{ fontSize: 10, color: NAVY, fontWeight: 800 }}>{suffix}</span> : null}
       </span>
     </label>
   );
