@@ -136,7 +136,7 @@ export default function RetirementProjection({
 
       <div className="wos-grid2" style={{ marginTop: 10 }}>
         <Table rows={lyman} title={`Lyman Montgomery — to age 75`} tone={NAVY} />
-        <Table rows={kateri} title={`Kateri Montgomery — to age 62`} tone={GOLD} />
+        <Table rows={kateri} title={`Kateri Montgomery — to age 62`} tone={NAVY} />
       </div>
       <div style={{ fontSize: 8.5, color: SLATE, marginTop: 6 }}>
         Assumes {ret}% average annual return, {raise}% annual raises, contributions made evenly through each year (half-year growth credit),
