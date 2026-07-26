@@ -23,7 +23,7 @@ import { exportToPdf } from '@/lib/export-utils';
 
 const HomeBuyingChecklist = () => {
   const { household } = useHousehold();
-  const [tab, setTab] = useState('planner');
+  const [tab, setTab] = useState('checklist');
   const printRef = useRef<HTMLDivElement>(null);
   const [printing, setPrinting] = useState(false);
 
