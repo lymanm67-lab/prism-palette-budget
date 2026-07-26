@@ -21,16 +21,29 @@ type Props = {
 function project(opts: {
   start: number; salary: number; years: number; contribPct: number; employerPct: number;
   ret: number; raise: number; ageNow: number; baseYear: number;
+  /** Extra monthly dollars redirected from freed-up debt payments */
+  extraMonthly?: number;
+  /** Calendar year the redirect begins */
+  extraStartYear?: number;
+  /** Month (1-12) the redirect begins in extraStartYear */
+  extraStartMonth?: number;
 }) {
   const rows: { year: number; age: number; contributions: number; growth: number; balance: number }[] = [];
   let bal = opts.start;
   let sal = opts.salary;
   for (let i = 1; i <= opts.years; i++) {
     sal = i === 1 ? opts.salary : sal * (1 + opts.raise);
-    const contrib = sal * (opts.contribPct + opts.employerPct);
+    const year = opts.baseYear + i;
+    let extra = 0;
+    if (opts.extraMonthly && opts.extraStartYear) {
+      const startMonth = opts.extraStartMonth ?? 1;
+      if (year > opts.extraStartYear) extra = opts.extraMonthly * 12;
+      else if (year === opts.extraStartYear) extra = opts.extraMonthly * (13 - startMonth);
+    }
+    const contrib = sal * (opts.contribPct + opts.employerPct) + extra;
     const growth = bal * opts.ret + contrib * (opts.ret / 2);
     bal = bal + contrib + growth;
-    rows.push({ year: opts.baseYear + i, age: opts.ageNow + i, contributions: contrib, growth, balance: bal });
+    rows.push({ year, age: opts.ageNow + i, contributions: contrib, growth, balance: bal });
   }
   return rows;
 }
@@ -64,18 +77,23 @@ export default function RetirementProjection({
   const [kateriEmp, setKateriEmp] = useState(14);
 
   const [scenario, setScenario] = useState<75 | 85>(75);
+  const [debtRedirect, setDebtRedirect] = useState(998); // $888 + $110, both from Sept 2027
+  const REDIRECT_START_YEAR = 2027;
+  const REDIRECT_START_MONTH = 9;
 
   const lyman75 = useMemo(() => project({
     start: lymanStart, salary: lymanSalary, years: Math.max(75 - lymanAgeNow, 0),
     contribPct: lymanPct / 100, employerPct: lymanEmp / 100, ret: ret / 100, raise: raise / 100,
     ageNow: lymanAgeNow, baseYear,
-  }), [lymanStart, lymanSalary, lymanPct, lymanEmp, ret, raise, lymanAgeNow, baseYear]);
+    extraMonthly: debtRedirect, extraStartYear: REDIRECT_START_YEAR, extraStartMonth: REDIRECT_START_MONTH,
+  }), [lymanStart, lymanSalary, lymanPct, lymanEmp, ret, raise, lymanAgeNow, baseYear, debtRedirect]);
 
   const lyman85 = useMemo(() => project({
     start: lymanStart, salary: lymanSalary, years: Math.max(85 - lymanAgeNow, 0),
     contribPct: lymanPct / 100, employerPct: lymanEmp / 100, ret: ret / 100, raise: raise / 100,
     ageNow: lymanAgeNow, baseYear,
-  }), [lymanStart, lymanSalary, lymanPct, lymanEmp, ret, raise, lymanAgeNow, baseYear]);
+    extraMonthly: debtRedirect, extraStartYear: REDIRECT_START_YEAR, extraStartMonth: REDIRECT_START_MONTH,
+  }), [lymanStart, lymanSalary, lymanPct, lymanEmp, ret, raise, lymanAgeNow, baseYear, debtRedirect]);
 
   const lyman = scenario === 75 ? lyman75 : lyman85;
 
@@ -129,6 +147,7 @@ export default function RetirementProjection({
         <Num label="Kateri age now" value={kateriAge} onChange={setKateriAge} />
         <Num label="Kateri defer" value={kateriPct} onChange={setKateriPct} suffix="%" />
         <Num label="Kateri employer" value={kateriEmp} onChange={setKateriEmp} suffix="%" />
+        <Num label="Debt redirect /mo" value={debtRedirect} onChange={setDebtRedirect} suffix="$" />
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4 }}>
           {[75, 85].map((a) => (
             <button
@@ -183,7 +202,8 @@ export default function RetirementProjection({
         <Table rows={kateri} title={`Kateri Montgomery — to age 62`} tone={NAVY} />
       </div>
       <div style={{ fontSize: 8.5, color: SLATE, marginTop: 6 }}>
-        Assumes {ret}% average annual return, {raise}% annual raises, contributions made evenly through each year (half-year growth credit),
+        Includes {money(debtRedirect)}/mo of freed-up debt payments ($888 + $110) redirected to Lyman's retirement starting September 2027
+        (4 months in 2027, full 12 months thereafter). Assumes {ret}% average annual return, {raise}% annual raises, contributions made evenly through each year (half-year growth credit),
         and no withdrawals before the stated retirement age. Pension and Social Security income are shown separately above.
       </div>
     </div>
