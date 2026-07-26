@@ -4,6 +4,8 @@ import { Printer, ImageDown, FileDown, Loader2 } from 'lucide-react';
 import { useWealthOSData } from '@/hooks/use-wealth-os';
 import { simulate } from '@/lib/legacy/monteCarloSim';
 import { exportBinderPNGs, exportBinderPDF } from '@/lib/legacy/wealthOsExport';
+import RetirementProjection from '@/components/wealth-os/RetirementProjection';
+
 
 
 /**
@@ -630,7 +632,16 @@ export default function WealthOS() {
         </div>
 
 
+        <SectionLabel>Projected Retirement Balances — Continued Contributions @ 7% Return</SectionLabel>
+        <RetirementProjection
+          lymanStart={lymanB.retirement || 0}
+          kateriStart={kateriB.retirement || OPERS + OHIO_DC}
+          lymanSalary={BASE_SALARY}
+          kateriSalary={113000}
+        />
+
         <SectionLabel>Salary Growth Timeline (3% Annual) — Age 59 → 75</SectionLabel>
+
         {SALARY_GROWTH.map((r, i) => (
           <Milestone
             key={r.year}
