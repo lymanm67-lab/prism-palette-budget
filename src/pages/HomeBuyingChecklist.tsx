@@ -118,16 +118,17 @@ const HomeBuyingChecklist = () => {
 
         ) : (
           <Tabs value={tab} onValueChange={setTab} className="w-full">
-            <TabsList className="w-full grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 h-auto p-1 gap-1">
+            <TabsList className="w-full grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-8 h-auto p-1 gap-1">
               {TABS.map((t) => {
                 const Icon = t.icon;
                 return (
-                  <TabsTrigger key={t.id} value={t.id} className="flex flex-col sm:flex-row gap-1 sm:gap-1.5 text-xs py-2">
-                    <Icon className="h-3.5 w-3.5" />
-                    <span>{t.label}</span>
+                  <TabsTrigger key={t.id} value={t.id} className="flex flex-col xl:flex-row items-center justify-center gap-1 xl:gap-1.5 text-[11px] sm:text-xs py-2 px-1 whitespace-normal text-center leading-tight min-w-0">
+                    <Icon className="h-3.5 w-3.5 shrink-0" />
+                    <span className="min-w-0">{t.label}</span>
                   </TabsTrigger>
                 );
               })}
+
             </TabsList>
 
             <TabsContent value="planner" className="mt-4"><PlannerRoot /></TabsContent>
