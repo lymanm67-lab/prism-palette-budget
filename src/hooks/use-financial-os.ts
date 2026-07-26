@@ -54,12 +54,16 @@ export function useLegacyWorth() {
       const acctAssets = (accounts.data || [])
         .filter((a: any) => !LIAB_TYPES.has(String(a.account_type || '').toLowerCase()))
         .reduce((s: number, a: any) => s + Number(a.balance || 0), 0);
-      const acctLiab = (accounts.data || [])
-        .filter((a: any) => LIAB_TYPES.has(String(a.account_type || '').toLowerCase()))
-        .reduce((s: number, a: any) => s + Math.abs(Number(a.balance || 0)), 0);
-      const debtLiab = (debts.data || []).reduce((s: number, d: any) => s + Number(d.balance || 0), 0);
+      const acctLiabRows = (accounts.data || [])
+        .filter((a: any) => LIAB_TYPES.has(String(a.account_type || '').toLowerCase()));
+      const acctLiab = acctLiabRows.reduce((s: number, a: any) => s + Math.abs(Number(a.balance || 0)), 0);
+      // Avoid double-counting debts tracked both as accounts and as payoff-plan debt items
+      const keepDebt = makeDebtDeduper(acctLiabRows.map((a: any) => String(a.name || '')));
+      const uniqueDebts = (debts.data || []).filter((d: any) => keepDebt(String(d.name || '')));
+      const debtLiab = uniqueDebts.reduce((s: number, d: any) => s + Number(d.balance || 0), 0);
       const liab = acctLiab + debtLiab;
       const netWorth = acctAssets - liab;
+
 
       const liquid = (accounts.data || [])
         .filter((a: any) => ['checking', 'savings', 'cash'].includes(String(a.account_type || '').toLowerCase()))
