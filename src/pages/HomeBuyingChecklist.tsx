@@ -57,16 +57,20 @@ const HomeBuyingChecklist = () => {
   const checklistPct = ((checklist?.filter((p) => p.is_checked).length ?? 0) / 8) * 100;
   const metrics = useHomeBuyingMetrics();
 
+  // Ordered to follow the actual home-buying journey:
+  // 1) Am I ready? → 2) What can I afford? → 3) How do I finance it? → 4) Paperwork
+  // → 5) Plan the timeline → 6) Find homes → 7) Evaluate & decide → 8) Ask the coach
   const TABS = [
+    { id: 'checklist', label: 'Readiness', icon: CheckCircle2 },
+    { id: 'calculators', label: 'Affordability', icon: Calculator },
+    { id: 'loans', label: 'Loans & Assistance', icon: Landmark },
+    { id: 'cosigner', label: 'Co-Signer Docs', icon: Users },
     { id: 'planner', label: 'Planner', icon: LayoutDashboard },
+    { id: 'search', label: 'Home Search', icon: Search },
     { id: 'decision', label: 'Decision', icon: ClipboardCheck },
     { id: 'coach', label: 'AI Coach', icon: Bot },
-    { id: 'calculators', label: 'Calculators', icon: Calculator },
-    { id: 'loans', label: 'Loans & Assistance', icon: Landmark },
-    { id: 'search', label: 'Home Search', icon: Search },
-    { id: 'checklist', label: 'Checklist', icon: CheckCircle2 },
-    { id: 'cosigner', label: 'Co-Signer Docs', icon: Users },
   ];
+
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 max-w-7xl">
