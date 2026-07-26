@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useHousehold } from '@/contexts/HouseholdContext';
+import { makeDebtDeduper } from '@/lib/liability-dedupe';
+
 
 const sb = supabase as any;
 

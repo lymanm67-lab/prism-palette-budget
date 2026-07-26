@@ -34,7 +34,7 @@ export function useLegacyWorth() {
       ] = await Promise.all([
         sb.from('accounts').select('id,account_type,balance,name').eq('household_id', hid).is('deleted_at', null),
         planIds.length
-          ? sb.from('debt_items').select('balance,interest_rate,minimum_payment,plan_id').in('plan_id', planIds)
+          ? sb.from('debt_items').select('name,balance,interest_rate,minimum_payment,plan_id').in('plan_id', planIds)
           : Promise.resolve({ data: [] }),
         sb.from('investment_holdings').select('symbol,market_value,cost_basis').eq('household_id', hid),
         sb.from('insurance_coverage').select('kind,coverage_amount').eq('household_id', hid).is('deleted_at', null),
