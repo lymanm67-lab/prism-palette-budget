@@ -83,11 +83,19 @@ export default function HomeBuyingChecklistTab({ onProgressChange }: Props) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="font-display text-xl font-bold flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setSectionOpen((o) => !o)}
+          aria-expanded={sectionOpen}
+          className="font-display text-xl font-bold flex items-center gap-2 hover:opacity-80 transition-opacity"
+        >
           <Home className="h-5 w-5 text-prism-teal" /> 8 Readiness Questions
-        </h3>
+          <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform ${sectionOpen ? 'rotate-180' : ''}`} />
+        </button>
         <Badge variant="secondary" className="gap-1.5"><Home className="h-3.5 w-3.5 text-prism-teal" />{checkedCount}/{CHECKLIST_ITEMS.length} Answered</Badge>
       </div>
+      {sectionOpen && (<>
+
 
       {overallProgress === 100 && (
         <p className="text-xs text-prism-teal flex items-center gap-1.5">
