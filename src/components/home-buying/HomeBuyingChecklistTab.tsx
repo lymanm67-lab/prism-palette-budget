@@ -30,7 +30,9 @@ interface Props { onProgressChange?: (pct: number) => void; }
 export default function HomeBuyingChecklistTab({ onProgressChange }: Props) {
   const { household } = useHousehold();
   const qc = useQueryClient();
+  const [sectionOpen, setSectionOpen] = useState(true);
   const [expandedItem, setExpandedItem] = useState<number | null>(null);
+
   const [editingNotes, setEditingNotes] = useState<Record<number, string>>({});
 
   const { data: progress } = useQuery({
