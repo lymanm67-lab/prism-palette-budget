@@ -186,8 +186,9 @@ export default function RetirementDashboard() {
   });
   const saveTab = (key: "opt" | "emp" | "hsa" | "roth", data: unknown, label: string) => {
     try {
-      const suffix = key === "opt" ? "" : `-${key}`;
-      localStorage.setItem(LS_KEY + suffix, JSON.stringify(data));
+      const storageKey = key === "opt" ? LS_KEY : key === "roth" ? ROTH_KEY : `${LS_KEY}-${key}`;
+      localStorage.setItem(storageKey, JSON.stringify(data));
+
       const ts = new Date().toLocaleString();
       const next = { ...savedAt, [key]: ts };
       setSavedAt(next);
