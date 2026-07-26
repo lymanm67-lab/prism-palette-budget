@@ -63,11 +63,21 @@ export default function RetirementProjection({
   const [kateriPct, setKateriPct] = useState(10);
   const [kateriEmp, setKateriEmp] = useState(14);
 
-  const lyman = useMemo(() => project({
+  const [scenario, setScenario] = useState<75 | 85>(75);
+
+  const lyman75 = useMemo(() => project({
     start: lymanStart, salary: lymanSalary, years: Math.max(75 - lymanAgeNow, 0),
     contribPct: lymanPct / 100, employerPct: lymanEmp / 100, ret: ret / 100, raise: raise / 100,
     ageNow: lymanAgeNow, baseYear,
   }), [lymanStart, lymanSalary, lymanPct, lymanEmp, ret, raise, lymanAgeNow, baseYear]);
+
+  const lyman85 = useMemo(() => project({
+    start: lymanStart, salary: lymanSalary, years: Math.max(85 - lymanAgeNow, 0),
+    contribPct: lymanPct / 100, employerPct: lymanEmp / 100, ret: ret / 100, raise: raise / 100,
+    ageNow: lymanAgeNow, baseYear,
+  }), [lymanStart, lymanSalary, lymanPct, lymanEmp, ret, raise, lymanAgeNow, baseYear]);
+
+  const lyman = scenario === 75 ? lyman75 : lyman85;
 
   const kateri = useMemo(() => project({
     start: kateriStart, salary: kateriSalary, years: Math.max(62 - kateriAge, 0),
@@ -75,7 +85,11 @@ export default function RetirementProjection({
     ageNow: kateriAge, baseYear,
   }), [kateriStart, kateriSalary, kateriPct, kateriEmp, ret, raise, kateriAge, baseYear]);
 
-  const lymanEnd = lyman.length ? lyman[lyman.length - 1].balance : lymanStart;
+  const end = (rows: typeof lyman75) => (rows.length ? rows[rows.length - 1].balance : lymanStart);
+  const lyman75End = end(lyman75);
+  const lyman85End = end(lyman85);
+  const lymanEnd = scenario === 75 ? lyman75End : lyman85End;
+  const retireAge = scenario;
   const kateriEnd = kateri.length ? kateri[kateri.length - 1].balance : kateriStart;
   const lymanContrib = lyman.reduce((s, r) => s + r.contributions, 0);
   const kateriContrib = kateri.reduce((s, r) => s + r.contributions, 0);
@@ -115,13 +129,41 @@ export default function RetirementProjection({
         <Num label="Kateri age now" value={kateriAge} onChange={setKateriAge} />
         <Num label="Kateri defer" value={kateriPct} onChange={setKateriPct} suffix="%" />
         <Num label="Kateri employer" value={kateriEmp} onChange={setKateriEmp} suffix="%" />
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4 }}>
+          {[75, 85].map((a) => (
+            <button
+              key={a}
+              type="button"
+              onClick={() => setScenario(a as 75 | 85)}
+              style={{
+                fontSize: 10, fontWeight: 800, padding: '3px 8px', borderRadius: 4,
+                border: `1px solid ${scenario === a ? NAVY : CONTROL_BORDER}`,
+                background: scenario === a ? NAVY : CONTROL_BG,
+                color: scenario === a ? '#fff' : NAVY, cursor: 'pointer',
+              }}
+            >
+              Retire @ {a}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="wos-grid3">
-        <div style={{ background: NAVY, color: '#fff', borderRadius: 6, padding: '8px 10px' }}>
-          <div style={{ fontSize: 8.5, letterSpacing: 0.6, textTransform: 'uppercase', opacity: 0.8 }}>Lyman @ 75 ({baseYear + Math.max(75 - lymanAgeNow, 0)})</div>
-          <div style={{ fontSize: 17, fontWeight: 800 }}>{money(lymanEnd)}</div>
-          <div style={{ fontSize: 9, opacity: 0.85 }}>{money(lymanContrib)} contributed</div>
+        <div
+          onClick={() => setScenario(75)}
+          style={{ cursor: 'pointer', background: NAVY, color: '#fff', borderRadius: 6, padding: '8px 10px', outline: scenario === 75 ? `2px solid ${GOLD}` : 'none' }}
+        >
+          <div style={{ fontSize: 8.5, letterSpacing: 0.6, textTransform: 'uppercase', opacity: 0.8 }}>Scenario A — Lyman @ 75 ({baseYear + Math.max(75 - lymanAgeNow, 0)})</div>
+          <div style={{ fontSize: 17, fontWeight: 800 }}>{money(lyman75End)}</div>
+          <div style={{ fontSize: 9, opacity: 0.85 }}>{money(lyman75.reduce((s, r) => s + r.contributions, 0))} contributed</div>
+        </div>
+        <div
+          onClick={() => setScenario(85)}
+          style={{ cursor: 'pointer', background: NAVY, color: '#fff', borderRadius: 6, padding: '8px 10px', outline: scenario === 85 ? `2px solid ${GOLD}` : 'none' }}
+        >
+          <div style={{ fontSize: 8.5, letterSpacing: 0.6, textTransform: 'uppercase', opacity: 0.8 }}>Scenario B — Lyman @ 85 ({baseYear + Math.max(85 - lymanAgeNow, 0)})</div>
+          <div style={{ fontSize: 17, fontWeight: 800 }}>{money(lyman85End)}</div>
+          <div style={{ fontSize: 9, opacity: 0.85 }}>+{money(lyman85End - lyman75End)} vs. retiring at 75</div>
         </div>
         <div style={{ background: NAVY, color: '#fff', borderRadius: 6, padding: '8px 10px', borderLeft: `4px solid ${GOLD}` }}>
           <div style={{ fontSize: 8.5, letterSpacing: 0.6, textTransform: 'uppercase', color: GOLD, fontWeight: 800 }}>Kateri @ 62 ({baseYear + Math.max(62 - kateriAge, 0)})</div>
@@ -130,14 +172,14 @@ export default function RetirementProjection({
         </div>
 
         <div style={{ background: GREEN, color: '#fff', borderRadius: 6, padding: '8px 10px' }}>
-          <div style={{ fontSize: 8.5, letterSpacing: 0.6, textTransform: 'uppercase', opacity: 0.85 }}>Combined at Lyman's Retirement</div>
-          <div style={{ fontSize: 17, fontWeight: 800 }}>{money(lymanEnd + kateriEnd * Math.pow(1 + ret / 100, Math.max((75 - lymanAgeNow) - (62 - kateriAge), 0)))}</div>
+          <div style={{ fontSize: 8.5, letterSpacing: 0.6, textTransform: 'uppercase', opacity: 0.85 }}>Combined at Lyman @ {retireAge}</div>
+          <div style={{ fontSize: 17, fontWeight: 800 }}>{money(lymanEnd + kateriEnd * Math.pow(1 + ret / 100, Math.max((retireAge - lymanAgeNow) - (62 - kateriAge), 0)))}</div>
           <div style={{ fontSize: 9, opacity: 0.85 }}>Kateri's balance compounded, no further contributions after 62</div>
         </div>
       </div>
 
       <div className="wos-grid2" style={{ marginTop: 10 }}>
-        <Table rows={lyman} title={`Lyman Montgomery — to age 75`} tone={NAVY} />
+        <Table rows={lyman} title={`Lyman Montgomery — to age ${retireAge}`} tone={NAVY} />
         <Table rows={kateri} title={`Kateri Montgomery — to age 62`} tone={NAVY} />
       </div>
       <div style={{ fontSize: 8.5, color: SLATE, marginTop: 6 }}>
