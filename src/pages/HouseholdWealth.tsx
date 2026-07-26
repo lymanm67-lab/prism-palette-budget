@@ -145,7 +145,7 @@ export default function HouseholdWealth() {
             <Card>
               <CardHeader><CardTitle className="flex items-center gap-2"><Landmark className="h-4 w-4" /> Kateri Montgomery</CardTitle></CardHeader>
               <CardContent className="space-y-2 text-sm">
-                <Line label="Salary (annual)" value="$103,000.00" />
+                <Line label="Salary (annual)" value="$113,000.00" />
                 <Line label="OPERS Pension Account" value={money2(OPERS)} />
                 <Line label="Ohio Deferred Compensation" value={money2(OHIO_DC)} />
                 <Line label="Real Estate — 213 Allies Street" value={money2(ALLIES)} />
@@ -401,7 +401,7 @@ export default function HouseholdWealth() {
             <Card>
               <CardHeader><CardTitle className="flex items-center gap-2"><PiggyBank className="h-4 w-4" /> Kateri Montgomery</CardTitle></CardHeader>
               <CardContent className="space-y-2 text-sm">
-                <Line label="Employment" value="$103,000.00 salary" />
+                <Line label="Employment" value="$113,000.00 salary" />
                 <Line label="Retirement" value={money2(kateriB.retirement)} />
                 <Line label="Pension (OPERS)" value={`${money2(OPERS)} • ${money(PENSION_MONTHLY)}/mo`} />
                 <Line label="Deferred Compensation" value={money2(OHIO_DC)} />

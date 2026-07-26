@@ -433,7 +433,7 @@ export default function WealthOS() {
           <div>
             <SectionLabel>Kateri Montgomery</SectionLabel>
             <div className="wos-card">
-              <Row label="Salary (annual)" value="$103,000.00" />
+              <Row label="Salary (annual)" value="$113,000.00" />
               <Row label="OPERS Pension Account" value={money(OPERS)} />
               <Row label="Ohio Deferred Compensation" value={money(OHIO_DC)} />
               <Row label="Real Estate — 213 Allies Street" value={money(ALLIES)} />
@@ -465,8 +465,8 @@ export default function WealthOS() {
         <div className="wos-grid4">
           <Kpi label="Lyman — Annual Salary" value="$70,940.04" tone="navy" />
           <Kpi label="Lyman — Consulting Income" value="$25,000.00" sub="business consulting / 1099" tone="plain" />
-          <Kpi label="Kateri — Annual Salary" value="$103,000.00" tone="gold" />
-          <Kpi label="Combined Household Income" value="$198,940.04" sub="$16,578.34 / mo gross" tone="green" />
+          <Kpi label="Kateri — Annual Salary" value="$113,000.00" tone="gold" />
+          <Kpi label="Combined Household Income" value="$208,940.04" sub="$17,411.67 / mo gross" tone="green" />
         </div>
 
         <SectionLabel>Lyman Montgomery — Employment & Consulting</SectionLabel>
