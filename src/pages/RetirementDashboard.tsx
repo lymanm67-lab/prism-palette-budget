@@ -89,6 +89,8 @@ const DEFAULT_OPT: OptimizerInputs = {
 };
 
 const LS_KEY = "retirement-optimizer-inputs-v5";
+const ROTH_KEY = LS_KEY + "-roth-v6";
+
 
 export default function RetirementDashboard() {
   const { household } = useHousehold();
@@ -139,10 +141,14 @@ export default function RetirementDashboard() {
     hasStateIncomeTax: true, stateRateNow: 0.0275, stateRateRetirement: 0.015,
   };
   const [roth, setRoth] = useState<RothInputs>(() => {
-    try { const r = localStorage.getItem(LS_KEY + "-roth-v6"); if (r) return normalizeRoth({ ...DEFAULT_ROTH, ...JSON.parse(r) }); } catch {}
+    try {
+      const r = localStorage.getItem(ROTH_KEY) ?? localStorage.getItem(LS_KEY + "-roth");
+      if (r) return normalizeRoth({ ...DEFAULT_ROTH, ...JSON.parse(r) });
+    } catch {}
     return DEFAULT_ROTH;
   });
-  useEffect(() => { try { localStorage.setItem(LS_KEY + "-roth-v6", JSON.stringify(roth)); } catch {} }, [roth]);
+  useEffect(() => { try { localStorage.setItem(ROTH_KEY, JSON.stringify(roth)); } catch {} }, [roth]);
+
   const rothVerdict = analyzeRothVsTraditional(roth);
 
   const [reviewMd, setReviewMd] = useState<string>("");
@@ -180,8 +186,9 @@ export default function RetirementDashboard() {
   });
   const saveTab = (key: "opt" | "emp" | "hsa" | "roth", data: unknown, label: string) => {
     try {
-      const suffix = key === "opt" ? "" : `-${key}`;
-      localStorage.setItem(LS_KEY + suffix, JSON.stringify(data));
+      const storageKey = key === "opt" ? LS_KEY : key === "roth" ? ROTH_KEY : `${LS_KEY}-${key}`;
+      localStorage.setItem(storageKey, JSON.stringify(data));
+
       const ts = new Date().toLocaleString();
       const next = { ...savedAt, [key]: ts };
       setSavedAt(next);
