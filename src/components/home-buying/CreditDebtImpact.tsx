@@ -6,16 +6,23 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { CreditCard, TrendingDown } from 'lucide-react';
 import { calcMortgage, estimateRateForFico, fmt$ } from '@/lib/home-buying/mortgage-math';
 import { LOAN_DTI_LIMITS, LOAN_PROGRAM_OPTIONS, type LoanProgram } from '@/lib/home-buying/loan-dti-limits';
+import { loadMortgageFico, saveMortgageFico, qualifyingFico, eligiblePrograms, BUREAU_MODEL, type MortgageFico } from '@/lib/home-buying/mortgage-fico';
 
 export default function CreditDebtImpact({ price: priceProp, onPriceChange }: { price?: number; onPriceChange?: (n: number) => void } = {}) {
   const [priceLocal, setPriceLocal] = useState(350000);
   const price = priceProp ?? priceLocal;
   const setPrice = (n: number) => { onPriceChange ? onPriceChange(n) : setPriceLocal(n); };
   const [downPct, setDownPct] = useState(10);
-  const [fico, setFico] = useState(700);
+  const [scores, setScoresState] = useState<MortgageFico>(() => loadMortgageFico());
+  const setScores = (s: MortgageFico) => { setScoresState(s); saveMortgageFico(s); };
+  const qualifying = qualifyingFico(scores);
+  const [ficoOverride, setFicoOverride] = useState<number | null>(null);
+  const fico = ficoOverride ?? qualifying ?? 700;
+  const setFico = (n: number) => setFicoOverride(n);
   const [monthlyDebt, setMonthlyDebt] = useState(600);
   const [grossIncome, setGrossIncome] = useState(7500);
   const [program, setProgram] = useState<LoanProgram>('conventional');
+
 
   const limits = LOAN_DTI_LIMITS[program];
 
