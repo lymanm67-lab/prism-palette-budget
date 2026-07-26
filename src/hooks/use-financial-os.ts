@@ -3,6 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import { makeDebtDeduper } from '@/lib/liability-dedupe';
+
 import {
   computeLegacyWorth, projectEstateAt85, daysUntilFreedom,
   type LegacyWorthInputs, type LifeStage,
