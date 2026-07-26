@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Home, Sparkles } from 'lucide-react';
+import { loadMortgageFico, qualifyingFico, eligiblePrograms, BUREAU_MODEL } from '@/lib/home-buying/mortgage-fico';
 
 interface ReadinessHeroProps {
   checklistPct: number;
@@ -11,6 +12,10 @@ export default function ReadinessHero({ checklistPct, metrics }: ReadinessHeroPr
   const overall = Math.round(
     (checklistPct + metrics.reduce((s, m) => s + m.pct, 0)) / (metrics.length + 1)
   );
+  const scores = loadMortgageFico();
+  const qualifying = qualifyingFico(scores);
+  const programs = qualifying !== null ? eligiblePrograms(qualifying) : [];
+
 
   return (
     <Card className="prism-card-shine border-border/50 overflow-hidden">
@@ -49,7 +54,42 @@ export default function ReadinessHero({ checklistPct, metrics }: ReadinessHeroPr
             ))}
           </div>
         </div>
+
+
+        {qualifying !== null && (
+          <div className="mt-5 pt-5 border-t border-border/40 flex flex-col lg:flex-row gap-4 lg:items-center">
+            <div className="rounded-lg border border-prism-amber/40 bg-prism-amber/5 px-4 py-2.5 shrink-0">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Qualifying Mortgage FICO</p>
+              <p className="font-display text-3xl font-extrabold prism-gradient-text leading-tight">{qualifying}</p>
+              <p className="text-[10px] text-muted-foreground">middle of 3 bureaus{scores.asOf ? ` · ${scores.asOf}` : ''}</p>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {(['Equifax', 'TransUnion', 'Experian'] as const).map((b) =>
+                typeof scores[b] === 'number' ? (
+                  <div key={b} className={`rounded-md border px-3 py-2 ${scores[b] === qualifying ? 'border-prism-amber/50 bg-prism-amber/5' : 'border-border/40 bg-card/40'}`}>
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">{b} · {BUREAU_MODEL[b]}</p>
+                    <p className="font-display text-base font-bold">{scores[b]}</p>
+                  </div>
+                ) : null
+              )}
+            </div>
+
+            <div className="flex flex-wrap gap-1.5 lg:ml-auto">
+              {programs.map((p) => (
+                <span
+                  key={p.program}
+                  title={p.note}
+                  className={`rounded-full border px-2.5 py-1 text-[11px] font-medium ${p.ok ? 'border-prism-teal/40 bg-prism-teal/10 text-prism-teal' : 'border-border/50 bg-muted/40 text-muted-foreground line-through'}`}
+                >
+                  {p.ok ? '✓' : '✕'} {p.program}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
 }
+
