@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Home, Sparkles } from 'lucide-react';
+import { loadMortgageFico, qualifyingFico, eligiblePrograms, BUREAU_MODEL } from '@/lib/home-buying/mortgage-fico';
 
 interface ReadinessHeroProps {
   checklistPct: number;
@@ -11,6 +12,10 @@ export default function ReadinessHero({ checklistPct, metrics }: ReadinessHeroPr
   const overall = Math.round(
     (checklistPct + metrics.reduce((s, m) => s + m.pct, 0)) / (metrics.length + 1)
   );
+  const scores = loadMortgageFico();
+  const qualifying = qualifyingFico(scores);
+  const programs = qualifying !== null ? eligiblePrograms(qualifying) : [];
+
 
   return (
     <Card className="prism-card-shine border-border/50 overflow-hidden">
