@@ -108,13 +108,14 @@ const HomeBuyingChecklist = () => {
 
         {printing ? (
           <div className="space-y-8">
-            <section><h2 className="font-display text-xl font-bold mb-3">Planner</h2><PlannerRoot /></section>
-            <section><h2 className="font-display text-xl font-bold mb-3">AI Coach</h2><AiHomeBuyingCoach /></section>
-            <section><h2 className="font-display text-xl font-bold mb-3">Calculators</h2><HomeBuyingCalculators /></section>
+            <section><h2 className="font-display text-xl font-bold mb-3">Readiness</h2><HomeBuyingChecklistTab /></section>
+            <section><h2 className="font-display text-xl font-bold mb-3">Affordability</h2><HomeBuyingCalculators /></section>
             <section><h2 className="font-display text-xl font-bold mb-3">Loans & Assistance</h2><LoansAndAssistance /></section>
+            <section><h2 className="font-display text-xl font-bold mb-3">Planner</h2><PlannerRoot /></section>
             <section><h2 className="font-display text-xl font-bold mb-3">Home Search</h2><AppreciationInfo /><HomeSearchPanel /></section>
-            <section><h2 className="font-display text-xl font-bold mb-3">Checklist</h2><HomeBuyingChecklistTab /></section>
+            <section><h2 className="font-display text-xl font-bold mb-3">AI Coach</h2><AiHomeBuyingCoach /></section>
           </div>
+
         ) : (
           <Tabs value={tab} onValueChange={setTab} className="w-full">
             <TabsList className="w-full grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 h-auto p-1 gap-1">
