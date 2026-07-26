@@ -638,6 +638,17 @@ export default function WealthOS() {
           kateriStart={kateriB.retirement || OPERS + OHIO_DC}
           lymanSalary={BASE_SALARY}
           kateriSalary={113000}
+          household={{
+            business: B.business || 0,
+            realEstate: B.realEstate || 0,
+            intellectualProperty: B.intellectualProperty || 0,
+            personalProperty: B.personalProperty || 0,
+            vehicles: B.vehicles || 0,
+            brokerage: B.brokerage || 0,
+            hsa: B.hsa || 0,
+            cash: B.cash || 0,
+            liabilities: live?.totalLiabilities || 0,
+          }}
         />
 
         <SectionLabel>Salary Growth Timeline (3% Annual) — Age 59 → 75</SectionLabel>

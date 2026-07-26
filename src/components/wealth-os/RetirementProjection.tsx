@@ -16,6 +16,22 @@ type Props = {
   kateriSalary: number;    // current base salary
   baseYear?: number;       // year of "current"
   lymanAgeNow?: number;
+  /** Non-retirement household assets at today's value, for the reconciliation roll-up */
+  household?: {
+    business?: number;
+    realEstate?: number;
+    intellectualProperty?: number;
+    personalProperty?: number;
+    vehicles?: number;
+    brokerage?: number;
+    hsa?: number;
+    cash?: number;
+    liabilities?: number;
+  };
+  /** Kateri's estimated OPERS pension, monthly */
+  pensionMonthly?: number;
+  /** Lyman's projected Social Security at 70, monthly */
+  socialSecurityMonthly?: number;
 };
 
 function project(opts: {
@@ -67,6 +83,7 @@ function Num({ label, value, onChange, suffix }: { label: string; value: number;
 
 export default function RetirementProjection({
   lymanStart, kateriStart, lymanSalary, kateriSalary, baseYear = 2026, lymanAgeNow = 59,
+  household, pensionMonthly = 6559, socialSecurityMonthly = 3500,
 }: Props) {
   const [ret, setRet] = useState(7);
   const [raise, setRaise] = useState(3);
@@ -77,6 +94,7 @@ export default function RetirementProjection({
   const [kateriEmp, setKateriEmp] = useState(14);
 
   const [scenario, setScenario] = useState<75 | 85>(75);
+  const [assetGrowth, setAssetGrowth] = useState(3);
   const [debtRedirect, setDebtRedirect] = useState(998); // $888 + $110, both from Sept 2027
   const REDIRECT_START_YEAR = 2027;
   const REDIRECT_START_MONTH = 9;
@@ -201,6 +219,52 @@ export default function RetirementProjection({
         <Table rows={lyman} title={`Lyman Montgomery — to age ${retireAge}`} tone={NAVY} />
         <Table rows={kateri} title={`Kateri Montgomery — to age 62`} tone={NAVY} />
       </div>
+      {household ? (() => {
+        const yrs = Math.max(retireAge - lymanAgeNow, 0);
+        const growth = Math.pow(1 + assetGrowth / 100, yrs);
+        const kateriAtLyman = kateriEnd * Math.pow(1 + ret / 100, Math.max(yrs - (62 - kateriAge), 0));
+        const appreciating =
+          (household.business || 0) + (household.realEstate || 0) + (household.intellectualProperty || 0) +
+          (household.brokerage || 0) + (household.hsa || 0);
+        const flat = (household.personalProperty || 0) + (household.vehicles || 0) + (household.cash || 0);
+        const grownAssets = appreciating * growth + flat;
+        const pensionPv = pensionMonthly * 12 * 20;   // ~20-year capitalization
+        const ssPv = socialSecurityMonthly * 12 * 18; // ~18-year capitalization
+        const liabilities = household.liabilities || 0;
+        const total = lymanEnd + kateriAtLyman + grownAssets + pensionPv + ssPv - liabilities;
+        const line = (label: string, value: number, note?: string, bold?: boolean) => (
+          <div key={label} style={{ display: 'flex', justifyContent: 'space-between', gap: 8, padding: '3px 0', borderBottom: '1px solid #EEF1F4' }}>
+            <span style={{ fontSize: 10, color: bold ? NAVY : SLATE, fontWeight: bold ? 800 : 600 }}>
+              {label}{note ? <span style={{ color: SLATE, fontWeight: 500 }}> — {note}</span> : null}
+            </span>
+            <span style={{ fontSize: 10.5, fontWeight: 800, color: value < 0 ? '#B42318' : NAVY }}>{value < 0 ? `(${money(-value)})` : money(value)}</span>
+          </div>
+        );
+        return (
+          <div className="wos-card" style={{ marginTop: 10 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+              <div style={{ fontWeight: 800, color: NAVY, fontSize: 11.5 }}>
+                Household Roll-Up — Reconciling Page 05 to Total Legacy Value (Lyman @ {retireAge})
+              </div>
+              <Num label="Asset growth" value={assetGrowth} onChange={setAssetGrowth} suffix="%" />
+            </div>
+            {line("Lyman — retirement accounts", lymanEnd, `this page, Scenario ${scenario === 75 ? 'A' : 'B'}`)}
+            {line("Kateri — retirement accounts", kateriAtLyman, "OPERS + Ohio DC, compounded after 62")}
+            {line("Business, IP, real estate, brokerage, HSA", appreciating * growth, `${assetGrowth}% growth over ${yrs} yrs`)}
+            {line("Vehicles, personal property, cash", flat, "held flat")}
+            {line("OPERS pension — capitalized", pensionPv, `${money(pensionMonthly)}/mo x 20 yrs`)}
+            {line("Social Security — capitalized", ssPv, `${money(socialSecurityMonthly)}/mo x 18 yrs`)}
+            {line("Less: household liabilities", -liabilities, "student loan, SBA, consumer debt")}
+            {line("Total household legacy value", total, undefined, true)}
+            <div style={{ fontSize: 8.5, color: SLATE, marginTop: 5 }}>
+              The {money(lymanEnd)} headline above is Lyman's retirement accounts only. This roll-up adds Kateri's accounts,
+              appreciating assets, and capitalized pension and Social Security income to show why the whole-household legacy
+              figure elsewhere in Prism is materially larger. Capitalization multiples are payout-year estimates, not market values.
+            </div>
+          </div>
+        );
+      })() : null}
+
       <div style={{ fontSize: 8.5, color: SLATE, marginTop: 6 }}>
         Includes {money(debtRedirect)}/mo of freed-up debt payments ($888 + $110) redirected to Lyman's retirement starting September 2027
         (4 months in 2027, full 12 months thereafter). Assumes {ret}% average annual return, {raise}% annual raises, contributions made evenly through each year (half-year growth credit),
