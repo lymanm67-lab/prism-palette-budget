@@ -121,11 +121,12 @@ export default function RetirementProjection({
           <div style={{ fontSize: 17, fontWeight: 800 }}>{money(lymanEnd)}</div>
           <div style={{ fontSize: 9, opacity: 0.85 }}>{money(lymanContrib)} contributed</div>
         </div>
-        <div style={{ background: GOLD, color: NAVY, borderRadius: 6, padding: '8px 10px' }}>
-          <div style={{ fontSize: 8.5, letterSpacing: 0.6, textTransform: 'uppercase', opacity: 0.85 }}>Kateri @ 62 ({baseYear + Math.max(62 - kateriAge, 0)})</div>
+        <div style={{ background: NAVY, color: '#fff', borderRadius: 6, padding: '8px 10px', borderLeft: `4px solid ${GOLD}` }}>
+          <div style={{ fontSize: 8.5, letterSpacing: 0.6, textTransform: 'uppercase', color: GOLD, fontWeight: 800 }}>Kateri @ 62 ({baseYear + Math.max(62 - kateriAge, 0)})</div>
           <div style={{ fontSize: 17, fontWeight: 800 }}>{money(kateriEnd)}</div>
-          <div style={{ fontSize: 9 }}>{money(kateriContrib)} contributed</div>
+          <div style={{ fontSize: 9, opacity: 0.85 }}>{money(kateriContrib)} contributed</div>
         </div>
+
         <div style={{ background: GREEN, color: '#fff', borderRadius: 6, padding: '8px 10px' }}>
           <div style={{ fontSize: 8.5, letterSpacing: 0.6, textTransform: 'uppercase', opacity: 0.85 }}>Combined at Lyman's Retirement</div>
           <div style={{ fontSize: 17, fontWeight: 800 }}>{money(lymanEnd + kateriEnd * Math.pow(1 + ret / 100, Math.max((75 - lymanAgeNow) - (62 - kateriAge), 0)))}</div>
@@ -135,7 +136,7 @@ export default function RetirementProjection({
 
       <div className="wos-grid2" style={{ marginTop: 10 }}>
         <Table rows={lyman} title={`Lyman Montgomery — to age 75`} tone={NAVY} />
-        <Table rows={kateri} title={`Kateri Montgomery — to age 62`} tone={GOLD} />
+        <Table rows={kateri} title={`Kateri Montgomery — to age 62`} tone={NAVY} />
       </div>
       <div style={{ fontSize: 8.5, color: SLATE, marginTop: 6 }}>
         Assumes {ret}% average annual return, {raise}% annual raises, contributions made evenly through each year (half-year growth credit),
