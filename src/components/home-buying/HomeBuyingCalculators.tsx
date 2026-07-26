@@ -17,12 +17,13 @@ export default function HomeBuyingCalculators() {
         Home Price is shared across all calculators — change it once and it updates everywhere.
       </div>
       <HousingBudgetPlanner price={price} onPriceChange={setPrice} />
+      <CreditDebtImpact price={price} onPriceChange={setPrice} />
       <DownPaymentPlanner price={price} onPriceChange={setPrice} />
       <ClosingCostEstimator price={price} onPriceChange={setPrice} />
       <HiddenCostBudget price={price} onPriceChange={setPrice} />
-      <CreditDebtImpact price={price} onPriceChange={setPrice} />
       <SharedCreditReports />
       <SharedVerificationDocs />
+
     </div>
   );
 }
