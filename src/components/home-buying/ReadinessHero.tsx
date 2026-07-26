@@ -54,10 +54,7 @@ export default function ReadinessHero({ checklistPct, metrics }: ReadinessHeroPr
             ))}
           </div>
         </div>
-      </CardContent>
-    </Card>
-  );
-        </div>
+
 
         {qualifying !== null && (
           <div className="mt-5 pt-5 border-t border-border/40 flex flex-col lg:flex-row gap-4 lg:items-center">
