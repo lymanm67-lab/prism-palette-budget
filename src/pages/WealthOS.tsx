@@ -630,7 +630,16 @@ export default function WealthOS() {
         </div>
 
 
+        <SectionLabel>Projected Retirement Balances — Continued Contributions @ 7% Return</SectionLabel>
+        <RetirementProjection
+          lymanStart={lymanB.retirement || 0}
+          kateriStart={kateriB.retirement || OPERS + OHIO_DC}
+          lymanSalary={BASE_SALARY}
+          kateriSalary={113000}
+        />
+
         <SectionLabel>Salary Growth Timeline (3% Annual) — Age 59 → 75</SectionLabel>
+
         {SALARY_GROWTH.map((r, i) => (
           <Milestone
             key={r.year}
