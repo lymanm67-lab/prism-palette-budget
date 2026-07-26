@@ -6,16 +6,23 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { CreditCard, TrendingDown } from 'lucide-react';
 import { calcMortgage, estimateRateForFico, fmt$ } from '@/lib/home-buying/mortgage-math';
 import { LOAN_DTI_LIMITS, LOAN_PROGRAM_OPTIONS, type LoanProgram } from '@/lib/home-buying/loan-dti-limits';
+import { loadMortgageFico, saveMortgageFico, qualifyingFico, eligiblePrograms, BUREAU_MODEL, type MortgageFico } from '@/lib/home-buying/mortgage-fico';
 
 export default function CreditDebtImpact({ price: priceProp, onPriceChange }: { price?: number; onPriceChange?: (n: number) => void } = {}) {
   const [priceLocal, setPriceLocal] = useState(350000);
   const price = priceProp ?? priceLocal;
   const setPrice = (n: number) => { onPriceChange ? onPriceChange(n) : setPriceLocal(n); };
   const [downPct, setDownPct] = useState(10);
-  const [fico, setFico] = useState(700);
+  const [scores, setScoresState] = useState<MortgageFico>(() => loadMortgageFico());
+  const setScores = (s: MortgageFico) => { setScoresState(s); saveMortgageFico(s); };
+  const qualifying = qualifyingFico(scores);
+  const [ficoOverride, setFicoOverride] = useState<number | null>(null);
+  const fico = ficoOverride ?? qualifying ?? 700;
+  const setFico = (n: number) => setFicoOverride(n);
   const [monthlyDebt, setMonthlyDebt] = useState(600);
   const [grossIncome, setGrossIncome] = useState(7500);
   const [program, setProgram] = useState<LoanProgram>('conventional');
+
 
   const limits = LOAN_DTI_LIMITS[program];
 
@@ -52,6 +59,56 @@ export default function CreditDebtImpact({ price: priceProp, onPriceChange }: { 
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-5">
+        {/* Tri-merge mortgage FICO scores — the models lenders actually pull */}
+        <div className="rounded-lg border border-border/40 p-4 space-y-3">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              Your Mortgage FICO Scores (tri-merge)
+            </p>
+            <span className="text-[10px] text-muted-foreground">
+              {scores.source ? `${scores.source} · ` : ''}{scores.asOf ? `as of ${scores.asOf}` : ''}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {(['Equifax', 'TransUnion', 'Experian'] as const).map((b) => (
+              <div key={b} className={`rounded-lg border p-3 ${scores[b] === qualifying ? 'border-prism-amber/50 bg-prism-amber/5' : 'border-border/40 bg-card/40'}`}>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">{b} · {BUREAU_MODEL[b]}</p>
+                <Input
+                  type="number"
+                  value={scores[b] ?? ''}
+                  onChange={(e) => setScores({ ...scores, [b]: e.target.value === '' ? undefined : +e.target.value })}
+                  className="h-8 mt-1 font-display text-lg font-bold"
+                />
+              </div>
+            ))}
+            <div className="rounded-lg border border-prism-teal/30 bg-prism-teal/5 p-3">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Qualifying (middle)</p>
+              <p className="font-display text-2xl font-bold prism-gradient-text">{qualifying ?? '—'}</p>
+              <p className="text-[10px] text-muted-foreground">Drives rate &amp; program below</p>
+            </div>
+          </div>
+
+          {qualifying !== null && (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              {eligiblePrograms(qualifying).map((p) => (
+                <div key={p.program} className={`rounded-md border p-2 ${p.ok ? 'border-prism-teal/30 bg-prism-teal/5' : 'border-prism-rose/30 bg-prism-rose/5'}`}>
+                  <p className="text-xs font-bold">{p.ok ? '✓' : '✕'} {p.program}</p>
+                  <p className="text-[10px] text-muted-foreground">{p.note}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <p className="text-[11px] text-muted-foreground italic">
+            Lenders pull FICO 2 / 4 / 5 and qualify you on the middle score — not the VantageScore free apps show.
+            {ficoOverride !== null && (
+              <> Currently overriding with {ficoOverride}. <button className="underline" onClick={() => setFicoOverride(null)}>Use qualifying score</button></>
+            )}
+          </p>
+        </div>
+
+
         <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
           <div><Label className="text-xs">Home Price</Label><Input type="number" value={price} onChange={(e) => setPrice(+e.target.value)} /></div>
           <div><Label className="text-xs">Down %</Label><Input type="number" value={downPct} onChange={(e) => setDownPct(+e.target.value)} /></div>
