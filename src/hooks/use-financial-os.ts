@@ -3,6 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import { makeDebtDeduper } from '@/lib/liability-dedupe';
+
 import {
   computeLegacyWorth, projectEstateAt85, daysUntilFreedom,
   type LegacyWorthInputs, type LifeStage,
@@ -34,7 +36,7 @@ export function useLegacyWorth() {
       ] = await Promise.all([
         sb.from('accounts').select('id,account_type,balance,name').eq('household_id', hid).is('deleted_at', null),
         planIds.length
-          ? sb.from('debt_items').select('balance,interest_rate,minimum_payment,plan_id').in('plan_id', planIds)
+          ? sb.from('debt_items').select('name,balance,interest_rate,minimum_payment,plan_id').in('plan_id', planIds)
           : Promise.resolve({ data: [] }),
         sb.from('investment_holdings').select('symbol,market_value,cost_basis').eq('household_id', hid),
         sb.from('insurance_coverage').select('kind,coverage_amount').eq('household_id', hid).is('deleted_at', null),
@@ -54,12 +56,16 @@ export function useLegacyWorth() {
       const acctAssets = (accounts.data || [])
         .filter((a: any) => !LIAB_TYPES.has(String(a.account_type || '').toLowerCase()))
         .reduce((s: number, a: any) => s + Number(a.balance || 0), 0);
-      const acctLiab = (accounts.data || [])
-        .filter((a: any) => LIAB_TYPES.has(String(a.account_type || '').toLowerCase()))
-        .reduce((s: number, a: any) => s + Math.abs(Number(a.balance || 0)), 0);
-      const debtLiab = (debts.data || []).reduce((s: number, d: any) => s + Number(d.balance || 0), 0);
+      const acctLiabRows = (accounts.data || [])
+        .filter((a: any) => LIAB_TYPES.has(String(a.account_type || '').toLowerCase()));
+      const acctLiab = acctLiabRows.reduce((s: number, a: any) => s + Math.abs(Number(a.balance || 0)), 0);
+      // Avoid double-counting debts tracked both as accounts and as payoff-plan debt items
+      const keepDebt = makeDebtDeduper(acctLiabRows.map((a: any) => String(a.name || '')));
+      const uniqueDebts = (debts.data || []).filter((d: any) => keepDebt(String(d.name || '')));
+      const debtLiab = uniqueDebts.reduce((s: number, d: any) => s + Number(d.balance || 0), 0);
       const liab = acctLiab + debtLiab;
       const netWorth = acctAssets - liab;
+
 
       const liquid = (accounts.data || [])
         .filter((a: any) => ['checking', 'savings', 'cash'].includes(String(a.account_type || '').toLowerCase()))

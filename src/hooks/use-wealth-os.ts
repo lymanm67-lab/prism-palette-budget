@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useHousehold } from '@/contexts/HouseholdContext';
+import { makeDebtDeduper } from '@/lib/liability-dedupe';
+
 
 const sb = supabase as any;
 
@@ -145,9 +147,13 @@ export function useWealthOSData() {
         byOwner[o.owner].buckets[bucket] += bal;
         byOwner[o.owner].assets.push(asset);
       }
+      const keepDebt = makeDebtDeduper(liabilities.map((l) => l.name));
       for (const d of debts.data || []) {
-        liabilities.push({ name: d.name || 'Debt', balance: Number(d.balance || 0) });
+        const dn = d.name || 'Debt';
+        if (!keepDebt(dn)) continue; // already counted as an account liability
+        liabilities.push({ name: dn, balance: Number(d.balance || 0) });
       }
+
 
       const totalLiabilities = liabilities.reduce((s, l) => s + l.balance, 0);
       const est = estate.data || [];
