@@ -89,6 +89,8 @@ const DEFAULT_OPT: OptimizerInputs = {
 };
 
 const LS_KEY = "retirement-optimizer-inputs-v5";
+const ROTH_KEY = LS_KEY + "-roth-v6";
+
 
 export default function RetirementDashboard() {
   const { household } = useHousehold();
