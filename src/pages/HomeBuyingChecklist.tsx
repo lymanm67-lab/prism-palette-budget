@@ -23,7 +23,7 @@ import { exportToPdf } from '@/lib/export-utils';
 
 const HomeBuyingChecklist = () => {
   const { household } = useHousehold();
-  const [tab, setTab] = useState('planner');
+  const [tab, setTab] = useState('checklist');
   const printRef = useRef<HTMLDivElement>(null);
   const [printing, setPrinting] = useState(false);
 
@@ -57,16 +57,20 @@ const HomeBuyingChecklist = () => {
   const checklistPct = ((checklist?.filter((p) => p.is_checked).length ?? 0) / 8) * 100;
   const metrics = useHomeBuyingMetrics();
 
+  // Ordered to follow the actual home-buying journey:
+  // 1) Am I ready? → 2) What can I afford? → 3) How do I finance it? → 4) Paperwork
+  // → 5) Plan the timeline → 6) Find homes → 7) Evaluate & decide → 8) Ask the coach
   const TABS = [
+    { id: 'checklist', label: 'Readiness', icon: CheckCircle2 },
+    { id: 'calculators', label: 'Affordability', icon: Calculator },
+    { id: 'loans', label: 'Loans & Assistance', icon: Landmark },
+    { id: 'cosigner', label: 'Co-Signer Docs', icon: Users },
     { id: 'planner', label: 'Planner', icon: LayoutDashboard },
+    { id: 'search', label: 'Home Search', icon: Search },
     { id: 'decision', label: 'Decision', icon: ClipboardCheck },
     { id: 'coach', label: 'AI Coach', icon: Bot },
-    { id: 'calculators', label: 'Calculators', icon: Calculator },
-    { id: 'loans', label: 'Loans & Assistance', icon: Landmark },
-    { id: 'search', label: 'Home Search', icon: Search },
-    { id: 'checklist', label: 'Checklist', icon: CheckCircle2 },
-    { id: 'cosigner', label: 'Co-Signer Docs', icon: Users },
   ];
+
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 max-w-7xl">
@@ -104,13 +108,14 @@ const HomeBuyingChecklist = () => {
 
         {printing ? (
           <div className="space-y-8">
-            <section><h2 className="font-display text-xl font-bold mb-3">Planner</h2><PlannerRoot /></section>
-            <section><h2 className="font-display text-xl font-bold mb-3">AI Coach</h2><AiHomeBuyingCoach /></section>
-            <section><h2 className="font-display text-xl font-bold mb-3">Calculators</h2><HomeBuyingCalculators /></section>
+            <section><h2 className="font-display text-xl font-bold mb-3">Readiness</h2><HomeBuyingChecklistTab /></section>
+            <section><h2 className="font-display text-xl font-bold mb-3">Affordability</h2><HomeBuyingCalculators /></section>
             <section><h2 className="font-display text-xl font-bold mb-3">Loans & Assistance</h2><LoansAndAssistance /></section>
+            <section><h2 className="font-display text-xl font-bold mb-3">Planner</h2><PlannerRoot /></section>
             <section><h2 className="font-display text-xl font-bold mb-3">Home Search</h2><AppreciationInfo /><HomeSearchPanel /></section>
-            <section><h2 className="font-display text-xl font-bold mb-3">Checklist</h2><HomeBuyingChecklistTab /></section>
+            <section><h2 className="font-display text-xl font-bold mb-3">AI Coach</h2><AiHomeBuyingCoach /></section>
           </div>
+
         ) : (
           <Tabs value={tab} onValueChange={setTab} className="w-full">
             <TabsList className="w-full grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 h-auto p-1 gap-1">
