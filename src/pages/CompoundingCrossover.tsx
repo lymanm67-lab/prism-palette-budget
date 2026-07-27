@@ -10,7 +10,10 @@ import {
   ReferenceLine,
   Legend,
 } from 'recharts';
-import { Quote, Sparkles, TrendingUp, Flag } from 'lucide-react';
+import { Quote, Sparkles, TrendingUp, Flag, Printer, Save, RotateCcw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Slider } from '@/components/ui/slider';
+import { toast } from 'sonner';
 import CompoundingStatusCard from '@/components/wealth-os/crossover/CompoundingStatusCard';
 import { Speedometer, Flywheel, CrossingArrows } from '@/components/wealth-os/crossover/CompoundingVisuals';
 import {
