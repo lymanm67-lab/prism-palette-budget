@@ -1,61 +1,47 @@
-## 1. The Montgomery Money Blueprint™ (Conscious Spending Plan, renamed sections)
+## Goal
 
-Same math and structure as the uploaded workbook, but with our own section names:
+Make the Investment Planning page read as one logical journey and behave like a live model, instead of a long stack of static report cards.
 
-| Workbook | Our name |
+## What's there now (verified)
+
+- `src/pages/InvestmentPlanning.tsx` — 4 visible tabs (Setup · Snapshot · Scenarios · Milestones) plus a "More tools" dropdown hiding 20 sub-tools grouped into 6 categories. Because 20 of 24 destinations are buried in a `Select`, most of the page is effectively invisible.
+- `src/components/investment/SnapshotDashboard.tsx` — inside Snapshot, sections currently run: KPI cards → Household roll-up → First Million → Age 75/78 scenario table → Million-Dollar Milestones → Contribution Timeline → Allocation Pie. Then the page appends Projection charts → Contribution sources → Today's vs future dollars → Allocation rules → Diagnostic. So charts appear *after* milestones, and allocation content shows up twice in different places.
+- Return rate, horizon age, and dollar mode are all edit-then-save fields in the wizard / DollarModeCard — there is no live control that re-runs the projection in place.
+
+## New order (the narrative)
+
+**1. Where you stand** → **2. What it grows to** → **3. What changes it** → **4. Milestones** → **5. Deep tools**
+
+Tab bar becomes 5 primary tabs, no hidden dropdown as the main path:
+
+| Tab | Contents |
 |---|---|
-| Fixed Costs (50–60%) | **Foundation Costs** (50–60% of take-home) |
-| Investments (10%) | **Wealth Engine** (10%+) |
-| Savings Goals (5–10%) | **Future Fund** (5–10%) |
-| Guilt-Free Spending (20–35%) | **Freedom Spending** (20–35%) |
-| Miscellaneous (auto 15%) | **Buffer (auto 15%)** |
-| Net Worth block | **Household Balance Sheet** |
+| Setup | Wizard (unchanged) |
+| Snapshot | Live control bar · KPI cards (75/80/85) · Projection chart · Household roll-up · Contribution sources · Diagnostic |
+| Scenarios | Return sweep table · Mixed returns · Scenario comparison · Raises · Debt→Wealth |
+| Milestones | First Million · Million-Dollar Milestones · Wealth Milestones chart · Retirement Milestones · Contribution timeline |
+| Planning Tools | The 20 sub-tools shown as a **card grid** grouped by the existing 6 categories, instead of a dropdown |
 
-Formulas kept identical:
-- Total Net Worth = Assets + Investments + Savings − Debt
-- Buffer = 15% of the sum of the Foundation rows above it
-- Foundation / Wealth Engine / Future Fund totals = sum of their rows
-- **Freedom Spending = Net monthly income − Foundation − Wealth Engine − Future Fund** (residual)
-- Every bucket % = bucket total ÷ net monthly income, scored against its target band
+Inside Snapshot the section order changes so the chart sits immediately under the KPIs (see the numbers, then see the curve), the household roll-up follows, and allocation/dollar-mode/diagnostic move to the bottom as "adjustments" rather than headline content.
 
-Row set (editable, add-your-own supported): Rent/Mortgage, Utilities, Insurance, Car/Transportation, Debt Payments, Groceries, Clothes, Phone, Subscriptions, Buffer → Wealth Engine: Post-Tax Retirement, Stocks → Future Fund: Vacations, Gifts, Long-Term Emergency Fund.
+## Interactivity added
 
-**Live prefill** from current Prism data (not the sample sheet): assets/investments/savings/debt from the existing net-worth + liability-dedupe logic (so the $107k student loan and $50k SBA aren't double counted), gross/net income from the household salary figures ($208,940/yr household), Foundation rows seeded from 3-month category-group averages. "Re-sync from live data" button, manual overrides always win.
+1. **Sticky control bar** at the top of Snapshot: expected-return slider (5–10%), horizon-age slider (65–90), and a Today's / Future dollars toggle. Every KPI, chart, roll-up and table below re-computes instantly from these local values — no save required. A "Save as plan defaults" button persists them to `investment_plans` when the user wants to keep them.
+2. **KPI cards become clickable** — clicking "Projected @ age 80" sets the horizon slider to 80 so the chart and roll-up follow.
+3. **Chart crosshair** — hovering the projection chart shows balance / age / contributions-to-date at that year.
+4. **Goal progress ring** replacing the flat progress bar, with the surplus/gap animating as sliders move.
+5. **Planning Tools grid** — each of the 20 tools becomes a card with its group label and a one-line description, so the depth of the page is discoverable.
+6. **Sections remember open/closed state** per user via localStorage, so the page doesn't reset every visit.
 
-**Where it appears**
-1. New page `/legacy/money-blueprint` (sidebar: Legacy → Money Blueprint) — full interactive plan, Save, Reset, print-optimized report matching the Crossover report style.
-2. Household Wealth (`/legacy/household`) — Blueprint summary card with the four bucket bars + Freedom Spending number and deep link.
-3. Wealth OS binder — same summary component so binder and live plan reconcile.
-4. Budgets page — a small banner link (no change to budget logic).
+## Not changing
 
-## 2. Fix "Joint Household — $0" on Household Wealth
-
-Confirmed cause: ownership is inferred purely from text matching on each account's name/institution (`/kateri/` → Separate Property, `/joint/` → Joint Household, otherwise defaults to Lyman). Querying the live accounts shows **no account contains the word "joint"** — Kateri's three are labeled "Kateri Montgomery — Separate Property", everything else falls through to Lyman. So the $0 is real, not a display bug: nothing is tagged joint.
-
-Fix:
-- Add an explicit `owner_tag` column on accounts (`lyman` | `kateri` | `joint`, nullable) via migration; the text heuristic becomes the fallback when it's null.
-- Add an inline owner selector on each row of the Household Wealth asset table (Individual / Separate Property / Joint Household) that persists the tag, so joint assets (e.g. shared real estate, joint cash) roll into the Joint column immediately.
-- Show "Untagged — defaults to Lyman" count with a one-click "Review ownership" prompt so the Joint bucket can't silently sit at zero.
-
-## 3. Make Household Wealth visual and interactive
-
-Add color and charts using the existing Recharts setup and semantic tokens (no hardcoded colors, dark-mode safe):
-- **Ownership donut** — Lyman / Kateri / Joint split of total assets, with the three stat tiles becoming clickable filters for the table below.
-- **Stacked bar by bucket × owner** — retirement, real estate, business, IP, vehicles, personal property, cash/HSA.
-- **Net worth trend area chart** from `legacy_worth_snapshots` (already queried) with assets vs. liabilities shading.
-- **Liability breakdown horizontal bars** (student loans, SBA, personal loan) with a payoff-progress tint.
-- **Blueprint bucket bars** from section 1, color-coded in-band / over / under.
-- Animated count-up on the KPI tiles, hover tooltips at 0ms, gradient glass cards consistent with the rest of the app, and a responsive 1-column mobile stack.
+- All projection math (`src/lib/investment/projection.ts`, `deferredWithdrawal.ts`) stays as-is — this is presentation and ordering only.
+- No schema changes. The only write is the optional "Save as plan defaults" which updates existing `investment_plans` columns (`expected_return_pct`, `retirement_age`, `use_future_dollars`).
+- Each sub-tool component's internals stay untouched; only how they're reached changes.
 
 ## Technical notes
 
-- Migration: `spending_plans` table (household-scoped, jsonb for balance sheet / income / buckets, soft delete) with GRANTs for `authenticated` + `service_role`, RLS enabled, household-membership policies; plus `accounts.owner_tag`.
-- Pure calc module `src/lib/budgeting/moneyBlueprint.ts` (buffer 15%, totals, residual Freedom Spending, band scoring) — no UI, unit-testable.
-- Hook `src/hooks/use-money-blueprint.ts` (fetch/upsert + `useRealtimeRefresh`).
-- Components: `MoneyBlueprintPlan.tsx`, `BlueprintBucketBar.tsx`, `BlueprintSummaryCard.tsx` (reused on Household Wealth + Wealth OS), `BlueprintReport.tsx` (print), plus `HouseholdCharts.tsx` for section 3.
-- `use-wealth-os.ts` `ownerFor()` updated to prefer `owner_tag`.
-- Currency inputs reuse the comma/decimal `NumberInput` pattern from the Crossover page.
-
-## Out of scope
-
-No changes to budget/category business logic, transaction categorization, or AI calls.
+- New `src/components/investment/SnapshotControlBar.tsx` holds the slider state; `SnapshotDashboard` accepts optional `returnPct` / `horizonAge` / `futureDollars` overrides and falls back to plan values, so nothing breaks if the bar isn't rendered.
+- `projectAt()` in `SnapshotDashboard` is already parameterized by rate and age, so live recompute is a memo over the slider values rather than new math.
+- New `src/components/investment/PlanningToolsGrid.tsx` renders `TAB_GROUPS` (already defined in the page) as cards and calls the same `setActiveTab`.
+- Files touched: `InvestmentPlanning.tsx`, `SnapshotDashboard.tsx`, `HouseholdRollupLine.tsx` (accept horizon prop), `CollapsibleSection.tsx` (persist state), plus 3 new components. Styling uses existing semantic tokens — no new colors.
