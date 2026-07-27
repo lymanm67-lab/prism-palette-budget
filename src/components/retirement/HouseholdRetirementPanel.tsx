@@ -5,7 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Users, User, TrendingUp, PiggyBank } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { Users, User, TrendingUp, PiggyBank, Save, RotateCcw } from "lucide-react";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid,
 } from "recharts";
@@ -142,6 +144,21 @@ export default function HouseholdRetirementPanel() {
     try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch { /* ignore */ }
   }, [state]);
 
+  const handleSave = () => {
+    try {
+      localStorage.setItem(LS_KEY, JSON.stringify(state));
+      toast.success("Household retirement figures saved");
+    } catch {
+      toast.error("Could not save — browser storage is unavailable");
+    }
+  };
+
+  const handleReset = () => {
+    setState(DEFAULTS);
+    try { localStorage.setItem(LS_KEY, JSON.stringify(DEFAULTS)); } catch { /* ignore */ }
+    toast.success("Reset to payroll-verified figures");
+  };
+
   const patch = (who: "lyman" | "kateri") => (p: Partial<SpouseRetirementInputs>) =>
     setState((s) => ({ ...s, [who]: { ...s[who], ...p } }));
 
@@ -191,9 +208,18 @@ export default function HouseholdRetirementPanel() {
           <span className="flex items-center gap-2">
             <Users className="h-4 w-4 text-primary" /> Household Retirement — Lyman &amp; Kateri
           </span>
-          <Badge variant="outline" className="text-[10px]">
-            Combined {combined.savingsRate.toFixed(1)}% of gross
-          </Badge>
+          <span className="flex items-center gap-2">
+            <Badge variant="outline" className="text-[10px]">
+              Combined {combined.savingsRate.toFixed(1)}% of gross
+            </Badge>
+            <Button size="sm" variant="outline" className="h-7 gap-1 text-xs" onClick={handleReset}>
+              <RotateCcw className="h-3 w-3" /> Reset
+            </Button>
+            <Button size="sm" className="h-7 gap-1 text-xs" onClick={handleSave}>
+              <Save className="h-3 w-3" /> Save
+            </Button>
+          </span>
+
         </CardTitle>
         <CardDescription className="text-xs">
           Individual and combined retirement funding. Seeded from verified payroll; edit any figure to re-model.
