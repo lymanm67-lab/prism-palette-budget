@@ -135,6 +135,11 @@ const ROW_MATCHERS: { key: string; test: (label: string) => boolean }[] = [
 /** Actual household rent (confirmed by Lyman). */
 const RENT_MONTHLY = 1100;
 
+/** Starting April 2027 Kateri covers the utilities bill in full. */
+export const KATERI_UTILITIES_MONTHLY = 377;
+export const KATERI_UTILITIES_START = new Date(2027, 3, 1);
+const kateriPaysUtilities = () => new Date() >= KATERI_UTILITIES_START;
+
 const WEALTH_MATCHERS: { key: string; test: (l: string) => boolean }[] = [
   { key: 'postTaxRetirement', test: (l) => /roth|ira|retirement|401|457|hsa/.test(l) },
   { key: 'stocks', test: (l) => /invest|brokerage|stock|crypto/.test(l) },
