@@ -126,6 +126,22 @@ export default function CompoundingCrossover() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch { /* ignore */ }
   };
 
+  const kOn = state.includeKateri;
+  const eff = useMemo(() => {
+    if (state.view === 'kateri') {
+      return { balance: state.kateriBalance, contributions: state.kateriContributions, redirect: 0, label: 'Kateri' };
+    }
+    if (state.view === 'combined' && kOn) {
+      return {
+        balance: state.balance + state.kateriBalance,
+        contributions: state.annualContributions + state.kateriContributions,
+        redirect: state.debtRedirectAnnual,
+        label: 'Household (Lyman + Kateri)',
+      };
+    }
+    return { balance: state.balance, contributions: state.annualContributions, redirect: state.debtRedirectAnnual, label: 'Lyman' };
+  }, [state, kOn]);
+
   const engineInputs = useMemo(
     () => ({
       currentBalance: eff.balance,
@@ -134,8 +150,9 @@ export default function CompoundingCrossover() {
       debtRedirectAnnual: eff.redirect,
       debtRedirectStartYear: state.debtRedirectStartYear,
     }),
-    [state],
+    [eff, state.contributionGrowthPct, state.debtRedirectStartYear],
   );
+
 
   const active = useMemo(
     () => runCrossover({ ...engineInputs, returnPct: state.returnPct }),
