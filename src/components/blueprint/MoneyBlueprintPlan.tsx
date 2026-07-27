@@ -10,8 +10,8 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
 } from 'recharts';
 import {
-  computeBlueprint, emptyBlueprint, BUCKET_META, BUFFER_RATE,
-  type BlueprintRow, type BlueprintState,
+  computeBlueprint, emptyBlueprint, BUCKET_META, BUFFER_RATE, OWNER_VIEWS, normalizeRow, rowAmount,
+  type BlueprintRow, type BlueprintState, type OwnerView,
 } from '@/lib/budgeting/moneyBlueprint';
 import { BlueprintBucketBar } from './BlueprintBucketBar';
 import { useMoneyBlueprint, useSaveMoneyBlueprint, useBlueprintPrefill } from '@/hooks/use-money-blueprint';
@@ -50,6 +50,7 @@ export function MoneyBlueprintPlan() {
   const save = useSaveMoneyBlueprint();
 
   const [state, setState] = useState<BlueprintState>(emptyBlueprint());
+  const [view, setView] = useState<OwnerView>('combined');
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -77,23 +78,28 @@ export function MoneyBlueprintPlan() {
     }
   }, [saved, prefill, wealth, hydrated]);
 
-  const result = useMemo(() => computeBlueprint(state), [state]);
+  const result = useMemo(() => computeBlueprint(state, view), [state, view]);
 
   const setRow = (bucket: BucketName, idx: number, patch: Partial<BlueprintRow>) =>
     setState((s) => ({
       ...s,
       buckets: {
         ...s.buckets,
-        [bucket]: s.buckets[bucket].map((r, i) => (i === idx ? { ...r, ...patch } : r)),
+        [bucket]: s.buckets[bucket].map((r, i) => (i === idx ? normalizeRow({ ...normalizeRow(r), ...patch }) : r)),
       },
     }));
+
+  /** Edits one spouse's slice; the combined amount re-totals automatically. */
+  const setOwner = (bucket: BucketName, idx: number, owner: 'lyman' | 'kateri', n: number) =>
+    setRow(bucket, idx, { [owner]: n } as Partial<BlueprintRow>);
+
 
   const addRow = (bucket: BucketName) =>
     setState((s) => ({
       ...s,
       buckets: {
         ...s.buckets,
-        [bucket]: [...s.buckets[bucket], { key: `custom_${Date.now()}`, label: 'New line', amount: 0, custom: true }],
+        [bucket]: [...s.buckets[bucket], { key: `custom_${Date.now()}`, label: 'New line', amount: 0, lyman: 0, kateri: 0, custom: true }],
       },
     }));
 
@@ -117,15 +123,15 @@ export function MoneyBlueprintPlan() {
       buckets: {
         foundation: s.buckets.foundation.map((r) => {
           const live = prefill.foundation.find((p) => p.key === r.key);
-          return live ? { ...r, amount: live.amount } : r;
+          return live ? { ...r, amount: live.amount, lyman: live.lyman, kateri: live.kateri } : r;
         }),
         wealthEngine: s.buckets.wealthEngine.map((r) => {
           const live = prefill.wealthEngine.find((p) => p.key === r.key);
-          return live ? { ...r, amount: live.amount } : r;
+          return live ? { ...r, amount: live.amount, lyman: live.lyman, kateri: live.kateri } : r;
         }),
         futureFund: s.buckets.futureFund.map((r) => {
           const live = prefill.futureFund.find((p) => p.key === r.key);
-          return live ? { ...r, amount: live.amount } : r;
+          return live ? { ...r, amount: live.amount, lyman: live.lyman, kateri: live.kateri } : r;
         }),
       },
     }));
@@ -144,9 +150,11 @@ export function MoneyBlueprintPlan() {
     .filter((d) => d.value > 0);
 
   const foundationChart = state.buckets.foundation
-    .filter((r) => (Number(r.amount) || 0) > 0)
-    .map((r) => ({ name: r.label.split(' (')[0], value: Number(r.amount) || 0 }))
+    .map((r) => ({ name: r.label.split(' (')[0], value: rowAmount(r, view) }))
+    .filter((r) => r.value > 0)
     .sort((a, b) => b.value - a.value);
+
+  const viewLabel = OWNER_VIEWS.find((v) => v.key === view)!.label;
 
   if (isLoading) return <p className="text-sm text-muted-foreground">Loading your blueprint…</p>;
 
@@ -159,6 +167,19 @@ export function MoneyBlueprintPlan() {
           value={state.name}
           onChange={(e) => setState((s) => ({ ...s, name: e.target.value }))}
         />
+        <div className="inline-flex rounded-lg border border-border/60 p-0.5">
+          {OWNER_VIEWS.map((v) => (
+            <Button
+              key={v.key}
+              size="sm"
+              variant={view === v.key ? 'default' : 'ghost'}
+              className="h-7 px-3 text-xs"
+              onClick={() => setView(v.key)}
+            >
+              {v.label}
+            </Button>
+          ))}
+        </div>
         <Button size="sm" onClick={onSave} disabled={save.isPending}>
           <Save className="h-3.5 w-3.5 mr-1" /> {save.isPending ? 'Saving…' : 'Save plan'}
         </Button>
@@ -166,7 +187,9 @@ export function MoneyBlueprintPlan() {
           <RefreshCw className="h-3.5 w-3.5 mr-1" /> Re-sync from live data
         </Button>
         <Button size="sm" variant="ghost" onClick={() => window.print()}>Print / PDF</Button>
+        <span className="text-xs text-muted-foreground">Viewing: <span className="font-semibold">{viewLabel}</span></span>
       </div>
+
 
       {/* Bucket scoreboard */}
       <div className="grid gap-4 lg:grid-cols-3">
@@ -240,10 +263,30 @@ export function MoneyBlueprintPlan() {
               />
             </div>
             <div className="grid grid-cols-[1fr_140px] items-center gap-3">
-              <Label className="text-xs">Net monthly income (take-home after taxes)</Label>
+              <Label className="text-xs">Net monthly income (household take-home)</Label>
               <MoneyInput
                 value={state.income.netMonthly}
                 onChange={(n) => setState((s) => ({ ...s, income: { ...s.income, netMonthly: n } }))}
+              />
+            </div>
+            <div className="grid grid-cols-[1fr_140px] items-center gap-3">
+              <Label className="text-xs">Lyman take-home</Label>
+              <MoneyInput
+                value={state.income.lymanNet ?? state.income.netMonthly}
+                onChange={(n) => setState((s) => ({
+                  ...s,
+                  income: { ...s.income, lymanNet: n, netMonthly: Math.round((n + (s.income.kateriNet ?? 0)) * 100) / 100 },
+                }))}
+              />
+            </div>
+            <div className="grid grid-cols-[1fr_140px] items-center gap-3">
+              <Label className="text-xs">Kateri take-home</Label>
+              <MoneyInput
+                value={state.income.kateriNet ?? 0}
+                onChange={(n) => setState((s) => ({
+                  ...s,
+                  income: { ...s.income, kateriNet: n, netMonthly: Math.round(((s.income.lymanNet ?? s.income.netMonthly) + n) * 100) / 100 },
+                }))}
               />
             </div>
             {prefill?.source && (
@@ -286,8 +329,24 @@ export function MoneyBlueprintPlan() {
                 </p>
               </CardHeader>
               <CardContent className="space-y-2">
-                {state.buckets[bucket].map((row, idx) => (
-                  <div key={row.key} className="grid grid-cols-[1fr_120px_auto] items-center gap-2">
+                {view === 'combined' && (
+                  <div className="grid grid-cols-[1fr_92px_92px_92px_auto] items-center gap-2 text-[10px] uppercase text-muted-foreground">
+                    <span>Category</span>
+                    <span className="text-right">Lyman</span>
+                    <span className="text-right">Kateri</span>
+                    <span className="text-right">Combined</span>
+                    <span className="w-8" />
+                  </div>
+                )}
+                {state.buckets[bucket].map((raw, idx) => {
+                  const row = normalizeRow(raw);
+                  return (
+                  <div
+                    key={row.key}
+                    className={view === 'combined'
+                      ? 'grid grid-cols-[1fr_92px_92px_92px_auto] items-center gap-2'
+                      : 'grid grid-cols-[1fr_120px_auto] items-center gap-2'}
+                  >
                     {row.custom ? (
                       <Input
                         className="h-9 text-xs"
@@ -297,14 +356,27 @@ export function MoneyBlueprintPlan() {
                     ) : (
                       <span className="text-xs">{row.label}</span>
                     )}
-                    <MoneyInput className="h-9 text-right tabular-nums" value={row.amount} onChange={(n) => setRow(bucket, idx, { amount: n })} />
+                    {view === 'combined' ? (
+                      <>
+                        <MoneyInput className="h-9 text-right tabular-nums text-xs" value={row.lyman!} onChange={(n) => setOwner(bucket, idx, 'lyman', n)} />
+                        <MoneyInput className="h-9 text-right tabular-nums text-xs" value={row.kateri!} onChange={(n) => setOwner(bucket, idx, 'kateri', n)} />
+                        <span className="text-right text-xs font-semibold tabular-nums">{money2(row.amount)}</span>
+                      </>
+                    ) : (
+                      <MoneyInput
+                        className="h-9 text-right tabular-nums"
+                        value={view === 'lyman' ? row.lyman! : row.kateri!}
+                        onChange={(n) => setOwner(bucket, idx, view === 'lyman' ? 'lyman' : 'kateri', n)}
+                      />
+                    )}
                     {row.custom ? (
                       <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => removeRow(bucket, idx)}>
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     ) : <span className="w-8" />}
                   </div>
-                ))}
+                  );
+                })}
                 {bucket === 'foundation' && (
                   <div className="flex items-center justify-between rounded-md bg-muted/50 px-3 py-2">
                     <span className="text-xs">Buffer — auto {Math.round(BUFFER_RATE * 100)}% for what you forgot</span>

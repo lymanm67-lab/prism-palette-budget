@@ -8,8 +8,37 @@ export type BucketKey = 'foundation' | 'wealthEngine' | 'futureFund' | 'freedom'
 export interface BlueprintRow {
   key: string;
   label: string;
+  /** Combined household amount (always lyman + kateri once normalized). */
   amount: number;
+  lyman?: number;
+  kateri?: number;
   custom?: boolean;
+}
+
+/** Which owner's slice of each category is being viewed / edited. */
+export type OwnerView = 'combined' | 'lyman' | 'kateri';
+
+export const OWNER_VIEWS: { key: OwnerView; label: string }[] = [
+  { key: 'combined', label: 'Combined' },
+  { key: 'lyman', label: 'Lyman' },
+  { key: 'kateri', label: 'Kateri' },
+];
+
+/** Ensures a row has an owner split; legacy rows land entirely on Lyman. */
+export function normalizeRow(row: BlueprintRow): BlueprintRow {
+  if (row.lyman === undefined && row.kateri === undefined) {
+    return { ...row, lyman: Number(row.amount) || 0, kateri: 0 };
+  }
+  const lyman = Number(row.lyman) || 0;
+  const kateri = Number(row.kateri) || 0;
+  return { ...row, lyman, kateri, amount: Math.round((lyman + kateri) * 100) / 100 };
+}
+
+export function rowAmount(row: BlueprintRow, view: OwnerView = 'combined'): number {
+  const r = normalizeRow(row);
+  if (view === 'lyman') return r.lyman!;
+  if (view === 'kateri') return r.kateri!;
+  return r.amount;
 }
 
 export interface BalanceSheet {
@@ -22,6 +51,16 @@ export interface BalanceSheet {
 export interface IncomeBlock {
   grossMonthly: number;
   netMonthly: number;
+  /** Per-owner take-home; when absent the combined figure is used. */
+  lymanNet?: number;
+  kateriNet?: number;
+}
+
+export function netForView(income: IncomeBlock, view: OwnerView = 'combined'): number {
+  const total = Number(income.netMonthly) || 0;
+  if (view === 'lyman') return Number(income.lymanNet ?? total) || 0;
+  if (view === 'kateri') return Number(income.kateriNet ?? 0) || 0;
+  return total;
 }
 
 export interface BlueprintBuckets {
@@ -103,7 +142,8 @@ export function emptyBlueprint(): BlueprintState {
   };
 }
 
-const sum = (rows: BlueprintRow[]) => rows.reduce((s, r) => s + (Number(r.amount) || 0), 0);
+const sum = (rows: BlueprintRow[], view: OwnerView = 'combined') =>
+  rows.reduce((s, r) => s + rowAmount(r, view), 0);
 
 export interface BucketResult {
   key: BucketKey;
@@ -133,18 +173,18 @@ function score(pct: number, min: number, max: number): 'in' | 'over' | 'under' {
   return 'in';
 }
 
-export function computeBlueprint(state: BlueprintState): BlueprintResult {
+export function computeBlueprint(state: BlueprintState, view: OwnerView = 'combined'): BlueprintResult {
   const bs = state.balanceSheet;
   const netWorth =
     (Number(bs.assets) || 0) + (Number(bs.investments) || 0) + (Number(bs.savings) || 0) - (Number(bs.debt) || 0);
 
-  const net = Number(state.income.netMonthly) || 0;
+  const net = netForView(state.income, view);
 
-  const foundationRows = sum(state.buckets.foundation);
+  const foundationRows = sum(state.buckets.foundation, view);
   const bufferAmount = Math.round(foundationRows * BUFFER_RATE * 100) / 100;
   const foundationTotal = foundationRows + bufferAmount;
-  const wealthEngineTotal = sum(state.buckets.wealthEngine);
-  const futureFundTotal = sum(state.buckets.futureFund);
+  const wealthEngineTotal = sum(state.buckets.wealthEngine, view);
+  const futureFundTotal = sum(state.buckets.futureFund, view);
   const freedomTotal = net - foundationTotal - wealthEngineTotal - futureFundTotal;
 
   const pct = (n: number) => (net > 0 ? Math.round((n / net) * 1000) / 10 : 0);
