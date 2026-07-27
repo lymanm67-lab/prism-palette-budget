@@ -99,14 +99,20 @@ export function SnapshotDashboard({ plan }: Props) {
     at75 >= 4_000_000 ? 'bg-emerald-500/15 text-emerald-500 border-emerald-500/30' :
     'bg-amber-500/15 text-amber-500 border-amber-500/30';
 
+  const proj80 = projectAt(plan, plan.expected_return_pct, 80);
+  const proj85 = projectAt(plan, plan.expected_return_pct, 85);
+
   const cards = [
     { icon: Wallet, label: 'Current balance', value: formatCurrencyFull(plan.current_balance) },
-    { icon: TrendingUp, label: `Projected @ age ${plan.retirement_age}`, value: formatCurrencyFull(baseProj.projectedBalance) },
+    { icon: TrendingUp, label: 'Projected @ age 75', value: formatCurrencyFull(at75) },
+    { icon: TrendingUp, label: 'Projected @ age 80', value: formatCurrencyFull(proj80.projectedBalance) },
+    { icon: TrendingUp, label: 'Projected @ age 85', value: formatCurrencyFull(proj85.projectedBalance) },
     { icon: Target, label: 'Goal', value: formatCurrencyFull(plan.target_amount) },
-    { icon: PiggyBank, label: baseProj.surplus >= 0 ? 'Surplus' : 'Gap', value: formatCurrencyFull(Math.abs(baseProj.surplus)) },
+    { icon: PiggyBank, label: baseProj.surplus >= 0 ? 'Surplus @ 75' : 'Gap @ 75', value: formatCurrencyFull(Math.abs(baseProj.surplus)) },
     { icon: Sparkles, label: 'Est. monthly income', value: formatCurrencyFull(baseProj.estimatedMonthlyIncome) },
     { icon: Heart, label: 'Legacy projection', value: formatCurrencyFull(baseProj.legacyProjection) },
   ];
+
 
   return (
     <div className="space-y-6">
