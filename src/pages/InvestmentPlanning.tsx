@@ -35,6 +35,7 @@ import { HSAPlanner } from '@/components/investment/HSAPlanner';
 import { LegacyPlanner } from '@/components/investment/LegacyPlanner';
 import { MoneyRulesManager } from '@/components/investment/MoneyRulesManager';
 import { TaxPlanner } from '@/components/investment/TaxPlanner';
+import { WithdrawalTaxPlanner } from '@/components/investment/WithdrawalTaxPlanner';
 import { RiskPlanner } from '@/components/investment/RiskPlanner';
 import { HealthcarePlanner } from '@/components/investment/HealthcarePlanner';
 import { IncomeEngineering } from '@/components/investment/IncomeEngineering';
