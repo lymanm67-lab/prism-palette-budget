@@ -44,6 +44,14 @@ const LYMAN_RETIREMENT_MONTHLY =
   PAYROLL_RETIREMENT.lyman.hsa;
 const KATERI_RETIREMENT_MONTHLY = PAYROLL_RETIREMENT.kateri.pension;
 
+/** Employer non-elective retirement contribution (no match): 9% of Lyman's gross. */
+export const LYMAN_EMPLOYER_RATE = 0.09;
+const LYMAN_EMPLOYER_MONTHLY =
+  Math.round(((LYMAN_GROSS_ANNUAL / 12) * LYMAN_EMPLOYER_RATE) * 100) / 100;
+/** OPERS employer contribution: 14% of Kateri's gross. */
+const KATERI_EMPLOYER_MONTHLY =
+  Math.round(((KATERI_GROSS_ANNUAL / 12) * 0.14) * 100) / 100;
+
 
 export function useMoneyBlueprint() {
   const { household } = useHousehold();
@@ -236,6 +244,15 @@ export function useBlueprintPrefill() {
         foundation,
         wealthEngine: DEFAULT_WEALTH_ENGINE.map((r) => {
           const tracked = monthlyAvg(wealth.get(r.key) || 0);
+          if (r.key === 'employerRetirement') {
+            // Employer money (no match — straight non-elective contributions).
+            return {
+              ...r,
+              lyman: LYMAN_EMPLOYER_MONTHLY,
+              kateri: KATERI_EMPLOYER_MONTHLY,
+              amount: Math.round((LYMAN_EMPLOYER_MONTHLY + KATERI_EMPLOYER_MONTHLY) * 100) / 100,
+            };
+          }
           if (r.key !== 'postTaxRetirement') return withSplit({ ...r, amount: tracked });
           // Payroll-deducted retirement never appears in bank transactions — use the
           // real paystub figures (and Kateri's OPERS) as the floor.

@@ -120,6 +120,7 @@ export const DEFAULT_FOUNDATION: BlueprintRow[] = [
 
 export const DEFAULT_WEALTH_ENGINE: BlueprintRow[] = [
   { key: 'postTaxRetirement', label: 'Post-Tax Retirement Savings', amount: 0 },
+  { key: 'employerRetirement', label: 'Employer Retirement Contribution (9% non-elective)', amount: 0 },
   { key: 'stocks', label: 'Stocks / Brokerage', amount: 0 },
 ];
 

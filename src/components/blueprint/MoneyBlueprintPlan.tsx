@@ -43,6 +43,16 @@ function MoneyInput({ value, onChange, className }: { value: number; onChange: (
 
 type BucketName = 'foundation' | 'wealthEngine' | 'futureFund';
 
+/** Refreshes saved rows from live figures and appends any new default rows. */
+function mergeLive(rows: BlueprintRow[], live: BlueprintRow[]): BlueprintRow[] {
+  const merged = rows.map((r) => {
+    const hit = live.find((p) => p.key === r.key);
+    return hit ? { ...r, label: hit.label, amount: hit.amount, lyman: hit.lyman, kateri: hit.kateri } : r;
+  });
+  const known = new Set(rows.map((r) => r.key));
+  return [...merged, ...live.filter((p) => !known.has(p.key)).map((p) => ({ ...p }))];
+}
+
 export function MoneyBlueprintPlan() {
   const { data: saved, isLoading } = useMoneyBlueprint();
   const { data: prefill } = useBlueprintPrefill();
@@ -79,6 +89,12 @@ export function MoneyBlueprintPlan() {
   }, [saved, prefill, wealth, hydrated]);
 
   const result = useMemo(() => computeBlueprint(state, view), [state, view]);
+
+  // Per-spouse take-home: fall back to live figures (never to the household total).
+  const kateriNetVal = state.income.kateriNet ?? prefill?.source?.kateriNet ?? 0;
+  const lymanNetVal = state.income.lymanNet
+    ?? prefill?.source?.lymanNet
+    ?? Math.max(0, Math.round((state.income.netMonthly - kateriNetVal) * 100) / 100);
 
   const setRow = (bucket: BucketName, idx: number, patch: Partial<BlueprintRow>) =>
     setState((s) => ({
@@ -121,18 +137,9 @@ export function MoneyBlueprintPlan() {
         debt: Math.round(wealth.totalLiabilities),
       },
       buckets: {
-        foundation: s.buckets.foundation.map((r) => {
-          const live = prefill.foundation.find((p) => p.key === r.key);
-          return live ? { ...r, amount: live.amount, lyman: live.lyman, kateri: live.kateri } : r;
-        }),
-        wealthEngine: s.buckets.wealthEngine.map((r) => {
-          const live = prefill.wealthEngine.find((p) => p.key === r.key);
-          return live ? { ...r, amount: live.amount, lyman: live.lyman, kateri: live.kateri } : r;
-        }),
-        futureFund: s.buckets.futureFund.map((r) => {
-          const live = prefill.futureFund.find((p) => p.key === r.key);
-          return live ? { ...r, amount: live.amount, lyman: live.lyman, kateri: live.kateri } : r;
-        }),
+        foundation: mergeLive(s.buckets.foundation, prefill.foundation),
+        wealthEngine: mergeLive(s.buckets.wealthEngine, prefill.wealthEngine),
+        futureFund: mergeLive(s.buckets.futureFund, prefill.futureFund),
       },
     }));
     toast.success('Re-synced from Track Money + budgets');
@@ -290,10 +297,10 @@ export function MoneyBlueprintPlan() {
               <div className="grid grid-cols-[1fr_140px] items-center gap-3">
                 <Label className="text-xs">Lyman take-home</Label>
                 <MoneyInput
-                  value={state.income.lymanNet ?? state.income.netMonthly}
+                  value={lymanNetVal}
                   onChange={(n) => setState((s) => ({
                     ...s,
-                    income: { ...s.income, lymanNet: n, netMonthly: Math.round((n + (s.income.kateriNet ?? 0)) * 100) / 100 },
+                    income: { ...s.income, lymanNet: n, netMonthly: Math.round((n + kateriNetVal) * 100) / 100 },
                   }))}
                 />
               </div>
@@ -302,10 +309,10 @@ export function MoneyBlueprintPlan() {
               <div className="grid grid-cols-[1fr_140px] items-center gap-3">
                 <Label className="text-xs">Kateri take-home</Label>
                 <MoneyInput
-                  value={state.income.kateriNet ?? 0}
+                  value={kateriNetVal}
                   onChange={(n) => setState((s) => ({
                     ...s,
-                    income: { ...s.income, kateriNet: n, netMonthly: Math.round(((s.income.lymanNet ?? s.income.netMonthly) + n) * 100) / 100 },
+                    income: { ...s.income, kateriNet: n, netMonthly: Math.round((lymanNetVal + n) * 100) / 100 },
                   }))}
                 />
               </div>
@@ -347,9 +354,9 @@ export function MoneyBlueprintPlan() {
             ? 'grid grid-cols-[minmax(0,1fr)_repeat(3,minmax(64px,88px))_52px_2rem] items-center gap-1.5'
             : 'grid grid-cols-[minmax(0,1fr)_minmax(90px,120px)_52px_2rem] items-center gap-1.5';
           const base = view === 'lyman'
-            ? (state.income.lymanNet ?? state.income.netMonthly)
+            ? lymanNetVal
             : view === 'kateri'
-              ? (state.income.kateriNet ?? 0)
+              ? kateriNetVal
               : state.income.netMonthly;
           const pctOf = (n: number) => (base > 0 ? `${Math.round((n / base) * 100)}%` : '—');
           return (
