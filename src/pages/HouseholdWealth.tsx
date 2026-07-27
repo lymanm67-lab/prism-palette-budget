@@ -12,6 +12,7 @@ import { useWealthOSData, BUCKET_LABELS, type Buckets } from '@/hooks/use-wealth
 import { PageExplainer } from '@/components/PageExplainer';
 import { OwnershipTagger } from '@/components/wealth-os/OwnershipTagger';
 import { BlueprintSummaryCard } from '@/components/blueprint/BlueprintSummaryCard';
+import { LegacyStepNav } from '@/components/legacy/LegacyStepNav';
 
 
 const OPERS = 328948.74;
@@ -425,6 +426,7 @@ export default function HouseholdWealth() {
       </Tabs>
 
       {isLoading && <p className="text-sm text-muted-foreground">Loading household data…</p>}
+      <LegacyStepNav />
     </div>
   );
 }

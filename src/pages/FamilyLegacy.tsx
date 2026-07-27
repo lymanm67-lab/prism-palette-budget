@@ -10,6 +10,7 @@ import { EthicalWillEditor } from '@/components/legacy/EthicalWillEditor';
 import { AnnualMeetingPlanner } from '@/components/legacy/AnnualMeetingPlanner';
 import { Heart, ScrollText, ShieldCheck, TrendingUp, Users, PenLine, BookHeart, CalendarDays, Landmark } from 'lucide-react';
 import { PageExplainer } from '@/components/PageExplainer';
+import { LegacyStepNav } from '@/components/legacy/LegacyStepNav';
 
 export default function FamilyLegacy() {
   const [searchParams] = useSearchParams();
@@ -89,6 +90,7 @@ export default function FamilyLegacy() {
         <TabsContent value="meeting" className="mt-4"><AnnualMeetingPlanner /></TabsContent>
         <TabsContent value="simulator" className="mt-4"><HundredYearSimulator /></TabsContent>
       </Tabs>
+      <LegacyStepNav />
     </div>
   );
 }

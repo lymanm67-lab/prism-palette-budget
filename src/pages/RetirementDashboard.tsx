@@ -18,6 +18,7 @@ import { analyzeRothVsTraditional, type RothInputs } from "@/lib/retirement/roth
 import { supabase } from "@/integrations/supabase/client";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { PageExplainer } from "@/components/PageExplainer";
+import { LegacyStepNav } from '@/components/legacy/LegacyStepNav';
 
 function normalizePct(v: number): number {
   return v >= 1 ? v / 100 : v;
@@ -706,6 +707,7 @@ export default function RetirementDashboard() {
           </Card>
         </TabsContent>
       </Tabs>
+      <LegacyStepNav />
     </div>
   );
 }
