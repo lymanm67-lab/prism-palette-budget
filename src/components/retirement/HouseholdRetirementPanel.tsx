@@ -29,6 +29,18 @@ export interface SpouseRetirementInputs {
   deferredCompMonthly: number;
   currentBalance: number;
   expectedReturnPct: number;
+  /** Planned total funding (employee + employer + deferred) as % of contribution-eligible salary, effective Dec 2026. */
+  plannedTotalPctOfBase?: number;
+}
+
+/** Applies the Dec-2026 planned deferral target by scaling employee contributions. */
+function applyPlanned(i: SpouseRetirementInputs): SpouseRetirementInputs {
+  const pct = i.plannedTotalPctOfBase;
+  if (!pct) return i;
+  const base = i.employerBaseMonthly || i.monthlyGross;
+  const target = (pct / 100) * base;
+  const employee = Math.max(0, target - i.employerMonthly - i.deferredCompMonthly);
+  return { ...i, employeeMonthly: employee };
 }
 
 const DEFAULTS: Record<"lyman" | "kateri", SpouseRetirementInputs> = {
@@ -48,6 +60,7 @@ const DEFAULTS: Record<"lyman" | "kateri", SpouseRetirementInputs> = {
 
     currentBalance: 176512.76,
     expectedReturnPct: 7,
+    plannedTotalPctOfBase: 30,
   },
   // Kateri: State of Ohio biweekly advice 07/24/2026 annualized at 26 pays.
   // Gross $4,317.60/pay, OPERS employee $431.76/pay, employer $604.46/pay, Ohio DC $25/pay.
@@ -65,7 +78,7 @@ const DEFAULTS: Record<"lyman" | "kateri", SpouseRetirementInputs> = {
   },
 };
 
-const LS_KEY = "household-retirement-panel-v4";
+const LS_KEY = "household-retirement-panel-v5";
 
 
 const money = (n: number) =>
@@ -139,6 +152,7 @@ export default function HouseholdRetirementPanel() {
     return DEFAULTS;
   });
   const [view, setView] = useState<"combined" | "lyman" | "kateri">("combined");
+  const [planned, setPlanned] = useState(true);
 
   useEffect(() => {
     try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch { /* ignore */ }
@@ -162,26 +176,31 @@ export default function HouseholdRetirementPanel() {
   const patch = (who: "lyman" | "kateri") => (p: Partial<SpouseRetirementInputs>) =>
     setState((s) => ({ ...s, [who]: { ...s[who], ...p } }));
 
-  const L = useMemo(() => totals(state.lyman), [state.lyman]);
-  const K = useMemo(() => totals(state.kateri), [state.kateri]);
+  const eff = useMemo(() => ({
+    lyman: planned ? applyPlanned(state.lyman) : state.lyman,
+    kateri: planned ? applyPlanned(state.kateri) : state.kateri,
+  }), [state, planned]);
+
+  const L = useMemo(() => totals(eff.lyman), [eff.lyman]);
+  const K = useMemo(() => totals(eff.kateri), [eff.kateri]);
 
   const combined = useMemo(() => {
     const monthlyTotal = L.monthlyTotal + K.monthlyTotal;
-    const gross = state.lyman.monthlyGross + state.kateri.monthlyGross;
+    const gross = eff.lyman.monthlyGross + eff.kateri.monthlyGross;
     return {
       monthlyTotal,
       annualTotal: monthlyTotal * 12,
       annualGross: gross * 12,
       savingsRate: gross > 0 ? (monthlyTotal / gross) * 100 : 0,
       employerPct: (() => {
-        const base = (state.lyman.employerBaseMonthly || state.lyman.monthlyGross)
-          + (state.kateri.employerBaseMonthly || state.kateri.monthlyGross);
-        return base > 0 ? ((state.lyman.employerMonthly + state.kateri.employerMonthly) / base) * 100 : 0;
+        const base = (eff.lyman.employerBaseMonthly || eff.lyman.monthlyGross)
+          + (eff.kateri.employerBaseMonthly || eff.kateri.monthlyGross);
+        return base > 0 ? ((eff.lyman.employerMonthly + eff.kateri.employerMonthly) / base) * 100 : 0;
       })(),
       projected: L.projected + K.projected,
-      balance: state.lyman.currentBalance + state.kateri.currentBalance,
+      balance: eff.lyman.currentBalance + eff.kateri.currentBalance,
     };
-  }, [L, K, state]);
+  }, [L, K, eff]);
 
   const active = view === "lyman" ? L : view === "kateri" ? K : combined;
   const activeInputs = view === "kateri" ? state.kateri : state.lyman;
@@ -189,15 +208,15 @@ export default function HouseholdRetirementPanel() {
   const chartData = [
     {
       name: "Lyman",
-      Employee: Math.round(state.lyman.employeeMonthly),
-      Employer: Math.round(state.lyman.employerMonthly),
-      "Deferred comp": Math.round(state.lyman.deferredCompMonthly),
+      Employee: Math.round(eff.lyman.employeeMonthly),
+      Employer: Math.round(eff.lyman.employerMonthly),
+      "Deferred comp": Math.round(eff.lyman.deferredCompMonthly),
     },
     {
       name: "Kateri",
-      Employee: Math.round(state.kateri.employeeMonthly),
-      Employer: Math.round(state.kateri.employerMonthly),
-      "Deferred comp": Math.round(state.kateri.deferredCompMonthly),
+      Employee: Math.round(eff.kateri.employeeMonthly),
+      Employer: Math.round(eff.kateri.employerMonthly),
+      "Deferred comp": Math.round(eff.kateri.deferredCompMonthly),
     },
   ];
 
@@ -227,13 +246,24 @@ export default function HouseholdRetirementPanel() {
       </CardHeader>
 
       <CardContent className="space-y-5">
-        <Tabs value={view} onValueChange={(v) => setView(v as typeof view)}>
-          <TabsList className="grid grid-cols-3 w-full md:w-[380px]">
-            <TabsTrigger value="combined"><Users className="h-3.5 w-3.5 mr-1.5" /> Combined</TabsTrigger>
-            <TabsTrigger value="lyman"><User className="h-3.5 w-3.5 mr-1.5" /> Lyman</TabsTrigger>
-            <TabsTrigger value="kateri"><User className="h-3.5 w-3.5 mr-1.5" /> Kateri</TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <Tabs value={view} onValueChange={(v) => setView(v as typeof view)}>
+            <TabsList className="grid grid-cols-3 w-full md:w-[380px]">
+              <TabsTrigger value="combined"><Users className="h-3.5 w-3.5 mr-1.5" /> Combined</TabsTrigger>
+              <TabsTrigger value="lyman"><User className="h-3.5 w-3.5 mr-1.5" /> Lyman</TabsTrigger>
+              <TabsTrigger value="kateri"><User className="h-3.5 w-3.5 mr-1.5" /> Kateri</TabsTrigger>
+            </TabsList>
+          </Tabs>
+          <label className="flex items-center gap-2 text-xs font-medium">
+            <input
+              type="checkbox"
+              className="h-3.5 w-3.5 accent-primary"
+              checked={planned}
+              onChange={(e) => setPlanned(e.target.checked)}
+            />
+            Planned Dec 2026 deferral (30% of W-2 incl. 9% employer)
+          </label>
+        </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <Stat label="Annual gross" value={money(active.annualGross)} />
@@ -267,12 +297,12 @@ export default function HouseholdRetirementPanel() {
             </thead>
             <tbody className="tabular-nums">
               {[
-                ["Monthly gross", state.lyman.monthlyGross, state.kateri.monthlyGross],
-                ["Employee contribution", state.lyman.employeeMonthly, state.kateri.employeeMonthly],
-                ["Employer contribution", state.lyman.employerMonthly, state.kateri.employerMonthly],
-                ["Deferred comp", state.lyman.deferredCompMonthly, state.kateri.deferredCompMonthly],
+                ["Monthly gross", eff.lyman.monthlyGross, eff.kateri.monthlyGross],
+                ["Employee contribution", eff.lyman.employeeMonthly, eff.kateri.employeeMonthly],
+                ["Employer contribution", eff.lyman.employerMonthly, eff.kateri.employerMonthly],
+                ["Deferred comp", eff.lyman.deferredCompMonthly, eff.kateri.deferredCompMonthly],
                 ["Total monthly funding", L.monthlyTotal, K.monthlyTotal],
-                ["Current balance", state.lyman.currentBalance, state.kateri.currentBalance],
+                ["Current balance", eff.lyman.currentBalance, eff.kateri.currentBalance],
                 ["Projected at retirement", L.projected, K.projected],
               ].map(([label, l, k], idx) => (
                 <tr key={label as string} className={idx % 2 ? "bg-muted/20" : ""}>
