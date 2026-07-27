@@ -121,18 +121,9 @@ export function MoneyBlueprintPlan() {
         debt: Math.round(wealth.totalLiabilities),
       },
       buckets: {
-        foundation: s.buckets.foundation.map((r) => {
-          const live = prefill.foundation.find((p) => p.key === r.key);
-          return live ? { ...r, amount: live.amount, lyman: live.lyman, kateri: live.kateri } : r;
-        }),
-        wealthEngine: s.buckets.wealthEngine.map((r) => {
-          const live = prefill.wealthEngine.find((p) => p.key === r.key);
-          return live ? { ...r, amount: live.amount, lyman: live.lyman, kateri: live.kateri } : r;
-        }),
-        futureFund: s.buckets.futureFund.map((r) => {
-          const live = prefill.futureFund.find((p) => p.key === r.key);
-          return live ? { ...r, amount: live.amount, lyman: live.lyman, kateri: live.kateri } : r;
-        }),
+        foundation: mergeLive(s.buckets.foundation, prefill.foundation),
+        wealthEngine: mergeLive(s.buckets.wealthEngine, prefill.wealthEngine),
+        futureFund: mergeLive(s.buckets.futureFund, prefill.futureFund),
       },
     }));
     toast.success('Re-synced from Track Money + budgets');
