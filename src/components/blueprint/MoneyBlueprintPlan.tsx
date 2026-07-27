@@ -50,6 +50,7 @@ export function MoneyBlueprintPlan() {
   const save = useSaveMoneyBlueprint();
 
   const [state, setState] = useState<BlueprintState>(emptyBlueprint());
+  const [view, setView] = useState<OwnerView>('combined');
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
