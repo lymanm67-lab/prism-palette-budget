@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import { Helmet } from 'react-helmet-async';
 import {
   ResponsiveContainer,
   LineChart,
@@ -151,14 +150,6 @@ export default function CompoundingCrossover() {
 
   return (
     <div className="min-h-screen" style={{ background: '#F8FAFC' }}>
-      <Helmet>
-        <title>The Compounding Crossover™ | Montgomery Wealth OS</title>
-        <meta
-          name="description"
-          content="Multi-scenario investment return analysis at 6%, 8% and 10% — and the Compounding Crossover point where investment growth overtakes contributions."
-        />
-      </Helmet>
-
       <div className="mx-auto max-w-6xl px-4 py-8">
         {/* Header */}
         <header className="mb-8 rounded-2xl p-8 text-white" style={{ background: NAVY }}>
