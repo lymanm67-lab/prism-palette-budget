@@ -657,39 +657,75 @@ export default function CompoundingCrossover() {
           {state.includeKateri && (
             <Panel className="mt-4">
               <h3 className="mb-3 text-sm font-bold" style={{ color: INK }}>
-                Rule of 72 by owner @ {state.returnPct}% (contributions excluded — balance growth only)
+                Rule of 72 by owner @ {state.returnPct}% — with and without contributions
               </h3>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="text-left text-[11px] uppercase tracking-wide text-muted-foreground">
-                      <th className="py-2">Owner</th>
-                      <th className="py-2">Today</th>
-                      <th className="py-2">1st double ({doubleYears.toFixed(1)} yrs)</th>
-                      <th className="py-2">2nd double</th>
-                      <th className="py-2">3rd double</th>
+                      <th className="py-2" rowSpan={2}>Owner</th>
+                      <th className="py-2" rowSpan={2}>Today</th>
+                      <th className="py-2 text-center" colSpan={2}>1st Double ({doubleYears.toFixed(1)} yrs)</th>
+                      <th className="py-2 text-center" colSpan={2}>2nd Double</th>
+                      <th className="py-2 text-center" colSpan={2}>3rd Double</th>
+                    </tr>
+                    <tr className="text-left text-[10px] uppercase tracking-wide text-muted-foreground">
+                      <th className="py-1">Without</th>
+                      <th className="py-1">With</th>
+                      <th className="py-1">Without</th>
+                      <th className="py-1">With</th>
+                      <th className="py-1">Without</th>
+                      <th className="py-1">With</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {household.map((h) => (
-                      <tr key={h.key} className="border-t border-border" >
-                        <td className="py-2 font-bold" style={{ color: h.key === 'combined' ? GOLD : INK }}>
-                          {h.label}
-                        </td>
-                        <td className="py-2">{money(h.balance)}</td>
-                        <td className="py-2">{money(h.balance * 2)}</td>
-                        <td className="py-2">{money(h.balance * 4)}</td>
-                        <td className="py-2 font-bold" style={{ color: EMERALD }}>
-                          {money(h.balance * 8)}
-                        </td>
-                      </tr>
-                    ))}
+                    {household.map((h) => {
+                      const findMilestone = (multiplier: number) => {
+                        const target = h.balance * multiplier;
+                        const row = h.result.rows.find((r) => r.endBalance >= target);
+                        return row ? { year: row.year, value: row.endBalance } : null;
+                      };
+                      const firstWith = findMilestone(2);
+                      const secondWith = findMilestone(4);
+                      const thirdWith = findMilestone(8);
+                      const thisYear = new Date().getFullYear();
+                      return (
+                        <tr key={h.key} className="border-t border-border" >
+                          <td className="py-2 font-bold" style={{ color: h.key === 'combined' ? GOLD : INK }}>
+                            {h.label}
+                          </td>
+                          <td className="py-2">{money(h.balance)}</td>
+                          <td className="py-2 text-muted-foreground">
+                            {money(h.balance * 2)}
+                            <span className="ml-1 text-[10px]">({thisYear + Math.round(doubleYears)})</span>
+                          </td>
+                          <td className="py-2 font-medium" style={{ color: EMERALD }}>
+                            {firstWith ? `${money(firstWith.value)} (${firstWith.year})` : '—'}
+                          </td>
+                          <td className="py-2 text-muted-foreground">
+                            {money(h.balance * 4)}
+                            <span className="ml-1 text-[10px]">({thisYear + Math.round(doubleYears * 2)})</span>
+                          </td>
+                          <td className="py-2 font-medium" style={{ color: EMERALD }}>
+                            {secondWith ? `${money(secondWith.value)} (${secondWith.year})` : '—'}
+                          </td>
+                          <td className="py-2 text-muted-foreground">
+                            {money(h.balance * 8)}
+                            <span className="ml-1 text-[10px]">({thisYear + Math.round(doubleYears * 3)})</span>
+                          </td>
+                          <td className="py-2 font-bold" style={{ color: EMERALD }}>
+                            {thirdWith ? `${money(thirdWith.value)} (${thirdWith.year})` : '—'}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
               <p className="mt-3 text-xs text-muted-foreground">
                 At {state.returnPct}%, household retirement assets double roughly every {doubleYears.toFixed(1)} years
-                on balance alone. Every contribution you add starts its own doubling clock.
+                on balance alone. With ongoing contributions, each doubling arrives sooner and the balance at each
+                milestone is larger — every dollar added starts its own doubling clock.
               </p>
             </Panel>
           )}
