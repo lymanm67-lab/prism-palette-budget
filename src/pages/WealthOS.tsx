@@ -6,6 +6,7 @@ import { simulate } from '@/lib/legacy/monteCarloSim';
 import { exportBinderPNGs, exportBinderPDF } from '@/lib/legacy/wealthOsExport';
 import RetirementProjection from '@/components/wealth-os/RetirementProjection';
 import CompoundingStatusCard from '@/components/wealth-os/crossover/CompoundingStatusCard';
+import { LegacyStepNav } from '@/components/legacy/LegacyStepNav';
 
 
 
@@ -901,6 +902,7 @@ export default function WealthOS() {
         </div>
       </Page>
 
+      <LegacyStepNav />
     </div>
   );
 }

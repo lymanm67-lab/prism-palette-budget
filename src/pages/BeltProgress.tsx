@@ -6,6 +6,7 @@ import { useUserProgression, useLegacyWorth } from '@/hooks/use-financial-os';
 import { BELT_ORDER, BELT_META, computeBelt, nextBeltRequirements, type Belt } from '@/lib/progression/beltRules';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, Lock } from 'lucide-react';
+import { LegacyStepNav } from '@/components/legacy/LegacyStepNav';
 
 export default function BeltProgress() {
   const { data: prog, recompute } = useUserProgression();
@@ -101,6 +102,7 @@ export default function BeltProgress() {
           })}
         </div>
       </div>
+      <LegacyStepNav />
     </div>
   );
 }

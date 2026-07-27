@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect } from 'react';
+import { LegacyStepNav } from '@/components/legacy/LegacyStepNav';
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
   BarChart, Bar, LineChart, Line, ReferenceLine, Cell,
@@ -448,6 +449,7 @@ export default function RetirementPreservation() {
           flexibility for healthcare needs, charitable giving, and multi-generational wealth transfer.
         </div>
       </Section>
+      <LegacyStepNav />
     </div>
   );
 }

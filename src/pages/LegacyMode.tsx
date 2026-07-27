@@ -29,6 +29,7 @@ const FACTOR_EDIT_ROUTES: Record<string, { to: string; hint: string }> = {
 };
 import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, LineChart, Line, Tooltip, XAxis, YAxis } from 'recharts';
 import NetWorthSummaryCard from '@/components/NetWorthSummaryCard';
+import { LegacyStepNav } from '@/components/legacy/LegacyStepNav';
 
 const fmt = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
 
@@ -301,6 +302,7 @@ export default function LegacyMode() {
           </Card>
         </Link>
       </div>
+      <LegacyStepNav />
     </div>
   );
 }

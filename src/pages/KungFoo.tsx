@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { CheckCircle2, Circle, TrendingUp, Sparkles, Lock, HelpCircle } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useKungFooPlan, useSaveKungFooPlan, useFinancialFreedom } from '@/hooks/use-financial-os';
+import { LegacyStepNav } from '@/components/legacy/LegacyStepNav';
 
 const fmt = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
 
@@ -147,6 +148,7 @@ export default function KungFoo() {
       <div className="rounded-md border border-border/40 bg-muted/30 px-3 py-2 text-[11px] text-muted-foreground">
         Educational guidance. Adjust employer match, HSA eligibility, and bracket in your profile for a more accurate plan.
       </div>
+      <LegacyStepNav />
     </div>
   );
 }

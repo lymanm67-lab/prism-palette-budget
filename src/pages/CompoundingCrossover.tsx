@@ -17,6 +17,7 @@ import { toast } from 'sonner';
 import CompoundingStatusCard from '@/components/wealth-os/crossover/CompoundingStatusCard';
 import CrossoverReport from '@/components/wealth-os/crossover/CrossoverReport';
 import { Speedometer, Flywheel, CrossingArrows } from '@/components/wealth-os/crossover/CompoundingVisuals';
+import { LegacyStepNav } from '@/components/legacy/LegacyStepNav';
 import {
   SCENARIOS,
   runCrossover,
@@ -1123,6 +1124,7 @@ export default function CompoundingCrossover() {
           and 10% scenarios are comparison models. Actual investment returns will vary over time.
         </p>
       </div>
+      <LegacyStepNav />
     </div>
   );
 }
