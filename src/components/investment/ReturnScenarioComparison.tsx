@@ -61,13 +61,27 @@ export function ReturnScenarioComparison({ plan, onCreateRules, onReviewLegacy }
     plan?.use_future_dollars ? 'nominal' : 'today'
   );
   const [targetAge, setTargetAge] = useState<string>('75');
+  const [who, setWho] = useState<'individual' | 'combined'>('combined');
+  const { data: spouse } = useInvestmentSpouse(plan?.id);
   if (!plan || !plan.current_age || !plan.retirement_age) return null;
 
   const useFuture = dollarMode === 'nominal';
   const ageNum = parseInt(targetAge, 10);
   const goal = plan.target_amount || 4_000_000;
-  const p7 = runProjection(buildInputs(plan, 7, useFuture, ageNum)).projectedBalance;
-  const p8 = runProjection(buildInputs(plan, 8, useFuture, ageNum)).projectedBalance;
+  const mine7 = runProjection(buildInputs(plan, 7, useFuture, ageNum)).projectedBalance;
+  const mine8 = runProjection(buildInputs(plan, 8, useFuture, ageNum)).projectedBalance;
+
+  const years = Math.max(0, ageNum - (plan.current_age ?? 59));
+  const spouseBalance = Number(spouse?.current_balance ?? 0);
+  const spouseMonthly =
+    Number(spouse?.monthly_employee_contribution ?? 0) + Number(spouse?.monthly_employer_contribution ?? 0);
+  const spouse7 = grow(spouseBalance, spouseMonthly, 7, years);
+  const spouse8 = grow(spouseBalance, spouseMonthly, 8, years);
+
+  const combined = who === 'combined' && !!spouse;
+  const p7 = combined ? mine7 + spouse7 : mine7;
+  const p8 = combined ? mine8 + spouse8 : mine8;
+  const whoLabel = combined ? 'Household combined' : plan.name || 'This plan only';
 
   const surplus7 = p7 - goal;
   const surplus8 = p8 - goal;
@@ -85,8 +99,8 @@ export function ReturnScenarioComparison({ plan, onCreateRules, onReviewLegacy }
 
   const headline =
     surplus7 >= 0 && surplus8 >= 0
-      ? `Your plan is projected to clear the ${formatCurrencyFull(goal)} goal by age ${ageNum} at both 7% and 8% ROI.`
-      : `At 7% ROI you are ${surplus7 >= 0 ? 'on track' : 'short of'} your ${formatCurrencyFull(goal)} goal by age ${ageNum}.`;
+      ? `${whoLabel} is projected to clear the ${formatCurrencyFull(goal)} goal by age ${ageNum} at both 7% and 8% ROI.`
+      : `At 7% ROI ${whoLabel.toLowerCase()} is ${surplus7 >= 0 ? 'on track for' : 'short of'} the ${formatCurrencyFull(goal)} goal by age ${ageNum}.`;
 
   return (
     <Card className="bg-gradient-to-br from-card to-muted/20">
