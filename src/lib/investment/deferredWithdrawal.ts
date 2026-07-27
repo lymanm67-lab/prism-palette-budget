@@ -66,6 +66,15 @@ export interface DeferredWithdrawalInputs {
   birthYear: number;
   /** Include RMD enforcement (withdraw at least the RMD from the pre-tax slice). */
   enforceRmd: boolean;
+
+  /** Annual pre-tax -> Roth conversion amount (0 = no conversions). */
+  conversionAnnualAmount?: number;
+  /** First age a conversion happens (can be before `startAge`). */
+  conversionStartAge?: number;
+  /** Last age a conversion happens — normally the RMD age minus 1. */
+  conversionEndAge?: number;
+  /** Pay conversion tax from outside cash instead of the portfolio. */
+  conversionTaxFromCash?: boolean;
 }
 
 export interface WithdrawalYear {
@@ -87,6 +96,10 @@ export interface WithdrawalYear {
   marginalRatePct: number;
   endBalance: number;
   rmdForced: boolean;
+  /** Pre-tax dollars converted to Roth this year. */
+  rothConversion: number;
+  /** Tax paid on this year's conversion. */
+  conversionTax: number;
 }
 
 export interface DeferredWithdrawalResult {
@@ -103,6 +116,14 @@ export interface DeferredWithdrawalResult {
   rmdConflict: boolean;
   /** Total tax paid on RMDs taken before the intended withdrawal start age. */
   preStrategyRmdTax: number;
+  /** Total Roth conversions executed (including pre-horizon years). */
+  totalConverted: number;
+  /** Total tax paid on those conversions. */
+  totalConversionTax: number;
+  /** Pre-tax balance remaining at RMD age — what RMDs are actually calculated on. */
+  pretaxAtRmdAge: number;
+  /** Bucket mix at `startAge` after any pre-horizon conversions. */
+  startMix: { pretax: number; roth: number; brokerage: number };
 }
 
 export function runDeferredWithdrawal(inp: DeferredWithdrawalInputs): DeferredWithdrawalResult {
@@ -119,6 +140,73 @@ export function runDeferredWithdrawal(inp: DeferredWithdrawalInputs): DeferredWi
   let rothBal = inp.startingBalance * roth;
   let brokerBal = inp.startingBalance * brokerage;
 
+  const convAmount = Math.max(0, inp.conversionAnnualAmount ?? 0);
+  const convStart = inp.conversionStartAge ?? rmdAge - 1;
+  const convEnd = inp.conversionEndAge ?? rmdAge - 1;
+  const payFromCash = !!inp.conversionTaxFromCash;
+
+  /** Tax owed on converting `amount` of pre-tax income on top of other income. */
+  const conversionTaxOn = (amount: number) => {
+    if (amount <= 0) return 0;
+    const base = inp.otherTaxableIncome;
+    const fed = Math.max(0, taxOn(base + amount, inp.brackets) - taxOn(base, inp.brackets));
+    return fed + amount * stateRate;
+  };
+
+  let totalConverted = 0;
+  let totalConversionTax = 0;
+
+  /** Runs one conversion year against the current buckets. */
+  const doConversion = (age: number) => {
+    if (convAmount <= 0 || age < convStart || age > convEnd || pretaxBal <= 0) {
+      return { converted: 0, tax: 0 };
+    }
+    const converted = Math.min(pretaxBal, convAmount);
+    const tax = conversionTaxOn(converted);
+    pretaxBal -= converted;
+    if (payFromCash) {
+      rothBal += converted;
+    } else if (brokerBal >= tax) {
+      brokerBal -= tax;
+      rothBal += converted;
+    } else {
+      const fromBroker = brokerBal;
+      brokerBal = 0;
+      rothBal += converted - (tax - fromBroker);
+    }
+    totalConverted += converted;
+    totalConversionTax += tax;
+    return { converted, tax };
+  };
+
+  // Pre-horizon conversion window (ages before the plan horizon). We discount the
+  // horizon balance back so the pre-75 conversion ladder can be modeled honestly.
+  if (convAmount > 0 && convStart < inp.startAge) {
+    const yearsBack = inp.startAge - convStart;
+    const backFactor = Math.pow(1 + r, yearsBack);
+    pretaxBal = (inp.startingBalance * pretax) / backFactor;
+    rothBal = (inp.startingBalance * roth) / backFactor;
+    brokerBal = (inp.startingBalance * brokerage) / backFactor;
+    for (let age = convStart; age <= Math.min(convEnd, inp.startAge); age++) {
+      if (age > convStart) {
+        pretaxBal *= 1 + r;
+        rothBal *= 1 + r;
+        brokerBal *= 1 + r;
+      }
+      doConversion(age);
+    }
+    // grow forward any remaining years to the horizon
+    const converted = Math.min(convEnd, inp.startAge);
+    const remaining = inp.startAge - Math.max(convStart, converted);
+    if (remaining > 0) {
+      const f = Math.pow(1 + r, remaining);
+      pretaxBal *= f; rothBal *= f; brokerBal *= f;
+    }
+  }
+
+  const startMix = { pretax: pretaxBal, roth: rothBal, brokerage: brokerBal };
+  let pretaxAtRmdAge = inp.startAge >= rmdAge ? pretaxBal : 0;
+
   const years: WithdrawalYear[] = [];
   let balanceAtDeferAge = 0;
   let totalGross = 0;
@@ -131,6 +219,8 @@ export function runDeferredWithdrawal(inp: DeferredWithdrawalInputs): DeferredWi
     pretaxBal *= 1 + r;
     rothBal *= 1 + r;
     brokerBal *= 1 + r;
+    const conv = doConversion(age);
+    if (age === rmdAge) pretaxAtRmdAge = pretaxBal;
     const startBalance = pretaxBal + rothBal + brokerBal;
 
     const strategyOn = age >= inp.withdrawalStartAge;
@@ -180,6 +270,8 @@ export function runDeferredWithdrawal(inp: DeferredWithdrawalInputs): DeferredWi
       marginalRatePct: marginalRate(baseIncome + ordinaryTaxable, inp.brackets) * 100,
       endBalance: pretaxBal + rothBal + brokerBal,
       rmdForced: rmdRequired > pretaxFromStrategy + 0.01,
+      rothConversion: conv.converted,
+      conversionTax: conv.tax,
     };
     years.push(row);
 
@@ -200,7 +292,14 @@ export function runDeferredWithdrawal(inp: DeferredWithdrawalInputs): DeferredWi
     endingBalance: years.length ? years[years.length - 1].endBalance : inp.startingBalance,
     blendedTaxRatePct: totalGross > 0 ? (totalTax / totalGross) * 100 : 0,
     rmdAge,
-    rmdConflict: inp.enforceRmd && rmdAge < inp.withdrawalStartAge,
+    rmdConflict:
+      inp.enforceRmd &&
+      rmdAge < inp.withdrawalStartAge &&
+      years.some((y) => y.age < inp.withdrawalStartAge && y.rmdRequired > 0.01),
     preStrategyRmdTax,
+    totalConverted,
+    totalConversionTax,
+    pretaxAtRmdAge,
+    startMix,
   };
 }

@@ -5,11 +5,11 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertTriangle, Landmark, ShieldCheck } from 'lucide-react';
+import { AlertTriangle, ArrowRightLeft, Landmark, ShieldCheck } from 'lucide-react';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
-import { runDeferredWithdrawal } from '@/lib/investment/deferredWithdrawal';
+import { runDeferredWithdrawal, rmdStartAge } from '@/lib/investment/deferredWithdrawal';
 import { BRACKETS_MFJ_2025, BRACKETS_SINGLE_2025 } from '@/lib/investment/tax';
 import { runProjection, formatCurrencyFull } from '@/lib/investment/projection';
 import type { InvestmentPlan } from '@/hooks/use-investment-plan';
@@ -66,6 +66,9 @@ export function WithdrawalTaxPlanner({ plan }: { plan: InvestmentPlan | null }) 
   const [stateRate, setStateRate] = useState(2.75);
   const [enforceRmd, setEnforceRmd] = useState(true);
   const [throughAge, setThroughAge] = useState(95);
+  const [convAmount, setConvAmount] = useState(0);
+  const [convStartAge, setConvStartAge] = useState(currentAge + 1);
+  const [convTaxFromCash, setConvTaxFromCash] = useState(false);
 
   const birthYear = new Date().getFullYear() - currentAge;
   const balance = startingBalance ?? Math.round(projectedAtHorizon);
@@ -85,8 +88,37 @@ export function WithdrawalTaxPlanner({ plan }: { plan: InvestmentPlan | null }) 
     stateTaxRatePct: stateRate,
     birthYear,
     enforceRmd,
+    conversionAnnualAmount: convAmount,
+    conversionStartAge: convStartAge,
+    conversionEndAge: rmdStartAge(birthYear) - 1,
+    conversionTaxFromCash: convTaxFromCash,
+  }), [balance, horizonAge, deferUntilAge, withdrawalStartAge, ratePct, throughAge,
+       returnPct, pretaxPct, rothPct, otherIncome, filing, stateRate, birthYear, enforceRmd,
+       convAmount, convStartAge, convTaxFromCash]);
+
+  // Same plan with no Roth conversions — the comparison baseline.
+  const baseline = useMemo(() => runDeferredWithdrawal({
+    startingBalance: balance,
+    startAge: horizonAge,
+    deferUntilAge,
+    withdrawalStartAge,
+    withdrawalRatePct: ratePct,
+    throughAge,
+    expectedReturnPct: returnPct,
+    pretaxSharePct: pretaxPct,
+    rothSharePct: rothPct,
+    otherTaxableIncome: otherIncome,
+    brackets: filing === 'mfj' ? BRACKETS_MFJ_2025 : BRACKETS_SINGLE_2025,
+    stateTaxRatePct: stateRate,
+    birthYear,
+    enforceRmd,
   }), [balance, horizonAge, deferUntilAge, withdrawalStartAge, ratePct, throughAge,
        returnPct, pretaxPct, rothPct, otherIncome, filing, stateRate, birthYear, enforceRmd]);
+
+  const rmdAge = rmdStartAge(birthYear);
+  const lifetimeTaxWith = result.totalTax + result.totalConversionTax;
+  const taxDelta = baseline.totalTax - lifetimeTaxWith;
+  const estateDelta = result.endingBalance - baseline.endingBalance;
 
   const first = result.firstWithdrawal;
 
@@ -172,6 +204,49 @@ export function WithdrawalTaxPlanner({ plan }: { plan: InvestmentPlan | null }) 
             </div>
           </div>
 
+          <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-3">
+            <div className="flex items-center gap-2">
+              <ArrowRightLeft className="h-4 w-4 text-primary" />
+              <p className="text-sm font-semibold">Roth conversion ladder (the RMD lever)</p>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Roth dollars have no RMD. Converting pre-tax 403(b)/457(b)/IRA money to Roth before
+              age {rmdAge} is the only way the portfolio can legally stay untouched to age {deferUntilAge}.
+              Conversions are taxed as ordinary income in the year they happen.
+            </p>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="space-y-1">
+                <Label htmlFor="wtp-conv">Convert per year</Label>
+                <Input id="wtp-conv" type="number" step="1000" value={convAmount}
+                  onChange={(e) => setConvAmount(Number(e.target.value))} />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="wtp-conv-start">Start converting at age</Label>
+                <Input id="wtp-conv-start" type="number" value={convStartAge}
+                  onChange={(e) => setConvStartAge(Number(e.target.value))} />
+                <p className="text-xs text-muted-foreground">Ladder ends at age {rmdAge - 1}</p>
+              </div>
+              <div className="flex items-center justify-between rounded-lg border bg-card p-2">
+                <Label htmlFor="wtp-conv-cash" className="text-xs">Pay conversion tax from cash</Label>
+                <Switch id="wtp-conv-cash" checked={convTaxFromCash} onCheckedChange={setConvTaxFromCash} />
+              </div>
+            </div>
+            {convAmount > 0 && (
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <Stat label="Total converted to Roth" value={formatCurrencyFull(result.totalConverted)} />
+                <Stat label="Tax paid on conversions" value={formatCurrencyFull(result.totalConversionTax)} tone="warn" />
+                <Stat label={`Pre-tax left at age ${rmdAge}`} value={formatCurrencyFull(result.pretaxAtRmdAge)}
+                  sub={result.pretaxAtRmdAge < 1000 ? 'RMD effectively eliminated' : 'Still RMD-exposed'} />
+                <Stat
+                  label="Lifetime tax vs no conversions"
+                  value={`${taxDelta >= 0 ? '−' : '+'}${formatCurrencyFull(Math.abs(taxDelta))}`}
+                  sub={`Estate ${estateDelta >= 0 ? '+' : '−'}${formatCurrencyFull(Math.abs(estateDelta))} at age ${throughAge}`}
+                  tone={taxDelta >= 0 ? 'good' : 'warn'}
+                />
+              </div>
+            )}
+          </div>
+
           {result.rmdConflict && (
             <Alert variant="destructive">
               <AlertTriangle className="h-4 w-4" />
@@ -210,8 +285,9 @@ export function WithdrawalTaxPlanner({ plan }: { plan: InvestmentPlan | null }) 
 
           <div className="grid gap-3 sm:grid-cols-3">
             <Stat label={`Lifetime withdrawals to ${throughAge}`} value={formatCurrencyFull(result.totalGross)} />
-            <Stat label="Lifetime tax on withdrawals" value={formatCurrencyFull(result.totalTax)}
-              sub={`${pct(result.blendedTaxRatePct)} blended rate`} tone="warn" />
+            <Stat label="Lifetime tax (withdrawals + conversions)" value={formatCurrencyFull(lifetimeTaxWith)}
+              sub={`${pct(result.blendedTaxRatePct)} blended on withdrawals · ${formatCurrencyFull(result.totalConversionTax)} conversion tax`}
+              tone="warn" />
             <Stat label={`Estate left at age ${throughAge}`} value={formatCurrencyFull(result.endingBalance)}
               tone="good" />
           </div>
@@ -225,6 +301,7 @@ export function WithdrawalTaxPlanner({ plan }: { plan: InvestmentPlan | null }) 
                     <TableHead className="text-right">Start balance</TableHead>
                     <TableHead className="text-right">Gross draw</TableHead>
                     <TableHead className="text-right">RMD</TableHead>
+                    <TableHead className="text-right">Roth conv.</TableHead>
                     <TableHead className="text-right">Federal</TableHead>
                     <TableHead className="text-right">State</TableHead>
                     <TableHead className="text-right">Net</TableHead>
@@ -242,6 +319,9 @@ export function WithdrawalTaxPlanner({ plan }: { plan: InvestmentPlan | null }) 
                       <TableCell className="text-right">{formatCurrencyFull(y.grossWithdrawal)}</TableCell>
                       <TableCell className="text-right text-muted-foreground">
                         {y.rmdRequired > 0 ? formatCurrencyFull(y.rmdRequired) : '—'}
+                      </TableCell>
+                      <TableCell className="text-right text-muted-foreground">
+                        {y.rothConversion > 0 ? formatCurrencyFull(y.rothConversion) : '—'}
                       </TableCell>
                       <TableCell className="text-right">{formatCurrencyFull(y.federalTax)}</TableCell>
                       <TableCell className="text-right">{formatCurrencyFull(y.stateTax)}</TableCell>
