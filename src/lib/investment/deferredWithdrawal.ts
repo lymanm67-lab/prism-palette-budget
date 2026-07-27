@@ -277,7 +277,7 @@ export function runDeferredWithdrawal(inp: DeferredWithdrawalInputs): DeferredWi
 
     if (age === inp.deferUntilAge) balanceAtDeferAge = row.endBalance;
     totalGross += gross;
-    totalTax += tax + conv.tax;
+    totalTax += tax;
     totalNet += row.netIncome;
     if (age < inp.withdrawalStartAge) preStrategyRmdTax += tax;
   }
@@ -292,7 +292,10 @@ export function runDeferredWithdrawal(inp: DeferredWithdrawalInputs): DeferredWi
     endingBalance: years.length ? years[years.length - 1].endBalance : inp.startingBalance,
     blendedTaxRatePct: totalGross > 0 ? (totalTax / totalGross) * 100 : 0,
     rmdAge,
-    rmdConflict: inp.enforceRmd && rmdAge < inp.withdrawalStartAge,
+    rmdConflict:
+      inp.enforceRmd &&
+      rmdAge < inp.withdrawalStartAge &&
+      years.some((y) => y.age < inp.withdrawalStartAge && y.rmdRequired > 0.01),
     preStrategyRmdTax,
     totalConverted,
     totalConversionTax,
