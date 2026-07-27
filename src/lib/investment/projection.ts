@@ -53,6 +53,11 @@ export interface ProjectionInputs {
   annualLumpSum?: { amount: number; startYear: number };
   /** When true, returns a monthly balance series in `result.monthly`. */
   includeMonthly?: boolean;
+
+  /** When true, lifestyle is funded by Social Security + spouse pension; the portfolio is preserved (no 4% draw). */
+  incomeFromSsPensionOnly?: boolean;
+  /** Spouse pension monthly income (used when `incomeFromSsPensionOnly` is true). */
+  spousePensionMonthly?: number;
 }
 
 export interface YearPoint {
@@ -313,9 +318,11 @@ export function runProjection(inputs: ProjectionInputs): ProjectionResult {
   const confidenceScore = Math.max(0, Math.min(100, Math.round(gapPct)));
 
   // 4% rule monthly + SS once claimed
-  const fourPctMonthly = (projectedBalance * 0.04) / 12;
+  const preservePortfolio = !!inputs.incomeFromSsPensionOnly;
+  const fourPctMonthly = preservePortfolio ? 0 : (projectedBalance * 0.04) / 12;
   const ssMonthly = inputs.ssMonthlyEstimate || 0;
-  const estimatedMonthlyIncome = fourPctMonthly + ssMonthly;
+  const spousePensionMonthly = preservePortfolio ? (inputs.spousePensionMonthly || 0) : 0;
+  const estimatedMonthlyIncome = fourPctMonthly + ssMonthly + spousePensionMonthly;
 
   // Required monthly contribution (binary search) — skip in recursive solve calls
   let requiredMonthlyContribution: number | null = null;
@@ -324,7 +331,8 @@ export function runProjection(inputs: ProjectionInputs): ProjectionResult {
   }
 
   const totalGrowth = projectedBalance - totalContribInput - totalEmp - totalErp;
-  const legacyProjection = Math.max(0, surplus);
+  // With SS + pension covering lifestyle, the whole portfolio stays intact as legacy capital.
+  const legacyProjection = preservePortfolio ? projectedBalance : Math.max(0, surplus);
 
   const status =
     onTrack === 'green'
