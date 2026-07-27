@@ -243,7 +243,7 @@ export default function CompoundingCrossover() {
                   {s.returnPct}%
                 </div>
                 <p className="mt-2 text-xs text-foreground/80">{s.purpose}</p>
-                <div className="mt-3 rounded-lg p-3" style={{ background: '#F8FAFC' }}>
+                <div className="mt-3 rounded-lg p-3" style={{ background: 'hsl(var(--muted))' }}>
                   <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                     Est. annual growth today
                   </div>
@@ -563,7 +563,7 @@ export default function CompoundingCrossover() {
                 </div>
                 <ul className="grid grid-cols-2 gap-2 text-sm text-foreground/80">
                   {['Salary', 'Employer contributions (9%)', 'Retirement contributions', 'Increasing savings rate', 'Cash-flow redirects', 'Debt redirection strategy'].map((x) => (
-                    <li key={x} className="rounded-lg px-3 py-2" style={{ background: '#F8FAFC' }}>
+                    <li key={x} className="rounded-lg px-3 py-2" style={{ background: 'hsl(var(--muted))' }}>
                       ✓ {x}
                     </li>
                   ))}
@@ -628,7 +628,7 @@ export default function CompoundingCrossover() {
                       ))}
                     </tbody>
                   </table>
-                  <div className="mt-4 rounded-lg p-3 text-sm" style={{ background: '#F8FAFC' }}>
+                  <div className="mt-4 rounded-lg p-3 text-sm" style={{ background: 'hsl(var(--muted))' }}>
                     <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                       Live calculation
                     </div>
