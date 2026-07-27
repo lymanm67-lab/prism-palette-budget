@@ -86,6 +86,7 @@ const NAV_SECTIONS: NavSection[] = [
       { to: '/legacy/family', icon: Heart, label: 'Family Legacy', color: 'text-prism-rose' },
       { to: '/legacy/household', icon: Users, label: 'Household Wealth', color: 'text-prism-teal' },
       { to: '/legacy/wealth-os', icon: BookOpen, label: 'Wealth OS Binder', color: 'text-prism-amber' },
+      { to: '/legacy/preservation', icon: TrendingUp, label: 'Retirement Preservation', color: 'text-prism-amber' },
       { to: '/legacy/crossover', icon: TrendingUp, label: 'Compounding Crossover', color: 'text-prism-teal' },
       { to: '/legacy/belts', icon: Target, label: 'Belt Progress', color: 'text-prism-lime' },
     ],
