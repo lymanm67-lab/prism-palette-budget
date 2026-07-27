@@ -6,7 +6,16 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Target, TrendingUp, Sparkles } from 'lucide-react';
 import { InvestmentPlan } from '@/hooks/use-investment-plan';
 import { runProjection, formatCurrencyFull } from '@/lib/investment/projection';
+import { useInvestmentSpouse } from '@/hooks/use-investment-v2';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell, ReferenceLine } from 'recharts';
+
+/** Simple compounding of a balance + monthly contribution over `years`. */
+function grow(balance: number, monthly: number, ratePct: number, years: number) {
+  const r = ratePct / 100 / 12;
+  const n = Math.max(0, Math.round(years * 12));
+  if (r === 0) return balance + monthly * n;
+  return balance * Math.pow(1 + r, n) + monthly * ((Math.pow(1 + r, n) - 1) / r);
+}
 
 interface Props {
   plan: InvestmentPlan | null;
