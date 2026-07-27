@@ -117,6 +117,9 @@ const ROW_MATCHERS: { key: string; test: (label: string) => boolean }[] = [
   { key: 'subscriptions', test: (l) => /personal subscriptions|streaming|membership|gym/.test(l) },
 ];
 
+/** Actual household rent (confirmed by Lyman). */
+const RENT_MONTHLY = 1100;
+
 const WEALTH_MATCHERS: { key: string; test: (l: string) => boolean }[] = [
   { key: 'postTaxRetirement', test: (l) => /roth|ira|retirement|401|457|hsa/.test(l) },
   { key: 'stocks', test: (l) => /invest|brokerage|stock|crypto/.test(l) },
