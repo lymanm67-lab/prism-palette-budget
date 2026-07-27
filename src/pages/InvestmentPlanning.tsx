@@ -319,7 +319,10 @@ export default function InvestmentPlanning() {
         <TabsContent value="trust" className="mt-4"><TrustFundingTracker plan={plan ?? null} /></TabsContent>
         <TabsContent value="assets" className="mt-4"><AssetTagManager plan={plan ?? null} /></TabsContent>
         <TabsContent value="rules" className="mt-4"><MoneyRulesManager planId={plan?.id} /></TabsContent>
-        <TabsContent value="tax" className="mt-4"><TaxPlanner plan={plan ?? null} /></TabsContent>
+        <TabsContent value="tax" className="mt-4 space-y-4">
+          <WithdrawalTaxPlanner plan={plan ?? null} />
+          <TaxPlanner plan={plan ?? null} />
+        </TabsContent>
         <TabsContent value="risk" className="mt-4"><RiskPlanner plan={plan ?? null} /></TabsContent>
         <TabsContent value="healthcare" className="mt-4"><HealthcarePlanner plan={plan ?? null} /></TabsContent>
         <TabsContent value="income" className="mt-4"><IncomeEngineering plan={plan ?? null} /></TabsContent>
