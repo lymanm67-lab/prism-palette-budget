@@ -10,8 +10,8 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
 } from 'recharts';
 import {
-  computeBlueprint, emptyBlueprint, BUCKET_META, BUFFER_RATE,
-  type BlueprintRow, type BlueprintState,
+  computeBlueprint, emptyBlueprint, BUCKET_META, BUFFER_RATE, OWNER_VIEWS, normalizeRow, rowAmount,
+  type BlueprintRow, type BlueprintState, type OwnerView,
 } from '@/lib/budgeting/moneyBlueprint';
 import { BlueprintBucketBar } from './BlueprintBucketBar';
 import { useMoneyBlueprint, useSaveMoneyBlueprint, useBlueprintPrefill } from '@/hooks/use-money-blueprint';
