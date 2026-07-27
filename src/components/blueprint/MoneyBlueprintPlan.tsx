@@ -297,10 +297,10 @@ export function MoneyBlueprintPlan() {
               <div className="grid grid-cols-[1fr_140px] items-center gap-3">
                 <Label className="text-xs">Lyman take-home</Label>
                 <MoneyInput
-                  value={state.income.lymanNet ?? state.income.netMonthly}
+                  value={lymanNetVal}
                   onChange={(n) => setState((s) => ({
                     ...s,
-                    income: { ...s.income, lymanNet: n, netMonthly: Math.round((n + (s.income.kateriNet ?? 0)) * 100) / 100 },
+                    income: { ...s.income, lymanNet: n, netMonthly: Math.round((n + kateriNetVal) * 100) / 100 },
                   }))}
                 />
               </div>
@@ -309,10 +309,10 @@ export function MoneyBlueprintPlan() {
               <div className="grid grid-cols-[1fr_140px] items-center gap-3">
                 <Label className="text-xs">Kateri take-home</Label>
                 <MoneyInput
-                  value={state.income.kateriNet ?? 0}
+                  value={kateriNetVal}
                   onChange={(n) => setState((s) => ({
                     ...s,
-                    income: { ...s.income, kateriNet: n, netMonthly: Math.round(((s.income.lymanNet ?? s.income.netMonthly) + n) * 100) / 100 },
+                    income: { ...s.income, kateriNet: n, netMonthly: Math.round((lymanNetVal + n) * 100) / 100 },
                   }))}
                 />
               </div>
@@ -354,9 +354,9 @@ export function MoneyBlueprintPlan() {
             ? 'grid grid-cols-[minmax(0,1fr)_repeat(3,minmax(64px,88px))_52px_2rem] items-center gap-1.5'
             : 'grid grid-cols-[minmax(0,1fr)_minmax(90px,120px)_52px_2rem] items-center gap-1.5';
           const base = view === 'lyman'
-            ? (state.income.lymanNet ?? state.income.netMonthly)
+            ? lymanNetVal
             : view === 'kateri'
-              ? (state.income.kateriNet ?? 0)
+              ? kateriNetVal
               : state.income.netMonthly;
           const pctOf = (n: number) => (base > 0 ? `${Math.round((n / base) * 100)}%` : '—');
           return (
