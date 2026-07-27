@@ -29,6 +29,18 @@ export interface SpouseRetirementInputs {
   deferredCompMonthly: number;
   currentBalance: number;
   expectedReturnPct: number;
+  /** Planned total funding (employee + employer + deferred) as % of contribution-eligible salary, effective Dec 2026. */
+  plannedTotalPctOfBase?: number;
+}
+
+/** Applies the Dec-2026 planned deferral target by scaling employee contributions. */
+function applyPlanned(i: SpouseRetirementInputs): SpouseRetirementInputs {
+  const pct = i.plannedTotalPctOfBase;
+  if (!pct) return i;
+  const base = i.employerBaseMonthly || i.monthlyGross;
+  const target = (pct / 100) * base;
+  const employee = Math.max(0, target - i.employerMonthly - i.deferredCompMonthly);
+  return { ...i, employeeMonthly: employee };
 }
 
 const DEFAULTS: Record<"lyman" | "kateri", SpouseRetirementInputs> = {
