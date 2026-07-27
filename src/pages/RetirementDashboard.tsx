@@ -105,6 +105,7 @@ interface HouseholdRollup {
   target: number;
   gap: number;
   multiplier: number;
+  live: boolean;
   parts: { label: string; value: number }[];
 }
 
