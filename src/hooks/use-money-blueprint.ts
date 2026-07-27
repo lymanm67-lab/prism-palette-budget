@@ -180,11 +180,6 @@ export function useBlueprintPrefill() {
         budgeted.set(hit.key, (budgeted.get(hit.key) || 0) + (Number((b as any).planned_amount) || 0));
       }
 
-      const foundation = DEFAULT_FOUNDATION.map((r) => ({
-        ...r,
-        amount: budgeted.has(r.key) ? Math.round(budgeted.get(r.key)! * 100) / 100 : monthlyAvg(spend.get(r.key) || 0),
-      }));
-
       // Lyman's take-home comes from real deposits; Kateri's salary isn't deposited into
       // tracked accounts, so it's estimated from her gross and added to household net.
       const lymanNet = monthlyAvg(income) > 500
@@ -193,14 +188,27 @@ export function useBlueprintPrefill() {
       const kateriNet = Math.round(((KATERI_GROSS_ANNUAL / 12) * NET_RATIO) * 100) / 100;
       const netMonthly = Math.round((lymanNet + kateriNet) * 100) / 100;
 
+      // Category owner split defaults to each spouse's share of take-home.
+      const lymanShare = netMonthly > 0 ? lymanNet / netMonthly : 1;
+      const withSplit = (r: { amount: number }) => {
+        const lyman = Math.round((r.amount || 0) * lymanShare * 100) / 100;
+        return { ...r, lyman, kateri: Math.round(((r.amount || 0) - lyman) * 100) / 100 };
+      };
+
+      const foundation = DEFAULT_FOUNDATION.map((r) => withSplit({
+        ...r,
+        amount: budgeted.has(r.key) ? Math.round(budgeted.get(r.key)! * 100) / 100 : monthlyAvg(spend.get(r.key) || 0),
+      }));
 
       return {
         foundation,
-        wealthEngine: DEFAULT_WEALTH_ENGINE.map((r) => ({ ...r, amount: monthlyAvg(wealth.get(r.key) || 0) })),
-        futureFund: DEFAULT_FUTURE_FUND.map((r) => ({ ...r, amount: monthlyAvg(future.get(r.key) || 0) })),
+        wealthEngine: DEFAULT_WEALTH_ENGINE.map((r) => withSplit({ ...r, amount: monthlyAvg(wealth.get(r.key) || 0) })),
+        futureFund: DEFAULT_FUTURE_FUND.map((r) => withSplit({ ...r, amount: monthlyAvg(future.get(r.key) || 0) })),
         income: {
           grossMonthly: Math.round((HOUSEHOLD_GROSS_ANNUAL / 12) * 100) / 100,
           netMonthly,
+          lymanNet,
+          kateriNet,
         },
         source: {
           budgetedKeys: Array.from(budgeted.keys()),
