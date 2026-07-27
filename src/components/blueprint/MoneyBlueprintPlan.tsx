@@ -246,6 +246,14 @@ export function MoneyBlueprintPlan() {
                 onChange={(n) => setState((s) => ({ ...s, income: { ...s.income, netMonthly: n } }))}
               />
             </div>
+            {prefill?.source && (
+              <p className="text-[11px] text-muted-foreground">
+                Live take-home: Lyman {money2(prefill.source.lymanNet)} (tracked deposits) + Kateri{' '}
+                {money2(prefill.source.kateriNet)} (est. from $113,000 salary) ={' '}
+                <span className="font-semibold">{money2(prefill.income.netMonthly)}</span>/mo.
+              </p>
+            )}
+
             <div className="grid grid-cols-3 gap-2 pt-1">
               <div className="rounded-lg border border-border/50 p-2">
                 <p className="text-[10px] uppercase text-muted-foreground">Allocated</p>
