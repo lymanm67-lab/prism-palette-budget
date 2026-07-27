@@ -82,15 +82,16 @@ const NAV_SECTIONS: NavSection[] = [
   {
     label: 'Legacy',
     items: [
-      { to: '/legacy', icon: Sparkles, label: 'Legacy Mode', color: 'text-prism-amber', essential: true },
-      { to: '/kungfoo', icon: Layers, label: 'KUNG FOO Plan', color: 'text-prism-teal' },
-      { to: '/retirement-optimizer', icon: Layers, label: 'Retirement Optimizer', color: 'text-prism-amber' },
-      { to: '/legacy/family', icon: Heart, label: 'Family Legacy', color: 'text-prism-rose' },
-      { to: '/legacy/household', icon: Users, label: 'Household Wealth', color: 'text-prism-teal' },
-      { to: '/legacy/wealth-os', icon: BookOpen, label: 'Wealth OS Binder', color: 'text-prism-amber' },
-      { to: '/legacy/preservation', icon: TrendingUp, label: 'Retirement Preservation', color: 'text-prism-amber' },
-      { to: '/legacy/crossover', icon: TrendingUp, label: 'Compounding Crossover', color: 'text-prism-teal' },
-      { to: '/legacy/belts', icon: Target, label: 'Belt Progress', color: 'text-prism-lime' },
+      { to: '/legacy/household', icon: Users, label: '1. Household Wealth', color: 'text-prism-teal' },
+      { to: '/legacy/crossover', icon: TrendingUp, label: '2. Compounding Crossover', color: 'text-prism-teal' },
+      { to: '/retirement-optimizer', icon: Layers, label: '3. Retirement Optimizer', color: 'text-prism-amber' },
+      { to: '/legacy/preservation', icon: TrendingUp, label: '4. Retirement Preservation', color: 'text-prism-amber' },
+      { to: '/kungfoo', icon: Layers, label: '5. KUNG FOO Plan', color: 'text-prism-teal' },
+      { to: '/legacy/family', icon: Heart, label: '6. Family Legacy', color: 'text-prism-rose' },
+      { to: '/legacy/wealth-os', icon: BookOpen, label: '7. Wealth OS Binder', color: 'text-prism-amber' },
+      { to: '/legacy', icon: Sparkles, label: '8. Legacy Mode', color: 'text-prism-amber', essential: true },
+      { to: '/legacy/belts', icon: Target, label: '9. Belt Progress', color: 'text-prism-lime' },
+
     ],
   },
   {
