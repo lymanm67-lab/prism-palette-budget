@@ -80,12 +80,13 @@ function futureValue(i: SpouseRetirementInputs) {
 
 function totals(i: SpouseRetirementInputs) {
   const monthlyTotal = i.employeeMonthly + i.employerMonthly + i.deferredCompMonthly;
+  const employerBase = i.employerBaseMonthly || i.monthlyGross;
   return {
     monthlyTotal,
     annualTotal: monthlyTotal * 12,
     annualGross: i.monthlyGross * 12,
     savingsRate: i.monthlyGross > 0 ? (monthlyTotal / i.monthlyGross) * 100 : 0,
-    employerPct: i.monthlyGross > 0 ? (i.employerMonthly / i.monthlyGross) * 100 : 0,
+    employerPct: employerBase > 0 ? (i.employerMonthly / employerBase) * 100 : 0,
     projected: futureValue(i),
     yearsToRetire: Math.max(0, i.retirementAge - i.currentAge),
   };
