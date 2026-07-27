@@ -144,6 +144,21 @@ export default function HouseholdRetirementPanel() {
     try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch { /* ignore */ }
   }, [state]);
 
+  const handleSave = () => {
+    try {
+      localStorage.setItem(LS_KEY, JSON.stringify(state));
+      toast.success("Household retirement figures saved");
+    } catch {
+      toast.error("Could not save — browser storage is unavailable");
+    }
+  };
+
+  const handleReset = () => {
+    setState(DEFAULTS);
+    try { localStorage.setItem(LS_KEY, JSON.stringify(DEFAULTS)); } catch { /* ignore */ }
+    toast.success("Reset to payroll-verified figures");
+  };
+
   const patch = (who: "lyman" | "kateri") => (p: Partial<SpouseRetirementInputs>) =>
     setState((s) => ({ ...s, [who]: { ...s[who], ...p } }));
 
