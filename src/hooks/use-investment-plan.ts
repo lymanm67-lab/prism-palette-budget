@@ -39,6 +39,8 @@ export type InvestmentPlan = {
   spouse_pension_monthly: number;
   spouse_pension_account_value: number;
   spouse_deferred_comp_value: number;
+  /** 'portfolio_draw' = 4% rule draw; 'ss_pension_only' = SS + spouse pension fund lifestyle, portfolio preserved */
+  income_strategy: 'portfolio_draw' | 'ss_pension_only' | string;
   notes: string | null;
   created_at: string;
   updated_at: string;
