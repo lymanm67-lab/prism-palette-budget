@@ -271,7 +271,7 @@ export default function CompoundingCrossover() {
                   value={state.balance}
                   onChange={(e) => set({ balance: Number(e.target.value) || 0 })}
                   className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-medium text-slate-900"
-                  style={{ borderColor: '#CBD5E1' }}
+                  style={{ borderColor: 'hsl(var(--border))' }}
                 />
               </label>
               <label className="mb-3 block text-xs font-semibold text-muted-foreground">
@@ -281,7 +281,7 @@ export default function CompoundingCrossover() {
                   value={state.annualContributions}
                   onChange={(e) => set({ annualContributions: Number(e.target.value) || 0 })}
                   className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-medium text-slate-900"
-                  style={{ borderColor: '#CBD5E1' }}
+                  style={{ borderColor: 'hsl(var(--border))' }}
                 />
               </label>
               <label className="mb-3 block text-xs font-semibold text-muted-foreground">
@@ -291,7 +291,7 @@ export default function CompoundingCrossover() {
                   value={state.contributionGrowthPct}
                   onChange={(e) => set({ contributionGrowthPct: Number(e.target.value) || 0 })}
                   className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-medium text-slate-900"
-                  style={{ borderColor: '#CBD5E1' }}
+                  style={{ borderColor: 'hsl(var(--border))' }}
                 />
               </label>
               <label className="mb-3 block text-xs font-semibold text-muted-foreground">
@@ -301,11 +301,11 @@ export default function CompoundingCrossover() {
                   value={state.debtRedirectAnnual}
                   onChange={(e) => set({ debtRedirectAnnual: Number(e.target.value) || 0 })}
                   className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-medium text-slate-900"
-                  style={{ borderColor: '#CBD5E1' }}
+                  style={{ borderColor: 'hsl(var(--border))' }}
                 />
               </label>
 
-              <div className="mb-3 rounded-lg border p-3" style={{ borderColor: '#CBD5E1', background: '#F8FAFC' }}>
+              <div className="mb-3 rounded-lg border p-3" style={{ borderColor: 'hsl(var(--border))', background: 'hsl(var(--muted))' }}>
                 <label className="flex items-center gap-2 text-xs font-bold" style={{ color: INK }}>
                   <input
                     type="checkbox"
@@ -325,7 +325,7 @@ export default function CompoundingCrossover() {
                         value={state.kateriBalance}
                         onChange={(e) => set({ kateriBalance: Number(e.target.value) || 0 })}
                         className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-medium text-slate-900"
-                        style={{ borderColor: '#CBD5E1' }}
+                        style={{ borderColor: 'hsl(var(--border))' }}
                       />
                     </label>
                     <label className="mt-3 block text-xs font-semibold text-muted-foreground">
@@ -335,7 +335,7 @@ export default function CompoundingCrossover() {
                         value={state.kateriContributions}
                         onChange={(e) => set({ kateriContributions: Number(e.target.value) || 0 })}
                         className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-medium text-slate-900"
-                        style={{ borderColor: '#CBD5E1' }}
+                        style={{ borderColor: 'hsl(var(--border))' }}
                       />
                     </label>
                     <div className="mt-3 text-[11px] font-semibold text-muted-foreground">View</div>
@@ -370,7 +370,7 @@ export default function CompoundingCrossover() {
                     onClick={() => set({ returnPct: s.returnPct })}
                     className="flex-1 rounded-md border px-2 py-2 text-xs font-bold transition"
                     style={{
-                      borderColor: state.returnPct === s.returnPct ? s.color : '#CBD5E1',
+                      borderColor: state.returnPct === s.returnPct ? s.color : 'hsl(var(--border))',
                       background: state.returnPct === s.returnPct ? s.color : 'white',
                       color: state.returnPct === s.returnPct ? 'white' : s.color,
                     }}
