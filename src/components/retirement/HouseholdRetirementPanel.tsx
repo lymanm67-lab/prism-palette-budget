@@ -208,15 +208,15 @@ export default function HouseholdRetirementPanel() {
   const chartData = [
     {
       name: "Lyman",
-      Employee: Math.round(state.lyman.employeeMonthly),
-      Employer: Math.round(state.lyman.employerMonthly),
-      "Deferred comp": Math.round(state.lyman.deferredCompMonthly),
+      Employee: Math.round(eff.lyman.employeeMonthly),
+      Employer: Math.round(eff.lyman.employerMonthly),
+      "Deferred comp": Math.round(eff.lyman.deferredCompMonthly),
     },
     {
       name: "Kateri",
-      Employee: Math.round(state.kateri.employeeMonthly),
-      Employer: Math.round(state.kateri.employerMonthly),
-      "Deferred comp": Math.round(state.kateri.deferredCompMonthly),
+      Employee: Math.round(eff.kateri.employeeMonthly),
+      Employer: Math.round(eff.kateri.employerMonthly),
+      "Deferred comp": Math.round(eff.kateri.deferredCompMonthly),
     },
   ];
 
