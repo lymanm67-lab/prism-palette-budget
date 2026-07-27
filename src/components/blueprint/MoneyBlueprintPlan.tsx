@@ -263,10 +263,30 @@ export function MoneyBlueprintPlan() {
               />
             </div>
             <div className="grid grid-cols-[1fr_140px] items-center gap-3">
-              <Label className="text-xs">Net monthly income (take-home after taxes)</Label>
+              <Label className="text-xs">Net monthly income (household take-home)</Label>
               <MoneyInput
                 value={state.income.netMonthly}
                 onChange={(n) => setState((s) => ({ ...s, income: { ...s.income, netMonthly: n } }))}
+              />
+            </div>
+            <div className="grid grid-cols-[1fr_140px] items-center gap-3">
+              <Label className="text-xs">Lyman take-home</Label>
+              <MoneyInput
+                value={state.income.lymanNet ?? state.income.netMonthly}
+                onChange={(n) => setState((s) => ({
+                  ...s,
+                  income: { ...s.income, lymanNet: n, netMonthly: Math.round((n + (s.income.kateriNet ?? 0)) * 100) / 100 },
+                }))}
+              />
+            </div>
+            <div className="grid grid-cols-[1fr_140px] items-center gap-3">
+              <Label className="text-xs">Kateri take-home</Label>
+              <MoneyInput
+                value={state.income.kateriNet ?? 0}
+                onChange={(n) => setState((s) => ({
+                  ...s,
+                  income: { ...s.income, kateriNet: n, netMonthly: Math.round(((s.income.lymanNet ?? s.income.netMonthly) + n) * 100) / 100 },
+                }))}
               />
             </div>
             {prefill?.source && (
