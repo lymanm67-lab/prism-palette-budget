@@ -582,9 +582,12 @@ export default function RetirementDashboard() {
             </div>
           </div>
           <p className="text-xs text-muted-foreground">
-            Fidelity-style age-to-salary multiplier targets. Lyman-only score: {soloReadiness}/100. Update balances
-            in the Household tab to keep this current — pensions and Social Security are not counted here.
+            Fidelity-style age-to-salary multiplier targets. Lyman-only score: {soloReadiness}/100.{" "}
+            {householdRollup.live
+              ? "Balances pulled live from your linked retirement accounts (Net Worth). Pensions and Social Security are not counted here."
+              : "No linked retirement accounts found — falling back to the Household tab figures."}
           </p>
+
         </CardContent>
       </Card>
 
