@@ -867,10 +867,19 @@ export default function CompoundingCrossover() {
                       dot={false}
                     />
                   ))}
-                  <ReferenceLine y={active.crossoverPortfolio} stroke={EMERALD} strokeDasharray="5 5" label={{ value: 'Crossover', fontSize: 10, fill: EMERALD, position: 'insideTopLeft' }} />
-                  <ReferenceLine y={500_000} stroke="#94A3B8" strokeDasharray="3 3" label={{ value: '$500k', fontSize: 10, fill: '#64748B', position: 'insideTopLeft' }} />
-                  <ReferenceLine y={1_000_000} stroke="#94A3B8" strokeDasharray="3 3" label={{ value: '$1M', fontSize: 10, fill: '#64748B', position: 'insideTopLeft' }} />
-                  <ReferenceLine y={2_000_000} stroke="#94A3B8" strokeDasharray="3 3" label={{ value: '$2M', fontSize: 10, fill: '#64748B', position: 'insideTopLeft' }} />
+                  <ReferenceLine
+                    y={active.crossoverPortfolio}
+                    stroke={EMERALD}
+                    strokeDasharray="5 5"
+                    label={{ value: `Crossover ${moneyShort(active.crossoverPortfolio)}`, fontSize: 11, fill: EMERALD, position: 'right' }}
+                  />
+                  <ReferenceLine
+                    y={1_000_000}
+                    stroke="hsl(var(--muted-foreground))"
+                    strokeDasharray="3 3"
+                    label={{ value: '$1M', fontSize: 10, fill: 'hsl(var(--muted-foreground))', position: 'left' }}
+                  />
+
                 </LineChart>
               </ResponsiveContainer>
             </div>
