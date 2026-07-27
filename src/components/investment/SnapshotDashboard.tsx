@@ -175,7 +175,7 @@ export function SnapshotDashboard({ plan }: Props) {
                 </thead>
                 <tbody>
                   {(sweep ?? []).map((s) => {
-                    const hit85 = s.at75 >= 4_000_000;
+                    const hit75 = s.at75 >= 4_000_000;
                     return (
                       <tr key={s.rate} className="border-b border-border/30">
                         <td className="py-2">
