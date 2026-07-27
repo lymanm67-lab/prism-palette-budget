@@ -10,7 +10,10 @@ import {
   ReferenceLine,
   Legend,
 } from 'recharts';
-import { Quote, Sparkles, TrendingUp, Flag } from 'lucide-react';
+import { Quote, Sparkles, TrendingUp, Flag, Printer, Save, RotateCcw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Slider } from '@/components/ui/slider';
+import { toast } from 'sonner';
 import CompoundingStatusCard from '@/components/wealth-os/crossover/CompoundingStatusCard';
 import { Speedometer, Flywheel, CrossingArrows } from '@/components/wealth-os/crossover/CompoundingVisuals';
 import {
@@ -205,11 +208,32 @@ export default function CompoundingCrossover() {
 
   const expectedFinal = byScenario.find((b) => b.scenario.key === 'expected')!.result.rows.slice(-1)[0].endBalance;
 
+  const saveScenario = () => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      localStorage.setItem(`${STORAGE_KEY}-saved-at`, new Date().toISOString());
+      toast.success('Crossover scenario saved', { description: `${eff.label} · ${state.returnPct}% return` });
+    } catch {
+      toast.error('Could not save this scenario');
+    }
+  };
+
+  const resetScenario = () => {
+    setState(DEFAULTS);
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULTS)); } catch { /* ignore */ }
+    toast.info('Reset to household defaults');
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto max-w-6xl px-4 py-8">
+      <style>{`@media print {
+        .no-print { display: none !important; }
+        section { break-inside: avoid; }
+        .recharts-wrapper { page-break-inside: avoid; }
+      }`}</style>
+      <div className="mx-auto max-w-6xl px-4 py-8 print:py-0">
         {/* Header */}
-        <header className="mb-8 rounded-2xl p-8 text-white" style={{ background: NAVY }}>
+        <header className="mb-4 rounded-2xl p-8 text-white" style={{ background: NAVY }}>
           <div className="text-xs font-semibold uppercase tracking-[0.25em]" style={{ color: GOLD }}>
             Montgomery Family Wealth Operating System
           </div>
@@ -220,6 +244,102 @@ export default function CompoundingCrossover() {
             portfolio — not your paycheck — becomes the primary engine of wealth creation.
           </p>
         </header>
+
+        {/* Interactive control bar */}
+        <div className="no-print sticky top-2 z-30 mb-8 rounded-2xl border border-border bg-card/95 p-4 shadow-lg backdrop-blur">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-2">
+              {VIEWS.map((v) => (
+                <button
+                  key={v.key}
+                  onClick={() => set({ view: v.key })}
+                  className={`rounded-full px-4 py-1.5 text-xs font-semibold transition ${
+                    state.view === v.key
+                      ? 'bg-primary text-primary-foreground shadow'
+                      : 'bg-muted text-muted-foreground hover:bg-muted/70'
+                  }`}
+                >
+                  {v.label}
+                </button>
+              ))}
+              <span className="ml-1 hidden text-xs text-muted-foreground sm:inline">{eff.label}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={resetScenario}>
+                <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> Reset
+              </Button>
+              <Button variant="outline" size="sm" onClick={saveScenario}>
+                <Save className="mr-1.5 h-3.5 w-3.5" /> Save scenario
+              </Button>
+              <Button size="sm" onClick={() => window.print()}>
+                <Printer className="mr-1.5 h-3.5 w-3.5" /> Print / PDF
+              </Button>
+            </div>
+          </div>
+
+          <div className="mt-4 grid gap-4 md:grid-cols-3">
+            <div>
+              <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
+                <span>Expected return</span>
+                <span className="text-foreground">{state.returnPct}%</span>
+              </div>
+              <Slider
+                className="mt-2"
+                min={4}
+                max={12}
+                step={0.5}
+                value={[state.returnPct]}
+                onValueChange={([v]) => set({ returnPct: v })}
+              />
+            </div>
+            <div>
+              <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
+                <span>Annual contributions ({state.view === 'kateri' ? 'Kateri' : 'Lyman'})</span>
+                <span className="text-foreground">{money(state.view === 'kateri' ? state.kateriContributions : state.annualContributions)}</span>
+              </div>
+              <Slider
+                className="mt-2"
+                min={0}
+                max={70000}
+                step={500}
+                value={[state.view === 'kateri' ? state.kateriContributions : state.annualContributions]}
+                onValueChange={([v]) =>
+                  set(state.view === 'kateri' ? { kateriContributions: v } : { annualContributions: v })
+                }
+              />
+            </div>
+            <div>
+              <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
+                <span>Contribution growth</span>
+                <span className="text-foreground">{state.contributionGrowthPct}% / yr</span>
+              </div>
+              <Slider
+                className="mt-2"
+                min={0}
+                max={10}
+                step={0.5}
+                value={[state.contributionGrowthPct]}
+                onValueChange={([v]) => set({ contributionGrowthPct: v })}
+              />
+            </div>
+          </div>
+
+          <div className="mt-4 grid gap-3 border-t border-border pt-3 sm:grid-cols-3">
+            <div>
+              <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Crossover year</div>
+              <div className="text-xl font-bold" style={{ color: GOLD }}>{active.crossoverYear ?? '—'}</div>
+            </div>
+            <div>
+              <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Portfolio at crossover</div>
+              <div className="text-xl font-bold" style={{ color: EMERALD }}>{moneyShort(active.crossoverPortfolio)}</div>
+            </div>
+            <div>
+              <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Balance today</div>
+              <div className="text-xl font-bold text-foreground">{moneyShort(eff.balance)}</div>
+            </div>
+          </div>
+        </div>
+
 
         {/* 1. Investment assumptions */}
         <Section eyebrow="Investment Assumptions" title="Long-Term Investment Growth Assumptions">
@@ -720,9 +840,19 @@ export default function CompoundingCrossover() {
           <Panel>
             <div className="h-[360px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData} margin={{ top: 10, right: 20, left: 10, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
-                  <XAxis dataKey="year" tick={{ fontSize: 11, fill: '#64748B' }} />
+                <LineChart data={chartData} margin={{ top: 10, right: 20, left: 10, bottom: 24 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis
+                    dataKey="year"
+                    tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+                    interval="preserveStartEnd"
+                    minTickGap={28}
+                    tickMargin={10}
+                    angle={-35}
+                    textAnchor="end"
+                    height={52}
+                  />
+
                   <YAxis tickFormatter={(v) => moneyShort(v)} tick={{ fontSize: 11, fill: '#64748B' }} width={64} />
                   <Tooltip formatter={(v: number) => money(v)} />
                   <Legend />
@@ -737,10 +867,19 @@ export default function CompoundingCrossover() {
                       dot={false}
                     />
                   ))}
-                  <ReferenceLine y={active.crossoverPortfolio} stroke={EMERALD} strokeDasharray="5 5" label={{ value: 'Crossover', fontSize: 10, fill: EMERALD, position: 'insideTopLeft' }} />
-                  <ReferenceLine y={500_000} stroke="#94A3B8" strokeDasharray="3 3" label={{ value: '$500k', fontSize: 10, fill: '#64748B', position: 'insideTopLeft' }} />
-                  <ReferenceLine y={1_000_000} stroke="#94A3B8" strokeDasharray="3 3" label={{ value: '$1M', fontSize: 10, fill: '#64748B', position: 'insideTopLeft' }} />
-                  <ReferenceLine y={2_000_000} stroke="#94A3B8" strokeDasharray="3 3" label={{ value: '$2M', fontSize: 10, fill: '#64748B', position: 'insideTopLeft' }} />
+                  <ReferenceLine
+                    y={active.crossoverPortfolio}
+                    stroke={EMERALD}
+                    strokeDasharray="5 5"
+                    label={{ value: `Crossover ${moneyShort(active.crossoverPortfolio)}`, fontSize: 11, fill: EMERALD, position: 'insideTopRight' }}
+                  />
+                  <ReferenceLine
+                    y={1_000_000}
+                    stroke="hsl(var(--muted-foreground))"
+                    strokeDasharray="3 3"
+                    label={{ value: '$1M', fontSize: 10, fill: 'hsl(var(--muted-foreground))', position: 'insideTopLeft' }}
+                  />
+
                 </LineChart>
               </ResponsiveContainer>
             </div>
