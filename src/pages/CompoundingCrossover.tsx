@@ -116,10 +116,10 @@ export default function CompoundingCrossover() {
 
   const engineInputs = useMemo(
     () => ({
-      currentBalance: state.balance,
-      annualContributions: state.annualContributions,
+      currentBalance: eff.balance,
+      annualContributions: eff.contributions,
       contributionGrowthPct: state.contributionGrowthPct,
-      debtRedirectAnnual: state.debtRedirectAnnual,
+      debtRedirectAnnual: eff.redirect,
       debtRedirectStartYear: state.debtRedirectStartYear,
     }),
     [state],
@@ -136,10 +136,10 @@ export default function CompoundingCrossover() {
   );
 
   const activeScenario = SCENARIOS.find((s) => s.returnPct === state.returnPct) ?? SCENARIOS[1];
-  const momentumPct = Math.min(100, (state.balance / 1_000_000) * 100);
+  const momentumPct = Math.min(100, (eff.balance / 1_000_000) * 100);
 
   const milestones = [
-    { label: 'Current', amount: state.balance, note: 'Contributions are the primary driver.' },
+    { label: 'Current', amount: eff.balance, note: 'Contributions are the primary driver.' },
     { label: 'Milestone One', amount: 250_000, note: 'Compounding becomes noticeable.' },
     { label: 'Milestone Two', amount: 375_000, note: 'Compounding Crossover™ — gains match contributions.' },
     { label: 'Milestone Three', amount: 500_000, note: 'Portfolio becomes the primary wealth engine.' },
@@ -191,7 +191,7 @@ export default function CompoundingCrossover() {
                     Est. annual growth today
                   </div>
                   <div className="text-lg font-bold" style={{ color: NAVY }}>
-                    {money(state.balance * (s.returnPct / 100))}
+                    {money(eff.balance * (s.returnPct / 100))}
                   </div>
                 </div>
                 {s.note && <p className="mt-3 text-[11px] italic leading-relaxed text-slate-500">{s.note}</p>}
@@ -268,11 +268,11 @@ export default function CompoundingCrossover() {
 
             <div className="lg:col-span-2">
               <CompoundingStatusCard
-                balance={state.balance}
-                annualContributions={state.annualContributions}
+                balance={eff.balance}
+                annualContributions={eff.contributions}
                 returnPct={state.returnPct}
                 contributionGrowthPct={state.contributionGrowthPct}
-                debtRedirectAnnual={state.debtRedirectAnnual}
+                debtRedirectAnnual={eff.redirect}
                 debtRedirectStartYear={state.debtRedirectStartYear}
               />
               <Panel className="mt-4">
@@ -298,7 +298,7 @@ export default function CompoundingCrossover() {
                       Status
                     </div>
                     <div className="text-xl font-bold" style={{ color: GOLD }}>
-                      {classifyStatus(state.balance, active.crossoverPortfolio)}
+                      {classifyStatus(eff.balance, active.crossoverPortfolio)}
                     </div>
                   </div>
                 </div>
@@ -325,7 +325,7 @@ export default function CompoundingCrossover() {
                     Foundation Building
                   </h3>
                   <div className="mt-2 text-3xl font-bold" style={{ color: EMERALD }}>
-                    {money(state.balance)}
+                    {money(eff.balance)}
                   </div>
                   <p className="mt-2 text-sm font-semibold text-slate-600">
                     "You are building the engine."
@@ -403,7 +403,7 @@ export default function CompoundingCrossover() {
                       Live calculation
                     </div>
                     <div className="mt-1">
-                      {money(state.annualContributions)} ÷ {state.returnPct}% ={' '}
+                      {money(eff.contributions)} ÷ {state.returnPct}% ={' '}
                       <span className="font-bold" style={{ color: EMERALD }}>
                         {money(active.crossoverPortfolio)}
                       </span>
@@ -434,7 +434,7 @@ export default function CompoundingCrossover() {
                 <Speedometer
                   value={momentumPct}
                   label="Compounding Momentum"
-                  caption={`${moneyShort(state.balance)} of the $1M flywheel threshold`}
+                  caption={`${moneyShort(eff.balance)} of the $1M flywheel threshold`}
                 />
               </div>
             </Panel>
@@ -455,7 +455,7 @@ export default function CompoundingCrossover() {
                   <GrowthTable balances={[1_000_000]} />
                 </div>
                 <Flywheel
-                  speed={Math.max(0.4, state.balance / 500_000)}
+                  speed={Math.max(0.4, eff.balance / 500_000)}
                   caption="Flywheel speed scales with portfolio size"
                 />
               </div>
@@ -580,7 +580,7 @@ export default function CompoundingCrossover() {
             <div className="relative grid gap-6 md:grid-cols-5">
               <div className="absolute left-0 right-0 top-6 hidden h-0.5 md:block" style={{ background: '#E2E8F0' }} />
               {milestones.map((m) => {
-                const reached = state.balance >= m.amount;
+                const reached = eff.balance >= m.amount;
                 return (
                   <div key={m.label} className="relative">
                     <div
