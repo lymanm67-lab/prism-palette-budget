@@ -162,6 +162,11 @@ export function SnapshotDashboard({ plan }: Props) {
         individualAtHorizon={at75}
         horizonAge={75}
         returnPct={plan.expected_return_pct}
+        individualByAge={{
+          75: at75,
+          80: projectAt(plan, plan.expected_return_pct, 80).projectedBalance,
+          85: projectAt(plan, plan.expected_return_pct, 85).projectedBalance,
+        }}
       />
 
       {/* First Million card */}
