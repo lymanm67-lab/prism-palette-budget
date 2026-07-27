@@ -152,6 +152,7 @@ export default function HouseholdRetirementPanel() {
     return DEFAULTS;
   });
   const [view, setView] = useState<"combined" | "lyman" | "kateri">("combined");
+  const [planned, setPlanned] = useState(true);
 
   useEffect(() => {
     try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch { /* ignore */ }
