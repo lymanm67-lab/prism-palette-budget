@@ -330,12 +330,12 @@ export function MoneyBlueprintPlan() {
               </CardHeader>
               <CardContent className="space-y-2">
                 {view === 'combined' && (
-                  <div className="grid grid-cols-[1fr_92px_92px_92px_auto] items-center gap-2 text-[10px] uppercase text-muted-foreground">
+                  <div className="grid grid-cols-[minmax(0,1fr)_repeat(3,minmax(64px,88px))_2rem] items-center gap-2 text-[10px] uppercase text-muted-foreground">
                     <span>Category</span>
                     <span className="text-right">Lyman</span>
                     <span className="text-right">Kateri</span>
                     <span className="text-right">Combined</span>
-                    <span className="w-8" />
+                    <span />
                   </div>
                 )}
                 {state.buckets[bucket].map((raw, idx) => {
@@ -344,18 +344,19 @@ export function MoneyBlueprintPlan() {
                   <div
                     key={row.key}
                     className={view === 'combined'
-                      ? 'grid grid-cols-[1fr_92px_92px_92px_auto] items-center gap-2'
-                      : 'grid grid-cols-[1fr_120px_auto] items-center gap-2'}
+                      ? 'grid grid-cols-[minmax(0,1fr)_repeat(3,minmax(64px,88px))_2rem] items-center gap-2'
+                      : 'grid grid-cols-[minmax(0,1fr)_minmax(90px,120px)_2rem] items-center gap-2'}
                   >
                     {row.custom ? (
                       <Input
-                        className="h-9 text-xs"
+                        className="h-9 text-xs min-w-0"
                         value={row.label}
                         onChange={(e) => setRow(bucket, idx, { label: e.target.value })}
                       />
                     ) : (
-                      <span className="text-xs">{row.label}</span>
+                      <span className="text-xs break-words leading-tight min-w-0">{row.label}</span>
                     )}
+
                     {view === 'combined' ? (
                       <>
                         <MoneyInput className="h-9 text-right tabular-nums text-xs" value={row.lyman!} onChange={(n) => setOwner(bucket, idx, 'lyman', n)} />
