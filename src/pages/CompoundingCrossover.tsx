@@ -36,7 +36,19 @@ const DEFAULTS = {
   debtRedirectAnnual: 11_976, // $998/mo redirect
   debtRedirectStartYear: 2027,
   returnPct: OFFICIAL_RETURN_PCT,
+  // Kateri — OPERS pension account + Ohio Deferred Compensation
+  includeKateri: true,
+  kateriBalance: 364_396,
+  kateriContributions: 15_000, // 10% OPERS employee deferral + Ohio DC
+  view: 'combined' as 'lyman' | 'kateri' | 'combined',
 };
+
+const VIEWS: { key: 'lyman' | 'kateri' | 'combined'; label: string }[] = [
+  { key: 'lyman', label: 'Lyman' },
+  { key: 'kateri', label: 'Kateri' },
+  { key: 'combined', label: 'Combined' },
+];
+
 
 function loadState() {
   try {
