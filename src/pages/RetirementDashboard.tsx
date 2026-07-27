@@ -8,7 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
-import { Sparkles, Target, Building2, HeartPulse, Scale, FileText, Upload, Loader2, Save, CheckCircle2, TrendingUp } from "lucide-react";
+import { Sparkles, Target, Building2, HeartPulse, Scale, FileText, Upload, Loader2, Save, CheckCircle2, TrendingUp, Users } from "lucide-react";
+import HouseholdRetirementPanel from "@/components/retirement/HouseholdRetirementPanel";
+
 
 const CompoundingCrossover = lazy(() => import("@/pages/CompoundingCrossover"));
 import { optimizeNextDollar, scoreRetirementReadiness, type OptimizerInputs } from "@/lib/retirement/optimizerEngine";
