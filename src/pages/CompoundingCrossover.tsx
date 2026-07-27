@@ -270,7 +270,7 @@ export default function CompoundingCrossover() {
                   type="number"
                   value={state.balance}
                   onChange={(e) => set({ balance: Number(e.target.value) || 0 })}
-                  className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-medium text-slate-900"
+                  className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-medium bg-background text-foreground"
                   style={{ borderColor: 'hsl(var(--border))' }}
                 />
               </label>
@@ -280,7 +280,7 @@ export default function CompoundingCrossover() {
                   type="number"
                   value={state.annualContributions}
                   onChange={(e) => set({ annualContributions: Number(e.target.value) || 0 })}
-                  className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-medium text-slate-900"
+                  className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-medium bg-background text-foreground"
                   style={{ borderColor: 'hsl(var(--border))' }}
                 />
               </label>
@@ -290,7 +290,7 @@ export default function CompoundingCrossover() {
                   type="number"
                   value={state.contributionGrowthPct}
                   onChange={(e) => set({ contributionGrowthPct: Number(e.target.value) || 0 })}
-                  className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-medium text-slate-900"
+                  className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-medium bg-background text-foreground"
                   style={{ borderColor: 'hsl(var(--border))' }}
                 />
               </label>
@@ -300,7 +300,7 @@ export default function CompoundingCrossover() {
                   type="number"
                   value={state.debtRedirectAnnual}
                   onChange={(e) => set({ debtRedirectAnnual: Number(e.target.value) || 0 })}
-                  className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-medium text-slate-900"
+                  className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-medium bg-background text-foreground"
                   style={{ borderColor: 'hsl(var(--border))' }}
                 />
               </label>
@@ -324,7 +324,7 @@ export default function CompoundingCrossover() {
                         type="number"
                         value={state.kateriBalance}
                         onChange={(e) => set({ kateriBalance: Number(e.target.value) || 0 })}
-                        className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-medium text-slate-900"
+                        className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-medium bg-background text-foreground"
                         style={{ borderColor: 'hsl(var(--border))' }}
                       />
                     </label>
@@ -334,7 +334,7 @@ export default function CompoundingCrossover() {
                         type="number"
                         value={state.kateriContributions}
                         onChange={(e) => set({ kateriContributions: Number(e.target.value) || 0 })}
-                        className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-medium text-slate-900"
+                        className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-medium bg-background text-foreground"
                         style={{ borderColor: 'hsl(var(--border))' }}
                       />
                     </label>
