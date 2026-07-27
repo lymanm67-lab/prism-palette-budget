@@ -50,6 +50,8 @@ export function MillionMilestonesTable({ plan }: Props) {
         debtPaymentAmount: plan.debt_payment_amount ?? undefined,
         debtPayoffDate: plan.debt_payoff_date,
         ssMonthlyEstimate: plan.ss_monthly_estimate ?? undefined,
+        incomeFromSsPensionOnly: plan.income_strategy === 'ss_pension_only',
+        spousePensionMonthly: plan.spouse_pension_monthly ?? 0,
         ssClaimingAge: plan.ss_claiming_age ?? undefined,
         ssInvestWhileWorking: plan.ss_invest_while_working,
         ssInvestPct: plan.ss_invest_pct,

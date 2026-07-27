@@ -47,6 +47,8 @@ function projectAt(plan: InvestmentPlan, rate: number, retirementAge: number) {
     debtPaymentAmount: plan.debt_payment_amount ?? undefined,
     debtPayoffDate: plan.debt_payoff_date,
     ssMonthlyEstimate: plan.ss_monthly_estimate ?? undefined,
+    incomeFromSsPensionOnly: plan.income_strategy === 'ss_pension_only',
+    spousePensionMonthly: plan.spouse_pension_monthly ?? 0,
     ssClaimingAge: plan.ss_claiming_age ?? undefined,
     ssInvestWhileWorking: plan.ss_invest_while_working,
     ssInvestPct: plan.ss_invest_pct,
@@ -129,8 +131,16 @@ export function SnapshotDashboard({ plan }: Props) {
             Showing in {plan.use_future_dollars ? 'future dollars' : "today's dollars"}.
             $4M goal treated as future dollars by default; today's-dollar view available below.
           </p>
+          {plan.income_strategy === 'ss_pension_only' && (
+            <p className="text-xs text-muted-foreground border-t border-border/40 pt-2">
+              <strong className="text-foreground">Income strategy:</strong> lifestyle is covered by Social Security
+              {plan.spouse_pension_monthly > 0 ? ` (${formatCurrencyFull(plan.ss_monthly_estimate ?? 0)}/mo) plus spouse pension (${formatCurrencyFull(plan.spouse_pension_monthly)}/mo)` : ''} —
+              no 4% withdrawal is taken, so the retirement portfolio stays invested as legacy capital.
+            </p>
+          )}
         </CardContent>
       </Card>
+
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         {cards.map(({ icon: Icon, label, value }) => (

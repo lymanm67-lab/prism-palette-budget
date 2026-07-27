@@ -3860,6 +3860,7 @@ export type Database = {
           hsa_monthly_contribution: number
           hsa_return_pct: number
           id: string
+          income_strategy: string
           inflation_pct: number
           is_active: boolean
           legacy_calculation_method: string
@@ -3901,6 +3902,7 @@ export type Database = {
           hsa_monthly_contribution?: number
           hsa_return_pct?: number
           id?: string
+          income_strategy?: string
           inflation_pct?: number
           is_active?: boolean
           legacy_calculation_method?: string
@@ -3942,6 +3944,7 @@ export type Database = {
           hsa_monthly_contribution?: number
           hsa_return_pct?: number
           id?: string
+          income_strategy?: string
           inflation_pct?: number
           is_active?: boolean
           legacy_calculation_method?: string
