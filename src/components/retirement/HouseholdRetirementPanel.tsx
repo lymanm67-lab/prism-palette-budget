@@ -286,12 +286,12 @@ export default function HouseholdRetirementPanel() {
             </thead>
             <tbody className="tabular-nums">
               {[
-                ["Monthly gross", state.lyman.monthlyGross, state.kateri.monthlyGross],
-                ["Employee contribution", state.lyman.employeeMonthly, state.kateri.employeeMonthly],
-                ["Employer contribution", state.lyman.employerMonthly, state.kateri.employerMonthly],
-                ["Deferred comp", state.lyman.deferredCompMonthly, state.kateri.deferredCompMonthly],
+                ["Monthly gross", eff.lyman.monthlyGross, eff.kateri.monthlyGross],
+                ["Employee contribution", eff.lyman.employeeMonthly, eff.kateri.employeeMonthly],
+                ["Employer contribution", eff.lyman.employerMonthly, eff.kateri.employerMonthly],
+                ["Deferred comp", eff.lyman.deferredCompMonthly, eff.kateri.deferredCompMonthly],
                 ["Total monthly funding", L.monthlyTotal, K.monthlyTotal],
-                ["Current balance", state.lyman.currentBalance, state.kateri.currentBalance],
+                ["Current balance", eff.lyman.currentBalance, eff.kateri.currentBalance],
                 ["Projected at retirement", L.projected, K.projected],
               ].map(([label, l, k], idx) => (
                 <tr key={label as string} className={idx % 2 ? "bg-muted/20" : ""}>
