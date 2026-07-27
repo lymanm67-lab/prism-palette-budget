@@ -58,7 +58,9 @@ const DEFAULTS: Record<"lyman" | "kateri", SpouseRetirementInputs> = {
     employerMonthly: 532.05,
     deferredCompMonthly: 160,
 
-    currentBalance: 176512.76,
+    // As of 07/24/2026 statements: IU Retirement $133,129.48 + IU TDA $16,888.01
+    // + IU 457(b) $11,320.86 + TIAA $12,324.05 + Stash/SoFi/Schwab $6,260.82.
+    currentBalance: 179923.22,
     expectedReturnPct: 7,
     plannedTotalPctOfBase: 30,
   },
