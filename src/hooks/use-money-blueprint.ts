@@ -190,7 +190,7 @@ export function useBlueprintPrefill() {
 
       // Category owner split defaults to each spouse's share of take-home.
       const lymanShare = netMonthly > 0 ? lymanNet / netMonthly : 1;
-      const withSplit = (r: { amount: number }) => {
+      const withSplit = <T extends { amount: number }>(r: T) => {
         const lyman = Math.round((r.amount || 0) * lymanShare * 100) / 100;
         return { ...r, lyman, kateri: Math.round(((r.amount || 0) - lyman) * 100) / 100 };
       };
