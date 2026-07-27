@@ -153,7 +153,11 @@ export default function HouseholdRetirementPanel() {
       annualTotal: monthlyTotal * 12,
       annualGross: gross * 12,
       savingsRate: gross > 0 ? (monthlyTotal / gross) * 100 : 0,
-      employerPct: gross > 0 ? ((state.lyman.employerMonthly + state.kateri.employerMonthly) / gross) * 100 : 0,
+      employerPct: (() => {
+        const base = (state.lyman.employerBaseMonthly || state.lyman.monthlyGross)
+          + (state.kateri.employerBaseMonthly || state.kateri.monthlyGross);
+        return base > 0 ? ((state.lyman.employerMonthly + state.kateri.employerMonthly) / base) * 100 : 0;
+      })(),
       projected: L.projected + K.projected,
       balance: state.lyman.currentBalance + state.kateri.currentBalance,
     };
