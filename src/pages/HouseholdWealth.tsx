@@ -112,9 +112,12 @@ export default function HouseholdWealth() {
         <Stat label="Combined Household Assets" value={money(householdTotal)} sub={live ? `Net worth ${money(live.netWorth)}` : undefined} />
       </div>
 
+      <BlueprintSummaryCard />
+
       <Tabs defaultValue="summary">
         <TabsList className="flex-wrap h-auto">
           <TabsTrigger value="summary">Household Snapshot</TabsTrigger>
+          <TabsTrigger value="ownership">Ownership</TabsTrigger>
           <TabsTrigger value="kateri">Kateri Profile</TabsTrigger>
           <TabsTrigger value="retirement">Retirement</TabsTrigger>
           <TabsTrigger value="realestate">Real Estate</TabsTrigger>
@@ -122,6 +125,11 @@ export default function HouseholdWealth() {
           <TabsTrigger value="allocation">Allocation</TabsTrigger>
           <TabsTrigger value="familyoffice">Family Office</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="ownership" className="mt-4">
+          <OwnershipTagger />
+        </TabsContent>
+
 
         {/* -------- Household snapshot -------- */}
         <TabsContent value="summary" className="space-y-4 mt-4">
