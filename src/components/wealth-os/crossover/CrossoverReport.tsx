@@ -108,7 +108,7 @@ export default function CrossoverReport(p: CrossoverReportProps) {
     { label: 'Milestone Four', amount: 1_000_000, note: 'Annual gains may exceed a full-time salary.' },
   ].map((m) => {
     const hit = p.rows.find((r) => r.endBalance >= m.amount);
-    return { ...m, year: m.amount <= p.balance ? thisYear : hit?.year ?? null };
+    return { ...m, achieved: m.amount <= p.balance, year: hit?.year ?? null };
   });
 
   return (
@@ -139,10 +139,12 @@ export default function CrossoverReport(p: CrossoverReportProps) {
       .rpt-eyebrow { font-size: 7.5pt; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: ${GOLD}; }
       .rpt-h h2 { margin: 2px 0 0; font-size: 16pt; font-weight: 700; color: ${NAVY}; }
       .rpt-root p { margin: 0 0 8px; }
-      .rpt-hero { background: ${NAVY}; color: #fff; border-radius: 10px; padding: 22px 24px; }
+      .rpt-hero, .rpt-hero * { color: #fff !important; }
+      .rpt-hero { background: ${NAVY} !important; border-radius: 10px; padding: 22px 24px; }
+      .rpt-hero .eb, .rpt-hero .eb * { color: ${GOLD} !important; }
       .rpt-hero h1 { margin: 6px 0 4px; font-size: 24pt; font-weight: 800; }
-      .rpt-hero .sub { font-size: 9.5pt; color: rgba(255,255,255,.82); }
-      .rpt-hero .eb { font-size: 8pt; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; color: ${GOLD}; }
+      .rpt-hero .sub { font-size: 9.5pt; color: rgba(255,255,255,.85) !important; }
+      .rpt-hero .eb { font-size: 8pt; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; }
       .rpt-kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 14px 0; }
       .rpt-kpi { border: 1.5px solid ${LINE}; border-radius: 8px; padding: 10px 12px; }
       .rpt-kpi-l { font-size: 7.5pt; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: ${SUB}; }
@@ -156,7 +158,7 @@ export default function CrossoverReport(p: CrossoverReportProps) {
       .rpt-note { font-size: 8pt; color: ${SUB}; }
       .rpt-two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
       @media print {
-        .rpt-root { background: #fff; }
+        .rpt-root, html, body { background: #fff !important; }
         .rpt-page {
           width: auto; min-height: 0; margin: 0; padding: 0;
           box-shadow: none; break-after: page; page-break-after: always;
@@ -434,7 +436,9 @@ export default function CrossoverReport(p: CrossoverReportProps) {
                 <tr key={m.label}>
                   <td style={{ fontWeight: 600 }}>{m.label}</td>
                   <td className="num">{money(m.amount)}</td>
-                  <td className="num" style={{ color: GOLD, fontWeight: 600 }}>{m.year ?? '—'}</td>
+                  <td className="num" style={{ color: m.achieved ? EMERALD : GOLD, fontWeight: 600 }}>
+                    {m.achieved ? 'Achieved' : m.year ?? '—'}
+                  </td>
                   <td className="rpt-note">{m.note}</td>
                 </tr>
               ))}
