@@ -140,6 +140,15 @@ export const KATERI_UTILITIES_MONTHLY = 377;
 export const KATERI_UTILITIES_START = new Date(2027, 3, 1);
 const kateriPaysUtilities = () => new Date() >= KATERI_UTILITIES_START;
 
+/** Consumer debt is fully paid off in January 2027 — payments redirect to retirement. */
+export const DEBT_FREE_DATE = new Date(2027, 0, 1);
+const debtEliminated = () => new Date() >= DEBT_FREE_DATE;
+
+/** From April 2027, $500/mo from the Education / Marketing budget is redirected to retirement. */
+export const EDU_MARKETING_REDIRECT = 500;
+export const EDU_MARKETING_REDIRECT_START = new Date(2027, 3, 1);
+const eduRedirectActive = () => new Date() >= EDU_MARKETING_REDIRECT_START;
+
 const WEALTH_MATCHERS: { key: string; test: (l: string) => boolean }[] = [
   { key: 'postTaxRetirement', test: (l) => /roth|ira|retirement|401|457|hsa/.test(l) },
   { key: 'stocks', test: (l) => /invest|brokerage|stock|crypto/.test(l) },
@@ -245,10 +254,23 @@ export function useBlueprintPrefill() {
         return { ...r, lyman, kateri: Math.round(((r.amount || 0) - lyman) * 100) / 100 };
       };
 
+      const debtSeed = budgeted.has('debt')
+        ? Math.round(budgeted.get('debt')! * 100) / 100
+        : monthlyAvg(spend.get('debt') || 0);
+
+      // Jan 2027: consumer debt is gone, so the payment redirects into retirement.
+      const debtRedirect = debtEliminated() ? debtSeed : 0;
+      // Apr 2027: $500/mo from the Education / Marketing budget also redirects.
+      const eduRedirect = eduRedirectActive() ? EDU_MARKETING_REDIRECT : 0;
+      const retirementRedirect = Math.round((debtRedirect + eduRedirect) * 100) / 100;
+
       const foundation = DEFAULT_FOUNDATION.map((r) => {
         // From April 2027 Kateri pays the utilities bill ($377/mo) entirely.
         if (r.key === 'utilities' && kateriPaysUtilities()) {
           return { ...r, lyman: 0, kateri: KATERI_UTILITIES_MONTHLY, amount: KATERI_UTILITIES_MONTHLY };
+        }
+        if (r.key === 'debt' && debtEliminated()) {
+          return { ...r, lyman: 0, kateri: 0, amount: 0 };
         }
         return withSplit({
           ...r,
@@ -260,6 +282,12 @@ export function useBlueprintPrefill() {
 
       return {
         foundation,
+        debtFreeRedirect: {
+          debtEliminated: debtEliminated(),
+          debtRedirect,
+          eduRedirect,
+          total: retirementRedirect,
+        },
         wealthEngine: DEFAULT_WEALTH_ENGINE.map((r) => {
           const tracked = monthlyAvg(wealth.get(r.key) || 0);
           if (r.key === 'employerRetirement') {
@@ -273,8 +301,8 @@ export function useBlueprintPrefill() {
           }
           if (r.key !== 'postTaxRetirement') return withSplit({ ...r, amount: tracked });
           // Payroll-deducted retirement never appears in bank transactions — use the
-          // real paystub figures (and Kateri's OPERS) as the floor.
-          const lyman = Math.max(tracked, LYMAN_RETIREMENT_MONTHLY);
+          // real paystub figures (and Kateri's OPERS) as the floor, plus any redirects.
+          const lyman = Math.max(tracked, LYMAN_RETIREMENT_MONTHLY) + retirementRedirect;
           const kateri = KATERI_RETIREMENT_MONTHLY;
           return {
             ...r,

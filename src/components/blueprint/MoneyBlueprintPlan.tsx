@@ -325,6 +325,28 @@ export function MoneyBlueprintPlan() {
               </p>
             )}
 
+            <div className="rounded-lg border border-primary/30 bg-primary/5 p-2 space-y-0.5">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-primary">
+                Debt-free redirect plan
+              </p>
+              <p className="text-[11px] text-muted-foreground">
+                Jan 2027 — consumer debt is eliminated
+                {prefill?.debtFreeRedirect?.debtRedirect
+                  ? <> and {money2(prefill.debtFreeRedirect.debtRedirect)}/mo redirects to retirement</>
+                  : <>; that payment redirects to retirement</>}.
+              </p>
+              <p className="text-[11px] text-muted-foreground">
+                Apr 2027 — $500/mo from Education / Marketing also redirects to retirement.
+              </p>
+              {prefill?.debtFreeRedirect?.total ? (
+                <p className="text-[11px] font-semibold">
+                  Currently active redirect: {money2(prefill.debtFreeRedirect.total)}/mo added to Wealth Engine.
+                </p>
+              ) : null}
+            </div>
+
+
+
 
             <div className="grid grid-cols-3 gap-2 pt-1">
               <div className="rounded-lg border border-border/50 p-2">
