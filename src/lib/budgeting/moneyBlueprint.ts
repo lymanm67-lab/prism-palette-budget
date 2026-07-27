@@ -142,7 +142,8 @@ export function emptyBlueprint(): BlueprintState {
   };
 }
 
-const sum = (rows: BlueprintRow[]) => rows.reduce((s, r) => s + (Number(r.amount) || 0), 0);
+const sum = (rows: BlueprintRow[], view: OwnerView = 'combined') =>
+  rows.reduce((s, r) => s + rowAmount(r, view), 0);
 
 export interface BucketResult {
   key: BucketKey;
