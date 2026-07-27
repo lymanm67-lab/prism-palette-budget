@@ -12,8 +12,11 @@ import {
 const sb = supabase as any;
 
 // Household salary figures already established elsewhere in the app.
-export const HOUSEHOLD_GROSS_ANNUAL = 208_940;
+export const KATERI_GROSS_ANNUAL = 113_000;
+export const LYMAN_GROSS_ANNUAL = 95_940;
+export const HOUSEHOLD_GROSS_ANNUAL = LYMAN_GROSS_ANNUAL + KATERI_GROSS_ANNUAL; // 208,940
 const NET_RATIO = 0.76; // take-home estimate after taxes + pre-tax deferrals
+
 
 export function useMoneyBlueprint() {
   const { household } = useHousehold();
@@ -142,9 +145,13 @@ export function useBlueprintPrefill() {
         if (BUSINESS_RE.test(label)) continue;
 
         if (amount > 0) {
-          if (/income|salary|paycheck|wife contribution|deposit|reimburs/.test(label)) income += amount;
+          // Kateri's salary is not deposited into tracked accounts — her "wife contribution"
+          // transfers are excluded here and her full net salary is added below instead.
+          if (/wife contribution|kateri/.test(label)) continue;
+          if (/income|salary|paycheck|deposit|reimburs/.test(label)) income += amount;
           continue;
         }
+
 
         const abs = Math.abs(amount);
         const w = WEALTH_MATCHERS.find((m) => m.test(label));
@@ -178,10 +185,14 @@ export function useBlueprintPrefill() {
         amount: budgeted.has(r.key) ? Math.round(budgeted.get(r.key)! * 100) / 100 : monthlyAvg(spend.get(r.key) || 0),
       }));
 
-      const netFromActuals = monthlyAvg(income);
-      const netMonthly = netFromActuals > 500
-        ? netFromActuals
-        : Math.round(((HOUSEHOLD_GROSS_ANNUAL / 12) * NET_RATIO) * 100) / 100;
+      // Lyman's take-home comes from real deposits; Kateri's salary isn't deposited into
+      // tracked accounts, so it's estimated from her gross and added to household net.
+      const lymanNet = monthlyAvg(income) > 500
+        ? monthlyAvg(income)
+        : Math.round(((LYMAN_GROSS_ANNUAL / 12) * NET_RATIO) * 100) / 100;
+      const kateriNet = Math.round(((KATERI_GROSS_ANNUAL / 12) * NET_RATIO) * 100) / 100;
+      const netMonthly = Math.round((lymanNet + kateriNet) * 100) / 100;
+
 
       return {
         foundation,
@@ -194,7 +205,10 @@ export function useBlueprintPrefill() {
         source: {
           budgetedKeys: Array.from(budgeted.keys()),
           transactionCount: rows.length,
+          lymanNet,
+          kateriNet,
         },
+
       };
     },
   });
