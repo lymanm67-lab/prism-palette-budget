@@ -265,6 +265,12 @@ export default function HouseholdRetirementPanel() {
           </label>
         </div>
 
+        <p className="text-[11px] text-muted-foreground">
+          All figures are monthly. Kateri is paid biweekly — her paycheck ($4,317.60/pay) is converted to monthly
+          as <span className="font-medium">pay × 26 ÷ 12 = $9,354.80/mo</span>, so both incomes are on the same monthly basis.
+        </p>
+
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <Stat label="Annual gross" value={money(active.annualGross)} />
           <Stat label="Total contributions /mo" value={money2(active.monthlyTotal)} accent />
