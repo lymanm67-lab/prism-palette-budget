@@ -102,18 +102,7 @@ export default function CompoundingStatusCard({
         </div>
       </div>
 
-      {onCrossoverPage ? (
-        <button
-          type="button"
-          onClick={() =>
-            window.scrollTo({ top: 0, behavior: 'smooth' })
-          }
-          className="mt-4 inline-flex items-center gap-1 text-sm font-semibold"
-          style={{ color: EMERALD }}
-        >
-          Back to top of The Compounding Crossover™ <ArrowRight className="h-4 w-4" />
-        </button>
-      ) : (
+      {!onCrossoverPage && (
         <Link
           to="/legacy/crossover"
           className="mt-4 inline-flex items-center gap-1 text-sm font-semibold"
