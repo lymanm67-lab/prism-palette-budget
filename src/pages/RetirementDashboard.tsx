@@ -508,19 +508,46 @@ export default function RetirementDashboard() {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center justify-between">
-            <span>Retirement Readiness</span>
+            <span>Household Retirement Readiness</span>
             <Badge variant={readiness >= 80 ? "default" : readiness >= 50 ? "secondary" : "destructive"}>
               {readiness}/100
             </Badge>
           </CardTitle>
+          <CardDescription>
+            Lyman + Kateri retirement balances and HSA measured against combined household income.
+          </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-3">
           <Progress value={readiness} className="h-2" />
-          <p className="text-xs text-muted-foreground mt-2">
-            Based on Fidelity-style age-to-salary multiplier targets.
+          <div className="grid gap-3 sm:grid-cols-3">
+            <Stat label="Household balance" value={`$${Math.round(householdRollup.balance).toLocaleString()}`} />
+            <Stat
+              label={`Target (${householdRollup.multiplier}× income)`}
+              value={`$${Math.round(householdRollup.target).toLocaleString()}`}
+            />
+            <Stat label="Gap to 100" value={`$${Math.round(householdRollup.gap).toLocaleString()}`} />
+          </div>
+          <div className="rounded-lg border border-border/60 p-3 space-y-1">
+            {householdRollup.parts.map((p) => (
+              <div key={p.label} className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">{p.label}</span>
+                <span className="font-medium tabular-nums">${Math.round(p.value).toLocaleString()}</span>
+              </div>
+            ))}
+            <div className="flex items-center justify-between text-xs border-t border-border/60 pt-1 mt-1">
+              <span className="text-muted-foreground">Household income (annual)</span>
+              <span className="font-medium tabular-nums">
+                ${Math.round(householdRollup.income).toLocaleString()}
+              </span>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Fidelity-style age-to-salary multiplier targets. Lyman-only score: {soloReadiness}/100. Update balances
+            in the Household tab to keep this current — pensions and Social Security are not counted here.
           </p>
         </CardContent>
       </Card>
+
 
       <Tabs defaultValue="household">
         <TabsList className="grid grid-cols-2 md:grid-cols-7">
