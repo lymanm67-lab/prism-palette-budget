@@ -10,11 +10,12 @@ import {
   ReferenceLine,
   Legend,
 } from 'recharts';
-import { Quote, Sparkles, TrendingUp, Flag, Printer, Save, RotateCcw } from 'lucide-react';
+import { Quote, Sparkles, TrendingUp, Flag, Printer, Save, RotateCcw, Eye, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { toast } from 'sonner';
 import CompoundingStatusCard from '@/components/wealth-os/crossover/CompoundingStatusCard';
+import CrossoverReport from '@/components/wealth-os/crossover/CrossoverReport';
 import { Speedometer, Flywheel, CrossingArrows } from '@/components/wealth-os/crossover/CompoundingVisuals';
 import {
   SCENARIOS,
@@ -159,6 +160,7 @@ function GrowthTable({ balances }: { balances: number[] }) {
 
 export default function CompoundingCrossover() {
   const [state, setState] = useState(loadState);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const set = (patch: Partial<typeof DEFAULTS>) => {
     const next = { ...state, ...patch };
     setState(next);
@@ -356,7 +358,10 @@ export default function CompoundingCrossover() {
               <Button variant="outline" size="sm" onClick={saveScenario}>
                 <Save className="mr-1.5 h-3.5 w-3.5" /> Save scenario
               </Button>
-              <Button size="sm" onClick={() => window.print()}>
+              <Button variant="outline" size="sm" onClick={() => setPreviewOpen(true)}>
+                <Eye className="mr-1.5 h-3.5 w-3.5" /> Print preview
+              </Button>
+              <Button size="sm" onClick={() => { setPreviewOpen(true); setTimeout(() => window.print(), 300); }}>
                 <Printer className="mr-1.5 h-3.5 w-3.5" /> Print / PDF
               </Button>
             </div>
