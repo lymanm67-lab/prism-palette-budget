@@ -12,8 +12,11 @@ import {
 const sb = supabase as any;
 
 // Household salary figures already established elsewhere in the app.
-export const HOUSEHOLD_GROSS_ANNUAL = 208_940;
+export const KATERI_GROSS_ANNUAL = 113_000;
+export const LYMAN_GROSS_ANNUAL = 95_940;
+export const HOUSEHOLD_GROSS_ANNUAL = LYMAN_GROSS_ANNUAL + KATERI_GROSS_ANNUAL; // 208,940
 const NET_RATIO = 0.76; // take-home estimate after taxes + pre-tax deferrals
+
 
 export function useMoneyBlueprint() {
   const { household } = useHousehold();
