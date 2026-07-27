@@ -164,8 +164,8 @@ export const LIFE_STAGE_LABELS: Record<LifeStage, { label: string; description: 
   family_endowment: { label: 'Family Endowment', description: 'Perpetual capital — supporting multiple generations and causes.' },
 };
 
-export function projectEstateAt85(currentNetWorth: number, age: number | null | undefined, annualContribution: number, growthRate = 0.07): number {
-  const years = Math.max(0, 85 - (age ?? 40));
+export function projectEstateAtHorizon(currentNetWorth: number, age: number | null | undefined, annualContribution: number, growthRate = 0.07): number {
+  const years = Math.max(0, 75 - (age ?? 40));
   const fvContrib = annualContribution * (((1 + growthRate) ** years - 1) / growthRate);
   const fvBase = currentNetWorth * (1 + growthRate) ** years;
   return fvBase + fvContrib;

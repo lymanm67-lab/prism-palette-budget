@@ -146,7 +146,7 @@ export default function LegacyMode() {
         <KpiTile icon={TrendingUp} label="Net Worth" value={fmt(lw.netWorth)} />
         <KpiTile icon={Target} label="Financial Freedom" value={`${((ff.data?.fiPercentage ?? 0) * 100).toFixed(1)}%`} sub={`${Math.round((ff.data?.currentPortfolio ?? 0)).toLocaleString()} / ${Math.round((ff.data?.targetPortfolio ?? 0)).toLocaleString()}`} />
         <KpiTile icon={Clock} label="Days Until Freedom" value={ff.data?.daysUntilFreedom != null ? ff.data.daysUntilFreedom.toLocaleString() : '—'} sub={ff.data?.yearsUntilOptional ? `${ff.data.yearsUntilOptional.toFixed(1)} years` : ''} />
-        <KpiTile icon={Sparkles} label="Projected Estate at 85" value={fmt(lw.estateAt85)} />
+        <KpiTile icon={Sparkles} label="Projected Estate at 75" value={fmt(lw.estateAt75)} />
       </div>
 
       {/* Trend + radar */}

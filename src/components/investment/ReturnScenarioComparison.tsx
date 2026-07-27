@@ -49,7 +49,7 @@ export function ReturnScenarioComparison({ plan, onCreateRules, onReviewLegacy }
   const [dollarMode, setDollarMode] = useState<'today' | 'nominal'>(
     plan?.use_future_dollars ? 'nominal' : 'today'
   );
-  const [targetAge, setTargetAge] = useState<string>('85');
+  const [targetAge, setTargetAge] = useState<string>('75');
   if (!plan || !plan.current_age || !plan.retirement_age) return null;
 
   const useFuture = dollarMode === 'nominal';
@@ -94,8 +94,8 @@ export function ReturnScenarioComparison({ plan, onCreateRules, onReviewLegacy }
           <div className="flex flex-col gap-2 items-end">
             <Tabs value={targetAge} onValueChange={setTargetAge}>
               <TabsList className="h-8">
-                <TabsTrigger value="85" className="text-xs h-6 px-2">Age 85</TabsTrigger>
-                <TabsTrigger value="88" className="text-xs h-6 px-2">Age 88</TabsTrigger>
+                <TabsTrigger value="75" className="text-xs h-6 px-2">Age 75</TabsTrigger>
+                <TabsTrigger value="78" className="text-xs h-6 px-2">Age 78</TabsTrigger>
               </TabsList>
             </Tabs>
             <Tabs value={dollarMode} onValueChange={(v) => setDollarMode(v as 'today' | 'nominal')}>

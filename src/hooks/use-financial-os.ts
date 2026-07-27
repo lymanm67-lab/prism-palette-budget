@@ -6,7 +6,7 @@ import { toast } from '@/hooks/use-toast';
 import { makeDebtDeduper } from '@/lib/liability-dedupe';
 
 import {
-  computeLegacyWorth, projectEstateAt85, daysUntilFreedom,
+  computeLegacyWorth, projectEstateAtHorizon, daysUntilFreedom,
   type LegacyWorthInputs, type LifeStage,
 } from '@/lib/legacy/legacyWorthEngine';
 import { buildKungFooPlan, type KungFooContext, type KungFooStep } from '@/lib/kungfoo/orderOfOperations';
@@ -140,7 +140,7 @@ export function useLegacyWorth() {
 
       const result = computeLegacyWorth(inputs);
       const planAnnualContribution = plan.data ? Number((plan.data as any).annual_contribution || 0) : 0;
-      const estateAt85 = projectEstateAt85(netWorth, age, Math.max(planAnnualContribution, annualIncome * 0.1));
+      const estateAt75 = projectEstateAtHorizon(netWorth, age, Math.max(planAnnualContribution, annualIncome * 0.1));
       const targetPortfolio = monthlyExpenses * 12 * 25;
       // Use actual retirement contribution rate; fall back to 20% of expenses if none configured
       const monthlySavings = planAnnualContribution > 0 ? planAnnualContribution / 12 : monthlyExpenses * 0.2;
@@ -153,10 +153,10 @@ export function useLegacyWorth() {
         score: result.score, factor_scores: Object.fromEntries(result.factors.map(f => [f.key, f.score])),
         life_stage: result.lifeStage, fi_percentage: inputs.fiPercentage,
         days_until_freedom: days, passive_income_coverage: passiveMonthlyIncome / Math.max(monthlyExpenses, 1),
-        projected_estate_at_85: estateAt85, net_worth: netWorth,
+        projected_estate_at_85: estateAt75, net_worth: netWorth,
       }, { onConflict: 'household_id,snapshot_date' });
 
-      return { ...result, inputs, netWorth, estateAt85, daysUntilFreedom: days, targetPortfolio };
+      return { ...result, inputs, netWorth, estateAt85: estateAt75, estateAt75, daysUntilFreedom: days, targetPortfolio };
     },
   });
 }

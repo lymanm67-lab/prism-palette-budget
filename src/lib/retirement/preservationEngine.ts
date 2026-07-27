@@ -92,7 +92,7 @@ function redirectDollars(year: number, monthly: number, startYear: number, start
 
 export function runEngine(i: EngineInputs): YearRow[] {
   const rows: YearRow[] = [];
-  const finalAge = Math.max(85, i.lymanRetireAge + 10);
+  const finalAge = Math.max(75, i.lymanRetireAge + 10);
   const years = finalAge - i.lymanAge;
 
   let lyman = i.lymanBalance;
@@ -174,7 +174,7 @@ export function milestones(rows: YearRow[], i: EngineInputs) {
     { key: 'kateri', label: `Kateri Retires (Age ${i.kateriRetireAge})`, row: kateriRetireRow },
     { key: 'lyman', label: `Lyman Retires (Age ${i.lymanRetireAge})`, row: at(i.lymanRetireAge) },
     { key: '80', label: 'Lyman Age 80', row: at(80) },
-    { key: '85', label: 'Lyman Age 85', row: at(85) },
+    { key: '75', label: 'Lyman Age 75', row: at(75) },
   ];
 }
 

@@ -93,7 +93,7 @@ export default function RetirementProjection({
   const [kateriPct, setKateriPct] = useState(10);
   const [kateriEmp, setKateriEmp] = useState(14);
 
-  const [scenario, setScenario] = useState<75 | 85>(75);
+  const [scenario, setScenario] = useState<70 | 75>(75);
   const [assetGrowth, setAssetGrowth] = useState(3);
   const [debtRedirect, setDebtRedirect] = useState(998); // $888 + $110, both from Sept 2027
   const REDIRECT_START_YEAR = 2027;
@@ -106,14 +106,14 @@ export default function RetirementProjection({
     extraMonthly: debtRedirect, extraStartYear: REDIRECT_START_YEAR, extraStartMonth: REDIRECT_START_MONTH,
   }), [lymanStart, lymanSalary, lymanPct, lymanEmp, ret, raise, lymanAgeNow, baseYear, debtRedirect]);
 
-  const lyman85 = useMemo(() => project({
-    start: lymanStart, salary: lymanSalary, years: Math.max(85 - lymanAgeNow, 0),
+  const lyman70 = useMemo(() => project({
+    start: lymanStart, salary: lymanSalary, years: Math.max(70 - lymanAgeNow, 0),
     contribPct: lymanPct / 100, employerPct: lymanEmp / 100, ret: ret / 100, raise: raise / 100,
     ageNow: lymanAgeNow, baseYear,
     extraMonthly: debtRedirect, extraStartYear: REDIRECT_START_YEAR, extraStartMonth: REDIRECT_START_MONTH,
   }), [lymanStart, lymanSalary, lymanPct, lymanEmp, ret, raise, lymanAgeNow, baseYear, debtRedirect]);
 
-  const lyman = scenario === 75 ? lyman75 : lyman85;
+  const lyman = scenario === 75 ? lyman75 : lyman70;
 
   const kateri = useMemo(() => project({
     start: kateriStart, salary: kateriSalary, years: Math.max(62 - kateriAge, 0),
@@ -123,8 +123,8 @@ export default function RetirementProjection({
 
   const end = (rows: typeof lyman75) => (rows.length ? rows[rows.length - 1].balance : lymanStart);
   const lyman75End = end(lyman75);
-  const lyman85End = end(lyman85);
-  const lymanEnd = scenario === 75 ? lyman75End : lyman85End;
+  const lyman70End = end(lyman70);
+  const lymanEnd = scenario === 75 ? lyman75End : lyman70End;
   const retireAge = scenario;
   const kateriEnd = kateri.length ? kateri[kateri.length - 1].balance : kateriStart;
   const lymanContrib = lyman.reduce((s, r) => s + r.contributions, 0);
@@ -167,11 +167,11 @@ export default function RetirementProjection({
         <Num label="Kateri employer" value={kateriEmp} onChange={setKateriEmp} suffix="%" />
         <Num label="Debt redirect /mo" value={debtRedirect} onChange={setDebtRedirect} suffix="$" />
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4 }}>
-          {[75, 85].map((a) => (
+          {[70, 75].map((a) => (
             <button
               key={a}
               type="button"
-              onClick={() => setScenario(a as 75 | 85)}
+              onClick={() => setScenario(a as 70 | 75)}
               style={{
                 fontSize: 10, fontWeight: 800, padding: '3px 8px', borderRadius: 4,
                 border: `1px solid ${scenario === a ? NAVY : CONTROL_BORDER}`,
@@ -195,12 +195,12 @@ export default function RetirementProjection({
           <div style={{ fontSize: 9, opacity: 0.85 }}>{money(lyman75.reduce((s, r) => s + r.contributions, 0))} contributed</div>
         </div>
         <div
-          onClick={() => setScenario(85)}
-          style={{ cursor: 'pointer', background: NAVY, color: '#fff', borderRadius: 6, padding: '8px 10px', outline: scenario === 85 ? `2px solid ${GOLD}` : 'none' }}
+          onClick={() => setScenario(70)}
+          style={{ cursor: 'pointer', background: NAVY, color: '#fff', borderRadius: 6, padding: '8px 10px', outline: scenario === 70 ? `2px solid ${GOLD}` : 'none' }}
         >
-          <div style={{ fontSize: 8.5, letterSpacing: 0.6, textTransform: 'uppercase', opacity: 0.8 }}>Scenario B — Lyman @ 85 ({baseYear + Math.max(85 - lymanAgeNow, 0)})</div>
-          <div style={{ fontSize: 17, fontWeight: 800 }}>{money(lyman85End)}</div>
-          <div style={{ fontSize: 9, opacity: 0.85 }}>+{money(lyman85End - lyman75End)} vs. retiring at 75</div>
+          <div style={{ fontSize: 8.5, letterSpacing: 0.6, textTransform: 'uppercase', opacity: 0.8 }}>Scenario B — Lyman @ 70 ({baseYear + Math.max(70 - lymanAgeNow, 0)})</div>
+          <div style={{ fontSize: 17, fontWeight: 800 }}>{money(lyman70End)}</div>
+          <div style={{ fontSize: 9, opacity: 0.85 }}>{money(lyman70End - lyman75End)} vs. retiring at 75</div>
         </div>
         <div style={{ background: NAVY, color: '#fff', borderRadius: 6, padding: '8px 10px', borderLeft: `4px solid ${GOLD}` }}>
           <div style={{ fontSize: 8.5, letterSpacing: 0.6, textTransform: 'uppercase', color: GOLD, fontWeight: 800 }}>Kateri @ 62 ({baseYear + Math.max(62 - kateriAge, 0)})</div>

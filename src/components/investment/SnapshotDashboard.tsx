@@ -15,11 +15,11 @@ import { CollapsibleSection } from './CollapsibleSection';
 interface Props { plan: InvestmentPlan | null }
 
 const SCENARIOS = [
-  { rate: 6, label: 'Conservative', ref85: 3_966_037, ref88: 4_895_240 },
-  { rate: 7, label: 'Average', ref85: 4_635_316, ref88: 5_849_013 },
-  { rate: 8, label: 'Growth', ref85: 5_418_844, ref88: 6_994_897 },
-  { rate: 9, label: 'Aggressive', ref85: 6_336_201, ref88: 8_371_721 },
-  { rate: 10, label: 'Aggressive+', ref85: 7_410_324, ref88: 10_026_064 },
+  { rate: 6, label: 'Conservative' },
+  { rate: 7, label: 'Average' },
+  { rate: 8, label: 'Growth' },
+  { rate: 9, label: 'Aggressive' },
+  { rate: 10, label: 'Aggressive+' },
 ];
 
 const MONTGOMERY_STEP_UPS = [
@@ -67,8 +67,8 @@ export function SnapshotDashboard({ plan }: Props) {
     if (!plan || !plan.current_age || !plan.retirement_age) return null;
     return SCENARIOS.map((s) => ({
       ...s,
-      at85: projectAt(plan, s.rate, 85).projectedBalance,
-      at88: projectAt(plan, s.rate, 88).projectedBalance,
+      at75: projectAt(plan, s.rate, 75).projectedBalance,
+      at78: projectAt(plan, s.rate, 78).projectedBalance,
     }));
   }, [plan]);
 
@@ -84,16 +84,16 @@ export function SnapshotDashboard({ plan }: Props) {
 
   const baseProj = projectAt(plan, plan.expected_return_pct, plan.retirement_age);
   const selectedScenario = sweep?.find((s) => s.rate === plan.expected_return_pct) ?? sweep?.[1];
-  const at85 = selectedScenario?.at85 ?? baseProj.projectedBalance;
+  const at75 = selectedScenario?.at75 ?? baseProj.projectedBalance;
 
   // New Montgomery status thresholds
   const statusLabel =
-    at85 >= 5_000_000 ? 'Strongly on track' :
-    at85 >= 4_000_000 ? 'On track' :
-    'Needs additional accelerator or age 88 backup';
+    at75 >= 5_000_000 ? 'Strongly on track' :
+    at75 >= 4_000_000 ? 'On track' :
+    'Needs additional accelerator or age 78 backup';
   const statusColor =
-    at85 >= 5_000_000 ? 'bg-emerald-500/15 text-emerald-500 border-emerald-500/30' :
-    at85 >= 4_000_000 ? 'bg-emerald-500/15 text-emerald-500 border-emerald-500/30' :
+    at75 >= 5_000_000 ? 'bg-emerald-500/15 text-emerald-500 border-emerald-500/30' :
+    at75 >= 4_000_000 ? 'bg-emerald-500/15 text-emerald-500 border-emerald-500/30' :
     'bg-amber-500/15 text-amber-500 border-amber-500/30';
 
   const cards = [
@@ -113,7 +113,7 @@ export function SnapshotDashboard({ plan }: Props) {
             <div>
               <CardTitle className="text-lg">Montgomery Retirement & Legacy Snapshot</CardTitle>
               <p className="text-sm text-muted-foreground mt-1">
-                Age 85 projection ({plan.expected_return_pct}% case): <strong className="text-foreground">{formatCurrencyFull(at85)}</strong>
+                Age 75 projection ({plan.expected_return_pct}% case): <strong className="text-foreground">{formatCurrencyFull(at75)}</strong>
               </p>
             </div>
             <Badge variant="outline" className={statusColor}>{statusLabel}</Badge>
@@ -151,16 +151,16 @@ export function SnapshotDashboard({ plan }: Props) {
         <FirstMillionCard plan={plan} />
       </CollapsibleSection>
 
-      {/* Age 85 / 88 scenario table */}
-      <CollapsibleSection title="Age 85 & Age 88 Projection by Scenario" defaultOpen>
+      {/* Age 75 / 78 scenario table */}
+      <CollapsibleSection title="Age 75 & Age 78 Projection by Scenario" defaultOpen>
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center gap-2">
               <Target className="h-5 w-5 text-primary" />
-              Age 85 & Age 88 Projection by Scenario
+              Age 75 & Age 78 Projection by Scenario
             </CardTitle>
             <p className="text-xs text-muted-foreground mt-1">
-              Computed with all step-ups, $208 accelerator, and $3K annual lump sum. "Ref" = Montgomery target.
+              Computed with all step-ups, $208 accelerator, and $3K annual lump sum.
             </p>
           </CardHeader>
           <CardContent>
@@ -169,32 +169,24 @@ export function SnapshotDashboard({ plan }: Props) {
                 <thead>
                   <tr className="border-b border-border/50 text-muted-foreground">
                     <th className="text-left py-2 font-medium">Scenario</th>
-                    <th className="text-right py-2 font-medium">Age 85</th>
-                    <th className="text-right py-2 font-medium text-muted-foreground/70">ref 85</th>
-                    <th className="text-right py-2 font-medium">Age 88</th>
-                    <th className="text-right py-2 font-medium text-muted-foreground/70">ref 88</th>
+                    <th className="text-right py-2 font-medium">Age 75</th>
+                    <th className="text-right py-2 font-medium">Age 78</th>
                   </tr>
                 </thead>
                 <tbody>
                   {(sweep ?? []).map((s) => {
-                    const hit85 = s.at85 >= 4_000_000;
+                    const hit85 = s.at75 >= 4_000_000;
                     return (
                       <tr key={s.rate} className="border-b border-border/30">
                         <td className="py-2">
                           <span className="font-medium">{s.rate}%</span>{' '}
                           <span className="text-muted-foreground">{s.label}</span>
                         </td>
-                        <td className={`text-right py-2 tabular-nums font-medium ${hit85 ? 'text-emerald-500' : 'text-amber-500'}`}>
-                          {formatCurrencyFull(s.at85)}
-                        </td>
-                        <td className="text-right py-2 tabular-nums text-muted-foreground/70">
-                          {formatCurrencyFull(s.ref85)}
+                        <td className={`text-right py-2 tabular-nums font-medium ${hit75 ? 'text-emerald-500' : 'text-amber-500'}`}>
+                          {formatCurrencyFull(s.at75)}
                         </td>
                         <td className="text-right py-2 tabular-nums font-medium">
-                          {formatCurrencyFull(s.at88)}
-                        </td>
-                        <td className="text-right py-2 tabular-nums text-muted-foreground/70">
-                          {formatCurrencyFull(s.ref88)}
+                          {formatCurrencyFull(s.at78)}
                         </td>
                       </tr>
                     );
@@ -203,8 +195,8 @@ export function SnapshotDashboard({ plan }: Props) {
               </table>
             </div>
             <p className="text-xs text-muted-foreground mt-3">
-              <strong className="text-foreground">Interpretation:</strong> 6% Conservative is near goal at age 85
-              and clears by age 88. 7% Average clears the $4M goal at age 85. 8% Growth strongly clears it.
+              <strong className="text-foreground">Interpretation:</strong> Working to age 75 is the plan horizon;
+              age 78 is shown as a backup scenario.
               9% and 10% are upside scenarios — not lifestyle-spending assumptions.
             </p>
           </CardContent>

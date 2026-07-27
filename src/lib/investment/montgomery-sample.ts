@@ -11,7 +11,7 @@ export async function loadMontgomerySample(householdId: string) {
     name: 'Montgomery Retirement and Legacy Plan',
     is_active: true,
     current_age: 58,
-    retirement_age: 85,
+    retirement_age: 75,
     current_balance: 165000,
     target_amount: 4000000,
     monthly_employee_contribution: 451.66,
