@@ -43,6 +43,16 @@ function MoneyInput({ value, onChange, className }: { value: number; onChange: (
 
 type BucketName = 'foundation' | 'wealthEngine' | 'futureFund';
 
+/** Refreshes saved rows from live figures and appends any new default rows. */
+function mergeLive(rows: BlueprintRow[], live: BlueprintRow[]): BlueprintRow[] {
+  const merged = rows.map((r) => {
+    const hit = live.find((p) => p.key === r.key);
+    return hit ? { ...r, label: hit.label, amount: hit.amount, lyman: hit.lyman, kateri: hit.kateri } : r;
+  });
+  const known = new Set(rows.map((r) => r.key));
+  return [...merged, ...live.filter((p) => !known.has(p.key)).map((p) => ({ ...p }))];
+}
+
 export function MoneyBlueprintPlan() {
   const { data: saved, isLoading } = useMoneyBlueprint();
   const { data: prefill } = useBlueprintPrefill();
