@@ -11,7 +11,7 @@ export default function CompoundInterestCalculator() {
   const [principal, setPrincipal] = useState(10000);
   const [monthly, setMonthly] = useState(500);
   const [years, setYears] = useState(20);
-  const [rate, setRate] = useState(7);
+  const [rate, setRate] = useState(8);
 
   const r = useMemo(() => {
     const m = rate / 100 / 12;

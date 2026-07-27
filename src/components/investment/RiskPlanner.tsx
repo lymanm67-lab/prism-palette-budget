@@ -26,7 +26,7 @@ export function RiskPlanner({ plan }: { plan: InvestmentPlan | null }) {
     yearsToRetirement: yearsToRet,
     yearsInRetirement: yearsInRet,
     annualWithdrawal,
-    expectedReturnPct: plan?.expected_return_pct ?? 7,
+    expectedReturnPct: plan?.expected_return_pct ?? 8,
     volatilityPct: volatility,
     inflationPct: plan?.inflation_pct ?? 2.5,
     runs: 1000,
@@ -51,7 +51,7 @@ export function RiskPlanner({ plan }: { plan: InvestmentPlan | null }) {
     yearsToRetirement: yearsToRet,
     badYears,
     badYearReturnPct: badReturn,
-    normalReturnPct: plan?.expected_return_pct ?? 7,
+    normalReturnPct: plan?.expected_return_pct ?? 8,
   }), [plan, monthly, yearsToRet, badYears, badReturn]);
 
   const stressChartData = stress.yearly.map((s, i) => ({

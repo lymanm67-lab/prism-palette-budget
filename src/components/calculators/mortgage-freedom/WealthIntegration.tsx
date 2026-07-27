@@ -22,7 +22,7 @@ interface WealthProps {
 export default function WealthIntegration({ monthlySurplus, mortgageRate, yearsToPayoff, currentAge, retirementAge }: WealthProps) {
   const { formatCurrency } = useCurrency();
   const [allocationPct, setAllocationPct] = useState(50); // % of surplus to mortgage; rest to investing
-  const [investReturn, setInvestReturn] = useState(7);    // conservative real return
+  const [investReturn, setInvestReturn] = useState(8);    // conservative real return
   const [taxBracket, setTaxBracket] = useState(24);       // marginal federal + state
   const [itemizes, setItemizes] = useState(true);         // deduct mortgage interest?
   const horizonYears = Math.max(1, retirementAge - currentAge);

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { projectRaiseRedirect, formatCurrencyFull } from '@/lib/investment/projection';
 import { DisclaimerBlock } from './DisclaimerBlock';
 
-export function RaiseRedirectPlanner({ defaultIncome = 5000, yearsToRetirement = 25, returnPct = 7 }) {
+export function RaiseRedirectPlanner({ defaultIncome = 5000, yearsToRetirement = 25, returnPct = 8 }) {
   const [income, setIncome] = useState(defaultIncome);
   const [raise, setRaise] = useState(3);
   const [investPct, setInvestPct] = useState(100);

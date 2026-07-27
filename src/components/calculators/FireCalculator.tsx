@@ -12,7 +12,7 @@ export default function FireCalculator() {
   const [swr, setSwr] = useState(4);
   const [current, setCurrent] = useState(150000);
   const [monthlySave, setMonthlySave] = useState(2500);
-  const [returnPct, setReturnPct] = useState(7);
+  const [returnPct, setReturnPct] = useState(8);
 
   const r = useMemo(() => {
     const fireNumber = expenses * (100 / swr);

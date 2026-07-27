@@ -85,7 +85,7 @@ export default function RetirementProjection({
   lymanStart, kateriStart, lymanSalary, kateriSalary, baseYear = 2026, lymanAgeNow = 59,
   household, pensionMonthly = 6559, socialSecurityMonthly = 3500,
 }: Props) {
-  const [ret, setRet] = useState(7);
+  const [ret, setRet] = useState(8);
   const [raise, setRaise] = useState(3);
   const [lymanPct, setLymanPct] = useState(30);
   const [lymanEmp, setLymanEmp] = useState(9);

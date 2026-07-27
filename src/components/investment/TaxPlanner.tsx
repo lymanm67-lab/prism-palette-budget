@@ -21,7 +21,7 @@ export function TaxPlanner({ plan }: { plan: InvestmentPlan | null }) {
   const [yearsToRet, setYearsToRet] = useState(
     plan && plan.current_age && plan.retirement_age ? plan.retirement_age - plan.current_age : 25,
   );
-  const [returnPct, setReturnPct] = useState(plan?.expected_return_pct ?? 7);
+  const [returnPct, setReturnPct] = useState(plan?.expected_return_pct ?? 8);
   const [incomeNow, setIncomeNow] = useState((plan?.current_monthly_income ?? 6000) * 12);
   const [incomeRetire, setIncomeRetire] = useState(60_000);
 

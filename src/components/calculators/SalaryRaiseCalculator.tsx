@@ -14,7 +14,7 @@ export default function SalaryRaiseCalculator() {
   const [inflation, setInflation] = useState(3);
   const [investPct, setInvestPct] = useState(50);
   const [years, setYears] = useState(20);
-  const [investReturn, setInvestReturn] = useState(7);
+  const [investReturn, setInvestReturn] = useState(8);
 
   const r = useMemo(() => {
     const gross = current * (raisePct / 100);

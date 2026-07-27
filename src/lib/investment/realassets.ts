@@ -26,7 +26,7 @@ export function businessSaleEvent(opts: {
 }) {
   const tax = (opts.capitalGainsPct ?? 20) / 100;
   const netProceeds = opts.saleAmount * (1 - tax);
-  const r = (opts.reinvestReturnPct ?? 7) / 100;
+  const r = (opts.reinvestReturnPct ?? 8) / 100;
   const futureValue = netProceeds * Math.pow(1 + r, opts.yearsAfterSale);
   return { netProceeds, taxPaid: opts.saleAmount * tax, futureValue };
 }

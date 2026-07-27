@@ -61,7 +61,7 @@ const DEFAULTS: Record<"lyman" | "kateri", SpouseRetirementInputs> = {
     // As of 07/24/2026 statements: IU Retirement $133,129.48 + IU TDA $16,888.01
     // + IU 457(b) $11,320.86 + TIAA $12,324.05 + Stash/SoFi/Schwab $6,260.82.
     currentBalance: 179923.22,
-    expectedReturnPct: 7,
+    expectedReturnPct: 8,
     plannedTotalPctOfBase: 30,
   },
   // Kateri: State of Ohio biweekly advice 07/24/2026 annualized at 26 pays.
@@ -76,7 +76,7 @@ const DEFAULTS: Record<"lyman" | "kateri", SpouseRetirementInputs> = {
     employerMonthly: 1309.66,
     deferredCompMonthly: 54.17,
     currentBalance: 364396.19,
-    expectedReturnPct: 7,
+    expectedReturnPct: 8,
   },
 };
 
