@@ -93,6 +93,8 @@ const WealthOS = lazy(() => import("@/pages/WealthOS"));
 const CompoundingCrossover = lazy(() => import("@/pages/CompoundingCrossover"));
 const RetirementPreservation = lazy(() => import("@/pages/RetirementPreservation"));
 const HouseholdWealth = lazy(() => import("@/pages/HouseholdWealth"));
+const MoneyBlueprint = lazy(() => import("@/pages/MoneyBlueprint"));
+
 const BeltProgress = lazy(() => import("@/pages/BeltProgress"));
 const RetirementDashboard = lazy(() => import("@/pages/RetirementDashboard"));
 
