@@ -197,3 +197,16 @@ export function useWealthOSData() {
     },
   });
 }
+
+/** Persist the ownership classification for a single asset account. */
+export function useSetAssetOwner() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ accountId, owner }: { accountId: string; owner: Owner }) => {
+      const { error } = await sb.from('accounts').update({ owner_tag: owner }).eq('id', accountId);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['wealth_os_data_v2'] }),
+  });
+}
+
