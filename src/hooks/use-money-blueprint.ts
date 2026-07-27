@@ -140,6 +140,15 @@ export const KATERI_UTILITIES_MONTHLY = 377;
 export const KATERI_UTILITIES_START = new Date(2027, 3, 1);
 const kateriPaysUtilities = () => new Date() >= KATERI_UTILITIES_START;
 
+/** Consumer debt is fully paid off in January 2027 — payments redirect to retirement. */
+export const DEBT_FREE_DATE = new Date(2027, 0, 1);
+const debtEliminated = () => new Date() >= DEBT_FREE_DATE;
+
+/** From April 2027, $500/mo from the Education / Marketing budget is redirected to retirement. */
+export const EDU_MARKETING_REDIRECT = 500;
+export const EDU_MARKETING_REDIRECT_START = new Date(2027, 3, 1);
+const eduRedirectActive = () => new Date() >= EDU_MARKETING_REDIRECT_START;
+
 const WEALTH_MATCHERS: { key: string; test: (l: string) => boolean }[] = [
   { key: 'postTaxRetirement', test: (l) => /roth|ira|retirement|401|457|hsa/.test(l) },
   { key: 'stocks', test: (l) => /invest|brokerage|stock|crypto/.test(l) },
