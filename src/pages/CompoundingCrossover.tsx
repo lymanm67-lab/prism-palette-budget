@@ -871,13 +871,13 @@ export default function CompoundingCrossover() {
                     y={active.crossoverPortfolio}
                     stroke={EMERALD}
                     strokeDasharray="5 5"
-                    label={{ value: `Crossover ${moneyShort(active.crossoverPortfolio)}`, fontSize: 11, fill: EMERALD, position: 'right' }}
+                    label={{ value: `Crossover ${moneyShort(active.crossoverPortfolio)}`, fontSize: 11, fill: EMERALD, position: 'insideTopRight' }}
                   />
                   <ReferenceLine
                     y={1_000_000}
                     stroke="hsl(var(--muted-foreground))"
                     strokeDasharray="3 3"
-                    label={{ value: '$1M', fontSize: 10, fill: 'hsl(var(--muted-foreground))', position: 'left' }}
+                    label={{ value: '$1M', fontSize: 10, fill: 'hsl(var(--muted-foreground))', position: 'insideTopLeft' }}
                   />
 
                 </LineChart>
