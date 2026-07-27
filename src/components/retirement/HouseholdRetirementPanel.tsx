@@ -30,17 +30,20 @@ export interface SpouseRetirementInputs {
 }
 
 const DEFAULTS: Record<"lyman" | "kateri", SpouseRetirementInputs> = {
-  // Lyman: W-2 $70,940.04/yr ($5,911.67/mo) + consulting $641.67/mo.
-  // Employer contributes 9% non-elective on W-2 salary (no match).
+  // Lyman: IU advice 07/31/2026 — W-2 $70,940.04/yr ($5,911.67/mo) + consulting $641.67/mo.
+  // Employer Base Retirement Plan $532.05/mo = 9% non-elective on W-2 salary (no match).
+  // Employee pre-tax: TDA $100 + IU 457(b) $75 + HSA $116.66 = $291.66/mo.
+  // Deferred comp (Roth): Roth TDA $85 + Roth 457(b) $75 = $160/mo.
   lyman: {
     name: "Lyman",
     currentAge: 59,
     retirementAge: 75,
     monthlyGross: 6553.34,
     employerBaseMonthly: 5911.67,
-    employeeMonthly: 451.66,
+    employeeMonthly: 291.66,
     employerMonthly: 532.05,
-    deferredCompMonthly: 0,
+    deferredCompMonthly: 160,
+
     currentBalance: 176512.76,
     expectedReturnPct: 7,
   },
