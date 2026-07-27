@@ -153,6 +153,33 @@ export default function CompoundingCrossover() {
     [eff, state.contributionGrowthPct, state.debtRedirectStartYear],
   );
 
+  const doubleYears = 72 / state.returnPct;
+  const household = useMemo(() => {
+    const people = [
+      { key: 'lyman', label: 'Lyman', balance: state.balance, contributions: state.annualContributions, redirect: state.debtRedirectAnnual },
+      { key: 'kateri', label: 'Kateri', balance: state.kateriBalance, contributions: state.kateriContributions, redirect: 0 },
+      {
+        key: 'combined',
+        label: 'Combined Household',
+        balance: state.balance + state.kateriBalance,
+        contributions: state.annualContributions + state.kateriContributions,
+        redirect: state.debtRedirectAnnual,
+      },
+    ];
+    return people.map((p) => ({
+      ...p,
+      result: runCrossover({
+        currentBalance: p.balance,
+        annualContributions: p.contributions,
+        contributionGrowthPct: state.contributionGrowthPct,
+        debtRedirectAnnual: p.redirect,
+        debtRedirectStartYear: state.debtRedirectStartYear,
+        returnPct: state.returnPct,
+      }),
+    }));
+  }, [state]);
+
+
 
   const active = useMemo(
     () => runCrossover({ ...engineInputs, returnPct: state.returnPct }),
