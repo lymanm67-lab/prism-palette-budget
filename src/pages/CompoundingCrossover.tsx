@@ -36,7 +36,19 @@ const DEFAULTS = {
   debtRedirectAnnual: 11_976, // $998/mo redirect
   debtRedirectStartYear: 2027,
   returnPct: OFFICIAL_RETURN_PCT,
+  // Kateri — OPERS pension account + Ohio Deferred Compensation
+  includeKateri: true,
+  kateriBalance: 364_396,
+  kateriContributions: 15_000, // 10% OPERS employee deferral + Ohio DC
+  view: 'combined' as 'lyman' | 'kateri' | 'combined',
 };
+
+const VIEWS: { key: 'lyman' | 'kateri' | 'combined'; label: string }[] = [
+  { key: 'lyman', label: 'Lyman' },
+  { key: 'kateri', label: 'Kateri' },
+  { key: 'combined', label: 'Combined' },
+];
+
 
 function loadState() {
   try {
@@ -114,16 +126,60 @@ export default function CompoundingCrossover() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch { /* ignore */ }
   };
 
+  const kOn = state.includeKateri;
+  const eff = useMemo(() => {
+    if (state.view === 'kateri') {
+      return { balance: state.kateriBalance, contributions: state.kateriContributions, redirect: 0, label: 'Kateri' };
+    }
+    if (state.view === 'combined' && kOn) {
+      return {
+        balance: state.balance + state.kateriBalance,
+        contributions: state.annualContributions + state.kateriContributions,
+        redirect: state.debtRedirectAnnual,
+        label: 'Household (Lyman + Kateri)',
+      };
+    }
+    return { balance: state.balance, contributions: state.annualContributions, redirect: state.debtRedirectAnnual, label: 'Lyman' };
+  }, [state, kOn]);
+
   const engineInputs = useMemo(
     () => ({
-      currentBalance: state.balance,
-      annualContributions: state.annualContributions,
+      currentBalance: eff.balance,
+      annualContributions: eff.contributions,
       contributionGrowthPct: state.contributionGrowthPct,
-      debtRedirectAnnual: state.debtRedirectAnnual,
+      debtRedirectAnnual: eff.redirect,
       debtRedirectStartYear: state.debtRedirectStartYear,
     }),
-    [state],
+    [eff, state.contributionGrowthPct, state.debtRedirectStartYear],
   );
+
+  const doubleYears = 72 / state.returnPct;
+  const household = useMemo(() => {
+    const people = [
+      { key: 'lyman', label: 'Lyman', balance: state.balance, contributions: state.annualContributions, redirect: state.debtRedirectAnnual },
+      { key: 'kateri', label: 'Kateri', balance: state.kateriBalance, contributions: state.kateriContributions, redirect: 0 },
+      {
+        key: 'combined',
+        label: 'Combined Household',
+        balance: state.balance + state.kateriBalance,
+        contributions: state.annualContributions + state.kateriContributions,
+        redirect: state.debtRedirectAnnual,
+      },
+    ];
+    return people.map((p) => ({
+      ...p,
+      result: runCrossover({
+        currentBalance: p.balance,
+        annualContributions: p.contributions,
+        contributionGrowthPct: state.contributionGrowthPct,
+        debtRedirectAnnual: p.redirect,
+        debtRedirectStartYear: state.debtRedirectStartYear,
+        returnPct: state.returnPct,
+      }),
+    }));
+  }, [state]);
+
+
 
   const active = useMemo(
     () => runCrossover({ ...engineInputs, returnPct: state.returnPct }),
@@ -136,10 +192,10 @@ export default function CompoundingCrossover() {
   );
 
   const activeScenario = SCENARIOS.find((s) => s.returnPct === state.returnPct) ?? SCENARIOS[1];
-  const momentumPct = Math.min(100, (state.balance / 1_000_000) * 100);
+  const momentumPct = Math.min(100, (eff.balance / 1_000_000) * 100);
 
   const milestones = [
-    { label: 'Current', amount: state.balance, note: 'Contributions are the primary driver.' },
+    { label: 'Current', amount: eff.balance, note: 'Contributions are the primary driver.' },
     { label: 'Milestone One', amount: 250_000, note: 'Compounding becomes noticeable.' },
     { label: 'Milestone Two', amount: 375_000, note: 'Compounding Crossover™ — gains match contributions.' },
     { label: 'Milestone Three', amount: 500_000, note: 'Portfolio becomes the primary wealth engine.' },
@@ -191,7 +247,7 @@ export default function CompoundingCrossover() {
                     Est. annual growth today
                   </div>
                   <div className="text-lg font-bold" style={{ color: NAVY }}>
-                    {money(state.balance * (s.returnPct / 100))}
+                    {money(eff.balance * (s.returnPct / 100))}
                   </div>
                 </div>
                 {s.note && <p className="mt-3 text-[11px] italic leading-relaxed text-slate-500">{s.note}</p>}
@@ -247,6 +303,64 @@ export default function CompoundingCrossover() {
                   style={{ borderColor: '#CBD5E1' }}
                 />
               </label>
+
+              <div className="mb-3 rounded-lg border p-3" style={{ borderColor: '#CBD5E1', background: '#F8FAFC' }}>
+                <label className="flex items-center gap-2 text-xs font-bold" style={{ color: NAVY }}>
+                  <input
+                    type="checkbox"
+                    checked={state.includeKateri}
+                    onChange={(e) =>
+                      set({ includeKateri: e.target.checked, view: e.target.checked ? state.view : 'lyman' })
+                    }
+                  />
+                  Include Kateri (OPERS + Ohio DC)
+                </label>
+                {state.includeKateri && (
+                  <>
+                    <label className="mt-3 block text-xs font-semibold text-slate-500">
+                      Kateri retirement balance
+                      <input
+                        type="number"
+                        value={state.kateriBalance}
+                        onChange={(e) => set({ kateriBalance: Number(e.target.value) || 0 })}
+                        className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-medium text-slate-900"
+                        style={{ borderColor: '#CBD5E1' }}
+                      />
+                    </label>
+                    <label className="mt-3 block text-xs font-semibold text-slate-500">
+                      Kateri annual contributions
+                      <input
+                        type="number"
+                        value={state.kateriContributions}
+                        onChange={(e) => set({ kateriContributions: Number(e.target.value) || 0 })}
+                        className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-medium text-slate-900"
+                        style={{ borderColor: '#CBD5E1' }}
+                      />
+                    </label>
+                    <div className="mt-3 text-[11px] font-semibold text-slate-500">View</div>
+                    <div className="mt-1 flex gap-2">
+                      {VIEWS.map((v) => (
+                        <button
+                          key={v.key}
+                          onClick={() => set({ view: v.key })}
+                          className="flex-1 rounded-md border px-2 py-2 text-[11px] font-bold transition"
+                          style={{
+                            borderColor: state.view === v.key ? NAVY : '#CBD5E1',
+                            background: state.view === v.key ? NAVY : 'white',
+                            color: state.view === v.key ? 'white' : NAVY,
+                          }}
+                        >
+                          {v.label}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="mt-2 text-[11px] text-slate-500">
+                      Showing: <span className="font-bold">{eff.label}</span>
+                    </div>
+                  </>
+                )}
+              </div>
+
               <div className="text-xs font-semibold text-slate-500">Planning scenario</div>
               <div className="mt-1 flex gap-2">
                 {SCENARIOS.map((s) => (
@@ -268,11 +382,11 @@ export default function CompoundingCrossover() {
 
             <div className="lg:col-span-2">
               <CompoundingStatusCard
-                balance={state.balance}
-                annualContributions={state.annualContributions}
+                balance={eff.balance}
+                annualContributions={eff.contributions}
                 returnPct={state.returnPct}
                 contributionGrowthPct={state.contributionGrowthPct}
-                debtRedirectAnnual={state.debtRedirectAnnual}
+                debtRedirectAnnual={eff.redirect}
                 debtRedirectStartYear={state.debtRedirectStartYear}
               />
               <Panel className="mt-4">
@@ -298,7 +412,7 @@ export default function CompoundingCrossover() {
                       Status
                     </div>
                     <div className="text-xl font-bold" style={{ color: GOLD }}>
-                      {classifyStatus(state.balance, active.crossoverPortfolio)}
+                      {classifyStatus(eff.balance, active.crossoverPortfolio)}
                     </div>
                   </div>
                 </div>
@@ -310,6 +424,121 @@ export default function CompoundingCrossover() {
             </div>
           </div>
         </Section>
+
+        {/* 2b. Household comparison */}
+        {state.includeKateri && (
+          <Section eyebrow="Household" title="Individual vs. Combined Crossover">
+            <Panel>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-[11px] uppercase tracking-wide text-slate-500">
+                      <th className="py-2">Owner</th>
+                      <th className="py-2">Balance</th>
+                      <th className="py-2">Annual contributions</th>
+                      <th className="py-2">Crossover portfolio @ {state.returnPct}%</th>
+                      <th className="py-2">Crossover year</th>
+                      <th className="py-2">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {household.map((h) => (
+                      <tr key={h.key} className="border-t" style={{ borderColor: '#E2E8F0' }}>
+                        <td className="py-2 font-bold" style={{ color: h.key === 'combined' ? GOLD : NAVY }}>
+                          {h.label}
+                        </td>
+                        <td className="py-2">{money(h.balance)}</td>
+                        <td className="py-2">{money(h.contributions)}</td>
+                        <td className="py-2">{money(h.result.crossoverPortfolio)}</td>
+                        <td className="py-2 font-semibold">{h.result.crossoverYear ?? '30+ yrs'}</td>
+                        <td className="py-2 text-xs text-slate-600">
+                          {classifyStatus(h.balance, h.result.crossoverPortfolio)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="mt-3 text-xs text-slate-500">
+                Combining both retirement engines pulls the household crossover forward — the same dollars compound
+                against a single shared retirement date instead of two separate ones.
+              </p>
+            </Panel>
+          </Section>
+        )}
+
+        {/* 2c. Rule of 72 */}
+        <Section eyebrow="The Math" title="The Rule of 72 — How Fast Money Doubles">
+          <div className="grid gap-4 lg:grid-cols-3">
+            {SCENARIOS.map((s) => {
+              const yrs = 72 / s.returnPct;
+              return (
+                <Panel key={s.key}>
+                  <div className="text-sm font-semibold" style={{ color: s.color }}>
+                    {s.returnPct}% return
+                  </div>
+                  <div className="mt-1 text-3xl font-bold" style={{ color: NAVY }}>
+                    {yrs.toFixed(1)} yrs
+                  </div>
+                  <div className="text-[11px] text-slate-500">72 ÷ {s.returnPct} = years to double</div>
+                  <div className="mt-3 space-y-1 text-xs text-slate-600">
+                    {[1, 2, 3].map((d) => (
+                      <div key={d} className="flex justify-between">
+                        <span>
+                          Doubling {d} ({new Date().getFullYear() + Math.round(yrs * d)})
+                        </span>
+                        <span className="font-bold" style={{ color: NAVY }}>
+                          {moneyShort(eff.balance * 2 ** d)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </Panel>
+              );
+            })}
+          </div>
+          {state.includeKateri && (
+            <Panel className="mt-4">
+              <h3 className="mb-3 text-sm font-bold" style={{ color: NAVY }}>
+                Rule of 72 by owner @ {state.returnPct}% (contributions excluded — balance growth only)
+              </h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-[11px] uppercase tracking-wide text-slate-500">
+                      <th className="py-2">Owner</th>
+                      <th className="py-2">Today</th>
+                      <th className="py-2">1st double ({doubleYears.toFixed(1)} yrs)</th>
+                      <th className="py-2">2nd double</th>
+                      <th className="py-2">3rd double</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {household.map((h) => (
+                      <tr key={h.key} className="border-t" style={{ borderColor: '#E2E8F0' }}>
+                        <td className="py-2 font-bold" style={{ color: h.key === 'combined' ? GOLD : NAVY }}>
+                          {h.label}
+                        </td>
+                        <td className="py-2">{money(h.balance)}</td>
+                        <td className="py-2">{money(h.balance * 2)}</td>
+                        <td className="py-2">{money(h.balance * 4)}</td>
+                        <td className="py-2 font-bold" style={{ color: EMERALD }}>
+                          {money(h.balance * 8)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="mt-3 text-xs text-slate-500">
+                At {state.returnPct}%, household retirement assets double roughly every {doubleYears.toFixed(1)} years
+                on balance alone. Every contribution you add starts its own doubling clock.
+              </p>
+            </Panel>
+          )}
+        </Section>
+
+
 
         {/* 3. Phases */}
         <Section eyebrow="The Power of Compounding" title="Five Phases of the Wealth Journey">
@@ -325,7 +554,7 @@ export default function CompoundingCrossover() {
                     Foundation Building
                   </h3>
                   <div className="mt-2 text-3xl font-bold" style={{ color: EMERALD }}>
-                    {money(state.balance)}
+                    {money(eff.balance)}
                   </div>
                   <p className="mt-2 text-sm font-semibold text-slate-600">
                     "You are building the engine."
@@ -403,7 +632,7 @@ export default function CompoundingCrossover() {
                       Live calculation
                     </div>
                     <div className="mt-1">
-                      {money(state.annualContributions)} ÷ {state.returnPct}% ={' '}
+                      {money(eff.contributions)} ÷ {state.returnPct}% ={' '}
                       <span className="font-bold" style={{ color: EMERALD }}>
                         {money(active.crossoverPortfolio)}
                       </span>
@@ -434,7 +663,7 @@ export default function CompoundingCrossover() {
                 <Speedometer
                   value={momentumPct}
                   label="Compounding Momentum"
-                  caption={`${moneyShort(state.balance)} of the $1M flywheel threshold`}
+                  caption={`${moneyShort(eff.balance)} of the $1M flywheel threshold`}
                 />
               </div>
             </Panel>
@@ -455,7 +684,7 @@ export default function CompoundingCrossover() {
                   <GrowthTable balances={[1_000_000]} />
                 </div>
                 <Flywheel
-                  speed={Math.max(0.4, state.balance / 500_000)}
+                  speed={Math.max(0.4, eff.balance / 500_000)}
                   caption="Flywheel speed scales with portfolio size"
                 />
               </div>
@@ -580,7 +809,7 @@ export default function CompoundingCrossover() {
             <div className="relative grid gap-6 md:grid-cols-5">
               <div className="absolute left-0 right-0 top-6 hidden h-0.5 md:block" style={{ background: '#E2E8F0' }} />
               {milestones.map((m) => {
-                const reached = state.balance >= m.amount;
+                const reached = eff.balance >= m.amount;
                 return (
                   <div key={m.label} className="relative">
                     <div
