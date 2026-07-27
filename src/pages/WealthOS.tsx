@@ -5,6 +5,7 @@ import { useWealthOSData } from '@/hooks/use-wealth-os';
 import { simulate } from '@/lib/legacy/monteCarloSim';
 import { exportBinderPNGs, exportBinderPDF } from '@/lib/legacy/wealthOsExport';
 import RetirementProjection from '@/components/wealth-os/RetirementProjection';
+import CompoundingStatusCard from '@/components/wealth-os/crossover/CompoundingStatusCard';
 
 
 
@@ -631,6 +632,16 @@ export default function WealthOS() {
           <Kpi label="Annualized Guaranteed Income" value="$120,708/yr" sub="Before portfolio withdrawals" tone="navy" />
         </div>
 
+
+        <SectionLabel>Compounding Status — The Compounding Crossover™</SectionLabel>
+        <div style={{ marginBottom: 14 }}>
+          <CompoundingStatusCard
+            balance={(lymanB.retirement || 0) + (kateriB.retirement || OPERS + OHIO_DC)}
+            annualContributions={28500}
+            debtRedirectAnnual={11976}
+            debtRedirectStartYear={2027}
+          />
+        </div>
 
         <SectionLabel>Projected Retirement Balances — Continued Contributions @ 7% Return</SectionLabel>
         <RetirementProjection
