@@ -28,8 +28,9 @@ function grow(balance: number, monthly: number, ratePct: number, years: number) 
   return fvBal + fvCon;
 }
 
-export function HouseholdRollupLine({ plan, individualAtHorizon, horizonAge, returnPct }: Props) {
+export function HouseholdRollupLine({ plan, individualAtHorizon, horizonAge, returnPct, individualByAge }: Props) {
   const { data: spouse } = useInvestmentSpouse(plan.id);
+
 
   const rollup = useMemo(() => {
     const years = Math.max(0, horizonAge - (plan.current_age ?? 59));
