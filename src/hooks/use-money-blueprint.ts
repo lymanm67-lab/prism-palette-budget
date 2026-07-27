@@ -145,9 +145,13 @@ export function useBlueprintPrefill() {
         if (BUSINESS_RE.test(label)) continue;
 
         if (amount > 0) {
-          if (/income|salary|paycheck|wife contribution|deposit|reimburs/.test(label)) income += amount;
+          // Kateri's salary is not deposited into tracked accounts — her "wife contribution"
+          // transfers are excluded here and her full net salary is added below instead.
+          if (/wife contribution|kateri/.test(label)) continue;
+          if (/income|salary|paycheck|deposit|reimburs/.test(label)) income += amount;
           continue;
         }
+
 
         const abs = Math.abs(amount);
         const w = WEALTH_MATCHERS.find((m) => m.test(label));
