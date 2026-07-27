@@ -90,6 +90,12 @@ export function MoneyBlueprintPlan() {
 
   const result = useMemo(() => computeBlueprint(state, view), [state, view]);
 
+  // Per-spouse take-home: fall back to live figures (never to the household total).
+  const kateriNetVal = state.income.kateriNet ?? prefill?.source?.kateriNet ?? 0;
+  const lymanNetVal = state.income.lymanNet
+    ?? prefill?.source?.lymanNet
+    ?? Math.max(0, Math.round((state.income.netMonthly - kateriNetVal) * 100) / 100);
+
   const setRow = (bucket: BucketName, idx: number, patch: Partial<BlueprintRow>) =>
     setState((s) => ({
       ...s,
