@@ -52,6 +52,41 @@ const VIEWS: { key: 'lyman' | 'kateri' | 'combined'; label: string }[] = [
   { key: 'combined', label: 'Combined' },
 ];
 
+/** Number input that displays thousands separators and 2-decimal formatting. */
+function NumberInput({
+  value,
+  onChange,
+  decimals = 2,
+  className,
+}: {
+  value: number;
+  onChange: (n: number) => void;
+  decimals?: number;
+  className?: string;
+}) {
+  const [draft, setDraft] = useState<string | null>(null);
+  const formatted = value.toLocaleString('en-US', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
+  return (
+    <input
+      type="text"
+      inputMode="decimal"
+      value={draft ?? formatted}
+      onChange={(e) => {
+        const raw = e.target.value;
+        setDraft(raw);
+        const n = Number(raw.replace(/[^0-9.\-]/g, ''));
+        if (!Number.isNaN(n)) onChange(n);
+      }}
+      onBlur={() => setDraft(null)}
+      className={className}
+    />
+  );
+}
+
+
 
 function loadState() {
   try {
