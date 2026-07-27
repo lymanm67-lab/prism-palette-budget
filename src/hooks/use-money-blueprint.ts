@@ -13,8 +13,14 @@ const sb = supabase as any;
 
 // Household salary figures already established elsewhere in the app.
 export const KATERI_GROSS_ANNUAL = 113_000;
-export const LYMAN_GROSS_ANNUAL = 70_940.04; // $5,911.67/mo
-export const HOUSEHOLD_GROSS_ANNUAL = LYMAN_GROSS_ANNUAL + KATERI_GROSS_ANNUAL; // 183,940.04
+/** W-2 salary only — employer retirement contributions are based on this. */
+export const LYMAN_SALARY_ANNUAL = 70_940.04; // $5,911.67/mo
+/** Consulting / 1099 income: $1,925 per quarter. */
+export const CONSULTING_QUARTERLY = 1_925;
+export const CONSULTING_ANNUAL = CONSULTING_QUARTERLY * 4; // 7,700
+export const LYMAN_GROSS_ANNUAL = LYMAN_SALARY_ANNUAL + CONSULTING_ANNUAL; // 78,640.04
+export const HOUSEHOLD_GROSS_ANNUAL = LYMAN_GROSS_ANNUAL + KATERI_GROSS_ANNUAL;
+
 const NET_RATIO = 0.76; // take-home estimate after taxes + pre-tax deferrals
 
 /**
