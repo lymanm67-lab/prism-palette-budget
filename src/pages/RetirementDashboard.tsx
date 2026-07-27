@@ -107,8 +107,13 @@ interface HouseholdRollup {
   parts: { label: string; value: number }[];
 }
 
-/** Rolls Lyman + Kateri retirement balances and HSA into one household readiness score. */
+const RETIREMENT_RE = /retirement|ira|401\(?k\)?|403\(?b\)?|457|opers|deferred comp|tiaa|pension|hsa/i;
+
+/** Rolls live Lyman + Kateri retirement accounts (incl. HSA) into one household readiness score. */
 function useHouseholdRetirementRollup(opt: OptimizerInputs): HouseholdRollup {
+  const { household } = useHousehold();
+  const householdId = household?.id;
+
   const [panel, setPanel] = useState<any>(null);
   useEffect(() => {
     try {
@@ -117,10 +122,41 @@ function useHouseholdRetirementRollup(opt: OptimizerInputs): HouseholdRollup {
     } catch { /* ignore */ }
   }, []);
 
+  const { data: accounts } = useQuery({
+    queryKey: ["retirement-readiness-accounts", householdId],
+    enabled: !!householdId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("accounts")
+        .select("name, institution, account_type, balance, owner_tag")
+        .eq("household_id", householdId!)
+        .is("deleted_at", null)
+        .eq("is_active", true);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
   return useMemo(() => {
-    const lymanBal = Number(panel?.lyman?.currentBalance ?? opt.totalRetirementBalance) || 0;
-    const kateriBal = Number(panel?.kateri?.currentBalance ?? 0) || 0;
-    const hsaBal = Number(opt.hsaBalance ?? 0) || 0;
+    const rows = (accounts ?? []).filter((a: any) => {
+      const label = `${a.name ?? ""} ${a.institution ?? ""}`;
+      if (!RETIREMENT_RE.test(label)) return false;
+      return a.account_type === "investment" || /hsa/i.test(label);
+    });
+
+    const isKateri = (a: any) =>
+      /kateri/i.test(`${a.name ?? ""} ${a.institution ?? ""} ${a.owner_tag ?? ""}`);
+
+    const sum = (list: any[]) => list.reduce((s, a) => s + Number(a.balance ?? 0), 0);
+
+    const lymanRows = rows.filter((a) => !isKateri(a) && !/hsa/i.test(`${a.name} ${a.institution ?? ""}`));
+    const kateriRows = rows.filter(isKateri);
+    const hsaRows = rows.filter((a) => /hsa/i.test(`${a.name} ${a.institution ?? ""}`) && !isKateri(a));
+
+    const hasLive = rows.length > 0;
+    const lymanBal = hasLive ? sum(lymanRows) : Number(panel?.lyman?.currentBalance ?? opt.totalRetirementBalance) || 0;
+    const kateriBal = hasLive ? sum(kateriRows) : Number(panel?.kateri?.currentBalance ?? 0) || 0;
+    const hsaBal = hasLive ? sum(hsaRows) : Number(opt.hsaBalance ?? 0) || 0;
 
     const lymanIncome = Number(panel?.lyman?.monthlyGross ?? 0) * 12 || opt.grossIncome;
     const kateriIncome = Number(panel?.kateri?.monthlyGross ?? 0) * 12 || 0;
@@ -141,14 +177,16 @@ function useHouseholdRetirementRollup(opt: OptimizerInputs): HouseholdRollup {
       target,
       gap: Math.max(0, target - balance),
       multiplier,
+      live: hasLive,
       parts: [
-        { label: "Lyman retirement", value: lymanBal },
-        { label: "Kateri (OPERS + Ohio DC)", value: kateriBal },
+        { label: `Lyman retirement (${lymanRows.length} accounts)`, value: lymanBal },
+        { label: `Kateri — OPERS + Ohio DC (${kateriRows.length} accounts)`, value: kateriBal },
         { label: "HSA", value: hsaBal },
       ],
     };
-  }, [panel, opt.totalRetirementBalance, opt.hsaBalance, opt.grossIncome, opt.age]);
+  }, [accounts, panel, opt.totalRetirementBalance, opt.hsaBalance, opt.grossIncome, opt.age]);
 }
+
 
 
 
