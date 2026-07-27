@@ -117,6 +117,14 @@ export function ReturnScenarioComparison({ plan, onCreateRules, onReviewLegacy }
             </p>
           </div>
           <div className="flex flex-col gap-2 items-end">
+            <Tabs value={who} onValueChange={(v) => setWho(v as 'individual' | 'combined')}>
+              <TabsList className="h-8">
+                <TabsTrigger value="individual" className="text-xs h-6 px-2">Me only</TabsTrigger>
+                <TabsTrigger value="combined" className="text-xs h-6 px-2">
+                  Combined{spouse?.name ? ` (+${spouse.name.split(' ')[0]})` : ''}
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
             <Tabs value={targetAge} onValueChange={setTargetAge}>
               <TabsList className="h-8">
                 <TabsTrigger value="75" className="text-xs h-6 px-2">Age 75</TabsTrigger>
