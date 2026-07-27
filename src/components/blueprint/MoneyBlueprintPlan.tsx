@@ -115,14 +115,22 @@ export function MoneyBlueprintPlan() {
         debt: Math.round(wealth.totalLiabilities),
       },
       buckets: {
-        ...s.buckets,
         foundation: s.buckets.foundation.map((r) => {
           const live = prefill.foundation.find((p) => p.key === r.key);
           return live ? { ...r, amount: live.amount } : r;
         }),
+        wealthEngine: s.buckets.wealthEngine.map((r) => {
+          const live = prefill.wealthEngine.find((p) => p.key === r.key);
+          return live ? { ...r, amount: live.amount } : r;
+        }),
+        futureFund: s.buckets.futureFund.map((r) => {
+          const live = prefill.futureFund.find((p) => p.key === r.key);
+          return live ? { ...r, amount: live.amount } : r;
+        }),
       },
     }));
-    toast.success('Re-synced from live household data');
+    toast.success('Re-synced from Track Money + budgets');
+
   };
 
   const onSave = () =>
