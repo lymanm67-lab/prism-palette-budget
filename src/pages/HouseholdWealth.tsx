@@ -10,6 +10,9 @@ import {
 } from 'recharts';
 import { useWealthOSData, BUCKET_LABELS, type Buckets } from '@/hooks/use-wealth-os';
 import { PageExplainer } from '@/components/PageExplainer';
+import { OwnershipTagger } from '@/components/wealth-os/OwnershipTagger';
+import { BlueprintSummaryCard } from '@/components/blueprint/BlueprintSummaryCard';
+
 
 const OPERS = 328948.74;
 const OHIO_DC = 35447.45;
