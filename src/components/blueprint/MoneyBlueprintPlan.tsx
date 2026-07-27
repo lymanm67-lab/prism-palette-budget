@@ -99,7 +99,7 @@ export function MoneyBlueprintPlan() {
       ...s,
       buckets: {
         ...s.buckets,
-        [bucket]: [...s.buckets[bucket], { key: `custom_${Date.now()}`, label: 'New line', amount: 0, custom: true }],
+        [bucket]: [...s.buckets[bucket], { key: `custom_${Date.now()}`, label: 'New line', amount: 0, lyman: 0, kateri: 0, custom: true }],
       },
     }));
 
