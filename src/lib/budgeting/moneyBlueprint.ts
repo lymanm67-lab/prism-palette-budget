@@ -51,6 +51,16 @@ export interface BalanceSheet {
 export interface IncomeBlock {
   grossMonthly: number;
   netMonthly: number;
+  /** Per-owner take-home; when absent the combined figure is used. */
+  lymanNet?: number;
+  kateriNet?: number;
+}
+
+export function netForView(income: IncomeBlock, view: OwnerView = 'combined'): number {
+  const total = Number(income.netMonthly) || 0;
+  if (view === 'lyman') return Number(income.lymanNet ?? total) || 0;
+  if (view === 'kateri') return Number(income.kateriNet ?? 0) || 0;
+  return total;
 }
 
 export interface BlueprintBuckets {
