@@ -129,32 +129,41 @@ export default function InvestmentPlanning() {
   };
 
 
-  const projection = useMemo(() => {
-    if (!plan || !plan.current_age || !plan.retirement_age) return null;
-    return runProjection({
-      currentAge: plan.current_age,
-      retirementAge: plan.retirement_age,
-      currentBalance: plan.current_balance,
-      targetAmount: plan.target_amount,
-      monthlyEmployeeContribution: plan.monthly_employee_contribution,
-      monthlyEmployerContribution: plan.monthly_employer_contribution,
-      expectedReturnPct: plan.expected_return_pct,
-      annualRaisePct: plan.annual_raise_pct,
-      raiseRedirectPct: plan.raise_redirect_pct,
-      debtPaymentAmount: plan.debt_payment_amount ?? undefined,
-      debtPayoffDate: plan.debt_payoff_date,
-      additionalMonthlyAmount: plan.additional_monthly_amount ?? undefined,
-      additionalStartDate: plan.additional_start_date,
-      ssMonthlyEstimate: plan.ss_monthly_estimate ?? undefined,
-      incomeFromSsPensionOnly: plan.income_strategy === 'ss_pension_only',
-      spousePensionMonthly: plan.spouse_pension_monthly ?? 0,
-      ssClaimingAge: plan.ss_claiming_age ?? undefined,
-      ssInvestWhileWorking: plan.ss_invest_while_working,
-      ssInvestPct: plan.ss_invest_pct,
-      useFutureDollars: plan.use_future_dollars,
-      inflationPct: plan.inflation_pct,
+  const liveProjection = useMemo(() => {
+    if (!plan || !plan.current_age) return null;
+    return projectSnapshot(plan, controls.returnPct, controls.horizonAge, controls.futureDollars);
+  }, [plan, controls]);
+
+  const controlsDirty =
+    !!plan &&
+    (controls.returnPct !== plan.expected_return_pct ||
+      controls.horizonAge !== (plan.retirement_age ?? 75) ||
+      controls.futureDollars !== plan.use_future_dollars);
+
+  const resetControls = () => {
+    if (!plan) return;
+    setControls({
+      returnPct: plan.expected_return_pct,
+      horizonAge: plan.retirement_age ?? 75,
+      futureDollars: plan.use_future_dollars,
     });
-  }, [plan]);
+  };
+
+  const handleSaveControls = async () => {
+    if (!plan) return;
+    try {
+      await upsert.mutateAsync({
+        id: plan.id,
+        expected_return_pct: controls.returnPct,
+        retirement_age: controls.horizonAge,
+        use_future_dollars: controls.futureDollars,
+      });
+      toast({ title: 'Defaults saved', description: 'Your plan now uses these settings everywhere.' });
+    } catch (e: any) {
+      toast({ title: 'Save failed', description: e.message, variant: 'destructive' });
+    }
+  };
+
 
   const handleExport = () => {
     if (!plan) return;
