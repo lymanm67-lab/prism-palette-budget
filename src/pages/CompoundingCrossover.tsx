@@ -398,6 +398,121 @@ export default function CompoundingCrossover() {
           </div>
         </Section>
 
+        {/* 2b. Household comparison */}
+        {state.includeKateri && (
+          <Section eyebrow="Household" title="Individual vs. Combined Crossover">
+            <Panel>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-[11px] uppercase tracking-wide text-slate-500">
+                      <th className="py-2">Owner</th>
+                      <th className="py-2">Balance</th>
+                      <th className="py-2">Annual contributions</th>
+                      <th className="py-2">Crossover portfolio @ {state.returnPct}%</th>
+                      <th className="py-2">Crossover year</th>
+                      <th className="py-2">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {household.map((h) => (
+                      <tr key={h.key} className="border-t" style={{ borderColor: '#E2E8F0' }}>
+                        <td className="py-2 font-bold" style={{ color: h.key === 'combined' ? GOLD : NAVY }}>
+                          {h.label}
+                        </td>
+                        <td className="py-2">{money(h.balance)}</td>
+                        <td className="py-2">{money(h.contributions)}</td>
+                        <td className="py-2">{money(h.result.crossoverPortfolio)}</td>
+                        <td className="py-2 font-semibold">{h.result.crossoverYear ?? '30+ yrs'}</td>
+                        <td className="py-2 text-xs text-slate-600">
+                          {classifyStatus(h.balance, h.result.crossoverPortfolio)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="mt-3 text-xs text-slate-500">
+                Combining both retirement engines pulls the household crossover forward — the same dollars compound
+                against a single shared retirement date instead of two separate ones.
+              </p>
+            </Panel>
+          </Section>
+        )}
+
+        {/* 2c. Rule of 72 */}
+        <Section eyebrow="The Math" title="The Rule of 72 — How Fast Money Doubles">
+          <div className="grid gap-4 lg:grid-cols-3">
+            {SCENARIOS.map((s) => {
+              const yrs = 72 / s.returnPct;
+              return (
+                <Panel key={s.key}>
+                  <div className="text-sm font-semibold" style={{ color: s.color }}>
+                    {s.returnPct}% return
+                  </div>
+                  <div className="mt-1 text-3xl font-bold" style={{ color: NAVY }}>
+                    {yrs.toFixed(1)} yrs
+                  </div>
+                  <div className="text-[11px] text-slate-500">72 ÷ {s.returnPct} = years to double</div>
+                  <div className="mt-3 space-y-1 text-xs text-slate-600">
+                    {[1, 2, 3].map((d) => (
+                      <div key={d} className="flex justify-between">
+                        <span>
+                          Doubling {d} ({new Date().getFullYear() + Math.round(yrs * d)})
+                        </span>
+                        <span className="font-bold" style={{ color: NAVY }}>
+                          {moneyShort(eff.balance * 2 ** d)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </Panel>
+              );
+            })}
+          </div>
+          {state.includeKateri && (
+            <Panel className="mt-4">
+              <h3 className="mb-3 text-sm font-bold" style={{ color: NAVY }}>
+                Rule of 72 by owner @ {state.returnPct}% (contributions excluded — balance growth only)
+              </h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-[11px] uppercase tracking-wide text-slate-500">
+                      <th className="py-2">Owner</th>
+                      <th className="py-2">Today</th>
+                      <th className="py-2">1st double ({doubleYears.toFixed(1)} yrs)</th>
+                      <th className="py-2">2nd double</th>
+                      <th className="py-2">3rd double</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {household.map((h) => (
+                      <tr key={h.key} className="border-t" style={{ borderColor: '#E2E8F0' }}>
+                        <td className="py-2 font-bold" style={{ color: h.key === 'combined' ? GOLD : NAVY }}>
+                          {h.label}
+                        </td>
+                        <td className="py-2">{money(h.balance)}</td>
+                        <td className="py-2">{money(h.balance * 2)}</td>
+                        <td className="py-2">{money(h.balance * 4)}</td>
+                        <td className="py-2 font-bold" style={{ color: EMERALD }}>
+                          {money(h.balance * 8)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="mt-3 text-xs text-slate-500">
+                At {state.returnPct}%, household retirement assets double roughly every {doubleYears.toFixed(1)} years
+                on balance alone. Every contribution you add starts its own doubling clock.
+              </p>
+            </Panel>
+          )}
+        </Section>
+
+
+
         {/* 3. Phases */}
         <Section eyebrow="The Power of Compounding" title="Five Phases of the Wealth Journey">
           <div className="space-y-4">
