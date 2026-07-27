@@ -12,13 +12,16 @@ export type Owner = 'lyman' | 'kateri' | 'joint';
 export type Classification = 'Individual' | 'Separate Property' | 'Joint Household';
 
 export interface HouseholdAsset {
+  id?: string;
   name: string;
   balance: number;
   owner: Owner;
+  ownerTag?: Owner | null;
   ownerLabel: string;
   classification: Classification;
   bucket: string;
 }
+
 
 export interface Buckets {
   retirement: number;
@@ -46,7 +49,9 @@ export interface WealthOSData {
   liabilities: { name: string; balance: number }[];
   estate: { complete: number; total: number; pct: number };
   history: { date: string; netWorth: number }[];
+  untaggedAssets: number;
 }
+
 
 const emptyBuckets = (): Buckets => ({
   retirement: 0, business: 0, realEstate: 0, intellectualProperty: 0,
@@ -82,19 +87,26 @@ function bucketFor(name: string, type: string): keyof Buckets {
   return 'brokerage';
 }
 
-function ownerFor(institution: string | null, name: string): { owner: Owner; classification: Classification; label: string } {
+const OWNER_META: Record<Owner, { classification: Classification; label: string }> = {
+  lyman: { classification: 'Individual', label: 'Lyman Montgomery' },
+  kateri: { classification: 'Separate Property', label: 'Kateri Montgomery' },
+  joint: { classification: 'Joint Household', label: 'Joint Household' },
+};
+
+function ownerFor(
+  institution: string | null,
+  name: string,
+  tag?: string | null,
+): { owner: Owner; classification: Classification; label: string; tagged: boolean } {
+  if (tag === 'lyman' || tag === 'kateri' || tag === 'joint') {
+    return { owner: tag, ...OWNER_META[tag], tagged: true };
+  }
   const src = `${institution || ''} ${name}`.toLowerCase();
-  if (/kateri/.test(src)) {
-    return { owner: 'kateri', classification: 'Separate Property', label: 'Kateri Montgomery' };
-  }
-  if (/joint/.test(src)) {
-    return { owner: 'joint', classification: 'Joint Household', label: 'Joint Household' };
-  }
-  if (/lyman/.test(src)) {
-    return { owner: 'lyman', classification: 'Individual', label: 'Lyman Montgomery' };
-  }
-  return { owner: 'lyman', classification: 'Individual', label: 'Lyman Montgomery' };
+  if (/kateri/.test(src)) return { owner: 'kateri', ...OWNER_META.kateri, tagged: false };
+  if (/joint/.test(src)) return { owner: 'joint', ...OWNER_META.joint, tagged: false };
+  return { owner: 'lyman', ...OWNER_META.lyman, tagged: false };
 }
+
 
 export function useWealthOSData() {
   const { household } = useHousehold();
@@ -108,7 +120,7 @@ export function useWealthOSData() {
       const planIds = (planRows || []).map((p: any) => p.id);
 
       const [accounts, debts, estate, snaps] = await Promise.all([
-        sb.from('accounts').select('name,institution,account_type,balance').eq('household_id', hid).is('deleted_at', null),
+        sb.from('accounts').select('id,name,institution,account_type,balance,owner_tag').eq('household_id', hid).is('deleted_at', null),
         planIds.length
           ? sb.from('debt_items').select('name,balance').in('plan_id', planIds)
           : Promise.resolve({ data: [] }),
@@ -124,6 +136,7 @@ export function useWealthOSData() {
       };
       const assets: HouseholdAsset[] = [];
       let totalAssets = 0;
+      let untagged = 0;
       const liabilities: { name: string; balance: number }[] = [];
 
       for (const a of accounts.data || []) {
@@ -135,9 +148,10 @@ export function useWealthOSData() {
           continue;
         }
         const bucket = bucketFor(name, type);
-        const o = ownerFor(a.institution ?? null, name);
+        const o = ownerFor(a.institution ?? null, name, a.owner_tag ?? null);
+        if (!o.tagged) untagged += 1;
         const asset: HouseholdAsset = {
-          name, balance: bal, bucket,
+          id: a.id, name, balance: bal, bucket, ownerTag: (a.owner_tag ?? null) as any,
           owner: o.owner, ownerLabel: o.label, classification: o.classification,
         };
         assets.push(asset);
@@ -147,6 +161,7 @@ export function useWealthOSData() {
         byOwner[o.owner].buckets[bucket] += bal;
         byOwner[o.owner].assets.push(asset);
       }
+
       const keepDebt = makeDebtDeduper(liabilities.map((l) => l.name));
       for (const d of debts.data || []) {
         const dn = d.name || 'Debt';
@@ -175,7 +190,9 @@ export function useWealthOSData() {
         history: (snaps.data || [])
           .filter((s: any) => s.net_worth != null)
           .map((s: any) => ({ date: s.snapshot_date, netWorth: Number(s.net_worth) })),
+        untaggedAssets: untagged,
       };
+
     },
   });
 }

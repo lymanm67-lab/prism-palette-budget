@@ -173,6 +173,7 @@ export type Database = {
           is_active: boolean
           last_synced_at: string | null
           name: string
+          owner_tag: string | null
           provider_account_id: string | null
           provider_type: string | null
           updated_at: string
@@ -189,6 +190,7 @@ export type Database = {
           is_active?: boolean
           last_synced_at?: string | null
           name: string
+          owner_tag?: string | null
           provider_account_id?: string | null
           provider_type?: string | null
           updated_at?: string
@@ -205,6 +207,7 @@ export type Database = {
           is_active?: boolean
           last_synced_at?: string | null
           name?: string
+          owner_tag?: string | null
           provider_account_id?: string | null
           provider_type?: string | null
           updated_at?: string
@@ -5772,6 +5775,50 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "snaptrade_connections_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      spending_plans: {
+        Row: {
+          balance_sheet: Json
+          buckets: Json
+          created_at: string
+          deleted_at: string | null
+          household_id: string
+          id: string
+          income: Json
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          balance_sheet?: Json
+          buckets?: Json
+          created_at?: string
+          deleted_at?: string | null
+          household_id: string
+          id?: string
+          income?: Json
+          name?: string
+          updated_at?: string
+        }
+        Update: {
+          balance_sheet?: Json
+          buckets?: Json
+          created_at?: string
+          deleted_at?: string | null
+          household_id?: string
+          id?: string
+          income?: Json
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spending_plans_household_id_fkey"
             columns: ["household_id"]
             isOneToOne: false
             referencedRelation: "households"
