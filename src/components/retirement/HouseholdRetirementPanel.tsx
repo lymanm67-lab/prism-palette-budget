@@ -60,6 +60,7 @@ const DEFAULTS: Record<"lyman" | "kateri", SpouseRetirementInputs> = {
 
     currentBalance: 176512.76,
     expectedReturnPct: 7,
+    plannedTotalPctOfBase: 30,
   },
   // Kateri: State of Ohio biweekly advice 07/24/2026 annualized at 26 pays.
   // Gross $4,317.60/pay, OPERS employee $431.76/pay, employer $604.46/pay, Ohio DC $25/pay.
