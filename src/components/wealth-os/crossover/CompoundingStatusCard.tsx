@@ -27,6 +27,7 @@ export default function CompoundingStatusCard({
   debtRedirectAnnual,
   debtRedirectStartYear,
 }: Props) {
+  const onCrossoverPage = useLocation().pathname === '/legacy/crossover';
   const res = runCrossover({
     currentBalance: balance,
     annualContributions,
