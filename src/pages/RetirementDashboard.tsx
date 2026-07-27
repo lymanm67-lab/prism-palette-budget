@@ -17,6 +17,7 @@ import { optimizeNextDollar, scoreRetirementReadiness, type OptimizerInputs } fr
 import { analyzeEmployerBenefits, type EmployerBenefits } from "@/lib/retirement/employerBenefits";
 import { projectHsa, type HsaInputs } from "@/lib/retirement/hsaIntelligence";
 import { analyzeRothVsTraditional, type RothInputs } from "@/lib/retirement/rothVsTraditional";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useHousehold } from "@/contexts/HouseholdContext";
 import { PageExplainer } from "@/components/PageExplainer";
