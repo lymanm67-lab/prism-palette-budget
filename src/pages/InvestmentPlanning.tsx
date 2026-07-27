@@ -62,8 +62,24 @@ export default function InvestmentPlanning() {
   const { data: plan, isLoading } = useInvestmentPlan();
   const { household } = useHousehold();
   const qc = useQueryClient();
+  const upsert = useUpsertInvestmentPlan();
   const [loadingSample, setLoadingSample] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('snapshot');
+  const [controls, setControls] = useState<SnapshotControls>({
+    returnPct: 8,
+    horizonAge: 75,
+    futureDollars: true,
+  });
+
+  // Hydrate the live controls from the saved plan once it loads.
+  useEffect(() => {
+    if (!plan) return;
+    setControls({
+      returnPct: plan.expected_return_pct,
+      horizonAge: plan.retirement_age ?? 75,
+      futureDollars: plan.use_future_dollars,
+    });
+  }, [plan?.id, plan?.expected_return_pct, plan?.retirement_age, plan?.use_future_dollars]);
 
   // Sync default tab once the plan finishes loading (avoids flash of wizard for returning users)
   useEffect(() => {
@@ -74,6 +90,7 @@ export default function InvestmentPlanning() {
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading, plan?.id]);
+
 
   const TAB_GROUPS = [
     { label: 'Build Your Plan', items: [
