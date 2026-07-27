@@ -316,7 +316,7 @@ export function MoneyBlueprintPlan() {
       </div>
 
       {/* Editable buckets */}
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className={view === 'combined' ? 'grid gap-4 2xl:grid-cols-3' : 'grid gap-4 lg:grid-cols-3'}>
         {(['foundation', 'wealthEngine', 'futureFund'] as BucketName[]).map((bucket) => {
           const meta = BUCKET_META[bucket];
           const res = result.buckets.find((b) => b.key === bucket)!;
@@ -330,12 +330,12 @@ export function MoneyBlueprintPlan() {
               </CardHeader>
               <CardContent className="space-y-2">
                 {view === 'combined' && (
-                  <div className="grid grid-cols-[1fr_92px_92px_92px_auto] items-center gap-2 text-[10px] uppercase text-muted-foreground">
+                  <div className="grid grid-cols-[minmax(0,1fr)_repeat(3,minmax(64px,88px))_2rem] items-center gap-2 text-[10px] uppercase text-muted-foreground">
                     <span>Category</span>
                     <span className="text-right">Lyman</span>
                     <span className="text-right">Kateri</span>
                     <span className="text-right">Combined</span>
-                    <span className="w-8" />
+                    <span />
                   </div>
                 )}
                 {state.buckets[bucket].map((raw, idx) => {
@@ -344,36 +344,37 @@ export function MoneyBlueprintPlan() {
                   <div
                     key={row.key}
                     className={view === 'combined'
-                      ? 'grid grid-cols-[1fr_92px_92px_92px_auto] items-center gap-2'
-                      : 'grid grid-cols-[1fr_120px_auto] items-center gap-2'}
+                      ? 'grid grid-cols-[minmax(0,1fr)_repeat(3,minmax(64px,88px))_2rem] items-center gap-2'
+                      : 'grid grid-cols-[minmax(0,1fr)_minmax(90px,120px)_2rem] items-center gap-2'}
                   >
                     {row.custom ? (
                       <Input
-                        className="h-9 text-xs"
+                        className="h-9 text-xs min-w-0"
                         value={row.label}
                         onChange={(e) => setRow(bucket, idx, { label: e.target.value })}
                       />
                     ) : (
-                      <span className="text-xs">{row.label}</span>
+                      <span className="text-xs break-words leading-tight min-w-0">{row.label}</span>
                     )}
+
                     {view === 'combined' ? (
                       <>
-                        <MoneyInput className="h-9 text-right tabular-nums text-xs" value={row.lyman!} onChange={(n) => setOwner(bucket, idx, 'lyman', n)} />
-                        <MoneyInput className="h-9 text-right tabular-nums text-xs" value={row.kateri!} onChange={(n) => setOwner(bucket, idx, 'kateri', n)} />
-                        <span className="text-right text-xs font-semibold tabular-nums">{money2(row.amount)}</span>
+                        <MoneyInput className="h-9 px-1.5 text-right tabular-nums text-xs min-w-0" value={row.lyman!} onChange={(n) => setOwner(bucket, idx, 'lyman', n)} />
+                        <MoneyInput className="h-9 px-1.5 text-right tabular-nums text-xs min-w-0" value={row.kateri!} onChange={(n) => setOwner(bucket, idx, 'kateri', n)} />
+                        <span className="text-right text-xs font-semibold tabular-nums truncate">{money2(row.amount)}</span>
                       </>
                     ) : (
                       <MoneyInput
-                        className="h-9 text-right tabular-nums"
+                        className="h-9 px-1.5 text-right tabular-nums text-xs min-w-0"
                         value={view === 'lyman' ? row.lyman! : row.kateri!}
                         onChange={(n) => setOwner(bucket, idx, view === 'lyman' ? 'lyman' : 'kateri', n)}
                       />
                     )}
                     {row.custom ? (
-                      <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => removeRow(bucket, idx)}>
+                      <Button size="icon" variant="ghost" className="h-8 w-8 -ml-0.5" onClick={() => removeRow(bucket, idx)}>
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
-                    ) : <span className="w-8" />}
+                    ) : <span />}
                   </div>
                   );
                 })}
