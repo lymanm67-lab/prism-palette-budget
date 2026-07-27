@@ -224,7 +224,9 @@ export function useBlueprintPrefill() {
 
       const foundation = DEFAULT_FOUNDATION.map((r) => withSplit({
         ...r,
-        amount: budgeted.has(r.key) ? Math.round(budgeted.get(r.key)! * 100) / 100 : monthlyAvg(spend.get(r.key) || 0),
+        amount: r.key === 'rent'
+          ? RENT_MONTHLY
+          : budgeted.has(r.key) ? Math.round(budgeted.get(r.key)! * 100) / 100 : monthlyAvg(spend.get(r.key) || 0),
       }));
 
       return {
