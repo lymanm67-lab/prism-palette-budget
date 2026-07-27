@@ -197,6 +197,50 @@ export function ReturnScenarioComparison({ plan, onCreateRules, onReviewLegacy }
           </div>
         </div>
 
+        {combined && (
+          <div className="overflow-x-auto rounded-lg border bg-card/40">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-border/50 text-muted-foreground">
+                  <th className="text-left py-2 px-3 font-medium">Who</th>
+                  <th className="text-right py-2 px-3 font-medium">Balance today</th>
+                  <th className="text-right py-2 px-3 font-medium">At age {ageNum} · 7%</th>
+                  <th className="text-right py-2 px-3 font-medium">At age {ageNum} · 8%</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-border/30">
+                  <td className="py-2 px-3 font-medium">{plan.name || 'This plan'}</td>
+                  <td className="text-right py-2 px-3 tabular-nums">{formatCurrencyFull(plan.current_balance)}</td>
+                  <td className="text-right py-2 px-3 tabular-nums">{formatCurrencyFull(mine7)}</td>
+                  <td className="text-right py-2 px-3 tabular-nums">{formatCurrencyFull(mine8)}</td>
+                </tr>
+                <tr className="border-b border-border/30">
+                  <td className="py-2 px-3 font-medium">{spouse?.name || 'Spouse'}</td>
+                  <td className="text-right py-2 px-3 tabular-nums">{formatCurrencyFull(spouseBalance)}</td>
+                  <td className="text-right py-2 px-3 tabular-nums">{formatCurrencyFull(spouse7)}</td>
+                  <td className="text-right py-2 px-3 tabular-nums">{formatCurrencyFull(spouse8)}</td>
+                </tr>
+                <tr className="border-t-2 border-primary/40 font-semibold">
+                  <td className="py-2 px-3">Household combined</td>
+                  <td className="text-right py-2 px-3 tabular-nums">
+                    {formatCurrencyFull(plan.current_balance + spouseBalance)}
+                  </td>
+                  <td className="text-right py-2 px-3 tabular-nums">{formatCurrencyFull(p7)}</td>
+                  <td className="text-right py-2 px-3 tabular-nums">{formatCurrencyFull(p8)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {who === 'combined' && !spouse && (
+          <p className="text-xs text-muted-foreground">
+            No spouse record saved yet — add spouse details to see combined household numbers.
+          </p>
+        )}
+
+
         <div className="rounded-lg bg-muted/40 p-4 text-sm space-y-2">
           <p>
             Your strongest wealth-building moves are investing every future raise, redirecting the debt payment when paid off,
