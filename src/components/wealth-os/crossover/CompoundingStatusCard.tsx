@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { ArrowRight, Gauge } from 'lucide-react';
 import {
   runCrossover,
@@ -27,6 +27,7 @@ export default function CompoundingStatusCard({
   debtRedirectAnnual,
   debtRedirectStartYear,
 }: Props) {
+  const onCrossoverPage = useLocation().pathname === '/legacy/crossover';
   const res = runCrossover({
     currentBalance: balance,
     annualContributions,
@@ -101,13 +102,26 @@ export default function CompoundingStatusCard({
         </div>
       </div>
 
-      <Link
-        to="/legacy/crossover"
-        className="mt-4 inline-flex items-center gap-1 text-sm font-semibold"
-        style={{ color: EMERALD }}
-      >
-        Open The Compounding Crossover™ <ArrowRight className="h-4 w-4" />
-      </Link>
+      {onCrossoverPage ? (
+        <button
+          type="button"
+          onClick={() =>
+            window.scrollTo({ top: 0, behavior: 'smooth' })
+          }
+          className="mt-4 inline-flex items-center gap-1 text-sm font-semibold"
+          style={{ color: EMERALD }}
+        >
+          Back to top of The Compounding Crossover™ <ArrowRight className="h-4 w-4" />
+        </button>
+      ) : (
+        <Link
+          to="/legacy/crossover"
+          className="mt-4 inline-flex items-center gap-1 text-sm font-semibold"
+          style={{ color: EMERALD }}
+        >
+          Open The Compounding Crossover™ <ArrowRight className="h-4 w-4" />
+        </Link>
+      )}
     </div>
   );
 }
