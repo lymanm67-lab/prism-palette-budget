@@ -123,15 +123,15 @@ export function MoneyBlueprintPlan() {
       buckets: {
         foundation: s.buckets.foundation.map((r) => {
           const live = prefill.foundation.find((p) => p.key === r.key);
-          return live ? { ...r, amount: live.amount } : r;
+          return live ? { ...r, amount: live.amount, lyman: live.lyman, kateri: live.kateri } : r;
         }),
         wealthEngine: s.buckets.wealthEngine.map((r) => {
           const live = prefill.wealthEngine.find((p) => p.key === r.key);
-          return live ? { ...r, amount: live.amount } : r;
+          return live ? { ...r, amount: live.amount, lyman: live.lyman, kateri: live.kateri } : r;
         }),
         futureFund: s.buckets.futureFund.map((r) => {
           const live = prefill.futureFund.find((p) => p.key === r.key);
-          return live ? { ...r, amount: live.amount } : r;
+          return live ? { ...r, amount: live.amount, lyman: live.lyman, kateri: live.kateri } : r;
         }),
       },
     }));
