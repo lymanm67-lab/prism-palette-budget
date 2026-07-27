@@ -840,9 +840,19 @@ export default function CompoundingCrossover() {
           <Panel>
             <div className="h-[360px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData} margin={{ top: 10, right: 20, left: 10, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
-                  <XAxis dataKey="year" tick={{ fontSize: 11, fill: '#64748B' }} />
+                <LineChart data={chartData} margin={{ top: 10, right: 20, left: 10, bottom: 24 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis
+                    dataKey="year"
+                    tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+                    interval="preserveStartEnd"
+                    minTickGap={28}
+                    tickMargin={10}
+                    angle={-35}
+                    textAnchor="end"
+                    height={52}
+                  />
+
                   <YAxis tickFormatter={(v) => moneyShort(v)} tick={{ fontSize: 11, fill: '#64748B' }} width={64} />
                   <Tooltip formatter={(v: number) => money(v)} />
                   <Legend />
