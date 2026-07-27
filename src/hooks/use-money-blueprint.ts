@@ -135,6 +135,11 @@ const ROW_MATCHERS: { key: string; test: (label: string) => boolean }[] = [
 /** Actual household rent (confirmed by Lyman). */
 const RENT_MONTHLY = 1100;
 
+/** Starting April 2027 Kateri covers the utilities bill in full. */
+export const KATERI_UTILITIES_MONTHLY = 377;
+export const KATERI_UTILITIES_START = new Date(2027, 3, 1);
+const kateriPaysUtilities = () => new Date() >= KATERI_UTILITIES_START;
+
 const WEALTH_MATCHERS: { key: string; test: (l: string) => boolean }[] = [
   { key: 'postTaxRetirement', test: (l) => /roth|ira|retirement|401|457|hsa/.test(l) },
   { key: 'stocks', test: (l) => /invest|brokerage|stock|crypto/.test(l) },
@@ -240,12 +245,18 @@ export function useBlueprintPrefill() {
         return { ...r, lyman, kateri: Math.round(((r.amount || 0) - lyman) * 100) / 100 };
       };
 
-      const foundation = DEFAULT_FOUNDATION.map((r) => withSplit({
-        ...r,
-        amount: r.key === 'rent'
-          ? RENT_MONTHLY
-          : budgeted.has(r.key) ? Math.round(budgeted.get(r.key)! * 100) / 100 : monthlyAvg(spend.get(r.key) || 0),
-      }));
+      const foundation = DEFAULT_FOUNDATION.map((r) => {
+        // From April 2027 Kateri pays the utilities bill ($377/mo) entirely.
+        if (r.key === 'utilities' && kateriPaysUtilities()) {
+          return { ...r, lyman: 0, kateri: KATERI_UTILITIES_MONTHLY, amount: KATERI_UTILITIES_MONTHLY };
+        }
+        return withSplit({
+          ...r,
+          amount: r.key === 'rent'
+            ? RENT_MONTHLY
+            : budgeted.has(r.key) ? Math.round(budgeted.get(r.key)! * 100) / 100 : monthlyAvg(spend.get(r.key) || 0),
+        });
+      });
 
       return {
         foundation,
