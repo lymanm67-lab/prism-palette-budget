@@ -58,6 +58,8 @@ function loadState() {
   return DEFAULTS;
 }
 
+const INK = 'hsl(var(--foreground))';
+
 const Section = ({
   eyebrow,
   title,
@@ -73,7 +75,7 @@ const Section = ({
         {eyebrow}
       </div>
     )}
-    <h2 className="mb-4 text-2xl font-bold" style={{ color: NAVY }}>
+    <h2 className="mb-4 text-2xl font-bold" style={{ color: INK }}>
       {title}
     </h2>
     {children}
@@ -82,8 +84,7 @@ const Section = ({
 
 const Panel = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
   <div
-    className={`rounded-2xl border bg-white p-5 shadow-sm ${className}`}
-    style={{ borderColor: '#E2E8F0' }}
+    className={`rounded-2xl border border-border bg-card text-card-foreground p-5 shadow-sm ${className}`}
   >
     {children}
   </div>
@@ -93,7 +94,7 @@ function GrowthTable({ balances }: { balances: number[] }) {
   return (
     <table className="w-full text-sm">
       <thead>
-        <tr className="text-left text-xs uppercase tracking-wide text-slate-500">
+        <tr className="text-left text-xs uppercase tracking-wide text-muted-foreground">
           <th className="pb-1">Return</th>
           <th className="pb-1 text-right">Annual Growth</th>
         </tr>
@@ -103,11 +104,11 @@ function GrowthTable({ balances }: { balances: number[] }) {
           const lo = balances[0] * (s.returnPct / 100);
           const hi = balances[balances.length - 1] * (s.returnPct / 100);
           return (
-            <tr key={s.key} className="border-t" style={{ borderColor: '#F1F5F9' }}>
+            <tr key={s.key} className="border-t border-border" >
               <td className="py-1.5 font-semibold" style={{ color: s.color }}>
                 {s.returnPct}%
               </td>
-              <td className="py-1.5 text-right font-medium" style={{ color: NAVY }}>
+              <td className="py-1.5 text-right font-medium" style={{ color: INK }}>
                 {lo === hi ? money(lo) : `${moneyShort(lo)} – ${moneyShort(hi)}`}
               </td>
             </tr>
@@ -205,7 +206,7 @@ export default function CompoundingCrossover() {
   const expectedFinal = byScenario.find((b) => b.scenario.key === 'expected')!.result.rows.slice(-1)[0].endBalance;
 
   return (
-    <div className="min-h-screen" style={{ background: '#F8FAFC' }}>
+    <div className="min-h-screen bg-background text-foreground">
       <div className="mx-auto max-w-6xl px-4 py-8">
         {/* Header */}
         <header className="mb-8 rounded-2xl p-8 text-white" style={{ background: NAVY }}>
@@ -241,16 +242,16 @@ export default function CompoundingCrossover() {
                 <div className="mt-2 text-4xl font-bold" style={{ color: s.color }}>
                   {s.returnPct}%
                 </div>
-                <p className="mt-2 text-xs text-slate-600">{s.purpose}</p>
-                <div className="mt-3 rounded-lg p-3" style={{ background: '#F8FAFC' }}>
-                  <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                <p className="mt-2 text-xs text-foreground/80">{s.purpose}</p>
+                <div className="mt-3 rounded-lg p-3" style={{ background: 'hsl(var(--muted))' }}>
+                  <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                     Est. annual growth today
                   </div>
-                  <div className="text-lg font-bold" style={{ color: NAVY }}>
+                  <div className="text-lg font-bold" style={{ color: INK }}>
                     {money(eff.balance * (s.returnPct / 100))}
                   </div>
                 </div>
-                {s.note && <p className="mt-3 text-[11px] italic leading-relaxed text-slate-500">{s.note}</p>}
+                {s.note && <p className="mt-3 text-[11px] italic leading-relaxed text-muted-foreground">{s.note}</p>}
               </Panel>
             ))}
           </div>
@@ -260,52 +261,52 @@ export default function CompoundingCrossover() {
         <Section eyebrow="Live Model" title="Live Compounding Dashboard">
           <div className="grid gap-4 lg:grid-cols-3">
             <Panel>
-              <h3 className="mb-3 text-sm font-bold" style={{ color: NAVY }}>
+              <h3 className="mb-3 text-sm font-bold" style={{ color: INK }}>
                 Assumptions
               </h3>
-              <label className="mb-3 block text-xs font-semibold text-slate-500">
+              <label className="mb-3 block text-xs font-semibold text-muted-foreground">
                 Current retirement balance
                 <input
                   type="number"
                   value={state.balance}
                   onChange={(e) => set({ balance: Number(e.target.value) || 0 })}
-                  className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-medium text-slate-900"
-                  style={{ borderColor: '#CBD5E1' }}
+                  className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-medium bg-background text-foreground"
+                  style={{ borderColor: 'hsl(var(--border))' }}
                 />
               </label>
-              <label className="mb-3 block text-xs font-semibold text-slate-500">
+              <label className="mb-3 block text-xs font-semibold text-muted-foreground">
                 Annual contributions (employee + employer)
                 <input
                   type="number"
                   value={state.annualContributions}
                   onChange={(e) => set({ annualContributions: Number(e.target.value) || 0 })}
-                  className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-medium text-slate-900"
-                  style={{ borderColor: '#CBD5E1' }}
+                  className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-medium bg-background text-foreground"
+                  style={{ borderColor: 'hsl(var(--border))' }}
                 />
               </label>
-              <label className="mb-3 block text-xs font-semibold text-slate-500">
+              <label className="mb-3 block text-xs font-semibold text-muted-foreground">
                 Annual contribution growth (raises &amp; deferral increases), %
                 <input
                   type="number"
                   value={state.contributionGrowthPct}
                   onChange={(e) => set({ contributionGrowthPct: Number(e.target.value) || 0 })}
-                  className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-medium text-slate-900"
-                  style={{ borderColor: '#CBD5E1' }}
+                  className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-medium bg-background text-foreground"
+                  style={{ borderColor: 'hsl(var(--border))' }}
                 />
               </label>
-              <label className="mb-3 block text-xs font-semibold text-slate-500">
+              <label className="mb-3 block text-xs font-semibold text-muted-foreground">
                 Debt redirect, annual (from {state.debtRedirectStartYear})
                 <input
                   type="number"
                   value={state.debtRedirectAnnual}
                   onChange={(e) => set({ debtRedirectAnnual: Number(e.target.value) || 0 })}
-                  className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-medium text-slate-900"
-                  style={{ borderColor: '#CBD5E1' }}
+                  className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-medium bg-background text-foreground"
+                  style={{ borderColor: 'hsl(var(--border))' }}
                 />
               </label>
 
-              <div className="mb-3 rounded-lg border p-3" style={{ borderColor: '#CBD5E1', background: '#F8FAFC' }}>
-                <label className="flex items-center gap-2 text-xs font-bold" style={{ color: NAVY }}>
+              <div className="mb-3 rounded-lg border p-3" style={{ borderColor: 'hsl(var(--border))', background: 'hsl(var(--muted))' }}>
+                <label className="flex items-center gap-2 text-xs font-bold" style={{ color: INK }}>
                   <input
                     type="checkbox"
                     checked={state.includeKateri}
@@ -317,27 +318,27 @@ export default function CompoundingCrossover() {
                 </label>
                 {state.includeKateri && (
                   <>
-                    <label className="mt-3 block text-xs font-semibold text-slate-500">
+                    <label className="mt-3 block text-xs font-semibold text-muted-foreground">
                       Kateri retirement balance
                       <input
                         type="number"
                         value={state.kateriBalance}
                         onChange={(e) => set({ kateriBalance: Number(e.target.value) || 0 })}
-                        className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-medium text-slate-900"
-                        style={{ borderColor: '#CBD5E1' }}
+                        className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-medium bg-background text-foreground"
+                        style={{ borderColor: 'hsl(var(--border))' }}
                       />
                     </label>
-                    <label className="mt-3 block text-xs font-semibold text-slate-500">
+                    <label className="mt-3 block text-xs font-semibold text-muted-foreground">
                       Kateri annual contributions
                       <input
                         type="number"
                         value={state.kateriContributions}
                         onChange={(e) => set({ kateriContributions: Number(e.target.value) || 0 })}
-                        className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-medium text-slate-900"
-                        style={{ borderColor: '#CBD5E1' }}
+                        className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-medium bg-background text-foreground"
+                        style={{ borderColor: 'hsl(var(--border))' }}
                       />
                     </label>
-                    <div className="mt-3 text-[11px] font-semibold text-slate-500">View</div>
+                    <div className="mt-3 text-[11px] font-semibold text-muted-foreground">View</div>
                     <div className="mt-1 flex gap-2">
                       {VIEWS.map((v) => (
                         <button
@@ -345,23 +346,23 @@ export default function CompoundingCrossover() {
                           onClick={() => set({ view: v.key })}
                           className="flex-1 rounded-md border px-2 py-2 text-[11px] font-bold transition"
                           style={{
-                            borderColor: state.view === v.key ? NAVY : '#CBD5E1',
-                            background: state.view === v.key ? NAVY : 'white',
-                            color: state.view === v.key ? 'white' : NAVY,
+                            borderColor: state.view === v.key ? NAVY : 'hsl(var(--border))',
+                            background: state.view === v.key ? NAVY : 'hsl(var(--card))',
+                            color: state.view === v.key ? '#fff' : INK,
                           }}
                         >
                           {v.label}
                         </button>
                       ))}
                     </div>
-                    <div className="mt-2 text-[11px] text-slate-500">
+                    <div className="mt-2 text-[11px] text-muted-foreground">
                       Showing: <span className="font-bold">{eff.label}</span>
                     </div>
                   </>
                 )}
               </div>
 
-              <div className="text-xs font-semibold text-slate-500">Planning scenario</div>
+              <div className="text-xs font-semibold text-muted-foreground">Planning scenario</div>
               <div className="mt-1 flex gap-2">
                 {SCENARIOS.map((s) => (
                   <button
@@ -369,7 +370,7 @@ export default function CompoundingCrossover() {
                     onClick={() => set({ returnPct: s.returnPct })}
                     className="flex-1 rounded-md border px-2 py-2 text-xs font-bold transition"
                     style={{
-                      borderColor: state.returnPct === s.returnPct ? s.color : '#CBD5E1',
+                      borderColor: state.returnPct === s.returnPct ? s.color : 'hsl(var(--border))',
                       background: state.returnPct === s.returnPct ? s.color : 'white',
                       color: state.returnPct === s.returnPct ? 'white' : s.color,
                     }}
@@ -392,7 +393,7 @@ export default function CompoundingCrossover() {
               <Panel className="mt-4">
                 <div className="grid gap-3 sm:grid-cols-3">
                   <div>
-                    <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                       Projected crossover date
                     </div>
                     <div className="text-xl font-bold" style={{ color: EMERALD }}>
@@ -400,15 +401,15 @@ export default function CompoundingCrossover() {
                     </div>
                   </div>
                   <div>
-                    <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                       Balance at crossover
                     </div>
-                    <div className="text-xl font-bold" style={{ color: NAVY }}>
+                    <div className="text-xl font-bold" style={{ color: INK }}>
                       {active.crossoverBalance ? moneyShort(active.crossoverBalance) : '—'}
                     </div>
                   </div>
                   <div>
-                    <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                       Status
                     </div>
                     <div className="text-xl font-bold" style={{ color: GOLD }}>
@@ -416,7 +417,7 @@ export default function CompoundingCrossover() {
                     </div>
                   </div>
                 </div>
-                <p className="mt-3 text-[11px] text-slate-500">
+                <p className="mt-3 text-[11px] text-muted-foreground">
                   Because contributions rise with raises and redirected debt payments, the mathematical
                   crossover target also rises over time — while the larger contributions get you there sooner.
                 </p>
@@ -432,7 +433,7 @@ export default function CompoundingCrossover() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="text-left text-[11px] uppercase tracking-wide text-slate-500">
+                    <tr className="text-left text-[11px] uppercase tracking-wide text-muted-foreground">
                       <th className="py-2">Owner</th>
                       <th className="py-2">Balance</th>
                       <th className="py-2">Annual contributions</th>
@@ -443,15 +444,15 @@ export default function CompoundingCrossover() {
                   </thead>
                   <tbody>
                     {household.map((h) => (
-                      <tr key={h.key} className="border-t" style={{ borderColor: '#E2E8F0' }}>
-                        <td className="py-2 font-bold" style={{ color: h.key === 'combined' ? GOLD : NAVY }}>
+                      <tr key={h.key} className="border-t border-border" >
+                        <td className="py-2 font-bold" style={{ color: h.key === 'combined' ? GOLD : INK }}>
                           {h.label}
                         </td>
                         <td className="py-2">{money(h.balance)}</td>
                         <td className="py-2">{money(h.contributions)}</td>
                         <td className="py-2">{money(h.result.crossoverPortfolio)}</td>
                         <td className="py-2 font-semibold">{h.result.crossoverYear ?? '30+ yrs'}</td>
-                        <td className="py-2 text-xs text-slate-600">
+                        <td className="py-2 text-xs text-foreground/80">
                           {classifyStatus(h.balance, h.result.crossoverPortfolio)}
                         </td>
                       </tr>
@@ -459,7 +460,7 @@ export default function CompoundingCrossover() {
                   </tbody>
                 </table>
               </div>
-              <p className="mt-3 text-xs text-slate-500">
+              <p className="mt-3 text-xs text-muted-foreground">
                 Combining both retirement engines pulls the household crossover forward — the same dollars compound
                 against a single shared retirement date instead of two separate ones.
               </p>
@@ -477,17 +478,17 @@ export default function CompoundingCrossover() {
                   <div className="text-sm font-semibold" style={{ color: s.color }}>
                     {s.returnPct}% return
                   </div>
-                  <div className="mt-1 text-3xl font-bold" style={{ color: NAVY }}>
+                  <div className="mt-1 text-3xl font-bold" style={{ color: INK }}>
                     {yrs.toFixed(1)} yrs
                   </div>
-                  <div className="text-[11px] text-slate-500">72 ÷ {s.returnPct} = years to double</div>
-                  <div className="mt-3 space-y-1 text-xs text-slate-600">
+                  <div className="text-[11px] text-muted-foreground">72 ÷ {s.returnPct} = years to double</div>
+                  <div className="mt-3 space-y-1 text-xs text-foreground/80">
                     {[1, 2, 3].map((d) => (
                       <div key={d} className="flex justify-between">
                         <span>
                           Doubling {d} ({new Date().getFullYear() + Math.round(yrs * d)})
                         </span>
-                        <span className="font-bold" style={{ color: NAVY }}>
+                        <span className="font-bold" style={{ color: INK }}>
                           {moneyShort(eff.balance * 2 ** d)}
                         </span>
                       </div>
@@ -499,13 +500,13 @@ export default function CompoundingCrossover() {
           </div>
           {state.includeKateri && (
             <Panel className="mt-4">
-              <h3 className="mb-3 text-sm font-bold" style={{ color: NAVY }}>
+              <h3 className="mb-3 text-sm font-bold" style={{ color: INK }}>
                 Rule of 72 by owner @ {state.returnPct}% (contributions excluded — balance growth only)
               </h3>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="text-left text-[11px] uppercase tracking-wide text-slate-500">
+                    <tr className="text-left text-[11px] uppercase tracking-wide text-muted-foreground">
                       <th className="py-2">Owner</th>
                       <th className="py-2">Today</th>
                       <th className="py-2">1st double ({doubleYears.toFixed(1)} yrs)</th>
@@ -515,8 +516,8 @@ export default function CompoundingCrossover() {
                   </thead>
                   <tbody>
                     {household.map((h) => (
-                      <tr key={h.key} className="border-t" style={{ borderColor: '#E2E8F0' }}>
-                        <td className="py-2 font-bold" style={{ color: h.key === 'combined' ? GOLD : NAVY }}>
+                      <tr key={h.key} className="border-t border-border" >
+                        <td className="py-2 font-bold" style={{ color: h.key === 'combined' ? GOLD : INK }}>
                           {h.label}
                         </td>
                         <td className="py-2">{money(h.balance)}</td>
@@ -530,7 +531,7 @@ export default function CompoundingCrossover() {
                   </tbody>
                 </table>
               </div>
-              <p className="mt-3 text-xs text-slate-500">
+              <p className="mt-3 text-xs text-muted-foreground">
                 At {state.returnPct}%, household retirement assets double roughly every {doubleYears.toFixed(1)} years
                 on balance alone. Every contribution you add starts its own doubling clock.
               </p>
@@ -550,19 +551,19 @@ export default function CompoundingCrossover() {
                   <div className="text-xs font-bold uppercase tracking-wide" style={{ color: GOLD }}>
                     Phase One
                   </div>
-                  <h3 className="text-xl font-bold" style={{ color: NAVY }}>
+                  <h3 className="text-xl font-bold" style={{ color: INK }}>
                     Foundation Building
                   </h3>
                   <div className="mt-2 text-3xl font-bold" style={{ color: EMERALD }}>
                     {money(eff.balance)}
                   </div>
-                  <p className="mt-2 text-sm font-semibold text-slate-600">
+                  <p className="mt-2 text-sm font-semibold text-foreground/80">
                     "You are building the engine."
                   </p>
                 </div>
-                <ul className="grid grid-cols-2 gap-2 text-sm text-slate-600">
+                <ul className="grid grid-cols-2 gap-2 text-sm text-foreground/80">
                   {['Salary', 'Employer contributions (9%)', 'Retirement contributions', 'Increasing savings rate', 'Cash-flow redirects', 'Debt redirection strategy'].map((x) => (
-                    <li key={x} className="rounded-lg px-3 py-2" style={{ background: '#F8FAFC' }}>
+                    <li key={x} className="rounded-lg px-3 py-2" style={{ background: 'hsl(var(--muted))' }}>
                       ✓ {x}
                     </li>
                   ))}
@@ -577,10 +578,10 @@ export default function CompoundingCrossover() {
                   <div className="text-xs font-bold uppercase tracking-wide" style={{ color: GOLD }}>
                     Phase Two
                   </div>
-                  <h3 className="text-xl font-bold" style={{ color: NAVY }}>
+                  <h3 className="text-xl font-bold" style={{ color: INK }}>
                     Momentum — $250,000 to $300,000
                   </h3>
-                  <p className="mt-2 text-sm text-slate-600">
+                  <p className="mt-2 text-sm text-foreground/80">
                     Compounding becomes noticeable. Investment returns make a visible contribution to
                     annual portfolio growth, though contributions remain the dominant driver.
                   </p>
@@ -594,10 +595,10 @@ export default function CompoundingCrossover() {
               <div className="text-xs font-bold uppercase tracking-wide" style={{ color: GOLD }}>
                 Phase Three
               </div>
-              <h3 className="text-xl font-bold" style={{ color: NAVY }}>
+              <h3 className="text-xl font-bold" style={{ color: INK }}>
                 The Compounding Crossover™
               </h3>
-              <p className="mb-4 text-sm font-semibold text-slate-600">
+              <p className="mb-4 text-sm font-semibold text-foreground/80">
                 Your Portfolio Begins Working as Hard as You Do
               </p>
               <div className="grid gap-6 md:grid-cols-2">
@@ -605,7 +606,7 @@ export default function CompoundingCrossover() {
                 <div>
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="text-left text-xs uppercase tracking-wide text-slate-500">
+                      <tr className="text-left text-xs uppercase tracking-wide text-muted-foreground">
                         <th className="pb-1">Scenario</th>
                         <th className="pb-1 text-right">Return</th>
                         <th className="pb-1 text-right">Crossover Portfolio</th>
@@ -613,13 +614,13 @@ export default function CompoundingCrossover() {
                     </thead>
                     <tbody>
                       {SCENARIOS.map((s) => (
-                        <tr key={s.key} className="border-t" style={{ borderColor: '#F1F5F9' }}>
+                        <tr key={s.key} className="border-t border-border" >
                           <td className="py-2 font-semibold" style={{ color: s.color }}>
                             {s.label}
                             {s.official ? ' (Official)' : ''}
                           </td>
                           <td className="py-2 text-right">{s.returnPct}%</td>
-                          <td className="py-2 text-right font-bold" style={{ color: NAVY }}>
+                          <td className="py-2 text-right font-bold" style={{ color: INK }}>
                             {moneyShort(crossoverPortfolioFor(27_000, s.returnPct))} –{' '}
                             {moneyShort(crossoverPortfolioFor(30_000, s.returnPct))}
                           </td>
@@ -627,8 +628,8 @@ export default function CompoundingCrossover() {
                       ))}
                     </tbody>
                   </table>
-                  <div className="mt-4 rounded-lg p-3 text-sm" style={{ background: '#F8FAFC' }}>
-                    <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  <div className="mt-4 rounded-lg p-3 text-sm" style={{ background: 'hsl(var(--muted))' }}>
+                    <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                       Live calculation
                     </div>
                     <div className="mt-1">
@@ -637,7 +638,7 @@ export default function CompoundingCrossover() {
                         {money(active.crossoverPortfolio)}
                       </span>
                     </div>
-                    <p className="mt-1 text-[11px] text-slate-500">
+                    <p className="mt-1 text-[11px] text-muted-foreground">
                       Compounding Crossover = Annual Retirement Contributions ÷ Expected Annual Return
                     </p>
                   </div>
@@ -652,10 +653,10 @@ export default function CompoundingCrossover() {
                   <div className="text-xs font-bold uppercase tracking-wide" style={{ color: GOLD }}>
                     Phase Four
                   </div>
-                  <h3 className="text-xl font-bold" style={{ color: NAVY }}>
+                  <h3 className="text-xl font-bold" style={{ color: INK }}>
                     Compounding Acceleration — $500,000
                   </h3>
-                  <p className="mb-3 text-sm font-semibold text-slate-600">
+                  <p className="mb-3 text-sm font-semibold text-foreground/80">
                     The Portfolio Becomes the Primary Wealth Engine
                   </p>
                   <GrowthTable balances={[500_000]} />
@@ -675,10 +676,10 @@ export default function CompoundingCrossover() {
                   <div className="text-xs font-bold uppercase tracking-wide" style={{ color: GOLD }}>
                     Phase Five
                   </div>
-                  <h3 className="text-xl font-bold" style={{ color: NAVY }}>
+                  <h3 className="text-xl font-bold" style={{ color: INK }}>
                     Financial Flywheel — $1,000,000
                   </h3>
-                  <p className="mb-3 text-sm font-semibold text-slate-600">
+                  <p className="mb-3 text-sm font-semibold text-foreground/80">
                     Your Money Starts Working Harder Than You Do
                   </p>
                   <GrowthTable balances={[1_000_000]} />
@@ -703,10 +704,10 @@ export default function CompoundingCrossover() {
                   <div className="text-sm font-semibold" style={{ color: scenario.color }}>
                     {scenario.label} · {scenario.returnPct}%
                   </div>
-                  <div className="mt-1 text-3xl font-bold" style={{ color: NAVY }}>
+                  <div className="mt-1 text-3xl font-bold" style={{ color: INK }}>
                     {moneyShort(final)}
                   </div>
-                  <div className="text-xs text-slate-500">Projected portfolio in 30 years</div>
+                  <div className="text-xs text-muted-foreground">Projected portfolio in 30 years</div>
                   <div className="mt-2 text-sm font-semibold" style={{ color: diff === 0 ? EMERALD : diff > 0 ? GOLD : '#2563EB' }}>
                     {diff === 0
                       ? 'Official planning baseline'
@@ -776,16 +777,16 @@ export default function CompoundingCrossover() {
                 <div className="text-xs font-bold uppercase tracking-wide" style={{ color: s.color }}>
                   {s.stage}
                 </div>
-                <h3 className="mt-1 text-base font-bold" style={{ color: NAVY }}>
+                <h3 className="mt-1 text-base font-bold" style={{ color: INK }}>
                   {s.title}
                 </h3>
-                <ul className="mt-2 space-y-1 text-sm text-slate-600">
+                <ul className="mt-2 space-y-1 text-sm text-foreground/80">
                   {s.items.map((i) => (
                     <li key={i}>• {i}</li>
                   ))}
                 </ul>
                 <div className="mt-4">
-                  <div className="mb-1 flex justify-between text-[10px] font-semibold uppercase text-slate-500">
+                  <div className="mb-1 flex justify-between text-[10px] font-semibold uppercase text-muted-foreground">
                     <span>Growth-driven share</span>
                     <span>{s.share}%</span>
                   </div>
@@ -793,7 +794,7 @@ export default function CompoundingCrossover() {
                     <div style={{ width: `${100 - s.share}%`, background: NAVY }} />
                     <div style={{ width: `${s.share}%`, background: s.color }} />
                   </div>
-                  <div className="mt-1 flex justify-between text-[10px] text-slate-500">
+                  <div className="mt-1 flex justify-between text-[10px] text-muted-foreground">
                     <span>Contributions</span>
                     <span>Investment growth</span>
                   </div>
@@ -821,10 +822,10 @@ export default function CompoundingCrossover() {
                     <div className="text-[10px] font-bold uppercase tracking-wide" style={{ color: GOLD }}>
                       {m.label}
                     </div>
-                    <div className="text-lg font-bold" style={{ color: NAVY }}>
+                    <div className="text-lg font-bold" style={{ color: INK }}>
                       {moneyShort(m.amount)}
                     </div>
-                    <p className="mt-1 text-xs text-slate-500">{m.note}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{m.note}</p>
                   </div>
                 );
               })}
@@ -850,7 +851,7 @@ export default function CompoundingCrossover() {
           </div>
         </Section>
 
-        <p className="pb-10 text-center text-[11px] text-slate-400">
+        <p className="pb-10 text-center text-[11px] text-muted-foreground">
           <TrendingUp className="mr-1 inline h-3 w-3" />
           8% is the official planning assumption of the Montgomery Family Wealth Operating System. The 6%
           and 10% scenarios are comparison models. Actual investment returns will vary over time.
