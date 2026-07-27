@@ -110,7 +110,10 @@ export default function RetirementDashboard() {
     try { localStorage.setItem(LS_KEY, JSON.stringify(opt)); } catch {}
   }, [opt]);
   const recs = optimizeNextDollar(opt);
-  const readiness = scoreRetirementReadiness(opt.totalRetirementBalance, opt.age, opt.grossIncome);
+  const soloReadiness = scoreRetirementReadiness(opt.totalRetirementBalance, opt.age, opt.grossIncome);
+  const householdRollup = useHouseholdRetirementRollup(opt);
+  const readiness = householdRollup.readiness;
+
 
   const DEFAULT_EMP: EmployerBenefits = {
     salary: 68874, match401kPct: 0, matchLimitPct: 0,
