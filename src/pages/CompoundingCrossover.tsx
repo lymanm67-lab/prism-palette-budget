@@ -261,41 +261,129 @@ export default function CompoundingCrossover() {
 
   return (
     <div className="min-h-screen bg-background text-foreground print-root">
-      <style>{`@media print {
-        @page { margin: 0.5in; }
-        html, body, .print-root, .print-root * {
+      <style>{`
+      .print-only { display: none; }
+      @media print {
+        @page {
+          margin: 0.6in 0.5in 0.75in 0.5in;
+          @bottom-center { content: "Page " counter(page) " of " counter(pages); font-size: 9pt; color: #64748b; }
+        }
+        /* Force a light, colorful palette (keeps brand colors, drops dark surfaces) */
+        .print-root {
+          --background: 0 0% 100%;
+          --foreground: 222 47% 11%;
+          --card: 0 0% 100%;
+          --card-foreground: 222 47% 11%;
+          --muted: 210 40% 96%;
+          --muted-foreground: 215 16% 40%;
+          --border: 214 32% 84%;
+          --popover: 0 0% 100%;
+          --popover-foreground: 222 47% 11%;
+        }
+        html, body, .print-root {
           background: #ffffff !important;
-          background-color: #ffffff !important;
-          color: #000000 !important;
+          color: #0f172a !important;
+        }
+        * {
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
         }
         .no-print { display: none !important; }
+        .print-only { display: block !important; }
+        .print-break { break-before: page; page-break-before: always; }
         section, .print-section { break-inside: avoid; page-break-inside: avoid; }
-        .recharts-wrapper { page-break-inside: avoid; }
-        /* Force white cards with dark borders */
-        .rounded-2xl, .rounded-lg, .rounded-md, .rounded-full, .rounded {
-          background: #ffffff !important;
+        .recharts-wrapper, table { page-break-inside: avoid; }
+        /* Cards: white surface, keep colored borders/text */
+        .bg-card, .bg-background, .bg-muted\\/30, .bg-muted\\/50 {
           background-color: #ffffff !important;
-          color: #000000 !important;
-          border-color: #000000 !important;
-          box-shadow: none !important;
         }
-        /* Remove glassmorphism/backdrop effects */
-        .backdrop-blur, [class*="backdrop-blur"] { backdrop-filter: none !important; }
-        /* Inputs should show values clearly */
+        [class*="backdrop-blur"] { backdrop-filter: none !important; }
+        .shadow-sm, .shadow, .shadow-md, .shadow-lg { box-shadow: none !important; }
+        .rounded-2xl, .rounded-xl { border: 1px solid #cbd5e1 !important; }
         input, select, textarea {
           background: #ffffff !important;
-          color: #000000 !important;
-          border: 1px solid #000000 !important;
+          color: #0f172a !important;
+          border: 1px solid #94a3b8 !important;
         }
-        /* Links should be black and underlined */
-        a { color: #000000 !important; text-decoration: underline !important; }
-        /* Ensure charts are visible */
-        svg text { fill: #000000 !important; }
-        /* Hide sliders but keep values */
-        [role="slider"] { border: 1px solid #000000 !important; }
+        a { color: #1d4ed8 !important; text-decoration: underline !important; }
+        /* Repeating footer with page number (Chrome/Safari fallback) */
+        .print-footer {
+          display: block !important;
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          font-size: 9pt;
+          color: #64748b;
+          border-top: 1px solid #cbd5e1;
+          padding-top: 4px;
+        }
+        .print-footer .pg::after { content: counter(page); }
       }`}</style>
+
+      {/* Print-only cover + executive narrative */}
+      <div className="print-only">
+        <div className="rounded-2xl p-8 text-white" style={{ background: NAVY }}>
+          <div className="text-xs font-semibold uppercase tracking-[0.25em]" style={{ color: GOLD }}>
+            Montgomery Family Wealth Operating System
+          </div>
+          <h1 className="mt-2 text-3xl font-bold">The Compounding Crossover™ Report</h1>
+          <p className="mt-1 text-sm text-white/80">
+            {eff.label} · Prepared {new Date().toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}
+          </p>
+        </div>
+
+        <div className="mt-5 grid grid-cols-3 gap-3">
+          <div className="rounded-xl border p-4" style={{ borderColor: GOLD }}>
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Crossover year</div>
+            <div className="text-2xl font-bold" style={{ color: GOLD }}>{active.crossoverYear ?? '—'}</div>
+          </div>
+          <div className="rounded-xl border p-4" style={{ borderColor: EMERALD }}>
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Portfolio at crossover</div>
+            <div className="text-2xl font-bold" style={{ color: EMERALD }}>{moneyShort(active.crossoverPortfolio)}</div>
+          </div>
+          <div className="rounded-xl border p-4" style={{ borderColor: NAVY }}>
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Balance today</div>
+            <div className="text-2xl font-bold" style={{ color: NAVY }}>{moneyShort(eff.balance)}</div>
+          </div>
+        </div>
+
+        <div className="mt-5 rounded-xl border p-5 text-sm leading-relaxed">
+          <div className="mb-2 text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: GOLD }}>
+            Executive Narrative
+          </div>
+          <p>
+            This report models the point at which <strong>{eff.label}</strong>&apos;s invested capital begins
+            producing more annual growth than the household contributes from earned income — the
+            Compounding Crossover™. Starting from a balance of{' '}
+            <strong>{moneyShort(eff.balance)}</strong> and assuming a long-term return of{' '}
+            <strong>{state.returnPct}%</strong>, the crossover is projected to occur in{' '}
+            <strong>{active.crossoverYear ?? 'a year beyond the modeled horizon'}</strong>
+            {active.crossoverPortfolio ? <> with a portfolio of <strong>{moneyShort(active.crossoverPortfolio)}</strong></> : null}.
+          </p>
+          <p className="mt-3">
+            Before the crossover, savings discipline is the primary driver of wealth. After it, market
+            compounding takes the lead and the portfolio becomes self-propelling. The pages that follow
+            detail the growth assumptions, the Rule of 72 doubling schedule, the five phases of the
+            wealth journey, scenario comparisons, and the milestones that mark progress toward legacy
+            independence.
+          </p>
+          <p className="mt-3 text-xs text-muted-foreground">
+            Projections are illustrative, assume steady returns and contributions, and are not a
+            guarantee of future performance.
+          </p>
+        </div>
+        <div className="print-break" />
+      </div>
+
+      {/* Repeating print footer with page numbers */}
+      <div className="print-footer print-only" style={{ display: 'none' }}>
+        <div className="flex items-center justify-between px-2">
+          <span>The Compounding Crossover™ · {eff.label}</span>
+          <span>Page <span className="pg" /></span>
+        </div>
+      </div>
+
       <div className="mx-auto max-w-6xl px-4 py-8 print:py-0">
         {/* Header */}
         <header className="mb-4 rounded-2xl p-8 text-white" style={{ background: NAVY }}>
