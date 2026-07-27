@@ -229,7 +229,20 @@ export function useBlueprintPrefill() {
 
       return {
         foundation,
-        wealthEngine: DEFAULT_WEALTH_ENGINE.map((r) => withSplit({ ...r, amount: monthlyAvg(wealth.get(r.key) || 0) })),
+        wealthEngine: DEFAULT_WEALTH_ENGINE.map((r) => {
+          const tracked = monthlyAvg(wealth.get(r.key) || 0);
+          if (r.key !== 'postTaxRetirement') return withSplit({ ...r, amount: tracked });
+          // Payroll-deducted retirement never appears in bank transactions — use the
+          // real paystub figures (and Kateri's OPERS) as the floor.
+          const lyman = Math.max(tracked, LYMAN_RETIREMENT_MONTHLY);
+          const kateri = KATERI_RETIREMENT_MONTHLY;
+          return {
+            ...r,
+            lyman: Math.round(lyman * 100) / 100,
+            kateri: Math.round(kateri * 100) / 100,
+            amount: Math.round((lyman + kateri) * 100) / 100,
+          };
+        }),
         futureFund: DEFAULT_FUTURE_FUND.map((r) => withSplit({ ...r, amount: monthlyAvg(future.get(r.key) || 0) })),
         income: {
           grossMonthly: Math.round((HOUSEHOLD_GROSS_ANNUAL / 12) * 100) / 100,
