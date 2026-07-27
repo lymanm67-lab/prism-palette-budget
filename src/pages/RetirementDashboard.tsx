@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, lazy, Suspense } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
-import { Sparkles, Target, Building2, HeartPulse, Scale, FileText, Upload, Loader2, Save, CheckCircle2 } from "lucide-react";
+import { Sparkles, Target, Building2, HeartPulse, Scale, FileText, Upload, Loader2, Save, CheckCircle2, TrendingUp } from "lucide-react";
+
+const CompoundingCrossover = lazy(() => import("@/pages/CompoundingCrossover"));
 import { optimizeNextDollar, scoreRetirementReadiness, type OptimizerInputs } from "@/lib/retirement/optimizerEngine";
 import { analyzeEmployerBenefits, type EmployerBenefits } from "@/lib/retirement/employerBenefits";
 import { projectHsa, type HsaInputs } from "@/lib/retirement/hsaIntelligence";
@@ -460,13 +462,21 @@ export default function RetirementDashboard() {
       </Card>
 
       <Tabs defaultValue="optimizer">
-        <TabsList className="grid grid-cols-2 md:grid-cols-5">
+        <TabsList className="grid grid-cols-2 md:grid-cols-6">
           <TabsTrigger value="optimizer"><Target className="h-3.5 w-3.5 mr-1.5" /> Next Dollar</TabsTrigger>
           <TabsTrigger value="employer"><Building2 className="h-3.5 w-3.5 mr-1.5" /> Employer</TabsTrigger>
           <TabsTrigger value="hsa"><HeartPulse className="h-3.5 w-3.5 mr-1.5" /> HSA</TabsTrigger>
           <TabsTrigger value="roth"><Scale className="h-3.5 w-3.5 mr-1.5" /> Roth vs Trad</TabsTrigger>
+          <TabsTrigger value="crossover"><TrendingUp className="h-3.5 w-3.5 mr-1.5" /> Crossover</TabsTrigger>
           <TabsTrigger value="cfo"><FileText className="h-3.5 w-3.5 mr-1.5" /> CFO Review</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="crossover" className="mt-4">
+          <Suspense fallback={<div className="p-8 text-center text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin inline mr-2" />Loading household crossover model…</div>}>
+            <CompoundingCrossover />
+          </Suspense>
+        </TabsContent>
+
 
         <TabsContent value="optimizer" className="mt-4 space-y-4">
           <Card>
