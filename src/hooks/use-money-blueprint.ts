@@ -205,7 +205,10 @@ export function useBlueprintPrefill() {
         source: {
           budgetedKeys: Array.from(budgeted.keys()),
           transactionCount: rows.length,
+          lymanNet,
+          kateriNet,
         },
+
       };
     },
   });
