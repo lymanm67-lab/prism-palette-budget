@@ -244,6 +244,15 @@ export function useBlueprintPrefill() {
         foundation,
         wealthEngine: DEFAULT_WEALTH_ENGINE.map((r) => {
           const tracked = monthlyAvg(wealth.get(r.key) || 0);
+          if (r.key === 'employerRetirement') {
+            // Employer money (no match — straight non-elective contributions).
+            return {
+              ...r,
+              lyman: LYMAN_EMPLOYER_MONTHLY,
+              kateri: KATERI_EMPLOYER_MONTHLY,
+              amount: Math.round((LYMAN_EMPLOYER_MONTHLY + KATERI_EMPLOYER_MONTHLY) * 100) / 100,
+            };
+          }
           if (r.key !== 'postTaxRetirement') return withSplit({ ...r, amount: tracked });
           // Payroll-deducted retirement never appears in bank transactions — use the
           // real paystub figures (and Kateri's OPERS) as the floor.
