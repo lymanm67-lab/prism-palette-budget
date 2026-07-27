@@ -276,6 +276,64 @@ export default function CompoundingCrossover() {
                   style={{ borderColor: '#CBD5E1' }}
                 />
               </label>
+
+              <div className="mb-3 rounded-lg border p-3" style={{ borderColor: '#CBD5E1', background: '#F8FAFC' }}>
+                <label className="flex items-center gap-2 text-xs font-bold" style={{ color: NAVY }}>
+                  <input
+                    type="checkbox"
+                    checked={state.includeKateri}
+                    onChange={(e) =>
+                      set({ includeKateri: e.target.checked, view: e.target.checked ? state.view : 'lyman' })
+                    }
+                  />
+                  Include Kateri (OPERS + Ohio DC)
+                </label>
+                {state.includeKateri && (
+                  <>
+                    <label className="mt-3 block text-xs font-semibold text-slate-500">
+                      Kateri retirement balance
+                      <input
+                        type="number"
+                        value={state.kateriBalance}
+                        onChange={(e) => set({ kateriBalance: Number(e.target.value) || 0 })}
+                        className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-medium text-slate-900"
+                        style={{ borderColor: '#CBD5E1' }}
+                      />
+                    </label>
+                    <label className="mt-3 block text-xs font-semibold text-slate-500">
+                      Kateri annual contributions
+                      <input
+                        type="number"
+                        value={state.kateriContributions}
+                        onChange={(e) => set({ kateriContributions: Number(e.target.value) || 0 })}
+                        className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-medium text-slate-900"
+                        style={{ borderColor: '#CBD5E1' }}
+                      />
+                    </label>
+                    <div className="mt-3 text-[11px] font-semibold text-slate-500">View</div>
+                    <div className="mt-1 flex gap-2">
+                      {VIEWS.map((v) => (
+                        <button
+                          key={v.key}
+                          onClick={() => set({ view: v.key })}
+                          className="flex-1 rounded-md border px-2 py-2 text-[11px] font-bold transition"
+                          style={{
+                            borderColor: state.view === v.key ? NAVY : '#CBD5E1',
+                            background: state.view === v.key ? NAVY : 'white',
+                            color: state.view === v.key ? 'white' : NAVY,
+                          }}
+                        >
+                          {v.label}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="mt-2 text-[11px] text-slate-500">
+                      Showing: <span className="font-bold">{eff.label}</span>
+                    </div>
+                  </>
+                )}
+              </div>
+
               <div className="text-xs font-semibold text-slate-500">Planning scenario</div>
               <div className="mt-1 flex gap-2">
                 {SCENARIOS.map((s) => (
