@@ -460,13 +460,21 @@ export default function RetirementDashboard() {
       </Card>
 
       <Tabs defaultValue="optimizer">
-        <TabsList className="grid grid-cols-2 md:grid-cols-5">
+        <TabsList className="grid grid-cols-2 md:grid-cols-6">
           <TabsTrigger value="optimizer"><Target className="h-3.5 w-3.5 mr-1.5" /> Next Dollar</TabsTrigger>
           <TabsTrigger value="employer"><Building2 className="h-3.5 w-3.5 mr-1.5" /> Employer</TabsTrigger>
           <TabsTrigger value="hsa"><HeartPulse className="h-3.5 w-3.5 mr-1.5" /> HSA</TabsTrigger>
           <TabsTrigger value="roth"><Scale className="h-3.5 w-3.5 mr-1.5" /> Roth vs Trad</TabsTrigger>
+          <TabsTrigger value="crossover"><TrendingUp className="h-3.5 w-3.5 mr-1.5" /> Crossover</TabsTrigger>
           <TabsTrigger value="cfo"><FileText className="h-3.5 w-3.5 mr-1.5" /> CFO Review</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="crossover" className="mt-4">
+          <Suspense fallback={<div className="p-8 text-center text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin inline mr-2" />Loading household crossover model…</div>}>
+            <CompoundingCrossover />
+          </Suspense>
+        </TabsContent>
+
 
         <TabsContent value="optimizer" className="mt-4 space-y-4">
           <Card>
