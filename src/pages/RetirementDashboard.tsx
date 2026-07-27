@@ -95,6 +95,61 @@ const DEFAULT_OPT: OptimizerInputs = {
 
 const LS_KEY = "retirement-optimizer-inputs-v5";
 const ROTH_KEY = LS_KEY + "-roth-v6";
+const HOUSEHOLD_PANEL_KEY = "household-retirement-panel-v1";
+
+interface HouseholdRollup {
+  readiness: number;
+  balance: number;
+  income: number;
+  target: number;
+  gap: number;
+  multiplier: number;
+  parts: { label: string; value: number }[];
+}
+
+/** Rolls Lyman + Kateri retirement balances and HSA into one household readiness score. */
+function useHouseholdRetirementRollup(opt: OptimizerInputs): HouseholdRollup {
+  const [panel, setPanel] = useState<any>(null);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(HOUSEHOLD_PANEL_KEY);
+      if (raw) setPanel(JSON.parse(raw));
+    } catch { /* ignore */ }
+  }, []);
+
+  return useMemo(() => {
+    const lymanBal = Number(panel?.lyman?.currentBalance ?? opt.totalRetirementBalance) || 0;
+    const kateriBal = Number(panel?.kateri?.currentBalance ?? 0) || 0;
+    const hsaBal = Number(opt.hsaBalance ?? 0) || 0;
+
+    const lymanIncome = Number(panel?.lyman?.monthlyGross ?? 0) * 12 || opt.grossIncome;
+    const kateriIncome = Number(panel?.kateri?.monthlyGross ?? 0) * 12 || 0;
+
+    const balance = lymanBal + kateriBal + hsaBal;
+    const income = lymanIncome + kateriIncome;
+    const readiness = scoreRetirementReadiness(balance, opt.age, income);
+
+    const targets: Record<number, number> = { 30: 1, 35: 2, 40: 3, 45: 4, 50: 6, 55: 7, 60: 8, 65: 10 };
+    const bracket = Object.keys(targets).map(Number).reverse().find((k) => opt.age >= k) ?? 30;
+    const multiplier = targets[bracket];
+    const target = multiplier * income;
+
+    return {
+      readiness,
+      balance,
+      income,
+      target,
+      gap: Math.max(0, target - balance),
+      multiplier,
+      parts: [
+        { label: "Lyman retirement", value: lymanBal },
+        { label: "Kateri (OPERS + Ohio DC)", value: kateriBal },
+        { label: "HSA", value: hsaBal },
+      ],
+    };
+  }, [panel, opt.totalRetirementBalance, opt.hsaBalance, opt.grossIncome, opt.age]);
+}
+
 
 
 export default function RetirementDashboard() {
