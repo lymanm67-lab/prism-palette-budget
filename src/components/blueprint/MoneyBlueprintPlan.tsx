@@ -324,7 +324,11 @@ export function MoneyBlueprintPlan() {
           const cols = view === 'combined'
             ? 'grid grid-cols-[minmax(0,1fr)_repeat(3,minmax(64px,88px))_52px_2rem] items-center gap-1.5'
             : 'grid grid-cols-[minmax(0,1fr)_minmax(90px,120px)_52px_2rem] items-center gap-1.5';
-          const base = result.baseIncome || state.income.netMonthly || 0;
+          const base = view === 'lyman'
+            ? (state.income.lymanNet ?? state.income.netMonthly)
+            : view === 'kateri'
+              ? (state.income.kateriNet ?? 0)
+              : state.income.netMonthly;
           const pctOf = (n: number) => (base > 0 ? `${Math.round((n / base) * 100)}%` : '—');
           return (
             <Card key={bucket} className="overflow-hidden border-border/70">
