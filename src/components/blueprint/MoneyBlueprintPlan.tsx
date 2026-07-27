@@ -78,16 +78,21 @@ export function MoneyBlueprintPlan() {
     }
   }, [saved, prefill, wealth, hydrated]);
 
-  const result = useMemo(() => computeBlueprint(state), [state]);
+  const result = useMemo(() => computeBlueprint(state, view), [state, view]);
 
   const setRow = (bucket: BucketName, idx: number, patch: Partial<BlueprintRow>) =>
     setState((s) => ({
       ...s,
       buckets: {
         ...s.buckets,
-        [bucket]: s.buckets[bucket].map((r, i) => (i === idx ? { ...r, ...patch } : r)),
+        [bucket]: s.buckets[bucket].map((r, i) => (i === idx ? normalizeRow({ ...normalizeRow(r), ...patch }) : r)),
       },
     }));
+
+  /** Edits one spouse's slice; the combined amount re-totals automatically. */
+  const setOwner = (bucket: BucketName, idx: number, owner: 'lyman' | 'kateri', n: number) =>
+    setRow(bucket, idx, { [owner]: n } as Partial<BlueprintRow>);
+
 
   const addRow = (bucket: BucketName) =>
     setState((s) => ({
