@@ -49,6 +49,23 @@ export function HouseholdRollupLine({ plan, individualAtHorizon, horizonAge, ret
     };
   }, [spouse, plan.current_age, horizonAge, returnPct, individualAtHorizon]);
 
+  const milestones = useMemo(() => {
+    const ages = [75, 80, 85];
+    const currentAge = plan.current_age ?? 59;
+    return ages.map((age) => {
+      const years = Math.max(0, age - currentAge);
+      const lyman = individualByAge?.[age] ?? grow(
+        plan.current_balance,
+        (plan.monthly_employee_contribution ?? 0) + (plan.monthly_employer_contribution ?? 0),
+        returnPct,
+        years,
+      );
+      const kateri = grow(rollup.spouseBalance, rollup.spouseMonthly, rollup.spouseRate, years);
+      return { age, lyman, kateri, combined: lyman + kateri };
+    });
+  }, [individualByAge, plan, returnPct, rollup]);
+
+
   const lymanNow = plan.current_balance;
   const combinedNow = lymanNow + rollup.spouseBalance;
   const hitsGoal = rollup.combined >= GOAL;
