@@ -309,8 +309,24 @@ export function MoneyBlueprintPlan() {
                 </p>
               </CardHeader>
               <CardContent className="space-y-2">
-                {state.buckets[bucket].map((row, idx) => (
-                  <div key={row.key} className="grid grid-cols-[1fr_120px_auto] items-center gap-2">
+                {view === 'combined' && (
+                  <div className="grid grid-cols-[1fr_92px_92px_92px_auto] items-center gap-2 text-[10px] uppercase text-muted-foreground">
+                    <span>Category</span>
+                    <span className="text-right">Lyman</span>
+                    <span className="text-right">Kateri</span>
+                    <span className="text-right">Combined</span>
+                    <span className="w-8" />
+                  </div>
+                )}
+                {state.buckets[bucket].map((raw, idx) => {
+                  const row = normalizeRow(raw);
+                  return (
+                  <div
+                    key={row.key}
+                    className={view === 'combined'
+                      ? 'grid grid-cols-[1fr_92px_92px_92px_auto] items-center gap-2'
+                      : 'grid grid-cols-[1fr_120px_auto] items-center gap-2'}
+                  >
                     {row.custom ? (
                       <Input
                         className="h-9 text-xs"
@@ -320,14 +336,27 @@ export function MoneyBlueprintPlan() {
                     ) : (
                       <span className="text-xs">{row.label}</span>
                     )}
-                    <MoneyInput className="h-9 text-right tabular-nums" value={row.amount} onChange={(n) => setRow(bucket, idx, { amount: n })} />
+                    {view === 'combined' ? (
+                      <>
+                        <MoneyInput className="h-9 text-right tabular-nums text-xs" value={row.lyman!} onChange={(n) => setOwner(bucket, idx, 'lyman', n)} />
+                        <MoneyInput className="h-9 text-right tabular-nums text-xs" value={row.kateri!} onChange={(n) => setOwner(bucket, idx, 'kateri', n)} />
+                        <span className="text-right text-xs font-semibold tabular-nums">{money2(row.amount)}</span>
+                      </>
+                    ) : (
+                      <MoneyInput
+                        className="h-9 text-right tabular-nums"
+                        value={view === 'lyman' ? row.lyman! : row.kateri!}
+                        onChange={(n) => setOwner(bucket, idx, view === 'lyman' ? 'lyman' : 'kateri', n)}
+                      />
+                    )}
                     {row.custom ? (
                       <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => removeRow(bucket, idx)}>
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     ) : <span className="w-8" />}
                   </div>
-                ))}
+                  );
+                })}
                 {bucket === 'foundation' && (
                   <div className="flex items-center justify-between rounded-md bg-muted/50 px-3 py-2">
                     <span className="text-xs">Buffer — auto {Math.round(BUFFER_RATE * 100)}% for what you forgot</span>
