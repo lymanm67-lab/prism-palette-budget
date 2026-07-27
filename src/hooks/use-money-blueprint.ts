@@ -117,6 +117,9 @@ const ROW_MATCHERS: { key: string; test: (label: string) => boolean }[] = [
   { key: 'subscriptions', test: (l) => /personal subscriptions|streaming|membership|gym/.test(l) },
 ];
 
+/** Actual household rent (confirmed by Lyman). */
+const RENT_MONTHLY = 1100;
+
 const WEALTH_MATCHERS: { key: string; test: (l: string) => boolean }[] = [
   { key: 'postTaxRetirement', test: (l) => /roth|ira|retirement|401|457|hsa/.test(l) },
   { key: 'stocks', test: (l) => /invest|brokerage|stock|crypto/.test(l) },
@@ -224,7 +227,9 @@ export function useBlueprintPrefill() {
 
       const foundation = DEFAULT_FOUNDATION.map((r) => withSplit({
         ...r,
-        amount: budgeted.has(r.key) ? Math.round(budgeted.get(r.key)! * 100) / 100 : monthlyAvg(spend.get(r.key) || 0),
+        amount: r.key === 'rent'
+          ? RENT_MONTHLY
+          : budgeted.has(r.key) ? Math.round(budgeted.get(r.key)! * 100) / 100 : monthlyAvg(spend.get(r.key) || 0),
       }));
 
       return {
