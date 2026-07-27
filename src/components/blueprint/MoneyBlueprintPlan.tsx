@@ -150,9 +150,11 @@ export function MoneyBlueprintPlan() {
     .filter((d) => d.value > 0);
 
   const foundationChart = state.buckets.foundation
-    .filter((r) => (Number(r.amount) || 0) > 0)
-    .map((r) => ({ name: r.label.split(' (')[0], value: Number(r.amount) || 0 }))
+    .map((r) => ({ name: r.label.split(' (')[0], value: rowAmount(r, view) }))
+    .filter((r) => r.value > 0)
     .sort((a, b) => b.value - a.value);
+
+  const viewLabel = OWNER_VIEWS.find((v) => v.key === view)!.label;
 
   if (isLoading) return <p className="text-sm text-muted-foreground">Loading your blueprint…</p>;
 
@@ -165,6 +167,19 @@ export function MoneyBlueprintPlan() {
           value={state.name}
           onChange={(e) => setState((s) => ({ ...s, name: e.target.value }))}
         />
+        <div className="inline-flex rounded-lg border border-border/60 p-0.5">
+          {OWNER_VIEWS.map((v) => (
+            <Button
+              key={v.key}
+              size="sm"
+              variant={view === v.key ? 'default' : 'ghost'}
+              className="h-7 px-3 text-xs"
+              onClick={() => setView(v.key)}
+            >
+              {v.label}
+            </Button>
+          ))}
+        </div>
         <Button size="sm" onClick={onSave} disabled={save.isPending}>
           <Save className="h-3.5 w-3.5 mr-1" /> {save.isPending ? 'Saving…' : 'Save plan'}
         </Button>
@@ -172,7 +187,9 @@ export function MoneyBlueprintPlan() {
           <RefreshCw className="h-3.5 w-3.5 mr-1" /> Re-sync from live data
         </Button>
         <Button size="sm" variant="ghost" onClick={() => window.print()}>Print / PDF</Button>
+        <span className="text-xs text-muted-foreground">Viewing: <span className="font-semibold">{viewLabel}</span></span>
       </div>
+
 
       {/* Bucket scoreboard */}
       <div className="grid gap-4 lg:grid-cols-3">
