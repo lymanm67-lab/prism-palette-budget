@@ -20,6 +20,8 @@ export interface SpouseRetirementInputs {
   currentAge: number;
   retirementAge: number;
   monthlyGross: number;
+  /** Contribution-eligible W-2 salary (excludes 1099/consulting income). */
+  employerBaseMonthly?: number;
   employeeMonthly: number;
   employerMonthly: number;
   deferredCompMonthly: number;
@@ -35,8 +37,9 @@ const DEFAULTS: Record<"lyman" | "kateri", SpouseRetirementInputs> = {
     currentAge: 59,
     retirementAge: 75,
     monthlyGross: 6553.34,
+    employerBaseMonthly: 5911.67,
     employeeMonthly: 451.66,
-    employerMonthly: 531.9,
+    employerMonthly: 532.05,
     deferredCompMonthly: 0,
     currentBalance: 176512.76,
     expectedReturnPct: 7,
@@ -57,7 +60,7 @@ const DEFAULTS: Record<"lyman" | "kateri", SpouseRetirementInputs> = {
   },
 };
 
-const LS_KEY = "household-retirement-panel-v2";
+const LS_KEY = "household-retirement-panel-v3";
 
 
 const money = (n: number) =>
@@ -77,12 +80,13 @@ function futureValue(i: SpouseRetirementInputs) {
 
 function totals(i: SpouseRetirementInputs) {
   const monthlyTotal = i.employeeMonthly + i.employerMonthly + i.deferredCompMonthly;
+  const employerBase = i.employerBaseMonthly || i.monthlyGross;
   return {
     monthlyTotal,
     annualTotal: monthlyTotal * 12,
     annualGross: i.monthlyGross * 12,
     savingsRate: i.monthlyGross > 0 ? (monthlyTotal / i.monthlyGross) * 100 : 0,
-    employerPct: i.monthlyGross > 0 ? (i.employerMonthly / i.monthlyGross) * 100 : 0,
+    employerPct: employerBase > 0 ? (i.employerMonthly / employerBase) * 100 : 0,
     projected: futureValue(i),
     yearsToRetire: Math.max(0, i.retirementAge - i.currentAge),
   };
@@ -149,7 +153,11 @@ export default function HouseholdRetirementPanel() {
       annualTotal: monthlyTotal * 12,
       annualGross: gross * 12,
       savingsRate: gross > 0 ? (monthlyTotal / gross) * 100 : 0,
-      employerPct: gross > 0 ? ((state.lyman.employerMonthly + state.kateri.employerMonthly) / gross) * 100 : 0,
+      employerPct: (() => {
+        const base = (state.lyman.employerBaseMonthly || state.lyman.monthlyGross)
+          + (state.kateri.employerBaseMonthly || state.kateri.monthlyGross);
+        return base > 0 ? ((state.lyman.employerMonthly + state.kateri.employerMonthly) / base) * 100 : 0;
+      })(),
       projected: L.projected + K.projected,
       balance: state.lyman.currentBalance + state.kateri.currentBalance,
     };
