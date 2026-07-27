@@ -74,17 +74,34 @@ export function useSaveMoneyBlueprint() {
   });
 }
 
-const GROUP_MAP: { key: string; test: RegExp }[] = [
-  { key: 'rent', test: /rent|mortgage|housing/i },
-  { key: 'utilities', test: /utilit|electric|water|internet|cable/i },
-  { key: 'insurance', test: /insur/i },
-  { key: 'transportation', test: /transport|auto|car|gas|fuel/i },
-  { key: 'debt', test: /debt|loan|credit card/i },
-  { key: 'groceries', test: /grocer|food/i },
-  { key: 'clothes', test: /cloth|apparel/i },
-  { key: 'phone', test: /phone|mobile|cell/i },
-  { key: 'subscriptions', test: /subscri|streaming/i },
+/** Maps a "<group> <category>" label to a blueprint row key. Order matters. */
+const ROW_MATCHERS: { key: string; test: (label: string) => boolean }[] = [
+  { key: 'rent', test: (l) => /housing/.test(l) && /rent|mortgage|hoa|property tax/.test(l) },
+  { key: 'utilities', test: (l) => /utilit|electric|water|gas bill|internet|cable|trash|sewer/.test(l) },
+  { key: 'phone', test: (l) => /phone|mobile|cell/.test(l) },
+  { key: 'insurance', test: (l) => /personal insurance|term life|auto insurance|home insurance|renters|medical plan|dental|vision/.test(l) },
+  { key: 'transportation', test: (l) => /transportation|fuel|gas station|auto|car payment|parking|transit|rideshare|uber|lyft/.test(l) },
+  { key: 'debt', test: (l) => /personal debt repayment|credit card|student loan|loan payment/.test(l) },
+  { key: 'groceries', test: (l) => /grocer/.test(l) },
+  { key: 'clothes', test: (l) => /cloth|apparel|shoes/.test(l) },
+  { key: 'subscriptions', test: (l) => /personal subscriptions|streaming|membership|gym/.test(l) },
 ];
+
+const WEALTH_MATCHERS: { key: string; test: (l: string) => boolean }[] = [
+  { key: 'postTaxRetirement', test: (l) => /roth|ira|retirement|401|457|hsa/.test(l) },
+  { key: 'stocks', test: (l) => /invest|brokerage|stock|crypto/.test(l) },
+];
+
+const FUTURE_MATCHERS: { key: string; test: (l: string) => boolean }[] = [
+  { key: 'vacations', test: (l) => /vacation|travel|hotel|flight/.test(l) },
+  { key: 'gifts', test: (l) => /gift|charit|donation|tithe/.test(l) },
+  { key: 'emergency', test: (l) => /emergency|savings goal|sinking/.test(l) },
+];
+
+/** Business / owner-side activity is excluded — the blueprint is the personal household plan. */
+const BUSINESS_RE = /business|app development|marketing & media|equity|owner draw|payroll & pre tax|assets|focused driven/;
+
+const monthlyAvg = (total: number) => Math.round((total / 3) * 100) / 100;
 
 /** Live figures used to seed / re-sync the blueprint. */
 export function useBlueprintPrefill() {
@@ -96,37 +113,90 @@ export function useBlueprintPrefill() {
     queryFn: async () => {
       const since = new Date();
       since.setDate(since.getDate() - 90);
-      const { data: txns } = await sb
-        .from('transactions')
-        .select('amount, categories(name, category_groups(name))')
-        .eq('household_id', household!.id)
-        .is('deleted_at', null)
-        .gte('date', since.toISOString().slice(0, 10))
-        .lt('amount', 0)
-        .limit(1000);
+      const sinceStr = since.toISOString().slice(0, 10);
 
-      const byKey = new Map<string, number>();
-      for (const t of txns || []) {
-        const label = `${(t as any).categories?.category_groups?.name || ''} ${(t as any).categories?.name || ''}`;
-        const hit = GROUP_MAP.find((g) => g.test.test(label));
+      // 1) 90 days of real activity from Track Money
+      const rows: any[] = [];
+      for (let page = 0; page < 5; page++) {
+        const { data, error } = await sb
+          .from('transactions')
+          .select('amount, is_transfer, categories(name, category_groups(name))')
+          .eq('household_id', household!.id)
+          .is('deleted_at', null)
+          .gte('date', sinceStr)
+          .range(page * 1000, page * 1000 + 999);
+        if (error) throw error;
+        rows.push(...(data || []));
+        if (!data || data.length < 1000) break;
+      }
+
+      const spend = new Map<string, number>();
+      const wealth = new Map<string, number>();
+      const future = new Map<string, number>();
+      let income = 0;
+
+      for (const t of rows) {
+        if (t.is_transfer) continue;
+        const amount = Number(t.amount) || 0;
+        const label = `${t.categories?.category_groups?.name || ''} ${t.categories?.name || ''}`.toLowerCase();
+        if (BUSINESS_RE.test(label)) continue;
+
+        if (amount > 0) {
+          if (/income|salary|paycheck|wife contribution|deposit|reimburs/.test(label)) income += amount;
+          continue;
+        }
+
+        const abs = Math.abs(amount);
+        const w = WEALTH_MATCHERS.find((m) => m.test(label));
+        if (w) { wealth.set(w.key, (wealth.get(w.key) || 0) + abs); continue; }
+        const f = FUTURE_MATCHERS.find((m) => m.test(label));
+        if (f) { future.set(f.key, (future.get(f.key) || 0) + abs); continue; }
+        const hit = ROW_MATCHERS.find((m) => m.test(label));
+        if (hit) spend.set(hit.key, (spend.get(hit.key) || 0) + abs);
+      }
+
+      // 2) Current-month budget targets override the 90-day average where they exist
+      const monthStart = new Date();
+      monthStart.setDate(1);
+      const { data: budgets } = await sb
+        .from('budgets')
+        .select('planned_amount, categories(name, category_groups(name))')
+        .eq('household_id', household!.id)
+        .eq('month', monthStart.toISOString().slice(0, 10));
+
+      const budgeted = new Map<string, number>();
+      for (const b of budgets || []) {
+        const label = `${(b as any).categories?.category_groups?.name || ''} ${(b as any).categories?.name || ''}`.toLowerCase();
+        if (BUSINESS_RE.test(label)) continue;
+        const hit = ROW_MATCHERS.find((m) => m.test(label));
         if (!hit) continue;
-        byKey.set(hit.key, (byKey.get(hit.key) || 0) + Math.abs(Number(t.amount) || 0));
+        budgeted.set(hit.key, (budgeted.get(hit.key) || 0) + (Number((b as any).planned_amount) || 0));
       }
 
       const foundation = DEFAULT_FOUNDATION.map((r) => ({
         ...r,
-        amount: Math.round(((byKey.get(r.key) || 0) / 3) * 100) / 100,
+        amount: budgeted.has(r.key) ? Math.round(budgeted.get(r.key)! * 100) / 100 : monthlyAvg(spend.get(r.key) || 0),
       }));
+
+      const netFromActuals = monthlyAvg(income);
+      const netMonthly = netFromActuals > 500
+        ? netFromActuals
+        : Math.round(((HOUSEHOLD_GROSS_ANNUAL / 12) * NET_RATIO) * 100) / 100;
 
       return {
         foundation,
-        wealthEngine: DEFAULT_WEALTH_ENGINE.map((r) => ({ ...r })),
-        futureFund: DEFAULT_FUTURE_FUND.map((r) => ({ ...r })),
+        wealthEngine: DEFAULT_WEALTH_ENGINE.map((r) => ({ ...r, amount: monthlyAvg(wealth.get(r.key) || 0) })),
+        futureFund: DEFAULT_FUTURE_FUND.map((r) => ({ ...r, amount: monthlyAvg(future.get(r.key) || 0) })),
         income: {
           grossMonthly: Math.round((HOUSEHOLD_GROSS_ANNUAL / 12) * 100) / 100,
-          netMonthly: Math.round(((HOUSEHOLD_GROSS_ANNUAL / 12) * NET_RATIO) * 100) / 100,
+          netMonthly,
+        },
+        source: {
+          budgetedKeys: Array.from(budgeted.keys()),
+          transactionCount: rows.length,
         },
       };
     },
   });
 }
+
