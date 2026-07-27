@@ -359,22 +359,22 @@ export function MoneyBlueprintPlan() {
 
                     {view === 'combined' ? (
                       <>
-                        <MoneyInput className="h-9 text-right tabular-nums text-xs" value={row.lyman!} onChange={(n) => setOwner(bucket, idx, 'lyman', n)} />
-                        <MoneyInput className="h-9 text-right tabular-nums text-xs" value={row.kateri!} onChange={(n) => setOwner(bucket, idx, 'kateri', n)} />
-                        <span className="text-right text-xs font-semibold tabular-nums">{money2(row.amount)}</span>
+                        <MoneyInput className="h-9 px-1.5 text-right tabular-nums text-xs min-w-0" value={row.lyman!} onChange={(n) => setOwner(bucket, idx, 'lyman', n)} />
+                        <MoneyInput className="h-9 px-1.5 text-right tabular-nums text-xs min-w-0" value={row.kateri!} onChange={(n) => setOwner(bucket, idx, 'kateri', n)} />
+                        <span className="text-right text-xs font-semibold tabular-nums truncate">{money2(row.amount)}</span>
                       </>
                     ) : (
                       <MoneyInput
-                        className="h-9 text-right tabular-nums"
+                        className="h-9 px-1.5 text-right tabular-nums text-xs min-w-0"
                         value={view === 'lyman' ? row.lyman! : row.kateri!}
                         onChange={(n) => setOwner(bucket, idx, view === 'lyman' ? 'lyman' : 'kateri', n)}
                       />
                     )}
                     {row.custom ? (
-                      <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => removeRow(bucket, idx)}>
+                      <Button size="icon" variant="ghost" className="h-8 w-8 -ml-0.5" onClick={() => removeRow(bucket, idx)}>
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
-                    ) : <span className="w-8" />}
+                    ) : <span />}
                   </div>
                   );
                 })}
