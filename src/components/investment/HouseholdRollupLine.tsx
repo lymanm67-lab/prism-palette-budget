@@ -12,6 +12,8 @@ interface Props {
   individualAtHorizon: number;
   horizonAge: number;
   returnPct: number;
+  /** Optional map of milestone age -> individual projected balance (e.g. 75/80/85). */
+  individualByAge?: Record<number, number>;
 }
 
 const GOAL = 4_000_000;
