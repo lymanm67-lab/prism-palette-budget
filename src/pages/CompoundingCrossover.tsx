@@ -260,11 +260,41 @@ export default function CompoundingCrossover() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground print-root">
       <style>{`@media print {
+        @page { margin: 0.5in; }
+        html, body, .print-root, .print-root * {
+          background: #ffffff !important;
+          background-color: #ffffff !important;
+          color: #000000 !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
         .no-print { display: none !important; }
-        section { break-inside: avoid; }
+        section, .print-section { break-inside: avoid; page-break-inside: avoid; }
         .recharts-wrapper { page-break-inside: avoid; }
+        /* Force white cards with dark borders */
+        .rounded-2xl, .rounded-lg, .rounded-md, .rounded-full, .rounded {
+          background: #ffffff !important;
+          background-color: #ffffff !important;
+          color: #000000 !important;
+          border-color: #000000 !important;
+          box-shadow: none !important;
+        }
+        /* Remove glassmorphism/backdrop effects */
+        .backdrop-blur, [class*="backdrop-blur"] { backdrop-filter: none !important; }
+        /* Inputs should show values clearly */
+        input, select, textarea {
+          background: #ffffff !important;
+          color: #000000 !important;
+          border: 1px solid #000000 !important;
+        }
+        /* Links should be black and underlined */
+        a { color: #000000 !important; text-decoration: underline !important; }
+        /* Ensure charts are visible */
+        svg text { fill: #000000 !important; }
+        /* Hide sliders but keep values */
+        [role="slider"] { border: 1px solid #000000 !important; }
       }`}</style>
       <div className="mx-auto max-w-6xl px-4 py-8 print:py-0">
         {/* Header */}
