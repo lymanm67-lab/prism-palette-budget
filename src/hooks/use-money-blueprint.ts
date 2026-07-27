@@ -17,6 +17,33 @@ export const LYMAN_GROSS_ANNUAL = 95_940;
 export const HOUSEHOLD_GROSS_ANNUAL = LYMAN_GROSS_ANNUAL + KATERI_GROSS_ANNUAL; // 208,940
 const NET_RATIO = 0.76; // take-home estimate after taxes + pre-tax deferrals
 
+/**
+ * Retirement contributions come out of payroll, not from bank transactions, so the
+ * 90-day transaction scan can never see them. These are the real per-month figures
+ * from the IU paystub (07/2026) plus Kateri's OPERS deferral.
+ */
+export const PAYROLL_RETIREMENT = {
+  lyman: {
+    rothTDA: 85,
+    roth457: 75,
+    preTaxTDA: 100,
+    preTax457: 75,
+    hsa: 116.66,
+  },
+  kateri: {
+    // OPERS member contribution: 10% of gross
+    pension: Math.round(((KATERI_GROSS_ANNUAL / 12) * 0.1) * 100) / 100,
+  },
+};
+
+const LYMAN_RETIREMENT_MONTHLY =
+  PAYROLL_RETIREMENT.lyman.rothTDA +
+  PAYROLL_RETIREMENT.lyman.roth457 +
+  PAYROLL_RETIREMENT.lyman.preTaxTDA +
+  PAYROLL_RETIREMENT.lyman.preTax457 +
+  PAYROLL_RETIREMENT.lyman.hsa;
+const KATERI_RETIREMENT_MONTHLY = PAYROLL_RETIREMENT.kateri.pension;
+
 
 export function useMoneyBlueprint() {
   const { household } = useHousehold();
@@ -202,7 +229,20 @@ export function useBlueprintPrefill() {
 
       return {
         foundation,
-        wealthEngine: DEFAULT_WEALTH_ENGINE.map((r) => withSplit({ ...r, amount: monthlyAvg(wealth.get(r.key) || 0) })),
+        wealthEngine: DEFAULT_WEALTH_ENGINE.map((r) => {
+          const tracked = monthlyAvg(wealth.get(r.key) || 0);
+          if (r.key !== 'postTaxRetirement') return withSplit({ ...r, amount: tracked });
+          // Payroll-deducted retirement never appears in bank transactions — use the
+          // real paystub figures (and Kateri's OPERS) as the floor.
+          const lyman = Math.max(tracked, LYMAN_RETIREMENT_MONTHLY);
+          const kateri = KATERI_RETIREMENT_MONTHLY;
+          return {
+            ...r,
+            lyman: Math.round(lyman * 100) / 100,
+            kateri: Math.round(kateri * 100) / 100,
+            amount: Math.round((lyman + kateri) * 100) / 100,
+          };
+        }),
         futureFund: DEFAULT_FUTURE_FUND.map((r) => withSplit({ ...r, amount: monthlyAvg(future.get(r.key) || 0) })),
         income: {
           grossMonthly: Math.round((HOUSEHOLD_GROSS_ANNUAL / 12) * 100) / 100,
