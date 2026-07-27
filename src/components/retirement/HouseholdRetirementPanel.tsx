@@ -176,26 +176,31 @@ export default function HouseholdRetirementPanel() {
   const patch = (who: "lyman" | "kateri") => (p: Partial<SpouseRetirementInputs>) =>
     setState((s) => ({ ...s, [who]: { ...s[who], ...p } }));
 
-  const L = useMemo(() => totals(state.lyman), [state.lyman]);
-  const K = useMemo(() => totals(state.kateri), [state.kateri]);
+  const eff = useMemo(() => ({
+    lyman: planned ? applyPlanned(state.lyman) : state.lyman,
+    kateri: planned ? applyPlanned(state.kateri) : state.kateri,
+  }), [state, planned]);
+
+  const L = useMemo(() => totals(eff.lyman), [eff.lyman]);
+  const K = useMemo(() => totals(eff.kateri), [eff.kateri]);
 
   const combined = useMemo(() => {
     const monthlyTotal = L.monthlyTotal + K.monthlyTotal;
-    const gross = state.lyman.monthlyGross + state.kateri.monthlyGross;
+    const gross = eff.lyman.monthlyGross + eff.kateri.monthlyGross;
     return {
       monthlyTotal,
       annualTotal: monthlyTotal * 12,
       annualGross: gross * 12,
       savingsRate: gross > 0 ? (monthlyTotal / gross) * 100 : 0,
       employerPct: (() => {
-        const base = (state.lyman.employerBaseMonthly || state.lyman.monthlyGross)
-          + (state.kateri.employerBaseMonthly || state.kateri.monthlyGross);
-        return base > 0 ? ((state.lyman.employerMonthly + state.kateri.employerMonthly) / base) * 100 : 0;
+        const base = (eff.lyman.employerBaseMonthly || eff.lyman.monthlyGross)
+          + (eff.kateri.employerBaseMonthly || eff.kateri.monthlyGross);
+        return base > 0 ? ((eff.lyman.employerMonthly + eff.kateri.employerMonthly) / base) * 100 : 0;
       })(),
       projected: L.projected + K.projected,
-      balance: state.lyman.currentBalance + state.kateri.currentBalance,
+      balance: eff.lyman.currentBalance + eff.kateri.currentBalance,
     };
-  }, [L, K, state]);
+  }, [L, K, eff]);
 
   const active = view === "lyman" ? L : view === "kateri" ? K : combined;
   const activeInputs = view === "kateri" ? state.kateri : state.lyman;
