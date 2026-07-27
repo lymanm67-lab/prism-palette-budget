@@ -191,9 +191,18 @@ export default function HouseholdRetirementPanel() {
           <span className="flex items-center gap-2">
             <Users className="h-4 w-4 text-primary" /> Household Retirement — Lyman &amp; Kateri
           </span>
-          <Badge variant="outline" className="text-[10px]">
-            Combined {combined.savingsRate.toFixed(1)}% of gross
-          </Badge>
+          <span className="flex items-center gap-2">
+            <Badge variant="outline" className="text-[10px]">
+              Combined {combined.savingsRate.toFixed(1)}% of gross
+            </Badge>
+            <Button size="sm" variant="outline" className="h-7 gap-1 text-xs" onClick={handleReset}>
+              <RotateCcw className="h-3 w-3" /> Reset
+            </Button>
+            <Button size="sm" className="h-7 gap-1 text-xs" onClick={handleSave}>
+              <Save className="h-3 w-3" /> Save
+            </Button>
+          </span>
+
         </CardTitle>
         <CardDescription className="text-xs">
           Individual and combined retirement funding. Seeded from verified payroll; edit any figure to re-model.
