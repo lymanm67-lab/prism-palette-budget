@@ -20,6 +20,8 @@ export interface SpouseRetirementInputs {
   currentAge: number;
   retirementAge: number;
   monthlyGross: number;
+  /** Contribution-eligible W-2 salary (excludes 1099/consulting income). */
+  employerBaseMonthly?: number;
   employeeMonthly: number;
   employerMonthly: number;
   deferredCompMonthly: number;
