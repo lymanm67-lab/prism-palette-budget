@@ -11,7 +11,7 @@ const fmt = (n: number) => `$${Math.round(n).toLocaleString()}`;
 export default function RothVsTraditionalCalculator() {
   const [annual, setAnnual] = useState(7000);
   const [years, setYears] = useState(30);
-  const [ret, setRet] = useState(7);
+  const [ret, setRet] = useState(8);
   const [nowPct, setNowPct] = useState(22);
   const [retPct, setRetPct] = useState(15);
 

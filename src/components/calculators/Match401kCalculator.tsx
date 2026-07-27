@@ -13,7 +13,7 @@ export default function Match401kCalculator() {
   const [matchPct, setMatchPct] = useState(50); // employer matches 50% of...
   const [matchCap, setMatchCap] = useState(6); // ...up to 6% of salary
   const [years, setYears] = useState(30);
-  const [returnPct, setReturnPct] = useState(7);
+  const [returnPct, setReturnPct] = useState(8);
 
   const r = useMemo(() => {
     const employee = salary * (contribPct / 100);

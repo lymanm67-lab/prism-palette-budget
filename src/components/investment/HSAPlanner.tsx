@@ -14,7 +14,7 @@ export function HSAPlanner({ plan }: { plan: InvestmentPlan | null }) {
 
   const hsaBalance = plan?.hsa_balance ?? 0;
   const monthly = (plan?.hsa_monthly_contribution ?? 0) + (plan?.hsa_employer_contribution ?? 0);
-  const ret = (plan?.hsa_return_pct ?? 7) / 100 / 12;
+  const ret = (plan?.hsa_return_pct ?? 8) / 100 / 12;
 
   const series = useMemo(() => {
     const rows: { year: number; balance: number }[] = [];

@@ -6,7 +6,7 @@ import { projectDebtToWealth, formatCurrencyFull } from '@/lib/investment/projec
 import { DisclaimerBlock } from './DisclaimerBlock';
 import { TrendingUp } from 'lucide-react';
 
-export function DebtToWealthTool({ defaultPayment = 500, yearsAfter = 15, returnPct = 7 }) {
+export function DebtToWealthTool({ defaultPayment = 500, yearsAfter = 15, returnPct = 8 }) {
   const [payment, setPayment] = useState(defaultPayment);
   const [redirect, setRedirect] = useState(100);
   const [years, setYears] = useState(yearsAfter);
