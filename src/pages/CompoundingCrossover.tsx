@@ -386,43 +386,55 @@ export default function CompoundingCrossover() {
               </h3>
               <label className="mb-3 block text-xs font-semibold text-muted-foreground">
                 Current retirement balance
-                <input
-                  type="number"
-                  value={state.balance}
-                  onChange={(e) => set({ balance: Number(e.target.value) || 0 })}
-                  className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-medium bg-background text-foreground"
-                  style={{ borderColor: 'hsl(var(--border))' }}
-                />
+                <div className="relative mt-1">
+                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span>
+                  <input
+                    type="number"
+                    value={state.balance}
+                    onChange={(e) => set({ balance: Number(e.target.value) || 0 })}
+                    className="w-full rounded-md border bg-background py-2 pl-7 pr-3 text-sm font-medium text-foreground"
+                    style={{ borderColor: 'hsl(var(--border))' }}
+                  />
+                </div>
               </label>
               <label className="mb-3 block text-xs font-semibold text-muted-foreground">
                 Annual contributions (employee + employer)
-                <input
-                  type="number"
-                  value={state.annualContributions}
-                  onChange={(e) => set({ annualContributions: Number(e.target.value) || 0 })}
-                  className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-medium bg-background text-foreground"
-                  style={{ borderColor: 'hsl(var(--border))' }}
-                />
+                <div className="relative mt-1">
+                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span>
+                  <input
+                    type="number"
+                    value={state.annualContributions}
+                    onChange={(e) => set({ annualContributions: Number(e.target.value) || 0 })}
+                    className="w-full rounded-md border bg-background py-2 pl-7 pr-3 text-sm font-medium text-foreground"
+                    style={{ borderColor: 'hsl(var(--border))' }}
+                  />
+                </div>
               </label>
               <label className="mb-3 block text-xs font-semibold text-muted-foreground">
                 Annual contribution growth (raises &amp; deferral increases), %
-                <input
-                  type="number"
-                  value={state.contributionGrowthPct}
-                  onChange={(e) => set({ contributionGrowthPct: Number(e.target.value) || 0 })}
-                  className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-medium bg-background text-foreground"
-                  style={{ borderColor: 'hsl(var(--border))' }}
-                />
+                <div className="relative mt-1">
+                  <input
+                    type="number"
+                    value={state.contributionGrowthPct}
+                    onChange={(e) => set({ contributionGrowthPct: Number(e.target.value) || 0 })}
+                    className="w-full rounded-md border bg-background py-2 pl-3 pr-7 text-sm font-medium text-foreground"
+                    style={{ borderColor: 'hsl(var(--border))' }}
+                  />
+                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">%</span>
+                </div>
               </label>
               <label className="mb-3 block text-xs font-semibold text-muted-foreground">
                 Debt redirect, annual (from {state.debtRedirectStartYear})
-                <input
-                  type="number"
-                  value={state.debtRedirectAnnual}
-                  onChange={(e) => set({ debtRedirectAnnual: Number(e.target.value) || 0 })}
-                  className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-medium bg-background text-foreground"
-                  style={{ borderColor: 'hsl(var(--border))' }}
-                />
+                <div className="relative mt-1">
+                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span>
+                  <input
+                    type="number"
+                    value={state.debtRedirectAnnual}
+                    onChange={(e) => set({ debtRedirectAnnual: Number(e.target.value) || 0 })}
+                    className="w-full rounded-md border bg-background py-2 pl-7 pr-3 text-sm font-medium text-foreground"
+                    style={{ borderColor: 'hsl(var(--border))' }}
+                  />
+                </div>
               </label>
 
               <div className="mb-3 rounded-lg border p-3" style={{ borderColor: 'hsl(var(--border))', background: 'hsl(var(--muted))' }}>
