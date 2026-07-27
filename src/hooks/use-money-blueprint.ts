@@ -185,10 +185,14 @@ export function useBlueprintPrefill() {
         amount: budgeted.has(r.key) ? Math.round(budgeted.get(r.key)! * 100) / 100 : monthlyAvg(spend.get(r.key) || 0),
       }));
 
-      const netFromActuals = monthlyAvg(income);
-      const netMonthly = netFromActuals > 500
-        ? netFromActuals
-        : Math.round(((HOUSEHOLD_GROSS_ANNUAL / 12) * NET_RATIO) * 100) / 100;
+      // Lyman's take-home comes from real deposits; Kateri's salary isn't deposited into
+      // tracked accounts, so it's estimated from her gross and added to household net.
+      const lymanNet = monthlyAvg(income) > 500
+        ? monthlyAvg(income)
+        : Math.round(((LYMAN_GROSS_ANNUAL / 12) * NET_RATIO) * 100) / 100;
+      const kateriNet = Math.round(((KATERI_GROSS_ANNUAL / 12) * NET_RATIO) * 100) / 100;
+      const netMonthly = Math.round((lymanNet + kateriNet) * 100) / 100;
+
 
       return {
         foundation,
