@@ -246,13 +246,24 @@ export default function HouseholdRetirementPanel() {
       </CardHeader>
 
       <CardContent className="space-y-5">
-        <Tabs value={view} onValueChange={(v) => setView(v as typeof view)}>
-          <TabsList className="grid grid-cols-3 w-full md:w-[380px]">
-            <TabsTrigger value="combined"><Users className="h-3.5 w-3.5 mr-1.5" /> Combined</TabsTrigger>
-            <TabsTrigger value="lyman"><User className="h-3.5 w-3.5 mr-1.5" /> Lyman</TabsTrigger>
-            <TabsTrigger value="kateri"><User className="h-3.5 w-3.5 mr-1.5" /> Kateri</TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <Tabs value={view} onValueChange={(v) => setView(v as typeof view)}>
+            <TabsList className="grid grid-cols-3 w-full md:w-[380px]">
+              <TabsTrigger value="combined"><Users className="h-3.5 w-3.5 mr-1.5" /> Combined</TabsTrigger>
+              <TabsTrigger value="lyman"><User className="h-3.5 w-3.5 mr-1.5" /> Lyman</TabsTrigger>
+              <TabsTrigger value="kateri"><User className="h-3.5 w-3.5 mr-1.5" /> Kateri</TabsTrigger>
+            </TabsList>
+          </Tabs>
+          <label className="flex items-center gap-2 text-xs font-medium">
+            <input
+              type="checkbox"
+              className="h-3.5 w-3.5 accent-primary"
+              checked={planned}
+              onChange={(e) => setPlanned(e.target.checked)}
+            />
+            Planned Dec 2026 deferral (30% of W-2 incl. 9% employer)
+          </label>
+        </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <Stat label="Annual gross" value={money(active.annualGross)} />
