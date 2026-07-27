@@ -54,7 +54,7 @@ import { ContributionTimelineChart } from '@/components/investment/ContributionT
 import { AllocationPieChart } from '@/components/investment/AllocationPieChart';
 import { projectSnapshot } from '@/lib/investment/snapshotProjection';
 import { useUpsertInvestmentPlan } from '@/hooks/use-investment-plan';
-import { runProjection } from '@/lib/investment/projection';
+
 import { exportInvestmentPlanPDF } from '@/lib/investment/exportInvestmentPlanPDF';
 import { toast } from '@/hooks/use-toast';
 
