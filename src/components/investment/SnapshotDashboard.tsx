@@ -11,6 +11,7 @@ import { MillionMilestonesTable } from './MillionMilestonesTable';
 import { ContributionTimelineChart } from './ContributionTimelineChart';
 import { AllocationPieChart } from './AllocationPieChart';
 import { CollapsibleSection } from './CollapsibleSection';
+import { HouseholdRollupLine } from './HouseholdRollupLine';
 
 interface Props { plan: InvestmentPlan | null }
 
@@ -155,6 +156,13 @@ export function SnapshotDashboard({ plan }: Props) {
           </Card>
         ))}
       </div>
+
+      <HouseholdRollupLine
+        plan={plan}
+        individualAtHorizon={at75}
+        horizonAge={75}
+        returnPct={plan.expected_return_pct}
+      />
 
       {/* First Million card */}
       <CollapsibleSection title="First Million by 10-Year Mark" defaultOpen>

@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Users } from 'lucide-react';
 import { formatCurrencyFull, runProjection } from '@/lib/investment/projection';
 import type { InvestmentPlan } from '@/hooks/use-investment-plan';
-import { n as useInvestmentSpouse } from '@/hooks/use-investment-v2';
+import { useInvestmentSpouse } from '@/hooks/use-investment-v2';
 
 interface Props {
   plan: InvestmentPlan;
