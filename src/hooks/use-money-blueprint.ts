@@ -13,8 +13,8 @@ const sb = supabase as any;
 
 // Household salary figures already established elsewhere in the app.
 export const KATERI_GROSS_ANNUAL = 113_000;
-export const LYMAN_GROSS_ANNUAL = 95_940;
-export const HOUSEHOLD_GROSS_ANNUAL = LYMAN_GROSS_ANNUAL + KATERI_GROSS_ANNUAL; // 208,940
+export const LYMAN_GROSS_ANNUAL = 70_940.04; // $5,911.67/mo
+export const HOUSEHOLD_GROSS_ANNUAL = LYMAN_GROSS_ANNUAL + KATERI_GROSS_ANNUAL; // 183,940.04
 const NET_RATIO = 0.76; // take-home estimate after taxes + pre-tax deferrals
 
 /**
