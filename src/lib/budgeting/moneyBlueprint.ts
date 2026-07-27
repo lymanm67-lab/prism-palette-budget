@@ -173,18 +173,18 @@ function score(pct: number, min: number, max: number): 'in' | 'over' | 'under' {
   return 'in';
 }
 
-export function computeBlueprint(state: BlueprintState): BlueprintResult {
+export function computeBlueprint(state: BlueprintState, view: OwnerView = 'combined'): BlueprintResult {
   const bs = state.balanceSheet;
   const netWorth =
     (Number(bs.assets) || 0) + (Number(bs.investments) || 0) + (Number(bs.savings) || 0) - (Number(bs.debt) || 0);
 
-  const net = Number(state.income.netMonthly) || 0;
+  const net = netForView(state.income, view);
 
-  const foundationRows = sum(state.buckets.foundation);
+  const foundationRows = sum(state.buckets.foundation, view);
   const bufferAmount = Math.round(foundationRows * BUFFER_RATE * 100) / 100;
   const foundationTotal = foundationRows + bufferAmount;
-  const wealthEngineTotal = sum(state.buckets.wealthEngine);
-  const futureFundTotal = sum(state.buckets.futureFund);
+  const wealthEngineTotal = sum(state.buckets.wealthEngine, view);
+  const futureFundTotal = sum(state.buckets.futureFund, view);
   const freedomTotal = net - foundationTotal - wealthEngineTotal - futureFundTotal;
 
   const pct = (n: number) => (net > 0 ? Math.round((n / net) * 1000) / 10 : 0);
