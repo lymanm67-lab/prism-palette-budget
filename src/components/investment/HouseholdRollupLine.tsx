@@ -12,6 +12,8 @@ interface Props {
   individualAtHorizon: number;
   horizonAge: number;
   returnPct: number;
+  /** Optional map of milestone age -> individual projected balance (e.g. 75/80/85). */
+  individualByAge?: Record<number, number>;
 }
 
 const GOAL = 4_000_000;
@@ -26,8 +28,9 @@ function grow(balance: number, monthly: number, ratePct: number, years: number) 
   return fvBal + fvCon;
 }
 
-export function HouseholdRollupLine({ plan, individualAtHorizon, horizonAge, returnPct }: Props) {
+export function HouseholdRollupLine({ plan, individualAtHorizon, horizonAge, returnPct, individualByAge }: Props) {
   const { data: spouse } = useInvestmentSpouse(plan.id);
+
 
   const rollup = useMemo(() => {
     const years = Math.max(0, horizonAge - (plan.current_age ?? 59));
@@ -45,6 +48,23 @@ export function HouseholdRollupLine({ plan, individualAtHorizon, horizonAge, ret
       combined: individualAtHorizon + spouseAtHorizon,
     };
   }, [spouse, plan.current_age, horizonAge, returnPct, individualAtHorizon]);
+
+  const milestones = useMemo(() => {
+    const ages = [75, 80, 85];
+    const currentAge = plan.current_age ?? 59;
+    return ages.map((age) => {
+      const years = Math.max(0, age - currentAge);
+      const lyman = individualByAge?.[age] ?? grow(
+        plan.current_balance,
+        (plan.monthly_employee_contribution ?? 0) + (plan.monthly_employer_contribution ?? 0),
+        returnPct,
+        years,
+      );
+      const kateri = grow(rollup.spouseBalance, rollup.spouseMonthly, rollup.spouseRate, years);
+      return { age, lyman, kateri, combined: lyman + kateri };
+    });
+  }, [individualByAge, plan, returnPct, rollup]);
+
 
   const lymanNow = plan.current_balance;
   const combinedNow = lymanNow + rollup.spouseBalance;
@@ -127,6 +147,45 @@ export function HouseholdRollupLine({ plan, individualAtHorizon, horizonAge, ret
             </tbody>
           </table>
         </div>
+
+        <div className="mt-5">
+          <p className="text-sm font-semibold mb-2">Projection by age (75 · 80 · 85)</p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-border/50 text-muted-foreground">
+                  <th className="text-left py-2 font-medium">Age</th>
+                  <th className="text-right py-2 font-medium">{plan.name || 'Lyman'}</th>
+                  <th className="text-right py-2 font-medium">{spouse?.name || 'Spouse'}</th>
+                  <th className="text-right py-2 font-medium">Household combined</th>
+                  <th className="text-right py-2 font-medium">vs $4M goal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {milestones.map((m) => {
+                  const met = m.combined >= GOAL;
+                  return (
+                    <tr key={m.age} className="border-b border-border/30">
+                      <td className="py-2 font-medium">{m.age}</td>
+                      <td className="text-right py-2 tabular-nums">{formatCurrencyFull(m.lyman)}</td>
+                      <td className="text-right py-2 tabular-nums">{formatCurrencyFull(m.kateri)}</td>
+                      <td className="text-right py-2 tabular-nums font-semibold">
+                        {formatCurrencyFull(m.combined)}
+                      </td>
+                      <td
+                        className={`text-right py-2 tabular-nums ${met ? 'text-emerald-500' : 'text-amber-500'}`}
+                      >
+                        {met ? '+' : '−'}
+                        {formatCurrencyFull(Math.abs(m.combined - GOAL))}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
         {!spouse && (
           <p className="text-xs text-muted-foreground mt-3">
             No spouse details saved yet — add them in the Spouse &amp; Household section to populate this line.
