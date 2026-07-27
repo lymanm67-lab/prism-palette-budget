@@ -60,7 +60,7 @@ const DEFAULTS: Record<"lyman" | "kateri", SpouseRetirementInputs> = {
   },
 };
 
-const LS_KEY = "household-retirement-panel-v2";
+const LS_KEY = "household-retirement-panel-v3";
 
 
 const money = (n: number) =>
