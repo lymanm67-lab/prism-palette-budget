@@ -316,7 +316,7 @@ export function MoneyBlueprintPlan() {
       </div>
 
       {/* Editable buckets */}
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className={view === 'combined' ? 'grid gap-4 2xl:grid-cols-3' : 'grid gap-4 lg:grid-cols-3'}>
         {(['foundation', 'wealthEngine', 'futureFund'] as BucketName[]).map((bucket) => {
           const meta = BUCKET_META[bucket];
           const res = result.buckets.find((b) => b.key === bucket)!;
