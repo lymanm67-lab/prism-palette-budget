@@ -24,7 +24,7 @@ export function InvestmentWizard({ plan, onDone }: Props) {
     target_amount: plan?.target_amount ?? 1000000,
     monthly_employee_contribution: plan?.monthly_employee_contribution ?? 0,
     monthly_employer_contribution: plan?.monthly_employer_contribution ?? 0,
-    expected_return_pct: plan?.expected_return_pct ?? 7,
+    expected_return_pct: plan?.expected_return_pct ?? 8,
     annual_raise_pct: plan?.annual_raise_pct ?? 3,
     raise_redirect_pct: plan?.raise_redirect_pct ?? 100,
     current_monthly_income: plan?.current_monthly_income ?? 0,

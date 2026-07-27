@@ -46,7 +46,7 @@ export function SpouseHouseholdPanel({ planId }: { planId?: string }) {
           <div><Label>Current balance ($)</Label><Input type="number" value={form.current_balance ?? 0} onChange={e => set('current_balance', Number(e.target.value))} /></div>
           <div><Label>Employee monthly ($)</Label><Input type="number" value={form.monthly_employee_contribution ?? 0} onChange={e => set('monthly_employee_contribution', Number(e.target.value))} /></div>
           <div><Label>Employer monthly ($)</Label><Input type="number" value={form.monthly_employer_contribution ?? 0} onChange={e => set('monthly_employer_contribution', Number(e.target.value))} /></div>
-          <div><Label>Expected return %</Label><Input type="number" value={form.expected_return_pct ?? 7} onChange={e => set('expected_return_pct', Number(e.target.value))} /></div>
+          <div><Label>Expected return %</Label><Input type="number" value={form.expected_return_pct ?? 8} onChange={e => set('expected_return_pct', Number(e.target.value))} /></div>
           <div><Label>Est. Social Security ($/mo)</Label><Input type="number" value={form.ss_monthly_estimate ?? ''} onChange={e => set('ss_monthly_estimate', num(e.target.value))} /></div>
           <div><Label>SS claiming age</Label><Input type="number" value={form.ss_claiming_age ?? ''} onChange={e => set('ss_claiming_age', num(e.target.value))} /></div>
         </div>
