@@ -322,7 +322,7 @@ export default function CompoundingCrossover() {
       }`}</style>
 
       {/* Print-only cover + executive narrative */}
-      <div className="print-only">
+      <div className="print-only mx-auto max-w-6xl px-4">
         <div className="rounded-2xl p-8 text-white" style={{ background: NAVY }}>
           <div className="text-xs font-semibold uppercase tracking-[0.25em]" style={{ color: GOLD }}>
             Montgomery Family Wealth Operating System
