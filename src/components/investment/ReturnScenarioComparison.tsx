@@ -6,7 +6,16 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Target, TrendingUp, Sparkles } from 'lucide-react';
 import { InvestmentPlan } from '@/hooks/use-investment-plan';
 import { runProjection, formatCurrencyFull } from '@/lib/investment/projection';
+import { useInvestmentSpouse } from '@/hooks/use-investment-v2';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell, ReferenceLine } from 'recharts';
+
+/** Simple compounding of a balance + monthly contribution over `years`. */
+function grow(balance: number, monthly: number, ratePct: number, years: number) {
+  const r = ratePct / 100 / 12;
+  const n = Math.max(0, Math.round(years * 12));
+  if (r === 0) return balance + monthly * n;
+  return balance * Math.pow(1 + r, n) + monthly * ((Math.pow(1 + r, n) - 1) / r);
+}
 
 interface Props {
   plan: InvestmentPlan | null;
@@ -52,13 +61,27 @@ export function ReturnScenarioComparison({ plan, onCreateRules, onReviewLegacy }
     plan?.use_future_dollars ? 'nominal' : 'today'
   );
   const [targetAge, setTargetAge] = useState<string>('75');
+  const [who, setWho] = useState<'individual' | 'combined'>('combined');
+  const { data: spouse } = useInvestmentSpouse(plan?.id);
   if (!plan || !plan.current_age || !plan.retirement_age) return null;
 
   const useFuture = dollarMode === 'nominal';
   const ageNum = parseInt(targetAge, 10);
   const goal = plan.target_amount || 4_000_000;
-  const p7 = runProjection(buildInputs(plan, 7, useFuture, ageNum)).projectedBalance;
-  const p8 = runProjection(buildInputs(plan, 8, useFuture, ageNum)).projectedBalance;
+  const mine7 = runProjection(buildInputs(plan, 7, useFuture, ageNum)).projectedBalance;
+  const mine8 = runProjection(buildInputs(plan, 8, useFuture, ageNum)).projectedBalance;
+
+  const years = Math.max(0, ageNum - (plan.current_age ?? 59));
+  const spouseBalance = Number(spouse?.current_balance ?? 0);
+  const spouseMonthly =
+    Number(spouse?.monthly_employee_contribution ?? 0) + Number(spouse?.monthly_employer_contribution ?? 0);
+  const spouse7 = grow(spouseBalance, spouseMonthly, 7, years);
+  const spouse8 = grow(spouseBalance, spouseMonthly, 8, years);
+
+  const combined = who === 'combined' && !!spouse;
+  const p7 = combined ? mine7 + spouse7 : mine7;
+  const p8 = combined ? mine8 + spouse8 : mine8;
+  const whoLabel = combined ? 'Household combined' : plan.name || 'This plan only';
 
   const surplus7 = p7 - goal;
   const surplus8 = p8 - goal;
@@ -76,8 +99,8 @@ export function ReturnScenarioComparison({ plan, onCreateRules, onReviewLegacy }
 
   const headline =
     surplus7 >= 0 && surplus8 >= 0
-      ? `Your plan is projected to clear the ${formatCurrencyFull(goal)} goal by age ${ageNum} at both 7% and 8% ROI.`
-      : `At 7% ROI you are ${surplus7 >= 0 ? 'on track' : 'short of'} your ${formatCurrencyFull(goal)} goal by age ${ageNum}.`;
+      ? `${whoLabel} is projected to clear the ${formatCurrencyFull(goal)} goal by age ${ageNum} at both 7% and 8% ROI.`
+      : `At 7% ROI ${whoLabel.toLowerCase()} is ${surplus7 >= 0 ? 'on track for' : 'short of'} the ${formatCurrencyFull(goal)} goal by age ${ageNum}.`;
 
   return (
     <Card className="bg-gradient-to-br from-card to-muted/20">
@@ -94,6 +117,14 @@ export function ReturnScenarioComparison({ plan, onCreateRules, onReviewLegacy }
             </p>
           </div>
           <div className="flex flex-col gap-2 items-end">
+            <Tabs value={who} onValueChange={(v) => setWho(v as 'individual' | 'combined')}>
+              <TabsList className="h-8">
+                <TabsTrigger value="individual" className="text-xs h-6 px-2">Me only</TabsTrigger>
+                <TabsTrigger value="combined" className="text-xs h-6 px-2">
+                  Combined{spouse?.name ? ` (+${spouse.name.split(' ')[0]})` : ''}
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
             <Tabs value={targetAge} onValueChange={setTargetAge}>
               <TabsList className="h-8">
                 <TabsTrigger value="75" className="text-xs h-6 px-2">Age 75</TabsTrigger>
@@ -165,6 +196,50 @@ export function ReturnScenarioComparison({ plan, onCreateRules, onReviewLegacy }
             </p>
           </div>
         </div>
+
+        {combined && (
+          <div className="overflow-x-auto rounded-lg border bg-card/40">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-border/50 text-muted-foreground">
+                  <th className="text-left py-2 px-3 font-medium">Who</th>
+                  <th className="text-right py-2 px-3 font-medium">Balance today</th>
+                  <th className="text-right py-2 px-3 font-medium">At age {ageNum} · 7%</th>
+                  <th className="text-right py-2 px-3 font-medium">At age {ageNum} · 8%</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-border/30">
+                  <td className="py-2 px-3 font-medium">{plan.name || 'This plan'}</td>
+                  <td className="text-right py-2 px-3 tabular-nums">{formatCurrencyFull(plan.current_balance)}</td>
+                  <td className="text-right py-2 px-3 tabular-nums">{formatCurrencyFull(mine7)}</td>
+                  <td className="text-right py-2 px-3 tabular-nums">{formatCurrencyFull(mine8)}</td>
+                </tr>
+                <tr className="border-b border-border/30">
+                  <td className="py-2 px-3 font-medium">{spouse?.name || 'Spouse'}</td>
+                  <td className="text-right py-2 px-3 tabular-nums">{formatCurrencyFull(spouseBalance)}</td>
+                  <td className="text-right py-2 px-3 tabular-nums">{formatCurrencyFull(spouse7)}</td>
+                  <td className="text-right py-2 px-3 tabular-nums">{formatCurrencyFull(spouse8)}</td>
+                </tr>
+                <tr className="border-t-2 border-primary/40 font-semibold">
+                  <td className="py-2 px-3">Household combined</td>
+                  <td className="text-right py-2 px-3 tabular-nums">
+                    {formatCurrencyFull(plan.current_balance + spouseBalance)}
+                  </td>
+                  <td className="text-right py-2 px-3 tabular-nums">{formatCurrencyFull(p7)}</td>
+                  <td className="text-right py-2 px-3 tabular-nums">{formatCurrencyFull(p8)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {who === 'combined' && !spouse && (
+          <p className="text-xs text-muted-foreground">
+            No spouse record saved yet — add spouse details to see combined household numbers.
+          </p>
+        )}
+
 
         <div className="rounded-lg bg-muted/40 p-4 text-sm space-y-2">
           <p>
