@@ -1,15 +1,35 @@
-import { useState, type ReactNode } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 
 interface CollapsibleSectionProps {
   title: string;
   defaultOpen?: boolean;
+  /** Overrides the auto key derived from the title. */
+  storageKey?: string;
   children: ReactNode;
 }
 
-export function CollapsibleSection({ title, defaultOpen = false, children }: CollapsibleSectionProps) {
-  const [open, setOpen] = useState(defaultOpen);
+export function CollapsibleSection({ title, defaultOpen = false, storageKey, children }: CollapsibleSectionProps) {
+  const key = `prism:section:${storageKey ?? title}`;
+  const [open, setOpen] = useState(() => {
+    try {
+      const saved = localStorage.getItem(key);
+      return saved === null ? defaultOpen : saved === '1';
+    } catch {
+      return defaultOpen;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(key, open ? '1' : '0');
+    } catch {
+      /* ignore quota / privacy-mode errors */
+    }
+  }, [key, open]);
+
+
   return (
     <Card className="overflow-hidden">
       <button

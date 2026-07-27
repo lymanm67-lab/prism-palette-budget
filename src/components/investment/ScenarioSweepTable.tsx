@@ -1,0 +1,90 @@
+import { useMemo } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Target } from 'lucide-react';
+import { formatCurrencyFull } from '@/lib/investment/projection';
+import { projectSnapshot } from '@/lib/investment/snapshotProjection';
+import type { InvestmentPlan } from '@/hooks/use-investment-plan';
+
+const SCENARIOS = [
+  { rate: 6, label: 'Conservative' },
+  { rate: 7, label: 'Average' },
+  { rate: 8, label: 'Growth' },
+  { rate: 9, label: 'Aggressive' },
+  { rate: 10, label: 'Aggressive+' },
+];
+
+interface Props {
+  plan: InvestmentPlan | null;
+  horizonAge?: number;
+  backupAge?: number;
+  futureDollars?: boolean;
+}
+
+export function ScenarioSweepTable({ plan, horizonAge = 75, backupAge = 78, futureDollars = true }: Props) {
+  const rows = useMemo(() => {
+    if (!plan || !plan.current_age) return [];
+    return SCENARIOS.map((s) => ({
+      ...s,
+      primary: projectSnapshot(plan, s.rate, horizonAge, futureDollars).projectedBalance,
+      backup: projectSnapshot(plan, s.rate, backupAge, futureDollars).projectedBalance,
+    }));
+  }, [plan, horizonAge, backupAge, futureDollars]);
+
+  if (!plan || !plan.current_age) return null;
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg flex items-center gap-2">
+          <Target className="h-5 w-5 text-primary" />
+          Age {horizonAge} &amp; Age {backupAge} projection by return scenario
+        </CardTitle>
+        <p className="text-xs text-muted-foreground mt-1">
+          Computed with all step-ups, the $208 accelerator, and the $3K annual lump sum.
+        </p>
+      </CardHeader>
+      <CardContent>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b border-border/50 text-muted-foreground">
+                <th className="text-left py-2 font-medium">Scenario</th>
+                <th className="text-right py-2 font-medium">Age {horizonAge}</th>
+                <th className="text-right py-2 font-medium">Age {backupAge}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((s) => {
+                const hit = s.primary >= plan.target_amount;
+                return (
+                  <tr
+                    key={s.rate}
+                    className={`border-b border-border/30 transition-colors hover:bg-accent/40 ${
+                      s.rate === plan.expected_return_pct ? 'bg-primary/5' : ''
+                    }`}
+                  >
+                    <td className="py-2">
+                      <span className="font-medium">{s.rate}%</span>{' '}
+                      <span className="text-muted-foreground">{s.label}</span>
+                      {s.rate === plan.expected_return_pct && (
+                        <span className="ml-2 text-[10px] text-primary">your case</span>
+                      )}
+                    </td>
+                    <td className={`text-right py-2 tabular-nums font-medium ${hit ? 'text-emerald-500' : 'text-amber-500'}`}>
+                      {formatCurrencyFull(s.primary)}
+                    </td>
+                    <td className="text-right py-2 tabular-nums font-medium">{formatCurrencyFull(s.backup)}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        <p className="text-xs text-muted-foreground mt-3">
+          <strong className="text-foreground">Interpretation:</strong> age {horizonAge} is the plan horizon;
+          age {backupAge} is the backup scenario. 9% and 10% are upside cases — not lifestyle-spending assumptions.
+        </p>
+      </CardContent>
+    </Card>
+  );
+}

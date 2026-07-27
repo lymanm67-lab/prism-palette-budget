@@ -45,7 +45,16 @@ import { EstateExecution } from '@/components/investment/EstateExecution';
 import { CharitablePlanner } from '@/components/investment/CharitablePlanner';
 import { CollegePlanner } from '@/components/investment/CollegePlanner';
 import { AutomationLog } from '@/components/investment/AutomationLog';
-import { runProjection } from '@/lib/investment/projection';
+import { SnapshotControlBar, type SnapshotControls } from '@/components/investment/SnapshotControlBar';
+import { PlanningToolsGrid } from '@/components/investment/PlanningToolsGrid';
+import { ScenarioSweepTable } from '@/components/investment/ScenarioSweepTable';
+import { FirstMillionCard } from '@/components/investment/FirstMillionCard';
+import { MillionMilestonesTable } from '@/components/investment/MillionMilestonesTable';
+import { ContributionTimelineChart } from '@/components/investment/ContributionTimelineChart';
+import { AllocationPieChart } from '@/components/investment/AllocationPieChart';
+import { projectSnapshot } from '@/lib/investment/snapshotProjection';
+import { useUpsertInvestmentPlan } from '@/hooks/use-investment-plan';
+
 import { exportInvestmentPlanPDF } from '@/lib/investment/exportInvestmentPlanPDF';
 import { toast } from '@/hooks/use-toast';
 
@@ -53,8 +62,24 @@ export default function InvestmentPlanning() {
   const { data: plan, isLoading } = useInvestmentPlan();
   const { household } = useHousehold();
   const qc = useQueryClient();
+  const upsert = useUpsertInvestmentPlan();
   const [loadingSample, setLoadingSample] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('snapshot');
+  const [controls, setControls] = useState<SnapshotControls>({
+    returnPct: 8,
+    horizonAge: 75,
+    futureDollars: true,
+  });
+
+  // Hydrate the live controls from the saved plan once it loads.
+  useEffect(() => {
+    if (!plan) return;
+    setControls({
+      returnPct: plan.expected_return_pct,
+      horizonAge: plan.retirement_age ?? 75,
+      futureDollars: plan.use_future_dollars,
+    });
+  }, [plan?.id, plan?.expected_return_pct, plan?.retirement_age, plan?.use_future_dollars]);
 
   // Sync default tab once the plan finishes loading (avoids flash of wizard for returning users)
   useEffect(() => {
@@ -65,6 +90,7 @@ export default function InvestmentPlanning() {
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading, plan?.id]);
+
 
   const TAB_GROUPS = [
     { label: 'Build Your Plan', items: [
@@ -120,32 +146,41 @@ export default function InvestmentPlanning() {
   };
 
 
-  const projection = useMemo(() => {
-    if (!plan || !plan.current_age || !plan.retirement_age) return null;
-    return runProjection({
-      currentAge: plan.current_age,
-      retirementAge: plan.retirement_age,
-      currentBalance: plan.current_balance,
-      targetAmount: plan.target_amount,
-      monthlyEmployeeContribution: plan.monthly_employee_contribution,
-      monthlyEmployerContribution: plan.monthly_employer_contribution,
-      expectedReturnPct: plan.expected_return_pct,
-      annualRaisePct: plan.annual_raise_pct,
-      raiseRedirectPct: plan.raise_redirect_pct,
-      debtPaymentAmount: plan.debt_payment_amount ?? undefined,
-      debtPayoffDate: plan.debt_payoff_date,
-      additionalMonthlyAmount: plan.additional_monthly_amount ?? undefined,
-      additionalStartDate: plan.additional_start_date,
-      ssMonthlyEstimate: plan.ss_monthly_estimate ?? undefined,
-      incomeFromSsPensionOnly: plan.income_strategy === 'ss_pension_only',
-      spousePensionMonthly: plan.spouse_pension_monthly ?? 0,
-      ssClaimingAge: plan.ss_claiming_age ?? undefined,
-      ssInvestWhileWorking: plan.ss_invest_while_working,
-      ssInvestPct: plan.ss_invest_pct,
-      useFutureDollars: plan.use_future_dollars,
-      inflationPct: plan.inflation_pct,
+  const liveProjection = useMemo(() => {
+    if (!plan || !plan.current_age) return null;
+    return projectSnapshot(plan, controls.returnPct, controls.horizonAge, controls.futureDollars);
+  }, [plan, controls]);
+
+  const controlsDirty =
+    !!plan &&
+    (controls.returnPct !== plan.expected_return_pct ||
+      controls.horizonAge !== (plan.retirement_age ?? 75) ||
+      controls.futureDollars !== plan.use_future_dollars);
+
+  const resetControls = () => {
+    if (!plan) return;
+    setControls({
+      returnPct: plan.expected_return_pct,
+      horizonAge: plan.retirement_age ?? 75,
+      futureDollars: plan.use_future_dollars,
     });
-  }, [plan]);
+  };
+
+  const handleSaveControls = async () => {
+    if (!plan) return;
+    try {
+      await upsert.mutateAsync({
+        id: plan.id,
+        expected_return_pct: controls.returnPct,
+        retirement_age: controls.horizonAge,
+        use_future_dollars: controls.futureDollars,
+      });
+      toast({ title: 'Defaults saved', description: 'Your plan now uses these settings everywhere.' });
+    } catch (e: any) {
+      toast({ title: 'Save failed', description: e.message, variant: 'destructive' });
+    }
+  };
+
 
   const handleExport = () => {
     if (!plan) return;
@@ -217,26 +252,30 @@ export default function InvestmentPlanning() {
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className="flex items-center gap-2 flex-wrap rounded-xl border border-border bg-card/40 backdrop-blur p-2">
-          <TabsList className="bg-transparent gap-1 p-0 h-auto">
-            <TabsTrigger value="wizard" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg">
-              Setup
-            </TabsTrigger>
-            <TabsTrigger value="snapshot" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg">
-              <Sparkles className="h-3.5 w-3.5 mr-1.5" /> Snapshot
-            </TabsTrigger>
-            <TabsTrigger value="scenarios" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg">
-              Scenarios
-            </TabsTrigger>
-            <TabsTrigger value="milestones" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg">
-              Milestones
-            </TabsTrigger>
+          <TabsList className="bg-transparent gap-1 p-0 h-auto flex-wrap">
+            {[
+              { value: 'wizard', label: '1. Setup' },
+              { value: 'snapshot', label: '2. Snapshot' },
+              { value: 'scenarios', label: '3. Scenarios' },
+              { value: 'milestones', label: '4. Milestones' },
+              { value: 'tools', label: '5. Planning tools' },
+            ].map((t) => (
+              <TabsTrigger
+                key={t.value}
+                value={t.value}
+                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg"
+              >
+                {t.value === 'snapshot' && <Sparkles className="h-3.5 w-3.5 mr-1.5" />}
+                {t.label}
+              </TabsTrigger>
+            ))}
           </TabsList>
 
           <div className="ml-auto flex items-center gap-2">
-            <span className="text-xs text-muted-foreground hidden md:inline">More tools</span>
+            <span className="text-xs text-muted-foreground hidden md:inline">Jump to</span>
             <Select value={MORE_TAB_VALUES.includes(activeTab) ? activeTab : ''} onValueChange={setActiveTab}>
-              <SelectTrigger className="w-[220px] h-9">
-                <SelectValue placeholder="Explore planning tools…" />
+              <SelectTrigger className="w-[200px] h-9">
+                <SelectValue placeholder="Any planning tool…" />
               </SelectTrigger>
               <SelectContent className="max-h-[420px]">
                 {TAB_GROUPS.map((group) => (
@@ -259,53 +298,131 @@ export default function InvestmentPlanning() {
             <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-primary/10 text-primary">
               {TAB_LABEL_LOOKUP[activeTab]}
             </span>
-            <button onClick={() => setActiveTab('snapshot')} className="hover:text-foreground underline-offset-2 hover:underline">
-              ← Back to Snapshot
+            <button onClick={() => setActiveTab('tools')} className="hover:text-foreground underline-offset-2 hover:underline">
+              ← All planning tools
             </button>
           </div>
         )}
 
-
+        {/* 2 — Where you stand & what it grows to */}
         <TabsContent value="snapshot" className="mt-4 space-y-3">
-          <SnapshotDashboard plan={plan ?? null} />
-          {projection && (
-            <CollapsibleSection title="Projection charts" defaultOpen>
-              <ProjectionCharts yearly={projection.yearly} target={plan!.target_amount} />
+          {plan && (
+            <SnapshotControlBar
+              controls={controls}
+              onChange={setControls}
+              onReset={resetControls}
+              onSave={handleSaveControls}
+              saving={upsert.isPending}
+              dirty={controlsDirty}
+            />
+          )}
+          <SnapshotDashboard
+            plan={plan ?? null}
+            returnPct={controls.returnPct}
+            horizonAge={controls.horizonAge}
+            futureDollars={controls.futureDollars}
+            onHorizonChange={(age) => setControls((c) => ({ ...c, horizonAge: age }))}
+          />
+          {liveProjection && (
+            <CollapsibleSection title="Projection chart" defaultOpen>
+              <ProjectionCharts yearly={liveProjection.yearly} target={plan!.target_amount} />
             </CollapsibleSection>
           )}
-          {projection && (
-            <CollapsibleSection title="Contribution sources">
-              <ContributionSourcesChart yearly={projection.yearly} />
+          {liveProjection && (
+            <CollapsibleSection title="Where the money comes from" defaultOpen>
+              <ContributionSourcesChart yearly={liveProjection.yearly} />
             </CollapsibleSection>
           )}
-          <CollapsibleSection title="Today's vs future dollars">
-            <DollarModeCard plan={plan ?? null} />
+          <CollapsibleSection title="Default new-dollar allocation">
+            <AllocationPieChart />
           </CollapsibleSection>
           <CollapsibleSection title="Retirement allocation rules">
             <AllocationRulesSection />
+          </CollapsibleSection>
+          <CollapsibleSection title="Today's vs future dollars">
+            <DollarModeCard plan={plan ?? null} />
           </CollapsibleSection>
           <CollapsibleSection title="Projection diagnostic">
             <ProjectionDiagnostic plan={plan ?? null} />
           </CollapsibleSection>
         </TabsContent>
 
+        {/* 1 — Setup */}
         <TabsContent value="wizard" className="mt-4">
           <InvestmentWizard plan={plan ?? null} />
         </TabsContent>
 
+        {/* 3 — What changes the outcome */}
+        <TabsContent value="scenarios" className="mt-4 space-y-3">
+          <ScenarioSweepTable
+            plan={plan ?? null}
+            horizonAge={controls.horizonAge}
+            backupAge={Math.min(90, controls.horizonAge + 3)}
+            futureDollars={controls.futureDollars}
+          />
+          <ReturnScenarioComparison
+            plan={plan ?? null}
+            onCreateRules={() => setActiveTab('rules')}
+            onReviewLegacy={() => setActiveTab('legacy')}
+          />
+          <CollapsibleSection title="Mixed / sequence-of-returns scenario" defaultOpen>
+            <MixedReturnsScenario plan={plan ?? null} />
+          </CollapsibleSection>
+          <CollapsibleSection title="Saved scenario comparison">
+            <ScenarioComparison plan={plan ?? null} />
+          </CollapsibleSection>
+          <CollapsibleSection title="Raise redirect planner">
+            <RaiseRedirectPlanner
+              defaultIncome={plan?.current_monthly_income ?? 5000}
+              yearsToRetirement={plan && plan.current_age ? controls.horizonAge - plan.current_age : 25}
+              returnPct={controls.returnPct}
+            />
+          </CollapsibleSection>
+          <CollapsibleSection title="Debt → wealth converter">
+            <DebtToWealthTool
+              defaultPayment={plan?.debt_payment_amount ?? 500}
+              yearsAfter={plan && plan.current_age ? controls.horizonAge - plan.current_age : 15}
+              returnPct={controls.returnPct}
+            />
+          </CollapsibleSection>
+        </TabsContent>
+
+        {/* 4 — Milestones */}
+        <TabsContent value="milestones" className="mt-4 space-y-3">
+          <FirstMillionCard plan={plan ?? null} />
+          <CollapsibleSection title="Million-dollar milestones" defaultOpen>
+            <MillionMilestonesTable plan={plan ?? null} />
+          </CollapsibleSection>
+          <CollapsibleSection title="Wealth milestones chart" defaultOpen>
+            <WealthMilestonesChart />
+          </CollapsibleSection>
+          <CollapsibleSection title="Retirement milestones">
+            <MilestoneTracker />
+          </CollapsibleSection>
+          <CollapsibleSection title="Contribution timeline">
+            <ContributionTimelineChart />
+          </CollapsibleSection>
+        </TabsContent>
+
+        {/* 5 — Deep tools */}
+        <TabsContent value="tools" className="mt-4">
+          <PlanningToolsGrid groups={TAB_GROUPS} onSelect={setActiveTab} />
+        </TabsContent>
+
+        {/* Individual deep tools */}
         <TabsContent value="raise" className="mt-4">
           <RaiseRedirectPlanner
             defaultIncome={plan?.current_monthly_income ?? 5000}
-            yearsToRetirement={plan && plan.current_age && plan.retirement_age ? plan.retirement_age - plan.current_age : 25}
-            returnPct={plan?.expected_return_pct ?? 7}
+            yearsToRetirement={plan && plan.current_age ? controls.horizonAge - plan.current_age : 25}
+            returnPct={controls.returnPct}
           />
         </TabsContent>
 
         <TabsContent value="debt" className="mt-4">
           <DebtToWealthTool
             defaultPayment={plan?.debt_payment_amount ?? 500}
-            yearsAfter={plan && plan.current_age && plan.retirement_age ? plan.retirement_age - plan.current_age : 15}
-            returnPct={plan?.expected_return_pct ?? 7}
+            yearsAfter={plan && plan.current_age ? controls.horizonAge - plan.current_age : 15}
+            returnPct={controls.returnPct}
           />
         </TabsContent>
 
@@ -332,28 +449,10 @@ export default function InvestmentPlanning() {
         <TabsContent value="charitable" className="mt-4"><CharitablePlanner /></TabsContent>
         <TabsContent value="college" className="mt-4"><CollegePlanner /></TabsContent>
         <TabsContent value="automation" className="mt-4"><AutomationLog planId={plan?.id} /></TabsContent>
-
-        <TabsContent value="scenarios" className="mt-4 space-y-3">
-          <ReturnScenarioComparison
-            plan={plan ?? null}
-            onCreateRules={() => setActiveTab('rules')}
-            onReviewLegacy={() => setActiveTab('legacy')}
-          />
-          <MixedReturnsScenario plan={plan ?? null} />
-          <ScenarioComparison plan={plan ?? null} />
-        </TabsContent>
-
-        <TabsContent value="milestones" className="mt-4 space-y-4">
-          <CollapsibleSection title="Wealth Milestones Chart" defaultOpen>
-            <WealthMilestonesChart />
-          </CollapsibleSection>
-          <CollapsibleSection title="Retirement Milestones" defaultOpen>
-            <MilestoneTracker />
-          </CollapsibleSection>
-        </TabsContent>
       </Tabs>
 
       <DisclaimerBlock />
     </div>
   );
 }
+
