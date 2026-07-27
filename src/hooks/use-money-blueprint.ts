@@ -17,6 +17,33 @@ export const LYMAN_GROSS_ANNUAL = 95_940;
 export const HOUSEHOLD_GROSS_ANNUAL = LYMAN_GROSS_ANNUAL + KATERI_GROSS_ANNUAL; // 208,940
 const NET_RATIO = 0.76; // take-home estimate after taxes + pre-tax deferrals
 
+/**
+ * Retirement contributions come out of payroll, not from bank transactions, so the
+ * 90-day transaction scan can never see them. These are the real per-month figures
+ * from the IU paystub (07/2026) plus Kateri's OPERS deferral.
+ */
+export const PAYROLL_RETIREMENT = {
+  lyman: {
+    rothTDA: 85,
+    roth457: 75,
+    preTaxTDA: 100,
+    preTax457: 75,
+    hsa: 116.66,
+  },
+  kateri: {
+    // OPERS member contribution: 10% of gross
+    pension: Math.round(((KATERI_GROSS_ANNUAL / 12) * 0.1) * 100) / 100,
+  },
+};
+
+const LYMAN_RETIREMENT_MONTHLY =
+  PAYROLL_RETIREMENT.lyman.rothTDA +
+  PAYROLL_RETIREMENT.lyman.roth457 +
+  PAYROLL_RETIREMENT.lyman.preTaxTDA +
+  PAYROLL_RETIREMENT.lyman.preTax457 +
+  PAYROLL_RETIREMENT.lyman.hsa;
+const KATERI_RETIREMENT_MONTHLY = PAYROLL_RETIREMENT.kateri.pension;
+
 
 export function useMoneyBlueprint() {
   const { household } = useHousehold();
