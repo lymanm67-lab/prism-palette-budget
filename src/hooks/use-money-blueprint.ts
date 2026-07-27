@@ -245,12 +245,18 @@ export function useBlueprintPrefill() {
         return { ...r, lyman, kateri: Math.round(((r.amount || 0) - lyman) * 100) / 100 };
       };
 
-      const foundation = DEFAULT_FOUNDATION.map((r) => withSplit({
-        ...r,
-        amount: r.key === 'rent'
-          ? RENT_MONTHLY
-          : budgeted.has(r.key) ? Math.round(budgeted.get(r.key)! * 100) / 100 : monthlyAvg(spend.get(r.key) || 0),
-      }));
+      const foundation = DEFAULT_FOUNDATION.map((r) => {
+        // From April 2027 Kateri pays the utilities bill ($377/mo) entirely.
+        if (r.key === 'utilities' && kateriPaysUtilities()) {
+          return { ...r, lyman: 0, kateri: KATERI_UTILITIES_MONTHLY, amount: KATERI_UTILITIES_MONTHLY };
+        }
+        return withSplit({
+          ...r,
+          amount: r.key === 'rent'
+            ? RENT_MONTHLY
+            : budgeted.has(r.key) ? Math.round(budgeted.get(r.key)! * 100) / 100 : monthlyAvg(spend.get(r.key) || 0),
+        });
+      });
 
       return {
         foundation,
