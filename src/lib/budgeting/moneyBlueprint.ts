@@ -8,8 +8,37 @@ export type BucketKey = 'foundation' | 'wealthEngine' | 'futureFund' | 'freedom'
 export interface BlueprintRow {
   key: string;
   label: string;
+  /** Combined household amount (always lyman + kateri once normalized). */
   amount: number;
+  lyman?: number;
+  kateri?: number;
   custom?: boolean;
+}
+
+/** Which owner's slice of each category is being viewed / edited. */
+export type OwnerView = 'combined' | 'lyman' | 'kateri';
+
+export const OWNER_VIEWS: { key: OwnerView; label: string }[] = [
+  { key: 'combined', label: 'Combined' },
+  { key: 'lyman', label: 'Lyman' },
+  { key: 'kateri', label: 'Kateri' },
+];
+
+/** Ensures a row has an owner split; legacy rows land entirely on Lyman. */
+export function normalizeRow(row: BlueprintRow): BlueprintRow {
+  if (row.lyman === undefined && row.kateri === undefined) {
+    return { ...row, lyman: Number(row.amount) || 0, kateri: 0 };
+  }
+  const lyman = Number(row.lyman) || 0;
+  const kateri = Number(row.kateri) || 0;
+  return { ...row, lyman, kateri, amount: Math.round((lyman + kateri) * 100) / 100 };
+}
+
+export function rowAmount(row: BlueprintRow, view: OwnerView = 'combined'): number {
+  const r = normalizeRow(row);
+  if (view === 'lyman') return r.lyman!;
+  if (view === 'kateri') return r.kateri!;
+  return r.amount;
 }
 
 export interface BalanceSheet {
