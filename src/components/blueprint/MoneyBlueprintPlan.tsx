@@ -14,7 +14,7 @@ import {
   type BlueprintRow, type BlueprintState, type OwnerView,
 } from '@/lib/budgeting/moneyBlueprint';
 import { BlueprintBucketBar } from './BlueprintBucketBar';
-import { useMoneyBlueprint, useSaveMoneyBlueprint, useBlueprintPrefill } from '@/hooks/use-money-blueprint';
+import { useMoneyBlueprint, useSaveMoneyBlueprint, useBlueprintPrefill, LYMAN_GROSS_ANNUAL, KATERI_GROSS_ANNUAL } from '@/hooks/use-money-blueprint';
 import { useWealthOSData } from '@/hooks/use-wealth-os';
 
 const money = (n: number) =>
@@ -253,49 +253,71 @@ export function MoneyBlueprintPlan() {
         </Card>
 
         <Card>
-          <CardHeader className="pb-3"><CardTitle className="text-base">Monthly Income</CardTitle></CardHeader>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">
+              Monthly Income — {view === 'combined' ? 'Household' : view === 'lyman' ? 'Lyman' : 'Kateri'}
+            </CardTitle>
+          </CardHeader>
           <CardContent className="space-y-3">
-            <div className="grid grid-cols-[1fr_140px] items-center gap-3">
-              <Label className="text-xs">Gross monthly income (all income before taxes)</Label>
-              <MoneyInput
-                value={state.income.grossMonthly}
-                onChange={(n) => setState((s) => ({ ...s, income: { ...s.income, grossMonthly: n } }))}
-              />
-            </div>
-            <div className="grid grid-cols-[1fr_140px] items-center gap-3">
-              <Label className="text-xs">Net monthly income (household take-home)</Label>
-              <MoneyInput
-                value={state.income.netMonthly}
-                onChange={(n) => setState((s) => ({ ...s, income: { ...s.income, netMonthly: n } }))}
-              />
-            </div>
-            <div className="grid grid-cols-[1fr_140px] items-center gap-3">
-              <Label className="text-xs">Lyman take-home</Label>
-              <MoneyInput
-                value={state.income.lymanNet ?? state.income.netMonthly}
-                onChange={(n) => setState((s) => ({
-                  ...s,
-                  income: { ...s.income, lymanNet: n, netMonthly: Math.round((n + (s.income.kateriNet ?? 0)) * 100) / 100 },
-                }))}
-              />
-            </div>
-            <div className="grid grid-cols-[1fr_140px] items-center gap-3">
-              <Label className="text-xs">Kateri take-home</Label>
-              <MoneyInput
-                value={state.income.kateriNet ?? 0}
-                onChange={(n) => setState((s) => ({
-                  ...s,
-                  income: { ...s.income, kateriNet: n, netMonthly: Math.round(((s.income.lymanNet ?? s.income.netMonthly) + n) * 100) / 100 },
-                }))}
-              />
-            </div>
-            {prefill?.source && (
+            {view === 'combined' ? (
+              <>
+                <div className="grid grid-cols-[1fr_140px] items-center gap-3">
+                  <Label className="text-xs">Gross monthly income (all income before taxes)</Label>
+                  <MoneyInput
+                    value={state.income.grossMonthly}
+                    onChange={(n) => setState((s) => ({ ...s, income: { ...s.income, grossMonthly: n } }))}
+                  />
+                </div>
+                <div className="grid grid-cols-[1fr_140px] items-center gap-3">
+                  <Label className="text-xs">Net monthly income (household take-home)</Label>
+                  <MoneyInput
+                    value={state.income.netMonthly}
+                    onChange={(n) => setState((s) => ({ ...s, income: { ...s.income, netMonthly: n } }))}
+                  />
+                </div>
+              </>
+            ) : (
+              <div className="grid grid-cols-[1fr_140px] items-center gap-3">
+                <Label className="text-xs">Gross monthly income (before taxes)</Label>
+                <div className="rounded-md border bg-muted/40 px-3 py-2 text-right text-sm font-semibold tabular-nums">
+                  {money2(
+                    view === 'lyman' ? LYMAN_GROSS_ANNUAL / 12 : KATERI_GROSS_ANNUAL / 12,
+                  )}
+                </div>
+              </div>
+            )}
+            {(view === 'combined' || view === 'lyman') && (
+              <div className="grid grid-cols-[1fr_140px] items-center gap-3">
+                <Label className="text-xs">Lyman take-home</Label>
+                <MoneyInput
+                  value={state.income.lymanNet ?? state.income.netMonthly}
+                  onChange={(n) => setState((s) => ({
+                    ...s,
+                    income: { ...s.income, lymanNet: n, netMonthly: Math.round((n + (s.income.kateriNet ?? 0)) * 100) / 100 },
+                  }))}
+                />
+              </div>
+            )}
+            {(view === 'combined' || view === 'kateri') && (
+              <div className="grid grid-cols-[1fr_140px] items-center gap-3">
+                <Label className="text-xs">Kateri take-home</Label>
+                <MoneyInput
+                  value={state.income.kateriNet ?? 0}
+                  onChange={(n) => setState((s) => ({
+                    ...s,
+                    income: { ...s.income, kateriNet: n, netMonthly: Math.round(((s.income.lymanNet ?? s.income.netMonthly) + n) * 100) / 100 },
+                  }))}
+                />
+              </div>
+            )}
+            {prefill?.source && view === 'combined' && (
               <p className="text-[11px] text-muted-foreground">
                 Live take-home: Lyman {money2(prefill.source.lymanNet)} (tracked deposits) + Kateri{' '}
                 {money2(prefill.source.kateriNet)} (est. from $113,000 salary) ={' '}
                 <span className="font-semibold">{money2(prefill.income.netMonthly)}</span>/mo.
               </p>
             )}
+
 
             <div className="grid grid-cols-3 gap-2 pt-1">
               <div className="rounded-lg border border-border/50 p-2">
