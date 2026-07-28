@@ -178,7 +178,10 @@ export default function HouseholdWealth() {
               <Stat label="Household Net Worth" value={money(live?.netWorth ?? 0)} />
             </CardContent>
           </Card>
+
+          <StudentLoanPslfCard />
         </TabsContent>
+
 
         {/* -------- Kateri profile -------- */}
         <TabsContent value="kateri" className="space-y-4 mt-4">
