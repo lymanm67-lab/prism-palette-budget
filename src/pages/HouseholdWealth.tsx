@@ -13,6 +13,8 @@ import { PageExplainer } from '@/components/PageExplainer';
 import { OwnershipTagger } from '@/components/wealth-os/OwnershipTagger';
 import { BlueprintSummaryCard } from '@/components/blueprint/BlueprintSummaryCard';
 import { LegacyStepNav } from '@/components/legacy/LegacyStepNav';
+import { StudentLoanPslfCard } from '@/components/wealth-os/StudentLoanPslfCard';
+
 
 
 const OPERS = 328948.74;
@@ -178,7 +180,10 @@ export default function HouseholdWealth() {
               <Stat label="Household Net Worth" value={money(live?.netWorth ?? 0)} />
             </CardContent>
           </Card>
+
+          <StudentLoanPslfCard />
         </TabsContent>
+
 
         {/* -------- Kateri profile -------- */}
         <TabsContent value="kateri" className="space-y-4 mt-4">
