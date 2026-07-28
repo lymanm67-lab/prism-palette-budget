@@ -13,6 +13,8 @@ import { PageExplainer } from '@/components/PageExplainer';
 import { OwnershipTagger } from '@/components/wealth-os/OwnershipTagger';
 import { BlueprintSummaryCard } from '@/components/blueprint/BlueprintSummaryCard';
 import { LegacyStepNav } from '@/components/legacy/LegacyStepNav';
+import { StudentLoanPslfCard } from '@/components/wealth-os/StudentLoanPslfCard';
+
 
 
 const OPERS = 328948.74;
