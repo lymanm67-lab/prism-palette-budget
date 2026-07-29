@@ -49,6 +49,8 @@ import {
   futureValue,
 } from '@/lib/investment/contributionWaterfall';
 import ContributionOptimizer from '@/components/investment/ContributionOptimizer';
+import { LegacyStepNav } from '@/components/legacy/LegacyStepNav';
+
 
 
 const STORAGE_KEY = 'montgomery-contribution-waterfall-v3';
