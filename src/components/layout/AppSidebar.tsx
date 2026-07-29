@@ -89,6 +89,7 @@ const NAV_SECTIONS: NavSection[] = [
       { to: '/legacy/preservation', icon: TrendingUp, label: '4. Retirement Preservation', color: 'text-prism-amber' },
       { to: '/legacy/sequence-risk', icon: ShieldCheck, label: '4b. Sequence Risk', color: 'text-prism-amber' },
       { to: '/legacy/waterfall', icon: Layers, label: '4c. Contribution Waterfall', color: 'text-prism-teal' },
+      { to: '/legacy/withdrawal-tax', icon: Layers, label: '4d. Withdrawal & Tax', color: 'text-prism-teal' },
       { to: '/kungfoo', icon: Layers, label: '5. KUNG FOO Plan', color: 'text-prism-teal' },
       { to: '/legacy/family', icon: Heart, label: '6. Family Legacy', color: 'text-prism-rose' },
       { to: '/legacy/wealth-os', icon: BookOpen, label: '7. Wealth OS Binder', color: 'text-prism-amber' },
