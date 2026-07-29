@@ -18,6 +18,7 @@ import {
 import {
   DEFAULT_SORR, SorrInputs, sequenceIllustration, scenarioDefs, projectScenario,
   strategyComparison, safeWithdrawalAnalysis, monteCarlo, preservationScore, cashReserveTarget,
+  improvementActions,
 } from '@/lib/retirement/sequenceRisk';
 
 const NAVY = '#0B2341';
