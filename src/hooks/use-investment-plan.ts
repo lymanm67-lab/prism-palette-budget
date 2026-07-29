@@ -171,7 +171,7 @@ export function useSeedMilestones() {
         { age: 70, title: 'Age 70 review', description: 'Social Security claiming and investment strategy.' },
         { age: 75, title: 'Age 75 review', description: 'Review withdrawal strategy, taxes, and risk.' },
         { age: 80, title: 'Age 80 review', description: 'Shift from accumulation to preservation and legacy.' },
-        { age: 75, title: 'Age 75 review', description: 'Review estate transfer and trust funding plan.' },
+        { age: 85, title: 'Age 85 review', description: 'Review estate transfer and trust funding plan.' },
       ];
       const rows = defaults.map((d, i) => ({ ...d, sort_order: i, household_id: household!.id }));
       const { error } = await supabase.from('investment_milestones').insert(rows as any);

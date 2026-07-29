@@ -29,7 +29,7 @@ export function BlueprintSummaryCard({ compact }: { compact?: boolean }) {
             </p>
           </div>
           <Button asChild size="sm" variant="outline">
-            <Link to="/legacy/money-blueprint">
+            <Link to="/money-blueprint">
               Open <ArrowRight className="h-3.5 w-3.5 ml-1" />
             </Link>
           </Button>
