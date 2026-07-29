@@ -1,5 +1,4 @@
 import { useMemo, useState, useEffect } from 'react';
-import { Helmet } from 'react-helmet-async';
 import {
   Card,
   CardContent,
@@ -99,6 +98,16 @@ export default function ContributionWaterfall() {
   const tax = useMemo(() => buildTaxDiversification(inputs), [inputs]);
   const next = useMemo(() => nextBestDollar(inputs), [inputs]);
 
+  useEffect(() => {
+    document.title = 'Contribution Waterfall | Tax-Efficient Investment Priority';
+    const meta = document.querySelector('meta[name="description"]');
+    if (meta)
+      meta.setAttribute(
+        'content',
+        'Dynamic Investment Priority Engine allocating each new retirement dollar across employer plan, HSA, Roth IRA, 457(b), TDA and brokerage.'
+      );
+  }, []);
+
   const employerMonthly = (inputs.iuSalary * inputs.employerRate) / 12;
   const totalMonthly =
     employerMonthly +
@@ -121,15 +130,6 @@ export default function ContributionWaterfall() {
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6 max-w-7xl">
-      <Helmet>
-        <title>Contribution Waterfall | Tax-Efficient Investment Priority</title>
-        <meta
-          name="description"
-          content="Dynamic Investment Priority Engine that allocates each new retirement dollar in the most tax-efficient order across employer plan, HSA, Roth IRA, 457(b), TDA and brokerage."
-        />
-        <link rel="canonical" href="/legacy/waterfall" />
-      </Helmet>
-
       <header className="space-y-2">
         <Badge variant="outline" className="border-prism-amber/40 text-prism-amber">
           Family Office • Dynamic Investment Priority Engine
