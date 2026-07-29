@@ -49,7 +49,7 @@ import {
   futureValue,
 } from '@/lib/investment/contributionWaterfall';
 
-const STORAGE_KEY = 'montgomery-contribution-waterfall-v1';
+const STORAGE_KEY = 'montgomery-contribution-waterfall-v2';
 
 const money = (n: number, d = 0) =>
   new Intl.NumberFormat('en-US', {
