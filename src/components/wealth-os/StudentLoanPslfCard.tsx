@@ -4,7 +4,8 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { GraduationCap, Info } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { GraduationCap, Info, ShieldAlert } from 'lucide-react';
 
 const money = (n: number) =>
   n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
@@ -19,6 +20,7 @@ export function StudentLoanPslfCard() {
   const [monthlyPayment, setMonthlyPayment] = useState(390);
   const [completed, setCompleted] = useState(55);
   const [required, setRequired] = useState(120);
+  const [adjustedView, setAdjustedView] = useState(false);
 
   const m = useMemo(() => {
     const remaining = Math.max(required - completed, 0);
@@ -41,9 +43,22 @@ export function StudentLoanPslfCard() {
           <CardTitle className="flex items-center gap-2 text-base">
             <GraduationCap className="h-4 w-4" /> Student Loan &amp; PSLF Tracking
           </CardTitle>
-          <Badge variant="outline" className="border-prism-teal/40 text-prism-teal bg-prism-teal/10">
-            {m.remaining === 0 ? 'PSLF Complete' : 'PSLF In Progress'}
-          </Badge>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <Switch
+                id="pslf-adjusted"
+                checked={adjustedView}
+                onCheckedChange={setAdjustedView}
+                aria-label="Toggle PSLF-adjusted liability view"
+              />
+              <Label htmlFor="pslf-adjusted" className="text-xs cursor-pointer">
+                PSLF-adjusted view
+              </Label>
+            </div>
+            <Badge variant="outline" className="border-prism-teal/40 text-prism-teal bg-prism-teal/10">
+              {m.remaining === 0 ? 'PSLF Complete' : 'PSLF In Progress'}
+            </Badge>
+          </div>
         </div>
         <p className="text-xs text-muted-foreground">
           Program type: Public Service Loan Forgiveness (PSLF)
@@ -80,13 +95,13 @@ export function StudentLoanPslfCard() {
           <Progress value={m.pctDone} className="h-2" />
         </div>
 
-        {/* Two views */}
-        <div className="grid gap-3 md:grid-cols-2">
+        {/* Liability views */}
+        <div className={`grid gap-3 ${adjustedView ? 'md:grid-cols-3' : 'md:grid-cols-2'}`}>
           <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4">
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">A. Net worth liability</p>
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">A. Legal balance</p>
             <p className="text-2xl font-bold text-destructive mt-1">{money(balance)}</p>
             <p className="text-xs text-muted-foreground mt-1">
-              Student loan balance — counted as a liability until forgiveness is approved and discharged.
+              Full student loan balance — the conservative net-worth liability until PSLF discharge is officially approved.
             </p>
           </div>
           <div className="rounded-lg border border-prism-teal/30 bg-prism-teal/5 p-4">
@@ -97,6 +112,16 @@ export function StudentLoanPslfCard() {
               Projected obligation, not the loan balance.
             </p>
           </div>
+          {adjustedView && (
+            <div className="rounded-lg border border-prism-amber/30 bg-prism-amber/5 p-4">
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">C. PSLF-adjusted liability</p>
+              <p className="text-2xl font-bold text-prism-amber mt-1">{money(m.exposure)}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Hypothetical net-worth liability if you treat the remaining payments as your only obligation.
+                For planning only — not the legal balance.
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="grid gap-3 sm:grid-cols-3 text-sm">
@@ -126,12 +151,24 @@ export function StudentLoanPslfCard() {
         <div className="flex gap-2 text-xs text-muted-foreground">
           <Info className="h-3.5 w-3.5 shrink-0 mt-0.5" />
           <p>
-            Because this loan is being managed under Public Service Loan Forgiveness, the full loan balance
-            should remain listed as a liability until forgiveness is officially approved. The estimated
-            remaining payment exposure reflects the projected cash-flow cost to reach {required} qualifying
-            payments, based on the current monthly payment.
+            Because this loan is being managed under Public Service Loan Forgiveness, the full legal balance
+            should remain listed as a liability until forgiveness is officially approved and discharged.
+            The estimated remaining payment exposure reflects the projected cash-flow cost to reach {required} qualifying
+            payments. Toggle "PSLF-adjusted view" to see what your net worth would look like if you treated only
+            the remaining payments as the obligation — this is for planning context only, not the legal balance.
           </p>
         </div>
+
+        {adjustedView && (
+          <div className="flex gap-2 text-xs text-destructive">
+            <ShieldAlert className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+            <p>
+              The PSLF-adjusted view assumes you complete all {required} qualifying payments, maintain eligible
+              employment, stay in a qualifying repayment plan, and that the discharge is approved. Any of those
+              conditions can change, so the full $107,000 balance remains the conservative net-worth liability.
+            </p>
+          </div>
+        )}
 
         <p className="text-xs text-muted-foreground">
           <strong className="text-foreground">Planning status:</strong> Projected forgiveness after {required} qualifying
