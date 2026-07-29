@@ -640,7 +640,10 @@ export default function ContributionWaterfall() {
           retirement income and legacy planning.
         </CardContent>
       </Card>
+
+      <LegacyStepNav />
     </div>
+
   );
 }
 
