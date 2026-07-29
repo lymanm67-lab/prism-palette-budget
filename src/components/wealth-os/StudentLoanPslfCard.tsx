@@ -4,7 +4,8 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { GraduationCap, Info } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { GraduationCap, Info, ShieldAlert } from 'lucide-react';
 
 const money = (n: number) =>
   n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
