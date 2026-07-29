@@ -65,17 +65,18 @@ export const DEFAULT_WATERFALL_INPUTS: WaterfallInputs = {
   hsaBalance: 4200,
 
   rothIraCurrentMonthly: 0,
-  rothIraAnnualTarget: 8000,
+  // Realistic near-term targets sized to current cash flow (step up after Sept-2027 debt payoff)
+  rothIraAnnualTarget: 2400, // $200/mo
   rothIraBalance: 0,
 
   // Paystub actuals (monthly pay): IU 457(b) $75 pre-tax + Roth 457(b) $75
   plan457CurrentMonthly: 150,
-  plan457AnnualTarget: 12000,
+  plan457AnnualTarget: 3000, // $250/mo
   plan457Balance: 12324,
 
   // Paystub actuals (monthly pay): Tax Deferred (TDA) $100 pre-tax + Roth TDA $85
   tdaCurrentMonthly: 185,
-  tdaAnnualTarget: 12000,
+  tdaAnnualTarget: 3600, // $300/mo
   tdaBalance: 161338,
 
   brokerageCurrentMonthly: 0,

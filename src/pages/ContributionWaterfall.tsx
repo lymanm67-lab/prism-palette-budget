@@ -49,7 +49,7 @@ import {
   futureValue,
 } from '@/lib/investment/contributionWaterfall';
 
-const STORAGE_KEY = 'montgomery-contribution-waterfall-v2';
+const STORAGE_KEY = 'montgomery-contribution-waterfall-v3';
 const PAYSTUB_457_MONTHLY = DEFAULT_WATERFALL_INPUTS.plan457CurrentMonthly;
 const PAYSTUB_TDA_MONTHLY = DEFAULT_WATERFALL_INPUTS.tdaCurrentMonthly;
 
