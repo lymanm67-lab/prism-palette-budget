@@ -335,17 +335,28 @@ export interface WaterfallStep {
 }
 
 export function buildCashFlowWaterfall(p: PayrollBaseline): WaterfallStep[] {
-  const phase2 = Math.max(0, p.marketingBudget - p.studentLoanPayment);
+  const p2 = phase2Redirect(p);
+  const p3 = phase3Redirect(p);
   return [
     {
       label: 'Current Payroll',
       detail: `${employeeContributionTotal(p).toFixed(2)}/mo employee + ${p.employerMonthly.toFixed(2)}/mo employer`,
       amount: null,
     },
-    { label: 'January 2027', detail: 'Marketing budget shift less student loan payment', amount: phase2 },
-    { label: 'Debt Payoff', detail: 'Consumer debt eliminated', amount: p.debtPayoffRedirect },
+    {
+      label: 'January 2027',
+      detail: `Consumer debt $${p.debtPayoffRedirect.toLocaleString()} freed less $${p.studentLoanPayment.toLocaleString()} student loan (IDR)`,
+      amount: p2,
+    },
+    {
+      label: 'June 2027',
+      detail: 'Marketing & education budget freed in May 2027, redirected from June',
+      amount: p3,
+    },
+    { label: 'Combined Redirect', detail: 'Total ongoing monthly redirect to retirement', amount: p2 + p3 },
     { label: 'Future Raises', detail: '3% annually, half redirected to investing', amount: null },
     { label: 'Future Bonuses', detail: 'Optional lump-sum deployment', amount: null },
     { label: 'Investment Allocation Engine', detail: 'Staged into HSA → Roth IRA → 457(b) → TDA → brokerage', amount: null },
   ];
+
 }
