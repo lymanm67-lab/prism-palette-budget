@@ -151,12 +151,24 @@ export function StudentLoanPslfCard() {
         <div className="flex gap-2 text-xs text-muted-foreground">
           <Info className="h-3.5 w-3.5 shrink-0 mt-0.5" />
           <p>
-            Because this loan is being managed under Public Service Loan Forgiveness, the full loan balance
-            should remain listed as a liability until forgiveness is officially approved. The estimated
-            remaining payment exposure reflects the projected cash-flow cost to reach {required} qualifying
-            payments, based on the current monthly payment.
+            Because this loan is being managed under Public Service Loan Forgiveness, the full legal balance
+            should remain listed as a liability until forgiveness is officially approved and discharged.
+            The estimated remaining payment exposure reflects the projected cash-flow cost to reach {required} qualifying
+            payments. Toggle "PSLF-adjusted view" to see what your net worth would look like if you treated only
+            the remaining payments as the obligation — this is for planning context only, not the legal balance.
           </p>
         </div>
+
+        {adjustedView && (
+          <div className="flex gap-2 text-xs text-destructive">
+            <ShieldAlert className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+            <p>
+              The PSLF-adjusted view assumes you complete all {required} qualifying payments, maintain eligible
+              employment, stay in a qualifying repayment plan, and that the discharge is approved. Any of those
+              conditions can change, so the full $107,000 balance remains the conservative net-worth liability.
+            </p>
+          </div>
+        )}
 
         <p className="text-xs text-muted-foreground">
           <strong className="text-foreground">Planning status:</strong> Projected forgiveness after {required} qualifying
