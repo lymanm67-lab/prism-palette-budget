@@ -60,10 +60,9 @@ const normalizeAnnualTarget = (value: number | undefined, fallback: number) => {
   const n = Number(value);
   if (!Number.isFinite(n) || n <= 0) return fallback;
 
-  // Old saved assumptions used $12,000/yr ($1,000/mo), which is too aggressive for
-  // the current paycheck plan. Migrate those stale saved targets back to the
-  // realistic defaults while preserving smaller manual edits.
-  return n >= 12000 ? fallback : n;
+  // Migrate old saved assumptions that were either stored as $1,000/mo or
+  // $12,000/yr back to the realistic paycheck-sized defaults.
+  return n >= 1000 ? fallback : n;
 };
 
 const normalizeWaterfallInputs = (saved: Partial<WaterfallInputs> = {}): WaterfallInputs => {
