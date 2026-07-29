@@ -139,8 +139,13 @@ export function analyzeHsa(i: WaterfallInputs): HsaAnalysis {
   };
 }
 
+/** Actual paystub amount wins; otherwise fall back to eligible salary x employer rate. */
+export function employerContributionMonthly(i: WaterfallInputs) {
+  return i.employerMonthlyActual > 0 ? i.employerMonthlyActual : (i.iuSalary * i.employerRate) / 12;
+}
+
 export function buildPriorityRows(i: WaterfallInputs): PriorityRow[] {
-  const employerMonthly = (i.iuSalary * i.employerRate) / 12;
+  const employerMonthly = employerContributionMonthly(i);
   const hsa = analyzeHsa(i);
 
   const rows: PriorityRow[] = [
@@ -351,7 +356,7 @@ export function buildTaxDiversification(i: WaterfallInputs): TaxDiversification 
     return fvBal + fvFlow;
   };
 
-  const employerMonthly = (i.iuSalary * i.employerRate) / 12;
+  const employerMonthly = employerContributionMonthly(i);
   const hsa = analyzeHsa(i);
 
   const projected = {

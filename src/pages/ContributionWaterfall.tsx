@@ -108,7 +108,7 @@ export default function ContributionWaterfall() {
       );
   }, []);
 
-  const employerMonthly = (inputs.iuSalary * inputs.employerRate) / 12;
+  const employerMonthly = employerContributionMonthly(inputs);
   const totalMonthly =
     employerMonthly +
     inputs.hsaCurrentMonthly +
@@ -223,7 +223,7 @@ export default function ContributionWaterfall() {
                   <p className="text-xs text-muted-foreground">
                     {r.percentComplete.toFixed(0)}% of target funded
                     {r.key === 'employer' &&
-                      ` · ${(inputs.employerRate * 100).toFixed(0)}% of eligible salary — fully funded foundation; continue while employed.`}
+                      ` · ${money(employerMonthly * 12)}/yr employer-funded (${((employerMonthly * 12 / inputs.iuSalary) * 100).toFixed(2)}% of eligible salary) — fully funded foundation; continue while employed.`}
                     {r.key === 'rothIra' &&
                       ` · Est. tax-free retirement value ${money(
                         futureValue(r.currentMonthly, inputs) + r.balance * Math.pow(1 + inputs.expectedReturn, inputs.yearsToRetirement)
@@ -435,7 +435,13 @@ export default function ContributionWaterfall() {
             <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <Field label="IU Eligible Salary" value={inputs.iuSalary} onChange={set('iuSalary')} />
               <Field
-                label="Employer Rate (decimal)"
+                label="Employer Contribution / mo (actual)"
+                value={inputs.employerMonthlyActual}
+                step="0.01"
+                onChange={set('employerMonthlyActual')}
+              />
+              <Field
+                label="Employer Rate fallback (decimal)"
                 value={inputs.employerRate}
                 step="0.01"
                 onChange={set('employerRate')}
