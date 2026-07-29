@@ -50,6 +50,19 @@ import {
 } from '@/lib/investment/contributionWaterfall';
 
 const STORAGE_KEY = 'montgomery-contribution-waterfall-v2';
+const PAYSTUB_457_MONTHLY = DEFAULT_WATERFALL_INPUTS.plan457CurrentMonthly;
+const PAYSTUB_TDA_MONTHLY = DEFAULT_WATERFALL_INPUTS.tdaCurrentMonthly;
+
+const normalizeWaterfallInputs = (saved: Partial<WaterfallInputs> = {}): WaterfallInputs => {
+  const merged = { ...DEFAULT_WATERFALL_INPUTS, ...saved };
+
+  return {
+    ...merged,
+    plan457CurrentMonthly:
+      merged.plan457CurrentMonthly > 0 ? merged.plan457CurrentMonthly : PAYSTUB_457_MONTHLY,
+    tdaCurrentMonthly: merged.tdaCurrentMonthly > 0 ? merged.tdaCurrentMonthly : PAYSTUB_TDA_MONTHLY,
+  };
+};
 
 const money = (n: number, d = 0) =>
   new Intl.NumberFormat('en-US', {
@@ -71,12 +84,12 @@ const CHART_COLORS = [
 ];
 
 export default function ContributionWaterfall() {
-  const [inputs, setInputs] = useState<WaterfallInputs>(DEFAULT_WATERFALL_INPUTS);
+  const [inputs, setInputs] = useState<WaterfallInputs>(normalizeWaterfallInputs());
 
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setInputs({ ...DEFAULT_WATERFALL_INPUTS, ...JSON.parse(raw) });
+      if (raw) setInputs(normalizeWaterfallInputs(JSON.parse(raw)));
     } catch {
       /* ignore */
     }
@@ -428,7 +441,7 @@ export default function ContributionWaterfall() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setInputs(DEFAULT_WATERFALL_INPUTS)}
+                onClick={() => setInputs(normalizeWaterfallInputs())}
               >
                 <RotateCcw className="h-4 w-4 mr-2" /> Reset
               </Button>
