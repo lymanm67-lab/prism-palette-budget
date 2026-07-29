@@ -20,6 +20,7 @@ export function StudentLoanPslfCard() {
   const [monthlyPayment, setMonthlyPayment] = useState(390);
   const [completed, setCompleted] = useState(55);
   const [required, setRequired] = useState(120);
+  const [adjustedView, setAdjustedView] = useState(false);
 
   const m = useMemo(() => {
     const remaining = Math.max(required - completed, 0);
