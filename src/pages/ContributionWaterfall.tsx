@@ -56,6 +56,16 @@ const PAYSTUB_TDA_MONTHLY = DEFAULT_WATERFALL_INPUTS.tdaCurrentMonthly;
 const BROKERAGE_BALANCE = 3500;
 const ROTH_IRA_MONTHLY = 100;
 
+const normalizeAnnualTarget = (value: number | undefined, fallback: number) => {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n <= 0) return fallback;
+
+  // Old saved assumptions used $12,000/yr ($1,000/mo), which is too aggressive for
+  // the current paycheck plan. Migrate those stale saved targets back to the
+  // realistic defaults while preserving smaller manual edits.
+  return n >= 12000 ? fallback : n;
+};
+
 const normalizeWaterfallInputs = (saved: Partial<WaterfallInputs> = {}): WaterfallInputs => {
   const merged = { ...DEFAULT_WATERFALL_INPUTS, ...saved };
 
@@ -67,6 +77,18 @@ const normalizeWaterfallInputs = (saved: Partial<WaterfallInputs> = {}): Waterfa
     brokerageBalance: merged.brokerageBalance > 0 ? merged.brokerageBalance : BROKERAGE_BALANCE,
     rothIraCurrentMonthly:
       merged.rothIraCurrentMonthly > 0 ? merged.rothIraCurrentMonthly : ROTH_IRA_MONTHLY,
+    rothIraAnnualTarget: normalizeAnnualTarget(
+      merged.rothIraAnnualTarget,
+      DEFAULT_WATERFALL_INPUTS.rothIraAnnualTarget
+    ),
+    plan457AnnualTarget: normalizeAnnualTarget(
+      merged.plan457AnnualTarget,
+      DEFAULT_WATERFALL_INPUTS.plan457AnnualTarget
+    ),
+    tdaAnnualTarget: normalizeAnnualTarget(
+      merged.tdaAnnualTarget,
+      DEFAULT_WATERFALL_INPUTS.tdaAnnualTarget
+    ),
   };
 };
 
