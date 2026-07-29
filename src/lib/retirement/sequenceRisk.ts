@@ -366,6 +366,98 @@ export function preservationScore(i: SorrInputs): {
   return { score, band, factors };
 }
 
+// -------------------------------------------------- improvement actions
+export type ScoreAction = {
+  factor: string;
+  current: string;
+  target: string;
+  gain: number;
+  action: string;
+  field?: keyof SorrInputs;
+  value?: number;
+};
+
+/** Ranked, input-specific recommendations for raising the preservation score. */
+export function improvementActions(i: SorrInputs): ScoreAction[] {
+  const base = preservationScore(i).score;
+  const gainOf = (patch: Partial<SorrInputs>) =>
+    preservationScore({ ...i, ...patch }).score - base;
+
+  const out: ScoreAction[] = [];
+
+  // Cash reserve
+  const nextReserve = i.cashReserveMonths < 12 ? 12 : i.cashReserveMonths < 24 ? 24 : 36;
+  if (i.cashReserveMonths < 36) {
+    out.push({
+      factor: 'Cash reserve',
+      current: `${i.cashReserveMonths} months`,
+      target: `${nextReserve} months`,
+      gain: gainOf({ cashReserveMonths: nextReserve }),
+      action: `Build liquid reserves to ${nextReserve} months of spending (about ${Math.round((i.annualSpending / 12) * nextReserve).toLocaleString('en-US')} dollars) so early-retirement withdrawals never hit the portfolio in a down market.`,
+      field: 'cashReserveMonths',
+      value: nextReserve,
+    });
+  }
+
+  // Withdrawal rate
+  const nextWr = i.withdrawalRatePct > 5 ? 5 : i.withdrawalRatePct > 4 ? 4 : i.withdrawalRatePct > 3 ? 3 : 2;
+  if (i.withdrawalRatePct > 2) {
+    out.push({
+      factor: 'Withdrawal rate',
+      current: `${i.withdrawalRatePct}%`,
+      target: `${nextWr}%`,
+      gain: gainOf({ withdrawalRatePct: nextWr }),
+      action: `Lower the planned withdrawal rate to ${nextWr}% by saving more before retirement or trimming discretionary retirement spending.`,
+      field: 'withdrawalRatePct',
+      value: nextWr,
+    });
+  }
+
+  // Guaranteed income coverage
+  const coverage = i.annualSpending > 0 ? (i.socialSecurityAnnual + i.pensionAnnual) / i.annualSpending : 0;
+  if (coverage < 1) {
+    const shortfall = Math.max(0, i.annualSpending - (i.socialSecurityAnnual + i.pensionAnnual));
+    out.push({
+      factor: 'Guaranteed income coverage',
+      current: `${Math.round(coverage * 100)}% covered`,
+      target: '100% covered',
+      gain: gainOf({ socialSecurityAnnual: i.socialSecurityAnnual + shortfall }),
+      action: `Close the ${Math.round(shortfall).toLocaleString('en-US')} dollar annual gap by delaying Social Security, adding a small annuity/SPIA, or reducing planned spending.`,
+    });
+  }
+
+  // Preservation period
+  if (i.preservationYears < 10) {
+    const nextPres = i.preservationYears < 5 ? 5 : 10;
+    out.push({
+      factor: 'Initial preservation period',
+      current: `${i.preservationYears} years`,
+      target: `${nextPres} years`,
+      gain: gainOf({ preservationYears: nextPres }),
+      action: `Extend the 0% withdrawal window to ${nextPres} years so the portfolio compounds untouched through the highest-risk period.`,
+      field: 'preservationYears',
+      value: nextPres,
+    });
+  }
+
+  // Social Security timing / retirement age
+  if (i.retirementAge < 70) {
+    const nextAge = i.retirementAge < 67 ? 67 : 70;
+    out.push({
+      factor: 'Social Security timing',
+      current: `Retire at ${i.retirementAge}`,
+      target: `Retire at ${nextAge}`,
+      gain: gainOf({ retirementAge: nextAge }),
+      action: `Working to age ${nextAge} adds contribution years and increases the lifetime Social Security benefit.`,
+      field: 'retirementAge',
+      value: nextAge,
+    });
+  }
+
+  return out.filter((a) => a.gain > 0).sort((a, b) => b.gain - a.gain);
+}
+
+
 export function cashReserveTarget(i: SorrInputs) {
   const monthlySpend = i.annualSpending / 12;
   const guaranteedMonthly = (i.socialSecurityAnnual + i.pensionAnnual) / 12;
