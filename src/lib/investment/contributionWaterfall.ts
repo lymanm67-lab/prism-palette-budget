@@ -4,7 +4,9 @@
 export interface WaterfallInputs {
   // Payroll / employer
   iuSalary: number; // Lyman IU eligible salary
-  employerRate: number; // 0.09
+  employerRate: number; // fallback rate if no actual amount is entered
+  /** Actual employer contribution per month from the paystub. Overrides salary x rate when > 0. */
+  employerMonthlyActual: number;
   employerHsaMonthly: number;
 
   // HSA
