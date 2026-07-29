@@ -92,6 +92,7 @@ const FamilyLegacy = lazy(() => import("@/pages/FamilyLegacy"));
 const WealthOS = lazy(() => import("@/pages/WealthOS"));
 const CompoundingCrossover = lazy(() => import("@/pages/CompoundingCrossover"));
 const RetirementPreservation = lazy(() => import("@/pages/RetirementPreservation"));
+const SequenceRisk = lazy(() => import("@/pages/SequenceRisk"));
 const HouseholdWealth = lazy(() => import("@/pages/HouseholdWealth"));
 const MoneyBlueprint = lazy(() => import("@/pages/MoneyBlueprint"));
 
@@ -234,6 +235,7 @@ const App = () => (
 
               <Route path="/legacy/crossover" element={<Suspense fallback={<PageLoader />}><CompoundingCrossover /></Suspense>} />
               <Route path="/legacy/preservation" element={<Suspense fallback={<PageLoader />}><RetirementPreservation /></Suspense>} />
+              <Route path="/legacy/sequence-risk" element={<Suspense fallback={<PageLoader />}><SequenceRisk /></Suspense>} />
               <Route path="/legacy/wealth-os" element={<Suspense fallback={<PageLoader />}><WealthOS /></Suspense>} />
               <Route path="/kungfoo" element={<Suspense fallback={<PageLoader />}><KungFoo /></Suspense>} />
               <Route path="/retirement-optimizer" element={<Suspense fallback={<PageLoader />}><RetirementDashboard /></Suspense>} />

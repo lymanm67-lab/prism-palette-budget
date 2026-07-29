@@ -7,6 +7,7 @@ import {
   CreditCard, LineChart, Sparkles, Shield, FileSearch, FileText, Building2,
   DollarSign, Clock, Lock, Scissors, ClipboardCheck, Gauge, ChevronDown,
   Layers, Search, AlertTriangle, Activity, Banknote, Smartphone, User, Briefcase, Globe, BookOpen, Users,
+  ShieldCheck,
 } from 'lucide-react';
 import prismLogo from '@/assets/prism-money-logo.png';
 import { useAuth } from '@/contexts/AuthContext';
@@ -86,6 +87,7 @@ const NAV_SECTIONS: NavSection[] = [
       { to: '/legacy/crossover', icon: TrendingUp, label: '2. Compounding Crossover', color: 'text-prism-teal' },
       { to: '/retirement-optimizer', icon: Layers, label: '3. Retirement Optimizer', color: 'text-prism-amber' },
       { to: '/legacy/preservation', icon: TrendingUp, label: '4. Retirement Preservation', color: 'text-prism-amber' },
+      { to: '/legacy/sequence-risk', icon: ShieldCheck, label: '4b. Sequence Risk', color: 'text-prism-amber' },
       { to: '/kungfoo', icon: Layers, label: '5. KUNG FOO Plan', color: 'text-prism-teal' },
       { to: '/legacy/family', icon: Heart, label: '6. Family Legacy', color: 'text-prism-rose' },
       { to: '/legacy/wealth-os', icon: BookOpen, label: '7. Wealth OS Binder', color: 'text-prism-amber' },
