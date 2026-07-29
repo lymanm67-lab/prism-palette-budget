@@ -38,6 +38,7 @@ import {
 } from 'lucide-react';
 import {
   DEFAULT_WATERFALL_INPUTS,
+  employerContributionMonthly,
   WaterfallInputs,
   analyzeHsa,
   buildPriorityRows,
