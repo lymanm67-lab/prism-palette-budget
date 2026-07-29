@@ -4,7 +4,9 @@
 export interface WaterfallInputs {
   // Payroll / employer
   iuSalary: number; // Lyman IU eligible salary
-  employerRate: number; // 0.09
+  employerRate: number; // fallback rate if no actual amount is entered
+  /** Actual employer contribution per month from the paystub. Overrides salary x rate when > 0. */
+  employerMonthlyActual: number;
   employerHsaMonthly: number;
 
   // HSA
@@ -53,6 +55,7 @@ export interface WaterfallInputs {
 export const DEFAULT_WATERFALL_INPUTS: WaterfallInputs = {
   iuSalary: 95940,
   employerRate: 0.09,
+  employerMonthlyActual: 532.05,
   employerHsaMonthly: 0,
 
   hsaCurrentMonthly: 116.66,
@@ -136,8 +139,13 @@ export function analyzeHsa(i: WaterfallInputs): HsaAnalysis {
   };
 }
 
+/** Actual paystub amount wins; otherwise fall back to eligible salary x employer rate. */
+export function employerContributionMonthly(i: WaterfallInputs) {
+  return i.employerMonthlyActual > 0 ? i.employerMonthlyActual : (i.iuSalary * i.employerRate) / 12;
+}
+
 export function buildPriorityRows(i: WaterfallInputs): PriorityRow[] {
-  const employerMonthly = (i.iuSalary * i.employerRate) / 12;
+  const employerMonthly = employerContributionMonthly(i);
   const hsa = analyzeHsa(i);
 
   const rows: PriorityRow[] = [
@@ -348,7 +356,7 @@ export function buildTaxDiversification(i: WaterfallInputs): TaxDiversification 
     return fvBal + fvFlow;
   };
 
-  const employerMonthly = (i.iuSalary * i.employerRate) / 12;
+  const employerMonthly = employerContributionMonthly(i);
   const hsa = analyzeHsa(i);
 
   const projected = {
