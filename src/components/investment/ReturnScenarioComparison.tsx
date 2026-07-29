@@ -128,7 +128,7 @@ export function ReturnScenarioComparison({ plan, onCreateRules, onReviewLegacy }
             <Tabs value={targetAge} onValueChange={setTargetAge}>
               <TabsList className="h-8">
                 <TabsTrigger value="75" className="text-xs h-6 px-2">Age 75</TabsTrigger>
-                <TabsTrigger value="78" className="text-xs h-6 px-2">Age 78</TabsTrigger>
+                <TabsTrigger value="80" className="text-xs h-6 px-2">Age 80</TabsTrigger>
               </TabsList>
             </Tabs>
             <Tabs value={dollarMode} onValueChange={(v) => setDollarMode(v as 'today' | 'nominal')}>
