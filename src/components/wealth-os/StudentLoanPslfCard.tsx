@@ -95,13 +95,13 @@ export function StudentLoanPslfCard() {
           <Progress value={m.pctDone} className="h-2" />
         </div>
 
-        {/* Two views */}
-        <div className="grid gap-3 md:grid-cols-2">
+        {/* Liability views */}
+        <div className={`grid gap-3 ${adjustedView ? 'md:grid-cols-3' : 'md:grid-cols-2'}`}>
           <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4">
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">A. Net worth liability</p>
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">A. Legal balance</p>
             <p className="text-2xl font-bold text-destructive mt-1">{money(balance)}</p>
             <p className="text-xs text-muted-foreground mt-1">
-              Student loan balance — counted as a liability until forgiveness is approved and discharged.
+              Full student loan balance — the conservative net-worth liability until PSLF discharge is officially approved.
             </p>
           </div>
           <div className="rounded-lg border border-prism-teal/30 bg-prism-teal/5 p-4">
@@ -112,6 +112,16 @@ export function StudentLoanPslfCard() {
               Projected obligation, not the loan balance.
             </p>
           </div>
+          {adjustedView && (
+            <div className="rounded-lg border border-prism-amber/30 bg-prism-amber/5 p-4">
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">C. PSLF-adjusted liability</p>
+              <p className="text-2xl font-bold text-prism-amber mt-1">{money(m.exposure)}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Hypothetical net-worth liability if you treat the remaining payments as your only obligation.
+                For planning only — not the legal balance.
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="grid gap-3 sm:grid-cols-3 text-sm">
