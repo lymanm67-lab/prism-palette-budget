@@ -55,6 +55,7 @@ export interface WaterfallInputs {
 export const DEFAULT_WATERFALL_INPUTS: WaterfallInputs = {
   iuSalary: 95940,
   employerRate: 0.09,
+  employerMonthlyActual: 532.05,
   employerHsaMonthly: 0,
 
   hsaCurrentMonthly: 116.66,
