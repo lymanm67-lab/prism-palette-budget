@@ -78,6 +78,7 @@ export default function SequenceRisk() {
   const swr = useMemo(() => safeWithdrawalAnalysis(i), [i]);
   const mc = useMemo(() => monteCarlo(i, mcRuns), [i, mcRuns]);
   const score = useMemo(() => preservationScore(i), [i]);
+  const actions = useMemo(() => improvementActions(i), [i]);
   const reserve = useMemo(() => cashReserveTarget(i), [i]);
 
   const timelineAges = [i.currentAge, i.retirementAge, 80, 85, 90, 95];
