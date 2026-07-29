@@ -10,6 +10,7 @@ export const LEGACY_STEPS = [
   { to: '/legacy/preservation', label: '4. Retirement Preservation', why: 'Plan withdrawals and the Social Security bridge.' },
   { to: '/legacy/sequence-risk', label: '4b. Sequence Risk', why: 'Stress-test the first decade of withdrawals.' },
   { to: '/legacy/waterfall', label: '4c. Contribution Waterfall', why: 'Route every new dollar in tax-efficient order.' },
+  { to: '/legacy/withdrawal-tax', label: '4d. Withdrawal & Tax', why: 'Sequence withdrawals to fill brackets and dodge IRMAA.' },
   { to: '/kungfoo', label: '5. KUNG FOO Plan', why: 'Lock the order of operations for every dollar.' },
   { to: '/legacy/family', label: '6. Family Legacy', why: 'Protect it with trusts, docs, and constitution.' },
   { to: '/legacy/wealth-os', label: '7. Wealth OS Binder', why: 'Package the whole plan into a report.' },
