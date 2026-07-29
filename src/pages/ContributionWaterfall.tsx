@@ -49,6 +49,8 @@ import {
   futureValue,
 } from '@/lib/investment/contributionWaterfall';
 import ContributionOptimizer from '@/components/investment/ContributionOptimizer';
+import { LegacyStepNav } from '@/components/legacy/LegacyStepNav';
+
 
 
 const STORAGE_KEY = 'montgomery-contribution-waterfall-v3';
@@ -224,14 +226,14 @@ export default function ContributionWaterfall() {
 
       <Tabs defaultValue="optimizer" className="w-full">
         <TabsList className="flex flex-wrap h-auto">
-          <TabsTrigger value="optimizer">Contribution Optimizer</TabsTrigger>
-          <TabsTrigger value="waterfall">Priority Waterfall</TabsTrigger>
-          <TabsTrigger value="hsa">HSA Engine</TabsTrigger>
-          <TabsTrigger value="redirect">Cash-Flow Redirect</TabsTrigger>
-          <TabsTrigger value="diversification">Tax Diversification</TabsTrigger>
-          <TabsTrigger value="income">Retirement Income</TabsTrigger>
-          <TabsTrigger value="scorecard">Scorecard</TabsTrigger>
-          <TabsTrigger value="assumptions">Assumptions</TabsTrigger>
+          <TabsTrigger value="optimizer">1. Affordability</TabsTrigger>
+          <TabsTrigger value="waterfall">2. Priority Waterfall</TabsTrigger>
+          <TabsTrigger value="hsa">3. HSA Engine</TabsTrigger>
+          <TabsTrigger value="redirect">4. Cash-Flow Redirect</TabsTrigger>
+          <TabsTrigger value="diversification">5. Tax Diversification</TabsTrigger>
+          <TabsTrigger value="income">6. Retirement Income</TabsTrigger>
+          <TabsTrigger value="scorecard">7. Scorecard</TabsTrigger>
+          <TabsTrigger value="assumptions">Settings &amp; Assumptions</TabsTrigger>
         </TabsList>
 
         {/* ---------------- OPTIMIZER ---------------- */}
@@ -241,6 +243,7 @@ export default function ContributionWaterfall() {
 
         {/* ---------------- WATERFALL ---------------- */}
         <TabsContent value="waterfall" className="space-y-4 pt-4">
+
 
           {rows.map((r, idx) => {
             const Icon = PRIORITY_ICONS[idx] ?? Layers;
@@ -639,7 +642,10 @@ export default function ContributionWaterfall() {
           retirement income and legacy planning.
         </CardContent>
       </Card>
+
+      <LegacyStepNav />
     </div>
+
   );
 }
 
