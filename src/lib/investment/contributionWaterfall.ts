@@ -68,18 +68,22 @@ export const DEFAULT_WATERFALL_INPUTS: WaterfallInputs = {
   rothIraAnnualTarget: 8000,
   rothIraBalance: 0,
 
-  plan457CurrentMonthly: 0,
+  // Paystub actuals (monthly pay): IU 457(b) $75 pre-tax + Roth 457(b) $75
+  plan457CurrentMonthly: 150,
   plan457AnnualTarget: 12000,
   plan457Balance: 12324,
 
-  tdaCurrentMonthly: 0,
+  // Paystub actuals (monthly pay): Tax Deferred (TDA) $100 pre-tax + Roth TDA $85
+  tdaCurrentMonthly: 185,
   tdaAnnualTarget: 12000,
   tdaBalance: 161338,
 
   brokerageCurrentMonthly: 0,
   brokerageBalance: 0,
 
-  preTaxSplit: 0.6,
+  // Blended pre-tax share of 457(b)+TDA deferrals: (75+100) / 335
+  preTaxSplit: 0.52,
+
 
   marketingEducationBudget: 500,
   studentLoanPayment: 390,
