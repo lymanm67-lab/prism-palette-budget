@@ -531,6 +531,56 @@ export default function SequenceRisk() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Improve my score */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Gauge className="h-4 w-4" style={{ color: GOLD }} /> Improve my score
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {actions.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  Every scored factor is already at maximum with your current inputs — the plan is as resilient as this model can measure.
+                </p>
+              ) : (
+                <>
+                  <p className="text-xs text-muted-foreground">
+                    Ranked by point gain. Applying an action updates the assumption above and recalculates the score
+                    (planning simulation only — it does not change your accounts).
+                  </p>
+                  {actions.map((a) => (
+                    <div key={a.factor} className="rounded-lg border p-3 space-y-2">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <div className="text-sm font-medium">{a.factor}</div>
+                          <div className="text-[11px] text-muted-foreground">
+                            {a.current} → {a.target}
+                          </div>
+                        </div>
+                        <Badge style={{ background: GREEN }} className="text-white shrink-0">+{a.gain} pts</Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground">{a.action}</p>
+                      {a.field && a.value !== undefined && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => set(a.field as keyof SorrInputs, a.value as number)}
+                        >
+                          Apply {a.target}
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                  <div className="text-xs text-muted-foreground">
+                    Applying every action above would move the score from <span className="font-medium">{score.score}</span> toward{' '}
+                    <span className="font-medium">{Math.min(100, score.score + actions.reduce((s, a) => s + a.gain, 0))}</span>/100.
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
 
