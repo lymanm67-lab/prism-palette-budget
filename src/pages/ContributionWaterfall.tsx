@@ -48,6 +48,8 @@ import {
   annualTaxSavings,
   futureValue,
 } from '@/lib/investment/contributionWaterfall';
+import ContributionOptimizer from '@/components/investment/ContributionOptimizer';
+
 
 const STORAGE_KEY = 'montgomery-contribution-waterfall-v3';
 const PAYSTUB_457_MONTHLY = DEFAULT_WATERFALL_INPUTS.plan457CurrentMonthly;
