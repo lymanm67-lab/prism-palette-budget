@@ -48,6 +48,8 @@ import {
   annualTaxSavings,
   futureValue,
 } from '@/lib/investment/contributionWaterfall';
+import ContributionOptimizer from '@/components/investment/ContributionOptimizer';
+
 
 const STORAGE_KEY = 'montgomery-contribution-waterfall-v3';
 const PAYSTUB_457_MONTHLY = DEFAULT_WATERFALL_INPUTS.plan457CurrentMonthly;
@@ -220,8 +222,9 @@ export default function ContributionWaterfall() {
         />
       </div>
 
-      <Tabs defaultValue="waterfall" className="w-full">
+      <Tabs defaultValue="optimizer" className="w-full">
         <TabsList className="flex flex-wrap h-auto">
+          <TabsTrigger value="optimizer">Contribution Optimizer</TabsTrigger>
           <TabsTrigger value="waterfall">Priority Waterfall</TabsTrigger>
           <TabsTrigger value="hsa">HSA Engine</TabsTrigger>
           <TabsTrigger value="redirect">Cash-Flow Redirect</TabsTrigger>
@@ -231,8 +234,14 @@ export default function ContributionWaterfall() {
           <TabsTrigger value="assumptions">Assumptions</TabsTrigger>
         </TabsList>
 
+        {/* ---------------- OPTIMIZER ---------------- */}
+        <TabsContent value="optimizer" className="pt-4">
+          <ContributionOptimizer />
+        </TabsContent>
+
         {/* ---------------- WATERFALL ---------------- */}
         <TabsContent value="waterfall" className="space-y-4 pt-4">
+
           {rows.map((r, idx) => {
             const Icon = PRIORITY_ICONS[idx] ?? Layers;
             return (
