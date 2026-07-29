@@ -162,10 +162,17 @@ export interface PhasePlan {
   note?: string;
 }
 
+export function phase2Redirect(p: PayrollBaseline) {
+  return Math.max(0, p.debtPayoffRedirect - p.studentLoanPayment);
+}
+
+export function phase3Redirect(p: PayrollBaseline) {
+  return Math.max(0, p.marketingBudget);
+}
+
 export function buildPhases(p: PayrollBaseline): PhasePlan[] {
-  const phase2Available = Math.max(0, p.marketingBudget - p.studentLoanPayment);
-  const hsaBump = Math.min(phase2Available, 33.34);
-  const rothBump = Math.max(0, phase2Available - hsaBump);
+  const p2 = phase2Redirect(p);
+  const p3 = phase3Redirect(p);
 
   return [
     {
@@ -185,25 +192,22 @@ export function buildPhases(p: PayrollBaseline): PhasePlan[] {
     },
     {
       id: 'phase2',
-      title: 'Phase 2 — First Affordable Increase',
+      title: 'Phase 2 — Consumer Debt Payoff Redirect',
       window: 'Beginning January 2027',
-      available: phase2Available,
-      summary: `Marketing budget $${p.marketingBudget.toLocaleString()} less student loan payment $${p.studentLoanPayment.toLocaleString()} frees $${phase2Available.toFixed(
+      available: p2,
+      summary: `Consumer debt payment $${p.debtPayoffRedirect.toLocaleString()} is freed in January 2027, less the $${p.studentLoanPayment.toLocaleString()} IDR student loan payment that begins the same month — a net $${p2.toFixed(
         0
-      )}/month.`,
-      lines: [
-        { account: 'HSA increase', amount: hsaBump },
-        { account: 'Roth IRA increase', amount: rothBump },
-      ],
-      note: 'Only one or two accounts are increased in this phase — no simultaneous across-the-board increases.',
+      )}/month redirected to retirement.`,
+      lines: buildStages(p, p2).map((s) => ({ account: s.name, amount: s.amount })),
+      note: 'Deployed in stages — each stage begins only after the previous one reaches its target.',
     },
     {
       id: 'phase3',
-      title: 'Phase 3 — Staged Debt-Payoff Redeployment',
-      window: 'After consumer debt payoff',
-      available: p.debtPayoffRedirect,
-      summary: `$${p.debtPayoffRedirect.toLocaleString()}/month of freed debt payments is deployed in stages — each stage begins only after the previous one reaches its target.`,
-      lines: buildStages(p).map((s) => ({ account: s.name, amount: s.amount })),
+      title: 'Phase 3 — Marketing Budget Redirect',
+      window: 'Freed May 2027 — redirected beginning June 2027',
+      available: p3,
+      summary: `The $${p.marketingBudget.toLocaleString()}/month marketing & education budget ends in May 2027 and is redirected to retirement accounts starting June 2027.`,
+      lines: buildStages(p, p3, p2).map((s) => ({ account: s.name, amount: s.amount })),
     },
   ];
 }
@@ -217,22 +221,27 @@ export interface Stage {
 }
 
 /** Stage targets sized to the household budget, not IRS maximums. */
-export function buildStages(p: PayrollBaseline): Stage[] {
-  const phase2Available = Math.max(0, p.marketingBudget - p.studentLoanPayment);
-  const rothAfterPhase2 = p.rothIraMonthly + Math.max(0, phase2Available - 33.34);
-
+export function buildStages(p: PayrollBaseline, budget?: number, alreadyDeployed = 0): Stage[] {
   const targets = [
-    { name: 'Roth IRA', target: 583.33, current: rothAfterPhase2, desc: 'Fill tax-free retirement income first.' },
+    { name: 'Roth IRA', target: 583.33, current: p.rothIraMonthly, desc: 'Fill tax-free retirement income first.' },
     { name: 'IU 457(b)', target: 400, current: p.trad457Monthly + p.roth457Monthly, desc: 'Add penalty-free early-access capacity.' },
     { name: 'IU TDA', target: 400, current: p.tradTdaMonthly + p.rothTdaMonthly, desc: 'Increase pre-tax deferral to lower taxable income.' },
   ];
 
-  let remaining = p.debtPayoffRedirect;
+  // Simulate any earlier phase that already consumed part of the gaps.
+  let prior = alreadyDeployed;
+  const gaps = targets.map((t) => {
+    const gap = Math.max(0, t.target - t.current);
+    const consumed = Math.min(prior, gap);
+    prior -= consumed;
+    return gap - consumed;
+  });
+
+  let remaining = budget ?? phase2Redirect(p) + phase3Redirect(p);
   const stages: Stage[] = [];
 
   targets.forEach((t, idx) => {
-    const gap = Math.max(0, t.target - t.current);
-    const amount = Math.min(remaining, gap);
+    const amount = Math.min(remaining, gaps[idx]);
     remaining -= amount;
     stages.push({
       stage: idx + 1,
@@ -253,6 +262,7 @@ export function buildStages(p: PayrollBaseline): Stage[] {
 
   return stages;
 }
+
 
 export interface SmartRecommendation {
   account: string;
