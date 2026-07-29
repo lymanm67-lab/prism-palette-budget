@@ -96,7 +96,7 @@ export default function SequenceRisk() {
     <div className="p-4 md:p-6 space-y-6 max-w-7xl mx-auto">
       <header className="space-y-1">
         <p className="text-[11px] uppercase tracking-[0.2em]" style={{ color: GOLD }}>Montgomery Family Wealth Operating System</p>
-        <h1 className="text-2xl md:text-3xl font-semibold" style={{ color: NAVY }}>
+        <h1 className="text-2xl md:text-3xl font-semibold text-foreground">
           Sequence of Returns Risk Management System™
         </h1>
         <p className="text-sm text-muted-foreground">
