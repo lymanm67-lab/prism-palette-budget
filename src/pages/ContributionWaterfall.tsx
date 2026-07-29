@@ -54,6 +54,7 @@ const PAYSTUB_457_MONTHLY = DEFAULT_WATERFALL_INPUTS.plan457CurrentMonthly;
 const PAYSTUB_TDA_MONTHLY = DEFAULT_WATERFALL_INPUTS.tdaCurrentMonthly;
 
 const BROKERAGE_BALANCE = 3500;
+const ROTH_IRA_MONTHLY = 100;
 
 const normalizeWaterfallInputs = (saved: Partial<WaterfallInputs> = {}): WaterfallInputs => {
   const merged = { ...DEFAULT_WATERFALL_INPUTS, ...saved };
@@ -64,6 +65,8 @@ const normalizeWaterfallInputs = (saved: Partial<WaterfallInputs> = {}): Waterfa
       merged.plan457CurrentMonthly > 0 ? merged.plan457CurrentMonthly : PAYSTUB_457_MONTHLY,
     tdaCurrentMonthly: merged.tdaCurrentMonthly > 0 ? merged.tdaCurrentMonthly : PAYSTUB_TDA_MONTHLY,
     brokerageBalance: merged.brokerageBalance > 0 ? merged.brokerageBalance : BROKERAGE_BALANCE,
+    rothIraCurrentMonthly:
+      merged.rothIraCurrentMonthly > 0 ? merged.rothIraCurrentMonthly : ROTH_IRA_MONTHLY,
   };
 };
 

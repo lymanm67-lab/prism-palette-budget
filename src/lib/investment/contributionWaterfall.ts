@@ -64,7 +64,7 @@ export const DEFAULT_WATERFALL_INPUTS: WaterfallInputs = {
   physicianVisitCost: 150,
   hsaBalance: 4200,
 
-  rothIraCurrentMonthly: 0,
+  rothIraCurrentMonthly: 100,
   // Realistic near-term targets sized to current cash flow (step up after Sept-2027 debt payoff)
   rothIraAnnualTarget: 2400, // $200/mo
   rothIraBalance: 0,
