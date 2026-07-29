@@ -43,9 +43,22 @@ export function StudentLoanPslfCard() {
           <CardTitle className="flex items-center gap-2 text-base">
             <GraduationCap className="h-4 w-4" /> Student Loan &amp; PSLF Tracking
           </CardTitle>
-          <Badge variant="outline" className="border-prism-teal/40 text-prism-teal bg-prism-teal/10">
-            {m.remaining === 0 ? 'PSLF Complete' : 'PSLF In Progress'}
-          </Badge>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <Switch
+                id="pslf-adjusted"
+                checked={adjustedView}
+                onCheckedChange={setAdjustedView}
+                aria-label="Toggle PSLF-adjusted liability view"
+              />
+              <Label htmlFor="pslf-adjusted" className="text-xs cursor-pointer">
+                PSLF-adjusted view
+              </Label>
+            </div>
+            <Badge variant="outline" className="border-prism-teal/40 text-prism-teal bg-prism-teal/10">
+              {m.remaining === 0 ? 'PSLF Complete' : 'PSLF In Progress'}
+            </Badge>
+          </div>
         </div>
         <p className="text-xs text-muted-foreground">
           Program type: Public Service Loan Forgiveness (PSLF)
