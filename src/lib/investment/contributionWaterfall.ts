@@ -79,7 +79,7 @@ export const DEFAULT_WATERFALL_INPUTS: WaterfallInputs = {
   tdaBalance: 161338,
 
   brokerageCurrentMonthly: 0,
-  brokerageBalance: 0,
+  brokerageBalance: 3500,
 
   // Blended pre-tax share of 457(b)+TDA deferrals: (75+100) / 335
   preTaxSplit: 0.52,
