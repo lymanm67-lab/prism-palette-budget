@@ -273,11 +273,10 @@ export function useBlueprintPrefill() {
         budgeted.set(hit.key, (budgeted.get(hit.key) || 0) + (Number((b as any).planned_amount) || 0));
       }
 
-      // Lyman's take-home comes from real deposits; Kateri's salary isn't deposited into
-      // tracked accounts, so it's estimated from her gross and added to household net.
-      const lymanNet = monthlyAvg(income) > 500
-        ? monthlyAvg(income)
-        : Math.round(((LYMAN_GROSS_ANNUAL / 12) * NET_RATIO) * 100) / 100;
+      // Lyman's net pay is deposited across five checking accounts (only some are tracked),
+      // so use the IU paystub net as a floor; Kateri's salary isn't deposited into tracked
+      // accounts at all, so it comes straight from her paystub.
+      const lymanNet = Math.max(monthlyAvg(income), LYMAN_NET_MONTHLY);
       const kateriNet = KATERI_NET_MONTHLY;
       const netMonthly = Math.round((lymanNet + kateriNet) * 100) / 100;
 
