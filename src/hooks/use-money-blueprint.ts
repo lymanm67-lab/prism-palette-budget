@@ -11,8 +11,30 @@ import {
 
 const sb = supabase as any;
 
-// Household salary figures already established elsewhere in the app.
-export const KATERI_GROSS_ANNUAL = 113_000;
+// ---------------------------------------------------------------------------
+// Kateri — State of Ohio (DODD) paystub, advice date 07/24/2026, biweekly (26/yr)
+// Gross 4,317.60 | Taxes 770.53 | Before-tax 533.27 | After-tax 1,062.70 | Net 1,951.10
+// ---------------------------------------------------------------------------
+export const KATERI_PAY_PERIODS = 26;
+export const KATERI_GROSS_BIWEEKLY = 4_317.60;
+export const KATERI_NET_BIWEEKLY = 1_951.10;
+/** Bankruptcy garnishment withheld from net each pay period. */
+export const KATERI_GARNISHMENT_BIWEEKLY = 958.62;
+/** OPERS member (10%) and employer (14%) contributions from the paystub. */
+export const KATERI_OPERS_EE_BIWEEKLY = 431.76;
+export const KATERI_OPERS_ER_BIWEEKLY = 604.46;
+/** Ohio Deferred Compensation contribution. */
+export const KATERI_DEFCOMP_BIWEEKLY = 25;
+
+const perMonth = (biweekly: number) =>
+  Math.round(((biweekly * KATERI_PAY_PERIODS) / 12) * 100) / 100;
+
+export const KATERI_GROSS_ANNUAL = Math.round(KATERI_GROSS_BIWEEKLY * KATERI_PAY_PERIODS * 100) / 100; // 112,257.60
+/** Actual take-home from the paystub (after taxes, benefits and garnishment). */
+export const KATERI_NET_MONTHLY = perMonth(KATERI_NET_BIWEEKLY); // 4,227.72
+export const KATERI_GARNISHMENT_MONTHLY = perMonth(KATERI_GARNISHMENT_BIWEEKLY);
+export const KATERI_DEFCOMP_MONTHLY = perMonth(KATERI_DEFCOMP_BIWEEKLY);
+
 /** W-2 salary only — employer retirement contributions are based on this. */
 export const LYMAN_SALARY_ANNUAL = 70_940.04; // $5,911.67/mo
 /** Consulting / 1099 income: $1,925 per quarter. */
@@ -21,7 +43,7 @@ export const CONSULTING_ANNUAL = CONSULTING_QUARTERLY * 4; // 7,700
 export const LYMAN_GROSS_ANNUAL = LYMAN_SALARY_ANNUAL + CONSULTING_ANNUAL; // 78,640.04
 export const HOUSEHOLD_GROSS_ANNUAL = LYMAN_GROSS_ANNUAL + KATERI_GROSS_ANNUAL;
 
-const NET_RATIO = 0.76; // take-home estimate after taxes + pre-tax deferrals
+const NET_RATIO = 0.76; // take-home estimate after taxes + pre-tax deferrals (Lyman fallback only)
 
 /**
  * Retirement contributions come out of payroll, not from bank transactions, so the
