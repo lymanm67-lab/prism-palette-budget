@@ -14,7 +14,7 @@ import {
   type BlueprintRow, type BlueprintState, type OwnerView,
 } from '@/lib/budgeting/moneyBlueprint';
 import { BlueprintBucketBar } from './BlueprintBucketBar';
-import { useMoneyBlueprint, useSaveMoneyBlueprint, useBlueprintPrefill, LYMAN_GROSS_ANNUAL, KATERI_GROSS_ANNUAL } from '@/hooks/use-money-blueprint';
+import { useMoneyBlueprint, useSaveMoneyBlueprint, useBlueprintPrefill, LYMAN_GROSS_ANNUAL, KATERI_GROSS_ANNUAL, kateriGarnishmentActive, KATERI_NET_MONTHLY_POST_BK, KATERI_GARNISHMENT_MONTHLY } from '@/hooks/use-money-blueprint';
 import { useWealthOSData } from '@/hooks/use-wealth-os';
 
 const money = (n: number) =>
@@ -318,13 +318,24 @@ export function MoneyBlueprintPlan() {
               </div>
             )}
             {prefill?.source && view === 'combined' && (
-              <p className="text-[11px] text-muted-foreground">
-                Live take-home: Lyman {money2(prefill.source.lymanNet)} (IU paystub 07/31/2026: $4,464.91 net,
-                split across five checking accounts) + Kateri {money2(prefill.source.kateriNet)} (DODD paystub
-                07/24/2026: $1,951.10 net × 26 ÷ 12, after taxes, benefits and the $958.62/pay garnishment) ={' '}
-                <span className="font-semibold">{money2(prefill.income.netMonthly)}</span>/mo.
-              </p>
+              <>
+                <p className="text-[11px] text-muted-foreground">
+                  Live take-home: Lyman {money2(prefill.source.lymanNet)} (IU paystub 07/31/2026: $4,464.91 net,
+                  split across five checking accounts) + Kateri {money2(prefill.source.kateriNet)} (DODD paystub
+                  07/24/2026: $1,951.10 net × 26 ÷ 12, after taxes, benefits and the $958.62/pay garnishment) ={' '}
+                  <span className="font-semibold">{money2(prefill.income.netMonthly)}</span>/mo.
+                </p>
+                {kateriGarnishmentActive() && (
+                  <p className="text-[11px] text-muted-foreground">
+                    Kateri's Chapter 13 is released <span className="font-semibold">April 2027</span> — the
+                    $958.62/pay garnishment stops, raising her take-home to{' '}
+                    <span className="font-semibold">{money2(KATERI_NET_MONTHLY_POST_BK)}</span>/mo (+
+                    {money2(KATERI_GARNISHMENT_MONTHLY)}/mo household).
+                  </p>
+                )}
+              </>
             )}
+
 
             <div className="rounded-lg border border-primary/30 bg-primary/5 p-2 space-y-0.5">
               <p className="text-[10px] font-semibold uppercase tracking-wide text-primary">
