@@ -50,7 +50,7 @@ export const HOUSEHOLD_GROSS_ANNUAL = LYMAN_GROSS_ANNUAL + KATERI_GROSS_ANNUAL;
  */
 export const LYMAN_NET_MONTHLY = 4_464.91;
 
-const NET_RATIO = 0.76; // take-home estimate after taxes + pre-tax deferrals (Lyman fallback only)
+
 
 
 /**
