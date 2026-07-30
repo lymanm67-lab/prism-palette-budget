@@ -287,7 +287,7 @@ export function useBlueprintPrefill() {
       // so use the IU paystub net as a floor; Kateri's salary isn't deposited into tracked
       // accounts at all, so it comes straight from her paystub.
       const lymanNet = Math.max(monthlyAvg(income), LYMAN_NET_MONTHLY);
-      const kateriNet = KATERI_NET_MONTHLY;
+      const kateriNet = kateriNetMonthly();
       const netMonthly = Math.round((lymanNet + kateriNet) * 100) / 100;
 
       // Category owner split defaults to each spouse's share of take-home.
