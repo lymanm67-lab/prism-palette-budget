@@ -43,7 +43,15 @@ export const CONSULTING_ANNUAL = CONSULTING_QUARTERLY * 4; // 7,700
 export const LYMAN_GROSS_ANNUAL = LYMAN_SALARY_ANNUAL + CONSULTING_ANNUAL; // 78,640.04
 export const HOUSEHOLD_GROSS_ANNUAL = LYMAN_GROSS_ANNUAL + KATERI_GROSS_ANNUAL;
 
-const NET_RATIO = 0.76; // take-home estimate after taxes + pre-tax deferrals (Lyman fallback only)
+/**
+ * Lyman — IU paystub, advice date 07/31/2026, monthly.
+ * Gross 5,911.67 | Taxes 660.17 | Before-tax 479.61 | After-tax 306.98 | Net 4,464.91
+ * Net pay is split across 5 checking accounts, so tracked deposits alone under-count it.
+ */
+export const LYMAN_NET_MONTHLY = 4_464.91;
+
+
+
 
 /**
  * Retirement contributions come out of payroll, not from bank transactions, so the
@@ -265,11 +273,10 @@ export function useBlueprintPrefill() {
         budgeted.set(hit.key, (budgeted.get(hit.key) || 0) + (Number((b as any).planned_amount) || 0));
       }
 
-      // Lyman's take-home comes from real deposits; Kateri's salary isn't deposited into
-      // tracked accounts, so it's estimated from her gross and added to household net.
-      const lymanNet = monthlyAvg(income) > 500
-        ? monthlyAvg(income)
-        : Math.round(((LYMAN_GROSS_ANNUAL / 12) * NET_RATIO) * 100) / 100;
+      // Lyman's net pay is deposited across five checking accounts (only some are tracked),
+      // so use the IU paystub net as a floor; Kateri's salary isn't deposited into tracked
+      // accounts at all, so it comes straight from her paystub.
+      const lymanNet = Math.max(monthlyAvg(income), LYMAN_NET_MONTHLY);
       const kateriNet = KATERI_NET_MONTHLY;
       const netMonthly = Math.round((lymanNet + kateriNet) * 100) / 100;
 
