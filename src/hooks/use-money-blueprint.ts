@@ -270,7 +270,7 @@ export function useBlueprintPrefill() {
       const lymanNet = monthlyAvg(income) > 500
         ? monthlyAvg(income)
         : Math.round(((LYMAN_GROSS_ANNUAL / 12) * NET_RATIO) * 100) / 100;
-      const kateriNet = Math.round(((KATERI_GROSS_ANNUAL / 12) * NET_RATIO) * 100) / 100;
+      const kateriNet = KATERI_NET_MONTHLY;
       const netMonthly = Math.round((lymanNet + kateriNet) * 100) / 100;
 
       // Category owner split defaults to each spouse's share of take-home.
