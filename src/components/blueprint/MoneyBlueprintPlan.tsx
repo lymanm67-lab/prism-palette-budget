@@ -320,7 +320,8 @@ export function MoneyBlueprintPlan() {
             {prefill?.source && view === 'combined' && (
               <p className="text-[11px] text-muted-foreground">
                 Live take-home: Lyman {money2(prefill.source.lymanNet)} (tracked deposits) + Kateri{' '}
-                {money2(prefill.source.kateriNet)} (est. from $113,000 salary) ={' '}
+                {money2(prefill.source.kateriNet)} (DODD paystub 07/24/2026: $1,951.10 net × 26 ÷ 12, after
+                taxes, benefits and the $958.62/pay garnishment) ={' '}
                 <span className="font-semibold">{money2(prefill.income.netMonthly)}</span>/mo.
               </p>
             )}
