@@ -53,20 +53,18 @@ import { LegacyStepNav } from '@/components/legacy/LegacyStepNav';
 
 
 
-const STORAGE_KEY = 'montgomery-contribution-waterfall-v3';
+const STORAGE_KEY = 'montgomery-contribution-waterfall-v4';
 const PAYSTUB_457_MONTHLY = DEFAULT_WATERFALL_INPUTS.plan457CurrentMonthly;
 const PAYSTUB_TDA_MONTHLY = DEFAULT_WATERFALL_INPUTS.tdaCurrentMonthly;
 
 const BROKERAGE_BALANCE = 3500;
 const ROTH_IRA_MONTHLY = 100;
 
+// Keep any user-entered annual target; only fall back when missing/invalid.
 const normalizeAnnualTarget = (value: number | undefined, fallback: number) => {
   const n = Number(value);
   if (!Number.isFinite(n) || n <= 0) return fallback;
-
-  // Migrate old saved assumptions that were either stored as $1,000/mo or
-  // $12,000/yr back to the realistic paycheck-sized defaults.
-  return n >= 1000 ? fallback : n;
+  return n;
 };
 
 const normalizeWaterfallInputs = (saved: Partial<WaterfallInputs> = {}): WaterfallInputs => {
