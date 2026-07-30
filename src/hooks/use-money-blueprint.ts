@@ -59,8 +59,10 @@ export const PAYROLL_RETIREMENT = {
     hsa: 116.66,
   },
   kateri: {
-    // OPERS member contribution: 10% of gross
-    pension: Math.round(((KATERI_GROSS_ANNUAL / 12) * 0.1) * 100) / 100,
+    // OPERS member contribution, straight from the paystub ($431.76 biweekly)
+    pension: perMonth(KATERI_OPERS_EE_BIWEEKLY),
+    // Ohio Deferred Compensation ($25 biweekly)
+    deferredComp: KATERI_DEFCOMP_MONTHLY,
   },
 };
 
