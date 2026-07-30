@@ -34,6 +34,16 @@ export const KATERI_GROSS_ANNUAL = Math.round(KATERI_GROSS_BIWEEKLY * KATERI_PAY
 export const KATERI_NET_MONTHLY = perMonth(KATERI_NET_BIWEEKLY); // 4,227.72
 export const KATERI_GARNISHMENT_MONTHLY = perMonth(KATERI_GARNISHMENT_BIWEEKLY);
 export const KATERI_DEFCOMP_MONTHLY = perMonth(KATERI_DEFCOMP_BIWEEKLY);
+/** Kateri's Chapter 13 is released April 2027 — the garnishment stops and net pay rises. */
+export const KATERI_BANKRUPTCY_RELEASE = new Date(2027, 3, 1);
+export const kateriGarnishmentActive = () => new Date() < KATERI_BANKRUPTCY_RELEASE;
+/** Take-home after the bankruptcy release (garnishment no longer withheld). */
+export const KATERI_NET_MONTHLY_POST_BK =
+  Math.round((KATERI_NET_MONTHLY + KATERI_GARNISHMENT_MONTHLY) * 100) / 100;
+/** Net take-home effective today. */
+export const kateriNetMonthly = () =>
+  kateriGarnishmentActive() ? KATERI_NET_MONTHLY : KATERI_NET_MONTHLY_POST_BK;
+
 
 /** W-2 salary only — employer retirement contributions are based on this. */
 export const LYMAN_SALARY_ANNUAL = 70_940.04; // $5,911.67/mo
