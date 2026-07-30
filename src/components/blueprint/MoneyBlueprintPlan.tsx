@@ -256,6 +256,24 @@ export function MoneyBlueprintPlan() {
               <span className="text-sm font-semibold">Total Net Worth</span>
               <span className="text-lg font-bold tabular-nums">{money2(result.netWorth)}</span>
             </div>
+
+            <div className="rounded-lg border border-border/60 bg-muted/30 p-3 space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Debt notes</p>
+              <ul className="space-y-1 text-xs text-muted-foreground">
+                <li>• Student loans — $107,000.00 (Nelnet, IDR $390/mo starting Jan 1, 2027)</li>
+                <li>• SBA business loan — $48,000.00</li>
+                <li>• Vacation loan — $5,049.30</li>
+                <li>• Consumer debt — $2,606.04</li>
+                <li className="font-medium text-foreground">Total household debt — $162,655.34</li>
+              </ul>
+              <p className="text-xs text-muted-foreground">
+                <span className="font-medium text-foreground">Student loans are in forgiveness (qualified and approved):</span>{' '}
+                65 more payments (~5.5 years) at $390/mo — about $25,350 of remaining cash-flow exposure — then the
+                balance is forgiven. The full $107,000 stays on the balance sheet until discharge for conservative
+                net-worth reporting.
+              </p>
+            </div>
+
           </CardContent>
         </Card>
 
