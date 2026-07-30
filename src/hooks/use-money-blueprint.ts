@@ -43,7 +43,15 @@ export const CONSULTING_ANNUAL = CONSULTING_QUARTERLY * 4; // 7,700
 export const LYMAN_GROSS_ANNUAL = LYMAN_SALARY_ANNUAL + CONSULTING_ANNUAL; // 78,640.04
 export const HOUSEHOLD_GROSS_ANNUAL = LYMAN_GROSS_ANNUAL + KATERI_GROSS_ANNUAL;
 
+/**
+ * Lyman — IU paystub, advice date 07/31/2026, monthly.
+ * Gross 5,911.67 | Taxes 660.17 | Before-tax 479.61 | After-tax 306.98 | Net 4,464.91
+ * Net pay is split across 5 checking accounts, so tracked deposits alone under-count it.
+ */
+export const LYMAN_NET_MONTHLY = 4_464.91;
+
 const NET_RATIO = 0.76; // take-home estimate after taxes + pre-tax deferrals (Lyman fallback only)
+
 
 /**
  * Retirement contributions come out of payroll, not from bank transactions, so the
