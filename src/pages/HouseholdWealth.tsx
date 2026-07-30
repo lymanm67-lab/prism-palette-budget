@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { Car, Home, PiggyBank, Users, Briefcase, Landmark } from 'lucide-react';
+import { Car, Home, PiggyBank, Users, Briefcase, Landmark, Info } from 'lucide-react';
 import {
   PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend,
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -178,6 +178,53 @@ export default function HouseholdWealth() {
               <Stat label="Real Estate" value={money(B.realEstate)} />
               <Stat label="Vehicles" value={money(B.vehicles || vehicleTotal)} />
               <Stat label="Household Net Worth" value={money(live?.netWorth ?? 0)} />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Briefcase className="h-4 w-4" /> Household Balance Sheet — Debt Notes
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 text-sm">
+              <div className="grid gap-3 md:grid-cols-2">
+                <div className="rounded-lg border border-border/50 bg-card/60 p-4">
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">Total household debt</p>
+                  <p className="text-2xl font-bold text-destructive mt-1">{money2(live?.totalLiabilities ?? 162_655.34)}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Student loans + SBA business loan + vacation/consumer obligations.
+                  </p>
+                </div>
+                <div className="rounded-lg border border-prism-teal/30 bg-prism-teal/5 p-4">
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">PSLF-adjusted net worth</p>
+                  <p className="text-2xl font-bold text-prism-teal mt-1">
+                    {money2((live?.netWorth ?? 0) + 107_000 - 25_350)}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Hypothetical if the $107,000 student loan balance is replaced by 65 remaining payments.
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-2 rounded-lg border border-border/50 bg-muted/30 p-4">
+                <p className="font-semibold">Debt composition</p>
+                <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                  <li>Student loans — $107,000 (Public Service Loan Forgiveness, 65 payments remaining)</li>
+                  <li>SBA business loan — $48,000</li>
+                  <li>Vacation/consumer debt — $5,049.30 + $2,606.04</li>
+                </ul>
+              </div>
+
+              <div className="flex gap-2 text-xs text-prism-teal">
+                <Info className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                <p>
+                  <strong>Forgiveness status:</strong> Student loans are in Public Service Loan Forgiveness,
+                  qualified and approved. After 65 more qualifying payments (~5.5 years), the remaining $107,000
+                  balance is projected to be forgiven. Until discharge is officially approved, the full legal
+                  balance remains on the household balance sheet as a conservative liability.
+                </p>
+              </div>
             </CardContent>
           </Card>
 
