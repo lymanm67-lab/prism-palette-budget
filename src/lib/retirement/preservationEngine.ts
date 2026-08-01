@@ -76,7 +76,7 @@ export const DEFAULT_INPUTS: EngineInputs = {
   kateriRetireAge: 62,
   kateriSalary: 113000,
   kateriOpers: 328948.74,
-  kateriDeferredComp: 35447.45,
+  kateriDeferredComp: 31170.96,
   kateriDcMonthly: 150,
   kateriPensionMonthly: 2900,
   socialSecurityMonthly: 3500,

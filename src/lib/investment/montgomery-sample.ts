@@ -53,7 +53,7 @@ export async function loadMontgomerySample(householdId: string) {
     name: 'Spouse',
     current_age: 56,
     retirement_age: 62,
-    current_balance: 35447.45, // deferred comp only — OPERS excluded
+    current_balance: 31170.96, // deferred comp only — OPERS excluded
     monthly_employee_contribution: 150,
     monthly_employer_contribution: 0,
     expected_return_pct: 6,
