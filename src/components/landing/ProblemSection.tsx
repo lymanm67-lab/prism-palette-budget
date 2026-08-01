@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { Layers, ScanSearch, Eye } from 'lucide-react';
+import EditableText from '@/components/editor/EditableText';
 
 const GROUPS = [
   {
@@ -24,10 +25,11 @@ const ProblemSection = () => (
     <div className="mx-auto max-w-5xl px-6">
       <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
         className="text-center mb-14">
-        <h2 className="font-display text-3xl sm:text-5xl font-extrabold tracking-tight">
+        <EditableText contentKey="problem.heading" as="h2" fallback="Why managing money still feels harder than it should"
+          className="font-display text-3xl sm:text-5xl font-extrabold tracking-tight">
           Why managing money still feels{' '}
           <span className="prism-gradient-text">harder than it should</span>
-        </h2>
+        </EditableText>
       </motion.div>
 
       <div className="grid gap-6 sm:grid-cols-3 max-w-4xl mx-auto">

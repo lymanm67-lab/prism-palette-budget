@@ -3,6 +3,8 @@ import { Button } from '@/components/ui/button';
 import prismLogo from '@/assets/prism-money-logo.png';
 import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
+import EditableText from '@/components/editor/EditableText';
+import EditableImage from '@/components/editor/EditableImage';
 
 const LandingNav = () => {
   const navigate = useNavigate();
@@ -24,28 +26,26 @@ const LandingNav = () => {
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-card/95 backdrop-blur-lg border-b border-border shadow-sm' : 'bg-transparent'}`}>
       <div className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <img src={prismLogo} alt="PrismMoney™" className="h-10 w-10 rounded-lg object-contain" />
-          <span className={`font-display text-lg font-extrabold tracking-tight ${scrolled ? 'text-foreground' : 'text-white'}`}>
-            PrismMoney™
-          </span>
+          <EditableImage contentKey="nav.logo_image" fallbackSrc={prismLogo} alt="PrismMoney™" className="h-10 w-10 rounded-lg object-contain" wrapperClassName="h-10 w-10 rounded-lg" loading="eager" />
+          <EditableText contentKey="nav.brand" fallback="PrismMoney™" className={`font-display text-lg font-extrabold tracking-tight ${scrolled ? 'text-foreground' : 'text-white'}`} />
         </div>
 
         {/* Desktop nav links */}
         <div className={`hidden md:flex items-center gap-6 text-sm font-semibold ${scrolled ? 'text-muted-foreground' : 'text-white/90'}`}>
-          <button onClick={() => scrollTo('benefits')} className="hover:text-accent transition-colors">Benefits</button>
-          <button onClick={() => scrollTo('features')} className="hover:text-accent transition-colors">Features</button>
-          <button onClick={() => scrollTo('pricing')} className="hover:text-accent transition-colors">Pricing</button>
-          <button onClick={() => scrollTo('faq')} className="hover:text-accent transition-colors">FAQ</button>
-          <button onClick={() => navigate('/changelog')} className="hover:text-accent transition-colors">What's New</button>
+          <button onClick={() => scrollTo('benefits')} className="hover:text-accent transition-colors"><EditableText contentKey="nav.link_benefits" fallback="Benefits" /></button>
+          <button onClick={() => scrollTo('features')} className="hover:text-accent transition-colors"><EditableText contentKey="nav.link_features" fallback="Features" /></button>
+          <button onClick={() => scrollTo('pricing')} className="hover:text-accent transition-colors"><EditableText contentKey="nav.link_pricing" fallback="Pricing" /></button>
+          <button onClick={() => scrollTo('faq')} className="hover:text-accent transition-colors"><EditableText contentKey="nav.link_faq" fallback="FAQ" /></button>
+          <button onClick={() => navigate('/changelog')} className="hover:text-accent transition-colors"><EditableText contentKey="nav.link_whats_new" fallback="What's New" /></button>
         </div>
 
         <div className="hidden md:flex items-center gap-3">
           <Button variant="ghost" onClick={() => navigate('/auth')}
             className={scrolled ? 'text-muted-foreground hover:text-foreground' : 'text-white font-semibold hover:text-white hover:bg-white/10'}>
-            Sign In
+            <EditableText contentKey="nav.cta_signin" fallback="Sign In" />
           </Button>
           <Button onClick={() => navigate('/onboarding')} className="prism-gradient-teal text-primary-foreground font-semibold hover:opacity-90 rounded-xl">
-            Start Free Trial
+            <EditableText contentKey="nav.cta_trial" fallback="Start Free Trial" />
           </Button>
         </div>
 
