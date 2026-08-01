@@ -18,7 +18,7 @@ import { StudentLoanPslfCard } from '@/components/wealth-os/StudentLoanPslfCard'
 
 
 const OPERS = 328948.74;
-const OHIO_DC = 35447.45;
+const OHIO_DC = 31170.96;
 const ALLIES = 100000;
 const EQUINOX = 15000;
 const JAGUAR = 25000;

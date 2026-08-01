@@ -238,7 +238,7 @@ const FALLBACK_ASSETS = [
 ];
 
 export const OPERS = 328948.74;
-export const OHIO_DC = 35447.45;
+export const OHIO_DC = 31170.96;
 export const ALLIES = 100000;
 export const EQUINOX = 15000;
 export const JAGUAR = 25000;

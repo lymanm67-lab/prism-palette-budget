@@ -66,7 +66,7 @@ const DEFAULTS: Record<"lyman" | "kateri", SpouseRetirementInputs> = {
   },
   // Kateri: State of Ohio biweekly advice 07/24/2026 annualized at 26 pays.
   // Gross $4,317.60/pay, OPERS employee $431.76/pay, employer $604.46/pay, Ohio DC $25/pay.
-  // Balance = OPERS $328,948.74 + Ohio Deferred Compensation $35,447.45.
+  // Balance = OPERS $328,948.74 + Ohio Deferred Compensation $31,170.96.
   kateri: {
     name: "Kateri",
     currentAge: 57,
@@ -75,7 +75,7 @@ const DEFAULTS: Record<"lyman" | "kateri", SpouseRetirementInputs> = {
     employeeMonthly: 935.48,
     employerMonthly: 1309.66,
     deferredCompMonthly: 54.17,
-    currentBalance: 364396.19,
+    currentBalance: 360119.70,
     expectedReturnPct: 8,
   },
 };
