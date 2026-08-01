@@ -7,12 +7,15 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-route
 import { ThemeProvider } from "next-themes";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { HouseholdProvider } from "@/contexts/HouseholdContext";
+import { EditModeProvider } from "@/components/editor/EditModeContext";
+import EditModeToggle from "@/components/editor/EditModeToggle";
 import AppLayout from "@/components/layout/AppLayout";
 import Auth from "@/pages/Auth";
 import LandingPage from "@/pages/LandingPage";
 import ResetPassword from "@/pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import Onboarding from "@/pages/Onboarding";
+
 
 // Lazy-loaded heavy pages for code-splitting
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
@@ -100,6 +103,8 @@ const MoneyBlueprint = lazy(() => import("@/pages/MoneyBlueprint"));
 
 const BeltProgress = lazy(() => import("@/pages/BeltProgress"));
 const RetirementDashboard = lazy(() => import("@/pages/RetirementDashboard"));
+const ContentEditor = lazy(() => import("@/pages/admin/ContentEditor"));
+
 
 const queryClient = new QueryClient();
 
