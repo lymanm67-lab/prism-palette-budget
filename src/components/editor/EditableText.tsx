@@ -73,10 +73,16 @@ const EditableText = ({
       title={`Editing ${contentKey} — Esc to cancel`}
       onInput={() => setDirty(true)}
       onBlur={commit}
+      onClick={(e: React.MouseEvent) => {
+        // Don't let clicks inside buttons/links navigate while editing.
+        e.preventDefault();
+        e.stopPropagation();
+      }}
       onKeyDown={(e: React.KeyboardEvent) => {
         if (e.key === 'Escape') {
           e.preventDefault();
           if (ref.current) ref.current.textContent = text;
+
           setDirty(false);
           ref.current?.blur();
         }
