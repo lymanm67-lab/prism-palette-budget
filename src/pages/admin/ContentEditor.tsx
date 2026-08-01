@@ -169,6 +169,8 @@ const ContentEditor = () => {
   const { map, isLoading } = useSiteContent();
   const [drafts, setDrafts] = useState<Record<string, string | undefined>>({});
   const [search, setSearch] = useState('');
+  const [activeTab, setActiveTab] = useState(CONTENT_GROUPS[0].id);
+
 
   const setDraft = (key: string, value: string | undefined) =>
     setDrafts((prev) => ({ ...prev, [key]: value }));
@@ -238,7 +240,11 @@ const ContentEditor = () => {
       ) : groups.length === 0 ? (
         <p className="text-sm text-muted-foreground">No fields match “{search}”.</p>
       ) : (
-        <Tabs defaultValue={groups[0].id}>
+        <Tabs
+          value={groups.some((g) => g.id === activeTab) ? activeTab : groups[0].id}
+          onValueChange={setActiveTab}
+        >
+
           <TabsList className="flex h-auto flex-wrap justify-start gap-1">
             {groups.map((g) => (
               <TabsTrigger key={g.id} value={g.id} className="text-xs">
