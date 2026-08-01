@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import EditableText from '@/components/editor/EditableText';
 
 const FinalCTASection = () => {
   const navigate = useNavigate();
@@ -18,16 +19,16 @@ const FinalCTASection = () => {
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl prism-gradient-teal prism-glow-teal">
             <Sparkles className="h-8 w-8 text-white" />
           </div>
-          <h2 className="font-display text-3xl sm:text-5xl font-extrabold text-white leading-tight">
-            Your money needs more than another tracker
-          </h2>
-          <p className="mt-4 text-base sm:text-lg text-white/80 max-w-xl mx-auto">
-            Get clear, stay in control, and make confident decisions with your money — starting today.
-          </p>
+          <EditableText contentKey="final_cta.heading" as="h2"
+            className="font-display text-3xl sm:text-5xl font-extrabold text-white leading-tight"
+            fallback="Your money needs more than another tracker" />
+          <EditableText contentKey="final_cta.subheading" as="p"
+            className="mt-4 text-base sm:text-lg text-white/80 max-w-xl mx-auto"
+            fallback="Get clear, stay in control, and make confident decisions with your money — starting today." />
           <div className="mt-8">
             <Button size="lg" onClick={() => navigate(subscribed ? '/dashboard' : '/onboarding')}
               className="prism-gradient-teal hover:opacity-90 text-lg h-14 px-10 gap-2 font-bold rounded-2xl prism-glow-teal text-white">
-              {subscribed ? 'Go to Dashboard' : 'Start Your Free Trial'} <ArrowRight className="h-5 w-5" />
+              {subscribed ? 'Go to Dashboard' : <EditableText contentKey="final_cta.cta" fallback="Start Your Free Trial" />} <ArrowRight className="h-5 w-5" />
             </Button>
           </div>
         </motion.div>

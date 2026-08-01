@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 import { useABTest } from '@/hooks/use-ab-test';
 import heroProductShot from '@/assets/hero-product-shot.png';
+import EditableText from '@/components/editor/EditableText';
+import EditableImage from '@/components/editor/EditableImage';
 
 const HeroSection = () => {
   const navigate = useNavigate();
@@ -36,10 +38,11 @@ const HeroSection = () => {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 mb-8">
             <span className="h-2 w-2 rounded-full bg-accent animate-pulse" />
-            <span className="text-xs font-medium text-white/80">Your financial control system</span>
+            <EditableText contentKey="hero.badge" fallback="Your financial control system" className="text-xs font-medium text-white/80" />
           </div>
 
-          <h1 className="font-display text-4xl sm:text-6xl lg:text-7xl font-extrabold text-white tracking-tight leading-[1.1]">
+          <EditableText contentKey="hero.headline" as="h1" fallback={headlineText}
+            className="font-display text-4xl sm:text-6xl lg:text-7xl font-extrabold text-white tracking-tight leading-[1.1]">
             {headlineText.includes('clear picture') ? (
               <>
                 You're making money, but you still don't have a{' '}
@@ -49,24 +52,21 @@ const HeroSection = () => {
             ) : (
               headlineText
             )}
-          </h1>
+          </EditableText>
 
-          <p className="mt-6 text-base sm:text-lg text-white/90 max-w-3xl mx-auto leading-relaxed font-medium">
-            {subheadlineText}
-          </p>
+          <EditableText contentKey="hero.subheadline" as="p" fallback={subheadlineText}
+            className="mt-6 text-base sm:text-lg text-white/90 max-w-3xl mx-auto leading-relaxed font-medium" />
 
-          <p className="mt-4 text-sm sm:text-base text-white/70 max-w-2xl mx-auto leading-relaxed">
-            {supportingText}
-          </p>
+          <EditableText contentKey="hero.supporting" as="p" fallback={supportingText}
+            className="mt-4 text-sm sm:text-base text-white/70 max-w-2xl mx-auto leading-relaxed" />
 
           <div className="mt-10 flex flex-col items-center gap-3">
             <Button size="lg" onClick={handleCtaClick}
               className="prism-gradient-teal hover:opacity-90 text-lg h-14 px-10 gap-2 font-bold rounded-2xl prism-glow-teal text-white">
-              {ctaText} <ArrowRight className="h-5 w-5" />
+              <EditableText contentKey="hero.cta" fallback={ctaText} /> <ArrowRight className="h-5 w-5" />
             </Button>
-            <p className="text-xs text-white/50 font-medium">
-              See your full financial picture in the next 10 minutes.
-            </p>
+            <EditableText contentKey="hero.cta_note" as="p" className="text-xs text-white/50 font-medium"
+              fallback="See your full financial picture in the next 10 minutes." />
           </div>
         </motion.div>
 
@@ -77,10 +77,12 @@ const HeroSection = () => {
           transition={{ delay: 0.5, duration: 0.8 }}
           className="mt-16 sm:mt-20 relative max-w-4xl mx-auto"
         >
-          <img
-            src={heroProductShot}
+          <EditableImage
+            contentKey="hero.product_image"
+            fallbackSrc={heroProductShot}
             alt="PrismMoney dashboard — your financial command center"
             className="w-full rounded-2xl"
+            wrapperClassName="rounded-2xl"
             loading="eager"
           />
           <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[hsl(var(--prism-navy))] to-transparent pointer-events-none rounded-b-2xl" />

@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import AnimatedNumber from '@/components/AnimatedNumber';
 import SafeToSpendCalculator from '@/components/landing/SafeToSpendCalculator';
 import { useABTest } from '@/hooks/use-ab-test';
+import EditableText from '@/components/editor/EditableText';
 
 const TIMEFRAMES = [
   { label: 'Today', amount: 182, color: 'from-prism-teal to-prism-sky' },
@@ -26,14 +27,16 @@ const SafeToSpendSection = () => {
     <section className="py-16 sm:py-24 bg-muted/20">
       <div className="mx-auto max-w-5xl px-6 text-center">
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-          <p className="text-xs font-semibold uppercase tracking-widest text-accent mb-4">Your Safe-to-Spend Right Now</p>
-          <h2 className="font-display text-3xl sm:text-5xl font-extrabold tracking-tight">
+          <EditableText contentKey="sts.eyebrow" as="p" fallback="Your Safe-to-Spend Right Now"
+            className="text-xs font-semibold uppercase tracking-widest text-accent mb-4" />
+          <EditableText contentKey="sts.heading" as="h2" fallback="Know exactly what you can safely spend"
+            className="font-display text-3xl sm:text-5xl font-extrabold tracking-tight">
             Know exactly what you can{' '}
             <span className="prism-gradient-text">safely spend</span>
-          </h2>
-          <p className="mt-4 text-muted-foreground text-base sm:text-lg max-w-2xl mx-auto">
-            No guessing. No spreadsheets. Just a clear number you can trust.
-          </p>
+          </EditableText>
+          <EditableText contentKey="sts.subheading" as="p"
+            className="mt-4 text-muted-foreground text-base sm:text-lg max-w-2xl mx-auto"
+            fallback="No guessing. No spreadsheets. Just a clear number you can trust." />
         </motion.div>
 
         <div className="mt-12 grid gap-6 sm:grid-cols-3 max-w-3xl mx-auto">

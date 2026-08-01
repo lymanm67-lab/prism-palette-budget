@@ -5741,6 +5741,30 @@ export type Database = {
           },
         ]
       }
+      site_content: {
+        Row: {
+          key: string
+          kind: string
+          updated_at: string
+          updated_by: string | null
+          value: string | null
+        }
+        Insert: {
+          key: string
+          kind?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: string | null
+        }
+        Update: {
+          key?: string
+          kind?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: string | null
+        }
+        Relationships: []
+      }
       snaptrade_connections: {
         Row: {
           brokerage_authorization_id: string | null

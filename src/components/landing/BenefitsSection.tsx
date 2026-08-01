@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { LayoutDashboard, Eye, Lightbulb, Briefcase, ShieldCheck, BadgeDollarSign, Camera, TrendingUp } from 'lucide-react';
+import EditableText from '@/components/editor/EditableText';
 
 const BENEFITS = [
   { icon: LayoutDashboard, title: 'All-in-one financial command center', desc: 'Budgeting, investments, retirement planning, subscriptions, and forecasting — one place.' },
@@ -17,13 +18,14 @@ const BenefitsSection = () => (
     <div className="mx-auto max-w-7xl px-6">
       <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
         className="text-center mb-4">
-        <p className="text-sm sm:text-base text-muted-foreground font-medium max-w-2xl mx-auto mb-6">
-          Prism replaces all of that with one clear system you can actually trust.
-        </p>
-        <h2 className="font-display text-3xl sm:text-5xl font-extrabold tracking-tight">
+        <EditableText contentKey="benefits.eyebrow" as="p"
+          className="text-sm sm:text-base text-muted-foreground font-medium max-w-2xl mx-auto mb-6"
+          fallback="Prism replaces all of that with one clear system you can actually trust." />
+        <EditableText contentKey="benefits.heading" as="h2" fallback="Why Prism Is Worth More Than a Basic Budget App"
+          className="font-display text-3xl sm:text-5xl font-extrabold tracking-tight">
           Why Prism Is Worth More Than a{' '}
           <span className="prism-gradient-text">Basic Budget App</span>
-        </h2>
+        </EditableText>
       </motion.div>
 
       <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">

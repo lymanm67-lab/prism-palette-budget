@@ -3,16 +3,19 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { HouseholdProvider } from "@/contexts/HouseholdContext";
+import { EditModeProvider } from "@/components/editor/EditModeContext";
+import EditModeToggle from "@/components/editor/EditModeToggle";
 import AppLayout from "@/components/layout/AppLayout";
 import Auth from "@/pages/Auth";
 import LandingPage from "@/pages/LandingPage";
 import ResetPassword from "@/pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import Onboarding from "@/pages/Onboarding";
+
 
 // Lazy-loaded heavy pages for code-splitting
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
@@ -100,6 +103,8 @@ const MoneyBlueprint = lazy(() => import("@/pages/MoneyBlueprint"));
 
 const BeltProgress = lazy(() => import("@/pages/BeltProgress"));
 const RetirementDashboard = lazy(() => import("@/pages/RetirementDashboard"));
+const ContentEditor = lazy(() => import("@/pages/admin/ContentEditor"));
+
 
 const queryClient = new QueryClient();
 
@@ -138,6 +143,15 @@ const AuthRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+// Routes that render their own full-screen chrome and should not show the edit FAB.
+const FULLSCREEN_ROUTES = ['/auth', '/onboarding', '/reset-password'];
+
+const EditModeFab = () => {
+  const { pathname } = useLocation();
+  if (FULLSCREEN_ROUTES.some((r) => pathname.startsWith(r))) return null;
+  return <EditModeToggle />;
+};
+
 const App = () => (
   <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
   <QueryClientProvider client={queryClient}>
@@ -146,7 +160,10 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <EditModeProvider>
+          <EditModeFab />
           <Routes>
+
             <Route path="/" element={<AuthRoute><LandingPage /></AuthRoute>} />
             <Route path="/onboarding" element={<AuthRoute><Onboarding /></AuthRoute>} />
             <Route path="/auth" element={<AuthRoute><Auth /></AuthRoute>} />
@@ -243,11 +260,14 @@ const App = () => (
               <Route path="/legacy/wealth-os" element={<Suspense fallback={<PageLoader />}><WealthOS /></Suspense>} />
               <Route path="/kungfoo" element={<Suspense fallback={<PageLoader />}><KungFoo /></Suspense>} />
               <Route path="/retirement-optimizer" element={<Suspense fallback={<PageLoader />}><RetirementDashboard /></Suspense>} />
+              <Route path="/admin/content-editor" element={<Suspense fallback={<PageLoader />}><ContentEditor /></Suspense>} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </EditModeProvider>
         </AuthProvider>
       </BrowserRouter>
+
     </TooltipProvider>
   </QueryClientProvider>
   </ThemeProvider>

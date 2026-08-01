@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { MapPin, ScanSearch, Wallet, AlertCircle, Camera, FileUp } from 'lucide-react';
+import EditableText from '@/components/editor/EditableText';
 
 const ITEMS = [
   { icon: MapPin, text: 'Where your money is actually going' },
@@ -14,10 +15,11 @@ const ImmediateValueSection = () => (
   <section className="py-16 sm:py-24 bg-background">
     <div className="mx-auto max-w-4xl px-6 text-center">
       <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-        <h2 className="font-display text-3xl sm:text-5xl font-extrabold tracking-tight">
+        <EditableText contentKey="value.heading" as="h2" fallback="What you'll see in the first 10 minutes"
+          className="font-display text-3xl sm:text-5xl font-extrabold tracking-tight">
           What you'll see in the{' '}
           <span className="prism-gradient-text">first 10 minutes</span>
-        </h2>
+        </EditableText>
       </motion.div>
 
       <div className="mt-12 grid gap-4 sm:grid-cols-2 max-w-3xl mx-auto">
