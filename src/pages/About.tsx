@@ -5,6 +5,8 @@ import {
   Zap, Heart, Target, Shield, BarChart3, Bot, Sparkles, ArrowRight, Code2, Lightbulb, Users
 } from 'lucide-react';
 import designerPhoto from '@/assets/designer-photo.png';
+import EditableText from '@/components/editor/EditableText';
+import EditableImage from '@/components/editor/EditableImage';
 
 const VALUES = [
   { icon: Heart, title: 'Empathy First', desc: 'Built for real people struggling with real financial challenges — not financial experts.' },
@@ -28,12 +30,12 @@ const About = () => {
             <Zap className="h-12 w-12 text-white" />
           </div>
           <div>
-            <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+            <EditableText contentKey="about.hero_heading" as="h1" fallback="The Story Behind PrismMoney™"
+              className="font-display text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
               The Story Behind <span className="prism-gradient-text">PrismMoney™</span>
-            </h1>
-            <p className="mt-3 text-white/80 leading-relaxed max-w-xl">
-              Built by someone who lived the financial struggle — and decided to build the tool they wished existed.
-            </p>
+            </EditableText>
+            <EditableText contentKey="about.hero_subheading" as="p" className="mt-3 text-white/80 leading-relaxed max-w-xl"
+              fallback="Built by someone who lived the financial struggle — and decided to build the tool they wished existed." />
           </div>
         </div>
       </div>
@@ -42,22 +44,23 @@ const About = () => {
       <div className="rounded-2xl border border-border p-6 sm:p-8">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
           {/* Designer photo */}
-          <img
-            src={designerPhoto}
+          <EditableImage
+            contentKey="about.designer_photo"
+            fallbackSrc={designerPhoto}
             alt="The designer and creator of PrismMoney"
             className="h-28 w-28 shrink-0 rounded-2xl object-cover object-top border-2 border-prism-teal/30 shadow-lg"
+            wrapperClassName="h-28 w-28 shrink-0 rounded-2xl"
           />
           <div className="text-center sm:text-left space-y-2">
-            <p className="text-xs font-bold uppercase tracking-wider text-prism-teal">Meet the Designer</p>
-            <h2 className="font-display text-2xl font-bold">The Creator of PrismMoney™</h2>
-            <p className="text-sm text-muted-foreground leading-relaxed max-w-lg">
-              Designer, developer, and someone who understands what it's like to stare at a bank account
-              and feel lost. PrismMoney™ was born out of a personal mission to make financial clarity
-              accessible to everyone — not just those who can afford a financial advisor.
-            </p>
-            <p className="text-xs text-muted-foreground/60 italic">
-              Designer · Developer · Financial Advocate
-            </p>
+            <EditableText contentKey="about.designer_eyebrow" as="p" fallback="Meet the Designer"
+              className="text-xs font-bold uppercase tracking-wider text-prism-teal" />
+            <EditableText contentKey="about.designer_heading" as="h2" fallback="The Creator of PrismMoney™"
+              className="font-display text-2xl font-bold" />
+            <EditableText contentKey="about.designer_bio" as="p"
+              className="text-sm text-muted-foreground leading-relaxed max-w-lg"
+              fallback="Designer, developer, and someone who understands what it's like to stare at a bank account and feel lost. PrismMoney™ was born out of a personal mission to make financial clarity accessible to everyone — not just those who can afford a financial advisor." />
+            <EditableText contentKey="about.designer_credits" as="p" fallback="Designer · Developer · Financial Advocate"
+              className="text-xs text-muted-foreground/60 italic" />
           </div>
         </div>
       </div>
@@ -65,7 +68,7 @@ const About = () => {
       {/* Origin Story */}
       <div className="grid gap-6 lg:grid-cols-5">
         <div className="lg:col-span-3 space-y-4">
-          <h2 className="font-display text-2xl font-bold">Why I Built This</h2>
+          <EditableText contentKey="about.origin_heading" as="h2" fallback="Why I Built This" className="font-display text-2xl font-bold" />
           <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
             <p>
               A few years ago, I was drowning. Credit card debt, student loans, a car payment I couldn't really afford, and 
@@ -124,17 +127,15 @@ const About = () => {
           </div>
 
           <div className="rounded-2xl border border-border p-6 space-y-4">
-            <h3 className="font-display font-bold text-lg">The Mission</h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Make financial literacy accessible to everyone — regardless of income, background, or 
-              financial education. No jargon, no judgment, just a clear path forward.
-            </p>
+            <EditableText contentKey="about.mission_heading" as="h3" fallback="The Mission" className="font-display font-bold text-lg" />
+            <EditableText contentKey="about.mission_body" as="p" className="text-sm text-muted-foreground leading-relaxed"
+              fallback="Make financial literacy accessible to everyone — regardless of income, background, or financial education. No jargon, no judgment, just a clear path forward." />
             <div className="h-1 rounded-full bg-gradient-to-r from-prism-navy via-prism-teal to-prism-orange" />
           </div>
 
           <div className="rounded-2xl prism-gradient p-6 text-white">
             <Sparkles className="h-6 w-6 mb-3" />
-            <p className="font-display font-bold text-lg">Join the Movement</p>
+            <EditableText contentKey="about.join_heading" as="p" fallback="Join the Movement" className="font-display font-bold text-lg" />
             <p className="text-sm text-white/60 mt-1 mb-4">
               Every dollar you budget is a step toward freedom.
             </p>

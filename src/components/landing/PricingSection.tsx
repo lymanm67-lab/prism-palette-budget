@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { STRIPE_PLANS } from '@/lib/stripe-plans';
 import { toast } from 'sonner';
 import { useABTest } from '@/hooks/use-ab-test';
+import EditableText from '@/components/editor/EditableText';
 
 const PLANS = [
   {
@@ -172,13 +173,11 @@ const PricingSection = () => {
             ) : headlineText}
           </h2>
           {showGuidance && (
-            <p className="mt-3 text-foreground/70 text-base sm:text-lg">
-              Most users start with Premium for full financial clarity.
-            </p>
+            <EditableText contentKey="pricing.guidance" as="p" className="mt-3 text-foreground/70 text-base sm:text-lg"
+              fallback="Most users start with Premium for full financial clarity." />
           )}
-          <p className="mt-1.5 text-sm text-foreground/50">
-            Most users recover the cost within the first 30 days.
-          </p>
+          <EditableText contentKey="pricing.note" as="p" className="mt-1.5 text-sm text-foreground/50"
+            fallback="Most users recover the cost within the first 30 days." />
         </motion.div>
 
         {/* Toggle */}
@@ -302,9 +301,8 @@ const PricingSection = () => {
               </div>
             ))}
           </div>
-          <p className="text-center text-sm text-foreground/60 font-medium">
-            14-day free trial · Cancel anytime · No credit card charged until trial ends
-          </p>
+          <EditableText contentKey="pricing.footnote" as="p" className="text-center text-sm text-foreground/60 font-medium"
+            fallback="14-day free trial · Cancel anytime · No credit card charged until trial ends" />
         </motion.div>
       </div>
     </section>
