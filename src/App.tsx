@@ -143,6 +143,15 @@ const AuthRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+// Routes that render their own full-screen chrome and should not show the edit FAB.
+const FULLSCREEN_ROUTES = ['/auth', '/onboarding', '/reset-password'];
+
+const EditModeFab = () => {
+  const { pathname } = useLocation();
+  if (FULLSCREEN_ROUTES.some((r) => pathname.startsWith(r))) return null;
+  return <EditModeToggle />;
+};
+
 const App = () => (
   <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
   <QueryClientProvider client={queryClient}>
@@ -151,7 +160,10 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <EditModeProvider>
+          <EditModeFab />
           <Routes>
+
             <Route path="/" element={<AuthRoute><LandingPage /></AuthRoute>} />
             <Route path="/onboarding" element={<AuthRoute><Onboarding /></AuthRoute>} />
             <Route path="/auth" element={<AuthRoute><Auth /></AuthRoute>} />
