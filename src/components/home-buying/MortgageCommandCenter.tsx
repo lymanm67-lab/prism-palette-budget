@@ -68,7 +68,7 @@ const MILESTONES = [
 
 const CHECKLIST = [
   { label: 'Pay all accounts as agreed', done: true },
-  { label: 'GLA payoff & deletion verification (Apr–May 2027)', done: true },
+  { label: 'GLA payoff & deletion verification (Feb–Mar 2027)', done: true },
   { label: 'Confirm all accounts show $0 balance', done: false },
   { label: 'Pull all 3 credit reports (May 2027)', done: false },
   { label: 'Ensure all negative items removed / updated', done: false },
