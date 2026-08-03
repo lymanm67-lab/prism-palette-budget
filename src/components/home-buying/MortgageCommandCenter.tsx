@@ -12,7 +12,8 @@ const money = (n: number) =>
 
 /* ---------------- data (from the Mortgage Command Center binder, 7/17/26) ---------------- */
 
-const PROGRAM = { enrolled: 26762.25, resolved: 24727.27, remaining: 2034.98, pctResolved: 92.44 };
+const AS_OF = 'Aug 3, 2026';
+const PROGRAM = { enrolled: 26762.25, resolved: 25066.45, remaining: 1695.80, pctResolved: 93.66 };
 const ACCOUNT_COUNTS = { total: 13, resolved: 9, active: 4 };
 
 const ACCOUNTS = [
@@ -22,11 +23,11 @@ const ACCOUNTS = [
   { name: 'GLA Collection', status: 'Payment Plan In Progress', kind: 'plan', balance: 1815.54, payment: '$165.54 (Aug–Dec 2026)\n$250.00 (Jan 2027 onward)', remaining: '9 (Est.)', payoff: 'Apr 2027 Final Pmt ~$240.54' },
   { name: "Kohl's / Capital One", status: 'Settlement In Progress', kind: 'settle', balance: 479.00, payment: '$100.00', remaining: '5', payoff: 'Oct 2026' },
 ];
-const TOTAL_REMAINING = 4329.52;
+const TOTAL_REMAINING = 1695.80;
 
 const DECLINE = [
-  { m: 'JUL 2026', v: 4330 }, { m: 'AUG 2026', v: 3867 }, { m: 'SEP 2026', v: 3414 },
-  { m: 'OCT 2026', v: 2652 }, { m: 'DEC 2027', v: 1517 }, { m: 'APR 2027', v: 479 },
+  { m: 'JUL 2026', v: 4330 }, { m: 'AUG 2026', v: 1696 }, { m: 'SEP 2026', v: 1331 },
+  { m: 'OCT 2026', v: 966 }, { m: 'DEC 2026', v: 636 }, { m: 'APR 2027', v: 240 },
   { m: 'JUN 2027', v: 0 },
 ];
 
