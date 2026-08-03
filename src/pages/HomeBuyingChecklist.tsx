@@ -122,7 +122,7 @@ const HomeBuyingChecklist = () => {
 
         ) : (
           <Tabs value={tab} onValueChange={setTab} className="w-full">
-            <TabsList className="w-full grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-8 h-auto p-1 gap-1">
+            <TabsList className="w-full grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-9 h-auto p-1 gap-1">
               {TABS.map((t) => {
                 const Icon = t.icon;
                 return (
