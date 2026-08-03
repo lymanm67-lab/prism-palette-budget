@@ -9,6 +9,7 @@ import { Brain, Loader2, Send, Sparkles, Info, Check, X, Minus } from 'lucide-re
 import ReactMarkdown from 'react-markdown';
 import { cn } from '@/lib/utils';
 import { useInvestmentHoldings } from '@/hooks/use-investment-data';
+import { useInvestmentSpouse } from '@/hooks/use-investment-v2';
 import { DisclaimerBlock } from '@/components/investment/DisclaimerBlock';
 import {
   DEFAULT_ANSWERS,
@@ -16,6 +17,12 @@ import {
   analyzePortfolio,
   scoreRisk,
 } from '@/lib/investment/portfolioModels';
+import { projectSnapshot, MONTGOMERY_STEP_UPS } from '@/lib/investment/snapshotProjection';
+import {
+  DEFAULT_PAYROLL_BASELINE,
+  phase2Redirect,
+  phase3Redirect,
+} from '@/lib/investment/contributionOptimizer';
 
 const ADVISOR_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/virtual-advisor`;
 
@@ -96,8 +103,17 @@ const EDGE_META: Record<Verdict, { label: string; className: string; Icon: typeo
   tie: { label: 'Even', className: 'bg-muted text-muted-foreground border-border', Icon: Minus },
 };
 
+const grow = (balance: number, monthly: number, ratePct: number, years: number) => {
+  const r = ratePct / 100 / 12;
+  const n = Math.max(0, Math.round(years * 12));
+  const fvBal = balance * Math.pow(1 + r, n);
+  const fvContrib = r === 0 ? monthly * n : monthly * ((Math.pow(1 + r, n) - 1) / r);
+  return fvBal + fvContrib;
+};
+
 export function VirtualAdvisorPanel({ plan }: { plan?: any }) {
   const { data: holdings = [] } = useInvestmentHoldings();
+  const { data: spouse } = useInvestmentSpouse(plan?.id);
   const [analysis, setAnalysis] = useState('');
   const [analyzing, setAnalyzing] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([]);
@@ -114,15 +130,88 @@ export function VirtualAdvisorPanel({ plan }: { plan?: any }) {
     const model = MODEL_PORTFOLIOS[level];
     const analysisResult = analyzePortfolio(holdings as any, model);
 
+    const rate = Number(plan?.expected_return_pct ?? plan?.expected_return ?? 8);
+    const baseline = DEFAULT_PAYROLL_BASELINE;
+
+    // Projections that include raises, dated step-ups, debt redirects and lump sums
+    const ages = [75, 80, 85];
+    const projections = plan?.current_age
+      ? ages.map((age) => {
+          const p = projectSnapshot(plan, rate, age, true);
+          return {
+            age,
+            projected_balance: Math.round(p.projectedBalance),
+            surplus_vs_goal: Math.round(p.surplus),
+            estimated_monthly_income: Math.round(p.estimatedMonthlyIncome),
+            legacy_projection: Math.round(p.legacyProjection),
+            on_track: p.onTrack,
+          };
+        })
+      : [];
+
+    const spouseBalance = Number(spouse?.current_balance ?? 0);
+    const spouseMonthly =
+      Number(spouse?.monthly_employee_contribution ?? 0) +
+      Number(spouse?.monthly_employer_contribution ?? 0);
+    const spouseRate = Number(spouse?.expected_return_pct ?? rate);
+
     return {
       profile: {
         current_age: plan?.current_age ?? null,
         retirement_age: plan?.retirement_age ?? null,
         horizon_years: horizonYears,
         goal_amount: plan?.target_amount ?? plan?.goal_amount ?? null,
-        expected_return_pct: plan?.expected_return ?? 8,
-        monthly_contribution: plan?.monthly_contribution ?? null,
+        expected_return_pct: rate,
+        monthly_employee_contribution: plan?.monthly_employee_contribution ?? null,
+        monthly_employer_contribution: plan?.monthly_employer_contribution ?? null,
+        current_balance: plan?.current_balance ?? null,
+        income_strategy: plan?.income_strategy ?? null,
+        note: 'Lifestyle in retirement is funded by Social Security + spouse pension; portfolio is preserved as legacy capital.',
       },
+      growth_engine: {
+        annual_raise_pct: plan?.annual_raise_pct ?? null,
+        raise_redirect_pct: plan?.raise_redirect_pct ?? null,
+        inflation_pct: plan?.inflation_pct ?? null,
+        dated_contribution_step_ups: MONTGOMERY_STEP_UPS,
+        annual_lump_sum: { amount: 3000, start_year: 2028 },
+        debt_payment_amount: plan?.debt_payment_amount ?? null,
+        debt_payoff_date: plan?.debt_payoff_date ?? null,
+        cash_flow_reallocations: {
+          jan_2027_debt_freed: baseline.debtPayoffRedirect,
+          jan_2027_student_loan_starts: baseline.studentLoanPayment,
+          jan_2027_net_redirect: phase2Redirect(baseline),
+          june_2027_marketing_education_freed: baseline.marketingBudget,
+          june_2027_total_redirect: phase3Redirect(baseline),
+        },
+        current_payroll_contributions: {
+          hsa: baseline.hsaMonthly,
+          traditional_tda: baseline.tradTdaMonthly,
+          traditional_457b: baseline.trad457Monthly,
+          roth_tda: baseline.rothTdaMonthly,
+          roth_457b: baseline.roth457Monthly,
+          roth_ira: baseline.rothIraMonthly,
+          employer: baseline.employerMonthly,
+        },
+      },
+      projections_with_growth_engine: projections,
+      household_combined: spouse
+        ? {
+            spouse_name: spouse.name ?? 'Spouse',
+            spouse_current_balance: Math.round(spouseBalance),
+            spouse_monthly_contribution: Math.round(spouseMonthly),
+            spouse_expected_return_pct: spouseRate,
+            spouse_pension_monthly: plan?.spouse_pension_monthly ?? null,
+            combined_now: Math.round(Number(plan?.current_balance ?? 0) + spouseBalance),
+            combined_at_ages: ages.map((age) => {
+              const years = Math.max(0, age - Number(plan?.current_age ?? age));
+              const mine = projections.find((p) => p.age === age)?.projected_balance ?? 0;
+              return {
+                age,
+                combined: Math.round(mine + grow(spouseBalance, spouseMonthly, spouseRate, years)),
+              };
+            }),
+          }
+        : null,
       portfolio: {
         total_value: analysisResult.total,
         weighted_expense_ratio_pct: analysisResult.currentEr * 100,
@@ -145,7 +234,8 @@ export function VirtualAdvisorPanel({ plan }: { plan?: any }) {
         account: h.accounts?.name ?? null,
       })),
     };
-  }, [plan, holdings]);
+  }, [plan, holdings, spouse]);
+
 
   const stream = async (
     body: Record<string, unknown>,
