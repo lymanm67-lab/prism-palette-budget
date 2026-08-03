@@ -158,7 +158,7 @@ Deno.serve(async (req) => {
     // 4) Fee charges (overdraft, late, atm, interest)
     for (const t of txns) {
       if (t.is_transfer) continue;
-      const text = `${t.merchant || ''} ${t.description || ''}`;
+      const text = `${t.merchant || ''} ${t.notes || ''}`;
       for (const p of FEE_PATTERNS) {
         if (p.regex.test(text)) {
           const amt = Math.abs(Number(t.amount));
