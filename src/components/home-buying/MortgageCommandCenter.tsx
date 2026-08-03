@@ -93,7 +93,7 @@ const Panel = ({
   const head = tone === 'green' ? 'bg-emerald-800' : tone === 'purple' ? 'bg-violet-800' : 'bg-prism-navy';
   return (
     <div className={`rounded-xl overflow-hidden border border-border bg-card shadow-sm flex flex-col ${className}`}>
-      <div className={`${head} text-primary-foreground px-3 py-2 text-center text-[11px] sm:text-xs font-extrabold tracking-wide uppercase`}>
+      <div className={`${head} text-prism-on-dark px-3 py-2 text-center text-[11px] sm:text-xs font-extrabold tracking-wide uppercase`}>
         {title}
       </div>
       <div className="p-3 sm:p-4 flex-1">{children}</div>
@@ -115,19 +115,19 @@ export default function MortgageCommandCenter() {
   return (
     <div className="space-y-3">
       {/* HEADER */}
-      <div className="rounded-xl bg-prism-navy text-primary-foreground px-4 py-4 grid lg:grid-cols-[1fr_auto] items-center gap-4">
+      <div className="rounded-xl bg-prism-navy text-prism-on-dark px-4 py-4 grid lg:grid-cols-[1fr_auto] items-center gap-4">
         <div className="text-center">
           <h2 className="font-display text-2xl sm:text-4xl font-extrabold tracking-tight">MORTGAGE COMMAND CENTER</h2>
           <div className="text-xs sm:text-sm font-extrabold text-prism-amber mt-1 uppercase">
             Your Roadmap to Homeownership — Target Date: June 2027
           </div>
-          <div className="text-[11px] font-semibold text-primary-foreground/80 mt-1">
+          <div className="text-[11px] font-semibold text-prism-on-dark-muted mt-1">
             Remaining debt {money(PROGRAM.remaining)} as of {AS_OF}
           </div>
 
         </div>
         <div className="mx-auto rounded-lg border-2 border-prism-amber/70 px-4 py-2 flex items-center gap-3">
-          <Target className="h-8 w-8 text-primary-foreground shrink-0" strokeWidth={1.5} />
+          <Target className="h-8 w-8 text-prism-on-dark shrink-0" strokeWidth={1.5} />
           <div>
             <div className="text-sm font-extrabold uppercase">Goal: Buy a Home</div>
             <div className="text-xs font-extrabold text-emerald-400 uppercase">Target Date: June 2027</div>
@@ -176,14 +176,14 @@ export default function MortgageCommandCenter() {
             <div className="text-center">
               <div className="text-[11px] font-extrabold mb-1">{money(PROGRAM.resolved)}</div>
               <div className="mx-auto w-full bg-emerald-700 rounded-t-md grid place-items-center" style={{ height: '150px' }}>
-                <span className="text-primary-foreground font-extrabold text-sm">{PROGRAM.pctResolved}%</span>
+                <span className="text-prism-on-dark font-extrabold text-sm">{PROGRAM.pctResolved}%</span>
               </div>
               <div className="text-[10px] font-bold uppercase text-muted-foreground mt-1 leading-tight">Resolved<br />(Paid / Settled)</div>
             </div>
             <div className="text-center">
               <div className="text-[11px] font-extrabold mb-1">{money(PROGRAM.remaining)}</div>
               <div className="mx-auto w-full bg-sky-500 rounded-t-md grid place-items-center" style={{ height: '48px' }}>
-                <span className="text-primary-foreground font-extrabold text-xs">13.98%</span>
+                <span className="text-prism-on-dark font-extrabold text-xs">13.98%</span>
               </div>
               <div className="text-[10px] font-bold uppercase text-muted-foreground mt-1 leading-tight">Remaining<br />Balance</div>
             </div>
@@ -324,7 +324,7 @@ export default function MortgageCommandCenter() {
               <li key={m.date} className="flex gap-2.5">
                 <div className="flex flex-col items-center">
                   {m.home ? (
-                    <span className="h-5 w-5 rounded-full bg-emerald-700 grid place-items-center"><Home className="h-3 w-3 text-primary-foreground" /></span>
+                    <span className="h-5 w-5 rounded-full bg-emerald-700 grid place-items-center"><Home className="h-3 w-3 text-prism-on-dark" /></span>
                   ) : m.done ? (
                     <CheckCircle2 className="h-5 w-5 text-emerald-600" />
                   ) : (
@@ -363,7 +363,7 @@ export default function MortgageCommandCenter() {
         <Panel title="Mortgage Education Progress" tone="purple">
           <div className="flex items-start gap-3">
             <span className="h-10 w-10 shrink-0 rounded-full bg-violet-800 grid place-items-center">
-              <GraduationCap className="h-5 w-5 text-primary-foreground" />
+              <GraduationCap className="h-5 w-5 text-prism-on-dark" />
             </span>
             <div>
               <div className="text-[11px] font-extrabold text-violet-700 dark:text-violet-300 uppercase">First Time Homebuyer Education Course</div>
@@ -391,7 +391,7 @@ export default function MortgageCommandCenter() {
                   <div className="text-[10px] text-muted-foreground">
                     Settled &amp; Paid · $0.00 · {a.note}
                     {a.badge && (
-                      <span className="ml-1 rounded bg-emerald-700 px-1 py-0.5 text-[8px] font-extrabold text-primary-foreground align-middle">{a.badge}</span>
+                      <span className="ml-1 rounded bg-emerald-700 px-1 py-0.5 text-[8px] font-extrabold text-prism-on-dark align-middle">{a.badge}</span>
                     )}
                   </div>
                 </div>
