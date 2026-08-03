@@ -292,7 +292,7 @@ export default function MortgageCommandCenter() {
             </table>
           </div>
           <div className="text-[9px] text-muted-foreground mt-2">
-            *GLA Collection (INTEG Health System PC · Acct Ref 25028855 · DOS 07/19/23): $165.54 (Aug–Dec 2026) then $250 (Jan 2027 onward). Final pmt ~ $290.54 in Apr 2027.
+            *GLA Collection (INTEG Health System PC · Acct Ref 25028855 · DOS 07/19/23): $250.00/month. Final pmt ~ $66.18 in Feb 2027.
           </div>
         </Panel>
 
