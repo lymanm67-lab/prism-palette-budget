@@ -64,6 +64,7 @@ const CAL_TOTALS = ['$350', '$486', '$958', '$966', '$858', '$837', '$385', '$66
 const MILESTONES = [
   { date: 'AUG 26, 2026', title: 'Synchrony / PayPal', note: 'Paid in Full', done: true },
   { date: 'OCT 21, 2026', title: 'Discover', note: 'Paid in Full', done: true },
+  { date: 'JAN 2027', title: 'Affirm', note: 'Estimated Paid in Full ($136.14/mo)', accent: true },
   { date: 'DEC 2026', title: "Kohl's / Capital One", note: 'Estimated Paid in Full', accent: true },
   { date: 'DEC 10, 2026', title: 'Upstart / LVNV Funding', note: 'Paid in Full' },
   { date: 'FEB 2027', title: 'GLA Collection', note: 'Estimated Paid in Full · Deletion from Credit Reports Agreed After Payoff' },
@@ -187,7 +188,7 @@ export default function MortgageCommandCenter() {
             <div className="text-center">
               <div className="text-[11px] font-extrabold mb-1">{money(PROGRAM.remaining)}</div>
               <div className="mx-auto w-full bg-sky-500 rounded-t-md grid place-items-center" style={{ height: '48px' }}>
-                <span className="text-prism-on-dark font-extrabold text-xs">13.98%</span>
+                <span className="text-prism-on-dark font-extrabold text-xs">16.52%</span>
               </div>
               <div className="text-[10px] font-bold uppercase text-muted-foreground mt-1 leading-tight">Remaining<br />Balance</div>
             </div>
@@ -296,6 +297,7 @@ export default function MortgageCommandCenter() {
             </table>
           </div>
           <div className="text-[9px] text-muted-foreground mt-2">
+            Snowball order (smallest balance first): 1) Discover · 2) Kohl&apos;s · 3) Affirm · 4) Upstart / LVNV · 5) GLA Collection — roll each freed payment into the next account.<br />
             *GLA Collection (INTEG Health System PC · Acct Ref 25028855 · DOS 07/19/23): $250.00/month. Final pmt ~ $66.18 in Feb 2027.
           </div>
         </Panel>
