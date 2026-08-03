@@ -60,9 +60,9 @@ const CAL_TOTALS = ['$350', '$350', '$822', '$830', '$722', '$701', '$250', '$66
 const MILESTONES = [
   { date: 'AUG 26, 2026', title: 'Synchrony / PayPal', note: 'Paid in Full', done: true },
   { date: 'OCT 21, 2026', title: 'Discover', note: 'Paid in Full', done: true },
-  { date: 'OCT 2026', title: "Kohl's / Capital One", note: 'Estimated Paid in Full', accent: true },
+  { date: 'DEC 2026', title: "Kohl's / Capital One", note: 'Estimated Paid in Full', accent: true },
   { date: 'DEC 10, 2026', title: 'Upstart / LVNV Funding', note: 'Paid in Full' },
-  { date: 'APR 2027', title: 'GLA Collection', note: 'Estimated Paid in Full · Deletion from Credit Reports Agreed After Payoff' },
+  { date: 'FEB 2027', title: 'GLA Collection', note: 'Estimated Paid in Full · Deletion from Credit Reports Agreed After Payoff' },
   { date: 'JUNE 2027', title: 'Mortgage Pre-Approval', note: '& Home Purchase Goal', home: true },
 ];
 
