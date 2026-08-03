@@ -48,10 +48,18 @@ function mdToHtml(md: string): string {
   const out: string[] = [];
   let list: 'ul' | 'ol' | null = null;
 
+  let inTable = false;
+
   const closeList = () => {
     if (list) {
       out.push(`</${list}>`);
       list = null;
+    }
+  };
+  const closeTable = () => {
+    if (inTable) {
+      out.push('</tbody></table>');
+      inTable = false;
     }
   };
 
@@ -65,15 +73,34 @@ function mdToHtml(md: string): string {
     const line = raw.trim();
     if (!line) {
       closeList();
+      closeTable();
       continue;
     }
     const h = line.match(/^(#{1,4})\s+(.*)$/);
     if (h) {
       closeList();
+      closeTable();
       const level = Math.min(4, h[1].length + 1);
       out.push(`<h${level}>${inline(h[2])}</h${level}>`);
       continue;
     }
+    if (/^\|(.+)\|$/.test(line)) {
+      closeList();
+      const cells = line.slice(1, -1).split('|').map((c) => c.trim());
+      const isDivider = cells.every((c) => /^:?-{2,}:?$/.test(c));
+      if (isDivider) continue;
+      if (!inTable) {
+        out.push('<table class="grid mdtable"><thead><tr>');
+        out.push(cells.map((c) => `<th>${inline(c)}</th>`).join(''));
+        out.push('</tr></thead><tbody>');
+        inTable = true;
+        continue;
+      }
+      out.push(`<tr>${cells.map((c) => `<td>${inline(c)}</td>`).join('')}</tr>`);
+      continue;
+    }
+    closeTable();
+
     const ol = line.match(/^(\d+)[.)]\s+(.*)$/);
     if (ol) {
       if (list !== 'ol') {
@@ -98,6 +125,7 @@ function mdToHtml(md: string): string {
     out.push(`<p>${inline(line)}</p>`);
   }
   closeList();
+  closeTable();
   return out.join('\n');
 }
 
@@ -292,6 +320,8 @@ const STYLES = `
   .kpi .v { display: block; font-size: 12pt; font-weight: 700; }
   table.grid { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 10pt; }
   table.grid th, table.grid td { border: 1px solid #111; padding: 5px 7px; text-align: left; vertical-align: top; }
+  table.mdtable th, table.mdtable td { width: auto; }
+  table.mdtable thead th { background: #e8e8e8; }
   table.grid th { width: 45%; background: #f2f2f2; font-weight: 600; }
   svg { display: block; margin: 8px 0; }
   .lbl { font-size: 9.5px; font-family: Helvetica, Arial, sans-serif; }
