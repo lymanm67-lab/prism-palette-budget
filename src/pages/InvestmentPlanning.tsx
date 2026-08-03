@@ -45,6 +45,7 @@ import { EstateExecution } from '@/components/investment/EstateExecution';
 import { CharitablePlanner } from '@/components/investment/CharitablePlanner';
 import { CollegePlanner } from '@/components/investment/CollegePlanner';
 import { AutomationLog } from '@/components/investment/AutomationLog';
+import { ManagedPortfolioAdvisor } from '@/components/investment/ManagedPortfolioAdvisor';
 import { SnapshotControlBar, type SnapshotControls } from '@/components/investment/SnapshotControlBar';
 import { PlanningToolsGrid } from '@/components/investment/PlanningToolsGrid';
 import { ScenarioSweepTable } from '@/components/investment/ScenarioSweepTable';
