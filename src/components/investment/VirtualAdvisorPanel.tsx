@@ -9,6 +9,7 @@ import { Brain, Loader2, Send, Sparkles, Info, Check, X, Minus } from 'lucide-re
 import ReactMarkdown from 'react-markdown';
 import { cn } from '@/lib/utils';
 import { useInvestmentHoldings } from '@/hooks/use-investment-data';
+import { useInvestmentSpouse } from '@/hooks/use-investment-v2';
 import { DisclaimerBlock } from '@/components/investment/DisclaimerBlock';
 import {
   DEFAULT_ANSWERS,
@@ -16,6 +17,12 @@ import {
   analyzePortfolio,
   scoreRisk,
 } from '@/lib/investment/portfolioModels';
+import { projectSnapshot, MONTGOMERY_STEP_UPS } from '@/lib/investment/snapshotProjection';
+import {
+  DEFAULT_PAYROLL_BASELINE,
+  phase2Redirect,
+  phase3Redirect,
+} from '@/lib/investment/contributionOptimizer';
 
 const ADVISOR_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/virtual-advisor`;
 
