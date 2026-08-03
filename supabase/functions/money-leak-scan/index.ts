@@ -74,7 +74,7 @@ Deno.serve(async (req) => {
 
     const [subsRes, txnsRes, recurringRes] = await Promise.all([
       supabase.from('subscriptions').select('*').eq('household_id', household_id),
-      supabase.from('transactions').select('id, date, amount, merchant, description, category_id, is_transfer').eq('household_id', household_id).is('deleted_at', null).gte('date', cutoff180),
+      supabase.from('transactions').select('id, date, amount, merchant, notes, category_id, is_transfer').eq('household_id', household_id).is('deleted_at', null).gte('date', cutoff180),
       supabase.from('recurring_transactions').select('id, merchant, amount, frequency, next_due_date, is_active').eq('household_id', household_id).eq('is_active', true),
     ]);
 
@@ -158,7 +158,7 @@ Deno.serve(async (req) => {
     // 4) Fee charges (overdraft, late, atm, interest)
     for (const t of txns) {
       if (t.is_transfer) continue;
-      const text = `${t.merchant || ''} ${t.description || ''}`;
+      const text = `${t.merchant || ''} ${t.notes || ''}`;
       for (const p of FEE_PATTERNS) {
         if (p.regex.test(text)) {
           const amt = Math.abs(Number(t.amount));
