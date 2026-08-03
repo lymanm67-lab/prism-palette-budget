@@ -13,30 +13,28 @@ const money = (n: number) =>
 /* ---------------- data (from the Mortgage Command Center binder, 7/17/26) ---------------- */
 
 const AS_OF = 'Aug 3, 2026';
-const PROGRAM = { enrolled: 26762.25, resolved: 25066.45, remaining: 1695.80, pctResolved: 93.66 };
-const ACCOUNT_COUNTS = { total: 13, resolved: 9, active: 4 };
+const PROGRAM = { enrolled: 26762.25, resolved: 22796.63, remaining: 3965.62, pctResolved: 85.18 };
+const ACCOUNT_COUNTS = { total: 13, resolved: 10, active: 4 };
 
 const ACCOUNTS = [
-  { name: 'Upstart / LVNV Funding', status: 'Payment Plan In Progress', kind: 'plan', balance: 1045.90, payment: '$200.00', remaining: '5', payoff: 'Dec 10, 2026' },
-  { name: 'Synchrony / PayPal', status: 'Payment Plan In Progress', kind: 'plan', balance: 550.62, payment: '$275.31', remaining: '2', payoff: 'Aug 26, 2026' },
-  { name: 'Discover', status: 'Payment Plan In Progress', kind: 'plan', balance: 438.46, payment: '$152.12', remaining: '4', payoff: 'Oct 21, 2026' },
-  { name: 'GLA Collection', status: 'Payment Plan In Progress', kind: 'plan', balance: 1815.54, payment: '$165.54 (Aug–Dec 2026)\n$250.00 (Jan 2027 onward)', remaining: '9 (Est.)', payoff: 'Apr 2027 Final Pmt ~$240.54' },
+  { name: 'Upstart / LVNV Funding (1838-224)', status: 'Resolved — Payments Pending', kind: 'plan', balance: 1487.80, payment: '$371.95', remaining: '4', payoff: 'Dec 10, 2026' },
+  { name: 'GLA Collection (INTEG Health System PC)', status: 'Payment Plan In Progress', kind: 'plan', balance: 1790.54, payment: '$165.54 (Aug–Dec 2026)\n$250.00 (Jan 2027 onward)', remaining: '9 (Est.)', payoff: 'Apr 2027 Final Pmt ~$290.54' },
+  { name: 'Discover', status: 'Payment Plan In Progress', kind: 'plan', balance: 208.28, payment: '$100.00 (9/21)\n$108.28 (10/21)', remaining: '2', payoff: 'Oct 21, 2026' },
   { name: "Kohl's / Capital One", status: 'Settlement In Progress', kind: 'settle', balance: 479.00, payment: '$100.00', remaining: '5', payoff: 'Oct 2026' },
 ];
-const TOTAL_REMAINING = 1695.80;
+const TOTAL_REMAINING = 3965.62;
 
 const DECLINE = [
-  { m: 'JUL 2026', v: 4330 }, { m: 'AUG 2026', v: 1696 }, { m: 'SEP 2026', v: 1331 },
-  { m: 'OCT 2026', v: 966 }, { m: 'DEC 2026', v: 636 }, { m: 'APR 2027', v: 240 },
-  { m: 'JUN 2027', v: 0 },
+  { m: 'AUG 2026', v: 3966 }, { m: 'SEP 2026', v: 3329 }, { m: 'OCT 2026', v: 2592 },
+  { m: 'NOV 2026', v: 1847 }, { m: 'DEC 2026', v: 1310 }, { m: 'JAN 2027', v: 966 },
+  { m: 'APR 2027', v: 241 }, { m: 'JUN 2027', v: 0 },
 ];
 
 const ALLOC = [
-  { name: 'Upstart / LVNV', amt: 1045.90, pct: 24.2, color: 'hsl(var(--prism-navy))' },
-  { name: 'GLA Collection', amt: 1815.54, pct: 41.9, color: 'hsl(216 90% 45%)' },
-  { name: 'Synchrony / PayPal', amt: 550.62, pct: 12.7, color: 'hsl(152 60% 38%)' },
-  { name: 'Discover', amt: 438.46, pct: 10.1, color: 'hsl(var(--prism-amber))' },
-  { name: "Kohl's / Capital One", amt: 479.00, pct: 11.1, color: 'hsl(190 65% 45%)' },
+  { name: 'Upstart / LVNV', amt: 1487.80, pct: 37.5, color: 'hsl(var(--prism-navy))' },
+  { name: 'GLA Collection', amt: 1790.54, pct: 45.2, color: 'hsl(216 90% 45%)' },
+  { name: 'Discover', amt: 208.28, pct: 5.2, color: 'hsl(var(--prism-amber))' },
+  { name: "Kohl's / Capital One", amt: 479.00, pct: 12.1, color: 'hsl(190 65% 45%)' },
 ];
 
 const ARCHIVED = [
@@ -44,18 +42,19 @@ const ARCHIVED = [
   { name: 'NetCredit', note: 'Removed from Report' },
   { name: 'USAA', note: 'Removed from Report' },
   { name: 'Capital One (4802)', note: 'Removed from Report' },
+  { name: 'Synchrony / PayPal (SYNCB/PPC)', note: 'Paid in Full — Balance $0.00', badge: 'NEW' },
   { name: 'FEB-RETA / DNF Associates', note: 'Deletion Agreed — Email Confirmation Pending', badge: 'NEW' },
 ];
 
 const CAL_MONTHS = ['JUL 2026', 'AUG 2026', 'SEP 2026', 'OCT 2026', 'NOV 2026', 'DEC 2026', 'JAN 2027', 'FEB 2027', 'MAR 2027', 'APR 2027'];
 const CAL_ROWS: { name: string; color: string; vals: (string)[] }[] = [
-  { name: 'Upstart / LVNV', color: 'hsl(var(--prism-navy))', vals: ['$200', '$200', '$200', '$200', '$200', '$200', '–', '–', '–', '–'] },
-  { name: 'Synchrony / PayPal', color: 'hsl(216 90% 45%)', vals: ['$275', '$275', '–', '–', '–', '–', '–', '–', '–', '–'] },
-  { name: 'Discover', color: 'hsl(var(--prism-orange))', vals: ['$152', '$152', '$152', '$152', '–', '–', '–', '–', '–', '–'] },
+  { name: 'Upstart / LVNV', color: 'hsl(var(--prism-navy))', vals: ['$372', '$372', '$372', '$372', '$372', '$372', '–', '–', '–', '–'] },
   { name: 'GLA Collection*', color: 'hsl(152 60% 38%)', vals: ['$165', '$165', '$165', '$165', '$165', '$165', '$250', '$250', '$250', '$250'] },
+  { name: 'Discover', color: 'hsl(var(--prism-orange))', vals: ['–', '–', '$100', '$108', '–', '–', '–', '–', '–', '–'] },
   { name: "Kohl's / Capital One", color: 'hsl(var(--prism-amber))', vals: ['$100', '$100', '$100', '$100', '–', '–', '–', '–', '–', '–'] },
 ];
-const CAL_TOTALS = ['$892', '$892', '$617', '$617', '$365', '$365', '$250', '$250', '$250', '$250'];
+const CAL_TOTALS = ['$637', '$637', '$737', '$745', '$537', '$537', '$250', '$250', '$250', '$250'];
+
 
 const MILESTONES = [
   { date: 'AUG 26, 2026', title: 'Synchrony / PayPal', note: 'Paid in Full', done: true },
