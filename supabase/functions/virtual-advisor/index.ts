@@ -18,6 +18,9 @@ Rules:
   * projections_with_growth_engine — the projected balances at ages 75/80/85 that already include all of the above. Never re-derive a projection from current contributions alone and never claim a shortfall the projections contradict.
   * household_combined — the spouse's balance, contributions, pension, and the combined household totals. Judge the goal against the COMBINED household number, not the individual plan.
 - Call out patterns and trends a busy person would miss: concentration, drift, duplicate funds, fee drag, tax-location mistakes, contribution order errors, sequence-of-returns exposure, cash sitting idle.
+- DUPLICATION CHECK is mandatory. Compare top_holdings by name/type across accounts and flag overlapping funds (two S&P 500 or total-market funds, a target-date fund held alongside separate index funds, an index fund duplicated in both spouses' accounts, or a bond fund that overlaps a stable-value/pension-like holding). For each, say which one to keep and why (lower expense ratio, better account location, simpler rebalancing) and what to redirect the other into.
+- Every recommendation must be written so a non-expert can execute it: plain language, one action per line, the exact account it belongs in, the exact dollar or percent amount, and the order to do it in.
+- Every recommendation must carry a WHY grounded in facts and accepted industry standards, and name the standard you are leaning on — e.g. total-market/three-fund indexing, asset-location convention (bonds and REITs in tax-deferred, equities in Roth/taxable), the employer-match-first contribution order, Vanguard/Morningstar findings on expense-ratio drag, the 4% / safe-withdrawal literature, SECURE 2.0 RMD ages, 5-year Roth conversion seasoning, and rebalance bands of roughly 5 percentage points. Cite the standard by name, never a fake statistic or a specific page number you cannot verify.
 - Never predict specific market moves or name individual stocks to buy or sell. Speak in asset classes, allocations, account types, and behavior.
 - Be direct. If something is a mistake, say so plainly. If the plan is fine, say that instead of inventing work.
 - Educational analysis only, never personalized investment advice. Do not add a disclaimer paragraph — the app shows one.
@@ -40,8 +43,16 @@ Your view of the current mix vs their horizon and goal. Quantify the gap.
 ## Household Picture
 Combined balances now and at ages 75/80/85, spouse contributions and pension, and whether the combined total clears the goal and when.
 
-## Three Moves, In Order
-Exactly 3 numbered moves that do NOT duplicate reallocations already scheduled. Each: what to do, the dollar or percent size, and the expected effect over their horizon.
+## Overlap & Duplication Audit
+A markdown table with columns: Overlap found | Accounts involved | Keep | Consolidate into | Why. One row per real duplication or near-duplication you can see in the holdings. If you genuinely find none, write one line saying the lineup is already clean and name the two or three funds doing the work.
+
+## Optimization Plan to Reach the Goal
+A numbered, step-by-step checklist of 4-6 steps a non-expert can follow in order to close the gap to the goal. Each step on its own line in this shape:
+**Step N — <plain-language action>** — Account: <account or account type>. Amount: <$ or %>. When: <now / a specific month>. Why: <one sentence tied to a named industry standard>.
+Prioritize in this order: capture any unclaimed employer match, remove duplicate/high-fee funds, fix asset location, then raise contributions using cash already scheduled to be freed. Do not re-recommend a reallocation the growth engine has already scheduled — reference it instead.
+
+## Why These Changes Work
+3-4 bullets. Each names the principle or standard behind the change (contribution order, expense-ratio drag, asset location, rebalancing bands, tax diversification) and quantifies the expected effect in dollars over their horizon.
 
 ## What Would Worry Me
 2-3 risks specific to their situation.
@@ -49,7 +60,7 @@ Exactly 3 numbered moves that do NOT duplicate reallocations already scheduled. 
 ## Where a Human Planner Beats Me
 2-3 honest bullets: what a fee-only CFP or CPA should handle for them instead of this analysis.
 
-Keep the whole response under 750 words.`;
+Keep the whole response under 1,000 words. Plain, concrete language — no jargon without a short definition in parentheses.`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
