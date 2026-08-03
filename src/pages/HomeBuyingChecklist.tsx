@@ -18,12 +18,14 @@ import AppreciationInfo from '@/components/home-buying/AppreciationInfo';
 import HomeBuyingChecklistTab from '@/components/home-buying/HomeBuyingChecklistTab';
 import PlannerRoot from '@/components/home-buying/planner/PlannerRoot';
 import DecisionRoot from '@/components/home-buying/decision/DecisionRoot';
+import MortgageCommandCenter from '@/components/home-buying/MortgageCommandCenter';
+
 import { useHomeBuyingMetrics } from '@/hooks/use-home-buying-metrics';
 import { exportToPdf } from '@/lib/export-utils';
 
 const HomeBuyingChecklist = () => {
   const { household } = useHousehold();
-  const [tab, setTab] = useState('checklist');
+  const [tab, setTab] = useState('command');
   const printRef = useRef<HTMLDivElement>(null);
   const [printing, setPrinting] = useState(false);
 
@@ -61,8 +63,10 @@ const HomeBuyingChecklist = () => {
   // 1) Am I ready? → 2) What can I afford? → 3) How do I finance it? → 4) Paperwork
   // → 5) Plan the timeline → 6) Find homes → 7) Evaluate & decide → 8) Ask the coach
   const TABS = [
+    { id: 'command', label: 'Command Center', icon: Home },
     { id: 'checklist', label: 'Readiness', icon: CheckCircle2 },
     { id: 'calculators', label: 'Affordability', icon: Calculator },
+
     { id: 'loans', label: 'Loans & Assistance', icon: Landmark },
     { id: 'cosigner', label: 'Co-Signer Docs', icon: Users },
     { id: 'planner', label: 'Planner', icon: LayoutDashboard },
@@ -118,7 +122,7 @@ const HomeBuyingChecklist = () => {
 
         ) : (
           <Tabs value={tab} onValueChange={setTab} className="w-full">
-            <TabsList className="w-full grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-8 h-auto p-1 gap-1">
+            <TabsList className="w-full grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-9 h-auto p-1 gap-1">
               {TABS.map((t) => {
                 const Icon = t.icon;
                 return (
@@ -131,7 +135,9 @@ const HomeBuyingChecklist = () => {
 
             </TabsList>
 
+            <TabsContent value="command" className="mt-4"><MortgageCommandCenter /></TabsContent>
             <TabsContent value="planner" className="mt-4"><PlannerRoot /></TabsContent>
+
             <TabsContent value="decision" className="mt-4"><DecisionRoot /></TabsContent>
             <TabsContent value="coach" className="mt-4"><AiHomeBuyingCoach /></TabsContent>
             <TabsContent value="calculators" className="mt-4"><HomeBuyingCalculators /></TabsContent>
