@@ -121,6 +121,10 @@ export default function MortgageCommandCenter() {
           <div className="text-xs sm:text-sm font-extrabold text-prism-amber mt-1 uppercase">
             Your Roadmap to Homeownership — Target Date: June 2027
           </div>
+          <div className="text-[11px] font-semibold text-primary-foreground/80 mt-1">
+            Remaining debt {money(PROGRAM.remaining)} as of {AS_OF}
+          </div>
+
         </div>
         <div className="mx-auto rounded-lg border-2 border-prism-amber/70 px-4 py-2 flex items-center gap-3">
           <Target className="h-8 w-8 text-primary-foreground shrink-0" strokeWidth={1.5} />
