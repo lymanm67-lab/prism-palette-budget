@@ -18,6 +18,8 @@ import AppreciationInfo from '@/components/home-buying/AppreciationInfo';
 import HomeBuyingChecklistTab from '@/components/home-buying/HomeBuyingChecklistTab';
 import PlannerRoot from '@/components/home-buying/planner/PlannerRoot';
 import DecisionRoot from '@/components/home-buying/decision/DecisionRoot';
+import MortgageCommandCenter from '@/components/home-buying/MortgageCommandCenter';
+
 import { useHomeBuyingMetrics } from '@/hooks/use-home-buying-metrics';
 import { exportToPdf } from '@/lib/export-utils';
 
