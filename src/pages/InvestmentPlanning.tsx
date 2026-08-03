@@ -451,6 +451,7 @@ export default function InvestmentPlanning() {
         <TabsContent value="charitable" className="mt-4"><CharitablePlanner /></TabsContent>
         <TabsContent value="college" className="mt-4"><CollegePlanner /></TabsContent>
         <TabsContent value="automation" className="mt-4"><AutomationLog planId={plan?.id} /></TabsContent>
+        <TabsContent value="portfolio" className="mt-4"><ManagedPortfolioAdvisor plan={plan ?? null} /></TabsContent>
       </Tabs>
 
       <DisclaimerBlock />
