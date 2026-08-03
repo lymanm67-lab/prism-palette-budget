@@ -12,6 +12,7 @@ const DESCRIPTIONS: Record<string, string> = {
   income: 'Engineer retirement income streams and buckets',
   rules: 'Automate where every new dollar goes',
   portfolio: 'Risk profile, model portfolios, drift, and fee drag',
+  aiadvisor: 'AI planner analysis vs. a human investment planner',
   tax: 'Roth vs traditional, conversions, withdrawal tax',
   risk: 'Monte Carlo, glide path, sequence-of-returns risk',
   healthcare: 'ACA, IRMAA, and long-term-care planning',

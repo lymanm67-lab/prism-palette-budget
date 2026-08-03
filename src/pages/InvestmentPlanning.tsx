@@ -46,6 +46,7 @@ import { CharitablePlanner } from '@/components/investment/CharitablePlanner';
 import { CollegePlanner } from '@/components/investment/CollegePlanner';
 import { AutomationLog } from '@/components/investment/AutomationLog';
 import { ManagedPortfolioAdvisor } from '@/components/investment/ManagedPortfolioAdvisor';
+import { VirtualAdvisorPanel } from '@/components/investment/VirtualAdvisorPanel';
 import { SnapshotControlBar, type SnapshotControls } from '@/components/investment/SnapshotControlBar';
 import { PlanningToolsGrid } from '@/components/investment/PlanningToolsGrid';
 import { ScenarioSweepTable } from '@/components/investment/ScenarioSweepTable';
@@ -100,6 +101,7 @@ export default function InvestmentPlanning() {
       { value: 'income', label: 'Retirement Income' },
       { value: 'rules', label: 'Money Rules' },
       { value: 'portfolio', label: 'Portfolio Models' },
+      { value: 'aiadvisor', label: 'AI Advisor' },
     ]},
     { label: 'Tax & Risk', items: [
       { value: 'tax', label: 'Tax' },
@@ -452,6 +454,7 @@ export default function InvestmentPlanning() {
         <TabsContent value="college" className="mt-4"><CollegePlanner /></TabsContent>
         <TabsContent value="automation" className="mt-4"><AutomationLog planId={plan?.id} /></TabsContent>
         <TabsContent value="portfolio" className="mt-4"><ManagedPortfolioAdvisor plan={plan ?? null} /></TabsContent>
+        <TabsContent value="aiadvisor" className="mt-4"><VirtualAdvisorPanel plan={plan ?? null} /></TabsContent>
       </Tabs>
 
       <DisclaimerBlock />
