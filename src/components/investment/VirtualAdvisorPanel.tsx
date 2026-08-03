@@ -361,10 +361,39 @@ export function VirtualAdvisorPanel({ plan }: { plan?: any }) {
                 </Badge>
               </div>
 
-              <Button onClick={runAnalysis} disabled={analyzing} className="gap-2">
-                {analyzing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-                {analysis ? 'Re-run analysis' : 'Run AI planner analysis'}
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button onClick={runAnalysis} disabled={analyzing} className="gap-2">
+                  {analyzing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                  {analysis ? 'Re-run analysis' : 'Run AI planner analysis'}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="gap-2"
+                  disabled={!analysis || analyzing}
+                  onClick={() => {
+                    const ok = printAdvisorReport({
+                      analysisMarkdown: analysis,
+                      snapshot: snapshot as any,
+                    });
+                    if (!ok) {
+                      toast({
+                        title: 'Pop-up blocked',
+                        description: 'Allow pop-ups for this site to print or save the PDF report.',
+                        variant: 'destructive',
+                      });
+                    }
+                  }}
+                >
+                  <Printer className="h-4 w-4" /> Print / Save PDF
+                </Button>
+              </div>
+              {analysis && (
+                <p className="text-xs text-muted-foreground">
+                  The report prints black-and-white friendly: grayscale bars, hatch patterns instead
+                  of color, and letter-size page breaks.
+                </p>
+              )}
+
 
               {analysis && (
                 <div className="rounded-lg border border-border/50 bg-muted/10 p-4">
