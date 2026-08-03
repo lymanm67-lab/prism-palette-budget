@@ -59,22 +59,23 @@ export default function MortgageCommandCenter() {
     queryKey: ['mcc_debts', household?.id],
     enabled: !!household,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('debt_items')
-        .select('name, current_balance, original_balance')
+        .select('name, balance')
         .eq('household_id', household!.id)
         .is('deleted_at', null);
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []) as { name: string; balance: number }[];
     },
   });
 
   const stats = useMemo(() => {
     const rows = (debts as any[]).map((d) => ({
       name: d.name as string,
-      bal: Number(d.current_balance ?? 0),
-      orig: Number(d.original_balance ?? 0),
+      bal: Number(d.balance ?? 0),
+      orig: Number(d.balance ?? 0),
     }));
+
     const active = rows.filter((r) => r.bal > 0);
     const resolved = rows.filter((r) => r.bal <= 0);
     const totalRemaining = active.reduce((s, r) => s + r.bal, 0);
