@@ -125,7 +125,9 @@ export function VirtualAdvisorPanel({ plan }: { plan?: any }) {
       },
       portfolio: {
         total_value: analysisResult.total,
-        weighted_expense_ratio_pct: analysisResult.weightedExpenseRatio * 100,
+        weighted_expense_ratio_pct: analysisResult.currentEr * 100,
+        model_expense_ratio_pct: analysisResult.modelEr * 100,
+        needs_rebalance: analysisResult.needsRebalance,
         model_used: model.name,
         allocation_vs_target: analysisResult.rows.map((r) => ({
           asset_class: r.label,
