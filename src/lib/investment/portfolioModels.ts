@@ -216,11 +216,13 @@ export function analyzePortfolio(
     total += mv;
   }
 
-  const rows: DriftRow[] = ASSET_CLASS_ORDER.map((cls) => {
+  const rows: DriftRow[] = ASSET_CLASS_ORDER.map((cls): DriftRow => {
     const actualValue = buckets[cls];
     const actualPct = total > 0 ? (actualValue / total) * 100 : 0;
     const targetPct = cls === 'other' ? 0 : model.targets[cls];
     const driftPct = actualPct - targetPct;
+    const status: DriftRow['status'] =
+      Math.abs(driftPct) <= TOLERANCE ? 'on_target' : driftPct > 0 ? 'over' : 'under';
     return {
       cls,
       label: ASSET_CLASS_LABELS[cls],
@@ -229,7 +231,7 @@ export function analyzePortfolio(
       targetPct,
       driftPct,
       dollarDelta: (driftPct / 100) * total,
-      status: Math.abs(driftPct) <= TOLERANCE ? 'on_target' : driftPct > 0 ? 'over' : 'under',
+      status,
     };
   }).filter((r) => r.actualValue > 0 || r.targetPct > 0);
 
