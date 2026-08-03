@@ -13,28 +13,28 @@ const money = (n: number) =>
 /* ---------------- data (from the Mortgage Command Center binder, 7/17/26) ---------------- */
 
 const AS_OF = 'Aug 3, 2026';
-const PROGRAM = { enrolled: 26762.25, resolved: 22796.63, remaining: 3965.62, pctResolved: 85.18 };
+const PROGRAM = { enrolled: 26762.25, resolved: 23020.99, remaining: 3741.26, pctResolved: 86.02 };
 const ACCOUNT_COUNTS = { total: 13, resolved: 10, active: 4 };
 
 const ACCOUNTS = [
   { name: 'Upstart / LVNV Funding (1838-224)', status: 'Resolved — Payments Pending', kind: 'plan', balance: 1487.80, payment: '$371.95', remaining: '4', payoff: 'Dec 10, 2026' },
-  { name: 'GLA Collection (INTEG Health System PC)', status: 'Payment Plan In Progress', kind: 'plan', balance: 1790.54, payment: '$165.54 (Aug–Dec 2026)\n$250.00 (Jan 2027 onward)', remaining: '9 (Est.)', payoff: 'Apr 2027 Final Pmt ~$290.54' },
+  { name: 'GLA Collection (INTEG Health System PC)', status: 'Payment Plan In Progress', kind: 'plan', balance: 1566.18, payment: '$250.00', remaining: '7 (Est.)', payoff: 'Feb 2027 Final Pmt ~$66.18' },
   { name: 'Discover', status: 'Payment Plan In Progress', kind: 'plan', balance: 208.28, payment: '$100.00 (9/21)\n$108.28 (10/21)', remaining: '2', payoff: 'Oct 21, 2026' },
-  { name: "Kohl's / Capital One", status: 'Settlement In Progress', kind: 'settle', balance: 479.00, payment: '$100.00', remaining: '5', payoff: 'Oct 2026' },
+  { name: "Kohl's / Capital One", status: 'Settlement In Progress', kind: 'settle', balance: 479.00, payment: '$100.00', remaining: '5', payoff: 'Dec 2026' },
 ];
-const TOTAL_REMAINING = 3965.62;
+const TOTAL_REMAINING = 3741.26;
 
 const DECLINE = [
-  { m: 'AUG 2026', v: 3966 }, { m: 'SEP 2026', v: 3329 }, { m: 'OCT 2026', v: 2592 },
-  { m: 'NOV 2026', v: 1847 }, { m: 'DEC 2026', v: 1310 }, { m: 'JAN 2027', v: 966 },
-  { m: 'APR 2027', v: 241 }, { m: 'JUN 2027', v: 0 },
+  { m: 'AUG 2026', v: 3741 }, { m: 'SEP 2026', v: 3391 }, { m: 'OCT 2026', v: 2569 },
+  { m: 'NOV 2026', v: 1739 }, { m: 'DEC 2026', v: 1017 }, { m: 'JAN 2027', v: 316 },
+  { m: 'FEB 2027', v: 66 }, { m: 'MAR 2027', v: 0 },
 ];
 
 const ALLOC = [
-  { name: 'Upstart / LVNV', amt: 1487.80, pct: 37.5, color: 'hsl(var(--prism-navy))' },
-  { name: 'GLA Collection', amt: 1790.54, pct: 45.2, color: 'hsl(216 90% 45%)' },
-  { name: 'Discover', amt: 208.28, pct: 5.2, color: 'hsl(var(--prism-amber))' },
-  { name: "Kohl's / Capital One", amt: 479.00, pct: 12.1, color: 'hsl(190 65% 45%)' },
+  { name: 'Upstart / LVNV', amt: 1487.80, pct: 39.8, color: 'hsl(var(--prism-navy))' },
+  { name: 'GLA Collection', amt: 1566.18, pct: 41.9, color: 'hsl(216 90% 45%)' },
+  { name: 'Discover', amt: 208.28, pct: 5.6, color: 'hsl(var(--prism-amber))' },
+  { name: "Kohl's / Capital One", amt: 479.00, pct: 12.8, color: 'hsl(190 65% 45%)' },
 ];
 
 const ARCHIVED = [
@@ -48,26 +48,27 @@ const ARCHIVED = [
 
 const CAL_MONTHS = ['JUL 2026', 'AUG 2026', 'SEP 2026', 'OCT 2026', 'NOV 2026', 'DEC 2026', 'JAN 2027', 'FEB 2027', 'MAR 2027', 'APR 2027'];
 const CAL_ROWS: { name: string; color: string; vals: (string)[] }[] = [
-  { name: 'Upstart / LVNV', color: 'hsl(var(--prism-navy))', vals: ['$372', '$372', '$372', '$372', '$372', '$372', '–', '–', '–', '–'] },
-  { name: 'GLA Collection*', color: 'hsl(152 60% 38%)', vals: ['$165', '$165', '$165', '$165', '$165', '$165', '$250', '$250', '$250', '$250'] },
+  { name: 'Upstart / LVNV', color: 'hsl(var(--prism-navy))', vals: ['–', '–', '$372', '$372', '$372', '$372', '–', '–', '–', '–'] },
+  { name: 'GLA Collection*', color: 'hsl(152 60% 38%)', vals: ['$250', '$250', '$250', '$250', '$250', '$250', '$250', '$66', '–', '–'] },
   { name: 'Discover', color: 'hsl(var(--prism-orange))', vals: ['–', '–', '$100', '$108', '–', '–', '–', '–', '–', '–'] },
-  { name: "Kohl's / Capital One", color: 'hsl(var(--prism-amber))', vals: ['$100', '$100', '$100', '$100', '–', '–', '–', '–', '–', '–'] },
+  { name: "Kohl's / Capital One", color: 'hsl(var(--prism-amber))', vals: ['$100', '$100', '$100', '$100', '$100', '$79', '–', '–', '–', '–'] },
 ];
-const CAL_TOTALS = ['$637', '$637', '$737', '$745', '$537', '$537', '$250', '$250', '$250', '$250'];
+const CAL_TOTALS = ['$350', '$350', '$822', '$830', '$722', '$701', '$250', '$66', '–', '–'];
+
 
 
 const MILESTONES = [
   { date: 'AUG 26, 2026', title: 'Synchrony / PayPal', note: 'Paid in Full', done: true },
   { date: 'OCT 21, 2026', title: 'Discover', note: 'Paid in Full', done: true },
-  { date: 'OCT 2026', title: "Kohl's / Capital One", note: 'Estimated Paid in Full', accent: true },
+  { date: 'DEC 2026', title: "Kohl's / Capital One", note: 'Estimated Paid in Full', accent: true },
   { date: 'DEC 10, 2026', title: 'Upstart / LVNV Funding', note: 'Paid in Full' },
-  { date: 'APR 2027', title: 'GLA Collection', note: 'Estimated Paid in Full · Deletion from Credit Reports Agreed After Payoff' },
+  { date: 'FEB 2027', title: 'GLA Collection', note: 'Estimated Paid in Full · Deletion from Credit Reports Agreed After Payoff' },
   { date: 'JUNE 2027', title: 'Mortgage Pre-Approval', note: '& Home Purchase Goal', home: true },
 ];
 
 const CHECKLIST = [
   { label: 'Pay all accounts as agreed', done: true },
-  { label: 'GLA payoff & deletion verification (Apr–May 2027)', done: true },
+  { label: 'GLA payoff & deletion verification (Feb–Mar 2027)', done: true },
   { label: 'Confirm all accounts show $0 balance', done: false },
   { label: 'Pull all 3 credit reports (May 2027)', done: false },
   { label: 'Ensure all negative items removed / updated', done: false },
@@ -182,7 +183,7 @@ export default function MortgageCommandCenter() {
             <div className="text-center">
               <div className="text-[11px] font-extrabold mb-1">{money(PROGRAM.remaining)}</div>
               <div className="mx-auto w-full bg-sky-500 rounded-t-md grid place-items-center" style={{ height: '48px' }}>
-                <span className="text-primary-foreground font-extrabold text-xs">14.82%</span>
+                <span className="text-primary-foreground font-extrabold text-xs">13.98%</span>
               </div>
               <div className="text-[10px] font-bold uppercase text-muted-foreground mt-1 leading-tight">Remaining<br />Balance</div>
             </div>
@@ -291,7 +292,7 @@ export default function MortgageCommandCenter() {
             </table>
           </div>
           <div className="text-[9px] text-muted-foreground mt-2">
-            *GLA Collection (INTEG Health System PC · Acct Ref 25028855 · DOS 07/19/23): $165.54 (Aug–Dec 2026) then $250 (Jan 2027 onward). Final pmt ~ $290.54 in Apr 2027.
+            *GLA Collection (INTEG Health System PC · Acct Ref 25028855 · DOS 07/19/23): $250.00/month. Final pmt ~ $66.18 in Feb 2027.
           </div>
         </Panel>
 
