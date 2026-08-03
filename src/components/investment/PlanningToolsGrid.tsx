@@ -11,6 +11,7 @@ const DESCRIPTIONS: Record<string, string> = {
   debt: 'Turn freed-up debt payments into investments',
   income: 'Engineer retirement income streams and buckets',
   rules: 'Automate where every new dollar goes',
+  portfolio: 'Risk profile, model portfolios, drift, and fee drag',
   tax: 'Roth vs traditional, conversions, withdrawal tax',
   risk: 'Monte Carlo, glide path, sequence-of-returns risk',
   healthcare: 'ACA, IRMAA, and long-term-care planning',
