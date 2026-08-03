@@ -99,6 +99,7 @@ export default function InvestmentPlanning() {
       { value: 'debt', label: 'Debt → Wealth' },
       { value: 'income', label: 'Retirement Income' },
       { value: 'rules', label: 'Money Rules' },
+      { value: 'portfolio', label: 'Portfolio Models' },
     ]},
     { label: 'Tax & Risk', items: [
       { value: 'tax', label: 'Tax' },
