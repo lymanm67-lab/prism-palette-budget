@@ -181,8 +181,8 @@ export default function MortgageCommandCenter() {
             </div>
             <div className="text-center">
               <div className="text-[11px] font-extrabold mb-1">{money(PROGRAM.remaining)}</div>
-              <div className="mx-auto w-full bg-sky-500 rounded-t-md grid place-items-center" style={{ height: '32px' }}>
-                <span className="text-primary-foreground font-extrabold text-xs">7.56%</span>
+              <div className="mx-auto w-full bg-sky-500 rounded-t-md grid place-items-center" style={{ height: '48px' }}>
+                <span className="text-primary-foreground font-extrabold text-xs">14.82%</span>
               </div>
               <div className="text-[10px] font-bold uppercase text-muted-foreground mt-1 leading-tight">Remaining<br />Balance</div>
             </div>
