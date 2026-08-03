@@ -63,6 +63,8 @@ export default {
         },
         prism: {
           navy: "hsl(var(--prism-navy))",
+          "on-dark": "hsl(var(--prism-on-dark))",
+          "on-dark-muted": "hsl(var(--prism-on-dark-muted))",
           "navy-light": "hsl(var(--prism-navy-light))",
           teal: "hsl(var(--prism-teal))",
           "teal-light": "hsl(var(--prism-teal-light))",
