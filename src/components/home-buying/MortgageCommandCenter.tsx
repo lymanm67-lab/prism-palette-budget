@@ -130,8 +130,8 @@ export default function MortgageCommandCenter() {
         </div>
       </div>
 
-      {/* ROW 1 */}
-      <div className="grid gap-3 xl:grid-cols-[1fr_2fr_1fr]">
+      {/* 1 — WHERE I STAND */}
+      <div className="grid gap-3 xl:grid-cols-3">
         <Panel title="Program Overview — Gitmeid">
           <div className="text-center space-y-1">
             <div className="text-[11px] font-bold uppercase text-muted-foreground">Total Enrolled Balance</div>
@@ -166,6 +166,55 @@ export default function MortgageCommandCenter() {
           </div>
         </Panel>
 
+        <Panel title="Progress to Goal">
+          <div className="grid grid-cols-2 gap-6 items-end h-44">
+            <div className="text-center">
+              <div className="text-[11px] font-extrabold mb-1">{money(PROGRAM.resolved)}</div>
+              <div className="mx-auto w-full bg-emerald-700 rounded-t-md grid place-items-center" style={{ height: '150px' }}>
+                <span className="text-primary-foreground font-extrabold text-sm">{PROGRAM.pctResolved}%</span>
+              </div>
+              <div className="text-[10px] font-bold uppercase text-muted-foreground mt-1 leading-tight">Resolved<br />(Paid / Settled)</div>
+            </div>
+            <div className="text-center">
+              <div className="text-[11px] font-extrabold mb-1">{money(PROGRAM.remaining)}</div>
+              <div className="mx-auto w-full bg-sky-500 rounded-t-md grid place-items-center" style={{ height: '32px' }}>
+                <span className="text-primary-foreground font-extrabold text-xs">7.56%</span>
+              </div>
+              <div className="text-[10px] font-bold uppercase text-muted-foreground mt-1 leading-tight">Remaining<br />Balance</div>
+            </div>
+          </div>
+        </Panel>
+
+        <Panel title="Balance Allocation">
+          <div className="flex items-center gap-4">
+            <div className="relative h-28 w-28 shrink-0 rounded-full" style={{ background: `conic-gradient(${conic})` }}>
+              <div className="absolute inset-[24%] rounded-full bg-card grid place-items-center text-center">
+                <div>
+                  <div className="text-[11px] font-extrabold leading-none">{money(TOTAL_REMAINING)}</div>
+                  <div className="text-[7px] uppercase text-muted-foreground tracking-wide">Total Remaining</div>
+                </div>
+              </div>
+            </div>
+            <div className="flex-1 min-w-0 space-y-1.5">
+              {ALLOC.map((a) => (
+                <div key={a.name} className="grid grid-cols-[10px_1fr_auto_40px] items-center gap-2 text-[10px]">
+                  <span className="h-2.5 w-2.5 rounded-full" style={{ background: a.color }} />
+                  <span className="truncate">{a.name}</span>
+                  <span className="font-semibold tabular-nums">{money(a.amt)}</span>
+                  <span className="text-muted-foreground tabular-nums text-right">{a.pct}%</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="mt-4 flex items-center gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2">
+            <ShieldCheck className="h-5 w-5 text-emerald-600 shrink-0" />
+            <span className="text-[11px]">You&apos;re in the final stretch! Stay focused and finish strong.</span>
+          </div>
+        </Panel>
+      </div>
+
+      {/* 2 — WHAT I STILL OWE */}
+      <div className="grid gap-3">
         <Panel title="Account Status Summary">
           <div className="overflow-x-auto">
             <table className="w-full text-[11px] border-collapse">
@@ -199,126 +248,10 @@ export default function MortgageCommandCenter() {
             </table>
           </div>
         </Panel>
-
-        <Panel title="Key Milestones Timeline">
-          <ol className="space-y-3">
-            {MILESTONES.map((m, i) => (
-              <li key={m.date} className="flex gap-2.5">
-                <div className="flex flex-col items-center">
-                  {m.home ? (
-                    <span className="h-5 w-5 rounded-full bg-emerald-700 grid place-items-center"><Home className="h-3 w-3 text-primary-foreground" /></span>
-                  ) : m.done ? (
-                    <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-                  ) : (
-                    <Circle className={`h-5 w-5 ${m.accent ? 'text-prism-amber' : 'text-prism-navy dark:text-prism-teal'}`} strokeWidth={2.5} />
-                  )}
-                  {i < MILESTONES.length - 1 && <span className="flex-1 w-px bg-emerald-600/40 mt-1" />}
-                </div>
-                <div className="grid grid-cols-[86px_1fr] gap-2 flex-1 pb-1">
-                  <div className={`text-[10px] font-extrabold ${m.accent ? 'text-prism-amber' : m.done ? 'text-emerald-700 dark:text-emerald-400' : 'text-prism-navy dark:text-prism-teal'}`}>{m.date}</div>
-                  <div>
-                    <div className="text-[10px] font-bold leading-tight">{m.title}</div>
-                    <div className="text-[10px] text-muted-foreground leading-tight">{m.note}</div>
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </Panel>
       </div>
 
-      {/* ROW 2 */}
-      <div className="grid gap-3 xl:grid-cols-[1fr_1fr_1fr]">
-        <Panel title="Total Balance Decline (All Active Accounts)">
-          <div className="h-52">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={DECLINE} margin={{ top: 18, right: 12, left: -12, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="m" tick={{ fontSize: 9 }} interval={0} stroke="hsl(var(--muted-foreground))" />
-                <YAxis tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" tickFormatter={(v) => `$${v}`} />
-                <Tooltip formatter={(v: number) => money(v)} contentStyle={{ fontSize: 11 }} />
-                <Line type="monotone" dataKey="v" stroke="hsl(216 90% 45%)" strokeWidth={2} dot={{ r: 3 }}>
-                  <LabelList dataKey="v" position="top" formatter={(v: number) => `$${v.toLocaleString()}`} style={{ fontSize: 9, fill: 'hsl(var(--foreground))' }} />
-                </Line>
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="text-center text-xs font-extrabold italic text-prism-navy dark:text-prism-teal mt-2">
-            On track to be 100% debt resolved before June 2027!
-          </div>
-        </Panel>
-
-        <Panel title="Balance Allocation">
-          <div className="flex items-center gap-4">
-            <div className="relative h-28 w-28 shrink-0 rounded-full" style={{ background: `conic-gradient(${conic})` }}>
-              <div className="absolute inset-[24%] rounded-full bg-card grid place-items-center text-center">
-                <div>
-                  <div className="text-[11px] font-extrabold leading-none">{money(TOTAL_REMAINING)}</div>
-                  <div className="text-[7px] uppercase text-muted-foreground tracking-wide">Total Remaining</div>
-                </div>
-              </div>
-            </div>
-            <div className="flex-1 min-w-0 space-y-1.5">
-              {ALLOC.map((a) => (
-                <div key={a.name} className="grid grid-cols-[10px_1fr_auto_40px] items-center gap-2 text-[10px]">
-                  <span className="h-2.5 w-2.5 rounded-full" style={{ background: a.color }} />
-                  <span className="truncate">{a.name}</span>
-                  <span className="font-semibold tabular-nums">{money(a.amt)}</span>
-                  <span className="text-muted-foreground tabular-nums text-right">{a.pct}%</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="mt-4 flex items-center gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2">
-            <ShieldCheck className="h-5 w-5 text-emerald-600 shrink-0" />
-            <span className="text-[11px]">You&apos;re in the final stretch! Stay focused and finish strong.</span>
-          </div>
-        </Panel>
-
-        <Panel title="Progress to Goal">
-          <div className="grid grid-cols-2 gap-6 items-end h-44">
-            <div className="text-center">
-              <div className="text-[11px] font-extrabold mb-1">{money(PROGRAM.resolved)}</div>
-              <div className="mx-auto w-full bg-emerald-700 rounded-t-md grid place-items-center" style={{ height: '150px' }}>
-                <span className="text-primary-foreground font-extrabold text-sm">{PROGRAM.pctResolved}%</span>
-              </div>
-              <div className="text-[10px] font-bold uppercase text-muted-foreground mt-1 leading-tight">Resolved<br />(Paid / Settled)</div>
-            </div>
-            <div className="text-center">
-              <div className="text-[11px] font-extrabold mb-1">{money(PROGRAM.remaining)}</div>
-              <div className="mx-auto w-full bg-sky-500 rounded-t-md grid place-items-center" style={{ height: '32px' }}>
-                <span className="text-primary-foreground font-extrabold text-xs">7.56%</span>
-              </div>
-              <div className="text-[10px] font-bold uppercase text-muted-foreground mt-1 leading-tight">Remaining<br />Balance</div>
-            </div>
-          </div>
-        </Panel>
-      </div>
-
-      {/* ROW 3 */}
-      <div className="grid gap-3 xl:grid-cols-[1fr_1.6fr_1fr]">
-        <Panel title="Completed & Settled Accounts (Archived)" tone="green">
-          <ul className="space-y-2">
-            {ARCHIVED.map((a) => (
-              <li key={a.name} className="grid grid-cols-[16px_1fr] gap-2 items-start border-b border-border/50 pb-2 last:border-0">
-                <CheckCircle2 className="h-4 w-4 text-emerald-600 mt-0.5" />
-                <div className="min-w-0">
-                  <div className="text-[11px] font-bold truncate">{a.name}</div>
-                  <div className="text-[10px] text-muted-foreground">
-                    Settled &amp; Paid · $0.00 · {a.note}
-                    {a.badge && (
-                      <span className="ml-1 rounded bg-emerald-700 px-1 py-0.5 text-[8px] font-extrabold text-primary-foreground align-middle">{a.badge}</span>
-                    )}
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
-          <div className="mt-3 text-[10px] font-bold italic text-emerald-700 dark:text-emerald-400">
-            Keep all settlement letters and confirmations in your documentation binder.
-          </div>
-        </Panel>
-
+      {/* 3 — WHAT I PAY EACH MONTH */}
+      <div className="grid gap-3 xl:grid-cols-[1.6fr_1fr]">
         <Panel title="Monthly Payment Calendar">
           <div className="overflow-x-auto">
             <table className="w-full text-[10px] border-collapse">
@@ -358,52 +291,123 @@ export default function MortgageCommandCenter() {
           </div>
         </Panel>
 
-        <div className="space-y-3">
-          <Panel title="Mortgage Readiness Checklist" tone="green">
-            <ul className="space-y-1.5">
-              {CHECKLIST.map((c) => (
-                <li key={c.label} className="flex items-start gap-2 text-[11px]">
-                  {c.done
-                    ? <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
-                    : <span className="h-3.5 w-3.5 mt-0.5 shrink-0 rounded-sm border-2 border-muted-foreground/50" />}
-                  <span>{c.label}</span>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-3 text-[11px] font-extrabold text-emerald-700 dark:text-emerald-400 uppercase">
-              Target: Pre-Approval by June 2027
-            </div>
-          </Panel>
+        <Panel title="Total Balance Decline (All Active Accounts)">
+          <div className="h-52">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={DECLINE} margin={{ top: 18, right: 12, left: -12, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="m" tick={{ fontSize: 9 }} interval={0} stroke="hsl(var(--muted-foreground))" />
+                <YAxis tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" tickFormatter={(v) => `$${v}`} />
+                <Tooltip formatter={(v: number) => money(v)} contentStyle={{ fontSize: 11 }} />
+                <Line type="monotone" dataKey="v" stroke="hsl(216 90% 45%)" strokeWidth={2} dot={{ r: 3 }}>
+                  <LabelList dataKey="v" position="top" formatter={(v: number) => `$${v.toLocaleString()}`} style={{ fontSize: 9, fill: 'hsl(var(--foreground))' }} />
+                </Line>
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="text-center text-xs font-extrabold italic text-prism-navy dark:text-prism-teal mt-2">
+            On track to be 100% debt resolved before June 2027!
+          </div>
+        </Panel>
+      </div>
 
-          <Panel title="Mortgage Education Progress" tone="purple">
-            <div className="flex items-start gap-3">
-              <span className="h-10 w-10 shrink-0 rounded-full bg-violet-800 grid place-items-center">
-                <GraduationCap className="h-5 w-5 text-primary-foreground" />
-              </span>
-              <div>
-                <div className="text-[11px] font-extrabold text-violet-700 dark:text-violet-300 uppercase">First Time Homebuyer Education Course</div>
-                <div className="text-[11px] font-bold mt-0.5">Status: <span className="text-prism-orange">In Progress</span></div>
-                <p className="text-[10px] text-muted-foreground mt-1">
-                  Great step! This course will help you build confidence and meet lender requirements.
-                </p>
-                <div className="text-[11px] font-extrabold text-violet-700 dark:text-violet-300 mt-2">
-                  Course Completion Goal: May 2027
+      {/* 4 — WHERE I AM GOING */}
+      <div className="grid gap-3 xl:grid-cols-3">
+        <Panel title="Key Milestones Timeline">
+          <ol className="space-y-3">
+            {MILESTONES.map((m, i) => (
+              <li key={m.date} className="flex gap-2.5">
+                <div className="flex flex-col items-center">
+                  {m.home ? (
+                    <span className="h-5 w-5 rounded-full bg-emerald-700 grid place-items-center"><Home className="h-3 w-3 text-primary-foreground" /></span>
+                  ) : m.done ? (
+                    <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                  ) : (
+                    <Circle className={`h-5 w-5 ${m.accent ? 'text-prism-amber' : 'text-prism-navy dark:text-prism-teal'}`} strokeWidth={2.5} />
+                  )}
+                  {i < MILESTONES.length - 1 && <span className="flex-1 w-px bg-emerald-600/40 mt-1" />}
                 </div>
+                <div className="grid grid-cols-[86px_1fr] gap-2 flex-1 pb-1">
+                  <div className={`text-[10px] font-extrabold ${m.accent ? 'text-prism-amber' : m.done ? 'text-emerald-700 dark:text-emerald-400' : 'text-prism-navy dark:text-prism-teal'}`}>{m.date}</div>
+                  <div>
+                    <div className="text-[10px] font-bold leading-tight">{m.title}</div>
+                    <div className="text-[10px] text-muted-foreground leading-tight">{m.note}</div>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </Panel>
+
+        <Panel title="Mortgage Readiness Checklist" tone="green">
+          <ul className="space-y-1.5">
+            {CHECKLIST.map((c) => (
+              <li key={c.label} className="flex items-start gap-2 text-[11px]">
+                {c.done
+                  ? <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+                  : <span className="h-3.5 w-3.5 mt-0.5 shrink-0 rounded-sm border-2 border-muted-foreground/50" />}
+                <span>{c.label}</span>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-3 text-[11px] font-extrabold text-emerald-700 dark:text-emerald-400 uppercase">
+            Target: Pre-Approval by June 2027
+          </div>
+        </Panel>
+
+        <Panel title="Mortgage Education Progress" tone="purple">
+          <div className="flex items-start gap-3">
+            <span className="h-10 w-10 shrink-0 rounded-full bg-violet-800 grid place-items-center">
+              <GraduationCap className="h-5 w-5 text-primary-foreground" />
+            </span>
+            <div>
+              <div className="text-[11px] font-extrabold text-violet-700 dark:text-violet-300 uppercase">First Time Homebuyer Education Course</div>
+              <div className="text-[11px] font-bold mt-0.5">Status: <span className="text-prism-orange">In Progress</span></div>
+              <p className="text-[10px] text-muted-foreground mt-1">
+                Great step! This course will help you build confidence and meet lender requirements.
+              </p>
+              <div className="text-[11px] font-extrabold text-violet-700 dark:text-violet-300 mt-2">
+                Course Completion Goal: May 2027
               </div>
             </div>
-          </Panel>
+          </div>
+        </Panel>
+      </div>
 
-          <Panel title="Key Notes">
-            <ul className="space-y-2">
-              {NOTES.map((n, i) => (
-                <li key={i} className="flex items-start gap-2 text-[11px]">
-                  <n.icon className="h-4 w-4 text-prism-navy dark:text-prism-teal shrink-0 mt-0.5" />
-                  <span>{n.body}</span>
-                </li>
-              ))}
-            </ul>
-          </Panel>
-        </div>
+      {/* 5 — PROOF & REMINDERS */}
+      <div className="grid gap-3 xl:grid-cols-[1.6fr_1fr]">
+        <Panel title="Completed & Settled Accounts (Archived)" tone="green">
+          <ul className="space-y-2">
+            {ARCHIVED.map((a) => (
+              <li key={a.name} className="grid grid-cols-[16px_1fr] gap-2 items-start border-b border-border/50 pb-2 last:border-0">
+                <CheckCircle2 className="h-4 w-4 text-emerald-600 mt-0.5" />
+                <div className="min-w-0">
+                  <div className="text-[11px] font-bold truncate">{a.name}</div>
+                  <div className="text-[10px] text-muted-foreground">
+                    Settled &amp; Paid · $0.00 · {a.note}
+                    {a.badge && (
+                      <span className="ml-1 rounded bg-emerald-700 px-1 py-0.5 text-[8px] font-extrabold text-primary-foreground align-middle">{a.badge}</span>
+                    )}
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-3 text-[10px] font-bold italic text-emerald-700 dark:text-emerald-400">
+            Keep all settlement letters and confirmations in your documentation binder.
+          </div>
+        </Panel>
+
+        <Panel title="Key Notes">
+          <ul className="space-y-2">
+            {NOTES.map((n, i) => (
+              <li key={i} className="flex items-start gap-2 text-[11px]">
+                <n.icon className="h-4 w-4 text-prism-navy dark:text-prism-teal shrink-0 mt-0.5" />
+                <span>{n.body}</span>
+              </li>
+            ))}
+          </ul>
+        </Panel>
       </div>
     </div>
   );
