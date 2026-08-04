@@ -21,8 +21,13 @@ const TABS = [
 ];
 
 export default function MedicalHousingPlanner() {
-  const [tab, setTab] = useState('dashboard');
+  const [params, setParams] = useSearchParams();
   useMhSeed();
+
+  const requested = params.get('tab') ?? 'dashboard';
+  const tab = TABS.some((t) => t.value === requested) ? requested : 'dashboard';
+  const setTab = (v: string) => setParams({ tab: v }, { replace: true });
+
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
