@@ -38,6 +38,9 @@ const RULES: { cls: AssetClass; re: RegExp }[] = [
   { cls: 'us_equity', re: /\b(s&p 500|total stock|large cap|mid cap|small cap|growth|value|equity index|russell|nasdaq|vti|voo|vtsax|fxaix|spy|qqq|iwm|vug|vtv)\b/i },
 ];
 
+const TARGET_DATE_RE = /(?:target[\s-]date|target[\s-]retirement|lifecycle|freedom|retirement[\s-]20\d\d|retirement[\s-]income|tr[\s-]?20\d\d|td[\s-]?20\d\d)/i;
+const YEAR_RE = /(?:20\d{2})/;
+
 /** Best-effort asset-class classification from symbol, name, and holding_type. */
 export function classifyHolding(h: {
   symbol?: string | null;
@@ -53,6 +56,55 @@ export function classifyHolding(h: {
   if (t === 'equity' || t === 'stock') return 'us_equity';
   if (t === 'etf' || t === 'mutual_fund' || t === 'fund') return 'us_equity';
   return 'other';
+}
+
+/** Detect target-date / lifecycle / retirement-date funds. */
+export function isTargetDateFund(h: {
+  symbol?: string | null;
+  name?: string | null;
+}): boolean {
+  const text = `${h.symbol ?? ''} ${h.name ?? ''}`;
+  return TARGET_DATE_RE.test(text);
+}
+
+/**
+ * Estimate the internal glide-path allocation of a target-date fund.
+ * Returns decimal weights that sum to ~1.0 across the five main asset classes.
+ * Uses the fund's target year and a generic glide-path approximation;
+ * major families (Vanguard, Fidelity Freedom, Schwab, T. Rowe Price)
+ * converge on roughly the same shape.
+ */
+export function estimateTargetDateAllocation(h: {
+  symbol?: string | null;
+  name?: string | null;
+}): Record<Exclude<AssetClass, 'other'>, number> {
+  const text = `${h.symbol ?? ''} ${h.name ?? ''}`;
+  const currentYear = new Date().getFullYear();
+  const yearMatch = text.match(YEAR_RE);
+  const targetYear = yearMatch ? Math.max(1950, Math.min(2100, Number(yearMatch[0]))) : currentYear + 25;
+  const yearsToTarget = targetYear - currentYear;
+
+  // Stock / bond glide path
+  let stockPct: number;
+  if (yearsToTarget > 25) stockPct = 0.90;
+  else if (yearsToTarget > 15) stockPct = 0.84 - (25 - yearsToTarget) * 0.004; // 0.84 -> 0.80
+  else if (yearsToTarget > 5) stockPct = 0.78 - (15 - yearsToTarget) * 0.013; // 0.78 -> 0.65
+  else if (yearsToTarget >= 0) stockPct = 0.62 - (5 - yearsToTarget) * 0.024; // 0.62 -> 0.50
+  else stockPct = Math.max(0.30, 0.50 + yearsToTarget * 0.01); // slowly declines past target
+
+  const bondPct = 1 - stockPct;
+
+  // Within stocks, ~60% US / 40% international is typical for target-date funds
+  const usPct = stockPct * 0.60;
+  const intlPct = stockPct * 0.40;
+
+  return {
+    us_equity: usPct,
+    intl_equity: intlPct,
+    bonds: bondPct,
+    real_estate: 0,
+    cash: 0,
+  };
 }
 
 /** Rough expense-ratio estimate (decimal, e.g. 0.0003 = 0.03%). */
@@ -71,8 +123,8 @@ export function estimateExpenseRatio(h: {
   if (CHEAP[sym] !== undefined) return CHEAP[sym];
 
   const name = (h.name ?? '').toLowerCase();
+  if (isTargetDateFund(h)) return 0.005;
   if (/index|idx/.test(name)) return 0.0015;
-  if (/target ?date|lifecycle|retirement 20\d\d/.test(name)) return 0.005;
   if (/money market|stable value/.test(name)) return 0.002;
   if (/annuity|variable/.test(name)) return 0.011;
   if ((h.holding_type ?? '').toLowerCase() === 'mutual_fund') return 0.006;
@@ -211,9 +263,19 @@ export function analyzePortfolio(
   for (const h of holdings) {
     const mv = Number(h.market_value ?? 0);
     if (!mv || mv <= 0) continue;
-    buckets[classifyHolding(h)] += mv;
-    erWeighted += mv * estimateExpenseRatio(h);
+    const er = estimateExpenseRatio(h);
+    erWeighted += mv * er;
     total += mv;
+
+    if (isTargetDateFund(h)) {
+      // Split target-date funds across their estimated glide-path allocation
+      const alloc = estimateTargetDateAllocation(h);
+      (Object.keys(alloc) as AssetClass[]).forEach((cls) => {
+        if (cls !== 'other') buckets[cls] += mv * alloc[cls];
+      });
+    } else {
+      buckets[classifyHolding(h)] += mv;
+    }
   }
 
   const rows: DriftRow[] = ASSET_CLASS_ORDER.map((cls): DriftRow => {
