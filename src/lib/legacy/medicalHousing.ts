@@ -649,7 +649,7 @@ const startupBase = {
 export const SEED_STARTUP_SCENARIOS = [
   { name: 'Akron Entry Scenario', purchase_price: 150000, is_active: true, range_low: 62500, range_high: 81000, sort_order: 1, ...startupBase },
   { name: 'Highland Square Scenario', purchase_price: 184000, is_active: false, range_low: 72300, range_high: 89300, sort_order: 2, ...startupBase },
-  { name: 'Cleveland Heights Scenario', purchase_price: 235000, is_active: false, range_low: 91000, range_high: 111000, sort_order: 3, ...startupBase, property_taxes: undefined },
+  { name: 'Cleveland Heights Scenario', purchase_price: 235000, is_active: false, range_low: 91000, range_high: 111000, sort_order: 3, ...startupBase, furniture: 14000, initial_repairs: 10000 },
 ];
 
 const incomeBase = {
