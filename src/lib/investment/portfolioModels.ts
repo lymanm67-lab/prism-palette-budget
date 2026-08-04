@@ -263,9 +263,19 @@ export function analyzePortfolio(
   for (const h of holdings) {
     const mv = Number(h.market_value ?? 0);
     if (!mv || mv <= 0) continue;
-    buckets[classifyHolding(h)] += mv;
-    erWeighted += mv * estimateExpenseRatio(h);
+    const er = estimateExpenseRatio(h);
+    erWeighted += mv * er;
     total += mv;
+
+    if (isTargetDateFund(h)) {
+      // Split target-date funds across their estimated glide-path allocation
+      const alloc = estimateTargetDateAllocation(h);
+      (Object.keys(alloc) as AssetClass[]).forEach((cls) => {
+        if (cls !== 'other') buckets[cls] += mv * alloc[cls];
+      });
+    } else {
+      buckets[classifyHolding(h)] += mv;
+    }
   }
 
   const rows: DriftRow[] = ASSET_CLASS_ORDER.map((cls): DriftRow => {
