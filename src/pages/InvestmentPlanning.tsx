@@ -10,6 +10,7 @@ import { useInvestmentPlan } from '@/hooks/use-investment-plan';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { loadMontgomerySample } from '@/lib/investment/montgomery-sample';
 import { SnapshotDashboard } from '@/components/investment/SnapshotDashboard';
+import { ActualReturnsCard } from '@/components/investment/ActualReturnsCard';
 import { ReturnScenarioComparison } from '@/components/investment/ReturnScenarioComparison';
 import { MixedReturnsScenario } from '@/components/investment/MixedReturnsScenario';
 import { ProjectionDiagnostic } from '@/components/investment/ProjectionDiagnostic';
