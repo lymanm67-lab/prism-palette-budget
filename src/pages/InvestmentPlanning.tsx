@@ -328,6 +328,7 @@ export default function InvestmentPlanning() {
             futureDollars={controls.futureDollars}
             onHorizonChange={(age) => setControls((c) => ({ ...c, horizonAge: age }))}
           />
+          <ActualReturnsCard />
           {liveProjection && (
             <CollapsibleSection title="Projection chart" defaultOpen>
               <ProjectionCharts yearly={liveProjection.yearly} target={plan!.target_amount} />
