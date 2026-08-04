@@ -117,9 +117,12 @@ export default function RealEstateCommunityImpact() {
 
   const s = thv.settings;
 
-  const mhTotalCost = Number(mh?.totalStartup ?? mh?.startupTotal ?? 0);
-  const mhProperties = Number(mh?.propertyCount ?? mh?.properties?.length ?? 0);
-  const mhMonthlyIncome = Number(mh?.monthlyCashFlow ?? mh?.totalMonthlyCashFlow ?? 0);
+  const mhTotalCost = Number(mh?.startupTotals?.totalStartup ?? 0);
+  const mhProperties = Number(mh?.properties?.length ?? 0);
+  const mhFunded = Number(mh?.reserves ?? 0);
+  const mhGap = Number(mh?.fundingGap ?? 0);
+  const mhAnnualProfit = Number(mh?.annualProfit ?? 0);
+
 
   return (
     <div className="container mx-auto space-y-6 px-4 py-6">
