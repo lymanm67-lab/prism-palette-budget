@@ -3859,6 +3859,7 @@ export type Database = {
           debt_payoff_date: string | null
           employer_match_pct: number | null
           expected_return_pct: number
+          expense_ratio_pct: number | null
           household_id: string
           hsa_balance: number
           hsa_employer_contribution: number
@@ -3901,6 +3902,7 @@ export type Database = {
           debt_payoff_date?: string | null
           employer_match_pct?: number | null
           expected_return_pct?: number
+          expense_ratio_pct?: number | null
           household_id: string
           hsa_balance?: number
           hsa_employer_contribution?: number
@@ -3943,6 +3945,7 @@ export type Database = {
           debt_payoff_date?: string | null
           employer_match_pct?: number | null
           expected_return_pct?: number
+          expense_ratio_pct?: number | null
           household_id?: string
           hsa_balance?: number
           hsa_employer_contribution?: number
