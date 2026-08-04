@@ -4780,6 +4780,719 @@ export type Database = {
           },
         ]
       }
+      mh_duplex_units: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          household_id: string
+          id: string
+          lease_expiration: string | null
+          lease_type: string
+          maintenance_cost: number
+          monthly_expenses: number
+          monthly_rent: number
+          notes: string | null
+          occupancy_pct: number
+          sort_order: number
+          tenant_type: string | null
+          unit_label: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          household_id: string
+          id?: string
+          lease_expiration?: string | null
+          lease_type?: string
+          maintenance_cost?: number
+          monthly_expenses?: number
+          monthly_rent?: number
+          notes?: string | null
+          occupancy_pct?: number
+          sort_order?: number
+          tenant_type?: string | null
+          unit_label: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          household_id?: string
+          id?: string
+          lease_expiration?: string | null
+          lease_type?: string
+          maintenance_cost?: number
+          monthly_expenses?: number
+          monthly_rent?: number
+          notes?: string | null
+          occupancy_pct?: number
+          sort_order?: number
+          tenant_type?: string | null
+          unit_label?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mh_duplex_units_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mh_employers: {
+        Row: {
+          address: string | null
+          category: string | null
+          city: string | null
+          contact_email: string | null
+          contact_person: string | null
+          contact_phone: string | null
+          contract_demand: string
+          created_at: string
+          deleted_at: string | null
+          employee_count: number | null
+          estimated_housing_demand: string
+          has_fellowship: boolean
+          has_residency: boolean
+          household_id: string
+          id: string
+          med_school_affiliation: string | null
+          name: string
+          notes: string | null
+          referral_status: string
+          sort_order: number
+          travel_nurse_demand: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          category?: string | null
+          city?: string | null
+          contact_email?: string | null
+          contact_person?: string | null
+          contact_phone?: string | null
+          contract_demand?: string
+          created_at?: string
+          deleted_at?: string | null
+          employee_count?: number | null
+          estimated_housing_demand?: string
+          has_fellowship?: boolean
+          has_residency?: boolean
+          household_id: string
+          id?: string
+          med_school_affiliation?: string | null
+          name: string
+          notes?: string | null
+          referral_status?: string
+          sort_order?: number
+          travel_nurse_demand?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          category?: string | null
+          city?: string | null
+          contact_email?: string | null
+          contact_person?: string | null
+          contact_phone?: string | null
+          contract_demand?: string
+          created_at?: string
+          deleted_at?: string | null
+          employee_count?: number | null
+          estimated_housing_demand?: string
+          has_fellowship?: boolean
+          has_residency?: boolean
+          household_id?: string
+          id?: string
+          med_school_affiliation?: string | null
+          name?: string
+          notes?: string | null
+          referral_status?: string
+          sort_order?: number
+          travel_nurse_demand?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mh_employers_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mh_income_scenarios: {
+        Row: {
+          advertising: number
+          annual_vacancy_pct: number
+          bedrooms: number
+          cash_invested: number
+          cleaning: number
+          created_at: string
+          deleted_at: string | null
+          furniture_reserve: number
+          household_id: string
+          id: string
+          insurance: number
+          internet: number
+          is_active: boolean
+          lawn_care: number
+          maintenance_reserve: number
+          market_label: string | null
+          model_type: string
+          monthly_rent: number
+          mortgage: number
+          name: string
+          notes: string | null
+          occupancy_pct: number
+          other_expenses: number
+          platform_fees: number
+          property_management: number
+          property_taxes: number
+          rent_per_room: number
+          snow_removal: number
+          sort_order: number
+          updated_at: string
+          utilities: number
+        }
+        Insert: {
+          advertising?: number
+          annual_vacancy_pct?: number
+          bedrooms?: number
+          cash_invested?: number
+          cleaning?: number
+          created_at?: string
+          deleted_at?: string | null
+          furniture_reserve?: number
+          household_id: string
+          id?: string
+          insurance?: number
+          internet?: number
+          is_active?: boolean
+          lawn_care?: number
+          maintenance_reserve?: number
+          market_label?: string | null
+          model_type?: string
+          monthly_rent?: number
+          mortgage?: number
+          name: string
+          notes?: string | null
+          occupancy_pct?: number
+          other_expenses?: number
+          platform_fees?: number
+          property_management?: number
+          property_taxes?: number
+          rent_per_room?: number
+          snow_removal?: number
+          sort_order?: number
+          updated_at?: string
+          utilities?: number
+        }
+        Update: {
+          advertising?: number
+          annual_vacancy_pct?: number
+          bedrooms?: number
+          cash_invested?: number
+          cleaning?: number
+          created_at?: string
+          deleted_at?: string | null
+          furniture_reserve?: number
+          household_id?: string
+          id?: string
+          insurance?: number
+          internet?: number
+          is_active?: boolean
+          lawn_care?: number
+          maintenance_reserve?: number
+          market_label?: string | null
+          model_type?: string
+          monthly_rent?: number
+          mortgage?: number
+          name?: string
+          notes?: string | null
+          occupancy_pct?: number
+          other_expenses?: number
+          platform_fees?: number
+          property_management?: number
+          property_taxes?: number
+          rent_per_room?: number
+          snow_removal?: number
+          sort_order?: number
+          updated_at?: string
+          utilities?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mh_income_scenarios_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mh_markets: {
+        Row: {
+          cautions: string[]
+          city: string | null
+          classification: string[]
+          created_at: string
+          deleted_at: string | null
+          household_id: string
+          id: string
+          name: string
+          notes: string | null
+          price_high: number
+          price_low: number
+          priority: string
+          recommendation: string | null
+          region: string
+          rent_expected: number | null
+          rent_low: number | null
+          rent_strong: number | null
+          sort_order: number
+          updated_at: string
+          zip: string | null
+        }
+        Insert: {
+          cautions?: string[]
+          city?: string | null
+          classification?: string[]
+          created_at?: string
+          deleted_at?: string | null
+          household_id: string
+          id?: string
+          name: string
+          notes?: string | null
+          price_high?: number
+          price_low?: number
+          priority?: string
+          recommendation?: string | null
+          region?: string
+          rent_expected?: number | null
+          rent_low?: number | null
+          rent_strong?: number | null
+          sort_order?: number
+          updated_at?: string
+          zip?: string | null
+        }
+        Update: {
+          cautions?: string[]
+          city?: string | null
+          classification?: string[]
+          created_at?: string
+          deleted_at?: string | null
+          household_id?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          price_high?: number
+          price_low?: number
+          priority?: string
+          recommendation?: string | null
+          region?: string
+          rent_expected?: number | null
+          rent_low?: number | null
+          rent_strong?: number | null
+          sort_order?: number
+          updated_at?: string
+          zip?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mh_markets_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mh_milestones: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          deleted_at: string | null
+          household_id: string
+          id: string
+          is_complete: boolean
+          notes: string | null
+          phase: string | null
+          sort_order: number
+          target_date: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          household_id: string
+          id?: string
+          is_complete?: boolean
+          notes?: string | null
+          phase?: string | null
+          sort_order?: number
+          target_date?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          household_id?: string
+          id?: string
+          is_complete?: boolean
+          notes?: string | null
+          phase?: string | null
+          sort_order?: number
+          target_date?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mh_milestones_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mh_properties: {
+        Row: {
+          address: string | null
+          bathrooms: number
+          bedrooms: number
+          city: string | null
+          compliance_verified: boolean
+          condition_notes: string | null
+          created_at: string
+          deleted_at: string | null
+          furnished_rent: number
+          hoa_restrictions: boolean
+          household_id: string
+          id: string
+          label: string
+          laundry: boolean
+          longterm_rent: number
+          major_repairs_unresolved: boolean
+          market_id: string | null
+          minutes_to_hospital: number | null
+          notes: string | null
+          off_street_parking: boolean
+          purchase_price: number
+          reserves_available: number
+          score_bedrooms: number | null
+          score_cash_flow: number | null
+          score_condition: number | null
+          score_furnished_rent: number | null
+          score_hospital_proximity: number | null
+          score_laundry: number | null
+          score_longterm_rent: number | null
+          score_management: number | null
+          score_neighborhood: number | null
+          score_overall_risk: number | null
+          score_parking: number | null
+          score_purchase_price: number | null
+          score_resale: number | null
+          score_reserves: number | null
+          score_safety: number | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          bathrooms?: number
+          bedrooms?: number
+          city?: string | null
+          compliance_verified?: boolean
+          condition_notes?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          furnished_rent?: number
+          hoa_restrictions?: boolean
+          household_id: string
+          id?: string
+          label: string
+          laundry?: boolean
+          longterm_rent?: number
+          major_repairs_unresolved?: boolean
+          market_id?: string | null
+          minutes_to_hospital?: number | null
+          notes?: string | null
+          off_street_parking?: boolean
+          purchase_price?: number
+          reserves_available?: number
+          score_bedrooms?: number | null
+          score_cash_flow?: number | null
+          score_condition?: number | null
+          score_furnished_rent?: number | null
+          score_hospital_proximity?: number | null
+          score_laundry?: number | null
+          score_longterm_rent?: number | null
+          score_management?: number | null
+          score_neighborhood?: number | null
+          score_overall_risk?: number | null
+          score_parking?: number | null
+          score_purchase_price?: number | null
+          score_resale?: number | null
+          score_reserves?: number | null
+          score_safety?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          bathrooms?: number
+          bedrooms?: number
+          city?: string | null
+          compliance_verified?: boolean
+          condition_notes?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          furnished_rent?: number
+          hoa_restrictions?: boolean
+          household_id?: string
+          id?: string
+          label?: string
+          laundry?: boolean
+          longterm_rent?: number
+          major_repairs_unresolved?: boolean
+          market_id?: string | null
+          minutes_to_hospital?: number | null
+          notes?: string | null
+          off_street_parking?: boolean
+          purchase_price?: number
+          reserves_available?: number
+          score_bedrooms?: number | null
+          score_cash_flow?: number | null
+          score_condition?: number | null
+          score_furnished_rent?: number | null
+          score_hospital_proximity?: number | null
+          score_laundry?: number | null
+          score_longterm_rent?: number | null
+          score_management?: number | null
+          score_neighborhood?: number | null
+          score_overall_risk?: number | null
+          score_parking?: number | null
+          score_purchase_price?: number | null
+          score_resale?: number | null
+          score_reserves?: number | null
+          score_safety?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mh_properties_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mh_properties_market_id_fkey"
+            columns: ["market_id"]
+            isOneToOne: false
+            referencedRelation: "mh_markets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mh_settings: {
+        Row: {
+          available_reserves: number
+          created_at: string
+          deleted_at: string | null
+          forecast_appreciation_pct: number
+          forecast_avg_cash_flow: number
+          forecast_avg_occupancy: number
+          forecast_avg_rent: number
+          forecast_avg_value: number
+          forecast_ltv_pct: number
+          forecast_reserve_per_property: number
+          household_id: string
+          id: string
+          target_startup_high: number
+          target_startup_low: number
+          updated_at: string
+          village_allocation_pct: number
+          village_custom_amount: number | null
+          village_fund_balance: number
+          village_funding_goal: number
+        }
+        Insert: {
+          available_reserves?: number
+          created_at?: string
+          deleted_at?: string | null
+          forecast_appreciation_pct?: number
+          forecast_avg_cash_flow?: number
+          forecast_avg_occupancy?: number
+          forecast_avg_rent?: number
+          forecast_avg_value?: number
+          forecast_ltv_pct?: number
+          forecast_reserve_per_property?: number
+          household_id: string
+          id?: string
+          target_startup_high?: number
+          target_startup_low?: number
+          updated_at?: string
+          village_allocation_pct?: number
+          village_custom_amount?: number | null
+          village_fund_balance?: number
+          village_funding_goal?: number
+        }
+        Update: {
+          available_reserves?: number
+          created_at?: string
+          deleted_at?: string | null
+          forecast_appreciation_pct?: number
+          forecast_avg_cash_flow?: number
+          forecast_avg_occupancy?: number
+          forecast_avg_rent?: number
+          forecast_avg_value?: number
+          forecast_ltv_pct?: number
+          forecast_reserve_per_property?: number
+          household_id?: string
+          id?: string
+          target_startup_high?: number
+          target_startup_low?: number
+          updated_at?: string
+          village_allocation_pct?: number
+          village_custom_amount?: number | null
+          village_fund_balance?: number
+          village_funding_goal?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mh_settings_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: true
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mh_startup_scenarios: {
+        Row: {
+          appliances: number
+          appraisal_cost: number
+          closing_costs: number
+          created_at: string
+          deleted_at: string | null
+          down_payment_pct: number
+          emergency_reserve: number
+          furniture: number
+          household_id: string
+          id: string
+          initial_cleaning: number
+          initial_repairs: number
+          inspection_cost: number
+          insurance_deposit: number
+          internet_setup: number
+          is_active: boolean
+          kitchen_supplies: number
+          licensing_permits: number
+          linens: number
+          maintenance_reserve: number
+          marketing: number
+          name: string
+          notes: string | null
+          paint_cosmetic: number
+          purchase_price: number
+          range_high: number | null
+          range_low: number | null
+          security_system: number
+          sort_order: number
+          updated_at: string
+          utility_deposits: number
+          vacancy_reserve: number
+        }
+        Insert: {
+          appliances?: number
+          appraisal_cost?: number
+          closing_costs?: number
+          created_at?: string
+          deleted_at?: string | null
+          down_payment_pct?: number
+          emergency_reserve?: number
+          furniture?: number
+          household_id: string
+          id?: string
+          initial_cleaning?: number
+          initial_repairs?: number
+          inspection_cost?: number
+          insurance_deposit?: number
+          internet_setup?: number
+          is_active?: boolean
+          kitchen_supplies?: number
+          licensing_permits?: number
+          linens?: number
+          maintenance_reserve?: number
+          marketing?: number
+          name: string
+          notes?: string | null
+          paint_cosmetic?: number
+          purchase_price?: number
+          range_high?: number | null
+          range_low?: number | null
+          security_system?: number
+          sort_order?: number
+          updated_at?: string
+          utility_deposits?: number
+          vacancy_reserve?: number
+        }
+        Update: {
+          appliances?: number
+          appraisal_cost?: number
+          closing_costs?: number
+          created_at?: string
+          deleted_at?: string | null
+          down_payment_pct?: number
+          emergency_reserve?: number
+          furniture?: number
+          household_id?: string
+          id?: string
+          initial_cleaning?: number
+          initial_repairs?: number
+          inspection_cost?: number
+          insurance_deposit?: number
+          internet_setup?: number
+          is_active?: boolean
+          kitchen_supplies?: number
+          licensing_permits?: number
+          linens?: number
+          maintenance_reserve?: number
+          marketing?: number
+          name?: string
+          notes?: string | null
+          paint_cosmetic?: number
+          purchase_price?: number
+          range_high?: number | null
+          range_low?: number | null
+          security_system?: number
+          sort_order?: number
+          updated_at?: string
+          utility_deposits?: number
+          vacancy_reserve?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mh_startup_scenarios_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       money_leaks: {
         Row: {
           annual_cost: number
