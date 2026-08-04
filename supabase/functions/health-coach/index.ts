@@ -68,7 +68,7 @@ serve(async (req) => {
       supabase.from("health_daily_logs").select("*").eq("household_id", householdId).is("deleted_at", null).gte("log_date", since).order("log_date", { ascending: false }).limit(120),
       supabase.from("health_meals").select("meal_date, meal_type, name, calories, protein_g").eq("household_id", householdId).is("deleted_at", null).gte("meal_date", since).limit(200),
       supabase.from("health_meal_prep").select("prep_date, containers_packed, meals_consumed").eq("household_id", householdId).is("deleted_at", null).order("prep_date", { ascending: false }).limit(8),
-      supabase.from("health_milestones").select("weight_target, reward, achieved_on").eq("household_id", householdId).is("deleted_at", null).order("sort_order"),
+      supabase.from("health_milestones").select("weight_target, reward, actual_date, estimated_date").eq("household_id", householdId).is("deleted_at", null).order("sort_order"),
     ]);
 
     if (profile.error) throw profile.error;
@@ -153,7 +153,7 @@ serve(async (req) => {
       household_id: householdId,
       report_type: reportType,
       content,
-      data_snapshot: ctx.totals_last_90_days,
+      metrics: ctx.totals_last_90_days,
     });
     if (insErr) console.error("could not store report", insErr);
 

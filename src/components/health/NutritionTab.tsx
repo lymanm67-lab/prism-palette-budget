@@ -71,7 +71,6 @@ export default function NutritionTab() {
       carbs_g: Math.round(f.carbs),
       fiber_g: Math.round(f.fiber),
       fat_g: Math.round(f.fat),
-      seasoning: type === 'breakfast' ? null : seasoning,
       components: null,
     });
     saveLog.mutate({

@@ -27,16 +27,16 @@ export default function MealPrepTab() {
   const [containers, setContainers] = useState(12);
 
   const checked: string[] = useMemo(() => {
-    const raw = current?.cook_checklist;
+    const raw = current?.checklist;
     return Array.isArray(raw) ? (raw as string[]) : [];
   }, [current]);
 
   const shopChecked: string[] = useMemo(() => {
-    const raw = current?.shopping_checklist;
+    const raw = current?.shopping_list;
     return Array.isArray(raw) ? (raw as string[]) : [];
   }, [current]);
 
-  const toggle = (field: 'cook_checklist' | 'shopping_checklist', list: string[], item: string) => {
+  const toggle = (field: 'checklist' | 'shopping_list', list: string[], item: string) => {
     if (!current) return;
     const next = list.includes(item) ? list.filter((i) => i !== item) : [...list, item];
     save.mutate({ id: current.id, [field]: next });
@@ -47,8 +47,8 @@ export default function MealPrepTab() {
       prep_date: prepDate,
       containers_packed: containers,
       meals_consumed: 0,
-      cook_checklist: [],
-      shopping_checklist: [],
+      checklist: [],
+      shopping_list: [],
     });
 
   return (
@@ -126,7 +126,7 @@ export default function MealPrepTab() {
                 <Checkbox
                   checked={checked.includes(item)}
                   disabled={!current}
-                  onCheckedChange={() => toggle('cook_checklist', checked, item)}
+                  onCheckedChange={() => toggle('checklist', checked, item)}
                 />
                 <span className={checked.includes(item) ? 'text-sm line-through opacity-60' : 'text-sm'}>
                   {item}
@@ -148,7 +148,7 @@ export default function MealPrepTab() {
                 <Checkbox
                   checked={shopChecked.includes(item)}
                   disabled={!current}
-                  onCheckedChange={() => toggle('shopping_checklist', shopChecked, item)}
+                  onCheckedChange={() => toggle('shopping_list', shopChecked, item)}
                 />
                 <span
                   className={shopChecked.includes(item) ? 'text-sm line-through opacity-60' : 'text-sm'}

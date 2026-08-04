@@ -48,7 +48,7 @@ export default function MilestonesTab() {
           )}
           {milestones.map((m) => {
             const target = Number(m.weight_target);
-            const hit = m.achieved_on != null || (status ? status.current <= target : false);
+            const hit = m.actual_date != null || (status ? status.current <= target : false);
             const eta = projectMilestoneDate(target, status);
             const start = status?.start ?? profile?.start_weight ?? target;
             const pct = status
@@ -72,7 +72,7 @@ export default function MilestonesTab() {
                   <div className="text-right">
                     {hit ? (
                       <Badge variant="outline" className="border-prism-lime/30 bg-prism-lime/15 text-prism-lime">
-                        Achieved {m.achieved_on ? formatDate(m.achieved_on) : ''}
+                        Achieved {m.actual_date ? formatDate(m.actual_date) : ''}
                       </Badge>
                     ) : (
                       <>
@@ -83,12 +83,12 @@ export default function MilestonesTab() {
                   </div>
                 </div>
                 <Progress value={pct * 100} className="mt-3 h-1.5" />
-                {!m.achieved_on && hit && (
+                {!m.actual_date && hit && (
                   <Button
                     size="sm"
                     variant="outline"
                     className="mt-3"
-                    onClick={() => saveMilestone.mutate({ id: m.id, achieved_on: todayISO() })}
+                    onClick={() => saveMilestone.mutate({ id: m.id, actual_date: todayISO() })}
                   >
                     Mark achieved &amp; claim reward
                   </Button>
