@@ -106,6 +106,7 @@ const MoneyBlueprint = lazy(() => import("@/pages/MoneyBlueprint"));
 
 const BeltProgress = lazy(() => import("@/pages/BeltProgress"));
 const RetirementDashboard = lazy(() => import("@/pages/RetirementDashboard"));
+const HealthDashboard = lazy(() => import("@/pages/health/HealthDashboard"));
 const ContentEditor = lazy(() => import("@/pages/admin/ContentEditor"));
 
 
@@ -266,6 +267,7 @@ const App = () => (
               <Route path="/legacy/wealth-os" element={<Suspense fallback={<PageLoader />}><WealthOS /></Suspense>} />
               <Route path="/kungfoo" element={<Suspense fallback={<PageLoader />}><KungFoo /></Suspense>} />
               <Route path="/retirement-optimizer" element={<Suspense fallback={<PageLoader />}><RetirementDashboard /></Suspense>} />
+              <Route path="/health" element={<Suspense fallback={<PageLoader />}><HealthDashboard /></Suspense>} />
               <Route path="/admin/content-editor" element={<Suspense fallback={<PageLoader />}><ContentEditor /></Suspense>} />
             </Route>
             <Route path="*" element={<NotFound />} />
