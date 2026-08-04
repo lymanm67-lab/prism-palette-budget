@@ -156,14 +156,15 @@ export default function RealEstateCommunityImpact() {
             { label: 'Current phase', value: mhProperties > 0 ? 'Property evaluation' : 'Market research' },
             { label: 'Target date', value: '2027' },
             { label: 'Estimated cost', value: mhTotalCost ? money(mhTotalCost) : 'Modeling in planner' },
-            { label: 'Amount funded', value: money(0) },
-            { label: 'Funding gap', value: mhTotalCost ? money(mhTotalCost) : 'To be determined' },
+            { label: 'Amount funded', value: money(mhFunded) },
+            { label: 'Funding gap', value: mhTotalCost ? money(mhGap) : 'To be determined' },
             { label: 'Next milestone', value: 'Score first candidate property' },
             { label: 'Responsible owner', value: 'Lyman Montgomery' },
             {
               label: 'Risk status',
-              value: mhMonthlyIncome > 0 ? 'Moderate' : 'Moderate — pre-acquisition',
+              value: mhAnnualProfit > 0 ? 'Moderate' : 'Moderate — pre-acquisition',
             },
+
           ]}
         />
 
