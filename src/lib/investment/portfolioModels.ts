@@ -119,16 +119,25 @@ export function estimateExpenseRatio(h: {
     VXUS: 0.0007, VTIAX: 0.0011, IEFA: 0.0007, VWO: 0.0008,
     BND: 0.0003, BNDX: 0.0007, VBTLX: 0.0005, FXNAX: 0.00025,
     VNQ: 0.0013, SCHH: 0.0007, QQQ: 0.002,
+    // Vanguard Target Retirement (Investor shares)
+    VFIFX: 0.0008, VFORX: 0.0008, VTHRX: 0.0008, VTTSX: 0.0008,
+    VFFVX: 0.0008, VTWNX: 0.0008, VTIVX: 0.0008,
+    // TIAA / CREF institutional-class variable accounts
+    QCBMIX: 0.0023, QCGLIX: 0.0027, QCILIX: 0.0022,
+    QCSCIX: 0.0026, QCEQIX: 0.0024, QREARX: 0.0079,
   };
   if (CHEAP[sym] !== undefined) return CHEAP[sym];
 
   const name = (h.name ?? '').toLowerCase();
-  if (isTargetDateFund(h)) return 0.005;
-  if (/index|idx/.test(name)) return 0.0015;
+  if (/tiaa traditional|guaranteed annuity/.test(name)) return 0;
+  if (/vanguard|vang/.test(name) && isTargetDateFund(h)) return 0.0008;
+  if (isTargetDateFund(h)) return 0.0012;
+  if (/index|idx/.test(name)) return 0.0008;
   if (/money market|stable value/.test(name)) return 0.002;
-  if (/annuity|variable/.test(name)) return 0.011;
-  if ((h.holding_type ?? '').toLowerCase() === 'mutual_fund') return 0.006;
+  if (/annuity|variable/.test(name)) return 0.008;
+  if ((h.holding_type ?? '').toLowerCase() === 'mutual_fund') return 0.004;
   return 0.0045; // conservative default for unclassified funds
+
 }
 
 // ---------------------------------------------------------------- risk profiler
