@@ -30,7 +30,32 @@ export function ScenarioSweepTable({ plan, horizonAge = 75, backupAge = 78, futu
     }));
   }, [plan, horizonAge, backupAge, futureDollars]);
 
+  // Longevity view: grow the age-85 balance forward to 95 and 100, with and
+  // without a 2.5% annual withdrawal starting the year after retirement.
+  const longevity = useMemo(() => {
+    if (!plan || !plan.current_age) return [];
+    const grow = (start: number, rate: number, years: number, withdraw: boolean) => {
+      let bal = start;
+      for (let i = 0; i < years; i++) {
+        bal *= 1 + rate / 100;
+        if (withdraw) bal -= bal * 0.025;
+      }
+      return bal;
+    };
+    return SCENARIOS.map((s) => {
+      const at85 = projectSnapshot(plan, s.rate, 85, futureDollars).projectedBalance;
+      return {
+        ...s,
+        a95: grow(at85, s.rate, 10, false),
+        a95w: grow(at85, s.rate, 10, true),
+        a100: grow(at85, s.rate, 15, false),
+        a100w: grow(at85, s.rate, 15, true),
+      };
+    });
+  }, [plan, futureDollars]);
+
   if (!plan || !plan.current_age) return null;
+
 
   return (
     <Card>
