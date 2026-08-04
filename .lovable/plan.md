@@ -1,47 +1,38 @@
-## Goal
+# Legacy Real Estate & Community Impact Goal
 
-Make the Investment Planning page read as one logical journey and behave like a live model, instead of a long stack of static report cards.
+A new module at `/legacy/real-estate` covering two long-term property ventures: **Medical Professional Housing** (furnished rentals for traveling nurses/residents) and the **Tiny Home Village** (affordable/community housing). Because the full spec is 12 tabs plus ~8 tables, it is built in three phases so each phase is usable on its own.
 
-## What's there now (verified)
+## Phase 1 — Foundation (build first)
 
-- `src/pages/InvestmentPlanning.tsx` — 4 visible tabs (Setup · Snapshot · Scenarios · Milestones) plus a "More tools" dropdown hiding 20 sub-tools grouped into 6 categories. Because 20 of 24 destinations are buried in a `Select`, most of the page is effectively invisible.
-- `src/components/investment/SnapshotDashboard.tsx` — inside Snapshot, sections currently run: KPI cards → Household roll-up → First Million → Age 75/78 scenario table → Million-Dollar Milestones → Contribution Timeline → Allocation Pie. Then the page appends Projection charts → Contribution sources → Today's vs future dollars → Allocation rules → Diagnostic. So charts appear *after* milestones, and allocation content shows up twice in different places.
-- Return rate, horizon age, and dollar mode are all edit-then-save fields in the wizard / DollarModeCard — there is no live control that re-runs the projection in place.
+1. **Overview dashboard** — vision statement, target launch window, combined capital needed vs. capital secured, progress ring, and an at-a-glance status for each of the two ventures.
+2. **Property pipeline** — add candidate properties (address, city, purchase price, rehab estimate, units, target rent, status: watching / offer / under contract / owned). Each row shows a quick yield estimate.
+3. **Funding tracker** — sources of capital (cash, HELOC, SBA, partner equity, grants, seller financing), amount targeted vs. committed, and gap to close.
+4. **Feasibility calculator** — per property: cash-in, monthly rent, expenses, vacancy, cap rate, cash-on-cash, DSCR, and break-even occupancy. Warns when DSCR is below 1.25.
 
-## New order (the narrative)
+## Phase 2 — Execution tools
 
-**1. Where you stand** → **2. What it grows to** → **3. What changes it** → **4. Milestones** → **5. Deep tools**
+5. **Partner & stakeholder tracker** — hospitals, nurse staffing agencies, city/zoning contacts, nonprofits, lenders; role, status, last contact, next step.
+6. **Milestone timeline** — phased roadmap (research → site control → financing → permits → build/rehab → lease-up), each with target date, owner, and completion.
+7. **Tiny Home Village planner** — lot count, cost per unit, infrastructure line items, zoning/permit checklist, phased build schedule.
+8. **Medical housing planner** — furnishing budget per unit, 13-week contract pricing model, occupancy assumptions, comparison against standard long-term rent.
 
-Tab bar becomes 5 primary tabs, no hidden dropdown as the main path:
+## Phase 3 — Impact, integration, and reporting
 
-| Tab | Contents |
-|---|---|
-| Setup | Wizard (unchanged) |
-| Snapshot | Live control bar · KPI cards (75/80/85) · Projection chart · Household roll-up · Contribution sources · Diagnostic |
-| Scenarios | Return sweep table · Mixed returns · Scenario comparison · Raises · Debt→Wealth |
-| Milestones | First Million · Million-Dollar Milestones · Wealth Milestones chart · Retirement Milestones · Contribution timeline |
-| Planning Tools | The 20 sub-tools shown as a **card grid** grouped by the existing 6 categories, instead of a dropdown |
-
-Inside Snapshot the section order changes so the chart sits immediately under the KPIs (see the numbers, then see the curve), the household roll-up follows, and allocation/dollar-mode/diagnostic move to the bottom as "adjustments" rather than headline content.
-
-## Interactivity added
-
-1. **Sticky control bar** at the top of Snapshot: expected-return slider (5–10%), horizon-age slider (65–90), and a Today's / Future dollars toggle. Every KPI, chart, roll-up and table below re-computes instantly from these local values — no save required. A "Save as plan defaults" button persists them to `investment_plans` when the user wants to keep them.
-2. **KPI cards become clickable** — clicking "Projected @ age 80" sets the horizon slider to 80 so the chart and roll-up follow.
-3. **Chart crosshair** — hovering the projection chart shows balance / age / contributions-to-date at that year.
-4. **Goal progress ring** replacing the flat progress bar, with the surplus/gap animating as sliders move.
-5. **Planning Tools grid** — each of the 20 tools becomes a card with its group label and a one-line description, so the depth of the page is discoverable.
-6. **Sections remember open/closed state** per user via localStorage, so the page doesn't reset every visit.
-
-## Not changing
-
-- All projection math (`src/lib/investment/projection.ts`, `deferredWithdrawal.ts`) stays as-is — this is presentation and ordering only.
-- No schema changes. The only write is the optional "Save as plan defaults" which updates existing `investment_plans` columns (`expected_return_pct`, `retirement_age`, `use_future_dollars`).
-- Each sub-tool component's internals stay untouched; only how they're reached changes.
+9. **Community impact scoreboard** — people housed, affordable units created, workforce housing nights supplied, local jobs, projected annual community value.
+10. **Legacy integration** — venture equity flows into Legacy Worth and the Wealth OS dashboard; ventures appear as a distinct asset class alongside the existing household roster.
+11. **AI venture coach** — reviews pipeline, funding gap, and feasibility numbers, then returns prioritized next actions and risk flags (educational only).
+12. **Printable binder** — one export covering vision, pipeline, feasibility, funding, milestones, and impact, in the same print style as the existing Executive Dashboard binder.
 
 ## Technical notes
 
-- New `src/components/investment/SnapshotControlBar.tsx` holds the slider state; `SnapshotDashboard` accepts optional `returnPct` / `horizonAge` / `futureDollars` overrides and falls back to plan values, so nothing breaks if the bar isn't rendered.
-- `projectAt()` in `SnapshotDashboard` is already parameterized by rate and age, so live recompute is a memo over the slider values rather than new math.
-- New `src/components/investment/PlanningToolsGrid.tsx` renders `TAB_GROUPS` (already defined in the page) as cards and calls the same `setActiveTab`.
-- Files touched: `InvestmentPlanning.tsx`, `SnapshotDashboard.tsx`, `HouseholdRollupLine.tsx` (accept horizon prop), `CollapsibleSection.tsx` (persist state), plus 3 new components. Styling uses existing semantic tokens — no new colors.
+- New tables (all household-scoped, RLS + GRANTs, soft-delete via `deleted_at`, `created_at`/`updated_at` with update trigger):
+  `legacy_re_ventures`, `legacy_re_properties`, `legacy_re_funding_sources`, `legacy_re_partners`, `legacy_re_milestones`, `legacy_re_unit_plans`, `legacy_re_impact_metrics`, `legacy_re_scenarios`.
+- Page: `src/pages/LegacyRealEstate.tsx`, lazy-routed at `/legacy/real-estate`; tab components under `src/components/legacy-real-estate/`.
+- Calculation engine: `src/lib/legacy/realEstateFeasibility.ts` (cap rate, cash-on-cash, DSCR, break-even occupancy, phased build cash flow) — pure functions, unit-testable.
+- Sidebar entry under **Legacy**; command palette entry; existing design tokens and glassmorphism, no hardcoded colors.
+- AI coach as a new edge function `legacy-re-coach` using the AI gateway, grounded strictly in the stored venture rows.
+- Legacy Worth integration reuses the existing manual-asset pattern so no double counting.
+
+## Suggested order
+
+Approve this and I will start with **Phase 1** (schema + overview, pipeline, funding, feasibility). Phases 2 and 3 follow as separate builds so credits stay predictable.
