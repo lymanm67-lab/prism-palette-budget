@@ -93,6 +93,7 @@ const LegacyMode = lazy(() => import("@/pages/LegacyMode"));
 const KungFoo = lazy(() => import("@/pages/KungFoo"));
 const FamilyLegacy = lazy(() => import("@/pages/FamilyLegacy"));
 const WealthOS = lazy(() => import("@/pages/WealthOS"));
+const MedicalHousingPlanner = lazy(() => import("@/pages/legacy/MedicalHousingPlanner"));
 const CompoundingCrossover = lazy(() => import("@/pages/CompoundingCrossover"));
 const RetirementPreservation = lazy(() => import("@/pages/RetirementPreservation"));
 const SequenceRisk = lazy(() => import("@/pages/SequenceRisk"));
@@ -257,6 +258,7 @@ const App = () => (
               <Route path="/legacy/sequence-risk" element={<Suspense fallback={<PageLoader />}><SequenceRisk /></Suspense>} />
               <Route path="/legacy/withdrawal-tax" element={<Suspense fallback={<PageLoader />}><WithdrawalSequencerPage /></Suspense>} />
               <Route path="/legacy/waterfall" element={<Suspense fallback={<PageLoader />}><ContributionWaterfall /></Suspense>} />
+              <Route path="/legacy/real-estate/medical-housing" element={<Suspense fallback={<PageLoader />}><MedicalHousingPlanner /></Suspense>} />
               <Route path="/legacy/wealth-os" element={<Suspense fallback={<PageLoader />}><WealthOS /></Suspense>} />
               <Route path="/kungfoo" element={<Suspense fallback={<PageLoader />}><KungFoo /></Suspense>} />
               <Route path="/retirement-optimizer" element={<Suspense fallback={<PageLoader />}><RetirementDashboard /></Suspense>} />

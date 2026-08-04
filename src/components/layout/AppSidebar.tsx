@@ -95,6 +95,7 @@ const NAV_SECTIONS: NavSection[] = [
       { to: '/legacy/wealth-os', icon: BookOpen, label: '7. Wealth OS Binder', color: 'text-prism-amber' },
       { to: '/legacy', icon: Sparkles, label: '8. Legacy Mode', color: 'text-prism-amber', essential: true },
       { to: '/legacy/belts', icon: Target, label: '9. Belt Progress', color: 'text-prism-lime' },
+      { to: '/legacy/real-estate/medical-housing', icon: Building2, label: '10. Medical Housing Planner', color: 'text-prism-teal' },
 
     ],
   },
