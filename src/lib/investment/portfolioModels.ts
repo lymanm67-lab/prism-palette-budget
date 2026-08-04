@@ -38,7 +38,7 @@ const RULES: { cls: AssetClass; re: RegExp }[] = [
   { cls: 'us_equity', re: /\b(s&p 500|total stock|large cap|mid cap|small cap|growth|value|equity index|russell|nasdaq|vti|voo|vtsax|fxaix|spy|qqq|iwm|vug|vtv)\b/i },
 ];
 
-const TARGET_DATE_RE = /(?:target[\s-]date|target[\s-]retirement|lifecycle|freedom|retirement[\s-]20\d\d|retirement[\s-]income|tr[\s-]?20\d\d|td[\s-]?20\d\d)/i;
+const TARGET_DATE_RE = /(?:target[\s-]date|target[\s-]ret(?:irement)?\b|lifecycle|freedom|retirement[\s-]20\d\d|retirement[\s-]income|tr[\s-]?20\d\d|td[\s-]?20\d\d)/i;
 const YEAR_RE = /(?:20\d{2})/;
 
 /** Best-effort asset-class classification from symbol, name, and holding_type. */
