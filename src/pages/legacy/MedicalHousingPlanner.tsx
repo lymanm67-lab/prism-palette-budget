@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Building2 } from 'lucide-react';
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PageOverview from '@/components/PageOverview';
 import { useMhSeed } from '@/hooks/use-medical-housing';
