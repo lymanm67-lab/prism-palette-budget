@@ -216,7 +216,21 @@ export function VirtualAdvisorPanel({ plan }: { plan?: any }) {
         : null,
       portfolio: {
         total_value: analysisResult.total,
-        weighted_expense_ratio_pct: analysisResult.currentEr * 100,
+        weighted_expense_ratio_pct:
+          plan?.expense_ratio_pct != null
+            ? Number(plan.expense_ratio_pct)
+            : analysisResult.currentEr * 100,
+        expense_ratio_source:
+          plan?.expense_ratio_pct != null
+            ? 'Actual reported fund expense ratio from plan statements'
+            : 'Estimated from holding symbols',
+        estimated_annual_fee_dollars: Math.round(
+          analysisResult.total *
+            ((plan?.expense_ratio_pct != null
+              ? Number(plan.expense_ratio_pct)
+              : analysisResult.currentEr * 100) /
+              100),
+        ),
         model_expense_ratio_pct: analysisResult.modelEr * 100,
         needs_rebalance: analysisResult.needsRebalance,
         model_used: model.name,
@@ -228,6 +242,7 @@ export function VirtualAdvisorPanel({ plan }: { plan?: any }) {
           status: r.status,
         })),
       },
+
       top_holdings: (holdings as any[]).slice(0, 20).map((h) => ({
         symbol: h.symbol ?? null,
         name: h.name ?? null,
