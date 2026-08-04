@@ -2598,6 +2598,502 @@ export type Database = {
           },
         ]
       }
+      health_achievements: {
+        Row: {
+          badge_key: string
+          created_at: string
+          deleted_at: string | null
+          earned_on: string
+          household_id: string
+          id: string
+          label: string
+          updated_at: string
+        }
+        Insert: {
+          badge_key: string
+          created_at?: string
+          deleted_at?: string | null
+          earned_on?: string
+          household_id: string
+          id?: string
+          label: string
+          updated_at?: string
+        }
+        Update: {
+          badge_key?: string
+          created_at?: string
+          deleted_at?: string | null
+          earned_on?: string
+          household_id?: string
+          id?: string
+          label?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "health_achievements_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      health_coach_reports: {
+        Row: {
+          content: string
+          created_at: string
+          deleted_at: string | null
+          household_id: string
+          id: string
+          metrics: Json | null
+          period_label: string | null
+          report_type: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          deleted_at?: string | null
+          household_id: string
+          id?: string
+          metrics?: Json | null
+          period_label?: string | null
+          report_type?: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          deleted_at?: string | null
+          household_id?: string
+          id?: string
+          metrics?: Json | null
+          period_label?: string | null
+          report_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "health_coach_reports_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      health_daily_logs: {
+        Row: {
+          active_minutes: number | null
+          avoided_processed_carbs: boolean
+          avoided_sugary_drinks: boolean
+          created_at: string
+          deleted_at: string | null
+          energy_rating: number | null
+          focus_rating: number | null
+          fruit_servings: number
+          household_id: string
+          id: string
+          log_date: string
+          miles: number
+          minutes_walked: number | null
+          mood_rating: number | null
+          notes: string | null
+          protein_g: number
+          revenue_amount: number | null
+          sleep_hours: number | null
+          steps: number | null
+          stress_rating: number | null
+          updated_at: string
+          veg_servings: number
+          water_oz: number
+          weight: number | null
+        }
+        Insert: {
+          active_minutes?: number | null
+          avoided_processed_carbs?: boolean
+          avoided_sugary_drinks?: boolean
+          created_at?: string
+          deleted_at?: string | null
+          energy_rating?: number | null
+          focus_rating?: number | null
+          fruit_servings?: number
+          household_id: string
+          id?: string
+          log_date?: string
+          miles?: number
+          minutes_walked?: number | null
+          mood_rating?: number | null
+          notes?: string | null
+          protein_g?: number
+          revenue_amount?: number | null
+          sleep_hours?: number | null
+          steps?: number | null
+          stress_rating?: number | null
+          updated_at?: string
+          veg_servings?: number
+          water_oz?: number
+          weight?: number | null
+        }
+        Update: {
+          active_minutes?: number | null
+          avoided_processed_carbs?: boolean
+          avoided_sugary_drinks?: boolean
+          created_at?: string
+          deleted_at?: string | null
+          energy_rating?: number | null
+          focus_rating?: number | null
+          fruit_servings?: number
+          household_id?: string
+          id?: string
+          log_date?: string
+          miles?: number
+          minutes_walked?: number | null
+          mood_rating?: number | null
+          notes?: string | null
+          protein_g?: number
+          revenue_amount?: number | null
+          sleep_hours?: number | null
+          steps?: number | null
+          stress_rating?: number | null
+          updated_at?: string
+          veg_servings?: number
+          water_oz?: number
+          weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "health_daily_logs_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      health_meal_prep: {
+        Row: {
+          checklist: Json
+          containers_packed: number
+          created_at: string
+          deleted_at: string | null
+          grocery_cost: number | null
+          household_id: string
+          id: string
+          meals_consumed: number
+          notes: string | null
+          prep_date: string
+          shopping_list: Json
+          updated_at: string
+        }
+        Insert: {
+          checklist?: Json
+          containers_packed?: number
+          created_at?: string
+          deleted_at?: string | null
+          grocery_cost?: number | null
+          household_id: string
+          id?: string
+          meals_consumed?: number
+          notes?: string | null
+          prep_date?: string
+          shopping_list?: Json
+          updated_at?: string
+        }
+        Update: {
+          checklist?: Json
+          containers_packed?: number
+          created_at?: string
+          deleted_at?: string | null
+          grocery_cost?: number | null
+          household_id?: string
+          id?: string
+          meals_consumed?: number
+          notes?: string | null
+          prep_date?: string
+          shopping_list?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "health_meal_prep_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      health_meals: {
+        Row: {
+          calories: number | null
+          carbs_g: number | null
+          components: Json
+          created_at: string
+          deleted_at: string | null
+          fat_g: number | null
+          fiber_g: number | null
+          household_id: string
+          id: string
+          is_template: boolean
+          meal_date: string
+          meal_type: string
+          name: string | null
+          protein_g: number | null
+          updated_at: string
+        }
+        Insert: {
+          calories?: number | null
+          carbs_g?: number | null
+          components?: Json
+          created_at?: string
+          deleted_at?: string | null
+          fat_g?: number | null
+          fiber_g?: number | null
+          household_id: string
+          id?: string
+          is_template?: boolean
+          meal_date?: string
+          meal_type?: string
+          name?: string | null
+          protein_g?: number | null
+          updated_at?: string
+        }
+        Update: {
+          calories?: number | null
+          carbs_g?: number | null
+          components?: Json
+          created_at?: string
+          deleted_at?: string | null
+          fat_g?: number | null
+          fiber_g?: number | null
+          household_id?: string
+          id?: string
+          is_template?: boolean
+          meal_date?: string
+          meal_type?: string
+          name?: string | null
+          protein_g?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "health_meals_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      health_milestones: {
+        Row: {
+          actual_date: string | null
+          created_at: string
+          deleted_at: string | null
+          estimated_date: string | null
+          household_id: string
+          id: string
+          reward: string | null
+          reward_claimed: boolean
+          sort_order: number
+          updated_at: string
+          weight_target: number
+        }
+        Insert: {
+          actual_date?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          estimated_date?: string | null
+          household_id: string
+          id?: string
+          reward?: string | null
+          reward_claimed?: boolean
+          sort_order?: number
+          updated_at?: string
+          weight_target: number
+        }
+        Update: {
+          actual_date?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          estimated_date?: string | null
+          household_id?: string
+          id?: string
+          reward?: string | null
+          reward_claimed?: boolean
+          sort_order?: number
+          updated_at?: string
+          weight_target?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "health_milestones_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      health_profile: {
+        Row: {
+          birth_date: string | null
+          body_fat_pct: number | null
+          created_at: string
+          current_weight: number
+          daily_miles_goal: number
+          deleted_at: string | null
+          fruit_goal_servings: number
+          goal_weight: number
+          height_inches: number | null
+          household_id: string
+          id: string
+          notes: string | null
+          person_name: string
+          protein_goal_g: number
+          sex: string | null
+          start_date: string
+          start_weight: number
+          target_date: string | null
+          updated_at: string
+          veg_goal_servings: number
+          waist_inches: number | null
+          walk_days_per_week: number
+          water_goal_oz: number
+        }
+        Insert: {
+          birth_date?: string | null
+          body_fat_pct?: number | null
+          created_at?: string
+          current_weight?: number
+          daily_miles_goal?: number
+          deleted_at?: string | null
+          fruit_goal_servings?: number
+          goal_weight?: number
+          height_inches?: number | null
+          household_id: string
+          id?: string
+          notes?: string | null
+          person_name?: string
+          protein_goal_g?: number
+          sex?: string | null
+          start_date?: string
+          start_weight?: number
+          target_date?: string | null
+          updated_at?: string
+          veg_goal_servings?: number
+          waist_inches?: number | null
+          walk_days_per_week?: number
+          water_goal_oz?: number
+        }
+        Update: {
+          birth_date?: string | null
+          body_fat_pct?: number | null
+          created_at?: string
+          current_weight?: number
+          daily_miles_goal?: number
+          deleted_at?: string | null
+          fruit_goal_servings?: number
+          goal_weight?: number
+          height_inches?: number | null
+          household_id?: string
+          id?: string
+          notes?: string | null
+          person_name?: string
+          protein_goal_g?: number
+          sex?: string | null
+          start_date?: string
+          start_weight?: number
+          target_date?: string | null
+          updated_at?: string
+          veg_goal_servings?: number
+          waist_inches?: number | null
+          walk_days_per_week?: number
+          water_goal_oz?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "health_profile_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      health_vitals: {
+        Row: {
+          a1c: number | null
+          body_fat_pct: number | null
+          created_at: string
+          deleted_at: string | null
+          diastolic: number | null
+          glucose: number | null
+          hdl: number | null
+          household_id: string
+          id: string
+          ldl: number | null
+          measured_on: string
+          notes: string | null
+          resting_heart_rate: number | null
+          systolic: number | null
+          total_cholesterol: number | null
+          triglycerides: number | null
+          updated_at: string
+          waist_inches: number | null
+        }
+        Insert: {
+          a1c?: number | null
+          body_fat_pct?: number | null
+          created_at?: string
+          deleted_at?: string | null
+          diastolic?: number | null
+          glucose?: number | null
+          hdl?: number | null
+          household_id: string
+          id?: string
+          ldl?: number | null
+          measured_on?: string
+          notes?: string | null
+          resting_heart_rate?: number | null
+          systolic?: number | null
+          total_cholesterol?: number | null
+          triglycerides?: number | null
+          updated_at?: string
+          waist_inches?: number | null
+        }
+        Update: {
+          a1c?: number | null
+          body_fat_pct?: number | null
+          created_at?: string
+          deleted_at?: string | null
+          diastolic?: number | null
+          glucose?: number | null
+          hdl?: number | null
+          household_id?: string
+          id?: string
+          ldl?: number | null
+          measured_on?: string
+          notes?: string | null
+          resting_heart_rate?: number | null
+          systolic?: number | null
+          total_cholesterol?: number | null
+          triglycerides?: number | null
+          updated_at?: string
+          waist_inches?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "health_vitals_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       home_buying_coach_sessions: {
         Row: {
           answers: Json
