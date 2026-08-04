@@ -3470,6 +3470,8 @@ export type Database = {
           price: number
           provider_holding_id: string | null
           quantity: number
+          return_1yr_pct: number | null
+          return_ytd_pct: number | null
           symbol: string | null
           updated_at: string
         }
@@ -3486,6 +3488,8 @@ export type Database = {
           price?: number
           provider_holding_id?: string | null
           quantity?: number
+          return_1yr_pct?: number | null
+          return_ytd_pct?: number | null
           symbol?: string | null
           updated_at?: string
         }
@@ -3502,6 +3506,8 @@ export type Database = {
           price?: number
           provider_holding_id?: string | null
           quantity?: number
+          return_1yr_pct?: number | null
+          return_ytd_pct?: number | null
           symbol?: string | null
           updated_at?: string
         }
