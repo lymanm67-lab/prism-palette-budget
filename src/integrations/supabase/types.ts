@@ -6736,6 +6736,765 @@ export type Database = {
           },
         ]
       }
+      thv_budgets: {
+        Row: {
+          contingency_pct: number
+          cost_per_home: number
+          created_at: string
+          deleted_at: string | null
+          funding_secured: number
+          homes_count: number
+          household_id: string
+          id: string
+          line_items: Json
+          name: string
+          notes: string | null
+          scenario: string
+          updated_at: string
+        }
+        Insert: {
+          contingency_pct?: number
+          cost_per_home?: number
+          created_at?: string
+          deleted_at?: string | null
+          funding_secured?: number
+          homes_count?: number
+          household_id: string
+          id?: string
+          line_items?: Json
+          name?: string
+          notes?: string | null
+          scenario?: string
+          updated_at?: string
+        }
+        Update: {
+          contingency_pct?: number
+          cost_per_home?: number
+          created_at?: string
+          deleted_at?: string | null
+          funding_secured?: number
+          homes_count?: number
+          household_id?: string
+          id?: string
+          line_items?: Json
+          name?: string
+          notes?: string | null
+          scenario?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      thv_documents: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          doc_type: string
+          external_url: string | null
+          household_id: string
+          id: string
+          notes: string | null
+          status: string
+          storage_path: string | null
+          tags: string[]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          doc_type?: string
+          external_url?: string | null
+          household_id: string
+          id?: string
+          notes?: string | null
+          status?: string
+          storage_path?: string | null
+          tags?: string[]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          doc_type?: string
+          external_url?: string | null
+          household_id?: string
+          id?: string
+          notes?: string | null
+          status?: string
+          storage_path?: string | null
+          tags?: string[]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      thv_funding: {
+        Row: {
+          application_date: string | null
+          application_deadline: string | null
+          category: string
+          committed_amount: number
+          contact_person: string | null
+          created_at: string
+          decision_date: string | null
+          deleted_at: string | null
+          follow_up_date: string | null
+          household_id: string
+          id: string
+          is_inkind: boolean
+          notes: string | null
+          received_amount: number
+          reporting_requirements: string | null
+          requested_amount: number
+          restrictions: string | null
+          source: string
+          status: string
+          target_amount: number
+          updated_at: string
+        }
+        Insert: {
+          application_date?: string | null
+          application_deadline?: string | null
+          category?: string
+          committed_amount?: number
+          contact_person?: string | null
+          created_at?: string
+          decision_date?: string | null
+          deleted_at?: string | null
+          follow_up_date?: string | null
+          household_id: string
+          id?: string
+          is_inkind?: boolean
+          notes?: string | null
+          received_amount?: number
+          reporting_requirements?: string | null
+          requested_amount?: number
+          restrictions?: string | null
+          source: string
+          status?: string
+          target_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          application_date?: string | null
+          application_deadline?: string | null
+          category?: string
+          committed_amount?: number
+          contact_person?: string | null
+          created_at?: string
+          decision_date?: string | null
+          deleted_at?: string | null
+          follow_up_date?: string | null
+          household_id?: string
+          id?: string
+          is_inkind?: boolean
+          notes?: string | null
+          received_amount?: number
+          reporting_requirements?: string | null
+          requested_amount?: number
+          restrictions?: string | null
+          source?: string
+          status?: string
+          target_amount?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      thv_impact: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          household_id: string
+          id: string
+          metrics: Json
+          notes: string | null
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          household_id: string
+          id?: string
+          metrics?: Json
+          notes?: string | null
+          updated_at?: string
+          year: number
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          household_id?: string
+          id?: string
+          metrics?: Json
+          notes?: string | null
+          updated_at?: string
+          year?: number
+        }
+        Relationships: []
+      }
+      thv_operating_budget: {
+        Row: {
+          created_at: string
+          expenses: Json
+          homes_count: number
+          household_id: string
+          id: string
+          income: Json
+          notes: string | null
+          reserve_months: number
+          residents_count: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          expenses?: Json
+          homes_count?: number
+          household_id: string
+          id?: string
+          income?: Json
+          notes?: string | null
+          reserve_months?: number
+          residents_count?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          expenses?: Json
+          homes_count?: number
+          household_id?: string
+          id?: string
+          income?: Json
+          notes?: string | null
+          reserve_months?: number
+          residents_count?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      thv_partners: {
+        Row: {
+          agreement_status: string | null
+          category: string
+          contact_person: string | null
+          created_at: string
+          date_contacted: string | null
+          deleted_at: string | null
+          email: string | null
+          financial_commitment: number | null
+          follow_up_date: string | null
+          household_id: string
+          id: string
+          inkind_commitment: string | null
+          notes: string | null
+          organization: string
+          phone: string | null
+          proposed_contribution: string | null
+          role: string | null
+          status: string
+          updated_at: string
+          volunteer_commitment: string | null
+        }
+        Insert: {
+          agreement_status?: string | null
+          category?: string
+          contact_person?: string | null
+          created_at?: string
+          date_contacted?: string | null
+          deleted_at?: string | null
+          email?: string | null
+          financial_commitment?: number | null
+          follow_up_date?: string | null
+          household_id: string
+          id?: string
+          inkind_commitment?: string | null
+          notes?: string | null
+          organization: string
+          phone?: string | null
+          proposed_contribution?: string | null
+          role?: string | null
+          status?: string
+          updated_at?: string
+          volunteer_commitment?: string | null
+        }
+        Update: {
+          agreement_status?: string | null
+          category?: string
+          contact_person?: string | null
+          created_at?: string
+          date_contacted?: string | null
+          deleted_at?: string | null
+          email?: string | null
+          financial_commitment?: number | null
+          follow_up_date?: string | null
+          household_id?: string
+          id?: string
+          inkind_commitment?: string | null
+          notes?: string | null
+          organization?: string
+          phone?: string | null
+          proposed_contribution?: string | null
+          role?: string | null
+          status?: string
+          updated_at?: string
+          volunteer_commitment?: string | null
+        }
+        Relationships: []
+      }
+      thv_programs: {
+        Row: {
+          capacity: number | null
+          completion_rate: number | null
+          created_at: string
+          deleted_at: string | null
+          description: string | null
+          est_cost: number | null
+          frequency: string | null
+          funding_source: string | null
+          household_id: string
+          id: string
+          name: string
+          notes: string | null
+          owner: string | null
+          participation_rate: number | null
+          partner: string | null
+          sort_order: number
+          status: string
+          success_measure: string | null
+          updated_at: string
+        }
+        Insert: {
+          capacity?: number | null
+          completion_rate?: number | null
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          est_cost?: number | null
+          frequency?: string | null
+          funding_source?: string | null
+          household_id: string
+          id?: string
+          name: string
+          notes?: string | null
+          owner?: string | null
+          participation_rate?: number | null
+          partner?: string | null
+          sort_order?: number
+          status?: string
+          success_measure?: string | null
+          updated_at?: string
+        }
+        Update: {
+          capacity?: number | null
+          completion_rate?: number | null
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          est_cost?: number | null
+          frequency?: string | null
+          funding_source?: string | null
+          household_id?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          owner?: string | null
+          participation_rate?: number | null
+          partner?: string | null
+          sort_order?: number
+          status?: string
+          success_measure?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      thv_residents: {
+        Row: {
+          created_at: string
+          credit_improved: boolean
+          deleted_at: string | null
+          emergency_savings: number
+          employed: boolean
+          enrolled_education: boolean
+          expected_exit_date: string | null
+          finished_financial_ed: boolean
+          has_bank_account: boolean
+          household_id: string
+          housing_model: string | null
+          id: string
+          mentor_assigned: boolean
+          move_in_date: string | null
+          notes: string | null
+          readiness_score: number
+          reliable_transportation: boolean
+          resident_code: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          credit_improved?: boolean
+          deleted_at?: string | null
+          emergency_savings?: number
+          employed?: boolean
+          enrolled_education?: boolean
+          expected_exit_date?: string | null
+          finished_financial_ed?: boolean
+          has_bank_account?: boolean
+          household_id: string
+          housing_model?: string | null
+          id?: string
+          mentor_assigned?: boolean
+          move_in_date?: string | null
+          notes?: string | null
+          readiness_score?: number
+          reliable_transportation?: boolean
+          resident_code: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          credit_improved?: boolean
+          deleted_at?: string | null
+          emergency_savings?: number
+          employed?: boolean
+          enrolled_education?: boolean
+          expected_exit_date?: string | null
+          finished_financial_ed?: boolean
+          has_bank_account?: boolean
+          household_id?: string
+          housing_model?: string | null
+          id?: string
+          mentor_assigned?: boolean
+          move_in_date?: string | null
+          notes?: string | null
+          readiness_score?: number
+          reliable_transportation?: boolean
+          resident_code?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      thv_risks: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          description: string | null
+          financial_impact: string
+          household_id: string
+          id: string
+          mitigation_plan: string | null
+          overall_rating: string
+          owner: string | null
+          probability: string
+          program_impact: string
+          review_date: string | null
+          risk: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          financial_impact?: string
+          household_id: string
+          id?: string
+          mitigation_plan?: string | null
+          overall_rating?: string
+          owner?: string | null
+          probability?: string
+          program_impact?: string
+          review_date?: string | null
+          risk: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          financial_impact?: string
+          household_id?: string
+          id?: string
+          mitigation_plan?: string | null
+          overall_rating?: string
+          owner?: string | null
+          probability?: string
+          program_impact?: string
+          review_date?: string | null
+          risk?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      thv_settings: {
+        Row: {
+          allocation_fixed_annual: number
+          allocation_mode: string
+          allocation_percent: number
+          allocation_refi_percent: number
+          allocation_sale_percent: number
+          approvals_completed: number
+          community_partners: number
+          created_at: string
+          current_phase: string
+          est_construction_cost: number
+          est_land_cost: number
+          est_total_cost: number
+          funding_pending: number
+          funding_secured: number
+          household_id: string
+          housing_models: Json
+          id: string
+          mh_annual_net_profit: number
+          mission: string
+          next_milestone: string
+          notes: string | null
+          planned_homes: number
+          progress: Json
+          residency_rules: Json
+          residents_served: number
+          responsible_owner: string
+          risk_rating: string
+          target_location: string
+          target_opening_date: string | null
+          updated_at: string
+          village_fund_balance: number
+        }
+        Insert: {
+          allocation_fixed_annual?: number
+          allocation_mode?: string
+          allocation_percent?: number
+          allocation_refi_percent?: number
+          allocation_sale_percent?: number
+          approvals_completed?: number
+          community_partners?: number
+          created_at?: string
+          current_phase?: string
+          est_construction_cost?: number
+          est_land_cost?: number
+          est_total_cost?: number
+          funding_pending?: number
+          funding_secured?: number
+          household_id: string
+          housing_models?: Json
+          id?: string
+          mh_annual_net_profit?: number
+          mission?: string
+          next_milestone?: string
+          notes?: string | null
+          planned_homes?: number
+          progress?: Json
+          residency_rules?: Json
+          residents_served?: number
+          responsible_owner?: string
+          risk_rating?: string
+          target_location?: string
+          target_opening_date?: string | null
+          updated_at?: string
+          village_fund_balance?: number
+        }
+        Update: {
+          allocation_fixed_annual?: number
+          allocation_mode?: string
+          allocation_percent?: number
+          allocation_refi_percent?: number
+          allocation_sale_percent?: number
+          approvals_completed?: number
+          community_partners?: number
+          created_at?: string
+          current_phase?: string
+          est_construction_cost?: number
+          est_land_cost?: number
+          est_total_cost?: number
+          funding_pending?: number
+          funding_secured?: number
+          household_id?: string
+          housing_models?: Json
+          id?: string
+          mh_annual_net_profit?: number
+          mission?: string
+          next_milestone?: string
+          notes?: string | null
+          planned_homes?: number
+          progress?: Json
+          residency_rules?: Json
+          residents_served?: number
+          responsible_owner?: string
+          risk_rating?: string
+          target_location?: string
+          target_opening_date?: string | null
+          updated_at?: string
+          village_fund_balance?: number
+        }
+        Relationships: []
+      }
+      thv_sites: {
+        Row: {
+          acreage: number | null
+          approval_status: string
+          asking_price: number | null
+          city: string | null
+          county: string | null
+          created_at: string
+          current_use: string | null
+          deleted_at: string | null
+          demolition_required: string | null
+          dist_education: number | null
+          dist_employers: number | null
+          dist_grocery: number | null
+          dist_healthcare: number | null
+          dist_social_services: number | null
+          electric_access: boolean
+          environmental_concerns: string | null
+          est_infrastructure_cost: number | null
+          gas_access: boolean
+          government_support: string | null
+          homes_allowed: number | null
+          household_id: string
+          id: string
+          internet_access: boolean
+          name: string
+          neighborhood_support: string | null
+          notes: string | null
+          parcel_number: string | null
+          road_access: string | null
+          scores: Json
+          sewer_access: boolean
+          site_prep_required: string | null
+          street_address: string | null
+          transit_access: string | null
+          updated_at: string
+          water_access: boolean
+          zoning_classification: string | null
+        }
+        Insert: {
+          acreage?: number | null
+          approval_status?: string
+          asking_price?: number | null
+          city?: string | null
+          county?: string | null
+          created_at?: string
+          current_use?: string | null
+          deleted_at?: string | null
+          demolition_required?: string | null
+          dist_education?: number | null
+          dist_employers?: number | null
+          dist_grocery?: number | null
+          dist_healthcare?: number | null
+          dist_social_services?: number | null
+          electric_access?: boolean
+          environmental_concerns?: string | null
+          est_infrastructure_cost?: number | null
+          gas_access?: boolean
+          government_support?: string | null
+          homes_allowed?: number | null
+          household_id: string
+          id?: string
+          internet_access?: boolean
+          name: string
+          neighborhood_support?: string | null
+          notes?: string | null
+          parcel_number?: string | null
+          road_access?: string | null
+          scores?: Json
+          sewer_access?: boolean
+          site_prep_required?: string | null
+          street_address?: string | null
+          transit_access?: string | null
+          updated_at?: string
+          water_access?: boolean
+          zoning_classification?: string | null
+        }
+        Update: {
+          acreage?: number | null
+          approval_status?: string
+          asking_price?: number | null
+          city?: string | null
+          county?: string | null
+          created_at?: string
+          current_use?: string | null
+          deleted_at?: string | null
+          demolition_required?: string | null
+          dist_education?: number | null
+          dist_employers?: number | null
+          dist_grocery?: number | null
+          dist_healthcare?: number | null
+          dist_social_services?: number | null
+          electric_access?: boolean
+          environmental_concerns?: string | null
+          est_infrastructure_cost?: number | null
+          gas_access?: boolean
+          government_support?: string | null
+          homes_allowed?: number | null
+          household_id?: string
+          id?: string
+          internet_access?: boolean
+          name?: string
+          neighborhood_support?: string | null
+          notes?: string | null
+          parcel_number?: string | null
+          road_access?: string | null
+          scores?: Json
+          sewer_access?: boolean
+          site_prep_required?: string | null
+          street_address?: string | null
+          transit_access?: string | null
+          updated_at?: string
+          water_access?: boolean
+          zoning_classification?: string | null
+        }
+        Relationships: []
+      }
+      thv_tasks: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          due_date: string | null
+          household_id: string
+          id: string
+          notes: string | null
+          owner: string | null
+          phase: number
+          sort_order: number
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          due_date?: string | null
+          household_id: string
+          id?: string
+          notes?: string | null
+          owner?: string | null
+          phase?: number
+          sort_order?: number
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          due_date?: string | null
+          household_id?: string
+          id?: string
+          notes?: string | null
+          owner?: string | null
+          phase?: number
+          sort_order?: number
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       transaction_splits: {
         Row: {
           amount: number
