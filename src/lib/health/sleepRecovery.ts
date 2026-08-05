@@ -136,6 +136,7 @@ export const CARE_TYPES = [
   { value: 'vaccination', label: 'Vaccination' },
   { value: 'lab', label: 'Lab work' },
   { value: 'specialist', label: 'Specialist' },
+  { value: 'chiropractor', label: 'Chiropractor' },
 ] as const;
 
 export const DOC_TYPES = [
