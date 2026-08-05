@@ -265,6 +265,7 @@ const App = () => (
               <Route path="/legacy/real-estate/medical-housing" element={<Suspense fallback={<PageLoader />}><MedicalHousingPlanner /></Suspense>} />
               <Route path="/legacy/real-estate" element={<Suspense fallback={<PageLoader />}><RealEstateCommunityImpact /></Suspense>} />
               <Route path="/legacy/real-estate/tiny-home-village" element={<Suspense fallback={<PageLoader />}><TinyHomeVillage /></Suspense>} />
+              <Route path="/legacy/foundation" element={<Suspense fallback={<PageLoader />}><FamilyFoundation /></Suspense>} />
               <Route path="/legacy/wealth-os" element={<Suspense fallback={<PageLoader />}><WealthOS /></Suspense>} />
               <Route path="/kungfoo" element={<Suspense fallback={<PageLoader />}><KungFoo /></Suspense>} />
               <Route path="/retirement-optimizer" element={<Suspense fallback={<PageLoader />}><RetirementDashboard /></Suspense>} />
