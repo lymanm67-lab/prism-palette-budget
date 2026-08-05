@@ -38,7 +38,9 @@ import {
   useTodayLog,
 } from '@/hooks/use-health';
 import MealScanner from '@/components/health/MealScanner';
+import ManualMealCard from '@/components/health/ManualMealCard';
 import SupplementsCard from '@/components/health/SupplementsCard';
+
 import { toast } from 'sonner';
 
 
@@ -123,6 +125,8 @@ export default function NutritionTab() {
   return (
     <div className="space-y-6">
       <MealScanner />
+      <ManualMealCard />
+
       <SupplementsCard />
 
       <Card>
