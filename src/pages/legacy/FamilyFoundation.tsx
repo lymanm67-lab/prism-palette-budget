@@ -39,6 +39,7 @@ import ReadinessIndexTab from '@/components/foundation/ReadinessIndexTab';
 import SustainabilityTab from '@/components/foundation/SustainabilityTab';
 import CharitableLegacyTab from '@/components/foundation/CharitableLegacyTab';
 import RetirementGivingTab from '@/components/foundation/RetirementGivingTab';
+import DocumentBuilderTab from '@/components/foundation/DocumentBuilderTab';
 
 const MODULES = [
   {
@@ -50,6 +51,7 @@ const MODULES = [
       { value: 'plan', label: 'Planning & Operating Flow' },
       { value: 'dashboard', label: 'Executive Dashboard' },
       { value: 'fundingstrategy', label: 'Charitable Legacy Funding Strategy' },
+      { value: 'docbuilder', label: 'Document Builder (Word / PDF)' },
     ],
   },
   {
@@ -152,6 +154,7 @@ export default function FamilyFoundation() {
     plan: <LaunchPlanTab onNavigate={goTo} />,
     dashboard: <FoundationDashboardTab />,
     fundingstrategy: <CharitableLegacyTab />,
+    docbuilder: <DocumentBuilderTab onNavigate={goTo} />,
     giving: <RetirementGivingTab />,
     readiness: <ReadinessIndexTab onNavigate={goTo} />,
     sustainability: <SustainabilityTab />,
