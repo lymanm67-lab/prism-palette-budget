@@ -33,7 +33,7 @@ export default function LongevityTab() {
           </div>
           <p className="mt-3 max-w-2xl text-sm text-prism-on-dark-muted">
             Blends progress toward your goal weight with your weekly habit score. Lifetime walking:{' '}
-            {totals.lifetime.toFixed(0)} miles.
+            {totals.lifetime.toFixed(0)} miles. Family-history target horizon: 100+ years.
           </p>
         </CardContent>
       </Card>
@@ -43,7 +43,7 @@ export default function LongevityTab() {
           [Clock, 'Healthy life expectancy', `${est.healthyLifeExpectancy.toFixed(1)} yrs`, 'Estimated healthy years'],
           [ShieldCheck, 'Independent living ahead', `${est.yearsIndependentLiving.toFixed(1)} yrs`, 'From today forward'],
           [PiggyBank, 'Annual medical savings', fmtMoney(est.annualMedicalSavings), 'Obesity-attributable spend avoided'],
-          [PiggyBank, 'Lifetime medical savings', fmtMoney(est.lifetimeMedicalSavings), 'Projected through age 90'],
+          [PiggyBank, 'Lifetime medical savings', fmtMoney(est.lifetimeMedicalSavings), 'Projected through age 100+'],
         ] as const).map(([Icon, label, value, caption]) => (
           <Card key={label}>
             <CardContent className="p-5">
