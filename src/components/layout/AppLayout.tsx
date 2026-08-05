@@ -105,6 +105,7 @@ const AppLayout = () => {
             <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-background focus:text-foreground">
               Skip to main content
             </a>
+            <div className="lg:hidden" style={{ height: 'env(safe-area-inset-top, 0px)' }} aria-hidden="true" />
             <OfflineBanner />
             <TrialCountdownBanner />
             <div id="main-content" className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
