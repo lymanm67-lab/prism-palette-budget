@@ -87,7 +87,7 @@ const MobileNav = () => {
               onClick={() => setMenuOpen(false)}
             />
             <motion.div
-              className="fixed top-14 bottom-16 left-0 right-0 z-[70] lg:hidden flex min-h-0 flex-col overflow-hidden bg-card border-b border-border shadow-xl safe-area-bottom"
+              className="fixed top-14 safe-area-top-offset bottom-16 left-0 right-0 z-[70] lg:hidden flex min-h-0 flex-col overflow-hidden bg-card border-b border-border shadow-xl safe-area-bottom"
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
