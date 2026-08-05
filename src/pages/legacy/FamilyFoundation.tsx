@@ -35,8 +35,37 @@ export default function FamilyFoundation() {
   const [params, setParams] = useSearchParams();
   useFdnSeed();
 
+  const settings = useFdnSettings();
+  const pillars = useFdnPillars();
+  const initiatives = useFdnInitiatives();
+  const roadmap = useFdnRoadmap();
+  const relationships = useFdnRelationships();
+  const legacyNodes = useFdnLegacyNodes();
+
+  const exporting =
+    settings.isLoading ||
+    pillars.isLoading ||
+    initiatives.isLoading ||
+    roadmap.isLoading ||
+    relationships.isLoading ||
+    legacyNodes.isLoading;
+
+  const handleExport = () => {
+    const ok = exportFoundationBinder({
+      settings: settings.data ?? null,
+      pillars: pillars.data ?? [],
+      initiatives: initiatives.data ?? [],
+      roadmap: roadmap.data ?? [],
+      relationships: relationships.data ?? [],
+      legacyNodes: legacyNodes.data ?? [],
+    });
+    if (!ok) toast.error('Allow pop-ups for this site to export the binder.');
+    else toast.success('Binder ready — choose "Save as PDF" in the print dialog.');
+  };
+
   const requested = params.get('tab') ?? 'dashboard';
   const tab = TABS.some((t) => t.value === requested) ? requested : 'dashboard';
+
 
   return (
     <div className="container mx-auto space-y-6 px-4 py-6">
