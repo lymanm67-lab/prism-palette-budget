@@ -33,7 +33,7 @@ export default function LongevityTab() {
           </div>
           <p className="mt-3 max-w-2xl text-sm text-prism-on-dark-muted">
             Blends progress toward your goal weight with your weekly habit score. Lifetime walking:{' '}
-            {totals.lifetime.toFixed(0)} miles.
+            {totals.lifetime.toFixed(0)} miles. Family-history target horizon: 100+ years.
           </p>
         </CardContent>
       </Card>
