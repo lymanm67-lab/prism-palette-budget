@@ -217,8 +217,7 @@ export function careCostSummary(items: PreventiveItem[], yearsToProject = 30): C
   // reactive care, compounded at 6% inside an HSA over the projection window.
   const avoided = 1400;
   const r = 0.06;
-  const lifetimeSavings =
-    r === 0 ? avoided * yearsToProject : avoided * ((Math.pow(1 + r, yearsToProject) - 1) / r);
+  const lifetimeSavings = avoided * ((Math.pow(1 + r, yearsToProject) - 1) / r);
 
   return {
     annualEstimate: Math.round(annualEstimate),
