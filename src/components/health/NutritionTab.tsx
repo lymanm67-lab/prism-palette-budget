@@ -58,6 +58,7 @@ export default function NutritionTab() {
   const [oil, setOil] = useState(true);
   const [seasoning, setSeasoning] = useState(SEASONINGS[0]);
   const [mealType, setMealType] = useState('lunch');
+  const [editing, setEditing] = useState<any | null>(null);
 
   const facts = useMemo(
     () => bowlNutrition({ proteinKey, vegKeys, carbKey, includeOil: oil, proteinServings: servings }),
