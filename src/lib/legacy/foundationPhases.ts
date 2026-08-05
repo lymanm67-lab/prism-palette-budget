@@ -161,8 +161,9 @@ export function buildFlow(ctx: FlowContext): FlowStep[] {
       title: 'Form the entity (articles, EIN, bylaws)',
       what: 'File the nonprofit corporation, obtain the EIN, and adopt bylaws at an organizing board meeting.',
       output: 'A legal entity and charter documents that the IRS exemption application depends on.',
-      tab: 'compliance',
-      tabLabel: 'Compliance',
+      tab: 'paperwork',
+      tabLabel: 'Formation & IRS Forms',
+
       progress:
         [compliant(ctx.compliance, 'articles'), compliant(ctx.compliance, 'ein'), compliant(ctx.compliance, 'bylaws')].filter(
           isDone,
