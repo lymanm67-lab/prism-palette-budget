@@ -452,9 +452,9 @@ export type BreakfastOption = {
 export const BREAKFAST_OPTIONS: BreakfastOption[] = [
   {
     key: 'eggs_sausage_fruit',
-    label: 'Four eggs, turkey sausage, fresh fruit',
-    items: ['4 whole eggs', '3 turkey sausage links', '1 cup mixed fruit'],
-    facts: { calories: 520, protein: 44, carbs: 20, fiber: 3, fat: 30 },
+    label: 'Two eggs, turkey sausage, fresh fruit with peanut butter',
+    items: ['2 whole eggs', '3 turkey sausage links', '1 cup fresh fruit (apple, orange, pineapple)', '1 tbsp peanut butter'],
+    facts: { calories: 495, protein: 35, carbs: 27, fiber: 4, fat: 30 },
   },
   {
     key: 'shake_eggs_fruit',
