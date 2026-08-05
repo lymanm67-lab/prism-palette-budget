@@ -125,6 +125,8 @@ export default function NutritionTab() {
   return (
     <div className="space-y-6">
       <MealScanner />
+      <ManualMealCard />
+
       <SupplementsCard />
 
       <Card>
