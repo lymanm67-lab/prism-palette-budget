@@ -542,6 +542,19 @@ export default function PreventiveCareTab() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  disabled={parseDoc.isPending}
+                  onClick={() => parseDoc.mutate(d.id)}
+                >
+                  {parseDoc.isPending && parseDoc.variables === d.id ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="mr-2 h-4 w-4" />
+                  )}
+                  {d.parsed_summary ? 'Re-parse' : 'Parse with AI'}
+                </Button>
                 <Button variant="outline" size="sm" onClick={() => openMedicalDocument(d.file_path)}>
                   View
                 </Button>
@@ -554,6 +567,7 @@ export default function PreventiveCareTab() {
                   <Trash2 className="h-4 w-4 text-destructive" />
                 </Button>
               </div>
+              <ParsedReportView doc={d} />
             </div>
           ))}
         </CardContent>
