@@ -166,26 +166,32 @@ const MobileNav = () => {
             </div>
 
             {/* Grid of items */}
-            <div className="grid grid-cols-3 gap-1 px-4 pb-6 max-h-[50vh] overflow-y-auto">
-              {MORE_ITEMS.map((item, i) => {
-                const isActive = location.pathname.startsWith(item.to);
-                return (
-                  <motion.button
-                    key={item.to}
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.03, duration: 0.2 }}
-                    onClick={() => handleMoreItemClick(item.to)}
-                    className={cn(
-                      'flex flex-col items-center gap-1.5 py-4 px-2 rounded-2xl transition-colors active:animate-haptic-press',
-                      isActive ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted'
-                    )}
-                  >
-                    <item.icon className="h-5 w-5" />
-                    <span className="text-[11px] font-medium">{item.label}</span>
-                  </motion.button>
-                );
-              })}
+            <div className="px-4 pb-6 max-h-[60vh] overflow-y-auto overscroll-contain">
+              {MENU_SECTIONS.map((section) => (
+                <div key={section.label} className="mb-4 last:mb-0">
+                  <p className="px-1 pb-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
+                    {section.label}
+                  </p>
+                  <div className="grid grid-cols-3 gap-1">
+                    {section.items.map((item) => {
+                      const isActive = location.pathname === item.to;
+                      return (
+                        <button
+                          key={section.label + item.to}
+                          onClick={() => handleMoreItemClick(item.to)}
+                          className={cn(
+                            'flex flex-col items-center gap-1.5 py-3 px-1.5 rounded-2xl transition-colors active:animate-haptic-press',
+                            isActive ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted'
+                          )}
+                        >
+                          <item.icon className="h-5 w-5 shrink-0" />
+                          <span className="text-[10px] font-medium leading-tight text-center line-clamp-2">{item.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
           </motion.div>
         )}
