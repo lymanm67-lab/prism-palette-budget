@@ -2194,6 +2194,340 @@ export type Database = {
           },
         ]
       }
+      fdn_initiatives: {
+        Row: {
+          actual_beneficiaries: number
+          budget: number
+          created_at: string
+          deleted_at: string | null
+          description: string | null
+          end_date: string | null
+          household_id: string
+          id: string
+          lead_name: string | null
+          pillar_id: string | null
+          spent: number
+          start_date: string | null
+          status: string
+          target_beneficiaries: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          actual_beneficiaries?: number
+          budget?: number
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          end_date?: string | null
+          household_id: string
+          id?: string
+          lead_name?: string | null
+          pillar_id?: string | null
+          spent?: number
+          start_date?: string | null
+          status?: string
+          target_beneficiaries?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          actual_beneficiaries?: number
+          budget?: number
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          end_date?: string | null
+          household_id?: string
+          id?: string
+          lead_name?: string | null
+          pillar_id?: string | null
+          spent?: number
+          start_date?: string | null
+          status?: string
+          target_beneficiaries?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fdn_initiatives_pillar_id_fkey"
+            columns: ["pillar_id"]
+            isOneToOne: false
+            referencedRelation: "fdn_pillars"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fdn_legacy_nodes: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          description: string | null
+          generation: string
+          household_id: string
+          id: string
+          linked_value: string | null
+          node_type: string
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          generation?: string
+          household_id: string
+          id?: string
+          linked_value?: string | null
+          node_type?: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          generation?: string
+          household_id?: string
+          id?: string
+          linked_value?: string | null
+          node_type?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      fdn_pillars: {
+        Row: {
+          actual_beneficiaries: number
+          annual_budget: number
+          color: string
+          created_at: string
+          deleted_at: string | null
+          description: string | null
+          focus_areas: Json
+          household_id: string
+          id: string
+          kpis: Json
+          name: string
+          slug: string
+          sort_order: number
+          status: string
+          target_beneficiaries: number
+          updated_at: string
+        }
+        Insert: {
+          actual_beneficiaries?: number
+          annual_budget?: number
+          color?: string
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          focus_areas?: Json
+          household_id: string
+          id?: string
+          kpis?: Json
+          name: string
+          slug: string
+          sort_order?: number
+          status?: string
+          target_beneficiaries?: number
+          updated_at?: string
+        }
+        Update: {
+          actual_beneficiaries?: number
+          annual_budget?: number
+          color?: string
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          focus_areas?: Json
+          household_id?: string
+          id?: string
+          kpis?: Json
+          name?: string
+          slug?: string
+          sort_order?: number
+          status?: string
+          target_beneficiaries?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      fdn_relationships: {
+        Row: {
+          category: string
+          created_at: string
+          deleted_at: string | null
+          email: string | null
+          household_id: string
+          id: string
+          influence: number
+          last_contact_at: string | null
+          name: string
+          next_touch_at: string | null
+          notes: string | null
+          organization: string | null
+          phone: string | null
+          role: string | null
+          strength: number
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          deleted_at?: string | null
+          email?: string | null
+          household_id: string
+          id?: string
+          influence?: number
+          last_contact_at?: string | null
+          name: string
+          next_touch_at?: string | null
+          notes?: string | null
+          organization?: string | null
+          phone?: string | null
+          role?: string | null
+          strength?: number
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          deleted_at?: string | null
+          email?: string | null
+          household_id?: string
+          id?: string
+          influence?: number
+          last_contact_at?: string | null
+          name?: string
+          next_touch_at?: string | null
+          notes?: string | null
+          organization?: string | null
+          phone?: string | null
+          role?: string | null
+          strength?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      fdn_roadmap: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          description: string | null
+          household_id: string
+          id: string
+          milestones: Json
+          phase_label: string | null
+          pillar_id: string | null
+          sort_order: number
+          status: string
+          target_amount: number
+          title: string
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          household_id: string
+          id?: string
+          milestones?: Json
+          phase_label?: string | null
+          pillar_id?: string | null
+          sort_order?: number
+          status?: string
+          target_amount?: number
+          title: string
+          updated_at?: string
+          year: number
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          household_id?: string
+          id?: string
+          milestones?: Json
+          phase_label?: string | null
+          pillar_id?: string | null
+          sort_order?: number
+          status?: string
+          target_amount?: number
+          title?: string
+          updated_at?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fdn_roadmap_pillar_id_fkey"
+            columns: ["pillar_id"]
+            isOneToOne: false
+            referencedRelation: "fdn_pillars"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fdn_settings: {
+        Row: {
+          annual_grant_budget: number
+          core_values: Json
+          created_at: string
+          deleted_at: string | null
+          endowment_current: number
+          endowment_target: number
+          foundation_name: string
+          founding_year: number
+          household_id: string
+          id: string
+          legacy_statement: string | null
+          mission: string | null
+          tagline: string | null
+          updated_at: string
+          vision: string | null
+        }
+        Insert: {
+          annual_grant_budget?: number
+          core_values?: Json
+          created_at?: string
+          deleted_at?: string | null
+          endowment_current?: number
+          endowment_target?: number
+          foundation_name?: string
+          founding_year?: number
+          household_id: string
+          id?: string
+          legacy_statement?: string | null
+          mission?: string | null
+          tagline?: string | null
+          updated_at?: string
+          vision?: string | null
+        }
+        Update: {
+          annual_grant_budget?: number
+          core_values?: Json
+          created_at?: string
+          deleted_at?: string | null
+          endowment_current?: number
+          endowment_target?: number
+          foundation_name?: string
+          founding_year?: number
+          household_id?: string
+          id?: string
+          legacy_statement?: string | null
+          mission?: string | null
+          tagline?: string | null
+          updated_at?: string
+          vision?: string | null
+        }
+        Relationships: []
+      }
       financial_goals: {
         Row: {
           color: string | null
