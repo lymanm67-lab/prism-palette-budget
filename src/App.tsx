@@ -95,6 +95,7 @@ const FamilyLegacy = lazy(() => import("@/pages/FamilyLegacy"));
 const WealthOS = lazy(() => import("@/pages/WealthOS"));
 const MedicalHousingPlanner = lazy(() => import("@/pages/legacy/MedicalHousingPlanner"));
 const TinyHomeVillage = lazy(() => import("@/pages/legacy/TinyHomeVillage"));
+const FamilyFoundation = lazy(() => import("@/pages/legacy/FamilyFoundation"));
 const RealEstateCommunityImpact = lazy(() => import("@/pages/legacy/RealEstateCommunityImpact"));
 const CompoundingCrossover = lazy(() => import("@/pages/CompoundingCrossover"));
 const RetirementPreservation = lazy(() => import("@/pages/RetirementPreservation"));
