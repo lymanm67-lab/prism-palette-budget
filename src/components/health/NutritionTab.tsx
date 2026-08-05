@@ -31,6 +31,9 @@ import {
   useSaveDailyLog,
   useTodayLog,
 } from '@/hooks/use-health';
+import MealScanner from '@/components/health/MealScanner';
+import SupplementsCard from '@/components/health/SupplementsCard';
+
 
 export default function NutritionTab() {
   const { data: profile } = useHealthProfile();
@@ -94,6 +97,9 @@ export default function NutritionTab() {
 
   return (
     <div className="space-y-6">
+      <MealScanner />
+      <SupplementsCard />
+
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
