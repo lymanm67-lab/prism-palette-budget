@@ -135,7 +135,11 @@ export default function FamilyFoundation() {
           ))}
         </TabsList>
 
+        <TabsContent value="plan">
+          <LaunchPlanTab onNavigate={(v) => setParams({ tab: v }, { replace: true })} />
+        </TabsContent>
         <TabsContent value="dashboard">
+
           <FoundationDashboardTab />
         </TabsContent>
         <TabsContent value="mission">
