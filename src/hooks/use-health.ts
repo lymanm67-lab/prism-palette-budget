@@ -245,15 +245,40 @@ export function useHealthSeed() {
 export type GroceryStats = {
   monthLabel: string;
   budget: number;
+  budgetSource: 'current' | 'carried' | 'none';
+  budgetMonthLabel: string | null;
+  categoryNames: string[];
   spent: number;
   remaining: number;
   trend: { month: string; spent: number }[];
+  recent: { id: string; date: string; merchant: string; amount: number }[];
 };
 
+const EMPTY_GROCERY = (now: Date): GroceryStats => ({
+  monthLabel: now.toLocaleDateString(undefined, { month: 'long', year: 'numeric' }),
+  budget: 0,
+  budgetSource: 'none',
+  budgetMonthLabel: null,
+  categoryNames: [],
+  spent: 0,
+  remaining: 0,
+  trend: [],
+  recent: [],
+});
+
+const monthLabelFromISO = (iso: string) =>
+  new Date(`${iso.slice(0, 7)}-01T00:00:00`).toLocaleDateString(undefined, {
+    month: 'long',
+    year: 'numeric',
+  });
+
 /**
- * Reads the household's grocery categories, their current-month budget and
- * actual spend from transactions. Transfers and soft-deleted rows excluded;
- * grocery reimbursements (positive amounts) are netted against the spend.
+ * Reads the household's grocery categories (and their subcategories), the
+ * current-month budget from the Budgets page, and actual spend from
+ * transactions. Transfers and soft-deleted rows excluded; grocery
+ * reimbursements (positive amounts) are netted against the spend. If no budget
+ * exists for the current month, the most recent prior month's budget carries
+ * forward.
  */
 export function useGroceryStats() {
   const { household } = useHousehold();
@@ -276,31 +301,35 @@ export function useGroceryStats() {
         .eq('household_id', hh)
         .or('name.ilike.%grocer%,name.ilike.%food%');
       const catIds = (cats ?? []).map((c: any) => c.id);
+      const categoryNames = (cats ?? []).map((c: any) => String(c.name));
 
-      if (catIds.length === 0) {
-        return {
-          monthLabel: now.toLocaleDateString(undefined, { month: 'long', year: 'numeric' }),
-          budget: 0,
-          spent: 0,
-          remaining: 0,
-          trend: [],
-        };
-      }
+      if (catIds.length === 0) return EMPTY_GROCERY(now);
 
-      const { data: budgets } = await sb
+      // Budget for this month, else carry forward the most recent prior month.
+      const { data: budgetRows } = await sb
         .from('budgets')
-        .select('planned_amount')
+        .select('planned_amount, month')
         .eq('household_id', hh)
-        .eq('month', monthStart)
-        .in('category_id', catIds);
-      const budget = (budgets ?? []).reduce(
-        (s: number, b: any) => s + (Number(b.planned_amount) || 0),
-        0,
-      );
+        .in('category_id', catIds)
+        .lte('month', monthStart)
+        .order('month', { ascending: false });
+
+      let budget = 0;
+      let budgetSource: GroceryStats['budgetSource'] = 'none';
+      let budgetMonthLabel: string | null = null;
+      const rows = budgetRows ?? [];
+      const useMonth = rows.length ? String(rows[0].month) : null;
+      if (useMonth) {
+        budget = rows
+          .filter((b: any) => String(b.month) === useMonth)
+          .reduce((s: number, b: any) => s + (Number(b.planned_amount) || 0), 0);
+        budgetSource = useMonth === monthStart ? 'current' : 'carried';
+        budgetMonthLabel = monthLabelFromISO(useMonth);
+      }
 
       const { data: txns } = await sb
         .from('transactions')
-        .select('amount, date')
+        .select('id, amount, date, merchant')
         .eq('household_id', hh)
         .in('category_id', catIds)
         .is('deleted_at', null)
@@ -320,15 +349,30 @@ export function useGroceryStats() {
         if (String(t.date) >= monthStart) spent += net;
       }
 
+      const recent = [...(txns ?? [])]
+        .sort((a: any, b: any) => (a.date < b.date ? 1 : -1))
+        .slice(0, 8)
+        .map((t: any) => ({
+          id: String(t.id),
+          date: String(t.date),
+          merchant: String(t.merchant ?? 'Grocery purchase'),
+          amount: -(Number(t.amount) || 0),
+        }));
+
       return {
         monthLabel: now.toLocaleDateString(undefined, { month: 'long', year: 'numeric' }),
         budget,
+        budgetSource,
+        budgetMonthLabel,
+        categoryNames,
         spent: Math.max(0, spent),
         remaining: budget - Math.max(0, spent),
         trend: [...byMonth.entries()]
           .sort((a, b) => (a[0] < b[0] ? -1 : 1))
           .map(([month, s]) => ({ month, spent: Math.max(0, s) })),
+        recent,
       };
     },
   });
 }
+
