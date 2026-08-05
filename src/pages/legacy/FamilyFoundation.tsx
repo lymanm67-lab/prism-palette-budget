@@ -139,12 +139,37 @@ export default function FamilyFoundation() {
         <TabsContent value="roadmap">
           <RoadmapTab />
         </TabsContent>
+        <TabsContent value="impact">
+          <ImpactTab />
+        </TabsContent>
+        <TabsContent value="funding">
+          <FundingTab />
+        </TabsContent>
+        <TabsContent value="investments">
+          <InvestmentsTab />
+        </TabsContent>
+        <TabsContent value="governance">
+          <GovernanceTab />
+        </TabsContent>
+        <TabsContent value="compliance">
+          <ComplianceTab />
+        </TabsContent>
+        <TabsContent value="succession">
+          <SuccessionTab />
+        </TabsContent>
         <TabsContent value="relationships">
           <RelationshipMapTab />
+        </TabsContent>
+        <TabsContent value="documents">
+          <DocumentVaultTab />
+        </TabsContent>
+        <TabsContent value="advisor">
+          <AiAdvisorTab />
         </TabsContent>
         <TabsContent value="legacy">
           <LegacyMapTab />
         </TabsContent>
+
       </Tabs>
     </div>
   );
