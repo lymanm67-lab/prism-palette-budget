@@ -12,7 +12,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Utensils, Plus, Trash2, Coffee } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Utensils, Plus, Trash2, Coffee, Pencil } from 'lucide-react';
 import {
   BOWL_CARBS,
   BOWL_PROTEINS,
