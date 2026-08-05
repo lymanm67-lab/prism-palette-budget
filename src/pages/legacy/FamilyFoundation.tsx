@@ -37,6 +37,8 @@ import LaunchPlanTab from '@/components/foundation/LaunchPlanTab';
 import FormationPaperworkTab from '@/components/foundation/FormationPaperworkTab';
 import ReadinessIndexTab from '@/components/foundation/ReadinessIndexTab';
 import SustainabilityTab from '@/components/foundation/SustainabilityTab';
+import CharitableLegacyTab from '@/components/foundation/CharitableLegacyTab';
+import RetirementGivingTab from '@/components/foundation/RetirementGivingTab';
 
 const MODULES = [
   {
@@ -47,6 +49,7 @@ const MODULES = [
     tabs: [
       { value: 'plan', label: 'Planning & Operating Flow' },
       { value: 'dashboard', label: 'Executive Dashboard' },
+      { value: 'fundingstrategy', label: 'Charitable Legacy Funding Strategy' },
     ],
   },
   {
@@ -94,6 +97,7 @@ const MODULES = [
     title: 'Legacy',
     blurb: 'Make it outlast you: successor trustees, the searchable record, and what passes to each generation.',
     tabs: [
+      { value: 'giving', label: 'Retirement & Estate Giving' },
       { value: 'succession', label: 'Succession' },
       { value: 'documents', label: 'Document Vault' },
       { value: 'legacy', label: 'Legacy Map' },
@@ -147,6 +151,8 @@ export default function FamilyFoundation() {
   const CONTENT: Record<string, JSX.Element> = {
     plan: <LaunchPlanTab onNavigate={goTo} />,
     dashboard: <FoundationDashboardTab />,
+    fundingstrategy: <CharitableLegacyTab />,
+    giving: <RetirementGivingTab />,
     readiness: <ReadinessIndexTab onNavigate={goTo} />,
     sustainability: <SustainabilityTab />,
     mission: <MissionValuesTab />,
