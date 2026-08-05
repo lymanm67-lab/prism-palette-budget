@@ -770,12 +770,11 @@ export function longevityEstimate(
   const lifetimeMedicalSavings = annualMedicalSavings * yearsAhead;
   const premiumSavings = 480 * (removed / totalToRemove);
 
-  // Base 78 years healthy life, extended by weight normalisation, habit score,
-  // and a family-history longevity target (default 100+).
+  // Family-history horizon is the floor (default 100+), extended further by
+  // weight normalisation and weekly habit consistency.
   const weightFactor = removed / totalToRemove; // 0 -> 1
   const habitFactor = score.total / 100;
-  const familyHistoryBonus = Math.max(0, targetAge - 90);
-  const healthyLifeExpectancy = 78 + weightFactor * 6 + habitFactor * 6 + familyHistoryBonus;
+  const healthyLifeExpectancy = targetAge + weightFactor * 4 + habitFactor * 4;
   const yearsIndependentLiving = Math.max(0, healthyLifeExpectancy - age);
   const healthyAgingScore = Math.round(
     Math.min(100, 40 + weightFactor * 35 + habitFactor * 25),
