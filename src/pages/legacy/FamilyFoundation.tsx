@@ -35,6 +35,8 @@ import GrantsTab from '@/components/foundation/GrantsTab';
 import RiskBenchmarksTab from '@/components/foundation/RiskBenchmarksTab';
 import LaunchPlanTab from '@/components/foundation/LaunchPlanTab';
 import FormationPaperworkTab from '@/components/foundation/FormationPaperworkTab';
+import ReadinessIndexTab from '@/components/foundation/ReadinessIndexTab';
+import SustainabilityTab from '@/components/foundation/SustainabilityTab';
 
 const MODULES = [
   {
