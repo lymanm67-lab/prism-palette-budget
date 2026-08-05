@@ -12,7 +12,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Utensils, Plus, Trash2, Coffee } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Utensils, Plus, Trash2, Coffee, Pencil } from 'lucide-react';
 import {
   BOWL_CARBS,
   BOWL_PROTEINS,
@@ -52,6 +58,7 @@ export default function NutritionTab() {
   const [oil, setOil] = useState(true);
   const [seasoning, setSeasoning] = useState(SEASONINGS[0]);
   const [mealType, setMealType] = useState('lunch');
+  const [editing, setEditing] = useState<any | null>(null);
 
   const facts = useMemo(
     () => bowlNutrition({ proteinKey, vegKeys, carbKey, includeOil: oil, proteinServings: servings }),
@@ -322,20 +329,128 @@ export default function NutritionTab() {
                         {m.meal_type} · {m.calories} kcal · {m.protein_g}g protein
                       </p>
                     </div>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => delMeal.mutate(m.id)}
-                      aria-label={`Remove ${m.name}`}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => setEditing({ ...m })}
+                        aria-label={`Edit ${m.name}`}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => delMeal.mutate(m.id)}
+                        aria-label={`Remove ${m.name}`}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 ))}
             </div>
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit meal</DialogTitle>
+          </DialogHeader>
+          {editing && (
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Food / meal name</Label>
+                <Input
+                  value={editing.name ?? ''}
+                  onChange={(e) => setEditing({ ...editing, name: e.target.value })}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Date</Label>
+                  <Input
+                    type="date"
+                    value={editing.meal_date ?? ''}
+                    onChange={(e) => setEditing({ ...editing, meal_date: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Meal</Label>
+                  <Select
+                    value={editing.meal_type ?? 'lunch'}
+                    onValueChange={(v) => setEditing({ ...editing, meal_type: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {['breakfast', 'lunch', 'dinner', 'snack'].map((t) => (
+                        <SelectItem key={t} value={t} className="capitalize">
+                          {t}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {([
+                  ['calories', 'Calories'],
+                  ['protein_g', 'Protein (g)'],
+                  ['carbs_g', 'Carbs (g)'],
+                  ['fiber_g', 'Fiber (g)'],
+                  ['fat_g', 'Fat (g)'],
+                ] as const).map(([field, label]) => (
+                  <div key={field} className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">{label}</Label>
+                    <Input
+                      type="number"
+                      value={editing[field] ?? 0}
+                      onChange={(e) =>
+                        setEditing({ ...editing, [field]: Number(e.target.value) || 0 })
+                      }
+                    />
+                  </div>
+                ))}
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button variant="outline" size="sm" onClick={() => setEditing(null)}>
+                  Cancel
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() =>
+                    saveMeal.mutate(
+                      {
+                        id: editing.id,
+                        name: editing.name,
+                        meal_date: editing.meal_date,
+                        meal_type: editing.meal_type,
+                        calories: Math.round(Number(editing.calories) || 0),
+                        protein_g: Math.round(Number(editing.protein_g) || 0),
+                        carbs_g: Math.round(Number(editing.carbs_g) || 0),
+                        fiber_g: Number(editing.fiber_g) || 0,
+                        fat_g: Math.round(Number(editing.fat_g) || 0),
+                      },
+                      {
+                        onSuccess: () => {
+                          toast.success('Meal updated');
+                          setEditing(null);
+                        },
+                      },
+                    )
+                  }
+                >
+                  Save changes
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

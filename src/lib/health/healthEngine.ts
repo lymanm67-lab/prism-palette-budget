@@ -462,6 +462,16 @@ export const BREAKFAST_OPTIONS: BreakfastOption[] = [
     items: ['1 scoop protein shake', '2 boiled eggs', '1 cup mixed fruit'],
     facts: { calories: 420, protein: 42, carbs: 26, fiber: 3, fat: 15 },
   },
+  {
+    key: 'omelette_toast',
+    label: 'Onion & pepper omelette with wheat toast',
+    items: [
+      '2 whole eggs (onion + bell pepper omelette)',
+      '2 slices 45-calorie wheat toast',
+      'Sautéed onions and peppers',
+    ],
+    facts: { calories: 320, protein: 20, carbs: 24, fiber: 6, fat: 16 },
+  },
 ];
 
 // ----------------------------------------------------------- meal prep planner
