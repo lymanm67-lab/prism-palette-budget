@@ -189,11 +189,15 @@ export default function DocumentBuilderTab({ onNavigate }: { onNavigate?: (tab: 
               <div>
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">Core values</p>
                 <div className="mt-1 flex flex-wrap gap-1.5">
-                  {(data.settings?.core_values ?? []).map((v: string) => (
-                    <Badge key={v} variant="secondary">
-                      {v}
-                    </Badge>
-                  ))}
+                  {(data.settings?.core_values ?? []).map((v: any, idx: number) => {
+                    const label = typeof v === 'string' ? v : (v?.title ?? v?.name ?? JSON.stringify(v));
+                    const detail = typeof v === 'string' ? null : v?.description ?? null;
+                    return (
+                      <Badge key={`${label}-${idx}`} variant="secondary" title={detail ?? undefined}>
+                        {label}
+                      </Badge>
+                    );
+                  })}
                   {(data.settings?.core_values ?? []).length === 0 && <span className="text-muted-foreground">None entered.</span>}
                 </div>
               </div>
