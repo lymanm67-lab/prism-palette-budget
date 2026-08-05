@@ -402,7 +402,9 @@ export const BOWL_CARBS: FoodOption[] = [
   { key: 'rice', label: 'Half cup rice', serving: '1/2 cup cooked', facts: { calories: 105, protein: 2, carbs: 22, fiber: 0.5, fat: 0 } },
   { key: 'half_half', label: 'Half rice / half cauliflower rice', serving: '1/2 + 1/2 cup', facts: { calories: 65, protein: 2, carbs: 13, fiber: 1.5, fat: 0 } },
   { key: 'cauli', label: 'Cauliflower rice only', serving: '1 cup', facts: { calories: 25, protein: 2, carbs: 5, fiber: 2, fat: 0 } },
+  { key: 'cajun_rice', label: 'Cajun rice (peppers, onions, Cajun spice)', serving: '1/2 cup cooked', facts: { calories: 130, protein: 3, carbs: 25, fiber: 1.5, fat: 2 } },
 ];
+
 
 export const SEASONINGS = ['Cajun', 'Garlic Herb', 'Lemon Pepper', 'Southwest', 'Mediterranean', 'Light Teriyaki'];
 
