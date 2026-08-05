@@ -70,6 +70,13 @@ export default function HealthDashboard() {
         <TabsContent value="grocery" className="mt-6">
           <GroceryTab />
         </TabsContent>
+        <TabsContent value="sleep" className="mt-6">
+          <SleepRecoveryTab />
+        </TabsContent>
+        <TabsContent value="preventive" className="mt-6">
+          <PreventiveCareTab />
+        </TabsContent>
+
         <TabsContent value="milestones" className="mt-6">
           <MilestonesTab />
         </TabsContent>
