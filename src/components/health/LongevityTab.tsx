@@ -40,7 +40,14 @@ export default function LongevityTab() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {([
-          [Clock, 'Healthy life expectancy', `${est.healthyLifeExpectancy.toFixed(1)} yrs`, 'Estimated healthy years'],
+          [
+            Clock,
+            'Healthy life expectancy',
+            est.healthyLifeExpectancy <= 100.05
+              ? '100+ yrs'
+              : `${est.healthyLifeExpectancy.toFixed(1)} yrs`,
+            'Estimated healthy years',
+          ],
           [ShieldCheck, 'Independent living ahead', `${est.yearsIndependentLiving.toFixed(1)} yrs`, 'From today forward'],
           [PiggyBank, 'Annual medical savings', fmtMoney(est.annualMedicalSavings), 'Obesity-attributable spend avoided'],
           [PiggyBank, 'Lifetime medical savings', fmtMoney(est.lifetimeMedicalSavings), 'Projected through age 100+'],
