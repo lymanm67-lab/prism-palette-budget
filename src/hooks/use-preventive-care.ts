@@ -8,7 +8,33 @@ import type { PreventiveItem } from '@/lib/health/sleepRecovery';
 const sb = supabase as any;
 const BUCKET = 'medical-documents';
 
+export type ParsedResult = {
+  name: string;
+  value: string;
+  unit?: string | null;
+  reference_range?: string | null;
+  flag?: 'normal' | 'low' | 'high' | 'abnormal' | 'unknown';
+};
+
+export type ParsedReport = {
+  report_type?: string;
+  report_date?: string | null;
+  provider?: string | null;
+  patient?: string | null;
+  results?: ParsedResult[];
+  diagnoses?: string[];
+  medications?: string[];
+  vitals?: { name: string; value: string }[];
+  key_findings?: string[];
+  follow_ups?: string[];
+  summary?: string;
+  confidence?: 'high' | 'medium' | 'low';
+};
+
 export type MedicalDocument = {
+  parse_status?: string | null;
+  parsed_at?: string | null;
+  parsed_summary?: ParsedReport | null;
   id: string;
   title: string;
   doc_type: string;
@@ -200,4 +226,25 @@ export async function openMedicalDocument(path: string) {
     return;
   }
   window.open(data.signedUrl, '_blank', 'noopener,noreferrer');
+}
+
+/** Runs AI extraction on an uploaded medical/lab report. */
+export function useParseMedicalDocument() {
+  const { household } = useHousehold();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (documentId: string) => {
+      const { data, error } = await supabase.functions.invoke('parse-medical-report', {
+        body: { documentId },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      return (data as any)?.parsed as ParsedReport;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['health_medical_documents', household?.id] });
+      toast.success('Report parsed');
+    },
+    onError: (e: any) => toast.error(e.message ?? 'Could not parse the report'),
+  });
 }
