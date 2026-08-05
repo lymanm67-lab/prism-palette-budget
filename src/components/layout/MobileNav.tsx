@@ -87,13 +87,13 @@ const MobileNav = () => {
               onClick={() => setMenuOpen(false)}
             />
             <motion.div
-              className="fixed top-14 left-0 right-0 z-[70] lg:hidden bg-card border-b border-border shadow-xl"
+              className="fixed top-14 bottom-16 left-0 right-0 z-[70] lg:hidden flex min-h-0 flex-col overflow-hidden bg-card border-b border-border shadow-xl safe-area-bottom"
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.2 }}
             >
-              <div className="px-4 py-4 max-h-[75vh] overflow-y-auto overscroll-contain">
+              <div className="min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain px-4 py-4 [-webkit-overflow-scrolling:touch]">
                 {MENU_SECTIONS.map((section) => (
                   <div key={section.label} className="mb-4 last:mb-0">
                     <p className="px-1 pb-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
@@ -143,7 +143,7 @@ const MobileNav = () => {
       <AnimatePresence>
         {sheetOpen && (
           <motion.div
-            className="fixed bottom-0 left-0 right-0 z-[70] lg:hidden bg-card rounded-t-3xl shadow-2xl border-t border-border safe-area-bottom"
+            className="fixed bottom-0 left-0 right-0 z-[70] lg:hidden flex max-h-[calc(100dvh-3.5rem)] min-h-0 flex-col overflow-hidden bg-card rounded-t-3xl shadow-2xl border-t border-border safe-area-bottom"
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
@@ -166,7 +166,7 @@ const MobileNav = () => {
             </div>
 
             {/* Grid of items */}
-            <div className="px-4 pb-6 max-h-[60vh] overflow-y-auto overscroll-contain">
+            <div className="min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain px-4 pb-6 [-webkit-overflow-scrolling:touch]">
               {MENU_SECTIONS.map((section) => (
                 <div key={section.label} className="mb-4 last:mb-0">
                   <p className="px-1 pb-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
