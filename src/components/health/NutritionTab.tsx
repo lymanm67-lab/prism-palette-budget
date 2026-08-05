@@ -38,7 +38,9 @@ import {
   useTodayLog,
 } from '@/hooks/use-health';
 import MealScanner from '@/components/health/MealScanner';
+import ManualMealCard from '@/components/health/ManualMealCard';
 import SupplementsCard from '@/components/health/SupplementsCard';
+
 import { toast } from 'sonner';
 
 
