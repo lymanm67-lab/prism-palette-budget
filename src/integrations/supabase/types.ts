@@ -2194,6 +2194,351 @@ export type Database = {
           },
         ]
       }
+      fdn_compliance: {
+        Row: {
+          authority: string | null
+          category: string
+          completed_at: string | null
+          created_at: string
+          deleted_at: string | null
+          due_date: string | null
+          frequency: string
+          household_id: string
+          id: string
+          item: string
+          notes: string | null
+          owner: string | null
+          reference_url: string | null
+          sort_order: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          authority?: string | null
+          category?: string
+          completed_at?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          due_date?: string | null
+          frequency?: string
+          household_id: string
+          id?: string
+          item: string
+          notes?: string | null
+          owner?: string | null
+          reference_url?: string | null
+          sort_order?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          authority?: string | null
+          category?: string
+          completed_at?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          due_date?: string | null
+          frequency?: string
+          household_id?: string
+          id?: string
+          item?: string
+          notes?: string | null
+          owner?: string | null
+          reference_url?: string | null
+          sort_order?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fdn_compliance_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fdn_documents: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          doc_category: string
+          expires_at: string | null
+          file_name: string | null
+          file_path: string | null
+          household_id: string
+          id: string
+          mime_type: string | null
+          notes: string | null
+          size_bytes: number | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          doc_category?: string
+          expires_at?: string | null
+          file_name?: string | null
+          file_path?: string | null
+          household_id: string
+          id?: string
+          mime_type?: string | null
+          notes?: string | null
+          size_bytes?: number | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          doc_category?: string
+          expires_at?: string | null
+          file_name?: string | null
+          file_path?: string | null
+          household_id?: string
+          id?: string
+          mime_type?: string | null
+          notes?: string | null
+          size_bytes?: number | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fdn_documents_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fdn_gifts: {
+        Row: {
+          acknowledged_at: string | null
+          amount: number
+          created_at: string
+          deleted_at: string | null
+          donor_name: string
+          donor_type: string
+          gift_date: string
+          gift_type: string
+          household_id: string
+          id: string
+          is_restricted: boolean
+          notes: string | null
+          pillar_id: string | null
+          pledge_balance: number
+          pledge_total: number
+          receipt_sent: boolean
+          restriction_note: string | null
+          updated_at: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          amount?: number
+          created_at?: string
+          deleted_at?: string | null
+          donor_name: string
+          donor_type?: string
+          gift_date?: string
+          gift_type?: string
+          household_id: string
+          id?: string
+          is_restricted?: boolean
+          notes?: string | null
+          pillar_id?: string | null
+          pledge_balance?: number
+          pledge_total?: number
+          receipt_sent?: boolean
+          restriction_note?: string | null
+          updated_at?: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          amount?: number
+          created_at?: string
+          deleted_at?: string | null
+          donor_name?: string
+          donor_type?: string
+          gift_date?: string
+          gift_type?: string
+          household_id?: string
+          id?: string
+          is_restricted?: boolean
+          notes?: string | null
+          pillar_id?: string | null
+          pledge_balance?: number
+          pledge_total?: number
+          receipt_sent?: boolean
+          restriction_note?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fdn_gifts_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fdn_gifts_pillar_id_fkey"
+            columns: ["pillar_id"]
+            isOneToOne: false
+            referencedRelation: "fdn_pillars"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fdn_governance: {
+        Row: {
+          attendees: string | null
+          committee: string | null
+          conflict_disclosed: boolean
+          created_at: string
+          decisions: string | null
+          deleted_at: string | null
+          email: string | null
+          household_id: string
+          id: string
+          is_independent: boolean
+          meeting_date: string | null
+          name: string
+          notes: string | null
+          phone: string | null
+          record_type: string
+          role: string | null
+          sort_order: number
+          status: string
+          term_end: string | null
+          term_start: string | null
+          updated_at: string
+        }
+        Insert: {
+          attendees?: string | null
+          committee?: string | null
+          conflict_disclosed?: boolean
+          created_at?: string
+          decisions?: string | null
+          deleted_at?: string | null
+          email?: string | null
+          household_id: string
+          id?: string
+          is_independent?: boolean
+          meeting_date?: string | null
+          name: string
+          notes?: string | null
+          phone?: string | null
+          record_type?: string
+          role?: string | null
+          sort_order?: number
+          status?: string
+          term_end?: string | null
+          term_start?: string | null
+          updated_at?: string
+        }
+        Update: {
+          attendees?: string | null
+          committee?: string | null
+          conflict_disclosed?: boolean
+          created_at?: string
+          decisions?: string | null
+          deleted_at?: string | null
+          email?: string | null
+          household_id?: string
+          id?: string
+          is_independent?: boolean
+          meeting_date?: string | null
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          record_type?: string
+          role?: string | null
+          sort_order?: number
+          status?: string
+          term_end?: string | null
+          term_start?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fdn_governance_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fdn_impact_metrics: {
+        Row: {
+          actual: number
+          baseline: number
+          created_at: string
+          deleted_at: string | null
+          household_id: string
+          id: string
+          metric_name: string
+          notes: string | null
+          period: string
+          pillar_id: string | null
+          sort_order: number
+          target: number
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          actual?: number
+          baseline?: number
+          created_at?: string
+          deleted_at?: string | null
+          household_id: string
+          id?: string
+          metric_name: string
+          notes?: string | null
+          period?: string
+          pillar_id?: string | null
+          sort_order?: number
+          target?: number
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          actual?: number
+          baseline?: number
+          created_at?: string
+          deleted_at?: string | null
+          household_id?: string
+          id?: string
+          metric_name?: string
+          notes?: string | null
+          period?: string
+          pillar_id?: string | null
+          sort_order?: number
+          target?: number
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fdn_impact_metrics_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fdn_impact_metrics_pillar_id_fkey"
+            columns: ["pillar_id"]
+            isOneToOne: false
+            referencedRelation: "fdn_pillars"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fdn_initiatives: {
         Row: {
           actual_beneficiaries: number
@@ -2255,6 +2600,62 @@ export type Database = {
             columns: ["pillar_id"]
             isOneToOne: false
             referencedRelation: "fdn_pillars"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fdn_investments: {
+        Row: {
+          asset_class: string
+          cost_basis: number
+          created_at: string
+          custodian: string | null
+          deleted_at: string | null
+          household_id: string
+          id: string
+          income_yield: number
+          market_value: number
+          name: string
+          notes: string | null
+          target_allocation_pct: number
+          updated_at: string
+        }
+        Insert: {
+          asset_class?: string
+          cost_basis?: number
+          created_at?: string
+          custodian?: string | null
+          deleted_at?: string | null
+          household_id: string
+          id?: string
+          income_yield?: number
+          market_value?: number
+          name: string
+          notes?: string | null
+          target_allocation_pct?: number
+          updated_at?: string
+        }
+        Update: {
+          asset_class?: string
+          cost_basis?: number
+          created_at?: string
+          custodian?: string | null
+          deleted_at?: string | null
+          household_id?: string
+          id?: string
+          income_yield?: number
+          market_value?: number
+          name?: string
+          notes?: string | null
+          target_allocation_pct?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fdn_investments_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
             referencedColumns: ["id"]
           },
         ]
@@ -2527,6 +2928,68 @@ export type Database = {
           vision?: string | null
         }
         Relationships: []
+      }
+      fdn_succession: {
+        Row: {
+          created_at: string
+          current_holder: string | null
+          deleted_at: string | null
+          generation: string
+          household_id: string
+          id: string
+          notes: string | null
+          readiness: number
+          role_title: string
+          sort_order: number
+          status: string
+          successor_name: string | null
+          target_transition_date: string | null
+          training_plan: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_holder?: string | null
+          deleted_at?: string | null
+          generation?: string
+          household_id: string
+          id?: string
+          notes?: string | null
+          readiness?: number
+          role_title: string
+          sort_order?: number
+          status?: string
+          successor_name?: string | null
+          target_transition_date?: string | null
+          training_plan?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_holder?: string | null
+          deleted_at?: string | null
+          generation?: string
+          household_id?: string
+          id?: string
+          notes?: string | null
+          readiness?: number
+          role_title?: string
+          sort_order?: number
+          status?: string
+          successor_name?: string | null
+          target_transition_date?: string | null
+          training_plan?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fdn_succession_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       financial_goals: {
         Row: {
