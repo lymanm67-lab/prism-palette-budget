@@ -13,6 +13,7 @@ export interface ReadinessState {
   sustainability?: Record<string, number>;
   costs?: Record<string, number>;
   funding?: Record<string, any>;
+  docBuilder?: Record<string, any>;
 }
 
 /** Reads and patches the `readiness_state` jsonb blob on fdn_settings. */
