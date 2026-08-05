@@ -23,6 +23,8 @@ import {
   Trash2,
   Plus,
   PiggyBank,
+  Sparkles,
+  Loader2,
 } from 'lucide-react';
 import {
   CARE_TYPES,
