@@ -204,3 +204,92 @@ export async function openFdnDocument(path: string) {
   }
   window.open(data.signedUrl, '_blank', 'noopener,noreferrer');
 }
+
+/* ------------------------ OCR + full-text search -------------------------- */
+
+/** Runs OCR/indexing on one stored document so its contents become searchable. */
+export function useOcrFdnDocument() {
+  const { household } = useHousehold();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (documentId: string) => {
+      const { data, error } = await sb.functions.invoke('ocr-foundation-document', {
+        body: { documentId },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['fdn_documents', household?.id] });
+      toast.success('Document indexed — its text is now searchable');
+    },
+    onError: (e: any) => toast.error(e.message ?? 'Could not index the document'),
+  });
+}
+
+/**
+ * Full-text search across document titles, notes, and OCR'd contents using the
+ * generated `search_vector` column. Falls back to substring matching so partial
+ * words and clause fragments still find results.
+ */
+export function useSearchFdnDocuments(query: string) {
+  const { household } = useHousehold();
+  const term = query.trim();
+  return useQuery({
+    queryKey: ['fdn_documents_search', household?.id, term],
+    enabled: !!household && term.length >= 2,
+    queryFn: async () => {
+      const base = () =>
+        sb
+          .from('fdn_documents')
+          .select('id, title, doc_category, file_name, file_path, notes, ocr_text, extracted, ocr_status, ocr_at')
+          .eq('household_id', household!.id)
+          .is('deleted_at', null)
+          .limit(40);
+
+      const { data, error } = await base().textSearch('search_vector', term, {
+        type: 'websearch',
+        config: 'english',
+      });
+      if (error) throw error;
+      if ((data ?? []).length > 0) return data as any[];
+
+      const like = `%${term.replace(/[%_]/g, '')}%`;
+      const { data: fuzzy, error: fuzzyErr } = await base().or(
+        `title.ilike.${like},notes.ilike.${like},ocr_text.ilike.${like}`,
+      );
+      if (fuzzyErr) throw fuzzyErr;
+      return (fuzzy ?? []) as any[];
+    },
+  });
+}
+
+/** Returns short surrounding snippets for each place the term appears. */
+export function documentSnippets(text: string | null, term: string, max = 3) {
+  if (!text || !term.trim()) return [] as string[];
+  const words = term.trim().split(/\s+/).filter((w) => w.length > 2);
+  const needles = words.length > 0 ? words : [term.trim()];
+  const lower = text.toLowerCase();
+  const hits: string[] = [];
+  const seen = new Set<number>();
+
+  for (const needle of needles) {
+    let from = 0;
+    const n = needle.toLowerCase();
+    while (hits.length < max) {
+      const at = lower.indexOf(n, from);
+      if (at === -1) break;
+      const block = Math.floor(at / 200);
+      if (!seen.has(block)) {
+        seen.add(block);
+        const start = Math.max(0, at - 90);
+        const end = Math.min(text.length, at + needle.length + 110);
+        hits.push(`${start > 0 ? '…' : ''}${text.slice(start, end).replace(/\s+/g, ' ').trim()}${end < text.length ? '…' : ''}`);
+      }
+      from = at + n.length;
+    }
+    if (hits.length >= max) break;
+  }
+  return hits;
+}
