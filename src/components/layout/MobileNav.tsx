@@ -174,11 +174,15 @@ const MobileNav = () => {
             {/* Grid of items */}
             <div className="min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain px-4 pb-6 [-webkit-overflow-scrolling:touch]">
               {MENU_SECTIONS.map((section) => (
-                <div key={section.label} className="mb-4 last:mb-0">
-                  <p className="px-1 pb-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
-                    {section.label}
-                  </p>
-                  <div className="grid grid-cols-3 gap-1">
+                <div key={section.label} className="mb-5 last:mb-0">
+                  <div className="mb-2 flex items-center gap-2">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
+                      {section.label}
+                    </p>
+                    <span className="h-px flex-1 bg-border" />
+                    <span className="text-[10px] font-medium text-muted-foreground/50">{section.items.length}</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 auto-rows-fr">
                     {section.items.map((item) => {
                       const isActive = location.pathname === item.to;
                       return (
@@ -186,8 +190,10 @@ const MobileNav = () => {
                           key={section.label + item.to}
                           onClick={() => handleMoreItemClick(item.to)}
                           className={cn(
-                            'flex flex-col items-center gap-1.5 py-3 px-1.5 rounded-2xl transition-colors active:animate-haptic-press',
-                            isActive ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted'
+                            'flex h-[74px] flex-col items-center justify-center gap-1.5 px-1.5 rounded-2xl border transition-colors active:animate-haptic-press',
+                            isActive
+                              ? 'border-primary/40 bg-primary/10 text-primary'
+                              : 'border-border/50 bg-muted/20 text-muted-foreground hover:bg-muted'
                           )}
                         >
                           <item.icon className="h-5 w-5 shrink-0" />
