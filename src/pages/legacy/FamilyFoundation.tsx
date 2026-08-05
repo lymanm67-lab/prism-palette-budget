@@ -52,6 +52,8 @@ const TABS = [
 export default function FamilyFoundation() {
   const [params, setParams] = useSearchParams();
   useFdnSeed();
+  useFdnOpsSeed();
+
 
   const settings = useFdnSettings();
   const pillars = useFdnPillars();
