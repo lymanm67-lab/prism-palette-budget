@@ -150,6 +150,13 @@ export default function FamilyFoundation() {
         <TabsContent value="funding">
           <FundingTab />
         </TabsContent>
+        <TabsContent value="grants">
+          <GrantsTab />
+        </TabsContent>
+        <TabsContent value="risk">
+          <RiskBenchmarksTab />
+        </TabsContent>
+
         <TabsContent value="investments">
           <InvestmentsTab />
         </TabsContent>
