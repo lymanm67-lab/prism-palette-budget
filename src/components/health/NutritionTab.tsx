@@ -65,22 +65,38 @@ export default function NutritionTab() {
   const bowlName = `${proteinLabel} Power Bowl (${seasoning})`;
 
   const logMeal = (name: string, f: typeof facts, type: string) => {
-    saveMeal.mutate({
-      meal_date: todayISO(),
-      meal_type: type,
-      name,
-      calories: Math.round(f.calories),
-      protein_g: Math.round(f.protein),
-      carbs_g: Math.round(f.carbs),
-      fiber_g: Math.round(f.fiber),
-      fat_g: Math.round(f.fat),
-      components: null,
-    });
-    saveLog.mutate({
-      log_date: todayISO(),
-      protein_g: (today?.protein_g ?? 0) + Math.round(f.protein),
-    });
+    saveMeal.mutate(
+      {
+        meal_date: todayISO(),
+        meal_type: type,
+        name,
+        calories: Math.round(f.calories),
+        protein_g: Math.round(f.protein),
+        carbs_g: Math.round(f.carbs),
+        fiber_g: Math.round(f.fiber),
+        fat_g: Math.round(f.fat),
+        components: {
+          source: 'bowl_builder',
+          protein: proteinKey,
+          protein_servings: servings,
+          carb: carbKey,
+          vegetables: vegKeys,
+          oil,
+          seasoning,
+        },
+      },
+      {
+        onSuccess: () => {
+          toast.success('Meal logged');
+          saveLog.mutate({
+            log_date: todayISO(),
+            protein_g: (today?.protein_g ?? 0) + Math.round(f.protein),
+          });
+        },
+      },
+    );
   };
+
 
   const dayTotals = meals
     .filter((m) => m.meal_date === todayISO())
