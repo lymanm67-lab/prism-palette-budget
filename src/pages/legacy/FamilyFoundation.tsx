@@ -53,6 +53,8 @@ const MODULES = [
     title: 'Plan the Foundation',
     blurb: 'Decide the why, the five pillars, the five-year build sequence, and who funds and partners with the work.',
     tabs: [
+      { value: 'readiness', label: 'Readiness Index' },
+      { value: 'sustainability', label: 'Sustainability & Costs' },
       { value: 'mission', label: 'Mission & Values' },
       { value: 'pillars', label: 'Five Pillars' },
       { value: 'roadmap', label: '5-Year Roadmap' },
