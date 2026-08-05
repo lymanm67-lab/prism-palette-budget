@@ -104,15 +104,27 @@ export function useFdnOpsSeed() {
   const governance = useFdnGovernance();
   const succession = useFdnSuccession();
   const impact = useFdnImpactMetrics();
+  const insurance = useFdnInsurance();
+  const benchmarks = useFdnBenchmarks();
 
   useEffect(() => {
     if (!household || done.current) return;
-    if (compliance.isLoading || governance.isLoading || succession.isLoading || impact.isLoading) return;
+    if (
+      compliance.isLoading ||
+      governance.isLoading ||
+      succession.isLoading ||
+      impact.isLoading ||
+      insurance.isLoading ||
+      benchmarks.isLoading
+    )
+      return;
     const jobs: { table: FdnOpsTable; rows: any[] }[] = [];
     if ((compliance.data ?? []).length === 0) jobs.push({ table: 'fdn_compliance', rows: COMPLIANCE_SEEDS });
     if ((governance.data ?? []).length === 0) jobs.push({ table: 'fdn_governance', rows: GOVERNANCE_SEEDS });
     if ((succession.data ?? []).length === 0) jobs.push({ table: 'fdn_succession', rows: SUCCESSION_SEEDS });
     if ((impact.data ?? []).length === 0) jobs.push({ table: 'fdn_impact_metrics', rows: IMPACT_SEEDS });
+    if ((insurance.data ?? []).length === 0) jobs.push({ table: 'fdn_insurance', rows: INSURANCE_SEEDS });
+    if ((benchmarks.data ?? []).length === 0) jobs.push({ table: 'fdn_benchmarks', rows: BENCHMARK_SEEDS });
     done.current = true;
     if (jobs.length === 0) return;
 
@@ -134,12 +146,17 @@ export function useFdnOpsSeed() {
     governance.isLoading,
     succession.isLoading,
     impact.isLoading,
+    insurance.isLoading,
+    benchmarks.isLoading,
     compliance.data,
     governance.data,
     succession.data,
     impact.data,
+    insurance.data,
+    benchmarks.data,
     qc,
   ]);
+
 }
 
 /* --------------------------- document vault ------------------------------ */
