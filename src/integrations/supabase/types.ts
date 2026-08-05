@@ -2887,6 +2887,78 @@ export type Database = {
           },
         ]
       }
+      health_medical_documents: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          doc_type: string
+          document_date: string | null
+          file_name: string | null
+          file_path: string
+          file_size: number | null
+          household_id: string
+          id: string
+          mime_type: string | null
+          notes: string | null
+          person: string | null
+          preventive_care_id: string | null
+          provider: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          doc_type?: string
+          document_date?: string | null
+          file_name?: string | null
+          file_path: string
+          file_size?: number | null
+          household_id: string
+          id?: string
+          mime_type?: string | null
+          notes?: string | null
+          person?: string | null
+          preventive_care_id?: string | null
+          provider?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          doc_type?: string
+          document_date?: string | null
+          file_name?: string | null
+          file_path?: string
+          file_size?: number | null
+          household_id?: string
+          id?: string
+          mime_type?: string | null
+          notes?: string | null
+          person?: string | null
+          preventive_care_id?: string | null
+          provider?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "health_medical_documents_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "health_medical_documents_preventive_care_id_fkey"
+            columns: ["preventive_care_id"]
+            isOneToOne: false
+            referencedRelation: "health_preventive_care"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       health_milestones: {
         Row: {
           actual_date: string | null
@@ -2930,6 +3002,77 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "health_milestones_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      health_preventive_care: {
+        Row: {
+          care_type: string
+          cost_estimate: number
+          covered_by_insurance: boolean
+          created_at: string
+          deleted_at: string | null
+          frequency_months: number
+          household_id: string
+          id: string
+          item_name: string
+          last_completed_on: string | null
+          next_due_on: string | null
+          notes: string | null
+          out_of_pocket: number
+          person: string | null
+          provider: string | null
+          sort_order: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          care_type?: string
+          cost_estimate?: number
+          covered_by_insurance?: boolean
+          created_at?: string
+          deleted_at?: string | null
+          frequency_months?: number
+          household_id: string
+          id?: string
+          item_name: string
+          last_completed_on?: string | null
+          next_due_on?: string | null
+          notes?: string | null
+          out_of_pocket?: number
+          person?: string | null
+          provider?: string | null
+          sort_order?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          care_type?: string
+          cost_estimate?: number
+          covered_by_insurance?: boolean
+          created_at?: string
+          deleted_at?: string | null
+          frequency_months?: number
+          household_id?: string
+          id?: string
+          item_name?: string
+          last_completed_on?: string | null
+          next_due_on?: string | null
+          notes?: string | null
+          out_of_pocket?: number
+          person?: string | null
+          provider?: string | null
+          sort_order?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "health_preventive_care_household_id_fkey"
             columns: ["household_id"]
             isOneToOne: false
             referencedRelation: "households"

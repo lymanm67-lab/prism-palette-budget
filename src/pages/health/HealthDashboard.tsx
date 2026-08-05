@@ -12,12 +12,16 @@ import LongevityTab from '@/components/health/LongevityTab';
 import HealthCoachTab from '@/components/health/HealthCoachTab';
 import HealthProfileTab from '@/components/health/HealthProfileTab';
 import HealthImportTab from '@/components/health/HealthImportTab';
+import SleepRecoveryTab from '@/components/health/SleepRecoveryTab';
+import PreventiveCareTab from '@/components/health/PreventiveCareTab';
 
 const TABS = [
   { value: 'dashboard', label: 'Command Center' },
   { value: 'nutrition', label: 'Nutrition' },
   { value: 'prep', label: 'Meal Prep' },
   { value: 'grocery', label: 'Grocery Budget' },
+  { value: 'sleep', label: 'Sleep & Recovery' },
+  { value: 'preventive', label: 'Preventive Care' },
   { value: 'milestones', label: 'Milestones' },
   { value: 'trends', label: 'Trends' },
   { value: 'productivity', label: 'Performance' },
@@ -26,6 +30,7 @@ const TABS = [
   { value: 'import', label: 'Import (Apple Health)' },
   { value: 'profile', label: 'Profile' },
 ];
+
 
 export default function HealthDashboard() {
   const [params, setParams] = useSearchParams();
@@ -65,6 +70,13 @@ export default function HealthDashboard() {
         <TabsContent value="grocery" className="mt-6">
           <GroceryTab />
         </TabsContent>
+        <TabsContent value="sleep" className="mt-6">
+          <SleepRecoveryTab />
+        </TabsContent>
+        <TabsContent value="preventive" className="mt-6">
+          <PreventiveCareTab />
+        </TabsContent>
+
         <TabsContent value="milestones" className="mt-6">
           <MilestonesTab />
         </TabsContent>
