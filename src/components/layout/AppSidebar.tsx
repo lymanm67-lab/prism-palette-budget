@@ -99,6 +99,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { to: '/legacy/real-estate/medical-housing', icon: Building2, label: '10a. Goal 1 — Medical Housing', color: 'text-prism-teal' },
       { to: '/legacy/real-estate/tiny-home-village', icon: Heart, label: '10b. Goal 2 — Tiny Home Village', color: 'text-prism-rose' },
       { to: '/health', icon: HeartPulse, label: '11. Health, Wellness & Longevity', color: 'text-prism-rose' },
+      { to: '/legacy/foundation', icon: Landmark, label: '12. Family Foundation', color: 'text-prism-amber' },
     ],
 
   },
