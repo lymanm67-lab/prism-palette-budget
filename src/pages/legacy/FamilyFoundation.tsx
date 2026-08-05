@@ -147,6 +147,8 @@ export default function FamilyFoundation() {
   const CONTENT: Record<string, JSX.Element> = {
     plan: <LaunchPlanTab onNavigate={goTo} />,
     dashboard: <FoundationDashboardTab />,
+    readiness: <ReadinessIndexTab onNavigate={goTo} />,
+    sustainability: <SustainabilityTab />,
     mission: <MissionValuesTab />,
     pillars: <PillarsTab />,
     roadmap: <RoadmapTab />,
