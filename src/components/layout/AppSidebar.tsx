@@ -32,7 +32,7 @@ type NavSection = {
   mode?: 'personal' | 'business';
 };
 
-const NAV_SECTIONS: NavSection[] = [
+export const NAV_SECTIONS: NavSection[] = [
   {
     label: 'Home',
     items: [

@@ -1,12 +1,12 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, ArrowLeftRight, PiggyBank, BarChart3, Grid3x3, X,
-  Settings, Target, Wallet, TrendingUp, Receipt, Calculator, Shield, Menu, Sun, Moon,
-  Home, FileText, RefreshCw, CreditCard, Calendar, Tags, HeartHandshake } from 'lucide-react';
+  Menu, Sun, Moon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState, useCallback } from 'react';
 import { useSidebarBadges } from '@/hooks/use-sidebar-badges';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from 'next-themes';
+import { NAV_SECTIONS } from './AppSidebar';
 
 const BOTTOM_NAV = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Home' },
@@ -15,26 +15,18 @@ const BOTTOM_NAV = [
   { to: '/reports', icon: BarChart3, label: 'Reports' },
 ];
 
-const MORE_ITEMS = [
-  { to: '/accounts', icon: Wallet, label: 'Accounts' },
-  { to: '/recurring', icon: RefreshCw, label: 'Recurring' },
-  { to: '/subscriptions', icon: CreditCard, label: 'Subscriptions' },
-  { to: '/goals', icon: Target, label: 'Goals' },
-  { to: '/net-worth', icon: TrendingUp, label: 'Net Worth' },
-  { to: '/investments', icon: TrendingUp, label: 'Investments' },
-  { to: '/cash-flow', icon: Wallet, label: 'Cash Flow' },
-  { to: '/forecast', icon: Calendar, label: 'Forecast' },
-  { to: '/spending-trends', icon: BarChart3, label: 'Trends' },
-  { to: '/debt-payoff', icon: CreditCard, label: 'Debt Payoff' },
-  { to: '/calculators', icon: Calculator, label: 'Calculators' },
-  { to: '/home-buying', icon: Home, label: 'Home Buying' },
-  { to: '/capital', icon: Shield, label: 'Capital' },
-  { to: '/capital/credit-overview', icon: CreditCard, label: 'Credit' },
-  { to: '/coach', icon: HeartHandshake, label: 'Coach' },
-  { to: '/tax-assistant', icon: FileText, label: 'Tax' },
-  { to: '/categories', icon: Tags, label: 'Categories' },
-  { to: '/settings', icon: Settings, label: 'Settings' },
-];
+type MobileNavItem = { to: string; icon: any; label: string };
+
+/** Every menu entry from the desktop sidebar, grouped by section, so nothing is hidden on mobile. */
+const MENU_SECTIONS: { label: string; items: MobileNavItem[] }[] = NAV_SECTIONS.map((section) => {
+  const items: MobileNavItem[] = [
+    ...(section.topItems ?? []),
+    ...(section.items ?? []),
+    ...((section.subGroups ?? []).flatMap((sg) => sg.items ?? [])),
+  ].map(({ to, icon, label }) => ({ to, icon, label }));
+  return { label: section.label, items };
+}).filter((s) => s.items.length > 0);
+
 
 const MobileNav = () => {
   const location = useLocation();
@@ -101,23 +93,32 @@ const MobileNav = () => {
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.2 }}
             >
-              <div className="grid grid-cols-3 gap-1 px-4 py-4 max-h-[60vh] overflow-y-auto">
-                {[...BOTTOM_NAV, ...MORE_ITEMS].map((item) => {
-                  const isActive = location.pathname === item.to || location.pathname.startsWith(item.to + '/');
-                  return (
-                    <button
-                      key={item.to}
-                      onClick={() => { navigate(item.to); setMenuOpen(false); }}
-                      className={cn(
-                        'flex flex-col items-center gap-1.5 py-3 px-2 rounded-2xl transition-colors active:animate-haptic-press',
-                        isActive ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted'
-                      )}
-                    >
-                      <item.icon className="h-5 w-5" />
-                      <span className="text-[11px] font-medium">{item.label}</span>
-                    </button>
-                  );
-                })}
+              <div className="px-4 py-4 max-h-[75vh] overflow-y-auto overscroll-contain">
+                {MENU_SECTIONS.map((section) => (
+                  <div key={section.label} className="mb-4 last:mb-0">
+                    <p className="px-1 pb-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
+                      {section.label}
+                    </p>
+                    <div className="grid grid-cols-3 gap-1">
+                      {section.items.map((item) => {
+                        const isActive = location.pathname === item.to;
+                        return (
+                          <button
+                            key={section.label + item.to}
+                            onClick={() => { navigate(item.to); setMenuOpen(false); }}
+                            className={cn(
+                              'flex flex-col items-center gap-1.5 py-3 px-1.5 rounded-2xl transition-colors active:animate-haptic-press',
+                              isActive ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted'
+                            )}
+                          >
+                            <item.icon className="h-5 w-5 shrink-0" />
+                            <span className="text-[10px] font-medium leading-tight text-center line-clamp-2">{item.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
               </div>
             </motion.div>
           </>
@@ -165,26 +166,32 @@ const MobileNav = () => {
             </div>
 
             {/* Grid of items */}
-            <div className="grid grid-cols-3 gap-1 px-4 pb-6 max-h-[50vh] overflow-y-auto">
-              {MORE_ITEMS.map((item, i) => {
-                const isActive = location.pathname.startsWith(item.to);
-                return (
-                  <motion.button
-                    key={item.to}
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.03, duration: 0.2 }}
-                    onClick={() => handleMoreItemClick(item.to)}
-                    className={cn(
-                      'flex flex-col items-center gap-1.5 py-4 px-2 rounded-2xl transition-colors active:animate-haptic-press',
-                      isActive ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted'
-                    )}
-                  >
-                    <item.icon className="h-5 w-5" />
-                    <span className="text-[11px] font-medium">{item.label}</span>
-                  </motion.button>
-                );
-              })}
+            <div className="px-4 pb-6 max-h-[60vh] overflow-y-auto overscroll-contain">
+              {MENU_SECTIONS.map((section) => (
+                <div key={section.label} className="mb-4 last:mb-0">
+                  <p className="px-1 pb-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
+                    {section.label}
+                  </p>
+                  <div className="grid grid-cols-3 gap-1">
+                    {section.items.map((item) => {
+                      const isActive = location.pathname === item.to;
+                      return (
+                        <button
+                          key={section.label + item.to}
+                          onClick={() => handleMoreItemClick(item.to)}
+                          className={cn(
+                            'flex flex-col items-center gap-1.5 py-3 px-1.5 rounded-2xl transition-colors active:animate-haptic-press',
+                            isActive ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted'
+                          )}
+                        >
+                          <item.icon className="h-5 w-5 shrink-0" />
+                          <span className="text-[10px] font-medium leading-tight text-center line-clamp-2">{item.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
           </motion.div>
         )}
