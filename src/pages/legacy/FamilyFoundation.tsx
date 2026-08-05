@@ -134,24 +134,44 @@ export default function FamilyFoundation() {
     else toast.success('Binder ready — choose "Save as PDF" in the print dialog.');
   };
 
-  const requested = params.get('tab') ?? 'dashboard';
-  const tab = TABS.some((t) => t.value === requested) ? requested : 'dashboard';
+  const requested = params.get('tab') ?? 'plan';
+  const active = ALL_TABS.find((t) => t.value === requested) ?? ALL_TABS[0];
+  const goTo = (v: string) => setParams({ tab: v }, { replace: true });
 
+  const CONTENT: Record<string, JSX.Element> = {
+    plan: <LaunchPlanTab onNavigate={goTo} />,
+    dashboard: <FoundationDashboardTab />,
+    mission: <MissionValuesTab />,
+    pillars: <PillarsTab />,
+    roadmap: <RoadmapTab />,
+    relationships: <RelationshipMapTab />,
+    paperwork: <FormationPaperworkTab onNavigate={goTo} />,
+    governance: <GovernanceTab />,
+    compliance: <ComplianceTab />,
+    risk: <RiskBenchmarksTab />,
+    funding: <FundingTab />,
+    investments: <InvestmentsTab />,
+    grants: <GrantsTab />,
+    impact: <ImpactTab />,
+    advisor: <AiAdvisorTab />,
+    succession: <SuccessionTab />,
+    documents: <DocumentVaultTab />,
+    legacy: <LegacyMapTab />,
+  };
 
   return (
     <div className="container mx-auto space-y-6 px-4 py-6">
       <PageOverview
         title="Dr. Lyman A. Montgomery Family Foundation"
-        description="The philanthropic arm of the family legacy: mission and values, five impact pillars, a five-year build roadmap, the relationship network that funds and partners with the work, and the generational legacy map."
+        description="Four sequential modules: plan the foundation, set it up with the state and IRS paperwork, operate the grantmaking, then hand it forward as legacy."
         icon={Landmark}
         iconColor="text-prism-amber"
-        ttsScript="This is the Dr. Lyman A. Montgomery Family Foundation module. Start on the executive dashboard for legacy readiness, endowment progress, dollars committed and deployed, and people served. Set your mission, vision, values, and endowment targets under Mission and Values. Work each of the five impact pillars — housing, financial literacy, education, health, and entrepreneurship — adding initiatives with budgets and beneficiary counts. The five-year roadmap turns the vision into dated phases with checkable milestones. The relationship map sorts funders, partners, and advisors into champions, priority targets, supporters, and prospects so you know who to contact next. The legacy map records what passes to each generation. Educational planning only, not legal, tax, or investment advice."
+        ttsScript="This is the Dr. Lyman A. Montgomery Family Foundation module, organized as four steps. Step one, Plan the Foundation: mission and values, the five impact pillars, the five-year roadmap, and the relationship map of funders and partners. Step two, Set Up the Foundation: the Ohio articles of incorporation, the employer identification number, bylaws and conflict-of-interest policies, and IRS Form 1023, each with a direct link to the official filing page, plus your board roster and compliance calendar. Step three, Operations: gifts and pledges in, the endowment invested, grants and scholarships out, and impact measured, with an AI advisor. Step four, Legacy: successor trustees, the searchable document vault, and the generational legacy map. Educational planning only, not legal, tax, or investment advice."
         features={[
-          'Legacy readiness score blending endowment, reach, roadmap execution, and pillar activity',
-          'Five impact pillars with budgets, KPIs, and initiative-level tracking',
-          'Interactive five-year roadmap with milestone checklists and funding targets',
-          'Relationship map that prioritizes outreach by influence versus relationship strength',
-          'Generational legacy map of values, assets, stories, and institutions',
+          'Step 1 — Plan: mission, five pillars, five-year roadmap, relationship map',
+          'Step 2 — Set Up: Ohio formation, EIN, bylaws, Form 1023 with official IRS links',
+          'Step 3 — Operations: funding, endowment, grant lifecycle, impact scoring',
+          'Step 4 — Legacy: succession, searchable vault, generational legacy map',
         ]}
       />
 
@@ -164,75 +184,71 @@ export default function FamilyFoundation() {
 
       <h1 className="sr-only">Dr. Lyman A. Montgomery Family Foundation Planning Module</h1>
 
-
       <Tabs
-        value={tab}
-        onValueChange={(v) => setParams({ tab: v }, { replace: true })}
+        value={active.module}
+        onValueChange={(m) => {
+          const mod = MODULES.find((x) => x.value === m);
+          if (mod) goTo(mod.tabs[0].value);
+        }}
         className="space-y-4"
       >
-        <TabsList className="flex h-auto w-full flex-wrap justify-start gap-1">
-          {TABS.map((t) => (
-            <TabsTrigger key={t.value} value={t.value} className="text-xs sm:text-sm">
-              {t.label}
+        <TabsList className="grid h-auto w-full grid-cols-2 gap-1 lg:grid-cols-5">
+          {MODULES.map((m) => (
+            <TabsTrigger
+              key={m.value}
+              value={m.value}
+              className="flex h-auto flex-col items-start gap-0.5 py-2 text-left"
+            >
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">{m.step}</span>
+              <span className="text-xs font-medium sm:text-sm">{m.title}</span>
             </TabsTrigger>
           ))}
         </TabsList>
 
-        <TabsContent value="plan">
-          <LaunchPlanTab onNavigate={(v) => setParams({ tab: v }, { replace: true })} />
-        </TabsContent>
-        <TabsContent value="dashboard">
+        {MODULES.map((m) => (
+          <TabsContent key={m.value} value={m.value} className="space-y-4">
+            <Card className="glass-card">
+              <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-prism-amber">{m.step}</p>
+                  <p className="text-base font-semibold">{m.title}</p>
+                  <p className="mt-0.5 max-w-3xl text-xs text-muted-foreground">{m.blurb}</p>
+                </div>
+                {m.value !== 'm4' && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-1"
+                    onClick={() => {
+                      const idx = MODULES.findIndex((x) => x.value === m.value);
+                      goTo(MODULES[idx + 1].tabs[0].value);
+                    }}
+                  >
+                    Next: {MODULES[MODULES.findIndex((x) => x.value === m.value) + 1].title}
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
 
-          <FoundationDashboardTab />
-        </TabsContent>
-        <TabsContent value="mission">
-          <MissionValuesTab />
-        </TabsContent>
-        <TabsContent value="pillars">
-          <PillarsTab />
-        </TabsContent>
-        <TabsContent value="roadmap">
-          <RoadmapTab />
-        </TabsContent>
-        <TabsContent value="impact">
-          <ImpactTab />
-        </TabsContent>
-        <TabsContent value="funding">
-          <FundingTab />
-        </TabsContent>
-        <TabsContent value="grants">
-          <GrantsTab />
-        </TabsContent>
-        <TabsContent value="risk">
-          <RiskBenchmarksTab />
-        </TabsContent>
-
-        <TabsContent value="investments">
-          <InvestmentsTab />
-        </TabsContent>
-        <TabsContent value="governance">
-          <GovernanceTab />
-        </TabsContent>
-        <TabsContent value="compliance">
-          <ComplianceTab />
-        </TabsContent>
-        <TabsContent value="succession">
-          <SuccessionTab />
-        </TabsContent>
-        <TabsContent value="relationships">
-          <RelationshipMapTab />
-        </TabsContent>
-        <TabsContent value="documents">
-          <DocumentVaultTab />
-        </TabsContent>
-        <TabsContent value="advisor">
-          <AiAdvisorTab />
-        </TabsContent>
-        <TabsContent value="legacy">
-          <LegacyMapTab />
-        </TabsContent>
-
+            <Tabs value={active.value} onValueChange={goTo} className="space-y-4">
+              <TabsList className="flex h-auto w-full flex-wrap justify-start gap-1">
+                {m.tabs.map((t) => (
+                  <TabsTrigger key={t.value} value={t.value} className="text-xs sm:text-sm">
+                    {t.label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+              {m.tabs.map((t) => (
+                <TabsContent key={t.value} value={t.value}>
+                  {CONTENT[t.value]}
+                </TabsContent>
+              ))}
+            </Tabs>
+          </TabsContent>
+        ))}
       </Tabs>
     </div>
   );
 }
+
