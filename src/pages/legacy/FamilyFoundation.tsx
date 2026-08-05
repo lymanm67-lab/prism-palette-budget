@@ -32,28 +32,71 @@ import AiAdvisorTab from '@/components/foundation/AiAdvisorTab';
 import GrantsTab from '@/components/foundation/GrantsTab';
 import RiskBenchmarksTab from '@/components/foundation/RiskBenchmarksTab';
 import LaunchPlanTab from '@/components/foundation/LaunchPlanTab';
+import FormationPaperworkTab from '@/components/foundation/FormationPaperworkTab';
 
-
-const TABS = [
-  { value: 'plan', label: 'Planning & Operating Flow' },
-  { value: 'dashboard', label: 'Executive Dashboard' },
-  { value: 'impact', label: 'Impact & Legacy Score' },
-
-  { value: 'mission', label: 'Mission & Values' },
-  { value: 'pillars', label: 'Five Pillars' },
-  { value: 'roadmap', label: '5-Year Roadmap' },
-  { value: 'funding', label: 'Funding & Donors' },
-  { value: 'grants', label: 'Grants & Scholarships' },
-  { value: 'investments', label: 'Endowment' },
-  { value: 'governance', label: 'Governance' },
-  { value: 'compliance', label: 'Compliance' },
-  { value: 'risk', label: 'Risk & Benchmarks' },
-  { value: 'succession', label: 'Succession' },
-  { value: 'relationships', label: 'Relationship Map' },
-  { value: 'documents', label: 'Document Vault' },
-  { value: 'advisor', label: 'AI Advisor' },
-  { value: 'legacy', label: 'Legacy Map' },
+const MODULES = [
+  {
+    value: 'm0',
+    step: 'Start',
+    title: 'Overview',
+    blurb: 'Where the foundation stands right now and the single next action across all four steps.',
+    tabs: [
+      { value: 'plan', label: 'Planning & Operating Flow' },
+      { value: 'dashboard', label: 'Executive Dashboard' },
+    ],
+  },
+  {
+    value: 'm1',
+    step: 'Step 1',
+    title: 'Plan the Foundation',
+    blurb: 'Decide the why, the five pillars, the five-year build sequence, and who funds and partners with the work.',
+    tabs: [
+      { value: 'mission', label: 'Mission & Values' },
+      { value: 'pillars', label: 'Five Pillars' },
+      { value: 'roadmap', label: '5-Year Roadmap' },
+      { value: 'relationships', label: 'Relationship Map' },
+    ],
+  },
+  {
+    value: 'm2',
+    step: 'Step 2',
+    title: 'Set Up the Foundation',
+    blurb: 'Paperwork: Ohio formation, EIN, bylaws and policies, IRS Form 1023, then the board and compliance calendar.',
+    tabs: [
+      { value: 'paperwork', label: 'Formation & IRS Forms' },
+      { value: 'governance', label: 'Governance' },
+      { value: 'compliance', label: 'Compliance Calendar' },
+      { value: 'risk', label: 'Risk & Benchmarks' },
+    ],
+  },
+  {
+    value: 'm3',
+    step: 'Step 3',
+    title: 'Operations',
+    blurb: 'Run the money: gifts in, endowment invested, grants and scholarships out, impact measured.',
+    tabs: [
+      { value: 'funding', label: 'Funding & Donors' },
+      { value: 'investments', label: 'Endowment' },
+      { value: 'grants', label: 'Grants & Scholarships' },
+      { value: 'impact', label: 'Impact & Legacy Score' },
+      { value: 'advisor', label: 'AI Advisor' },
+    ],
+  },
+  {
+    value: 'm4',
+    step: 'Step 4',
+    title: 'Legacy',
+    blurb: 'Make it outlast you: successor trustees, the searchable record, and what passes to each generation.',
+    tabs: [
+      { value: 'succession', label: 'Succession' },
+      { value: 'documents', label: 'Document Vault' },
+      { value: 'legacy', label: 'Legacy Map' },
+    ],
+  },
 ];
+
+const ALL_TABS = MODULES.flatMap((m) => m.tabs.map((t) => ({ ...t, module: m.value })));
+
 
 
 
