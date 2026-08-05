@@ -35,6 +35,8 @@ import GrantsTab from '@/components/foundation/GrantsTab';
 import RiskBenchmarksTab from '@/components/foundation/RiskBenchmarksTab';
 import LaunchPlanTab from '@/components/foundation/LaunchPlanTab';
 import FormationPaperworkTab from '@/components/foundation/FormationPaperworkTab';
+import ReadinessIndexTab from '@/components/foundation/ReadinessIndexTab';
+import SustainabilityTab from '@/components/foundation/SustainabilityTab';
 
 const MODULES = [
   {
@@ -53,6 +55,8 @@ const MODULES = [
     title: 'Plan the Foundation',
     blurb: 'Decide the why, the five pillars, the five-year build sequence, and who funds and partners with the work.',
     tabs: [
+      { value: 'readiness', label: 'Readiness Index' },
+      { value: 'sustainability', label: 'Sustainability & Costs' },
       { value: 'mission', label: 'Mission & Values' },
       { value: 'pillars', label: 'Five Pillars' },
       { value: 'roadmap', label: '5-Year Roadmap' },
@@ -143,6 +147,8 @@ export default function FamilyFoundation() {
   const CONTENT: Record<string, JSX.Element> = {
     plan: <LaunchPlanTab onNavigate={goTo} />,
     dashboard: <FoundationDashboardTab />,
+    readiness: <ReadinessIndexTab onNavigate={goTo} />,
+    sustainability: <SustainabilityTab />,
     mission: <MissionValuesTab />,
     pillars: <PillarsTab />,
     roadmap: <RoadmapTab />,

@@ -1,0 +1,1 @@
+ALTER TABLE public.fdn_settings ADD COLUMN IF NOT EXISTS readiness_state jsonb NOT NULL DEFAULT '{}'::jsonb;

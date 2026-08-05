@@ -3183,6 +3183,7 @@ export type Database = {
           mrd_avg_assets: number
           mrd_carryover: number
           mrd_qualifying_admin: number
+          readiness_state: Json
           spending_policy_pct: number
           staff_count: number
           tagline: string | null
@@ -3207,6 +3208,7 @@ export type Database = {
           mrd_avg_assets?: number
           mrd_carryover?: number
           mrd_qualifying_admin?: number
+          readiness_state?: Json
           spending_policy_pct?: number
           staff_count?: number
           tagline?: string | null
@@ -3231,6 +3233,7 @@ export type Database = {
           mrd_avg_assets?: number
           mrd_carryover?: number
           mrd_qualifying_admin?: number
+          readiness_state?: Json
           spending_policy_pct?: number
           staff_count?: number
           tagline?: string | null
