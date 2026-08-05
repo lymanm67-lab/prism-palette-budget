@@ -29,6 +29,8 @@ import ImpactTab from '@/components/foundation/ImpactTab';
 import SuccessionTab from '@/components/foundation/SuccessionTab';
 import DocumentVaultTab from '@/components/foundation/DocumentVaultTab';
 import AiAdvisorTab from '@/components/foundation/AiAdvisorTab';
+import GrantsTab from '@/components/foundation/GrantsTab';
+import RiskBenchmarksTab from '@/components/foundation/RiskBenchmarksTab';
 
 
 const TABS = [
@@ -38,15 +40,18 @@ const TABS = [
   { value: 'pillars', label: 'Five Pillars' },
   { value: 'roadmap', label: '5-Year Roadmap' },
   { value: 'funding', label: 'Funding & Donors' },
+  { value: 'grants', label: 'Grants & Scholarships' },
   { value: 'investments', label: 'Endowment' },
   { value: 'governance', label: 'Governance' },
   { value: 'compliance', label: 'Compliance' },
+  { value: 'risk', label: 'Risk & Benchmarks' },
   { value: 'succession', label: 'Succession' },
   { value: 'relationships', label: 'Relationship Map' },
   { value: 'documents', label: 'Document Vault' },
   { value: 'advisor', label: 'AI Advisor' },
   { value: 'legacy', label: 'Legacy Map' },
 ];
+
 
 
 export default function FamilyFoundation() {
