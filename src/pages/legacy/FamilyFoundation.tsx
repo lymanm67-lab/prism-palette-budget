@@ -31,11 +31,14 @@ import DocumentVaultTab from '@/components/foundation/DocumentVaultTab';
 import AiAdvisorTab from '@/components/foundation/AiAdvisorTab';
 import GrantsTab from '@/components/foundation/GrantsTab';
 import RiskBenchmarksTab from '@/components/foundation/RiskBenchmarksTab';
+import LaunchPlanTab from '@/components/foundation/LaunchPlanTab';
 
 
 const TABS = [
+  { value: 'plan', label: 'Planning & Operating Flow' },
   { value: 'dashboard', label: 'Executive Dashboard' },
   { value: 'impact', label: 'Impact & Legacy Score' },
+
   { value: 'mission', label: 'Mission & Values' },
   { value: 'pillars', label: 'Five Pillars' },
   { value: 'roadmap', label: '5-Year Roadmap' },
@@ -132,7 +135,11 @@ export default function FamilyFoundation() {
           ))}
         </TabsList>
 
+        <TabsContent value="plan">
+          <LaunchPlanTab onNavigate={(v) => setParams({ tab: v }, { replace: true })} />
+        </TabsContent>
         <TabsContent value="dashboard">
+
           <FoundationDashboardTab />
         </TabsContent>
         <TabsContent value="mission">
