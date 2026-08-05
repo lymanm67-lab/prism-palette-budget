@@ -227,3 +227,24 @@ export async function openMedicalDocument(path: string) {
   }
   window.open(data.signedUrl, '_blank', 'noopener,noreferrer');
 }
+
+/** Runs AI extraction on an uploaded medical/lab report. */
+export function useParseMedicalDocument() {
+  const { household } = useHousehold();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (documentId: string) => {
+      const { data, error } = await supabase.functions.invoke('parse-medical-report', {
+        body: { documentId },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      return (data as any)?.parsed as ParsedReport;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['health_medical_documents', household?.id] });
+      toast.success('Report parsed');
+    },
+    onError: (e: any) => toast.error(e.message ?? 'Could not parse the report'),
+  });
+}
