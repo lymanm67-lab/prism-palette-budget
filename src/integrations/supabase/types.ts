@@ -2900,6 +2900,9 @@ export type Database = {
           id: string
           mime_type: string | null
           notes: string | null
+          parse_status: string | null
+          parsed_at: string | null
+          parsed_summary: Json | null
           person: string | null
           preventive_care_id: string | null
           provider: string | null
@@ -2918,6 +2921,9 @@ export type Database = {
           id?: string
           mime_type?: string | null
           notes?: string | null
+          parse_status?: string | null
+          parsed_at?: string | null
+          parsed_summary?: Json | null
           person?: string | null
           preventive_care_id?: string | null
           provider?: string | null
@@ -2936,6 +2942,9 @@ export type Database = {
           id?: string
           mime_type?: string | null
           notes?: string | null
+          parse_status?: string | null
+          parsed_at?: string | null
+          parsed_summary?: Json | null
           person?: string | null
           preventive_care_id?: string | null
           provider?: string | null
