@@ -2194,6 +2194,77 @@ export type Database = {
           },
         ]
       }
+      fdn_benchmarks: {
+        Row: {
+          annual_giving: number
+          created_at: string
+          deleted_at: string | null
+          fiscal_year: number | null
+          grants_count: number
+          household_id: string
+          id: string
+          location: string | null
+          notes: string | null
+          operating_expenses: number
+          payout_pct: number
+          peer_name: string
+          peer_type: string
+          sort_order: number
+          source: string | null
+          staff_count: number
+          total_assets: number
+          updated_at: string
+        }
+        Insert: {
+          annual_giving?: number
+          created_at?: string
+          deleted_at?: string | null
+          fiscal_year?: number | null
+          grants_count?: number
+          household_id: string
+          id?: string
+          location?: string | null
+          notes?: string | null
+          operating_expenses?: number
+          payout_pct?: number
+          peer_name: string
+          peer_type?: string
+          sort_order?: number
+          source?: string | null
+          staff_count?: number
+          total_assets?: number
+          updated_at?: string
+        }
+        Update: {
+          annual_giving?: number
+          created_at?: string
+          deleted_at?: string | null
+          fiscal_year?: number | null
+          grants_count?: number
+          household_id?: string
+          id?: string
+          location?: string | null
+          notes?: string | null
+          operating_expenses?: number
+          payout_pct?: number
+          peer_name?: string
+          peer_type?: string
+          sort_order?: number
+          source?: string | null
+          staff_count?: number
+          total_assets?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fdn_benchmarks_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fdn_compliance: {
         Row: {
           authority: string | null
@@ -2473,6 +2544,135 @@ export type Database = {
           },
         ]
       }
+      fdn_grants: {
+        Row: {
+          agreement_signed_at: string | null
+          amount_awarded: number
+          amount_paid: number
+          amount_requested: number
+          application_date: string | null
+          board_approved_at: string | null
+          charitable_purpose: string | null
+          conflict_screened: boolean
+          contact_email: string | null
+          contact_name: string | null
+          created_at: string
+          decision_date: string | null
+          deleted_at: string | null
+          due_diligence_notes: string | null
+          ein: string | null
+          expenditure_responsibility: boolean
+          final_report_received_at: string | null
+          grant_type: string
+          grantee_name: string
+          household_id: string
+          id: string
+          irs_status_verified: boolean
+          notes: string | null
+          outcome_summary: string | null
+          payment_schedule: string | null
+          people_served: number
+          pillar_id: string | null
+          project_title: string | null
+          purpose: string | null
+          report_due_date: string | null
+          report_received_at: string | null
+          selection_criteria: string | null
+          sort_order: number
+          stage: string
+          updated_at: string
+        }
+        Insert: {
+          agreement_signed_at?: string | null
+          amount_awarded?: number
+          amount_paid?: number
+          amount_requested?: number
+          application_date?: string | null
+          board_approved_at?: string | null
+          charitable_purpose?: string | null
+          conflict_screened?: boolean
+          contact_email?: string | null
+          contact_name?: string | null
+          created_at?: string
+          decision_date?: string | null
+          deleted_at?: string | null
+          due_diligence_notes?: string | null
+          ein?: string | null
+          expenditure_responsibility?: boolean
+          final_report_received_at?: string | null
+          grant_type?: string
+          grantee_name: string
+          household_id: string
+          id?: string
+          irs_status_verified?: boolean
+          notes?: string | null
+          outcome_summary?: string | null
+          payment_schedule?: string | null
+          people_served?: number
+          pillar_id?: string | null
+          project_title?: string | null
+          purpose?: string | null
+          report_due_date?: string | null
+          report_received_at?: string | null
+          selection_criteria?: string | null
+          sort_order?: number
+          stage?: string
+          updated_at?: string
+        }
+        Update: {
+          agreement_signed_at?: string | null
+          amount_awarded?: number
+          amount_paid?: number
+          amount_requested?: number
+          application_date?: string | null
+          board_approved_at?: string | null
+          charitable_purpose?: string | null
+          conflict_screened?: boolean
+          contact_email?: string | null
+          contact_name?: string | null
+          created_at?: string
+          decision_date?: string | null
+          deleted_at?: string | null
+          due_diligence_notes?: string | null
+          ein?: string | null
+          expenditure_responsibility?: boolean
+          final_report_received_at?: string | null
+          grant_type?: string
+          grantee_name?: string
+          household_id?: string
+          id?: string
+          irs_status_verified?: boolean
+          notes?: string | null
+          outcome_summary?: string | null
+          payment_schedule?: string | null
+          people_served?: number
+          pillar_id?: string | null
+          project_title?: string | null
+          purpose?: string | null
+          report_due_date?: string | null
+          report_received_at?: string | null
+          selection_criteria?: string | null
+          sort_order?: number
+          stage?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fdn_grants_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fdn_grants_pillar_id_fkey"
+            columns: ["pillar_id"]
+            isOneToOne: false
+            referencedRelation: "fdn_pillars"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fdn_impact_metrics: {
         Row: {
           actual: number
@@ -2600,6 +2800,74 @@ export type Database = {
             columns: ["pillar_id"]
             isOneToOne: false
             referencedRelation: "fdn_pillars"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fdn_insurance: {
+        Row: {
+          annual_premium: number
+          broker: string | null
+          carrier: string | null
+          coverage_limit: number
+          coverage_type: string
+          created_at: string
+          deductible: number
+          deleted_at: string | null
+          effective_date: string | null
+          expires_at: string | null
+          household_id: string
+          id: string
+          notes: string | null
+          policy_number: string | null
+          sort_order: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          annual_premium?: number
+          broker?: string | null
+          carrier?: string | null
+          coverage_limit?: number
+          coverage_type: string
+          created_at?: string
+          deductible?: number
+          deleted_at?: string | null
+          effective_date?: string | null
+          expires_at?: string | null
+          household_id: string
+          id?: string
+          notes?: string | null
+          policy_number?: string | null
+          sort_order?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          annual_premium?: number
+          broker?: string | null
+          carrier?: string | null
+          coverage_limit?: number
+          coverage_type?: string
+          created_at?: string
+          deductible?: number
+          deleted_at?: string | null
+          effective_date?: string | null
+          expires_at?: string | null
+          household_id?: string
+          id?: string
+          notes?: string | null
+          policy_number?: string | null
+          sort_order?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fdn_insurance_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
             referencedColumns: ["id"]
           },
         ]
@@ -2877,6 +3145,7 @@ export type Database = {
       }
       fdn_settings: {
         Row: {
+          admin_expense_annual: number
           annual_grant_budget: number
           core_values: Json
           created_at: string
@@ -2885,15 +3154,22 @@ export type Database = {
           endowment_target: number
           foundation_name: string
           founding_year: number
+          fundraising_expense_annual: number
           household_id: string
           id: string
           legacy_statement: string | null
           mission: string | null
+          mrd_avg_assets: number
+          mrd_carryover: number
+          mrd_qualifying_admin: number
+          spending_policy_pct: number
+          staff_count: number
           tagline: string | null
           updated_at: string
           vision: string | null
         }
         Insert: {
+          admin_expense_annual?: number
           annual_grant_budget?: number
           core_values?: Json
           created_at?: string
@@ -2902,15 +3178,22 @@ export type Database = {
           endowment_target?: number
           foundation_name?: string
           founding_year?: number
+          fundraising_expense_annual?: number
           household_id: string
           id?: string
           legacy_statement?: string | null
           mission?: string | null
+          mrd_avg_assets?: number
+          mrd_carryover?: number
+          mrd_qualifying_admin?: number
+          spending_policy_pct?: number
+          staff_count?: number
           tagline?: string | null
           updated_at?: string
           vision?: string | null
         }
         Update: {
+          admin_expense_annual?: number
           annual_grant_budget?: number
           core_values?: Json
           created_at?: string
@@ -2919,10 +3202,16 @@ export type Database = {
           endowment_target?: number
           foundation_name?: string
           founding_year?: number
+          fundraising_expense_annual?: number
           household_id?: string
           id?: string
           legacy_statement?: string | null
           mission?: string | null
+          mrd_avg_assets?: number
+          mrd_carryover?: number
+          mrd_qualifying_admin?: number
+          spending_policy_pct?: number
+          staff_count?: number
           tagline?: string | null
           updated_at?: string
           vision?: string | null
