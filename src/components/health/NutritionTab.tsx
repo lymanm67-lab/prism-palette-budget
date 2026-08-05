@@ -33,6 +33,8 @@ import {
 } from '@/hooks/use-health';
 import MealScanner from '@/components/health/MealScanner';
 import SupplementsCard from '@/components/health/SupplementsCard';
+import { toast } from 'sonner';
+
 
 
 export default function NutritionTab() {
