@@ -31,7 +31,15 @@ export default function GroceryTab() {
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {([
-          ['Grocery budget', fmtMoney(stats.budget), stats.monthLabel],
+          [
+            'Grocery budget',
+            fmtMoney(stats.budget),
+            stats.budgetSource === 'current'
+              ? `From Budgets — ${stats.monthLabel}`
+              : stats.budgetSource === 'carried'
+                ? `Carried from ${stats.budgetMonthLabel}`
+                : 'No grocery budget set yet',
+          ],
           ['Spent so far', fmtMoney(stats.spent), 'Reimbursements netted out'],
           ['Remaining', fmtMoney(stats.remaining), stats.remaining >= 0 ? 'On plan' : 'Over budget'],
           ['Cost per prepped meal', fmtMoney(costPerMeal), `${mealCount} meals tracked`],
@@ -59,8 +67,37 @@ export default function GroceryTab() {
               ? `${Math.round(usedPct * 100)}% of the grocery budget used.`
               : 'No grocery budget found for this month — set one on the Budgets page and it will appear here.'}
           </p>
+          {stats.categoryNames.length > 0 && (
+            <p className="text-xs text-muted-foreground">
+              Pulling from categories: {stats.categoryNames.join(', ')}
+            </p>
+          )}
         </CardContent>
       </Card>
+
+      {stats.recent.length > 0 && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Receipt className="h-4 w-4 text-prism-teal" /> Recent grocery transactions
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="divide-y divide-border">
+            {stats.recent.map((t) => (
+              <div key={t.id} className="flex items-center justify-between py-2 text-sm">
+                <span className="truncate pr-3">{t.merchant}</span>
+                <span className="flex shrink-0 items-center gap-3 text-muted-foreground">
+                  <span className="text-xs">{t.date}</span>
+                  <span className="tabular-nums font-medium text-foreground">
+                    {fmtMoney(t.amount)}
+                  </span>
+                </span>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
 
       {stats.trend.length > 0 && (
         <Card>
