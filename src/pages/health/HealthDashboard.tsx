@@ -11,6 +11,7 @@ import ProductivityTab from '@/components/health/ProductivityTab';
 import LongevityTab from '@/components/health/LongevityTab';
 import HealthCoachTab from '@/components/health/HealthCoachTab';
 import HealthProfileTab from '@/components/health/HealthProfileTab';
+import HealthImportTab from '@/components/health/HealthImportTab';
 
 const TABS = [
   { value: 'dashboard', label: 'Command Center' },
@@ -22,6 +23,7 @@ const TABS = [
   { value: 'productivity', label: 'Performance' },
   { value: 'longevity', label: 'Longevity' },
   { value: 'coach', label: 'AI Coach' },
+  { value: 'import', label: 'Import (Apple Health)' },
   { value: 'profile', label: 'Profile' },
 ];
 
@@ -77,6 +79,9 @@ export default function HealthDashboard() {
         </TabsContent>
         <TabsContent value="coach" className="mt-6">
           <HealthCoachTab />
+        </TabsContent>
+        <TabsContent value="import" className="mt-6">
+          <HealthImportTab />
         </TabsContent>
         <TabsContent value="profile" className="mt-6">
           <HealthProfileTab />
