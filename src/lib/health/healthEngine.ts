@@ -472,6 +472,16 @@ export const BREAKFAST_OPTIONS: BreakfastOption[] = [
     ],
     facts: { calories: 325, protein: 20, carbs: 31, fiber: 7, fat: 16 },
   },
+  {
+    key: 'oatmeal_eggs_toast',
+    label: 'Oatmeal with almond milk, Stevia, and cinnamon + eggs + toast',
+    items: [
+      '🥣 Oatmeal with almond milk, Stevia, and cinnamon',
+      '🍳 2 eggs',
+      '🍞 1 slice L\'Oven Fresh 45 Calorie 100% Whole Wheat Bread',
+    ],
+    facts: { calories: 365, protein: 21, carbs: 36, fiber: 6, fat: 17 },
+  },
 ];
 
 // ----------------------------------------------------------- meal prep planner
