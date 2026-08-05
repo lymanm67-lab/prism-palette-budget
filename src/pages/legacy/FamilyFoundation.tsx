@@ -14,22 +14,40 @@ import {
   useFdnLegacyNodes,
 } from '@/hooks/use-foundation';
 import { exportFoundationBinder } from '@/lib/legacy/foundationExport';
+import { useFdnOpsSeed } from '@/hooks/use-foundation-ops';
 import FoundationDashboardTab from '@/components/foundation/FoundationDashboardTab';
 import MissionValuesTab from '@/components/foundation/MissionValuesTab';
 import PillarsTab from '@/components/foundation/PillarsTab';
 import RoadmapTab from '@/components/foundation/RoadmapTab';
 import RelationshipMapTab from '@/components/foundation/RelationshipMapTab';
 import LegacyMapTab from '@/components/foundation/LegacyMapTab';
+import FundingTab from '@/components/foundation/FundingTab';
+import InvestmentsTab from '@/components/foundation/InvestmentsTab';
+import GovernanceTab from '@/components/foundation/GovernanceTab';
+import ComplianceTab from '@/components/foundation/ComplianceTab';
+import ImpactTab from '@/components/foundation/ImpactTab';
+import SuccessionTab from '@/components/foundation/SuccessionTab';
+import DocumentVaultTab from '@/components/foundation/DocumentVaultTab';
+import AiAdvisorTab from '@/components/foundation/AiAdvisorTab';
 
 
 const TABS = [
   { value: 'dashboard', label: 'Executive Dashboard' },
+  { value: 'impact', label: 'Impact & Legacy Score' },
   { value: 'mission', label: 'Mission & Values' },
   { value: 'pillars', label: 'Five Pillars' },
   { value: 'roadmap', label: '5-Year Roadmap' },
+  { value: 'funding', label: 'Funding & Donors' },
+  { value: 'investments', label: 'Endowment' },
+  { value: 'governance', label: 'Governance' },
+  { value: 'compliance', label: 'Compliance' },
+  { value: 'succession', label: 'Succession' },
   { value: 'relationships', label: 'Relationship Map' },
+  { value: 'documents', label: 'Document Vault' },
+  { value: 'advisor', label: 'AI Advisor' },
   { value: 'legacy', label: 'Legacy Map' },
 ];
+
 
 export default function FamilyFoundation() {
   const [params, setParams] = useSearchParams();
