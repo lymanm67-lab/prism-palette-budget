@@ -11,6 +11,7 @@ import {
   SUCCESSION_SEEDS,
   IMPACT_SEEDS,
 } from '@/lib/legacy/foundationOps';
+import { INSURANCE_SEEDS, BENCHMARK_SEEDS } from '@/lib/legacy/foundationGrants';
 
 const sb = supabase as any;
 
@@ -21,7 +22,10 @@ export type FdnOpsTable =
   | 'fdn_compliance'
   | 'fdn_impact_metrics'
   | 'fdn_succession'
-  | 'fdn_documents';
+  | 'fdn_documents'
+  | 'fdn_grants'
+  | 'fdn_insurance'
+  | 'fdn_benchmarks';
 
 function useOpsList(table: FdnOpsTable, orderBy = 'created_at', ascending = true) {
   const { household } = useHousehold();
@@ -48,6 +52,10 @@ export const useFdnCompliance = () => useOpsList('fdn_compliance', 'sort_order')
 export const useFdnImpactMetrics = () => useOpsList('fdn_impact_metrics', 'sort_order');
 export const useFdnSuccession = () => useOpsList('fdn_succession', 'sort_order');
 export const useFdnDocuments = () => useOpsList('fdn_documents', 'created_at', false);
+export const useFdnGrants = () => useOpsList('fdn_grants', 'created_at', false);
+export const useFdnInsurance = () => useOpsList('fdn_insurance', 'sort_order');
+export const useFdnBenchmarks = () => useOpsList('fdn_benchmarks', 'sort_order');
+
 
 export function useSaveFdnOpsRow(table: FdnOpsTable) {
   const { household } = useHousehold();
