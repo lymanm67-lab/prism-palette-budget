@@ -346,6 +346,14 @@
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+/* Safe area for mobile top bar (status bar / notch) */
+.safe-area-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.safe-area-top-offset {
+  margin-top: env(safe-area-inset-top, 0px);
+}
+
 /* Focus visible styles for accessibility */
 :focus-visible {
   outline: 2px solid hsl(var(--ring));

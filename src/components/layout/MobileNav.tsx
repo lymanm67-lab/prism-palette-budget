@@ -56,7 +56,7 @@ const MobileNav = () => {
   return (
     <>
       {/* Top bar */}
-      <header className="flex lg:hidden items-center justify-between px-4 h-14 border-b border-border bg-card/80 backdrop-blur-md fixed top-0 left-0 right-0 z-[60]">
+      <header className="flex lg:hidden items-center justify-between px-4 h-14 box-content safe-area-top border-b border-border bg-card/80 backdrop-blur-md fixed top-0 left-0 right-0 z-[60]">
         <button
           onClick={() => setMenuOpen(prev => !prev)}
           className="h-11 w-11 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-muted active:animate-haptic-press"
@@ -87,7 +87,7 @@ const MobileNav = () => {
               onClick={() => setMenuOpen(false)}
             />
             <motion.div
-              className="fixed top-14 bottom-16 left-0 right-0 z-[70] lg:hidden flex min-h-0 flex-col overflow-hidden bg-card border-b border-border shadow-xl safe-area-bottom"
+              className="fixed top-14 safe-area-top-offset bottom-16 left-0 right-0 z-[70] lg:hidden flex min-h-0 flex-col overflow-hidden bg-card border-b border-border shadow-xl safe-area-bottom"
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
