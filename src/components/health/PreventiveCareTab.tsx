@@ -347,6 +347,7 @@ export default function PreventiveCareTab() {
   const save = useSavePreventiveCare();
   const del = useDeletePreventiveCare();
   const delDoc = useDeleteMedicalDocument();
+  const parseDoc = useParseMedicalDocument();
 
   const [addOpen, setAddOpen] = useState(false);
   const [uploadOpen, setUploadOpen] = useState(false);
