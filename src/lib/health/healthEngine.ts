@@ -384,7 +384,10 @@ export const BOWL_PROTEINS: FoodOption[] = [
   { key: 'chicken', label: 'Grilled chicken breast', serving: '6 oz', facts: { calories: 280, protein: 52, carbs: 0, fiber: 0, fat: 6 } },
   { key: 'shrimp', label: 'Shrimp', serving: '6 oz', facts: { calories: 170, protein: 36, carbs: 1, fiber: 0, fat: 2 } },
   { key: 'turkey', label: 'Ground turkey (93%)', serving: '6 oz', facts: { calories: 300, protein: 46, carbs: 0, fiber: 0, fat: 12 } },
+  { key: 'sausage_shrimp', label: 'Andouille sausage + shrimp (Cajun)', serving: '3 oz + 3 oz', facts: { calories: 305, protein: 30, carbs: 2, fiber: 0, fat: 19 } },
+  { key: 'shrimp_chicken', label: 'Shrimp + grilled chopped chicken', serving: '3 oz + 3 oz', facts: { calories: 225, protein: 44, carbs: 1, fiber: 0, fat: 4 } },
 ];
+
 
 export const BOWL_VEGETABLES: FoodOption[] = [
   { key: 'onions', label: 'Grilled onions', serving: '1/2 cup', facts: { calories: 35, protein: 1, carbs: 8, fiber: 1.5, fat: 0 } },
@@ -399,7 +402,9 @@ export const BOWL_CARBS: FoodOption[] = [
   { key: 'rice', label: 'Half cup rice', serving: '1/2 cup cooked', facts: { calories: 105, protein: 2, carbs: 22, fiber: 0.5, fat: 0 } },
   { key: 'half_half', label: 'Half rice / half cauliflower rice', serving: '1/2 + 1/2 cup', facts: { calories: 65, protein: 2, carbs: 13, fiber: 1.5, fat: 0 } },
   { key: 'cauli', label: 'Cauliflower rice only', serving: '1 cup', facts: { calories: 25, protein: 2, carbs: 5, fiber: 2, fat: 0 } },
+  { key: 'cajun_rice', label: 'Cajun rice (peppers, onions, Cajun spice)', serving: '1/2 cup cooked', facts: { calories: 130, protein: 3, carbs: 25, fiber: 1.5, fat: 2 } },
 ];
+
 
 export const SEASONINGS = ['Cajun', 'Garlic Herb', 'Lemon Pepper', 'Southwest', 'Mediterranean', 'Light Teriyaki'];
 
