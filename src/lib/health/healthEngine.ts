@@ -464,13 +464,13 @@ export const BREAKFAST_OPTIONS: BreakfastOption[] = [
   },
   {
     key: 'omelette_toast',
-    label: 'Onion & pepper omelette with wheat toast',
+    label: 'Onion & pepper omelette with L\'oven Fresh wheat toast',
     items: [
       '2 whole eggs (onion + bell pepper omelette)',
-      '2 slices 45-calorie wheat toast',
+      '2 slices L\'oven Fresh 45-calorie whole wheat toast (13g net carbs, 4g fiber)',
       'Sautéed onions and peppers',
     ],
-    facts: { calories: 320, protein: 20, carbs: 24, fiber: 6, fat: 16 },
+    facts: { calories: 325, protein: 20, carbs: 31, fiber: 7, fat: 16 },
   },
 ];
 
