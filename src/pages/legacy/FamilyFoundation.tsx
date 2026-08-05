@@ -84,7 +84,15 @@ export default function FamilyFoundation() {
         ]}
       />
 
+      <div className="flex justify-end">
+        <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting} className="gap-1.5">
+          <FileDown className="h-4 w-4" />
+          Export PDF Binder
+        </Button>
+      </div>
+
       <h1 className="sr-only">Dr. Lyman A. Montgomery Family Foundation Planning Module</h1>
+
 
       <Tabs
         value={tab}
