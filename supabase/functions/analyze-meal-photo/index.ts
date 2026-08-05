@@ -55,25 +55,28 @@ serve(async (req) => {
           {
             role: "system",
             content:
-              "You are a registered-dietitian-grade food vision analyst. Estimate the nutrition of the meal in the photo using standard USDA nutritional values. " +
-              "Identify each visible food item, estimate its portion (oz, cups, pieces) and its calories/protein/carbs/fiber/fat. " +
+              "You are a registered-dietitian-grade food analyst. Estimate the nutrition of the described or photographed meal using standard USDA nutritional values. " +
+              "Identify each food item, estimate its portion (oz, cups, pieces) and its calories/protein/carbs/fiber/fat. " +
               'Return ONLY valid JSON, no markdown: {"name":string,"meal_type":"breakfast"|"lunch"|"dinner"|"snack","confidence":"high"|"medium"|"low",' +
               '"items":[{"label":string,"portion":string,"calories":number,"protein_g":number,"carbs_g":number,"fiber_g":number,"fat_g":number}],' +
               '"totals":{"calories":number,"protein_g":number,"carbs_g":number,"fiber_g":number,"fat_g":number},"notes":string}. ' +
-              "Totals must equal the sum of items. Keep notes under 200 characters. If the photo is not food, return items as an empty array and explain in notes.",
+              "Totals must equal the sum of items. Keep notes under 200 characters. If the input is not food, return items as an empty array and explain in notes.",
           },
           {
             role: "user",
             content: [
               {
                 type: "text",
-                text: note
-                  ? `Analyze this meal photo and estimate calories and macros. User context: ${note}`
-                  : "Analyze this meal photo and estimate calories and macros.",
+                text: hasImage
+                  ? note
+                    ? `Analyze this meal photo and estimate calories and macros. User context: ${note}`
+                    : "Analyze this meal photo and estimate calories and macros."
+                  : `Estimate calories and macros for this meal described by the user: ${description}`,
               },
-              { type: "image_url", image_url: { url: image } },
+              ...(hasImage ? [{ type: "image_url", image_url: { url: image } }] : []),
             ],
           },
+
         ],
       }),
     });
