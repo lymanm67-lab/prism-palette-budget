@@ -1,14 +1,26 @@
 import { useSearchParams } from 'react-router-dom';
-import { Landmark } from 'lucide-react';
+import { Landmark, FileDown } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 import PageOverview from '@/components/PageOverview';
-import { useFdnSeed } from '@/hooks/use-foundation';
+import {
+  useFdnSeed,
+  useFdnSettings,
+  useFdnPillars,
+  useFdnInitiatives,
+  useFdnRoadmap,
+  useFdnRelationships,
+  useFdnLegacyNodes,
+} from '@/hooks/use-foundation';
+import { exportFoundationBinder } from '@/lib/legacy/foundationExport';
 import FoundationDashboardTab from '@/components/foundation/FoundationDashboardTab';
 import MissionValuesTab from '@/components/foundation/MissionValuesTab';
 import PillarsTab from '@/components/foundation/PillarsTab';
 import RoadmapTab from '@/components/foundation/RoadmapTab';
 import RelationshipMapTab from '@/components/foundation/RelationshipMapTab';
 import LegacyMapTab from '@/components/foundation/LegacyMapTab';
+
 
 const TABS = [
   { value: 'dashboard', label: 'Executive Dashboard' },
@@ -23,8 +35,37 @@ export default function FamilyFoundation() {
   const [params, setParams] = useSearchParams();
   useFdnSeed();
 
+  const settings = useFdnSettings();
+  const pillars = useFdnPillars();
+  const initiatives = useFdnInitiatives();
+  const roadmap = useFdnRoadmap();
+  const relationships = useFdnRelationships();
+  const legacyNodes = useFdnLegacyNodes();
+
+  const exporting =
+    settings.isLoading ||
+    pillars.isLoading ||
+    initiatives.isLoading ||
+    roadmap.isLoading ||
+    relationships.isLoading ||
+    legacyNodes.isLoading;
+
+  const handleExport = () => {
+    const ok = exportFoundationBinder({
+      settings: settings.data ?? null,
+      pillars: pillars.data ?? [],
+      initiatives: initiatives.data ?? [],
+      roadmap: roadmap.data ?? [],
+      relationships: relationships.data ?? [],
+      legacyNodes: legacyNodes.data ?? [],
+    });
+    if (!ok) toast.error('Allow pop-ups for this site to export the binder.');
+    else toast.success('Binder ready — choose "Save as PDF" in the print dialog.');
+  };
+
   const requested = params.get('tab') ?? 'dashboard';
   const tab = TABS.some((t) => t.value === requested) ? requested : 'dashboard';
+
 
   return (
     <div className="container mx-auto space-y-6 px-4 py-6">
@@ -43,7 +84,15 @@ export default function FamilyFoundation() {
         ]}
       />
 
+      <div className="flex justify-end">
+        <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting} className="gap-1.5">
+          <FileDown className="h-4 w-4" />
+          Export PDF Binder
+        </Button>
+      </div>
+
       <h1 className="sr-only">Dr. Lyman A. Montgomery Family Foundation Planning Module</h1>
+
 
       <Tabs
         value={tab}
