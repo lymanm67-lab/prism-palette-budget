@@ -8,7 +8,33 @@ import type { PreventiveItem } from '@/lib/health/sleepRecovery';
 const sb = supabase as any;
 const BUCKET = 'medical-documents';
 
+export type ParsedResult = {
+  name: string;
+  value: string;
+  unit?: string | null;
+  reference_range?: string | null;
+  flag?: 'normal' | 'low' | 'high' | 'abnormal' | 'unknown';
+};
+
+export type ParsedReport = {
+  report_type?: string;
+  report_date?: string | null;
+  provider?: string | null;
+  patient?: string | null;
+  results?: ParsedResult[];
+  diagnoses?: string[];
+  medications?: string[];
+  vitals?: { name: string; value: string }[];
+  key_findings?: string[];
+  follow_ups?: string[];
+  summary?: string;
+  confidence?: 'high' | 'medium' | 'low';
+};
+
 export type MedicalDocument = {
+  parse_status?: string | null;
+  parsed_at?: string | null;
+  parsed_summary?: ParsedReport | null;
   id: string;
   title: string;
   doc_type: string;
