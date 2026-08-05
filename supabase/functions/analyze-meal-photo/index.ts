@@ -35,9 +35,12 @@ serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const image = typeof body?.image === "string" ? body.image : "";
     const note = typeof body?.note === "string" ? body.note.slice(0, 400) : "";
-    if (!image.startsWith("data:image/") && !image.startsWith("http")) {
-      return json({ error: "A meal photo is required" }, 400);
+    const description = typeof body?.description === "string" ? body.description.slice(0, 600) : "";
+    const hasImage = image.startsWith("data:image/") || image.startsWith("http");
+    if (!hasImage && !description.trim()) {
+      return json({ error: "A meal photo or description is required" }, 400);
     }
+
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
