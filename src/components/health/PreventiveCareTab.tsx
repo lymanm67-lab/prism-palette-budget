@@ -41,8 +41,83 @@ import {
   useMedicalDocuments,
   useUploadMedicalDocument,
   useDeleteMedicalDocument,
+  useParseMedicalDocument,
   openMedicalDocument,
+  type MedicalDocument,
 } from '@/hooks/use-preventive-care';
+
+const FLAG_TONE: Record<string, string> = {
+  normal: 'text-emerald-600 dark:text-emerald-400',
+  low: 'text-amber-600 dark:text-amber-400',
+  high: 'text-destructive',
+  abnormal: 'text-destructive',
+  unknown: 'text-muted-foreground',
+};
+
+function ParsedReportView({ doc }: { doc: MedicalDocument }) {
+  const p = doc.parsed_summary;
+  if (!p) return null;
+  const list = (label: string, arr?: string[]) =>
+    arr && arr.length > 0 ? (
+      <div>
+        <p className="text-xs font-medium">{label}</p>
+        <ul className="list-disc pl-4 text-xs text-muted-foreground">
+          {arr.map((x, i) => (
+            <li key={i}>{x}</li>
+          ))}
+        </ul>
+      </div>
+    ) : null;
+
+  return (
+    <div className="mt-3 w-full space-y-3 rounded-lg border bg-muted/30 p-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <Badge variant="outline">AI extracted</Badge>
+        {p.report_type && <span className="text-xs text-muted-foreground">{p.report_type}</span>}
+        {p.report_date && <span className="text-xs text-muted-foreground">· {p.report_date}</span>}
+        {p.confidence && (
+          <span className="text-xs text-muted-foreground">· {p.confidence} confidence</span>
+        )}
+      </div>
+      {p.summary && <p className="text-sm">{p.summary}</p>}
+      {p.results && p.results.length > 0 && (
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead className="text-muted-foreground">
+              <tr>
+                <th className="py-1 text-left font-medium">Test</th>
+                <th className="py-1 text-left font-medium">Result</th>
+                <th className="py-1 text-left font-medium">Reference</th>
+              </tr>
+            </thead>
+            <tbody>
+              {p.results.map((r, i) => (
+                <tr key={i} className="border-t">
+                  <td className="py-1 pr-2">{r.name}</td>
+                  <td className={`py-1 pr-2 font-medium ${FLAG_TONE[r.flag ?? 'unknown'] ?? ''}`}>
+                    {r.value}
+                    {r.unit ? ` ${r.unit}` : ''}
+                  </td>
+                  <td className="py-1 text-muted-foreground">{r.reference_range ?? '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {p.vitals && p.vitals.length > 0 &&
+        list('Vitals', p.vitals.map((v) => `${v.name}: ${v.value}`))}
+      {list('Key findings', p.key_findings)}
+      {list('Diagnoses noted', p.diagnoses)}
+      {list('Medications noted', p.medications)}
+      {list('Follow-ups', p.follow_ups)}
+      <p className="text-[11px] text-muted-foreground">
+        AI extraction for your own records only — not medical advice. Always confirm against the
+        original report and your provider.
+      </p>
+    </div>
+  );
+}
 
 const money = (n: number) =>
   n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
