@@ -734,6 +734,7 @@ export function longevityEstimate(
   profile: HealthProfile | null,
   status: WeightStatus | null,
   score: ScoreBreakdown,
+  targetAge = 100,
 ): LongevityEstimate {
   const age = ageFrom(profile?.birth_date) ?? 59;
   const bmiNow = status?.bmi ?? null;
@@ -745,14 +746,16 @@ export function longevityEstimate(
 
   const fullSavings = 2200; // per year at goal weight
   const annualMedicalSavings = fullSavings * (removed / totalToRemove);
-  const yearsAhead = Math.max(1, 90 - age);
+  const yearsAhead = Math.max(1, targetAge - age);
   const lifetimeMedicalSavings = annualMedicalSavings * yearsAhead;
   const premiumSavings = 480 * (removed / totalToRemove);
 
-  // Base 78 years healthy life, extended by weight normalisation and habit score.
+  // Base 78 years healthy life, extended by weight normalisation, habit score,
+  // and a family-history longevity target (default 100+).
   const weightFactor = removed / totalToRemove; // 0 -> 1
   const habitFactor = score.total / 100;
-  const healthyLifeExpectancy = 78 + weightFactor * 4 + habitFactor * 3;
+  const familyHistoryBonus = Math.max(0, targetAge - 90);
+  const healthyLifeExpectancy = 78 + weightFactor * 6 + habitFactor * 6 + familyHistoryBonus;
   const yearsIndependentLiving = Math.max(0, healthyLifeExpectancy - age);
   const healthyAgingScore = Math.round(
     Math.min(100, 40 + weightFactor * 35 + habitFactor * 25),
