@@ -31,6 +31,9 @@ import {
   useSaveDailyLog,
   useTodayLog,
 } from '@/hooks/use-health';
+import MealScanner from '@/components/health/MealScanner';
+import SupplementsCard from '@/components/health/SupplementsCard';
+
 
 export default function NutritionTab() {
   const { data: profile } = useHealthProfile();
