@@ -129,7 +129,9 @@ export function buildFoundationDocument(d: DocSourceData): DocSection[] {
       `Vision. ${dash(s?.vision)}`,
       `Legacy statement. ${dash(s?.legacy_statement)}`,
     ],
-    bullets: (s?.core_values ?? []).map((v: any) => String(v)),
+    bullets: (s?.core_values ?? []).map((v: any) =>
+      typeof v === 'string' ? v : [v?.title ?? v?.name, v?.description].filter(Boolean).join(' — ')
+    ),
   });
 
   sections.push({
