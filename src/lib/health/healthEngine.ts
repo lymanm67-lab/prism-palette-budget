@@ -406,7 +406,7 @@ export const BOWL_CARBS: FoodOption[] = [
 ];
 
 
-export const SEASONINGS = ['Cajun', 'Garlic Herb', 'Lemon Pepper', 'Southwest', 'Mediterranean', 'Light Teriyaki'];
+export const SEASONINGS = ['Cajun', 'Garlic Herb', 'Lemon Pepper', 'Southwest', 'Mediterranean', 'Light Teriyaki', 'Salt and Pepper', 'Hot Sauce'];
 
 /** A tablespoon of olive oil for the grill/skillet. */
 export const COOKING_FAT: NutritionFacts = { calories: 120, protein: 0, carbs: 0, fiber: 0, fat: 14 };
