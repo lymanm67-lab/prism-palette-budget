@@ -280,9 +280,13 @@ export function weightStatus(profile: HealthProfile | null, logs: DailyLog[]): W
     lbsPerWeek = ((Number(first.weight) - Number(last.weight)) / days) * 7;
   }
 
+  // Projected goal date: use the actual trend when we have one, otherwise fall
+  // back to the planned 1.5 lb/week pace so the goal date is never blank.
+  const PLANNED_LBS_PER_WEEK = 1.5;
   let projectedGoalDate: string | null = null;
-  if (lbsPerWeek && lbsPerWeek > 0.05 && remaining > 0) {
-    projectedGoalDate = addDays(todayISO(), Math.round((remaining / lbsPerWeek) * 7));
+  if (remaining > 0) {
+    const rate = lbsPerWeek && lbsPerWeek > 0.05 ? lbsPerWeek : PLANNED_LBS_PER_WEEK;
+    projectedGoalDate = addDays(todayISO(), Math.round((remaining / rate) * 7));
   }
 
   const age = ageFrom(profile.birth_date);
