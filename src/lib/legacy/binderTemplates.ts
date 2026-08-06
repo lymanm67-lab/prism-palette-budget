@@ -880,12 +880,14 @@ const OPERATIONS: BinderTemplate[] = [
     build: (c) => P(
       heading('Principles'),
       bullets(['Every pillar has at least one output measure and one outcome measure.', 'Outcomes are collected from grantees, not estimated by the Foundation.', 'Baselines are recorded before funding begins.', 'Results, including failures, are reported to the Board annually.']),
-      heading('Current metrics'),
-      bullets(c.impactMetricsSafe ?? []),
+      heading('Current metrics by pillar'),
+      bullets(c.pillars.map((p) =>
+        `${dash(p.name)} — target ${dash(p.target_beneficiaries)}, served ${dash(p.actual_beneficiaries)}${Array.isArray(p.kpis) && p.kpis.length ? ` · KPIs: ${p.kpis.join(', ')}` : ''}`,
+      )),
       heading('Reporting cadence'),
       'Grantees report at the midpoint and close. The Board reviews an annual impact report before approving the following year budget.',
       NO_ADVICE,
-    ) as string,
+    ),
   },
   {
     section: 'operations', doc_code: 'OP-007', title: 'Staffing, Volunteer & Contractor Policy',
@@ -1384,14 +1386,6 @@ const EXECUTIVE: BinderTemplate[] = [
   },
 ];
 
-/* impact metric helper injected onto context at build time */
-declare module './binderTemplates' {}
-Object.defineProperty(Object.prototype, 'impactMetricsSafe', {
-  configurable: true,
-  get() {
-    return undefined;
-  },
-});
 
 export const BINDER_TEMPLATES: BinderTemplate[] = [
   ...LEGAL, ...GOVERNANCE, ...FINANCIAL, ...IRS_DOCS, ...OPERATIONS, ...COMPLIANCE, ...LEGACY, ...EXECUTIVE,
