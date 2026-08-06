@@ -316,7 +316,10 @@ export default function ExerciseTab() {
         </CardContent>
       </Card>
 
+      <CardioCard />
+
       <Card>
+
 
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
