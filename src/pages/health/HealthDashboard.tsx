@@ -14,12 +14,14 @@ import HealthProfileTab from '@/components/health/HealthProfileTab';
 import HealthImportTab from '@/components/health/HealthImportTab';
 import SleepRecoveryTab from '@/components/health/SleepRecoveryTab';
 import PreventiveCareTab from '@/components/health/PreventiveCareTab';
+import ExerciseTab from '@/components/health/ExerciseTab';
 
 const TABS = [
   { value: 'dashboard', label: 'Command Center' },
   { value: 'nutrition', label: 'Nutrition' },
   { value: 'prep', label: 'Meal Prep' },
   { value: 'grocery', label: 'Grocery Budget' },
+  { value: 'exercise', label: 'Exercise (Total Gym)' },
   { value: 'sleep', label: 'Sleep & Recovery' },
   { value: 'preventive', label: 'Preventive Care' },
   { value: 'milestones', label: 'Milestones' },
@@ -69,6 +71,9 @@ export default function HealthDashboard() {
         </TabsContent>
         <TabsContent value="grocery" className="mt-6">
           <GroceryTab />
+        </TabsContent>
+        <TabsContent value="exercise" className="mt-6">
+          <ExerciseTab />
         </TabsContent>
         <TabsContent value="sleep" className="mt-6">
           <SleepRecoveryTab />
