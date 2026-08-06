@@ -539,11 +539,10 @@ export const MILESTONE_REWARDS: Record<number, string> = {
   200: 'New walking shoes',
   190: 'New workout clothing',
   180: 'New wardrobe',
-  170: 'Fitness tracker upgrade',
-  160: 'Professional photo session, executive health assessment, weekend celebration with spouse',
+  175: 'Goal weight — professional photo session, executive health assessment, weekend celebration with spouse',
 };
 
-export const MILESTONE_WEIGHTS = [220, 210, 200, 190, 180, 170, 160];
+export const MILESTONE_WEIGHTS = [220, 210, 200, 190, 180, 175];
 
 export function projectMilestoneDate(
   target: number,
