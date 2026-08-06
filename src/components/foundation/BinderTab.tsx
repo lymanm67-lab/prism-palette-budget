@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react';
-import { FileText, Plus, Pencil, Trash2, Copy, Printer, History } from 'lucide-react';
+import { FileText, Plus, Pencil, Trash2, Copy, Printer, History, Sparkles, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -14,7 +16,8 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
-import { useFdnSettings } from '@/hooks/use-foundation';
+import { useFdnSettings, useFdnPillars, useFdnInitiatives } from '@/hooks/use-foundation';
+import { useFdnGovernance, useFdnCompliance, useFdnInvestments } from '@/hooks/use-foundation-ops';
 import BinderToolbar from '@/components/foundation/BinderToolbar';
 import {
   useBinderDocs, useSaveBinderDoc, useDeleteBinderDoc, useNewBinderVersion,
@@ -24,6 +27,7 @@ import {
   binderProgress, docControl, docFooter, latestVersions, nextDocCode,
   type BinderDoc, type BinderStatus,
 } from '@/lib/legacy/foundationBinder';
+
 
 const emptyForm = {
   id: '' as string,
