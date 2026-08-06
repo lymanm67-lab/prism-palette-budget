@@ -1,0 +1,1 @@
+UPDATE public.health_profile SET goal_weight = 175, updated_at = now();
