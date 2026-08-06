@@ -2265,6 +2265,96 @@ export type Database = {
           },
         ]
       }
+      fdn_binder_documents: {
+        Row: {
+          approved_on: string | null
+          body: string | null
+          created_at: string
+          cross_refs: string[]
+          deleted_at: string | null
+          doc_code: string
+          effective_on: string | null
+          household_id: string
+          id: string
+          notes: string | null
+          prepared_by: string | null
+          purpose: string | null
+          review_due_on: string | null
+          reviewed_by: string | null
+          section: string
+          sort_order: number
+          status: string
+          supersedes_id: string | null
+          tags: string[]
+          title: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          approved_on?: string | null
+          body?: string | null
+          created_at?: string
+          cross_refs?: string[]
+          deleted_at?: string | null
+          doc_code: string
+          effective_on?: string | null
+          household_id: string
+          id?: string
+          notes?: string | null
+          prepared_by?: string | null
+          purpose?: string | null
+          review_due_on?: string | null
+          reviewed_by?: string | null
+          section: string
+          sort_order?: number
+          status?: string
+          supersedes_id?: string | null
+          tags?: string[]
+          title: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          approved_on?: string | null
+          body?: string | null
+          created_at?: string
+          cross_refs?: string[]
+          deleted_at?: string | null
+          doc_code?: string
+          effective_on?: string | null
+          household_id?: string
+          id?: string
+          notes?: string | null
+          prepared_by?: string | null
+          purpose?: string | null
+          review_due_on?: string | null
+          reviewed_by?: string | null
+          section?: string
+          sort_order?: number
+          status?: string
+          supersedes_id?: string | null
+          tags?: string[]
+          title?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fdn_binder_documents_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fdn_binder_documents_supersedes_id_fkey"
+            columns: ["supersedes_id"]
+            isOneToOne: false
+            referencedRelation: "fdn_binder_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fdn_compliance: {
         Row: {
           authority: string | null
