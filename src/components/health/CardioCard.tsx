@@ -1,11 +1,17 @@
 import { useMemo, useState } from 'react';
+import { format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Footprints } from 'lucide-react';
+import { CalendarIcon, Footprints } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { useHealthProfile } from '@/hooks/use-health';
+
 
 type Activity = {
   id: string;
