@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dumbbell, CalendarDays, Target } from 'lucide-react';
+import { Dumbbell, CalendarDays, Target, Youtube } from 'lucide-react';
 import { useHealthProfile, useHealthLogs } from '@/hooks/use-health';
 import { weightStatus, projectMilestoneDate } from '@/lib/health/healthEngine';
 
@@ -371,10 +371,26 @@ export default function ExerciseTab() {
                     <span className="text-muted-foreground">Execution: </span>
                     {e.how}
                   </p>
-                  <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                  <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
                     <Badge variant="secondary">{e.sets}</Badge>
                     <Badge variant="secondary">{e.incline}</Badge>
                   </div>
+                  <a
+                    href={`https://www.youtube.com/results?search_query=${encodeURIComponent(
+                      `Total Gym ${e.name} exercise demonstration`,
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 flex items-center gap-3 rounded-md border bg-background/60 p-2 transition-colors hover:bg-accent"
+                  >
+                    <span className="flex h-10 w-16 items-center justify-center rounded bg-destructive/15">
+                      <Youtube className="h-5 w-5 text-destructive" />
+                    </span>
+                    <span className="text-xs">
+                      <span className="block font-medium">Watch demo on YouTube</span>
+                      <span className="text-muted-foreground">Total Gym {e.name}</span>
+                    </span>
+                  </a>
                 </div>
               ))}
             </TabsContent>
