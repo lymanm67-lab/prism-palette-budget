@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react';
-import { FileText, Plus, Pencil, Trash2, Copy, Printer, History } from 'lucide-react';
+import { FileText, Plus, Pencil, Trash2, Copy, Printer, History, Sparkles, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -14,7 +16,8 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
-import { useFdnSettings } from '@/hooks/use-foundation';
+import { useFdnSettings, useFdnPillars, useFdnInitiatives } from '@/hooks/use-foundation';
+import { useFdnGovernance, useFdnCompliance, useFdnInvestments } from '@/hooks/use-foundation-ops';
 import BinderToolbar from '@/components/foundation/BinderToolbar';
 import {
   useBinderDocs, useSaveBinderDoc, useDeleteBinderDoc, useNewBinderVersion,
@@ -24,6 +27,7 @@ import {
   binderProgress, docControl, docFooter, latestVersions, nextDocCode,
   type BinderDoc, type BinderStatus,
 } from '@/lib/legacy/foundationBinder';
+
 
 const emptyForm = {
   id: '' as string,
@@ -54,6 +58,14 @@ export default function BinderTab() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<Form>(emptyForm);
   const [historyFor, setHistoryFor] = useState<string | null>(null);
+  const [aiNotes, setAiNotes] = useState('');
+  const [writing, setWriting] = useState(false);
+
+  const pillars = useFdnPillars();
+  const initiatives = useFdnInitiatives();
+  const governance = useFdnGovernance();
+  const compliance = useFdnCompliance();
+  const investments = useFdnInvestments();
 
   const org = settings.data?.foundation_name ?? 'Dr. Lyman A. Montgomery Family Foundation';
   const all = docs.data ?? [];
@@ -61,6 +73,44 @@ export default function BinderTab() {
   const live = useMemo(() => latestVersions(sectionDocs), [sectionDocs]);
   const progress = useMemo(() => binderProgress(all), [all]);
   const def = BINDER_SECTIONS.find((s) => s.key === section)!;
+
+  const writeWithAi = async () => {
+    if (!form.title.trim()) { toast.error('Give the document a title first.'); return; }
+    setWriting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('binder-writer', {
+        body: {
+          mode: form.body.trim() ? 'polish' : 'draft',
+          org,
+          section: def.title,
+          doc_code: form.doc_code,
+          title: form.title,
+          purpose: form.purpose,
+          body: form.body,
+          instructions: aiNotes,
+          snapshot: {
+            settings: settings.data ?? null,
+            pillars: pillars.data ?? [],
+            initiatives: initiatives.data ?? [],
+            governance: governance.data ?? [],
+            compliance: compliance.data ?? [],
+            investments: investments.data ?? [],
+          },
+        },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      const body = (data as any)?.body as string;
+      if (!body) throw new Error('The writer returned no text.');
+      setForm((f) => ({ ...f, body }));
+      toast.success('Draft written — review before saving.');
+    } catch (e: any) {
+      toast.error(e.message ?? 'The document writer failed.');
+    } finally {
+      setWriting(false);
+    }
+  };
+
 
   const openNew = () => {
     setForm({ ...emptyForm, doc_code: nextDocCode(section, sectionDocs), sort_order: live.length });
@@ -235,14 +285,27 @@ ${d.purpose ? `<p class="purpose">${d.purpose}</p>` : ''}
                         <Label>Purpose</Label>
                         <Input value={form.purpose} onChange={(e) => setForm({ ...form, purpose: e.target.value })} />
                       </div>
-                      <div className="sm:col-span-2">
-                        <Label>Body</Label>
+                      <div className="sm:col-span-2 space-y-2">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <Label>Body</Label>
+                          <Button type="button" size="sm" variant="outline" className="gap-1.5"
+                            disabled={writing} onClick={writeWithAi}>
+                            {writing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                            {form.body.trim() ? 'Rewrite with AI' : 'Write with AI'}
+                          </Button>
+                        </div>
+                        <Input
+                          value={aiNotes}
+                          onChange={(e) => setAiNotes(e.target.value)}
+                          placeholder="Optional instructions for the AI writer (tone, clauses to include, dollar thresholds…)"
+                        />
                         <Textarea
                           rows={8}
                           value={form.body}
                           onChange={(e) => setForm({ ...form, body: e.target.value })}
-                          placeholder="Document text. Leave blank now — the AI document writer fills this in a later step."
+                          placeholder="Document text — or let the AI document writer draft it from your live foundation records."
                         />
+
                       </div>
                       <div>
                         <Label>Prepared by</Label>
