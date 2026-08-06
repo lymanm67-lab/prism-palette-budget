@@ -6,6 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dumbbell, CalendarDays, Target, Youtube } from 'lucide-react';
 import { useHealthProfile, useHealthLogs } from '@/hooks/use-health';
 import { weightStatus, projectMilestoneDate } from '@/lib/health/healthEngine';
+import CardioCard from '@/components/health/CardioCard';
+
 
 type Exercise = {
   name: string;
@@ -314,7 +316,10 @@ export default function ExerciseTab() {
         </CardContent>
       </Card>
 
+      <CardioCard />
+
       <Card>
+
 
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
