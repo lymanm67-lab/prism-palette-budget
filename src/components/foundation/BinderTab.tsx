@@ -82,7 +82,7 @@ export default function BinderTab() {
         body: {
           mode: form.body.trim() ? 'polish' : 'draft',
           org,
-          section: def.label,
+          section: def.title,
           doc_code: form.doc_code,
           title: form.title,
           purpose: form.purpose,
