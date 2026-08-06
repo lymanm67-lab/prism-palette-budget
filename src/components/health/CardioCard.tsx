@@ -41,7 +41,9 @@ export default function CardioCard() {
   const { data: profile } = useHealthProfile();
   const weight = profile?.current_weight ?? 220;
 
+  const [date, setDate] = useState<Date | undefined>(new Date());
   const [activityId, setActivityId] = useState('walk-brisk');
+
   const [mode, setMode] = useState<'time' | 'distance'>('time');
   const [minutes, setMinutes] = useState('30');
   const [miles, setMiles] = useState('2');
