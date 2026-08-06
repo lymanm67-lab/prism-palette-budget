@@ -1,11 +1,17 @@
 import { useMemo, useState } from 'react';
+import { format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Footprints } from 'lucide-react';
+import { CalendarIcon, Footprints } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { useHealthProfile } from '@/hooks/use-health';
+
 
 type Activity = {
   id: string;
@@ -35,7 +41,9 @@ export default function CardioCard() {
   const { data: profile } = useHealthProfile();
   const weight = profile?.current_weight ?? 220;
 
+  const [date, setDate] = useState<Date | undefined>(new Date());
   const [activityId, setActivityId] = useState('walk-brisk');
+
   const [mode, setMode] = useState<'time' | 'distance'>('time');
   const [minutes, setMinutes] = useState('30');
   const [miles, setMiles] = useState('2');
@@ -93,7 +101,32 @@ export default function CardioCard() {
           </div>
 
           <div className="space-y-1.5">
+            <Label>Date</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn('w-full justify-start text-left font-normal', !date && 'text-muted-foreground')}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {date ? format(date, 'PPP') : <span>Pick a date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={setDate}
+                  initialFocus
+                  className={cn('p-3 pointer-events-auto')}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          <div className="space-y-1.5">
             <Label>Enter by</Label>
+
             <Select value={mode} onValueChange={(v) => setMode(v as 'time' | 'distance')}>
               <SelectTrigger>
                 <SelectValue />
