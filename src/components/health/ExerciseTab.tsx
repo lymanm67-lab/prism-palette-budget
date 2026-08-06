@@ -290,7 +290,7 @@ export default function ExerciseTab() {
         </CardHeader>
         <CardContent className="space-y-3">
           <a
-            href="https://www.youtube.com/watch?v=8V5tJm2Gu_g"
+            href="https://www.google.com/search?tbm=vid&q=8V5tJm2Gu_g+Total+Gym"
             target="_blank"
             rel="noopener noreferrer"
             className="group relative block aspect-video w-full overflow-hidden rounded-lg border"
@@ -308,8 +308,8 @@ export default function ExerciseTab() {
             </span>
           </a>
           <p className="text-sm text-muted-foreground">
-            Opens on YouTube in a new tab (in-app playback is blocked by YouTube). Follow along for form
-            cues, then use the library below to build your push / pull / legs week.
+            Opens in Google Videos, avoiding the direct YouTube connection blocked by some browsers. Follow
+            along for form cues, then use the library below to build your push / pull / legs week.
           </p>
         </CardContent>
       </Card>
@@ -410,7 +410,7 @@ export default function ExerciseTab() {
                     <Badge variant="secondary">{e.incline}</Badge>
                   </div>
                   <a
-                    href={`https://www.youtube.com/results?search_query=${encodeURIComponent(`Total Gym ${e.name} exercise demonstration`)}`}
+                    href={`https://www.google.com/search?tbm=vid&q=${encodeURIComponent(`Total Gym ${e.name} exercise demonstration`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="mt-3 flex items-center gap-3 rounded-md border bg-background/60 p-2 transition-colors hover:bg-accent"
@@ -419,7 +419,7 @@ export default function ExerciseTab() {
                       <Youtube className="h-5 w-5 text-destructive" />
                     </span>
                     <span className="text-xs">
-                      <span className="block font-medium">Watch demo on YouTube</span>
+                      <span className="block font-medium">Find video demonstration</span>
                       <span className="text-muted-foreground">Total Gym {e.name}</span>
                     </span>
                   </a>
