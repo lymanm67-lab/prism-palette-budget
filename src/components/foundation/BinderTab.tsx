@@ -285,14 +285,27 @@ ${d.purpose ? `<p class="purpose">${d.purpose}</p>` : ''}
                         <Label>Purpose</Label>
                         <Input value={form.purpose} onChange={(e) => setForm({ ...form, purpose: e.target.value })} />
                       </div>
-                      <div className="sm:col-span-2">
-                        <Label>Body</Label>
+                      <div className="sm:col-span-2 space-y-2">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <Label>Body</Label>
+                          <Button type="button" size="sm" variant="outline" className="gap-1.5"
+                            disabled={writing} onClick={writeWithAi}>
+                            {writing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                            {form.body.trim() ? 'Rewrite with AI' : 'Write with AI'}
+                          </Button>
+                        </div>
+                        <Input
+                          value={aiNotes}
+                          onChange={(e) => setAiNotes(e.target.value)}
+                          placeholder="Optional instructions for the AI writer (tone, clauses to include, dollar thresholds…)"
+                        />
                         <Textarea
                           rows={8}
                           value={form.body}
                           onChange={(e) => setForm({ ...form, body: e.target.value })}
-                          placeholder="Document text. Leave blank now — the AI document writer fills this in a later step."
+                          placeholder="Document text — or let the AI document writer draft it from your live foundation records."
                         />
+
                       </div>
                       <div>
                         <Label>Prepared by</Label>
