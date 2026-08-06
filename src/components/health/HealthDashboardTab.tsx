@@ -89,7 +89,13 @@ export default function HealthDashboardTab() {
                     <p className="text-xl font-semibold">
                       {formatDate(status?.projectedGoalDate ?? profile.target_date)}
                     </p>
+                    <p className="text-xs text-prism-on-dark-muted">
+                      {status?.lbsPerWeek && status.lbsPerWeek > 0.05
+                        ? `at ${status.lbsPerWeek.toFixed(1)} lb/week actual`
+                        : 'at planned 1.5 lb/week'}
+                    </p>
                   </div>
+
                 </div>
               </div>
               <HealthRing
