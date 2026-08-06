@@ -284,6 +284,31 @@ export default function ExerciseTab() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
+            <Dumbbell className="h-5 w-5 text-prism-teal" />
+            Featured Total Gym workout
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="aspect-video w-full overflow-hidden rounded-lg border">
+            <iframe
+              className="h-full w-full"
+              src="https://www.youtube.com/embed/8V5tJm2Gu_g"
+              title="Featured Total Gym workout demonstration"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              loading="lazy"
+            />
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Follow along for form cues, then use the library below to build your push / pull / legs week.
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card>
+
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
             <Target className="h-5 w-5 text-prism-rose" />
             Goal date — {goal} lb
           </CardTitle>
