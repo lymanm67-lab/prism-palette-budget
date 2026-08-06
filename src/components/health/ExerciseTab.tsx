@@ -289,18 +289,27 @@ export default function ExerciseTab() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="aspect-video w-full overflow-hidden rounded-lg border">
-            <iframe
-              className="h-full w-full"
-              src="https://www.youtube.com/embed/8V5tJm2Gu_g"
-              title="Featured Total Gym workout demonstration"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
+          <a
+            href="https://www.youtube.com/watch?v=8V5tJm2Gu_g"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group relative block aspect-video w-full overflow-hidden rounded-lg border"
+          >
+            <img
+              src="https://i.ytimg.com/vi/8V5tJm2Gu_g/hqdefault.jpg"
+              alt="Featured Total Gym full-body workout demonstration thumbnail"
+              className="h-full w-full object-cover transition-transform group-hover:scale-105"
               loading="lazy"
             />
-          </div>
+            <span className="absolute inset-0 flex items-center justify-center bg-foreground/25">
+              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-destructive text-destructive-foreground shadow-lg">
+                <Youtube className="h-7 w-7" />
+              </span>
+            </span>
+          </a>
           <p className="text-sm text-muted-foreground">
-            Follow along for form cues, then use the library below to build your push / pull / legs week.
+            Opens on YouTube in a new tab (in-app playback is blocked by YouTube). Follow along for form
+            cues, then use the library below to build your push / pull / legs week.
           </p>
         </CardContent>
       </Card>
