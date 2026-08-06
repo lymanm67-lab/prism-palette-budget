@@ -58,6 +58,14 @@ export default function BinderTab() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<Form>(emptyForm);
   const [historyFor, setHistoryFor] = useState<string | null>(null);
+  const [aiNotes, setAiNotes] = useState('');
+  const [writing, setWriting] = useState(false);
+
+  const pillars = useFdnPillars();
+  const initiatives = useFdnInitiatives();
+  const governance = useFdnGovernance();
+  const compliance = useFdnCompliance();
+  const investments = useFdnInvestments();
 
   const org = settings.data?.foundation_name ?? 'Dr. Lyman A. Montgomery Family Foundation';
   const all = docs.data ?? [];
@@ -65,6 +73,44 @@ export default function BinderTab() {
   const live = useMemo(() => latestVersions(sectionDocs), [sectionDocs]);
   const progress = useMemo(() => binderProgress(all), [all]);
   const def = BINDER_SECTIONS.find((s) => s.key === section)!;
+
+  const writeWithAi = async () => {
+    if (!form.title.trim()) { toast.error('Give the document a title first.'); return; }
+    setWriting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('binder-writer', {
+        body: {
+          mode: form.body.trim() ? 'polish' : 'draft',
+          org,
+          section: def.label,
+          doc_code: form.doc_code,
+          title: form.title,
+          purpose: form.purpose,
+          body: form.body,
+          instructions: aiNotes,
+          snapshot: {
+            settings: settings.data ?? null,
+            pillars: pillars.data ?? [],
+            initiatives: initiatives.data ?? [],
+            governance: governance.data ?? [],
+            compliance: compliance.data ?? [],
+            investments: investments.data ?? [],
+          },
+        },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      const body = (data as any)?.body as string;
+      if (!body) throw new Error('The writer returned no text.');
+      setForm((f) => ({ ...f, body }));
+      toast.success('Draft written — review before saving.');
+    } catch (e: any) {
+      toast.error(e.message ?? 'The document writer failed.');
+    } finally {
+      setWriting(false);
+    }
+  };
+
 
   const openNew = () => {
     setForm({ ...emptyForm, doc_code: nextDocCode(section, sectionDocs), sort_order: live.length });
