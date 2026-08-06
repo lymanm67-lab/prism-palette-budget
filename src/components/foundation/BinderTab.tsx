@@ -15,6 +15,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { useFdnSettings } from '@/hooks/use-foundation';
+import BinderToolbar from '@/components/foundation/BinderToolbar';
 import {
   useBinderDocs, useSaveBinderDoc, useDeleteBinderDoc, useNewBinderVersion,
 } from '@/hooks/use-foundation-binder';
@@ -54,7 +55,7 @@ export default function BinderTab() {
   const [form, setForm] = useState<Form>(emptyForm);
   const [historyFor, setHistoryFor] = useState<string | null>(null);
 
-  const org = settings.data?.organization_name ?? 'Dr. Lyman A. Montgomery Family Foundation';
+  const org = settings.data?.foundation_name ?? 'Dr. Lyman A. Montgomery Family Foundation';
   const all = docs.data ?? [];
   const sectionDocs = useMemo(() => all.filter((d) => d.section === section), [all, section]);
   const live = useMemo(() => latestVersions(sectionDocs), [sectionDocs]);
@@ -173,6 +174,8 @@ ${d.purpose ? `<p class="purpose">${d.purpose}</p>` : ''}
           </div>
         </CardContent>
       </Card>
+
+      <BinderToolbar section={section} docs={all} />
 
       <Tabs value={section} onValueChange={setSection} className="space-y-4">
         <TabsList className="flex h-auto w-full flex-wrap justify-start gap-1">
