@@ -257,12 +257,6 @@ function fmtDate(iso: string | null) {
   });
 }
 
-function openYouTube(event: React.MouseEvent<HTMLAnchorElement>, url: string) {
-  event.preventDefault();
-  const opened = window.open(url, '_blank', 'noopener,noreferrer');
-  if (!opened) window.location.assign(url);
-}
-
 export default function ExerciseTab() {
   const { data: profile } = useHealthProfile();
   const { data: logs = [] } = useHealthLogs();
@@ -299,7 +293,6 @@ export default function ExerciseTab() {
             href="https://www.youtube.com/watch?v=8V5tJm2Gu_g"
             target="_blank"
             rel="noopener noreferrer"
-            onClick={(event) => openYouTube(event, 'https://www.youtube.com/watch?v=8V5tJm2Gu_g')}
             className="group relative block aspect-video w-full overflow-hidden rounded-lg border"
           >
             <img
@@ -420,12 +413,6 @@ export default function ExerciseTab() {
                     href={`https://www.youtube.com/results?search_query=${encodeURIComponent(`Total Gym ${e.name} exercise demonstration`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    onClick={(event) =>
-                      openYouTube(
-                        event,
-                        `https://www.youtube.com/results?search_query=${encodeURIComponent(`Total Gym ${e.name} exercise demonstration`)}`,
-                      )
-                    }
                     className="mt-3 flex items-center gap-3 rounded-md border bg-background/60 p-2 transition-colors hover:bg-accent"
                   >
                     <span className="flex h-10 w-16 items-center justify-center rounded bg-destructive/15">
