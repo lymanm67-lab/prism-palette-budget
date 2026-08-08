@@ -80,7 +80,6 @@ export default function CardioCard() {
         log_date: iso,
         miles: Number(existing?.miles ?? 0) + Number(result.dist.toFixed(2)),
         minutes_walked: Number(existing?.minutes_walked ?? 0) + Math.round(result.mins),
-        exercise_calories: Number(existing?.exercise_calories ?? 0) + Math.round(result.calories),
       },
       { onSuccess: () => toast.success('Session logged') },
     );
@@ -203,7 +202,7 @@ export default function CardioCard() {
             <Plus className="mr-1 h-4 w-4" /> Log this session
           </Button>
           <span className="text-xs text-muted-foreground">
-            Adds the miles and calories burned to that day's log and your nutrition energy balance.
+            Adds the miles and minutes to that day's log; the burn flows into your nutrition energy balance.
           </span>
         </div>
 
