@@ -8,6 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import InsightCard from '@/components/credit-health/InsightCard';
 import { useCreditAccounts } from '@/hooks/use-credit-accounts';
+import { useCreditInquiries } from '@/hooks/use-credit-inquiries';
 import { cn } from '@/lib/utils';
 
 const FACTORS = [
