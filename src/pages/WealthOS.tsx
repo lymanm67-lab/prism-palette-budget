@@ -6,6 +6,7 @@ import { simulate } from '@/lib/legacy/monteCarloSim';
 import { exportBinderPNGs, exportBinderPDF } from '@/lib/legacy/wealthOsExport';
 import RetirementProjection from '@/components/wealth-os/RetirementProjection';
 import CompoundingStatusCard from '@/components/wealth-os/crossover/CompoundingStatusCard';
+import FireNumberCard from '@/components/wealth-os/FireNumberCard';
 import { LegacyStepNav } from '@/components/legacy/LegacyStepNav';
 
 
@@ -641,6 +642,14 @@ export default function WealthOS() {
             annualContributions={28500}
             debtRedirectAnnual={11976}
             debtRedirectStartYear={2027}
+          />
+        </div>
+
+        <SectionLabel>FIRE Number &amp; Four Financial Gateways™</SectionLabel>
+        <div style={{ marginBottom: 14 }}>
+          <FireNumberCard
+            investedAssets={(B.retirement || 0) + (B.brokerage || 0) + (B.hsa || 0) + (B.emergency || 0) + (B.cash || 0)}
+            guaranteedMonthly={10059}
           />
         </div>
 
