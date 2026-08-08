@@ -50,15 +50,22 @@ function usePlanAssumptions() {
     queryFn: async () => {
       const { data } = await sb
         .from('investment_plans')
-        .select('annual_contribution,expected_return,retirement_age,annual_expenses_in_retirement')
+        .select(
+          'monthly_employee_contribution,monthly_employer_contribution,additional_monthly_amount,expected_return_pct,retirement_age',
+        )
         .eq('household_id', household!.id)
         .eq('is_active', true)
         .maybeSingle();
+      const monthly =
+        Number(data?.monthly_employee_contribution || 0) +
+        Number(data?.monthly_employer_contribution || 0) +
+        Number(data?.additional_monthly_amount || 0);
       return {
-        annualContribution: Number(data?.annual_contribution || 0),
-        returnRate: data?.expected_return != null ? Number(data.expected_return) / 100 : 0.08,
+        annualContribution: monthly * 12,
+        returnRate:
+          data?.expected_return_pct != null ? Number(data.expected_return_pct) / 100 : 0.08,
         retirementAge: data?.retirement_age != null ? Number(data.retirement_age) : 75,
-        annualRetirementSpend: Number(data?.annual_expenses_in_retirement || 0),
+        annualRetirementSpend: 0,
       };
     },
   });
