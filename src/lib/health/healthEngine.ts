@@ -412,6 +412,67 @@ export const BOWL_CARBS: FoodOption[] = [
 
 export const SEASONINGS = ['Cajun', 'Garlic Herb', 'Lemon Pepper', 'Southwest', 'Mediterranean', 'Light Teriyaki', 'Salt and Pepper', 'Hot Sauce'];
 
+/** Drinks: calories are per 8 oz. `hydration` = share of volume that counts toward the water goal. */
+export type DrinkOption = {
+  key: string;
+  label: string;
+  caloriesPer8oz: number;
+  hydration: number;
+  sugary?: boolean;
+};
+
+export const DRINK_OPTIONS: DrinkOption[] = [
+  { key: 'water', label: 'Water', caloriesPer8oz: 0, hydration: 1 },
+  { key: 'sparkling_water', label: 'Sparkling water (unsweetened)', caloriesPer8oz: 0, hydration: 1 },
+  { key: 'coffee_black', label: 'Coffee — black', caloriesPer8oz: 2, hydration: 0.8 },
+  { key: 'coffee_cream', label: 'Coffee — with cream/sugar', caloriesPer8oz: 60, hydration: 0.8 },
+  { key: 'tea_unsweet', label: 'Tea — unsweetened', caloriesPer8oz: 2, hydration: 1 },
+  { key: 'tea_sweet', label: 'Tea — sweetened', caloriesPer8oz: 70, hydration: 0.8, sugary: true },
+  { key: 'diet_soda', label: 'Diet soda', caloriesPer8oz: 0, hydration: 0.8 },
+  { key: 'soda', label: 'Soda (regular)', caloriesPer8oz: 100, hydration: 0.5, sugary: true },
+  { key: 'juice', label: 'Fruit juice', caloriesPer8oz: 110, hydration: 0.7, sugary: true },
+  { key: 'milk_2', label: 'Milk (2%)', caloriesPer8oz: 122, hydration: 0.8 },
+  { key: 'almond_milk', label: 'Unsweetened almond milk', caloriesPer8oz: 30, hydration: 0.9 },
+  { key: 'protein_shake', label: 'Protein shake', caloriesPer8oz: 150, hydration: 0.8 },
+  { key: 'sports_drink', label: 'Sports drink', caloriesPer8oz: 60, hydration: 0.9, sugary: true },
+  { key: 'energy_drink', label: 'Energy drink', caloriesPer8oz: 110, hydration: 0.6, sugary: true },
+  { key: 'beer', label: 'Beer', caloriesPer8oz: 100, hydration: 0.3 },
+  { key: 'wine', label: 'Wine', caloriesPer8oz: 200, hydration: 0.2 },
+];
+
+export function drinkNutrition(key: string, ounces: number) {
+  const d = DRINK_OPTIONS.find((x) => x.key === key) ?? DRINK_OPTIONS[0];
+  return {
+    drink: d,
+    calories: (d.caloriesPer8oz * ounces) / 8,
+    waterOz: d.hydration * ounces,
+  };
+}
+
+/** Calories in vs. calories out for one day. */
+export function energyBalance(opts: {
+  caloriesIn: number;
+  miles: number;
+  weightLb: number;
+  exerciseCalories?: number;
+  calorieGoal?: number;
+}) {
+  const walkingBurn = caloriesFromMiles(opts.miles, opts.weightLb);
+  const exerciseBurn = opts.exerciseCalories ?? 0;
+  const burned = walkingBurn + exerciseBurn;
+  const goal = opts.calorieGoal ?? 1700;
+  return {
+    caloriesIn: opts.caloriesIn,
+    walkingBurn,
+    exerciseBurn,
+    burned,
+    net: opts.caloriesIn - burned,
+    goal,
+    remaining: goal - opts.caloriesIn,
+    fatPounds: fatPoundsFromCalories(Math.max(0, goal - (opts.caloriesIn - burned))),
+  };
+}
+
 /** A tablespoon of olive oil for the grill/skillet. */
 export const COOKING_FAT: NutritionFacts = { calories: 120, protein: 0, carbs: 0, fiber: 0, fat: 14 };
 
