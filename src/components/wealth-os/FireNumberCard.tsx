@@ -68,16 +68,16 @@ export default function FireNumberCard({ investedAssets, guaranteedMonthly = 0 }
       { name: 'Freedom', sub: 'Assets fund life', monthly: monthly * 1.5 },
     ].map(g => {
       const grossTarget = (g.monthly * 12) / rate;
-      const net = Math.max(0, g.monthly - guaranteedMonthly);
+      const net = Math.max(0, g.monthly - guaranteed);
       const target = (net * 12) / rate;
-      const coverage = g.monthly > 0 ? (((investedAssets * rate) / 12 + guaranteedMonthly) / g.monthly) * 100 : 0;
+      const coverage = g.monthly > 0 ? (((investedAssets * rate) / 12 + guaranteed) / g.monthly) * 100 : 0;
       return { ...g, grossTarget, target, coverage, progress: target > 0 ? Math.min(100, (investedAssets / target) * 100) : 100 };
     });
     const fireNumber = annualExpenses / rate;
-    const adjusted = Math.max(0, (annualExpenses - guaranteedMonthly * 12)) / rate;
+    const adjusted = Math.max(0, (annualExpenses - guaranteed * 12)) / rate;
     const passedIdx = gateways.reduce((acc, g, i) => (g.coverage >= 100 ? i : acc), -1);
     return { fireNumber, adjusted, gateways, passedIdx, monthlyPassive: (investedAssets * rate) / 12 };
-  }, [annualExpenses, swr, investedAssets, guaranteedMonthly]);
+  }, [annualExpenses, swr, investedAssets, guaranteed]);
 
   return (
     <Card>
