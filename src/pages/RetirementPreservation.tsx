@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
 import { LegacyStepNav } from '@/components/legacy/LegacyStepNav';
+import HealthHorizonBanner from '@/components/legacy/HealthHorizonBanner';
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
   BarChart, Bar, LineChart, Line, ReferenceLine, Cell,
@@ -135,6 +136,9 @@ export default function RetirementPreservation() {
           Retirement Strategy: Social Security First • Portfolio Preservation Second
         </div>
       </header>
+
+      <HealthHorizonBanner />
+
 
       {/* Assumption controls */}
       <Section title="Planning Assumptions" subtitle="Every projection below recalculates instantly when these change.">

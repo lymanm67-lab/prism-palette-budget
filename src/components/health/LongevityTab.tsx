@@ -10,6 +10,7 @@ import {
   weightStatus,
 } from '@/lib/health/healthEngine';
 import { useHealthLogs, useHealthProfile } from '@/hooks/use-health';
+import LongevityDividendCard from '@/components/health/LongevityDividendCard';
 
 export default function LongevityTab() {
   const { data: profile } = useHealthProfile();
@@ -22,6 +23,8 @@ export default function LongevityTab() {
 
   return (
     <div className="space-y-6">
+      <LongevityDividendCard />
+
       <Card className="border-0 prism-gradient">
         <CardContent className="p-6 text-prism-on-dark">
           <p className="text-xs uppercase tracking-wide text-prism-on-dark-muted">

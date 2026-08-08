@@ -10,6 +10,7 @@ import FinancialHealthScore from '@/components/FinancialHealthScore';
 import GoalTrackerWidget from '@/components/GoalTrackerWidget';
 import ConsistencyTrackerCard from '@/components/health/ConsistencyTrackerCard';
 import MorningKickstartCard from '@/components/health/MorningKickstartCard';
+import CombinedLegacyScoreCard from '@/components/legacy/CombinedLegacyScoreCard';
 
 import SpendingAnomalyAlert from '@/components/SpendingAnomalyAlert';
 import { SafeToSpendHero } from '@/components/SafeToSpendHero';
@@ -432,6 +433,9 @@ Your Safe-to-Spend updates in real time as you add transactions, pay bills, and 
       <motion.div variants={item}>
         <FinancialHealthScore monthlyIncome={monthlyIncome} monthlyExpenses={monthlyExpenses} totalAssets={totalAssets} totalLiabilities={totalLiabilities} />
       </motion.div>
+
+      {/* Combined legacy score (wealth + health) */}
+      <motion.div variants={item}><CombinedLegacyScoreCard compact /></motion.div>
 
       {/* Health consistency + morning ritual */}
       <div className="grid gap-6 lg:grid-cols-2">
