@@ -268,6 +268,8 @@ export default function ExerciseTab() {
   const { data: profile } = useHealthProfile();
   const { data: logs = [] } = useHealthLogs();
   const [group, setGroup] = useState<string>('all');
+  const [coachExercise, setCoachExercise] = useState<string | null>(null);
+
   const { data: today } = useTodayLog();
   const saveLog = useSaveDailyLog();
   const [strengthMins, setStrengthMins] = useState('30');
