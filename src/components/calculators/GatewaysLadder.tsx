@@ -235,9 +235,9 @@ export default function GatewaysLadder({ annualExpenses, swr, current, monthlySa
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">{r.blurb}</p>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-3 text-xs">
-                      <div><div className="text-muted-foreground">Monthly need</div><div className="font-semibold">{fmt(r.monthlyNeed)}</div></div>
+                      <div><div className="text-muted-foreground">Monthly need</div><div className="font-semibold">{fmt(r.grossMonthly)}</div>{guaranteed > 0 && <div className="text-[10px] text-prism-teal">{fmt(r.monthlyNeed)} after income</div>}</div>
                       <div><div className="text-muted-foreground">Annual need</div><div className="font-semibold">{fmt(r.annualNeed)}</div></div>
-                      <div><div className="text-muted-foreground">Target number</div><div className="font-semibold text-primary">{fmt(r.target)}</div></div>
+                      <div><div className="text-muted-foreground">Target number</div><div className="font-semibold text-primary">{fmt(r.target)}</div>{r.reduction > 0 && <div className="text-[10px] text-prism-teal">−{fmt(r.reduction)} vs {fmt(r.grossTarget)}</div>}</div>
                       <div><div className="text-muted-foreground">Years away</div><div className="font-semibold">{r.months === 0 ? 'Reached' : r.months == null ? '> 60' : (r.months / 12).toFixed(1)}</div></div>
                     </div>
                     <Progress value={r.progress} className="mt-3" />
