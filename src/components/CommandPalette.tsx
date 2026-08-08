@@ -34,7 +34,15 @@ const PAGES = [
   { name: 'Debt Payoff', path: '/debt-payoff', icon: CreditCard, keywords: ['loans', 'strategy'] },
   { name: 'Investments', path: '/investments', icon: TrendingUp, keywords: ['portfolio', 'stocks'] },
   { name: 'Tax Assistant', path: '/tax-assistant', icon: FileText, keywords: ['taxes', 'deductions'] },
+  { name: 'Retirement Hub', path: '/retirement', icon: Layers, keywords: ['retirement', 'preservation', 'sequence risk', 'waterfall', 'withdrawal', 'crossover'] },
+  { name: 'Health Dashboard', path: '/health', icon: HeartPulse, keywords: ['health', 'wellness', 'longevity', 'weight', 'vitals'] },
+  { name: 'Longevity & Dividend', path: '/health?tab=longevity', icon: Sparkles, keywords: ['longevity', 'lifespan', 'horizon', 'dividend', 'legacy score'] },
+  { name: 'Nutrition & Meals', path: '/health?tab=nutrition', icon: HeartPulse, keywords: ['meals', 'calories', 'protein', 'food', 'bowl'] },
+  { name: 'Exercise & Coach Arty', path: '/health?tab=exercise', icon: Dumbbell, keywords: ['workout', 'total gym', 'cardio', 'walking', 'coach arty'] },
+  { name: 'Energy Report', path: '/health?tab=energy', icon: BarChart3, keywords: ['calories burned', 'water', 'progress', 'energy balance'] },
+  { name: 'Preventive Care', path: '/health?tab=preventive', icon: HeartPulse, keywords: ['doctor', 'labs', 'medical records', 'appointments'] },
 ];
+
 
 const ACTIONS = [
   { name: 'Add Transaction', action: 'add-transaction', icon: Receipt, keywords: ['new', 'create'] },
