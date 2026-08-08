@@ -125,12 +125,65 @@ export default function NutritionTab() {
       { calories: 0, protein: 0, carbs: 0, fiber: 0, fat: 0 },
     );
 
+  const balance = energyBalance({
+    caloriesIn: dayTotals.calories,
+    miles: Number(today?.miles ?? 0),
+    weightLb: Number(profile?.current_weight ?? 220),
+    exerciseCalories: Number((today as any)?.exercise_calories ?? 0),
+    calorieGoal: Number((profile as any)?.calorie_goal ?? 1700),
+  });
+
   return (
     <div className="space-y-6">
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Flame className="h-4 w-4 text-prism-orange" /> Daily calories &amp; energy balance
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+            {([
+              ['Calories in', Math.round(balance.caloriesIn), 'meals + drinks logged today'],
+              ['Walking burn', Math.round(balance.walkingBurn), `${Number(today?.miles ?? 0)} mi logged`],
+              ['Exercise burn', Math.round(balance.exerciseBurn), 'cardio & Total Gym sessions'],
+              ['Total burned', Math.round(balance.burned), 'walking + exercise'],
+              ['Net calories', Math.round(balance.net), `goal ${balance.goal} cal`],
+            ] as const).map(([label, value, hint]) => (
+              <div key={label} className="rounded-lg border bg-card p-3">
+                <p className="text-xs text-muted-foreground">{label}</p>
+                <p className="mt-1 text-lg font-semibold tabular-nums">{value.toLocaleString()}</p>
+                <p className="mt-0.5 text-[11px] text-muted-foreground">{hint}</p>
+              </div>
+            ))}
+          </div>
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            <Badge
+              variant="outline"
+              className={
+                balance.remaining >= 0
+                  ? 'border-prism-lime/30 bg-prism-lime/15 text-prism-lime'
+                  : 'border-prism-amber/30 bg-prism-amber/15 text-prism-amber'
+              }
+            >
+              {balance.remaining >= 0
+                ? `${Math.round(balance.remaining)} cal left today`
+                : `${Math.abs(Math.round(balance.remaining))} cal over goal`}
+            </Badge>
+            <Badge variant="secondary">
+              Deficit today ≈ {balance.fatPounds.toFixed(2)} lb of fat
+            </Badge>
+          </div>
+        </CardContent>
+      </Card>
+
       <MealScanner />
       <ManualMealCard />
 
+      <DrinksCard />
+
       <SupplementsCard />
+
 
       <Card>
         <CardHeader className="pb-3">
