@@ -16,6 +16,9 @@ import SleepRecoveryTab from '@/components/health/SleepRecoveryTab';
 import PreventiveCareTab from '@/components/health/PreventiveCareTab';
 import ExerciseTab from '@/components/health/ExerciseTab';
 import EnergyReportTab from '@/components/health/EnergyReportTab';
+import MorningKickstartCard from '@/components/health/MorningKickstartCard';
+import ConsistencyTrackerCard from '@/components/health/ConsistencyTrackerCard';
+
 
 const TABS = [
   { value: 'dashboard', label: 'Command Center' },
@@ -115,7 +118,9 @@ export default function HealthDashboard() {
         <TabsContent value="profile" className="mt-6">
           <HealthProfileTab />
         </TabsContent>
-      </Tabs>
+        </Tabs>
+      </div>
     </div>
+
   );
 }
