@@ -9,11 +9,12 @@ import PageOverview from "@/components/PageOverview";
 
 interface ScoreFactor {
   label: string;
-  value: number; // 0-100
+  value: number | null; // 0-100, or null when the data has not been entered
   weight: number;
   icon: typeof TrendingUp;
   color: string;
   description: string;
+  missingHint: string;
 }
 
 const BankabilityScore = () => {
