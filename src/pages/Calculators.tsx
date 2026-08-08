@@ -865,6 +865,39 @@ const Calculators = () => {
                       <span className="text-xs font-medium text-prism-amber whitespace-nowrap">Open →</span>
                     </a>
                   )}
+
+                  {/* Retirement + Health module shortcuts appended to Investing & Retirement group */}
+                  {group.label === 'Investing & Retirement' && !pickerSearch.trim() && (
+                    <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                      <a
+                        href="/retirement"
+                        className="flex items-center gap-3 rounded-xl border border-prism-teal/40 bg-gradient-to-br from-prism-teal/10 to-prism-teal/5 p-3 hover:border-prism-teal/60 hover:shadow-md transition-all group"
+                      >
+                        <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-background/60 backdrop-blur-sm group-hover:scale-110 transition-transform">
+                          <Target className="h-4 w-4 text-prism-teal" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="text-sm font-semibold">Retirement Hub</div>
+                          <div className="text-xs text-muted-foreground truncate">Optimizer, preservation, sequence risk, withdrawal tax.</div>
+                        </div>
+                        <span className="text-xs font-medium text-prism-teal whitespace-nowrap">Open →</span>
+                      </a>
+                      <a
+                        href="/health?tab=longevity"
+                        className="flex items-center gap-3 rounded-xl border border-prism-rose/40 bg-gradient-to-br from-prism-rose/10 to-prism-rose/5 p-3 hover:border-prism-rose/60 hover:shadow-md transition-all group"
+                      >
+                        <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-background/60 backdrop-blur-sm group-hover:scale-110 transition-transform">
+                          <Heart className="h-4 w-4 text-prism-rose" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="text-sm font-semibold">Longevity Dividend™</div>
+                          <div className="text-xs text-muted-foreground truncate">Health-adjusted planning horizon and combined legacy score.</div>
+                        </div>
+                        <span className="text-xs font-medium text-prism-rose whitespace-nowrap">Open →</span>
+                      </a>
+                    </div>
+                  )}
+
                 </div>
               );
             })}

@@ -9,6 +9,7 @@ import ReadinessMeter from '@/components/credit-health/ReadinessMeter';
 import InsightCard from '@/components/credit-health/InsightCard';
 import { useCreditAccounts } from '@/hooks/use-credit-accounts';
 import { useDisputes } from '@/hooks/use-disputes';
+import { useCreditInquiries } from '@/hooks/use-credit-inquiries';
 import { cn } from '@/lib/utils';
 
 type ReadinessLevel = 'not_ready' | 'improving' | 'nearly_ready' | 'ready';
@@ -23,40 +24,98 @@ const ApprovalReadiness = () => {
   const navigate = useNavigate();
   const { accounts } = useCreditAccounts();
   const { disputes } = useDisputes();
+  const { hard: inquiries } = useCreditInquiries();
 
   const assessment = useMemo(() => {
-    const totalBalance = accounts.reduce((s, a) => s + Number(a.balance), 0);
-    const totalLimit = accounts.reduce((s, a) => s + Number(a.credit_limit || 0), 0);
-    const utilization = totalLimit > 0 ? (totalBalance / totalLimit) * 100 : 0;
+    const revolving = accounts.filter(a => a.account_type === 'Revolving');
+    const totalBalance = revolving.reduce((s, a) => s + Number(a.balance), 0);
+    const totalLimit = revolving.reduce((s, a) => s + Number(a.credit_limit || 0), 0);
+    const hasRevolvingLimits = totalLimit > 0;
+    const utilization = hasRevolvingLimits ? (totalBalance / totalLimit) * 100 : null;
     const negativeCount = accounts.filter(a => ['Collection', 'Charge-Off', 'Foreclosure', 'Repossession'].includes(a.account_status)).length;
     const openDisputes = disputes.filter(d => ['submitted', 'in_progress'].includes(d.status)).length;
+    const withDates = accounts.filter(a => a.date_opened);
+    const hasPaymentData = accounts.some(a => !!a.payment_history) || negativeCount > 0;
 
-    // Score estimate
-    const utilizationScore = utilization <= 10 ? 100 : utilization <= 30 ? 80 : utilization <= 50 ? 55 : 15;
-    const negativeScore = negativeCount === 0 ? 100 : negativeCount <= 2 ? 40 : 15;
-    const raw = 300 + (550 * (utilizationScore * 0.20 + negativeScore * 0.28 + 50 * 0.13 + 50 * 0.11 + 50 * 0.08 + 80 * 0.20) / 100);
-    const score = accounts.length > 0 ? Math.min(850, Math.max(300, Math.round(raw))) : 0;
+    // Factor scores — null when the underlying data was never imported.
+    // No assumed/placeholder factor values are substituted.
+    const utilizationScore = utilization === null ? null : utilization <= 10 ? 100 : utilization <= 30 ? 80 : utilization <= 50 ? 55 : 15;
+    const negativeScore = !hasPaymentData ? null : negativeCount === 0 ? 100 : negativeCount <= 2 ? 40 : 15;
+    const avgAgeMonths = withDates.length > 0
+      ? withDates.reduce((sum, a) => sum + ((Date.now() - new Date(a.date_opened!).getTime()) / (1000 * 60 * 60 * 24 * 30)), 0) / withDates.length
+      : null;
+    const ageScore = avgAgeMonths === null ? null : avgAgeMonths >= 84 ? 100 : avgAgeMonths >= 48 ? 75 : avgAgeMonths >= 24 ? 55 : avgAgeMonths >= 12 ? 35 : 20;
+    const types = new Set(accounts.map(a => a.account_type));
+    const mixScore = accounts.length === 0 ? null : types.size >= 4 ? 100 : types.size >= 3 ? 75 : types.size >= 2 ? 50 : 30;
+
+    // Only estimate when payment history, utilization and credit age are all present.
+    const canEstimate = utilizationScore !== null && negativeScore !== null && ageScore !== null && mixScore !== null;
+    const score: number | null = canEstimate
+      ? Math.min(850, Math.max(300, Math.round(
+          300 + (550 * (
+            negativeScore! * 0.34 + utilizationScore! * 0.24 + ageScore! * 0.16 + mixScore! * 0.26
+          ) / 100)
+        )))
+      : null;
 
     const checklist: ChecklistItem[] = [
-      { label: 'Credit Score', status: score >= 670 ? 'pass' : score >= 580 ? 'warning' : 'fail', detail: score > 0 ? `Estimated score: ${score}` : 'Import reports to assess' },
-      { label: 'Credit Utilization', status: utilization <= 30 ? 'pass' : utilization <= 50 ? 'warning' : 'fail', detail: totalLimit > 0 ? `Currently at ${utilization.toFixed(0)}%` : 'No revolving accounts found' },
-      { label: 'Negative Items', status: negativeCount === 0 ? 'pass' : negativeCount <= 2 ? 'warning' : 'fail', detail: `${negativeCount} negative item${negativeCount !== 1 ? 's' : ''} found` },
-      { label: 'Open Disputes', status: openDisputes === 0 ? 'pass' : 'warning', detail: openDisputes > 0 ? `${openDisputes} disputes pending — wait for resolution` : 'No open disputes' },
-      { label: 'Recent Inquiries', status: 'pass', detail: 'Check your reports for recent hard pulls' },
-      { label: 'Payment History', status: negativeCount === 0 ? 'pass' : 'warning', detail: negativeCount === 0 ? 'No late payments detected' : 'Address any past-due accounts' },
+      {
+        label: 'Credit Score',
+        status: score === null ? 'warning' : score >= 670 ? 'pass' : score >= 580 ? 'warning' : 'fail',
+        detail: score === null
+          ? 'Score unavailable — import reports with payment history, limits and open dates'
+          : `Estimated score: ${score}`,
+      },
+      {
+        label: 'Credit Utilization',
+        status: utilization === null ? 'warning' : utilization <= 30 ? 'pass' : utilization <= 50 ? 'warning' : 'fail',
+        detail: utilization === null ? 'No revolving limits reported' : `Currently at ${utilization.toFixed(0)}%`,
+      },
+      {
+        label: 'Negative Items',
+        status: !hasPaymentData ? 'warning' : negativeCount === 0 ? 'pass' : negativeCount <= 2 ? 'warning' : 'fail',
+        detail: !hasPaymentData ? 'No payment data imported' : `${negativeCount} negative item${negativeCount !== 1 ? 's' : ''} found`,
+      },
+      {
+        label: 'Open Disputes',
+        status: openDisputes === 0 ? 'pass' : 'warning',
+        detail: openDisputes > 0 ? `${openDisputes} disputes pending — wait for resolution` : 'No open disputes',
+      },
+      {
+        label: 'Recent Inquiries',
+        status: inquiries.length === 0 ? 'warning' : inquiries.filter(i => {
+          const d = i.inquiry_date ? new Date(i.inquiry_date) : null;
+          return d ? (Date.now() - d.getTime()) / (1000 * 60 * 60 * 24) <= 365 : false;
+        }).length <= 2 ? 'pass' : 'warning',
+        detail: inquiries.length === 0
+          ? 'No inquiries logged — import reports to assess'
+          : `${inquiries.filter(i => {
+              const d = i.inquiry_date ? new Date(i.inquiry_date) : null;
+              return d ? (Date.now() - d.getTime()) / (1000 * 60 * 60 * 24) <= 365 : false;
+            }).length} hard pull(s) in the last 12 months`,
+      },
+      {
+        label: 'Payment History',
+        status: !hasPaymentData ? 'warning' : negativeCount === 0 ? 'pass' : 'warning',
+        detail: !hasPaymentData
+          ? 'No payment history imported'
+          : negativeCount === 0 ? 'No late payments detected' : 'Address any past-due accounts',
+      },
     ];
 
     const passes = checklist.filter(c => c.status === 'pass').length;
     const level: ReadinessLevel = passes >= 5 ? 'ready' : passes >= 4 ? 'nearly_ready' : passes >= 2 ? 'improving' : 'not_ready';
 
     const improvements: string[] = [];
-    if (utilization > 30) improvements.push(`Reduce utilization from ${utilization.toFixed(0)}% to below 30%`);
+    if (utilization !== null && utilization > 30) improvements.push(`Reduce utilization from ${utilization.toFixed(0)}% to below 30%`);
     if (negativeCount > 0) improvements.push('Dispute inaccurate negative items');
     if (openDisputes > 0) improvements.push('Wait for dispute resolutions before applying');
-    if (score < 670 && score > 0) improvements.push('Continue building positive credit history');
+    if (score !== null && score < 670) improvements.push('Continue building positive credit history');
+    if (score === null) improvements.push('Import full credit reports so the readiness estimate can be calculated');
 
     return { score, level, checklist, improvements, utilization };
-  }, [accounts, disputes]);
+  }, [accounts, disputes, inquiries]);
+
 
   const statusIcon = (s: string) => {
     if (s === 'pass') return <Check className="h-4 w-4 text-emerald-500" />;
