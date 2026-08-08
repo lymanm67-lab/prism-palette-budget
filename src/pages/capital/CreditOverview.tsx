@@ -275,17 +275,20 @@ const CreditOverview = () => {
                 <div className="grid grid-cols-3 gap-2 pt-3 border-t border-border/50">
                   {bureauScores.map(b => {
                     const actual = actualScores[b.bureau];
-                    const shown = actual ?? b.score;
-                    const isActual = !!actual;
-                    const color = shown === 0 ? 'text-muted-foreground' : shown >= 670 ? 'text-emerald-600' : shown >= 580 ? 'text-amber-600' : 'text-destructive';
+                    const shown: number | null = actual && actual > 0 ? actual : b.score;
+                    const isActual = !!(actual && actual > 0);
+                    const color = shown === null ? 'text-muted-foreground' : shown >= 670 ? 'text-emerald-600' : shown >= 580 ? 'text-amber-600' : 'text-destructive';
                     return (
                       <div key={b.bureau} className="text-center space-y-0.5">
                         <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{b.bureau}</p>
-                        <p className={`text-base font-bold ${color}`}>{shown > 0 ? shown : '—'}</p>
-                        <p className="text-[9px] text-muted-foreground">{isActual ? 'Actual' : 'Est.'} · {b.count} acct{b.count !== 1 ? 's' : ''}</p>
+                        <p className={`text-base font-bold ${color}`}>{shown ?? '—'}</p>
+                        <p className="text-[9px] text-muted-foreground">
+                          {shown === null ? 'No data' : isActual ? 'Actual' : 'Est.'} · {b.count} acct{b.count !== 1 ? 's' : ''}
+                        </p>
                       </div>
                     );
                   })}
+
                 </div>
 
                 {/* Enter actual scores */}
