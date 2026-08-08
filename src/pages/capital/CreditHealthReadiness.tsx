@@ -23,6 +23,7 @@ const ApprovalReadiness = () => {
   const navigate = useNavigate();
   const { accounts } = useCreditAccounts();
   const { disputes } = useDisputes();
+  const { hard: inquiries } = useCreditInquiries();
 
   const assessment = useMemo(() => {
     const revolving = accounts.filter(a => a.account_type === 'Revolving');
