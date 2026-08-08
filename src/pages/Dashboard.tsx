@@ -433,6 +433,9 @@ Your Safe-to-Spend updates in real time as you add transactions, pay bills, and 
         <FinancialHealthScore monthlyIncome={monthlyIncome} monthlyExpenses={monthlyExpenses} totalAssets={totalAssets} totalLiabilities={totalLiabilities} />
       </motion.div>
 
+      {/* Combined legacy score (wealth + health) */}
+      <motion.div variants={item}><CombinedLegacyScoreCard compact /></motion.div>
+
       {/* Health consistency + morning ritual */}
       <div className="grid gap-6 lg:grid-cols-2">
         <motion.div variants={item}><ConsistencyTrackerCard compact /></motion.div>
