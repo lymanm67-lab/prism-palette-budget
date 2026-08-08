@@ -8,6 +8,7 @@ import { Target, ArrowRight } from 'lucide-react';
 
 const fmt = (n: number) => `$${Math.round(n).toLocaleString()}`;
 const EXP_KEY = 'prism.fire.annualExpenses';
+const INC_KEY = 'prism.fire.guaranteedIncome';
 
 interface Props {
   /** Investable / retirement assets that can fund withdrawals */
@@ -16,6 +17,14 @@ interface Props {
   guaranteedMonthly?: number;
 }
 
+type IncomeState = {
+  scope: 'individual' | 'household';
+  mySs: number;
+  spouseSs: number;
+  spousePension: number;
+  other: number;
+};
+
 export default function FireNumberCard({ investedAssets, guaranteedMonthly = 0 }: Props) {
   const [annualExpenses, setAnnualExpenses] = useState<number>(() => {
     const saved = typeof window !== 'undefined' ? window.localStorage.getItem(EXP_KEY) : null;
@@ -23,11 +32,31 @@ export default function FireNumberCard({ investedAssets, guaranteedMonthly = 0 }
     return Number.isFinite(n) && n > 0 ? n : 72000;
   });
   const [swr, setSwr] = useState(4);
+  const [income, setIncome] = useState<IncomeState>(() => {
+    const saved = typeof window !== 'undefined' ? window.localStorage.getItem(INC_KEY) : null;
+    if (saved) {
+      try { return { scope: 'household', mySs: 0, spouseSs: 0, spousePension: 0, other: 0, ...JSON.parse(saved) }; } catch { /* ignore */ }
+    }
+    return { scope: 'household', mySs: 0, spouseSs: 0, spousePension: 0, other: guaranteedMonthly || 0 };
+  });
 
   const setExpenses = (v: number) => {
     setAnnualExpenses(v);
     if (v > 0) window.localStorage.setItem(EXP_KEY, String(v));
   };
+
+  const setInc = (patch: Partial<IncomeState>) => {
+    setIncome(prev => {
+      const next = { ...prev, ...patch };
+      window.localStorage.setItem(INC_KEY, JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const isHousehold = income.scope === 'household';
+  const guaranteed = isHousehold
+    ? income.mySs + income.spouseSs + income.spousePension + income.other
+    : income.mySs + income.other;
 
   const r = useMemo(() => {
     const rate = (swr || 4) / 100;
