@@ -225,13 +225,27 @@ const CreditOverview = () => {
               </CardHeader>
               <CardContent className="relative space-y-4">
                 {(() => {
-                  const displayScore = hasActuals
+                  const displayScore: number | null = hasActuals
                     ? Math.round(
                         [actualScores.Equifax, actualScores.Experian, actualScores.TransUnion]
                           .filter((n): n is number => typeof n === 'number' && n > 0)
                           .reduce((a, b, _, arr) => a + b / arr.length, 0)
                       )
                     : clampedScore;
+
+                  if (displayScore === null) {
+                    return (
+                      <div className="text-center space-y-2 py-4">
+                        <HelpCircle className="h-10 w-10 mx-auto text-muted-foreground" />
+                        <p className="text-sm font-semibold">Score unavailable</p>
+                        <p className="text-xs text-muted-foreground">
+                          We don't estimate a score from incomplete data. Add credit limits, account open dates, and payment history
+                          (or import a full credit report), or enter your actual scores below.
+                        </p>
+                      </div>
+                    );
+                  }
+
                   const dPercent = ((displayScore - 300) / 550) * 100;
                   const dColor = displayScore >= 750 ? 'hsl(var(--accent))' : displayScore >= 670 ? 'hsl(142 71% 45%)' : displayScore >= 580 ? 'hsl(48 96% 53%)' : 'hsl(var(--destructive))';
                   const dLabel = displayScore >= 750 ? 'Excellent' : displayScore >= 670 ? 'Good' : displayScore >= 580 ? 'Fair' : 'Poor';
@@ -255,6 +269,7 @@ const CreditOverview = () => {
                     </div>
                   );
                 })()}
+
 
                 {/* Per-Bureau Scores */}
                 <div className="grid grid-cols-3 gap-2 pt-3 border-t border-border/50">
