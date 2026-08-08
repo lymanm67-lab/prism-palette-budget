@@ -9,6 +9,7 @@ import ReadinessMeter from '@/components/credit-health/ReadinessMeter';
 import InsightCard from '@/components/credit-health/InsightCard';
 import { useCreditAccounts } from '@/hooks/use-credit-accounts';
 import { useDisputes } from '@/hooks/use-disputes';
+import { useCreditInquiries } from '@/hooks/use-credit-inquiries';
 import { cn } from '@/lib/utils';
 
 type ReadinessLevel = 'not_ready' | 'improving' | 'nearly_ready' | 'ready';
