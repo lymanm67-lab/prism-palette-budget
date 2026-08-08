@@ -3891,6 +3891,7 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           energy_rating: number | null
+          exercise_calories: number
           focus_rating: number | null
           fruit_servings: number
           household_id: string
@@ -3917,6 +3918,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           energy_rating?: number | null
+          exercise_calories?: number
           focus_rating?: number | null
           fruit_servings?: number
           household_id: string
@@ -3943,6 +3945,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           energy_rating?: number | null
+          exercise_calories?: number
           focus_rating?: number | null
           fruit_servings?: number
           household_id?: string
