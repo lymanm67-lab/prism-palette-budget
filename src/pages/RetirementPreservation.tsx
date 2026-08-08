@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
 import { LegacyStepNav } from '@/components/legacy/LegacyStepNav';
+import HealthHorizonBanner from '@/components/legacy/HealthHorizonBanner';
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
   BarChart, Bar, LineChart, Line, ReferenceLine, Cell,
