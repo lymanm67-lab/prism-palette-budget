@@ -16,6 +16,9 @@ import SleepRecoveryTab from '@/components/health/SleepRecoveryTab';
 import PreventiveCareTab from '@/components/health/PreventiveCareTab';
 import ExerciseTab from '@/components/health/ExerciseTab';
 import EnergyReportTab from '@/components/health/EnergyReportTab';
+import MorningKickstartCard from '@/components/health/MorningKickstartCard';
+import ConsistencyTrackerCard from '@/components/health/ConsistencyTrackerCard';
+
 
 const TABS = [
   { value: 'dashboard', label: 'Command Center' },
@@ -53,7 +56,13 @@ export default function HealthDashboard() {
         </p>
       </header>
 
-      <Tabs value={tab} onValueChange={(v) => setParams({ tab: v })}>
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <aside className="order-first space-y-4 lg:order-last lg:sticky lg:top-4 lg:self-start">
+          <MorningKickstartCard />
+          <ConsistencyTrackerCard />
+        </aside>
+
+        <Tabs value={tab} onValueChange={(v) => setParams({ tab: v })} className="min-w-0">
         <TabsList className="flex h-auto w-full flex-wrap justify-start">
           {TABS.map((t) => (
             <TabsTrigger key={t.value} value={t.value}>
@@ -61,6 +70,7 @@ export default function HealthDashboard() {
             </TabsTrigger>
           ))}
         </TabsList>
+
 
         <TabsContent value="dashboard" className="mt-6">
           <HealthDashboardTab />
@@ -108,7 +118,9 @@ export default function HealthDashboard() {
         <TabsContent value="profile" className="mt-6">
           <HealthProfileTab />
         </TabsContent>
-      </Tabs>
+        </Tabs>
+      </div>
     </div>
+
   );
 }

@@ -8,6 +8,9 @@ import GettingStartedWidget from '@/components/GettingStartedWidget';
 import { EmptyStateChecklist } from '@/components/dashboard/EmptyStateChecklist';
 import FinancialHealthScore from '@/components/FinancialHealthScore';
 import GoalTrackerWidget from '@/components/GoalTrackerWidget';
+import ConsistencyTrackerCard from '@/components/health/ConsistencyTrackerCard';
+import MorningKickstartCard from '@/components/health/MorningKickstartCard';
+
 import SpendingAnomalyAlert from '@/components/SpendingAnomalyAlert';
 import { SafeToSpendHero } from '@/components/SafeToSpendHero';
 import { StsEquationView } from '@/components/StsEquationView';
@@ -429,6 +432,14 @@ Your Safe-to-Spend updates in real time as you add transactions, pay bills, and 
       <motion.div variants={item}>
         <FinancialHealthScore monthlyIncome={monthlyIncome} monthlyExpenses={monthlyExpenses} totalAssets={totalAssets} totalLiabilities={totalLiabilities} />
       </motion.div>
+
+      {/* Health consistency + morning ritual */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <motion.div variants={item}><ConsistencyTrackerCard compact /></motion.div>
+        <motion.div variants={item}><MorningKickstartCard compact /></motion.div>
+      </div>
+
+
 
       {/* Charts */}
       <DashboardCharts monthlyCashflow={monthlyCashflow} spendingData={filteredSpending} formatCurrency={formatCurrency} formatCompact={formatCompact} />

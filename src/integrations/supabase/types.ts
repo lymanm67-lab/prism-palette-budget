@@ -3896,8 +3896,12 @@ export type Database = {
           fruit_servings: number
           household_id: string
           id: string
+          intention_note: string | null
+          kickstart_steps: Json
           log_date: string
           miles: number
+          mindfulness_minutes: number | null
+          mindfulness_type: string | null
           minutes_walked: number | null
           mood_rating: number | null
           notes: string | null
@@ -3910,6 +3914,7 @@ export type Database = {
           veg_servings: number
           water_oz: number
           weight: number | null
+          workout_sessions: Json
         }
         Insert: {
           active_minutes?: number | null
@@ -3923,8 +3928,12 @@ export type Database = {
           fruit_servings?: number
           household_id: string
           id?: string
+          intention_note?: string | null
+          kickstart_steps?: Json
           log_date?: string
           miles?: number
+          mindfulness_minutes?: number | null
+          mindfulness_type?: string | null
           minutes_walked?: number | null
           mood_rating?: number | null
           notes?: string | null
@@ -3937,6 +3946,7 @@ export type Database = {
           veg_servings?: number
           water_oz?: number
           weight?: number | null
+          workout_sessions?: Json
         }
         Update: {
           active_minutes?: number | null
@@ -3950,8 +3960,12 @@ export type Database = {
           fruit_servings?: number
           household_id?: string
           id?: string
+          intention_note?: string | null
+          kickstart_steps?: Json
           log_date?: string
           miles?: number
+          mindfulness_minutes?: number | null
+          mindfulness_type?: string | null
           minutes_walked?: number | null
           mood_rating?: number | null
           notes?: string | null
@@ -3964,6 +3978,7 @@ export type Database = {
           veg_servings?: number
           water_oz?: number
           weight?: number | null
+          workout_sessions?: Json
         }
         Relationships: [
           {
