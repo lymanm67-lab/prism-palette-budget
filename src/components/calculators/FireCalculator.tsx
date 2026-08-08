@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Target } from 'lucide-react';
+import GatewaysLadder from './GatewaysLadder';
 
 const fmt = (n: number) => `$${Math.round(n).toLocaleString()}`;
 
@@ -35,6 +36,7 @@ export default function FireCalculator() {
   }, [expenses, swr, current, monthlySave, returnPct]);
 
   return (
+    <>
     <Card>
       <CardHeader><CardTitle className="flex items-center gap-2"><Target className="h-5 w-5 text-primary" /> FIRE Number (4% Rule)</CardTitle></CardHeader>
       <CardContent className="space-y-4">
@@ -64,5 +66,8 @@ export default function FireCalculator() {
         </div>
       </CardContent>
     </Card>
+
+    <GatewaysLadder annualExpenses={expenses} swr={swr} current={current} monthlySave={monthlySave} returnPct={returnPct} />
+    </>
   );
 }
