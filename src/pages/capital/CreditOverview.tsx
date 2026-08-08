@@ -418,7 +418,9 @@ const CreditOverview = () => {
               </Card>
             </div>
           </div>
-          <SixMonthScorePath currentScore={clampedScore} utilization={utilization} negativeCount={negativeCount} revolvingBalance={revolvingBalance} />
+          {clampedScore !== null && (
+            <SixMonthScorePath currentScore={clampedScore} utilization={utilization} negativeCount={negativeCount} revolvingBalance={revolvingBalance} />
+          )}
           </>
         );
       })()}
