@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, TrendingUp, TrendingDown, Minus, AlertTriangle, Info, Lightbulb, BarChart3 } from 'lucide-react';
+import { ArrowLeft, TrendingUp, TrendingDown, Minus, AlertTriangle, Info, Lightbulb, BarChart3, HelpCircle } from 'lucide-react';
 import PageOverview from '@/components/PageOverview';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import InsightCard from '@/components/credit-health/InsightCard';
 import { useCreditAccounts } from '@/hooks/use-credit-accounts';
+import { useCreditInquiries } from '@/hooks/use-credit-inquiries';
 import { cn } from '@/lib/utils';
 
 const FACTORS = [
@@ -21,6 +22,7 @@ const FACTORS = [
 const ScoreBreakdown = () => {
   const navigate = useNavigate();
   const { accounts } = useCreditAccounts();
+  const { inquiries } = useCreditInquiries();
 
   const scores = useMemo(() => {
     const revolving = accounts.filter(a => a.account_type === 'Revolving');
@@ -32,14 +34,32 @@ const ScoreBreakdown = () => {
     const avgAge = withDates.length ? withDates.reduce((sum, a) => sum + ((Date.now() - new Date(a.date_opened!).getTime()) / (1000 * 60 * 60 * 24 * 30)), 0) / withDates.length : 0;
     const types = new Set(accounts.map(a => a.account_type));
 
+    // Payment history requires either reported payment strings or known derogatory statuses.
+    const hasPaymentData = accounts.some(a => !!a.payment_history) || negativeCount > 0;
+
+    // New credit requires inquiry records or account open dates within the last 12 months.
+    const cutoff = Date.now() - 365 * 24 * 60 * 60 * 1000;
+    const hardRecent = (inquiries || []).filter(i => i.inquiry_type === 'hard' && new Date(i.inquiry_date).getTime() >= cutoff).length;
+    const newAccountsRecent = withDates.filter(a => new Date(a.date_opened!).getTime() >= cutoff).length;
+    const hasNewCreditData = (inquiries || []).length > 0 || withDates.length > 0;
+    const recentEvents = hardRecent + newAccountsRecent;
+
     return {
-      payment: negativeCount === 0 ? 90 : negativeCount <= 2 ? 45 : 15,
-      utilization: utilization <= 10 ? 95 : utilization <= 30 ? 75 : utilization <= 50 ? 45 : 15,
-      age: avgAge >= 84 ? 90 : avgAge >= 48 ? 70 : avgAge >= 24 ? 45 : 20,
-      new: 70, // placeholder
-      mix: types.size >= 4 ? 90 : types.size >= 3 ? 70 : types.size >= 2 ? 45 : 25,
-    };
-  }, [accounts]);
+      payment: !hasPaymentData ? null : negativeCount === 0 ? 90 : negativeCount <= 2 ? 45 : 15,
+      utilization: revolving.length === 0 || totalLimit === 0
+        ? null
+        : utilization <= 10 ? 95 : utilization <= 30 ? 75 : utilization <= 50 ? 45 : 15,
+      age: withDates.length === 0
+        ? null
+        : avgAge >= 84 ? 90 : avgAge >= 48 ? 70 : avgAge >= 24 ? 45 : 20,
+      new: !hasNewCreditData
+        ? null
+        : recentEvents === 0 ? 95 : recentEvents <= 2 ? 75 : recentEvents <= 4 ? 45 : 20,
+      mix: accounts.length === 0
+        ? null
+        : types.size >= 4 ? 90 : types.size >= 3 ? 70 : types.size >= 2 ? 45 : 25,
+    } as Record<string, number | null>;
+  }, [accounts, inquiries]);
 
   const getStatus = (s: number) => s >= 70 ? 'good' : s >= 40 ? 'fair' : 'poor';
 
@@ -47,6 +67,7 @@ const ScoreBreakdown = () => {
     good: { color: 'text-emerald-600', bg: '[&>div]:bg-emerald-500', Icon: TrendingUp },
     fair: { color: 'text-amber-600', bg: '[&>div]:bg-amber-500', Icon: Minus },
     poor: { color: 'text-destructive', bg: '[&>div]:bg-destructive', Icon: TrendingDown },
+    unknown: { color: 'text-muted-foreground', bg: '[&>div]:bg-muted', Icon: HelpCircle },
   };
 
   return (
@@ -79,7 +100,7 @@ const ScoreBreakdown = () => {
       <div className="space-y-4">
         {FACTORS.map(f => {
           const score = scores[f.key as keyof typeof scores];
-          const status = getStatus(score);
+          const status = score === null ? 'unknown' : getStatus(score);
           const st = statusStyles[status];
           const StatusIcon = st.Icon;
 
@@ -99,12 +120,18 @@ const ScoreBreakdown = () => {
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
                     <span className={cn('font-medium', st.color)}>
-                      {status === 'good' ? 'Strong' : status === 'fair' ? 'Needs attention' : 'Critical'}
+                      {status === 'unknown' ? 'Not enough data' : status === 'good' ? 'Strong' : status === 'fair' ? 'Needs attention' : 'Critical'}
                     </span>
-                    <span className="text-muted-foreground">{score}/100</span>
+                    <span className="text-muted-foreground">{score === null ? '—' : `${score}/100`}</span>
                   </div>
-                  <Progress value={score} className={cn('h-2', st.bg)} />
+                  <Progress value={score ?? 0} className={cn('h-2', st.bg)} />
+                  {score === null && (
+                    <p className="text-[11px] text-muted-foreground">
+                      Import a credit report or add accounts, limits, open dates, and inquiries so this factor can be measured.
+                    </p>
+                  )}
                 </div>
+
 
                 <Accordion type="single" collapsible>
                   <AccordionItem value="details" className="border-0">
