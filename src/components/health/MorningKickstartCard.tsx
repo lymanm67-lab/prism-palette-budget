@@ -40,6 +40,23 @@ export default function MorningKickstartCard({ compact = false }: { compact?: bo
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
   const [coachOpen, setCoachOpen] = useState(false);
+  const [voiceOn, setVoiceOn] = useState(true);
+  const [totalSeconds, setTotalSeconds] = useState(0);
+  const [cueText, setCueText] = useState('');
+  const lastCue = useRef('');
+
+  const sessions = useMemo(() => sessionsForType(mtype), [mtype]);
+  const [sessionId, setSessionId] = useState<string>(sessions[0]?.id ?? 'silent');
+  const session: GuidedSession = useMemo(
+    () => sessions.find((s) => s.id === sessionId) ?? sessions[0],
+    [sessions, sessionId],
+  );
+  const { speak, stop } = useCoachVoice(voiceOn);
+
+  useEffect(() => {
+    if (!sessions.some((s) => s.id === sessionId)) setSessionId(sessions[0]?.id ?? 'silent');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessions]);
 
   useEffect(() => {
     setIntention((today as any)?.intention_note ?? '');
@@ -76,10 +93,37 @@ export default function MorningKickstartCard({ compact = false }: { compact?: bo
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timerRunning, secondsLeft, minutes, mtype, intention]);
 
+  // Guided cues, spoken and shown as they come due.
+  useEffect(() => {
+    if (!timerRunning || totalSeconds <= 0) return;
+    const elapsed = totalSeconds - secondsLeft;
+    const cue = cueAt(session, elapsed, totalSeconds);
+    if (cue && cue.text !== lastCue.current) {
+      lastCue.current = cue.text;
+      setCueText(cue.text);
+      speak(cue.text);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timerRunning, secondsLeft, totalSeconds, session]);
+
   const startTimer = () => {
-    setSecondsLeft(Math.max(1, Number(minutes) || 5) * 60);
+    const total = Math.max(1, Number(minutes) || 5) * 60;
+    lastCue.current = '';
+    setCueText('');
+    setTotalSeconds(total);
+    setSecondsLeft(total);
     setTimerRunning(true);
   };
+
+  const resetTimer = () => {
+    setTimerRunning(false);
+    setSecondsLeft(0);
+    setTotalSeconds(0);
+    setCueText('');
+    lastCue.current = '';
+    stop();
+  };
+
 
   const reflections = useMemo(
     () =>
