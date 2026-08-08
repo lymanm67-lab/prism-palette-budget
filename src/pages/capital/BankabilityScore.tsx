@@ -70,21 +70,27 @@ const BankabilityScore = () => {
     enabled: !!householdId,
   });
 
-  // Calculate factor scores
+  // Factor scores — null whenever the underlying data has not been entered.
+  // No assumed midpoint (previously 50) is substituted for missing data.
   const accounts = creditAccounts || [];
   const latest = snapshots?.[0];
 
   // 1. Personal credit strength
   const openAccounts = accounts.filter(a => a.account_status === "Open");
   const negativeAccounts = accounts.filter(a => ["Collection", "Charge-Off"].includes(a.account_status));
-  const personalCredit = Math.max(0, Math.min(100, 60 + (openAccounts.length * 5) - (negativeAccounts.length * 15)));
+  const personalCredit: number | null = accounts.length === 0
+    ? null
+    : Math.max(0, Math.min(100, (openAccounts.length * 12) - (negativeAccounts.length * 15)));
 
   // 2. Business credit (PAYDEX proxy)
+  const totalSteps = creditSteps?.length || 0;
   const completedSteps = creditSteps?.filter(s => s.is_completed).length || 0;
-  const businessCredit = Math.min(100, completedSteps * 16);
+  const businessCredit: number | null = totalSteps === 0
+    ? null
+    : Math.min(100, Math.round((completedSteps / totalSteps) * 100));
 
   // 3. Revenue stability
-  let revenueStability = 50;
+  let revenueStability: number | null = null;
   if (snapshots && snapshots.length >= 2) {
     const revenues = snapshots.map(s => s.monthly_revenue).filter(r => r > 0);
     if (revenues.length >= 2) {
@@ -96,54 +102,57 @@ const BankabilityScore = () => {
   }
 
   // 4. Cash flow consistency
-  let cashFlow = 50;
-  if (latest) {
-    const ratio = latest.monthly_operating_expenses > 0
-      ? latest.cash_reserves / latest.monthly_operating_expenses
-      : 0;
+  let cashFlow: number | null = null;
+  if (latest && latest.monthly_operating_expenses > 0) {
+    const ratio = latest.cash_reserves / latest.monthly_operating_expenses;
     cashFlow = Math.min(100, Math.round(ratio * 33));
   }
 
   // 5. DSCR
-  let dscr = 50;
+  let dscr: number | null = null;
   if (latest) {
     const noi = latest.monthly_revenue - latest.monthly_operating_expenses;
     const totalDebt = accounts.reduce((sum, a) => sum + (Number(a.monthly_payment) || 0), 0);
     if (totalDebt > 0) {
-      const dscrVal = noi / totalDebt;
-      dscr = Math.min(100, Math.round(dscrVal * 50));
-    } else if (noi > 0) {
-      dscr = 85;
+      dscr = Math.max(0, Math.min(100, Math.round((noi / totalDebt) * 50)));
+    } else if (accounts.length > 0) {
+      // No debt service reported at all — full coverage by definition.
+      dscr = noi > 0 ? 100 : 0;
     }
   }
 
-  // 6. Bank relationship
-  const bankRelationship = latest ? Math.min(100, 50 + (snapshots!.length * 8)) : 20;
+  // 6. Bank relationship — depth of reported banking history
+  const bankRelationship: number | null = !snapshots || snapshots.length === 0
+    ? null
+    : Math.min(100, snapshots.length * 12);
 
   // 7. Medicaid receivable stability
-  let receivableStability = 50;
-  if (claims && claims.length > 0) {
-    const approved = claims.filter(c => c.status === "approved" || c.status === "paid").length;
-    receivableStability = Math.round((approved / claims.length) * 100);
-  }
+  const receivableStability: number | null = claims && claims.length > 0
+    ? Math.round((claims.filter(c => c.status === "approved" || c.status === "paid").length / claims.length) * 100)
+    : null;
 
-  // 8. Business credit bureau scores (proxy)
-  const bureauScore = businessCredit;
+  // 8. Business credit bureau scores — same evidence base as PAYDEX progress
+  const bureauScore: number | null = businessCredit;
 
   const factors: ScoreFactor[] = [
-    { label: "Personal Credit Strength", value: personalCredit, weight: 15, icon: CreditCard, color: "text-prism-sky", description: "Based on open accounts and negative items" },
-    { label: "PAYDEX / Business Credit", value: businessCredit, weight: 10, icon: Building2, color: "text-prism-indigo", description: "Business credit building progress" },
-    { label: "Bureau Scores", value: bureauScore, weight: 10, icon: FileText, color: "text-prism-violet", description: "Business credit bureau score estimates" },
-    { label: "Revenue Stability", value: revenueStability, weight: 15, icon: TrendingUp, color: "text-prism-teal", description: "Month-over-month revenue consistency" },
-    { label: "Cash Flow Consistency", value: cashFlow, weight: 15, icon: DollarSign, color: "text-prism-lime", description: "Operating cash flow and reserves" },
-    { label: "Debt Service Coverage", value: dscr, weight: 15, icon: BarChart3, color: "text-prism-amber", description: "Ability to service existing debt" },
-    { label: "Bank Relationship", value: bankRelationship, weight: 10, icon: Landmark, color: "text-prism-orange", description: "Banking history depth" },
-    { label: "Receivable Stability", value: receivableStability, weight: 10, icon: Users, color: "text-prism-rose", description: "Medicaid claim approval rates" },
+    { label: "Personal Credit Strength", value: personalCredit, weight: 15, icon: CreditCard, color: "text-prism-sky", description: "Based on open accounts and negative items", missingHint: "Import credit reports" },
+    { label: "PAYDEX / Business Credit", value: businessCredit, weight: 10, icon: Building2, color: "text-prism-indigo", description: "Business credit building progress", missingHint: "Start the business credit roadmap" },
+    { label: "Bureau Scores", value: bureauScore, weight: 10, icon: FileText, color: "text-prism-violet", description: "Business credit bureau score estimates", missingHint: "Start the business credit roadmap" },
+    { label: "Revenue Stability", value: revenueStability, weight: 15, icon: TrendingUp, color: "text-prism-teal", description: "Month-over-month revenue consistency", missingHint: "Add at least 2 monthly snapshots" },
+    { label: "Cash Flow Consistency", value: cashFlow, weight: 15, icon: DollarSign, color: "text-prism-lime", description: "Operating cash flow and reserves", missingHint: "Add reserves and operating expenses" },
+    { label: "Debt Service Coverage", value: dscr, weight: 15, icon: BarChart3, color: "text-prism-amber", description: "Ability to service existing debt", missingHint: "Add a financial snapshot" },
+    { label: "Bank Relationship", value: bankRelationship, weight: 10, icon: Landmark, color: "text-prism-orange", description: "Banking history depth", missingHint: "Add financial snapshots over time" },
+    { label: "Receivable Stability", value: receivableStability, weight: 10, icon: Users, color: "text-prism-rose", description: "Medicaid claim approval rates", missingHint: "Log Medicaid claims" },
   ];
 
-  const totalScore = Math.round(
-    factors.reduce((sum, f) => sum + (f.value * f.weight / 100), 0)
-  );
+  // Score only across factors with real data, reweighted to the available evidence.
+  const scored = factors.filter(f => f.value !== null);
+  const availableWeight = scored.reduce((sum, f) => sum + f.weight, 0);
+  const totalScore: number | null = availableWeight >= 50
+    ? Math.round(scored.reduce((sum, f) => sum + (f.value! * f.weight), 0) / availableWeight)
+    : null;
+  const coveragePct = Math.round(availableWeight);
+
 
   const getInterpretation = (score: number) => {
     if (score >= 90) return { label: "Highly Bankable", color: "text-prism-teal", variant: "default" as const };
