@@ -141,9 +141,24 @@ export default function GatewaysLadder({ annualExpenses, swr, current, monthlySa
           </div>
         </div>
 
+        <div className="flex gap-2">
+          {(['individual', 'household'] as const).map(s => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => setScope(s)}
+              className={`flex-1 rounded-md border px-3 py-2 text-xs font-medium capitalize transition-colors ${
+                scope === s ? 'border-primary bg-primary/10 text-primary' : 'border-border text-muted-foreground hover:bg-muted/40'
+              }`}
+            >
+              {s === 'individual' ? 'Individual (me only)' : 'Household (both spouses)'}
+            </button>
+          ))}
+        </div>
+
         <div className="grid md:grid-cols-3 gap-3">
           <div>
-            <Label>Monthly take-home pay</Label>
+            <Label>My monthly take-home pay</Label>
             <Input type="number" value={takeHome} onChange={e => setTakeHome(+e.target.value)} />
           </div>
           <div>
@@ -155,6 +170,44 @@ export default function GatewaysLadder({ annualExpenses, swr, current, monthlySa
             <Input type="number" step="0.05" value={freedomMultiple} onChange={e => setFreedomMultiple(+e.target.value)} />
           </div>
         </div>
+
+        <div className="rounded-lg border border-prism-teal/30 bg-prism-teal/5 p-4 space-y-3">
+          <div className="text-sm font-semibold">Guaranteed lifetime income (lowers every gateway number)</div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div>
+              <Label className="text-xs">My Social Security /mo</Label>
+              <Input type="number" value={mySs} onChange={e => setMySs(+e.target.value)} />
+            </div>
+            {isHousehold && (
+              <>
+                <div>
+                  <Label className="text-xs">Spouse Social Security /mo</Label>
+                  <Input type="number" value={spouseSs} onChange={e => setSpouseSs(+e.target.value)} />
+                </div>
+                <div>
+                  <Label className="text-xs">Spouse pension /mo</Label>
+                  <Input type="number" value={spousePension} onChange={e => setSpousePension(+e.target.value)} />
+                </div>
+              </>
+            )}
+            <div>
+              <Label className="text-xs">Other guaranteed /mo</Label>
+              <Input type="number" value={otherIncome} onChange={e => setOtherIncome(+e.target.value)} />
+            </div>
+            {isHousehold && (
+              <div>
+                <Label className="text-xs">Spouse take-home /mo</Label>
+                <Input type="number" value={spouseTakeHome} onChange={e => setSpouseTakeHome(+e.target.value)} />
+              </div>
+            )}
+          </div>
+          <div className="text-xs text-muted-foreground">
+            {fmt(guaranteed)}/mo guaranteed = {fmt(guaranteed * 12)}/yr, which removes{' '}
+            <strong className="text-foreground">{fmt(rate > 0 ? (guaranteed * 12) / rate : 0)}</strong> from every gateway target at {swr}%.
+            Offsets apply once benefits and pensions start — before then, plan a bridge from the portfolio.
+          </div>
+        </div>
+
 
         <div className="space-y-3">
           {rows.map((r, i) => {
