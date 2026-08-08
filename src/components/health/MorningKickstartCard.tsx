@@ -281,6 +281,22 @@ export default function MorningKickstartCard({ compact = false }: { compact?: bo
                           </Select>
                         </div>
                         <div className="space-y-1.5">
+                          <Label className="text-xs text-muted-foreground">Guided session</Label>
+                          <Select value={sessionId} onValueChange={setSessionId}>
+                            <SelectTrigger className="h-9">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {sessions.map((g) => (
+                                <SelectItem key={g.id} value={g.id}>
+                                  {g.title}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <p className="text-xs text-muted-foreground">{session?.summary}</p>
+                        </div>
+                        <div className="space-y-1.5">
                           <Label className="text-xs text-muted-foreground">Today's intention</Label>
                           <Input
                             value={intention}
@@ -289,25 +305,34 @@ export default function MorningKickstartCard({ compact = false }: { compact?: bo
                           />
                         </div>
                         {secondsLeft > 0 && (
-                          <div className="flex items-center justify-between rounded-lg border bg-muted/30 p-3">
-                            <span className="text-2xl font-semibold tabular-nums">{mmss(secondsLeft)}</span>
-                            <div className="flex gap-1">
-                              <Button size="sm" variant="outline" onClick={() => setTimerRunning((r) => !r)}>
-                                {timerRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => {
-                                  setTimerRunning(false);
-                                  setSecondsLeft(0);
-                                }}
-                              >
-                                <RotateCcw className="h-4 w-4" />
-                              </Button>
+                          <div className="space-y-2 rounded-lg border bg-muted/30 p-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-2xl font-semibold tabular-nums">{mmss(secondsLeft)}</span>
+                              <div className="flex gap-1">
+                                <Button size="sm" variant="outline" onClick={() => setTimerRunning((r) => !r)}>
+                                  {timerRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  aria-label={voiceOn ? 'Mute guidance' : 'Unmute guidance'}
+                                  onClick={() => {
+                                    setVoiceOn((v) => !v);
+                                    stop();
+                                  }}
+                                >
+                                  {voiceOn ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+                                </Button>
+                                <Button size="sm" variant="ghost" onClick={resetTimer}>
+                                  <RotateCcw className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </div>
+                            <Progress value={totalSeconds ? ((totalSeconds - secondsLeft) / totalSeconds) * 100 : 0} />
+                            {cueText && <p className="text-sm leading-relaxed">{cueText}</p>}
                           </div>
                         )}
+
                         <Button
                           size="sm"
                           variant="ghost"
