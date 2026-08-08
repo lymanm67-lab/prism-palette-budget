@@ -43,12 +43,26 @@ function monthsToReach(target: number, current: number, monthly: number, annualR
 }
 
 export default function GatewaysLadder({ annualExpenses, swr, current, monthlySave, returnPct }: Props) {
+  const [scope, setScope] = useState<'individual' | 'household'>('household');
   const [takeHome, setTakeHome] = useState<number>(() => Math.round((annualExpenses / 12) * 1.25));
   const [essentialsPct, setEssentialsPct] = useState(60);
   const [freedomMultiple, setFreedomMultiple] = useState(1.25);
 
+  // Guaranteed lifetime income (reduces the portfolio you need)
+  const [mySs, setMySs] = useState(0);
+  const [spouseSs, setSpouseSs] = useState(0);
+  const [spousePension, setSpousePension] = useState(0);
+  const [otherIncome, setOtherIncome] = useState(0);
+  const [spouseTakeHome, setSpouseTakeHome] = useState(0);
+
+  const isHousehold = scope === 'household';
+  const guaranteed = isHousehold
+    ? mySs + spouseSs + spousePension + otherIncome
+    : mySs + otherIncome;
+
   const rate = (swr || 4) / 100;
-  const monthlyLifestyle = annualExpenses / 12;
+  const monthlyLifestyle = isHousehold ? annualExpenses / 12 : (annualExpenses / 12) * 0.6;
+  const incomeToReplace = (takeHome || monthlyLifestyle) + (isHousehold ? spouseTakeHome : 0);
 
   const gates: Gate[] = useMemo(() => [
     {
@@ -69,27 +83,31 @@ export default function GatewaysLadder({ annualExpenses, swr, current, monthlySa
       key: 'independence',
       name: 'Financial Independence',
       subtitle: 'Replace income',
-      monthlyNeed: takeHome || monthlyLifestyle,
-      blurb: 'Portfolio income fully replaces your take-home pay. Work becomes optional.',
+      monthlyNeed: incomeToReplace,
+      blurb: 'Portfolio plus guaranteed income fully replaces take-home pay. Work becomes optional.',
     },
     {
       key: 'freedom',
       name: 'Financial Freedom',
       subtitle: 'Assets fund your life',
-      monthlyNeed: (takeHome || monthlyLifestyle) * freedomMultiple,
+      monthlyNeed: incomeToReplace * freedomMultiple,
       blurb: 'Your assets fund an expanded, chosen lifestyle with margin on top.',
     },
-  ], [monthlyLifestyle, essentialsPct, takeHome, freedomMultiple]);
+  ], [monthlyLifestyle, essentialsPct, incomeToReplace, freedomMultiple]);
 
   const rows = gates.map(g => {
-    const annualNeed = g.monthlyNeed * 12;
+    const grossMonthly = g.monthlyNeed;
+    const grossTarget = rate > 0 ? (grossMonthly * 12) / rate : 0;
+    const netMonthly = Math.max(0, grossMonthly - guaranteed);
+    const annualNeed = netMonthly * 12;
     const target = rate > 0 ? annualNeed / rate : 0;
+    const reduction = Math.max(0, grossTarget - target);
     const passiveMonthly = (current * rate) / 12;
-    const coverage = g.monthlyNeed > 0 ? (passiveMonthly / g.monthlyNeed) * 100 : 0;
-    const progress = target > 0 ? Math.min(100, (current / target) * 100) : 0;
+    const coverage = grossMonthly > 0 ? ((passiveMonthly + guaranteed) / grossMonthly) * 100 : 0;
+    const progress = target > 0 ? Math.min(100, (current / target) * 100) : 100;
     const gap = Math.max(0, target - current);
     const months = monthsToReach(target, current, monthlySave, returnPct);
-    return { ...g, annualNeed, target, coverage, progress, gap, months, passiveMonthly };
+    return { ...g, grossMonthly, grossTarget, monthlyNeed: netMonthly, annualNeed, target, reduction, coverage, progress, gap, months, passiveMonthly };
   });
 
   const passedIdx = rows.reduce((acc, r, i) => (r.coverage >= 100 ? i : acc), -1);
@@ -123,9 +141,24 @@ export default function GatewaysLadder({ annualExpenses, swr, current, monthlySa
           </div>
         </div>
 
+        <div className="flex gap-2">
+          {(['individual', 'household'] as const).map(s => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => setScope(s)}
+              className={`flex-1 rounded-md border px-3 py-2 text-xs font-medium capitalize transition-colors ${
+                scope === s ? 'border-primary bg-primary/10 text-primary' : 'border-border text-muted-foreground hover:bg-muted/40'
+              }`}
+            >
+              {s === 'individual' ? 'Individual (me only)' : 'Household (both spouses)'}
+            </button>
+          ))}
+        </div>
+
         <div className="grid md:grid-cols-3 gap-3">
           <div>
-            <Label>Monthly take-home pay</Label>
+            <Label>My monthly take-home pay</Label>
             <Input type="number" value={takeHome} onChange={e => setTakeHome(+e.target.value)} />
           </div>
           <div>
@@ -137,6 +170,44 @@ export default function GatewaysLadder({ annualExpenses, swr, current, monthlySa
             <Input type="number" step="0.05" value={freedomMultiple} onChange={e => setFreedomMultiple(+e.target.value)} />
           </div>
         </div>
+
+        <div className="rounded-lg border border-prism-teal/30 bg-prism-teal/5 p-4 space-y-3">
+          <div className="text-sm font-semibold">Guaranteed lifetime income (lowers every gateway number)</div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div>
+              <Label className="text-xs">My Social Security /mo</Label>
+              <Input type="number" value={mySs} onChange={e => setMySs(+e.target.value)} />
+            </div>
+            {isHousehold && (
+              <>
+                <div>
+                  <Label className="text-xs">Spouse Social Security /mo</Label>
+                  <Input type="number" value={spouseSs} onChange={e => setSpouseSs(+e.target.value)} />
+                </div>
+                <div>
+                  <Label className="text-xs">Spouse pension /mo</Label>
+                  <Input type="number" value={spousePension} onChange={e => setSpousePension(+e.target.value)} />
+                </div>
+              </>
+            )}
+            <div>
+              <Label className="text-xs">Other guaranteed /mo</Label>
+              <Input type="number" value={otherIncome} onChange={e => setOtherIncome(+e.target.value)} />
+            </div>
+            {isHousehold && (
+              <div>
+                <Label className="text-xs">Spouse take-home /mo</Label>
+                <Input type="number" value={spouseTakeHome} onChange={e => setSpouseTakeHome(+e.target.value)} />
+              </div>
+            )}
+          </div>
+          <div className="text-xs text-muted-foreground">
+            {fmt(guaranteed)}/mo guaranteed = {fmt(guaranteed * 12)}/yr, which removes{' '}
+            <strong className="text-foreground">{fmt(rate > 0 ? (guaranteed * 12) / rate : 0)}</strong> from every gateway target at {swr}%.
+            Offsets apply once benefits and pensions start — before then, plan a bridge from the portfolio.
+          </div>
+        </div>
+
 
         <div className="space-y-3">
           {rows.map((r, i) => {
@@ -164,9 +235,9 @@ export default function GatewaysLadder({ annualExpenses, swr, current, monthlySa
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">{r.blurb}</p>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-3 text-xs">
-                      <div><div className="text-muted-foreground">Monthly need</div><div className="font-semibold">{fmt(r.monthlyNeed)}</div></div>
+                      <div><div className="text-muted-foreground">Monthly need</div><div className="font-semibold">{fmt(r.grossMonthly)}</div>{guaranteed > 0 && <div className="text-[10px] text-prism-teal">{fmt(r.monthlyNeed)} after income</div>}</div>
                       <div><div className="text-muted-foreground">Annual need</div><div className="font-semibold">{fmt(r.annualNeed)}</div></div>
-                      <div><div className="text-muted-foreground">Target number</div><div className="font-semibold text-primary">{fmt(r.target)}</div></div>
+                      <div><div className="text-muted-foreground">Target number</div><div className="font-semibold text-primary">{fmt(r.target)}</div>{r.reduction > 0 && <div className="text-[10px] text-prism-teal">−{fmt(r.reduction)} vs {fmt(r.grossTarget)}</div>}</div>
                       <div><div className="text-muted-foreground">Years away</div><div className="font-semibold">{r.months === 0 ? 'Reached' : r.months == null ? '> 60' : (r.months / 12).toFixed(1)}</div></div>
                     </div>
                     <Progress value={r.progress} className="mt-3" />
