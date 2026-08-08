@@ -162,7 +162,7 @@ const BankabilityScore = () => {
     return { label: "High Risk", color: "text-prism-rose", variant: "destructive" as const };
   };
 
-  const interp = getInterpretation(totalScore);
+  const interp = totalScore !== null ? getInterpretation(totalScore) : null;
 
   return (
     <div className="space-y-6 pb-8">
@@ -177,20 +177,37 @@ const BankabilityScore = () => {
       {/* Score Display */}
       <Card>
         <CardContent className="pt-8 pb-8">
-          <div className="text-center space-y-3">
-            <p className="text-sm text-muted-foreground">Your Bankability Score</p>
-            <p className={`text-6xl font-extrabold ${interp.color}`}>{totalScore}</p>
-            <Badge variant={interp.variant} className="text-sm px-4 py-1">{interp.label}</Badge>
-            <div className="max-w-md mx-auto mt-4">
-              <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                <span>High Risk</span>
-                <span>Needs Work</span>
-                <span>Moderate</span>
-                <span>Bankable</span>
-              </div>
-              <Progress value={totalScore} className="h-3" />
+          {totalScore === null || !interp ? (
+            <div className="text-center space-y-3">
+              <p className="text-sm text-muted-foreground">Your Bankability Score</p>
+              <p className="text-3xl font-bold text-muted-foreground">Score unavailable</p>
+              <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                Not enough data yet. Add financial snapshots, credit accounts, and claims below —
+                at least half of the scoring weight must be backed by real data before a score is shown.
+              </p>
+              <Badge variant="secondary" className="text-sm px-4 py-1">{coveragePct}% of scoring weight has data</Badge>
             </div>
-          </div>
+          ) : (
+            <div className="text-center space-y-3">
+              <p className="text-sm text-muted-foreground">Your Bankability Score</p>
+              <p className={`text-6xl font-extrabold ${interp.color}`}>{totalScore}</p>
+              <Badge variant={interp.variant} className="text-sm px-4 py-1">{interp.label}</Badge>
+              <div className="max-w-md mx-auto mt-4">
+                <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                  <span>High Risk</span>
+                  <span>Needs Work</span>
+                  <span>Moderate</span>
+                  <span>Bankable</span>
+                </div>
+                <Progress value={totalScore} className="h-3" />
+              </div>
+              {coveragePct < 100 && (
+                <p className="text-xs text-muted-foreground">
+                  Based on {coveragePct}% of the scoring weight — factors without data are excluded, not assumed.
+                </p>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -203,7 +220,8 @@ const BankabilityScore = () => {
         <CardContent className="space-y-4">
           {factors.map((factor) => {
             const Icon = factor.icon;
-            const contribution = Math.round(factor.value * factor.weight / 100);
+            const hasData = factor.value !== null;
+            const contribution = hasData ? Math.round(factor.value! * factor.weight / 100) : 0;
             return (
               <div key={factor.label} className="space-y-1.5">
                 <div className="flex items-center justify-between">
@@ -213,17 +231,26 @@ const BankabilityScore = () => {
                     <span className="text-xs text-muted-foreground">({factor.weight}% weight)</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold">{factor.value}</span>
-                    <span className="text-xs text-muted-foreground">+{contribution} pts</span>
+                    {hasData ? (
+                      <>
+                        <span className="text-sm font-semibold">{factor.value}</span>
+                        <span className="text-xs text-muted-foreground">+{contribution} pts</span>
+                      </>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">No data</span>
+                    )}
                   </div>
                 </div>
-                <Progress value={factor.value} className="h-1.5" />
-                <p className="text-xs text-muted-foreground">{factor.description}</p>
+                <Progress value={hasData ? factor.value! : 0} className="h-1.5" />
+                <p className="text-xs text-muted-foreground">
+                  {hasData ? factor.description : `${factor.description} — ${factor.missingHint} to include this factor.`}
+                </p>
               </div>
             );
           })}
         </CardContent>
       </Card>
+
 
       {/* Interpretation Guide */}
       <Card>
