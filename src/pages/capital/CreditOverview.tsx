@@ -346,18 +346,25 @@ const CreditOverview = () => {
                 <div className="space-y-2">
                   {factors.map(f => {
                     const Icon = f.icon;
-                    const barColor = f.score >= 70 ? 'bg-accent' : f.score >= 40 ? 'bg-yellow-500' : 'bg-destructive';
+                    const s = f.score;
+                    const barColor = s === null ? 'bg-muted-foreground/40' : s >= 70 ? 'bg-accent' : s >= 40 ? 'bg-yellow-500' : 'bg-destructive';
+                    const iconColor = s === null ? 'text-muted-foreground' : s >= 70 ? 'text-accent' : s >= 40 ? 'text-yellow-500' : 'text-destructive';
                     return (
                       <div key={f.label} className="flex items-center gap-2 text-xs">
-                        <Icon className={`h-3.5 w-3.5 shrink-0 ${f.score >= 70 ? 'text-accent' : f.score >= 40 ? 'text-yellow-500' : 'text-destructive'}`} />
+                        <Icon className={`h-3.5 w-3.5 shrink-0 ${iconColor}`} />
                         <span className="w-28 truncate">{f.label}</span>
-                        <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
-                          <div className={`h-full rounded-full ${barColor} transition-all duration-700`} style={{ width: `${f.score}%` }} />
-                        </div>
+                        {s === null ? (
+                          <span className="flex-1 text-[10px] text-muted-foreground">No data reported</span>
+                        ) : (
+                          <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+                            <div className={`h-full rounded-full ${barColor} transition-all duration-700`} style={{ width: `${s}%` }} />
+                          </div>
+                        )}
                         <span className="text-muted-foreground w-7 text-right">{f.weight}</span>
                       </div>
                     );
                   })}
+
                 </div>
               </CardContent>
             </Card>
