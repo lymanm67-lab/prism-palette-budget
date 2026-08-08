@@ -107,6 +107,7 @@ const MoneyBlueprint = lazy(() => import("@/pages/MoneyBlueprint"));
 
 const BeltProgress = lazy(() => import("@/pages/BeltProgress"));
 const RetirementDashboard = lazy(() => import("@/pages/RetirementDashboard"));
+const RetirementHub = lazy(() => import("@/pages/RetirementHub"));
 const HealthDashboard = lazy(() => import("@/pages/health/HealthDashboard"));
 const ContentEditor = lazy(() => import("@/pages/admin/ContentEditor"));
 
