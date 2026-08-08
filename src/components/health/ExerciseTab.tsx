@@ -3,8 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dumbbell, CalendarDays, Target, Youtube } from 'lucide-react';
-import { useHealthProfile, useHealthLogs } from '@/hooks/use-health';
+import { Dumbbell, CalendarDays, Target, Youtube, Flame, Plus } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
+import { useHealthProfile, useHealthLogs, useSaveDailyLog, useTodayLog } from '@/hooks/use-health';
 import { weightStatus, projectMilestoneDate } from '@/lib/health/healthEngine';
 import CardioCard from '@/components/health/CardioCard';
 
@@ -263,6 +266,9 @@ export default function ExerciseTab() {
   const { data: profile } = useHealthProfile();
   const { data: logs = [] } = useHealthLogs();
   const [group, setGroup] = useState<string>('all');
+  const { data: today } = useTodayLog();
+  const saveLog = useSaveDailyLog();
+  const [strengthMins, setStrengthMins] = useState('30');
 
   const status = useMemo(() => weightStatus(profile ?? null, logs), [profile, logs]);
   const goal = profile?.goal_weight ?? 175;
@@ -281,8 +287,60 @@ export default function ExerciseTab() {
   const filtered =
     group === 'all' ? TOTAL_GYM_EXERCISES : TOTAL_GYM_EXERCISES.filter((e) => e.group === group);
 
+  const strengthWeight = status?.current ?? profile?.current_weight ?? 220;
+  const strengthBurn = Math.round(
+    ((Number(strengthMins) || 0) / 60) * 3.5 * (strengthWeight / 2.205) * 1.05,
+  );
+  const loggedBurn = Number((today as any)?.exercise_calories ?? 0);
+
+  const logStrength = () => {
+    if (strengthBurn <= 0) {
+      toast.error('Enter session minutes');
+      return;
+    }
+    saveLog.mutate(
+      {
+        log_date: new Date().toISOString().slice(0, 10),
+        exercise_calories: loggedBurn + strengthBurn,
+      },
+      { onSuccess: () => toast.success('Strength session burn logged') },
+    );
+  };
+
   return (
     <div className="space-y-6">
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Flame className="h-4 w-4 text-prism-orange" /> Log a strength session
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Minutes on the Total Gym</Label>
+              <Input
+                type="number"
+                min="0"
+                value={strengthMins}
+                onChange={(e) => setStrengthMins(e.target.value)}
+              />
+            </div>
+            <div className="rounded-lg border bg-muted/30 p-3">
+              <p className="text-xs text-muted-foreground">Estimated burn</p>
+              <p className="text-lg font-semibold tabular-nums">{strengthBurn} cal</p>
+            </div>
+            <div className="rounded-lg border bg-muted/30 p-3">
+              <p className="text-xs text-muted-foreground">Logged today</p>
+              <p className="text-lg font-semibold tabular-nums">{Math.round(loggedBurn)} cal</p>
+            </div>
+          </div>
+          <Button size="sm" onClick={logStrength} disabled={saveLog.isPending}>
+            <Plus className="mr-1 h-4 w-4" /> Add to today's burn
+          </Button>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
