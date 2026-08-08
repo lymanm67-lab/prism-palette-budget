@@ -8,9 +8,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CalendarIcon, Footprints } from 'lucide-react';
+import { CalendarIcon, Footprints, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useHealthProfile } from '@/hooks/use-health';
+import { useHealthLogs, useHealthProfile, useSaveDailyLog } from '@/hooks/use-health';
+import { toast } from 'sonner';
 
 
 type Activity = {
@@ -39,6 +40,8 @@ const STRIDE_FT = 2.5; // approximate steps conversion
 
 export default function CardioCard() {
   const { data: profile } = useHealthProfile();
+  const { data: logs = [] } = useHealthLogs();
+  const saveLog = useSaveDailyLog();
   const weight = profile?.current_weight ?? 220;
 
   const [date, setDate] = useState<Date | undefined>(new Date());
@@ -68,6 +71,19 @@ export default function CardioCard() {
       fatLbs: calories / 3500,
     };
   }, [activity, mode, minutes, miles, weight]);
+
+  const logSession = () => {
+    const iso = (date ?? new Date()).toISOString().slice(0, 10);
+    const existing = logs.find((l: any) => l.log_date === iso) as any | undefined;
+    saveLog.mutate(
+      {
+        log_date: iso,
+        miles: Number(existing?.miles ?? 0) + Number(result.dist.toFixed(2)),
+        minutes_walked: Number(existing?.minutes_walked ?? 0) + Math.round(result.mins),
+      },
+      { onSuccess: () => toast.success('Session logged') },
+    );
+  };
 
   return (
     <Card>
@@ -179,6 +195,15 @@ export default function CardioCard() {
             <p className="text-xs uppercase tracking-wide text-muted-foreground">Fat equivalent</p>
             <p className="mt-1 text-2xl font-semibold">{result.fatLbs.toFixed(2)} lb</p>
           </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <Button size="sm" onClick={logSession} disabled={saveLog.isPending}>
+            <Plus className="mr-1 h-4 w-4" /> Log this session
+          </Button>
+          <span className="text-xs text-muted-foreground">
+            Adds the miles and minutes to that day's log; the burn flows into your nutrition energy balance.
+          </span>
         </div>
 
         <div className="flex flex-wrap items-center gap-2 text-xs">
