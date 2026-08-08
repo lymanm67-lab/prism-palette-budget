@@ -8,6 +8,7 @@ import { Target, ArrowRight } from 'lucide-react';
 
 const fmt = (n: number) => `$${Math.round(n).toLocaleString()}`;
 const EXP_KEY = 'prism.fire.annualExpenses';
+const INC_KEY = 'prism.fire.guaranteedIncome';
 
 interface Props {
   /** Investable / retirement assets that can fund withdrawals */
@@ -16,6 +17,14 @@ interface Props {
   guaranteedMonthly?: number;
 }
 
+type IncomeState = {
+  scope: 'individual' | 'household';
+  mySs: number;
+  spouseSs: number;
+  spousePension: number;
+  other: number;
+};
+
 export default function FireNumberCard({ investedAssets, guaranteedMonthly = 0 }: Props) {
   const [annualExpenses, setAnnualExpenses] = useState<number>(() => {
     const saved = typeof window !== 'undefined' ? window.localStorage.getItem(EXP_KEY) : null;
@@ -23,11 +32,31 @@ export default function FireNumberCard({ investedAssets, guaranteedMonthly = 0 }
     return Number.isFinite(n) && n > 0 ? n : 72000;
   });
   const [swr, setSwr] = useState(4);
+  const [income, setIncome] = useState<IncomeState>(() => {
+    const saved = typeof window !== 'undefined' ? window.localStorage.getItem(INC_KEY) : null;
+    if (saved) {
+      try { return { scope: 'household', mySs: 0, spouseSs: 0, spousePension: 0, other: 0, ...JSON.parse(saved) }; } catch { /* ignore */ }
+    }
+    return { scope: 'household', mySs: 0, spouseSs: 0, spousePension: 0, other: guaranteedMonthly || 0 };
+  });
 
   const setExpenses = (v: number) => {
     setAnnualExpenses(v);
     if (v > 0) window.localStorage.setItem(EXP_KEY, String(v));
   };
+
+  const setInc = (patch: Partial<IncomeState>) => {
+    setIncome(prev => {
+      const next = { ...prev, ...patch };
+      window.localStorage.setItem(INC_KEY, JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const isHousehold = income.scope === 'household';
+  const guaranteed = isHousehold
+    ? income.mySs + income.spouseSs + income.spousePension + income.other
+    : income.mySs + income.other;
 
   const r = useMemo(() => {
     const rate = (swr || 4) / 100;
@@ -39,16 +68,16 @@ export default function FireNumberCard({ investedAssets, guaranteedMonthly = 0 }
       { name: 'Freedom', sub: 'Assets fund life', monthly: monthly * 1.5 },
     ].map(g => {
       const grossTarget = (g.monthly * 12) / rate;
-      const net = Math.max(0, g.monthly - guaranteedMonthly);
+      const net = Math.max(0, g.monthly - guaranteed);
       const target = (net * 12) / rate;
-      const coverage = g.monthly > 0 ? (((investedAssets * rate) / 12 + guaranteedMonthly) / g.monthly) * 100 : 0;
+      const coverage = g.monthly > 0 ? (((investedAssets * rate) / 12 + guaranteed) / g.monthly) * 100 : 0;
       return { ...g, grossTarget, target, coverage, progress: target > 0 ? Math.min(100, (investedAssets / target) * 100) : 100 };
     });
     const fireNumber = annualExpenses / rate;
-    const adjusted = Math.max(0, (annualExpenses - guaranteedMonthly * 12)) / rate;
+    const adjusted = Math.max(0, (annualExpenses - guaranteed * 12)) / rate;
     const passedIdx = gateways.reduce((acc, g, i) => (g.coverage >= 100 ? i : acc), -1);
     return { fireNumber, adjusted, gateways, passedIdx, monthlyPassive: (investedAssets * rate) / 12 };
-  }, [annualExpenses, swr, investedAssets, guaranteedMonthly]);
+  }, [annualExpenses, swr, investedAssets, guaranteed]);
 
   return (
     <Card>
@@ -71,18 +100,63 @@ export default function FireNumberCard({ investedAssets, guaranteedMonthly = 0 }
             <Input type="number" step="0.25" value={swr} onChange={e => setSwr(+e.target.value)} />
           </div>
           <div className="rounded-lg bg-primary/10 p-3">
-            <div className="text-[11px] text-muted-foreground">FIRE number</div>
+            <div className="text-[11px] text-muted-foreground">FIRE number{isHousehold ? ' (household)' : ' (individual)'}</div>
             <div className="text-xl font-bold text-primary">{fmt(r.fireNumber)}</div>
-            {guaranteedMonthly > 0 && (
+            {guaranteed > 0 && (
               <div className="text-[10px] text-prism-teal">{fmt(r.adjusted)} after guaranteed income</div>
             )}
           </div>
         </div>
 
+        <div className="flex gap-2">
+          {(['individual', 'household'] as const).map(s => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => setInc({ scope: s })}
+              className={`flex-1 rounded-md border px-3 py-2 text-xs font-medium transition-colors ${
+                income.scope === s ? 'border-primary bg-primary/10 text-primary' : 'border-border text-muted-foreground hover:bg-muted/40'
+              }`}
+            >
+              {s === 'individual' ? 'Individual (me only)' : 'Household (both spouses)'}
+            </button>
+          ))}
+        </div>
+
+        <div className="rounded-lg border border-prism-teal/30 bg-prism-teal/5 p-3 space-y-2">
+          <div className="text-xs font-semibold">Guaranteed lifetime income (lowers every target)</div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <div>
+              <Label className="text-[11px]">My Social Security /mo</Label>
+              <Input type="number" value={income.mySs} onChange={e => setInc({ mySs: +e.target.value })} />
+            </div>
+            {isHousehold && (
+              <>
+                <div>
+                  <Label className="text-[11px]">Spouse Social Security /mo</Label>
+                  <Input type="number" value={income.spouseSs} onChange={e => setInc({ spouseSs: +e.target.value })} />
+                </div>
+                <div>
+                  <Label className="text-[11px]">Spouse pension /mo</Label>
+                  <Input type="number" value={income.spousePension} onChange={e => setInc({ spousePension: +e.target.value })} />
+                </div>
+              </>
+            )}
+            <div>
+              <Label className="text-[11px]">Other guaranteed /mo</Label>
+              <Input type="number" value={income.other} onChange={e => setInc({ other: +e.target.value })} />
+            </div>
+          </div>
+          <div className="text-[11px] text-muted-foreground">
+            {fmt(guaranteed)}/mo guaranteed removes <strong className="text-foreground">{fmt(swr > 0 ? (guaranteed * 12) / (swr / 100) : 0)}</strong> from the portfolio you need at {swr}%.
+          </div>
+        </div>
+
         <div className="text-xs text-muted-foreground">
           Invested assets {fmt(investedAssets)} produce <strong className="text-foreground">{fmt(r.monthlyPassive)}/mo</strong>
-          {guaranteedMonthly > 0 && <> plus <strong className="text-foreground">{fmt(guaranteedMonthly)}/mo</strong> guaranteed</>} at {swr}%.
+          {guaranteed > 0 && <> plus <strong className="text-foreground">{fmt(guaranteed)}/mo</strong> guaranteed</>} at {swr}%.
         </div>
+
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {r.gateways.map((g, i) => (
