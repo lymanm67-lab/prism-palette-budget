@@ -375,12 +375,12 @@ export default function NutritionTab() {
             ))}
           </div>
 
-          {meals.filter((m) => m.meal_date === todayISO()).length === 0 ? (
+          {meals.filter((m) => m.meal_date === todayISO() && m.meal_type !== 'drink').length === 0 ? (
             <p className="text-sm text-muted-foreground">No meals logged today yet.</p>
           ) : (
             <div className="divide-y rounded-lg border">
               {meals
-                .filter((m) => m.meal_date === todayISO())
+                .filter((m) => m.meal_date === todayISO() && m.meal_type !== 'drink')
                 .map((m) => (
                   <div key={m.id} className="flex items-center justify-between gap-3 p-3">
                     <div className="min-w-0">
