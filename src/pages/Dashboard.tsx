@@ -10,6 +10,7 @@ import FinancialHealthScore from '@/components/FinancialHealthScore';
 import GoalTrackerWidget from '@/components/GoalTrackerWidget';
 import ConsistencyTrackerCard from '@/components/health/ConsistencyTrackerCard';
 import MorningKickstartCard from '@/components/health/MorningKickstartCard';
+import CombinedLegacyScoreCard from '@/components/legacy/CombinedLegacyScoreCard';
 
 import SpendingAnomalyAlert from '@/components/SpendingAnomalyAlert';
 import { SafeToSpendHero } from '@/components/SafeToSpendHero';
