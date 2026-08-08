@@ -644,6 +644,14 @@ export default function WealthOS() {
           />
         </div>
 
+        <SectionLabel>FIRE Number &amp; Four Financial Gateways™</SectionLabel>
+        <div style={{ marginBottom: 14 }}>
+          <FireNumberCard
+            investedAssets={(B.retirement || 0) + (B.brokerage || 0) + (B.hsa || 0) + (B.emergency || 0) + (B.cash || 0)}
+            guaranteedMonthly={10059}
+          />
+        </div>
+
         <SectionLabel>Projected Retirement Balances — Continued Contributions @ 7% Return</SectionLabel>
         <RetirementProjection
           lymanStart={lymanB.retirement || 0}
