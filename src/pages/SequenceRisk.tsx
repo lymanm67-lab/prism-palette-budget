@@ -107,6 +107,12 @@ export default function SequenceRisk() {
         </p>
       </header>
 
+      <HealthHorizonBanner
+        currentEndAge={i.endAge}
+        onApply={(planningAge) => set('endAge', planningAge)}
+      />
+
+
       {/* Assumption bar */}
       <Card>
         <CardHeader className="pb-3">
