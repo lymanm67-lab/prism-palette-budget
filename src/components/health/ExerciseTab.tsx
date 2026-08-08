@@ -3,13 +3,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dumbbell, CalendarDays, Target, Youtube, Flame, Plus } from 'lucide-react';
+import { Dumbbell, CalendarDays, Target, Youtube, Flame, Plus, Timer } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { useHealthProfile, useHealthLogs, useSaveDailyLog, useTodayLog } from '@/hooks/use-health';
 import { weightStatus, projectMilestoneDate } from '@/lib/health/healthEngine';
 import CardioCard from '@/components/health/CardioCard';
+import CoachArtyTimer from '@/components/health/CoachArtyTimer';
+
 
 
 type Exercise = {
@@ -472,6 +474,15 @@ export default function ExerciseTab() {
                     <Badge variant="secondary">{e.sets}</Badge>
                     <Badge variant="secondary">{e.incline}</Badge>
                   </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="mt-3 w-full"
+                    onClick={() => setCoachExercise(e.name)}
+                  >
+                    <Timer className="mr-1 h-4 w-4" /> Start with Coach Arty
+                  </Button>
+
                   <a
                     href={`https://www.google.com/search?tbm=vid&q=${encodeURIComponent(`Total Gym ${e.name} exercise demonstration`)}`}
                     target="_blank"
@@ -492,6 +503,13 @@ export default function ExerciseTab() {
           </Tabs>
         </CardContent>
       </Card>
+
+      <CoachArtyTimer
+        open={!!coachExercise}
+        onOpenChange={(o) => !o && setCoachExercise(null)}
+        exerciseName={coachExercise ?? 'Total Gym full body'}
+      />
     </div>
+
   );
 }
