@@ -43,12 +43,26 @@ function monthsToReach(target: number, current: number, monthly: number, annualR
 }
 
 export default function GatewaysLadder({ annualExpenses, swr, current, monthlySave, returnPct }: Props) {
+  const [scope, setScope] = useState<'individual' | 'household'>('household');
   const [takeHome, setTakeHome] = useState<number>(() => Math.round((annualExpenses / 12) * 1.25));
   const [essentialsPct, setEssentialsPct] = useState(60);
   const [freedomMultiple, setFreedomMultiple] = useState(1.25);
 
+  // Guaranteed lifetime income (reduces the portfolio you need)
+  const [mySs, setMySs] = useState(0);
+  const [spouseSs, setSpouseSs] = useState(0);
+  const [spousePension, setSpousePension] = useState(0);
+  const [otherIncome, setOtherIncome] = useState(0);
+  const [spouseTakeHome, setSpouseTakeHome] = useState(0);
+
+  const isHousehold = scope === 'household';
+  const guaranteed = isHousehold
+    ? mySs + spouseSs + spousePension + otherIncome
+    : mySs + otherIncome;
+
   const rate = (swr || 4) / 100;
-  const monthlyLifestyle = annualExpenses / 12;
+  const monthlyLifestyle = isHousehold ? annualExpenses / 12 : (annualExpenses / 12) * 0.6;
+  const incomeToReplace = (takeHome || monthlyLifestyle) + (isHousehold ? spouseTakeHome : 0);
 
   const gates: Gate[] = useMemo(() => [
     {
@@ -69,27 +83,31 @@ export default function GatewaysLadder({ annualExpenses, swr, current, monthlySa
       key: 'independence',
       name: 'Financial Independence',
       subtitle: 'Replace income',
-      monthlyNeed: takeHome || monthlyLifestyle,
-      blurb: 'Portfolio income fully replaces your take-home pay. Work becomes optional.',
+      monthlyNeed: incomeToReplace,
+      blurb: 'Portfolio plus guaranteed income fully replaces take-home pay. Work becomes optional.',
     },
     {
       key: 'freedom',
       name: 'Financial Freedom',
       subtitle: 'Assets fund your life',
-      monthlyNeed: (takeHome || monthlyLifestyle) * freedomMultiple,
+      monthlyNeed: incomeToReplace * freedomMultiple,
       blurb: 'Your assets fund an expanded, chosen lifestyle with margin on top.',
     },
-  ], [monthlyLifestyle, essentialsPct, takeHome, freedomMultiple]);
+  ], [monthlyLifestyle, essentialsPct, incomeToReplace, freedomMultiple]);
 
   const rows = gates.map(g => {
-    const annualNeed = g.monthlyNeed * 12;
+    const grossMonthly = g.monthlyNeed;
+    const grossTarget = rate > 0 ? (grossMonthly * 12) / rate : 0;
+    const netMonthly = Math.max(0, grossMonthly - guaranteed);
+    const annualNeed = netMonthly * 12;
     const target = rate > 0 ? annualNeed / rate : 0;
+    const reduction = Math.max(0, grossTarget - target);
     const passiveMonthly = (current * rate) / 12;
-    const coverage = g.monthlyNeed > 0 ? (passiveMonthly / g.monthlyNeed) * 100 : 0;
-    const progress = target > 0 ? Math.min(100, (current / target) * 100) : 0;
+    const coverage = grossMonthly > 0 ? ((passiveMonthly + guaranteed) / grossMonthly) * 100 : 0;
+    const progress = target > 0 ? Math.min(100, (current / target) * 100) : 100;
     const gap = Math.max(0, target - current);
     const months = monthsToReach(target, current, monthlySave, returnPct);
-    return { ...g, annualNeed, target, coverage, progress, gap, months, passiveMonthly };
+    return { ...g, grossMonthly, grossTarget, monthlyNeed: netMonthly, annualNeed, target, reduction, coverage, progress, gap, months, passiveMonthly };
   });
 
   const passedIdx = rows.reduce((acc, r, i) => (r.coverage >= 100 ? i : acc), -1);
