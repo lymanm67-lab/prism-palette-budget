@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Check, Pause, Play, RotateCcw, Sunrise } from 'lucide-react';
+import { Check, Pause, Play, RotateCcw, Sunrise, Volume2, VolumeX } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   KICKSTART_STEPS,
@@ -18,9 +18,12 @@ import {
   parseKickstart,
   type KickstartStepKey,
 } from '@/lib/health/kickstart';
+import { cueAt, sessionsForType, type GuidedSession } from '@/lib/health/guidedSessions';
+import { useCoachVoice } from '@/hooks/use-coach-voice';
 import { useHealthLogs, useSaveDailyLog, useTodayLog } from '@/hooks/use-health';
 import { todayISO } from '@/lib/health/healthEngine';
 import CoachArtyTimer from '@/components/health/CoachArtyTimer';
+
 
 export default function MorningKickstartCard({ compact = false }: { compact?: boolean }) {
   const navigate = useNavigate();
