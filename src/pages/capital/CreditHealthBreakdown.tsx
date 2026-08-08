@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, TrendingUp, TrendingDown, Minus, AlertTriangle, Info, Lightbulb, BarChart3 } from 'lucide-react';
+import { ArrowLeft, TrendingUp, TrendingDown, Minus, AlertTriangle, Info, Lightbulb, BarChart3, HelpCircle } from 'lucide-react';
 import PageOverview from '@/components/PageOverview';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
