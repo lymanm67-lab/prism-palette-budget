@@ -66,5 +66,8 @@ export default function FireCalculator() {
         </div>
       </CardContent>
     </Card>
+
+    <GatewaysLadder annualExpenses={expenses} swr={swr} current={current} monthlySave={monthlySave} returnPct={returnPct} />
+    </>
   );
 }
