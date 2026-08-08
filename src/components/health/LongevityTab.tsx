@@ -10,6 +10,7 @@ import {
   weightStatus,
 } from '@/lib/health/healthEngine';
 import { useHealthLogs, useHealthProfile } from '@/hooks/use-health';
+import LongevityDividendCard from '@/components/health/LongevityDividendCard';
 
 export default function LongevityTab() {
   const { data: profile } = useHealthProfile();
