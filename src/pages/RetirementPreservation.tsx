@@ -136,6 +136,9 @@ export default function RetirementPreservation() {
         </div>
       </header>
 
+      <HealthHorizonBanner />
+
+
       {/* Assumption controls */}
       <Section title="Planning Assumptions" subtitle="Every projection below recalculates instantly when these change.">
         <div className="flex flex-wrap items-center gap-2 mb-4">
