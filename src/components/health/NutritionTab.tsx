@@ -18,7 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Utensils, Plus, Trash2, Coffee, Pencil } from 'lucide-react';
+import { Utensils, Plus, Trash2, Coffee, Pencil, Flame } from 'lucide-react';
 import {
   BOWL_CARBS,
   BOWL_PROTEINS,
@@ -27,6 +27,7 @@ import {
   BREAKFAST_OPTIONS,
   SEASONINGS,
   bowlNutrition,
+  energyBalance,
   todayISO,
 } from '@/lib/health/healthEngine';
 import {
@@ -40,6 +41,8 @@ import {
 import MealScanner from '@/components/health/MealScanner';
 import ManualMealCard from '@/components/health/ManualMealCard';
 import SupplementsCard from '@/components/health/SupplementsCard';
+import DrinksCard from '@/components/health/DrinksCard';
+
 
 import { toast } from 'sonner';
 
