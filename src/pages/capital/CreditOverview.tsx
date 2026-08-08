@@ -127,65 +127,70 @@ const CreditOverview = () => {
           return totalMonths / withDates.length;
         })();
 
-        // Factor scores (VantageScore 3.0 weighting)
-        const utilizationScore = utilization <= 10 ? 100 : utilization <= 30 ? 80 : utilization <= 50 ? 55 : utilization <= 75 ? 30 : 10;
-        const negativeScore = negativeCount === 0 ? 100 : negativeCount <= 2 ? 40 : 15;
-        const ageScore = avgAge >= 84 ? 100 : avgAge >= 48 ? 75 : avgAge >= 24 ? 55 : avgAge >= 12 ? 35 : 20;
+        // Factor scores (VantageScore 3.0 weighting) — null when the underlying data is missing
+        const hasRevolvingLimits = accounts.some(a => a.account_type === 'Revolving' && Number(a.credit_limit || 0) > 0);
+        const hasPaymentData = accounts.some(a => !!a.payment_history) || negativeCount > 0;
+        const hasDates = accounts.some(a => a.date_opened);
+
+        const utilizationScore = !hasRevolvingLimits ? null : utilization <= 10 ? 100 : utilization <= 30 ? 80 : utilization <= 50 ? 55 : utilization <= 75 ? 30 : 10;
+        const negativeScore = !hasPaymentData ? null : negativeCount === 0 ? 100 : negativeCount <= 2 ? 40 : 15;
+        const ageScore = !hasDates ? null : avgAge >= 84 ? 100 : avgAge >= 48 ? 75 : avgAge >= 24 ? 55 : avgAge >= 12 ? 35 : 20;
         const mixScore = (() => {
           const types = new Set(accounts.map(a => a.account_type));
           return types.size >= 4 ? 100 : types.size >= 3 ? 75 : types.size >= 2 ? 50 : 30;
         })();
         const totalAcctsScore = openAccounts.length >= 10 ? 100 : openAccounts.length >= 5 ? 75 : openAccounts.length >= 3 ? 50 : 30;
 
-        // Weighted estimate (VantageScore 3.0 approximate weights)
-        const estimatedScore = Math.round(
-          300 + (550 * (
-            utilizationScore * 0.20 +
-            negativeScore * 0.28 +
-            ageScore * 0.13 +
-            mixScore * 0.11 +
-            totalAcctsScore * 0.08 +
-            (100 * 0.20) // payment history placeholder (assume good if no negatives data)
-          ) / 100)
-        );
-        const clampedScore = Math.min(850, Math.max(300, estimatedScore));
-
-        const scorePercent = ((clampedScore - 300) / 550) * 100;
-        const scoreColor = clampedScore >= 750 ? 'hsl(var(--accent))' : clampedScore >= 670 ? 'hsl(142 71% 45%)' : clampedScore >= 580 ? 'hsl(48 96% 53%)' : 'hsl(var(--destructive))';
-        const scoreLabel = clampedScore >= 750 ? 'Excellent' : clampedScore >= 670 ? 'Good' : clampedScore >= 580 ? 'Fair' : 'Poor';
+        // Weighted estimate — only produced when payment history, utilization and age data all exist.
+        // We never substitute an assumed value for missing factors.
+        const canEstimate = utilizationScore !== null && negativeScore !== null && ageScore !== null;
+        const clampedScore = canEstimate
+          ? Math.min(850, Math.max(300, Math.round(
+              300 + (550 * (
+                utilizationScore! * 0.24 +
+                negativeScore! * 0.34 +
+                ageScore! * 0.16 +
+                mixScore * 0.14 +
+                totalAcctsScore * 0.12
+              ) / 100)
+            )))
+          : null;
 
         const factors = [
-          { label: 'Payment History', weight: '28%', score: negativeScore, icon: negativeScore >= 70 ? TrendingUp : negativeScore >= 40 ? Minus : TrendingDown },
-          { label: 'Credit Utilization', weight: '20%', score: utilizationScore, icon: utilizationScore >= 70 ? TrendingUp : utilizationScore >= 40 ? Minus : TrendingDown },
-          { label: 'Credit Age', weight: '13%', score: ageScore, icon: ageScore >= 70 ? TrendingUp : ageScore >= 40 ? Minus : TrendingDown },
-          { label: 'Account Mix', weight: '11%', score: mixScore, icon: mixScore >= 70 ? TrendingUp : mixScore >= 40 ? Minus : TrendingDown },
-          { label: 'Total Accounts', weight: '8%', score: totalAcctsScore, icon: totalAcctsScore >= 70 ? TrendingUp : totalAcctsScore >= 40 ? Minus : TrendingDown },
+          { label: 'Payment History', weight: '34%', score: negativeScore, icon: negativeScore === null ? HelpCircle : negativeScore >= 70 ? TrendingUp : negativeScore >= 40 ? Minus : TrendingDown },
+          { label: 'Credit Utilization', weight: '24%', score: utilizationScore, icon: utilizationScore === null ? HelpCircle : utilizationScore >= 70 ? TrendingUp : utilizationScore >= 40 ? Minus : TrendingDown },
+          { label: 'Credit Age', weight: '16%', score: ageScore, icon: ageScore === null ? HelpCircle : ageScore >= 70 ? TrendingUp : ageScore >= 40 ? Minus : TrendingDown },
+          { label: 'Account Mix', weight: '14%', score: mixScore, icon: mixScore >= 70 ? TrendingUp : mixScore >= 40 ? Minus : TrendingDown },
+          { label: 'Total Accounts', weight: '12%', score: totalAcctsScore, icon: totalAcctsScore >= 70 ? TrendingUp : totalAcctsScore >= 40 ? Minus : TrendingDown },
         ];
 
-        // Per-bureau scores
-        const computeBureauScore = (bureauAccts: typeof accounts) => {
-          if (bureauAccts.length === 0) return 0;
+        // Per-bureau scores — null when that bureau lacks enough reported data
+        const computeBureauScore = (bureauAccts: typeof accounts): number | null => {
+          if (bureauAccts.length === 0) return null;
           const bRevolving = bureauAccts.filter(a => a.account_type === 'Revolving');
           const bBalance = bRevolving.reduce((s, a) => s + Number(a.balance), 0);
           const bLimit = bRevolving.reduce((s, a) => s + Number(a.credit_limit || 0), 0);
-          const bUtil = bLimit > 0 ? (bBalance / bLimit) * 100 : 0;
           const bNeg = bureauAccts.filter(a => ['Collection', 'Charge-Off', 'Foreclosure', 'Repossession'].includes(a.account_status)).length;
+          const bHasPayment = bureauAccts.some(a => !!a.payment_history) || bNeg > 0;
           const bOpen = bureauAccts.filter(a => a.account_status.toLowerCase() === 'open');
           const bWithDates = bureauAccts.filter(a => a.date_opened);
-          const bAvgAge = bWithDates.length ? bWithDates.reduce((sum, a) => sum + ((Date.now() - new Date(a.date_opened!).getTime()) / (1000 * 60 * 60 * 24 * 30)), 0) / bWithDates.length : 0;
+          if (bLimit === 0 || !bHasPayment || bWithDates.length === 0) return null;
+          const bUtil = (bBalance / bLimit) * 100;
+          const bAvgAge = bWithDates.reduce((sum, a) => sum + ((Date.now() - new Date(a.date_opened!).getTime()) / (1000 * 60 * 60 * 24 * 30)), 0) / bWithDates.length;
           const bTypes = new Set(bureauAccts.map(a => a.account_type));
           const uS = bUtil <= 10 ? 100 : bUtil <= 30 ? 80 : bUtil <= 50 ? 55 : bUtil <= 75 ? 30 : 10;
           const nS = bNeg === 0 ? 100 : bNeg <= 2 ? 40 : 15;
           const aS = bAvgAge >= 84 ? 100 : bAvgAge >= 48 ? 75 : bAvgAge >= 24 ? 55 : bAvgAge >= 12 ? 35 : 20;
           const mS = bTypes.size >= 4 ? 100 : bTypes.size >= 3 ? 75 : bTypes.size >= 2 ? 50 : 30;
           const tS = bOpen.length >= 10 ? 100 : bOpen.length >= 5 ? 75 : bOpen.length >= 3 ? 50 : 30;
-          return Math.min(850, Math.max(300, Math.round(300 + (550 * (uS * 0.20 + nS * 0.28 + aS * 0.13 + mS * 0.11 + tS * 0.08 + 100 * 0.20) / 100))));
+          return Math.min(850, Math.max(300, Math.round(300 + (550 * (uS * 0.24 + nS * 0.34 + aS * 0.16 + mS * 0.14 + tS * 0.12) / 100))));
         };
 
         const bureauScores = (['Equifax', 'Experian', 'TransUnion'] as const).map(bureau => {
           const ba = accounts.filter(a => a.bureau === bureau);
           return { bureau, score: computeBureauScore(ba), count: ba.length };
         });
+
 
         return (
           <>
