@@ -8,6 +8,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { LegacyStepNav } from '@/components/legacy/LegacyStepNav';
+import HealthHorizonBanner from '@/components/legacy/HealthHorizonBanner';
 import {
   ResponsiveContainer, LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis,
   CartesianGrid, Tooltip, Legend, ReferenceLine, Cell,
