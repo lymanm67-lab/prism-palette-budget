@@ -100,7 +100,7 @@ const ScoreBreakdown = () => {
       <div className="space-y-4">
         {FACTORS.map(f => {
           const score = scores[f.key as keyof typeof scores];
-          const status = getStatus(score);
+          const status = score === null ? 'unknown' : getStatus(score);
           const st = statusStyles[status];
           const StatusIcon = st.Icon;
 
@@ -120,12 +120,18 @@ const ScoreBreakdown = () => {
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
                     <span className={cn('font-medium', st.color)}>
-                      {status === 'good' ? 'Strong' : status === 'fair' ? 'Needs attention' : 'Critical'}
+                      {status === 'unknown' ? 'Not enough data' : status === 'good' ? 'Strong' : status === 'fair' ? 'Needs attention' : 'Critical'}
                     </span>
-                    <span className="text-muted-foreground">{score}/100</span>
+                    <span className="text-muted-foreground">{score === null ? '—' : `${score}/100`}</span>
                   </div>
-                  <Progress value={score} className={cn('h-2', st.bg)} />
+                  <Progress value={score ?? 0} className={cn('h-2', st.bg)} />
+                  {score === null && (
+                    <p className="text-[11px] text-muted-foreground">
+                      Import a credit report or add accounts, limits, open dates, and inquiries so this factor can be measured.
+                    </p>
+                  )}
                 </div>
+
 
                 <Accordion type="single" collapsible>
                   <AccordionItem value="details" className="border-0">
