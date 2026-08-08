@@ -100,18 +100,63 @@ export default function FireNumberCard({ investedAssets, guaranteedMonthly = 0 }
             <Input type="number" step="0.25" value={swr} onChange={e => setSwr(+e.target.value)} />
           </div>
           <div className="rounded-lg bg-primary/10 p-3">
-            <div className="text-[11px] text-muted-foreground">FIRE number</div>
+            <div className="text-[11px] text-muted-foreground">FIRE number{isHousehold ? ' (household)' : ' (individual)'}</div>
             <div className="text-xl font-bold text-primary">{fmt(r.fireNumber)}</div>
-            {guaranteedMonthly > 0 && (
+            {guaranteed > 0 && (
               <div className="text-[10px] text-prism-teal">{fmt(r.adjusted)} after guaranteed income</div>
             )}
           </div>
         </div>
 
+        <div className="flex gap-2">
+          {(['individual', 'household'] as const).map(s => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => setInc({ scope: s })}
+              className={`flex-1 rounded-md border px-3 py-2 text-xs font-medium transition-colors ${
+                income.scope === s ? 'border-primary bg-primary/10 text-primary' : 'border-border text-muted-foreground hover:bg-muted/40'
+              }`}
+            >
+              {s === 'individual' ? 'Individual (me only)' : 'Household (both spouses)'}
+            </button>
+          ))}
+        </div>
+
+        <div className="rounded-lg border border-prism-teal/30 bg-prism-teal/5 p-3 space-y-2">
+          <div className="text-xs font-semibold">Guaranteed lifetime income (lowers every target)</div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <div>
+              <Label className="text-[11px]">My Social Security /mo</Label>
+              <Input type="number" value={income.mySs} onChange={e => setInc({ mySs: +e.target.value })} />
+            </div>
+            {isHousehold && (
+              <>
+                <div>
+                  <Label className="text-[11px]">Spouse Social Security /mo</Label>
+                  <Input type="number" value={income.spouseSs} onChange={e => setInc({ spouseSs: +e.target.value })} />
+                </div>
+                <div>
+                  <Label className="text-[11px]">Spouse pension /mo</Label>
+                  <Input type="number" value={income.spousePension} onChange={e => setInc({ spousePension: +e.target.value })} />
+                </div>
+              </>
+            )}
+            <div>
+              <Label className="text-[11px]">Other guaranteed /mo</Label>
+              <Input type="number" value={income.other} onChange={e => setInc({ other: +e.target.value })} />
+            </div>
+          </div>
+          <div className="text-[11px] text-muted-foreground">
+            {fmt(guaranteed)}/mo guaranteed removes <strong className="text-foreground">{fmt(swr > 0 ? (guaranteed * 12) / (swr / 100) : 0)}</strong> from the portfolio you need at {swr}%.
+          </div>
+        </div>
+
         <div className="text-xs text-muted-foreground">
           Invested assets {fmt(investedAssets)} produce <strong className="text-foreground">{fmt(r.monthlyPassive)}/mo</strong>
-          {guaranteedMonthly > 0 && <> plus <strong className="text-foreground">{fmt(guaranteedMonthly)}/mo</strong> guaranteed</>} at {swr}%.
+          {guaranteed > 0 && <> plus <strong className="text-foreground">{fmt(guaranteed)}/mo</strong> guaranteed</>} at {swr}%.
         </div>
+
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {r.gateways.map((g, i) => (
