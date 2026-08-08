@@ -1,5 +1,5 @@
 // Morning Kickstart — the ordered wake-up ritual, right rail on the Health page.
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Check, Pause, Play, RotateCcw, Sunrise } from 'lucide-react';
+import { Check, Pause, Play, RotateCcw, Sunrise, Volume2, VolumeX } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   KICKSTART_STEPS,
@@ -18,9 +18,12 @@ import {
   parseKickstart,
   type KickstartStepKey,
 } from '@/lib/health/kickstart';
+import { cueAt, sessionsForType, type GuidedSession } from '@/lib/health/guidedSessions';
+import { useCoachVoice } from '@/hooks/use-coach-voice';
 import { useHealthLogs, useSaveDailyLog, useTodayLog } from '@/hooks/use-health';
 import { todayISO } from '@/lib/health/healthEngine';
 import CoachArtyTimer from '@/components/health/CoachArtyTimer';
+
 
 export default function MorningKickstartCard({ compact = false }: { compact?: boolean }) {
   const navigate = useNavigate();
@@ -37,6 +40,23 @@ export default function MorningKickstartCard({ compact = false }: { compact?: bo
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
   const [coachOpen, setCoachOpen] = useState(false);
+  const [voiceOn, setVoiceOn] = useState(true);
+  const [totalSeconds, setTotalSeconds] = useState(0);
+  const [cueText, setCueText] = useState('');
+  const lastCue = useRef('');
+
+  const sessions = useMemo(() => sessionsForType(mtype), [mtype]);
+  const [sessionId, setSessionId] = useState<string>(sessions[0]?.id ?? 'silent');
+  const session: GuidedSession = useMemo(
+    () => sessions.find((s) => s.id === sessionId) ?? sessions[0],
+    [sessions, sessionId],
+  );
+  const { speak, stop } = useCoachVoice(voiceOn);
+
+  useEffect(() => {
+    if (!sessions.some((s) => s.id === sessionId)) setSessionId(sessions[0]?.id ?? 'silent');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessions]);
 
   useEffect(() => {
     setIntention((today as any)?.intention_note ?? '');
@@ -73,10 +93,37 @@ export default function MorningKickstartCard({ compact = false }: { compact?: bo
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timerRunning, secondsLeft, minutes, mtype, intention]);
 
+  // Guided cues, spoken and shown as they come due.
+  useEffect(() => {
+    if (!timerRunning || totalSeconds <= 0) return;
+    const elapsed = totalSeconds - secondsLeft;
+    const cue = cueAt(session, elapsed, totalSeconds);
+    if (cue && cue.text !== lastCue.current) {
+      lastCue.current = cue.text;
+      setCueText(cue.text);
+      speak(cue.text);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timerRunning, secondsLeft, totalSeconds, session]);
+
   const startTimer = () => {
-    setSecondsLeft(Math.max(1, Number(minutes) || 5) * 60);
+    const total = Math.max(1, Number(minutes) || 5) * 60;
+    lastCue.current = '';
+    setCueText('');
+    setTotalSeconds(total);
+    setSecondsLeft(total);
     setTimerRunning(true);
   };
+
+  const resetTimer = () => {
+    setTimerRunning(false);
+    setSecondsLeft(0);
+    setTotalSeconds(0);
+    setCueText('');
+    lastCue.current = '';
+    stop();
+  };
+
 
   const reflections = useMemo(
     () =>
@@ -234,6 +281,22 @@ export default function MorningKickstartCard({ compact = false }: { compact?: bo
                           </Select>
                         </div>
                         <div className="space-y-1.5">
+                          <Label className="text-xs text-muted-foreground">Guided session</Label>
+                          <Select value={sessionId} onValueChange={setSessionId}>
+                            <SelectTrigger className="h-9">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {sessions.map((g) => (
+                                <SelectItem key={g.id} value={g.id}>
+                                  {g.title}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <p className="text-xs text-muted-foreground">{session?.summary}</p>
+                        </div>
+                        <div className="space-y-1.5">
                           <Label className="text-xs text-muted-foreground">Today's intention</Label>
                           <Input
                             value={intention}
@@ -242,25 +305,34 @@ export default function MorningKickstartCard({ compact = false }: { compact?: bo
                           />
                         </div>
                         {secondsLeft > 0 && (
-                          <div className="flex items-center justify-between rounded-lg border bg-muted/30 p-3">
-                            <span className="text-2xl font-semibold tabular-nums">{mmss(secondsLeft)}</span>
-                            <div className="flex gap-1">
-                              <Button size="sm" variant="outline" onClick={() => setTimerRunning((r) => !r)}>
-                                {timerRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => {
-                                  setTimerRunning(false);
-                                  setSecondsLeft(0);
-                                }}
-                              >
-                                <RotateCcw className="h-4 w-4" />
-                              </Button>
+                          <div className="space-y-2 rounded-lg border bg-muted/30 p-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-2xl font-semibold tabular-nums">{mmss(secondsLeft)}</span>
+                              <div className="flex gap-1">
+                                <Button size="sm" variant="outline" onClick={() => setTimerRunning((r) => !r)}>
+                                  {timerRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  aria-label={voiceOn ? 'Mute guidance' : 'Unmute guidance'}
+                                  onClick={() => {
+                                    setVoiceOn((v) => !v);
+                                    stop();
+                                  }}
+                                >
+                                  {voiceOn ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+                                </Button>
+                                <Button size="sm" variant="ghost" onClick={resetTimer}>
+                                  <RotateCcw className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </div>
+                            <Progress value={totalSeconds ? ((totalSeconds - secondsLeft) / totalSeconds) * 100 : 0} />
+                            {cueText && <p className="text-sm leading-relaxed">{cueText}</p>}
                           </div>
                         )}
+
                         <Button
                           size="sm"
                           variant="ghost"
