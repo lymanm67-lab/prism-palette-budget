@@ -13,6 +13,7 @@ import {
   LayoutDashboard, Receipt, PiggyBank, Target, Wallet, Tags,
   TrendingUp, Calculator, BarChart3, RefreshCw, CreditCard,
   Settings, HelpCircle, FileText, Search, Calendar,
+  Layers, HeartPulse, Sparkles, Dumbbell,
 } from 'lucide-react';
 
 const PAGES = [
