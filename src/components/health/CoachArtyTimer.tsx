@@ -22,6 +22,9 @@ import {
   type Verbosity,
 } from '@/lib/health/coachArty';
 import { useCoachVoice } from '@/hooks/use-coach-voice';
+import { useWorkoutMusic, type MusicStyle } from '@/hooks/use-workout-music';
+import { Slider } from '@/components/ui/slider';
+import { Music, Music2 } from 'lucide-react';
 import { useHealthProfile, useSaveDailyLog, useTodayLog } from '@/hooks/use-health';
 import { todayISO } from '@/lib/health/healthEngine';
 
@@ -74,7 +77,19 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
   const [setsDone, setSetsDone] = useState(0);
   const loggedRef = useRef(false);
 
-  const { speak, stop } = useCoachVoice(voiceOn);
+  const { speak, stop, speaking } = useCoachVoice(voiceOn);
+  const music = useWorkoutMusic();
+  const [musicOn, setMusicOn] = useState(true);
+
+  // Duck the track under Coach Arty and ease it back during rest periods.
+  useEffect(() => {
+    music.duck(speaking ? 0.3 : 1);
+  }, [speaking, music.duck]);
+
+  // Stretch sessions get the calmer groove; strength work gets the driving one.
+  useEffect(() => {
+    music.setStyle(stretch ? 'warmup' : 'push');
+  }, [stretch, music.setStyle]);
 
   const phases = useMemo(
     () =>
@@ -206,6 +221,12 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
     return () => window.clearInterval(id);
   }, [running, phase, index, advance, speak, verbosity, stretch]);
 
+  // Music follows the session: plays while running, stops on pause/reset/close.
+  useEffect(() => {
+    if (started && running && musicOn) void music.start();
+    else music.stop();
+  }, [started, running, musicOn, music.start, music.stop]);
+
   const start = () => {
     const first = phases[0];
     setStarted(true);
@@ -282,6 +303,45 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
                 <Label className="text-xs text-muted-foreground">Rest seconds</Label>
                 <Input type="number" min="5" value={rest} onChange={(e) => setRest(e.target.value)} />
               </div>
+            </div>
+
+            <div className="space-y-3 rounded-lg border p-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Music className="h-4 w-4" />
+                  <span className="text-sm">Background music</span>
+                </div>
+                <Switch checked={musicOn} onCheckedChange={setMusicOn} />
+              </div>
+              {musicOn && (
+                <>
+                  <Select value={music.style} onValueChange={(v) => music.setStyle(v as MusicStyle)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="warmup">Warm up — steady 100 BPM groove</SelectItem>
+                      <SelectItem value="push">Push — driving 124 BPM</SelectItem>
+                      <SelectItem value="beast">Beast mode — 140 BPM high energy</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">
+                      Music volume — {Math.round(music.volume * 100)}%
+                    </Label>
+                    <Slider
+                      value={[Math.round(music.volume * 100)]}
+                      min={0}
+                      max={100}
+                      step={5}
+                      onValueChange={([v]) => music.setVolume(v / 100)}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    The track ducks automatically whenever Coach Arty speaks.
+                  </p>
+                </>
+              )}
             </div>
 
             <div className="flex items-center justify-between rounded-lg border p-3">
@@ -395,6 +455,10 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
               <Button variant="ghost" size="sm" onClick={() => setVoiceOn((v) => !v)}>
                 {voiceOn ? <Volume2 className="mr-1 h-4 w-4" /> : <VolumeX className="mr-1 h-4 w-4" />}
                 {voiceOn ? 'Mute' : 'Unmute'}
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => setMusicOn((m) => !m)}>
+                {musicOn ? <Music className="mr-1 h-4 w-4" /> : <Music2 className="mr-1 h-4 w-4" />}
+                {musicOn ? 'Music off' : 'Music on'}
               </Button>
             </div>
 
