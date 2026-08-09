@@ -442,6 +442,38 @@ export default function ExerciseTab() {
       </Card>
 
       <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Timer className="h-4 w-4 text-prism-teal" /> Log a split stretch machine session
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Minutes stretching</Label>
+              <Input
+                type="number"
+                min="0"
+                value={stretchMins}
+                onChange={(e) => setStretchMins(e.target.value)}
+              />
+            </div>
+            <div className="rounded-lg border bg-muted/30 p-3">
+              <p className="text-xs text-muted-foreground">Estimated burn</p>
+              <p className="text-lg font-semibold tabular-nums">{stretchBurn} cal</p>
+            </div>
+            <div className="rounded-lg border bg-muted/30 p-3">
+              <p className="text-xs text-muted-foreground">Logged today</p>
+              <p className="text-lg font-semibold tabular-nums">{Math.round(loggedBurn)} cal</p>
+            </div>
+          </div>
+          <Button size="sm" onClick={logStretch} disabled={saveLog.isPending}>
+            <Plus className="mr-1 h-4 w-4" /> Add to today's burn
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Dumbbell className="h-5 w-5 text-prism-teal" />
