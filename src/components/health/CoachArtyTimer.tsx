@@ -31,18 +31,29 @@ type Props = {
   exerciseName: string;
   /** When true, defaults are tuned for static stretching holds instead of reps. */
   isStretch?: boolean;
+  /** Optional picker list so the session can be switched without closing the dialog. */
+  options?: { name: string; group?: string; isStretch?: boolean }[];
   /** Called after the session is logged (e.g. to tick the Kickstart step). */
   onComplete?: () => void;
 };
 
 const WATER_EVERY_SETS = 3;
 
-export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStretch, onComplete }: Props) {
+export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStretch, options, onComplete }: Props) {
   const { data: profile } = useHealthProfile();
   const { data: today } = useTodayLog();
   const saveLog = useSaveDailyLog();
 
-  const defaults = isStretch
+  const [selected, setSelected] = useState(exerciseName);
+  useEffect(() => {
+    if (open) setSelected(exerciseName);
+  }, [open, exerciseName]);
+
+  const picked = options?.find((o) => o.name === selected);
+  const name = picked?.name ?? selected ?? exerciseName;
+  const stretch = picked ? !!picked.isStretch : !!isStretch;
+
+  const defaults = stretch
     ? { sets: 3, reps: 5, workSeconds: 45, restSeconds: 15 }
     : DEFAULT_ITEM;
 
@@ -52,6 +63,7 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
   const [rest, setRest] = useState(String(defaults.restSeconds));
   const [voiceOn, setVoiceOn] = useState(true);
   const [verbosity, setVerbosity] = useState<Verbosity>('full');
+
 
   const [running, setRunning] = useState(false);
   const [started, setStarted] = useState(false);
@@ -68,20 +80,20 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
     () =>
       buildPhases([
         {
-          name: exerciseName,
+          name: name,
           sets: Math.max(1, Number(sets) || 1),
           reps: Math.max(1, Number(reps) || 1),
           workSeconds: Math.max(5, Number(work) || 30),
           restSeconds: Math.max(5, Number(rest) || 30),
         },
       ]),
-    [exerciseName, sets, reps, work, rest],
+    [name, sets, reps, work, rest],
   );
 
   const phase: Phase | undefined = phases[index];
   const planSeconds = useMemo(() => totalSeconds(phases), [phases]);
   const weight = profile?.current_weight ?? 220;
-  const met = isStretch ? 2.5 : 3.5;
+  const met = stretch ? 2.5 : 3.5;
   const calories = sessionCalories(elapsed, weight, met);
 
   const reset = useCallback(() => {
@@ -105,7 +117,7 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
     setReps(String(defaults.reps));
     setWork(String(defaults.workSeconds));
     setRest(String(defaults.restSeconds));
-  }, [isStretch, exerciseName]);
+  }, [stretch, name]);
 
   const logSession = useCallback(
     (seconds: number, doneSets: number) => {
@@ -123,7 +135,7 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
           workout_sessions: [
             ...priorSessions,
             {
-              exercise: exerciseName,
+              exercise: name,
               sets: doneSets,
               reps: Number(reps) || 0,
               seconds,
@@ -137,7 +149,7 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
       );
       onComplete?.();
     },
-    [exerciseName, met, onComplete, reps, saveLog, today, weight],
+    [name, met, onComplete, reps, saveLog, today, weight],
   );
 
   const advance = useCallback(
@@ -170,9 +182,9 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
       }
       setIndex(nextIdx);
       setRemaining(next.seconds);
-      void speak(phaseCue(next, phases[nextIdx + 1], verbosity, nextIdx, isStretch));
+      void speak(phaseCue(next, phases[nextIdx + 1], verbosity, nextIdx, stretch));
     },
-    [isStretch, logSession, phases, speak, verbosity, weight],
+    [stretch, logSession, phases, speak, verbosity, weight],
   );
 
   // Countdown loop.
@@ -186,13 +198,13 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
           advance(index);
           return 0;
         }
-        const cue = tickCue(phase, next, verbosity, isStretch);
+        const cue = tickCue(phase, next, verbosity, stretch);
         if (cue) void speak(cue);
         return next;
       });
     }, 1000);
     return () => window.clearInterval(id);
-  }, [running, phase, index, advance, speak, verbosity, isStretch]);
+  }, [running, phase, index, advance, speak, verbosity, stretch]);
 
   const start = () => {
     const first = phases[0];
@@ -203,7 +215,7 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
     setElapsed(0);
     setSetsDone(0);
     loggedRef.current = false;
-    void speak(phaseCue(first, phases[1], verbosity, 0, isStretch));
+    void speak(phaseCue(first, phases[1], verbosity, 0, stretch));
   };
 
   const logWater = () => {
@@ -226,20 +238,39 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Dumbbell className="h-5 w-5 text-prism-teal" />
-            Coach Arty — {exerciseName}
+            Coach Arty — {name}
           </DialogTitle>
         </DialogHeader>
 
         {!started ? (
           <div className="space-y-4">
+            {options && options.length > 0 && (
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Exercise</Label>
+                <Select value={selected} onValueChange={setSelected}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose an exercise" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-72">
+                    {options.map((o) => (
+                      <SelectItem key={o.name} value={o.name}>
+                        {o.group ? `${o.group} — ${o.name}` : o.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-3">
+
               <div className="space-y-1.5">
                 <Label className="text-xs text-muted-foreground">Sets</Label>
                 <Input type="number" min="1" value={sets} onChange={(e) => setSets(e.target.value)} />
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs text-muted-foreground">
-                  {isStretch ? 'Breaths / hold count' : 'Target reps'}
+                  {stretch ? 'Breaths / hold count' : 'Target reps'}
                 </Label>
                 <Input type="number" min="1" value={reps} onChange={(e) => setReps(e.target.value)} />
               </div>
@@ -270,7 +301,7 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
                 <SelectContent>
                   <SelectItem value="full">Full coaching — cues plus motivation</SelectItem>
                   <SelectItem value="cues">
-                    Cues only — sets, {isStretch ? 'breaths' : 'reps'}, rest
+                    Cues only — sets, {stretch ? 'breaths' : 'reps'}, rest
                   </SelectItem>
                 </SelectContent>
               </Select>
@@ -315,7 +346,7 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
               <p className="text-lg font-semibold">{phase?.label}</p>
               {phase?.kind === 'work' && (
                 <p className="text-sm text-muted-foreground">
-                  {phase.reps} {isStretch ? 'breaths — hold steady' : 'reps — controlled tempo'}
+                  {phase.reps} {stretch ? 'breaths — hold steady' : 'reps — controlled tempo'}
                 </p>
               )}
             </div>

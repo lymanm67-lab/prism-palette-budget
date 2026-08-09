@@ -676,9 +676,15 @@ export default function ExerciseTab() {
       <CoachArtyTimer
         open={!!coachExercise}
         onOpenChange={(o) => !o && setCoachExercise(null)}
-        exerciseName={coachExercise ?? 'Total Gym full body'}
+        exerciseName={coachExercise ?? 'Total Gym Squat'}
         isStretch={SPLIT_STRETCH_EXERCISES.some((e) => e.name === coachExercise)}
+        options={ALL_EXERCISES.map((e) => ({
+          name: e.name,
+          group: e.group,
+          isStretch: e.group === 'Stretch / Mobility',
+        }))}
       />
+
     </div>
 
   );
