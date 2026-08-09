@@ -274,7 +274,7 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
 
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <Badge variant="secondary">{mmss(planSeconds)} planned</Badge>
-              <Badge variant="outline">~{sessionCalories(planSeconds, weight)} cal</Badge>
+              <Badge variant="outline">~{sessionCalories(planSeconds, weight, met)} cal</Badge>
               <span>Water reminder every {WATER_EVERY_SETS} sets</span>
             </div>
 
