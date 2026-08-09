@@ -29,6 +29,8 @@ type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   exerciseName: string;
+  /** When true, defaults are tuned for static stretching holds instead of reps. */
+  isStretch?: boolean;
   /** Called after the session is logged (e.g. to tick the Kickstart step). */
   onComplete?: () => void;
 };
