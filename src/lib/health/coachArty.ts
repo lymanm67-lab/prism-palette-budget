@@ -87,10 +87,10 @@ export function totalSeconds(phases: Phase[]) {
   return phases.reduce((s, p) => s + p.seconds, 0);
 }
 
-/** Strength-training burn using METs (~3.5 for resistance work). */
-export function sessionCalories(seconds: number, weightLb: number) {
+/** Calorie burn from a timed session. MET defaults to ~3.5 for resistance work; 2.5 for static stretching. */
+export function sessionCalories(seconds: number, weightLb: number, met = 3.5) {
   const kg = weightLb / 2.205;
-  return Math.round((3.5 * 3.5 * kg) / 200 * (seconds / 60));
+  return Math.round((met * 3.5 * kg) / 200 * (seconds / 60));
 }
 
 const PUSH_LINES = [
