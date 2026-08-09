@@ -18,6 +18,7 @@ import SleepRecoveryTab from '@/components/health/SleepRecoveryTab';
 import PreventiveCareTab from '@/components/health/PreventiveCareTab';
 import ExerciseTab from '@/components/health/ExerciseTab';
 import EnergyReportTab from '@/components/health/EnergyReportTab';
+import DailyRecapPanel from '@/components/health/DailyRecapPanel';
 import MorningKickstartCard from '@/components/health/MorningKickstartCard';
 import ConsistencyTrackerCard from '@/components/health/ConsistencyTrackerCard';
 
@@ -43,6 +44,7 @@ const MODULES: Module[] = [
       { value: 'dashboard', label: 'Command Center', hint: 'Scores, rings and the daily snapshot.', render: () => <HealthDashboardTab /> },
       { value: 'nutrition', label: 'Nutrition & Water', hint: 'Meals, protein, fiber and hydration.', render: () => <NutritionTab /> },
       { value: 'exercise', label: 'Exercise & Coach Arty', hint: 'Total Gym, stretching, cardio and guided sessions.', render: () => <ExerciseTab /> },
+      { value: 'recap', label: 'Daily Recap', hint: 'Sessions by type and how they feed your Weekly Health Score.', render: () => <DailyRecapPanel /> },
       { value: 'energy', label: 'Energy Report', hint: 'Calories in vs out, hydration and weight trend.', render: () => <EnergyReportTab /> },
     ],
   },
