@@ -647,7 +647,11 @@ export default function ExerciseTab() {
                   </Button>
 
                   <a
-                    href={`https://www.google.com/search?tbm=vid&q=${encodeURIComponent(`Total Gym ${e.name} exercise demonstration`)}`}
+                    href={`https://www.google.com/search?tbm=vid&q=${encodeURIComponent(
+                      e.group === 'Stretch / Mobility'
+                        ? `split stretch machine ${e.name} demonstration`
+                        : `Total Gym ${e.name} exercise demonstration`,
+                    )}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="mt-3 flex items-center gap-3 rounded-md border bg-background/60 p-2 transition-colors hover:bg-accent"
@@ -657,7 +661,9 @@ export default function ExerciseTab() {
                     </span>
                     <span className="text-xs">
                       <span className="block font-medium">Find video demonstration</span>
-                      <span className="text-muted-foreground">Total Gym {e.name}</span>
+                      <span className="text-muted-foreground">
+                        {e.group === 'Stretch / Mobility' ? 'Split stretch machine' : 'Total Gym'} {e.name}
+                      </span>
                     </span>
                   </a>
                 </div>
