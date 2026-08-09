@@ -389,11 +389,25 @@ export default function ExerciseTab() {
         log_date: new Date().toISOString().slice(0, 10),
         exercise_calories: loggedBurn + strengthBurn,
       },
-      { onSuccess: () => toast.success('Strength session burn logged') },
-    );
-  };
+        { onSuccess: () => toast.success('Strength session burn logged') },
+      );
+    };
 
-  return (
+    const logStretch = () => {
+      if (stretchBurn <= 0) {
+        toast.error('Enter stretch minutes');
+        return;
+      }
+      saveLog.mutate(
+        {
+          log_date: new Date().toISOString().slice(0, 10),
+          exercise_calories: loggedBurn + stretchBurn,
+        },
+        { onSuccess: () => toast.success('Stretch session burn logged') },
+      );
+    };
+
+    return (
     <div className="space-y-6">
       <Card>
         <CardHeader className="pb-3">
