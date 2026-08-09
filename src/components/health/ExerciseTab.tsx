@@ -378,37 +378,82 @@ export default function ExerciseTab() {
     ((Number(stretchMins) || 0) / 60) * 2.5 * (strengthWeight / 2.205) * 1.05,
   );
   const loggedBurn = Number((today as any)?.exercise_calories ?? 0);
+  const todaySessions = Array.isArray((today as any)?.workout_sessions)
+    ? ((today as any).workout_sessions as Array<Record<string, unknown>>)
+    : [];
+
+  const appendSession = (entry: Record<string, unknown>, burn: number, message: string) => {
+    saveLog.mutate(
+      {
+        log_date: todayISO(),
+        exercise_calories: loggedBurn + burn,
+        workout_sessions: [...todaySessions, { ...entry, calories: burn, at: new Date().toISOString() }],
+      } as any,
+      { onSuccess: () => toast.success(message) },
+    );
+  };
 
   const logStrength = () => {
     if (strengthBurn <= 0) {
       toast.error('Enter session minutes');
       return;
     }
-    saveLog.mutate(
-      {
-        log_date: todayISO(),
-        exercise_calories: loggedBurn + strengthBurn,
-      },
-        { onSuccess: () => toast.success('Strength session burn logged') },
-      );
-    };
+    appendSession(
+      { exercise: 'Total Gym session', kind: 'strength', seconds: (Number(strengthMins) || 0) * 60 },
+      strengthBurn,
+      'Strength session logged',
+    );
+  };
 
-    const logStretch = () => {
-      if (stretchBurn <= 0) {
-        toast.error('Enter stretch minutes');
-        return;
-      }
-      saveLog.mutate(
-        {
-          log_date: todayISO(),
-          exercise_calories: loggedBurn + stretchBurn,
-        },
-        { onSuccess: () => toast.success('Stretch session burn logged') },
-      );
-    };
+  const logStretch = () => {
+    if (stretchBurn <= 0) {
+      toast.error('Enter stretch minutes');
+      return;
+    }
+    appendSession(
+      { exercise: 'Split stretch machine', kind: 'stretch', seconds: (Number(stretchMins) || 0) * 60 },
+      stretchBurn,
+      'Stretch session logged',
+    );
+  };
 
-    return (
+  return (
     <div className="space-y-6">
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Dumbbell className="h-4 w-4 text-prism-teal" /> Today's sessions
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {todaySessions.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No sessions logged yet today — finish a Coach Arty workout or add minutes below.
+            </p>
+          ) : (
+            <ul className="space-y-2">
+              {todaySessions.map((s, i) => (
+                <li
+                  key={i}
+                  className="flex items-center justify-between rounded-lg border bg-muted/20 px-3 py-2 text-sm"
+                >
+                  <span className="font-medium">
+                    {String(s.exercise ?? 'Session')}
+                    <span className="ml-2 text-xs uppercase tracking-wide text-muted-foreground">
+                      {String(s.kind ?? 'strength')}
+                    </span>
+                  </span>
+                  <span className="tabular-nums text-muted-foreground">
+                    {Math.round((Number(s.seconds) || 0) / 60)} min · {Math.round(Number(s.calories) || 0)} cal
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+
+
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
