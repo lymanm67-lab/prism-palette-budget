@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -6,7 +7,8 @@ import { Flame, Footprints, TrendingDown, Sparkles, Quote } from 'lucide-react';
 import HealthRing from './HealthRing';
 import QuickLogPanel from './QuickLogPanel';
 import AnimatedNumber from '@/components/AnimatedNumber';
-import { useHealthLogs, useHealthProfile, useTodayLog } from '@/hooks/use-health';
+import { useHealthLogs, useHealthMeals, useHealthProfile } from '@/hooks/use-health';
+import { mergeMealsIntoLogs } from '@/lib/health/mealRollup';
 import {
   bmiBand,
   fmtMiles,
@@ -17,6 +19,7 @@ import {
   weeklyHealthScore,
   weightStatus,
 } from '@/lib/health/healthEngine';
+
 
 const bandTone = {
   green: 'bg-prism-lime/15 text-prism-lime border-prism-lime/30',
