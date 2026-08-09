@@ -112,6 +112,11 @@ export default function ConsistencyTrackerCard({ compact = false }: { compact?: 
           })}
         </div>
 
+        <p className="text-xs text-muted-foreground">
+          Water today: <span className="font-medium text-foreground">{waterToday}oz</span> of {waterGoal}oz goal
+          {waterToday < waterGoal * 0.9 && ` — ${Math.max(0, Math.round(waterGoal * 0.9 - waterToday))}oz more to earn the water habit`}
+        </p>
+
         <div>
           <p className="mb-1.5 text-xs uppercase tracking-wide text-muted-foreground">Last 30 days</p>
           <div className="flex flex-wrap gap-1">
