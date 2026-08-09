@@ -99,6 +99,13 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
     if (!open) reset();
   }, [open, reset]);
 
+  useEffect(() => {
+    setSets(String(defaults.sets));
+    setReps(String(defaults.reps));
+    setWork(String(defaults.workSeconds));
+    setRest(String(defaults.restSeconds));
+  }, [isStretch, exerciseName]);
+
   const logSession = useCallback(
     (seconds: number, doneSets: number) => {
       if (loggedRef.current || seconds < 30) return;
