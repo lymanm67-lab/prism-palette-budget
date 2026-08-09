@@ -216,6 +216,12 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
     return () => window.clearInterval(id);
   }, [running, phase, index, advance, speak, verbosity, stretch]);
 
+  // Music follows the session: plays while running, stops on pause/reset/close.
+  useEffect(() => {
+    if (started && running && musicOn) void music.start();
+    else music.stop();
+  }, [started, running, musicOn, music.start, music.stop]);
+
   const start = () => {
     const first = phases[0];
     setStarted(true);
