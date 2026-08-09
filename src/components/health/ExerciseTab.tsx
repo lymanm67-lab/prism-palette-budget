@@ -16,7 +16,7 @@ import CoachArtyTimer from '@/components/health/CoachArtyTimer';
 
 type Exercise = {
   name: string;
-  group: 'Legs' | 'Chest & Shoulders' | 'Back' | 'Arms' | 'Core' | 'Cardio';
+  group: 'Legs' | 'Chest & Shoulders' | 'Back' | 'Arms' | 'Core' | 'Cardio' | 'Stretch / Mobility';
   setup: string;
   how: string;
   sets: string;
