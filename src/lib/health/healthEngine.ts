@@ -50,7 +50,15 @@ export type DailyLog = {
 
 // ---------------------------------------------------------------- date helpers
 
-export const todayISO = () => new Date().toISOString().slice(0, 10);
+/** Today's date in Eastern time (household timezone), as YYYY-MM-DD. */
+export const todayISO = () =>
+  new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/New_York',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date());
+
 
 export function addDays(iso: string, days: number) {
   const d = new Date(`${iso}T00:00:00`);
