@@ -366,7 +366,7 @@ export default function ExerciseTab() {
 
   const projected = projectMilestoneDate(goal, status);
   const filtered =
-    group === 'all' ? TOTAL_GYM_EXERCISES : TOTAL_GYM_EXERCISES.filter((e) => e.group === group);
+    group === 'all' ? ALL_EXERCISES : ALL_EXERCISES.filter((e) => e.group === group);
 
   const strengthWeight = status?.current ?? profile?.current_weight ?? 220;
   const strengthBurn = Math.round(
