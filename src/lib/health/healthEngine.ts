@@ -362,19 +362,27 @@ export function weeklyHealthScore(logs: DailyLog[], profile: HealthProfile | nul
   }, 0);
   const walking = clamp01(movementDays / expectedWalks) * 30;
 
-  const nutritionDays = week.filter(
-    (l) =>
-      Number(l.veg_servings) >= vegGoal &&
-      l.avoided_sugary_drinks &&
-      l.avoided_processed_carbs,
-  ).length;
-  const nutrition = clamp01(nutritionDays / daysSoFar) * 30;
+  // Score partial progress instead of requiring every target to be perfect
+  // before awarding any points. Logged meals count toward nutrition tracking.
+  const nutritionProgress = week.reduce((sum, l) => {
+    const veg = clamp01((Number(l.veg_servings) || 0) / vegGoal);
+    const meals = clamp01((Number((l as DailyLog & { meal_count?: number }).meal_count) || 0) / 3);
+    const quality = (l.avoided_sugary_drinks ? 0.5 : 0) + (l.avoided_processed_carbs ? 0.5 : 0);
+    return sum + veg * 0.4 + meals * 0.3 + quality * 0.3;
+  }, 0);
+  const nutrition = clamp01(nutritionProgress / daysSoFar) * 30;
 
-  const proteinDays = week.filter((l) => Number(l.protein_g) >= proteinGoal * 0.9).length;
-  const protein = clamp01(proteinDays / daysSoFar) * 20;
+  const proteinProgress = week.reduce(
+    (sum, l) => sum + clamp01((Number(l.protein_g) || 0) / (proteinGoal * 0.9)),
+    0,
+  );
+  const protein = clamp01(proteinProgress / daysSoFar) * 20;
 
-  const waterDays = week.filter((l) => Number(l.water_oz) >= waterGoal * 0.8).length;
-  const water = clamp01(waterDays / daysSoFar) * 10;
+  const waterProgress = week.reduce(
+    (sum, l) => sum + clamp01((Number(l.water_oz) || 0) / (waterGoal * 0.8)),
+    0,
+  );
+  const water = clamp01(waterProgress / daysSoFar) * 10;
 
   const weighDays = week.filter((l) => l.weight != null).length;
   const tracking = clamp01(weighDays / Math.min(daysSoFar, 5)) * 10;

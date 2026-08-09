@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { CalendarIcon, Footprints, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useHealthLogs, useHealthProfile, useSaveDailyLog } from '@/hooks/use-health';
+import { todayISO } from '@/lib/health/healthEngine';
 import { toast } from 'sonner';
 
 
@@ -44,7 +45,7 @@ export default function CardioCard() {
   const saveLog = useSaveDailyLog();
   const weight = profile?.current_weight ?? 220;
 
-  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [date, setDate] = useState<Date | undefined>(() => new Date(`${todayISO()}T12:00:00`));
   const [activityId, setActivityId] = useState('walk-brisk');
 
   const [mode, setMode] = useState<'time' | 'distance'>('time');
