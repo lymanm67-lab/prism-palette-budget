@@ -34,6 +34,9 @@ export default function SleepRecoveryTab() {
     energy: p.energy,
     stress: p.stress,
   }));
+  const sleepPoints = chart.filter((p) => p.sleep != null).length;
+  const moodPoints = chart.filter((p) => p.energy != null || p.stress != null).length;
+
 
   const scoreTone =
     s.recoveryScore >= 80
@@ -93,13 +96,13 @@ export default function SleepRecoveryTab() {
           <CardTitle className="text-base">Sleep hours — last 30 days</CardTitle>
         </CardHeader>
         <CardContent className="h-[260px]">
-          {chart.length === 0 ? (
+          {sleepPoints === 0 ? (
             <p className="text-sm text-muted-foreground">
               Log sleep hours on the Command Center (or import from Apple Health) to see trends here.
             </p>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chart}>
+              <AreaChart data={chart.filter((p) => p.sleep != null)}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                 <XAxis dataKey="date" tick={{ fontSize: 11 }} className="!bg-transparent" />
                 <YAxis domain={[0, 12]} tick={{ fontSize: 11 }} className="!bg-transparent" />
@@ -119,10 +122,12 @@ export default function SleepRecoveryTab() {
                   stroke="hsl(var(--primary))"
                   fill="hsl(var(--primary) / 0.2)"
                   connectNulls
+                  dot={{ r: 3, fill: 'hsl(var(--primary))' }}
                 />
               </AreaChart>
             </ResponsiveContainer>
           )}
+
         </CardContent>
       </Card>
 
@@ -131,11 +136,11 @@ export default function SleepRecoveryTab() {
           <CardTitle className="text-base">Energy vs. stress</CardTitle>
         </CardHeader>
         <CardContent className="h-[240px]">
-          {chart.length === 0 ? (
+          {moodPoints === 0 ? (
             <p className="text-sm text-muted-foreground">No energy or stress ratings logged yet.</p>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chart}>
+              <LineChart data={chart.filter((p) => p.energy != null || p.stress != null)}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                 <XAxis dataKey="date" tick={{ fontSize: 11 }} className="!bg-transparent" />
                 <YAxis domain={[0, 10]} tick={{ fontSize: 11 }} className="!bg-transparent" />
@@ -147,8 +152,9 @@ export default function SleepRecoveryTab() {
                     color: 'hsl(var(--foreground))',
                   }}
                 />
-                <Line type="monotone" dataKey="energy" name="Energy" stroke="hsl(var(--chart-2))" connectNulls dot={false} />
-                <Line type="monotone" dataKey="stress" name="Stress" stroke="hsl(var(--chart-4))" connectNulls dot={false} />
+                <Line type="monotone" dataKey="energy" name="Energy" stroke="hsl(var(--chart-2))" connectNulls dot={{ r: 3 }} />
+                <Line type="monotone" dataKey="stress" name="Stress" stroke="hsl(var(--chart-4))" connectNulls dot={{ r: 3 }} />
+
               </LineChart>
             </ResponsiveContainer>
           )}
