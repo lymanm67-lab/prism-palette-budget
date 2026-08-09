@@ -269,7 +269,9 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="full">Full coaching — cues plus motivation</SelectItem>
-                  <SelectItem value="cues">Cues only — sets, reps, rest</SelectItem>
+                  <SelectItem value="cues">
+                    Cues only — sets, {isStretch ? 'breaths' : 'reps'}, rest
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
