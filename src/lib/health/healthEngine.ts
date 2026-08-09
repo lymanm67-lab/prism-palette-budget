@@ -319,9 +319,13 @@ export type ScoreBreakdown = {
 
 const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
 
-/** Weekly Health Score: walking 30, nutrition 30, protein 20, water 10, tracking 10. */
+/**
+ * Weekly Health Score: walking 30, nutrition 30, protein 20, water 10, tracking 10.
+ * Uses a rolling 7-day window (not a calendar week) so the score keeps reflecting
+ * logged data instead of resetting to zero every Sunday.
+ */
 export function weeklyHealthScore(logs: DailyLog[], profile: HealthProfile | null): ScoreBreakdown {
-  const ws = weekStart(todayISO());
+  const ws = addDays(todayISO(), -6);
   const week = logs.filter((l) => l.log_date >= ws && l.log_date <= todayISO());
   const p = profile;
   const milesGoal = p?.daily_miles_goal ?? 3.5;
@@ -330,8 +334,9 @@ export function weeklyHealthScore(logs: DailyLog[], profile: HealthProfile | nul
   const waterGoal = p?.water_goal_oz ?? 100;
   const vegGoal = p?.veg_goal_servings ?? 5;
 
-  const daysSoFar = Math.max(1, Math.min(7, daysBetween(ws, todayISO()) + 1));
-  const expectedWalks = Math.max(1, Math.round((walkDays / 7) * daysSoFar));
+  const daysSoFar = 7;
+  const expectedWalks = Math.max(1, walkDays);
+
 
   const walksHit = week.filter((l) => (Number(l.miles) || 0) >= milesGoal).length;
   const walking = clamp01(walksHit / expectedWalks) * 30;
