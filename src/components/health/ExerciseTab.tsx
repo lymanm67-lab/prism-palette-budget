@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { useHealthProfile, useHealthLogs, useSaveDailyLog, useTodayLog } from '@/hooks/use-health';
-import { weightStatus, projectMilestoneDate } from '@/lib/health/healthEngine';
+import { weightStatus, projectMilestoneDate, todayISO } from '@/lib/health/healthEngine';
 import CardioCard from '@/components/health/CardioCard';
 import CoachArtyTimer from '@/components/health/CoachArtyTimer';
 
