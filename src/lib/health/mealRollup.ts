@@ -76,10 +76,33 @@ export function mealTotalsByDate(meals: AnyRow[]): Map<string, MealDayTotals> {
  */
 export function mergeMealsIntoLogs<T extends AnyRow>(logs: T[], meals: AnyRow[]): T[] {
   const totals = mealTotalsByDate(meals);
-  const normalizedLogs = (logs ?? []).map((l) => ({
-    ...l,
-    log_date: effectiveDate(l, 'log_date'),
-  })) as T[];
+  const normalizedByDate = new Map<string, T>();
+  for (const row of logs ?? []) {
+    const date = effectiveDate(row, 'log_date');
+    const prior = normalizedByDate.get(date);
+    const normalized = { ...row, log_date: date } as T;
+    if (!prior) {
+      normalizedByDate.set(date, normalized);
+      continue;
+    }
+    normalizedByDate.set(date, {
+      ...prior,
+      miles: (Number(prior.miles) || 0) + (Number(row.miles) || 0),
+      minutes_walked: (Number(prior.minutes_walked) || 0) + (Number(row.minutes_walked) || 0),
+      active_minutes: (Number(prior.active_minutes) || 0) + (Number(row.active_minutes) || 0),
+      exercise_calories: (Number(prior.exercise_calories) || 0) + (Number(row.exercise_calories) || 0),
+      protein_g: Math.max(Number(prior.protein_g) || 0, Number(row.protein_g) || 0),
+      water_oz: Math.max(Number(prior.water_oz) || 0, Number(row.water_oz) || 0),
+      veg_servings: Math.max(Number(prior.veg_servings) || 0, Number(row.veg_servings) || 0),
+      avoided_sugary_drinks: Boolean(prior.avoided_sugary_drinks || row.avoided_sugary_drinks),
+      avoided_processed_carbs: Boolean(prior.avoided_processed_carbs || row.avoided_processed_carbs),
+      workout_sessions: [
+        ...(Array.isArray(prior.workout_sessions) ? prior.workout_sessions : []),
+        ...(Array.isArray(row.workout_sessions) ? row.workout_sessions : []),
+      ],
+    } as T);
+  }
+  const normalizedLogs = [...normalizedByDate.values()];
   if (!totals.size) return normalizedLogs;
 
   const byDate = new Map<string, T>();
