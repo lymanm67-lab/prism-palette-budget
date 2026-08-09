@@ -23,6 +23,8 @@ import { useCoachVoice } from '@/hooks/use-coach-voice';
 import { useHealthLogs, useSaveDailyLog, useTodayLog } from '@/hooks/use-health';
 import { todayISO } from '@/lib/health/healthEngine';
 import CoachArtyTimer from '@/components/health/CoachArtyTimer';
+import SleepMoodCheckInCard from '@/components/health/SleepMoodCheckInCard';
+
 
 
 export default function MorningKickstartCard({ compact = false }: { compact?: boolean }) {
@@ -374,8 +376,11 @@ export default function MorningKickstartCard({ compact = false }: { compact?: bo
               ))}
             </div>
           )}
+
+          <SleepMoodCheckInCard variant="prompt" />
         </CardContent>
       </Card>
+
 
       <CoachArtyTimer
         open={coachOpen}
