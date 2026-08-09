@@ -186,13 +186,13 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
           advance(index);
           return 0;
         }
-        const cue = tickCue(phase, next, verbosity);
+        const cue = tickCue(phase, next, verbosity, isStretch);
         if (cue) void speak(cue);
         return next;
       });
     }, 1000);
     return () => window.clearInterval(id);
-  }, [running, phase, index, advance, speak, verbosity]);
+  }, [running, phase, index, advance, speak, verbosity, isStretch]);
 
   const start = () => {
     const first = phases[0];
@@ -203,7 +203,7 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
     setElapsed(0);
     setSetsDone(0);
     loggedRef.current = false;
-    void speak(phaseCue(first, phases[1], verbosity, 0));
+    void speak(phaseCue(first, phases[1], verbosity, 0, isStretch));
   };
 
   const logWater = () => {
