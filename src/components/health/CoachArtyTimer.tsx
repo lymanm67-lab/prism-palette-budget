@@ -314,7 +314,9 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
             <div className="text-center">
               <p className="text-lg font-semibold">{phase?.label}</p>
               {phase?.kind === 'work' && (
-                <p className="text-sm text-muted-foreground">{phase.reps} reps — controlled tempo</p>
+                <p className="text-sm text-muted-foreground">
+                  {phase.reps} {isStretch ? 'breaths — hold steady' : 'reps — controlled tempo'}
+                </p>
               )}
             </div>
 
