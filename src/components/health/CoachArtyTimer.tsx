@@ -37,15 +37,19 @@ type Props = {
 
 const WATER_EVERY_SETS = 3;
 
-export default function CoachArtyTimer({ open, onOpenChange, exerciseName, onComplete }: Props) {
+export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStretch, onComplete }: Props) {
   const { data: profile } = useHealthProfile();
   const { data: today } = useTodayLog();
   const saveLog = useSaveDailyLog();
 
-  const [sets, setSets] = useState(String(DEFAULT_ITEM.sets));
-  const [reps, setReps] = useState(String(DEFAULT_ITEM.reps));
-  const [work, setWork] = useState(String(DEFAULT_ITEM.workSeconds));
-  const [rest, setRest] = useState(String(DEFAULT_ITEM.restSeconds));
+  const defaults = isStretch
+    ? { sets: 3, reps: 5, workSeconds: 45, restSeconds: 15 }
+    : DEFAULT_ITEM;
+
+  const [sets, setSets] = useState(String(defaults.sets));
+  const [reps, setReps] = useState(String(defaults.reps));
+  const [work, setWork] = useState(String(defaults.workSeconds));
+  const [rest, setRest] = useState(String(defaults.restSeconds));
   const [voiceOn, setVoiceOn] = useState(true);
   const [verbosity, setVerbosity] = useState<Verbosity>('full');
 
