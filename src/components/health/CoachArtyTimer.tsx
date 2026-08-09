@@ -111,7 +111,7 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
     (seconds: number, doneSets: number) => {
       if (loggedRef.current || seconds < 30) return;
       loggedRef.current = true;
-      const burn = sessionCalories(seconds, weight);
+      const burn = sessionCalories(seconds, weight, met);
       const prior = Number((today as any)?.exercise_calories ?? 0);
       const priorSessions = Array.isArray((today as any)?.workout_sessions)
         ? ((today as any).workout_sessions as unknown[])
@@ -137,7 +137,7 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
       );
       onComplete?.();
     },
-    [exerciseName, onComplete, reps, saveLog, today, weight],
+    [exerciseName, met, onComplete, reps, saveLog, today, weight],
   );
 
   const advance = useCallback(
