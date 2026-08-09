@@ -119,13 +119,17 @@ export function phaseCue(
   next: Phase | undefined,
   verbosity: Verbosity,
   seed: number,
+  isStretch = false,
 ): string {
+  const unit = isStretch ? 'breaths' : 'reps';
   if (phase.kind === 'prep') {
-    return `Coach Arty here. We are starting ${phase.exercise}. ${phase.setsTotal} sets of ${phase.reps} reps. Get set.`;
+    return `Coach Arty here. We are starting ${phase.exercise}. ${phase.setsTotal} sets of ${phase.reps} ${unit}. Get set.`;
   }
   if (phase.kind === 'work') {
-    const base = `Set ${phase.setIndex} of ${phase.setsTotal}. ${phase.reps} reps. Go.`;
-    return verbosity === 'full' ? `${base} ${pick(PUSH_LINES, seed + phase.setIndex)}` : base;
+    const base = isStretch
+      ? `Set ${phase.setIndex} of ${phase.setsTotal}. Hold for ${phase.reps} ${unit}. Settle into the stretch.`
+      : `Set ${phase.setIndex} of ${phase.setsTotal}. ${phase.reps} ${unit}. Go.`;
+    return verbosity === 'full' && !isStretch ? `${base} ${pick(PUSH_LINES, seed + phase.setIndex)}` : base;
   }
   if (phase.kind === 'rest') {
     const base = pick(REST_LINES, seed + phase.setIndex);
