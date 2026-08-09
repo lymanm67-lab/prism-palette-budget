@@ -22,6 +22,9 @@ import {
   type Verbosity,
 } from '@/lib/health/coachArty';
 import { useCoachVoice } from '@/hooks/use-coach-voice';
+import { useWorkoutMusic, type MusicStyle } from '@/hooks/use-workout-music';
+import { Slider } from '@/components/ui/slider';
+import { Music, Music2 } from 'lucide-react';
 import { useHealthProfile, useSaveDailyLog, useTodayLog } from '@/hooks/use-health';
 import { todayISO } from '@/lib/health/healthEngine';
 
