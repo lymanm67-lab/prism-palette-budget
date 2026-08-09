@@ -170,9 +170,9 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
       }
       setIndex(nextIdx);
       setRemaining(next.seconds);
-      void speak(phaseCue(next, phases[nextIdx + 1], verbosity, nextIdx));
+      void speak(phaseCue(next, phases[nextIdx + 1], verbosity, nextIdx, isStretch));
     },
-    [logSession, phases, speak, verbosity, weight],
+    [isStretch, logSession, phases, speak, verbosity, weight],
   );
 
   // Countdown loop.
