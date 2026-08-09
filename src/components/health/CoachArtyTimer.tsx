@@ -81,7 +81,8 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
   const phase: Phase | undefined = phases[index];
   const planSeconds = useMemo(() => totalSeconds(phases), [phases]);
   const weight = profile?.current_weight ?? 220;
-  const calories = sessionCalories(elapsed, weight);
+  const met = isStretch ? 2.5 : 3.5;
+  const calories = sessionCalories(elapsed, weight, met);
 
   const reset = useCallback(() => {
     stop();
