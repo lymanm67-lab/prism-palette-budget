@@ -27,6 +27,12 @@ export default function ConsistencyTrackerCard({ compact = false }: { compact?: 
     const t = todayISO();
     return Math.round(Number((logs as any[]).find((l) => l.log_date === t)?.water_oz ?? 0));
   }, [logs]);
+  const waterLoggedDays = useMemo(() => {
+    const waterByDate = new Map(
+      (logs as any[]).map((log) => [log.log_date, Number(log.water_oz ?? 0)]),
+    );
+    return c.days.slice(-7).filter((day) => (waterByDate.get(day.date) ?? 0) > 0).length;
+  }, [c.days, logs]);
 
   if (isLoading) {
     return (
@@ -103,7 +109,7 @@ export default function ConsistencyTrackerCard({ compact = false }: { compact?: 
 
         <div className="flex flex-wrap gap-1.5">
           {HABITS.map((h) => {
-            const rate = Math.round((c.weekHitRate[h.key] ?? 0) * 7);
+             const rate = h.key === 'water' ? waterLoggedDays : Math.round((c.weekHitRate[h.key] ?? 0) * 7);
             return (
               <Badge key={h.key} variant={rate >= 5 ? 'default' : rate >= 3 ? 'secondary' : 'outline'}>
                 {h.short} {rate}/7
