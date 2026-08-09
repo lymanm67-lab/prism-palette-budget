@@ -677,6 +677,7 @@ export default function ExerciseTab() {
         open={!!coachExercise}
         onOpenChange={(o) => !o && setCoachExercise(null)}
         exerciseName={coachExercise ?? 'Total Gym full body'}
+        isStretch={SPLIT_STRETCH_EXERCISES.some((e) => e.name === coachExercise)}
       />
     </div>
 
