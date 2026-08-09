@@ -50,7 +50,7 @@ export const KICKSTART_STEPS: KickstartStep[] = [
     key: 'walk',
     order: 5,
     title: 'Walk',
-    detail: 'Twenty easy minutes after strength work burns fat and clears the head.',
+    detail: 'Thirty easy minutes after strength work burns fat and clears the head.',
     action: 'Log a walk',
   },
   {
