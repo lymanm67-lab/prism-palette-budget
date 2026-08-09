@@ -406,6 +406,10 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
                 {voiceOn ? <Volume2 className="mr-1 h-4 w-4" /> : <VolumeX className="mr-1 h-4 w-4" />}
                 {voiceOn ? 'Mute' : 'Unmute'}
               </Button>
+              <Button variant="ghost" size="sm" onClick={() => setMusicOn((m) => !m)}>
+                {musicOn ? <Music className="mr-1 h-4 w-4" /> : <Music2 className="mr-1 h-4 w-4" />}
+                {musicOn ? 'Music off' : 'Music on'}
+              </Button>
             </div>
 
             {phase?.kind === 'done' && (
