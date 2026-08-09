@@ -24,8 +24,9 @@ export function useCoachVoice(enabled: boolean) {
       if (!synth) return;
       synth.cancel();
       const u = new SpeechSynthesisUtterance(text);
-      u.rate = 1.05;
-      u.pitch = 0.95;
+      u.rate = 1.08;
+      u.pitch = 1.15;
+
       u.onend = () => setSpeaking(false);
       setSpeaking(true);
       synth.speak(u);
