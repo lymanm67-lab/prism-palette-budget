@@ -11,11 +11,20 @@ import { HABITS, buildConsistency } from '@/lib/health/consistency';
 
 export default function ConsistencyTrackerCard({ compact = false }: { compact?: boolean }) {
   const navigate = useNavigate();
-  const { data: logs = [], isLoading } = useHealthLogs();
+  const { data: rawLogs = [], isLoading } = useHealthLogs();
   const { data: meals = [] } = useHealthMeals();
   const { data: profile } = useHealthProfile();
 
+  // Merge logged drinks/meals into the daily logs so water logged in Nutrition counts here too.
+  const logs = useMemo(() => mergeMealsIntoLogs(rawLogs as any[], meals as any[]), [rawLogs, meals]);
+
   const c = useMemo(() => buildConsistency(logs as any, meals as any, profile ?? null), [logs, meals, profile]);
+
+  const waterGoal = profile?.water_goal_oz ?? 100;
+  const waterToday = useMemo(() => {
+    const t = todayISO();
+    return Math.round(Number((logs as any[]).find((l) => l.log_date === t)?.water_oz ?? 0));
+  }, [logs]);
 
   if (isLoading) {
     return (
