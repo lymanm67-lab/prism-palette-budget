@@ -244,7 +244,26 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
 
         {!started ? (
           <div className="space-y-4">
+            {options && options.length > 0 && (
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Exercise</Label>
+                <Select value={selected} onValueChange={setSelected}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose an exercise" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-72">
+                    {options.map((o) => (
+                      <SelectItem key={o.name} value={o.name}>
+                        {o.group ? `${o.group} — ${o.name}` : o.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-3">
+
               <div className="space-y-1.5">
                 <Label className="text-xs text-muted-foreground">Sets</Label>
                 <Input type="number" min="1" value={sets} onChange={(e) => setSets(e.target.value)} />
