@@ -350,6 +350,7 @@ export default function ExerciseTab() {
   const { data: today } = useTodayLog();
   const saveLog = useSaveDailyLog();
   const [strengthMins, setStrengthMins] = useState('30');
+  const [stretchMins, setStretchMins] = useState('20');
 
   const status = useMemo(() => weightStatus(profile ?? null, logs), [profile, logs]);
   const goal = profile?.goal_weight ?? 175;
