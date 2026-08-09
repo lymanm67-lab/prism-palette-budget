@@ -308,9 +308,9 @@ const WEEK_PLAN: { day: string; focus: string; picks: string[]; note: string }[]
   },
   {
     day: 'Thursday',
-    focus: 'Walk + Mobility',
-    picks: ['Cardio Pull (rowing tempo)'],
-    note: 'Easy day — protect recovery and sleep.',
+    focus: 'Walk + Split Stretch Machine',
+    picks: ['Seated Forward Fold', 'Straddle / Pancake Fold', 'Hip Flexor / Lunge Stretch', 'Calf & Hamstring Combo'],
+    note: '20–25 min on the split stretch machine after your walk. Improves recovery and range of motion for Total Gym work.',
   },
   {
     day: 'Friday',
