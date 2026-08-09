@@ -73,13 +73,16 @@ export default function CardioCard() {
   }, [activity, mode, minutes, miles, weight]);
 
   const logSession = () => {
-    const iso = (date ?? new Date()).toISOString().slice(0, 10);
+    // Preserve the date selected in the household timezone; converting a local
+    // evening Date to UTC can otherwise save the session under tomorrow.
+    const iso = format(date ?? new Date(), 'yyyy-MM-dd');
     const existing = logs.find((l: any) => l.log_date === iso) as any | undefined;
     saveLog.mutate(
       {
         log_date: iso,
         miles: Number(existing?.miles ?? 0) + Number(result.dist.toFixed(2)),
         minutes_walked: Number(existing?.minutes_walked ?? 0) + Math.round(result.mins),
+        exercise_calories: Number((existing as any)?.exercise_calories ?? 0) + Math.round(result.calories),
       },
       { onSuccess: () => toast.success('Session logged') },
     );

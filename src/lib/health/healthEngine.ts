@@ -46,6 +46,8 @@ export type DailyLog = {
   mood_rating: number | null;
   revenue_amount: number | null;
   notes: string | null;
+  exercise_calories?: number | null;
+  workout_sessions?: unknown[] | null;
 };
 
 // ---------------------------------------------------------------- date helpers
@@ -346,8 +348,19 @@ export function weeklyHealthScore(logs: DailyLog[], profile: HealthProfile | nul
   const expectedWalks = Math.max(1, walkDays);
 
 
-  const walksHit = week.filter((l) => (Number(l.miles) || 0) >= milesGoal).length;
-  const walking = clamp01(walksHit / expectedWalks) * 30;
+  // Credit every logged movement day. A full mileage goal or a separately
+  // logged workout earns the day; partial walks earn proportional credit.
+  const movementDays = week.reduce((sum, l) => {
+    const mileCredit = clamp01((Number(l.miles) || 0) / milesGoal);
+    const workoutCredit =
+      (Number(l.exercise_calories) || 0) > 0 ||
+      (Number(l.active_minutes) || 0) >= 20 ||
+      (Array.isArray(l.workout_sessions) && l.workout_sessions.length > 0)
+        ? 1
+        : 0;
+    return sum + Math.max(mileCredit, workoutCredit);
+  }, 0);
+  const walking = clamp01(movementDays / expectedWalks) * 30;
 
   const nutritionDays = week.filter(
     (l) =>

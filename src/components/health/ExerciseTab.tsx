@@ -386,7 +386,7 @@ export default function ExerciseTab() {
     }
     saveLog.mutate(
       {
-        log_date: new Date().toISOString().slice(0, 10),
+        log_date: todayISO(),
         exercise_calories: loggedBurn + strengthBurn,
       },
         { onSuccess: () => toast.success('Strength session burn logged') },
@@ -400,7 +400,7 @@ export default function ExerciseTab() {
       }
       saveLog.mutate(
         {
-          log_date: new Date().toISOString().slice(0, 10),
+          log_date: todayISO(),
           exercise_calories: loggedBurn + stretchBurn,
         },
         { onSuccess: () => toast.success('Stretch session burn logged') },
