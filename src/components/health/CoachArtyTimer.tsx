@@ -76,6 +76,8 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
   const [waterPrompt, setWaterPrompt] = useState(false);
   const [setsDone, setSetsDone] = useState(0);
   const loggedRef = useRef(false);
+  const logSessionRef = useRef<((seconds: number, doneSets: number) => void) | null>(null);
+
 
   const { speak, stop, speaking } = useCoachVoice(voiceOn);
   const music = useWorkoutMusic();
@@ -123,9 +125,13 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
     loggedRef.current = false;
   }, [stop]);
 
+  // Closing mid-session should still bank the work already done.
   useEffect(() => {
-    if (!open) reset();
-  }, [open, reset]);
+    if (open) return;
+    if (started && elapsed >= 30 && !loggedRef.current) logSessionRef.current?.(elapsed, setsDone);
+    reset();
+  }, [open]);
+
 
   useEffect(() => {
     setSets(String(defaults.sets));
@@ -156,6 +162,7 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
               seconds,
               calories: burn,
               coach: 'Coach Arty',
+              kind: stretch ? 'stretch' : 'strength',
               at: new Date().toISOString(),
             },
           ],
@@ -164,8 +171,11 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
       );
       onComplete?.();
     },
-    [name, met, onComplete, reps, saveLog, today, weight],
+    [name, met, onComplete, reps, saveLog, stretch, today, weight],
   );
+
+  logSessionRef.current = logSession;
+
 
   const advance = useCallback(
     (from: number) => {
@@ -449,6 +459,20 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
                   <SkipForward className="mr-1 h-4 w-4" /> Skip
                 </Button>
               )}
+              {phase?.kind !== 'done' && (
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setRunning(false);
+                    logSession(elapsed, setsDone);
+                    onOpenChange(false);
+                  }}
+                  disabled={elapsed < 30}
+                >
+                  Finish &amp; log
+                </Button>
+              )}
+
               <Button variant="outline" size="sm" onClick={reset}>
                 <RotateCcw className="mr-1 h-4 w-4" /> Restart
               </Button>
