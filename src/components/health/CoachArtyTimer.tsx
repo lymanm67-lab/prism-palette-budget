@@ -162,7 +162,7 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
         setElapsed((secs) => {
           const totalDone = secs;
           const doneSets = phases.filter((p) => p.kind === 'work').length;
-          void speak(finishCue(doneSets, Math.round(totalDone / 60), sessionCalories(totalDone, weight)));
+          void speak(finishCue(doneSets, Math.round(totalDone / 60), sessionCalories(totalDone, weight, met)));
           logSession(totalDone, doneSets);
           return secs;
         });
