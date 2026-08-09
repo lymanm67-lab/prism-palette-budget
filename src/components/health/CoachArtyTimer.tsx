@@ -84,7 +84,12 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
   // Duck the track under Coach Arty and ease it back during rest periods.
   useEffect(() => {
     music.duck(speaking ? 0.3 : 1);
-  }, [speaking, music]);
+  }, [speaking, music.duck]);
+
+  // Stretch sessions get the calmer groove; strength work gets the driving one.
+  useEffect(() => {
+    music.setStyle(stretch ? 'warmup' : 'push');
+  }, [stretch, music.setStyle]);
 
   const phases = useMemo(
     () =>
