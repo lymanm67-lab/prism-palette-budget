@@ -162,6 +162,7 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
               seconds,
               calories: burn,
               coach: 'Coach Arty',
+              kind: stretch ? 'stretch' : 'strength',
               at: new Date().toISOString(),
             },
           ],
@@ -170,8 +171,11 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
       );
       onComplete?.();
     },
-    [name, met, onComplete, reps, saveLog, today, weight],
+    [name, met, onComplete, reps, saveLog, stretch, today, weight],
   );
+
+  logSessionRef.current = logSession;
+
 
   const advance = useCallback(
     (from: number) => {
