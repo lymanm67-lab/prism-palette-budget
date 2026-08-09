@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -6,7 +7,8 @@ import { Flame, Footprints, TrendingDown, Sparkles, Quote } from 'lucide-react';
 import HealthRing from './HealthRing';
 import QuickLogPanel from './QuickLogPanel';
 import AnimatedNumber from '@/components/AnimatedNumber';
-import { useHealthLogs, useHealthProfile, useTodayLog } from '@/hooks/use-health';
+import { useHealthLogs, useHealthMeals, useHealthProfile } from '@/hooks/use-health';
+import { mergeMealsIntoLogs } from '@/lib/health/mealRollup';
 import {
   bmiBand,
   fmtMiles,
@@ -18,6 +20,7 @@ import {
   weightStatus,
 } from '@/lib/health/healthEngine';
 
+
 const bandTone = {
   green: 'bg-prism-lime/15 text-prism-lime border-prism-lime/30',
   yellow: 'bg-prism-amber/15 text-prism-amber border-prism-amber/30',
@@ -28,8 +31,17 @@ const bandLabel = { green: 'Excellent', yellow: 'Needs attention', red: 'Action 
 
 export default function HealthDashboardTab() {
   const { data: profile, isLoading } = useHealthProfile();
-  const { data: logs = [] } = useHealthLogs();
-  const { data: today } = useTodayLog();
+  const { data: rawLogs = [] } = useHealthLogs();
+  const { data: meals = [] } = useHealthMeals();
+
+  // Meals/drinks logged in Nutrition roll into the daily-log numbers so the
+  // Command Center reflects everything that was actually logged.
+  const logs = useMemo(() => mergeMealsIntoLogs(rawLogs as any[], meals as any[]), [rawLogs, meals]);
+  const todayKey = new Date().toLocaleDateString('en-CA');
+  const today = useMemo(
+    () => (logs as any[]).find((l) => l.log_date === todayKey),
+    [logs, todayKey],
+  );
 
   if (isLoading || !profile) {
     return (
@@ -41,14 +53,15 @@ export default function HealthDashboardTab() {
     );
   }
 
-  const status = weightStatus(profile, logs);
-  const totals = walkTotals(logs, profile);
-  const score = weeklyHealthScore(logs, profile);
+  const status = weightStatus(profile, logs as any);
+  const totals = walkTotals(logs as any, profile);
+  const score = weeklyHealthScore(logs as any, profile);
   const weeklyGoal = profile.daily_miles_goal * profile.walk_days_per_week;
   const band = bmiBand(status?.bmi ?? null);
 
   const proteinPct = (today?.protein_g ?? 0) / (profile.protein_goal_g || 1);
   const waterPct = (today?.water_oz ?? 0) / (profile.water_goal_oz || 1);
+
 
   return (
     <div className="space-y-6">
