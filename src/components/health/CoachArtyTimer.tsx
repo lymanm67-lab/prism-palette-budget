@@ -294,6 +294,45 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
               </div>
             </div>
 
+            <div className="space-y-3 rounded-lg border p-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Music className="h-4 w-4" />
+                  <span className="text-sm">Background music</span>
+                </div>
+                <Switch checked={musicOn} onCheckedChange={setMusicOn} />
+              </div>
+              {musicOn && (
+                <>
+                  <Select value={music.style} onValueChange={(v) => music.setStyle(v as MusicStyle)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="warmup">Warm up — steady 100 BPM groove</SelectItem>
+                      <SelectItem value="push">Push — driving 124 BPM</SelectItem>
+                      <SelectItem value="beast">Beast mode — 140 BPM high energy</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">
+                      Music volume — {Math.round(music.volume * 100)}%
+                    </Label>
+                    <Slider
+                      value={[Math.round(music.volume * 100)]}
+                      min={0}
+                      max={100}
+                      step={5}
+                      onValueChange={([v]) => music.setVolume(v / 100)}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    The track ducks automatically whenever Coach Arty speaks.
+                  </p>
+                </>
+              )}
+            </div>
+
             <div className="flex items-center justify-between rounded-lg border p-3">
               <div className="flex items-center gap-2">
                 {voiceOn ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
