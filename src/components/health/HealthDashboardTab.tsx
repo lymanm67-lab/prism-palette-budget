@@ -37,7 +37,7 @@ export default function HealthDashboardTab() {
   // Meals/drinks logged in Nutrition roll into the daily-log numbers so the
   // Command Center reflects everything that was actually logged.
   const logs = useMemo(() => mergeMealsIntoLogs(rawLogs as any[], meals as any[]), [rawLogs, meals]);
-  const todayKey = new Date().toLocaleDateString('en-CA');
+  const todayKey = todayISO();
   const today = useMemo(
     () => (logs as any[]).find((l) => l.log_date === todayKey),
     [logs, todayKey],
