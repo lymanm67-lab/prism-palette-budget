@@ -77,7 +77,14 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
   const [setsDone, setSetsDone] = useState(0);
   const loggedRef = useRef(false);
 
-  const { speak, stop } = useCoachVoice(voiceOn);
+  const { speak, stop, speaking } = useCoachVoice(voiceOn);
+  const music = useWorkoutMusic();
+  const [musicOn, setMusicOn] = useState(true);
+
+  // Duck the track under Coach Arty and ease it back during rest periods.
+  useEffect(() => {
+    music.duck(speaking ? 0.3 : 1);
+  }, [speaking, music]);
 
   const phases = useMemo(
     () =>
