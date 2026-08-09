@@ -373,6 +373,10 @@ export default function ExerciseTab() {
   const strengthBurn = Math.round(
     ((Number(strengthMins) || 0) / 60) * 3.5 * (strengthWeight / 2.205) * 1.05,
   );
+  // Stretching is lower intensity (~2.5 METs) but still contributes to daily burn.
+  const stretchBurn = Math.round(
+    ((Number(stretchMins) || 0) / 60) * 2.5 * (strengthWeight / 2.205) * 1.05,
+  );
   const loggedBurn = Number((today as any)?.exercise_calories ?? 0);
 
   const logStrength = () => {
