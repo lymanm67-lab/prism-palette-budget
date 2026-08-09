@@ -575,7 +575,7 @@ export default function ExerciseTab() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CalendarDays className="h-5 w-5 text-prism-teal" />
-            Weekly Total Gym schedule
+            Weekly strength + mobility schedule
           </CardTitle>
         </CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-2">
