@@ -143,11 +143,18 @@ export function phaseCue(
 }
 
 /** Mid-phase cues keyed off the remaining seconds. */
-export function tickCue(phase: Phase, remaining: number, verbosity: Verbosity): string | null {
+export function tickCue(
+  phase: Phase,
+  remaining: number,
+  verbosity: Verbosity,
+  isStretch = false,
+): string | null {
   if (phase.kind === 'work') {
     if (remaining === 10) return 'Ten seconds.';
     if (remaining === 3) return 'Three, two, one.';
-    if (verbosity === 'full' && remaining === Math.round(phase.seconds / 2)) return 'Halfway. Keep the form.';
+    if (verbosity === 'full' && remaining === Math.round(phase.seconds / 2)) {
+      return isStretch ? 'Breathe into the tension. Do not bounce.' : 'Halfway. Keep the form.';
+    }
     return null;
   }
   if (phase.kind === 'rest') {
