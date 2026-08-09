@@ -76,6 +76,8 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
   const [waterPrompt, setWaterPrompt] = useState(false);
   const [setsDone, setSetsDone] = useState(0);
   const loggedRef = useRef(false);
+  const logSessionRef = useRef<((seconds: number, doneSets: number) => void) | null>(null);
+
 
   const { speak, stop, speaking } = useCoachVoice(voiceOn);
   const music = useWorkoutMusic();
