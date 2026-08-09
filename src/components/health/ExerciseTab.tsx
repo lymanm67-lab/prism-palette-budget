@@ -16,7 +16,7 @@ import CoachArtyTimer from '@/components/health/CoachArtyTimer';
 
 type Exercise = {
   name: string;
-  group: 'Legs' | 'Chest & Shoulders' | 'Back' | 'Arms' | 'Core' | 'Cardio';
+  group: 'Legs' | 'Chest & Shoulders' | 'Back' | 'Arms' | 'Core' | 'Cardio' | 'Stretch / Mobility';
   setup: string;
   how: string;
   sets: string;
@@ -208,7 +208,84 @@ const TOTAL_GYM_EXERCISES: Exercise[] = [
   },
 ];
 
-const GROUPS = ['Legs', 'Chest & Shoulders', 'Back', 'Arms', 'Core', 'Cardio'] as const;
+const SPLIT_STRETCH_EXERCISES: Exercise[] = [
+  {
+    name: 'Seated Forward Fold',
+    group: 'Stretch / Mobility',
+    setup: 'Sit on the split stretch machine seat, legs extended straight out, back tall.',
+    how: 'Hinge forward from the hips, keeping the back flat, until you feel a gentle hamstring stretch. Hold and breathe.',
+    sets: '3 x 30–45 sec',
+    incline: 'Light tension',
+  },
+  {
+    name: 'Straddle / Pancake Fold',
+    group: 'Stretch / Mobility',
+    setup: 'Open legs wide to a comfortable straddle on the machine, knees and toes pointing up.',
+    how: 'Slowly fold forward between the legs, leading with the chest. Stop at the first point of tension.',
+    sets: '3 x 30–45 sec',
+    incline: 'Light tension',
+  },
+  {
+    name: 'Middle Split Hold',
+    group: 'Stretch / Mobility',
+    setup: 'Position the machine so the legs extend out to the sides at a moderate angle.',
+    how: 'Let gravity and the machine assist the inner-thigh stretch. Hold steady, no bouncing.',
+    sets: '3 x 30 sec',
+    incline: 'Moderate assist',
+  },
+  {
+    name: 'Front Split Hold',
+    group: 'Stretch / Mobility',
+    setup: 'One leg forward, one leg back, supported by the machine rails.',
+    how: 'Square the hips and sink into the stretch, keeping the torso upright. Hold and breathe deeply.',
+    sets: '2 x 30 sec each side',
+    incline: 'Moderate assist',
+  },
+  {
+    name: 'Hip Flexor / Lunge Stretch',
+    group: 'Stretch / Mobility',
+    setup: 'One foot forward, back knee resting on the pad, torso tall.',
+    how: 'Gently push the hips forward until you feel the front of the hip and thigh open.',
+    sets: '2 x 45 sec each side',
+    incline: 'Light tension',
+  },
+  {
+    name: 'Butterfly / Groin Stretch',
+    group: 'Stretch / Mobility',
+    setup: 'Sit with soles of the feet together, knees fall outward with machine-assisted support.',
+    how: 'Keep the spine long and gently allow the inner thighs to release.',
+    sets: '3 x 30 sec',
+    incline: 'Light tension',
+  },
+  {
+    name: 'Calf & Hamstring Combo',
+    group: 'Stretch / Mobility',
+    setup: 'Legs extended, flex the feet back toward the shins using the machine strap.',
+    how: 'Hold the dorsiflexed position to stretch calves and back of the legs together.',
+    sets: '3 x 30 sec',
+    incline: 'Light tension',
+  },
+  {
+    name: 'Figure-Four Glute Stretch',
+    group: 'Stretch / Mobility',
+    setup: 'Lie on your back, cross one ankle over the opposite knee.',
+    how: 'Use the machine to gently draw the supporting leg toward the chest until the glute releases.',
+    sets: '2 x 45 sec each side',
+    incline: 'Light assist',
+  },
+  {
+    name: 'Spinal Decompression Hang',
+    group: 'Stretch / Mobility',
+    setup: 'Secure upper body, let the lower body be gently weighted or supported in a relaxed hang.',
+    how: 'Breathe slowly and let the spine lengthen. Do not force the range.',
+    sets: '2 x 45 sec',
+    incline: 'Body weight only',
+  },
+];
+
+const ALL_EXERCISES = [...TOTAL_GYM_EXERCISES, ...SPLIT_STRETCH_EXERCISES];
+
+const GROUPS = ['Legs', 'Chest & Shoulders', 'Back', 'Arms', 'Core', 'Cardio', 'Stretch / Mobility'] as const;
 
 const WEEK_PLAN: { day: string; focus: string; picks: string[]; note: string }[] = [
   {
@@ -231,9 +308,9 @@ const WEEK_PLAN: { day: string; focus: string; picks: string[]; note: string }[]
   },
   {
     day: 'Thursday',
-    focus: 'Walk + Mobility',
-    picks: ['Cardio Pull (rowing tempo)'],
-    note: 'Easy day — protect recovery and sleep.',
+    focus: 'Walk + Split Stretch Machine',
+    picks: ['Seated Forward Fold', 'Straddle / Pancake Fold', 'Hip Flexor / Lunge Stretch', 'Calf & Hamstring Combo'],
+    note: '20–25 min on the split stretch machine after your walk. Improves recovery and range of motion for Total Gym work.',
   },
   {
     day: 'Friday',
@@ -273,6 +350,7 @@ export default function ExerciseTab() {
   const { data: today } = useTodayLog();
   const saveLog = useSaveDailyLog();
   const [strengthMins, setStrengthMins] = useState('30');
+  const [stretchMins, setStretchMins] = useState('20');
 
   const status = useMemo(() => weightStatus(profile ?? null, logs), [profile, logs]);
   const goal = profile?.goal_weight ?? 175;
@@ -289,11 +367,15 @@ export default function ExerciseTab() {
 
   const projected = projectMilestoneDate(goal, status);
   const filtered =
-    group === 'all' ? TOTAL_GYM_EXERCISES : TOTAL_GYM_EXERCISES.filter((e) => e.group === group);
+    group === 'all' ? ALL_EXERCISES : ALL_EXERCISES.filter((e) => e.group === group);
 
   const strengthWeight = status?.current ?? profile?.current_weight ?? 220;
   const strengthBurn = Math.round(
     ((Number(strengthMins) || 0) / 60) * 3.5 * (strengthWeight / 2.205) * 1.05,
+  );
+  // Stretching is lower intensity (~2.5 METs) but still contributes to daily burn.
+  const stretchBurn = Math.round(
+    ((Number(stretchMins) || 0) / 60) * 2.5 * (strengthWeight / 2.205) * 1.05,
   );
   const loggedBurn = Number((today as any)?.exercise_calories ?? 0);
 
@@ -307,11 +389,25 @@ export default function ExerciseTab() {
         log_date: new Date().toISOString().slice(0, 10),
         exercise_calories: loggedBurn + strengthBurn,
       },
-      { onSuccess: () => toast.success('Strength session burn logged') },
-    );
-  };
+        { onSuccess: () => toast.success('Strength session burn logged') },
+      );
+    };
 
-  return (
+    const logStretch = () => {
+      if (stretchBurn <= 0) {
+        toast.error('Enter stretch minutes');
+        return;
+      }
+      saveLog.mutate(
+        {
+          log_date: new Date().toISOString().slice(0, 10),
+          exercise_calories: loggedBurn + stretchBurn,
+        },
+        { onSuccess: () => toast.success('Stretch session burn logged') },
+      );
+    };
+
+    return (
     <div className="space-y-6">
       <Card>
         <CardHeader className="pb-3">
@@ -346,6 +442,38 @@ export default function ExerciseTab() {
       </Card>
 
       <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Timer className="h-4 w-4 text-prism-teal" /> Log a split stretch machine session
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Minutes stretching</Label>
+              <Input
+                type="number"
+                min="0"
+                value={stretchMins}
+                onChange={(e) => setStretchMins(e.target.value)}
+              />
+            </div>
+            <div className="rounded-lg border bg-muted/30 p-3">
+              <p className="text-xs text-muted-foreground">Estimated burn</p>
+              <p className="text-lg font-semibold tabular-nums">{stretchBurn} cal</p>
+            </div>
+            <div className="rounded-lg border bg-muted/30 p-3">
+              <p className="text-xs text-muted-foreground">Logged today</p>
+              <p className="text-lg font-semibold tabular-nums">{Math.round(loggedBurn)} cal</p>
+            </div>
+          </div>
+          <Button size="sm" onClick={logStretch} disabled={saveLog.isPending}>
+            <Plus className="mr-1 h-4 w-4" /> Add to today's burn
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Dumbbell className="h-5 w-5 text-prism-teal" />
@@ -374,6 +502,39 @@ export default function ExerciseTab() {
           <p className="text-sm text-muted-foreground">
             Opens in Google Videos, avoiding the direct YouTube connection blocked by some browsers. Follow
             along for form cues, then use the library below to build your push / pull / legs week.
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Timer className="h-5 w-5 text-prism-sky" />
+            Featured split stretch machine routine
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <a
+            href="https://www.google.com/search?tbm=vid&q=split+stretch+machine+routine+full+body+stretching"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group relative block aspect-video w-full overflow-hidden rounded-lg border"
+          >
+            <img
+              src="/placeholder.svg"
+              alt="Split stretch machine routine demonstration thumbnail"
+              className="h-full w-full object-cover transition-transform group-hover:scale-105"
+              loading="lazy"
+            />
+            <span className="absolute inset-0 flex items-center justify-center bg-foreground/25">
+              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-destructive text-destructive-foreground shadow-lg">
+                <Youtube className="h-7 w-7" />
+              </span>
+            </span>
+          </a>
+          <p className="text-sm text-muted-foreground">
+            Search for a split stretch machine routine to follow along. Use the library below to build a
+            hamstring, hip, and groin mobility sequence.
           </p>
         </CardContent>
       </Card>
@@ -414,7 +575,7 @@ export default function ExerciseTab() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CalendarDays className="h-5 w-5 text-prism-teal" />
-            Weekly Total Gym schedule
+            Weekly strength + mobility schedule
           </CardTitle>
         </CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-2">
@@ -441,7 +602,7 @@ export default function ExerciseTab() {
         <CardHeader className="flex flex-row items-center justify-between gap-2">
           <CardTitle className="flex items-center gap-2">
             <Dumbbell className="h-5 w-5 text-prism-amber" />
-            Total Gym exercise library
+            Exercise library — Total Gym & Stretch Machine
           </CardTitle>
           <Button variant="outline" size="sm" onClick={() => window.print()}>
             Print
@@ -486,7 +647,11 @@ export default function ExerciseTab() {
                   </Button>
 
                   <a
-                    href={`https://www.google.com/search?tbm=vid&q=${encodeURIComponent(`Total Gym ${e.name} exercise demonstration`)}`}
+                    href={`https://www.google.com/search?tbm=vid&q=${encodeURIComponent(
+                      e.group === 'Stretch / Mobility'
+                        ? `split stretch machine ${e.name} demonstration`
+                        : `Total Gym ${e.name} exercise demonstration`,
+                    )}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="mt-3 flex items-center gap-3 rounded-md border bg-background/60 p-2 transition-colors hover:bg-accent"
@@ -496,7 +661,9 @@ export default function ExerciseTab() {
                     </span>
                     <span className="text-xs">
                       <span className="block font-medium">Find video demonstration</span>
-                      <span className="text-muted-foreground">Total Gym {e.name}</span>
+                      <span className="text-muted-foreground">
+                        {e.group === 'Stretch / Mobility' ? 'Split stretch machine' : 'Total Gym'} {e.name}
+                      </span>
                     </span>
                   </a>
                 </div>
@@ -510,6 +677,7 @@ export default function ExerciseTab() {
         open={!!coachExercise}
         onOpenChange={(o) => !o && setCoachExercise(null)}
         exerciseName={coachExercise ?? 'Total Gym full body'}
+        isStretch={SPLIT_STRETCH_EXERCISES.some((e) => e.name === coachExercise)}
       />
     </div>
 

@@ -87,10 +87,10 @@ export function totalSeconds(phases: Phase[]) {
   return phases.reduce((s, p) => s + p.seconds, 0);
 }
 
-/** Strength-training burn using METs (~3.5 for resistance work). */
-export function sessionCalories(seconds: number, weightLb: number) {
+/** Calorie burn from a timed session. MET defaults to ~3.5 for resistance work; 2.5 for static stretching. */
+export function sessionCalories(seconds: number, weightLb: number, met = 3.5) {
   const kg = weightLb / 2.205;
-  return Math.round((3.5 * 3.5 * kg) / 200 * (seconds / 60));
+  return Math.round((met * 3.5 * kg) / 200 * (seconds / 60));
 }
 
 const PUSH_LINES = [
@@ -119,13 +119,17 @@ export function phaseCue(
   next: Phase | undefined,
   verbosity: Verbosity,
   seed: number,
+  isStretch = false,
 ): string {
+  const unit = isStretch ? 'breaths' : 'reps';
   if (phase.kind === 'prep') {
-    return `Coach Arty here. We are starting ${phase.exercise}. ${phase.setsTotal} sets of ${phase.reps} reps. Get set.`;
+    return `Coach Arty here. We are starting ${phase.exercise}. ${phase.setsTotal} sets of ${phase.reps} ${unit}. Get set.`;
   }
   if (phase.kind === 'work') {
-    const base = `Set ${phase.setIndex} of ${phase.setsTotal}. ${phase.reps} reps. Go.`;
-    return verbosity === 'full' ? `${base} ${pick(PUSH_LINES, seed + phase.setIndex)}` : base;
+    const base = isStretch
+      ? `Set ${phase.setIndex} of ${phase.setsTotal}. Hold for ${phase.reps} ${unit}. Settle into the stretch.`
+      : `Set ${phase.setIndex} of ${phase.setsTotal}. ${phase.reps} ${unit}. Go.`;
+    return verbosity === 'full' && !isStretch ? `${base} ${pick(PUSH_LINES, seed + phase.setIndex)}` : base;
   }
   if (phase.kind === 'rest') {
     const base = pick(REST_LINES, seed + phase.setIndex);
@@ -139,11 +143,18 @@ export function phaseCue(
 }
 
 /** Mid-phase cues keyed off the remaining seconds. */
-export function tickCue(phase: Phase, remaining: number, verbosity: Verbosity): string | null {
+export function tickCue(
+  phase: Phase,
+  remaining: number,
+  verbosity: Verbosity,
+  isStretch = false,
+): string | null {
   if (phase.kind === 'work') {
     if (remaining === 10) return 'Ten seconds.';
     if (remaining === 3) return 'Three, two, one.';
-    if (verbosity === 'full' && remaining === Math.round(phase.seconds / 2)) return 'Halfway. Keep the form.';
+    if (verbosity === 'full' && remaining === Math.round(phase.seconds / 2)) {
+      return isStretch ? 'Breathe into the tension. Do not bounce.' : 'Halfway. Keep the form.';
+    }
     return null;
   }
   if (phase.kind === 'rest') {

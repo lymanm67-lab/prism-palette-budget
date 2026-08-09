@@ -29,21 +29,27 @@ type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   exerciseName: string;
+  /** When true, defaults are tuned for static stretching holds instead of reps. */
+  isStretch?: boolean;
   /** Called after the session is logged (e.g. to tick the Kickstart step). */
   onComplete?: () => void;
 };
 
 const WATER_EVERY_SETS = 3;
 
-export default function CoachArtyTimer({ open, onOpenChange, exerciseName, onComplete }: Props) {
+export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStretch, onComplete }: Props) {
   const { data: profile } = useHealthProfile();
   const { data: today } = useTodayLog();
   const saveLog = useSaveDailyLog();
 
-  const [sets, setSets] = useState(String(DEFAULT_ITEM.sets));
-  const [reps, setReps] = useState(String(DEFAULT_ITEM.reps));
-  const [work, setWork] = useState(String(DEFAULT_ITEM.workSeconds));
-  const [rest, setRest] = useState(String(DEFAULT_ITEM.restSeconds));
+  const defaults = isStretch
+    ? { sets: 3, reps: 5, workSeconds: 45, restSeconds: 15 }
+    : DEFAULT_ITEM;
+
+  const [sets, setSets] = useState(String(defaults.sets));
+  const [reps, setReps] = useState(String(defaults.reps));
+  const [work, setWork] = useState(String(defaults.workSeconds));
+  const [rest, setRest] = useState(String(defaults.restSeconds));
   const [voiceOn, setVoiceOn] = useState(true);
   const [verbosity, setVerbosity] = useState<Verbosity>('full');
 
@@ -75,7 +81,8 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, onCom
   const phase: Phase | undefined = phases[index];
   const planSeconds = useMemo(() => totalSeconds(phases), [phases]);
   const weight = profile?.current_weight ?? 220;
-  const calories = sessionCalories(elapsed, weight);
+  const met = isStretch ? 2.5 : 3.5;
+  const calories = sessionCalories(elapsed, weight, met);
 
   const reset = useCallback(() => {
     stop();
@@ -93,11 +100,18 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, onCom
     if (!open) reset();
   }, [open, reset]);
 
+  useEffect(() => {
+    setSets(String(defaults.sets));
+    setReps(String(defaults.reps));
+    setWork(String(defaults.workSeconds));
+    setRest(String(defaults.restSeconds));
+  }, [isStretch, exerciseName]);
+
   const logSession = useCallback(
     (seconds: number, doneSets: number) => {
       if (loggedRef.current || seconds < 30) return;
       loggedRef.current = true;
-      const burn = sessionCalories(seconds, weight);
+      const burn = sessionCalories(seconds, weight, met);
       const prior = Number((today as any)?.exercise_calories ?? 0);
       const priorSessions = Array.isArray((today as any)?.workout_sessions)
         ? ((today as any).workout_sessions as unknown[])
@@ -123,7 +137,7 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, onCom
       );
       onComplete?.();
     },
-    [exerciseName, onComplete, reps, saveLog, today, weight],
+    [exerciseName, met, onComplete, reps, saveLog, today, weight],
   );
 
   const advance = useCallback(
@@ -148,7 +162,7 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, onCom
         setElapsed((secs) => {
           const totalDone = secs;
           const doneSets = phases.filter((p) => p.kind === 'work').length;
-          void speak(finishCue(doneSets, Math.round(totalDone / 60), sessionCalories(totalDone, weight)));
+          void speak(finishCue(doneSets, Math.round(totalDone / 60), sessionCalories(totalDone, weight, met)));
           logSession(totalDone, doneSets);
           return secs;
         });
@@ -156,9 +170,9 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, onCom
       }
       setIndex(nextIdx);
       setRemaining(next.seconds);
-      void speak(phaseCue(next, phases[nextIdx + 1], verbosity, nextIdx));
+      void speak(phaseCue(next, phases[nextIdx + 1], verbosity, nextIdx, isStretch));
     },
-    [logSession, phases, speak, verbosity, weight],
+    [isStretch, logSession, phases, speak, verbosity, weight],
   );
 
   // Countdown loop.
@@ -172,13 +186,13 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, onCom
           advance(index);
           return 0;
         }
-        const cue = tickCue(phase, next, verbosity);
+        const cue = tickCue(phase, next, verbosity, isStretch);
         if (cue) void speak(cue);
         return next;
       });
     }, 1000);
     return () => window.clearInterval(id);
-  }, [running, phase, index, advance, speak, verbosity]);
+  }, [running, phase, index, advance, speak, verbosity, isStretch]);
 
   const start = () => {
     const first = phases[0];
@@ -189,7 +203,7 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, onCom
     setElapsed(0);
     setSetsDone(0);
     loggedRef.current = false;
-    void speak(phaseCue(first, phases[1], verbosity, 0));
+    void speak(phaseCue(first, phases[1], verbosity, 0, isStretch));
   };
 
   const logWater = () => {
@@ -224,7 +238,9 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, onCom
                 <Input type="number" min="1" value={sets} onChange={(e) => setSets(e.target.value)} />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Target reps</Label>
+                <Label className="text-xs text-muted-foreground">
+                  {isStretch ? 'Breaths / hold count' : 'Target reps'}
+                </Label>
                 <Input type="number" min="1" value={reps} onChange={(e) => setReps(e.target.value)} />
               </div>
               <div className="space-y-1.5">
@@ -253,14 +269,16 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, onCom
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="full">Full coaching — cues plus motivation</SelectItem>
-                  <SelectItem value="cues">Cues only — sets, reps, rest</SelectItem>
+                  <SelectItem value="cues">
+                    Cues only — sets, {isStretch ? 'breaths' : 'reps'}, rest
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <Badge variant="secondary">{mmss(planSeconds)} planned</Badge>
-              <Badge variant="outline">~{sessionCalories(planSeconds, weight)} cal</Badge>
+              <Badge variant="outline">~{sessionCalories(planSeconds, weight, met)} cal</Badge>
               <span>Water reminder every {WATER_EVERY_SETS} sets</span>
             </div>
 
@@ -296,7 +314,9 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, onCom
             <div className="text-center">
               <p className="text-lg font-semibold">{phase?.label}</p>
               {phase?.kind === 'work' && (
-                <p className="text-sm text-muted-foreground">{phase.reps} reps — controlled tempo</p>
+                <p className="text-sm text-muted-foreground">
+                  {phase.reps} {isStretch ? 'breaths — hold steady' : 'reps — controlled tempo'}
+                </p>
               )}
             </div>
 
