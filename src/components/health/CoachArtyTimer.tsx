@@ -123,9 +123,13 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
     loggedRef.current = false;
   }, [stop]);
 
+  // Closing mid-session should still bank the work already done.
   useEffect(() => {
-    if (!open) reset();
-  }, [open, reset]);
+    if (open) return;
+    if (started && elapsed >= 30 && !loggedRef.current) logSessionRef.current?.(elapsed, setsDone);
+    reset();
+  }, [open]);
+
 
   useEffect(() => {
     setSets(String(defaults.sets));
