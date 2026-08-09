@@ -208,7 +208,84 @@ const TOTAL_GYM_EXERCISES: Exercise[] = [
   },
 ];
 
-const GROUPS = ['Legs', 'Chest & Shoulders', 'Back', 'Arms', 'Core', 'Cardio'] as const;
+const SPLIT_STRETCH_EXERCISES: Exercise[] = [
+  {
+    name: 'Seated Forward Fold',
+    group: 'Stretch / Mobility',
+    setup: 'Sit on the split stretch machine seat, legs extended straight out, back tall.',
+    how: 'Hinge forward from the hips, keeping the back flat, until you feel a gentle hamstring stretch. Hold and breathe.',
+    sets: '3 x 30–45 sec',
+    incline: 'Light tension',
+  },
+  {
+    name: 'Straddle / Pancake Fold',
+    group: 'Stretch / Mobility',
+    setup: 'Open legs wide to a comfortable straddle on the machine, knees and toes pointing up.',
+    how: 'Slowly fold forward between the legs, leading with the chest. Stop at the first point of tension.',
+    sets: '3 x 30–45 sec',
+    incline: 'Light tension',
+  },
+  {
+    name: 'Middle Split Hold',
+    group: 'Stretch / Mobility',
+    setup: 'Position the machine so the legs extend out to the sides at a moderate angle.',
+    how: 'Let gravity and the machine assist the inner-thigh stretch. Hold steady, no bouncing.',
+    sets: '3 x 30 sec',
+    incline: 'Moderate assist',
+  },
+  {
+    name: 'Front Split Hold',
+    group: 'Stretch / Mobility',
+    setup: 'One leg forward, one leg back, supported by the machine rails.',
+    how: 'Square the hips and sink into the stretch, keeping the torso upright. Hold and breathe deeply.',
+    sets: '2 x 30 sec each side',
+    incline: 'Moderate assist',
+  },
+  {
+    name: 'Hip Flexor / Lunge Stretch',
+    group: 'Stretch / Mobility',
+    setup: 'One foot forward, back knee resting on the pad, torso tall.',
+    how: 'Gently push the hips forward until you feel the front of the hip and thigh open.',
+    sets: '2 x 45 sec each side',
+    incline: 'Light tension',
+  },
+  {
+    name: 'Butterfly / Groin Stretch',
+    group: 'Stretch / Mobility',
+    setup: 'Sit with soles of the feet together, knees fall outward with machine-assisted support.',
+    how: 'Keep the spine long and gently allow the inner thighs to release.',
+    sets: '3 x 30 sec',
+    incline: 'Light tension',
+  },
+  {
+    name: 'Calf & Hamstring Combo',
+    group: 'Stretch / Mobility',
+    setup: 'Legs extended, flex the feet back toward the shins using the machine strap.',
+    how: 'Hold the dorsiflexed position to stretch calves and back of the legs together.',
+    sets: '3 x 30 sec',
+    incline: 'Light tension',
+  },
+  {
+    name: 'Figure-Four Glute Stretch',
+    group: 'Stretch / Mobility',
+    setup: 'Lie on your back, cross one ankle over the opposite knee.',
+    how: 'Use the machine to gently draw the supporting leg toward the chest until the glute releases.',
+    sets: '2 x 45 sec each side',
+    incline: 'Light assist',
+  },
+  {
+    name: 'Spinal Decompression Hang',
+    group: 'Stretch / Mobility',
+    setup: 'Secure upper body, let the lower body be gently weighted or supported in a relaxed hang.',
+    how: 'Breathe slowly and let the spine lengthen. Do not force the range.',
+    sets: '2 x 45 sec',
+    incline: 'Body weight only',
+  },
+];
+
+const ALL_EXERCISES = [...TOTAL_GYM_EXERCISES, ...SPLIT_STRETCH_EXERCISES];
+
+const GROUPS = ['Legs', 'Chest & Shoulders', 'Back', 'Arms', 'Core', 'Cardio', 'Stretch / Mobility'] as const;
 
 const WEEK_PLAN: { day: string; focus: string; picks: string[]; note: string }[] = [
   {
