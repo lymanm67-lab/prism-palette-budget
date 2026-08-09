@@ -92,7 +92,8 @@ export function mergeMealsIntoLogs<T extends AnyRow>(logs: T[], meals: AnyRow[])
       active_minutes: (Number(prior.active_minutes) || 0) + (Number(row.active_minutes) || 0),
       exercise_calories: (Number(prior.exercise_calories) || 0) + (Number(row.exercise_calories) || 0),
       protein_g: Math.max(Number(prior.protein_g) || 0, Number(row.protein_g) || 0),
-      water_oz: Math.max(Number(prior.water_oz) || 0, Number(row.water_oz) || 0),
+      // Water is cumulative per row, so duplicate rows for the same Eastern day add up.
+      water_oz: (Number(prior.water_oz) || 0) + (Number(row.water_oz) || 0),
       veg_servings: Math.max(Number(prior.veg_servings) || 0, Number(row.veg_servings) || 0),
       avoided_sugary_drinks: Boolean(prior.avoided_sugary_drinks || row.avoided_sugary_drinks),
       avoided_processed_carbs: Boolean(prior.avoided_processed_carbs || row.avoided_processed_carbs),

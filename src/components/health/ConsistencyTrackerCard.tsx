@@ -8,14 +8,25 @@ import { Progress } from '@/components/ui/progress';
 import { Flame, Trophy, Sparkles, ChevronRight } from 'lucide-react';
 import { useHealthLogs, useHealthMeals, useHealthProfile } from '@/hooks/use-health';
 import { HABITS, buildConsistency } from '@/lib/health/consistency';
+import { mergeMealsIntoLogs } from '@/lib/health/mealRollup';
+import { todayISO } from '@/lib/health/healthEngine';
 
 export default function ConsistencyTrackerCard({ compact = false }: { compact?: boolean }) {
   const navigate = useNavigate();
-  const { data: logs = [], isLoading } = useHealthLogs();
+  const { data: rawLogs = [], isLoading } = useHealthLogs();
   const { data: meals = [] } = useHealthMeals();
   const { data: profile } = useHealthProfile();
 
+  // Merge logged drinks/meals into the daily logs so water logged in Nutrition counts here too.
+  const logs = useMemo(() => mergeMealsIntoLogs(rawLogs as any[], meals as any[]), [rawLogs, meals]);
+
   const c = useMemo(() => buildConsistency(logs as any, meals as any, profile ?? null), [logs, meals, profile]);
+
+  const waterGoal = profile?.water_goal_oz ?? 100;
+  const waterToday = useMemo(() => {
+    const t = todayISO();
+    return Math.round(Number((logs as any[]).find((l) => l.log_date === t)?.water_oz ?? 0));
+  }, [logs]);
 
   if (isLoading) {
     return (
@@ -100,6 +111,11 @@ export default function ConsistencyTrackerCard({ compact = false }: { compact?: 
             );
           })}
         </div>
+
+        <p className="text-xs text-muted-foreground">
+          Water today: <span className="font-medium text-foreground">{waterToday}oz</span> of {waterGoal}oz goal
+          {waterToday < waterGoal * 0.9 && ` — ${Math.max(0, Math.round(waterGoal * 0.9 - waterToday))}oz more to earn the water habit`}
+        </p>
 
         <div>
           <p className="mb-1.5 text-xs uppercase tracking-wide text-muted-foreground">Last 30 days</p>
