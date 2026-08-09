@@ -58,6 +58,8 @@ export default function SleepRecoveryTab() {
 
   return (
     <div className="space-y-6">
+      <SleepMoodCheckInCard variant="full" />
+
       <Card className="border-0 prism-gradient-violet">
         <CardContent className="p-6">
           <p className="text-xs uppercase tracking-wide text-prism-on-dark-muted">Recovery score</p>
