@@ -602,7 +602,7 @@ export default function ExerciseTab() {
         <CardHeader className="flex flex-row items-center justify-between gap-2">
           <CardTitle className="flex items-center gap-2">
             <Dumbbell className="h-5 w-5 text-prism-amber" />
-            Total Gym exercise library
+            Exercise library — Total Gym & Stretch Machine
           </CardTitle>
           <Button variant="outline" size="sm" onClick={() => window.print()}>
             Print
