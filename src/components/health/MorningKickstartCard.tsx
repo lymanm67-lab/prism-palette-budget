@@ -374,8 +374,11 @@ export default function MorningKickstartCard({ compact = false }: { compact?: bo
               ))}
             </div>
           )}
+
+          <SleepMoodCheckInCard variant="prompt" />
         </CardContent>
       </Card>
+
 
       <CoachArtyTimer
         open={coachOpen}
