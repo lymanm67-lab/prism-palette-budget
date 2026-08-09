@@ -31,12 +31,17 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         model: 'openai/gpt-4o-mini-tts',
         input: text.slice(0, MAX_CHARS),
-        voice: 'onyx',
+        voice: 'ash',
         response_format: 'mp3',
+        speed: 1.05,
         instructions:
-          'You are Coach Arty, an encouraging but no-nonsense personal trainer for a 59-year-old man. ' +
-          'Speak with warm energy, clear pacing, and confidence. Short, punchy delivery.',
+          'You are Coach Arty, a high-energy, uplifting personal trainer hyping up a 59-year-old man mid-workout. ' +
+          'Sound genuinely excited and proud of him — like a coach courtside. Bright, warm, upbeat tone with real ' +
+          'dynamic range: lift your pitch on encouragement, punch key words ("let\'s GO", "strong", "you got this"), ' +
+          'and vary your rhythm so nothing sounds flat or robotic. Smile while you speak. Crisp, confident, ' +
+          'conversational pacing — never monotone, never droning, never reading a list.',
       }),
+
     });
 
     if (!res.ok) {
