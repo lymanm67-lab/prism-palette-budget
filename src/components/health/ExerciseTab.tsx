@@ -506,6 +506,39 @@ export default function ExerciseTab() {
         </CardContent>
       </Card>
 
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Timer className="h-5 w-5 text-prism-sky" />
+            Featured split stretch machine routine
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <a
+            href="https://www.google.com/search?tbm=vid&q=split+stretch+machine+routine+full+body+stretching"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group relative block aspect-video w-full overflow-hidden rounded-lg border"
+          >
+            <img
+              src="/placeholder.svg"
+              alt="Split stretch machine routine demonstration thumbnail"
+              className="h-full w-full object-cover transition-transform group-hover:scale-105"
+              loading="lazy"
+            />
+            <span className="absolute inset-0 flex items-center justify-center bg-foreground/25">
+              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-destructive text-destructive-foreground shadow-lg">
+                <Youtube className="h-7 w-7" />
+              </span>
+            </span>
+          </a>
+          <p className="text-sm text-muted-foreground">
+            Search for a split stretch machine routine to follow along. Use the library below to build a
+            hamstring, hip, and groin mobility sequence.
+          </p>
+        </CardContent>
+      </Card>
+
       <CardioCard />
 
       <Card>
