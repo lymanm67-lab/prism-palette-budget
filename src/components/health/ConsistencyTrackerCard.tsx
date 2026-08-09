@@ -8,6 +8,8 @@ import { Progress } from '@/components/ui/progress';
 import { Flame, Trophy, Sparkles, ChevronRight } from 'lucide-react';
 import { useHealthLogs, useHealthMeals, useHealthProfile } from '@/hooks/use-health';
 import { HABITS, buildConsistency } from '@/lib/health/consistency';
+import { mergeMealsIntoLogs } from '@/lib/health/mealRollup';
+import { todayISO } from '@/lib/health/healthEngine';
 
 export default function ConsistencyTrackerCard({ compact = false }: { compact?: boolean }) {
   const navigate = useNavigate();
