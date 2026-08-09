@@ -34,6 +34,9 @@ export default function SleepRecoveryTab() {
     energy: p.energy,
     stress: p.stress,
   }));
+  const sleepPoints = chart.filter((p) => p.sleep != null).length;
+  const moodPoints = chart.filter((p) => p.energy != null || p.stress != null).length;
+
 
   const scoreTone =
     s.recoveryScore >= 80
