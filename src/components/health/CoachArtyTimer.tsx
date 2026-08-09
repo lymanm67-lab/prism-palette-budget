@@ -238,7 +238,9 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
                 <Input type="number" min="1" value={sets} onChange={(e) => setSets(e.target.value)} />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Target reps</Label>
+                <Label className="text-xs text-muted-foreground">
+                  {isStretch ? 'Breaths / hold count' : 'Target reps'}
+                </Label>
                 <Input type="number" min="1" value={reps} onChange={(e) => setReps(e.target.value)} />
               </div>
               <div className="space-y-1.5">
