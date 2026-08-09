@@ -459,6 +459,20 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
                   <SkipForward className="mr-1 h-4 w-4" /> Skip
                 </Button>
               )}
+              {phase?.kind !== 'done' && (
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setRunning(false);
+                    logSession(elapsed, setsDone);
+                    onOpenChange(false);
+                  }}
+                  disabled={elapsed < 30}
+                >
+                  Finish &amp; log
+                </Button>
+              )}
+
               <Button variant="outline" size="sm" onClick={reset}>
                 <RotateCcw className="mr-1 h-4 w-4" /> Restart
               </Button>
