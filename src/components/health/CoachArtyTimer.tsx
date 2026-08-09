@@ -31,18 +31,29 @@ type Props = {
   exerciseName: string;
   /** When true, defaults are tuned for static stretching holds instead of reps. */
   isStretch?: boolean;
+  /** Optional picker list so the session can be switched without closing the dialog. */
+  options?: { name: string; group?: string; isStretch?: boolean }[];
   /** Called after the session is logged (e.g. to tick the Kickstart step). */
   onComplete?: () => void;
 };
 
 const WATER_EVERY_SETS = 3;
 
-export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStretch, onComplete }: Props) {
+export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStretch, options, onComplete }: Props) {
   const { data: profile } = useHealthProfile();
   const { data: today } = useTodayLog();
   const saveLog = useSaveDailyLog();
 
-  const defaults = isStretch
+  const [selected, setSelected] = useState(exerciseName);
+  useEffect(() => {
+    if (open) setSelected(exerciseName);
+  }, [open, exerciseName]);
+
+  const picked = options?.find((o) => o.name === selected);
+  const name = picked?.name ?? selected ?? exerciseName;
+  const stretch = picked ? !!picked.isStretch : !!isStretch;
+
+  const defaults = stretch
     ? { sets: 3, reps: 5, workSeconds: 45, restSeconds: 15 }
     : DEFAULT_ITEM;
 
@@ -52,6 +63,7 @@ export default function CoachArtyTimer({ open, onOpenChange, exerciseName, isStr
   const [rest, setRest] = useState(String(defaults.restSeconds));
   const [voiceOn, setVoiceOn] = useState(true);
   const [verbosity, setVerbosity] = useState<Verbosity>('full');
+
 
   const [running, setRunning] = useState(false);
   const [started, setStarted] = useState(false);
