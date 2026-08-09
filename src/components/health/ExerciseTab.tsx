@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { useHealthProfile, useHealthLogs, useSaveDailyLog, useTodayLog } from '@/hooks/use-health';
-import { weightStatus, projectMilestoneDate } from '@/lib/health/healthEngine';
+import { weightStatus, projectMilestoneDate, todayISO } from '@/lib/health/healthEngine';
 import CardioCard from '@/components/health/CardioCard';
 import CoachArtyTimer from '@/components/health/CoachArtyTimer';
 
@@ -386,7 +386,7 @@ export default function ExerciseTab() {
     }
     saveLog.mutate(
       {
-        log_date: new Date().toISOString().slice(0, 10),
+        log_date: todayISO(),
         exercise_calories: loggedBurn + strengthBurn,
       },
         { onSuccess: () => toast.success('Strength session burn logged') },
@@ -400,7 +400,7 @@ export default function ExerciseTab() {
       }
       saveLog.mutate(
         {
-          log_date: new Date().toISOString().slice(0, 10),
+          log_date: todayISO(),
           exercise_calories: loggedBurn + stretchBurn,
         },
         { onSuccess: () => toast.success('Stretch session burn logged') },

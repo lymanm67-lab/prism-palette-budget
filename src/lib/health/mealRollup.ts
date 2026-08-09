@@ -4,6 +4,23 @@
 
 type AnyRow = Record<string, any>;
 
+const easternDate = (value?: string | null) =>
+  value
+    ? new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'America/New_York',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      }).format(new Date(value))
+    : null;
+
+/** Correct legacy rows saved with the UTC date during the prior evening in Eastern time. */
+const effectiveDate = (row: AnyRow, field: 'meal_date' | 'log_date') => {
+  const entered = row?.[field];
+  const savedEastern = easternDate(row?.created_at ?? row?.updated_at);
+  return entered && savedEastern && entered > savedEastern ? savedEastern : entered;
+};
+
 export type MealDayTotals = {
   calories: number;
   protein_g: number;
@@ -18,7 +35,7 @@ export type MealDayTotals = {
 export function mealTotalsByDate(meals: AnyRow[]): Map<string, MealDayTotals> {
   const map = new Map<string, MealDayTotals>();
   for (const m of meals ?? []) {
-    const date = m?.meal_date;
+    const date = effectiveDate(m, 'meal_date');
     if (!date) continue;
     const cur =
       map.get(date) ??
@@ -59,12 +76,39 @@ export function mealTotalsByDate(meals: AnyRow[]): Map<string, MealDayTotals> {
  */
 export function mergeMealsIntoLogs<T extends AnyRow>(logs: T[], meals: AnyRow[]): T[] {
   const totals = mealTotalsByDate(meals);
-  if (!totals.size) return logs ?? [];
+  const normalizedByDate = new Map<string, T>();
+  for (const row of logs ?? []) {
+    const date = effectiveDate(row, 'log_date');
+    const prior = normalizedByDate.get(date);
+    const normalized = { ...row, log_date: date } as T;
+    if (!prior) {
+      normalizedByDate.set(date, normalized);
+      continue;
+    }
+    normalizedByDate.set(date, {
+      ...prior,
+      miles: (Number(prior.miles) || 0) + (Number(row.miles) || 0),
+      minutes_walked: (Number(prior.minutes_walked) || 0) + (Number(row.minutes_walked) || 0),
+      active_minutes: (Number(prior.active_minutes) || 0) + (Number(row.active_minutes) || 0),
+      exercise_calories: (Number(prior.exercise_calories) || 0) + (Number(row.exercise_calories) || 0),
+      protein_g: Math.max(Number(prior.protein_g) || 0, Number(row.protein_g) || 0),
+      water_oz: Math.max(Number(prior.water_oz) || 0, Number(row.water_oz) || 0),
+      veg_servings: Math.max(Number(prior.veg_servings) || 0, Number(row.veg_servings) || 0),
+      avoided_sugary_drinks: Boolean(prior.avoided_sugary_drinks || row.avoided_sugary_drinks),
+      avoided_processed_carbs: Boolean(prior.avoided_processed_carbs || row.avoided_processed_carbs),
+      workout_sessions: [
+        ...(Array.isArray(prior.workout_sessions) ? prior.workout_sessions : []),
+        ...(Array.isArray(row.workout_sessions) ? row.workout_sessions : []),
+      ],
+    } as T);
+  }
+  const normalizedLogs = [...normalizedByDate.values()];
+  if (!totals.size) return normalizedLogs;
 
   const byDate = new Map<string, T>();
-  for (const l of logs ?? []) byDate.set(l.log_date, l);
+  for (const l of normalizedLogs) byDate.set(l.log_date, l);
 
-  const merged: T[] = (logs ?? []).map((l) => {
+  const merged: T[] = normalizedLogs.map((l) => {
     const t = totals.get(l.log_date);
     if (!t) return l;
     return {

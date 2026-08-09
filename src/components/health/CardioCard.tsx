@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { CalendarIcon, Footprints, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useHealthLogs, useHealthProfile, useSaveDailyLog } from '@/hooks/use-health';
+import { todayISO } from '@/lib/health/healthEngine';
 import { toast } from 'sonner';
 
 
@@ -44,7 +45,7 @@ export default function CardioCard() {
   const saveLog = useSaveDailyLog();
   const weight = profile?.current_weight ?? 220;
 
-  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [date, setDate] = useState<Date | undefined>(() => new Date(`${todayISO()}T12:00:00`));
   const [activityId, setActivityId] = useState('walk-brisk');
 
   const [mode, setMode] = useState<'time' | 'distance'>('time');
@@ -73,13 +74,16 @@ export default function CardioCard() {
   }, [activity, mode, minutes, miles, weight]);
 
   const logSession = () => {
-    const iso = (date ?? new Date()).toISOString().slice(0, 10);
+    // Preserve the date selected in the household timezone; converting a local
+    // evening Date to UTC can otherwise save the session under tomorrow.
+    const iso = format(date ?? new Date(), 'yyyy-MM-dd');
     const existing = logs.find((l: any) => l.log_date === iso) as any | undefined;
     saveLog.mutate(
       {
         log_date: iso,
         miles: Number(existing?.miles ?? 0) + Number(result.dist.toFixed(2)),
         minutes_walked: Number(existing?.minutes_walked ?? 0) + Math.round(result.mins),
+        exercise_calories: Number((existing as any)?.exercise_calories ?? 0) + Math.round(result.calories),
       },
       { onSuccess: () => toast.success('Session logged') },
     );

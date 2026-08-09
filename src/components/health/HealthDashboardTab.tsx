@@ -137,7 +137,7 @@ export default function HealthDashboardTab() {
               </Badge>
             </div>
             {([
-              ['Walking', score.walking, 30],
+              ['Movement', score.walking, 30],
               ['Nutrition', score.nutrition, 30],
               ['Protein', score.protein, 20],
               ['Water', score.water, 10],
