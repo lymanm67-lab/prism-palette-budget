@@ -21,6 +21,12 @@ import EnergyReportTab from '@/components/health/EnergyReportTab';
 import DailyRecapPanel from '@/components/health/DailyRecapPanel';
 import MorningKickstartCard from '@/components/health/MorningKickstartCard';
 import ConsistencyTrackerCard from '@/components/health/ConsistencyTrackerCard';
+import WeightRoadmapTab from '@/components/health/WeightRoadmapTab';
+import WalkingProgramTab from '@/components/health/WalkingProgramTab';
+import HealthspanTab from '@/components/health/HealthspanTab';
+import ReviewsTab from '@/components/health/ReviewsTab';
+import DailyScorecardCard from '@/components/health/DailyScorecardCard';
+import HealthMissionBanner from '@/components/health/HealthMissionBanner';
 
 type Section = { value: string; label: string; hint: string; render: () => JSX.Element };
 type Module = {
@@ -45,6 +51,7 @@ const MODULES: Module[] = [
       { value: 'nutrition', label: 'Nutrition & Water', hint: 'Meals, protein, fiber and hydration.', render: () => <NutritionTab /> },
       { value: 'exercise', label: 'Exercise & Coach Arty', hint: 'Total Gym, stretching, cardio and guided sessions.', render: () => <ExerciseTab /> },
       { value: 'recap', label: 'Daily Recap', hint: 'Sessions by type and how they feed your Weekly Health Score.', render: () => <DailyRecapPanel /> },
+      { value: 'scorecard', label: 'Daily Scorecard', hint: 'Ten longevity habits — consistency beats perfection.', render: () => <DailyScorecardCard /> },
       { value: 'energy', label: 'Energy Report', hint: 'Calories in vs out, hydration and weight trend.', render: () => <EnergyReportTab /> },
     ],
   },
@@ -77,6 +84,10 @@ const MODULES: Module[] = [
     blurb: 'Milestones, trends and how health compounds into wealth.',
     icon: LineChart,
     sections: [
+      { value: 'roadmap', label: 'Weight Roadmap', hint: '220 to 175 lbs, trend averages, maintenance zones and the plateau protocol.', render: () => <WeightRoadmapTab /> },
+      { value: 'walking', label: 'Walking Program', hint: '6 days a week, 1-3 miles a day, 12-16 miles a week.', render: () => <WalkingProgramTab /> },
+      { value: 'healthspan', label: 'Healthspan First', hint: 'Longevity habits score, functional checks and goals by decade.', render: () => <HealthspanTab /> },
+      { value: 'reviews', label: 'Weekly & Monthly Review', hint: 'Sunday recap and the monthly longevity review.', render: () => <ReviewsTab /> },
       { value: 'milestones', label: 'Milestones', hint: 'Weight goal pacing and achievements.', render: () => <MilestonesTab /> },
       { value: 'trends', label: 'Trends', hint: 'Long-run charts across every metric.', render: () => <TrendsTab /> },
       { value: 'productivity', label: 'Performance', hint: 'Focus, energy and output vs habits.', render: () => <ProductivityTab /> },
@@ -119,6 +130,8 @@ export default function HealthDashboard() {
           coach tune it.
         </p>
       </header>
+
+      <HealthMissionBanner />
 
       {/* Module rail */}
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
