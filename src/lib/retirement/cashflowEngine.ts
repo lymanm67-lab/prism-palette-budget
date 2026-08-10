@@ -10,7 +10,10 @@
  *    loan payment stops. Never both at once.
  *  - The $888 debt payoff releases $888, but only $498 is redirected while the
  *    $390 loan obligation is alive.
- *  - Tax refunds are annual lump sums, never divided into monthly contributions.
+ *  - The planned $3,000/year wealth contribution is invested systematically as the
+ *    $250/month Monthly Wealth Accelerator beginning January 2028. The old $3,000
+ *    annual tax-refund lump sum is REMOVED — never count both.
+ *  - Actual tax refunds are optional, default $0, and excluded from baseline projections.
  *  - HSA is excluded from the retirement portfolio.
  */
 
@@ -40,6 +43,7 @@ export type SourceCategory =
   | 'debt_reallocation'
   | 'loan_reallocation'
   | 'step_up'
+  | 'wealth_accelerator'
   | 'tax_refund'
   | 'raise_reallocation'
   | 'lump_sum'
@@ -100,7 +104,7 @@ export const DEFAULT_CONFIG: EngineConfig = {
   extraMonthly: 0,
   badYear: null,
   badYearReturnPct: -12,
-  refundAmount: 3000,
+  refundAmount: 0,
   refundMonth: 4,
   refundStartYear: 2028,
   disabledSources: [],
@@ -118,7 +122,8 @@ export function defaultSources(): ContributionSource[] {
     { id: 'accelerator', label: 'First Million Accelerator', category: 'accelerator', monthlyAmount: 208, startMonth: '2027-01', frequency: 'monthly', destination: D, taxClass: 'roth', active: true, notes: 'Retirement accelerator beginning January 2027' },
     { id: 'loan-payment', label: 'Student Loan Payment (IDR)', category: 'obligation', monthlyAmount: STUDENT_LOAN_MONTHLY, startMonth: PSLF_START_MONTH, frequency: 'monthly', destination: 'Loan servicer', taxClass: 'cash_flow', active: true, isObligation: true, notes: 'Committed household cash flow. Not an investment. 65 qualifying payments remaining at start.' },
     { id: 'debt-realloc', label: 'Debt Freedom Reallocation', category: 'debt_reallocation', monthlyAmount: NET_DEBT_REALLOCATION, startMonth: '2027-09', frequency: 'monthly', destination: D, taxClass: 'roth', active: true, notes: '$888 debt payment ends − $390 student loan obligation = $498 redirected' },
-    { id: 'refund', label: 'Annual Wealth Accelerator (tax refund)', category: 'tax_refund', monthlyAmount: 0, annualAmount: 3000, annualMonth: 4, startMonth: '2028-01', frequency: 'annual', destination: D, taxClass: 'roth', active: true, notes: 'Annual lump sum. Never divided by 12.' },
+    { id: 'wealth-accel', label: 'Monthly Wealth Accelerator', category: 'wealth_accelerator', monthlyAmount: 250, startMonth: '2028-01', frequency: 'monthly', destination: D, taxClass: 'roth', active: true, notes: '$250/month from January 2028 = $3,000/year invested systematically. Replaces the old annual tax-refund lump sum. Designate pretax or Roth destination.' },
+    { id: 'refund', label: 'Optional tax refund investment', category: 'tax_refund', monthlyAmount: 0, annualAmount: 0, annualMonth: 4, startMonth: '2028-01', frequency: 'annual', destination: D, taxClass: 'roth', active: false, notes: 'Extra only. Defaults to $0 and is never assumed in baseline projections — enter an actual refund to include it.' },
     { id: 'step-1', label: 'Retirement Step-Up #1', category: 'step_up', monthlyAmount: 500, startMonth: '2028-06', frequency: 'monthly', destination: D, taxClass: 'roth', active: true },
     { id: 'step-2', label: 'Retirement Step-Up #2', category: 'step_up', monthlyAmount: 200, startMonth: '2029-01', frequency: 'monthly', destination: D, taxClass: 'roth', active: true },
     { id: 'step-3', label: 'Retirement Step-Up #3', category: 'step_up', monthlyAmount: 500, startMonth: '2030-01', frequency: 'monthly', destination: D, taxClass: 'roth', active: true },
@@ -265,6 +270,7 @@ export interface MonthPoint {
   debtRealloc: number;
   loanRealloc: number;
   stepUps: number;
+  wealthAccel: number;
   raise: number;
   refund: number;
   contributions: number; // all investment dollars this month (incl. refund lump)
@@ -281,6 +287,7 @@ export interface YearRow {
   refund: number;
   accelerator: number;
   stepUps: number;
+  wealthAccel: number;
   raise: number;
   growth: number;
   endingBalance: number;
@@ -316,7 +323,7 @@ export interface ProjectionResult {
   endingBalance: number;
   totals: {
     employee: number; employer: number; accelerator: number; debtRealloc: number;
-    loanRealloc: number; stepUps: number; raise: number; refund: number; growth: number;
+    loanRealloc: number; stepUps: number; wealthAccel: number; raise: number; refund: number; growth: number;
   };
 }
 
@@ -327,6 +334,7 @@ const CATEGORY_KEY: Record<SourceCategory, keyof MonthPoint | null> = {
   debt_reallocation: 'debtRealloc',
   loan_reallocation: 'loanRealloc',
   step_up: 'stepUps',
+  wealth_accelerator: 'wealthAccel',
   raise_reallocation: 'raise',
   tax_refund: 'refund',
   lump_sum: 'refund',
@@ -343,7 +351,7 @@ export function runProjection(
   const totalMonths = Math.max(12, (cfg.projectToAge - cfg.currentAge) * 12);
   let balance = cfg.startingBalance;
 
-  const totals = { employee: 0, employer: 0, accelerator: 0, debtRealloc: 0, loanRealloc: 0, stepUps: 0, raise: 0, refund: 0, growth: 0 };
+  const totals = { employee: 0, employer: 0, accelerator: 0, debtRealloc: 0, loanRealloc: 0, stepUps: 0, wealthAccel: 0, raise: 0, refund: 0, growth: 0 };
   const milestoneHits = new Map<number, MonthPoint>();
   let personal: CrossoverPoint = { reached: false, month: null, age: null, balance: null, annualGrowth: null, annualContributions: null };
   let funding: CrossoverPoint = { reached: false, month: null, age: null, balance: null, annualGrowth: null, annualContributions: null };
@@ -360,7 +368,7 @@ export function runProjection(
 
     const point: MonthPoint = {
       month, balance: 0, growth, employee: 0, employer: 0, accelerator: 0,
-      debtRealloc: 0, loanRealloc: 0, stepUps: 0, raise: 0, refund: 0,
+      debtRealloc: 0, loanRealloc: 0, stepUps: 0, wealthAccel: 0, raise: 0, refund: 0,
       contributions: 0, loanPayment: 0,
       age: cfg.currentAge + Math.floor(i / 12),
     };
@@ -389,11 +397,12 @@ export function runProjection(
     totals.debtRealloc += point.debtRealloc;
     totals.loanRealloc += point.loanRealloc;
     totals.stepUps += point.stepUps;
+    totals.wealthAccel += point.wealthAccel;
     totals.raise += point.raise;
     totals.refund += point.refund;
 
     const expectedAnnualGrowth = balance * (returnPct / 100);
-    const annualEmployee = (point.employee + point.accelerator + point.debtRealloc + point.loanRealloc + point.stepUps + point.raise) * 12;
+    const annualEmployee = (point.employee + point.accelerator + point.debtRealloc + point.loanRealloc + point.stepUps + point.wealthAccel + point.raise) * 12;
     const annualAll = annualEmployee + point.employer * 12;
     if (!personal.reached && expectedAnnualGrowth > annualEmployee && annualEmployee > 0) {
       personal = { reached: true, month, age: point.age, balance, annualGrowth: expectedAnnualGrowth, annualContributions: annualEmployee };
@@ -411,10 +420,10 @@ export function runProjection(
   const yearMap = new Map<number, YearRow>();
   for (const p of months) {
     const y = Number(p.month.slice(0, 4));
-    const row = yearMap.get(y) ?? { year: y, employee: 0, employer: 0, debtRealloc: 0, loanRealloc: 0, refund: 0, accelerator: 0, stepUps: 0, raise: 0, growth: 0, endingBalance: 0 };
+    const row = yearMap.get(y) ?? { year: y, employee: 0, employer: 0, debtRealloc: 0, loanRealloc: 0, refund: 0, accelerator: 0, stepUps: 0, wealthAccel: 0, raise: 0, growth: 0, endingBalance: 0 };
     row.employee += p.employee; row.employer += p.employer; row.debtRealloc += p.debtRealloc;
     row.loanRealloc += p.loanRealloc; row.refund += p.refund; row.accelerator += p.accelerator;
-    row.stepUps += p.stepUps; row.raise += p.raise; row.growth += p.growth;
+    row.stepUps += p.stepUps; row.wealthAccel += p.wealthAccel; row.raise += p.raise; row.growth += p.growth;
     row.endingBalance = p.balance;
     yearMap.set(y, row);
   }
@@ -422,7 +431,7 @@ export function runProjection(
   const milestones: MilestoneHit[] = MILESTONE_LADDER.map((target) => {
     const hit = milestoneHits.get(target);
     const contribAtHit = hit
-      ? (hit.employee + hit.employer + hit.accelerator + hit.debtRealloc + hit.loanRealloc + hit.stepUps + hit.raise) * 12
+      ? (hit.employee + hit.employer + hit.accelerator + hit.debtRealloc + hit.loanRealloc + hit.stepUps + hit.wealthAccel + hit.raise) * 12
       : null;
     return {
       target,
@@ -466,6 +475,7 @@ export function contributionLadder(sources: ContributionSource[], pslf: PslfStat
     { label: 'Baseline combined retirement funding', amount: base, effective: monthLabel(BASELINE_MONTH), kind: 'base', note: 'Employee $335 + employer $532.05' },
     { label: 'First Million Accelerator', amount: 208, effective: monthLabel('2027-01'), kind: 'add' },
     { label: 'Debt Freedom Reallocation', amount: NET_DEBT_REALLOCATION, effective: monthLabel('2027-09'), kind: 'add', note: '$888 freed − $390 student loan obligation' },
+    { label: 'Monthly Wealth Accelerator', amount: 250, effective: monthLabel('2028-01'), kind: 'add', note: '$250/month = $3,000/year invested systematically (replaces the annual tax-refund lump sum)' },
     { label: 'Retirement Step-Up #1', amount: 500, effective: monthLabel('2028-06'), kind: 'add' },
     { label: 'Retirement Step-Up #2', amount: 200, effective: monthLabel('2029-01'), kind: 'add' },
     { label: 'Retirement Step-Up #3', amount: 500, effective: monthLabel('2030-01'), kind: 'add' },
@@ -479,7 +489,7 @@ export function contributionLadder(sources: ContributionSource[], pslf: PslfStat
       note: pslf.confirmed ? 'Forgiveness confirmed' : 'Requires PSLF Forgiveness Confirmed = YES',
     },
     { label: 'Future pay raise reallocation', amount: cfg.extraMonthly, effective: 'When confirmed', kind: 'variable', note: 'Only counted when you confirm the amount' },
-    { label: 'Annual tax refund investment', amount: cfg.refundAmount, effective: `Each ${MONTH_NAMES[cfg.refundMonth - 1]} from ${cfg.refundStartYear}`, kind: 'annual', note: 'Annual lump sum — not a monthly contribution' },
+    { label: 'Optional tax refund investment', amount: cfg.refundAmount, effective: cfg.refundAmount > 0 ? `Each ${MONTH_NAMES[cfg.refundMonth - 1]} from ${cfg.refundStartYear}` : 'Not assumed — $0 by default', kind: 'annual', note: 'Extra only. Enter an actual refund to include it; never counted alongside the $250/month accelerator as the same money.' },
   ];
   return steps;
 }
@@ -528,7 +538,7 @@ export function contributionTimeline(pslf: PslfStatus, cfg: EngineConfig) {
     { when: 'August 2026', headline: 'Baseline combined retirement funding', detail: '$867.05/month — employee $335 + employer $532.05' },
     { when: 'January 2027', headline: 'First Million Accelerator +$208', detail: 'Student loan payment of $390 begins as household obligation (not an investment)' },
     { when: 'September 2027', headline: 'Debt payment ends — net +$498 to retirement', detail: '$888 freed, $390 continues funding the student loan' },
-    { when: `${MONTH_NAMES[cfg.refundMonth - 1]} ${cfg.refundStartYear}`, headline: `Annual tax refund investment +$${cfg.refundAmount.toLocaleString()}`, detail: 'Annual lump sum, repeats each year' },
+    { when: 'January 2028', headline: 'Monthly Wealth Accelerator +$250/month', detail: '$3,000/year invested systematically — replaces the old annual tax-refund lump sum' },
     { when: 'June 2028', headline: 'Retirement Step-Up #1 +$500/month', detail: 'Cash-flow driven increase' },
     { when: 'January 2029', headline: 'Retirement Step-Up #2 +$200/month', detail: 'Cash-flow driven increase' },
     { when: 'January 2030', headline: 'Retirement Step-Up #3 +$500/month', detail: 'Cash-flow driven increase' },
