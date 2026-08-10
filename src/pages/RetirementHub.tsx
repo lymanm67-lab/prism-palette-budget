@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  Layers, TrendingUp, ShieldCheck, Coins, Wallet, Gauge, HeartPulse,
+  Layers, TrendingUp, ShieldCheck, Coins, Wallet, Gauge, HeartPulse, LineChart,
 } from 'lucide-react';
 
 const RetirementDashboard = lazy(() => import('@/pages/RetirementDashboard'));
@@ -13,6 +13,7 @@ const ContributionWaterfall = lazy(() => import('@/pages/ContributionWaterfall')
 const WithdrawalSequencer = lazy(() => import('@/pages/WithdrawalSequencer'));
 const CompoundingCrossover = lazy(() => import('@/pages/CompoundingCrossover'));
 const CrossoverTracker = lazy(() => import('@/pages/CrossoverTracker'));
+const RetirementTracker = lazy(() => import('@/pages/RetirementTracker'));
 
 type TabDef = {
   key: string;
@@ -23,6 +24,13 @@ type TabDef = {
 };
 
 const TABS: TabDef[] = [
+  {
+    key: 'tracker',
+    label: 'Investment Tracker',
+    blurb: 'Monthly balances, actual returns, contributions vs growth, milestones and wealth projections.',
+    icon: LineChart,
+    Component: RetirementTracker as TabDef['Component'],
+  },
   {
     key: 'optimizer',
     label: 'Optimizer',

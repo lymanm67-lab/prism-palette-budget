@@ -8085,6 +8085,60 @@ export type Database = {
           },
         ]
       }
+      retirement_accounts: {
+        Row: {
+          account_kind: string
+          baseline_balance: number
+          baseline_date: string | null
+          created_at: string
+          current_balance: number
+          deleted_at: string | null
+          fund_name: string | null
+          household_id: string
+          id: string
+          institution: string | null
+          name: string
+          notes: string | null
+          sort_order: number
+          ticker: string | null
+          updated_at: string
+        }
+        Insert: {
+          account_kind?: string
+          baseline_balance?: number
+          baseline_date?: string | null
+          created_at?: string
+          current_balance?: number
+          deleted_at?: string | null
+          fund_name?: string | null
+          household_id: string
+          id?: string
+          institution?: string | null
+          name: string
+          notes?: string | null
+          sort_order?: number
+          ticker?: string | null
+          updated_at?: string
+        }
+        Update: {
+          account_kind?: string
+          baseline_balance?: number
+          baseline_date?: string | null
+          created_at?: string
+          current_balance?: number
+          deleted_at?: string | null
+          fund_name?: string | null
+          household_id?: string
+          id?: string
+          institution?: string | null
+          name?: string
+          notes?: string | null
+          sort_order?: number
+          ticker?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       retirement_allocation_events: {
         Row: {
           created_at: string
@@ -8190,6 +8244,57 @@ export type Database = {
         }
         Relationships: []
       }
+      retirement_fund_returns: {
+        Row: {
+          as_of_date: string
+          created_at: string
+          deleted_at: string | null
+          five_year_return: number | null
+          household_id: string
+          id: string
+          label: string
+          methodology_note: string | null
+          one_year_return: number | null
+          ten_year_return: number | null
+          three_year_return: number | null
+          ticker: string | null
+          updated_at: string
+          ytd_return: number | null
+        }
+        Insert: {
+          as_of_date: string
+          created_at?: string
+          deleted_at?: string | null
+          five_year_return?: number | null
+          household_id: string
+          id?: string
+          label: string
+          methodology_note?: string | null
+          one_year_return?: number | null
+          ten_year_return?: number | null
+          three_year_return?: number | null
+          ticker?: string | null
+          updated_at?: string
+          ytd_return?: number | null
+        }
+        Update: {
+          as_of_date?: string
+          created_at?: string
+          deleted_at?: string | null
+          five_year_return?: number | null
+          household_id?: string
+          id?: string
+          label?: string
+          methodology_note?: string | null
+          one_year_return?: number | null
+          ten_year_return?: number | null
+          three_year_return?: number | null
+          ticker?: string | null
+          updated_at?: string
+          ytd_return?: number | null
+        }
+        Relationships: []
+      }
       retirement_recommendations: {
         Row: {
           allocations: Json | null
@@ -8234,6 +8339,101 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      retirement_statements: {
+        Row: {
+          account_id: string
+          beginning_balance: number
+          created_at: string
+          deleted_at: string | null
+          employee_contributions: number
+          employer_contributions: number
+          ending_balance: number
+          fees: number
+          five_year_return: number | null
+          fund_name: string | null
+          household_id: string
+          id: string
+          notes: string | null
+          one_year_return: number | null
+          period_month: string
+          reported_prr: number | null
+          statement_date: string | null
+          statement_path: string | null
+          ten_year_return: number | null
+          three_year_return: number | null
+          ticker: string | null
+          transfers_in: number
+          transfers_out: number
+          updated_at: string
+          withdrawals: number
+          ytd_return: number | null
+        }
+        Insert: {
+          account_id: string
+          beginning_balance?: number
+          created_at?: string
+          deleted_at?: string | null
+          employee_contributions?: number
+          employer_contributions?: number
+          ending_balance?: number
+          fees?: number
+          five_year_return?: number | null
+          fund_name?: string | null
+          household_id: string
+          id?: string
+          notes?: string | null
+          one_year_return?: number | null
+          period_month: string
+          reported_prr?: number | null
+          statement_date?: string | null
+          statement_path?: string | null
+          ten_year_return?: number | null
+          three_year_return?: number | null
+          ticker?: string | null
+          transfers_in?: number
+          transfers_out?: number
+          updated_at?: string
+          withdrawals?: number
+          ytd_return?: number | null
+        }
+        Update: {
+          account_id?: string
+          beginning_balance?: number
+          created_at?: string
+          deleted_at?: string | null
+          employee_contributions?: number
+          employer_contributions?: number
+          ending_balance?: number
+          fees?: number
+          five_year_return?: number | null
+          fund_name?: string | null
+          household_id?: string
+          id?: string
+          notes?: string | null
+          one_year_return?: number | null
+          period_month?: string
+          reported_prr?: number | null
+          statement_date?: string | null
+          statement_path?: string | null
+          ten_year_return?: number | null
+          three_year_return?: number | null
+          ticker?: string | null
+          transfers_in?: number
+          transfers_out?: number
+          updated_at?: string
+          withdrawals?: number
+          ytd_return?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "retirement_statements_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "retirement_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       roadmap_progress: {
         Row: {
