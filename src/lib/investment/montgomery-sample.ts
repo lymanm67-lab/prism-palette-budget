@@ -98,7 +98,7 @@ export async function loadMontgomerySample(householdId: string) {
     { name: 'First Million Accelerator ($208/mo)', trigger_type: 'date', start_date: '2027-01-01', amount: 208, destination: 'HSA/Roth', frequency: 'monthly' },
     { name: 'Redirect debt payment to retirement', trigger_type: 'date', start_date: '2027-09-01', amount: 888, destination: 'Retirement', frequency: 'monthly' },
     { name: 'Add $500/mo step-up', trigger_type: 'date', start_date: '2028-06-01', amount: 500, destination: 'Retirement', frequency: 'monthly' },
-    { name: 'Annual $3,000 tax refund lump', trigger_type: 'date', start_date: '2028-01-01', amount: 3000, destination: 'Brokerage', frequency: 'yearly' },
+    { name: 'Monthly Wealth Accelerator ($250/mo)', trigger_type: 'date', start_date: '2028-01-01', amount: 250, destination: 'Retirement', frequency: 'monthly' },
     { name: 'Add $200/mo to retirement', trigger_type: 'date', start_date: '2029-01-01', amount: 200, destination: 'Retirement', frequency: 'monthly' },
     { name: 'Second $500/mo step-up', trigger_type: 'date', start_date: '2030-01-01', amount: 500, destination: 'Retirement', frequency: 'monthly' },
     { name: 'Invest Social Security while working', trigger_type: 'age', start_date: '2037-06-01', amount: 3540, amount_pct: 100, destination: 'Brokerage', frequency: 'monthly' },
