@@ -3,7 +3,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectGroup, SelectLabel, SelectItem } from '@/components/ui/select';
-import { Sparkles, Download, TrendingUp, Wand2, Target, TrendingDown } from 'lucide-react';
+import { Sparkles, Download, TrendingUp, Wand2, Target, TrendingDown, Coins } from 'lucide-react';
 import { RelatedToolsBar } from '@/components/planning/RelatedToolsBar';
 import { useQueryClient } from '@tanstack/react-query';
 import { useInvestmentPlan } from '@/hooks/use-investment-plan';
@@ -234,6 +234,7 @@ export default function InvestmentPlanning() {
           { to: '/goals', icon: Target, label: 'Goals', description: 'Short-term savings & milestones' },
           { to: '/debt-payoff', icon: TrendingDown, label: 'Debt Payoff', description: 'Build your payoff strategy first, then redirect payments here' },
           { to: '/investments', icon: TrendingUp, label: 'Holdings', description: 'See current investment account balances' },
+          { to: '/investments/portfolio?tab=cashflow', icon: Coins, label: 'Cash Flow Engine', description: 'Contribution ladder, PSLF redirect, milestones & scenarios' },
         ]}
       />
 

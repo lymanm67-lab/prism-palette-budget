@@ -34,7 +34,11 @@ type SectionKey = (typeof SECTIONS)[number]['key'];
 
 export default function InvestmentPortfolio() {
   const t = useRetirementTracker();
-  const [section, setSection] = useState<SectionKey>('overview');
+  const initial = (() => {
+    const q = new URLSearchParams(window.location.search).get('tab');
+    return SECTIONS.some((s) => s.key === q) ? (q as SectionKey) : 'overview';
+  })();
+  const [section, setSection] = useState<SectionKey>(initial);
 
   const {
     isLoading, accounts, retirementAccounts, selfDirectedAccounts, statements, positions, goals,
