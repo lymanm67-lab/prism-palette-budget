@@ -77,6 +77,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { to: '/goals', icon: Target, label: 'Goals', color: 'text-prism-lime', essential: true },
       { to: '/investments', icon: TrendingUp, label: 'Investment Holdings', color: 'text-prism-indigo' },
       { to: '/planning/investments', icon: Sparkles, label: 'Investment Planning', color: 'text-prism-amber' },
+      { to: '/planning/retirement-tax', icon: Sparkles, label: 'Retirement Tax Center', color: 'text-prism-amber' },
       { to: '/home-buying', icon: Home, label: 'Home Buying', color: 'text-prism-amber' },
     ],
   },

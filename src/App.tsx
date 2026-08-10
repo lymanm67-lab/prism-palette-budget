@@ -108,6 +108,7 @@ const MoneyBlueprint = lazy(() => import("@/pages/MoneyBlueprint"));
 const BeltProgress = lazy(() => import("@/pages/BeltProgress"));
 const RetirementDashboard = lazy(() => import("@/pages/RetirementDashboard"));
 const InvestmentPortfolio = lazy(() => import("./pages/InvestmentPortfolio"));
+const RetirementTaxCenter = lazy(() => import("./pages/RetirementTaxCenter"));
 const RetirementHub = lazy(() => import("@/pages/RetirementHub"));
 const HealthDashboard = lazy(() => import("@/pages/health/HealthDashboard"));
 const ContentEditor = lazy(() => import("@/pages/admin/ContentEditor"));
@@ -272,6 +273,7 @@ const App = () => (
               <Route path="/kungfoo" element={<Suspense fallback={<PageLoader />}><KungFoo /></Suspense>} />
               <Route path="/retirement-optimizer" element={<Suspense fallback={<PageLoader />}><RetirementDashboard /></Suspense>} />
               <Route path="/retirement" element={<Suspense fallback={<PageLoader />}><RetirementHub /></Suspense>} />
+              <Route path="/planning/retirement-tax" element={<Suspense fallback={<PageLoader />}><RetirementTaxCenter /></Suspense>} />
               <Route path="/investments/portfolio" element={<Suspense fallback={<PageLoader />}><InvestmentPortfolio /></Suspense>} />
               <Route path="/health" element={<Suspense fallback={<PageLoader />}><HealthDashboard /></Suspense>} />
               <Route path="/admin/content-editor" element={<Suspense fallback={<PageLoader />}><ContentEditor /></Suspense>} />
