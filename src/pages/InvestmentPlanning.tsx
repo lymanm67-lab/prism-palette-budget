@@ -234,6 +234,7 @@ export default function InvestmentPlanning() {
           { to: '/goals', icon: Target, label: 'Goals', description: 'Short-term savings & milestones' },
           { to: '/debt-payoff', icon: TrendingDown, label: 'Debt Payoff', description: 'Build your payoff strategy first, then redirect payments here' },
           { to: '/investments', icon: TrendingUp, label: 'Holdings', description: 'See current investment account balances' },
+          { to: '/investments/portfolio?tab=cashflow', icon: Coins, label: 'Cash Flow Engine', description: 'Contribution ladder, PSLF redirect, milestones & scenarios' },
         ]}
       />
 
