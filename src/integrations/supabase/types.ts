@@ -5343,6 +5343,45 @@ export type Database = {
         }
         Relationships: []
       }
+      investment_goals: {
+        Row: {
+          allocation: Json
+          annual_goal: number
+          created_at: string
+          deleted_at: string | null
+          household_id: string
+          id: string
+          notes: string | null
+          planned_monthly: number
+          scope: string
+          updated_at: string
+        }
+        Insert: {
+          allocation?: Json
+          annual_goal?: number
+          created_at?: string
+          deleted_at?: string | null
+          household_id: string
+          id?: string
+          notes?: string | null
+          planned_monthly?: number
+          scope?: string
+          updated_at?: string
+        }
+        Update: {
+          allocation?: Json
+          annual_goal?: number
+          created_at?: string
+          deleted_at?: string | null
+          household_id?: string
+          id?: string
+          notes?: string | null
+          planned_monthly?: number
+          scope?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       investment_holdings: {
         Row: {
           account_id: string
@@ -5864,6 +5903,98 @@ export type Database = {
           use_future_dollars?: boolean
         }
         Relationships: []
+      }
+      investment_positions: {
+        Row: {
+          account_id: string
+          as_of_date: string | null
+          asset_class: string | null
+          asset_type: string
+          average_cost: number | null
+          contributions: number
+          cost_basis: number | null
+          created_at: string
+          current_price: number | null
+          current_value: number
+          deleted_at: string | null
+          dividends: number
+          household_id: string
+          id: string
+          interest: number
+          monthly_contribution: number
+          name: string
+          notes: string | null
+          purchased_at: string | null
+          quantity: number | null
+          reported_return: number | null
+          sort_order: number
+          ticker: string | null
+          updated_at: string
+          withdrawals: number
+        }
+        Insert: {
+          account_id: string
+          as_of_date?: string | null
+          asset_class?: string | null
+          asset_type?: string
+          average_cost?: number | null
+          contributions?: number
+          cost_basis?: number | null
+          created_at?: string
+          current_price?: number | null
+          current_value?: number
+          deleted_at?: string | null
+          dividends?: number
+          household_id: string
+          id?: string
+          interest?: number
+          monthly_contribution?: number
+          name: string
+          notes?: string | null
+          purchased_at?: string | null
+          quantity?: number | null
+          reported_return?: number | null
+          sort_order?: number
+          ticker?: string | null
+          updated_at?: string
+          withdrawals?: number
+        }
+        Update: {
+          account_id?: string
+          as_of_date?: string | null
+          asset_class?: string | null
+          asset_type?: string
+          average_cost?: number | null
+          contributions?: number
+          cost_basis?: number | null
+          created_at?: string
+          current_price?: number | null
+          current_value?: number
+          deleted_at?: string | null
+          dividends?: number
+          household_id?: string
+          id?: string
+          interest?: number
+          monthly_contribution?: number
+          name?: string
+          notes?: string | null
+          purchased_at?: string | null
+          quantity?: number | null
+          reported_return?: number | null
+          sort_order?: number
+          ticker?: string | null
+          updated_at?: string
+          withdrawals?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investment_positions_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "retirement_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       investment_rule_executions: {
         Row: {
@@ -8092,6 +8223,8 @@ export type Database = {
           baseline_date: string | null
           created_at: string
           current_balance: number
+          custodian: string | null
+          default_asset_class: string | null
           deleted_at: string | null
           fund_name: string | null
           household_id: string
@@ -8099,6 +8232,8 @@ export type Database = {
           institution: string | null
           name: string
           notes: string | null
+          plan_type: string | null
+          portfolio_class: string
           sort_order: number
           ticker: string | null
           updated_at: string
@@ -8109,6 +8244,8 @@ export type Database = {
           baseline_date?: string | null
           created_at?: string
           current_balance?: number
+          custodian?: string | null
+          default_asset_class?: string | null
           deleted_at?: string | null
           fund_name?: string | null
           household_id: string
@@ -8116,6 +8253,8 @@ export type Database = {
           institution?: string | null
           name: string
           notes?: string | null
+          plan_type?: string | null
+          portfolio_class?: string
           sort_order?: number
           ticker?: string | null
           updated_at?: string
@@ -8126,6 +8265,8 @@ export type Database = {
           baseline_date?: string | null
           created_at?: string
           current_balance?: number
+          custodian?: string | null
+          default_asset_class?: string | null
           deleted_at?: string | null
           fund_name?: string | null
           household_id?: string
@@ -8133,6 +8274,8 @@ export type Database = {
           institution?: string | null
           name?: string
           notes?: string | null
+          plan_type?: string | null
+          portfolio_class?: string
           sort_order?: number
           ticker?: string | null
           updated_at?: string
@@ -8346,6 +8489,7 @@ export type Database = {
           beginning_balance: number
           created_at: string
           deleted_at: string | null
+          dividend_income: number
           employee_contributions: number
           employer_contributions: number
           ending_balance: number
@@ -8354,8 +8498,10 @@ export type Database = {
           fund_name: string | null
           household_id: string
           id: string
+          interest_income: number
           notes: string | null
           one_year_return: number | null
+          other_contributions: number
           period_month: string
           reported_prr: number | null
           statement_date: string | null
@@ -8374,6 +8520,7 @@ export type Database = {
           beginning_balance?: number
           created_at?: string
           deleted_at?: string | null
+          dividend_income?: number
           employee_contributions?: number
           employer_contributions?: number
           ending_balance?: number
@@ -8382,8 +8529,10 @@ export type Database = {
           fund_name?: string | null
           household_id: string
           id?: string
+          interest_income?: number
           notes?: string | null
           one_year_return?: number | null
+          other_contributions?: number
           period_month: string
           reported_prr?: number | null
           statement_date?: string | null
@@ -8402,6 +8551,7 @@ export type Database = {
           beginning_balance?: number
           created_at?: string
           deleted_at?: string | null
+          dividend_income?: number
           employee_contributions?: number
           employer_contributions?: number
           ending_balance?: number
@@ -8410,8 +8560,10 @@ export type Database = {
           fund_name?: string | null
           household_id?: string
           id?: string
+          interest_income?: number
           notes?: string | null
           one_year_return?: number | null
+          other_contributions?: number
           period_month?: string
           reported_prr?: number | null
           statement_date?: string | null
