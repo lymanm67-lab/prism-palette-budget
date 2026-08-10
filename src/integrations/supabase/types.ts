@@ -8230,11 +8230,15 @@ export type Database = {
           household_id: string
           id: string
           institution: string | null
+          is_inherited: boolean
           name: string
           notes: string | null
+          owner: string | null
           plan_type: string | null
           portfolio_class: string
+          rmd_applicable: boolean
           sort_order: number
+          tax_bucket: string
           ticker: string | null
           updated_at: string
         }
@@ -8251,11 +8255,15 @@ export type Database = {
           household_id: string
           id?: string
           institution?: string | null
+          is_inherited?: boolean
           name: string
           notes?: string | null
+          owner?: string | null
           plan_type?: string | null
           portfolio_class?: string
+          rmd_applicable?: boolean
           sort_order?: number
+          tax_bucket?: string
           ticker?: string | null
           updated_at?: string
         }
@@ -8272,11 +8280,15 @@ export type Database = {
           household_id?: string
           id?: string
           institution?: string | null
+          is_inherited?: boolean
           name?: string
           notes?: string | null
+          owner?: string | null
           plan_type?: string | null
           portfolio_class?: string
+          rmd_applicable?: boolean
           sort_order?: number
+          tax_bucket?: string
           ticker?: string | null
           updated_at?: string
         }
@@ -8974,6 +8986,207 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      tax_business_losses: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          entity_name: string
+          household_id: string
+          id: string
+          is_carryforward: boolean
+          loss_amount: number
+          loss_type: string
+          notes: string | null
+          tax_year: number
+          updated_at: string
+          used_amount: number
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          entity_name: string
+          household_id: string
+          id?: string
+          is_carryforward?: boolean
+          loss_amount?: number
+          loss_type?: string
+          notes?: string | null
+          tax_year: number
+          updated_at?: string
+          used_amount?: number
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          entity_name?: string
+          household_id?: string
+          id?: string
+          is_carryforward?: boolean
+          loss_amount?: number
+          loss_type?: string
+          notes?: string | null
+          tax_year?: number
+          updated_at?: string
+          used_amount?: number
+        }
+        Relationships: []
+      }
+      tax_charitable_plans: {
+        Row: {
+          amount: number
+          counts_toward_rmd: boolean
+          created_at: string
+          deleted_at: string | null
+          household_id: string
+          id: string
+          notes: string | null
+          recipient: string | null
+          source_account_id: string | null
+          status: string
+          tax_year: number
+          updated_at: string
+          vehicle: string
+        }
+        Insert: {
+          amount?: number
+          counts_toward_rmd?: boolean
+          created_at?: string
+          deleted_at?: string | null
+          household_id: string
+          id?: string
+          notes?: string | null
+          recipient?: string | null
+          source_account_id?: string | null
+          status?: string
+          tax_year: number
+          updated_at?: string
+          vehicle?: string
+        }
+        Update: {
+          amount?: number
+          counts_toward_rmd?: boolean
+          created_at?: string
+          deleted_at?: string | null
+          household_id?: string
+          id?: string
+          notes?: string | null
+          recipient?: string | null
+          source_account_id?: string | null
+          status?: string
+          tax_year?: number
+          updated_at?: string
+          vehicle?: string
+        }
+        Relationships: []
+      }
+      tax_roth_conversions: {
+        Row: {
+          amount: number
+          created_at: string
+          deleted_at: string | null
+          estimated_tax: number
+          household_id: string
+          id: string
+          marginal_rate: number | null
+          notes: string | null
+          offset_by_losses: number
+          source_account_id: string | null
+          status: string
+          tax_year: number
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          deleted_at?: string | null
+          estimated_tax?: number
+          household_id: string
+          id?: string
+          marginal_rate?: number | null
+          notes?: string | null
+          offset_by_losses?: number
+          source_account_id?: string | null
+          status?: string
+          tax_year: number
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          deleted_at?: string | null
+          estimated_tax?: number
+          household_id?: string
+          id?: string
+          marginal_rate?: number | null
+          notes?: string | null
+          offset_by_losses?: number
+          source_account_id?: string | null
+          status?: string
+          tax_year?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      tax_settings: {
+        Row: {
+          assumed_return: number
+          birth_year: number
+          created_at: string
+          filing_status: string
+          foundation_annual_target: number
+          household_id: string
+          id: string
+          inflation: number
+          irmaa_guard: boolean
+          notes: string | null
+          planning_end_age: number
+          qcd_annual_target: number
+          rmd_start_age: number
+          spouse_birth_year: number | null
+          state: string
+          target_bracket: number
+          updated_at: string
+        }
+        Insert: {
+          assumed_return?: number
+          birth_year?: number
+          created_at?: string
+          filing_status?: string
+          foundation_annual_target?: number
+          household_id: string
+          id?: string
+          inflation?: number
+          irmaa_guard?: boolean
+          notes?: string | null
+          planning_end_age?: number
+          qcd_annual_target?: number
+          rmd_start_age?: number
+          spouse_birth_year?: number | null
+          state?: string
+          target_bracket?: number
+          updated_at?: string
+        }
+        Update: {
+          assumed_return?: number
+          birth_year?: number
+          created_at?: string
+          filing_status?: string
+          foundation_annual_target?: number
+          household_id?: string
+          id?: string
+          inflation?: number
+          irmaa_guard?: boolean
+          notes?: string | null
+          planning_end_age?: number
+          qcd_annual_target?: number
+          rmd_start_age?: number
+          spouse_birth_year?: number | null
+          state?: string
+          target_bracket?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       thv_budgets: {
         Row: {
