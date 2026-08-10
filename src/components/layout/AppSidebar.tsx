@@ -7,7 +7,8 @@ import {
   CreditCard, LineChart, Sparkles, Shield, FileSearch, FileText, Building2,
   DollarSign, Clock, Lock, Scissors, ClipboardCheck, Gauge, ChevronDown,
   Layers, Search, AlertTriangle, Activity, Banknote, Smartphone, User, Briefcase, Globe, BookOpen, Users,
-  ShieldCheck,
+  ShieldCheck, Plane,
+
 } from 'lucide-react';
 import prismLogo from '@/assets/prism-money-logo.png';
 import { useAuth } from '@/contexts/AuthContext';
@@ -68,6 +69,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { to: '/subscriptions', icon: CreditCard, label: 'Subscriptions & Recurring', color: 'text-prism-violet', essential: true },
       { to: '/bill-negotiation', icon: Scissors, label: 'Bill Negotiation', color: 'text-prism-rose' },
       { to: '/debt-payoff', icon: TrendingDown, label: 'Debt Payoff', color: 'text-prism-rose' },
+      { to: '/planning/travel-fund', icon: Plane, label: 'Annual Travel Fund', color: 'text-prism-sky' },
     ],
   },
   {
