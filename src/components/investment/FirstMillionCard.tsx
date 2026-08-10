@@ -24,7 +24,7 @@ const FIRST_MILLION_YEARS = 10;
 
 export function FirstMillionCard({ plan }: Props) {
   const [includeAccelerator, setIncludeAccelerator] = useState(true);
-  const [includeLumpSum, setIncludeLumpSum] = useState(true);
+  const [includeWealthAccel, setIncludeWealthAccel] = useState(true);
 
   const results = useMemo(() => {
     if (!plan || !plan.current_age) return null;
@@ -55,16 +55,17 @@ export function FirstMillionCard({ plan }: Props) {
               { amount: 100, startDate: '2026-07-01' },
               { amount: 225, startDate: '2027-01-01' },
               { amount: 208, startDate: '2027-01-01' }, // First Million Accelerator
+              { amount: 498, startDate: '2027-09-01' }, // Debt freedom reallocation
               { amount: 500, startDate: '2028-06-01' },
               { amount: 200, startDate: '2029-01-01' },
               { amount: 500, startDate: '2030-01-01' },
             ]
           : [],
-        annualLumpSum: includeLumpSum ? { amount: 3000, startYear: 2028 } : undefined,
+        extraDatedStepUps: undefined,
       });
       return { ...s, projected: r.projectedBalance };
     });
-  }, [plan, includeAccelerator, includeLumpSum]);
+  }, [plan, includeAccelerator, includeWealthAccel]);
 
   if (!plan || !results) {
     return (
@@ -96,7 +97,7 @@ export function FirstMillionCard({ plan }: Props) {
           <Stat label="Target" value="$1,000,000" />
           <Stat label="Target date" value="Jun 2036" />
           <Stat label="Accelerator" value="$208/mo from Jan 2027" />
-          <Stat label="Annual lump" value="$3,000 from 2028" />
+          <Stat label="Wealth accelerator" value="$250/mo from Jan 2028" />
         </div>
       </CardHeader>
 
@@ -107,8 +108,8 @@ export function FirstMillionCard({ plan }: Props) {
             <Label htmlFor="acc" className="text-xs cursor-pointer">Include accelerator + step-ups</Label>
           </div>
           <div className="flex items-center gap-2">
-            <Switch id="lump" checked={includeLumpSum} onCheckedChange={setIncludeLumpSum} />
-            <Label htmlFor="lump" className="text-xs cursor-pointer">Include $3,000 annual lump</Label>
+            <Switch id="lump" checked={includeWealthAccel} onCheckedChange={setIncludeWealthAccel} />
+            <Label htmlFor="lump" className="text-xs cursor-pointer">Include $250/mo Wealth Accelerator (from Jan 2028)</Label>
           </div>
         </div>
 
@@ -182,7 +183,7 @@ export function FirstMillionCard({ plan }: Props) {
 
         <p className="text-xs text-muted-foreground leading-relaxed">
           Your First Million target is set for the 10-year mark, around June 2036. With the $208 monthly
-          accelerator beginning January 2027 and the $3,000 annual tax refund lump sum beginning in 2028,
+          accelerator beginning January 2027 and the $250/month Monthly Wealth Accelerator beginning January 2028,
           the <strong className="text-foreground">7% Average case projects ≈ {formatCurrencyFull(sevenPct.projected)}</strong>{' '}
           by the 10-year mark. The 8% Growth case projects ≈ {formatCurrencyFull(eightPct.projected)}.
         </p>

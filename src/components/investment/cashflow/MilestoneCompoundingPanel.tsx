@@ -26,13 +26,13 @@ export function MilestoneCompoundingPanel({ projection, scenarios, retirementTot
     const hit = projection.milestones.find((m) => m.target === 1_000_000);
     const cut = hit?.month;
     const rows = cut ? projection.months.filter((m) => m.month <= cut) : projection.months;
-    const acc = { employee: 0, employer: 0, debtRealloc: 0, loanRealloc: 0, refund: 0, accelerator: 0, stepUps: 0, raise: 0, growth: 0 };
+    const acc = { employee: 0, employer: 0, debtRealloc: 0, loanRealloc: 0, refund: 0, accelerator: 0, stepUps: 0, wealthAccel: 0, raise: 0, growth: 0 };
     for (const m of rows) {
       acc.employee += m.employee; acc.employer += m.employer; acc.debtRealloc += m.debtRealloc;
       acc.loanRealloc += m.loanRealloc; acc.refund += m.refund; acc.accelerator += m.accelerator;
-      acc.stepUps += m.stepUps; acc.raise += m.raise; acc.growth += m.growth;
+      acc.stepUps += m.stepUps; acc.wealthAccel += m.wealthAccel; acc.raise += m.raise; acc.growth += m.growth;
     }
-    const contributions = acc.employee + acc.employer + acc.debtRealloc + acc.loanRealloc + acc.refund + acc.accelerator + acc.stepUps + acc.raise;
+    const contributions = acc.employee + acc.employer + acc.debtRealloc + acc.loanRealloc + acc.refund + acc.accelerator + acc.stepUps + acc.wealthAccel + acc.raise;
     const total = contributions + acc.growth + config.startingBalance;
     return { acc, contributions, total, reachedMonth: cut ?? null };
   }, [projection, config.startingBalance]);
@@ -44,7 +44,8 @@ export function MilestoneCompoundingPanel({ projection, scenarios, retirementTot
       Employer: Math.round(y.employer),
       'Debt reallocation': Math.round(y.debtRealloc),
       'Loan reallocation': Math.round(y.loanRealloc),
-      'Tax refund': Math.round(y.refund),
+      'Wealth accelerator': Math.round(y.wealthAccel),
+      'Tax refund (optional)': Math.round(y.refund),
       'Investment growth': Math.round(y.growth),
     })),
     [projection],
@@ -155,7 +156,8 @@ export function MilestoneCompoundingPanel({ projection, scenarios, retirementTot
                 <Bar dataKey="Employer" stackId="c" fill="hsl(var(--muted-foreground))" />
                 <Bar dataKey="Debt reallocation" stackId="c" fill="hsl(var(--prism-amber))" />
                 <Bar dataKey="Loan reallocation" stackId="c" fill="hsl(var(--destructive))" />
-                <Bar dataKey="Tax refund" stackId="c" fill="hsl(var(--secondary-foreground))" />
+                <Bar dataKey="Wealth accelerator" stackId="c" fill="hsl(var(--prism-amber))" />
+                <Bar dataKey="Tax refund (optional)" stackId="c" fill="hsl(var(--secondary-foreground))" />
                 <Bar dataKey="Investment growth" stackId="c" fill="hsl(142 71% 45%)" />
               </BarChart>
             </ResponsiveContainer>
@@ -246,11 +248,12 @@ export function MilestoneCompoundingPanel({ projection, scenarios, retirementTot
         <CardContent className="space-y-3">
           <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-4 text-xs">
             <Kv label="Starting balance" value={money(config.startingBalance, 2)} />
-            <Kv label="Personally contributed" value={money(millionAttribution.acc.employee + millionAttribution.acc.accelerator + millionAttribution.acc.stepUps + millionAttribution.acc.raise)} />
+            <Kv label="Personally contributed" value={money(millionAttribution.acc.employee + millionAttribution.acc.accelerator + millionAttribution.acc.stepUps + millionAttribution.acc.wealthAccel + millionAttribution.acc.raise)} />
             <Kv label="Employer contributions" value={money(millionAttribution.acc.employer)} />
             <Kv label="Debt reallocation" value={money(millionAttribution.acc.debtRealloc)} />
             <Kv label="Student loan reallocation" value={money(millionAttribution.acc.loanRealloc)} />
-            <Kv label="Tax refund investments" value={money(millionAttribution.acc.refund)} />
+            <Kv label="Monthly Wealth Accelerator" value={money(millionAttribution.acc.wealthAccel)} />
+            <Kv label="Optional tax refund investments" value={money(millionAttribution.acc.refund)} />
             <Kv label="Investment growth" value={money(millionAttribution.acc.growth)} />
             <Kv label="Total" value={money(millionAttribution.total)} />
           </div>

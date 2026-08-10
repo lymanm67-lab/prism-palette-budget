@@ -6,12 +6,13 @@ import { Area, AreaChart, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianG
 const TIMELINE = [
   { date: 'Today', cumulative: 0, note: 'Baseline contributions' },
   { date: 'Jul 2026', cumulative: 100, note: '+$100/mo' },
-  { date: 'Jan 2027', cumulative: 533, note: '+$225 + $208 accelerator' },
-  { date: 'Sep 2027', cumulative: 1421, note: '+$888 debt redirect' },
-  { date: 'Jun 2028', cumulative: 1921, note: '+$500 step-up' },
-  { date: 'Jan 2029', cumulative: 2121, note: '+$200' },
-  { date: 'Jan 2030', cumulative: 2621, note: '+$500 step-up' },
-  { date: 'Jun 2037', cumulative: 6161, note: '+$3,540 SS invested' },
+  { date: 'Jan 2027', cumulative: 308, note: '+$208 First Million Accelerator' },
+  { date: 'Sep 2027', cumulative: 806, note: '+$498 debt freedom reallocation' },
+  { date: 'Jan 2028', cumulative: 1056, note: '+$250 Monthly Wealth Accelerator' },
+  { date: 'Jun 2028', cumulative: 1556, note: '+$500 step-up #1' },
+  { date: 'Jan 2029', cumulative: 1756, note: '+$200 step-up #2' },
+  { date: 'Jan 2030', cumulative: 2256, note: '+$500 step-up #3' },
+  { date: 'After PSLF', cumulative: 2646, note: '+$390 student loan freedom' },
 ];
 
 export function ContributionTimelineChart() {

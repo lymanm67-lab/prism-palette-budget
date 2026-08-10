@@ -65,7 +65,7 @@ export function CashflowExecutive({
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <Tile label="PSLF payments remaining" value={String(pslf.remaining)} hint={`${pslf.completed} of ${pslf.startingRemaining} complete`} progress={pslf.pctComplete} />
             <Tile label="Cash flow released after PSLF" value={money(390)} hint="Redirects to retirement once confirmed" />
-            <Tile label="Annual tax refund investment" value={money(config.refundAmount)} hint="Annual lump sum, never monthly" />
+            <Tile label="Monthly Wealth Accelerator" value={`+${money(250)}/mo`} hint="From January 2028 · $3,000/year invested systematically" />
             <Tile label="Projected value at age 85" value={money(atAge85)} hint={`At ${config.returnPct}% illustrative return`} />
           </div>
 
@@ -93,7 +93,8 @@ export function CashflowExecutive({
           <pre className="font-mono text-[10px] leading-relaxed whitespace-pre overflow-x-auto">{`INCOME → RETIREMENT CONTRIBUTIONS ($335 employee + $532.05 employer)
 DEBT PAYOFF ($888) → $390 student loan obligation + $498 retirement
 PSLF FORGIVENESS (confirmed) → releases $390/month → retirement
-TAX REFUND → $${config.refundAmount.toLocaleString()} annual lump sum
+MONTHLY WEALTH ACCELERATOR → $250/month from January 2028 ($3,000/year)
+FUTURE RAISE REALLOCATIONS → only when confirmed
       ↓
 COMPOUNDING → $200K → $250K → $500K → $1M → $4M → GENERATIONAL WEALTH`}</pre>
           <p>
@@ -103,6 +104,7 @@ COMPOUNDING → $200K → $250K → $500K → $1M → $4M → GENERATIONAL WEALT
             <Badge variant="outline" className="text-[10px]">Student loan payment is never an investment</Badge>
             <Badge variant="outline" className="text-[10px]">$390 is either a payment or a contribution — never both</Badge>
             <Badge variant="outline" className="text-[10px]">Employer money kept separate from employee money</Badge>
+            <Badge variant="outline" className="text-[10px]">$250/month replaces the $3,000 annual refund — never both</Badge>
           </div>
         </CardContent>
       </Card>

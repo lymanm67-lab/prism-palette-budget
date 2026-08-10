@@ -15,7 +15,8 @@ const CATEGORY_LABEL: Record<string, string> = {
   debt_reallocation: 'Debt reallocation',
   loan_reallocation: 'Student loan reallocation',
   step_up: 'Monthly step-up',
-  tax_refund: 'Annual tax refund',
+  wealth_accelerator: 'Monthly Wealth Accelerator',
+  tax_refund: 'Optional tax refund',
   raise_reallocation: 'Pay raise reallocation',
   lump_sum: 'Other lump sum',
   obligation: 'Household obligation',
@@ -115,7 +116,7 @@ export function ContributionSourcesPanel({
             <p className="text-lg font-semibold tabular-nums">{money(currentMonthly, 2)}</p>
           </div>
           <p className="text-[10px] text-muted-foreground">
-            Annual lump sums are reported separately. The ${config.refundAmount.toLocaleString()} tax refund is
+            Annual lump sums are reported separately. The optional tax refund (${config.refundAmount.toLocaleString()}) is
             never divided by 12.
           </p>
         </CardContent>

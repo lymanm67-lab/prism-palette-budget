@@ -84,7 +84,7 @@ export function ScenarioLab({ config, scenarios, onPatch, onReset }: Props) {
 
           <div className="grid gap-3 sm:grid-cols-3">
             <div className="space-y-1">
-              <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Tax refund amount</Label>
+              <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Optional refund amount ($0 default)</Label>
               <Input
                 type="number"
                 value={config.refundAmount}
@@ -93,7 +93,7 @@ export function ScenarioLab({ config, scenarios, onPatch, onReset }: Props) {
               />
             </div>
             <div className="space-y-1">
-              <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Refund month</Label>
+              <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Refund month (if invested)</Label>
               <Input
                 type="number" min={1} max={12}
                 value={config.refundMonth}
@@ -102,7 +102,7 @@ export function ScenarioLab({ config, scenarios, onPatch, onReset }: Props) {
               />
             </div>
             <div className="space-y-1">
-              <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Refund first year</Label>
+              <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Refund first year (if invested)</Label>
               <Input
                 type="number"
                 value={config.refundStartYear}

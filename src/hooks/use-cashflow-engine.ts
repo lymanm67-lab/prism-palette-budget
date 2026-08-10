@@ -5,8 +5,8 @@ import {
   RETURN_SCENARIOS, type ContributionSource, type EngineConfig,
 } from '@/lib/retirement/cashflowEngine';
 
-const CFG_KEY = 'prism.cashflowEngine.config.v1';
-const SRC_KEY = 'prism.cashflowEngine.sources.v1';
+const CFG_KEY = 'prism.cashflowEngine.config.v2';
+const SRC_KEY = 'prism.cashflowEngine.sources.v2';
 
 function load<T>(key: string, fallback: T): T {
   try {
@@ -78,7 +78,7 @@ export function useCashflowEngine(startingBalance?: number) {
     const months = projection.months;
     const base = currentMonthly;
     for (const p of months) {
-      const total = p.employee + p.employer + p.accelerator + p.debtRealloc + p.loanRealloc + p.stepUps + p.raise;
+      const total = p.employee + p.employer + p.accelerator + p.debtRealloc + p.loanRealloc + p.stepUps + p.wealthAccel + p.raise;
       if (total > base + 0.5) return { month: p.month, amount: total - base, total };
     }
     return null;
