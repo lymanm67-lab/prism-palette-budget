@@ -59,9 +59,11 @@ export function FirstMillionCard({ plan }: Props) {
               { amount: 500, startDate: '2028-06-01' },
               { amount: 200, startDate: '2029-01-01' },
               { amount: 500, startDate: '2030-01-01' },
+              ...(includeWealthAccel ? [{ amount: 250, startDate: '2028-01-01' }] : []),
             ]
-          : [],
-        extraDatedStepUps: undefined,
+          : includeWealthAccel
+            ? [{ amount: 250, startDate: '2028-01-01' }]
+            : [],
       });
       return { ...s, projected: r.projectedBalance };
     });
