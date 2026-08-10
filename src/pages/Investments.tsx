@@ -296,6 +296,17 @@ const Investments = () => {
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
           <Button
+            asChild
+            size="sm"
+            variant="outline"
+            className="gap-1.5 h-8"
+          >
+            <Link to="/investments/portfolio?tab=cashflow">
+              <DollarSign className="h-4 w-4" />
+              <span className="hidden sm:inline">Cash Flow Engine</span>
+            </Link>
+          </Button>
+          <Button
             size="sm"
             variant="outline"
             className="gap-1.5 h-8"
@@ -304,6 +315,7 @@ const Investments = () => {
             <Plus className="h-4 w-4" />
             <span className="hidden sm:inline">Add</span>
           </Button>
+
           <Button
             size="sm"
             className="gap-1.5 h-8 prism-gradient text-white border-0 hover:opacity-90"
