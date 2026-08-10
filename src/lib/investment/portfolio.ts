@@ -19,7 +19,7 @@ import type { MonthPoint, RetirementAccountRow } from '@/lib/retirement/investme
 export const PORTFOLIO_BASELINE_DATE = '2026-08-07';
 
 export const BASELINE_RETIREMENT_TOTAL = 181504.7;
-export const BASELINE_SELF_DIRECTED_TOTAL = 2608.91;
+export const BASELINE_SELF_DIRECTED_TOTAL = 2629.39;
 export const BASELINE_INVESTMENT_TOTAL = 184113.61;
 
 export const UNCLASSIFIED = 'NOT YET CLASSIFIED';
@@ -219,7 +219,7 @@ export const CANONICAL_ACCOUNTS: CanonicalAccount[] = [
     plan_type: 'Taxable brokerage',
     fund_name: null,
     ticker: null,
-    balance: 255.0,
+    balance: 275.48,
     sort_order: 9,
     default_asset_class: null,
   },
