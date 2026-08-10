@@ -48,7 +48,18 @@ export type DailyLog = {
   notes: string | null;
   exercise_calories?: number | null;
   workout_sessions?: unknown[] | null;
+  scorecard?: Record<string, boolean> | null;
+  resting_hr?: number | null;
+  bp_systolic?: number | null;
+  bp_diastolic?: number | null;
+  awakenings?: number | null;
+  sleep_quality?: number | null;
+  journal_note?: string | null;
+  mindfulness_minutes?: number | null;
+  mindfulness_type?: string | null;
+  intention_note?: string | null;
 };
+
 
 // ---------------------------------------------------------------- date helpers
 

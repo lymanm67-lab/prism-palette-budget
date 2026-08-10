@@ -3888,6 +3888,9 @@ export type Database = {
           active_minutes: number | null
           avoided_processed_carbs: boolean
           avoided_sugary_drinks: boolean
+          awakenings: number | null
+          bp_diastolic: number | null
+          bp_systolic: number | null
           created_at: string
           deleted_at: string | null
           energy_rating: number | null
@@ -3897,6 +3900,7 @@ export type Database = {
           household_id: string
           id: string
           intention_note: string | null
+          journal_note: string | null
           kickstart_steps: Json
           log_date: string
           miles: number
@@ -3906,8 +3910,11 @@ export type Database = {
           mood_rating: number | null
           notes: string | null
           protein_g: number
+          resting_hr: number | null
           revenue_amount: number | null
+          scorecard: Json
           sleep_hours: number | null
+          sleep_quality: number | null
           steps: number | null
           stress_rating: number | null
           updated_at: string
@@ -3920,6 +3927,9 @@ export type Database = {
           active_minutes?: number | null
           avoided_processed_carbs?: boolean
           avoided_sugary_drinks?: boolean
+          awakenings?: number | null
+          bp_diastolic?: number | null
+          bp_systolic?: number | null
           created_at?: string
           deleted_at?: string | null
           energy_rating?: number | null
@@ -3929,6 +3939,7 @@ export type Database = {
           household_id: string
           id?: string
           intention_note?: string | null
+          journal_note?: string | null
           kickstart_steps?: Json
           log_date?: string
           miles?: number
@@ -3938,8 +3949,11 @@ export type Database = {
           mood_rating?: number | null
           notes?: string | null
           protein_g?: number
+          resting_hr?: number | null
           revenue_amount?: number | null
+          scorecard?: Json
           sleep_hours?: number | null
+          sleep_quality?: number | null
           steps?: number | null
           stress_rating?: number | null
           updated_at?: string
@@ -3952,6 +3966,9 @@ export type Database = {
           active_minutes?: number | null
           avoided_processed_carbs?: boolean
           avoided_sugary_drinks?: boolean
+          awakenings?: number | null
+          bp_diastolic?: number | null
+          bp_systolic?: number | null
           created_at?: string
           deleted_at?: string | null
           energy_rating?: number | null
@@ -3961,6 +3978,7 @@ export type Database = {
           household_id?: string
           id?: string
           intention_note?: string | null
+          journal_note?: string | null
           kickstart_steps?: Json
           log_date?: string
           miles?: number
@@ -3970,8 +3988,11 @@ export type Database = {
           mood_rating?: number | null
           notes?: string | null
           protein_g?: number
+          resting_hr?: number | null
           revenue_amount?: number | null
+          scorecard?: Json
           sleep_hours?: number | null
+          sleep_quality?: number | null
           steps?: number | null
           stress_rating?: number | null
           updated_at?: string
