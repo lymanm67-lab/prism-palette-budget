@@ -14,6 +14,7 @@ const WithdrawalSequencer = lazy(() => import('@/pages/WithdrawalSequencer'));
 const CompoundingCrossover = lazy(() => import('@/pages/CompoundingCrossover'));
 const CrossoverTracker = lazy(() => import('@/pages/CrossoverTracker'));
 const RetirementTracker = lazy(() => import('@/pages/RetirementTracker'));
+const InvestmentPortfolio = lazy(() => import('@/pages/InvestmentPortfolio'));
 
 type TabDef = {
   key: string;
@@ -24,6 +25,13 @@ type TabDef = {
 };
 
 const TABS: TabDef[] = [
+  {
+    key: 'portfolio',
+    label: 'Investment Portfolio',
+    blurb: 'Total investments, retirement vs self-directed, recordkeepers, accounts and individual holdings.',
+    icon: Layers,
+    Component: InvestmentPortfolio as TabDef['Component'],
+  },
   {
     key: 'tracker',
     label: 'Investment Tracker',
