@@ -109,7 +109,7 @@ export default function RetirementTracker() {
         statements are preserved — entering a new month never overwrites a prior one.
       </p>
 
-      <AccountCards accounts={accounts} statements={statements} totalPortfolio={totalPortfolio} />
+      <AccountCards accounts={tracker.retirementAccounts} statements={statements} totalPortfolio={totalPortfolio} />
 
       <MonthlyEntryForm
         accounts={accounts}
