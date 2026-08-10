@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Layers, PiggyBank, Wallet, PieChart, CalendarClock, Gauge, Trophy, ClipboardList } from 'lucide-react';
+import { Layers, PiggyBank, Wallet, PieChart, CalendarClock, Gauge, Trophy, ClipboardList, Coins } from 'lucide-react';
 import { useRetirementTracker } from '@/hooks/use-retirement-tracker';
 import { money, deriveStatement } from '@/lib/retirement/investmentTracker';
 import {
@@ -16,6 +16,7 @@ import { SnapshotWaterfall } from '@/components/investment/SnapshotWaterfall';
 import { ComparisonCards, type ComparisonGroup } from '@/components/investment/ComparisonCards';
 import { ProjectionsPanel } from '@/components/investment/ProjectionsPanel';
 import { InvestmentScorecard } from '@/components/investment/InvestmentScorecard';
+import { CashflowEngineTab } from '@/components/investment/cashflow/CashflowEngineTab';
 
 const SECTIONS = [
   { key: 'overview', label: 'Portfolio', icon: Layers },
@@ -25,6 +26,7 @@ const SECTIONS = [
   { key: 'snapshot', label: 'Monthly Snapshot', icon: CalendarClock },
   { key: 'performance', label: 'Performance', icon: Gauge },
   { key: 'projections', label: 'Projections', icon: Trophy },
+  { key: 'cashflow', label: 'Cash Flow Engine', icon: Coins },
   { key: 'scorecard', label: 'Scorecard', icon: ClipboardList },
 ] as const;
 
@@ -278,6 +280,14 @@ export default function InvestmentPortfolio() {
           monthlyEmployee={monthlyEmployee}
           monthlyEmployer={monthlyEmployer}
           monthlySelfDirected={sdMonthContrib}
+        />
+      ) : null}
+
+      {section === 'cashflow' ? (
+        <CashflowEngineTab
+          retirementTotal={retirementTotal}
+          selfDirectedTotal={selfDirectedTotal}
+          investmentTotal={investmentTotal}
         />
       ) : null}
 
