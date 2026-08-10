@@ -44,7 +44,7 @@ export function RetirementBreakdown({
       </Card>
 
       <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2 content-start">
           {groups.map((g) => (
             <Card key={g.custodian}>
               <CardContent className="p-4">
