@@ -4,6 +4,7 @@ import AiSpendingInsights from '@/components/AiSpendingInsights';
 import { Tooltip as ShadcnTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import PageOverview from '@/components/PageOverview';
 import WeeklyRecap from '@/components/WeeklyRecap';
+import { TravelFundCard } from '@/components/travel/TravelFundCard';
 import GettingStartedWidget from '@/components/GettingStartedWidget';
 import { EmptyStateChecklist } from '@/components/dashboard/EmptyStateChecklist';
 import FinancialHealthScore from '@/components/FinancialHealthScore';
@@ -552,6 +553,8 @@ Your Safe-to-Spend updates in real time as you add transactions, pay bills, and 
           </Card>
         </motion.div>
       )}
+
+      <TravelFundCard />
 
       <BusinessProfileManager open={manageOpen} onOpenChange={setManageOpen} />
       <WeeklyRecap open={recapOpen} onOpenChange={setRecapOpen} />

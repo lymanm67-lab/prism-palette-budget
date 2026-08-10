@@ -10081,6 +10081,331 @@ export type Database = {
           },
         ]
       }
+      travel_budget_lines: {
+        Row: {
+          actual_amount: number
+          budget_amount: number
+          business_pct: number
+          category: string
+          classification: string
+          created_at: string
+          household_id: string
+          id: string
+          notes: string | null
+          trip_id: string
+          updated_at: string
+        }
+        Insert: {
+          actual_amount?: number
+          budget_amount?: number
+          business_pct?: number
+          category: string
+          classification?: string
+          created_at?: string
+          household_id: string
+          id?: string
+          notes?: string | null
+          trip_id: string
+          updated_at?: string
+        }
+        Update: {
+          actual_amount?: number
+          budget_amount?: number
+          business_pct?: number
+          category?: string
+          classification?: string
+          created_at?: string
+          household_id?: string
+          id?: string
+          notes?: string | null
+          trip_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "travel_budget_lines_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "travel_budget_lines_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "travel_trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      travel_business_expenses: {
+        Row: {
+          amount: number
+          business_activity: string | null
+          business_pct: number
+          business_purpose: string | null
+          cpa_reviewed: boolean
+          created_at: string
+          description: string
+          documentation: string | null
+          expense_date: string
+          household_id: string
+          id: string
+          location: string | null
+          receipt_url: string | null
+          trip_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          business_activity?: string | null
+          business_pct?: number
+          business_purpose?: string | null
+          cpa_reviewed?: boolean
+          created_at?: string
+          description: string
+          documentation?: string | null
+          expense_date?: string
+          household_id: string
+          id?: string
+          location?: string | null
+          receipt_url?: string | null
+          trip_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          business_activity?: string | null
+          business_pct?: number
+          business_purpose?: string | null
+          cpa_reviewed?: boolean
+          created_at?: string
+          description?: string
+          documentation?: string | null
+          expense_date?: string
+          household_id?: string
+          id?: string
+          location?: string | null
+          receipt_url?: string | null
+          trip_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "travel_business_expenses_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "travel_business_expenses_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "travel_trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      travel_contributions: {
+        Row: {
+          amount: number
+          contribution_month: string
+          created_at: string
+          household_id: string
+          id: string
+          is_actual: boolean
+          notes: string | null
+          source: string | null
+          trip_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          contribution_month: string
+          created_at?: string
+          household_id: string
+          id?: string
+          is_actual?: boolean
+          notes?: string | null
+          source?: string | null
+          trip_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          contribution_month?: string
+          created_at?: string
+          household_id?: string
+          id?: string
+          is_actual?: boolean
+          notes?: string | null
+          source?: string | null
+          trip_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "travel_contributions_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "travel_contributions_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "travel_trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      travel_settings: {
+        Row: {
+          cost_history: Json
+          created_at: string
+          cycle_start_month: number
+          enhanced_budget: number
+          essential_budget: number
+          household_id: string
+          id: string
+          inflation_pct: number
+          monthly_target: number
+          notes: string | null
+          reserve_target: number
+          target_budget: number
+          trip_month: number
+          updated_at: string
+        }
+        Insert: {
+          cost_history?: Json
+          created_at?: string
+          cycle_start_month?: number
+          enhanced_budget?: number
+          essential_budget?: number
+          household_id: string
+          id?: string
+          inflation_pct?: number
+          monthly_target?: number
+          notes?: string | null
+          reserve_target?: number
+          target_budget?: number
+          trip_month?: number
+          updated_at?: string
+        }
+        Update: {
+          cost_history?: Json
+          created_at?: string
+          cycle_start_month?: number
+          enhanced_budget?: number
+          essential_budget?: number
+          household_id?: string
+          id?: string
+          inflation_pct?: number
+          monthly_target?: number
+          notes?: string | null
+          reserve_target?: number
+          target_budget?: number
+          trip_month?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "travel_settings_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: true
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      travel_trips: {
+        Row: {
+          actual_cost: number | null
+          booking: Json
+          budget_target: number
+          completed_at: string | null
+          created_at: string
+          deleted_at: string | null
+          depart_date: string | null
+          destination: string
+          final_payment_due: string | null
+          funding_checklist: Json
+          household_id: string
+          id: string
+          is_prepaid: boolean
+          monthly_contribution: number
+          notes: string | null
+          rollover_amount: number
+          saved_amount: number
+          savings_start_date: string | null
+          status: string
+          travel_month: number
+          travel_year: number
+          trip_type: string
+          updated_at: string
+        }
+        Insert: {
+          actual_cost?: number | null
+          booking?: Json
+          budget_target?: number
+          completed_at?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          depart_date?: string | null
+          destination: string
+          final_payment_due?: string | null
+          funding_checklist?: Json
+          household_id: string
+          id?: string
+          is_prepaid?: boolean
+          monthly_contribution?: number
+          notes?: string | null
+          rollover_amount?: number
+          saved_amount?: number
+          savings_start_date?: string | null
+          status?: string
+          travel_month?: number
+          travel_year: number
+          trip_type?: string
+          updated_at?: string
+        }
+        Update: {
+          actual_cost?: number | null
+          booking?: Json
+          budget_target?: number
+          completed_at?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          depart_date?: string | null
+          destination?: string
+          final_payment_due?: string | null
+          funding_checklist?: Json
+          household_id?: string
+          id?: string
+          is_prepaid?: boolean
+          monthly_contribution?: number
+          notes?: string | null
+          rollover_amount?: number
+          saved_amount?: number
+          savings_start_date?: string | null
+          status?: string
+          travel_month?: number
+          travel_year?: number
+          trip_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "travel_trips_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_progression: {
         Row: {
           belt_earned_at: string
