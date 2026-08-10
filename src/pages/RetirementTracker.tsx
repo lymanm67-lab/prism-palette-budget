@@ -28,16 +28,8 @@ const INCOME_MODULES = [
 ];
 
 export default function RetirementTracker() {
-  const {
-    isLoading,
-    accounts,
-    statements,
-    fundReturns,
-    timeline,
-    totalPortfolio,
-    sources,
-  } = useRetirementTracker();
   const tracker = useRetirementTracker();
+  const { isLoading, accounts, statements, fundReturns, timeline, totalPortfolio, sources } = tracker;
 
   const [inputs, setInputs] = useState<ProjectionInputs>({
     startingBalance: 0,
@@ -152,7 +144,7 @@ export default function RetirementTracker() {
         inputs={effectiveInputs}
         onChange={(patch) => {
           if ('startingBalance' in patch) setTouchedBalance(true);
-          setInputs((prev) => ({ ...prev, ...effectiveInputs, ...patch }));
+          setInputs((prev) => ({ ...prev, startingBalance: effectiveInputs.startingBalance, ...patch }));
         }}
       />
 
