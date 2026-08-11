@@ -26,6 +26,16 @@ const monthlyEquivalent = (amount: number, frequency: string) => {
   }
 };
 
+
+/**
+ * Payroll withholdings, pre-tax deductions and income groups are not spending —
+ * they must never appear in the Budgeted vs. Actual table or the year rollup.
+ */
+const isExcludedGroup = (groupName?: string | null) => {
+  const n = (groupName || '').toLowerCase();
+  return /payroll|pre[\s-]?tax|deduction|income/.test(n);
+};
+
 export default function BudgetBillsReport() {
   const { household } = useHousehold();
   const { formatCurrency } = useCurrency();
@@ -48,13 +58,13 @@ export default function BudgetBillsReport() {
       const [budgetsRes, txRes, billsRes] = await Promise.all([
         supabase
           .from('budgets')
-          .select('id, category_id, month, planned_amount, categories(name, color, category_groups(budget_type))')
+          .select('id, category_id, month, planned_amount, categories(name, color, category_groups(name, budget_type))')
           .eq('household_id', household!.id)
           .gte('month', start)
           .lte('month', end),
         supabase
           .from('transactions')
-          .select('amount, date, category_id, categories(name, color, category_groups(budget_type))')
+          .select('amount, date, category_id, categories(name, color, category_groups(name, budget_type))')
           .eq('household_id', household!.id)
           .eq('is_transfer', false)
           .is('deleted_at', null)
@@ -96,10 +106,7 @@ export default function BudgetBillsReport() {
     if (!data) return [] as any[];
     type Row = { key: string; categoryId: string | null; budgetId: string | null; name: string; color?: string; budgeted: number; actual: number };
     const map = new Map<string, Row>();
-    const excluded = (cat: any) => {
-      const bt = cat?.category_groups?.budget_type;
-      return bt === 'payroll_deduction' || bt === 'income';
-    };
+    const excluded = (cat: any) => isExcludedGroup(cat?.category_groups?.name);
     const keyFor = (cat: any, categoryId: string | null) =>
       (cat?.name ? String(cat.name).trim().toLowerCase() : categoryId ?? 'uncategorized');
     const make = (key: string, categoryId: string | null, name: string, color?: string): Row =>
@@ -182,10 +189,7 @@ export default function BudgetBillsReport() {
   const monthlyRows = useMemo(() => {
     const rows = MONTHS.map((m, i) => ({ label: m, index: i, budgeted: 0, actual: 0, bills: billsMonthlyTotal }));
     if (!data) return rows;
-    const skip = (cat: any) => {
-      const bt = cat?.category_groups?.budget_type;
-      return bt === 'payroll_deduction' || bt === 'income';
-    };
+    const skip = (cat: any) => isExcludedGroup(cat?.category_groups?.name);
     for (const b of data.budgets) {
       const d = new Date(b.month);
       if (d.getUTCFullYear() !== yearNum) continue;
