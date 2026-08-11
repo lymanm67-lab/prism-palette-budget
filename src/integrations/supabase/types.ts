@@ -8134,6 +8134,7 @@ export type Database = {
           id: string
           is_active: boolean
           last_paid_date: string | null
+          match_text: string | null
           merchant: string | null
           next_due_date: string
           notes: string | null
@@ -8156,6 +8157,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           last_paid_date?: string | null
+          match_text?: string | null
           merchant?: string | null
           next_due_date: string
           notes?: string | null
@@ -8178,6 +8180,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           last_paid_date?: string | null
+          match_text?: string | null
           merchant?: string | null
           next_due_date?: string
           notes?: string | null
