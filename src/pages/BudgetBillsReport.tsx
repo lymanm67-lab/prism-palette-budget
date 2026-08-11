@@ -55,22 +55,37 @@ export default function BudgetBillsReport() {
       const start = `${yearNum}-01-01`;
       const end = `${yearNum}-12-31`;
 
-      const [budgetsRes, txRes, billsRes] = await Promise.all([
+      // Transactions are fetched in 1k pages: the API caps a single response at
+      // 1,000 rows, which previously truncated the year and understated actuals.
+      const fetchAllTransactions = async () => {
+        const all: any[] = [];
+        const pageSize = 1000;
+        for (let page = 0; ; page++) {
+          const { data: rows, error } = await supabase
+            .from('transactions')
+            .select('amount, date, category_id, categories(name, color, category_groups(name, budget_type))')
+            .eq('household_id', household!.id)
+            .eq('is_transfer', false)
+            .is('deleted_at', null)
+            .gte('date', start)
+            .lte('date', end)
+            .order('date')
+            .range(page * pageSize, page * pageSize + pageSize - 1);
+          if (error) throw error;
+          all.push(...(rows ?? []));
+          if (!rows || rows.length < pageSize) break;
+        }
+        return all;
+      };
+
+      const [budgetsRes, txAll, billsRes] = await Promise.all([
         supabase
           .from('budgets')
           .select('id, category_id, month, planned_amount, categories(name, color, category_groups(name, budget_type))')
           .eq('household_id', household!.id)
           .gte('month', start)
           .lte('month', end),
-        supabase
-          .from('transactions')
-          .select('amount, date, category_id, categories(name, color, category_groups(name, budget_type))')
-          .eq('household_id', household!.id)
-          .eq('is_transfer', false)
-          .is('deleted_at', null)
-          .gte('date', start)
-          .lte('date', end)
-          .limit(10000),
+        fetchAllTransactions(),
         supabase
           .from('recurring_transactions')
           .select('id, merchant, amount, frequency, next_due_date, autopay_enabled, is_active, categories!recurring_transactions_category_id_fkey(name, color), accounts(name)')
@@ -79,13 +94,13 @@ export default function BudgetBillsReport() {
           .order('next_due_date'),
       ]);
 
+
       if (budgetsRes.error) throw budgetsRes.error;
-      if (txRes.error) throw txRes.error;
       if (billsRes.error) throw billsRes.error;
 
       return {
         budgets: (budgetsRes.data ?? []) as any[],
-        transactions: (txRes.data ?? []) as any[],
+        transactions: txAll as any[],
         // Bills = money going out only. Positive recurring rows are income
         // (salary, client retainers) and must not inflate the bill totals.
         bills: ((billsRes.data ?? []) as any[]).filter((b) => (Number(b.amount) || 0) < 0),
