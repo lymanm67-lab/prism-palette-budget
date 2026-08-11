@@ -76,7 +76,9 @@ export default function BudgetBillsReport() {
       return {
         budgets: (budgetsRes.data ?? []) as any[],
         transactions: (txRes.data ?? []) as any[],
-        bills: (billsRes.data ?? []) as any[],
+        // Bills = money going out only. Positive recurring rows are income
+        // (salary, client retainers) and must not inflate the bill totals.
+        bills: ((billsRes.data ?? []) as any[]).filter((b) => (Number(b.amount) || 0) < 0),
       };
     },
   });
