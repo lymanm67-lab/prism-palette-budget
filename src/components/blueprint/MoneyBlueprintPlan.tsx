@@ -534,6 +534,9 @@ export function MoneyBlueprintPlan() {
           </CardContent>
         </Card>
       </div>
+
+      <BlueprintMonthlyBills />
+
     </div>
   );
 }
