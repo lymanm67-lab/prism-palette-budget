@@ -558,9 +558,11 @@ export default function BudgetBillsReport() {
                 </table>
               </div>
               <p className="text-xs text-muted-foreground mt-3">
-
-                Bills are shown as a monthly equivalent from your active recurring schedule. Transfers and deleted transactions are excluded from actual spend.
+                How to read this: <strong>Net (income − spend)</strong> is your real cash result for the month — positive means you took in more than you spent.{' '}
+                <strong>Budget variance</strong> compares spend to your plan only (budget − spend) and ignores income, so a month can be cash-positive and still over budget.
+                Bills are a monthly equivalent from your active recurring schedule. Transfers and deleted transactions are excluded from actual spend.
               </p>
+
             </CardContent>
           </Card>
         </div>
