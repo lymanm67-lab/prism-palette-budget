@@ -89,14 +89,18 @@ export default function BudgetBillsReport() {
   // Budgeted vs actual by category for the selected month
   const categoryRows = useMemo(() => {
     if (!data) return [] as any[];
-    const map = new Map<string, { name: string; color?: string; budgeted: number; actual: number }>();
+    type Row = { key: string; categoryId: string | null; budgetId: string | null; name: string; color?: string; budgeted: number; actual: number };
+    const map = new Map<string, Row>();
+    const make = (key: string, categoryId: string | null, name: string, color?: string): Row =>
+      ({ key, categoryId, budgetId: null, name, color, budgeted: 0, actual: 0 });
 
     for (const b of data.budgets) {
       const d = new Date(b.month);
       if (d.getUTCFullYear() !== yearNum || d.getUTCMonth() !== monthNum) continue;
       const key = b.category_id ?? 'uncategorized';
-      const row = map.get(key) ?? { name: b.categories?.name ?? 'Uncategorized', color: b.categories?.color, budgeted: 0, actual: 0 };
+      const row = map.get(key) ?? make(key, b.category_id ?? null, b.categories?.name ?? 'Uncategorized', b.categories?.color);
       row.budgeted += Number(b.planned_amount) || 0;
+      row.budgetId = row.budgetId ?? b.id;
       map.set(key, row);
     }
 
@@ -106,13 +110,53 @@ export default function BudgetBillsReport() {
       const d = new Date(`${t.date}T00:00:00`);
       if (d.getFullYear() !== yearNum || d.getMonth() !== monthNum) continue;
       const key = t.category_id ?? 'uncategorized';
-      const row = map.get(key) ?? { name: t.categories?.name ?? 'Uncategorized', color: t.categories?.color, budgeted: 0, actual: 0 };
+      const row = map.get(key) ?? make(key, t.category_id ?? null, t.categories?.name ?? 'Uncategorized', t.categories?.color);
       row.actual += Math.abs(amt);
       map.set(key, row);
     }
 
     return Array.from(map.values()).sort((a, b) => b.actual - a.actual);
   }, [data, yearNum, monthNum]);
+
+  const refresh = () => qc.invalidateQueries({ queryKey: ['budget-bills-report'] });
+
+  const saveBudget = async (row: any, raw: string) => {
+    const amount = Number(raw);
+    if (!Number.isFinite(amount) || amount < 0) {
+      toast({ title: 'Enter a valid amount', variant: 'destructive' });
+      throw new Error('invalid');
+    }
+    const monthStr = `${yearNum}-${String(monthNum + 1).padStart(2, '0')}-01`;
+    let error;
+    if (row.budgetId) {
+      ({ error } = await supabase.from('budgets').update({ planned_amount: amount }).eq('id', row.budgetId));
+    } else if (row.categoryId) {
+      ({ error } = await supabase.from('budgets').insert({
+        household_id: household!.id,
+        category_id: row.categoryId,
+        month: monthStr,
+        planned_amount: amount,
+      }));
+    } else {
+      toast({ title: 'Cannot budget uncategorized spending', variant: 'destructive' });
+      throw new Error('no category');
+    }
+    if (error) {
+      toast({ title: 'Could not save budget', description: error.message, variant: 'destructive' });
+      throw error;
+    }
+    await refresh();
+  };
+
+  const saveBill = async (id: string, updates: Record<string, any>) => {
+    const { error } = await supabase.from('recurring_transactions').update(updates).eq('id', id);
+    if (error) {
+      toast({ title: 'Could not save bill', description: error.message, variant: 'destructive' });
+      throw error;
+    }
+    await refresh();
+  };
+
 
   const totals = useMemo(() => {
     const budgeted = categoryRows.reduce((s, r) => s + r.budgeted, 0);
