@@ -24,6 +24,7 @@ const Transactions = lazy(() => import("@/pages/Transactions"));
 const Budgets = lazy(() => import("@/pages/Budgets"));
 const Reports = lazy(() => import("@/pages/Reports"));
 const MonthlyReport = lazy(() => import("@/pages/MonthlyReport"));
+const BudgetBillsReport = lazy(() => import("@/pages/BudgetBillsReport"));
 const Categories = lazy(() => import("@/pages/Categories"));
 const Settings = lazy(() => import("@/pages/Settings"));
 const AutoSplitRules = lazy(() => import("@/pages/AutoSplitRules"));
@@ -200,6 +201,7 @@ const App = () => (
               <Route path="/categories" element={<Suspense fallback={<PageLoader />}><Categories /></Suspense>} />
               <Route path="/reports" element={<Suspense fallback={<PageLoader />}><Reports /></Suspense>} />
               <Route path="/reports/monthly" element={<Suspense fallback={<PageLoader />}><MonthlyReport /></Suspense>} />
+              <Route path="/reports/budgets-bills" element={<Suspense fallback={<PageLoader />}><BudgetBillsReport /></Suspense>} />
               <Route path="/spending-trends" element={<Suspense fallback={<PageLoader />}><SpendingTrends /></Suspense>} />
               <Route path="/goals" element={<Suspense fallback={<PageLoader />}><Goals /></Suspense>} />
               <Route path="/debt-payoff" element={<Suspense fallback={<PageLoader />}><DebtPayoff /></Suspense>} />
