@@ -96,12 +96,11 @@ export default function BudgetBillsReport() {
 
 
       if (budgetsRes.error) throw budgetsRes.error;
-      if (txRes.error) throw txRes.error;
       if (billsRes.error) throw billsRes.error;
 
       return {
         budgets: (budgetsRes.data ?? []) as any[],
-        transactions: (txRes.data ?? []) as any[],
+        transactions: txAll as any[],
         // Bills = money going out only. Positive recurring rows are income
         // (salary, client retainers) and must not inflate the bill totals.
         bills: ((billsRes.data ?? []) as any[]).filter((b) => (Number(b.amount) || 0) < 0),
