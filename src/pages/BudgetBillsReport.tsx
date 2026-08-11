@@ -352,17 +352,78 @@ export default function BudgetBillsReport() {
                     <tbody>
                       {(data?.bills ?? []).map((b) => (
                         <tr key={b.id} className="border-b last:border-0">
-                          <td className="py-2 pr-3 font-medium">{b.merchant ?? 'Bill'}</td>
+                          <td className="py-2 pr-3 font-medium">
+                            {editMode ? (
+                              <InlineEditCell
+                                value={b.merchant ?? ''}
+                                placeholder="Bill name"
+                                onSave={(v) => saveBill(b.id, { merchant: v })}
+                              />
+                            ) : (
+                              b.merchant ?? 'Bill'
+                            )}
+                          </td>
                           <td className="py-2 px-3">{b.categories?.name ?? '—'}</td>
                           <td className="py-2 px-3">{b.accounts?.name ?? '—'}</td>
-                          <td className="py-2 px-3 capitalize">{b.frequency}</td>
-                          <td className="py-2 px-3">{b.next_due_date}</td>
-                          <td className="py-2 px-3">
-                            <Badge variant={b.autopay_enabled ? 'default' : 'outline'}>
-                              {b.autopay_enabled ? 'Autopay' : 'Manual'}
-                            </Badge>
+                          <td className="py-2 px-3 capitalize">
+                            {editMode ? (
+                              <Select value={b.frequency} onValueChange={(v) => saveBill(b.id, { frequency: v })}>
+                                <SelectTrigger className="h-7 w-[120px]"><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  {['weekly', 'biweekly', 'monthly', 'quarterly', 'yearly'].map((f) => (
+                                    <SelectItem key={f} value={f} className="capitalize">{f}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            ) : (
+                              b.frequency
+                            )}
                           </td>
-                          <td className="py-2 pl-3 text-right">{formatCurrency(Math.abs(Number(b.amount) || 0))}</td>
+                          <td className="py-2 px-3">
+                            {editMode ? (
+                              <InlineEditCell
+                                type="date"
+                                value={b.next_due_date ?? ''}
+                                placeholder="Set date"
+                                onSave={(v) => saveBill(b.id, { next_due_date: v || null })}
+                              />
+                            ) : (
+                              b.next_due_date
+                            )}
+                          </td>
+                          <td className="py-2 px-3">
+                            {editMode ? (
+                              <Switch
+                                checked={!!b.autopay_enabled}
+                                onCheckedChange={(v) => saveBill(b.id, { autopay_enabled: v })}
+                              />
+                            ) : (
+                              <Badge variant={b.autopay_enabled ? 'default' : 'outline'}>
+                                {b.autopay_enabled ? 'Autopay' : 'Manual'}
+                              </Badge>
+                            )}
+                          </td>
+                          <td className="py-2 pl-3 text-right">
+                            {editMode ? (
+                              <div className="flex justify-end">
+                                <InlineEditCell
+                                  type="number"
+                                  value={String(Math.abs(Number(b.amount) || 0))}
+                                  formatter={(v) => (v ? formatCurrency(Number(v)) : '')}
+                                  onSave={(v) => {
+                                    const n = Math.abs(Number(v));
+                                    if (!Number.isFinite(n)) {
+                                      toast({ title: 'Enter a valid amount', variant: 'destructive' });
+                                      return Promise.reject(new Error('invalid'));
+                                    }
+                                    return saveBill(b.id, { amount: Number(b.amount) < 0 ? -n : n });
+                                  }}
+                                />
+                              </div>
+                            ) : (
+                              formatCurrency(Math.abs(Number(b.amount) || 0))
+                            )}
+                          </td>
                           <td className="py-2 pl-3 text-right">{formatCurrency(monthlyEquivalent(b.amount, b.frequency))}</td>
                         </tr>
                       ))}
