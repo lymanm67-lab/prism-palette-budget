@@ -278,9 +278,23 @@ export default function BudgetBillsReport() {
                         const variance = r.budgeted - r.actual;
                         const pct = r.budgeted > 0 ? Math.min(150, (r.actual / r.budgeted) * 100) : 0;
                         return (
-                          <tr key={r.name} className="border-b last:border-0">
+                          <tr key={r.key} className="border-b last:border-0">
                             <td className="py-2 pr-3 font-medium">{r.name}</td>
-                            <td className="py-2 px-3 text-right">{r.budgeted > 0 ? formatCurrency(r.budgeted) : '—'}</td>
+                            <td className="py-2 px-3 text-right">
+                              {editMode && r.categoryId ? (
+                                <div className="flex justify-end">
+                                  <InlineEditCell
+                                    type="number"
+                                    value={r.budgeted ? String(r.budgeted) : ''}
+                                    placeholder="Set budget"
+                                    onSave={(v) => saveBudget(r, v)}
+                                    formatter={(v) => (v ? formatCurrency(Number(v)) : '')}
+                                  />
+                                </div>
+                              ) : (
+                                r.budgeted > 0 ? formatCurrency(r.budgeted) : '—'
+                              )}
+                            </td>
                             <td className="py-2 px-3 text-right">{formatCurrency(r.actual)}</td>
                             <td className={`py-2 px-3 text-right ${r.budgeted === 0 ? 'text-muted-foreground' : variance >= 0 ? 'text-emerald-500' : 'text-destructive'}`}>
                               {r.budgeted === 0 ? 'Unbudgeted' : formatCurrency(variance)}
