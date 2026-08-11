@@ -212,9 +212,9 @@ export default function BudgetBillsReport() {
     return { budgeted, actual, variance: budgeted - actual };
   }, [categoryRows]);
 
-  // Month-by-month: budget total vs actual spend vs bills total
+  // Month-by-month: budget total vs actual spend vs bills total vs income
   const monthlyRows = useMemo(() => {
-    const rows = MONTHS.map((m, i) => ({ label: m, index: i, budgeted: 0, actual: 0, bills: billsMonthlyTotal }));
+    const rows = MONTHS.map((m, i) => ({ label: m, index: i, budgeted: 0, actual: 0, income: 0, bills: billsMonthlyTotal }));
     if (!data) return rows;
     const skip = (cat: any) => isExcludedGroup(cat?.category_groups?.name);
     for (const b of data.budgets) {
@@ -225,14 +225,20 @@ export default function BudgetBillsReport() {
     }
     for (const t of data.transactions) {
       const amt = Number(t.amount) || 0;
-      if (amt >= 0) continue;
-      if (skip(t.categories)) continue;
       const d = new Date(`${t.date}T00:00:00`);
       if (d.getFullYear() !== yearNum) continue;
+      // Inflows are real money in (payroll, consulting, reimbursements) and are
+      // tracked separately so a month with extra income reads realistically.
+      if (amt > 0) {
+        rows[d.getMonth()].income += amt;
+        continue;
+      }
+      if (skip(t.categories)) continue;
       rows[d.getMonth()].actual += Math.abs(amt);
     }
     return rows;
   }, [data, yearNum, billsMonthlyTotal]);
+
 
   const years = useMemo(() => {
     const y = now.getFullYear();
@@ -512,18 +518,25 @@ export default function BudgetBillsReport() {
                       <th className="py-2 px-3 text-right">Budgeted</th>
                       <th className="py-2 px-3 text-right">Bills</th>
                       <th className="py-2 px-3 text-right">Actual spend</th>
+                      <th className="py-2 px-3 text-right">Income</th>
+                      <th className="py-2 px-3 text-right">Net (income − spend)</th>
                       <th className="py-2 pl-3 text-right">Budget variance</th>
                     </tr>
                   </thead>
                   <tbody>
                     {monthlyRows.map((r) => {
                       const variance = r.budgeted - r.actual;
+                      const net = r.income - r.actual;
                       return (
                         <tr key={r.label} className={`border-b last:border-0 ${r.index === monthNum ? 'bg-muted/40' : ''}`}>
                           <td className="py-2 pr-3 font-medium">{r.label}</td>
                           <td className="py-2 px-3 text-right">{r.budgeted > 0 ? formatCurrency(r.budgeted) : '—'}</td>
                           <td className="py-2 px-3 text-right">{formatCurrency(r.bills)}</td>
                           <td className="py-2 px-3 text-right">{r.actual > 0 ? formatCurrency(r.actual) : '—'}</td>
+                          <td className="py-2 px-3 text-right">{r.income > 0 ? formatCurrency(r.income) : '—'}</td>
+                          <td className={`py-2 px-3 text-right ${r.income === 0 && r.actual === 0 ? 'text-muted-foreground' : net >= 0 ? 'text-emerald-500' : 'text-destructive'}`}>
+                            {r.income === 0 && r.actual === 0 ? '—' : formatCurrency(net)}
+                          </td>
                           <td className={`py-2 pl-3 text-right ${r.budgeted === 0 ? 'text-muted-foreground' : variance >= 0 ? 'text-emerald-500' : 'text-destructive'}`}>
                             {r.budgeted === 0 ? '—' : formatCurrency(variance)}
                           </td>
@@ -535,6 +548,8 @@ export default function BudgetBillsReport() {
                       <td className="py-2 px-3 text-right">{formatCurrency(monthlyRows.reduce((s, r) => s + r.budgeted, 0))}</td>
                       <td className="py-2 px-3 text-right">{formatCurrency(billsMonthlyTotal * 12)}</td>
                       <td className="py-2 px-3 text-right">{formatCurrency(monthlyRows.reduce((s, r) => s + r.actual, 0))}</td>
+                      <td className="py-2 px-3 text-right">{formatCurrency(monthlyRows.reduce((s, r) => s + r.income, 0))}</td>
+                      <td className="py-2 px-3 text-right">{formatCurrency(monthlyRows.reduce((s, r) => s + (r.income - r.actual), 0))}</td>
                       <td className="py-2 pl-3 text-right">
                         {formatCurrency(monthlyRows.reduce((s, r) => s + (r.budgeted - r.actual), 0))}
                       </td>
@@ -543,6 +558,7 @@ export default function BudgetBillsReport() {
                 </table>
               </div>
               <p className="text-xs text-muted-foreground mt-3">
+
                 Bills are shown as a monthly equivalent from your active recurring schedule. Transfers and deleted transactions are excluded from actual spend.
               </p>
             </CardContent>
