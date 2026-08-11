@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useHousehold } from '@/contexts/HouseholdContext';
@@ -104,7 +104,7 @@ export default function BudgetBillsReport() {
   // one line per real category instead of personal/business duplicates.
   const categoryRows = useMemo(() => {
     if (!data) return [] as any[];
-    type Row = { key: string; categoryId: string | null; budgetId: string | null; name: string; color?: string; budgeted: number; actual: number };
+    type Row = { key: string; categoryId: string | null; budgetId: string | null; name: string; groupName: string; color?: string; budgeted: number; actual: number };
     const map = new Map<string, Row>();
     const excluded = (cat: any) => isExcludedGroup(cat?.category_groups?.name);
     // Merge duplicates only within the same category group, so a personal "Rent"
@@ -119,15 +119,15 @@ export default function BudgetBillsReport() {
       const grp = cat?.category_groups?.name;
       return grp && /business/i.test(grp) ? `${name} (Business)` : name;
     };
-    const make = (key: string, categoryId: string | null, name: string, color?: string): Row =>
-      ({ key, categoryId, budgetId: null, name, color, budgeted: 0, actual: 0 });
+    const make = (key: string, categoryId: string | null, name: string, groupName?: string, color?: string): Row =>
+      ({ key, categoryId, budgetId: null, name, groupName: groupName || 'Other', color, budgeted: 0, actual: 0 });
 
     for (const b of data.budgets) {
       const d = new Date(b.month);
       if (d.getUTCFullYear() !== yearNum || d.getUTCMonth() !== monthNum) continue;
       if (excluded(b.categories)) continue;
       const key = keyFor(b.categories, b.category_id ?? null);
-      const row = map.get(key) ?? make(key, b.category_id ?? null, labelFor(b.categories), b.categories?.color);
+      const row = map.get(key) ?? make(key, b.category_id ?? null, labelFor(b.categories), b.categories?.category_groups?.name, b.categories?.color);
       row.budgeted += Number(b.planned_amount) || 0;
       row.budgetId = row.budgetId ?? b.id;
       row.categoryId = row.categoryId ?? b.category_id ?? null;
@@ -141,12 +141,14 @@ export default function BudgetBillsReport() {
       const d = new Date(`${t.date}T00:00:00`);
       if (d.getFullYear() !== yearNum || d.getMonth() !== monthNum) continue;
       const key = keyFor(t.categories, t.category_id ?? null);
-      const row = map.get(key) ?? make(key, t.category_id ?? null, labelFor(t.categories), t.categories?.color);
+      const row = map.get(key) ?? make(key, t.category_id ?? null, labelFor(t.categories), t.categories?.category_groups?.name, t.categories?.color);
       row.actual += Math.abs(amt);
       map.set(key, row);
     }
 
-    return Array.from(map.values()).sort((a, b) => b.actual - a.actual);
+    return Array.from(map.values()).sort((a, b) =>
+      a.groupName.localeCompare(b.groupName) || b.actual - a.actual,
+    );
   }, [data, yearNum, monthNum]);
 
   const refresh = () => qc.invalidateQueries({ queryKey: ['budget-bills-report'] });
@@ -308,35 +310,44 @@ export default function BudgetBillsReport() {
                       </tr>
                     </thead>
                     <tbody>
-                      {categoryRows.map((r) => {
+                      {categoryRows.map((r, index) => {
                         const variance = r.budgeted - r.actual;
                         const pct = r.budgeted > 0 ? Math.min(150, (r.actual / r.budgeted) * 100) : 0;
                         return (
-                          <tr key={r.key} className="border-b last:border-0">
-                            <td className="py-2 pr-3 font-medium">{r.name}</td>
-                            <td className="py-2 px-3 text-right">
-                              {editMode && r.categoryId ? (
-                                <div className="flex justify-end">
-                                  <InlineEditCell
-                                    type="number"
-                                    value={r.budgeted ? String(r.budgeted) : ''}
-                                    placeholder="Set budget"
-                                    onSave={(v) => saveBudget(r, v)}
-                                    formatter={(v) => (v ? formatCurrency(Number(v)) : '')}
-                                  />
-                                </div>
-                              ) : (
-                                r.budgeted > 0 ? formatCurrency(r.budgeted) : '—'
-                              )}
-                            </td>
-                            <td className="py-2 px-3 text-right">{formatCurrency(r.actual)}</td>
-                            <td className={`py-2 px-3 text-right ${r.budgeted === 0 ? 'text-muted-foreground' : variance >= 0 ? 'text-emerald-500' : 'text-destructive'}`}>
-                              {r.budgeted === 0 ? 'Unbudgeted' : formatCurrency(variance)}
-                            </td>
-                            <td className="py-2 pl-3 print:hidden">
-                              {r.budgeted > 0 ? <Progress value={pct} className="h-2" /> : <span className="text-xs text-muted-foreground">—</span>}
-                            </td>
-                          </tr>
+                          <Fragment key={r.key}>
+                            {(index === 0 || categoryRows[index - 1].groupName !== r.groupName) && (
+                              <tr className="bg-muted/50 border-y">
+                                <th colSpan={5} className="py-2 px-3 text-left text-xs font-semibold uppercase tracking-wide text-foreground">
+                                  {r.groupName}
+                                </th>
+                              </tr>
+                            )}
+                            <tr className="border-b last:border-0">
+                              <td className="py-2 pr-3 pl-3 font-medium">{r.name}</td>
+                              <td className="py-2 px-3 text-right">
+                                {editMode && r.categoryId ? (
+                                  <div className="flex justify-end">
+                                    <InlineEditCell
+                                      type="number"
+                                      value={r.budgeted ? String(r.budgeted) : ''}
+                                      placeholder="Set budget"
+                                      onSave={(v) => saveBudget(r, v)}
+                                      formatter={(v) => (v ? formatCurrency(Number(v)) : '')}
+                                    />
+                                  </div>
+                                ) : (
+                                  r.budgeted > 0 ? formatCurrency(r.budgeted) : '—'
+                                )}
+                              </td>
+                              <td className="py-2 px-3 text-right">{formatCurrency(r.actual)}</td>
+                              <td className={`py-2 px-3 text-right ${r.budgeted === 0 ? 'text-muted-foreground' : variance >= 0 ? 'text-emerald-500' : 'text-destructive'}`}>
+                                {r.budgeted === 0 ? 'Unbudgeted' : formatCurrency(variance)}
+                              </td>
+                              <td className="py-2 pl-3 print:hidden">
+                                {r.budgeted > 0 ? <Progress value={pct} className="h-2" /> : <span className="text-xs text-muted-foreground">—</span>}
+                              </td>
+                            </tr>
+                          </Fragment>
                         );
                       })}
                       <tr className="font-semibold">
