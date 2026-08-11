@@ -212,9 +212,9 @@ export default function BudgetBillsReport() {
     return { budgeted, actual, variance: budgeted - actual };
   }, [categoryRows]);
 
-  // Month-by-month: budget total vs actual spend vs bills total
+  // Month-by-month: budget total vs actual spend vs bills total vs income
   const monthlyRows = useMemo(() => {
-    const rows = MONTHS.map((m, i) => ({ label: m, index: i, budgeted: 0, actual: 0, bills: billsMonthlyTotal }));
+    const rows = MONTHS.map((m, i) => ({ label: m, index: i, budgeted: 0, actual: 0, income: 0, bills: billsMonthlyTotal }));
     if (!data) return rows;
     const skip = (cat: any) => isExcludedGroup(cat?.category_groups?.name);
     for (const b of data.budgets) {
@@ -225,14 +225,20 @@ export default function BudgetBillsReport() {
     }
     for (const t of data.transactions) {
       const amt = Number(t.amount) || 0;
-      if (amt >= 0) continue;
-      if (skip(t.categories)) continue;
       const d = new Date(`${t.date}T00:00:00`);
       if (d.getFullYear() !== yearNum) continue;
+      // Inflows are real money in (payroll, consulting, reimbursements) and are
+      // tracked separately so a month with extra income reads realistically.
+      if (amt > 0) {
+        rows[d.getMonth()].income += amt;
+        continue;
+      }
+      if (skip(t.categories)) continue;
       rows[d.getMonth()].actual += Math.abs(amt);
     }
     return rows;
   }, [data, yearNum, billsMonthlyTotal]);
+
 
   const years = useMemo(() => {
     const y = now.getFullYear();
