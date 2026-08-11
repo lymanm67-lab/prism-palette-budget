@@ -1,5 +1,5 @@
 // Merchant aliases — fixes common bank-feed misreads (e.g. "Movable Feast" is
-// actually "Lovable", "AMZN MKTP" is Amazon, etc.). Used by the Cleanup hub.
+// actually Lovable AI Services, "AMZN MKTP" is Amazon, etc.). Used by the Cleanup hub.
 export interface MerchantAlias {
   pattern: RegExp;
   canonical: string;       // display name to normalize to
@@ -7,8 +7,8 @@ export interface MerchantAlias {
 }
 
 export const MERCHANT_ALIASES: MerchantAlias[] = [
-  { pattern: /^movable\s+feast/i,       canonical: 'Lovable', categoryName: 'Lovable' },
-  { pattern: /^lovable(\s+dover)?\b/i,  canonical: 'Lovable', categoryName: 'Lovable' },
+  { pattern: /^movable\s+feast/i,       canonical: 'Lovable AI Services', categoryName: 'Lovable' },
+  { pattern: /^lovable(\s+dover)?\b/i,  canonical: 'Lovable AI Services', categoryName: 'Lovable' },
 ];
 
 // Transfer-like merchant patterns (Flow 1)
