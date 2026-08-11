@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { useCurrency } from '@/hooks/use-currency';
@@ -7,8 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Printer, Receipt, Wallet, CalendarClock, Zap } from 'lucide-react';
+import { Loader2, Printer, Receipt, Wallet, CalendarClock, Zap, Pencil, Check } from 'lucide-react';
+import InlineEditCell from '@/components/InlineEditCell';
+import { toast } from '@/hooks/use-toast';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -26,9 +29,11 @@ const monthlyEquivalent = (amount: number, frequency: string) => {
 export default function BudgetBillsReport() {
   const { household } = useHousehold();
   const { formatCurrency } = useCurrency();
+  const qc = useQueryClient();
   const now = new Date();
   const [year, setYear] = useState(String(now.getFullYear()));
   const [month, setMonth] = useState(String(now.getMonth()));
+  const [editMode, setEditMode] = useState(false);
 
   const yearNum = Number(year);
   const monthNum = Number(month);
@@ -84,14 +89,18 @@ export default function BudgetBillsReport() {
   // Budgeted vs actual by category for the selected month
   const categoryRows = useMemo(() => {
     if (!data) return [] as any[];
-    const map = new Map<string, { name: string; color?: string; budgeted: number; actual: number }>();
+    type Row = { key: string; categoryId: string | null; budgetId: string | null; name: string; color?: string; budgeted: number; actual: number };
+    const map = new Map<string, Row>();
+    const make = (key: string, categoryId: string | null, name: string, color?: string): Row =>
+      ({ key, categoryId, budgetId: null, name, color, budgeted: 0, actual: 0 });
 
     for (const b of data.budgets) {
       const d = new Date(b.month);
       if (d.getUTCFullYear() !== yearNum || d.getUTCMonth() !== monthNum) continue;
       const key = b.category_id ?? 'uncategorized';
-      const row = map.get(key) ?? { name: b.categories?.name ?? 'Uncategorized', color: b.categories?.color, budgeted: 0, actual: 0 };
+      const row = map.get(key) ?? make(key, b.category_id ?? null, b.categories?.name ?? 'Uncategorized', b.categories?.color);
       row.budgeted += Number(b.planned_amount) || 0;
+      row.budgetId = row.budgetId ?? b.id;
       map.set(key, row);
     }
 
@@ -101,13 +110,53 @@ export default function BudgetBillsReport() {
       const d = new Date(`${t.date}T00:00:00`);
       if (d.getFullYear() !== yearNum || d.getMonth() !== monthNum) continue;
       const key = t.category_id ?? 'uncategorized';
-      const row = map.get(key) ?? { name: t.categories?.name ?? 'Uncategorized', color: t.categories?.color, budgeted: 0, actual: 0 };
+      const row = map.get(key) ?? make(key, t.category_id ?? null, t.categories?.name ?? 'Uncategorized', t.categories?.color);
       row.actual += Math.abs(amt);
       map.set(key, row);
     }
 
     return Array.from(map.values()).sort((a, b) => b.actual - a.actual);
   }, [data, yearNum, monthNum]);
+
+  const refresh = () => qc.invalidateQueries({ queryKey: ['budget-bills-report'] });
+
+  const saveBudget = async (row: any, raw: string) => {
+    const amount = Number(raw);
+    if (!Number.isFinite(amount) || amount < 0) {
+      toast({ title: 'Enter a valid amount', variant: 'destructive' });
+      throw new Error('invalid');
+    }
+    const monthStr = `${yearNum}-${String(monthNum + 1).padStart(2, '0')}-01`;
+    let error;
+    if (row.budgetId) {
+      ({ error } = await supabase.from('budgets').update({ planned_amount: amount }).eq('id', row.budgetId));
+    } else if (row.categoryId) {
+      ({ error } = await supabase.from('budgets').insert({
+        household_id: household!.id,
+        category_id: row.categoryId,
+        month: monthStr,
+        planned_amount: amount,
+      }));
+    } else {
+      toast({ title: 'Cannot budget uncategorized spending', variant: 'destructive' });
+      throw new Error('no category');
+    }
+    if (error) {
+      toast({ title: 'Could not save budget', description: error.message, variant: 'destructive' });
+      throw error;
+    }
+    await refresh();
+  };
+
+  const saveBill = async (id: string, updates: Record<string, any>) => {
+    const { error } = await supabase.from('recurring_transactions').update(updates).eq('id', id);
+    if (error) {
+      toast({ title: 'Could not save bill', description: error.message, variant: 'destructive' });
+      throw error;
+    }
+    await refresh();
+  };
+
 
   const totals = useMemo(() => {
     const budgeted = categoryRows.reduce((s, r) => s + r.budgeted, 0);
@@ -163,7 +212,10 @@ export default function BudgetBillsReport() {
               {years.map((y) => <SelectItem key={y} value={y}>{y}</SelectItem>)}
             </SelectContent>
           </Select>
-          <Button onClick={() => window.print()}>
+          <Button variant={editMode ? 'default' : 'outline'} onClick={() => setEditMode((v) => !v)}>
+            {editMode ? <><Check className="h-4 w-4 mr-2" /> Done editing</> : <><Pencil className="h-4 w-4 mr-2" /> Edit</>}
+          </Button>
+          <Button variant="secondary" onClick={() => window.print()}>
             <Printer className="h-4 w-4 mr-2" /> Print
           </Button>
         </div>
@@ -226,9 +278,23 @@ export default function BudgetBillsReport() {
                         const variance = r.budgeted - r.actual;
                         const pct = r.budgeted > 0 ? Math.min(150, (r.actual / r.budgeted) * 100) : 0;
                         return (
-                          <tr key={r.name} className="border-b last:border-0">
+                          <tr key={r.key} className="border-b last:border-0">
                             <td className="py-2 pr-3 font-medium">{r.name}</td>
-                            <td className="py-2 px-3 text-right">{r.budgeted > 0 ? formatCurrency(r.budgeted) : '—'}</td>
+                            <td className="py-2 px-3 text-right">
+                              {editMode && r.categoryId ? (
+                                <div className="flex justify-end">
+                                  <InlineEditCell
+                                    type="number"
+                                    value={r.budgeted ? String(r.budgeted) : ''}
+                                    placeholder="Set budget"
+                                    onSave={(v) => saveBudget(r, v)}
+                                    formatter={(v) => (v ? formatCurrency(Number(v)) : '')}
+                                  />
+                                </div>
+                              ) : (
+                                r.budgeted > 0 ? formatCurrency(r.budgeted) : '—'
+                              )}
+                            </td>
                             <td className="py-2 px-3 text-right">{formatCurrency(r.actual)}</td>
                             <td className={`py-2 px-3 text-right ${r.budgeted === 0 ? 'text-muted-foreground' : variance >= 0 ? 'text-emerald-500' : 'text-destructive'}`}>
                               {r.budgeted === 0 ? 'Unbudgeted' : formatCurrency(variance)}
@@ -286,17 +352,78 @@ export default function BudgetBillsReport() {
                     <tbody>
                       {(data?.bills ?? []).map((b) => (
                         <tr key={b.id} className="border-b last:border-0">
-                          <td className="py-2 pr-3 font-medium">{b.merchant ?? 'Bill'}</td>
+                          <td className="py-2 pr-3 font-medium">
+                            {editMode ? (
+                              <InlineEditCell
+                                value={b.merchant ?? ''}
+                                placeholder="Bill name"
+                                onSave={(v) => saveBill(b.id, { merchant: v })}
+                              />
+                            ) : (
+                              b.merchant ?? 'Bill'
+                            )}
+                          </td>
                           <td className="py-2 px-3">{b.categories?.name ?? '—'}</td>
                           <td className="py-2 px-3">{b.accounts?.name ?? '—'}</td>
-                          <td className="py-2 px-3 capitalize">{b.frequency}</td>
-                          <td className="py-2 px-3">{b.next_due_date}</td>
-                          <td className="py-2 px-3">
-                            <Badge variant={b.autopay_enabled ? 'default' : 'outline'}>
-                              {b.autopay_enabled ? 'Autopay' : 'Manual'}
-                            </Badge>
+                          <td className="py-2 px-3 capitalize">
+                            {editMode ? (
+                              <Select value={b.frequency} onValueChange={(v) => saveBill(b.id, { frequency: v })}>
+                                <SelectTrigger className="h-7 w-[120px]"><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  {['weekly', 'biweekly', 'monthly', 'quarterly', 'yearly'].map((f) => (
+                                    <SelectItem key={f} value={f} className="capitalize">{f}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            ) : (
+                              b.frequency
+                            )}
                           </td>
-                          <td className="py-2 pl-3 text-right">{formatCurrency(Math.abs(Number(b.amount) || 0))}</td>
+                          <td className="py-2 px-3">
+                            {editMode ? (
+                              <InlineEditCell
+                                type="date"
+                                value={b.next_due_date ?? ''}
+                                placeholder="Set date"
+                                onSave={(v) => saveBill(b.id, { next_due_date: v || null })}
+                              />
+                            ) : (
+                              b.next_due_date
+                            )}
+                          </td>
+                          <td className="py-2 px-3">
+                            {editMode ? (
+                              <Switch
+                                checked={!!b.autopay_enabled}
+                                onCheckedChange={(v) => saveBill(b.id, { autopay_enabled: v })}
+                              />
+                            ) : (
+                              <Badge variant={b.autopay_enabled ? 'default' : 'outline'}>
+                                {b.autopay_enabled ? 'Autopay' : 'Manual'}
+                              </Badge>
+                            )}
+                          </td>
+                          <td className="py-2 pl-3 text-right">
+                            {editMode ? (
+                              <div className="flex justify-end">
+                                <InlineEditCell
+                                  type="number"
+                                  value={String(Math.abs(Number(b.amount) || 0))}
+                                  formatter={(v) => (v ? formatCurrency(Number(v)) : '')}
+                                  onSave={(v) => {
+                                    const n = Math.abs(Number(v));
+                                    if (!Number.isFinite(n)) {
+                                      toast({ title: 'Enter a valid amount', variant: 'destructive' });
+                                      return Promise.reject(new Error('invalid'));
+                                    }
+                                    return saveBill(b.id, { amount: Number(b.amount) < 0 ? -n : n });
+                                  }}
+                                />
+                              </div>
+                            ) : (
+                              formatCurrency(Math.abs(Number(b.amount) || 0))
+                            )}
+                          </td>
                           <td className="py-2 pl-3 text-right">{formatCurrency(monthlyEquivalent(b.amount, b.frequency))}</td>
                         </tr>
                       ))}
