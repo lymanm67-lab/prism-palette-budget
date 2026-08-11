@@ -24,6 +24,7 @@ const Transactions = lazy(() => import("@/pages/Transactions"));
 const Budgets = lazy(() => import("@/pages/Budgets"));
 const Reports = lazy(() => import("@/pages/Reports"));
 const MonthlyReport = lazy(() => import("@/pages/MonthlyReport"));
+const BudgetBillsReport = lazy(() => import("@/pages/BudgetBillsReport"));
 const Categories = lazy(() => import("@/pages/Categories"));
 const Settings = lazy(() => import("@/pages/Settings"));
 const AutoSplitRules = lazy(() => import("@/pages/AutoSplitRules"));
