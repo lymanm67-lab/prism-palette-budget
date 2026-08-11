@@ -103,7 +103,7 @@ function titleCase(str: string): string {
   const brands: Record<string, string> = {
     'amazon': 'Amazon',
     'netflix': 'Netflix',
-    'lovable': 'Lovable',
+    'lovable': 'Lovable AI Services',
     'spotify': 'Spotify',
     'starz': 'Starz',
     'hume ai': 'Hume AI',
