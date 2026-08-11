@@ -26,7 +26,7 @@ export function isGenericMerchant(merchant: string): boolean {
 
 /**
  * Extract a clean merchant name from a pipe-delimited merchant field
- * e.g., "LOVABLE|MERCHANT PURCHASE TER..." → "Lovable"
+ * e.g., "LOVABLE|MERCHANT PURCHASE TER..." → "Lovable AI Services"
  */
 function extractFromPipeMerchant(merchant: string): string | null {
   if (!merchant.includes('|')) return null;
