@@ -29,9 +29,11 @@ const monthlyEquivalent = (amount: number, frequency: string) => {
 export default function BudgetBillsReport() {
   const { household } = useHousehold();
   const { formatCurrency } = useCurrency();
+  const qc = useQueryClient();
   const now = new Date();
   const [year, setYear] = useState(String(now.getFullYear()));
   const [month, setMonth] = useState(String(now.getMonth()));
+  const [editMode, setEditMode] = useState(false);
 
   const yearNum = Number(year);
   const monthNum = Number(month);
