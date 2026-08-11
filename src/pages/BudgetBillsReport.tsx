@@ -212,7 +212,10 @@ export default function BudgetBillsReport() {
               {years.map((y) => <SelectItem key={y} value={y}>{y}</SelectItem>)}
             </SelectContent>
           </Select>
-          <Button onClick={() => window.print()}>
+          <Button variant={editMode ? 'default' : 'outline'} onClick={() => setEditMode((v) => !v)}>
+            {editMode ? <><Check className="h-4 w-4 mr-2" /> Done editing</> : <><Pencil className="h-4 w-4 mr-2" /> Edit</>}
+          </Button>
+          <Button variant="secondary" onClick={() => window.print()}>
             <Printer className="h-4 w-4 mr-2" /> Print
           </Button>
         </div>
