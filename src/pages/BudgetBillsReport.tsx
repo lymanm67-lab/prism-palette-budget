@@ -88,30 +88,42 @@ export default function BudgetBillsReport() {
     [data],
   );
 
-  // Budgeted vs actual by category for the selected month
+  // Budgeted vs actual by category for the selected month.
+  // Payroll deductions and income groups are excluded (they aren't discretionary
+  // spending), and identically-named categories are merged so the table shows
+  // one line per real category instead of personal/business duplicates.
   const categoryRows = useMemo(() => {
     if (!data) return [] as any[];
     type Row = { key: string; categoryId: string | null; budgetId: string | null; name: string; color?: string; budgeted: number; actual: number };
     const map = new Map<string, Row>();
+    const excluded = (cat: any) => {
+      const bt = cat?.category_groups?.budget_type;
+      return bt === 'payroll_deduction' || bt === 'income';
+    };
+    const keyFor = (cat: any, categoryId: string | null) =>
+      (cat?.name ? String(cat.name).trim().toLowerCase() : categoryId ?? 'uncategorized');
     const make = (key: string, categoryId: string | null, name: string, color?: string): Row =>
       ({ key, categoryId, budgetId: null, name, color, budgeted: 0, actual: 0 });
 
     for (const b of data.budgets) {
       const d = new Date(b.month);
       if (d.getUTCFullYear() !== yearNum || d.getUTCMonth() !== monthNum) continue;
-      const key = b.category_id ?? 'uncategorized';
+      if (excluded(b.categories)) continue;
+      const key = keyFor(b.categories, b.category_id ?? null);
       const row = map.get(key) ?? make(key, b.category_id ?? null, b.categories?.name ?? 'Uncategorized', b.categories?.color);
       row.budgeted += Number(b.planned_amount) || 0;
       row.budgetId = row.budgetId ?? b.id;
+      row.categoryId = row.categoryId ?? b.category_id ?? null;
       map.set(key, row);
     }
 
     for (const t of data.transactions) {
       const amt = Number(t.amount) || 0;
       if (amt >= 0) continue; // expenses only
+      if (excluded(t.categories)) continue;
       const d = new Date(`${t.date}T00:00:00`);
       if (d.getFullYear() !== yearNum || d.getMonth() !== monthNum) continue;
-      const key = t.category_id ?? 'uncategorized';
+      const key = keyFor(t.categories, t.category_id ?? null);
       const row = map.get(key) ?? make(key, t.category_id ?? null, t.categories?.name ?? 'Uncategorized', t.categories?.color);
       row.actual += Math.abs(amt);
       map.set(key, row);
