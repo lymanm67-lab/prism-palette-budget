@@ -107,8 +107,18 @@ export default function BudgetBillsReport() {
     type Row = { key: string; categoryId: string | null; budgetId: string | null; name: string; color?: string; budgeted: number; actual: number };
     const map = new Map<string, Row>();
     const excluded = (cat: any) => isExcludedGroup(cat?.category_groups?.name);
-    const keyFor = (cat: any, categoryId: string | null) =>
-      (cat?.name ? String(cat.name).trim().toLowerCase() : categoryId ?? 'uncategorized');
+    // Merge duplicates only within the same category group, so a personal "Rent"
+    // and a business "Rent" stay separate lines instead of being summed.
+    const keyFor = (cat: any, categoryId: string | null) => {
+      if (!cat?.name) return categoryId ?? 'uncategorized';
+      const grp = (cat?.category_groups?.name || '').trim().toLowerCase();
+      return `${grp}|${String(cat.name).trim().toLowerCase()}`;
+    };
+    const labelFor = (cat: any) => {
+      const name = cat?.name ?? 'Uncategorized';
+      const grp = cat?.category_groups?.name;
+      return grp && /business/i.test(grp) ? `${name} (Business)` : name;
+    };
     const make = (key: string, categoryId: string | null, name: string, color?: string): Row =>
       ({ key, categoryId, budgetId: null, name, color, budgeted: 0, actual: 0 });
 
@@ -117,7 +127,7 @@ export default function BudgetBillsReport() {
       if (d.getUTCFullYear() !== yearNum || d.getUTCMonth() !== monthNum) continue;
       if (excluded(b.categories)) continue;
       const key = keyFor(b.categories, b.category_id ?? null);
-      const row = map.get(key) ?? make(key, b.category_id ?? null, b.categories?.name ?? 'Uncategorized', b.categories?.color);
+      const row = map.get(key) ?? make(key, b.category_id ?? null, labelFor(b.categories), b.categories?.color);
       row.budgeted += Number(b.planned_amount) || 0;
       row.budgetId = row.budgetId ?? b.id;
       row.categoryId = row.categoryId ?? b.category_id ?? null;
@@ -131,7 +141,7 @@ export default function BudgetBillsReport() {
       const d = new Date(`${t.date}T00:00:00`);
       if (d.getFullYear() !== yearNum || d.getMonth() !== monthNum) continue;
       const key = keyFor(t.categories, t.category_id ?? null);
-      const row = map.get(key) ?? make(key, t.category_id ?? null, t.categories?.name ?? 'Uncategorized', t.categories?.color);
+      const row = map.get(key) ?? make(key, t.category_id ?? null, labelFor(t.categories), t.categories?.color);
       row.actual += Math.abs(amt);
       map.set(key, row);
     }
