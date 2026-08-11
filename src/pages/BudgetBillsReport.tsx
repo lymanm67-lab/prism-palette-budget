@@ -294,7 +294,7 @@ export default function BudgetBillsReport() {
             {[
               { label: 'Budgeted', value: totals.budgeted, icon: Wallet },
               { label: 'Actual spend', value: totals.actual, icon: Receipt },
-              { label: 'Variance', value: totals.variance, icon: Zap },
+              { label: 'Net (income − spend)', value: (monthlyRows[monthNum]?.income ?? 0) - totals.actual, icon: Zap },
               { label: 'Monthly bills', value: billsMonthlyTotal, icon: CalendarClock },
             ].map((s) => (
               <Card key={s.label} className="print:shadow-none print:border-black">
@@ -302,7 +302,8 @@ export default function BudgetBillsReport() {
                   <div className="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wide">
                     <s.icon className="h-3.5 w-3.5" /> {s.label}
                   </div>
-                  <div className={`text-2xl font-bold mt-2 ${s.label === 'Variance' ? (s.value >= 0 ? 'text-emerald-500' : 'text-destructive') : ''}`}>
+                  <div className={`text-2xl font-bold mt-2 ${s.label.startsWith('Net') ? (s.value >= 0 ? 'text-emerald-500' : 'text-destructive') : ''}`}>
+
                     {formatCurrency(s.value)}
                   </div>
                 </CardContent>
