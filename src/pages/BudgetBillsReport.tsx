@@ -182,14 +182,20 @@ export default function BudgetBillsReport() {
   const monthlyRows = useMemo(() => {
     const rows = MONTHS.map((m, i) => ({ label: m, index: i, budgeted: 0, actual: 0, bills: billsMonthlyTotal }));
     if (!data) return rows;
+    const skip = (cat: any) => {
+      const bt = cat?.category_groups?.budget_type;
+      return bt === 'payroll_deduction' || bt === 'income';
+    };
     for (const b of data.budgets) {
       const d = new Date(b.month);
       if (d.getUTCFullYear() !== yearNum) continue;
+      if (skip(b.categories)) continue;
       rows[d.getUTCMonth()].budgeted += Number(b.planned_amount) || 0;
     }
     for (const t of data.transactions) {
       const amt = Number(t.amount) || 0;
       if (amt >= 0) continue;
+      if (skip(t.categories)) continue;
       const d = new Date(`${t.date}T00:00:00`);
       if (d.getFullYear() !== yearNum) continue;
       rows[d.getMonth()].actual += Math.abs(amt);
