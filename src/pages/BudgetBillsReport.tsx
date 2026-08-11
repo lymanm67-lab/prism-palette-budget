@@ -48,13 +48,13 @@ export default function BudgetBillsReport() {
       const [budgetsRes, txRes, billsRes] = await Promise.all([
         supabase
           .from('budgets')
-          .select('id, category_id, month, planned_amount, categories(name, color)')
+          .select('id, category_id, month, planned_amount, categories(name, color, category_groups(budget_type))')
           .eq('household_id', household!.id)
           .gte('month', start)
           .lte('month', end),
         supabase
           .from('transactions')
-          .select('amount, date, category_id, categories(name, color)')
+          .select('amount, date, category_id, categories(name, color, category_groups(budget_type))')
           .eq('household_id', household!.id)
           .eq('is_transfer', false)
           .is('deleted_at', null)
