@@ -110,7 +110,7 @@ export default function CardioCard() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {(['Walking', 'Jogging', 'Running'] as const).map((g) => (
+                {(['Walking', 'Jogging', 'Running', 'Elliptical'] as const).map((g) => (
                   <div key={g}>
                     <p className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{g}</p>
                     {ACTIVITIES.filter((a) => a.group === g).map((a) => (
