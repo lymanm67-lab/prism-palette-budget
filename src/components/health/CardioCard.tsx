@@ -18,7 +18,7 @@ import { toast } from 'sonner';
 type Activity = {
   id: string;
   label: string;
-  group: 'Walking' | 'Jogging' | 'Running';
+  group: 'Walking' | 'Jogging' | 'Running' | 'Elliptical';
   mph: number;
   met: number;
 };
@@ -35,6 +35,10 @@ const ACTIVITIES: Activity[] = [
   { id: 'run-6', label: 'Running — 6.0 mph (10:00 / mi)', group: 'Running', mph: 6.0, met: 9.8 },
   { id: 'run-7', label: 'Running — 7.0 mph (8:34 / mi)', group: 'Running', mph: 7.0, met: 11.0 },
   { id: 'run-8', label: 'Running — 8.0 mph (7:30 / mi)', group: 'Running', mph: 8.0, met: 11.8 },
+  { id: 'elliptical-light', label: 'Elliptical — light (50 rpm)', group: 'Elliptical', mph: 4.0, met: 3.5 },
+  { id: 'elliptical-mod', label: 'Elliptical — moderate (60 rpm)', group: 'Elliptical', mph: 5.0, met: 5.0 },
+  { id: 'elliptical-vigorous', label: 'Elliptical — vigorous (70 rpm)', group: 'Elliptical', mph: 6.0, met: 7.0 },
+  { id: 'elliptical-hard', label: 'Elliptical — hard / intervals (80 rpm)', group: 'Elliptical', mph: 7.0, met: 9.0 },
 ];
 
 const STRIDE_FT = 2.5; // approximate steps conversion
@@ -106,7 +110,7 @@ export default function CardioCard() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {(['Walking', 'Jogging', 'Running'] as const).map((g) => (
+                {(['Walking', 'Jogging', 'Running', 'Elliptical'] as const).map((g) => (
                   <div key={g}>
                     <p className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{g}</p>
                     {ACTIVITIES.filter((a) => a.group === g).map((a) => (
