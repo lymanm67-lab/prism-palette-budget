@@ -19,13 +19,9 @@ export function BlueprintOverview({
   onDrill: (tab: string) => void;
 }) {
   const { data: wealth } = useWealthOSData();
-  let sts = 0;
-  try {
-    // Safe-to-spend is optional context; never let it break the overview.
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const s = useSafeToSpend() as any;
-    sts = Number(s?.data?.safeToSpend ?? s?.safeToSpend ?? 0) || 0;
-  } catch { sts = 0; }
+  const stsResult = useSafeToSpend('combined');
+  const sts = Number(stsResult?.monthly) || 0;
+
 
   const rows = useMemo(() => buildTimeline(state), [state]);
   const year1 = rows[0];
