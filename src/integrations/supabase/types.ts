@@ -648,6 +648,30 @@ export type Database = {
           },
         ]
       }
+      blueprint_assumptions: {
+        Row: {
+          created_at: string
+          household_id: string
+          id: string
+          state: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          household_id: string
+          id?: string
+          state?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          household_id?: string
+          id?: string
+          state?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       budgets: {
         Row: {
           category_id: string
