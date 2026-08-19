@@ -27,7 +27,7 @@ export function AgeGapAnalysis({ h, g, policy }: { h: LtcHousehold; g: GapStrate
                 <Row k="HSA support" v={`${usd(w.hsaSupport)}/mo`} />
                 <Row k="Income allocated" v={`${usd(w.incomeSupport)}/mo`} />
                 <Row k="Portfolio gap" v={`${usd(w.portfolioGap)}/mo`} strong />
-                <Row k="HSA covers gap for" v={`${hsaCoverageDuration(w.hsaBalance, w.portfolioGap + w.hsaSupport).toFixed(0)} months`} />
+                <Row k="HSA covers gap for" v={(() => { const d = hsaCoverageDuration(w.hsaBalance, w.portfolioGap + w.hsaSupport); return d.unlimited ? 'No gap to fund' : `${d.months.toFixed(0)} months`; })()} />
               </CardContent>
             </Card>
           );
