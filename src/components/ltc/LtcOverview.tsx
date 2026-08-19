@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Shield, Info } from 'lucide-react';
 import {
   benefitAtAge, careCostAtAge, combinedPremium, annualPremium, cashBenefitMonthly,
-  gapBand, fundedGap, protectionLevel, simulateCareEvent, type LtcState,
+  fundedGap, protectionLevel, simulateCareEvent, type LtcState,
 } from '@/lib/ltc/model';
 import { money, money2, StatCard, ProtectionBadge, GapBadge, Note } from './shared';
 
