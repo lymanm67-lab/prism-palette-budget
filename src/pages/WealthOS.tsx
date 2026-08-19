@@ -820,8 +820,78 @@ export default function WealthOS() {
           <Kpi label="Life Insurance — Personal Policy" value="$500,000" tone="navy" />
           <Kpi label="Employer Group Life" value="$250,000" tone="plain" />
           <Kpi label="Disability" value="~60% Salary Replacement" tone="gold" />
-          <Kpi label="Long-Term Care" value="In Place" tone="green" />
+          <Kpi
+            label="Long-Term Care"
+            value={ltc ? `${money(ltc.premium)}/mo premium` : 'Quotes under review'}
+            sub={ltc ? `${ltc.policy.carrier} — ${ltc.policy.product}` : 'No plan selected yet'}
+            tone="green"
+          />
         </div>
+
+        <SectionLabel>Long-Term Care Plan of Record</SectionLabel>
+        {ltc ? (
+          <>
+            <div className="wos-card">
+              <Row label="Carrier / product" value={`${ltc.policy.carrier} — ${ltc.policy.product}`} />
+              <Row
+                label="Starting monthly benefit (each)"
+                value={`${money(ltc.policy.startingMonthlyBenefit)} • ${ltc.policy.benefitPeriodMonths}-month period • ${money(ltc.policy.poolEach)} pool`}
+              />
+              <Row
+                label="Inflation protection"
+                value={`${ltc.policy.inflationPct}% ${ltc.policy.inflationCompound ? 'compound' : 'simple'}${ltc.policy.inflationLifetime ? ', lifetime' : ''}`}
+              />
+              <Row
+                label={`Benefit at claim age ${ltc.h.assumedClaimAge}`}
+                value={`${money(ltc.atClaim.monthlyBenefit)}/mo vs. ${money(ltc.claimCost)}/mo projected ${ltc.h.city} care cost`}
+              />
+              <Row
+                label="Combined household premium"
+                value={`${money(ltc.premium)}/mo • ${money(ltc.premium * 12)}/yr`}
+              />
+              <Row
+                label="Protection level"
+                value={`${PROTECTION_LABEL[ltc.level.level]} — ${(ltc.level.coverageRatio * 100).toFixed(0)}% of care cost, ${(ltc.level.premiumShare * 100).toFixed(1)}% of income`}
+                bold
+              />
+            </div>
+
+            <SectionLabel>Net Worth Protected by the Policy</SectionLabel>
+            <div className="wos-grid2">
+              <Kpi
+                label={`Withdrawals avoided — ${ltc.h.assumedCareYears}-year care event`}
+                value={money(ltc.withCover.insurancePaid)}
+                sub={`Uninsured cost would be ${money(ltc.without.outOfPocket)}`}
+                tone="green"
+              />
+              <Kpi
+                label="Net worth exposed without cover"
+                value={money(Math.min(live?.netWorth ?? 0, ltc.without.outOfPocket))}
+                sub={`Net worth today ${money(live?.netWorth ?? 0)}`}
+                tone="gold"
+              />
+            </div>
+
+            <SectionLabel>Benefit Sweet Spot — Value per Premium Dollar</SectionLabel>
+            <div className="wos-card">
+              {ltc.sweetSpot.rows.slice(0, 5).map((r) => (
+                <Row
+                  key={r.benefit}
+                  label={`${money(r.benefit)}/mo benefit${r.benefit === ltc.sweetSpot.bestBenefit ? ' — best value' : ''}`}
+                  value={`${money(r.combined)}/mo premium • ${money(r.protectedCapital)} capital protected • value ${r.valueScore}/10`}
+                  bold={r.benefit === ltc.sweetSpot.bestBenefit}
+                />
+              ))}
+            </div>
+            <div className="wos-note" style={{ marginTop: 6 }}>
+              {ltc.quotes} carrier quote(s) on file. Reviewed {ltc.h.lastReviewed}; next review {ltc.h.nextReview}.
+            </div>
+          </>
+        ) : (
+          <div className="wos-card">
+            <Row label="Long-term care plan" value="No plan of record — complete the LTC Decision Dashboard" bold />
+          </div>
+        )}
 
         <SectionLabel>Beneficiaries</SectionLabel>
         <div className="wos-card">
@@ -834,7 +904,11 @@ export default function WealthOS() {
         <SectionLabel>Protection Coverage Level</SectionLabel>
         <Bar label="Life insurance vs. 10x income benchmark" pct={106} value="$750,000 total" />
         <Bar label="Disability income replacement" pct={60} value="60%" />
-        <Bar label="Long-term care readiness" pct={100} value="Covered" />
+        <Bar
+          label="Long-term care readiness (benefit vs. projected care cost)"
+          pct={ltc ? Math.round(ltc.coveragePct) : 0}
+          value={ltc ? `${Math.round(ltc.coveragePct)}% covered` : 'Not in force'}
+        />
         <Bar label="Emergency liquidity (3-month target)" pct={3} value="$350" />
 
         <div className="wos-quote" style={{ marginTop: 16 }}>
