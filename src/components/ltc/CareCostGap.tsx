@@ -73,7 +73,7 @@ export function CareCostGap({ state, patch }: { state: LtcState; patch: (p: Part
                     <td className="py-2 tabular-nums">{money(t.monthlyCost)}</td>
                     <td className="py-2 tabular-nums">{money(t.planMax)}</td>
                     <td className="py-2 tabular-nums font-semibold">{money(t.planPays)}</td>
-                    <td className={`py-2 tabular-nums ${t.withinPlanMax ? 'text-prism-emerald' : ''}`}>
+                    <td className={`py-2 tabular-nums ${t.withinPlanMax ? 'text-prism-positive' : ''}`}>
                       {t.monthlyShare > 0 ? money(t.monthlyShare) : 'Covered'}
                     </td>
                     <td className="py-2 tabular-nums">{t.coveragePct.toFixed(0)}%</td>

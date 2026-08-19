@@ -157,7 +157,7 @@ export function LtcOverview({ state, onGoTo }: { state: LtcState; onGoTo: (tab: 
                     <td className="py-2 tabular-nums">{money(planMaxAtAge(h.lymanAge, age))}</td>
                     <td className="py-2 tabular-nums">{money2(first.hourlyRate)}/hr</td>
                     {tiers.map((t) => (
-                      <td key={t.weeklyHours} className={`py-2 tabular-nums ${t.withinPlanMax ? 'text-prism-emerald' : ''}`}>
+                      <td key={t.weeklyHours} className={`py-2 tabular-nums ${t.withinPlanMax ? 'text-prism-positive' : ''}`}>
                         {t.monthlyShare > 0 ? `${money(t.monthlyShare)}` : 'Covered'}
                       </td>
                     ))}
