@@ -81,6 +81,39 @@ export interface PremiumPayment {
   notes?: string;
 }
 
+
+/**
+ * A renewal / rate-action notice from the carrier. LTC premiums are not
+ * guaranteed level — carriers can file class-wide increases, so every notice is
+ * logged with the old and new premium and how it was answered.
+ */
+export interface RenewalNotice {
+  id: string;
+  /** Effective date of the new premium. */
+  effectiveDate: string;
+  /** Date the notice arrived. */
+  noticeDate?: string;
+  carrier: string;
+  oldMonthlyPremium: number;
+  newMonthlyPremium: number;
+  /** Monthly benefit in force after the action (landing spot if benefit was cut). */
+  monthlyBenefit?: number;
+  /** How the increase was handled. */
+  response: 'accepted' | 'reducedBenefit' | 'shortenedPeriod' | 'reducedInflation' | 'nonforfeiture' | 'pending' | 'declined';
+  filingPct?: number;
+  notes?: string;
+}
+
+export const RENEWAL_RESPONSE_LABEL: Record<RenewalNotice['response'], string> = {
+  accepted: 'Paid the increase',
+  reducedBenefit: 'Reduced monthly benefit',
+  shortenedPeriod: 'Shortened benefit period',
+  reducedInflation: 'Reduced inflation rider',
+  nonforfeiture: 'Took nonforfeiture option',
+  pending: 'Decision pending',
+  declined: 'Declined / lapsed',
+};
+
 export interface LtcState {
   household: LtcHousehold;
   policies: LtcPolicy[];
@@ -90,6 +123,9 @@ export interface LtcState {
   reviewLog: { date: string; premium: number; benefit: number; careCost: number; notes?: string }[];
   /** Monthly premium payment ledger (binder / plan of record). */
   premiumLog?: PremiumPayment[];
+  /** Carrier renewal / rate-increase history. */
+  renewals?: RenewalNotice[];
+
 
   /** Location-based care cost + agency comparison (see ./location). */
   location?: import('./location').LtcLocationState;
