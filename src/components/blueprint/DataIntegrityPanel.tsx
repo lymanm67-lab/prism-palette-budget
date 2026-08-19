@@ -19,9 +19,11 @@ export function DataIntegrityPanel({ state }: { state: AssumptionState }) {
       netWorth: wealth?.netWorth,
       liabilities: wealth?.liabilities,
       portfolio: wealth ? wealth.buckets.retirement + wealth.buckets.brokerage + wealth.buckets.hsa : undefined,
+      assets: wealth?.assets?.map((a) => ({ name: a.name, balance: a.balance })),
     }),
     [state, wealth],
   );
+
   const errors = issues.filter((i) => i.severity === 'error');
 
   return (

@@ -209,14 +209,26 @@ const BUSINESS_RE = /business|app development|marketing & media|equity|owner dra
 
 const monthlyAvg = (total: number) => Math.round((total / 3) * 100) / 100;
 
-/** Live figures used to seed / re-sync the blueprint. */
-export function useBlueprintPrefill() {
+/** First day of the current month as `YYYY-MM-DD`. */
+export const currentBudgetMonth = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`;
+};
+
+/**
+ * Live figures used to seed / re-sync the blueprint.
+ * `month` (a `YYYY-MM-DD` first-of-month key) selects which budget month the
+ * Foundation / bucket targets are read from, so the plan never goes stale.
+ */
+export function useBlueprintPrefill(month?: string) {
   const { household } = useHousehold();
+  const budgetMonth = month || currentBudgetMonth();
   return useQuery({
-    queryKey: ['blueprint_prefill', household?.id],
+    queryKey: ['blueprint_prefill', household?.id, budgetMonth],
     enabled: !!household,
     staleTime: 60_000,
     queryFn: async () => {
+
       const since = new Date();
       since.setDate(since.getDate() - 90);
       const sinceStr = since.toISOString().slice(0, 10);
@@ -265,23 +277,24 @@ export function useBlueprintPrefill() {
         if (hit) spend.set(hit.key, (spend.get(hit.key) || 0) + abs);
       }
 
-      // 2) Current-month budget targets override the 90-day average where they exist
-      const monthStart = new Date();
-      monthStart.setDate(1);
+      // 2) Budget targets for the selected month override the 90-day average where they exist
       const { data: budgets } = await sb
         .from('budgets')
         .select('planned_amount, categories(name, category_groups(name))')
         .eq('household_id', household!.id)
-        .eq('month', monthStart.toISOString().slice(0, 10));
+        .eq('month', budgetMonth);
 
       const budgeted = new Map<string, number>();
       for (const b of budgets || []) {
         const label = `${(b as any).categories?.category_groups?.name || ''} ${(b as any).categories?.name || ''}`.toLowerCase();
         if (BUSINESS_RE.test(label)) continue;
+        // Income and payroll-deduction lines are not household outflows.
+        if (/income|payroll|paycheck|salary/.test(label)) continue;
         const hit = ROW_MATCHERS.find((m) => m.test(label));
         if (!hit) continue;
         budgeted.set(hit.key, (budgeted.get(hit.key) || 0) + (Number((b as any).planned_amount) || 0));
       }
+
 
       // Lyman's net pay is deposited across five checking accounts (only some are tracked),
       // so use the IU paystub net as a floor; Kateri's salary isn't deposited into tracked
@@ -362,11 +375,14 @@ export function useBlueprintPrefill() {
           kateriNet,
         },
         source: {
+          budgetMonth,
           budgetedKeys: Array.from(budgeted.keys()),
+          budgetRowCount: budgets?.length || 0,
           transactionCount: rows.length,
           lymanNet,
           kateriNet,
         },
+
 
       };
     },

@@ -15,7 +15,7 @@ import {
 } from '@/lib/budgeting/moneyBlueprint';
 import { BlueprintBucketBar } from './BlueprintBucketBar';
 import { BlueprintMonthlyBills } from './BlueprintMonthlyBills';
-import { useMoneyBlueprint, useSaveMoneyBlueprint, useBlueprintPrefill, LYMAN_GROSS_ANNUAL, KATERI_GROSS_ANNUAL, kateriGarnishmentActive, KATERI_NET_MONTHLY_POST_BK, KATERI_GARNISHMENT_MONTHLY } from '@/hooks/use-money-blueprint';
+import { useMoneyBlueprint, useSaveMoneyBlueprint, useBlueprintPrefill, currentBudgetMonth, LYMAN_GROSS_ANNUAL, KATERI_GROSS_ANNUAL, kateriGarnishmentActive, KATERI_NET_MONTHLY_POST_BK, KATERI_GARNISHMENT_MONTHLY } from '@/hooks/use-money-blueprint';
 import { useWealthOSData } from '@/hooks/use-wealth-os';
 
 const money = (n: number) =>
@@ -54,10 +54,26 @@ function mergeLive(rows: BlueprintRow[], live: BlueprintRow[]): BlueprintRow[] {
   return [...merged, ...live.filter((p) => !known.has(p.key)).map((p) => ({ ...p }))];
 }
 
+/** Last 12 months + next 5, for choosing which budget month drives the plan. */
+const MONTH_OPTIONS = (() => {
+  const now = new Date();
+  const out: { value: string; label: string }[] = [];
+  for (let i = -12; i <= 5; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+    out.push({
+      value: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`,
+      label: d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+    });
+  }
+  return out;
+})();
+
 export function MoneyBlueprintPlan() {
+  const [budgetMonth, setBudgetMonth] = useState(currentBudgetMonth());
   const { data: saved, isLoading } = useMoneyBlueprint();
-  const { data: prefill } = useBlueprintPrefill();
+  const { data: prefill } = useBlueprintPrefill(budgetMonth);
   const { data: wealth } = useWealthOSData();
+
   const save = useSaveMoneyBlueprint();
 
   const [state, setState] = useState<BlueprintState>(emptyBlueprint());
@@ -194,8 +210,21 @@ export function MoneyBlueprintPlan() {
         <Button size="sm" variant="outline" onClick={resync}>
           <RefreshCw className="h-3.5 w-3.5 mr-1" /> Re-sync from live data
         </Button>
+        <div className="flex items-center gap-1.5">
+          <Label className="text-xs text-muted-foreground">Budget month</Label>
+          <select
+            className="h-7 rounded-md border border-input bg-background px-2 text-xs"
+            value={budgetMonth}
+            onChange={(e) => setBudgetMonth(e.target.value)}
+          >
+            {MONTH_OPTIONS.map((m) => (
+              <option key={m.value} value={m.value}>{m.label}</option>
+            ))}
+          </select>
+        </div>
         <Button size="sm" variant="ghost" onClick={() => window.print()}>Print / PDF</Button>
         <span className="text-xs text-muted-foreground">Viewing: <span className="font-semibold">{viewLabel}</span></span>
+
       </div>
 
 
