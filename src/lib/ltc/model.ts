@@ -262,6 +262,24 @@ export function gapBand(benefit: number, cost: number): GapBand {
   return 'large';
 }
 
+/**
+ * Posture for a partial-coverage strategy: the retained risk is intentionally
+ * funded by household income, so the band credits an income offset (default
+ * 30% of monthly household income) on top of the insurance benefit.
+ */
+export function fundedGap(benefit: number, cost: number, monthlyIncome: number, incomeSharePct = 30) {
+  const incomeOffset = Math.max(0, monthlyIncome) * (incomeSharePct / 100);
+  const funded = benefit + incomeOffset;
+  return {
+    incomeOffset,
+    funded,
+    residualGap: Math.max(0, cost - funded),
+    insuranceRatio: cost > 0 ? benefit / cost : 1,
+    fundedRatio: cost > 0 ? funded / cost : 1,
+    band: gapBand(funded, cost),
+  };
+}
+
 export type ProtectionLevel = 'under' | 'basic' | 'balanced' | 'strong' | 'over';
 export const PROTECTION_LABEL: Record<ProtectionLevel, string> = {
   under: 'Underinsured', basic: 'Basic Protection', balanced: 'Balanced Protection',

@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Shield, Info } from 'lucide-react';
 import {
   benefitAtAge, careCostAtAge, combinedPremium, annualPremium, cashBenefitMonthly,
-  gapBand, protectionLevel, simulateCareEvent, type LtcState,
+  fundedGap, protectionLevel, simulateCareEvent, type LtcState,
 } from '@/lib/ltc/model';
 import { money, money2, StatCard, ProtectionBadge, GapBadge, Note } from './shared';
 
@@ -15,6 +15,7 @@ export function LtcOverview({ state, onGoTo }: { state: LtcState; onGoTo: (tab: 
   const claimCost = careCostAtAge(h, h.lymanAge, h.assumedClaimAge);
   const claimBenefit = benefitAtAge(policy, h.lymanAge, h.assumedClaimAge).monthlyBenefit;
   const gap = Math.max(0, claimCost - claimBenefit);
+  const funded = fundedGap(claimBenefit, claimCost, h.monthlyHouseholdIncome);
   const sim = simulateCareEvent(state, policy, h.assumedClaimAge, h.assumedCareYears);
 
   const ages = [70, 75, 80, 85];
@@ -94,7 +95,12 @@ export function LtcOverview({ state, onGoTo }: { state: LtcState; onGoTo: (tab: 
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-            Gap posture: <GapBadge band={gapBand(claimBenefit, claimCost)} />
+            Gap posture: <GapBadge band={funded.band} />
+            <span className="text-[11px]">
+              insurance covers {(funded.insuranceRatio * 100).toFixed(0)}%; with a{' '}
+              {money(funded.incomeOffset)}/mo income contribution {(funded.fundedRatio * 100).toFixed(0)}% is funded
+              (residual {money(funded.residualGap)}/mo)
+            </span>
             <button className="underline hover:text-foreground" onClick={() => onGoTo('gap')}>See the care cost gap</button>
             <span>·</span>
             <button className="underline hover:text-foreground" onClick={() => onGoTo('protection')}>See assets protected</button>
