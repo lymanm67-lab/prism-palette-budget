@@ -14,6 +14,7 @@ import {
   useLtcDocuments, useLtcDocumentMutations, ltcSignedUrl, type LtcDocument,
 } from '@/hooks/use-ltc-plan';
 import { money, money2, Note, Field, NumField } from './shared';
+import { PremiumTracker } from './PremiumTracker';
 
 export function DocumentVault({ state, patch }: { state: LtcState; patch: (p: Partial<LtcState>) => void }) {
   const { data: docs = [] } = useLtcDocuments();
@@ -59,6 +60,8 @@ export function DocumentVault({ state, patch }: { state: LtcState; patch: (p: Pa
 
   return (
     <div className="space-y-4">
+      <PremiumTracker state={state} patch={patch} />
+
       <Card className="glass-card">
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2"><Upload className="h-4 w-4 text-prism-teal" /> Add quote, contract or notice</CardTitle>
