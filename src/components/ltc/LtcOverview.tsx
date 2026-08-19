@@ -2,14 +2,14 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Shield, Info, Clock, Handshake } from 'lucide-react';
+import { Shield, Info, Clock, Handshake, Banknote } from 'lucide-react';
 import {
   benefitAtAge, combinedPremium, annualPremium, cashBenefitMonthly, type LtcState,
 } from '@/lib/ltc/model';
 import {
   PLAN_MAX_MONTHLY, PLAN_INFLATION_PCT, PLAN_HOUR_TIERS, PLAN_AGES,
   carePlanAt, carePlanTiers, carePlanEvent, maxTierWithinPlan, planMaxAtAge,
-  policyMeetsPlanMax, targetAgencyRate,
+  policyMeetsPlanMax, targetAgencyRate, cashBenefitAt, SUPPORT_COST_PCT,
 } from '@/lib/ltc/careplan';
 import { money, money2, StatCard, Note, CoverageBadge } from './shared';
 
@@ -26,6 +26,7 @@ export function LtcOverview({ state, onGoTo }: { state: LtcState; onGoTo: (tab: 
   const event = carePlanEvent(h, claimAge, h.assumedCareYears, hours);
   const negotiateRate = targetAgencyRate(hours, plan.planMax);
   const meetsPlan = policyMeetsPlanMax(policy);
+  const cash = cashBenefitAt(plan, policy.cashBenefitPct || SUPPORT_COST_PCT);
 
   const planRows: [string, string][] = [
     ['Monthly plan maximum (today)', `${money(PLAN_MAX_MONTHLY)}/mo`],
@@ -106,6 +107,45 @@ export function LtcOverview({ state, onGoTo }: { state: LtcState; onGoTo: (tab: 
             age {claimAge}. Largest tier that fits entirely inside the maximum: <span className="font-semibold text-foreground">{bestFit.weeklyHours} hrs/week</span>.
             Over a {h.assumedCareYears}-year care event at {hours} hrs/week the plan pays {money(event.planPaid)} and your
             share is {money(event.yourShare)}.
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* 25% cash benefit / support costs ---------------------------------- */}
+      <Card className="glass-card">
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Banknote className="h-4 w-4 text-prism-amber" /> {cash.pct}% cash benefit &amp; support costs
+          </CardTitle>
+          <Note>
+            Support costs — supplies, transportation, respite, and informal or family caregivers — run about
+            {' '}{SUPPORT_COST_PCT}% on top of agency hours. The contract's {cash.pct}% cash benefit is the piece designed to
+            pay them, with no receipts required.
+          </Note>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <StatCard label={`Cash benefit at age ${claimAge}`} value={`${money(cash.cashMonthly)}/mo`} sub={`${cash.pct}% of the ${money(plan.planMax)}/mo maximum`} tone="info" />
+            <StatCard label={`Support costs at ${hours} hrs/week`} value={`${money(cash.supportCost)}/mo`} sub={`${SUPPORT_COST_PCT}% of ${money(plan.monthlyCost)}/mo of care`} tone="warn" />
+            <StatCard
+              label="Cash left over"
+              value={`${money(cash.cashSurplus)}/mo`}
+              sub={cash.supportCovered ? 'Cash covers support costs' : 'Support costs exceed the cash benefit'}
+              tone={cash.supportCovered ? 'good' : 'warn'}
+            />
+            <StatCard
+              label="All-in monthly share"
+              value={`${money(cash.gapAfterCash)}/mo`}
+              sub="Care gap plus support costs, income-funded"
+              tone={cash.gapAfterCash > 0 ? 'warn' : 'good'}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Cash is modeled as an <span className="font-semibold text-foreground">election, not a bonus</span>: on most
+            contracts a month paid in cash pays {money(cash.cashMonthly)} instead of reimbursing up to{' '}
+            {money(plan.planPays)} — a {money(cash.cashInsteadOfPlanShortfall)}/mo trade. Use cash in months when family
+            provides the care, and reimbursement in months when the agency does. Confirm with the carrier whether both
+            can be paid in the same month before assuming they stack.
           </p>
         </CardContent>
       </Card>
