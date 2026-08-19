@@ -128,3 +128,54 @@ export function policyMeetsPlanMax(policy: LtcPolicy | undefined) {
     && policy.inflationPct >= PLAN_INFLATION_PCT
     && policy.inflationCompound;
 }
+
+/* ------------------------------------------------------------------------- */
+/* 25% cash benefit (support costs)                                          */
+/* ------------------------------------------------------------------------- */
+
+/** Support costs (supplies, transport, respite, informal caregivers) as a share of care cost. */
+export const SUPPORT_COST_PCT = 25;
+
+export interface CashBenefitPoint {
+  /** Cash-benefit percentage from the contract (25% on the plan of record). */
+  pct: number;
+  /** Monthly cash benefit at that age, inflated with the plan maximum. */
+  cashMonthly: number;
+  /** Estimated support costs at that age (25% of the care cost). */
+  supportCost: number;
+  /** Cash left after support costs — can be applied to the residual gap. */
+  cashSurplus: number;
+  /** Residual gap after cash is applied to it. */
+  gapAfterCash: number;
+  /** True when the cash benefit alone absorbs the support costs. */
+  supportCovered: boolean;
+  /**
+   * Cash is an ALTERNATIVE to reimbursement on most contracts. When elected,
+   * the month's benefit is the cash amount only, not the full plan maximum.
+   */
+  cashInsteadOfPlanShortfall: number;
+}
+
+/**
+ * Model the 25% cash benefit against support costs and the residual gap.
+ * `additive` = the contract confirms cash can be paid on top of reimbursement
+ * (rare). Default false: cash is treated as an election, not a bonus.
+ */
+export function cashBenefitAt(
+  point: CarePlanPoint,
+  cashBenefitPct = SUPPORT_COST_PCT,
+  opts?: { additive?: boolean; supportCostPct?: number },
+): CashBenefitPoint {
+  const pct = Math.max(0, cashBenefitPct);
+  const cashMonthly = point.planMax * (pct / 100);
+  const supportCost = point.monthlyCost * ((opts?.supportCostPct ?? SUPPORT_COST_PCT) / 100);
+  const cashSurplus = Math.max(0, cashMonthly - supportCost);
+  const gapAfterCash = opts?.additive
+    ? Math.max(0, point.monthlyShare + supportCost - cashMonthly)
+    : Math.max(0, point.monthlyShare + supportCost);
+  return {
+    pct, cashMonthly, supportCost, cashSurplus, gapAfterCash,
+    supportCovered: cashMonthly >= supportCost,
+    cashInsteadOfPlanShortfall: Math.max(0, point.planPays - cashMonthly),
+  };
+}
