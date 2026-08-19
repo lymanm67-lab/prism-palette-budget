@@ -376,7 +376,33 @@ export interface AssumptionState {
   achievedMilestones: { amount: number; date?: string }[];
   scenarios: SavedScenario[];
   confidence: Record<string, Confidence>;
+  /** Link to the household spending plan (Budget Planner / CSV import). */
+  budget: BudgetLink;
 }
+
+/**
+ * The monthly budget that funds investing. `plannedSpendMonthly` is the sum of
+ * the household outflow budgets for `sourceMonth`; whatever net income is left
+ * over is surplus, and `surplusRedirectPct` of it is invested in the timeline.
+ */
+export interface BudgetLink {
+  sourceMonth: string;
+  netIncomeMonthly: number;
+  plannedSpendMonthly: number;
+  surplusRedirectPct: number;
+  /** Where the numbers came from — 'planner', 'csv' or 'manual'. */
+  source: 'planner' | 'csv' | 'manual';
+  importedAt?: string;
+  categoryCount?: number;
+}
+
+/** Net income minus planned spending for the linked budget month. */
+export const budgetSurplus = (s: AssumptionState) =>
+  Math.round(((s.budget?.netIncomeMonthly || 0) - (s.budget?.plannedSpendMonthly || 0)) * 100) / 100;
+
+/** The share of surplus that actually reaches the portfolio each month. */
+export const budgetSurplusMonthly = (s: AssumptionState) =>
+  Math.round(Math.max(0, budgetSurplus(s)) * ((s.budget?.surplusRedirectPct || 0) / 100) * 100) / 100;
 
 export interface SavedScenario {
   id: string;
@@ -515,10 +541,21 @@ export function defaultAssumptions(seed?: Partial<AssumptionState>): AssumptionS
       otherRecurringIncomeMonthly: 'current',
       retirementAge: 'projected',
     },
+    // Net income = Lyman $4,464.91 + Kateri $4,227.72 take-home. Planned spend is
+    // the confirmed household budget target; surplus redirect starts at 0 so an
+    // import never silently inflates a projection.
+    budget: {
+      sourceMonth: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-01`,
+      netIncomeMonthly: 8_692.63,
+      plannedSpendMonthly: 4_393.58,
+      surplusRedirectPct: 0,
+      source: 'manual',
+    },
   };
   const merged = { ...base, ...(seed || {}) };
-  // Older saved records predate the seeded comparison scenarios.
+  // Older saved records predate the seeded comparison scenarios / budget link.
   if (!merged.scenarios?.length) merged.scenarios = baselineScenarios(merged.debts || debts);
+  merged.budget = { ...base.budget, ...(seed?.budget || {}) };
   return merged;
 }
 
@@ -579,6 +616,8 @@ export interface YearRow {
   debtRedirectMonthly: number;
   voluntaryMonthly: number;
   scheduledMonthly: number;
+  /** Investable surplus released by the monthly budget. */
+  budgetSurplusMonthly: number;
   totalMonthly: number;
   totalAnnual: number;
   /** Household income (legacy window) */
@@ -622,9 +661,10 @@ export function buildTimeline(s: AssumptionState): YearRow[] {
     const scheduledMonthly = year >= s.scheduledIncreaseStartYear ? s.scheduledIncreaseMonthly : 0;
     const employeeMonthly = s.employeeContributionMonthly;
     const voluntaryMonthly = s.additionalVoluntaryMonthly;
+    const surplusMonthly = budgetSurplusMonthly(s);
     const totalMonthly =
       employeeMonthly + employerMonthly + debtRedirectMonthly + voluntaryMonthly +
-      scheduledMonthly + raiseRedirectMonthly;
+      scheduledMonthly + raiseRedirectMonthly + surplusMonthly;
 
     const ssYears = age - s.socialSecurityStartAge;
     const socialSecurityMonthly =
@@ -636,7 +676,8 @@ export function buildTimeline(s: AssumptionState): YearRow[] {
     rows.push({
       year, age, salary, raiseAmount, cumulativeRaises, raiseRedirectMonthly,
       employeeMonthly, employerMonthly, debtRedirectMonthly, voluntaryMonthly,
-      scheduledMonthly, totalMonthly, totalAnnual: totalMonthly * 12,
+      scheduledMonthly, budgetSurplusMonthly: surplusMonthly,
+      totalMonthly, totalAnnual: totalMonthly * 12,
       socialSecurityMonthly, pensionMonthly,
       otherIncomeMonthly: s.otherRecurringIncomeMonthly,
       householdIncomeMonthly:
