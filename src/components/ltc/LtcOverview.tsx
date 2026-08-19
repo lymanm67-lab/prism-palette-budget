@@ -1,13 +1,19 @@
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Shield, Info } from 'lucide-react';
 import {
   benefitAtAge, careCostAtAge, combinedPremium, annualPremium, cashBenefitMonthly,
   fundedGap, protectionLevel, simulateCareEvent, type LtcState,
 } from '@/lib/ltc/model';
+import { coverageAt, futureHourlyRate, HOUR_TIERS } from '@/lib/ltc/location';
 import { money, money2, StatCard, ProtectionBadge, GapBadge, Note } from './shared';
+
+const BENEFIT_CAP = 2100;
 
 export function LtcOverview({ state, onGoTo }: { state: LtcState; onGoTo: (tab: string) => void }) {
   const h = state.household;
+  const [plannedHours, setPlannedHours] = useState<number>(20);
   const policy = state.policies.find((p) => p.id === state.currentPolicyId) || state.policies[0];
   if (!policy) return <Note>No policy on file yet.</Note>;
 
@@ -18,7 +24,16 @@ export function LtcOverview({ state, onGoTo }: { state: LtcState; onGoTo: (tab: 
   const funded = fundedGap(claimBenefit, claimCost, h.monthlyHouseholdIncome);
   const sim = simulateCareEvent(state, policy, h.assumedClaimAge, h.assumedCareYears);
 
+  // Hours-based gap posture: benefits capped at $2,100/mo, cost driven by real weekly need.
+  const yearsToClaim = Math.max(0, h.assumedClaimAge - h.lymanAge);
+  const currentHourlyRate = ((h.dailyLow + h.dailyHigh) / 2) / 4.5;
+  const projectedHourlyRate = futureHourlyRate(currentHourlyRate, h.careCostGrowthPct, yearsToClaim);
+  const cappedBenefit = Math.min(BENEFIT_CAP, claimBenefit);
+  const hoursCoverage = coverageAt(plannedHours, projectedHourlyRate, cappedBenefit);
+  const hoursFunded = fundedGap(hoursCoverage.insurancePays, hoursCoverage.monthlyCost, h.monthlyHouseholdIncome);
+
   const ages = [70, 75, 80, 85];
+
 
   const targetRows: [string, string][] = [
     ['Monthly household premium', money2(combinedPremium(policy))],
