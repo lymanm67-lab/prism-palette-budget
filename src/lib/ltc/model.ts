@@ -241,6 +241,8 @@ export function defaultState(partial?: Partial<LtcState>): LtcState {
     sweetSpot: partial.sweetSpot?.length ? partial.sweetSpot : d.sweetSpot,
     reviewLog: partial.reviewLog || d.reviewLog,
     premiumLog: partial.premiumLog || d.premiumLog || [],
+    renewals: partial.renewals || [],
+
   };
 }
 
