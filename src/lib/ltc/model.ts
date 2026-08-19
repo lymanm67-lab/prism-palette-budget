@@ -154,6 +154,8 @@ export function defaultState(partial?: Partial<LtcState>): LtcState {
     currentPolicyId: 'moo-2100-3',
     household: {
       lymanAge: 59, kateriAge: 55, city: 'Akron, Ohio',
+      // Akron OH non-medical home care daily rate: $128–$140 (verified Aug 2026).
+      // $4,195/mo ≈ high end of range (~$135/day × 31 days).
       homeCareMonthly: 4195, dailyLow: 128, dailyHigh: 140,
       careCostGrowthPct: 3, assumedClaimAge: 80, assumedCareYears: 3,
       retirementBalance: 184114, expectedReturnPct: 8,

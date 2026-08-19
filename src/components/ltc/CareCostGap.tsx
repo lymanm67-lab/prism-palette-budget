@@ -16,8 +16,8 @@ export function CareCostGap({ state, patch }: { state: LtcState; patch: (p: Part
     <div className="space-y-4">
       <Card className="glass-card">
         <CardHeader>
-          <CardTitle className="text-base">{h.city} Care Cost Basis</CardTitle>
-          <Note>Planning estimates — replace with quotes from local agencies as you gather them.</Note>
+          <CardTitle className="text-base">{h.city} Non-Medical Home Care Cost Basis</CardTitle>
+          <Note>Akron OH daily rate $128–$140. Replace with agency quotes as you gather them.</Note>
         </CardHeader>
         <CardContent className="grid sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
           <Field label="In-home care ($/month)"><NumField value={h.homeCareMonthly} onChange={(n) => setH({ homeCareMonthly: n })} /></Field>
