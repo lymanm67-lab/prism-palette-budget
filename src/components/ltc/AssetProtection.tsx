@@ -1,9 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield, TrendingUp } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Shield, TrendingUp, Link2 } from 'lucide-react';
 import {
   careCostAtAge, combinedPremium, fvMonthly, simulateCareEvent, type LtcState,
 } from '@/lib/ltc/model';
-import { money, money2, Note, Field, NumField } from './shared';
+import { useWealthOSData } from '@/hooks/use-wealth-os';
+import { money, money2, Note, Field, NumField, StatCard } from './shared';
+
 
 const DURATIONS = [1, 2, 3, 5];
 const RETURNS = [6, 7, 8, 9];
