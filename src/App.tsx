@@ -263,6 +263,7 @@ const App = () => (
               <Route path="/legacy/belts" element={<Suspense fallback={<PageLoader />}><BeltProgress /></Suspense>} />
               <Route path="/legacy/household" element={<Suspense fallback={<PageLoader />}><HouseholdWealth /></Suspense>} />
               <Route path="/money-blueprint" element={<Suspense fallback={<PageLoader />}><MoneyBlueprint /></Suspense>} />
+              <Route path="/ltc" element={<Suspense fallback={<PageLoader />}><LongTermCare /></Suspense>} />
 
               <Route path="/legacy/crossover" element={<Suspense fallback={<PageLoader />}><CompoundingCrossover /></Suspense>} />
               <Route path="/legacy/preservation" element={<Suspense fallback={<PageLoader />}><RetirementPreservation /></Suspense>} />
