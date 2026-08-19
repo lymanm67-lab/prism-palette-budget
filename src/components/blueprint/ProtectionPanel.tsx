@@ -7,7 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Plus, Shield, Trash2, HeartPulse, Stethoscope, AlertTriangle } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Plus, Shield, Trash2, HeartPulse, Stethoscope, AlertTriangle, Upload } from 'lucide-react';
 import { money, NumField, SectionNote, ConfidenceBadge } from './shared';
 import {
   CARE_SCENARIOS, annualPremium, dailyBenefit, careCostAtAge, healthcareReserve,
