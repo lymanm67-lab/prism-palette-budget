@@ -261,6 +261,29 @@ export default function WealthOS() {
   const [active, setActive] = useState(0);
   const [busy, setBusy] = useState<'png' | 'pdf' | null>(null);
   const { data: live } = useWealthOSData();
+  const { data: ltcRecord } = useLtcPlan();
+
+  /* Long-Term Care — live from the LTC Decision Dashboard */
+  const ltc = useMemo(() => {
+    const s = ltcRecord?.state;
+    if (!s) return null;
+    const policy = s.policies.find((p) => p.id === s.currentPolicyId) || s.policies[0];
+    if (!policy) return null;
+    const h = s.household;
+    const claimCost = careCostAtAge(h, h.lymanAge, h.assumedClaimAge);
+    const atClaim = benefitAtAge(policy, h.lymanAge, h.assumedClaimAge);
+    const withCover = simulateCareEvent(s, policy, h.assumedClaimAge, h.assumedCareYears);
+    const without = simulateCareEvent(s, null, h.assumedClaimAge, h.assumedCareYears);
+    const level = protectionLevel(s, policy);
+    const coveragePct = claimCost > 0 ? Math.min(100, (atClaim.monthlyBenefit / claimCost) * 100) : 0;
+    return {
+      policy, h, claimCost, atClaim, withCover, without, level, coveragePct,
+      premium: combinedPremium(policy),
+      quotes: s.policies.length,
+      sweetSpot: sweetSpotTable(s),
+    };
+  }, [ltcRecord]);
+
 
   const ASSETS = useMemo(
     () => FALLBACK_ASSETS.map((a) => ({
