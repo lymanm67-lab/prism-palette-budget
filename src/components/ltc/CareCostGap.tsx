@@ -2,7 +2,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Info } from 'lucide-react';
 import { benefitAtAge, careCostAtAge, gapBand, type LtcState } from '@/lib/ltc/model';
-import { money, Note, Field, NumField, GapBadge } from './shared';
+import { coverageAt, futureHourlyRate, HOUR_TIERS } from '@/lib/ltc/location';
+import { money, money2, Note, Field, NumField, GapBadge, CoverageBadge } from './shared';
 
 const GROWTH = [2, 3, 4, 5];
 const AGES = [65, 70, 75, 80, 85];
@@ -39,36 +40,44 @@ export function CareCostGap({ state, patch }: { state: LtcState; patch: (p: Part
       <Card className="glass-card">
         <CardHeader>
           <CardTitle className="text-base">Projected cost, benefit and gap</CardTitle>
-          <Note>Projected care cost − LTC insurance benefit = monthly coverage gap.</Note>
+          <Note>Weekly care hours × projected local hourly rate × 4.33. Plan benefits are capped at $2,100 per month.</Note>
         </CardHeader>
         <CardContent className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border/60 text-left text-[10px] uppercase tracking-wide text-muted-foreground">
                 <th className="py-2">Age</th>
-                <th className="py-2">Projected care cost</th>
-                <th className="py-2">LTC benefit</th>
-                <th className="py-2">Monthly gap</th>
+                <th className="py-2">Care hours</th>
+                <th className="py-2">Projected rate</th>
+                <th className="py-2">Monthly cost</th>
+                <th className="py-2">Plan pays</th>
+                <th className="py-2">Your monthly share</th>
                 <th className="py-2">Coverage</th>
                 <th className="py-2">Status</th>
               </tr>
             </thead>
             <tbody>
-              {AGES.map((age) => {
-                const cost = careCostAtAge(h, h.lymanAge, age);
-                const benefit = policy ? benefitAtAge(policy, h.lymanAge, age).monthlyBenefit : 0;
-                const gap = Math.max(0, cost - benefit);
-                const band = gapBand(benefit, cost);
-                return (
-                  <tr key={age} className="border-b border-border/30">
-                    <td className="py-2">{age}</td>
-                    <td className="py-2 tabular-nums">{money(cost)}</td>
-                    <td className="py-2 tabular-nums font-semibold">{money(benefit)}</td>
-                    <td className="py-2 tabular-nums">{money(gap)}</td>
-                    <td className="py-2 tabular-nums">{cost ? `${((benefit / cost) * 100).toFixed(0)}%` : '—'}</td>
-                    <td className="py-2"><GapBadge band={band} /></td>
-                  </tr>
-                );
+              {AGES.flatMap((age) => {
+                const years = Math.max(0, age - h.lymanAge);
+                const currentHourlyRate = ((h.dailyLow + h.dailyHigh) / 2) / 4.5;
+                const hourlyRate = futureHourlyRate(currentHourlyRate, h.careCostGrowthPct, years);
+                const availableBenefit = Math.min(2100, policy ? benefitAtAge(policy, h.lymanAge, age).monthlyBenefit : 0);
+
+                return HOUR_TIERS.map((hours, index) => {
+                  const coverage = coverageAt(hours, hourlyRate, availableBenefit);
+                  return (
+                    <tr key={`${age}-${hours}`} className={`border-b border-border/30 ${index === 0 ? 'border-t border-border/60' : ''}`}>
+                      <td className="py-2 font-semibold">{index === 0 ? age : ''}</td>
+                      <td className="py-2 tabular-nums">{hours} hrs/week</td>
+                      <td className="py-2 tabular-nums">{money2(hourlyRate)}/hr</td>
+                      <td className="py-2 tabular-nums">{money(coverage.monthlyCost)}</td>
+                      <td className="py-2 tabular-nums font-semibold">{money(coverage.insurancePays)}</td>
+                      <td className="py-2 tabular-nums">{money(coverage.outOfPocketMonthly)}</td>
+                      <td className="py-2 tabular-nums">{coverage.coveragePct.toFixed(0)}%</td>
+                      <td className="py-2"><CoverageBadge band={coverage.band} /></td>
+                    </tr>
+                  );
+                });
               })}
             </tbody>
           </table>
