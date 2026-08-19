@@ -264,7 +264,7 @@ export function ensureLocationState(s?: Partial<LtcLocationState> | null): LtcLo
     ...d,
     ...s,
     locations: s.locations?.length ? s.locations : d.locations,
-    agencies: s.agencies || [],
+    agencies: s.agencies?.length ? s.agencies : d.agencies,
     rateHistory: s.rateHistory || [],
     blended: { ...d.blended, ...(s.blended || {}) },
     progression: { ...d.progression, ...(s.progression || {}) },
