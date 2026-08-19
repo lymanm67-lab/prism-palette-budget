@@ -826,7 +826,7 @@ export default function WealthOS() {
           <Kpi label="Disability" value="~60% Salary Replacement" tone="gold" />
           <Kpi
             label="Long-Term Care"
-            value={ltc ? `${money(ltc.premium)}/mo premium` : 'Quotes under review'}
+            value={ltc ? `${money2(ltc.premium)}/mo premium` : 'Quotes under review'}
             sub={ltc ? `${ltc.policy.carrier} — ${ltc.policy.product}` : 'No plan selected yet'}
             tone="green"
           />
@@ -847,11 +847,11 @@ export default function WealthOS() {
               />
               <Row
                 label={`Benefit at claim age ${ltc.h.assumedClaimAge}`}
-                value={`${money(ltc.atClaim.monthlyBenefit)}/mo vs. ${money(ltc.claimCost)}/mo projected ${ltc.h.city} care cost`}
+                value={`${money(Math.round(ltc.atClaim.monthlyBenefit))}/mo vs. ${money(Math.round(ltc.claimCost))}/mo projected ${ltc.h.city} care cost`}
               />
               <Row
                 label="Combined household premium"
-                value={`${money(ltc.premium)}/mo • ${money(ltc.premium * 12)}/yr`}
+                value={`${money2(ltc.premium)}/mo • ${money(ltc.premium * 12)}/yr`}
               />
               <Row
                 label="Protection level"
@@ -864,14 +864,14 @@ export default function WealthOS() {
             <div className="wos-grid2">
               <Kpi
                 label={`Withdrawals avoided — ${ltc.h.assumedCareYears}-year care event`}
-                value={money(ltc.withCover.insurancePaid)}
-                sub={`Uninsured cost would be ${money(ltc.without.outOfPocket)}`}
+                value={money(Math.round(ltc.withCover.insurancePaid))}
+                sub={`Uninsured cost would be ${money(Math.round(ltc.without.outOfPocket))}`}
                 tone="green"
               />
               <Kpi
                 label="Net worth exposed without cover"
-                value={money(Math.min(live?.netWorth ?? 0, ltc.without.outOfPocket))}
-                sub={`Net worth today ${money(live?.netWorth ?? 0)}`}
+                value={money(Math.round(Math.min(live?.netWorth ?? 0, ltc.without.outOfPocket)))}
+                sub={`Net worth today ${money(Math.round(live?.netWorth ?? 0))}`}
                 tone="gold"
               />
             </div>
@@ -882,7 +882,7 @@ export default function WealthOS() {
                 <Row
                   key={r.benefit}
                   label={`${money(r.benefit)}/mo benefit${r.benefit === ltc.sweetSpot.bestBenefit ? ' — best value' : ''}`}
-                  value={`${money(r.combined)}/mo premium • ${money(r.protectedCapital)} capital protected • value ${r.valueScore}/10`}
+                  value={`${money2(r.combined)}/mo premium • ${money(Math.round(r.protectedCapital))} capital protected • value ${r.valueScore}/10`}
                   bold={r.benefit === ltc.sweetSpot.bestBenefit}
                 />
               ))}
