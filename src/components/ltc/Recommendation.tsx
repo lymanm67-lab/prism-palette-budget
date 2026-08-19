@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Award, Target } from 'lucide-react';
 import {
   benefitAtAge, careCostAtAge, combinedPremium, rankPolicies, simulateCareEvent,
-  sweetSpotTable, defaultState, cashBenefitMonthly, type LtcState, type LtcWeights,
+  scoreRungs, defaultState, cashBenefitMonthly, RUNG_GRADE_LABEL,
+  type LtcState, type LtcWeights, type RungGrade,
 } from '@/lib/ltc/model';
 import { money, money2, Note, GapBadge, NumField } from './shared';
 
@@ -19,13 +20,29 @@ const WEIGHT_LABELS: { key: keyof LtcWeights; label: string }[] = [
   { key: 'cash', label: 'Cash benefit' },
 ];
 
+const RUNG_TONE: Record<RungGrade, string> = {
+  best: 'bg-prism-lime/15 text-prism-lime border-prism-lime/30',
+  strong: 'bg-prism-teal/15 text-prism-teal border-prism-teal/30',
+  workable: 'bg-prism-sky/15 text-prism-sky border-prism-sky/30',
+  stretch: 'bg-prism-amber/15 text-prism-amber border-prism-amber/30',
+  thin: 'bg-destructive/15 text-destructive border-destructive/30',
+};
+
+function RungBadge({ grade }: { grade: RungGrade }) {
+  return (
+    <Badge variant="outline" className={`text-[10px] whitespace-nowrap ${RUNG_TONE[grade]}`}>
+      {RUNG_GRADE_LABEL[grade]}
+    </Badge>
+  );
+}
+
 export function Recommendation({ state, patch }: { state: LtcState; patch: (p: Partial<LtcState>) => void }) {
   const h = state.household;
   const ranked = rankPolicies(state);
   const byId = (id: string) => state.policies.find((p) => p.id === id)!;
   const top = ranked[0] ? byId(ranked[0].policyId) : null;
   const highestBenefit = [...state.policies].sort((a, b) => b.startingMonthlyBenefit - a.startingMonthlyBenefit)[0];
-  const { rows, bestBenefit } = sweetSpotTable(state);
+  const { rows, topBenefit } = scoreRungs(state);
 
   const setW = (key: keyof LtcWeights, v: number) => patch({ weights: { ...state.weights, [key]: v } });
   const totalW = Object.values(state.weights).reduce((a, b) => a + b, 0);
@@ -161,7 +178,7 @@ export function Recommendation({ state, patch }: { state: LtcState; patch: (p: P
           <Note>
             All rungs hold 3% compound lifetime inflation, a 3-year benefit period, 90-day elimination, Partnership
             qualification, and 100% home care and assisted living. Enter each spouse's quoted premium as you receive it.
-            Best balance under current inputs: {bestBenefit ? money(bestBenefit) : '—'} per month.
+            Rungs are scored on affordability, coverage of projected care cost, premium efficiency and overall value using your decision weights. Highest scoring rung: {topBenefit ? money(topBenefit) : '—'} per month.
           </Note>
         </CardHeader>
         <CardContent className="overflow-x-auto">
@@ -171,7 +188,9 @@ export function Recommendation({ state, patch }: { state: LtcState; patch: (p: P
                 <th className="py-2">Benefit</th><th className="py-2">Lyman /mo</th><th className="py-2">Kateri /mo</th>
                 <th className="py-2">Combined /mo</th><th className="py-2">Combined /yr</th>
                 <th className="py-2">Benefit at {h.assumedClaimAge}</th><th className="py-2">Pool at {h.assumedClaimAge}</th>
-                <th className="py-2">Gap</th><th className="py-2">Capital protected</th><th className="py-2">Value score</th>
+                <th className="py-2">Gap</th><th className="py-2">Capital protected</th>
+                <th className="py-2">Afford.</th><th className="py-2">Coverage</th><th className="py-2">Efficiency</th>
+                <th className="py-2">Value</th><th className="py-2">Rung score</th><th className="py-2">Verdict</th>
               </tr>
             </thead>
             <tbody>
@@ -180,7 +199,7 @@ export function Recommendation({ state, patch }: { state: LtcState; patch: (p: P
                 const setRung = (p: Partial<typeof rung>) =>
                   patch({ sweetSpot: state.sweetSpot.map((x, j) => (j === i ? { ...x, ...p } : x)) });
                 return (
-                  <tr key={r.benefit} className={`border-b border-border/30 ${r.highlight ? 'bg-prism-amber/5' : ''} ${r.benefit === bestBenefit ? 'bg-prism-lime/5' : ''}`}>
+                  <tr key={r.benefit} className={`border-b border-border/30 ${r.highlight ? 'bg-prism-amber/5' : ''} ${r.benefit === topBenefit ? 'bg-prism-lime/5' : ''}`}>
                     <td className="py-2 font-semibold whitespace-nowrap">
                       {money(r.benefit)}
                       {r.highlight && <Badge variant="outline" className="ml-2 text-[9px] border-prism-amber/40 text-prism-amber">Middle ground</Badge>}
@@ -193,14 +212,20 @@ export function Recommendation({ state, patch }: { state: LtcState; patch: (p: P
                     <td className="py-2 tabular-nums">{money(r.futurePool)}</td>
                     <td className="py-2 tabular-nums">{money(r.gap)} <GapBadge band={r.band} /></td>
                     <td className="py-2 tabular-nums">{money(r.protectedCapital)}</td>
-                    <td className="py-2 tabular-nums font-bold">{r.valueScore}</td>
+                    <td className="py-2 tabular-nums">{r.affordability}</td>
+                    <td className="py-2 tabular-nums">{r.coverage}</td>
+                    <td className="py-2 tabular-nums">{r.efficiency}</td>
+                    <td className="py-2 tabular-nums">{r.valueScore}</td>
+                    <td className="py-2 tabular-nums font-bold text-prism-amber">{r.score} <span className="text-[10px] text-muted-foreground">#{r.rank}</span></td>
+                    <td className="py-2"><RungBadge grade={r.grade} /></td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
           <Note>
-            Value score rewards capital protected per premium dollar and penalises buying benefit well beyond projected
+            Affordability falls to zero as the combined premium approaches 5% of household income. Coverage peaks when the
+            projected benefit matches projected care cost and is penalised above 110%. Value rewards capital protected per premium dollar and penalises buying benefit well beyond projected
             {' '}{h.city} care cost ({money(careCostAtAge(h, h.lymanAge, h.assumedClaimAge))}/mo at age {h.assumedClaimAge}).
           </Note>
         </CardContent>

@@ -67,6 +67,20 @@ export interface SweetSpotRung {
   premiumKateri: number;
 }
 
+/** A single monthly LTC premium payment logged into the binder. */
+export interface PremiumPayment {
+  id: string;
+  /** Month paid, YYYY-MM. */
+  month: string;
+  /** Date the payment actually cleared. */
+  paidOn: string;
+  amountLyman: number;
+  amountKateri: number;
+  method?: string;
+  confirmation?: string;
+  notes?: string;
+}
+
 export interface LtcState {
   household: LtcHousehold;
   policies: LtcPolicy[];
@@ -74,6 +88,9 @@ export interface LtcState {
   weights: LtcWeights;
   sweetSpot: SweetSpotRung[];
   reviewLog: { date: string; premium: number; benefit: number; careCost: number; notes?: string }[];
+  /** Monthly premium payment ledger (binder / plan of record). */
+  premiumLog?: PremiumPayment[];
+
   /** Location-based care cost + agency comparison (see ./location). */
   location?: import('./location').LtcLocationState;
   asOf: string;
@@ -176,6 +193,7 @@ export function defaultState(partial?: Partial<LtcState>): LtcState {
       { benefit: 3000, premiumLyman: 121.71, premiumKateri: 183.15 },
     ],
     reviewLog: [],
+    premiumLog: [],
   };
   if (!partial) return d;
   return {
@@ -186,8 +204,10 @@ export function defaultState(partial?: Partial<LtcState>): LtcState {
     policies: partial.policies?.length ? partial.policies : d.policies,
     sweetSpot: partial.sweetSpot?.length ? partial.sweetSpot : d.sweetSpot,
     reviewLog: partial.reviewLog || d.reviewLog,
+    premiumLog: partial.premiumLog || d.premiumLog || [],
   };
 }
+
 
 // ---------------------------------------------------------------------------
 // Core math
@@ -509,4 +529,151 @@ export function reviewWarnings(state: LtcState): ReviewWarning[] {
     detail: 'The cash benefit is not assumed to stack on top of the full reimbursement benefit. Verify against the policy contract.',
   });
   return out;
+}
+
+// ---------------------------------------------------------------------------
+// Monthly premium tracker (binder plan of record)
+// ---------------------------------------------------------------------------
+
+export const paymentTotal = (p: PremiumPayment) => (p.amountLyman || 0) + (p.amountKateri || 0);
+
+export interface PremiumTracker {
+  /** Plan of record: the combined monthly premium on the current policy. */
+  planOfRecord: number;
+  annualPlanOfRecord: number;
+  payments: PremiumPayment[];
+  /** One row per logged month, newest first, measured against plan of record. */
+  months: {
+    month: string;
+    paid: number;
+    expected: number;
+    variance: number;
+    lyman: number;
+    kateri: number;
+    onPlan: boolean;
+    payment: PremiumPayment;
+  }[];
+  paidThisYear: number;
+  expectedThisYear: number;
+  varianceThisYear: number;
+  lifetimePaid: number;
+  monthsLogged: number;
+  monthsOnPlan: number;
+  averagePaid: number;
+  latestMonth?: string;
+  /** Months in the current year with no logged payment yet. */
+  missingMonths: string[];
+  incomeShare: number;
+}
+
+export function premiumTracker(state: LtcState, today = new Date()): PremiumTracker {
+  const policy = state.policies.find((p) => p.id === state.currentPolicyId) || state.policies[0];
+  const planOfRecord = policy ? combinedPremium(policy) : 0;
+  const payments = [...(state.premiumLog || [])].sort((a, b) => b.month.localeCompare(a.month));
+  const year = today.getFullYear();
+  const monthIdx = today.getMonth();
+
+  const months = payments.map((p) => {
+    const paid = paymentTotal(p);
+    return {
+      month: p.month,
+      paid,
+      expected: planOfRecord,
+      variance: paid - planOfRecord,
+      lyman: p.amountLyman || 0,
+      kateri: p.amountKateri || 0,
+      onPlan: Math.abs(paid - planOfRecord) <= 0.5,
+      payment: p,
+    };
+  });
+
+  const thisYear = months.filter((m) => m.month.startsWith(String(year)));
+  const paidThisYear = thisYear.reduce((s, m) => s + m.paid, 0);
+  const expectedThisYear = planOfRecord * (monthIdx + 1);
+  const lifetimePaid = months.reduce((s, m) => s + m.paid, 0);
+
+  const missingMonths: string[] = [];
+  for (let i = 0; i <= monthIdx; i++) {
+    const key = `${year}-${String(i + 1).padStart(2, '0')}`;
+    if (!months.some((m) => m.month === key)) missingMonths.push(key);
+  }
+
+  return {
+    planOfRecord,
+    annualPlanOfRecord: planOfRecord * 12,
+    payments,
+    months,
+    paidThisYear,
+    expectedThisYear,
+    varianceThisYear: paidThisYear - expectedThisYear,
+    lifetimePaid,
+    monthsLogged: months.length,
+    monthsOnPlan: months.filter((m) => m.onPlan).length,
+    averagePaid: months.length ? lifetimePaid / months.length : 0,
+    latestMonth: months[0]?.month,
+    missingMonths,
+    incomeShare: state.household.monthlyHouseholdIncome > 0
+      ? planOfRecord / state.household.monthlyHouseholdIncome
+      : 0,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Sweet spot rung scoring
+// ---------------------------------------------------------------------------
+
+export type RungGrade = 'best' | 'strong' | 'workable' | 'stretch' | 'thin';
+
+export const RUNG_GRADE_LABEL: Record<RungGrade, string> = {
+  best: 'Best Balance',
+  strong: 'Strong Fit',
+  workable: 'Workable',
+  stretch: 'Budget Stretch',
+  thin: 'Too Thin',
+};
+
+/**
+ * Scores every sweet-spot rung on four axes and blends them with the household
+ * decision weights so the ranking follows the same logic as policy scoring.
+ * Affordability falls away as premium eats more household income; coverage
+ * rewards benefit that tracks projected local care cost without overbuying.
+ */
+export function scoreRungs(state: LtcState) {
+  const { rows, bestBenefit } = sweetSpotTable(state);
+  const income = state.household.monthlyHouseholdIncome;
+  const w = state.weights;
+  const wSum = Math.max(1, w.affordability + w.benefit + w.inflation + w.flexibility);
+
+  const scored = rows.map((r) => {
+    const share = income > 0 ? r.combined / income : 0;
+    // 1% of income = 10, 5% of income (lapse threshold) = 0.
+    const affordability = r1(clamp10(10 - ((share * 100) - 1) * 2.5));
+    const ratio = r.careCost > 0 ? r.futureMonthly / r.careCost : 0;
+    // Coverage peaks at ~100% of projected cost, penalised above 110%.
+    const coverage = r1(clamp10(ratio >= 1.1 ? 10 - (ratio - 1.1) * 12 : ratio * 9.5));
+    const efficiency = r1(clamp10((r.protectedCapital / Math.max(1, r.premiumsPaid)) * 1.4));
+    const value = r.valueScore;
+    const score = r1(
+      (affordability * w.affordability + coverage * w.benefit + efficiency * w.inflation + value * w.flexibility) / wSum,
+    );
+    return { ...r, share, affordability, coverage, efficiency, score };
+  });
+
+  const ranked = [...scored].sort((a, b) => b.score - a.score);
+  const topBenefit = ranked[0]?.benefit;
+
+  const withGrades = scored.map((r) => {
+    let grade: RungGrade = 'workable';
+    if (r.benefit === topBenefit) grade = 'best';
+    else if (r.share > 0.05) grade = 'stretch';
+    else if (r.band === 'large') grade = 'thin';
+    else if (r.score >= 6.5) grade = 'strong';
+    return {
+      ...r,
+      grade,
+      rank: ranked.findIndex((x) => x.benefit === r.benefit) + 1,
+    };
+  });
+
+  return { rows: withGrades, bestBenefit, topBenefit, ranked };
 }
