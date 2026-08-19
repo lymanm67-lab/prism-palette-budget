@@ -6358,6 +6358,103 @@ export type Database = {
           },
         ]
       }
+      ltc_documents: {
+        Row: {
+          agent: string | null
+          carrier: string | null
+          category: string
+          created_at: string
+          created_by: string | null
+          file_name: string | null
+          file_path: string | null
+          household_id: string
+          id: string
+          inflation_pct: number | null
+          monthly_benefit: number | null
+          monthly_premium: number | null
+          notes: string | null
+          product: string | null
+          quote_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          agent?: string | null
+          carrier?: string | null
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          file_name?: string | null
+          file_path?: string | null
+          household_id: string
+          id?: string
+          inflation_pct?: number | null
+          monthly_benefit?: number | null
+          monthly_premium?: number | null
+          notes?: string | null
+          product?: string | null
+          quote_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          agent?: string | null
+          carrier?: string | null
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          file_name?: string | null
+          file_path?: string | null
+          household_id?: string
+          id?: string
+          inflation_pct?: number | null
+          monthly_benefit?: number | null
+          monthly_premium?: number | null
+          notes?: string | null
+          product?: string | null
+          quote_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ltc_documents_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ltc_plan: {
+        Row: {
+          created_at: string
+          household_id: string
+          id: string
+          state: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          household_id: string
+          id?: string
+          state?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          household_id?: string
+          id?: string
+          state?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ltc_plan_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: true
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       medicaid_claims: {
         Row: {
           amount: number
