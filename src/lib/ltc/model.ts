@@ -176,6 +176,7 @@ export function defaultState(partial?: Partial<LtcState>): LtcState {
       { benefit: 3000, premiumLyman: 121.71, premiumKateri: 183.15 },
     ],
     reviewLog: [],
+    premiumLog: [],
   };
   if (!partial) return d;
   return {
@@ -186,8 +187,10 @@ export function defaultState(partial?: Partial<LtcState>): LtcState {
     policies: partial.policies?.length ? partial.policies : d.policies,
     sweetSpot: partial.sweetSpot?.length ? partial.sweetSpot : d.sweetSpot,
     reviewLog: partial.reviewLog || d.reviewLog,
+    premiumLog: partial.premiumLog || d.premiumLog || [],
   };
 }
+
 
 // ---------------------------------------------------------------------------
 // Core math
