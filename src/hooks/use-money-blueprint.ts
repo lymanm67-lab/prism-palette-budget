@@ -375,11 +375,14 @@ export function useBlueprintPrefill(month?: string) {
           kateriNet,
         },
         source: {
+          budgetMonth,
           budgetedKeys: Array.from(budgeted.keys()),
+          budgetRowCount: budgets?.length || 0,
           transactionCount: rows.length,
           lymanNet,
           kateriNet,
         },
+
 
       };
     },
