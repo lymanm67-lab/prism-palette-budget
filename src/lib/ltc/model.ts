@@ -74,8 +74,11 @@ export interface LtcState {
   weights: LtcWeights;
   sweetSpot: SweetSpotRung[];
   reviewLog: { date: string; premium: number; benefit: number; careCost: number; notes?: string }[];
+  /** Location-based care cost + agency comparison (see ./location). */
+  location?: import('./location').LtcLocationState;
   asOf: string;
 }
+
 
 // ---------------------------------------------------------------------------
 // Seeded carriers (household quotes on file)

@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { GAP_LABEL, PROTECTION_LABEL, type GapBand, type ProtectionLevel } from '@/lib/ltc/model';
+import { COVERAGE_LABEL, type CoverageBand } from '@/lib/ltc/location';
+
 
 export const money = (n: number) =>
   (Number(n) || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
@@ -74,6 +76,46 @@ export function ProtectionBadge({ level }: { level: ProtectionLevel }) {
   );
 }
 
+const COVERAGE_TONE: Record<CoverageBand, string> = {
+  full: 'bg-prism-lime/15 text-prism-lime border-prism-lime/30',
+  strong: 'bg-prism-lime/10 text-prism-lime border-prism-lime/25',
+  balanced: 'bg-prism-sky/15 text-prism-sky border-prism-sky/30',
+  partial: 'bg-prism-amber/15 text-prism-amber border-prism-amber/30',
+  selfFund: 'bg-destructive/15 text-destructive border-destructive/30',
+};
+
+export function CoverageBadge({ band, className }: { band: CoverageBand; className?: string }) {
+  return (
+    <Badge variant="outline" className={`text-[10px] whitespace-nowrap ${COVERAGE_TONE[band]} ${className || ''}`}>
+      {COVERAGE_LABEL[band]}
+    </Badge>
+  );
+}
+
+export function TextField({
+  value, onChange, placeholder, className,
+}: { value: string; onChange: (v: string) => void; placeholder?: string; className?: string }) {
+  return (
+    <Input className={className} value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} />
+  );
+}
+
+export function Select({
+  value, onChange, options, className,
+}: { value: string; onChange: (v: string) => void; options: { value: string; label: string }[]; className?: string }) {
+  return (
+    <select
+      className={`h-10 w-full rounded-md border border-input bg-background px-2 text-sm ${className || ''}`}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+    >
+      {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+    </select>
+  );
+}
+
+export const hours1 = (n: number) => `${(Number(n) || 0).toFixed(1)} hrs`;
+
 export function Note({ children }: { children: React.ReactNode }) {
   return <p className="text-xs text-muted-foreground">{children}</p>;
 }
@@ -86,3 +128,4 @@ export function Field({ label, children }: { label: string; children: React.Reac
     </label>
   );
 }
+
