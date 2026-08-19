@@ -127,6 +127,9 @@ export interface LtcState {
   renewals?: RenewalNotice[];
 
 
+  /** Layered LTC gap funding strategy (see ./gapstrategy). */
+  gapStrategy?: import('./gapstrategy').GapStrategyState;
+
   /** Location-based care cost + agency comparison (see ./location). */
   location?: import('./location').LtcLocationState;
   asOf: string;

@@ -9,6 +9,9 @@ import { inflationFactor, type LtcHousehold, type LtcPolicy } from './model';
 import { carePlanAt, PLAN_MAX_MONTHLY, PLAN_INFLATION_PCT, SUPPORT_COST_PCT } from './careplan';
 import { HOUR_TIERS } from './location';
 
+export const usd = (n: number, dp = 0) =>
+  `$${(Number.isFinite(n) ? n : 0).toLocaleString(undefined, { minimumFractionDigits: dp, maximumFractionDigits: dp })}`;
+
 /* ----------------------------------------------------------------------- */
 /* State                                                                    */
 /* ----------------------------------------------------------------------- */
