@@ -376,7 +376,33 @@ export interface AssumptionState {
   achievedMilestones: { amount: number; date?: string }[];
   scenarios: SavedScenario[];
   confidence: Record<string, Confidence>;
+  /** Link to the household spending plan (Budget Planner / CSV import). */
+  budget: BudgetLink;
 }
+
+/**
+ * The monthly budget that funds investing. `plannedSpendMonthly` is the sum of
+ * the household outflow budgets for `sourceMonth`; whatever net income is left
+ * over is surplus, and `surplusRedirectPct` of it is invested in the timeline.
+ */
+export interface BudgetLink {
+  sourceMonth: string;
+  netIncomeMonthly: number;
+  plannedSpendMonthly: number;
+  surplusRedirectPct: number;
+  /** Where the numbers came from — 'planner', 'csv' or 'manual'. */
+  source: 'planner' | 'csv' | 'manual';
+  importedAt?: string;
+  categoryCount?: number;
+}
+
+/** Net income minus planned spending for the linked budget month. */
+export const budgetSurplus = (s: AssumptionState) =>
+  Math.round(((s.budget?.netIncomeMonthly || 0) - (s.budget?.plannedSpendMonthly || 0)) * 100) / 100;
+
+/** The share of surplus that actually reaches the portfolio each month. */
+export const budgetSurplusMonthly = (s: AssumptionState) =>
+  Math.round(Math.max(0, budgetSurplus(s)) * ((s.budget?.surplusRedirectPct || 0) / 100) * 100) / 100;
 
 export interface SavedScenario {
   id: string;
