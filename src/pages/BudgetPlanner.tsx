@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -310,8 +310,8 @@ export default function BudgetPlanner() {
                 </thead>
                 <tbody>
                   {grouped.map(([group, groupRows]) => (
-                    <>
-                      <tr key={group} className="bg-muted/30">
+                    <Fragment key={group}>
+                      <tr className="bg-muted/30">
                         <td colSpan={5} className="p-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                           {group}
                         </td>
@@ -344,7 +344,7 @@ export default function BudgetPlanner() {
                           </tr>
                         );
                       })}
-                    </>
+                    </Fragment>
                   ))}
                   <tr className="border-t-2 border-border font-semibold">
                     <td className="p-2">Total</td>
