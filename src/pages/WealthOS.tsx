@@ -884,7 +884,7 @@ export default function WealthOS() {
                 />
               ))}
             </div>
-            <div className="wos-note" style={{ marginTop: 6 }}>
+            <div style={{ marginTop: 6, fontSize: 9.5, color: SLATE }}>
               {ltc.quotes} carrier quote(s) on file. Reviewed {ltc.h.lastReviewed}; next review {ltc.h.nextReview}.
             </div>
           </>
