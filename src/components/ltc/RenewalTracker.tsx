@@ -191,8 +191,8 @@ export function RenewalTracker({ state, patch }: { state: LtcState; patch: (p: P
                     options={RESPONSES.map((v) => ({ value: v, label: RENEWAL_RESPONSE_LABEL[v] }))} />
                 </Field>
               </div>
-              <div className="flex items-end gap-2">
-                <Field label="Notes" className="flex-1">
+              <div className="flex items-end gap-2 [&>*:first-child]:flex-1">
+                <Field label="Notes">
                   <input className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
                     value={r.notes || ''} onChange={(e) => update(r.id, { notes: e.target.value })} />
                 </Field>
