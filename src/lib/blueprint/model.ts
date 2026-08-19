@@ -755,8 +755,14 @@ export interface IntegrityIssue {
 
 export function validateBlueprint(
   s: AssumptionState,
-  live?: { netWorth?: number; liabilities?: { name: string; balance: number }[]; portfolio?: number },
+  live?: {
+    netWorth?: number;
+    liabilities?: { name: string; balance: number }[];
+    portfolio?: number;
+    assets?: { name: string; balance: number }[];
+  },
 ): IntegrityIssue[] {
+
   const issues: IntegrityIssue[] = [];
 
   const dupDebt = new Map<string, number>();
