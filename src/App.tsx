@@ -105,6 +105,7 @@ const WithdrawalSequencerPage = lazy(() => import("@/pages/WithdrawalSequencer")
 const ContributionWaterfall = lazy(() => import("@/pages/ContributionWaterfall"));
 const HouseholdWealth = lazy(() => import("@/pages/HouseholdWealth"));
 const MoneyBlueprint = lazy(() => import("@/pages/MoneyBlueprint"));
+const LongTermCare = lazy(() => import("@/pages/LongTermCare"));
 
 const BeltProgress = lazy(() => import("@/pages/BeltProgress"));
 const RetirementDashboard = lazy(() => import("@/pages/RetirementDashboard"));
