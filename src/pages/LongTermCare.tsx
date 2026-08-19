@@ -7,6 +7,7 @@ import { PageExplainer } from '@/components/PageExplainer';
 import { LtcOverview } from '@/components/ltc/LtcOverview';
 import { CurrentPlan } from '@/components/ltc/CurrentPlan';
 import { PolicyComparison } from '@/components/ltc/PolicyComparison';
+import { QuoteUpload } from '@/components/ltc/QuoteUpload';
 import { InflationProjection } from '@/components/ltc/InflationProjection';
 import { CareCostGap } from '@/components/ltc/CareCostGap';
 import { AssetProtection } from '@/components/ltc/AssetProtection';
