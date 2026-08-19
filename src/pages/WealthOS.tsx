@@ -2,6 +2,10 @@ import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Printer, ImageDown, FileDown, Loader2 } from 'lucide-react';
 import { useWealthOSData } from '@/hooks/use-wealth-os';
+import { useLtcPlan } from '@/hooks/use-ltc-plan';
+import {
+  benefitAtAge, careCostAtAge, combinedPremium, protectionLevel, simulateCareEvent, sweetSpotTable,
+} from '@/lib/ltc/model';
 import { simulate } from '@/lib/legacy/monteCarloSim';
 import { exportBinderPNGs, exportBinderPDF } from '@/lib/legacy/wealthOsExport';
 import RetirementProjection from '@/components/wealth-os/RetirementProjection';
