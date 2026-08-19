@@ -54,10 +54,26 @@ function mergeLive(rows: BlueprintRow[], live: BlueprintRow[]): BlueprintRow[] {
   return [...merged, ...live.filter((p) => !known.has(p.key)).map((p) => ({ ...p }))];
 }
 
+/** Last 12 months + next 5, for choosing which budget month drives the plan. */
+const MONTH_OPTIONS = (() => {
+  const now = new Date();
+  const out: { value: string; label: string }[] = [];
+  for (let i = -12; i <= 5; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+    out.push({
+      value: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`,
+      label: d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+    });
+  }
+  return out;
+})();
+
 export function MoneyBlueprintPlan() {
+  const [budgetMonth, setBudgetMonth] = useState(currentBudgetMonth());
   const { data: saved, isLoading } = useMoneyBlueprint();
-  const { data: prefill } = useBlueprintPrefill();
+  const { data: prefill } = useBlueprintPrefill(budgetMonth);
   const { data: wealth } = useWealthOSData();
+
   const save = useSaveMoneyBlueprint();
 
   const [state, setState] = useState<BlueprintState>(emptyBlueprint());
