@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { GAP_LABEL, PROTECTION_LABEL, type GapBand, type ProtectionLevel } from '@/lib/ltc/model';
+import { COVERAGE_LABEL, type CoverageBand } from '@/lib/ltc/location';
+
 
 export const money = (n: number) =>
   (Number(n) || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
