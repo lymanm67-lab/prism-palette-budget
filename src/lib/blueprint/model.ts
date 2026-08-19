@@ -811,5 +811,28 @@ export function validateBlueprint(
 
   if (s.rmdAge < 73) issues.push({ id: 'rmd-age', severity: 'warn', title: 'RMD age below current law', detail: 'RMD age is editable, but values below 73 conflict with current rules.' });
 
+  // Repeated asset rows inflate net worth — flagged, never auto-deleted.
+  if (live?.assets?.length) {
+    const groups = new Map<string, { name: string; count: number; total: number }>();
+    for (const a of live.assets) {
+      const key = a.name.toLowerCase().trim();
+      const g = groups.get(key) || { name: a.name, count: 0, total: 0 };
+      g.count += 1;
+      g.total += a.balance;
+      groups.set(key, g);
+    }
+    groups.forEach((g, key) => {
+      if (g.count > 1) {
+        issues.push({
+          id: `dup-asset-${key}`,
+          severity: 'warn',
+          title: `Duplicate asset row — "${g.name}"`,
+          detail: `"${g.name}" appears ${g.count} times in your accounts, totalling $${g.total.toLocaleString(undefined, { maximumFractionDigits: 2 })}. Confirm which row to keep; nothing has been deleted.`,
+        });
+      }
+    });
+  }
+
   return issues;
 }
+
