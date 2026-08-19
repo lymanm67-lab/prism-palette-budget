@@ -79,6 +79,7 @@ export interface GapStrategyState {
   opportunity: { premiumDelta: number; returnPct: number };
   people: PersonPlan[];
   stress: { careInflationPct: number; claimAge: number; careYears: number };
+  progression: 'moderate' | 'higher';
 }
 
 export function defaultGapStrategy(h?: LtcHousehold): GapStrategyState {
@@ -103,6 +104,7 @@ export function defaultGapStrategy(h?: LtcHousehold): GapStrategyState {
       { name: 'Kateri', age: kateriAge, hsaBalance: 0, careStartAge: 82, careYears: 3, weeklyHours: 20, monthlyBenefit: PLAN_MAX_MONTHLY },
     ],
     stress: { careInflationPct: 4, claimAge: 80, careYears: 3 },
+    progression: 'moderate',
   };
 }
 
