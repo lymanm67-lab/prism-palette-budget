@@ -237,11 +237,6 @@ export default function BudgetPlanner() {
 
   return (
     <div className="container mx-auto p-4 space-y-4 max-w-6xl">
-      <Helmet>
-        <title>Budget Planner — Edit Monthly Budgets | Prism</title>
-        <meta name="description" content="Plan and edit every month's budget, import a budget CSV, and see instantly how each change moves your Blueprint retirement projection." />
-        <link rel="canonical" href="https://prismbudget.com/planning/budget" />
-      </Helmet>
 
       <header className="space-y-2">
         <h1 className="text-2xl font-bold flex items-center gap-2">
