@@ -29,7 +29,7 @@ export function GapRecommendation({ h, g, policy }: { h: LtcHousehold; g: GapStr
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-base flex items-center gap-2">
-            {v.band === 'strong' || v.band === 'solid'
+            {v.band === 'fullyFunded' || v.band === 'stronglyProtected' || v.band === 'balanced'
               ? <CheckCircle2 className="h-4 w-4 text-prism-positive" />
               : <AlertTriangle className="h-4 w-4 text-destructive" />}
             Are we protected?
