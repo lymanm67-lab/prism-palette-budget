@@ -15,13 +15,20 @@ import { AssetProtection } from '@/components/ltc/AssetProtection';
 import { ScenarioSimulator } from '@/components/ltc/ScenarioSimulator';
 import { Recommendation } from '@/components/ltc/Recommendation';
 import { DocumentVault } from '@/components/ltc/DocumentVault';
+import { CareCostByLocation } from '@/components/ltc/CareCostByLocation';
+import { AgencyComparison } from '@/components/ltc/AgencyComparison';
+import { HoursProtected } from '@/components/ltc/HoursProtected';
 import { useLtcPlan, useSaveLtcPlan } from '@/hooks/use-ltc-plan';
 import { defaultState, type LtcState } from '@/lib/ltc/model';
+import { ensureLocationState, type LtcLocationState } from '@/lib/ltc/location';
 
 const TABS = [
   { key: 'overview', label: 'Overview' },
   { key: 'current', label: 'Current Plan' },
   { key: 'compare', label: 'Compare Policies' },
+  { key: 'locations', label: 'Care Cost by Location' },
+  { key: 'agencies', label: 'Local Agencies' },
+  { key: 'hours', label: 'Hours Protected' },
   { key: 'inflation', label: 'Inflation' },
   { key: 'gap', label: 'Care Cost Gap' },
   { key: 'assets', label: 'Asset Protection' },
@@ -29,6 +36,7 @@ const TABS = [
   { key: 'recommend', label: 'Recommendation' },
   { key: 'vault', label: 'Documents' },
 ];
+
 
 export default function LongTermCare() {
   const { data: record } = useLtcPlan();
