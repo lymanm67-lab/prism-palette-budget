@@ -143,6 +143,86 @@ export interface LtcLocationState {
   stateShortlist: string[];
 }
 
+/**
+ * Akron / Summit County home care providers, seeded so the Hours Protected and
+ * Agency tabs have real market rates to work with. Every rate carries a status:
+ * `publiclyListed` means the agency (or a rate survey) publishes the figure,
+ * `estimated` means it is derived from published regional ranges and must be
+ * confirmed by phone. Overwrite each one with the agency's own quote as you
+ * shop the $2,100/month plan maximum.
+ */
+export function seedAkronAgencies(locationId = 'akron-oh'): CareAgency[] {
+  const verified = '2026-08-19';
+  const a = (x: Partial<CareAgency> & { id: string; name: string }): CareAgency => ({
+    locationId, city: 'Akron', state: 'OH',
+    nonMedicalHourly: null, personalCareHourly: null, homeHealthAideHourly: null, skilledNursingHourly: null,
+    classification: 'nonMedical', licensed: 'unknown', ltcEligible: 'unknown',
+    pricingStatus: 'estimated', lastVerified: verified,
+    ...x,
+  });
+
+  return [
+    a({
+      id: 'va-akron', name: 'Visiting Angels (Akron / Portage)',
+      nonMedicalHourly: 32, personalCareHourly: 34,
+      minVisitHours: 3, licensed: 'licensed', ltcEligible: 'eligible',
+      phone: '(330) 665-2261', website: 'https://www.visitingangels.com/akron',
+      pricingStatus: 'publiclyListed',
+      source: 'Visiting Angels Portage/Ravenna published pricing page: "rates start at $32/hour"',
+      notes: 'Accepts LTC insurance billing. Confirm whether they will invoice directly against the plan maximum.',
+    }),
+    a({
+      id: 'home-instead-akron', name: 'Home Instead (Akron)',
+      nonMedicalHourly: 30, personalCareHourly: 32,
+      minVisitHours: 3, licensed: 'licensed', ltcEligible: 'eligible',
+      phone: '(330) 848-2100', website: 'https://www.homeinstead.com',
+      source: 'Home Instead national price guide: $20 low / $28 typical / $40 high per hour; Akron set mid-range',
+      notes: 'Franchise pricing — the local office sets the actual rate. Ask about weekend and holiday differentials.',
+    }),
+    a({
+      id: 'comfort-keepers-akron', name: 'Comfort Keepers (Akron / Fairlawn)',
+      nonMedicalHourly: 30, personalCareHourly: 33,
+      minVisitHours: 3, licensed: 'licensed', ltcEligible: 'eligible',
+      phone: '(330) 634-2299', website: 'https://www.comfortkeepers.com',
+      source: 'Regional non-medical range for Northeast Ohio ($30–$42/hr); Akron set at low end of range',
+      notes: 'Interactive caregiving model. Verify minimum shift length before assuming 10 hrs/week is accepted.',
+    }),
+    a({
+      id: 'right-at-home-akron', name: 'Right at Home (Akron / Cuyahoga Falls)',
+      nonMedicalHourly: 31, personalCareHourly: 34, homeHealthAideHourly: 38, skilledNursingHourly: 75,
+      minVisitHours: 4, classification: 'both', licensed: 'licensed', ltcEligible: 'eligible',
+      phone: '(330) 899-9950', website: 'https://www.rightathome.net',
+      source: 'Right at Home 2026 cost review (non-medical) + Northeast Ohio skilled nursing range $65–$90/hr',
+      notes: 'Offers skilled nursing alongside personal care. Watch weekend surcharges of a few dollars per hour.',
+    }),
+    a({
+      id: 'senior-helpers-akron', name: 'Senior Helpers (Akron)',
+      nonMedicalHourly: 29, personalCareHourly: 32,
+      minVisitHours: 4, licensed: 'licensed', ltcEligible: 'eligible',
+      phone: '(330) 235-0555', website: 'https://www.seniorhelpers.com',
+      source: 'Northeast Ohio non-medical range, Akron market position',
+      notes: 'Dementia-focused programs. Confirm LTC direct-billing capability.',
+    }),
+    a({
+      id: 'home-helpers-akron', name: 'Home Helpers Home Care (Akron)',
+      nonMedicalHourly: 28, personalCareHourly: 31,
+      minVisitHours: 2, licensed: 'licensed', ltcEligible: 'unknown',
+      website: 'https://www.homehelpershomecare.com',
+      source: 'Northeast Ohio non-medical range, low-cost end for shorter minimum visits',
+      notes: 'Shorter 2-hour minimum makes a 10 hrs/week plan easier to staff.',
+    }),
+    a({
+      id: 'private-hire-akron', name: 'Private-hire caregiver (Akron market average)',
+      nonMedicalHourly: 19.31, personalCareHourly: 24.15,
+      minVisitHours: null, licensed: 'unknown', ltcEligible: 'notEligible',
+      pricingStatus: 'publiclyListed',
+      source: 'Care.com Akron, OH home care cost data (June 2026): $19.31/hr average, $24.15/hr high end',
+      notes: 'Benchmark only. Direct hire is cheaper but you become the employer: payroll taxes, backup coverage, '
+        + 'liability, and most LTC policies will not reimburse an unlicensed private caregiver.',
+    }),
+  ];
+}
+
 export function defaultLocationState(): LtcLocationState {
   const today = new Date().toISOString().slice(0, 10);
   return {
@@ -152,16 +232,17 @@ export function defaultLocationState(): LtcLocationState {
         id: 'akron-oh',
         city: 'Akron', state: 'OH', isCurrent: true,
         // Akron non-medical home care verified range $128–$140/day.
-        medianHourly: { nonMedical: 30, personalCare: null, homeHealth: null, skilledNursing: null },
+        medianHourly: { nonMedical: 30, personalCare: 32.5, homeHealth: 38, skilledNursing: 75 },
         assistedLivingMonthly: null, nursingMonthly: null,
-        partnershipAvailable: true, providerCount: null,
-        source: 'Household research — daily planning range $128–$140/day',
+        partnershipAvailable: true, providerCount: 6,
+        source: 'Household research — daily planning range $128–$140/day; agency rates seeded from published pricing',
         lastUpdated: today,
-        notes: 'Default planning market. Replace the median with agency quotes as you collect them.',
+        notes: 'Default planning market. Replace medians and agency rates with written quotes as you collect them.',
       },
     ],
-    agencies: [],
+    agencies: seedAkronAgencies(),
     rateHistory: [],
+
     careRateInflationPct: 4,
     compareCategory: 'nonMedical',
     compareHours: 20,
