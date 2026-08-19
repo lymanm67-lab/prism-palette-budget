@@ -3,19 +3,24 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import type { LtcHousehold, LtcPolicy } from '@/lib/ltc/model';
-import { PLAN_HOUR_TIERS, targetAgencyRate } from '@/lib/ltc/careplan';
+import { targetAgencyRate } from '@/lib/ltc/careplan';
 import type { LtcLocationState } from '@/lib/ltc/location';
 import {
-  waterfallAt, protectionBand, PROTECTION_LABEL, simulateGapProgression, PROGRESSION_SCENARIOS, usd, type GapStrategyState,
+  waterfallAt, protectionBand, PROTECTION_LABEL, simulateGapProgression, plannedHourTiers, usd, type GapStrategyState,
 } from '@/lib/ltc/gapstrategy';
+import { PlannedHoursControl } from './PlannedHoursControl';
 
 export function CareScenarios({ h, g, patchG, policy, loc }: {
   h: LtcHousehold; g: GapStrategyState; patchG: (p: Partial<GapStrategyState>) => void;
   policy?: LtcPolicy; loc?: LtcLocationState;
 }) {
   const age = g.stress.claimAge;
-  const rows = PLAN_HOUR_TIERS.map((hrs) => ({ hrs, w: waterfallAt(h, g, age, hrs, policy) }));
-  const progression = simulateGapProgression(h, g, age, PROGRESSION_SCENARIOS[g.progression] ?? PROGRESSION_SCENARIOS.moderate, policy);
+  const tiers = plannedHourTiers(g.weeklyHours);
+  const rows = tiers.map((hrs) => ({ hrs, w: waterfallAt(h, g, age, hrs, policy) }));
+  const bump = g.progression === 'higher' ? 10 : 5;
+  const progressionHours = Array.from({ length: Math.max(1, Math.round(g.stress.careYears || 3)) },
+    (_, i) => Math.max(1, g.weeklyHours + i * bump));
+  const progression = simulateGapProgression(h, g, age, progressionHours, policy);
   const agencies = (loc?.agencies || [])
     .map((a) => ({ ...a, rate: a.nonMedicalHourly ?? a.personalCareHourly ?? 0 }))
     .filter((a) => a.rate > 0)
@@ -26,15 +31,11 @@ export function CareScenarios({ h, g, patchG, policy, loc }: {
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-base">Care hour scenarios at age {age}</CardTitle>
-          <p className="text-xs text-muted-foreground">Every tier is funded through the same waterfall.</p>
+          <p className="text-xs text-muted-foreground">Built from my real planned hours — every variation is funded through the same waterfall.</p>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-wrap gap-2 mb-3">
-            {PLAN_HOUR_TIERS.map((hrs) => (
-              <Button key={hrs} size="sm" variant={g.weeklyHours === hrs ? 'default' : 'outline'} onClick={() => patchG({ weeklyHours: hrs })}>
-                {hrs} hrs/wk
-              </Button>
-            ))}
+          <div className="mb-3">
+            <PlannedHoursControl g={g} patchG={patchG} />
           </div>
           <Table>
             <TableHeader><TableRow>
@@ -46,7 +47,7 @@ export function CareScenarios({ h, g, patchG, policy, loc }: {
             <TableBody>
               {rows.map(({ hrs, w }) => (
                 <TableRow key={hrs} className={g.weeklyHours === hrs ? 'bg-primary/5' : ''}>
-                  <TableCell className="font-medium">{hrs}/wk</TableCell>
+                  <TableCell className="font-medium">{hrs}/wk{hrs === g.weeklyHours ? ' (plan)' : ''}</TableCell>
                   <TableCell className="text-right">{usd(w.monthlyCost)}</TableCell>
                   <TableCell className="text-right">{usd(w.reimbursement)}</TableCell>
                   <TableCell className="text-right">{usd(w.hsaSupport)}</TableCell>
@@ -99,7 +100,7 @@ export function CareScenarios({ h, g, patchG, policy, loc }: {
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm">Progressive care need</CardTitle>
-          <p className="text-xs text-muted-foreground">Care rarely starts at 40 hours — needs escalate over time.</p>
+          <p className="text-xs text-muted-foreground">Starts at my planned {g.weeklyHours} hrs/week and escalates by {bump} hrs each year.</p>
         </CardHeader>
         <CardContent>
           <Table>
