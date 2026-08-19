@@ -105,9 +105,21 @@ export function LtcCenter({
               </SectionNote>
             </div>
           ))}
-          <Button size="sm" variant="outline" className="print:hidden" onClick={() => patch({ ltcQuotes: [...quotes, blankQuote()] })}>
-            <Plus className="h-3.5 w-3.5 mr-1" /> Add LTC quote
-          </Button>
+          <div className="flex flex-wrap gap-2 print:hidden">
+            <Button size="sm" variant="outline" onClick={() => patch({ ltcQuotes: [...quotes, blankQuote()] })}>
+              <Plus className="h-3.5 w-3.5 mr-1" /> Add LTC quote
+            </Button>
+            {/* Carrier PDFs are parsed by the LTC dashboard uploader, which stores the file too. */}
+            <Button size="sm" variant="ghost" asChild>
+              <Link to="/ltc?tab=compare">
+                <Upload className="h-3.5 w-3.5 mr-1" /> Upload a carrier quote (AI parse)
+              </Link>
+            </Button>
+          </div>
+          <SectionNote>
+            Have a PDF or photo of a carrier quote? Upload it on the LTC dashboard's Compare tab — it extracts the
+            benefit, inflation rider and premiums, saves the file, and adds the policy to the comparison.
+          </SectionNote>
         </CardContent>
       </Card>
 
