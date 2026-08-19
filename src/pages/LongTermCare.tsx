@@ -125,7 +125,17 @@ export default function LongTermCare() {
           <QuoteUpload state={state} patch={patch} />
           <PolicyComparison state={state} patch={patch} />
         </TabsContent>
+        <TabsContent value="locations" className="mt-4">
+          <CareCostByLocation state={state} loc={locationState} patchLoc={patchLoc} />
+        </TabsContent>
+        <TabsContent value="agencies" className="mt-4">
+          <AgencyComparison state={state} loc={locationState} patchLoc={patchLoc} />
+        </TabsContent>
+        <TabsContent value="hours" className="mt-4">
+          <HoursProtected state={state} loc={locationState} patchLoc={patchLoc} />
+        </TabsContent>
         <TabsContent value="inflation" className="mt-4"><InflationProjection state={state} /></TabsContent>
+
         <TabsContent value="gap" className="mt-4"><CareCostGap state={state} patch={patch} /></TabsContent>
         <TabsContent value="assets" className="mt-4"><AssetProtection state={state} patch={patch} /></TabsContent>
         <TabsContent value="scenarios" className="mt-4"><ScenarioSimulator state={state} /></TabsContent>
