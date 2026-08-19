@@ -386,18 +386,75 @@ export interface SavedScenario {
   overrides: Partial<AssumptionState>;
 }
 
+/**
+ * Household baseline — every value below is the real, verified figure for the
+ * Montgomery household (IU + DODD paystubs, OPERS, SSA estimate, debt records).
+ */
 export function defaultAssumptions(seed?: Partial<AssumptionState>): AssumptionState {
+  const debts: DebtRedirect[] = [
+    {
+      key: 'student',
+      label: 'Student loans (PSLF / IDR)',
+      balance: 107_000,
+      ratePct: 6.5,
+      requiredPayment: 390,
+      extraPayment: 0,
+      payoffDate: '2033-07',
+      destination: 'workplace_retirement',
+      forgiveness: {
+        qualifyingPaymentsCompleted: 41,
+        qualifyingPaymentsRemaining: 79,
+        monthlyQualifyingPayment: 390,
+        forgivenessDate: '2033-07',
+      },
+      notes: 'IDR payments of $390 begin Jan 2027. Liability until legally forgiven; payment redirects to investing at forgiveness.',
+    },
+    {
+      key: 'vacation',
+      label: 'Vacation loans (2)',
+      balance: 5_049.30,
+      ratePct: 12,
+      requiredPayment: 383.90,
+      extraPayment: 0,
+      payoffDate: '2027-01',
+      destination: 'roth',
+      notes: 'Vacation Loan 1 $3,488.03 at $228.47 + Vacation Loan 2 $1,561.27 at $155.43.',
+    },
+    {
+      key: 'consumer',
+      label: 'Consumer debt (BetrLink settlement)',
+      balance: 2_606.04,
+      ratePct: 24,
+      requiredPayment: 888,
+      extraPayment: 0,
+      payoffDate: '2026-11',
+      destination: 'brokerage',
+      notes: 'BetrLink settlement plan at $888/mo — the real Freedom Plan target.',
+    },
+    {
+      key: 'sba',
+      label: 'SBA loan',
+      balance: 48_000,
+      ratePct: 3,
+      requiredPayment: 158,
+      extraPayment: 0,
+      payoffDate: '2050-01',
+      destination: 'brokerage',
+      notes: '3% minimums forever — lowest payoff priority.',
+    },
+  ];
+
   const base: AssumptionState = {
     asOf: new Date().toISOString().slice(0, 10),
     currentAge: 59,
     spouseCurrentAge: 55,
-    retirementAge: 80,
+    retirementAge: 85,
     salaryAnnual: 70_940.04,
     salaryGrowthPct: 3,
     raiseRedirectPct: 100,
     raiseDestination: 'workplace_retirement',
     employerContributionPct: 9,
-    employeeContributionMonthly: 335,
+    employeeContributionMonthly: 451.66,
     additionalVoluntaryMonthly: 0,
     scheduledIncreaseMonthly: 250,
     scheduledIncreaseStartYear: 2028,
@@ -412,70 +469,22 @@ export function defaultAssumptions(seed?: Partial<AssumptionState>): AssumptionS
     socialSecurityMonthly: 4_035,
     socialSecurityCola: 2,
     spousePensionStartAge: 62,
-    spousePensionMonthly: 0,
+    spousePensionMonthly: 6_559,
     spousePensionCola: 2,
     spousePensionSurvivorPct: 50,
-    otherRecurringIncomeMonthly: 0,
+    // Consulting / 1099 income: $1,925 per quarter = $7,700/yr.
+    otherRecurringIncomeMonthly: 641.67,
     legacyWindowStartAge: 70,
     plannedWithdrawalForLiving: 0,
     rmdAge: 75,
     effectiveTaxRatePct: 22,
     rothConversionAnnual: 0,
-    debts: [
-      {
-        key: 'student',
-        label: 'Student loans (PSLF / IDR)',
-        balance: 107_000,
-        ratePct: 6.5,
-        requiredPayment: 390,
-        extraPayment: 0,
-        payoffDate: '2033-08',
-        destination: 'workplace_retirement',
-        forgiveness: {
-          qualifyingPaymentsCompleted: 41,
-          qualifyingPaymentsRemaining: 79,
-          monthlyQualifyingPayment: 390,
-          forgivenessDate: '2033-08',
-        },
-        notes: 'Liability until legally forgiven. Payment redirects to investing at forgiveness.',
-      },
-      {
-        key: 'vacation',
-        label: 'Vacation loans',
-        balance: 5_049.30,
-        ratePct: 12,
-        requiredPayment: 210,
-        extraPayment: 0,
-        payoffDate: '2027-01',
-        destination: 'roth',
-      },
-      {
-        key: 'consumer',
-        label: 'Consumer debt',
-        balance: 2_606.04,
-        ratePct: 24,
-        requiredPayment: 150,
-        extraPayment: 0,
-        payoffDate: '2027-01',
-        destination: 'brokerage',
-      },
-      {
-        key: 'sba',
-        label: 'SBA loan',
-        balance: 48_000,
-        ratePct: 3,
-        requiredPayment: 246,
-        extraPayment: 0,
-        payoffDate: '2050-01',
-        destination: 'brokerage',
-        notes: '3% minimums — lowest payoff priority.',
-      },
-    ],
+    debts,
     waterfall: [
-      { key: 'employer', label: 'Capture employer retirement contribution', annualLimit: 999_999, committedAnnual: 0, eligible: true },
-      { key: 'workplace', label: 'Workplace retirement (403(b) TDA)', annualLimit: 23_500, committedAnnual: 0, eligible: true },
-      { key: 'gov457', label: 'Governmental 457(b)', annualLimit: 23_500, committedAnnual: 0, eligible: true },
-      { key: 'hsa', label: 'HSA (while eligible)', annualLimit: 8_550, committedAnnual: 0, eligible: true },
+      { key: 'employer', label: 'Capture employer retirement contribution', annualLimit: 999_999, committedAnnual: 6_384.60, eligible: true, notes: 'IU 9% employer contribution — $532.05/mo.' },
+      { key: 'workplace', label: 'Workplace retirement (403(b) TDA)', annualLimit: 23_500, committedAnnual: 2_220, eligible: true, notes: 'Roth TDA $85 + pre-tax TDA $100 per month.' },
+      { key: 'gov457', label: 'Governmental 457(b)', annualLimit: 23_500, committedAnnual: 1_800, eligible: true, notes: 'Roth 457 $75 + pre-tax 457 $75 per month.' },
+      { key: 'hsa', label: 'HSA (while eligible)', annualLimit: 8_550, committedAnnual: 1_399.92, eligible: true, notes: '$116.66/mo from payroll.' },
       { key: 'roth', label: 'Roth opportunities', annualLimit: 8_000, committedAnnual: 0, eligible: true },
       { key: 'brokerage', label: 'Taxable brokerage', annualLimit: 999_999, committedAnnual: 0, eligible: true },
       { key: 'legacy', label: 'Legacy / foundation assets', annualLimit: 999_999, committedAnnual: 0, eligible: true },
@@ -486,26 +495,68 @@ export function defaultAssumptions(seed?: Partial<AssumptionState>): AssumptionS
       medicarePartB: 185, medigap: 180, partD: 35, advantage: 0, ltcPremium: 0,
       dental: 45, vision: 15, hearing: 20, copays: 60, deductibles: 40,
       eliminationPeriodCost: 0, homeCareGap: 0, uncoveredCare: 0, other: 0,
-      reserveYears: 5, hsaBalance: 0,
+      reserveYears: 5, hsaBalance: 1_500,
     },
     medicare: {
-      plannedMedicareAge: 80,
+      plannedMedicareAge: 65,
       hsaEligible: true,
       medicareEnrolled: false,
       activeEmployerCoverage: true,
       optionsConsidered: ['Medicare Part A', 'Medicare Part B', 'Medicare Part D', 'IU Blue Retiree Plan'],
     },
     achievedMilestones: [{ amount: 100_000 }],
-    scenarios: [],
+    scenarios: baselineScenarios(debts),
     confidence: {
       socialSecurityMonthly: 'projected',
       portfolioBalance: 'current',
       salaryAnnual: 'current',
-      spousePensionMonthly: 'estimated',
+      employeeContributionMonthly: 'current',
+      spousePensionMonthly: 'current',
+      otherRecurringIncomeMonthly: 'current',
+      retirementAge: 'projected',
     },
   };
-  return { ...base, ...(seed || {}) };
+  const merged = { ...base, ...(seed || {}) };
+  // Older saved records predate the seeded comparison scenarios.
+  if (!merged.scenarios?.length) merged.scenarios = baselineScenarios(merged.debts || debts);
+  return merged;
 }
+
+/**
+ * Saved comparison sets: work-stop age sensitivity, return sensitivity, and the
+ * PSLF forgiven / not-forgiven fork. Overrides are sparse patches of the state.
+ */
+export function baselineScenarios(debts: DebtRedirect[]): SavedScenario[] {
+  const createdAt = '2026-08-19';
+  const mk = (id: string, name: string, overrides: Partial<AssumptionState>): SavedScenario =>
+    ({ id, name, createdAt, overrides });
+
+  // PSLF fails: the balance is repaid on a standard schedule instead of forgiven.
+  const unforgiven: DebtRedirect[] = debts.map((d) =>
+    d.forgiveness
+      ? {
+          ...d,
+          label: 'Student loans (no forgiveness — repaid in full)',
+          requiredPayment: 1_215,
+          payoffDate: '2037-01',
+          forgiveness: undefined,
+          notes: 'PSLF denied — $107,000 repaid over 10 years at roughly $1,215/mo.',
+        }
+      : d,
+  );
+
+  return [
+    mk('retire-75', 'Retire at 75', { retirementAge: 75 }),
+    mk('retire-80', 'Retire at 80', { retirementAge: 80 }),
+    mk('retire-85', 'Retire at 85 (base plan)', { retirementAge: 85 }),
+    mk('return-6', 'Conservative — 6% returns', { primaryReturnPct: 6, stretchReturnPct: 7 }),
+    mk('return-8', 'Base — 8% returns', { primaryReturnPct: 8, stretchReturnPct: 10 }),
+    mk('return-10', 'Stretch — 10% returns', { primaryReturnPct: 10, stretchReturnPct: 12 }),
+    mk('pslf-forgiven', 'PSLF forgiven July 2033 (base)', { debts }),
+    mk('pslf-denied', 'PSLF denied — student loans paid in full', { debts: unforgiven }),
+  ];
+}
+
 
 export function applyScenario(state: AssumptionState, scenario?: SavedScenario | null): AssumptionState {
   if (!scenario) return state;
