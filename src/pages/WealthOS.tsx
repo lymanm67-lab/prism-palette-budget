@@ -2,6 +2,11 @@ import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Printer, ImageDown, FileDown, Loader2 } from 'lucide-react';
 import { useWealthOSData } from '@/hooks/use-wealth-os';
+import { useLtcPlan } from '@/hooks/use-ltc-plan';
+import {
+  benefitAtAge, careCostAtAge, combinedPremium, protectionLevel, simulateCareEvent, sweetSpotTable,
+  PROTECTION_LABEL,
+} from '@/lib/ltc/model';
 import { simulate } from '@/lib/legacy/monteCarloSim';
 import { exportBinderPNGs, exportBinderPDF } from '@/lib/legacy/wealthOsExport';
 import RetirementProjection from '@/components/wealth-os/RetirementProjection';
@@ -24,6 +29,9 @@ const SLATE = '#64748B';
 const GREEN = '#1F7A5A';
 
 const money = (n: number) => `$${n.toLocaleString('en-US', { maximumFractionDigits: 2 })}`;
+/** Currency with cents always shown — used for premiums and other exact figures. */
+const money2 = (n: number) =>
+  `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 /* Lyman salary growth: age 59 (2026) → 75 (2042) at 3% annual, plus $25k consulting */
 const BASE_SALARY = 70940.04;
@@ -261,6 +269,29 @@ export default function WealthOS() {
   const [active, setActive] = useState(0);
   const [busy, setBusy] = useState<'png' | 'pdf' | null>(null);
   const { data: live } = useWealthOSData();
+  const { data: ltcRecord } = useLtcPlan();
+
+  /* Long-Term Care — live from the LTC Decision Dashboard */
+  const ltc = useMemo(() => {
+    const s = ltcRecord?.state;
+    if (!s) return null;
+    const policy = s.policies.find((p) => p.id === s.currentPolicyId) || s.policies[0];
+    if (!policy) return null;
+    const h = s.household;
+    const claimCost = careCostAtAge(h, h.lymanAge, h.assumedClaimAge);
+    const atClaim = benefitAtAge(policy, h.lymanAge, h.assumedClaimAge);
+    const withCover = simulateCareEvent(s, policy, h.assumedClaimAge, h.assumedCareYears);
+    const without = simulateCareEvent(s, null, h.assumedClaimAge, h.assumedCareYears);
+    const level = protectionLevel(s, policy);
+    const coveragePct = claimCost > 0 ? Math.min(100, (atClaim.monthlyBenefit / claimCost) * 100) : 0;
+    return {
+      policy, h, claimCost, atClaim, withCover, without, level, coveragePct,
+      premium: combinedPremium(policy),
+      quotes: s.policies.length,
+      sweetSpot: sweetSpotTable(s),
+    };
+  }, [ltcRecord]);
+
 
   const ASSETS = useMemo(
     () => FALLBACK_ASSETS.map((a) => ({
@@ -793,8 +824,78 @@ export default function WealthOS() {
           <Kpi label="Life Insurance — Personal Policy" value="$500,000" tone="navy" />
           <Kpi label="Employer Group Life" value="$250,000" tone="plain" />
           <Kpi label="Disability" value="~60% Salary Replacement" tone="gold" />
-          <Kpi label="Long-Term Care" value="In Place" tone="green" />
+          <Kpi
+            label="Long-Term Care"
+            value={ltc ? `${money2(ltc.premium)}/mo premium` : 'Quotes under review'}
+            sub={ltc ? `${ltc.policy.carrier} — ${ltc.policy.product}` : 'No plan selected yet'}
+            tone="green"
+          />
         </div>
+
+        <SectionLabel>Long-Term Care Plan of Record</SectionLabel>
+        {ltc ? (
+          <>
+            <div className="wos-card">
+              <Row label="Carrier / product" value={`${ltc.policy.carrier} — ${ltc.policy.product}`} />
+              <Row
+                label="Starting monthly benefit (each)"
+                value={`${money(ltc.policy.startingMonthlyBenefit)} • ${ltc.policy.benefitPeriodMonths}-month period • ${money(ltc.policy.poolEach)} pool`}
+              />
+              <Row
+                label="Inflation protection"
+                value={`${ltc.policy.inflationPct}% ${ltc.policy.inflationCompound ? 'compound' : 'simple'}${ltc.policy.inflationLifetime ? ', lifetime' : ''}`}
+              />
+              <Row
+                label={`Benefit at claim age ${ltc.h.assumedClaimAge}`}
+                value={`${money(Math.round(ltc.atClaim.monthlyBenefit))}/mo vs. ${money(Math.round(ltc.claimCost))}/mo projected ${ltc.h.city} care cost`}
+              />
+              <Row
+                label="Combined household premium"
+                value={`${money2(ltc.premium)}/mo • ${money(ltc.premium * 12)}/yr`}
+              />
+              <Row
+                label="Protection level"
+                value={`${PROTECTION_LABEL[ltc.level.level]} — ${(ltc.level.coverageRatio * 100).toFixed(0)}% of care cost, ${(ltc.level.premiumShare * 100).toFixed(1)}% of income`}
+                bold
+              />
+            </div>
+
+            <SectionLabel>Net Worth Protected by the Policy</SectionLabel>
+            <div className="wos-grid2">
+              <Kpi
+                label={`Withdrawals avoided — ${ltc.h.assumedCareYears}-year care event`}
+                value={money(Math.round(ltc.withCover.insurancePaid))}
+                sub={`Uninsured cost would be ${money(Math.round(ltc.without.outOfPocket))}`}
+                tone="green"
+              />
+              <Kpi
+                label="Net worth exposed without cover"
+                value={money(Math.round(Math.min(live?.netWorth ?? 0, ltc.without.outOfPocket)))}
+                sub={`Net worth today ${money(Math.round(live?.netWorth ?? 0))}`}
+                tone="gold"
+              />
+            </div>
+
+            <SectionLabel>Benefit Sweet Spot — Value per Premium Dollar</SectionLabel>
+            <div className="wos-card">
+              {ltc.sweetSpot.rows.slice(0, 5).map((r) => (
+                <Row
+                  key={r.benefit}
+                  label={`${money(r.benefit)}/mo benefit${r.benefit === ltc.sweetSpot.bestBenefit ? ' — best value' : ''}`}
+                  value={`${money2(r.combined)}/mo premium • ${money(Math.round(r.protectedCapital))} capital protected • value ${r.valueScore}/10`}
+                  bold={r.benefit === ltc.sweetSpot.bestBenefit}
+                />
+              ))}
+            </div>
+            <div style={{ marginTop: 6, fontSize: 9.5, color: SLATE }}>
+              {ltc.quotes} carrier quote(s) on file. Reviewed {ltc.h.lastReviewed}; next review {ltc.h.nextReview}.
+            </div>
+          </>
+        ) : (
+          <div className="wos-card">
+            <Row label="Long-term care plan" value="No plan of record — complete the LTC Decision Dashboard" bold />
+          </div>
+        )}
 
         <SectionLabel>Beneficiaries</SectionLabel>
         <div className="wos-card">
@@ -807,7 +908,11 @@ export default function WealthOS() {
         <SectionLabel>Protection Coverage Level</SectionLabel>
         <Bar label="Life insurance vs. 10x income benchmark" pct={106} value="$750,000 total" />
         <Bar label="Disability income replacement" pct={60} value="60%" />
-        <Bar label="Long-term care readiness" pct={100} value="Covered" />
+        <Bar
+          label="Long-term care readiness (benefit vs. projected care cost)"
+          pct={ltc ? Math.round(ltc.coveragePct) : 0}
+          value={ltc ? `${Math.round(ltc.coveragePct)}% covered` : 'Not in force'}
+        />
         <Bar label="Emergency liquidity (3-month target)" pct={3} value="$350" />
 
         <div className="wos-quote" style={{ marginTop: 16 }}>

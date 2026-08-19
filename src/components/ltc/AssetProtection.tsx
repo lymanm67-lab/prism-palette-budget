@@ -1,9 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield, TrendingUp } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Shield, TrendingUp, Link2 } from 'lucide-react';
 import {
   careCostAtAge, combinedPremium, fvMonthly, simulateCareEvent, type LtcState,
 } from '@/lib/ltc/model';
-import { money, money2, Note, Field, NumField } from './shared';
+import { useWealthOSData } from '@/hooks/use-wealth-os';
+import { money, money2, Note, Field, NumField, StatCard } from './shared';
+
 
 const DURATIONS = [1, 2, 3, 5];
 const RETURNS = [6, 7, 8, 9];
@@ -22,8 +26,56 @@ export function AssetProtection({ state, patch }: { state: LtcState; patch: (p: 
     ? Math.max(0, combinedPremium(cheapestAlt) - combinedPremium(policy))
     : 0;
 
+  // Live household balance sheet — LTC risk measured against real net worth.
+  const { data: wealth } = useWealthOSData();
+  const liveRetirement = wealth?.retirementAssets?.reduce((s, a) => s + a.balance, 0) ?? 0;
+  const liveNetWorth = wealth?.netWorth ?? 0;
+  const drift = liveRetirement > 0 ? Math.abs(liveRetirement - h.retirementBalance) : 0;
+  const baseCase = simulateCareEvent(state, policy || null, h.assumedClaimAge, h.assumedCareYears);
+  const noCover = simulateCareEvent(state, null, h.assumedClaimAge, h.assumedCareYears);
+  const netWorthAtRisk = Math.min(liveNetWorth, noCover.outOfPocket);
+  const netWorthShielded = Math.min(liveNetWorth, baseCase.insurancePaid);
+  const riskPct = liveNetWorth > 0 ? (netWorthAtRisk / liveNetWorth) * 100 : 0;
+
   return (
     <div className="space-y-4">
+      <Card className="glass-card">
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Link2 className="h-4 w-4 text-prism-sky" /> Linked to household net worth
+          </CardTitle>
+          <Note>
+            Care risk is measured against the live balance sheet, not a typed-in number. A {h.assumedCareYears}-year
+            care event beginning at age {h.assumedClaimAge} is compared to today's net worth.
+          </Note>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <StatCard label="Live net worth" value={money(liveNetWorth)} sub={`${wealth?.assets?.length ?? 0} assets tracked`} tone="info" />
+            <StatCard label="Retirement assets (live)" value={money(liveRetirement)} sub="Bucketed retirement accounts" />
+            <StatCard
+              label="Net worth at risk without cover"
+              value={money(netWorthAtRisk)}
+              sub={`${riskPct.toFixed(0)}% of net worth`}
+              tone={riskPct > 40 ? 'risk' : riskPct > 20 ? 'warn' : 'good'}
+            />
+            <StatCard label="Shielded by insurance" value={money(netWorthShielded)} sub="Withdrawals avoided" tone="good" />
+          </div>
+          {liveRetirement > 0 && drift > 1000 && (
+            <div className="flex flex-wrap items-center gap-2 rounded-lg border border-prism-amber/40 bg-prism-amber/5 p-3">
+              <Badge variant="outline" className="text-[10px] border-prism-amber/40 text-prism-amber">Out of sync</Badge>
+              <span className="text-xs">
+                The retirement balance used below is {money(h.retirementBalance)}, but your accounts total {money(liveRetirement)}.
+              </span>
+              <Button size="sm" variant="outline" onClick={() => setH({ retirementBalance: Math.round(liveRetirement) })}>
+                Use live balance
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+
       <Card className="glass-card">
         <CardHeader><CardTitle className="text-base">Inputs</CardTitle></CardHeader>
         <CardContent className="grid sm:grid-cols-3 lg:grid-cols-6 gap-3 items-end">
