@@ -5,6 +5,7 @@ import { useWealthOSData } from '@/hooks/use-wealth-os';
 import { useLtcPlan } from '@/hooks/use-ltc-plan';
 import {
   benefitAtAge, careCostAtAge, combinedPremium, protectionLevel, simulateCareEvent, sweetSpotTable,
+  PROTECTION_LABEL,
 } from '@/lib/ltc/model';
 import { simulate } from '@/lib/legacy/monteCarloSim';
 import { exportBinderPNGs, exportBinderPDF } from '@/lib/legacy/wealthOsExport';
