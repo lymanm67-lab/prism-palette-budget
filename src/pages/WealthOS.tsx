@@ -29,6 +29,9 @@ const SLATE = '#64748B';
 const GREEN = '#1F7A5A';
 
 const money = (n: number) => `$${n.toLocaleString('en-US', { maximumFractionDigits: 2 })}`;
+/** Currency with cents always shown — used for premiums and other exact figures. */
+const money2 = (n: number) =>
+  `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 /* Lyman salary growth: age 59 (2026) → 75 (2042) at 3% annual, plus $25k consulting */
 const BASE_SALARY = 70940.04;
