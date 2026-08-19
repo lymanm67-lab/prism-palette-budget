@@ -7,7 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Plus, Shield, Trash2, HeartPulse, Stethoscope, AlertTriangle } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Plus, Shield, Trash2, HeartPulse, Stethoscope, AlertTriangle, Upload } from 'lucide-react';
 import { money, NumField, SectionNote, ConfidenceBadge } from './shared';
 import {
   CARE_SCENARIOS, annualPremium, dailyBenefit, careCostAtAge, healthcareReserve,
@@ -105,9 +106,21 @@ export function LtcCenter({
               </SectionNote>
             </div>
           ))}
-          <Button size="sm" variant="outline" className="print:hidden" onClick={() => patch({ ltcQuotes: [...quotes, blankQuote()] })}>
-            <Plus className="h-3.5 w-3.5 mr-1" /> Add LTC quote
-          </Button>
+          <div className="flex flex-wrap gap-2 print:hidden">
+            <Button size="sm" variant="outline" onClick={() => patch({ ltcQuotes: [...quotes, blankQuote()] })}>
+              <Plus className="h-3.5 w-3.5 mr-1" /> Add LTC quote
+            </Button>
+            {/* Carrier PDFs are parsed by the LTC dashboard uploader, which stores the file too. */}
+            <Button size="sm" variant="ghost" asChild>
+              <Link to="/ltc?tab=compare">
+                <Upload className="h-3.5 w-3.5 mr-1" /> Upload a carrier quote (AI parse)
+              </Link>
+            </Button>
+          </div>
+          <SectionNote>
+            Have a PDF or photo of a carrier quote? Upload it on the LTC dashboard's Compare tab — it extracts the
+            benefit, inflation rider and premiums, saves the file, and adds the policy to the comparison.
+          </SectionNote>
         </CardContent>
       </Card>
 
