@@ -67,6 +67,20 @@ export interface SweetSpotRung {
   premiumKateri: number;
 }
 
+/** A single monthly LTC premium payment logged into the binder. */
+export interface PremiumPayment {
+  id: string;
+  /** Month paid, YYYY-MM. */
+  month: string;
+  /** Date the payment actually cleared. */
+  paidOn: string;
+  amountLyman: number;
+  amountKateri: number;
+  method?: string;
+  confirmation?: string;
+  notes?: string;
+}
+
 export interface LtcState {
   household: LtcHousehold;
   policies: LtcPolicy[];
@@ -74,6 +88,9 @@ export interface LtcState {
   weights: LtcWeights;
   sweetSpot: SweetSpotRung[];
   reviewLog: { date: string; premium: number; benefit: number; careCost: number; notes?: string }[];
+  /** Monthly premium payment ledger (binder / plan of record). */
+  premiumLog?: PremiumPayment[];
+
   /** Location-based care cost + agency comparison (see ./location). */
   location?: import('./location').LtcLocationState;
   asOf: string;
