@@ -235,6 +235,10 @@ export default function BudgetPlanner() {
     return Array.from(g.entries());
   }, [rows]);
 
+  useEffect(() => {
+    document.title = 'Budget Planner — Edit Monthly Budgets | PrismMoney™';
+  }, []);
+
   return (
     <div className="container mx-auto p-4 space-y-4 max-w-6xl">
 
