@@ -616,6 +616,8 @@ export interface YearRow {
   debtRedirectMonthly: number;
   voluntaryMonthly: number;
   scheduledMonthly: number;
+  /** Investable surplus released by the monthly budget. */
+  budgetSurplusMonthly: number;
   totalMonthly: number;
   totalAnnual: number;
   /** Household income (legacy window) */
@@ -659,9 +661,10 @@ export function buildTimeline(s: AssumptionState): YearRow[] {
     const scheduledMonthly = year >= s.scheduledIncreaseStartYear ? s.scheduledIncreaseMonthly : 0;
     const employeeMonthly = s.employeeContributionMonthly;
     const voluntaryMonthly = s.additionalVoluntaryMonthly;
+    const surplusMonthly = budgetSurplusMonthly(s);
     const totalMonthly =
       employeeMonthly + employerMonthly + debtRedirectMonthly + voluntaryMonthly +
-      scheduledMonthly + raiseRedirectMonthly;
+      scheduledMonthly + raiseRedirectMonthly + surplusMonthly;
 
     const ssYears = age - s.socialSecurityStartAge;
     const socialSecurityMonthly =
@@ -673,7 +676,8 @@ export function buildTimeline(s: AssumptionState): YearRow[] {
     rows.push({
       year, age, salary, raiseAmount, cumulativeRaises, raiseRedirectMonthly,
       employeeMonthly, employerMonthly, debtRedirectMonthly, voluntaryMonthly,
-      scheduledMonthly, totalMonthly, totalAnnual: totalMonthly * 12,
+      scheduledMonthly, budgetSurplusMonthly: surplusMonthly,
+      totalMonthly, totalAnnual: totalMonthly * 12,
       socialSecurityMonthly, pensionMonthly,
       otherIncomeMonthly: s.otherRecurringIncomeMonthly,
       householdIncomeMonthly:
