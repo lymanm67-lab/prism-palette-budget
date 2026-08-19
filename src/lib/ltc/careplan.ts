@@ -179,3 +179,55 @@ export function cashBenefitAt(
     cashInsteadOfPlanShortfall: Math.max(0, point.planPays - cashMonthly),
   };
 }
+
+/* ------------------------------------------------------------------------- */
+/* Elimination period bridge                                                 */
+/* ------------------------------------------------------------------------- */
+
+export interface EliminationBridge {
+  days: number;
+  months: number;
+  /** Full care cost you face before reimbursement begins. */
+  careOutOfPocket: number;
+  /** Support costs over the same window. */
+  supportOutOfPocket: number;
+  totalOutOfPocket: number;
+  /**
+   * Cash benefit payable during the wait when the rider has no elimination
+   * period (many cash/indemnity riders pay from day one — verify the contract).
+   */
+  cashDuringWait: number;
+  /** What you still fund yourself after cash is applied. */
+  netOutOfPocket: number;
+  /** Percent of the wait covered by the cash benefit. */
+  coveragePct: number;
+  /** Cash covers the whole wait. */
+  fullyBridged: boolean;
+}
+
+/**
+ * Model the elimination period: what care + support costs while reimbursement
+ * has not started, and how far the cash benefit bridges it.
+ * `cashPaysFromDayOne` false = cash also waits out the elimination period.
+ */
+export function eliminationBridge(
+  point: CarePlanPoint,
+  eliminationDays: number,
+  cashBenefitPct = SUPPORT_COST_PCT,
+  opts?: { cashPaysFromDayOne?: boolean; supportCostPct?: number },
+): EliminationBridge {
+  const days = Math.max(0, eliminationDays);
+  const months = days / 30;
+  const cash = cashBenefitAt(point, cashBenefitPct, { supportCostPct: opts?.supportCostPct });
+  const careOutOfPocket = point.monthlyCost * months;
+  const supportOutOfPocket = cash.supportCost * months;
+  const totalOutOfPocket = careOutOfPocket + supportOutOfPocket;
+  const cashDuringWait = (opts?.cashPaysFromDayOne ?? true) ? cash.cashMonthly * months : 0;
+  const netOutOfPocket = Math.max(0, totalOutOfPocket - cashDuringWait);
+  const coveragePct = totalOutOfPocket > 0 ? Math.min(100, (cashDuringWait / totalOutOfPocket) * 100) : 100;
+  return {
+    days, months, careOutOfPocket, supportOutOfPocket, totalOutOfPocket,
+    cashDuringWait, netOutOfPocket, coveragePct,
+    fullyBridged: netOutOfPocket <= 0.01,
+  };
+}

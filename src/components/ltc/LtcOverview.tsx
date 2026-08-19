@@ -2,14 +2,14 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Shield, Info, Clock, Handshake, Banknote } from 'lucide-react';
+import { Shield, Info, Clock, Handshake, Banknote, Hourglass } from 'lucide-react';
 import {
   benefitAtAge, combinedPremium, annualPremium, cashBenefitMonthly, type LtcState,
 } from '@/lib/ltc/model';
 import {
   PLAN_MAX_MONTHLY, PLAN_INFLATION_PCT, PLAN_HOUR_TIERS, PLAN_AGES,
   carePlanAt, carePlanTiers, carePlanEvent, maxTierWithinPlan, planMaxAtAge,
-  policyMeetsPlanMax, targetAgencyRate, cashBenefitAt, SUPPORT_COST_PCT,
+  policyMeetsPlanMax, targetAgencyRate, cashBenefitAt, SUPPORT_COST_PCT, eliminationBridge,
 } from '@/lib/ltc/careplan';
 import { money, money2, StatCard, Note, CoverageBadge } from './shared';
 
@@ -27,6 +27,8 @@ export function LtcOverview({ state, onGoTo }: { state: LtcState; onGoTo: (tab: 
   const negotiateRate = targetAgencyRate(hours, plan.planMax);
   const meetsPlan = policyMeetsPlanMax(policy);
   const cash = cashBenefitAt(plan, policy.cashBenefitPct || SUPPORT_COST_PCT);
+  const [cashDayOne, setCashDayOne] = useState(true);
+  const bridge = eliminationBridge(plan, policy.eliminationDays, policy.cashBenefitPct || SUPPORT_COST_PCT, { cashPaysFromDayOne: cashDayOne });
 
   const planRows: [string, string][] = [
     ['Monthly plan maximum (today)', `${money(PLAN_MAX_MONTHLY)}/mo`],
@@ -146,6 +148,54 @@ export function LtcOverview({ state, onGoTo }: { state: LtcState; onGoTo: (tab: 
             {money(plan.planPays)} — a {money(cash.cashInsteadOfPlanShortfall)}/mo trade. Use cash in months when family
             provides the care, and reimbursement in months when the agency does. Confirm with the carrier whether both
             can be paid in the same month before assuming they stack.
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Elimination period bridge ----------------------------------------- */}
+      <Card className="glass-card">
+        <CardHeader className="space-y-2">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Hourglass className="h-4 w-4 text-prism-sky" /> {bridge.days}-day elimination period — can the cash benefit bridge it?
+          </CardTitle>
+          <Note>
+            Reimbursement does not start until the {bridge.days}-day ({bridge.months.toFixed(1)}-month) wait is satisfied.
+            Indemnity-style cash benefits are commonly payable from day one, which is exactly what makes them useful here —
+            confirm your contract's wording.
+          </Note>
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" variant={cashDayOne ? 'default' : 'outline'} onClick={() => setCashDayOne(true)}>
+              Cash pays from day one
+            </Button>
+            <Button size="sm" variant={!cashDayOne ? 'default' : 'outline'} onClick={() => setCashDayOne(false)}>
+              Cash also waits out the period
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <StatCard label="Care during the wait" value={money(bridge.careOutOfPocket)} sub={`${hours} hrs/week at ${money(plan.monthlyCost)}/mo`} tone="warn" />
+            <StatCard label="Support costs during the wait" value={money(bridge.supportOutOfPocket)} sub={`${SUPPORT_COST_PCT}% of care cost`} tone="warn" />
+            <StatCard
+              label="Cash benefit paid during the wait"
+              value={money(bridge.cashDuringWait)}
+              sub={cashDayOne ? `${cash.pct}% × ${money(plan.planMax)}/mo, no wait` : 'Nothing paid until the wait ends'}
+              tone={bridge.cashDuringWait > 0 ? 'good' : 'warn'}
+            />
+            <StatCard
+              label="Net out of pocket"
+              value={money(bridge.netOutOfPocket)}
+              sub={`${bridge.coveragePct.toFixed(0)}% of the wait bridged by cash`}
+              tone={bridge.fullyBridged ? 'good' : 'warn'}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Keep {money(bridge.netOutOfPocket)} liquid as the elimination-period reserve for a claim at age {claimAge} at{' '}
+            {hours} hrs/week. After the wait clears, the same {cash.pct}% cash benefit switches roles: it stops bridging the
+            wait and starts covering the {money(cash.supportCost)}/mo of support costs, leaving{' '}
+            {money(cash.gapAfterCash)}/mo of all-in gap funded from income.
+            {' '}Ohio note: days of care usually count toward the elimination period only when services are actually
+            received, so lighter hour tiers can stretch a 90-day wait into more calendar months.
           </p>
         </CardContent>
       </Card>
