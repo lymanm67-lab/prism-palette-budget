@@ -15,13 +15,20 @@ import { AssetProtection } from '@/components/ltc/AssetProtection';
 import { ScenarioSimulator } from '@/components/ltc/ScenarioSimulator';
 import { Recommendation } from '@/components/ltc/Recommendation';
 import { DocumentVault } from '@/components/ltc/DocumentVault';
+import { CareCostByLocation } from '@/components/ltc/CareCostByLocation';
+import { AgencyComparison } from '@/components/ltc/AgencyComparison';
+import { HoursProtected } from '@/components/ltc/HoursProtected';
 import { useLtcPlan, useSaveLtcPlan } from '@/hooks/use-ltc-plan';
 import { defaultState, type LtcState } from '@/lib/ltc/model';
+import { ensureLocationState, type LtcLocationState } from '@/lib/ltc/location';
 
 const TABS = [
   { key: 'overview', label: 'Overview' },
   { key: 'current', label: 'Current Plan' },
   { key: 'compare', label: 'Compare Policies' },
+  { key: 'locations', label: 'Care Cost by Location' },
+  { key: 'agencies', label: 'Local Agencies' },
+  { key: 'hours', label: 'Hours Protected' },
   { key: 'inflation', label: 'Inflation' },
   { key: 'gap', label: 'Care Cost Gap' },
   { key: 'assets', label: 'Asset Protection' },
@@ -29,6 +36,7 @@ const TABS = [
   { key: 'recommend', label: 'Recommendation' },
   { key: 'vault', label: 'Documents' },
 ];
+
 
 export default function LongTermCare() {
   const { data: record } = useLtcPlan();
@@ -59,6 +67,12 @@ export default function LongTermCare() {
 
   const patch = (p: Partial<LtcState>) =>
     setState((s) => ({ ...s, ...p, asOf: new Date().toISOString().slice(0, 10) }));
+
+  // Location block hydrates from saved plans that predate it.
+  const locationState = ensureLocationState(state.location);
+  const patchLoc = (p: Partial<LtcLocationState>) =>
+    patch({ location: { ...locationState, ...p } });
+
 
   const onSave = async () => {
     try {
@@ -111,7 +125,17 @@ export default function LongTermCare() {
           <QuoteUpload state={state} patch={patch} />
           <PolicyComparison state={state} patch={patch} />
         </TabsContent>
+        <TabsContent value="locations" className="mt-4">
+          <CareCostByLocation state={state} loc={locationState} patchLoc={patchLoc} />
+        </TabsContent>
+        <TabsContent value="agencies" className="mt-4">
+          <AgencyComparison state={state} loc={locationState} patchLoc={patchLoc} />
+        </TabsContent>
+        <TabsContent value="hours" className="mt-4">
+          <HoursProtected state={state} loc={locationState} patchLoc={patchLoc} />
+        </TabsContent>
         <TabsContent value="inflation" className="mt-4"><InflationProjection state={state} /></TabsContent>
+
         <TabsContent value="gap" className="mt-4"><CareCostGap state={state} patch={patch} /></TabsContent>
         <TabsContent value="assets" className="mt-4"><AssetProtection state={state} patch={patch} /></TabsContent>
         <TabsContent value="scenarios" className="mt-4"><ScenarioSimulator state={state} /></TabsContent>
