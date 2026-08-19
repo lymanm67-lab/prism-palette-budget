@@ -630,3 +630,13 @@ export const US_STATES = [
   'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH',
   'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY',
 ] as const;
+
+/**
+ * Honest note about how the reimbursement maximum and the cash benefit interact.
+ * The cash benefit is never silently added to the reimbursement maximum.
+ */
+export function benefitPoolNote(policy?: LtcPolicy) {
+  if (!policy) return 'No policy selected.';
+  const cash = policy.startingMonthlyBenefit * (policy.cashBenefitPct / 100);
+  return `${policy.carrier} ${policy.product}: ${policy.startingMonthlyBenefit.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 })}/mo per person, ${policy.inflationPct}% ${policy.inflationCompound ? 'compound' : 'simple'}${policy.inflationLifetime ? ' lifetime' : ''}, ${policy.benefitPeriodMonths}-month benefit period, ${policy.eliminationDays}-day elimination, home care ${policy.homeCarePct}% / assisted living ${policy.assistedLivingPct}%${policy.partnershipQualified ? ', Partnership qualified' : ''}. Cash benefit ${policy.cashBenefitPct}% (${cash.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 })}/mo) is NOT assumed additive to the reimbursement maximum unless the contract confirms both can be used simultaneously.`;
+}
