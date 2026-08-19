@@ -541,10 +541,21 @@ export function defaultAssumptions(seed?: Partial<AssumptionState>): AssumptionS
       otherRecurringIncomeMonthly: 'current',
       retirementAge: 'projected',
     },
+    // Net income = Lyman $4,464.91 + Kateri $4,227.72 take-home. Planned spend is
+    // the confirmed household budget target; surplus redirect starts at 0 so an
+    // import never silently inflates a projection.
+    budget: {
+      sourceMonth: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-01`,
+      netIncomeMonthly: 8_692.63,
+      plannedSpendMonthly: 4_393.58,
+      surplusRedirectPct: 0,
+      source: 'manual',
+    },
   };
   const merged = { ...base, ...(seed || {}) };
-  // Older saved records predate the seeded comparison scenarios.
+  // Older saved records predate the seeded comparison scenarios / budget link.
   if (!merged.scenarios?.length) merged.scenarios = baselineScenarios(merged.debts || debts);
+  merged.budget = { ...base.budget, ...(seed?.budget || {}) };
   return merged;
 }
 
