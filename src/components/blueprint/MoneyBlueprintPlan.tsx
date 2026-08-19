@@ -194,8 +194,21 @@ export function MoneyBlueprintPlan() {
         <Button size="sm" variant="outline" onClick={resync}>
           <RefreshCw className="h-3.5 w-3.5 mr-1" /> Re-sync from live data
         </Button>
+        <div className="flex items-center gap-1.5">
+          <Label className="text-xs text-muted-foreground">Budget month</Label>
+          <select
+            className="h-7 rounded-md border border-input bg-background px-2 text-xs"
+            value={budgetMonth}
+            onChange={(e) => setBudgetMonth(e.target.value)}
+          >
+            {MONTH_OPTIONS.map((m) => (
+              <option key={m.value} value={m.value}>{m.label}</option>
+            ))}
+          </select>
+        </div>
         <Button size="sm" variant="ghost" onClick={() => window.print()}>Print / PDF</Button>
         <span className="text-xs text-muted-foreground">Viewing: <span className="font-semibold">{viewLabel}</span></span>
+
       </div>
 
 
