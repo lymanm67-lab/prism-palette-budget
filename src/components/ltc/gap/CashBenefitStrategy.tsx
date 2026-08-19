@@ -5,9 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import type { LtcHousehold, LtcPolicy } from '@/lib/ltc/model';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
-  waterfallAt, eliminationPlan, STACK_LABEL, usd, type GapStrategyState, type StackMode,
+  waterfallAt, eliminationPlan, cashBenefitJourney, STACK_LABEL, usd, type GapStrategyState, type StackMode,
 } from '@/lib/ltc/gapstrategy';
+import { PlannedHoursControl } from './PlannedHoursControl';
 
 export function CashBenefitStrategy({ h, g, patchG, policy }: {
   h: LtcHousehold; g: GapStrategyState; patchG: (p: Partial<GapStrategyState>) => void; policy?: LtcPolicy;
@@ -16,6 +18,8 @@ export function CashBenefitStrategy({ h, g, patchG, policy }: {
   const w = waterfallAt(h, g, age, g.weeklyHours, policy, { includeCash: false });
   const elim = eliminationPlan(h, g, age, g.weeklyHours, policy);
   const cashPct = policy?.cashBenefitPct ?? 25;
+  const journey = cashBenefitJourney(h, g, age, g.weeklyHours, policy);
+  const t = journey.totals;
 
   return (
     <div className="space-y-4">
@@ -28,6 +32,7 @@ export function CashBenefitStrategy({ h, g, patchG, policy }: {
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
+          <PlannedHoursControl g={g} patchG={patchG} compact />
           <div>
             <Label className="text-xs">Cash benefit stacks with reimbursement?</Label>
             <div className="flex flex-wrap gap-2 mt-1">
@@ -57,6 +62,79 @@ export function CashBenefitStrategy({ h, g, patchG, policy }: {
               </div>
             ))}
           </div>
+        </CardContent>
+      </Card>
+
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm">Cash benefit end to end — {g.weeklyHours} hrs/week from age {age}</CardTitle>
+          <p className="text-xs text-muted-foreground">
+            Every dollar of the {journey.cashPct}% cash benefit ({usd(journey.monthlyCash)}/mo at claim) followed from the first
+            day of the wait through the end of the claim: support costs first, then the reimbursement gap.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+            {[
+              ['Total cash received', usd(t.cashPaid)],
+              ['Funds support costs', usd(t.cashToSupport)],
+              ['Funds the care gap', usd(t.cashToGap)],
+              ['Unused / flexible cash', usd(t.cashUnused)],
+            ].map(([k, v]) => (
+              <div key={k} className="rounded-md border p-2">
+                <div className="text-[11px] text-muted-foreground">{k}</div>
+                <div className="font-semibold">{v}</div>
+              </div>
+            ))}
+          </div>
+          <Table>
+            <TableHeader><TableRow>
+              <TableHead>Stage</TableHead><TableHead className="text-right">Care cost</TableHead>
+              <TableHead className="text-right">Support costs</TableHead><TableHead className="text-right">Cash paid</TableHead>
+              <TableHead className="text-right">To support</TableHead><TableHead className="text-right">To gap</TableHead>
+              <TableHead className="text-right">Out of pocket without cash</TableHead>
+              <TableHead className="text-right">With cash</TableHead>
+            </TableRow></TableHeader>
+            <TableBody>
+              {journey.rows.map((r) => (
+                <TableRow key={r.key}>
+                  <TableCell className="text-xs">{r.label}</TableCell>
+                  <TableCell className="text-right">{usd(r.careCost)}</TableCell>
+                  <TableCell className="text-right">{usd(r.supportCosts)}</TableCell>
+                  <TableCell className="text-right">{usd(r.cashPaid)}</TableCell>
+                  <TableCell className="text-right">{usd(r.cashToSupport)}</TableCell>
+                  <TableCell className="text-right">{usd(r.cashToGap)}</TableCell>
+                  <TableCell className="text-right">{usd(r.gapWithoutCash)}</TableCell>
+                  <TableCell className="text-right font-semibold">{usd(r.gapWithCash)}</TableCell>
+                </TableRow>
+              ))}
+              <TableRow className="bg-muted/40 font-semibold">
+                <TableCell className="text-xs">Total</TableCell>
+                <TableCell className="text-right">{usd(journey.rows.reduce((a, r) => a + r.careCost, 0))}</TableCell>
+                <TableCell className="text-right">{usd(journey.rows.reduce((a, r) => a + r.supportCosts, 0))}</TableCell>
+                <TableCell className="text-right">{usd(t.cashPaid)}</TableCell>
+                <TableCell className="text-right">{usd(t.cashToSupport)}</TableCell>
+                <TableCell className="text-right">{usd(t.cashToGap)}</TableCell>
+                <TableCell className="text-right">{usd(t.gapWithoutCash)}</TableCell>
+                <TableCell className="text-right">{usd(t.gapWithCash)}</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="outline" className={t.portfolioSaved > 0 ? 'text-prism-positive' : ''}>
+              Actual impact: {usd(t.portfolioSaved)} kept out of pocket
+            </Badge>
+            <span className="text-xs text-muted-foreground">
+              Left invested at {g.opportunity.returnPct}% that is {usd(journey.savedWithGrowth)} of preserved portfolio value.
+            </span>
+          </div>
+          {t.cashUnused > 0 && (
+            <p className="text-[11px] text-muted-foreground">
+              {usd(t.cashUnused)} of cash benefit is not needed for care or support — it can fund home modifications,
+              family caregiver pay, transport, or be redirected back to the portfolio.
+            </p>
+          )}
         </CardContent>
       </Card>
 

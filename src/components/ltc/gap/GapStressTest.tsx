@@ -1,10 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import type { LtcHousehold, LtcPolicy } from '@/lib/ltc/model';
-import { PLAN_HOUR_TIERS } from '@/lib/ltc/careplan';
 import { stressTest, usd, type GapStrategyState } from '@/lib/ltc/gapstrategy';
+import { PlannedHoursControl } from './PlannedHoursControl';
 
 export function GapStressTest({ h, g, patchG, policy }: {
   h: LtcHousehold; g: GapStrategyState; patchG: (p: Partial<GapStrategyState>) => void; policy?: LtcPolicy;
@@ -21,11 +20,9 @@ export function GapStressTest({ h, g, patchG, policy }: {
         </p>
       </CardHeader>
       <CardContent className="space-y-3">
+        <PlannedHoursControl g={g} patchG={patchG} compact />
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs text-muted-foreground">Hours tested:</span>
-          {PLAN_HOUR_TIERS.map((hrs) => (
-            <Button key={hrs} size="sm" variant={g.weeklyHours === hrs ? 'default' : 'outline'} onClick={() => patchG({ weeklyHours: hrs })}>{hrs}</Button>
-          ))}
+          <span className="text-xs text-muted-foreground">Tested at {g.weeklyHours} hrs/week:</span>
           <Badge variant="outline" className={failures === 0 ? 'text-prism-positive' : 'text-destructive'}>
             {failures === 0 ? 'All scenarios funded' : `${failures} of ${rows.length} scenarios lean on the portfolio`}
           </Badge>

@@ -587,3 +587,132 @@ export function portfolioComparison(
     noLtc: run(false, false),
   };
 }
+
+/* ----------------------------------------------------------------------- */
+/* Planned care hours (real hours, not fixed tiers)                          */
+/* ----------------------------------------------------------------------- */
+
+/** Comparison tiers built AROUND the real planned hours instead of 10/20/30/40. */
+export function plannedHourTiers(planned: number, step = 5, spread = 2): number[] {
+  const p = Math.max(1, Math.round(planned));
+  const set = new Set<number>([p]);
+  for (let i = 1; i <= spread; i++) {
+    if (p - i * step >= 1) set.add(p - i * step);
+    set.add(p + i * step);
+  }
+  return Array.from(set).sort((a, b) => a - b);
+}
+
+/* ----------------------------------------------------------------------- */
+/* Cash benefit — end to end                                                */
+/* ----------------------------------------------------------------------- */
+
+export interface CashJourneyRow {
+  key: string;
+  label: string;
+  months: number;
+  age: number;
+  careCost: number;
+  supportCosts: number;
+  cashPaid: number;
+  cashToSupport: number;
+  cashToGap: number;
+  cashUnused: number;
+  gapWithoutCash: number;
+  gapWithCash: number;
+}
+
+export interface CashJourney {
+  cashPct: number;
+  monthlyCash: number;
+  rows: CashJourneyRow[];
+  totals: {
+    cashPaid: number;
+    cashToSupport: number;
+    cashToGap: number;
+    cashUnused: number;
+    gapWithoutCash: number;
+    gapWithCash: number;
+    portfolioSaved: number;
+  };
+  /** Portfolio dollars preserved, grown at the opportunity return over the horizon. */
+  savedWithGrowth: number;
+  eliminationCovered: boolean;
+}
+
+/**
+ * Walks the cash benefit from the first day of the elimination period through the
+ * end of the care event: what is paid, what it actually funds, and what it saves.
+ */
+export function cashBenefitJourney(
+  h: LtcHousehold, g: GapStrategyState, claimAge: number, weeklyHours: number, policy?: LtcPolicy,
+): CashJourney {
+  const cashPct = policy?.cashBenefitPct ?? SUPPORT_COST_PCT;
+  const years = Math.max(1, Math.round(g.stress.careYears || 3));
+  const rows: CashJourneyRow[] = [];
+  let hsa = projectHsa(g.hsa, h.lymanAge, claimAge);
+
+  const elimMonths = (policy?.eliminationDays ?? 90) / 30;
+  const w0 = waterfallAt(h, g, claimAge, weeklyHours, policy, { includeCash: false, hsaBalanceOverride: hsa });
+  const elimCost = w0.monthlyCost * elimMonths;
+  const elimSupport = w0.monthlyCost * (SUPPORT_COST_PCT / 100) * elimMonths;
+  const elimCash = g.cashPaysDuringElimination ? w0.cashBenefit * elimMonths : 0;
+  // During the wait there is no reimbursement, so the full cost is the gap.
+  const elimGapNo = elimCost + elimSupport;
+  const elimToSupport = Math.min(elimCash, elimSupport);
+  const elimToGap = Math.min(elimCash - elimToSupport, elimCost);
+  rows.push({
+    key: 'elimination',
+    label: `Elimination period — first ${policy?.eliminationDays ?? 90} days`,
+    months: elimMonths, age: claimAge,
+    careCost: elimCost, supportCosts: elimSupport,
+    cashPaid: elimCash, cashToSupport: elimToSupport, cashToGap: elimToGap,
+    cashUnused: Math.max(0, elimCash - elimToSupport - elimToGap),
+    gapWithoutCash: elimGapNo,
+    gapWithCash: Math.max(0, elimGapNo - elimToSupport - elimToGap),
+  });
+
+  for (let y = 0; y < years; y++) {
+    const age = claimAge + y;
+    const wNo = waterfallAt(h, g, age, weeklyHours, policy, { includeCash: false, hsaBalanceOverride: hsa });
+    const careCost = wNo.monthlyCost * 12;
+    const support = wNo.monthlyCost * (SUPPORT_COST_PCT / 100) * 12;
+    const cashPaid = wNo.cashBenefit * 12;
+    // Insurance reimburses first; the household still owes the gap plus support costs.
+    const gapNo = Math.max(0, careCost - wNo.reimbursement * 12) + support;
+    const toSupport = Math.min(cashPaid, support);
+    const toGap = Math.min(cashPaid - toSupport, Math.max(0, careCost - wNo.reimbursement * 12));
+    rows.push({
+      key: `y${y}`,
+      label: `Claim year ${y + 1} — age ${age}`,
+      months: 12, age,
+      careCost, supportCosts: support,
+      cashPaid, cashToSupport: toSupport, cashToGap: toGap,
+      cashUnused: Math.max(0, cashPaid - toSupport - toGap),
+      gapWithoutCash: gapNo,
+      gapWithCash: Math.max(0, gapNo - toSupport - toGap),
+    });
+    const hsaUse = Math.min(hsa, wNo.hsaSupport * 12);
+    hsa = Math.max(0, hsa - hsaUse);
+  }
+
+  const sum = (k: keyof CashJourneyRow) => rows.reduce((a, r) => a + (r[k] as number), 0);
+  const cashToSupport = sum('cashToSupport');
+  const cashToGap = sum('cashToGap');
+  const gapWithoutCash = sum('gapWithoutCash');
+  const gapWithCash = sum('gapWithCash');
+  const portfolioSaved = Math.max(0, gapWithoutCash - gapWithCash);
+  const r = (g.opportunity.returnPct || 0) / 100;
+  const horizon = elimMonths / 12 + years;
+  return {
+    cashPct,
+    monthlyCash: w0.cashBenefit,
+    rows,
+    totals: {
+      cashPaid: sum('cashPaid'), cashToSupport, cashToGap, cashUnused: sum('cashUnused'),
+      gapWithoutCash, gapWithCash, portfolioSaved,
+    },
+    savedWithGrowth: portfolioSaved * Math.pow(1 + r, Math.max(0, horizon)),
+    eliminationCovered: rows[0].gapWithCash <= (g.retirementIncomeForLtc * elimMonths + hsa),
+  };
+}
