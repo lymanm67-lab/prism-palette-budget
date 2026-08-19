@@ -19,6 +19,7 @@ import { CareCostByLocation } from '@/components/ltc/CareCostByLocation';
 import { AgencyComparison } from '@/components/ltc/AgencyComparison';
 import { HoursProtected } from '@/components/ltc/HoursProtected';
 import { RenewalTracker } from '@/components/ltc/RenewalTracker';
+import { GapStrategy } from '@/components/ltc/GapStrategy';
 import { useLtcPlan, useSaveLtcPlan } from '@/hooks/use-ltc-plan';
 import { defaultState, type LtcState } from '@/lib/ltc/model';
 import { ensureLocationState, type LtcLocationState } from '@/lib/ltc/location';
@@ -32,6 +33,7 @@ const TABS = [
   { key: 'hours', label: 'Hours Protected' },
   { key: 'inflation', label: 'Inflation' },
   { key: 'gap', label: 'Care Cost Gap' },
+  { key: 'strategy', label: 'Gap Strategy' },
   { key: 'assets', label: 'Asset Protection' },
   { key: 'scenarios', label: 'Scenarios' },
   { key: 'recommend', label: 'Recommendation' },
@@ -139,6 +141,9 @@ export default function LongTermCare() {
         <TabsContent value="inflation" className="mt-4"><InflationProjection state={state} /></TabsContent>
 
         <TabsContent value="gap" className="mt-4"><CareCostGap state={state} patch={patch} /></TabsContent>
+        <TabsContent value="strategy" className="mt-4">
+          <GapStrategy state={state} patch={patch} loc={locationState} />
+        </TabsContent>
         <TabsContent value="assets" className="mt-4"><AssetProtection state={state} patch={patch} /></TabsContent>
         <TabsContent value="scenarios" className="mt-4"><ScenarioSimulator state={state} /></TabsContent>
         <TabsContent value="recommend" className="mt-4"><Recommendation state={state} patch={patch} /></TabsContent>

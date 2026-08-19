@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PLAN_HOUR_TIERS } from '@/lib/ltc/careplan';
-import { activePolicy, type LtcState } from '@/lib/ltc/model';
+import type { LtcState } from '@/lib/ltc/model';
 import { ensureGapStrategy, type GapStrategyState } from '@/lib/ltc/gapstrategy';
 import type { LtcLocationState } from '@/lib/ltc/location';
 import { FundingWaterfall } from './gap/FundingWaterfall';
@@ -36,7 +36,7 @@ export function GapStrategy({ state, patch, loc }: {
 }) {
   const g = ensureGapStrategy(state.gapStrategy, state.household);
   const patchG = (p: Partial<GapStrategyState>) => patch({ gapStrategy: { ...g, ...p } });
-  const policy = activePolicy(state);
+  const policy = state.policies.find((p) => p.id === state.currentPolicyId) || state.policies[0];
   const h = state.household;
 
   return (
