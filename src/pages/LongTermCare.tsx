@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -34,7 +35,23 @@ export default function LongTermCare() {
   const save = useSaveLtcPlan();
   const [state, setState] = useState<LtcState>(defaultState());
   const [hydrated, setHydrated] = useState(false);
-  const [tab, setTab] = useState('overview');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedTab = searchParams.get('tab');
+  const [tab, setTab] = useState(
+    TABS.some((t) => t.key === requestedTab) ? (requestedTab as string) : 'overview',
+  );
+
+  // Deep links such as /ltc?tab=compare land straight on the quote uploader.
+  useEffect(() => {
+    if (requestedTab && TABS.some((t) => t.key === requestedTab) && requestedTab !== tab) setTab(requestedTab);
+  }, [requestedTab]);
+
+  const changeTab = (next: string) => {
+    setTab(next);
+    const params = new URLSearchParams(searchParams);
+    params.set('tab', next);
+    setSearchParams(params, { replace: true });
+  };
 
   useEffect(() => {
     if (record && !hydrated) { setState(record.state); setHydrated(true); }
@@ -83,12 +100,12 @@ export default function LongTermCare() {
         ]}
       />
 
-      <Tabs value={tab} onValueChange={setTab}>
+      <Tabs value={tab} onValueChange={changeTab}>
         <TabsList className="flex w-full flex-wrap h-auto justify-start print:hidden">
           {TABS.map((t) => <TabsTrigger key={t.key} value={t.key} className="text-xs">{t.label}</TabsTrigger>)}
         </TabsList>
 
-        <TabsContent value="overview" className="mt-4"><LtcOverview state={state} onGoTo={setTab} /></TabsContent>
+        <TabsContent value="overview" className="mt-4"><LtcOverview state={state} onGoTo={changeTab} /></TabsContent>
         <TabsContent value="current" className="mt-4"><CurrentPlan state={state} patch={patch} /></TabsContent>
         <TabsContent value="compare" className="mt-4 space-y-4">
           <QuoteUpload state={state} patch={patch} />
