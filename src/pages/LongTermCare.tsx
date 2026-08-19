@@ -68,6 +68,12 @@ export default function LongTermCare() {
   const patch = (p: Partial<LtcState>) =>
     setState((s) => ({ ...s, ...p, asOf: new Date().toISOString().slice(0, 10) }));
 
+  // Location block hydrates from saved plans that predate it.
+  const locationState = ensureLocationState(state.location);
+  const patchLoc = (p: Partial<LtcLocationState>) =>
+    patch({ location: { ...locationState, ...p } });
+
+
   const onSave = async () => {
     try {
       await save.mutateAsync(state);
