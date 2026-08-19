@@ -81,6 +81,39 @@ export interface PremiumPayment {
   notes?: string;
 }
 
+
+/**
+ * A renewal / rate-action notice from the carrier. LTC premiums are not
+ * guaranteed level — carriers can file class-wide increases, so every notice is
+ * logged with the old and new premium and how it was answered.
+ */
+export interface RenewalNotice {
+  id: string;
+  /** Effective date of the new premium. */
+  effectiveDate: string;
+  /** Date the notice arrived. */
+  noticeDate?: string;
+  carrier: string;
+  oldMonthlyPremium: number;
+  newMonthlyPremium: number;
+  /** Monthly benefit in force after the action (landing spot if benefit was cut). */
+  monthlyBenefit?: number;
+  /** How the increase was handled. */
+  response: 'accepted' | 'reducedBenefit' | 'shortenedPeriod' | 'reducedInflation' | 'nonforfeiture' | 'pending' | 'declined';
+  filingPct?: number;
+  notes?: string;
+}
+
+export const RENEWAL_RESPONSE_LABEL: Record<RenewalNotice['response'], string> = {
+  accepted: 'Paid the increase',
+  reducedBenefit: 'Reduced monthly benefit',
+  shortenedPeriod: 'Shortened benefit period',
+  reducedInflation: 'Reduced inflation rider',
+  nonforfeiture: 'Took nonforfeiture option',
+  pending: 'Decision pending',
+  declined: 'Declined / lapsed',
+};
+
 export interface LtcState {
   household: LtcHousehold;
   policies: LtcPolicy[];
@@ -90,6 +123,9 @@ export interface LtcState {
   reviewLog: { date: string; premium: number; benefit: number; careCost: number; notes?: string }[];
   /** Monthly premium payment ledger (binder / plan of record). */
   premiumLog?: PremiumPayment[];
+  /** Carrier renewal / rate-increase history. */
+  renewals?: RenewalNotice[];
+
 
   /** Location-based care cost + agency comparison (see ./location). */
   location?: import('./location').LtcLocationState;
@@ -205,6 +241,8 @@ export function defaultState(partial?: Partial<LtcState>): LtcState {
     sweetSpot: partial.sweetSpot?.length ? partial.sweetSpot : d.sweetSpot,
     reviewLog: partial.reviewLog || d.reviewLog,
     premiumLog: partial.premiumLog || d.premiumLog || [],
+    renewals: partial.renewals || [],
+
   };
 }
 
@@ -694,4 +732,66 @@ export function scoreRungs(state: LtcState) {
   });
 
   return { rows: withGrades, bestBenefit, topBenefit, ranked };
+}
+
+// ---------------------------------------------------------------------------
+// Renewal / rate-increase tracking
+// ---------------------------------------------------------------------------
+
+export interface RenewalAnalysis {
+  rows: (RenewalNotice & { increaseDollars: number; increasePct: number })[];
+  /** Premium in force after the most recent notice (or the current policy). */
+  currentPremium: number;
+  originalPremium: number;
+  cumulativePct: number;
+  /** Average annual increase across the logged history. */
+  averageAnnualPct: number;
+  /** Count of accepted increases. */
+  acceptedCount: number;
+  pendingCount: number;
+  /** Premium share of household income after the latest action. */
+  premiumShare: number;
+  /** Share once projected forward at the observed average increase. */
+  projectedIn5Years: number;
+  projected5YrShare: number;
+  /** True when the projected premium breaches the 5% of income lapse guardrail. */
+  breachesGuardrail: boolean;
+}
+
+export function analyzeRenewals(state: LtcState, policy?: LtcPolicy): RenewalAnalysis {
+  const income = Math.max(0, state.household.monthlyHouseholdIncome);
+  const sorted = [...(state.renewals || [])].sort((a, b) => a.effectiveDate.localeCompare(b.effectiveDate));
+  const rows = sorted.map((r) => {
+    const increaseDollars = r.newMonthlyPremium - r.oldMonthlyPremium;
+    return {
+      ...r,
+      increaseDollars,
+      increasePct: r.oldMonthlyPremium > 0 ? (increaseDollars / r.oldMonthlyPremium) * 100 : 0,
+    };
+  });
+
+  const basePremium = policy ? combinedPremium(policy) : 0;
+  const originalPremium = rows.length ? rows[0].oldMonthlyPremium : basePremium;
+  const currentPremium = rows.length ? rows[rows.length - 1].newMonthlyPremium : basePremium;
+  const cumulativePct = originalPremium > 0 ? ((currentPremium - originalPremium) / originalPremium) * 100 : 0;
+
+  const firstYear = rows.length ? Number(rows[0].effectiveDate.slice(0, 4)) : 0;
+  const lastYear = rows.length ? Number(rows[rows.length - 1].effectiveDate.slice(0, 4)) : 0;
+  const span = Math.max(1, lastYear - firstYear);
+  const averageAnnualPct = rows.length
+    ? (Math.pow(currentPremium / Math.max(1, originalPremium), 1 / span) - 1) * 100
+    : 0;
+
+  const growth = Math.max(0, averageAnnualPct) / 100;
+  const projectedIn5Years = currentPremium * Math.pow(1 + growth, 5);
+  const premiumShare = income > 0 ? currentPremium / income : 0;
+  const projected5YrShare = income > 0 ? projectedIn5Years / income : 0;
+
+  return {
+    rows, currentPremium, originalPremium, cumulativePct, averageAnnualPct,
+    acceptedCount: rows.filter((r) => r.response === 'accepted').length,
+    pendingCount: rows.filter((r) => r.response === 'pending').length,
+    premiumShare, projectedIn5Years, projected5YrShare,
+    breachesGuardrail: projected5YrShare > 0.05,
+  };
 }

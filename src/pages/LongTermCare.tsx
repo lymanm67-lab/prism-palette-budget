@@ -18,6 +18,7 @@ import { DocumentVault } from '@/components/ltc/DocumentVault';
 import { CareCostByLocation } from '@/components/ltc/CareCostByLocation';
 import { AgencyComparison } from '@/components/ltc/AgencyComparison';
 import { HoursProtected } from '@/components/ltc/HoursProtected';
+import { RenewalTracker } from '@/components/ltc/RenewalTracker';
 import { useLtcPlan, useSaveLtcPlan } from '@/hooks/use-ltc-plan';
 import { defaultState, type LtcState } from '@/lib/ltc/model';
 import { ensureLocationState, type LtcLocationState } from '@/lib/ltc/location';
@@ -34,6 +35,7 @@ const TABS = [
   { key: 'assets', label: 'Asset Protection' },
   { key: 'scenarios', label: 'Scenarios' },
   { key: 'recommend', label: 'Recommendation' },
+  { key: 'renewals', label: 'Renewals & Rate Increases' },
   { key: 'vault', label: 'Documents' },
 ];
 
@@ -140,6 +142,7 @@ export default function LongTermCare() {
         <TabsContent value="assets" className="mt-4"><AssetProtection state={state} patch={patch} /></TabsContent>
         <TabsContent value="scenarios" className="mt-4"><ScenarioSimulator state={state} /></TabsContent>
         <TabsContent value="recommend" className="mt-4"><Recommendation state={state} patch={patch} /></TabsContent>
+        <TabsContent value="renewals" className="mt-4"><RenewalTracker state={state} patch={patch} /></TabsContent>
         <TabsContent value="vault" className="mt-4"><DocumentVault state={state} patch={patch} /></TabsContent>
       </Tabs>
     </div>
