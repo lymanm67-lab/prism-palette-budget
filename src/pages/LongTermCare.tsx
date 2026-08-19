@@ -89,7 +89,10 @@ export default function LongTermCare() {
 
         <TabsContent value="overview" className="mt-4"><LtcOverview state={state} onGoTo={setTab} /></TabsContent>
         <TabsContent value="current" className="mt-4"><CurrentPlan state={state} patch={patch} /></TabsContent>
-        <TabsContent value="compare" className="mt-4"><PolicyComparison state={state} patch={patch} /></TabsContent>
+        <TabsContent value="compare" className="mt-4 space-y-4">
+          <QuoteUpload state={state} patch={patch} />
+          <PolicyComparison state={state} patch={patch} />
+        </TabsContent>
         <TabsContent value="inflation" className="mt-4"><InflationProjection state={state} /></TabsContent>
         <TabsContent value="gap" className="mt-4"><CareCostGap state={state} patch={patch} /></TabsContent>
         <TabsContent value="assets" className="mt-4"><AssetProtection state={state} patch={patch} /></TabsContent>
