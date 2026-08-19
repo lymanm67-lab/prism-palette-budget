@@ -109,13 +109,31 @@ export function LtcOverview({ state, onGoTo }: { state: LtcState; onGoTo: (tab: 
               major financial risk so retirement assets, income and legacy wealth are not unnecessarily depleted.
             </p>
           </div>
+          <div className="space-y-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[11px] uppercase tracking-wide text-muted-foreground">Planned weekly care hours</span>
+              {HOUR_TIERS.map((hrs) => (
+                <Button key={hrs} size="sm" variant={plannedHours === hrs ? 'default' : 'outline'}
+                  onClick={() => setPlannedHours(hrs)}>{hrs} hrs</Button>
+              ))}
+            </div>
+            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+              Gap posture at {plannedHours} hrs/week: <GapBadge band={hoursFunded.band} />
+              <span className="text-[11px]">
+                {money(hoursCoverage.monthlyCost)}/mo of care at {money2(projectedHourlyRate)}/hr (age {h.assumedClaimAge});
+                plan pays {money(hoursCoverage.insurancePays)} (capped at {money(BENEFIT_CAP)}/mo), covering{' '}
+                {hoursCoverage.coveragePct.toFixed(0)}%; with a {money(hoursFunded.incomeOffset)}/mo income contribution{' '}
+                {(hoursFunded.fundedRatio * 100).toFixed(0)}% is funded (residual {money(hoursFunded.residualGap)}/mo)
+              </span>
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              Posture is need-based, not full-time care. Shop agencies willing to work within the {money(BENEFIT_CAP)}/mo
+              plan maximum. Full-time reference cost at age {h.assumedClaimAge}: {money(claimCost)}/mo
+              ({(funded.fundedRatio * 100).toFixed(0)}% funded).
+            </p>
+          </div>
           <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-            Gap posture: <GapBadge band={funded.band} />
-            <span className="text-[11px]">
-              insurance covers {(funded.insuranceRatio * 100).toFixed(0)}%; with a{' '}
-              {money(funded.incomeOffset)}/mo income contribution {(funded.fundedRatio * 100).toFixed(0)}% is funded
-              (residual {money(funded.residualGap)}/mo)
-            </span>
+
             <button className="underline hover:text-foreground" onClick={() => onGoTo('gap')}>See the care cost gap</button>
             <span>·</span>
             <button className="underline hover:text-foreground" onClick={() => onGoTo('protection')}>See assets protected</button>
