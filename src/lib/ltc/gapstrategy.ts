@@ -7,7 +7,7 @@
 
 import { inflationFactor, type LtcHousehold, type LtcPolicy } from './model';
 import { carePlanAt, PLAN_MAX_MONTHLY, PLAN_INFLATION_PCT, SUPPORT_COST_PCT } from './careplan';
-import { HOUR_TIERS } from './location';
+import { HOUR_TIERS, monthlyCostFromHours } from './location';
 
 export const usd = (n: number, dp = 0) =>
   `$${(Number.isFinite(n) ? n : 0).toLocaleString(undefined, { minimumFractionDigits: dp, maximumFractionDigits: dp })}`;
@@ -223,6 +223,8 @@ export interface WaterfallOpts {
   careMonthsOverride?: number;
   /** Force the starting plan maximum (0 models "no LTC insurance"). */
   planMaxToday?: number;
+  /** Price the care at a specific agency hourly rate instead of the projected blended rate. */
+  hourlyRateOverride?: number;
 }
 
 export function waterfallAt(
@@ -246,8 +248,11 @@ export function waterfallAt(
   const hsaBalance = opts?.hsaBalanceOverride ?? projectHsa(g.hsa, h.lymanAge, age);
   const hsaCapacity = hsaMonthlyCapacity(hsaBalance, careMonths);
 
-  const cost = point.monthlyCost;
-  const reimbursement = point.planPays;
+  const hourlyRate = opts?.hourlyRateOverride ?? point.hourlyRate;
+  const cost = opts?.hourlyRateOverride
+    ? monthlyCostFromHours(weeklyHours, opts.hourlyRateOverride)
+    : point.monthlyCost;
+  const reimbursement = Math.min(point.planMax, cost);
   let remaining = Math.max(0, cost - reimbursement);
 
   const cashApplied = stack ? Math.min(cashBenefit, remaining) : 0;
@@ -264,14 +269,14 @@ export function waterfallAt(
   const pct = (n: number) => (cost > 0 ? (n / cost) * 100 : 0);
 
   return {
-    age, weeklyHours, hourlyRate: point.hourlyRate, monthlyCost: cost, planMax: point.planMax,
+    age, weeklyHours, hourlyRate, monthlyCost: cost, planMax: point.planMax,
     reimbursement, cashBenefit, cashApplied, hsaBalance, hsaSupport, incomeSupport, portfolioGap,
     insurancePct: pct(reimbursement + cashApplied),
     hsaPct: pct(hsaSupport),
     householdPct: pct(incomeSupport + portfolioGap),
     portfolioPct: pct(portfolioGap),
     layers: [
-      { key: 'cost', label: 'Projected care cost', amount: cost, remaining: cost, note: `${weeklyHours} hrs/wk @ $${point.hourlyRate.toFixed(2)}/hr` },
+      { key: 'cost', label: 'Projected care cost', amount: cost, remaining: cost, note: `${weeklyHours} hrs/wk @ $${hourlyRate.toFixed(2)}/hr` },
       { key: 'reimbursement', label: 'LTC reimbursement', amount: reimbursement, remaining: Math.max(0, cost - reimbursement), note: `Plan maximum $${Math.round(point.planMax).toLocaleString()}/mo` },
       { key: 'cash', label: '25% cash benefit', amount: cashApplied, remaining: Math.max(0, cost - reimbursement - cashApplied), note: stack ? 'Confirmed additive' : `Not applied — stacking ${STACK_LABEL[g.stackCash].toLowerCase()}` },
       { key: 'hsa', label: 'HSA withdrawal', amount: hsaSupport, remaining: Math.max(0, cost - reimbursement - cashApplied - hsaSupport), note: `${careMonths}-month draw from $${Math.round(hsaBalance).toLocaleString()}` },

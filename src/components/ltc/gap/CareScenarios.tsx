@@ -6,7 +6,7 @@ import type { LtcHousehold, LtcPolicy } from '@/lib/ltc/model';
 import { PLAN_HOUR_TIERS, targetAgencyRate } from '@/lib/ltc/careplan';
 import type { LtcLocationState } from '@/lib/ltc/location';
 import {
-  waterfallAt, protectionBand, PROTECTION_LABEL, careProgression, usd, type GapStrategyState,
+  waterfallAt, protectionBand, PROTECTION_LABEL, simulateGapProgression, PROGRESSION_SCENARIOS, usd, type GapStrategyState,
 } from '@/lib/ltc/gapstrategy';
 
 export function CareScenarios({ h, g, patchG, policy, loc }: {
@@ -15,8 +15,11 @@ export function CareScenarios({ h, g, patchG, policy, loc }: {
 }) {
   const age = g.stress.claimAge;
   const rows = PLAN_HOUR_TIERS.map((hrs) => ({ hrs, w: waterfallAt(h, g, age, hrs, policy) }));
-  const progression = careProgression(h, g, policy);
-  const agencies = (loc?.agencies || []).filter((a) => a.hourlyRate > 0).slice(0, 8);
+  const progression = simulateGapProgression(h, g, age, PROGRESSION_SCENARIOS[g.progression] ?? PROGRESSION_SCENARIOS.moderate, policy);
+  const agencies = (loc?.agencies || [])
+    .map((a) => ({ ...a, rate: a.nonMedicalHourly ?? a.personalCareHourly ?? 0 }))
+    .filter((a) => a.rate > 0)
+    .slice(0, 8);
 
   return (
     <div className="space-y-4">
@@ -72,11 +75,11 @@ export function CareScenarios({ h, g, patchG, policy, loc }: {
               </TableRow></TableHeader>
               <TableBody>
                 {agencies.map((a) => {
-                  const w = waterfallAt(h, g, age, g.weeklyHours, policy, { hourlyRateOverride: a.hourlyRate });
+                  const w = waterfallAt(h, g, age, g.weeklyHours, policy, { hourlyRateOverride: a.rate });
                   return (
                     <TableRow key={a.id}>
                       <TableCell>{a.name}</TableCell>
-                      <TableCell className="text-right">{usd(a.hourlyRate, 2)}/hr</TableCell>
+                      <TableCell className="text-right">{usd(a.rate, 2)}/hr</TableCell>
                       <TableCell className="text-right">{usd(w.monthlyCost)}</TableCell>
                       <TableCell className="text-right font-semibold">{usd(w.portfolioGap)}</TableCell>
                       <TableCell>
@@ -110,8 +113,8 @@ export function CareScenarios({ h, g, patchG, policy, loc }: {
                 <TableRow key={p.year}>
                   <TableCell>{p.year + 1}</TableCell><TableCell>{p.age}</TableCell>
                   <TableCell className="text-right">{p.weeklyHours}</TableCell>
-                  <TableCell className="text-right">{usd(p.monthlyCost)}</TableCell>
-                  <TableCell className="text-right font-semibold">{usd(p.portfolioGap)}</TableCell>
+                  <TableCell className="text-right">{usd(p.careCost / 12)}</TableCell>
+                  <TableCell className="text-right font-semibold">{usd(p.portfolioWithdrawal / 12)}</TableCell>
                   <TableCell className="text-right">{usd(p.hsaRemaining)}</TableCell>
                 </TableRow>
               ))}
