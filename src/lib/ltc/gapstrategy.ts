@@ -218,6 +218,8 @@ export interface WaterfallOpts {
   includeCash?: boolean;
   hsaBalanceOverride?: number;
   careMonthsOverride?: number;
+  /** Force the starting plan maximum (0 models "no LTC insurance"). */
+  planMaxToday?: number;
 }
 
 export function waterfallAt(
@@ -231,7 +233,7 @@ export function waterfallAt(
   const point = carePlanAt(h, age, weeklyHours, {
     careInflationPct: opts?.careInflationPct,
     planInflationPct: opts?.planInflationPct ?? policy?.inflationPct ?? PLAN_INFLATION_PCT,
-    planMaxToday: policy?.startingMonthlyBenefit ?? PLAN_MAX_MONTHLY,
+    planMaxToday: opts?.planMaxToday ?? policy?.startingMonthlyBenefit ?? PLAN_MAX_MONTHLY,
   });
   const cashPct = opts?.cashBenefitPct ?? policy?.cashBenefitPct ?? SUPPORT_COST_PCT;
   const cashBenefit = point.planMax * (cashPct / 100);
@@ -549,8 +551,8 @@ export function portfolioComparison(
       const w = waterfallAt(h, g, claimAge + y, weeklyHours, useIns ? policy : undefined, {
         hsaBalanceOverride: hsa,
         careMonthsOverride: careYears * 12,
-        planMaxToday: undefined,
-      } as WaterfallOpts);
+        planMaxToday: useIns ? undefined : 0,
+      });
       const insPaid = useIns ? (w.reimbursement + w.cashApplied) * 12 : 0;
       cost += w.monthlyCost * 12;
       ins += insPaid;
