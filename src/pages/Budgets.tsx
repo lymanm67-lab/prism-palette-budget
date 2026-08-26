@@ -189,10 +189,6 @@ const Budgets = () => {
   const [reassignIds, setReassignIds] = useState<Set<string>>(new Set());
   const [reassignTarget, setReassignTarget] = useState('');
 
-  // Duplicate clusters inside the current drill-down (same-day, same-amount)
-  const editingDupeClusters = useMemo(() => clusterDuplicates(editingBudgetTxns), [editingBudgetTxns]);
-  const editingDupeIds = useMemo(() => new Set(editingDupeClusters.flatMap(c => c.txns.map(t => t.id))), [editingDupeClusters]);
-
   // Allow/approve the overspend: raise this month's planned amount to the actual spend
   const allowOverspend = async () => {
     if (!editingBudget) return;
