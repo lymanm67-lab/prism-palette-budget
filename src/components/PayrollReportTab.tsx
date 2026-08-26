@@ -225,10 +225,10 @@ export default function PayrollReportTab({ budgetMonth }: PayrollReportTabProps)
     const deferredPct = grossIncome > 0 ? (deferredTotal / grossIncome) * 100 : 0;
 
     // Employer-paid benefits toward retirement
-    const detectedEmployerItems = deductions.filter(d => {
-      const lower = d.name.toLowerCase();
-      return lower.includes('employer') || lower.includes('match') || lower.includes('company contrib');
-    });
+    const detectedEmployerItems = employerLines.map(d => ({
+      ...d,
+      pctOfGross: grossIncome > 0 ? (d.monthlyAmount / grossIncome) * 100 : 0,
+    }));
     const detectedEmployerContrib = detectedEmployerItems.reduce((s, d) => s + d.monthlyAmount, 0);
     const matchPct = parseFloat(employerMatchPct) || 0;
     const calculatedEmployerContrib = grossIncome > 0 ? (grossIncome * matchPct) / 100 : 0;
