@@ -637,6 +637,8 @@ export interface CashJourney {
   };
   /** Portfolio dollars preserved, grown at the opportunity return over the horizon. */
   savedWithGrowth: number;
+  /** True when the cash benefit is confirmed payable alongside reimbursement. */
+  stacks: boolean;
   eliminationCovered: boolean;
 }
 
