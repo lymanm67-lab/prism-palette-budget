@@ -73,6 +73,12 @@ export function CashBenefitStrategy({ h, g, patchG, policy }: {
             Every dollar of the {journey.cashPct}% cash benefit ({usd(journey.monthlyCash)}/mo at claim) followed from the first
             day of the wait through the end of the claim: support costs first, then the reimbursement gap.
           </p>
+          {!journey.stacks && (
+            <p className="text-[11px] text-muted-foreground">
+              Stacking is set to “{STACK_LABEL[g.stackCash]}”, so no cash benefit is credited once reimbursement begins —
+              only the elimination period can draw on it (if the rider allows). Confirm stacking to model it during the claim.
+            </p>
+          )}
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">

@@ -637,6 +637,8 @@ export interface CashJourney {
   };
   /** Portfolio dollars preserved, grown at the opportunity return over the horizon. */
   savedWithGrowth: number;
+  /** True when the cash benefit is confirmed payable alongside reimbursement. */
+  stacks: boolean;
   eliminationCovered: boolean;
 }
 
@@ -650,6 +652,7 @@ export function cashBenefitJourney(
   const cashPct = policy?.cashBenefitPct ?? SUPPORT_COST_PCT;
   const years = Math.max(1, Math.round(g.stress.careYears || 3));
   const rows: CashJourneyRow[] = [];
+  const stacks = g.stackCash === 'yes';
   let hsa = projectHsa(g.hsa, h.lymanAge, claimAge);
 
   const elimMonths = (policy?.eliminationDays ?? 90) / 30;
@@ -677,7 +680,8 @@ export function cashBenefitJourney(
     const wNo = waterfallAt(h, g, age, weeklyHours, policy, { includeCash: false, hsaBalanceOverride: hsa });
     const careCost = wNo.monthlyCost * 12;
     const support = wNo.monthlyCost * (SUPPORT_COST_PCT / 100) * 12;
-    const cashPaid = wNo.cashBenefit * 12;
+    // Once reimbursement starts, the cash benefit only helps if the contract lets it stack.
+    const cashPaid = stacks ? wNo.cashBenefit * 12 : 0;
     // Insurance reimburses first; the household still owes the gap plus support costs.
     const gapNo = Math.max(0, careCost - wNo.reimbursement * 12) + support;
     const toSupport = Math.min(cashPaid, support);
@@ -713,6 +717,7 @@ export function cashBenefitJourney(
       gapWithoutCash, gapWithCash, portfolioSaved,
     },
     savedWithGrowth: portfolioSaved * Math.pow(1 + r, Math.max(0, horizon)),
+    stacks,
     eliminationCovered: rows[0].gapWithCash <= (g.retirementIncomeForLtc * elimMonths + hsa),
   };
 }
