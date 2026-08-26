@@ -8,7 +8,7 @@ import { TransferCleanup } from '@/components/cleanup/TransferCleanup';
 import { NeedsReviewCleanup } from '@/components/cleanup/NeedsReviewCleanup';
 import { DuplicateBudgetMerger } from '@/components/cleanup/DuplicateBudgetMerger';
 import { MerchantRecategorize } from '@/components/cleanup/MerchantRecategorize';
-import { ChevronDown, Sparkles, ArrowLeftRight, AlertCircle, Layers, Tag, Loader2, History } from 'lucide-react';
+import { ChevronDown, Sparkles, ArrowLeftRight, AlertCircle, Layers, Tag, Loader2, History, Settings2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function Cleanup() {
