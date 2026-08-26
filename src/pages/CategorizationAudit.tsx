@@ -8,7 +8,10 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { useCategorizationAudit, useRevertAuditRows, type AuditRuleGroup } from '@/hooks/use-categorization-audit';
-import { ArrowRight, ChevronDown, History, Loader2, RotateCcw, Search, Sparkles } from 'lucide-react';
+import { ArrowRight, ChevronDown, History, Loader2, RotateCcw, Search, Sparkles, Trash2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useHousehold } from '@/contexts/HouseholdContext';
+import { useQueryClient } from '@tanstack/react-query';
 
 const SOURCE_LABELS: Record<string, string> = {
   merchant_alias: 'Merchant alias rule',
