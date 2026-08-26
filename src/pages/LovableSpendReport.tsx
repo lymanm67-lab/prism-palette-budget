@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Loader2, AlertTriangle, CheckCircle2, Trash2, ScanSearch, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import PageOverview from '@/components/PageOverview';
+import { clusterDuplicates, confirmedDuplicateIds } from '@/lib/duplicate-detector';
 
 const MONTHLY_CAP = 400; // Matches the Money Leaks entry cap for Lovable/AI services
 const MERCHANT_MATCH = '%lovable%';
@@ -32,6 +33,8 @@ interface Cluster {
   amount: number;
   txns: Txn[];
   confirmed: boolean; // same provider_transaction_id across accounts = true double-import
+  score: number; // 0-100 duplicate confidence
+  scoreLabel: 'Confirmed' | 'High' | 'Review';
 }
 
 const monthLabel = (prefix: string) => {
@@ -104,43 +107,19 @@ export default function LovableSpendReport() {
     const sizeOrder = ['$15', '$20', '$25', '$50', '$100', 'Other'];
     const sizeRows = sizeOrder.filter(l => sizes.has(l)).map(l => ({ label: l, ...sizes.get(l)! }));
 
-    // Same-day clusters
-    const groups = new Map<string, Txn[]>();
-    for (const t of list) {
-      const key = `${t.date}|${Math.abs(t.amount).toFixed(2)}`;
-      groups.set(key, [...(groups.get(key) || []), t]);
-    }
-    const clusters: Cluster[] = Array.from(groups.entries())
-      .filter(([, g]) => g.length > 1)
-      .map(([key, g]) => {
-        const byProvider = new Map<string, Txn[]>();
-        for (const t of g) {
-          if (!t.provider_transaction_id) continue;
-          byProvider.set(t.provider_transaction_id, [...(byProvider.get(t.provider_transaction_id) || []), t]);
-        }
-        const confirmed = Array.from(byProvider.values()).some(p => p.length > 1);
-        const [date, amount] = key.split('|');
-        return { key, date, amount: parseFloat(amount), txns: g.sort((a, b) => a.created_at.localeCompare(b.created_at)), confirmed };
-      })
-      .sort((a, b) => b.date.localeCompare(a.date));
+    // Same-day clusters (shared detector: amount + timing + provider-ID confidence)
+    const clusters = clusterDuplicates(list) as Cluster[];
 
     return { total, ytd, count: list.length, months, sizeRows, clusters };
   }, [txns]);
 
   const confirmedDupes = useMemo(() => {
-    const out: Txn[] = [];
+    const ids = new Set<string>();
     for (const c of stats.clusters.filter(c => c.confirmed)) {
-      const byProvider = new Map<string, Txn[]>();
-      for (const t of c.txns) {
-        if (!t.provider_transaction_id) continue;
-        byProvider.set(t.provider_transaction_id, [...(byProvider.get(t.provider_transaction_id) || []), t]);
-      }
-      for (const p of byProvider.values()) {
-        if (p.length > 1) out.push(...p.slice(1)); // keep earliest, delete the rest
-      }
+      for (const id of confirmedDuplicateIds(c)) ids.add(id);
     }
-    return out;
-  }, [stats.clusters]);
+    return (txns || []).filter(t => ids.has(t.id));
+  }, [stats.clusters, txns]);
 
   const softDelete = async (ids: string[], label: string) => {
     if (!household || ids.length === 0) return;
@@ -225,9 +204,14 @@ export default function LovableSpendReport() {
                 <div className="text-sm font-medium">
                   {new Date(c.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} — {c.txns.length}× {formatCurrency(c.amount)}
                 </div>
-                <Badge variant={c.confirmed ? 'destructive' : 'secondary'}>
-                  {c.confirmed ? 'Confirmed double-import' : 'Likely real purchases'}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="font-mono" title="Confidence: identical amount (30) + same-day timing (20) + shared bank provider ID (50)">
+                    {c.score}% confidence
+                  </Badge>
+                  <Badge variant={c.confirmed ? 'destructive' : 'secondary'}>
+                    {c.confirmed ? 'Confirmed double-import' : 'Likely real purchases'}
+                  </Badge>
+                </div>
               </div>
               <div className="divide-y">
                 {c.txns.map(t => (

@@ -8,7 +8,10 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { useCategorizationAudit, useRevertAuditRows, type AuditRuleGroup } from '@/hooks/use-categorization-audit';
-import { ArrowRight, ChevronDown, History, Loader2, RotateCcw, Search, Sparkles } from 'lucide-react';
+import { ArrowRight, ChevronDown, History, Loader2, RotateCcw, Search, Sparkles, Trash2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useHousehold } from '@/contexts/HouseholdContext';
+import { useQueryClient } from '@tanstack/react-query';
 
 const SOURCE_LABELS: Record<string, string> = {
   merchant_alias: 'Merchant alias rule',
@@ -16,6 +19,8 @@ const SOURCE_LABELS: Record<string, string> = {
   auto_categorize: 'Auto-categorize',
   normalize_merchant: 'Merchant normalization',
   transfer_rule: 'Transfer rule',
+  'duplicate-detector': 'Duplicate detector',
+  'duplicate-scheduler': 'Scheduled duplicate scan',
 };
 
 const currency = (n: number) =>
@@ -28,6 +33,33 @@ export default function CategorizationAudit() {
   const { data, isLoading } = useCategorizationAudit(days);
   const revert = useRevertAuditRows();
   const { toast } = useToast();
+  const { household } = useHousehold();
+  const qc = useQueryClient();
+  const [removingFlags, setRemovingFlags] = useState(false);
+
+  // Soft-delete the transactions flagged by the scheduled duplicate scan, then dismiss the flags.
+  const removeFlaggedDupes = async (g: AuditRuleGroup) => {
+    if (!household) return;
+    const ids = g.rows.filter((r) => !r.reverted_at && r.transaction_id).map((r) => r.transaction_id!);
+    if (!ids.length) return;
+    setRemovingFlags(true);
+    try {
+      const { error } = await supabase.from('transactions').update({ deleted_at: new Date().toISOString() }).in('id', ids);
+      if (error) throw error;
+      // Convert the review flags into duplicate-detector removal records so Undo restores them
+      await supabase
+        .from('categorization_audit')
+        .update({ source: 'duplicate-detector', rule_name: `${g.ruleName} — removed after review` })
+        .in('id', g.rows.map((r) => r.id));
+      toast({ title: 'Duplicates removed', description: `${ids.length} transaction(s) soft-deleted — balances auto-corrected. Use "Undo this rule" to restore them.` });
+      qc.invalidateQueries({ queryKey: ['categorization-audit'] });
+      qc.invalidateQueries({ queryKey: ['transactions'] });
+    } catch (e: unknown) {
+      toast({ title: 'Removal failed', description: e instanceof Error ? e.message : 'Unknown error', variant: 'destructive' });
+    } finally {
+      setRemovingFlags(false);
+    }
+  };
 
   const groups = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -167,7 +199,27 @@ export default function CategorizationAudit() {
             </CollapsibleTrigger>
             <CollapsibleContent>
               <CardContent className="space-y-3">
-                <div className="flex justify-end">
+                {g.source === 'duplicate-scheduler' && (
+                  <p className="text-xs text-muted-foreground rounded-md border border-dashed p-2">
+                    Review-only flags from the scheduled detector — nothing was changed yet. Remove the duplicates, or use Undo to dismiss these flags (dismissed clusters are never re-flagged).
+                  </p>
+                )}
+                <div className="flex justify-end gap-2">
+                  {g.source === 'duplicate-scheduler' && (
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      disabled={removingFlags || g.changed === 0}
+                      onClick={() => removeFlaggedDupes(g)}
+                    >
+                      {removingFlags ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="mr-2 h-4 w-4" />
+                      )}
+                      Remove flagged duplicates ({g.changed})
+                    </Button>
+                  )}
                   <Button
                     size="sm"
                     variant="outline"
@@ -179,7 +231,7 @@ export default function CategorizationAudit() {
                     ) : (
                       <RotateCcw className="mr-2 h-4 w-4" />
                     )}
-                    Undo this rule ({g.changed})
+                    {g.source === 'duplicate-scheduler' ? `Dismiss flags (${g.changed})` : `Undo this rule (${g.changed})`}
                   </Button>
                 </div>
                 <div className="max-h-96 overflow-auto rounded-md border border-border/50">

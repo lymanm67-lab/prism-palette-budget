@@ -23,7 +23,7 @@ import { useBudgets, useCategories, useCategoryGroups, useTransactions, useUpser
 import { useBusinessProfiles } from '@/hooks/use-business-data';
 import { useSmartBudget } from '@/hooks/use-financial-intelligence';
 import { useCurrency } from '@/hooks/use-currency';
-import { Loader2, Plus, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Eye, EyeOff, Settings2, TrendingUp, AlertTriangle, CheckCircle2, PiggyBank, Sparkles, Copy, ClipboardCheck, MoreHorizontal, BookOpen, Printer, X, Scale, FileUp, Receipt } from 'lucide-react';
+import { Loader2, Plus, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Eye, EyeOff, Settings2, TrendingUp, AlertTriangle, CheckCircle2, PiggyBank, Sparkles, Copy, ClipboardCheck, MoreHorizontal, BookOpen, Printer, X, Scale, FileUp, Receipt, ArrowRightLeft } from 'lucide-react';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -37,6 +37,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { EmptyState } from '@/components/EmptyState';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import NetWorthSummaryCard from '@/components/NetWorthSummaryCard';
+import { clusterDuplicates, softDeleteDuplicates } from '@/lib/duplicate-detector';
+import { useQueryClient } from '@tanstack/react-query';
 
 const getMonth = (offset: number) => {
   const d = new Date();
@@ -180,6 +182,80 @@ const Budgets = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState<{ category_id: string; planned_amount: string; rollover: boolean } | null>(null);
   const [form, setForm] = useState({ category_id: '', planned_amount: '', rollover: false, budgetKind: 'expense' as 'income' | 'expense' | 'equity', group_id: '', expense_type: 'flexible' as 'fixed' | 'flexible' | 'non_monthly' | 'payroll_deduction' });
+  const qc = useQueryClient();
+  const [drillBusy, setDrillBusy] = useState(false);
+  const [dupeSelection, setDupeSelection] = useState<Set<string>>(new Set());
+  const [reassignMode, setReassignMode] = useState(false);
+  const [reassignIds, setReassignIds] = useState<Set<string>>(new Set());
+  const [reassignTarget, setReassignTarget] = useState('');
+
+  // Allow/approve the overspend: raise this month's planned amount to the actual spend
+  const allowOverspend = async () => {
+    if (!editingBudget) return;
+    const spent = spentByCategory[editingBudget.category_id] || 0;
+    setDrillBusy(true);
+    try {
+      await upsertBudget.mutateAsync({ category_id: editingBudget.category_id, month, planned_amount: Math.ceil(spent * 100) / 100, rollover: form.rollover });
+      setForm(f => ({ ...f, planned_amount: String(Math.ceil(spent * 100) / 100) }));
+      toast.success(`Budget raised to ${formatCurrency(spent)} — overspend approved for ${formatMonth(month)}`);
+    } finally { setDrillBusy(false); }
+  };
+
+  // Remove selected duplicate transactions (same one-click cleanup as the Lovable spend report)
+  const removeSelectedDupes = async () => {
+    if (!household || dupeSelection.size === 0) return;
+    setDrillBusy(true);
+    const txns = editingBudgetTxns.filter(t => dupeSelection.has(t.id));
+    const { deleted, error } = await softDeleteDuplicates({
+      householdId: household.id,
+      txns,
+      ruleKey: 'budget-drilldown-dupe',
+      ruleName: 'Budget drill-down duplicate cleanup',
+    });
+    setDrillBusy(false);
+    if (error) { toast.error(error); return; }
+    toast.success(`Removed ${deleted} duplicate${deleted === 1 ? '' : 's'} — balances auto-corrected. Undo in Categorization Audit.`);
+    setDupeSelection(new Set());
+    qc.invalidateQueries({ queryKey: ['transactions'] });
+    qc.invalidateQueries({ queryKey: ['budgets'] });
+  };
+
+  // Reassign selected transactions to the correct category (audit-logged, reversible)
+  const applyReassign = async () => {
+    if (!household || !editingBudget || reassignIds.size === 0 || !reassignTarget) return;
+    setDrillBusy(true);
+    try {
+      const targetCat = (categories || []).find(c => c.id === reassignTarget);
+      const fromCat = (categories || []).find(c => c.id === editingBudget.category_id);
+      const txns = editingBudgetTxns.filter(t => reassignIds.has(t.id));
+      const { error } = await supabase.from('transactions').update({ category_id: reassignTarget }).in('id', txns.map(t => t.id));
+      if (error) throw error;
+      await supabase.from('categorization_audit').insert(txns.map(t => ({
+        household_id: household.id,
+        transaction_id: t.id,
+        source: 'manual',
+        rule_key: 'budget-reassign',
+        rule_name: `Budget drill-down reassign → ${targetCat?.name || 'category'}`,
+        before_merchant: t.merchant,
+        after_merchant: t.merchant,
+        before_category_id: editingBudget.category_id,
+        before_category_name: fromCat?.name || null,
+        after_category_id: reassignTarget,
+        after_category_name: targetCat?.name || null,
+        txn_date: t.date,
+        amount: t.amount,
+        applied_by: 'manual',
+      })) as never[]);
+      toast.success(`Moved ${txns.length} transaction${txns.length === 1 ? '' : 's'} to ${targetCat?.name}. Undo in Categorization Audit.`);
+      setReassignIds(new Set());
+      setReassignMode(false);
+      setReassignTarget('');
+      qc.invalidateQueries({ queryKey: ['transactions'] });
+      qc.invalidateQueries({ queryKey: ['budgets'] });
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Reassign failed');
+    } finally { setDrillBusy(false); }
+  };
   const [auditOpen, setAuditOpen] = useState(false);
   const [auditResult, setAuditResult] = useState<string>('');
   const [auditLoading, setAuditLoading] = useState(false);
@@ -300,6 +376,10 @@ const Budgets = () => {
       return { ...t, possibleDupe: list.filter(x => x.date === t.date && Math.abs(x.amount) === Math.abs(t.amount)).length > 1 };
     }).sort((a, b) => b.date.localeCompare(a.date));
   }, [editingBudget, transactions, month]);
+
+  // Duplicate clusters inside the current drill-down (same-day, same-amount)
+  const editingDupeClusters = useMemo(() => clusterDuplicates(editingBudgetTxns), [editingBudgetTxns]);
+  const editingDupeIds = useMemo(() => new Set(editingDupeClusters.flatMap(c => c.txns.map(t => t.id))), [editingDupeClusters]);
 
   // Previous month spending for MoM comparison
   const prevMonthSpending = useMemo(() => {
@@ -772,6 +852,10 @@ const Budgets = () => {
     const budgetKind = expType === 'income' ? 'income' : expType === 'equity' ? 'equity' : 'expense';
     const formExpType = (expType === 'income' || expType === 'equity' ? 'flexible' : expType) as 'fixed' | 'flexible' | 'non_monthly';
     setForm({ category_id: categoryId, planned_amount: String(currentAmount), rollover, budgetKind, group_id: cat?.group_id || '', expense_type: formExpType });
+    setDupeSelection(new Set());
+    setReassignMode(false);
+    setReassignIds(new Set());
+    setReassignTarget('');
     setDialogOpen(true);
   };
 
@@ -2574,40 +2658,121 @@ const Budgets = () => {
                 +{formatCurrency(rolloverAmounts.get(form.category_id)!)} rolling over from previous month
               </div>
             )}
-            {editingBudget && (
+            {editingBudget && (() => {
+              const planned = parseFloat(editingBudget.planned_amount) || 0;
+              const editingSpent = spentByCategory[editingBudget.category_id] || 0;
+              const isOverspent = planned > 0 && editingSpent > planned;
+              const toggleSet = (set: Set<string>, id: string) => {
+                const next = new Set(set);
+                if (next.has(id)) next.delete(id); else next.add(id);
+                return next;
+              };
+              return (
               <div className="space-y-2">
-                <Label>Transactions behind this total — {formatMonth(month)}</Label>
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <Label>Transactions behind this total — {formatMonth(month)}</Label>
+                  {isOverspent && (
+                    <div className="flex items-center gap-1.5">
+                      <Button size="sm" variant="outline" className="h-7 text-xs gap-1" disabled={drillBusy || upsertBudget.isPending} onClick={allowOverspend}>
+                        <CheckCircle2 className="h-3 w-3" /> Allow overspend
+                      </Button>
+                      <Button size="sm" variant={reassignMode ? 'secondary' : 'outline'} className="h-7 text-xs gap-1"
+                        onClick={() => { setReassignMode(v => !v); setReassignIds(new Set()); setReassignTarget(''); }}>
+                        <ArrowRightLeft className="h-3 w-3" /> Reassign
+                      </Button>
+                    </div>
+                  )}
+                </div>
+                {isOverspent && (
+                  <p className="text-[11px] text-amber-600 dark:text-amber-400">
+                    Overspent by {formatCurrency(editingSpent - planned)}. "Allow overspend" raises this month's plan to the actual spend; "Reassign" moves selected transactions to the correct category (reversible via audit).
+                  </p>
+                )}
+                {editingDupeClusters.length > 0 && (
+                  <div className="rounded-md border border-amber-500/30 bg-amber-500/5 p-2 space-y-1">
+                    {editingDupeClusters.map(c => (
+                      <div key={c.key} className="flex items-center justify-between gap-2 text-[11px]">
+                        <span className="text-muted-foreground">
+                          {new Date(c.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} — {c.txns.length}× {formatCurrency(c.amount)}
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <span className="font-mono text-muted-foreground" title="Confidence: identical amount (30) + same-day timing (20) + shared bank provider ID (50)">{c.score}%</span>
+                          <span className={c.confirmed ? 'rounded bg-destructive/10 text-destructive px-1.5 py-0.5 font-medium' : 'rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 font-medium'}>
+                            {c.confirmed ? 'Confirmed double-import' : 'Possible dupe'}
+                          </span>
+                        </span>
+                      </div>
+                    ))}
+                    <p className="text-[10px] text-muted-foreground">Tick suspect rows below, then remove them with one click — balances auto-correct and the cleanup is undoable in the audit trail.</p>
+                  </div>
+                )}
                 {editingBudgetTxns.length === 0 ? (
                   <p className="text-xs text-muted-foreground rounded-md border border-dashed p-3 text-center">No transactions in this category this month.</p>
                 ) : (
                   <ScrollArea className="max-h-56 rounded-md border">
                     <div className="divide-y">
-                      {editingBudgetTxns.map(t => (
+                      {editingBudgetTxns.map(t => {
+                        const selectable = reassignMode || editingDupeIds.has(t.id);
+                        const checked = reassignMode ? reassignIds.has(t.id) : dupeSelection.has(t.id);
+                        return (
                         <div key={t.id} className="flex items-center justify-between gap-2 px-3 py-2 text-xs">
-                          <div className="min-w-0">
-                            <p className="truncate font-medium">{t.merchant || t.notes || 'Transaction'}</p>
-                            <p className="text-muted-foreground">{new Date(t.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</p>
+                          <div className="flex items-center gap-2 min-w-0">
+                            {selectable && (
+                              <Checkbox
+                                checked={checked}
+                                onCheckedChange={() => reassignMode ? setReassignIds(s => toggleSet(s, t.id)) : setDupeSelection(s => toggleSet(s, t.id))}
+                              />
+                            )}
+                            <div className="min-w-0">
+                              <p className="truncate font-medium">{t.merchant || t.notes || 'Transaction'}</p>
+                              <p className="text-muted-foreground">{new Date(t.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</p>
+                            </div>
                           </div>
                           <div className="flex items-center gap-2 shrink-0">
                             {t.possibleDupe && (
-                              <span className="rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 text-[10px] font-medium">Possible dupe</span>
+                              <span className="rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 text-[10px] font-medium">
+                                Possible dupe{editingDupeClusters.find(c => c.txns.some(x => x.id === t.id))?.confirmed ? ' · provider match' : ''}
+                              </span>
                             )}
                             <span className={t.amount < 0 ? 'text-foreground' : 'text-emerald-600 dark:text-emerald-400'}>
                               {t.amount < 0 ? '−' : '+'}{formatCurrency(Math.abs(t.amount))}
                             </span>
                           </div>
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </ScrollArea>
                 )}
+                {!reassignMode && dupeSelection.size > 0 && (
+                  <Button size="sm" variant="destructive" className="w-full h-8 text-xs gap-1.5" disabled={drillBusy} onClick={removeSelectedDupes}>
+                    {drillBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                    Remove {dupeSelection.size} selected duplicate{dupeSelection.size === 1 ? '' : 's'}
+                  </Button>
+                )}
+                {reassignMode && (
+                  <div className="flex items-center gap-2">
+                    <Select value={reassignTarget} onValueChange={setReassignTarget}>
+                      <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Move selected to…" /></SelectTrigger>
+                      <SelectContent>
+                        {(categories || []).filter(c => c.id !== editingBudget.category_id).map(c => (
+                          <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button size="sm" className="h-8 text-xs shrink-0" disabled={drillBusy || reassignIds.size === 0 || !reassignTarget} onClick={applyReassign}>
+                      {drillBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : `Move ${reassignIds.size || ''}`}
+                    </Button>
+                  </div>
+                )}
                 {editingBudgetTxns.some(t => t.possibleDupe) && (
                   <p className="text-[11px] text-amber-600 dark:text-amber-400">
-                    Same-date, same-amount charges flagged — review in <a href="/cleanup/audit" className="underline">Categorization Audit</a> or <a href="/transactions" className="underline">Transactions</a>.
+                    Full duplicate history in <a href="/cleanup/audit" className="underline">Categorization Audit</a> or <a href="/transactions" className="underline">Transactions</a>.
                   </p>
                 )}
               </div>
-            )}
+              );
+            })()}
             <div className="text-xs text-muted-foreground">Month: {formatMonth(month)}</div>
             <Button onClick={handleSave} disabled={!form.category_id || !form.planned_amount || upsertBudget.isPending} className="w-full">
               {upsertBudget.isPending ? 'Saving...' : editingBudget ? 'Update Budget' : 'Create Budget'}
