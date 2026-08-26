@@ -652,6 +652,7 @@ export function cashBenefitJourney(
   const cashPct = policy?.cashBenefitPct ?? SUPPORT_COST_PCT;
   const years = Math.max(1, Math.round(g.stress.careYears || 3));
   const rows: CashJourneyRow[] = [];
+  const stacks = g.stackCash === 'yes';
   let hsa = projectHsa(g.hsa, h.lymanAge, claimAge);
 
   const elimMonths = (policy?.eliminationDays ?? 90) / 30;
