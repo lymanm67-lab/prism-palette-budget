@@ -104,6 +104,10 @@ export function useRevertAuditRows() {
         if (r.before_category_id !== r.after_category_id) {
           update.category_id = r.before_category_id;
         }
+        // Duplicate-detector removals soft-deleted the transaction — undo restores it (balances auto-correct via trigger)
+        if (r.source === 'duplicate-detector') {
+          update.deleted_at = null;
+        }
         if (Object.keys(update).length) {
           const { error } = await supabase.from('transactions').update(update).eq('id', r.transaction_id!);
           if (error) throw error;

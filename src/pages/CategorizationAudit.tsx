@@ -16,6 +16,8 @@ const SOURCE_LABELS: Record<string, string> = {
   auto_categorize: 'Auto-categorize',
   normalize_merchant: 'Merchant normalization',
   transfer_rule: 'Transfer rule',
+  'duplicate-detector': 'Duplicate detector',
+  'duplicate-scheduler': 'Scheduled duplicate scan',
 };
 
 const currency = (n: number) =>
