@@ -284,6 +284,23 @@ const Budgets = () => {
     return { spentByCategory: spent, receivedByCategory: received };
   }, [transactions, month, monthSplits]);
 
+  // Transactions making up the edited budget's month total (for duplicate/misclassification review)
+  const editingBudgetTxns = useMemo(() => {
+    if (!editingBudget || !transactions) return [];
+    const monthPrefix = month.substring(0, 7);
+    const list = transactions.filter(t =>
+      t.date.startsWith(monthPrefix) && t.category_id === editingBudget.category_id && !t.is_transfer
+    );
+    // Flag potential duplicates: same date + same absolute amount
+    const seen = new Map<string, number>();
+    return list.map(t => {
+      const key = `${t.date}|${Math.abs(t.amount).toFixed(2)}`;
+      const n = (seen.get(key) || 0) + 1;
+      seen.set(key, n);
+      return { ...t, possibleDupe: list.filter(x => x.date === t.date && Math.abs(x.amount) === Math.abs(t.amount)).length > 1 };
+    }).sort((a, b) => b.date.localeCompare(a.date));
+  }, [editingBudget, transactions, month]);
+
   // Previous month spending for MoM comparison
   const prevMonthSpending = useMemo(() => {
     if (!transactions) return { totalExpenses: 0, totalIncome: 0, byCategory: {} as Record<string, number> };
@@ -2555,6 +2572,40 @@ const Budgets = () => {
             {form.rollover && rolloverAmounts.has(form.category_id) && (
               <div className="text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 rounded-lg px-3 py-2">
                 +{formatCurrency(rolloverAmounts.get(form.category_id)!)} rolling over from previous month
+              </div>
+            )}
+            {editingBudget && (
+              <div className="space-y-2">
+                <Label>Transactions behind this total — {formatMonth(month)}</Label>
+                {editingBudgetTxns.length === 0 ? (
+                  <p className="text-xs text-muted-foreground rounded-md border border-dashed p-3 text-center">No transactions in this category this month.</p>
+                ) : (
+                  <ScrollArea className="max-h-56 rounded-md border">
+                    <div className="divide-y">
+                      {editingBudgetTxns.map(t => (
+                        <div key={t.id} className="flex items-center justify-between gap-2 px-3 py-2 text-xs">
+                          <div className="min-w-0">
+                            <p className="truncate font-medium">{t.merchant || t.notes || 'Transaction'}</p>
+                            <p className="text-muted-foreground">{new Date(t.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</p>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            {t.possibleDupe && (
+                              <span className="rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 text-[10px] font-medium">Possible dupe</span>
+                            )}
+                            <span className={t.amount < 0 ? 'text-foreground' : 'text-emerald-600 dark:text-emerald-400'}>
+                              {t.amount < 0 ? '−' : '+'}{formatCurrency(Math.abs(t.amount))}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                )}
+                {editingBudgetTxns.some(t => t.possibleDupe) && (
+                  <p className="text-[11px] text-amber-600 dark:text-amber-400">
+                    Same-date, same-amount charges flagged — review in <a href="/cleanup/audit" className="underline">Categorization Audit</a> or <a href="/transactions" className="underline">Transactions</a>.
+                  </p>
+                )}
               </div>
             )}
             <div className="text-xs text-muted-foreground">Month: {formatMonth(month)}</div>

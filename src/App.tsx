@@ -25,6 +25,7 @@ const Budgets = lazy(() => import("@/pages/Budgets"));
 const Reports = lazy(() => import("@/pages/Reports"));
 const MonthlyReport = lazy(() => import("@/pages/MonthlyReport"));
 const BudgetBillsReport = lazy(() => import("@/pages/BudgetBillsReport"));
+const LovableSpendReport = lazy(() => import("@/pages/LovableSpendReport"));
 const BudgetPlanner = lazy(() => import("@/pages/BudgetPlanner"));
 const Categories = lazy(() => import("@/pages/Categories"));
 const Settings = lazy(() => import("@/pages/Settings"));
@@ -207,6 +208,7 @@ const App = () => (
               <Route path="/reports/monthly" element={<Suspense fallback={<PageLoader />}><MonthlyReport /></Suspense>} />
               <Route path="/planning/budget" element={<Suspense fallback={<PageLoader />}><BudgetPlanner /></Suspense>} />
               <Route path="/reports/budgets-bills" element={<Suspense fallback={<PageLoader />}><BudgetBillsReport /></Suspense>} />
+              <Route path="/reports/lovable-spend" element={<Suspense fallback={<PageLoader />}><LovableSpendReport /></Suspense>} />
               <Route path="/spending-trends" element={<Suspense fallback={<PageLoader />}><SpendingTrends /></Suspense>} />
               <Route path="/goals" element={<Suspense fallback={<PageLoader />}><Goals /></Suspense>} />
               <Route path="/debt-payoff" element={<Suspense fallback={<PageLoader />}><DebtPayoff /></Suspense>} />
