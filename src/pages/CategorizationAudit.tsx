@@ -199,7 +199,27 @@ export default function CategorizationAudit() {
             </CollapsibleTrigger>
             <CollapsibleContent>
               <CardContent className="space-y-3">
-                <div className="flex justify-end">
+                {g.source === 'duplicate-scheduler' && (
+                  <p className="text-xs text-muted-foreground rounded-md border border-dashed p-2">
+                    Review-only flags from the scheduled detector — nothing was changed yet. Remove the duplicates, or use Undo to dismiss these flags (dismissed clusters are never re-flagged).
+                  </p>
+                )}
+                <div className="flex justify-end gap-2">
+                  {g.source === 'duplicate-scheduler' && (
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      disabled={removingFlags || g.changed === 0}
+                      onClick={() => removeFlaggedDupes(g)}
+                    >
+                      {removingFlags ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="mr-2 h-4 w-4" />
+                      )}
+                      Remove flagged duplicates ({g.changed})
+                    </Button>
+                  )}
                   <Button
                     size="sm"
                     variant="outline"
@@ -211,7 +231,7 @@ export default function CategorizationAudit() {
                     ) : (
                       <RotateCcw className="mr-2 h-4 w-4" />
                     )}
-                    Undo this rule ({g.changed})
+                    {g.source === 'duplicate-scheduler' ? `Dismiss flags (${g.changed})` : `Undo this rule (${g.changed})`}
                   </Button>
                 </div>
                 <div className="max-h-96 overflow-auto rounded-md border border-border/50">
