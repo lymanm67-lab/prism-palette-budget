@@ -12,6 +12,7 @@ import { Loader2, AlertTriangle, CheckCircle2, Trash2, ScanSearch, Sparkles } fr
 import { toast } from 'sonner';
 import PageOverview from '@/components/PageOverview';
 import { clusterDuplicates, confirmedDuplicateIds } from '@/lib/duplicate-detector';
+import { ScoreBreakdownTooltip } from '@/components/cleanup/ScoreBreakdownTooltip';
 
 const MONTHLY_CAP = 400; // Matches the Money Leaks entry cap for Lovable/AI services
 const MERCHANT_MATCH = '%lovable%';
@@ -205,9 +206,11 @@ export default function LovableSpendReport() {
                   {new Date(c.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} — {c.txns.length}× {formatCurrency(c.amount)}
                 </div>
                 <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="font-mono" title="Confidence: identical amount (30) + same-day timing (20) + shared bank provider ID (50)">
-                    {c.score}% confidence
-                  </Badge>
+                  <ScoreBreakdownTooltip cluster={c}>
+                    <Badge variant="outline" className="font-mono cursor-help">
+                      {c.score}% confidence
+                    </Badge>
+                  </ScoreBreakdownTooltip>
                   <Badge variant={c.confirmed ? 'destructive' : 'secondary'}>
                     {c.confirmed ? 'Confirmed double-import' : 'Likely real purchases'}
                   </Badge>

@@ -38,6 +38,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import NetWorthSummaryCard from '@/components/NetWorthSummaryCard';
 import { clusterDuplicates, softDeleteDuplicates } from '@/lib/duplicate-detector';
+import { ScoreBreakdownTooltip } from '@/components/cleanup/ScoreBreakdownTooltip';
 import { useQueryClient } from '@tanstack/react-query';
 
 const getMonth = (offset: number) => {
@@ -2696,7 +2697,9 @@ const Budgets = () => {
                           {new Date(c.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} — {c.txns.length}× {formatCurrency(c.amount)}
                         </span>
                         <span className="flex items-center gap-1.5">
-                          <span className="font-mono text-muted-foreground" title="Confidence: identical amount (30) + same-day timing (20) + shared bank provider ID (50)">{c.score}%</span>
+                          <ScoreBreakdownTooltip cluster={c}>
+                            <span className="font-mono text-muted-foreground cursor-help underline decoration-dotted underline-offset-2">{c.score}%</span>
+                          </ScoreBreakdownTooltip>
                           <span className={c.confirmed ? 'rounded bg-destructive/10 text-destructive px-1.5 py-0.5 font-medium' : 'rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 font-medium'}>
                             {c.confirmed ? 'Confirmed double-import' : 'Possible dupe'}
                           </span>

@@ -1936,6 +1936,50 @@ export type Database = {
           },
         ]
       }
+      duplicate_detector_settings: {
+        Row: {
+          created_at: string
+          email: string | null
+          email_enabled: boolean
+          household_id: string
+          id: string
+          last_email_sent_at: string | null
+          max_clusters: number
+          scan_days: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          email_enabled?: boolean
+          household_id: string
+          id?: string
+          last_email_sent_at?: string | null
+          max_clusters?: number
+          scan_days?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          email_enabled?: boolean
+          household_id?: string
+          id?: string
+          last_email_sent_at?: string | null
+          max_clusters?: number
+          scan_days?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "duplicate_detector_settings_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: true
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       estate_planning_checklist: {
         Row: {
           completed_at: string | null
