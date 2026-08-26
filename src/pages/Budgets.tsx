@@ -37,7 +37,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { EmptyState } from '@/components/EmptyState';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import NetWorthSummaryCard from '@/components/NetWorthSummaryCard';
-import { clusterDuplicates, softDeleteDuplicates, scoreCluster } from '@/lib/duplicate-detector';
+import { clusterDuplicates, softDeleteDuplicates } from '@/lib/duplicate-detector';
 import { useQueryClient } from '@tanstack/react-query';
 
 const getMonth = (offset: number) => {
