@@ -3,8 +3,11 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
+import { useHousehold } from '@/contexts/HouseholdContext';
+import { logCategorizationAudit } from '@/lib/categorization-audit';
 import type { MiscategorizedGroup } from '@/hooks/use-cleanup-candidates';
 import { Loader2, Sparkles } from 'lucide-react';
+
 
 interface Props { groups: MiscategorizedGroup[] }
 
