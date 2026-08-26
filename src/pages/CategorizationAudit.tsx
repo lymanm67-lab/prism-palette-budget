@@ -149,12 +149,20 @@ export default function CategorizationAudit() {
             Every rule-driven change to a transaction's merchant or category, with before/after values and one-click undo.
           </p>
         </div>
-        <Button variant="outline" size="sm" asChild>
-          <Link to="/cleanup">
-            <Sparkles className="mr-2 h-4 w-4" />
-            Data Cleanup
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          {pendingFlagCount > 0 && (
+            <Button variant="destructive" size="sm" disabled={removingFlags} onClick={resolveAllFlagged}>
+              {removingFlags ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
+              Resolve all flagged ({pendingFlagCount})
+            </Button>
+          )}
+          <Button variant="outline" size="sm" asChild>
+            <Link to="/cleanup">
+              <Sparkles className="mr-2 h-4 w-4" />
+              Data Cleanup
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
