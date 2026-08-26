@@ -51,6 +51,9 @@ export default function Cleanup() {
         <div className="flex items-center gap-2">
           {total > 0 && <Badge variant="secondary" className="text-base">{total} items</Badge>}
           <Button variant="outline" size="sm" asChild>
+            <Link to="/cleanup/rules"><Settings2 className="mr-2 h-4 w-4" />Import rules</Link>
+          </Button>
+          <Button variant="outline" size="sm" asChild>
             <Link to="/cleanup/audit"><History className="mr-2 h-4 w-4" />Audit trail</Link>
           </Button>
         </div>
