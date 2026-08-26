@@ -23,7 +23,7 @@ import { useBudgets, useCategories, useCategoryGroups, useTransactions, useUpser
 import { useBusinessProfiles } from '@/hooks/use-business-data';
 import { useSmartBudget } from '@/hooks/use-financial-intelligence';
 import { useCurrency } from '@/hooks/use-currency';
-import { Loader2, Plus, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Eye, EyeOff, Settings2, TrendingUp, AlertTriangle, CheckCircle2, PiggyBank, Sparkles, Copy, ClipboardCheck, MoreHorizontal, BookOpen, Printer, X, Scale, FileUp, Receipt } from 'lucide-react';
+import { Loader2, Plus, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Eye, EyeOff, Settings2, TrendingUp, AlertTriangle, CheckCircle2, PiggyBank, Sparkles, Copy, ClipboardCheck, MoreHorizontal, BookOpen, Printer, X, Scale, FileUp, Receipt, ArrowRightLeft } from 'lucide-react';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -852,6 +852,10 @@ const Budgets = () => {
     const budgetKind = expType === 'income' ? 'income' : expType === 'equity' ? 'equity' : 'expense';
     const formExpType = (expType === 'income' || expType === 'equity' ? 'flexible' : expType) as 'fixed' | 'flexible' | 'non_monthly';
     setForm({ category_id: categoryId, planned_amount: String(currentAmount), rollover, budgetKind, group_id: cat?.group_id || '', expense_type: formExpType });
+    setDupeSelection(new Set());
+    setReassignMode(false);
+    setReassignIds(new Set());
+    setReassignTarget('');
     setDialogOpen(true);
   };
 
