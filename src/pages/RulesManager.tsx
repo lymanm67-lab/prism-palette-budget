@@ -1,9 +1,10 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { History, ListChecks, Settings2, Wand2 } from 'lucide-react';
+import { History, ListChecks, Radar, Settings2, Wand2 } from 'lucide-react';
 import { RulesList } from '@/components/cleanup/RulesList';
 import { RuleRunner } from '@/components/cleanup/RuleRunner';
+import { DetectorSettings } from '@/components/cleanup/DetectorSettings';
 
 export default function RulesManager() {
   return (
@@ -27,9 +28,11 @@ export default function RulesManager() {
         <TabsList>
           <TabsTrigger value="rules"><ListChecks className="mr-2 h-4 w-4" />My rules</TabsTrigger>
           <TabsTrigger value="rerun"><Wand2 className="mr-2 h-4 w-4" />Re-run rules</TabsTrigger>
+          <TabsTrigger value="detector"><Radar className="mr-2 h-4 w-4" />Detector</TabsTrigger>
         </TabsList>
         <TabsContent value="rules" className="mt-4"><RulesList /></TabsContent>
         <TabsContent value="rerun" className="mt-4"><RuleRunner /></TabsContent>
+        <TabsContent value="detector" className="mt-4"><DetectorSettings /></TabsContent>
       </Tabs>
     </div>
   );
