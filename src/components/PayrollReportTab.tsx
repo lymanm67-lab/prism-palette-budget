@@ -135,13 +135,30 @@ export default function PayrollReportTab({ budgetMonth }: PayrollReportTabProps)
     let totalFlexibleExp = 0;
     let totalNonMonthlyExp = 0;
     const deductions: DeductionLine[] = [];
+    // Employer match / company contributions are ADDITIVE — they are never withheld
+    // from pay, so they must not count toward payroll deductions or gross income.
+    const employerLines: DeductionLine[] = [];
+    const isEmployerContribution = (name: string) => {
+      const lower = name.toLowerCase();
+      return lower.includes('employer') || lower.includes('match') || lower.includes('company contrib');
+    };
 
     for (const b of budgets as any[]) {
       if (incomeCatIds.has(b.category_id)) {
         netIncome += b.planned_amount;
       } else if (payrollCatIds.has(b.category_id)) {
-        totalDeductions += b.planned_amount;
         const cat = categories.find(c => c.id === b.category_id);
+        if (cat && isEmployerContribution(cat.name)) {
+          employerLines.push({
+            name: cat.name,
+            monthlyAmount: b.planned_amount,
+            annualAmount: b.planned_amount * 12,
+            pctOfGross: 0,
+            type: classifyDeduction(cat.name),
+          });
+          continue;
+        }
+        totalDeductions += b.planned_amount;
         if (cat) {
           deductions.push({
             name: cat.name,
@@ -208,10 +225,10 @@ export default function PayrollReportTab({ budgetMonth }: PayrollReportTabProps)
     const deferredPct = grossIncome > 0 ? (deferredTotal / grossIncome) * 100 : 0;
 
     // Employer-paid benefits toward retirement
-    const detectedEmployerItems = deductions.filter(d => {
-      const lower = d.name.toLowerCase();
-      return lower.includes('employer') || lower.includes('match') || lower.includes('company contrib');
-    });
+    const detectedEmployerItems = employerLines.map(d => ({
+      ...d,
+      pctOfGross: grossIncome > 0 ? (d.monthlyAmount / grossIncome) * 100 : 0,
+    }));
     const detectedEmployerContrib = detectedEmployerItems.reduce((s, d) => s + d.monthlyAmount, 0);
     const matchPct = parseFloat(employerMatchPct) || 0;
     const calculatedEmployerContrib = grossIncome > 0 ? (grossIncome * matchPct) / 100 : 0;
