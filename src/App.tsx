@@ -83,6 +83,7 @@ const ExperimentsDashboard = lazy(() => import("@/pages/ExperimentsDashboard"));
 const ReconciliationAudit = lazy(() => import("@/pages/ReconciliationAudit"));
 const Cleanup = lazy(() => import("@/pages/Cleanup"));
 const CategorizationAudit = lazy(() => import("@/pages/CategorizationAudit"));
+const RulesManager = lazy(() => import("@/pages/RulesManager"));
 const AppStoreReadiness = lazy(() => import("@/pages/AppStoreReadiness"));
 const CrossoverTracker = lazy(() => import("@/pages/CrossoverTracker"));
 const InvestmentPlanning = lazy(() => import("@/pages/InvestmentPlanning"));
@@ -258,6 +259,7 @@ const App = () => (
               <Route path="/reconciliation" element={<Suspense fallback={<PageLoader />}><ReconciliationAudit /></Suspense>} />
               <Route path="/cleanup" element={<Suspense fallback={<PageLoader />}><Cleanup /></Suspense>} />
               <Route path="/cleanup/audit" element={<Suspense fallback={<PageLoader />}><CategorizationAudit /></Suspense>} />
+              <Route path="/cleanup/rules" element={<Suspense fallback={<PageLoader />}><RulesManager /></Suspense>} />
               <Route path="/experiments" element={<Suspense fallback={<PageLoader />}><ExperimentsDashboard /></Suspense>} />
               <Route path="/app-store-readiness" element={<Suspense fallback={<PageLoader />}><AppStoreReadiness /></Suspense>} />
               <Route path="/crossover-tracker" element={<Suspense fallback={<PageLoader />}><CrossoverTracker /></Suspense>} />
