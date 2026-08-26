@@ -182,6 +182,84 @@ const Budgets = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState<{ category_id: string; planned_amount: string; rollover: boolean } | null>(null);
   const [form, setForm] = useState({ category_id: '', planned_amount: '', rollover: false, budgetKind: 'expense' as 'income' | 'expense' | 'equity', group_id: '', expense_type: 'flexible' as 'fixed' | 'flexible' | 'non_monthly' | 'payroll_deduction' });
+  const qc = useQueryClient();
+  const [drillBusy, setDrillBusy] = useState(false);
+  const [dupeSelection, setDupeSelection] = useState<Set<string>>(new Set());
+  const [reassignMode, setReassignMode] = useState(false);
+  const [reassignIds, setReassignIds] = useState<Set<string>>(new Set());
+  const [reassignTarget, setReassignTarget] = useState('');
+
+  // Duplicate clusters inside the current drill-down (same-day, same-amount)
+  const editingDupeClusters = useMemo(() => clusterDuplicates(editingBudgetTxns), [editingBudgetTxns]);
+  const editingDupeIds = useMemo(() => new Set(editingDupeClusters.flatMap(c => c.txns.map(t => t.id))), [editingDupeClusters]);
+
+  // Allow/approve the overspend: raise this month's planned amount to the actual spend
+  const allowOverspend = async () => {
+    if (!editingBudget) return;
+    const spent = spentByCategory[editingBudget.category_id] || 0;
+    setDrillBusy(true);
+    try {
+      await upsertBudget.mutateAsync({ category_id: editingBudget.category_id, month, planned_amount: Math.ceil(spent * 100) / 100, rollover: form.rollover });
+      setForm(f => ({ ...f, planned_amount: String(Math.ceil(spent * 100) / 100) }));
+      toast.success(`Budget raised to ${formatCurrency(spent)} — overspend approved for ${formatMonth(month)}`);
+    } finally { setDrillBusy(false); }
+  };
+
+  // Remove selected duplicate transactions (same one-click cleanup as the Lovable spend report)
+  const removeSelectedDupes = async () => {
+    if (!household || dupeSelection.size === 0) return;
+    setDrillBusy(true);
+    const txns = editingBudgetTxns.filter(t => dupeSelection.has(t.id));
+    const { deleted, error } = await softDeleteDuplicates({
+      householdId: household.id,
+      txns,
+      ruleKey: 'budget-drilldown-dupe',
+      ruleName: 'Budget drill-down duplicate cleanup',
+    });
+    setDrillBusy(false);
+    if (error) { toast.error(error); return; }
+    toast.success(`Removed ${deleted} duplicate${deleted === 1 ? '' : 's'} — balances auto-corrected. Undo in Categorization Audit.`);
+    setDupeSelection(new Set());
+    qc.invalidateQueries({ queryKey: ['transactions'] });
+    qc.invalidateQueries({ queryKey: ['budgets'] });
+  };
+
+  // Reassign selected transactions to the correct category (audit-logged, reversible)
+  const applyReassign = async () => {
+    if (!household || !editingBudget || reassignIds.size === 0 || !reassignTarget) return;
+    setDrillBusy(true);
+    try {
+      const targetCat = (categories || []).find(c => c.id === reassignTarget);
+      const fromCat = (categories || []).find(c => c.id === editingBudget.category_id);
+      const txns = editingBudgetTxns.filter(t => reassignIds.has(t.id));
+      const { error } = await supabase.from('transactions').update({ category_id: reassignTarget }).in('id', txns.map(t => t.id));
+      if (error) throw error;
+      await supabase.from('categorization_audit').insert(txns.map(t => ({
+        household_id: household.id,
+        transaction_id: t.id,
+        source: 'manual',
+        rule_key: 'budget-reassign',
+        rule_name: `Budget drill-down reassign → ${targetCat?.name || 'category'}`,
+        before_merchant: t.merchant,
+        after_merchant: t.merchant,
+        before_category_id: editingBudget.category_id,
+        before_category_name: fromCat?.name || null,
+        after_category_id: reassignTarget,
+        after_category_name: targetCat?.name || null,
+        txn_date: t.date,
+        amount: t.amount,
+        applied_by: 'manual',
+      })) as never[]);
+      toast.success(`Moved ${txns.length} transaction${txns.length === 1 ? '' : 's'} to ${targetCat?.name}. Undo in Categorization Audit.`);
+      setReassignIds(new Set());
+      setReassignMode(false);
+      setReassignTarget('');
+      qc.invalidateQueries({ queryKey: ['transactions'] });
+      qc.invalidateQueries({ queryKey: ['budgets'] });
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Reassign failed');
+    } finally { setDrillBusy(false); }
+  };
   const [auditOpen, setAuditOpen] = useState(false);
   const [auditResult, setAuditResult] = useState<string>('');
   const [auditLoading, setAuditLoading] = useState(false);
