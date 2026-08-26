@@ -928,6 +928,84 @@ export type Database = {
           },
         ]
       }
+      categorization_audit: {
+        Row: {
+          after_category_id: string | null
+          after_category_name: string | null
+          after_merchant: string | null
+          amount: number | null
+          applied_by: string | null
+          before_category_id: string | null
+          before_category_name: string | null
+          before_merchant: string | null
+          created_at: string
+          household_id: string
+          id: string
+          reverted_at: string | null
+          rule_key: string | null
+          rule_name: string
+          source: string
+          transaction_id: string | null
+          txn_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          after_category_id?: string | null
+          after_category_name?: string | null
+          after_merchant?: string | null
+          amount?: number | null
+          applied_by?: string | null
+          before_category_id?: string | null
+          before_category_name?: string | null
+          before_merchant?: string | null
+          created_at?: string
+          household_id: string
+          id?: string
+          reverted_at?: string | null
+          rule_key?: string | null
+          rule_name: string
+          source: string
+          transaction_id?: string | null
+          txn_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          after_category_id?: string | null
+          after_category_name?: string | null
+          after_merchant?: string | null
+          amount?: number | null
+          applied_by?: string | null
+          before_category_id?: string | null
+          before_category_name?: string | null
+          before_merchant?: string | null
+          created_at?: string
+          household_id?: string
+          id?: string
+          reverted_at?: string | null
+          rule_key?: string | null
+          rule_name?: string
+          source?: string
+          transaction_id?: string | null
+          txn_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "categorization_audit_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "categorization_audit_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categorization_rules: {
         Row: {
           category_id: string

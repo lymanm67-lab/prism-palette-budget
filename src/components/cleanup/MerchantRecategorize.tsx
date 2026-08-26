@@ -3,8 +3,11 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
+import { useHousehold } from '@/contexts/HouseholdContext';
+import { logCategorizationAudit } from '@/lib/categorization-audit';
 import type { MiscategorizedGroup } from '@/hooks/use-cleanup-candidates';
 import { Loader2, Sparkles } from 'lucide-react';
+
 
 interface Props { groups: MiscategorizedGroup[] }
 
@@ -17,6 +20,7 @@ function GroupCard({ group }: { group: MiscategorizedGroup }) {
   const [busy, setBusy] = useState(false);
   const { toast } = useToast();
   const qc = useQueryClient();
+  const { household } = useHousehold();
 
   const applicable = group.transactions.filter(t => !t.hasSplit);
   const skipped = group.transactions.filter(t => t.hasSplit);
@@ -36,11 +40,33 @@ function GroupCard({ group }: { group: MiscategorizedGroup }) {
           })
           .in('id', ids);
         if (error) throw error;
+
+        if (household) {
+          await logCategorizationAudit(
+            applicable.map(t => ({
+              householdId: household.id,
+              transactionId: t.id,
+              source: 'merchant_alias' as const,
+              ruleKey: `alias:${group.canonical}`,
+              ruleName: `${group.canonical} → ${group.targetCategoryName}`,
+              beforeMerchant: t.merchant,
+              afterMerchant: group.canonical,
+              beforeCategoryId: t.currentCategoryId,
+              beforeCategoryName: t.currentCategoryName,
+              afterCategoryId: group.targetCategoryId,
+              afterCategoryName: group.targetCategoryName,
+              txnDate: t.date,
+              amount: t.amount,
+            }))
+          );
+        }
       }
       toast({ title: 'Re-categorized', description: `${ids.length} "${group.canonical}" transaction(s) fixed.` });
       qc.invalidateQueries({ queryKey: ['cleanup-candidates'] });
+      qc.invalidateQueries({ queryKey: ['categorization-audit'] });
     } catch (e: any) {
       toast({ title: 'Failed', description: e.message, variant: 'destructive' });
+
     } finally {
       setBusy(false);
     }
