@@ -179,6 +179,14 @@ export default function LovableSpendReport() {
       <PageOverview
         title="Lovable / AI Services Spend Report"
         description="Full breakdown of Lovable spending by month, day, and charge size — with duplicate-import detection and a $400/mo Money Leaks cap."
+        icon={Sparkles}
+        ttsScript="This report breaks down everything you have spent on Lovable A I services. The summary cards show all-time and year-to-date spend plus total charges. The same-day clusters section flags identical charges that may be double imports from your banks — confirmed duplicates can be removed with one click, and account balances correct automatically. The monthly cap tracker shows how each month compares to your four hundred dollar cap, and the charge-size pattern shows how much of your spend comes from fifteen dollar micro top-ups."
+        features={[
+          'All-time and 2026 spend totals',
+          'Same-day duplicate detection with one-click cleanup',
+          'Monthly $400 cap tracker with over-cap highlighting',
+          'Charge-size pattern analysis ($15 micro top-ups vs larger purchases)',
+        ]}
       />
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
