@@ -33,6 +33,8 @@ interface Cluster {
   amount: number;
   txns: Txn[];
   confirmed: boolean; // same provider_transaction_id across accounts = true double-import
+  score: number; // 0-100 duplicate confidence
+  scoreLabel: 'Confirmed' | 'High' | 'Review';
 }
 
 const monthLabel = (prefix: string) => {
@@ -112,19 +114,12 @@ export default function LovableSpendReport() {
   }, [txns]);
 
   const confirmedDupes = useMemo(() => {
-    const out: Txn[] = [];
+    const ids = new Set<string>();
     for (const c of stats.clusters.filter(c => c.confirmed)) {
-      const byProvider = new Map<string, Txn[]>();
-      for (const t of c.txns) {
-        if (!t.provider_transaction_id) continue;
-        byProvider.set(t.provider_transaction_id, [...(byProvider.get(t.provider_transaction_id) || []), t]);
-      }
-      for (const p of byProvider.values()) {
-        if (p.length > 1) out.push(...p.slice(1)); // keep earliest, delete the rest
-      }
+      for (const id of confirmedDuplicateIds(c)) ids.add(id);
     }
-    return out;
-  }, [stats.clusters]);
+    return (txns || []).filter(t => ids.has(t.id));
+  }, [stats.clusters, txns]);
 
   const softDelete = async (ids: string[], label: string) => {
     if (!household || ids.length === 0) return;
