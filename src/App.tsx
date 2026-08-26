@@ -83,6 +83,7 @@ const ExperimentsDashboard = lazy(() => import("@/pages/ExperimentsDashboard"));
 const ReconciliationAudit = lazy(() => import("@/pages/ReconciliationAudit"));
 const Cleanup = lazy(() => import("@/pages/Cleanup"));
 const CategorizationAudit = lazy(() => import("@/pages/CategorizationAudit"));
+const RulesManager = lazy(() => import("@/pages/RulesManager"));
 const AppStoreReadiness = lazy(() => import("@/pages/AppStoreReadiness"));
 const CrossoverTracker = lazy(() => import("@/pages/CrossoverTracker"));
 const InvestmentPlanning = lazy(() => import("@/pages/InvestmentPlanning"));
