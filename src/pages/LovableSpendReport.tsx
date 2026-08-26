@@ -204,9 +204,14 @@ export default function LovableSpendReport() {
                 <div className="text-sm font-medium">
                   {new Date(c.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} — {c.txns.length}× {formatCurrency(c.amount)}
                 </div>
-                <Badge variant={c.confirmed ? 'destructive' : 'secondary'}>
-                  {c.confirmed ? 'Confirmed double-import' : 'Likely real purchases'}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="font-mono" title="Confidence: identical amount (30) + same-day timing (20) + shared bank provider ID (50)">
+                    {c.score}% confidence
+                  </Badge>
+                  <Badge variant={c.confirmed ? 'destructive' : 'secondary'}>
+                    {c.confirmed ? 'Confirmed double-import' : 'Likely real purchases'}
+                  </Badge>
+                </div>
               </div>
               <div className="divide-y">
                 {c.txns.map(t => (
