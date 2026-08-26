@@ -284,6 +284,23 @@ const Budgets = () => {
     return { spentByCategory: spent, receivedByCategory: received };
   }, [transactions, month, monthSplits]);
 
+  // Transactions making up the edited budget's month total (for duplicate/misclassification review)
+  const editingBudgetTxns = useMemo(() => {
+    if (!editingBudget || !transactions) return [];
+    const monthPrefix = month.substring(0, 7);
+    const list = transactions.filter(t =>
+      t.date.startsWith(monthPrefix) && t.category_id === editingBudget.category_id && !t.is_transfer
+    );
+    // Flag potential duplicates: same date + same absolute amount
+    const seen = new Map<string, number>();
+    return list.map(t => {
+      const key = `${t.date}|${Math.abs(t.amount).toFixed(2)}`;
+      const n = (seen.get(key) || 0) + 1;
+      seen.set(key, n);
+      return { ...t, possibleDupe: list.filter(x => x.date === t.date && Math.abs(x.amount) === Math.abs(t.amount)).length > 1 };
+    }).sort((a, b) => b.date.localeCompare(a.date));
+  }, [editingBudget, transactions, month]);
+
   // Previous month spending for MoM comparison
   const prevMonthSpending = useMemo(() => {
     if (!transactions) return { totalExpenses: 0, totalIncome: 0, byCategory: {} as Record<string, number> };
