@@ -381,6 +381,10 @@ const Budgets = () => {
     }).sort((a, b) => b.date.localeCompare(a.date));
   }, [editingBudget, transactions, month]);
 
+  // Duplicate clusters inside the current drill-down (same-day, same-amount)
+  const editingDupeClusters = useMemo(() => clusterDuplicates(editingBudgetTxns), [editingBudgetTxns]);
+  const editingDupeIds = useMemo(() => new Set(editingDupeClusters.flatMap(c => c.txns.map(t => t.id))), [editingDupeClusters]);
+
   // Previous month spending for MoM comparison
   const prevMonthSpending = useMemo(() => {
     if (!transactions) return { totalExpenses: 0, totalIncome: 0, byCategory: {} as Record<string, number> };
