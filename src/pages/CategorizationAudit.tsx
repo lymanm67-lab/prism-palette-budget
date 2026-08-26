@@ -101,6 +101,34 @@ export default function CategorizationAudit() {
     }
   };
 
+  // Bulk-resolve every scheduler-flagged cluster in one action; the converted rows keep the
+  // same rule_key, so the existing group "Undo this rule" restores everything at once.
+  const schedulerGroups = (data || []).filter((g) => g.source === 'duplicate-scheduler' && g.changed > 0);
+  const pendingFlagCount = schedulerGroups.reduce((n, g) => n + g.changed, 0);
+
+  const resolveAllFlagged = async () => {
+    if (!household) return;
+    const rows = schedulerGroups.flatMap((g) => g.rows.filter((r) => !r.reverted_at && r.transaction_id));
+    if (!rows.length) return;
+    setRemovingFlags(true);
+    try {
+      const ids = rows.map((r) => r.transaction_id!);
+      const { error } = await supabase.from('transactions').update({ deleted_at: new Date().toISOString() }).in('id', ids);
+      if (error) throw error;
+      await supabase
+        .from('categorization_audit')
+        .update({ source: 'duplicate-detector', rule_name: 'Scheduled duplicate scan — bulk resolved' })
+        .in('id', schedulerGroups.flatMap((g) => g.rows.map((r) => r.id)));
+      toast({ title: 'All flagged duplicates removed', description: `${ids.length} transaction(s) soft-deleted — balances auto-corrected. One "Undo this rule" on the group restores everything.` });
+      qc.invalidateQueries({ queryKey: ['categorization-audit'] });
+      qc.invalidateQueries({ queryKey: ['transactions'] });
+    } catch (e: unknown) {
+      toast({ title: 'Bulk resolve failed', description: e instanceof Error ? e.message : 'Unknown error', variant: 'destructive' });
+    } finally {
+      setRemovingFlags(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[40vh]">

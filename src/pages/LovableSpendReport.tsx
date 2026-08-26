@@ -12,6 +12,7 @@ import { Loader2, AlertTriangle, CheckCircle2, Trash2, ScanSearch, Sparkles } fr
 import { toast } from 'sonner';
 import PageOverview from '@/components/PageOverview';
 import { clusterDuplicates, confirmedDuplicateIds } from '@/lib/duplicate-detector';
+import { ScoreBreakdownTooltip } from '@/components/cleanup/ScoreBreakdownTooltip';
 
 const MONTHLY_CAP = 400; // Matches the Money Leaks entry cap for Lovable/AI services
 const MERCHANT_MATCH = '%lovable%';
