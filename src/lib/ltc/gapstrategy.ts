@@ -717,6 +717,7 @@ export function cashBenefitJourney(
       gapWithoutCash, gapWithCash, portfolioSaved,
     },
     savedWithGrowth: portfolioSaved * Math.pow(1 + r, Math.max(0, horizon)),
+    stacks,
     eliminationCovered: rows[0].gapWithCash <= (g.retirementIncomeForLtc * elimMonths + hsa),
   };
 }
