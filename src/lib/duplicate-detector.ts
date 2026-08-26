@@ -40,6 +40,29 @@ export function scoreCluster(txns: DupeTxn[]): { score: number; confirmed: boole
   return { score, confirmed, scoreLabel };
 }
 
+export interface ScoreSignal {
+  label: string;
+  points: number;
+  hit: boolean;
+  detail: string;
+}
+
+/** Per-signal breakdown of a cluster's 0–100 confidence score. */
+export function scoreBreakdown(cluster: Pick<DupeCluster, 'confirmed'>): ScoreSignal[] {
+  return [
+    { label: 'Identical amount', points: 30, hit: true, detail: 'Every charge in the cluster is for the exact same amount.' },
+    { label: 'Same-day timing', points: 20, hit: true, detail: 'All charges posted on the same calendar day.' },
+    {
+      label: 'Shared bank provider ID',
+      points: 50,
+      hit: cluster.confirmed,
+      detail: cluster.confirmed
+        ? 'The same bank transaction ID appears more than once — proof of a double import.'
+        : 'No shared bank IDs found — these are likely separate real purchases.',
+    },
+  ];
+}
+
 /** Group transactions into same-date, same-absolute-amount clusters (size > 1). */
 export function clusterDuplicates(txns: DupeTxn[]): DupeCluster[] {
   const groups = new Map<string, DupeTxn[]>();
