@@ -47,6 +47,7 @@ export interface MiscategorizedGroup {
     date: string;
     merchant: string | null;
     amount: number;
+    currentCategoryId: string | null;
     currentCategoryName: string | null;
     hasSplit: boolean;
   }[];
@@ -248,6 +249,7 @@ async function fetchAll(householdId: string): Promise<CleanupCandidates> {
       const cc = t.category_id ? catById.get(t.category_id) : null;
       return {
         id: t.id, date: t.date, merchant: t.merchant, amount: Number(t.amount),
+        currentCategoryId: t.category_id ?? null,
         currentCategoryName: cc?.name ?? null,
         hasSplit: splitIds.has(t.id),
       };

@@ -51,7 +51,7 @@ function GroupCard({ group }: { group: MiscategorizedGroup }) {
               ruleName: `${group.canonical} → ${group.targetCategoryName}`,
               beforeMerchant: t.merchant,
               afterMerchant: group.canonical,
-              beforeCategoryId: null,
+              beforeCategoryId: t.currentCategoryId,
               beforeCategoryName: t.currentCategoryName,
               afterCategoryId: group.targetCategoryId,
               afterCategoryName: group.targetCategoryName,
