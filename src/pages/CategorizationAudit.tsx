@@ -33,6 +33,33 @@ export default function CategorizationAudit() {
   const { data, isLoading } = useCategorizationAudit(days);
   const revert = useRevertAuditRows();
   const { toast } = useToast();
+  const { household } = useHousehold();
+  const qc = useQueryClient();
+  const [removingFlags, setRemovingFlags] = useState(false);
+
+  // Soft-delete the transactions flagged by the scheduled duplicate scan, then dismiss the flags.
+  const removeFlaggedDupes = async (g: AuditRuleGroup) => {
+    if (!household) return;
+    const ids = g.rows.filter((r) => !r.reverted_at && r.transaction_id).map((r) => r.transaction_id!);
+    if (!ids.length) return;
+    setRemovingFlags(true);
+    try {
+      const { error } = await supabase.from('transactions').update({ deleted_at: new Date().toISOString() }).in('id', ids);
+      if (error) throw error;
+      // Convert the review flags into duplicate-detector removal records so Undo restores them
+      await supabase
+        .from('categorization_audit')
+        .update({ source: 'duplicate-detector', rule_name: `${g.ruleName} — removed after review` })
+        .in('id', g.rows.map((r) => r.id));
+      toast({ title: 'Duplicates removed', description: `${ids.length} transaction(s) soft-deleted — balances auto-corrected. Use "Undo this rule" to restore them.` });
+      qc.invalidateQueries({ queryKey: ['categorization-audit'] });
+      qc.invalidateQueries({ queryKey: ['transactions'] });
+    } catch (e: unknown) {
+      toast({ title: 'Removal failed', description: e instanceof Error ? e.message : 'Unknown error', variant: 'destructive' });
+    } finally {
+      setRemovingFlags(false);
+    }
+  };
 
   const groups = useMemo(() => {
     const q = search.trim().toLowerCase();
