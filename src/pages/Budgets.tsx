@@ -2514,7 +2514,7 @@ const Budgets = () => {
 
       {/* Create / Edit Budget Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-display">{editingBudget ? 'Edit Budget' : 'Add Budget'}</DialogTitle>
           </DialogHeader>
@@ -2712,7 +2712,7 @@ const Budgets = () => {
                 {editingBudgetTxns.length === 0 ? (
                   <p className="text-xs text-muted-foreground rounded-md border border-dashed p-3 text-center">No transactions in this category this month.</p>
                 ) : (
-                  <ScrollArea className="max-h-56 rounded-md border">
+                  <ScrollArea className="h-80 rounded-md border">
                     <div className="divide-y">
                       {editingBudgetTxns.map(t => {
                         const selectable = reassignMode || editingDupeIds.has(t.id);
