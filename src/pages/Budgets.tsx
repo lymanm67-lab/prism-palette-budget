@@ -2654,40 +2654,121 @@ const Budgets = () => {
                 +{formatCurrency(rolloverAmounts.get(form.category_id)!)} rolling over from previous month
               </div>
             )}
-            {editingBudget && (
+            {editingBudget && (() => {
+              const planned = parseFloat(editingBudget.planned_amount) || 0;
+              const editingSpent = spentByCategory[editingBudget.category_id] || 0;
+              const isOverspent = planned > 0 && editingSpent > planned;
+              const toggleSet = (set: Set<string>, id: string) => {
+                const next = new Set(set);
+                if (next.has(id)) next.delete(id); else next.add(id);
+                return next;
+              };
+              return (
               <div className="space-y-2">
-                <Label>Transactions behind this total — {formatMonth(month)}</Label>
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <Label>Transactions behind this total — {formatMonth(month)}</Label>
+                  {isOverspent && (
+                    <div className="flex items-center gap-1.5">
+                      <Button size="sm" variant="outline" className="h-7 text-xs gap-1" disabled={drillBusy || upsertBudget.isPending} onClick={allowOverspend}>
+                        <CheckCircle2 className="h-3 w-3" /> Allow overspend
+                      </Button>
+                      <Button size="sm" variant={reassignMode ? 'secondary' : 'outline'} className="h-7 text-xs gap-1"
+                        onClick={() => { setReassignMode(v => !v); setReassignIds(new Set()); setReassignTarget(''); }}>
+                        <ArrowRightLeft className="h-3 w-3" /> Reassign
+                      </Button>
+                    </div>
+                  )}
+                </div>
+                {isOverspent && (
+                  <p className="text-[11px] text-amber-600 dark:text-amber-400">
+                    Overspent by {formatCurrency(editingSpent - planned)}. "Allow overspend" raises this month's plan to the actual spend; "Reassign" moves selected transactions to the correct category (reversible via audit).
+                  </p>
+                )}
+                {editingDupeClusters.length > 0 && (
+                  <div className="rounded-md border border-amber-500/30 bg-amber-500/5 p-2 space-y-1">
+                    {editingDupeClusters.map(c => (
+                      <div key={c.key} className="flex items-center justify-between gap-2 text-[11px]">
+                        <span className="text-muted-foreground">
+                          {new Date(c.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} — {c.txns.length}× {formatCurrency(c.amount)}
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <span className="font-mono text-muted-foreground" title="Confidence: identical amount (30) + same-day timing (20) + shared bank provider ID (50)">{c.score}%</span>
+                          <span className={c.confirmed ? 'rounded bg-destructive/10 text-destructive px-1.5 py-0.5 font-medium' : 'rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 font-medium'}>
+                            {c.confirmed ? 'Confirmed double-import' : 'Possible dupe'}
+                          </span>
+                        </span>
+                      </div>
+                    ))}
+                    <p className="text-[10px] text-muted-foreground">Tick suspect rows below, then remove them with one click — balances auto-correct and the cleanup is undoable in the audit trail.</p>
+                  </div>
+                )}
                 {editingBudgetTxns.length === 0 ? (
                   <p className="text-xs text-muted-foreground rounded-md border border-dashed p-3 text-center">No transactions in this category this month.</p>
                 ) : (
                   <ScrollArea className="max-h-56 rounded-md border">
                     <div className="divide-y">
-                      {editingBudgetTxns.map(t => (
+                      {editingBudgetTxns.map(t => {
+                        const selectable = reassignMode || editingDupeIds.has(t.id);
+                        const checked = reassignMode ? reassignIds.has(t.id) : dupeSelection.has(t.id);
+                        return (
                         <div key={t.id} className="flex items-center justify-between gap-2 px-3 py-2 text-xs">
-                          <div className="min-w-0">
-                            <p className="truncate font-medium">{t.merchant || t.notes || 'Transaction'}</p>
-                            <p className="text-muted-foreground">{new Date(t.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</p>
+                          <div className="flex items-center gap-2 min-w-0">
+                            {selectable && (
+                              <Checkbox
+                                checked={checked}
+                                onCheckedChange={() => reassignMode ? setReassignIds(s => toggleSet(s, t.id)) : setDupeSelection(s => toggleSet(s, t.id))}
+                              />
+                            )}
+                            <div className="min-w-0">
+                              <p className="truncate font-medium">{t.merchant || t.notes || 'Transaction'}</p>
+                              <p className="text-muted-foreground">{new Date(t.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</p>
+                            </div>
                           </div>
                           <div className="flex items-center gap-2 shrink-0">
                             {t.possibleDupe && (
-                              <span className="rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 text-[10px] font-medium">Possible dupe</span>
+                              <span className="rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 text-[10px] font-medium">
+                                Possible dupe{editingDupeClusters.find(c => c.txns.some(x => x.id === t.id))?.confirmed ? ' · provider match' : ''}
+                              </span>
                             )}
                             <span className={t.amount < 0 ? 'text-foreground' : 'text-emerald-600 dark:text-emerald-400'}>
                               {t.amount < 0 ? '−' : '+'}{formatCurrency(Math.abs(t.amount))}
                             </span>
                           </div>
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </ScrollArea>
                 )}
+                {!reassignMode && dupeSelection.size > 0 && (
+                  <Button size="sm" variant="destructive" className="w-full h-8 text-xs gap-1.5" disabled={drillBusy} onClick={removeSelectedDupes}>
+                    {drillBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                    Remove {dupeSelection.size} selected duplicate{dupeSelection.size === 1 ? '' : 's'}
+                  </Button>
+                )}
+                {reassignMode && (
+                  <div className="flex items-center gap-2">
+                    <Select value={reassignTarget} onValueChange={setReassignTarget}>
+                      <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Move selected to…" /></SelectTrigger>
+                      <SelectContent>
+                        {(categories || []).filter(c => c.id !== editingBudget.category_id).map(c => (
+                          <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button size="sm" className="h-8 text-xs shrink-0" disabled={drillBusy || reassignIds.size === 0 || !reassignTarget} onClick={applyReassign}>
+                      {drillBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : `Move ${reassignIds.size || ''}`}
+                    </Button>
+                  </div>
+                )}
                 {editingBudgetTxns.some(t => t.possibleDupe) && (
                   <p className="text-[11px] text-amber-600 dark:text-amber-400">
-                    Same-date, same-amount charges flagged — review in <a href="/cleanup/audit" className="underline">Categorization Audit</a> or <a href="/transactions" className="underline">Transactions</a>.
+                    Full duplicate history in <a href="/cleanup/audit" className="underline">Categorization Audit</a> or <a href="/transactions" className="underline">Transactions</a>.
                   </p>
                 )}
               </div>
-            )}
+              );
+            })()}
             <div className="text-xs text-muted-foreground">Month: {formatMonth(month)}</div>
             <Button onClick={handleSave} disabled={!form.category_id || !form.planned_amount || upsertBudget.isPending} className="w-full">
               {upsertBudget.isPending ? 'Saving...' : editingBudget ? 'Update Budget' : 'Create Budget'}
