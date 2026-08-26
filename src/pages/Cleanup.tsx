@@ -8,7 +8,8 @@ import { TransferCleanup } from '@/components/cleanup/TransferCleanup';
 import { NeedsReviewCleanup } from '@/components/cleanup/NeedsReviewCleanup';
 import { DuplicateBudgetMerger } from '@/components/cleanup/DuplicateBudgetMerger';
 import { MerchantRecategorize } from '@/components/cleanup/MerchantRecategorize';
-import { ChevronDown, Sparkles, ArrowLeftRight, AlertCircle, Layers, Tag, Loader2 } from 'lucide-react';
+import { ChevronDown, Sparkles, ArrowLeftRight, AlertCircle, Layers, Tag, Loader2, History } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function Cleanup() {
   const { data, isLoading } = useCleanupCandidates();
@@ -47,7 +48,12 @@ export default function Cleanup() {
             One-click fixes for transaction and budget issues. Every action shows a preview before saving.
           </p>
         </div>
-        {total > 0 && <Badge variant="secondary" className="text-base">{total} items</Badge>}
+        <div className="flex items-center gap-2">
+          {total > 0 && <Badge variant="secondary" className="text-base">{total} items</Badge>}
+          <Button variant="outline" size="sm" asChild>
+            <Link to="/cleanup/audit"><History className="mr-2 h-4 w-4" />Audit trail</Link>
+          </Button>
+        </div>
       </div>
 
       {total === 0 && (
