@@ -679,7 +679,8 @@ export function cashBenefitJourney(
     const wNo = waterfallAt(h, g, age, weeklyHours, policy, { includeCash: false, hsaBalanceOverride: hsa });
     const careCost = wNo.monthlyCost * 12;
     const support = wNo.monthlyCost * (SUPPORT_COST_PCT / 100) * 12;
-    const cashPaid = wNo.cashBenefit * 12;
+    // Once reimbursement starts, the cash benefit only helps if the contract lets it stack.
+    const cashPaid = stacks ? wNo.cashBenefit * 12 : 0;
     // Insurance reimburses first; the household still owes the gap plus support costs.
     const gapNo = Math.max(0, careCost - wNo.reimbursement * 12) + support;
     const toSupport = Math.min(cashPaid, support);
