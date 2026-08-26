@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Loader2, AlertTriangle, CheckCircle2, Trash2, ScanSearch, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import PageOverview from '@/components/PageOverview';
+import { clusterDuplicates, confirmedDuplicateIds } from '@/lib/duplicate-detector';
 
 const MONTHLY_CAP = 400; // Matches the Money Leaks entry cap for Lovable/AI services
 const MERCHANT_MATCH = '%lovable%';
@@ -104,25 +105,8 @@ export default function LovableSpendReport() {
     const sizeOrder = ['$15', '$20', '$25', '$50', '$100', 'Other'];
     const sizeRows = sizeOrder.filter(l => sizes.has(l)).map(l => ({ label: l, ...sizes.get(l)! }));
 
-    // Same-day clusters
-    const groups = new Map<string, Txn[]>();
-    for (const t of list) {
-      const key = `${t.date}|${Math.abs(t.amount).toFixed(2)}`;
-      groups.set(key, [...(groups.get(key) || []), t]);
-    }
-    const clusters: Cluster[] = Array.from(groups.entries())
-      .filter(([, g]) => g.length > 1)
-      .map(([key, g]) => {
-        const byProvider = new Map<string, Txn[]>();
-        for (const t of g) {
-          if (!t.provider_transaction_id) continue;
-          byProvider.set(t.provider_transaction_id, [...(byProvider.get(t.provider_transaction_id) || []), t]);
-        }
-        const confirmed = Array.from(byProvider.values()).some(p => p.length > 1);
-        const [date, amount] = key.split('|');
-        return { key, date, amount: parseFloat(amount), txns: g.sort((a, b) => a.created_at.localeCompare(b.created_at)), confirmed };
-      })
-      .sort((a, b) => b.date.localeCompare(a.date));
+    // Same-day clusters (shared detector: amount + timing + provider-ID confidence)
+    const clusters = clusterDuplicates(list) as Cluster[];
 
     return { total, ytd, count: list.length, months, sizeRows, clusters };
   }, [txns]);
