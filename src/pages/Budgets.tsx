@@ -2756,14 +2756,12 @@ const Budgets = () => {
                 )}
                 {reassignMode && (
                   <div className="flex items-center gap-2">
-                    <Select value={reassignTarget} onValueChange={setReassignTarget}>
-                      <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Move selected to…" /></SelectTrigger>
-                      <SelectContent>
-                        {(categories || []).filter(c => c.id !== editingBudget.category_id).map(c => (
-                          <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <CategoryCombobox
+                      value={reassignTarget}
+                      onValueChange={setReassignTarget}
+                      placeholder="Move selected to…"
+                      className="flex-1 h-8 text-xs"
+                    />
                     <Button size="sm" className="h-8 text-xs shrink-0" disabled={drillBusy || reassignIds.size === 0 || !reassignTarget} onClick={applyReassign}>
                       {drillBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : `Move ${reassignIds.size || ''}`}
                     </Button>
