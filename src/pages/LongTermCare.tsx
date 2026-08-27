@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Printer, Save } from 'lucide-react';
 import { PageExplainer } from '@/components/PageExplainer';
+import { LtcTaxCenter } from '@/components/ltc/tax/LtcTaxCenter';
+import { LtcExportBar } from '@/components/ltc/LtcExportBar';
 import { LtcOverview } from '@/components/ltc/LtcOverview';
 import { CurrentPlan } from '@/components/ltc/CurrentPlan';
 import { QuoteUpload } from '@/components/ltc/QuoteUpload';
@@ -115,6 +117,7 @@ export default function LongTermCare() {
           <Button size="sm" variant="outline" onClick={() => window.print()}>
             <Printer className="h-3.5 w-3.5 mr-1" /> Print
           </Button>
+          <LtcExportBar />
         </div>
       </header>
 
@@ -163,6 +166,7 @@ export default function LongTermCare() {
           <PolicyValuePaths includeSurrenderValue={includeSurrender} onToggle={setIncludeSurrender} />
         </TabsContent>
         <TabsContent value="stress" className="mt-4"><StressTestTab /></TabsContent>
+        <TabsContent value="tax" className="mt-4"><LtcTaxCenter /></TabsContent>
         <TabsContent value="renewals" className="mt-4"><RenewalTracker state={state} patch={patch} /></TabsContent>
         <TabsContent value="vault" className="mt-4"><DocumentVault state={state} patch={patch} /></TabsContent>
       </Tabs>
