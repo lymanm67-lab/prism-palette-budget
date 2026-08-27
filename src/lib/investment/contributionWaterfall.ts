@@ -58,7 +58,7 @@ export const DEFAULT_WATERFALL_INPUTS: WaterfallInputs = {
   employerMonthlyActual: 532.05,
   employerHsaMonthly: 0,
 
-  hsaCurrentMonthly: 116.66,
+  hsaCurrentMonthly: 366.67,
   hsaTargetMonthly: 150,
   routineMedicalMonthly: 50,
   physicianVisitCost: 150,
