@@ -8,8 +8,10 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Sparkles, Loader2, Wallet, Receipt, Flame, PiggyBank, TrendingUp, Shield, CheckCircle2, Info, CalendarClock } from 'lucide-react';
+import { ArrowLeft, Sparkles, Loader2, Wallet, Receipt, Flame, PiggyBank, TrendingUp, Shield, CheckCircle2, Info, CalendarClock, RotateCcw } from 'lucide-react';
 import PageOverview from '@/components/PageOverview';
+import PaycheckScheduleCard from '@/components/coach/PaycheckScheduleCard';
+import { usePaycheckSchedules, toDeployFrequency } from '@/hooks/use-paycheck-schedule';
 
 const fmt = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
 
@@ -27,9 +29,32 @@ export default function PaycheckDeployment() {
   const { data: deployments } = usePaycheckDeployments(6);
   const build = useBuildPaycheckDeployment();
   const update = useUpdatePaycheckDeployment();
+  const { primary } = usePaycheckSchedules();
   const [freq, setFreq] = useState('biweekly');
   const [net, setNet] = useState<string>('');
   const [payDate, setPayDate] = useState<string>('');
+  const [overridden, setOverridden] = useState(false);
+
+  // Schedule-driven defaults: entered once, applied to every future payday.
+  const schedFreq = primary ? toDeployFrequency(primary.frequency) : null;
+  const effFreq = overridden ? freq : (schedFreq || freq);
+  const effNet = overridden ? net : (net || (primary ? String(primary.net_amount) : ''));
+  const effPayDate = overridden ? payDate : (payDate || primary?.next_due_date || '');
+
+  const loadFromSchedule = (opts: { pay_date: string; net_amount: number; frequency: string }) => {
+    setPayDate(opts.pay_date);
+    setNet(String(opts.net_amount));
+    setFreq(opts.frequency);
+    setOverridden(false);
+  };
+
+  const resetToSchedule = () => {
+    setOverridden(false);
+    setPayDate(primary?.next_due_date || '');
+    setNet(primary ? String(primary.net_amount) : '');
+    setFreq(schedFreq || 'biweekly');
+  };
+
 
   return (
     <div className="space-y-6 p-4 sm:p-6 max-w-6xl mx-auto">
@@ -60,25 +85,35 @@ export default function PaycheckDeployment() {
         ]}
       />
 
+      <PaycheckScheduleCard onUse={loadFromSchedule} />
+
       <Card className="bg-card/60 backdrop-blur-sm border-border/60">
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-prism-amber" /> Build the next paycheck plan
+            {primary && !overridden && (
+              <Badge variant="outline" className="text-[10px] ml-1">From schedule</Badge>
+            )}
+            {overridden && (
+              <Badge variant="outline" className="text-[10px] ml-1 bg-prism-amber/10 border-prism-amber/30 text-prism-amber">
+                One-time override
+              </Badge>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-3 sm:grid-cols-4">
             <div>
               <Label className="text-xs">Pay date</Label>
-              <Input type="date" value={payDate} onChange={e => setPayDate(e.target.value)} className="h-9" />
+              <Input type="date" value={effPayDate} onChange={e => { setPayDate(e.target.value); setOverridden(true); }} className="h-9" />
             </div>
             <div>
               <Label className="text-xs">Net per pay</Label>
-              <Input type="number" placeholder="auto" value={net} onChange={e => setNet(e.target.value)} className="h-9 font-mono" />
+              <Input type="number" placeholder="auto" value={effNet} onChange={e => { setNet(e.target.value); setOverridden(true); }} className="h-9 font-mono" />
             </div>
             <div>
               <Label className="text-xs">Frequency</Label>
-              <Select value={freq} onValueChange={setFreq}>
+              <Select value={effFreq} onValueChange={v => { setFreq(v); setOverridden(true); }}>
                 <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="weekly">Weekly</SelectItem>
@@ -91,16 +126,22 @@ export default function PaycheckDeployment() {
             <div className="flex items-end">
               <Button className="w-full h-9"
                 onClick={() => build.mutate({
-                  pay_date: payDate || undefined,
-                  net_amount: net ? Number(net) : undefined,
-                  frequency: freq,
+                  pay_date: effPayDate || undefined,
+                  net_amount: effNet ? Number(effNet) : undefined,
+                  frequency: effFreq,
                 })}
                 disabled={build.isPending}>
                 {build.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <>Deploy paycheck <Sparkles className="h-3.5 w-3.5 ml-1.5" /></>}
               </Button>
             </div>
           </div>
+          {overridden && primary && (
+            <Button variant="ghost" size="sm" className="h-7 mt-2 text-[11px]" onClick={resetToSchedule}>
+              <RotateCcw className="h-3 w-3 mr-1" /> Reset to schedule ({primary.merchant})
+            </Button>
+          )}
         </CardContent>
+
       </Card>
 
       {/* Timeline */}
