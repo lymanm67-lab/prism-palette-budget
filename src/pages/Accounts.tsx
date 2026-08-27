@@ -184,6 +184,27 @@ const Accounts = () => {
     return `${days}d ago`;
   }, []);
 
+  // Surface per-item Plaid sync failures (e.g. ITEM_LOGIN_REQUIRED) instead of reporting success.
+  const notifySyncFailures = useCallback((data: any) => {
+    const failures: any[] = data?.failed_items || [];
+    if (!failures.length) return false;
+    qc.invalidateQueries({ queryKey: ['plaid_connections'] });
+    failures.forEach((f) => {
+      const name = f.institution_name || 'Bank connection';
+      if (f.needs_reauth) {
+        toast.error(`${name} needs to be reconnected — sign in again to resume syncing.`, {
+          duration: 10000,
+          action: f.plaid_item_id
+            ? { label: 'Reconnect', onClick: () => requestPlaidRelink(f.plaid_item_id, f.institution_name) }
+            : undefined,
+        });
+      } else {
+        toast.warning(`${name} did not sync: ${f.message || f.error_code}`);
+      }
+    });
+    return true;
+  }, [qc, requestPlaidRelink]);
+
   const handleRefreshSingleAccount = async (accountId: string, providerType: string | null, institution: string | null) => {
     if (!household) return;
     setRefreshingAccountId(accountId);
