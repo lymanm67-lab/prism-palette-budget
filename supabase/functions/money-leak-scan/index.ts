@@ -85,9 +85,9 @@ Deno.serve(async (req) => {
       supabase.from('recurring_transactions').select('id, merchant, amount, frequency, next_due_date, is_active').eq('household_id', household_id).eq('is_active', true),
     ]);
 
-    const subs = subsRes.data || [];
-    const txns = txnsRes.data || [];
-    const recurring = recurringRes.data || [];
+    const subs = (subsRes.data || []).filter((s) => !isExcluded(s.merchant) && !isExcluded(s.normalized_merchant));
+    const txns = (txnsRes.data || []).filter((t) => !isExcluded(t.merchant) && !isExcluded(t.notes));
+    const recurring = (recurringRes.data || []).filter((r) => !isExcluded(r.merchant));
 
     const leaks: LeakRow[] = [];
 
