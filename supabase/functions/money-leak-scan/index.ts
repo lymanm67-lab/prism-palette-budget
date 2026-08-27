@@ -165,6 +165,7 @@ Deno.serve(async (req) => {
     // 4) Fee charges (overdraft, late, atm, interest)
     for (const t of txns) {
       if (t.is_transfer) continue;
+      if (Number(t.amount) > 0) continue; // income/deposits are never fees
       const text = `${t.merchant || ''} ${t.notes || ''}`;
       for (const p of FEE_PATTERNS) {
         if (p.regex.test(text)) {
