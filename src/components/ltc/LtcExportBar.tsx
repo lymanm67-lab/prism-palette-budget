@@ -77,9 +77,23 @@ export function LtcExportBar({ opts }: { opts?: LtcExportOptions } = {}) {
               LTC projections, stress-test outputs and tax estimates
             </p>
             <p style={{ fontSize: 11, color: '#6b7280', margin: 0 }}>
-              Generated {stamp()} · Stress baseline: claim age {DEFAULT_STRESS.claimAge}, {DEFAULT_STRESS.careYears} years
-              at ${DEFAULT_STRESS.monthlyCareCost.toLocaleString()}/mo
+              Generated {stamp()} · Stress baseline: claim age {opts?.stress?.claimAge ?? DEFAULT_STRESS.claimAge},{' '}
+              {opts?.stress?.careYears ?? DEFAULT_STRESS.careYears} years at $
+              {(opts?.stress?.monthlyCareCost ?? DEFAULT_STRESS.monthlyCareCost).toLocaleString()}/mo
             </p>
+
+            <div style={{ marginTop: 14, padding: 10, background: '#f9fafb', border: '1px solid #e5e7eb' }}>
+              <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#374151' }}>
+                Contents
+              </div>
+              <ol style={{ margin: '4px 0 0 16px', padding: 0, fontSize: 10, color: '#4b5563' }}>
+                {tables.map((t) => (
+                  <li key={t.key}>{tableLabel(t)}</li>
+                ))}
+              </ol>
+            </div>
+
+
 
             {tables.map((t) => (
               <div key={t.key} style={{ marginTop: 18 }}>
