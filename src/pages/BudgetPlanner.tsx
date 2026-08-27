@@ -375,6 +375,9 @@ export default function BudgetPlanner() {
         </CardContent>
       </Card>
 
+      <BaselineLockManager />
+
+
       <BlueprintImpactPanel
         state={state}
         patch={patch}
