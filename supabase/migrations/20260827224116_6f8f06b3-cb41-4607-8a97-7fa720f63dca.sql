@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.enforce_budget_baseline_lock() FROM PUBLIC, anon, authenticated;
