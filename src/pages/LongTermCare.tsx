@@ -61,7 +61,7 @@ export default function LongTermCare() {
     TABS.some((t) => t.key === requestedTab) ? (requestedTab as string) : 'overview',
   );
 
-  // Deep links such as /ltc?tab=compare land straight on the quote uploader.
+  // Deep links such as /ltc?tab=policy land straight on the Nationwide policy tab.
   useEffect(() => {
     if (requestedTab && TABS.some((t) => t.key === requestedTab) && requestedTab !== tab) setTab(requestedTab);
   }, [requestedTab]);

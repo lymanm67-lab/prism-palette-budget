@@ -112,14 +112,14 @@ export function LtcCenter({
             </Button>
             {/* Carrier PDFs are parsed by the LTC dashboard uploader, which stores the file too. */}
             <Button size="sm" variant="ghost" asChild>
-              <Link to="/ltc?tab=compare">
+              <Link to="/ltc?tab=policy">
                 <Upload className="h-3.5 w-3.5 mr-1" /> Upload a carrier quote (AI parse)
               </Link>
             </Button>
           </div>
           <SectionNote>
-            Have a PDF or photo of a carrier quote? Upload it on the LTC dashboard's Compare tab — it extracts the
-            benefit, inflation rider and premiums, saves the file, and adds the policy to the comparison.
+            Our policy of record is Nationwide CareMatters Together. Have a PDF or photo of an illustration? Upload it on
+            the LTC dashboard's Our Policy tab — it extracts the benefit, inflation rider and premiums and saves the file.
           </SectionNote>
         </CardContent>
       </Card>
