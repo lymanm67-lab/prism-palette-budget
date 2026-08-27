@@ -373,7 +373,7 @@ Deno.serve(async (req) => {
       // Get all plaid items for this household
       const { data: plaidItems, error: itemsError } = await serviceSupabase
         .from('plaid_items')
-        .select('id, plaid_access_token, institution_name')
+        .select('id, plaid_item_id, plaid_access_token, institution_name')
         .eq('household_id', household_id)
         .eq('status', 'active');
 
@@ -386,6 +386,41 @@ Deno.serve(async (req) => {
       let totalAccountsUpdated = 0;
       let totalNewTransactions = 0;
       let allNewTransactionIds: string[] = [];
+      // Per-item failures surfaced to the client so stale connections are never silent.
+      const failedItems: {
+        plaid_item_id: string | null;
+        institution_name: string | null;
+        error_code: string;
+        needs_reauth: boolean;
+        message: string;
+      }[] = [];
+
+      const recordItemFailure = async (
+        item: { id: string; plaid_item_id: string | null; institution_name: string | null },
+        status: number,
+        bodyText: string,
+      ) => {
+        let code = `HTTP_${status}`;
+        let message = 'Bank sync failed for this connection.';
+        try {
+          const parsed = JSON.parse(bodyText);
+          code = parsed.error_code || code;
+          message = parsed.error_message || message;
+        } catch { /* non-JSON error body */ }
+        const needsReauth = ['ITEM_LOGIN_REQUIRED', 'INVALID_ACCESS_TOKEN', 'ITEM_NOT_FOUND', 'PENDING_EXPIRATION'].includes(code);
+        if (failedItems.some((f) => f.plaid_item_id === item.plaid_item_id)) return needsReauth;
+        failedItems.push({
+          plaid_item_id: item.plaid_item_id,
+          institution_name: item.institution_name,
+          error_code: code,
+          needs_reauth: needsReauth,
+          message,
+        });
+        if (needsReauth) {
+          await serviceSupabase.from('plaid_items').update({ status: 'error' }).eq('id', item.id);
+        }
+        return needsReauth;
+      };
 
       for (const item of plaidItems) {
         // Update account balances
