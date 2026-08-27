@@ -37,21 +37,60 @@ export default function CategorizationAudit() {
   const qc = useQueryClient();
   const [removingFlags, setRemovingFlags] = useState(false);
 
-  // Soft-delete the transactions flagged by the scheduled duplicate scan, then dismiss the flags.
-  const removeFlaggedDupes = async (g: AuditRuleGroup) => {
+  // Soft-delete ONLY the extra copies inside each flagged cluster (earliest row is always kept),
+  // then convert/dismiss the review flags.
+  const resolveFlaggedRows = async (
+    rows: AuditRuleGroup['rows'],
+    allRowIds: string[],
+    ruleName: string,
+    successTitle: string,
+  ) => {
     if (!household) return;
-    const ids = g.rows.filter((r) => !r.reverted_at && r.transaction_id).map((r) => r.transaction_id!);
-    if (!ids.length) return;
+    const pending = rows.filter((r) => !r.reverted_at && r.transaction_id);
+    if (!pending.length) return;
     setRemovingFlags(true);
     try {
-      const { error } = await supabase.from('transactions').update({ deleted_at: new Date().toISOString() }).in('id', ids);
-      if (error) throw error;
-      // Convert the review flags into duplicate-detector removal records so Undo restores them
-      await supabase
-        .from('categorization_audit')
-        .update({ source: 'duplicate-detector', rule_name: `${g.ruleName} — removed after review` })
-        .in('id', g.rows.map((r) => r.id));
-      toast({ title: 'Duplicates removed', description: `${ids.length} transaction(s) soft-deleted — balances auto-corrected. Use "Undo this rule" to restore them.` });
+      const { data: txns, error: fetchErr } = await supabase
+        .from('transactions')
+        .select('id, date, amount, merchant, provider_transaction_id, created_at')
+        .in('id', pending.map((r) => r.transaction_id!))
+        .is('deleted_at', null);
+      if (fetchErr) throw fetchErr;
+
+      const removeIds = extraCopyIds((txns || []) as never as Parameters<typeof extraCopyIds>[0]);
+      if (removeIds.length) {
+        const { error } = await supabase
+          .from('transactions')
+          .update({ deleted_at: new Date().toISOString() })
+          .in('id', removeIds);
+        if (error) throw error;
+      }
+
+      const removedSet = new Set(removeIds);
+      const removedRowIds = pending.filter((r) => removedSet.has(r.transaction_id!)).map((r) => r.id);
+      const keptRowIds = allRowIds.filter((id) => !removedRowIds.includes(id));
+
+      if (removedRowIds.length) {
+        // Converted rows become duplicate-detector removals so "Undo this rule" restores them.
+        await supabase
+          .from('categorization_audit')
+          .update({ source: 'duplicate-detector', rule_name: ruleName })
+          .in('id', removedRowIds);
+      }
+      if (keptRowIds.length) {
+        // Kept originals: dismiss the review-only flag so the cluster stops re-appearing.
+        await supabase
+          .from('categorization_audit')
+          .update({ reverted_at: new Date().toISOString() })
+          .in('id', keptRowIds);
+      }
+
+      toast({
+        title: successTitle,
+        description: removeIds.length
+          ? `${removeIds.length} extra copy(ies) soft-deleted — one original kept in every cluster. Use "Undo this rule" to restore them.`
+          : 'No extra copies found — every flagged charge looks like a separate real transaction, so the flags were dismissed.',
+      });
       qc.invalidateQueries({ queryKey: ['categorization-audit'] });
       qc.invalidateQueries({ queryKey: ['transactions'] });
     } catch (e: unknown) {
@@ -60,6 +99,9 @@ export default function CategorizationAudit() {
       setRemovingFlags(false);
     }
   };
+
+  const removeFlaggedDupes = (g: AuditRuleGroup) =>
+    resolveFlaggedRows(g.rows, g.rows.map((r) => r.id), `${g.ruleName} — removed after review`, 'Duplicates removed');
 
   const groups = useMemo(() => {
     const q = search.trim().toLowerCase();
