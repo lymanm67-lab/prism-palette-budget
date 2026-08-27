@@ -310,7 +310,6 @@ const Accounts = () => {
           toast.success(`Refreshed: ${data.accounts_updated} accounts updated, ${data.new_transactions} new transactions`);
         }
       }
-      }
     } catch (err: any) {
       toast.error(err.message || 'Failed to refresh accounts');
     }
