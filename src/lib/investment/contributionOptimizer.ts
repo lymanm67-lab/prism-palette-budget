@@ -27,12 +27,12 @@ export interface PayrollBaseline {
 }
 
 export const DEFAULT_PAYROLL_BASELINE: PayrollBaseline = {
-  netPayMonthly: 4464.91,
-  hsaMonthly: 116.66,
-  tradTdaMonthly: 100,
-  trad457Monthly: 75,
-  rothTdaMonthly: 85,
-  roth457Monthly: 75,
+  netPayMonthly: 4250.02,
+  hsaMonthly: 366.67,
+  tradTdaMonthly: 35,
+  trad457Monthly: 30,
+  rothTdaMonthly: 100,
+  roth457Monthly: 175,
   rothIraMonthly: 0,
   employerMonthly: 532.05,
 

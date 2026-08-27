@@ -44,19 +44,19 @@ function applyPlanned(i: SpouseRetirementInputs): SpouseRetirementInputs {
 }
 
 const DEFAULTS: Record<"lyman" | "kateri", SpouseRetirementInputs> = {
-  // Lyman: IU advice 07/31/2026 — W-2 $70,940.04/yr ($5,911.67/mo) + consulting $641.67/mo.
+  // Lyman: IU advice 08/31/2026 — W-2 $70,940.04/yr ($5,911.67/mo) + consulting $641.67/mo.
   // Employer Base Retirement Plan $532.05/mo = 9% non-elective on W-2 salary (no match).
-  // Employee pre-tax: TDA $100 + IU 457(b) $75 + HSA $116.66 = $291.66/mo.
-  // Deferred comp (Roth): Roth TDA $85 + Roth 457(b) $75 = $160/mo.
+  // Employee pre-tax: TDA $35 + IU 457(b) $30 + HSA $366.67 = $431.67/mo.
+  // Deferred comp (Roth): Roth TDA $100 + Roth 457(b) $175 = $275/mo.
   lyman: {
     name: "Lyman",
     currentAge: 59,
     retirementAge: 75,
     monthlyGross: 6553.34,
     employerBaseMonthly: 5911.67,
-    employeeMonthly: 291.66,
+    employeeMonthly: 431.67,
     employerMonthly: 532.05,
-    deferredCompMonthly: 160,
+    deferredCompMonthly: 275,
 
     // As of 07/24/2026 statements: IU Retirement $133,129.48 + IU TDA $16,888.01
     // + IU 457(b) $11,320.86 + TIAA $12,324.05 + Stash/SoFi/Schwab $6,260.82.

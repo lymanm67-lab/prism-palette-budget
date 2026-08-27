@@ -510,7 +510,7 @@ export function defaultAssumptions(seed?: Partial<AssumptionState>): AssumptionS
       { key: 'employer', label: 'Capture employer retirement contribution', annualLimit: 999_999, committedAnnual: 6_384.60, eligible: true, notes: 'IU 9% employer contribution — $532.05/mo.' },
       { key: 'workplace', label: 'Workplace retirement (403(b) TDA)', annualLimit: 23_500, committedAnnual: 2_220, eligible: true, notes: 'Roth TDA $85 + pre-tax TDA $100 per month.' },
       { key: 'gov457', label: 'Governmental 457(b)', annualLimit: 23_500, committedAnnual: 1_800, eligible: true, notes: 'Roth 457 $75 + pre-tax 457 $75 per month.' },
-      { key: 'hsa', label: 'HSA (while eligible)', annualLimit: 8_550, committedAnnual: 1_399.92, eligible: true, notes: '$116.66/mo from payroll.' },
+      { key: 'hsa', label: 'HSA (while eligible)', annualLimit: 8_550, committedAnnual: 4_400.04, eligible: true, notes: '$366.67/mo from payroll.' },
       { key: 'roth', label: 'Roth opportunities', annualLimit: 8_000, committedAnnual: 0, eligible: true },
       { key: 'brokerage', label: 'Taxable brokerage', annualLimit: 999_999, committedAnnual: 0, eligible: true },
       { key: 'legacy', label: 'Legacy / foundation assets', annualLimit: 999_999, committedAnnual: 0, eligible: true },
@@ -541,7 +541,7 @@ export function defaultAssumptions(seed?: Partial<AssumptionState>): AssumptionS
       otherRecurringIncomeMonthly: 'current',
       retirementAge: 'projected',
     },
-    // Net income = Lyman $4,464.91 + Kateri $4,227.72 take-home. Planned spend is
+    // Net income = Lyman $4,250.02 + Kateri $4,227.72 take-home. Planned spend is
     // the confirmed household budget target; surplus redirect starts at 0 so an
     // import never silently inflates a projection.
     budget: {
