@@ -86,7 +86,7 @@ export default function MonthlyReport() {
   const { household } = useHousehold();
   const qc = useQueryClient();
   const [running, setRunning] = useState(false);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [entity, setEntity] = useState<EntityView>('combined');
 
   const { data: reports = [], isLoading } = useQuery({
@@ -106,11 +106,64 @@ export default function MonthlyReport() {
     },
   });
 
-  useEffect(() => {
-    if (!selectedId && reports.length) setSelectedId(reports[0].id);
-  }, [reports, selectedId]);
+  // Every month that has transactions — the dropdown should offer all of them,
+  // not just the months a report has already been generated for.
+  const { data: txMonths = [] } = useQuery({
+    queryKey: ['monthly_report_tx_range', household?.id],
+    enabled: !!household?.id,
+    queryFn: async () => {
+      const base = supabase
+        .from('transactions')
+        .select('date')
+        .eq('household_id', household!.id)
+        .is('deleted_at', null);
+      const [{ data: first }, { data: last }] = await Promise.all([
+        base.order('date', { ascending: true }).limit(1),
+        supabase
+          .from('transactions')
+          .select('date')
+          .eq('household_id', household!.id)
+          .is('deleted_at', null)
+          .order('date', { ascending: false })
+          .limit(1),
+      ]);
+      const start = first?.[0]?.date;
+      const end = last?.[0]?.date;
+      if (!start || !end) return [] as string[];
+      const months: string[] = [];
+      let [y, m] = start.slice(0, 7).split('-').map(Number);
+      const [ey, em] = end.slice(0, 7).split('-').map(Number);
+      while (y < ey || (y === ey && m <= em)) {
+        months.push(`${y}-${String(m).padStart(2, '0')}`);
+        m += 1;
+        if (m > 12) { m = 1; y += 1; }
+      }
+      return months.reverse();
+    },
+  });
 
-  const active = reports.find((r) => r.id === selectedId) || reports[0];
+  const reportByMonth = useMemo(() => {
+    const map = new Map<string, ReportRow>();
+    for (const r of reports) {
+      const m = r.metadata?.month;
+      if (m && !map.has(m)) map.set(m, r);
+    }
+    return map;
+  }, [reports]);
+
+  const monthOptions = useMemo(() => {
+    const set = new Set<string>([...txMonths, ...reportByMonth.keys()]);
+    return Array.from(set).sort((a, b) => b.localeCompare(a));
+  }, [txMonths, reportByMonth]);
+
+  useEffect(() => {
+    if (!selectedMonth && monthOptions.length) {
+      const firstWithReport = monthOptions.find((m) => reportByMonth.has(m));
+      setSelectedMonth(firstWithReport || monthOptions[0]);
+    }
+  }, [monthOptions, reportByMonth, selectedMonth]);
+
+  const active = (selectedMonth && reportByMonth.get(selectedMonth)) || null;
 
   const runReport = async (months?: string[]) => {
     if (!household?.id) return;
@@ -130,8 +183,9 @@ export default function MonthlyReport() {
     }
   };
 
-  const runH1 = () =>
-    runReport(['2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06']);
+  const missingMonths = monthOptions.filter((m) => !reportByMonth.has(m));
+  const runAllMissing = () => runReport(missingMonths.slice(0, 24));
+
 
   const meta = active?.metadata ?? {};
   const rawByCategory: any[] = meta.by_category || [];
