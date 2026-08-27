@@ -24,6 +24,13 @@ const FEE_PATTERNS: Array<{ type: string; regex: RegExp; risk: 'low' | 'medium' 
   { type: 'interest_charge', regex: /interest\s*charge|finance\s*charge|purchase\s*interest/i, risk: 'high', title: 'Interest charge', fix: 'Pay statement balance in full; consider a payoff sprint.' },
 ];
 
+// Essential bills / debt payments the household has explicitly excluded from leak scanning
+const EXCLUDED_MERCHANTS = /clarke\s*realt|betrlink|banner\s*life|upgrade|small\s*business\s*admin|\bsba\b/i;
+
+function isExcluded(name?: string | null): boolean {
+  return !!name && EXCLUDED_MERCHANTS.test(name);
+}
+
 function monthsBetween(a: Date, b: Date): number {
   return (b.getFullYear() - a.getFullYear()) * 12 + (b.getMonth() - a.getMonth());
 }
