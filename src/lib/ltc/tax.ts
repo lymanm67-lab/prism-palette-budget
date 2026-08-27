@@ -453,7 +453,9 @@ export const NW_TAX_DEFAULTS: PremiumDeductionInputs = {
 function fvAnnuity(payment: number, years: number, r: number) {
   if (payment === 0 || years <= 0) return 0;
   if (r === 0) return payment * years;
-  return payment * (((1 + r) ** years - 1) / r);
+  // Annuity-due: premiums are paid at the start of each policy year, matching
+  // the HSA withdrawal timing used in the projection loop.
+  return payment * (((1 + r) ** years - 1) / r) * (1 + r);
 }
 
 function round(n: number) {
