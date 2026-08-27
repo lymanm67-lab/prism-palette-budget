@@ -224,15 +224,16 @@ export default function MonthlyReport() {
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          {reports.length > 0 && (
-            <Select value={selectedId ?? undefined} onValueChange={setSelectedId}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Select report" />
+          {monthOptions.length > 0 && (
+            <Select value={selectedMonth ?? undefined} onValueChange={setSelectedMonth}>
+              <SelectTrigger className="w-[220px]">
+                <SelectValue placeholder="Select month" />
               </SelectTrigger>
-              <SelectContent>
-                {reports.map((r) => (
-                  <SelectItem key={r.id} value={r.id}>
-                    {monthLabel(r.metadata?.month) || new Date(r.created_at).toLocaleDateString()}
+              <SelectContent className="max-h-[320px]">
+                {monthOptions.map((m) => (
+                  <SelectItem key={m} value={m}>
+                    {monthLabel(m)}
+                    {!reportByMonth.has(m) && ' — not generated'}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -247,10 +248,12 @@ export default function MonthlyReport() {
               >{k}</button>
             ))}
           </div>
-          <Button variant="outline" onClick={runH1} disabled={running || !household?.id}>
-            {running ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
-            Generate Jan–Jun 2026
-          </Button>
+          {missingMonths.length > 0 && (
+            <Button variant="outline" onClick={runAllMissing} disabled={running || !household?.id}>
+              {running ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
+              Generate {missingMonths.length} missing
+            </Button>
+          )}
           <Button variant="outline" onClick={() => runReport()} disabled={running || !household?.id}>
             <RefreshCcw className="h-4 w-4 mr-2" />
             Run last month
@@ -268,10 +271,19 @@ export default function MonthlyReport() {
         </div>
       ) : !active ? (
         <Card>
-          <CardContent className="py-10 text-center text-muted-foreground">
-            No monthly report yet. Click <strong>Generate Jan–Jun 2026</strong> to backfill.
+          <CardContent className="py-10 text-center text-muted-foreground space-y-3">
+            <div>
+              No report for <strong>{selectedMonth ? monthLabel(selectedMonth) : 'this month'}</strong> yet.
+            </div>
+            {selectedMonth && (
+              <Button onClick={() => runReport([selectedMonth])} disabled={running || !household?.id}>
+                {running ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
+                Generate {monthLabel(selectedMonth)}
+              </Button>
+            )}
           </CardContent>
         </Card>
+
       ) : (
         <div id="report-print" className="space-y-6">
           {/* Hero header */}
