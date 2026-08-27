@@ -125,3 +125,21 @@ export async function softDeleteDuplicates(opts: {
   await supabase.from('categorization_audit').insert(auditRows as never[]);
   return { deleted: ids.length };
 }
+
+/**
+ * Given a flat set of transactions, return only the EXTRA copies that should be
+ * soft-deleted: within each same-date/same-amount cluster the earliest row is always
+ * kept. Confirmed clusters (shared provider ID) keep the earliest row per provider ID.
+ * Never returns every member of a cluster, so a real charge can't disappear entirely.
+ */
+export function extraCopyIds(txns: DupeTxn[]): string[] {
+  const out: string[] = [];
+  for (const cluster of clusterDuplicates(txns)) {
+    if (cluster.confirmed) {
+      out.push(...confirmedDuplicateIds(cluster));
+    } else {
+      out.push(...cluster.txns.slice(1).map((t) => t.id));
+    }
+  }
+  return out;
+}
