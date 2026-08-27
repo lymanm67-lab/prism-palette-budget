@@ -3,7 +3,13 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { FileDown, Sheet, Loader2 } from 'lucide-react';
 import { exportToCsv, exportToPdf } from '@/lib/export-utils';
-import { allLtcExportTables, tablesToCsvRows, type ExportTable } from '@/lib/ltc/exports';
+import {
+  allLtcExportTables,
+  tablesToCsvRows,
+  tableLabel,
+  type ExportTable,
+  type LtcExportOptions,
+} from '@/lib/ltc/exports';
 import { NW_PLANNING_NOTICE, NW_PRODUCT, DEFAULT_STRESS } from '@/lib/ltc/nationwide';
 import { TAX_DISCLAIMER } from '@/lib/ltc/tax';
 
@@ -14,7 +20,7 @@ const stamp = () => new Date().toISOString().slice(0, 10);
  * CSV writes every dataset into one sheet; PDF renders an off-screen printable
  * report so the export is identical regardless of which tab is open.
  */
-export function LtcExportBar() {
+export function LtcExportBar({ opts }: { opts?: LtcExportOptions } = {}) {
   const [busy, setBusy] = useState<'pdf' | 'csv' | null>(null);
   const [tables, setTables] = useState<ExportTable[] | null>(null);
   const printRef = useRef<HTMLDivElement>(null);
@@ -22,7 +28,7 @@ export function LtcExportBar() {
   const onCsv = () => {
     try {
       setBusy('csv');
-      const { headers, rows } = tablesToCsvRows(allLtcExportTables());
+      const { headers, rows } = tablesToCsvRows(allLtcExportTables(opts));
       exportToCsv(headers, rows, `ltc-nationwide-projections-${stamp()}`);
       toast.success('LTC projections exported to CSV');
     } catch (e: any) {
@@ -35,7 +41,7 @@ export function LtcExportBar() {
   const onPdf = async () => {
     setBusy('pdf');
     try {
-      setTables(allLtcExportTables());
+      setTables(allLtcExportTables(opts));
       // Let the printable block mount before rasterizing it.
       await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(() => r(null))));
       if (!printRef.current) throw new Error('Report could not be prepared');
@@ -77,7 +83,10 @@ export function LtcExportBar() {
 
             {tables.map((t) => (
               <div key={t.key} style={{ marginTop: 18 }}>
-                <h2 style={{ fontSize: 13, fontWeight: 700, margin: '0 0 6px' }}>{t.title}</h2>
+                <div style={{ fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6b7280' }}>
+                  {t.subTab ? `${t.tab} · ${t.subTab}` : t.tab}
+                </div>
+                <h2 style={{ fontSize: 13, fontWeight: 700, margin: '2px 0 6px' }}>{t.title}</h2>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
                   <thead>
                     <tr>
