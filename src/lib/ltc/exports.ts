@@ -151,39 +151,91 @@ export function stressGridTable(base: StressInputs = DEFAULT_STRESS): ExportTabl
   };
 }
 
-export function taxTables(opts?: {
+export interface LtcExportOptions {
+  stress?: StressInputs;
   deduction?: PremiumDeductionInputs;
   hsa?: HsaFundingInputs;
   benefit?: BenefitTaxInputs;
-}): ExportTable[] {
-  const dIn = opts?.deduction ?? NW_TAX_DEFAULTS;
+}
+
+/** Resolves every export input set, filling any gap with the plan-of-record defaults. */
+export function resolveExportInputs(opts?: LtcExportOptions): Required<LtcExportOptions> {
+  const deduction = opts?.deduction ?? NW_TAX_DEFAULTS;
+  return {
+    stress: opts?.stress ?? DEFAULT_STRESS,
+    deduction,
+    hsa:
+      opts?.hsa ?? {
+        annualPremium: NW.annualPremium,
+        years: 10,
+        hsaBalance: 12_000,
+        hsaReturnPct: 6,
+        marginalRate: deduction.marginalRate,
+        ages: deduction.ages,
+        agi: deduction.agi,
+        filingStatus: deduction.filingStatus,
+        otherMedicalExpenses: deduction.otherMedicalExpenses,
+        itemizes: deduction.itemizes,
+      },
+    benefit:
+      opts?.benefit ?? {
+        monthlyBenefit: NW.monthlyBenefitEach,
+        monthlyQualifiedCost: 2_100,
+        daysInMonth: 30,
+        chronicallyIllCertified: true,
+        planOfCareOnFile: true,
+        taxQualifiedContract: true,
+      },
+  };
+}
+
+/** Every user-editable assumption behind the exported numbers, in one block. */
+export function inputSummaryTable(opts?: LtcExportOptions): ExportTable {
+  const { stress, deduction: d, hsa, benefit: b } = resolveExportInputs(opts);
+  const yn = (v: boolean) => (v ? 'Yes' : 'No');
+  return {
+    key: 'input-summary',
+    tab: 'Input Summary',
+    title: 'Input Summary — every assumption behind this report',
+    headers: ['Tab', 'Input', 'Value'],
+    rows: [
+      ['Our Policy', 'Combined monthly premium', n2(NW.monthlyPremium)],
+      ['Our Policy', 'Annual premium', n2(NW.annualPremium)],
+      ['Our Policy', 'Initial monthly benefit (each insured)', NW.monthlyBenefitEach],
+      ['Our Policy', 'Inflation protection', `${NW.inflationPct}% compound for life`],
+      ['Our Policy', 'Elimination period (days)', NW.eliminationDays],
+      ['Stress Test', 'Claim age', stress.claimAge],
+      ['Stress Test', 'Care years', stress.careYears],
+      ['Stress Test', 'Monthly care cost', n2(stress.monthlyCareCost)],
+      ['Tax Advantage · Premium Deduction', 'Filing status', d.filingStatus],
+      ['Tax Advantage · Premium Deduction', 'AGI', n2(d.agi)],
+      ['Tax Advantage · Premium Deduction', 'Insured ages at year end', d.ages.join(' / ')],
+      ['Tax Advantage · Premium Deduction', 'Annual LTC premium', n2(d.annualPremium)],
+      ['Tax Advantage · Premium Deduction', 'Other medical expenses', n2(d.otherMedicalExpenses)],
+      ['Tax Advantage · Premium Deduction', 'Itemizes (Schedule A)', yn(d.itemizes)],
+      ['Tax Advantage · Premium Deduction', 'Self-employed health plan', yn(d.selfEmployedHealthPlan)],
+      ['Tax Advantage · Premium Deduction', 'Marginal rate (%)', n2(d.marginalRate * 100)],
+      ['Tax Advantage · Premium Deduction', 'Premium paid from HSA', n2(d.premiumPaidFromHsa ?? 0)],
+      ['Tax Advantage · HSA vs Cash', 'Horizon (years)', hsa.years],
+      ['Tax Advantage · HSA vs Cash', 'HSA starting balance', n2(hsa.hsaBalance)],
+      ['Tax Advantage · HSA vs Cash', 'HSA return (%)', n2(hsa.hsaReturnPct)],
+      ['Tax Advantage · HSA vs Cash', 'Annual premium funded', n2(hsa.annualPremium)],
+      ['Tax Advantage · Benefit Taxability', 'Monthly benefit elected', n2(b.monthlyBenefit)],
+      ['Tax Advantage · Benefit Taxability', 'Monthly qualified care cost', n2(b.monthlyQualifiedCost)],
+      ['Tax Advantage · Benefit Taxability', 'Days in benefit month', b.daysInMonth ?? 30],
+      ['Tax Advantage · Benefit Taxability', 'Chronically ill certified', yn(b.chronicallyIllCertified)],
+      ['Tax Advantage · Benefit Taxability', 'Plan of care on file', yn(b.planOfCareOnFile)],
+      ['Tax Advantage · Benefit Taxability', 'Tax-qualified contract', yn(b.taxQualifiedContract)],
+    ],
+  };
+}
+
+export function taxTables(opts?: LtcExportOptions): ExportTable[] {
+  const { deduction: dIn, hsa: hsaIn, benefit: bIn } = resolveExportInputs(opts);
   const d = estimatePremiumDeduction(dIn);
-
-  const hsaIn: HsaFundingInputs =
-    opts?.hsa ?? {
-      annualPremium: NW.annualPremium,
-      years: 10,
-      hsaBalance: 12_000,
-      hsaReturnPct: 6,
-      marginalRate: dIn.marginalRate,
-      ages: dIn.ages,
-      agi: dIn.agi,
-      filingStatus: dIn.filingStatus,
-      otherMedicalExpenses: dIn.otherMedicalExpenses,
-      itemizes: dIn.itemizes,
-    };
   const h = compareHsaVsCash(hsaIn);
-
-  const bIn: BenefitTaxInputs =
-    opts?.benefit ?? {
-      monthlyBenefit: NW.monthlyBenefitEach,
-      monthlyQualifiedCost: 2_100,
-      daysInMonth: 30,
-      chronicallyIllCertified: true,
-      planOfCareOnFile: true,
-      taxQualifiedContract: true,
-    };
   const b = assessBenefitTaxability(bIn);
+
 
   return [
     {
