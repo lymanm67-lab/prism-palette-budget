@@ -54,11 +54,11 @@ export const LYMAN_GROSS_ANNUAL = LYMAN_SALARY_ANNUAL + CONSULTING_ANNUAL; // 78
 export const HOUSEHOLD_GROSS_ANNUAL = LYMAN_GROSS_ANNUAL + KATERI_GROSS_ANNUAL;
 
 /**
- * Lyman — IU paystub, advice date 07/31/2026, monthly.
- * Gross 5,911.67 | Taxes 660.17 | Before-tax 479.61 | After-tax 306.98 | Net 4,464.91
+ * Lyman — IU paystub, advice date 08/31/2026, monthly.
+ * Gross 5,911.67 | Taxes 620.05 | Before-tax 619.62 | After-tax 421.98 | Net 4,250.02
  * Net pay is split across 5 checking accounts, so tracked deposits alone under-count it.
  */
-export const LYMAN_NET_MONTHLY = 4_464.91;
+export const LYMAN_NET_MONTHLY = 4_250.02;
 
 
 
@@ -66,16 +66,17 @@ export const LYMAN_NET_MONTHLY = 4_464.91;
 /**
  * Retirement contributions come out of payroll, not from bank transactions, so the
  * 90-day transaction scan can never see them. These are the real per-month figures
- * from the IU paystub (07/2026) plus Kateri's OPERS deferral.
+ * from the IU paystub (08/2026) plus Kateri's OPERS deferral.
  */
 export const PAYROLL_RETIREMENT = {
   lyman: {
-    rothTDA: 85,
-    roth457: 75,
-    preTaxTDA: 100,
-    preTax457: 75,
-    hsa: 116.66,
+    rothTDA: 100,
+    roth457: 175,
+    preTaxTDA: 35,
+    preTax457: 30,
+    hsa: 366.67,
   },
+
   kateri: {
     // OPERS member contribution, straight from the paystub ($431.76 biweekly)
     pension: perMonth(KATERI_OPERS_EE_BIWEEKLY),
