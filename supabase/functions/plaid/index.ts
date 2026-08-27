@@ -528,6 +528,7 @@ Deno.serve(async (req) => {
 
         if (!txnResponse.ok) {
           const errText = await txnResponse.text();
+          await recordItemFailure(item, txnResponse.status, errText);
           console.error(`[plaid sync-transactions] ${item.institution_name} status=${txnResponse.status} body=${errText}`);
         }
         if (txnResponse.ok) {
