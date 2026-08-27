@@ -18,7 +18,7 @@ interface LeakRow {
 }
 
 const FEE_PATTERNS: Array<{ type: string; regex: RegExp; risk: 'low' | 'medium' | 'high'; title: string; fix: string }> = [
-  { type: 'overdraft', regex: /overdraft|nsf|insufficient/i, risk: 'high', title: 'Overdraft fee', fix: 'Enable overdraft protection or shift due dates to after payday.' },
+  { type: 'overdraft', regex: /overdraft|\bnsf\b|insufficient\s*fund/i, risk: 'high', title: 'Overdraft fee', fix: 'Enable overdraft protection or shift due dates to after payday.' },
   { type: 'late_fee', regex: /late\s*fee|past\s*due/i, risk: 'high', title: 'Late fee', fix: 'Move this bill onto autopay and add a 3-day pre-pay reminder.' },
   { type: 'atm_fee', regex: /atm\s*fee|atm\s*surcharge|out[- ]of[- ]network/i, risk: 'low', title: 'ATM fee', fix: 'Use in-network ATMs or cash-back at checkout.' },
   { type: 'interest_charge', regex: /interest\s*charge|finance\s*charge|purchase\s*interest/i, risk: 'high', title: 'Interest charge', fix: 'Pay statement balance in full; consider a payoff sprint.' },
