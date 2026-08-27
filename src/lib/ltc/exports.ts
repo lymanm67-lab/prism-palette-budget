@@ -31,6 +31,10 @@ import {
 
 export interface ExportTable {
   key: string;
+  /** On-screen tab this dataset comes from — keeps exports labeled like the UI. */
+  tab: string;
+  /** On-screen sub-tab, where the tab has one. */
+  subTab?: string;
   title: string;
   headers: string[];
   rows: (string | number)[][];
@@ -41,6 +45,7 @@ const n2 = (n: number) => Math.round(n * 100) / 100;
 export function policySummaryTable(): ExportTable {
   return {
     key: 'policy',
+    tab: 'Our Policy',
     title: 'Nationwide CareMatters Together — Plan of Record',
     headers: ['Item', 'Value'],
     rows: [
@@ -62,6 +67,7 @@ export function policySummaryTable(): ExportTable {
 export function benefitLadderTable(): ExportTable {
   return {
     key: 'benefit-ladder',
+    tab: 'Inflation',
     title: 'Inflation-Protected Benefit Ladder',
     headers: ['Older insured age', 'Monthly benefit (each)', 'Total LTC benefits', 'Source'],
     rows: nwBenefitLadder().map((r) => [
@@ -77,6 +83,7 @@ export function surrenderValueTable(): ExportTable {
   const cv = contractValue({ includeSurrenderValueInNetWorth: true });
   return {
     key: 'surrender',
+    tab: 'Policy Value',
     title: 'Illustrated Net Surrender Value (Insurance and Contract Values bucket only)',
     headers: ['Policy year', 'Net surrender value'],
     rows: [
@@ -90,6 +97,7 @@ export function stressTestTable(inputs: StressInputs = DEFAULT_STRESS): ExportTa
   const r = runStressTest(inputs);
   return {
     key: 'stress',
+    tab: 'Stress Test',
     title: `Stress Test — claim at age ${inputs.claimAge}, ${inputs.careYears} years at $${inputs.monthlyCareCost}/mo`,
     headers: ['Line', 'Amount'],
     rows: [
@@ -128,6 +136,7 @@ export function stressGridTable(base: StressInputs = DEFAULT_STRESS): ExportTabl
   }
   return {
     key: 'stress-grid',
+    tab: 'Stress Test',
     title: 'Stress Test Grid — claim age by care duration',
     headers: [
       'Claim age',
@@ -179,6 +188,8 @@ export function taxTables(opts?: {
   return [
     {
       key: 'tax-deduction',
+      tab: 'Tax Advantage',
+      subTab: 'Premium Deduction',
       title: 'Premium Deduction Estimate',
       headers: ['Item', 'Value'],
       rows: [
@@ -198,6 +209,8 @@ export function taxTables(opts?: {
     },
     {
       key: 'tax-hsa',
+      tab: 'Tax Advantage',
+      subTab: 'HSA vs Cash',
       title: 'HSA vs Cash Premium Funding',
       headers: ['Item', 'HSA path', 'Cash path'],
       rows: [
@@ -212,6 +225,8 @@ export function taxTables(opts?: {
     },
     {
       key: 'tax-benefit',
+      tab: 'Tax Advantage',
+      subTab: 'Benefit Taxability',
       title: 'Benefit Taxability Assessment',
       headers: ['Item', 'Value'],
       rows: [
@@ -227,6 +242,8 @@ export function taxTables(opts?: {
     },
     {
       key: 'tax-limits',
+      tab: 'Tax Advantage',
+      subTab: 'IRS Limits & Docs',
       title: 'IRS Age-Based Eligible Premium Limits',
       headers: ['Attained age at year end', 'Eligible premium'],
       rows: LTC_AGE_LIMITS_2025.map((b2) => [b2.label, b2.limit]),
