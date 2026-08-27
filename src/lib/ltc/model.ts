@@ -3,6 +3,12 @@
 // every future dollar of care cost. Every calculation here compares premium
 // paid against retirement capital potentially protected.
 
+import {
+  NATIONWIDE_POLICY, NW_POLICY_ID, DEFAULT_STRESS,
+  type StressInputs, type PoolScenario,
+} from './nationwide';
+import { DEFAULT_SURRENDER_TOGGLE, type SurrenderValueToggle } from './safeguards';
+
 export interface LtcPolicy {
   id: string;
   carrier: string;
@@ -132,6 +138,9 @@ export interface LtcState {
 
   /** Location-based care cost + agency comparison (see ./location). */
   location?: import('./location').LtcLocationState;
+
+  /** Nationwide CareMatters Together UI state (net-worth toggle, stress test). */
+  nationwide?: NationwideUiState;
   asOf: string;
 }
 

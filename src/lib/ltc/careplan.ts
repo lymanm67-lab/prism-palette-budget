@@ -12,7 +12,8 @@ import {
 } from './location';
 
 /** Monthly plan maximum today (per person). */
-export const PLAN_MAX_MONTHLY = 2100;
+// Nationwide CareMatters Together: initial maximum monthly LTC benefit per insured.
+export const PLAN_MAX_MONTHLY = 2000;
 /** Benefit inflation applied to the plan maximum. */
 export const PLAN_INFLATION_PCT = 3;
 /** Care-rate inflation used for the plan of record. */
