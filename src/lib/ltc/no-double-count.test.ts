@@ -84,7 +84,9 @@ describe('benefit-as-withdrawal-offset', () => {
       portfolioBalance: 50_000,
     });
     expect(r.withdrawalsAvoided).toBe(10_000);
-    expect(r.portfolioAfter).toBe(40_000);
+    expect(r.withdrawalRequired).toBe(0);
+    // Excess benefit is never added to the portfolio — the balance is untouched.
+    expect(r.portfolioAfter).toBe(50_000);
   });
 
   it('holds across a grid of care costs and benefits', () => {
@@ -106,12 +108,13 @@ describe('projection datasets never double-count', () => {
   it('benefit ladder keeps monthly and total benefit internally consistent', () => {
     const rows = nwBenefitLadder();
     for (const r of rows) {
-      expect(r.monthly).toBeGreaterThan(0);
-      expect(r.total).toBeGreaterThanOrEqual(r.monthly);
+      expect(r.monthlyBenefit).toBeGreaterThan(0);
+      expect(r.totalBenefit).toBeGreaterThanOrEqual(r.monthlyBenefit);
       // The pool is never inflated beyond the 72-payment contract maximum.
-      expect(r.total).toBeLessThanOrEqual(r.monthly * NW.maxFullPayments + 1);
+      expect(r.totalBenefit).toBeLessThanOrEqual(r.monthlyBenefit * NW.maxFullPayments + 1);
     }
   });
+
 
   it('shared pool usage never exceeds the pool for any scenario', () => {
     const scenarios = Object.keys(POOL_SCENARIO_LABEL) as PoolScenario[];
