@@ -15,6 +15,7 @@ import { defaultAssumptions, type AssumptionState } from '@/lib/blueprint/model'
 import { money, SectionNote } from '@/components/blueprint/shared';
 import BlueprintImpactPanel from '@/components/budget/BlueprintImpactPanel';
 import BudgetCsvImportDialog from '@/components/budget/BudgetCsvImportDialog';
+import BaselineLockManager from '@/components/budget/BaselineLockManager';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 

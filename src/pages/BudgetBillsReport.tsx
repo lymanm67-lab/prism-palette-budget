@@ -11,6 +11,8 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Printer, Receipt, Wallet, CalendarClock, Zap, Pencil, Check } from 'lucide-react';
 import InlineEditCell from '@/components/InlineEditCell';
+import PrintReportFrame from '@/components/print/PrintReportFrame';
+import ReconciliationCheckCard from '@/components/reports/ReconciliationCheckCard';
 import { toast } from '@/hooks/use-toast';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -283,11 +285,17 @@ export default function BudgetBillsReport() {
           <Loader2 className="h-5 w-5 animate-spin mr-2" /> Loading report…
         </div>
       ) : (
-        <div id="budget-bills-print" className="space-y-6">
-          <div className="hidden print:block">
-            <h1 className="text-2xl font-bold">Budgets &amp; Bills Report</h1>
-            <p className="text-sm">{MONTHS[monthNum]} {yearNum}</p>
-          </div>
+        <PrintReportFrame
+          id="budget-bills-print"
+          title="Budgets & Bills Report"
+          period={`${MONTHS[monthNum]} ${yearNum}`}
+          subtitle="Budgeted vs. actual by category, bill schedule, and month-by-month rollup"
+        >
+          <ReconciliationCheckCard
+            start={`${yearNum}-${String(monthNum + 1).padStart(2, '0')}-01`}
+            end={new Date(Date.UTC(yearNum, monthNum + 1, 0)).toISOString().slice(0, 10)}
+            periodLabel={`${MONTHS[monthNum]} ${yearNum}`}
+          />
 
           {/* Summary */}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -566,16 +574,8 @@ export default function BudgetBillsReport() {
 
             </CardContent>
           </Card>
-        </div>
+        </PrintReportFrame>
       )}
-
-      <style>{`
-        @media print {
-          @page { margin: 0.5in; }
-          .print\\:hidden { display: none !important; }
-          #budget-bills-print { max-width: 100% !important; }
-        }
-      `}</style>
     </div>
   );
 }
