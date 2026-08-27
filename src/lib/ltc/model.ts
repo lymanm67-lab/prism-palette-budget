@@ -3,6 +3,12 @@
 // every future dollar of care cost. Every calculation here compares premium
 // paid against retirement capital potentially protected.
 
+import {
+  NATIONWIDE_POLICY, NW_POLICY_ID, DEFAULT_STRESS,
+  type StressInputs, type PoolScenario,
+} from './nationwide';
+import { DEFAULT_SURRENDER_TOGGLE, type SurrenderValueToggle } from './safeguards';
+
 export interface LtcPolicy {
   id: string;
   carrier: string;
@@ -132,6 +138,9 @@ export interface LtcState {
 
   /** Location-based care cost + agency comparison (see ./location). */
   location?: import('./location').LtcLocationState;
+
+  /** Nationwide CareMatters Together UI state (net-worth toggle, stress test). */
+  nationwide?: NationwideUiState;
   asOf: string;
 }
 
@@ -140,112 +149,74 @@ export interface LtcState {
 // Seeded carriers (household quotes on file)
 // ---------------------------------------------------------------------------
 
-const base = {
-  benefitPeriodMonths: 36,
-  homeCarePct: 100,
-  assistedLivingPct: 100,
-  nursingPct: 100,
-  eliminationDays: 90,
-  inflationCompound: true,
-  inflationLifetime: true,
-  sharedCare: false,
-  premiumWaiver: true,
-  jointApplicantDiscount: true,
-  seeded: true,
-};
-
-export const SEED_POLICIES: LtcPolicy[] = [
-  {
-    ...base, id: 'moo-2100-3', carrier: 'Mutual of Omaha', product: 'MutualCare Secure Solution',
-    startingMonthlyBenefit: 2100, poolEach: 75600, inflationPct: 3, cashBenefitPct: 25,
-    partnershipQualified: true, premiumLyman: 85.19, premiumKateri: 128.21, combinedMonthlyPremium: 213.40,
-    notes: 'Current leading strategy. Cash benefit $525/mo (25% of home health care benefit).',
-  },
-  {
-    ...base, id: 'thrivent-3000-3', carrier: 'Thrivent', product: '3% Compound Plan',
-    startingMonthlyBenefit: 3000, poolEach: 108000, inflationPct: 3, cashBenefitPct: 0,
-    partnershipQualified: true, combinedMonthlyPremium: 257.51,
-  },
-  {
-    ...base, id: 'ngl-3000-3', carrier: 'National Guardian Life', product: 'HonestLTC 3%',
-    startingMonthlyBenefit: 3000, poolEach: 108000, inflationPct: 3, cashBenefitPct: 0,
-    partnershipQualified: true, combinedMonthlyPremium: 262,
-  },
-  {
-    ...base, id: 'thrivent-3000-2', carrier: 'Thrivent', product: '2% Compound Plan',
-    startingMonthlyBenefit: 3000, poolEach: 108000, inflationPct: 2, cashBenefitPct: 0,
-    partnershipQualified: false, combinedMonthlyPremium: 218.79,
-  },
-  {
-    ...base, id: 'ngl-3000-2', carrier: 'National Guardian Life', product: 'HonestLTC 2%',
-    startingMonthlyBenefit: 3000, poolEach: 108000, inflationPct: 2, cashBenefitPct: 0,
-    partnershipQualified: true, combinedMonthlyPremium: 220,
-  },
-  {
-    ...base, id: 'moo-3000-2', carrier: 'Mutual of Omaha', product: 'Secure Solution $3,000 / 2%',
-    startingMonthlyBenefit: 3000, poolEach: 108000, inflationPct: 2, cashBenefitPct: 25,
-    partnershipQualified: false, combinedMonthlyPremium: 242.23,
-  },
-  {
-    ...base, id: 'moo-3000-3', carrier: 'Mutual of Omaha', product: 'Secure Solution $3,000 / 3%',
-    startingMonthlyBenefit: 3000, poolEach: 108000, inflationPct: 3, cashBenefitPct: 25,
-    partnershipQualified: true, combinedMonthlyPremium: 313.17,
-  },
-];
+/**
+ * Plan of record: Nationwide CareMatters Together. Prior carrier quotes
+ * (Mutual of Omaha, Thrivent, National Guardian Life) were removed so no
+ * superseded LTC assumption can reach a projection, chart or household total.
+ */
+export const SEED_POLICIES: LtcPolicy[] = [NATIONWIDE_POLICY];
 
 export const DOC_CATEGORIES = [
-  'Mutual of Omaha',
-  'Thrivent',
-  'National Guardian Life',
-  'Other LTC Quotes',
+  'Nationwide CareMatters Together',
   'Policy Contracts',
+  'Illustrations & Proposals',
   'Benefit Summaries',
   'Annual Statements',
-  'Rate Increase Notices',
+  'Claim Documents',
+  'Other LTC Quotes',
   'Other',
 ] as const;
+
+export interface NationwideUiState extends SurrenderValueToggle {
+  poolScenario: PoolScenario;
+  stress: StressInputs;
+}
 
 export function defaultState(partial?: Partial<LtcState>): LtcState {
   const today = new Date().toISOString().slice(0, 10);
   const next = `${new Date().getFullYear() + 1}-${today.slice(5)}`;
   const d: LtcState = {
     asOf: today,
-    currentPolicyId: 'moo-2100-3',
+    currentPolicyId: NW_POLICY_ID,
     household: {
       lymanAge: 59, kateriAge: 55, city: 'Akron, Ohio',
       // Akron OH non-medical home care daily rate: $128–$140 (verified Aug 2026).
       // $4,195/mo ≈ high end of range (~$135/day × 31 days).
       homeCareMonthly: 4195, dailyLow: 128, dailyHigh: 140,
-      careCostGrowthPct: 3, assumedClaimAge: 80, assumedCareYears: 3,
+      careCostGrowthPct: 3, assumedClaimAge: 85, assumedCareYears: 3,
       retirementBalance: 184114, expectedReturnPct: 8,
       monthlyHouseholdIncome: 16000,
       lastReviewed: today, nextReview: next,
     },
     policies: SEED_POLICIES,
     weights: { affordability: 25, inflation: 25, benefit: 15, flexibility: 10, partnership: 10, homeCare: 10, cash: 5 },
-    sweetSpot: [
-      { benefit: 2000, premiumLyman: 81.13, premiumKateri: 122.10 },
-      { benefit: 2100, premiumLyman: 85.19, premiumKateri: 128.21 },
-      { benefit: 2250, premiumLyman: 91.28, premiumKateri: 137.37 },
-      { benefit: 2500, premiumLyman: 101.42, premiumKateri: 152.63 },
-      { benefit: 2750, premiumLyman: 111.56, premiumKateri: 167.89 },
-      { benefit: 3000, premiumLyman: 121.71, premiumKateri: 183.15 },
-    ],
+    sweetSpot: [],
     reviewLog: [],
     premiumLog: [],
+    nationwide: {
+      ...DEFAULT_SURRENDER_TOGGLE,
+      poolScenario: 'equal',
+      stress: DEFAULT_STRESS,
+    },
   };
   if (!partial) return d;
+  // Saved plans predating the Nationwide policy are migrated forward: legacy
+  // carrier quotes and shopping rungs are dropped, never merged.
   return {
     ...d,
     ...partial,
     household: { ...d.household, ...(partial.household || {}) },
     weights: { ...d.weights, ...(partial.weights || {}) },
-    policies: partial.policies?.length ? partial.policies : d.policies,
-    sweetSpot: partial.sweetSpot?.length ? partial.sweetSpot : d.sweetSpot,
+    policies: [
+      NATIONWIDE_POLICY,
+      ...(partial.policies || []).filter((p) => p.id !== NW_POLICY_ID && !p.seeded),
+    ],
+    currentPolicyId: NW_POLICY_ID,
+    sweetSpot: [],
     reviewLog: partial.reviewLog || d.reviewLog,
     premiumLog: partial.premiumLog || d.premiumLog || [],
     renewals: partial.renewals || [],
-
+    nationwide: { ...d.nationwide!, ...(partial.nationwide || {}) },
   };
 }
 
