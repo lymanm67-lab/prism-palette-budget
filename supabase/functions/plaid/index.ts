@@ -603,10 +603,13 @@ Deno.serve(async (req) => {
       }
 
       return new Response(JSON.stringify({
-        success: true,
+        success: failedItems.length === 0,
+        partial: failedItems.length > 0,
         accounts_updated: totalAccountsUpdated,
         new_transactions: totalNewTransactions,
         new_transaction_ids: allNewTransactionIds,
+        failed_items: failedItems,
+        reauth_required: failedItems.filter((f) => f.needs_reauth),
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
