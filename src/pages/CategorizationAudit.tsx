@@ -12,6 +12,7 @@ import { ArrowRight, ChevronDown, History, Loader2, RotateCcw, Search, Sparkles,
 import { supabase } from '@/integrations/supabase/client';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { useQueryClient } from '@tanstack/react-query';
+import { extraCopyIds } from '@/lib/duplicate-detector';
 
 const SOURCE_LABELS: Record<string, string> = {
   merchant_alias: 'Merchant alias rule',
