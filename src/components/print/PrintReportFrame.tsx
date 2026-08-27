@@ -65,7 +65,7 @@ export default function PrintReportFrame({
           PrismMoney™ · {title}
           {period ? ` · ${period}` : ''}
         </span>
-        <span className="print-page-counter" />
+        <span>Page breaks optimized for Letter · print at 100% scale</span>
       </div>
 
       <style>{`
@@ -106,13 +106,6 @@ export default function PrintReportFrame({
             padding-top: 3px;
           }
           .print-report .print-running-title { font-weight: 700; }
-
-          /* Page numbering via CSS counters on the footer */
-          .print-report { counter-reset: prism-page; }
-          .print-report .print-running-footer { counter-increment: prism-page; }
-          .print-report .print-page-counter::after {
-            content: "Page " counter(prism-page);
-          }
 
           /* Masthead */
           .print-report .print-masthead {
