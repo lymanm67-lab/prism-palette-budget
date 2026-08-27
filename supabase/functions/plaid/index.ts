@@ -437,6 +437,12 @@ Deno.serve(async (req) => {
         // Build Plaid account_id → DB account id map (backfilling provider_account_id
         // on existing rows so per-account transaction mapping works for older links too).
         const plaidToDbAccount = new Map<string, string>();
+        if (!accountsResponse.ok) {
+          const accErr = await accountsResponse.clone().text();
+          const needsReauth = await recordItemFailure(item, accountsResponse.status, accErr);
+          console.error(`[plaid sync-transactions] accounts/get ${item.institution_name} status=${accountsResponse.status} body=${accErr}`);
+          if (needsReauth) continue;
+        }
         if (accountsResponse.ok) {
           const accountsData = await accountsResponse.json();
           const plaidAccounts = accountsData.accounts || [];
