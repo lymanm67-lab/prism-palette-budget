@@ -1,0 +1,238 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`snapshots > benefit ladder 1`] = `
+[
+  {
+    "age": 59,
+    "illustrated": true,
+    "label": "Policy Illustration Value",
+    "monthlyBenefit": 2000,
+    "totalBenefit": 155245,
+  },
+  {
+    "age": 65,
+    "illustrated": false,
+    "label": "Planning Estimate Based on 3% Annual Compounding",
+    "monthlyBenefit": 2388.1045930580003,
+    "totalBenefit": 185370.64877464462,
+  },
+  {
+    "age": 70,
+    "illustrated": false,
+    "label": "Planning Estimate Based on 3% Annual Compounding",
+    "monthlyBenefit": 2768.467741448892,
+    "totalBenefit": 214895.3872606166,
+  },
+  {
+    "age": 75,
+    "illustrated": false,
+    "label": "Planning Estimate Based on 3% Annual Compounding",
+    "monthlyBenefit": 3209.4128781975764,
+    "totalBenefit": 249122.65113789137,
+  },
+  {
+    "age": 80,
+    "illustrated": false,
+    "label": "Planning Estimate Based on 3% Annual Compounding",
+    "monthlyBenefit": 3720.5891434189944,
+    "totalBenefit": 288801.4307850409,
+  },
+  {
+    "age": 85,
+    "illustrated": true,
+    "label": "Policy Illustration Value",
+    "monthlyBenefit": 4313,
+    "totalBenefit": 334800,
+  },
+  {
+    "age": 90,
+    "illustrated": false,
+    "label": "Planning Estimate Based on 3% Annual Compounding",
+    "monthlyBenefit": 5000.160690650704,
+    "totalBenefit": 388124.97321003425,
+  },
+  {
+    "age": 95,
+    "illustrated": false,
+    "label": "Planning Estimate Based on 3% Annual Compounding",
+    "monthlyBenefit": 5796.556656005345,
+    "totalBenefit": 449943.2190307749,
+  },
+]
+`;
+
+exports[`snapshots > contract value with the toggle off 1`] = `
+{
+  "bucket": "Insurance and Contract Values",
+  "excluded": [
+    {
+      "amount": 155245,
+      "label": "Future LTC benefit pool",
+      "reason": "Risk transfer, not an owned asset. Only reduces future withdrawals.",
+    },
+    {
+      "amount": 72001,
+      "label": "Life insurance death benefit",
+      "reason": "Payable to beneficiaries at death — not current household net worth.",
+    },
+    {
+      "amount": 7200,
+      "label": "Guaranteed minimum death benefit",
+      "reason": "Contingent contract value, excluded from current totals.",
+    },
+  ],
+  "illustrated": true,
+  "includedInNetWorth": 0,
+  "note": "Surrender value is reported under Insurance and Contract Values only. It is never added to Cash, Emergency Fund, HSA or Retirement Accounts.",
+  "policyYear": 1,
+  "surrenderValue": 1870,
+}
+`;
+
+exports[`snapshots > contract value with the toggle on 1`] = `
+{
+  "bucket": "Insurance and Contract Values",
+  "excluded": [
+    {
+      "amount": 155245,
+      "label": "Future LTC benefit pool",
+      "reason": "Risk transfer, not an owned asset. Only reduces future withdrawals.",
+    },
+    {
+      "amount": 72001,
+      "label": "Life insurance death benefit",
+      "reason": "Payable to beneficiaries at death — not current household net worth.",
+    },
+    {
+      "amount": 7200,
+      "label": "Guaranteed minimum death benefit",
+      "reason": "Contingent contract value, excluded from current totals.",
+    },
+  ],
+  "illustrated": false,
+  "includedInNetWorth": 15455,
+  "note": "Surrender value is reported under Insurance and Contract Values only. It is never added to Cash, Emergency Fund, HSA or Retirement Accounts.",
+  "policyYear": 11,
+  "surrenderValue": 15455,
+}
+`;
+
+exports[`snapshots > default stress test result 1`] = `
+{
+  "benefitIllustrated": true,
+  "coveragePct": 57.50666666666666,
+  "eliminationCost": 22500,
+  "hsaAtClaim": 0,
+  "inputs": {
+    "careYears": 3,
+    "claimAge": 85,
+    "hsaBalance": 0,
+    "hsaReturnPct": 6,
+    "monthlyCareCost": 7500,
+    "monthlyIncomeAvailable": 2000,
+    "retirementAssets": 181505,
+    "taxableAssets": 2609,
+  },
+  "insurancePaid": 142329,
+  "layers": [
+    {
+      "applied": 142329,
+      "detail": "33 of 36 months paid from the shared pool.",
+      "key": "insurance",
+      "label": "Nationwide LTC (cash indemnity)",
+      "remainingGap": 127671,
+    },
+    {
+      "applied": 0,
+      "detail": "Qualified healthcare and eligible LTC-related costs.",
+      "key": "hsa",
+      "label": "HSA healthcare reserve",
+      "remainingGap": 127671,
+    },
+    {
+      "applied": 72000,
+      "detail": "Household cash flow directed to care.",
+      "key": "income",
+      "label": "Pension & Social Security cash flow",
+      "remainingGap": 55671,
+    },
+    {
+      "applied": 2609,
+      "detail": "Self-directed brokerage drawn before retirement accounts.",
+      "key": "taxable",
+      "label": "Taxable assets",
+      "remainingGap": 53062,
+    },
+    {
+      "applied": 53062,
+      "detail": "Last funding source — protects the legacy base.",
+      "key": "retirement",
+      "label": "Retirement assets",
+      "remainingGap": 0,
+    },
+  ],
+  "monthlyBenefit": 4313,
+  "monthlyGap": 3187,
+  "months": 36,
+  "payableMonths": 33,
+  "poolAtClaim": 334800,
+  "poolExhausted": false,
+  "portfolioAssetsProtected": 142329,
+  "retroactiveFirstPayment": 17252,
+  "totalCareCost": 270000,
+  "totalGap": 127671,
+  "uncoveredGap": 0,
+}
+`;
+
+exports[`snapshots > double-count rules of record 1`] = `
+[
+  "LTC benefits are not investment assets.",
+  "Future LTC benefits are never added to household net worth.",
+  "Death benefits are never added to current household net worth.",
+  "Surrender value may be shown separately as an insurance contract value.",
+  "HSA assets stay separate from insurance benefits.",
+  "LTC benefits reduce what the household must withdraw from the HSA or retirement assets during a modeled care event — they are never added on top of those balances.",
+]
+`;
+
+exports[`snapshots > surrender value ladder 1`] = `
+[
+  {
+    "value": 1870,
+    "year": 1,
+  },
+  {
+    "value": 6731,
+    "year": 5,
+  },
+  {
+    "value": 13806,
+    "year": 10,
+  },
+  {
+    "value": 22051,
+    "year": 15,
+  },
+  {
+    "value": 31337,
+    "year": 20,
+  },
+  {
+    "value": 41140,
+    "year": 25,
+  },
+  {
+    "value": 50320,
+    "year": 30,
+  },
+  {
+    "value": 57570,
+    "year": 35,
+  },
+  {
+    "value": 63623,
+    "year": 40,
+  },
+]
+`;
