@@ -42,9 +42,11 @@ const TABS = [
   { key: 'scenarios', label: 'Scenarios' },
   { key: 'value', label: 'Policy Value' },
   { key: 'stress', label: 'Stress Test' },
+  { key: 'tax', label: 'Tax Advantage' },
   { key: 'renewals', label: 'Renewals & Rate Increases' },
   { key: 'vault', label: 'Documents' },
 ];
+
 
 
 export default function LongTermCare() {
