@@ -561,13 +561,75 @@ export default function MonthlyReport() {
         </div>
       )}
 
-      {/* Print styles */}
+      {/* Print styles — optimized for black & white laser printers */}
       <style>{`
         @media print {
           @page { size: letter; margin: 0.5in; }
-          body { background: white !important; }
+          body { background: white !important; color: black !important; }
           .print\\:hidden { display: none !important; }
           #report-print { max-width: 100% !important; }
+
+          /* Strip dark/gradient report surfaces so they print as clean white with black borders */
+          #report-print,
+          #report-print .rounded-2xl,
+          #report-print [class*="bg-gradient"],
+          #report-print [class*="bg-card"],
+          #report-print [class*="bg-muted"],
+          #report-print .bg-muted\\/40,
+          #report-print .bg-muted\\/30,
+          #report-print .bg-card\\/50 {
+            background: white !important;
+            background-image: none !important;
+            box-shadow: none !important;
+          }
+
+          #report-print,
+          #report-print * {
+            color: black !important;
+          }
+
+          /* Keep subtle borders so sections remain distinct in B&W */
+          #report-print .border,
+          #report-print .border-t,
+          #report-print .border-b,
+          #report-print [class*="border-"] {
+            border-color: #000 !important;
+          }
+
+          /* Badges: outline style for B&W readability */
+          #report-print [class*="Badge"],
+          #report-print .badge {
+            background: white !important;
+            color: black !important;
+            border: 1px solid black !important;
+            box-shadow: none !important;
+          }
+
+          /* Tables */
+          #report-print table { border-collapse: collapse; width: 100%; }
+          #report-print th,
+          #report-print td {
+            border: 1px solid #000 !important;
+            padding: 6px 8px !important;
+          }
+          #report-print th {
+            background: #e5e5e5 !important;
+            font-weight: 700 !important;
+          }
+          #report-print tr { page-break-inside: avoid; }
+
+          /* Avoid breaking cards across pages */
+          #report-print .rounded-2xl,
+          #report-print [class*="Card"],
+          #report-print .overflow-hidden {
+            break-inside: avoid;
+          }
+
+          /* Ensure icons don’t print as solid blocks */
+          #report-print svg {
+            fill: none !important;
+            stroke: black !important;
+          }
         }
       `}</style>
     </div>
