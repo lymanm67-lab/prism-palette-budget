@@ -29,9 +29,32 @@ export default function PaycheckDeployment() {
   const { data: deployments } = usePaycheckDeployments(6);
   const build = useBuildPaycheckDeployment();
   const update = useUpdatePaycheckDeployment();
+  const { primary } = usePaycheckSchedules();
   const [freq, setFreq] = useState('biweekly');
   const [net, setNet] = useState<string>('');
   const [payDate, setPayDate] = useState<string>('');
+  const [overridden, setOverridden] = useState(false);
+
+  // Schedule-driven defaults: entered once, applied to every future payday.
+  const schedFreq = primary ? toDeployFrequency(primary.frequency) : null;
+  const effFreq = overridden ? freq : (schedFreq || freq);
+  const effNet = overridden ? net : (net || (primary ? String(primary.net_amount) : ''));
+  const effPayDate = overridden ? payDate : (payDate || primary?.next_due_date || '');
+
+  const loadFromSchedule = (opts: { pay_date: string; net_amount: number; frequency: string }) => {
+    setPayDate(opts.pay_date);
+    setNet(String(opts.net_amount));
+    setFreq(opts.frequency);
+    setOverridden(false);
+  };
+
+  const resetToSchedule = () => {
+    setOverridden(false);
+    setPayDate(primary?.next_due_date || '');
+    setNet(primary ? String(primary.net_amount) : '');
+    setFreq(schedFreq || 'biweekly');
+  };
+
 
   return (
     <div className="space-y-6 p-4 sm:p-6 max-w-6xl mx-auto">
