@@ -303,14 +303,16 @@ export function taxTables(opts?: LtcExportOptions): ExportTable[] {
   ];
 }
 
+/** "Tab · Sub-tab — Title" label, identical to the on-screen tab names. */
+export function tableLabel(t: ExportTable): string {
+  const tab = t.subTab ? `${t.tab} · ${t.subTab}` : t.tab;
+  return `${tab} — ${t.title}`;
+}
+
 /** Full export set used by both the CSV and PDF exporters. */
-export function allLtcExportTables(opts?: {
-  stress?: StressInputs;
-  deduction?: PremiumDeductionInputs;
-  hsa?: HsaFundingInputs;
-  benefit?: BenefitTaxInputs;
-}): ExportTable[] {
+export function allLtcExportTables(opts?: LtcExportOptions): ExportTable[] {
   return [
+    inputSummaryTable(opts),
     policySummaryTable(),
     benefitLadderTable(),
     surrenderValueTable(),
@@ -327,9 +329,11 @@ export function tablesToCsvRows(tables: ExportTable[]): { headers: string[]; row
   const rows: (string | number)[][] = [];
   tables.forEach((t, idx) => {
     if (idx > 0) rows.push(pad(['']));
+    rows.push(pad([`Tab: ${t.subTab ? `${t.tab} · ${t.subTab}` : t.tab}`]));
     rows.push(pad([t.title]));
     rows.push(pad(t.headers));
     t.rows.forEach((r) => rows.push(pad(r)));
   });
   return { headers: pad(['Nationwide CareMatters Together — LTC Projections & Stress Tests']), rows };
 }
+
