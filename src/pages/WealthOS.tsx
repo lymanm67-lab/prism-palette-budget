@@ -876,17 +876,21 @@ export default function WealthOS() {
               />
             </div>
 
-            <SectionLabel>Benefit Sweet Spot — Value per Premium Dollar</SectionLabel>
-            <div className="wos-card">
-              {ltc.sweetSpot.rows.slice(0, 5).map((r) => (
-                <Row
-                  key={r.benefit}
-                  label={`${money(r.benefit)}/mo benefit${r.benefit === ltc.sweetSpot.bestBenefit ? ' — best value' : ''}`}
-                  value={`${money2(r.combined)}/mo premium • ${money(Math.round(r.protectedCapital))} capital protected • value ${r.valueScore}/10`}
-                  bold={r.benefit === ltc.sweetSpot.bestBenefit}
-                />
-              ))}
-            </div>
+            {ltc.sweetSpot.rows.length > 0 && (
+              <>
+                <SectionLabel>Benefit Sweet Spot — Value per Premium Dollar</SectionLabel>
+                <div className="wos-card">
+                  {ltc.sweetSpot.rows.slice(0, 5).map((r) => (
+                    <Row
+                      key={r.benefit}
+                      label={`${money(r.benefit)}/mo benefit${r.benefit === ltc.sweetSpot.bestBenefit ? ' — best value' : ''}`}
+                      value={`${money2(r.combined)}/mo premium • ${money(Math.round(r.protectedCapital))} capital protected • value ${r.valueScore}/10`}
+                      bold={r.benefit === ltc.sweetSpot.bestBenefit}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
             <div style={{ marginTop: 6, fontSize: 9.5, color: SLATE }}>
               {ltc.quotes} carrier quote(s) on file. Reviewed {ltc.h.lastReviewed}; next review {ltc.h.nextReview}.
             </div>

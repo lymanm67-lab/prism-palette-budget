@@ -277,7 +277,7 @@ export function LtcOverview({ state, onGoTo }: { state: LtcState; onGoTo: (tab: 
             <span>·</span>
             <button className="underline hover:text-foreground" onClick={() => onGoTo('agencies')}>Compare agencies</button>
             <span>·</span>
-            <button className="underline hover:text-foreground" onClick={() => onGoTo('recommend')}>See the recommendation</button>
+            <button className="underline hover:text-foreground" onClick={() => onGoTo('value')}>See the recommendation</button>
           </div>
         </CardContent>
       </Card>
