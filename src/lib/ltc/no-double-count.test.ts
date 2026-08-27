@@ -110,8 +110,9 @@ describe('projection datasets never double-count', () => {
     for (const r of rows) {
       expect(r.monthlyBenefit).toBeGreaterThan(0);
       expect(r.totalBenefit).toBeGreaterThanOrEqual(r.monthlyBenefit);
-      // The pool is never inflated beyond the 72-payment contract maximum.
-      expect(r.totalBenefit).toBeLessThanOrEqual(r.monthlyBenefit * NW.maxFullPayments + 1);
+      // The shared pool is never inflated beyond 72 full payments per insured
+      // for the two insureds on the contract.
+      expect(r.totalBenefit).toBeLessThanOrEqual(r.monthlyBenefit * NW.maxFullPayments * 2 + 1);
     }
   });
 
