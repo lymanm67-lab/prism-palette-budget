@@ -184,6 +184,27 @@ const Accounts = () => {
     return `${days}d ago`;
   }, []);
 
+  // Surface per-item Plaid sync failures (e.g. ITEM_LOGIN_REQUIRED) instead of reporting success.
+  const notifySyncFailures = useCallback((data: any) => {
+    const failures: any[] = data?.failed_items || [];
+    if (!failures.length) return false;
+    qc.invalidateQueries({ queryKey: ['plaid_connections'] });
+    failures.forEach((f) => {
+      const name = f.institution_name || 'Bank connection';
+      if (f.needs_reauth) {
+        toast.error(`${name} needs to be reconnected — sign in again to resume syncing.`, {
+          duration: 10000,
+          action: f.plaid_item_id
+            ? { label: 'Reconnect', onClick: () => requestPlaidRelink(f.plaid_item_id, f.institution_name) }
+            : undefined,
+        });
+      } else {
+        toast.warning(`${name} did not sync: ${f.message || f.error_code}`);
+      }
+    });
+    return true;
+  }, [qc, requestPlaidRelink]);
+
   const handleRefreshSingleAccount = async (accountId: string, providerType: string | null, institution: string | null) => {
     if (!household) return;
     setRefreshingAccountId(accountId);
@@ -211,6 +232,7 @@ const Accounts = () => {
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Sync failed');
+        const hadFailures = notifySyncFailures(data);
 
         if (data.new_transactions > 0 && data.new_transaction_ids?.length) {
           toast.success(`${data.new_transactions} new transactions synced`);
@@ -219,7 +241,7 @@ const Accounts = () => {
               body: { transaction_ids: data.new_transaction_ids, household_id: household.id },
             });
           } catch { /* ignore */ }
-        } else {
+        } else if (!hadFailures) {
           toast.success('Account refreshed — no new transactions');
         }
       }
@@ -265,6 +287,7 @@ const Accounts = () => {
 
       if (plaidRes.status === 'fulfilled') {
         const data = plaidRes.value;
+        const hadFailures = notifySyncFailures(data);
         if (data.new_transactions > 0 && data.new_transaction_ids?.length) {
           toast.success(`Synced ${data.accounts_updated} accounts, ${data.new_transactions} new transactions. Running auto-categorize…`);
           try {
@@ -281,6 +304,8 @@ const Accounts = () => {
           } catch {
             toast.warning('Sync complete but auto-categorize failed');
           }
+        } else if (hadFailures) {
+          toast.warning(`Partial sync: ${data.accounts_updated} accounts updated, ${data.failed_items.length} connection(s) need attention`);
         } else {
           toast.success(`Refreshed: ${data.accounts_updated} accounts updated, ${data.new_transactions} new transactions`);
         }
