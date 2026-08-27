@@ -18,11 +18,18 @@ interface LeakRow {
 }
 
 const FEE_PATTERNS: Array<{ type: string; regex: RegExp; risk: 'low' | 'medium' | 'high'; title: string; fix: string }> = [
-  { type: 'overdraft', regex: /overdraft|nsf|insufficient/i, risk: 'high', title: 'Overdraft fee', fix: 'Enable overdraft protection or shift due dates to after payday.' },
+  { type: 'overdraft', regex: /overdraft|\bnsf\b|insufficient\s*fund/i, risk: 'high', title: 'Overdraft fee', fix: 'Enable overdraft protection or shift due dates to after payday.' },
   { type: 'late_fee', regex: /late\s*fee|past\s*due/i, risk: 'high', title: 'Late fee', fix: 'Move this bill onto autopay and add a 3-day pre-pay reminder.' },
   { type: 'atm_fee', regex: /atm\s*fee|atm\s*surcharge|out[- ]of[- ]network/i, risk: 'low', title: 'ATM fee', fix: 'Use in-network ATMs or cash-back at checkout.' },
   { type: 'interest_charge', regex: /interest\s*charge|finance\s*charge|purchase\s*interest/i, risk: 'high', title: 'Interest charge', fix: 'Pay statement balance in full; consider a payoff sprint.' },
 ];
+
+// Essential bills / debt payments the household has explicitly excluded from leak scanning
+const EXCLUDED_MERCHANTS = /clarke\s*realt|betrlink|banner\s*life|upgrade|small\s*business\s*admin|\bsba\b/i;
+
+function isExcluded(name?: string | null): boolean {
+  return !!name && EXCLUDED_MERCHANTS.test(name);
+}
 
 function monthsBetween(a: Date, b: Date): number {
   return (b.getFullYear() - a.getFullYear()) * 12 + (b.getMonth() - a.getMonth());
@@ -78,9 +85,9 @@ Deno.serve(async (req) => {
       supabase.from('recurring_transactions').select('id, merchant, amount, frequency, next_due_date, is_active').eq('household_id', household_id).eq('is_active', true),
     ]);
 
-    const subs = subsRes.data || [];
-    const txns = txnsRes.data || [];
-    const recurring = recurringRes.data || [];
+    const subs = (subsRes.data || []).filter((s) => !isExcluded(s.merchant) && !isExcluded(s.normalized_merchant));
+    const txns = (txnsRes.data || []).filter((t) => !isExcluded(t.merchant) && !isExcluded(t.notes));
+    const recurring = (recurringRes.data || []).filter((r) => !isExcluded(r.merchant));
 
     const leaks: LeakRow[] = [];
 
@@ -158,6 +165,7 @@ Deno.serve(async (req) => {
     // 4) Fee charges (overdraft, late, atm, interest)
     for (const t of txns) {
       if (t.is_transfer) continue;
+      if (Number(t.amount) > 0) continue; // income/deposits are never fees
       const text = `${t.merchant || ''} ${t.notes || ''}`;
       for (const p of FEE_PATTERNS) {
         if (p.regex.test(text)) {
