@@ -31,6 +31,10 @@ import {
 
 export interface ExportTable {
   key: string;
+  /** On-screen tab this dataset comes from — keeps exports labeled like the UI. */
+  tab: string;
+  /** On-screen sub-tab, where the tab has one. */
+  subTab?: string;
   title: string;
   headers: string[];
   rows: (string | number)[][];
@@ -41,6 +45,7 @@ const n2 = (n: number) => Math.round(n * 100) / 100;
 export function policySummaryTable(): ExportTable {
   return {
     key: 'policy',
+    tab: 'Our Policy',
     title: 'Nationwide CareMatters Together — Plan of Record',
     headers: ['Item', 'Value'],
     rows: [
@@ -62,6 +67,7 @@ export function policySummaryTable(): ExportTable {
 export function benefitLadderTable(): ExportTable {
   return {
     key: 'benefit-ladder',
+    tab: 'Inflation',
     title: 'Inflation-Protected Benefit Ladder',
     headers: ['Older insured age', 'Monthly benefit (each)', 'Total LTC benefits', 'Source'],
     rows: nwBenefitLadder().map((r) => [
@@ -77,6 +83,7 @@ export function surrenderValueTable(): ExportTable {
   const cv = contractValue({ includeSurrenderValueInNetWorth: true });
   return {
     key: 'surrender',
+    tab: 'Policy Value',
     title: 'Illustrated Net Surrender Value (Insurance and Contract Values bucket only)',
     headers: ['Policy year', 'Net surrender value'],
     rows: [
@@ -90,6 +97,7 @@ export function stressTestTable(inputs: StressInputs = DEFAULT_STRESS): ExportTa
   const r = runStressTest(inputs);
   return {
     key: 'stress',
+    tab: 'Stress Test',
     title: `Stress Test — claim at age ${inputs.claimAge}, ${inputs.careYears} years at $${inputs.monthlyCareCost}/mo`,
     headers: ['Line', 'Amount'],
     rows: [
@@ -128,6 +136,7 @@ export function stressGridTable(base: StressInputs = DEFAULT_STRESS): ExportTabl
   }
   return {
     key: 'stress-grid',
+    tab: 'Stress Test',
     title: 'Stress Test Grid — claim age by care duration',
     headers: [
       'Claim age',
@@ -142,43 +151,97 @@ export function stressGridTable(base: StressInputs = DEFAULT_STRESS): ExportTabl
   };
 }
 
-export function taxTables(opts?: {
+export interface LtcExportOptions {
+  stress?: StressInputs;
   deduction?: PremiumDeductionInputs;
   hsa?: HsaFundingInputs;
   benefit?: BenefitTaxInputs;
-}): ExportTable[] {
-  const dIn = opts?.deduction ?? NW_TAX_DEFAULTS;
+}
+
+/** Resolves every export input set, filling any gap with the plan-of-record defaults. */
+export function resolveExportInputs(opts?: LtcExportOptions): Required<LtcExportOptions> {
+  const deduction = opts?.deduction ?? NW_TAX_DEFAULTS;
+  return {
+    stress: opts?.stress ?? DEFAULT_STRESS,
+    deduction,
+    hsa:
+      opts?.hsa ?? {
+        annualPremium: NW.annualPremium,
+        years: 10,
+        hsaBalance: 12_000,
+        hsaReturnPct: 6,
+        marginalRate: deduction.marginalRate,
+        ages: deduction.ages,
+        agi: deduction.agi,
+        filingStatus: deduction.filingStatus,
+        otherMedicalExpenses: deduction.otherMedicalExpenses,
+        itemizes: deduction.itemizes,
+      },
+    benefit:
+      opts?.benefit ?? {
+        monthlyBenefit: NW.monthlyBenefitEach,
+        monthlyQualifiedCost: 2_100,
+        daysInMonth: 30,
+        chronicallyIllCertified: true,
+        planOfCareOnFile: true,
+        taxQualifiedContract: true,
+      },
+  };
+}
+
+/** Every user-editable assumption behind the exported numbers, in one block. */
+export function inputSummaryTable(opts?: LtcExportOptions): ExportTable {
+  const { stress, deduction: d, hsa, benefit: b } = resolveExportInputs(opts);
+  const yn = (v: boolean) => (v ? 'Yes' : 'No');
+  return {
+    key: 'input-summary',
+    tab: 'Input Summary',
+    title: 'Input Summary — every assumption behind this report',
+    headers: ['Tab', 'Input', 'Value'],
+    rows: [
+      ['Our Policy', 'Combined monthly premium', n2(NW.monthlyPremium)],
+      ['Our Policy', 'Annual premium', n2(NW.annualPremium)],
+      ['Our Policy', 'Initial monthly benefit (each insured)', NW.monthlyBenefitEach],
+      ['Our Policy', 'Inflation protection', `${NW.inflationPct}% compound for life`],
+      ['Our Policy', 'Elimination period (days)', NW.eliminationDays],
+      ['Stress Test', 'Claim age', stress.claimAge],
+      ['Stress Test', 'Care years', stress.careYears],
+      ['Stress Test', 'Monthly care cost', n2(stress.monthlyCareCost)],
+      ['Tax Advantage · Premium Deduction', 'Filing status', d.filingStatus],
+      ['Tax Advantage · Premium Deduction', 'AGI', n2(d.agi)],
+      ['Tax Advantage · Premium Deduction', 'Insured ages at year end', d.ages.join(' / ')],
+      ['Tax Advantage · Premium Deduction', 'Annual LTC premium', n2(d.annualPremium)],
+      ['Tax Advantage · Premium Deduction', 'Other medical expenses', n2(d.otherMedicalExpenses)],
+      ['Tax Advantage · Premium Deduction', 'Itemizes (Schedule A)', yn(d.itemizes)],
+      ['Tax Advantage · Premium Deduction', 'Self-employed health plan', yn(d.selfEmployedHealthPlan)],
+      ['Tax Advantage · Premium Deduction', 'Marginal rate (%)', n2(d.marginalRate * 100)],
+      ['Tax Advantage · Premium Deduction', 'Premium paid from HSA', n2(d.premiumPaidFromHsa ?? 0)],
+      ['Tax Advantage · HSA vs Cash', 'Horizon (years)', hsa.years],
+      ['Tax Advantage · HSA vs Cash', 'HSA starting balance', n2(hsa.hsaBalance)],
+      ['Tax Advantage · HSA vs Cash', 'HSA return (%)', n2(hsa.hsaReturnPct)],
+      ['Tax Advantage · HSA vs Cash', 'Annual premium funded', n2(hsa.annualPremium)],
+      ['Tax Advantage · Benefit Taxability', 'Monthly benefit elected', n2(b.monthlyBenefit)],
+      ['Tax Advantage · Benefit Taxability', 'Monthly qualified care cost', n2(b.monthlyQualifiedCost)],
+      ['Tax Advantage · Benefit Taxability', 'Days in benefit month', b.daysInMonth ?? 30],
+      ['Tax Advantage · Benefit Taxability', 'Chronically ill certified', yn(b.chronicallyIllCertified)],
+      ['Tax Advantage · Benefit Taxability', 'Plan of care on file', yn(b.planOfCareOnFile)],
+      ['Tax Advantage · Benefit Taxability', 'Tax-qualified contract', yn(b.taxQualifiedContract)],
+    ],
+  };
+}
+
+export function taxTables(opts?: LtcExportOptions): ExportTable[] {
+  const { deduction: dIn, hsa: hsaIn, benefit: bIn } = resolveExportInputs(opts);
   const d = estimatePremiumDeduction(dIn);
-
-  const hsaIn: HsaFundingInputs =
-    opts?.hsa ?? {
-      annualPremium: NW.annualPremium,
-      years: 10,
-      hsaBalance: 12_000,
-      hsaReturnPct: 6,
-      marginalRate: dIn.marginalRate,
-      ages: dIn.ages,
-      agi: dIn.agi,
-      filingStatus: dIn.filingStatus,
-      otherMedicalExpenses: dIn.otherMedicalExpenses,
-      itemizes: dIn.itemizes,
-    };
   const h = compareHsaVsCash(hsaIn);
-
-  const bIn: BenefitTaxInputs =
-    opts?.benefit ?? {
-      monthlyBenefit: NW.monthlyBenefitEach,
-      monthlyQualifiedCost: 2_100,
-      daysInMonth: 30,
-      chronicallyIllCertified: true,
-      planOfCareOnFile: true,
-      taxQualifiedContract: true,
-    };
   const b = assessBenefitTaxability(bIn);
+
 
   return [
     {
       key: 'tax-deduction',
+      tab: 'Tax Advantage',
+      subTab: 'Premium Deduction',
       title: 'Premium Deduction Estimate',
       headers: ['Item', 'Value'],
       rows: [
@@ -198,6 +261,8 @@ export function taxTables(opts?: {
     },
     {
       key: 'tax-hsa',
+      tab: 'Tax Advantage',
+      subTab: 'HSA vs Cash',
       title: 'HSA vs Cash Premium Funding',
       headers: ['Item', 'HSA path', 'Cash path'],
       rows: [
@@ -212,6 +277,8 @@ export function taxTables(opts?: {
     },
     {
       key: 'tax-benefit',
+      tab: 'Tax Advantage',
+      subTab: 'Benefit Taxability',
       title: 'Benefit Taxability Assessment',
       headers: ['Item', 'Value'],
       rows: [
@@ -227,6 +294,8 @@ export function taxTables(opts?: {
     },
     {
       key: 'tax-limits',
+      tab: 'Tax Advantage',
+      subTab: 'IRS Limits & Docs',
       title: 'IRS Age-Based Eligible Premium Limits',
       headers: ['Attained age at year end', 'Eligible premium'],
       rows: LTC_AGE_LIMITS_2025.map((b2) => [b2.label, b2.limit]),
@@ -234,14 +303,16 @@ export function taxTables(opts?: {
   ];
 }
 
+/** "Tab · Sub-tab — Title" label, identical to the on-screen tab names. */
+export function tableLabel(t: ExportTable): string {
+  const tab = t.subTab ? `${t.tab} · ${t.subTab}` : t.tab;
+  return `${tab} — ${t.title}`;
+}
+
 /** Full export set used by both the CSV and PDF exporters. */
-export function allLtcExportTables(opts?: {
-  stress?: StressInputs;
-  deduction?: PremiumDeductionInputs;
-  hsa?: HsaFundingInputs;
-  benefit?: BenefitTaxInputs;
-}): ExportTable[] {
+export function allLtcExportTables(opts?: LtcExportOptions): ExportTable[] {
   return [
+    inputSummaryTable(opts),
     policySummaryTable(),
     benefitLadderTable(),
     surrenderValueTable(),
@@ -258,9 +329,11 @@ export function tablesToCsvRows(tables: ExportTable[]): { headers: string[]; row
   const rows: (string | number)[][] = [];
   tables.forEach((t, idx) => {
     if (idx > 0) rows.push(pad(['']));
+    rows.push(pad([`Tab: ${t.subTab ? `${t.tab} · ${t.subTab}` : t.tab}`]));
     rows.push(pad([t.title]));
     rows.push(pad(t.headers));
     t.rows.forEach((r) => rows.push(pad(r)));
   });
   return { headers: pad(['Nationwide CareMatters Together — LTC Projections & Stress Tests']), rows };
 }
+

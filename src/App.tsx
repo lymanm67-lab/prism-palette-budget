@@ -110,6 +110,7 @@ const ContributionWaterfall = lazy(() => import("@/pages/ContributionWaterfall")
 const HouseholdWealth = lazy(() => import("@/pages/HouseholdWealth"));
 const MoneyBlueprint = lazy(() => import("@/pages/MoneyBlueprint"));
 const LongTermCare = lazy(() => import("@/pages/LongTermCare"));
+const LtcTaxReport = lazy(() => import("@/pages/LtcTaxReport"));
 
 const BeltProgress = lazy(() => import("@/pages/BeltProgress"));
 const RetirementDashboard = lazy(() => import("@/pages/RetirementDashboard"));
@@ -185,6 +186,7 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/changelog" element={<Suspense fallback={<PageLoader />}><Changelog /></Suspense>} />
             <Route path="/support" element={<Suspense fallback={<PageLoader />}><Support /></Suspense>} />
+            <Route path="/ltc/tax-report" element={<Suspense fallback={<PageLoader />}><LtcTaxReport /></Suspense>} />
             <Route element={
               <ProtectedRoute>
                 <HouseholdProvider>
