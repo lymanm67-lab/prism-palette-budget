@@ -232,6 +232,7 @@ const Accounts = () => {
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Sync failed');
+        const hadFailures = notifySyncFailures(data);
 
         if (data.new_transactions > 0 && data.new_transaction_ids?.length) {
           toast.success(`${data.new_transactions} new transactions synced`);
@@ -240,7 +241,7 @@ const Accounts = () => {
               body: { transaction_ids: data.new_transaction_ids, household_id: household.id },
             });
           } catch { /* ignore */ }
-        } else {
+        } else if (!hadFailures) {
           toast.success('Account refreshed — no new transactions');
         }
       }
