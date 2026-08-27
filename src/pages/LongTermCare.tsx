@@ -7,13 +7,16 @@ import { Printer, Save } from 'lucide-react';
 import { PageExplainer } from '@/components/PageExplainer';
 import { LtcOverview } from '@/components/ltc/LtcOverview';
 import { CurrentPlan } from '@/components/ltc/CurrentPlan';
-import { PolicyComparison } from '@/components/ltc/PolicyComparison';
 import { QuoteUpload } from '@/components/ltc/QuoteUpload';
-import { InflationProjection } from '@/components/ltc/InflationProjection';
+import { NationwidePolicyTab } from '@/components/ltc/nationwide/NationwidePolicyTab';
+import { SharedPoolPanel } from '@/components/ltc/nationwide/SharedPoolPanel';
+import { NwInflationProjection } from '@/components/ltc/nationwide/NwInflationProjection';
+import { PolicyValuePaths } from '@/components/ltc/nationwide/PolicyValuePaths';
+import { StressTestTab } from '@/components/ltc/nationwide/StressTestTab';
 import { CareCostGap } from '@/components/ltc/CareCostGap';
 import { AssetProtection } from '@/components/ltc/AssetProtection';
 import { ScenarioSimulator } from '@/components/ltc/ScenarioSimulator';
-import { Recommendation } from '@/components/ltc/Recommendation';
+import type { PoolScenario } from '@/lib/ltc/nationwide';
 import { DocumentVault } from '@/components/ltc/DocumentVault';
 import { CareCostByLocation } from '@/components/ltc/CareCostByLocation';
 import { AgencyComparison } from '@/components/ltc/AgencyComparison';
@@ -27,7 +30,8 @@ import { ensureLocationState, type LtcLocationState } from '@/lib/ltc/location';
 const TABS = [
   { key: 'overview', label: 'Overview' },
   { key: 'current', label: 'Current Plan' },
-  { key: 'compare', label: 'Compare Policies' },
+  { key: 'policy', label: 'Our Policy' },
+  { key: 'pool', label: 'Shared Pool' },
   { key: 'locations', label: 'Care Cost by Location' },
   { key: 'agencies', label: 'Local Agencies' },
   { key: 'hours', label: 'Hours Protected' },
@@ -36,7 +40,8 @@ const TABS = [
   { key: 'strategy', label: 'Gap Strategy' },
   { key: 'assets', label: 'Asset Protection' },
   { key: 'scenarios', label: 'Scenarios' },
-  { key: 'recommend', label: 'Recommendation' },
+  { key: 'value', label: 'Policy Value' },
+  { key: 'stress', label: 'Stress Test' },
   { key: 'renewals', label: 'Renewals & Rate Increases' },
   { key: 'vault', label: 'Documents' },
 ];
@@ -47,6 +52,9 @@ export default function LongTermCare() {
   const save = useSaveLtcPlan();
   const [state, setState] = useState<LtcState>(defaultState());
   const [hydrated, setHydrated] = useState(false);
+  const [poolScenario, setPoolScenario] = useState<PoolScenario>('lymanMore');
+  const [poolAge, setPoolAge] = useState(85);
+  const [includeSurrender, setIncludeSurrender] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const requestedTab = searchParams.get('tab');
   const [tab, setTab] = useState(
@@ -93,8 +101,8 @@ export default function LongTermCare() {
         <div>
           <h1 className="text-3xl font-bold">Long-Term Care Decision Dashboard</h1>
           <p className="text-muted-foreground max-w-3xl">
-            Compare carrier quotes side by side, project benefits against real {state.household.city} care costs, and see
-            exactly how much retirement capital each option protects.
+            Our active Nationwide CareMatters Together policy, projected against real {state.household.city} care costs,
+            with the shared benefit pool, cash indemnity claims, and the retirement capital it protects.
           </p>
           <p className="text-[11px] uppercase tracking-wide text-muted-foreground mt-1">As of: {state.asOf}</p>
         </div>
@@ -113,7 +121,7 @@ export default function LongTermCare() {
         sections={[
           { heading: 'Transfer the downside', body: 'Long-term care is the single largest threat to a retirement portfolio. Insurance is judged by how much retirement capital it protects per premium dollar, not by the biggest benefit.' },
           { heading: 'Real local costs', body: 'Projections use Akron-area care costs grown at your assumed inflation rate, so benefit growth is always compared to what care will actually cost.' },
-          { heading: 'Weighted recommendation', body: 'Affordability, inflation protection, benefit size, flexibility, Ohio Partnership status, home care and cash benefit are scored and weighted. Adjust the weights and the ranking updates.' },
+          { heading: 'One policy of record', body: 'Nationwide CareMatters Together is the active LTC strategy: $291.96 combined monthly premium, $2,000 initial monthly benefit per insured, 3% compound inflation for life, and cash indemnity claims.' },
           { heading: 'Lapse risk is real', body: 'A policy that lapses protects nothing. If the combined premium exceeds 5% of household income, the dashboard flags it and points you to a lower sweet-spot rung.' },
         ]}
       />
@@ -125,9 +133,12 @@ export default function LongTermCare() {
 
         <TabsContent value="overview" className="mt-4"><LtcOverview state={state} onGoTo={changeTab} /></TabsContent>
         <TabsContent value="current" className="mt-4"><CurrentPlan state={state} patch={patch} /></TabsContent>
-        <TabsContent value="compare" className="mt-4 space-y-4">
+        <TabsContent value="policy" className="mt-4 space-y-4">
+          <NationwidePolicyTab />
           <QuoteUpload state={state} patch={patch} />
-          <PolicyComparison state={state} patch={patch} />
+        </TabsContent>
+        <TabsContent value="pool" className="mt-4">
+          <SharedPoolPanel scenario={poolScenario} age={poolAge} onScenario={setPoolScenario} onAge={setPoolAge} />
         </TabsContent>
         <TabsContent value="locations" className="mt-4">
           <CareCostByLocation state={state} loc={locationState} patchLoc={patchLoc} />
@@ -138,7 +149,7 @@ export default function LongTermCare() {
         <TabsContent value="hours" className="mt-4">
           <HoursProtected state={state} loc={locationState} patchLoc={patchLoc} />
         </TabsContent>
-        <TabsContent value="inflation" className="mt-4"><InflationProjection state={state} /></TabsContent>
+        <TabsContent value="inflation" className="mt-4"><NwInflationProjection /></TabsContent>
 
         <TabsContent value="gap" className="mt-4"><CareCostGap state={state} patch={patch} /></TabsContent>
         <TabsContent value="strategy" className="mt-4">
@@ -146,7 +157,10 @@ export default function LongTermCare() {
         </TabsContent>
         <TabsContent value="assets" className="mt-4"><AssetProtection state={state} patch={patch} /></TabsContent>
         <TabsContent value="scenarios" className="mt-4"><ScenarioSimulator state={state} /></TabsContent>
-        <TabsContent value="recommend" className="mt-4"><Recommendation state={state} patch={patch} /></TabsContent>
+        <TabsContent value="value" className="mt-4">
+          <PolicyValuePaths includeSurrenderValue={includeSurrender} onToggle={setIncludeSurrender} />
+        </TabsContent>
+        <TabsContent value="stress" className="mt-4"><StressTestTab /></TabsContent>
         <TabsContent value="renewals" className="mt-4"><RenewalTracker state={state} patch={patch} /></TabsContent>
         <TabsContent value="vault" className="mt-4"><DocumentVault state={state} patch={patch} /></TabsContent>
       </Tabs>
