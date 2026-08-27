@@ -678,6 +678,7 @@ export type Database = {
           created_at: string
           household_id: string
           id: string
+          locked_at: string | null
           month: string
           planned_amount: number
           rollover: boolean
@@ -688,6 +689,7 @@ export type Database = {
           created_at?: string
           household_id: string
           id?: string
+          locked_at?: string | null
           month: string
           planned_amount?: number
           rollover?: boolean
@@ -698,6 +700,7 @@ export type Database = {
           created_at?: string
           household_id?: string
           id?: string
+          locked_at?: string | null
           month?: string
           planned_amount?: number
           rollover?: boolean
@@ -875,6 +878,7 @@ export type Database = {
       }
       categories: {
         Row: {
+          baseline_locked: boolean
           color: string
           created_at: string
           default_account_id: string | null
@@ -885,6 +889,7 @@ export type Database = {
           sort_order: number
         }
         Insert: {
+          baseline_locked?: boolean
           color?: string
           created_at?: string
           default_account_id?: string | null
@@ -895,6 +900,7 @@ export type Database = {
           sort_order?: number
         }
         Update: {
+          baseline_locked?: boolean
           color?: string
           created_at?: string
           default_account_id?: string | null

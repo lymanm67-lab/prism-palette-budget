@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import PrintReportFrame from '@/components/print/PrintReportFrame';
+import ReconciliationCheckCard from '@/components/reports/ReconciliationCheckCard';
 import ReactMarkdown from 'react-markdown';
 import { supabase } from '@/integrations/supabase/client';
 import { useHousehold } from '@/contexts/HouseholdContext';
@@ -285,7 +287,22 @@ export default function MonthlyReport() {
         </Card>
 
       ) : (
-        <div id="report-print" className="space-y-6">
+        <PrintReportFrame
+          id="report-print"
+          title="Monthly Spending Report"
+          period={monthLabel(meta.month)}
+          subtitle="Budget vs. actual, overages, wrong-account charges and next-month steps"
+          generatedAt={active.created_at}
+        >
+          <ReconciliationCheckCard
+            start={`${String(meta.month ?? selectedMonth).slice(0, 7)}-01`}
+            end={(() => {
+              const m = String(meta.month ?? selectedMonth).slice(0, 7);
+              const [y, mo] = m.split('-').map(Number);
+              return new Date(Date.UTC(y, mo, 0)).toISOString().slice(0, 10);
+            })()}
+            periodLabel={monthLabel(meta.month ?? selectedMonth)}
+          />
           {/* Hero header */}
           <div className="rounded-2xl overflow-hidden border bg-gradient-to-br from-prism-orange/10 via-background to-background print:border-black">
             <div className="p-6 md:p-8 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
@@ -555,83 +572,10 @@ export default function MonthlyReport() {
           </Card>
 
 
-          <div className="text-xs text-muted-foreground text-center print:block hidden">
-            PrismMoney™ · Monthly Spending Report
-          </div>
-        </div>
+        </PrintReportFrame>
       )}
 
-      {/* Print styles — optimized for black & white laser printers */}
-      <style>{`
-        @media print {
-          @page { size: letter; margin: 0.5in; }
-          body { background: white !important; color: black !important; }
-          .print\\:hidden { display: none !important; }
-          #report-print { max-width: 100% !important; }
 
-          /* Strip dark/gradient report surfaces so they print as clean white with black borders */
-          #report-print,
-          #report-print .rounded-2xl,
-          #report-print [class*="bg-gradient"],
-          #report-print [class*="bg-card"],
-          #report-print [class*="bg-muted"],
-          #report-print .bg-muted\\/40,
-          #report-print .bg-muted\\/30,
-          #report-print .bg-card\\/50 {
-            background: white !important;
-            background-image: none !important;
-            box-shadow: none !important;
-          }
-
-          #report-print,
-          #report-print * {
-            color: black !important;
-          }
-
-          /* Keep subtle borders so sections remain distinct in B&W */
-          #report-print .border,
-          #report-print .border-t,
-          #report-print .border-b,
-          #report-print [class*="border-"] {
-            border-color: #000 !important;
-          }
-
-          /* Badges: outline style for B&W readability */
-          #report-print [class*="Badge"],
-          #report-print .badge {
-            background: white !important;
-            color: black !important;
-            border: 1px solid black !important;
-            box-shadow: none !important;
-          }
-
-          /* Tables */
-          #report-print table { border-collapse: collapse; width: 100%; }
-          #report-print th,
-          #report-print td {
-            border: 1px solid #000 !important;
-            padding: 6px 8px !important;
-          }
-          #report-print th {
-            background: #e5e5e5 !important;
-            font-weight: 700 !important;
-          }
-          #report-print tr { page-break-inside: avoid; }
-
-          /* Avoid breaking cards across pages */
-          #report-print .rounded-2xl,
-          #report-print [class*="Card"],
-          #report-print .overflow-hidden {
-            break-inside: avoid;
-          }
-
-          /* Ensure icons don’t print as solid blocks */
-          #report-print svg {
-            fill: none !important;
-            stroke: black !important;
-          }
-        }
-      `}</style>
     </div>
   );
 }
