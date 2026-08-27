@@ -36,11 +36,11 @@ export function StressTestTab({ hsaBalance = 0 }: { hsaBalance?: number }) {
               <Select value={String(inputs.monthlyCareCost)} onChange={(v) => set({ monthlyCareCost: Number(v) })}
                 options={STRESS_COST_PRESETS.map((c) => ({ value: String(c), label: money(c) }))} />
             </Field>
-            <NumField label="HSA balance today" value={inputs.hsaBalance} onChange={(v) => set({ hsaBalance: v })} />
-            <NumField label="HSA growth %" value={inputs.hsaReturnPct} onChange={(v) => set({ hsaReturnPct: v })} />
-            <NumField label="Monthly income for care" value={inputs.monthlyIncomeAvailable} onChange={(v) => set({ monthlyIncomeAvailable: v })} />
-            <NumField label="Taxable assets" value={inputs.taxableAssets} onChange={(v) => set({ taxableAssets: v })} />
-            <NumField label="Retirement assets" value={inputs.retirementAssets} onChange={(v) => set({ retirementAssets: v })} />
+            <Field label="HSA balance today"><NumField value={inputs.hsaBalance} onChange={(v) => set({ hsaBalance: v })} /></Field>
+            <Field label="HSA growth %"><NumField value={inputs.hsaReturnPct} onChange={(v) => set({ hsaReturnPct: v })} /></Field>
+            <Field label="Monthly income for care"><NumField value={inputs.monthlyIncomeAvailable} onChange={(v) => set({ monthlyIncomeAvailable: v })} /></Field>
+            <Field label="Taxable assets"><NumField value={inputs.taxableAssets} onChange={(v) => set({ taxableAssets: v })} /></Field>
+            <Field label="Retirement assets"><NumField value={inputs.retirementAssets} onChange={(v) => set({ retirementAssets: v })} /></Field>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
