@@ -287,6 +287,7 @@ const Accounts = () => {
 
       if (plaidRes.status === 'fulfilled') {
         const data = plaidRes.value;
+        const hadFailures = notifySyncFailures(data);
         if (data.new_transactions > 0 && data.new_transaction_ids?.length) {
           toast.success(`Synced ${data.accounts_updated} accounts, ${data.new_transactions} new transactions. Running auto-categorize…`);
           try {
@@ -303,9 +304,12 @@ const Accounts = () => {
           } catch {
             toast.warning('Sync complete but auto-categorize failed');
           }
+        } else if (hadFailures) {
+          toast.warning(`Partial sync: ${data.accounts_updated} accounts updated, ${data.failed_items.length} connection(s) need attention`);
         } else {
           toast.success(`Refreshed: ${data.accounts_updated} accounts updated, ${data.new_transactions} new transactions`);
         }
+      }
       }
     } catch (err: any) {
       toast.error(err.message || 'Failed to refresh accounts');
