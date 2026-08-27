@@ -244,7 +244,9 @@ export function compareHsaVsCash(i: HsaFundingInputs): HsaFundingResult {
 
   const hsaPath: HsaFundingPath = {
     label: 'Pay premiums from the HSA',
-    afterTaxCost: round(cashRemainder * i.years),
+    // Out-of-pocket dollars are compared at future value so both paths are
+    // measured at the same point in time.
+    afterTaxCost: round(fvAnnuity(cashRemainder, i.years, r)),
     hsaEndingBalance: round(hsaBal),
     taxBenefit: round(hsaEligiblePremium * i.years * i.marginalRate),
     forgoneGrowth: round(cashBal - hsaBal),
@@ -258,7 +260,9 @@ export function compareHsaVsCash(i: HsaFundingInputs): HsaFundingResult {
 
   const cashPath: HsaFundingPath = {
     label: 'Pay premiums with taxable cash',
-    afterTaxCost: round(i.annualPremium * i.years - cashDeduction.estimatedTaxSavings * i.years),
+    afterTaxCost: round(
+      fvAnnuity(i.annualPremium - cashDeduction.estimatedTaxSavings, i.years, r),
+    ),
     hsaEndingBalance: round(cashBal),
     taxBenefit: round(cashDeduction.estimatedTaxSavings * i.years),
     forgoneGrowth: 0,
@@ -444,6 +448,13 @@ export const NW_TAX_DEFAULTS: PremiumDeductionInputs = {
   marginalRate: 0.22,
   premiumPaidFromHsa: 0,
 };
+
+/** Future value of an ordinary annuity of `payment` for `years` at rate `r`. */
+function fvAnnuity(payment: number, years: number, r: number) {
+  if (payment === 0 || years <= 0) return 0;
+  if (r === 0) return payment * years;
+  return payment * (((1 + r) ** years - 1) / r);
+}
 
 function round(n: number) {
   return Math.round(n * 100) / 100;
