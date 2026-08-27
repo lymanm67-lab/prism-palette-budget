@@ -511,7 +511,7 @@ export default function WealthOS() {
           <Kpi label="Consulting Income" value="$25,000.00" sub="~$2,083.33 / mo" tone="gold" />
           <Kpi label="Total Annual Income" value="$95,940.04" sub="$7,995.00 / mo gross" tone="green" />
           <Kpi label="Monthly Gross (W-2)" value="$5,911.67" tone="plain" />
-          <Kpi label="Monthly Net (W-2)" value="$4,464.91" tone="plain" />
+          <Kpi label="Monthly Net (W-2)" value="$4,250.02" tone="plain" />
           <Kpi label="Employer Contribution" value="$532.05" sub="per month • 9% non-elective" tone="plain" />
         </div>
 

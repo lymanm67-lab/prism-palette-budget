@@ -541,7 +541,7 @@ export function defaultAssumptions(seed?: Partial<AssumptionState>): AssumptionS
       otherRecurringIncomeMonthly: 'current',
       retirementAge: 'projected',
     },
-    // Net income = Lyman $4,464.91 + Kateri $4,227.72 take-home. Planned spend is
+    // Net income = Lyman $4,250.02 + Kateri $4,227.72 take-home. Planned spend is
     // the confirmed household budget target; surplus redirect starts at 0 so an
     // import never silently inflates a projection.
     budget: {
