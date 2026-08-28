@@ -126,6 +126,9 @@ function trendSvg(points: InfographicTrendPoint[]) {
 }
 
 export default function BudgetInfographicPrint({ monthLabel, daysInMonth, categories, trend = [] }: Props) {
+  const [html, setHtml] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
+
   const handlePrint = useCallback(() => {
     // ---- aggregate by group -------------------------------------------------
     const groups = new Map<string, { group: string; spent: number; budget: number; cats: InfographicCategory[] }>();
@@ -364,18 +367,23 @@ export default function BudgetInfographicPrint({ monthLabel, daysInMonth, catego
 </div>
 </body></html>`;
 
-    const w = window.open('', '_blank', 'width=1000,height=1200');
-    if (!w) return;
-    w.document.write(html);
-    w.document.close();
-    w.focus();
-    setTimeout(() => w.print(), 400);
+    setHtml(html);
+    setOpen(true);
   }, [monthLabel, daysInMonth, categories, trend]);
 
   return (
-    <Button variant="outline" onClick={handlePrint} className="gap-2">
-      <LayoutTemplate className="h-4 w-4" />
-      Print Infographic
-    </Button>
+    <>
+      <Button variant="outline" onClick={handlePrint} className="gap-2">
+        <LayoutTemplate className="h-4 w-4" />
+        Print Infographic
+      </Button>
+      <InfographicPreviewDialog
+        html={html}
+        title={`My Monthly Budget — ${monthLabel}`}
+        open={open}
+        onOpenChange={setOpen}
+        filename={`monthly-budget-infographic-${monthLabel.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
+      />
+    </>
   );
 }
