@@ -124,9 +124,11 @@ export default function MoneyBlueprintPanel({ month, expenseStructure }: Props) 
                           'tabular-nums',
                           c.underTarget
                             ? 'text-emerald-600 dark:text-emerald-400'
-                            : c.variance === 0
-                              ? ''
-                              : STATUS_TEXT[c.status],
+                            : c.key === 'build_wealth' && (c.remainingToTarget || 0) > 0
+                              ? 'text-amber-600 dark:text-amber-400'
+                              : c.variance === 0
+                                ? ''
+                                : STATUS_TEXT[c.status],
                         )}
                       >
                         {c.aboveTargetLabel ||
