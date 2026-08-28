@@ -43,6 +43,7 @@ import { ScoreBreakdownTooltip } from '@/components/cleanup/ScoreBreakdownToolti
 import { useQueryClient } from '@tanstack/react-query';
 import MoneyBlueprintPanel from '@/components/budget/MoneyBlueprintPanel';
 import PayrollElectionsCard from '@/components/budget/PayrollElectionsCard';
+import DebtCashFlowRelease from '@/components/budget/DebtCashFlowRelease';
 
 const getMonth = (offset: number) => {
   const d = new Date();
@@ -1795,6 +1796,9 @@ const Budgets = () => {
 
       {/* 50/10/20/20 Money Blueprint (personal money only) */}
       <MoneyBlueprintPanel month={month} expenseStructure={sectionTotals as any} />
+
+      {/* Debt settlement step-down, fee reserve and true redirectable cash flow */}
+      <DebtCashFlowRelease month={month} />
 
       <PayrollElectionsCard
         month={month}
