@@ -5,8 +5,6 @@ import { PURPOSE_META, type MoneyPurpose } from '@/lib/budgeting/moneyPurpose';
 import { cn } from '@/lib/utils';
 
 const ALL: MoneyPurpose[] = [
-
-const ALL: MoneyPurpose[] = [
   'live',
   'enjoy',
   'build_wealth',
