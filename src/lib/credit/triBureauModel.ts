@@ -230,7 +230,9 @@ function scoreFile(
   bureau: Bureau,
   st: AppliedState,
   inquiryDatesMonthsAgo: number[],
-  anchor: number | null,
+  sens: Sensitivity,
+  /** Base (pre-scenario) aggregate utilization, used for multi-cycle averaging. */
+  blendUtil: number | null,
 ): ScoreParts {
   const p = BUREAU_PROFILE[bureau];
   const live = st.lines.filter(l => !l.disputed);
@@ -238,12 +240,23 @@ function scoreFile(
   const revolving = live.filter(l => l.simLimit > 0);
   const totalBal = revolving.reduce((s, l) => s + l.simBalance, 0);
   const totalLimit = revolving.reduce((s, l) => s + l.simLimit, 0) + st.syntheticLimit;
-  const aggregateUtil = totalLimit > 0 ? (totalBal / totalLimit) * 100 : 0;
+  const rawUtil = totalLimit > 0 ? (totalBal / totalLimit) * 100 : 0;
 
-  const derogCount = live.filter(l => DEROGATORY_STATUSES.includes(l.account_status)).length;
+  // Utilization averaging window: with a window > 1 cycle the new balance is blended
+  // with the old one, so a pay-down shows up more slowly.
+  const w = Math.max(1, sens.utilWindowMonths);
+  const aggregateUtil = blendUtil == null || w === 1 ? rawUtil : (rawUtil + blendUtil * (w - 1)) / w;
+
+  // A disputed item only gets partial credit until the assumed deletion lag passes.
+  const credit = disputeCredit(sens.disputeLagMonths);
+  const disputedDerogs = st.lines.filter(l => l.disputed && DEROGATORY_STATUSES.includes(l.account_status)).length;
+  const derogCount =
+    live.filter(l => DEROGATORY_STATUSES.includes(l.account_status)).length + disputedDerogs * (1 - credit);
 
   const inquiries12mo =
-    inquiryDatesMonthsAgo.filter(m => m + st.inquiryAgeShiftMonths < 12).length + st.extraInquiries;
+    inquiryDatesMonthsAgo.filter(m => m + st.inquiryAgeShiftMonths < sens.inquiryWindowMonths).length +
+    st.extraInquiries;
+
 
   const now = Date.now();
   const dated = live.filter(l => l.date_opened);
