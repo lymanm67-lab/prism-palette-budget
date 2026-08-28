@@ -216,6 +216,8 @@ const Categories = () => {
     });
   };
 
+  const purposeResolution = usePurposeResolution();
+
   // Filter groups by tab
   const filteredGroups = useMemo(() => {
     if (!groups) return [];
