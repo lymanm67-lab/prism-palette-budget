@@ -265,7 +265,7 @@ export default function TriBureauSimulator({ accounts }: { accounts: CreditAccou
               <h4 className="text-sm font-semibold flex items-center gap-2">
                 <CreditCard className="h-4 w-4 text-muted-foreground" /> Pay down by card
               </h4>
-              {baseCards.map(c => {
+              {baseCards.filter(c => c.balance > 0).map(c => {
                 const paid = paydownFor(c.id);
                 return (
                   <div key={c.id} className="rounded-lg border border-border/40 p-2.5 space-y-1.5">
