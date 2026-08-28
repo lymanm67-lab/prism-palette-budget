@@ -181,6 +181,9 @@ export function useMoneyPurposeSnapshot(monthInput: string, window: AverageWindo
     const planned = emptyTotals();
     const actual = emptyTotals();
     let netIncome = 0;
+    const catNameById = new Map<string, string>(
+      ((categories as any[]) || []).map((c: any) => [c.id, c.name || '']),
+    );
 
     for (const b of ((budgets as any[]) || [])) {
       if (resolution.incomeCategoryIds.has(b.category_id)) continue;
