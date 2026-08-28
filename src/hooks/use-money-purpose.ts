@@ -5,6 +5,7 @@ import { useHousehold } from '@/contexts/HouseholdContext';
 import { useBudgets, useCategories, useCategoryGroups, useTransactionsByDateRange } from '@/hooks/use-finance-data';
 import { classifyMoneyPurpose, consumesTakeHome, type MoneyPurpose } from '@/lib/budgeting/moneyPurpose';
 import { computeBlueprint5010, CORE_KEYS, type BlueprintOutput, type CoreKey } from '@/lib/budgeting/blueprint5010';
+import { projectPhase, type PhaseProjection } from '@/lib/budgeting/phaseProjection';
 
 export interface PurposeResolution {
   byCategory: Map<string, MoneyPurpose | null>;
