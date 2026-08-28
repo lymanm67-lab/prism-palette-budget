@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import {
   Layers, RotateCcw, Plus, X, TrendingUp, TrendingDown, Minus, ShieldQuestion,
-  Home, CreditCard, Search, CheckCircle2, XCircle, FileDown, FileSpreadsheet, Lock,
+  Home, CreditCard, Search, CheckCircle2, XCircle, FileDown, FileSpreadsheet, Lock, Wand2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -19,12 +19,14 @@ import {
   DEROGATORY_STATUSES, loadMortgageFico, DEFAULT_SENSITIVITY,
   type ScenarioAction, type Bureau, type Tradeline, type Sensitivity,
 } from '@/lib/credit/triBureauModel';
-import { buildChecklists, buildGate } from '@/lib/credit/triBureauChecklist';
+import { buildChecklists, buildGate, buildWarnings } from '@/lib/credit/triBureauChecklist';
+import { PRESETS, type PresetId } from '@/lib/credit/triBureauPresets';
 import { buildTimeline } from '@/lib/credit/triBureauTimeline';
 import { buildTriBureauCsv, buildTriBureauSpec, downloadCsv, type ExportPayload } from '@/lib/credit/triBureauExport';
 import { loadRuns, saveRuns, toSavedRun, type SavedRun } from '@/lib/credit/triBureauRuns';
 import { printInfographic } from '@/lib/reports/infographic';
 import TriBureauChecklistPanel from './TriBureauChecklistPanel';
+import TriBureauWarningBanner from './TriBureauWarningBanner';
 import TriBureauSensitivityPanel from './TriBureauSensitivityPanel';
 import TriBureauTimelinePanel from './TriBureauTimelinePanel';
 import TriBureauRunCompare from './TriBureauRunCompare';
@@ -67,6 +69,8 @@ export default function TriBureauSimulator({ accounts }: { accounts: CreditAccou
   const [downPct, setDownPct] = useState('5');
   const [sensitivity, setSensitivity] = useState<Sensitivity>(DEFAULT_SENSITIVITY);
   const [runs, setRuns] = useState<SavedRun[]>(() => loadRuns());
+  const [activePreset, setActivePreset] = useState<PresetId | null>(null);
+  const [presetBudget, setPresetBudget] = useState('2000');
 
   useEffect(() => { saveRuns(runs); }, [runs]);
 
@@ -109,6 +113,7 @@ export default function TriBureauSimulator({ accounts }: { accounts: CreditAccou
     [tradelines, inquiriesByBureau, reportedScores],
   );
   const gate = useMemo(() => buildGate(tradelines, inquiriesByBureau), [tradelines, inquiriesByBureau]);
+  const warnings = useMemo(() => buildWarnings(checklists, gate), [checklists, gate]);
   const cards = useMemo(() => buildCardTable(tradelines, actions), [tradelines, actions]);
   const baseCards = useMemo(() => buildCardTable(tradelines, []), [tradelines]);
 
@@ -136,7 +141,7 @@ export default function TriBureauSimulator({ accounts }: { accounts: CreditAccou
   // ─── action helpers ───
   const add = (a: ScenarioAction) => setActions(p => [...p, a]);
   const remove = (id: string) => setActions(p => p.filter(a => ('id' in a ? a.id : '') !== id));
-  const reset = () => setActions([]);
+  const reset = () => { setActions([]); setActivePreset(null); setSensitivity(DEFAULT_SENSITIVITY); };
 
   const paydownFor = (accountId: string) =>
     actions.filter(a => a.kind === 'paydown' && a.accountId === accountId)
@@ -196,6 +201,7 @@ export default function TriBureauSimulator({ accounts }: { accounts: CreditAccou
     cards,
     timeline,
     checklists,
+    warnings,
     sensitivity,
     actionSummary,
     baseMiddle,
@@ -230,10 +236,30 @@ export default function TriBureauSimulator({ accounts }: { accounts: CreditAccou
     toast.success(`Saved "${label}"`);
   };
 
+  const applyPreset = (id: PresetId) => {
+    const def = PRESETS.find(x => x.id === id);
+    if (!def) return;
+    const res = def.build({
+      tradelines,
+      cards: baseCards,
+      blockedAccountIds: gate.blockedAccountIds,
+      cashBudget: Math.max(0, parseFloat(presetBudget) || 0),
+    });
+    setActions(res.actions);
+    setSensitivity(res.sensitivity);
+    setActivePreset(id);
+    toast.success(`${def.label} applied`, {
+      description: res.notes.join(' ') || `${res.actions.length} action(s) stacked — timeline updated.`,
+    });
+  };
+
   if (accounts.length === 0) return null;
 
   return (
     <div className="space-y-4">
+      {/* ─── Data-quality warnings (also embedded in every export) ─── */}
+      <TriBureauWarningBanner warnings={warnings} />
+
       {/* ─── Three-score panel ─── */}
       <Card className="glass-card">
         <CardHeader>
@@ -351,6 +377,47 @@ export default function TriBureauSimulator({ accounts }: { accounts: CreditAccou
           <CardDescription>Combine pay-downs, disputes and inquiry timing — all three scores update together.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
+          {/* quick presets */}
+          <div className="rounded-lg border border-border/40 bg-muted/20 p-3 space-y-2.5">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <h4 className="text-sm font-semibold flex items-center gap-2">
+                <Wand2 className="h-4 w-4 text-prism-amber" /> Quick scenario presets
+              </h4>
+              <div className="flex items-center gap-1.5">
+                <Label htmlFor="preset-budget" className="text-[11px] text-muted-foreground">Cash budget</Label>
+                <Input
+                  id="preset-budget"
+                  value={presetBudget}
+                  onChange={e => setPresetBudget(e.target.value)}
+                  className="h-7 w-24 text-xs"
+                  inputMode="decimal"
+                />
+              </div>
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              Each preset sets the sensitivity assumptions, stacks matching actions and regenerates the timeline.
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {PRESETS.map(pr => (
+                <Button
+                  key={pr.id}
+                  size="sm"
+                  variant={activePreset === pr.id ? 'default' : 'outline'}
+                  className="gap-1.5 text-xs"
+                  onClick={() => applyPreset(pr.id)}
+                  title={pr.blurb}
+                >
+                  {pr.label}
+                </Button>
+              ))}
+            </div>
+            {activePreset && (
+              <p className="text-[11px] text-muted-foreground border-l-2 border-prism-amber/50 pl-2">
+                {PRESETS.find(p => p.id === activePreset)?.blurb}
+              </p>
+            )}
+          </div>
+
           {/* per-card paydown */}
           {baseCards.some(c => c.balance > 0) && (
             <div className="space-y-2">
