@@ -43,6 +43,8 @@ export interface BlueprintCard {
   status: 'on' | 'watch' | 'off';
   /** true when the shortfall/overage is structurally acceptable (LIVE above target) */
   aboveTargetLabel?: string;
+  /** true when the label reports a positive under-target cushion (ceilings) */
+  underTarget?: boolean;
   /** BUILD WEALTH only: portion already satisfied by payroll withholding */
   fundedByPayroll?: number;
   remainingToTarget?: number;
@@ -131,6 +133,12 @@ export function computeBlueprint5010(input: BlueprintInput): BlueprintOutput {
 
     if (key === 'live' && variance > 0) {
       card.aboveTargetLabel = `Above Target by ${money(variance)}`;
+    }
+    // Ceiling purposes: coming in under target is a win, so present it as a
+    // positive cushion rather than a negative variance.
+    if (key !== 'build_wealth' && variance < 0) {
+      card.aboveTargetLabel = `Under Target by ${money(-variance)}`;
+      card.underTarget = true;
     }
     if (key === 'build_wealth') {
       card.fundedByPayroll = payrollWealth;
