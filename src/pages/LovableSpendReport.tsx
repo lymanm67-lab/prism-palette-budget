@@ -293,10 +293,14 @@ export default function LovableSpendReport() {
           <h1 className="text-2xl font-display font-bold">Lovable AI Services — Spend Report</h1>
           <p className="text-sm text-muted-foreground">Duplicate detection · charge-size patterns · monthly cap tracking</p>
         </div>
-        <Button onClick={runCleanup} disabled={cleaning || confirmedDupes.length === 0} variant={confirmedDupes.length ? 'destructive' : 'outline'} className="gap-2">
-          {cleaning ? <Loader2 className="h-4 w-4 animate-spin" /> : <ScanSearch className="h-4 w-4" />}
-          {confirmedDupes.length ? `Remove ${confirmedDupes.length} confirmed duplicate${confirmedDupes.length === 1 ? '' : 's'}` : 'No confirmed duplicates'}
-        </Button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <PrintInfographicButton buildSpec={buildInfographic} />
+          <Button onClick={runCleanup} disabled={cleaning || confirmedDupes.length === 0} variant={confirmedDupes.length ? 'destructive' : 'outline'} className="gap-2">
+            {cleaning ? <Loader2 className="h-4 w-4 animate-spin" /> : <ScanSearch className="h-4 w-4" />}
+            {confirmedDupes.length ? `Remove ${confirmedDupes.length} confirmed duplicate${confirmedDupes.length === 1 ? '' : 's'}` : 'No confirmed duplicates'}
+          </Button>
+        </div>
+
       </div>
 
       {/* Summary cards */}
