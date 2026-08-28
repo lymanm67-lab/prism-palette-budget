@@ -38,17 +38,11 @@ export default function InfographicPreviewDialog({
       .toISOString()
       .slice(0, 10)}`;
 
+  const [markup, setMarkup] = useState<string | null>(null);
+
   useEffect(() => {
     if (!open) return;
-    const markup = html ?? (spec ? renderInfographic(spec) : null);
-    if (!markup) return;
-    const frame = frameRef.current;
-    if (!frame) return;
-    const doc = frame.contentDocument;
-    if (!doc) return;
-    doc.open();
-    doc.write(markup);
-    doc.close();
+    setMarkup(html ?? (spec ? renderInfographic(spec) : null));
   }, [open, spec, html]);
 
   const captureCanvas = async () => {
@@ -142,6 +136,7 @@ export default function InfographicPreviewDialog({
           <iframe
             ref={frameRef}
             title="Infographic preview"
+            srcDoc={markup ?? ''}
             className="w-full h-[65vh] bg-white"
           />
         </div>
