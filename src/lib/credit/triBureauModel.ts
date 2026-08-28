@@ -50,6 +50,31 @@ export const BUREAU_PROFILE: Record<Bureau, {
 
 export const DEROGATORY_STATUSES = ['Collection', 'Charge-Off', 'Foreclosure', 'Repossession'];
 
+/** User-adjustable modeling assumptions. */
+export interface Sensitivity {
+  /** How many statement cycles of utilization the model averages. 1 = only the new balance. */
+  utilWindowMonths: number;
+  /** How long a hard inquiry is scored for (FICO published window is 12 months). */
+  inquiryWindowMonths: number;
+  /** Months you assume it takes a disputed item to actually delete. */
+  disputeLagMonths: number;
+}
+
+export const DEFAULT_SENSITIVITY: Sensitivity = {
+  utilWindowMonths: 1,
+  inquiryWindowMonths: 12,
+  disputeLagMonths: 2,
+};
+
+/** Fraction of the dispute benefit that is credited at the assumed timing. */
+export function disputeCredit(lagMonths: number): number {
+  if (lagMonths >= 4) return 1;
+  if (lagMonths >= 2) return 0.9;
+  if (lagMonths >= 1) return 0.7;
+  return 0.45;
+}
+
+
 export interface Tradeline {
   id: string;
   bureau: string;
