@@ -132,6 +132,12 @@ export function computeBlueprint5010(input: BlueprintInput): BlueprintOutput {
     if (key === 'live' && variance > 0) {
       card.aboveTargetLabel = `Above Target by ${money(variance)}`;
     }
+    // Ceiling purposes: coming in under target is a win, so present it as a
+    // positive cushion rather than a negative variance.
+    if (key !== 'build_wealth' && variance < 0) {
+      card.aboveTargetLabel = `Under Target by ${money(-variance)}`;
+      card.underTarget = true;
+    }
     if (key === 'build_wealth') {
       card.fundedByPayroll = payrollWealth;
       card.remainingToTarget = Math.max(0, Math.round((targetAmount - actualAmount) * 100) / 100);
