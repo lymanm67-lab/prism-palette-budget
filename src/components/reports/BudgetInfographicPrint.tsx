@@ -157,7 +157,7 @@ export default function BudgetInfographicPrint({ monthLabel, daysInMonth, catego
       .map(
         (s) => `<tr>
           <td style="padding:3px 6px"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${s.color}"></span></td>
-          <td style="padding:3px 6px;font-size:9.5px;color:${NAVY}">${s.label}</td>
+          <td style="padding:2px 5px;font-size:9px;line-height:1.15;color:${NAVY}">${s.label}</td>
           <td style="padding:3px 6px;font-size:9.5px;text-align:right;font-weight:600">${money(s.value)}</td>
           <td style="padding:3px 6px;font-size:9.5px;text-align:right;color:${GREY}">${totalSpent > 0 ? ((s.value / totalSpent) * 100).toFixed(1) : '0.0'}%</td>
         </tr>`
@@ -264,7 +264,7 @@ export default function BudgetInfographicPrint({ monthLabel, daysInMonth, catego
   .th { font-size: 8.5px; font-weight: 800; letter-spacing: 0.04em; color: ${GREY}; text-transform: uppercase; padding: 5px 8px; border-bottom: 1.5px solid #d7dbe3; }
 </style></head>
 <body>
-<div style="max-width:7.8in;margin:0 auto;zoom:0.87">
+<div style="max-width:7.8in;margin:0 auto;zoom:0.78">
 
   <!-- Masthead -->
   <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;border-bottom:2px solid ${NAVY};padding-bottom:8px">
