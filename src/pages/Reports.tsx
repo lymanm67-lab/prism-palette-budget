@@ -340,6 +340,224 @@ const Reports = () => {
     }
   }, [activeTab, startDate, endDate, spendingData, budgetVsActual, monthlyCashflow, netWorthTrend, transactions, topMerchants]);
 
+  // ==================== PRINT INFOGRAPHIC (per active tab) ====================
+  const buildInfographic = useCallback((): InfographicSpec | null => {
+    const money = (n: number) => formatCurrency(n);
+    const totalSpend = (spendingData || []).reduce((s, c) => s + c.value, 0);
+    const savings = incomeVsExpenses.income - incomeVsExpenses.expenses;
+    const savingsPct = incomeVsExpenses.income > 0 ? Math.round((savings / incomeVsExpenses.income) * 100) : 0;
+    const netWorthNow = netWorthTrend.length ? netWorthTrend[netWorthTrend.length - 1].netWorth : 0;
+    const netWorthStart = netWorthTrend.length ? netWorthTrend[0].netWorth : 0;
+
+    const trendPoints = monthlyCashflow.slice(-3).map((m) => ({
+      label: m.month.toUpperCase(),
+      primary: m.income,
+      secondary: m.expenses,
+    }));
+
+    const base: InfographicSpec = {
+      title: 'Financial Report',
+      period: dateLabel,
+      tagline: 'See the numbers. Own the decisions.',
+      glanceTitle: 'At a Glance',
+      glance: [
+        { label: 'Income', value: money(incomeVsExpenses.income), tone: 'green' },
+        { label: 'Spending', value: money(incomeVsExpenses.expenses), tone: 'red' },
+        { label: 'Net', value: money(savings), tone: savings >= 0 ? 'blue' : 'red' },
+      ],
+      kpis: [
+        { title: 'Income', value: money(incomeVsExpenses.income), sub: 'Period total', tone: 'green' },
+        { title: 'Spending', value: money(incomeVsExpenses.expenses), sub: 'Excludes transfers', tone: 'red' },
+        { title: 'Net', value: money(savings), sub: `${savingsPct}% savings rate`, tone: savings >= 0 ? 'blue' : 'red' },
+        { title: 'Net Worth', value: money(netWorthNow), sub: `${netWorthNow - netWorthStart >= 0 ? '+' : '-'}${money(Math.abs(netWorthNow - netWorthStart))} in range`, tone: 'navy' },
+        { title: 'View', value: reportMode === 'combined' ? 'Combined' : 'Personal', sub: 'Report mode', tone: 'purple' },
+      ],
+      commitment: {
+        label: 'MY COMMITMENT:',
+        text: 'Review the numbers monthly and adjust before the month runs me.',
+        steps: ['REVIEW\nTHE DATA', 'FIX\nTHE LEAKS', 'FUND\nTHE GOALS', 'REPEAT\nMONTHLY'],
+      },
+      slogan: 'CLARITY FIRST. COMPOUNDING NEXT.',
+    };
+
+    if (activeTab === 'spending') {
+      return {
+        ...base,
+        title: 'Spending Report',
+        donut: {
+          title: 'Spending by Category',
+          legendHeader: 'Category',
+          totalLabel: 'Total Spent',
+          slices: (spendingData || []).slice(0, 8).map((c) => ({ label: c.name, value: c.value, color: c.color })),
+          footerNote: `${(spendingData || []).length} categories · ${money(totalSpend)} total`,
+        },
+        tables: [
+          {
+            title: 'Top Merchants',
+            tone: 'navy',
+            columns: [{ label: 'Merchant', align: 'left' }, { label: 'Spent' }, { label: 'Charges' }],
+            rows: topMerchants.slice(0, 10).map((m) => [
+              { text: m.name, align: 'left' as const, bold: true },
+              { text: money(m.total), tone: 'red' as const, bold: true },
+              String(m.count),
+            ]),
+            emptyMessage: 'No merchant spending in this range.',
+          },
+          {
+            title: 'Year-to-Date by Category',
+            tone: 'blue',
+            columns: [{ label: 'Category', align: 'left' }, { label: 'YTD' }, { label: '% of Total' }],
+            rows: ytdCategoryTotals.slice(0, 10).map((c) => [
+              { text: c.name, align: 'left' as const, bold: true },
+              money(c.total),
+              ytdGrandTotal > 0 ? `${Math.round((c.total / ytdGrandTotal) * 100)}%` : '0%',
+            ]),
+            totalRow: ['Total YTD', money(ytdGrandTotal), '100%'],
+            emptyMessage: 'No year-to-date spending recorded.',
+          },
+        ],
+        trend: { title: 'Income vs Spending', width: '2.9in', points: trendPoints, primaryLabel: 'Income', secondaryLabel: 'Spending', deltaLabel: 'Net' },
+      };
+    }
+
+    if (activeTab === 'budget') {
+      const over = budgetVsActual.filter((b) => b.actual > b.budget).sort((a, b) => (b.actual - b.budget) - (a.actual - a.budget));
+      const budgeted = budgetVsActual.reduce((s, b) => s + b.budget, 0);
+      const actual = budgetVsActual.reduce((s, b) => s + b.actual, 0);
+      return {
+        ...base,
+        title: 'Budget & Cash Flow',
+        kpis: [
+          { title: 'Budgeted', value: money(budgeted), sub: `${budgetVsActual.length} categories`, tone: 'navy' },
+          { title: 'Actual', value: money(actual), sub: budgeted > 0 ? `${Math.round((actual / budgeted) * 100)}% used` : '—', tone: 'blue' },
+          { title: 'Variance', value: money(budgeted - actual), sub: actual > budgeted ? 'Over budget' : 'Under budget', tone: actual > budgeted ? 'red' : 'green' },
+          { title: 'Over-Budget', value: String(over.length), sub: 'Categories', tone: over.length ? 'orange' : 'green' },
+          { title: 'Net Cash Flow', value: money(savings), sub: `${savingsPct}% savings rate`, tone: savings >= 0 ? 'green' : 'red' },
+        ],
+        donut: {
+          title: 'Where the Budget Went',
+          legendHeader: 'Category',
+          totalLabel: 'Actual Spend',
+          slices: budgetVsActual.filter((b) => b.actual > 0).sort((a, b) => b.actual - a.actual).slice(0, 8).map((b) => ({ label: b.name, value: b.actual })),
+        },
+        tables: [
+          {
+            title: 'Budget vs Actual',
+            tone: 'navy',
+            columns: [{ label: 'Category', align: 'left' }, { label: 'Budget' }, { label: 'Actual' }, { label: 'Variance' }],
+            rows: budgetVsActual.slice(0, 12).map((b) => [
+              { text: b.name, align: 'left' as const, bold: true },
+              money(b.budget),
+              { text: money(b.actual), tone: (b.actual > b.budget ? 'red' : 'navy') as const, bold: true },
+              { text: money(b.budget - b.actual), tone: (b.budget - b.actual < 0 ? 'red' : 'green') as const, bold: true },
+            ]),
+            totalRow: ['Total', money(budgeted), money(actual), money(budgeted - actual)],
+            emptyMessage: 'No budgets set for this month.',
+          },
+          {
+            title: 'Monthly Cash Flow',
+            tone: 'blue',
+            columns: [{ label: 'Month', align: 'left' }, { label: 'Income' }, { label: 'Expenses' }, { label: 'Savings' }],
+            rows: monthlyCashflow.slice(-8).map((m) => [
+              { text: m.month, align: 'left' as const, bold: true },
+              { text: money(m.income), tone: 'green' as const },
+              { text: money(m.expenses), tone: 'red' as const },
+              { text: money(m.savings), tone: (m.savings >= 0 ? 'green' : 'red') as const, bold: true },
+            ]),
+            emptyMessage: 'No cash-flow history in this range.',
+          },
+        ],
+        trend: { title: 'Income vs Spending', width: '2.9in', points: trendPoints, primaryLabel: 'Income', secondaryLabel: 'Spending', deltaLabel: 'Net' },
+      };
+    }
+
+    if (activeTab === 'wealth') {
+      const accountRows = (accounts || [])
+        .slice()
+        .sort((a, b) => Math.abs(b.balance) - Math.abs(a.balance))
+        .slice(0, 12);
+      const assets = (accounts || []).filter((a) => a.balance >= 0).reduce((s, a) => s + a.balance, 0);
+      const liabilities = (accounts || []).filter((a) => a.balance < 0).reduce((s, a) => s + Math.abs(a.balance), 0);
+      return {
+        ...base,
+        title: 'Wealth Report',
+        kpis: [
+          { title: 'Net Worth', value: money(assets - liabilities), sub: 'Assets minus debts', tone: 'navy' },
+          { title: 'Assets', value: money(assets), sub: `${(accounts || []).filter((a) => a.balance >= 0).length} accounts`, tone: 'green' },
+          { title: 'Liabilities', value: money(liabilities), sub: `${(accounts || []).filter((a) => a.balance < 0).length} accounts`, tone: 'red' },
+          { title: 'Change in Range', value: money(netWorthNow - netWorthStart), sub: dateLabel, tone: netWorthNow - netWorthStart >= 0 ? 'green' : 'red' },
+          { title: 'Savings Rate', value: `${savingsPct}%`, sub: money(savings), tone: 'blue' },
+        ],
+        donut: {
+          title: 'Asset Mix',
+          legendHeader: 'Account',
+          totalLabel: 'Total Assets',
+          slices: (accounts || []).filter((a) => a.balance > 0).sort((a, b) => b.balance - a.balance).slice(0, 8).map((a) => ({ label: a.name, value: a.balance })),
+        },
+        tables: [
+          {
+            title: 'Accounts',
+            tone: 'navy',
+            columns: [{ label: 'Account', align: 'left' }, { label: 'Type', align: 'left' }, { label: 'Balance' }],
+            rows: accountRows.map((a) => [
+              { text: a.name, align: 'left' as const, bold: true },
+              { text: String(a.account_type || '—'), align: 'left' as const },
+              { text: money(a.balance), tone: (a.balance < 0 ? 'red' : 'green') as const, bold: true },
+            ]),
+            emptyMessage: 'No accounts connected.',
+          },
+          {
+            title: 'Net Worth Trend',
+            tone: 'blue',
+            columns: [{ label: 'Month', align: 'left' }, { label: 'Net Worth' }],
+            rows: netWorthTrend.slice(-10).map((n) => [
+              { text: n.month, align: 'left' as const, bold: true },
+              money(n.netWorth),
+            ]),
+            emptyMessage: 'Not enough history to plot net worth.',
+          },
+        ],
+        trend: {
+          title: 'Net Worth Momentum',
+          width: '2.9in',
+          points: netWorthTrend.slice(-3).map((n) => ({ label: n.month.toUpperCase(), primary: Math.max(netWorthNow, n.netWorth), secondary: n.netWorth })),
+          primaryLabel: 'Peak',
+          secondaryLabel: 'Net worth',
+          deltaLabel: 'Gap',
+        },
+      };
+    }
+
+    // payroll / investment-growth and any future tab: household summary sheet
+    return {
+      ...base,
+      title: activeTab === 'payroll' ? 'Payroll & Income' : 'Growth Report',
+      donut: {
+        title: 'Spending by Category',
+        legendHeader: 'Category',
+        totalLabel: 'Total Spent',
+        slices: (spendingData || []).slice(0, 8).map((c) => ({ label: c.name, value: c.value, color: c.color })),
+      },
+      tables: [
+        {
+          title: 'Income vs Expenses by Month',
+          tone: 'navy',
+          columns: [{ label: 'Month', align: 'left' }, { label: 'Income' }, { label: 'Expenses' }, { label: 'Net' }],
+          rows: incomeVsExpenses.byMonth.slice(-10).map((m) => [
+            { text: m.month, align: 'left' as const, bold: true },
+            { text: money(m.income), tone: 'green' as const },
+            { text: money(m.expenses), tone: 'red' as const },
+            { text: money(m.income - m.expenses), tone: (m.income - m.expenses >= 0 ? 'green' : 'red') as const, bold: true },
+          ]),
+          totalRow: ['Total', money(incomeVsExpenses.income), money(incomeVsExpenses.expenses), money(incomeVsExpenses.net)],
+          emptyMessage: 'No income or expense history in this range.',
+        },
+      ],
+      trend: { title: 'Income vs Spending', width: '2.9in', points: trendPoints, primaryLabel: 'Income', secondaryLabel: 'Spending', deltaLabel: 'Net' },
+    };
+  }, [activeTab, dateLabel, reportMode, spendingData, budgetVsActual, monthlyCashflow, netWorthTrend, topMerchants, ytdCategoryTotals, ytdGrandTotal, incomeVsExpenses, accounts, formatCurrency]);
+
+
   if (isLoading) return (
     <div className="p-8 space-y-6">
       <div className="h-10 w-full max-w-md bg-muted animate-pulse rounded-lg mb-6" />
