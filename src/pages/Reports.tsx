@@ -392,7 +392,7 @@ const Reports = () => {
           legendHeader: 'Category',
           totalLabel: 'Total Spent',
           slices: (spendingData || []).slice(0, 8).map((c) => ({ label: c.name, value: c.value, color: c.color })),
-          footerNote: `${(spendingData || []).length} categories · ${money(totalSpend)} total`,
+          footerNote: `Top ${Math.min(8, (spendingData || []).length)} of ${(spendingData || []).length} categories · ${money(totalSpend)} total spend`,
         },
         tables: [
           {
