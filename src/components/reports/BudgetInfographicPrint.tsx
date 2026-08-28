@@ -95,7 +95,7 @@ function trendSvg(points: InfographicTrendPoint[]) {
   const h = 150;
   const padL = 46;
   const padB = 34;
-  const max = Math.max(...points.flatMap((p) => [p.budget, p.actual]), 1);
+  const max = Math.max(...points.flatMap((p) => [p.budget, p.actual]), 1) * 1.12;
   const bw = (w - padL - 10) / points.length;
   const scale = (v: number) => (h - padB) * (1 - v / (max * 1.1));
   const gridVals = [0, 0.25, 0.5, 0.75, 1].map((f) => f * max * 1.1);
@@ -264,7 +264,7 @@ export default function BudgetInfographicPrint({ monthLabel, daysInMonth, catego
   .th { font-size: 8.5px; font-weight: 800; letter-spacing: 0.04em; color: ${GREY}; text-transform: uppercase; padding: 5px 8px; border-bottom: 1.5px solid #d7dbe3; }
 </style></head>
 <body>
-<div style="max-width:7.8in;margin:0 auto">
+<div style="max-width:7.8in;margin:0 auto;zoom:0.87">
 
   <!-- Masthead -->
   <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;border-bottom:2px solid ${NAVY};padding-bottom:8px">
