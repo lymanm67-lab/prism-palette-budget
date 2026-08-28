@@ -104,7 +104,8 @@ export function usePayrollElections() {
 
 /** Elections in force for a given YYYY-MM month. */
 export function electionsForMonth(elections: PayrollElection[] | undefined, month: string): PayrollElection[] {
-  const first = `${month}-01`;
+  // Accept `YYYY-MM` or `YYYY-MM-DD`; always compare against the 1st of the month.
+  const first = `${month.slice(0, 7)}-01`;
   return (elections || []).filter(
     (e) => e.effective_start <= first && (!e.effective_end || e.effective_end >= first),
   );
