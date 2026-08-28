@@ -14,11 +14,17 @@ import { renderInfographic, type InfographicSpec } from '@/lib/reports/infograph
  */
 export default function InfographicPreviewDialog({
   spec,
+  html,
+  title,
   open,
   onOpenChange,
   filename,
 }: {
-  spec: InfographicSpec | null;
+  /** Spec-driven infographic (shared engine). */
+  spec?: InfographicSpec | null;
+  /** Pre-rendered standalone HTML document (bespoke infographics). */
+  html?: string | null;
+  title?: string;
   open: boolean;
   onOpenChange: (v: boolean) => void;
   filename?: string;
@@ -28,20 +34,22 @@ export default function InfographicPreviewDialog({
 
   const baseName =
     filename ||
-    `${(spec?.title ?? 'report').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}-${new Date()
+    `${(spec?.title ?? title ?? 'report').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}-${new Date()
       .toISOString()
       .slice(0, 10)}`;
 
   useEffect(() => {
-    if (!open || !spec) return;
+    if (!open) return;
+    const markup = html ?? (spec ? renderInfographic(spec) : null);
+    if (!markup) return;
     const frame = frameRef.current;
     if (!frame) return;
     const doc = frame.contentDocument;
     if (!doc) return;
     doc.open();
-    doc.write(renderInfographic(spec));
+    doc.write(markup);
     doc.close();
-  }, [open, spec]);
+  }, [open, spec, html]);
 
   const captureCanvas = async () => {
     const doc = frameRef.current?.contentDocument;
@@ -108,7 +116,7 @@ export default function InfographicPreviewDialog({
       <DialogContent className="max-w-4xl">
         <DialogHeader>
           <DialogTitle>
-            {spec?.title ?? 'Infographic'}
+            {spec?.title ?? title ?? 'Infographic'}
             {spec?.period ? ` — ${spec.period}` : ''}
           </DialogTitle>
           <DialogDescription>
