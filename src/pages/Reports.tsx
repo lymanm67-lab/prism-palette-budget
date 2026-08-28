@@ -26,6 +26,9 @@ import ReportNarrative from '@/components/ReportNarrative';
 import PayrollReportTab from '@/components/PayrollReportTab';
 import InvestmentGrowthProjector from '@/components/InvestmentGrowthProjector';
 import ReportTabGuide from '@/components/ReportTabGuide';
+import PrintInfographicButton from '@/components/reports/PrintInfographicButton';
+import type { InfographicSpec } from '@/lib/reports/infographic';
+
 const tooltipStyle = { background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))' };
 
 const TREND_COLORS = [
