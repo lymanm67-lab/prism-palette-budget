@@ -11,6 +11,7 @@ import PageOverview from '@/components/PageOverview';
 import AddCreditAccountDialog from '@/components/capital/AddCreditAccountDialog';
 import CreditReportImport from '@/components/capital/CreditReportImport';
 import CreditScoreSimulator from '@/components/capital/CreditScoreSimulator';
+import TriBureauSimulator from '@/components/capital/TriBureauSimulator';
 import AiCreditAnalysis from '@/components/capital/AiCreditAnalysis';
 import SixMonthScorePath from '@/components/capital/SixMonthScorePath';
 import MultiModelScores from '@/components/capital/MultiModelScores';
