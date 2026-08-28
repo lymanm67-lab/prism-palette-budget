@@ -885,6 +885,7 @@ export type Database = {
           group_id: string
           household_id: string
           id: string
+          money_purpose: Database["public"]["Enums"]["money_purpose"] | null
           name: string
           sort_order: number
         }
@@ -896,6 +897,7 @@ export type Database = {
           group_id: string
           household_id: string
           id?: string
+          money_purpose?: Database["public"]["Enums"]["money_purpose"] | null
           name: string
           sort_order?: number
         }
@@ -907,6 +909,7 @@ export type Database = {
           group_id?: string
           household_id?: string
           id?: string
+          money_purpose?: Database["public"]["Enums"]["money_purpose"] | null
           name?: string
           sort_order?: number
         }
@@ -1069,6 +1072,7 @@ export type Database = {
           expense_type: string
           household_id: string
           id: string
+          money_purpose: Database["public"]["Enums"]["money_purpose"] | null
           name: string
           sort_order: number
           target_percent_max: number | null
@@ -1082,6 +1086,7 @@ export type Database = {
           expense_type?: string
           household_id: string
           id?: string
+          money_purpose?: Database["public"]["Enums"]["money_purpose"] | null
           name: string
           sort_order?: number
           target_percent_max?: number | null
@@ -1095,6 +1100,7 @@ export type Database = {
           expense_type?: string
           household_id?: string
           id?: string
+          money_purpose?: Database["public"]["Enums"]["money_purpose"] | null
           name?: string
           sort_order?: number
           target_percent_max?: number | null
@@ -10253,6 +10259,8 @@ export type Database = {
           id: string
           is_transfer: boolean
           merchant: string | null
+          money_purpose: Database["public"]["Enums"]["money_purpose"] | null
+          money_purpose_locked: boolean
           needs_review: boolean
           normalized_merchant: string | null
           notes: string | null
@@ -10273,6 +10281,8 @@ export type Database = {
           id?: string
           is_transfer?: boolean
           merchant?: string | null
+          money_purpose?: Database["public"]["Enums"]["money_purpose"] | null
+          money_purpose_locked?: boolean
           needs_review?: boolean
           normalized_merchant?: string | null
           notes?: string | null
@@ -10293,6 +10303,8 @@ export type Database = {
           id?: string
           is_transfer?: boolean
           merchant?: string | null
+          money_purpose?: Database["public"]["Enums"]["money_purpose"] | null
+          money_purpose_locked?: boolean
           needs_review?: boolean
           normalized_merchant?: string | null
           notes?: string | null
@@ -10804,6 +10816,14 @@ export type Database = {
         | "loan"
         | "other"
       app_role: "founder" | "admin" | "user"
+      money_purpose:
+        | "live"
+        | "enjoy"
+        | "build_wealth"
+        | "eliminate_debt"
+        | "business"
+        | "payroll_deduction"
+        | "employer_contribution"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -10940,6 +10960,15 @@ export const Constants = {
         "other",
       ],
       app_role: ["founder", "admin", "user"],
+      money_purpose: [
+        "live",
+        "enjoy",
+        "build_wealth",
+        "eliminate_debt",
+        "business",
+        "payroll_deduction",
+        "employer_contribution",
+      ],
     },
   },
 } as const
