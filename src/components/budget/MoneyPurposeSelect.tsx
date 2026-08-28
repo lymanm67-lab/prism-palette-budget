@@ -4,13 +4,7 @@ import { useUpdateCategory } from '@/hooks/use-finance-data';
 import { PURPOSE_META, type MoneyPurpose } from '@/lib/budgeting/moneyPurpose';
 import { cn } from '@/lib/utils';
 
-const OPTIONS: MoneyPurpose[] = [
-  'live',
-  'enjoy',
-  'build_wealth',
-  'eliminate_debt',
-  'eliminate_debt',
-];
+const ALL: MoneyPurpose[] = [
 
 const ALL: MoneyPurpose[] = [
   'live',
