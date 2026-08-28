@@ -153,6 +153,15 @@ export default function MoneyBlueprintPanel({ month, expenseStructure }: Props) 
                       ). The difference is cushion you can redirect to Build Wealth or Eliminate Debt.
                     </p>
                   )}
+                  {c.key === 'build_wealth' && (c.remainingToTarget || 0) > 0 && (
+                    <p className="mt-1.5 border-t border-border/50 pt-1.5">
+                      “Gap to Close” is the amount still needed to reach the {c.targetPct}% Build
+                      Wealth floor: target {formatCurrency(c.targetAmount)} minus what’s already
+                      funded ({formatCurrency(c.fundedByPayroll || 0)} via payroll +{' '}
+                      {formatCurrency(c.actualAmount - (c.fundedByPayroll || 0))} from take-home).
+                      Use “Fund the gap” below to close it.
+                    </p>
+                  )}
                 </TooltipContent>
               </Tooltip>
             ))}
