@@ -398,6 +398,9 @@ export default function MoneyBlueprintPanel({ month, expenseStructure }: Props) 
 
       {/* ---------------- Every-dollar audit ---------------- */}
       <ReconciliationDrilldown snap={snap} />
+
+      {/* ---------------- Per-month bucket ledger ---------------- */}
+      <PurposeLedger month={month} netIncome={snap.netIncome} />
     </div>
   );
 }
