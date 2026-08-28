@@ -260,10 +260,23 @@ export default function MonthlyReport() {
             <RefreshCcw className="h-4 w-4 mr-2" />
             Run last month
           </Button>
+          {active && (
+            <BudgetInfographicPrint
+              monthLabel={monthLabel(meta.month ?? selectedMonth)}
+              daysInMonth={(() => {
+                const m = String(meta.month ?? selectedMonth).slice(0, 7);
+                const [y, mo] = m.split('-').map(Number);
+                return new Date(Date.UTC(y, mo, 0)).getUTCDate();
+              })()}
+              categories={byCategory}
+              trend={trendPoints}
+            />
+          )}
           <Button onClick={printPDF} disabled={!active}>
             <Printer className="h-4 w-4 mr-2" />
             Print / Save PDF
           </Button>
+
         </div>
       </div>
 
