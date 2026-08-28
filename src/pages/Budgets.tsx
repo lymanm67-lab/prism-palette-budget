@@ -43,6 +43,7 @@ import { ScoreBreakdownTooltip } from '@/components/cleanup/ScoreBreakdownToolti
 import { useQueryClient } from '@tanstack/react-query';
 import MoneyBlueprintPanel from '@/components/budget/MoneyBlueprintPanel';
 import PayrollElectionsCard from '@/components/budget/PayrollElectionsCard';
+import DebtCashFlowRelease from '@/components/budget/DebtCashFlowRelease';
 
 const getMonth = (offset: number) => {
   const d = new Date();
