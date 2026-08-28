@@ -91,7 +91,7 @@ function donutSvg(slices: { label: string; value: number; color: string }[], tot
 
 function trendSvg(points: InfographicTrendPoint[]) {
   if (!points.length) return '';
-  const w = 275;
+  const w = 240;
   const h = 150;
   const padL = 46;
   const padB = 34;
@@ -222,11 +222,11 @@ export default function BudgetInfographicPrint({ monthLabel, daysInMonth, catego
       .map((p) => {
         const val = buckets[p.key];
         const share = totalSpent > 0 ? (val / totalSpent) * 100 : 0;
-        return `<div style="flex:1;text-align:center;padding:0 6px">
-          <div style="font-size:8.5px;font-weight:800;letter-spacing:0.04em;color:${p.color}">${p.title}</div>
+        return `<div style="flex:1;text-align:center;padding:0 3px;min-width:0">
+          <div style="font-size:7px;font-weight:800;letter-spacing:0.02em;color:${p.color}">${p.title}</div>
           <div style="font-size:17px;font-weight:800;color:${p.color};margin-top:4px">${share.toFixed(1)}%</div>
           <div style="font-size:10px;font-weight:700;color:${BLUE}">${money(val)}</div>
-          <div style="font-size:7.5px;color:${GREY};margin-top:3px">${p.sub}</div>
+          <div style="font-size:6.5px;color:${GREY};margin-top:3px">${p.sub}</div>
         </div>`;
       })
       .join('');
@@ -335,7 +335,7 @@ export default function BudgetInfographicPrint({ monthLabel, daysInMonth, catego
       <div style="display:flex;padding:10px 4px">${purposeCards}</div>
       <div style="background:#f2f6fd;color:${BLUE};font-size:9.5px;font-style:italic;font-weight:700;text-align:center;padding:5px">Smart choices today create financial freedom tomorrow.</div>
     </div>
-    <div class="panel" style="width:2.95in">
+    <div class="panel" style="width:2.6in">
       <div class="panel-head" style="background:${NAVY}">Monthly Trend (3-Month View)</div>
       <div style="padding:6px;text-align:center">
         <div style="font-size:8.5px;margin-bottom:2px"><span style="color:${GREEN};font-weight:700">■ Budgeted</span> &nbsp; <span style="color:${BLUE};font-weight:700">■ Actual</span> &nbsp; <span style="color:${RED};font-weight:700">■ Over / (Under)</span></div>
@@ -343,7 +343,7 @@ export default function BudgetInfographicPrint({ monthLabel, daysInMonth, catego
       </div>
       <div style="background:#f4f6fa;color:${NAVY};font-size:9.5px;font-style:italic;font-weight:700;text-align:center;padding:5px">Staying consistent builds long-term wealth.</div>
     </div>
-    <div class="panel" style="width:2.2in">
+    <div class="panel" style="width:1.85in">
       <div class="panel-head" style="background:${PURPLE}">My Financial Priorities</div>
       <div style="padding:8px 10px">${priorities}</div>
     </div>
