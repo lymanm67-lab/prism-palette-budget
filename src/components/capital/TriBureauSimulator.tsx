@@ -260,7 +260,7 @@ export default function TriBureauSimulator({ accounts }: { accounts: CreditAccou
         </CardHeader>
         <CardContent className="space-y-5">
           {/* per-card paydown */}
-          {baseCards.length > 0 && (
+          {baseCards.some(c => c.balance > 0) && (
             <div className="space-y-2">
               <h4 className="text-sm font-semibold flex items-center gap-2">
                 <CreditCard className="h-4 w-4 text-muted-foreground" /> Pay down by card
