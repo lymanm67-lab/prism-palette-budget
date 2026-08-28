@@ -252,13 +252,9 @@ function scoreFile(
     550 *
       ((derogScore * 0.35 + utilScore * 0.30 + ageScore * 0.15 + mixScore * 0.10 + depthScore * 0.10) / 100);
 
-  let score = raw - worstCardDrag - inquiries12mo * p.inquiryPts;
-
-  // If we have a real reported score for this bureau, anchor the model to it so the
-  // *delta* is what matters, not our absolute level.
-  if (anchor != null) {
-    score = anchor + (score - raw) + (raw - raw); // baseline shift applied by caller
-  }
+  // Absolute level is only a fallback — the caller anchors to the reported score and
+  // applies our modeled delta, which is the number we actually trust.
+  const score = raw - worstCardDrag - inquiries12mo * p.inquiryPts;
 
   return {
     score: Math.max(300, Math.min(850, Math.round(score))),
