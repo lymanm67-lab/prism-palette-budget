@@ -143,6 +143,14 @@ export function computeBlueprint5010(input: BlueprintInput): BlueprintOutput {
     if (key === 'build_wealth') {
       card.fundedByPayroll = payrollWealth;
       card.remainingToTarget = Math.max(0, Math.round((targetAmount - actualAmount) * 100) / 100);
+      // Build Wealth is a floor, not a cap — present any shortfall as a
+      // positive "gap to close" (an action item), never a negative variance.
+      if (card.remainingToTarget > 0) {
+        card.aboveTargetLabel = `Gap to Close ${money(card.remainingToTarget)}`;
+      } else {
+        card.aboveTargetLabel = `Floor Met · ${money(-variance)} above`;
+        card.underTarget = true;
+      }
     }
     return card;
   });
