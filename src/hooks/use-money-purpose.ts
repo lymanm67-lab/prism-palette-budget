@@ -1,27 +1,23 @@
 import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useHousehold } from '@/contexts/HouseholdContext';
 import { useBudgets, useCategories, useCategoryGroups, useTransactionsByDateRange } from '@/hooks/use-finance-data';
-import {
-  classifyMoneyPurpose,
-  consumesTakeHome,
-  type MoneyPurpose,
-} from '@/lib/budgeting/moneyPurpose';
+import { classifyMoneyPurpose, consumesTakeHome, type MoneyPurpose } from '@/lib/budgeting/moneyPurpose';
+import { computeBlueprint5010, CORE_KEYS, type BlueprintOutput, type CoreKey } from '@/lib/budgeting/blueprint5010';
 
 export interface PurposeResolution {
-  /** category id -> resolved purpose (stored override wins over smart mapping) */
   byCategory: Map<string, MoneyPurpose | null>;
-  /** category id -> true when the purpose came from a stored override */
   overridden: Set<string>;
-  /** category ids whose money is business-owned (never personal) */
   businessCategoryIds: Set<string>;
-  /** category ids that are employer-paid contributions (never personal cash) */
   employerCategoryIds: Set<string>;
-  /** category ids that are personal income (the denominator) */
   incomeCategoryIds: Set<string>;
+  payrollCategoryIds: Set<string>;
 }
 
 /**
- * Resolves the Money Purpose of every category: a stored `money_purpose` value
- * (user override) takes precedence, otherwise the smart mapping rules apply.
+ * Resolves the Money Purpose of every category: a stored `money_purpose`
+ * (user override) wins, otherwise the smart mapping rules apply.
  */
 export function usePurposeResolution(): PurposeResolution {
   const { data: categories } = useCategories();
@@ -33,8 +29,9 @@ export function usePurposeResolution(): PurposeResolution {
     const businessCategoryIds = new Set<string>();
     const employerCategoryIds = new Set<string>();
     const incomeCategoryIds = new Set<string>();
+    const payrollCategoryIds = new Set<string>();
 
-    const groupMap = new Map<string, any>((groups as any[] | undefined)?.map((g: any) => [g.id, g]) || []);
+    const groupMap = new Map<string, any>(((groups as any[]) || []).map((g: any) => [g.id, g]));
 
     for (const c of ((categories as any[]) || [])) {
       const g = groupMap.get(c.group_id) || {};
@@ -53,25 +50,70 @@ export function usePurposeResolution(): PurposeResolution {
 
       if (purpose === 'business') businessCategoryIds.add(c.id);
       if (purpose === 'employer_contribution') employerCategoryIds.add(c.id);
+      if ((g.expense_type || '') === 'payroll_deduction') payrollCategoryIds.add(c.id);
       if ((g.expense_type || '') === 'income' && (g.budget_type || 'personal') === 'personal') {
         incomeCategoryIds.add(c.id);
       }
     }
 
-    return { byCategory, overridden, businessCategoryIds, employerCategoryIds, incomeCategoryIds };
+    return {
+      byCategory,
+      overridden,
+      businessCategoryIds,
+      employerCategoryIds,
+      incomeCategoryIds,
+      payrollCategoryIds,
+    };
   }, [categories, groups]);
 }
 
-export interface PurposeTotals {
-  live: number;
-  enjoy: number;
-  build_wealth: number;
-  eliminate_debt: number;
-  /** informational only — excluded from personal ratios */
-  business: number;
-  payroll_deduction: number;
-  employer_contribution: number;
+// ---------------------------------------------------------------------------
+// Payroll elections (effective-dated)
+// ---------------------------------------------------------------------------
+
+export interface PayrollElection {
+  id: string;
+  label: string;
+  owner: string;
+  amount: number;
+  tax_treatment: string;
+  counts_as_wealth: boolean;
+  is_employer: boolean;
+  effective_start: string;
+  effective_end: string | null;
+  notes: string | null;
 }
+
+export function usePayrollElections() {
+  const { household } = useHousehold();
+  return useQuery({
+    queryKey: ['payroll-elections', household?.id],
+    enabled: !!household?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('payroll_elections' as any)
+        .select('*')
+        .eq('household_id', household!.id)
+        .order('effective_start', { ascending: false });
+      if (error) throw error;
+      return (data || []) as unknown as PayrollElection[];
+    },
+  });
+}
+
+/** Elections in force for a given YYYY-MM month. */
+export function electionsForMonth(elections: PayrollElection[] | undefined, month: string): PayrollElection[] {
+  const first = `${month}-01`;
+  return (elections || []).filter(
+    (e) => e.effective_start <= first && (!e.effective_end || e.effective_end >= first),
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Monthly purpose totals
+// ---------------------------------------------------------------------------
+
+export type PurposeTotals = Record<MoneyPurpose, number>;
 
 const emptyTotals = (): PurposeTotals => ({
   live: 0,
@@ -83,40 +125,50 @@ const emptyTotals = (): PurposeTotals => ({
   employer_contribution: 0,
 });
 
-function monthBounds(month: string) {
-  const start = `${month}-01`;
+function monthEnd(month: string) {
   const [y, m] = month.split('-').map(Number);
-  const end = new Date(Date.UTC(y, m, 0)).toISOString().slice(0, 10);
-  return { start, end };
+  return new Date(Date.UTC(y, m, 0)).toISOString().slice(0, 10);
 }
 
-export interface MoneyPurposeMonth {
-  planned: PurposeTotals;
+function addMonths(month: string, delta: number) {
+  const [y, m] = month.split('-').map(Number);
+  const d = new Date(Date.UTC(y, m - 1 + delta, 1));
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
+}
+
+export type AverageWindow = 1 | 3 | 6 | 12;
+
+export interface MoneyPurposeSnapshot {
+  /** actual spend per purpose, averaged across the window */
   actual: PurposeTotals;
-  /** personal take-home received in the month (income categories, transfers excluded) */
+  /** planned amounts for the selected month (not averaged) */
+  planned: PurposeTotals;
+  /** take-home cash received, averaged across the window */
   netIncome: number;
-  /** planned/actual sums that consume take-home cash only */
-  plannedAllocated: number;
-  actualAllocated: number;
-  unallocated: number;
+  /** employee payroll wealth contributions in force for the month */
+  payrollWealth: number;
+  /** employer-paid contributions in force for the month */
+  employerWealth: number;
+  /** payroll taxes/benefits withheld (informational) */
+  payrollDeductions: number;
+  blueprint: BlueprintOutput;
+  monthsCovered: string[];
+  /** true when the month is complete, so imported actuals are authoritative */
+  isCompletedMonth: boolean;
   loading: boolean;
 }
 
 /**
- * Personal 50/10/20/20 totals for a month.
- *
- * Accounting rules enforced here:
- * - business purposes never enter personal totals;
- * - employer contributions never enter personal totals or income;
- * - payroll deductions are tracked separately (they already sit inside net pay),
- *   except wealth-building deductions which are surfaced under BUILD WEALTH;
- * - transfers between owned accounts are ignored.
+ * Personal 50/10/20/20 snapshot. Business purposes and employer contributions
+ * are excluded from every personal ratio.
  */
-export function useMoneyPurposeMonth(month: string): MoneyPurposeMonth {
+export function useMoneyPurposeSnapshot(month: string, window: AverageWindow = 1): MoneyPurposeSnapshot {
   const resolution = usePurposeResolution();
   const { data: budgets, isLoading: bLoading } = useBudgets(month);
-  const { start, end } = monthBounds(month);
-  const { data: txns, isLoading: tLoading } = useTransactionsByDateRange(start, end);
+  const { data: elections, isLoading: eLoading } = usePayrollElections();
+
+  const startMonth = addMonths(month, -(window - 1));
+  const { data: txns, isLoading: tLoading } = useTransactionsByDateRange(`${startMonth}-01`, monthEnd(month));
 
   return useMemo(() => {
     const planned = emptyTotals();
@@ -133,38 +185,70 @@ export function useMoneyPurposeMonth(month: string): MoneyPurposeMonth {
     for (const t of ((txns as any[]) || [])) {
       if (t.deleted_at || t.is_transfer) continue;
       const amount = Number(t.amount) || 0;
-      const catId = t.category_id;
+      const catId = t.category_id as string | null;
 
+      // Income is the denominator, never an allocation.
       if (catId && resolution.incomeCategoryIds.has(catId)) {
         if (amount > 0) netIncome += amount;
         continue;
       }
 
-      const p = (t.money_purpose as MoneyPurpose | null) || (catId ? resolution.byCategory.get(catId) : null);
+      const p = ((t.money_purpose as MoneyPurpose | null) || (catId ? resolution.byCategory.get(catId) : null)) as
+        | MoneyPurpose
+        | null
+        | undefined;
       if (!p) continue;
-      // expenses arrive as negative amounts; refunds (positive) net against the purpose
+
+      // Payroll deduction rows are already inside net pay — never charge them again.
+      if (catId && resolution.payrollCategoryIds.has(catId)) {
+        actual[p === 'build_wealth' ? 'payroll_deduction' : p] += -amount;
+        continue;
+      }
       actual[p] += -amount;
     }
 
-    const plannedAllocated = (['live', 'enjoy', 'build_wealth', 'eliminate_debt'] as const).reduce(
-      (s, k) => s + planned[k],
-      0,
-    );
-    const actualAllocated = (['live', 'enjoy', 'build_wealth', 'eliminate_debt'] as const).reduce(
-      (s, k) => s + actual[k],
-      0,
-    );
+    const divisor = window;
+    for (const k of Object.keys(actual) as MoneyPurpose[]) {
+      actual[k] = Math.round((actual[k] / divisor) * 100) / 100;
+    }
+    netIncome = Math.round((netIncome / divisor) * 100) / 100;
+
+    const active = electionsForMonth(elections, month);
+    const payrollWealth = active
+      .filter((e) => e.counts_as_wealth && !e.is_employer)
+      .reduce((s, e) => s + Number(e.amount || 0), 0);
+    const employerWealth = active.filter((e) => e.is_employer).reduce((s, e) => s + Number(e.amount || 0), 0);
+    const payrollDeductions = active
+      .filter((e) => !e.counts_as_wealth && !e.is_employer)
+      .reduce((s, e) => s + Number(e.amount || 0), 0);
+
+    const core = (src: PurposeTotals): Record<CoreKey, number> =>
+      CORE_KEYS.reduce((acc, k) => ({ ...acc, [k]: src[k] }), {} as Record<CoreKey, number>);
+
+    const blueprint = computeBlueprint5010({
+      netIncome,
+      actual: core(actual),
+      planned: core(planned),
+      payrollWealth,
+      employerWealth,
+    });
+
+    const monthsCovered = Array.from({ length: window }, (_, i) => addMonths(month, -i)).reverse();
+    const isCompletedMonth = monthEnd(month) < new Date().toISOString().slice(0, 10);
 
     return {
-      planned,
       actual,
+      planned,
       netIncome,
-      plannedAllocated,
-      actualAllocated,
-      unallocated: netIncome - actualAllocated,
-      loading: bLoading || tLoading,
+      payrollWealth,
+      employerWealth,
+      payrollDeductions,
+      blueprint,
+      monthsCovered,
+      isCompletedMonth,
+      loading: bLoading || tLoading || eLoading,
     };
-  }, [budgets, txns, resolution, bLoading, tLoading]);
+  }, [budgets, txns, elections, resolution, window, month, bLoading, tLoading, eLoading]);
 }
 
 export { consumesTakeHome };
