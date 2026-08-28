@@ -211,7 +211,7 @@ export default function MonthlyReport() {
   const trendPoints = useMemo(() => {
     const current = String(meta.month ?? selectedMonth ?? '').slice(0, 7);
     if (!current) return [];
-    const months = monthOptions.filter((m) => m <= current).slice(-3);
+    const months = monthOptions.filter((m) => m <= current).sort().slice(-3);
     return months.map((m) => {
       const rep = reportByMonth.get(m);
       const cats: any[] = (rep?.metadata?.by_category || []).filter((c: any) => matchesEntity(c.entity));
