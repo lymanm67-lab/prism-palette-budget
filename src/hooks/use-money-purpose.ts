@@ -253,6 +253,7 @@ export function useMoneyPurposeSnapshot(month: string, window: AverageWindow = 1
       employerWealth,
       payrollDeductions,
       blueprint,
+      phaseProjection,
       monthsCovered,
       isCompletedMonth,
       loading: bLoading || tLoading || eLoading,
