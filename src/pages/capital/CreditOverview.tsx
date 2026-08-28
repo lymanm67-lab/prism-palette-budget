@@ -444,6 +444,9 @@ const CreditOverview = () => {
       {/* Credit Score Simulator */}
       {accounts.length > 0 && <CreditScoreSimulator accounts={accounts} />}
 
+      {/* Tri-Bureau / scenario-stacking / per-card simulator */}
+      {accounts.length > 0 && <TriBureauSimulator accounts={accounts} />}
+
       {/* Accounts Table */}
       <Tabs value={tab} onValueChange={setTab}>
         <div className="flex items-center justify-between flex-wrap gap-2">
