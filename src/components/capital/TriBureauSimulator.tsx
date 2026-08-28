@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -8,16 +8,26 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import {
   Layers, RotateCcw, Plus, X, TrendingUp, TrendingDown, Minus, ShieldQuestion,
-  Home, CreditCard, Search, CheckCircle2, XCircle,
+  Home, CreditCard, Search, CheckCircle2, XCircle, FileDown, FileSpreadsheet, Lock,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import type { CreditAccount } from '@/hooks/use-credit-accounts';
 import { useCreditInquiries } from '@/hooks/use-credit-inquiries';
 import {
   simulateTriBureau, buildCardTable, projectedMiddleScore, BUREAU_PROFILE, BUREAUS,
-  DEROGATORY_STATUSES, loadMortgageFico,
-  type ScenarioAction, type Bureau, type Tradeline,
+  DEROGATORY_STATUSES, loadMortgageFico, DEFAULT_SENSITIVITY,
+  type ScenarioAction, type Bureau, type Tradeline, type Sensitivity,
 } from '@/lib/credit/triBureauModel';
+import { buildChecklists, buildGate } from '@/lib/credit/triBureauChecklist';
+import { buildTimeline } from '@/lib/credit/triBureauTimeline';
+import { buildTriBureauCsv, buildTriBureauSpec, downloadCsv, type ExportPayload } from '@/lib/credit/triBureauExport';
+import { loadRuns, saveRuns, toSavedRun, type SavedRun } from '@/lib/credit/triBureauRuns';
+import { printInfographic } from '@/lib/reports/infographic';
+import TriBureauChecklistPanel from './TriBureauChecklistPanel';
+import TriBureauSensitivityPanel from './TriBureauSensitivityPanel';
+import TriBureauTimelinePanel from './TriBureauTimelinePanel';
+import TriBureauRunCompare from './TriBureauRunCompare';
 import { eligiblePrograms } from '@/lib/home-buying/mortgage-fico';
 import { useFinancialProfile, profileNumbers } from '@/hooks/use-financial-profile';
 import { calcMortgage, estimateRateForFico } from '@/lib/home-buying/mortgage-math';
@@ -36,6 +46,18 @@ const bandColor: Record<string, string> = {
 let seq = 0;
 const nextId = () => `act-${++seq}`;
 
+function actionLabel(a: ScenarioAction, nameOf: (id: string) => string): string {
+  const name = 'accountId' in a ? nameOf((a as any).accountId) : '';
+  switch (a.kind) {
+    case 'paydown': return `Pay down ${fmt((a as any).amount)} on ${name}`;
+    case 'dispute': return `Remove negative on ${name}`;
+    case 'limitIncrease': return `+${fmt((a as any).amount)} limit on ${name}`;
+    case 'ageInquiries': return `Wait ${(a as any).months} months before applying`;
+    case 'newInquiry': return `Take ${(a as any).count} new hard inquiries`;
+    default: return `Add ${fmt((a as any).limit)} of new credit limit`;
+  }
+}
+
 export default function TriBureauSimulator({ accounts }: { accounts: CreditAccount[] }) {
   const { inquiries } = useCreditInquiries() as any;
   const { profile } = useFinancialProfile();
@@ -43,6 +65,10 @@ export default function TriBureauSimulator({ accounts }: { accounts: CreditAccou
   const [newCardLimit, setNewCardLimit] = useState('');
   const [homePrice, setHomePrice] = useState('185000');
   const [downPct, setDownPct] = useState('5');
+  const [sensitivity, setSensitivity] = useState<Sensitivity>(DEFAULT_SENSITIVITY);
+  const [runs, setRuns] = useState<SavedRun[]>(() => loadRuns());
+
+  useEffect(() => { saveRuns(runs); }, [runs]);
 
   const tradelines = useMemo<Tradeline[]>(
     () =>
@@ -74,9 +100,15 @@ export default function TriBureauSimulator({ accounts }: { accounts: CreditAccou
   const reportedScores = useMemo(() => loadMortgageFico(), []);
 
   const estimates = useMemo(
-    () => simulateTriBureau({ tradelines, inquiriesByBureau, actions, reportedScores }),
-    [tradelines, inquiriesByBureau, actions, reportedScores],
+    () => simulateTriBureau({ tradelines, inquiriesByBureau, actions, reportedScores, sensitivity }),
+    [tradelines, inquiriesByBureau, actions, reportedScores, sensitivity],
   );
+
+  const checklists = useMemo(
+    () => buildChecklists(tradelines, inquiriesByBureau, reportedScores),
+    [tradelines, inquiriesByBureau, reportedScores],
+  );
+  const gate = useMemo(() => buildGate(tradelines, inquiriesByBureau), [tradelines, inquiriesByBureau]);
   const cards = useMemo(() => buildCardTable(tradelines, actions), [tradelines, actions]);
   const baseCards = useMemo(() => buildCardTable(tradelines, []), [tradelines]);
 
@@ -87,6 +119,17 @@ export default function TriBureauSimulator({ accounts }: { accounts: CreditAccou
     return vals.length === 3 ? vals[1] : vals[0] ?? null;
   }, [estimates]);
   const simMiddle = projectedMiddleScore(estimates);
+
+  const nameOf = useCallback(
+    (id: string) => tradelines.find(t => t.id === id)?.account_name ?? 'Account',
+    [tradelines],
+  );
+  const actionSummary = useMemo(() => actions.map(a => actionLabel(a, nameOf)), [actions, nameOf]);
+
+  const timeline = useMemo(
+    () => buildTimeline({ actions, tradelines, sensitivity, baseMiddle, simMiddle }),
+    [actions, tradelines, sensitivity, baseMiddle, simMiddle],
+  );
 
   const derogs = tradelines.filter(t => DEROGATORY_STATUSES.includes(t.account_status));
 
@@ -145,6 +188,46 @@ export default function TriBureauSimulator({ accounts }: { accounts: CreditAccou
   const backEndSim = nums.totalIncome > 0 && pitiSim ? ((nums.debts + pitiSim.monthlyPITI) / nums.totalIncome) * 100 : 0;
   const frontEndSim = nums.totalIncome > 0 && pitiSim ? (pitiSim.monthlyPITI / nums.totalIncome) * 100 : 0;
   const ltv = 100 - dp;
+  const programs = eligiblePrograms(simMiddle ?? 0);
+
+  const payload = (): ExportPayload => ({
+    estimates,
+    cards,
+    timeline,
+    checklists,
+    sensitivity,
+    actionSummary,
+    baseMiddle,
+    simMiddle,
+    programs,
+    lender: {
+      price, downPct: dp, rateNow, rateSim,
+      pitiNow: pitiNow?.monthlyPITI ?? null,
+      pitiSim: pitiSim?.monthlyPITI ?? null,
+      frontEnd: frontEndSim, backEndNow, backEndSim, ltv,
+    },
+  });
+
+  const exportCsv = () => {
+    downloadCsv(buildTriBureauCsv(payload()), `tri-bureau-simulator-${new Date().toISOString().slice(0, 10)}`);
+    toast.success('CSV exported');
+  };
+
+  const exportPdf = () => {
+    if (!printInfographic(buildTriBureauSpec(payload()))) {
+      toast.error('Allow pop-ups for this site to print or save the PDF');
+      return;
+    }
+    toast.success('Print dialog opened — choose "Save as PDF"');
+  };
+
+  const saveRun = (label: string) => {
+    setRuns(p => [
+      toSavedRun({ label, actions, sensitivity, estimates, baseMiddle, simMiddle, programs, actionSummary }),
+      ...p,
+    ]);
+    toast.success(`Saved "${label}"`);
+  };
 
   if (accounts.length === 0) return null;
 
@@ -164,11 +247,19 @@ export default function TriBureauSimulator({ accounts }: { accounts: CreditAccou
                 lenders pull from that bureau.
               </CardDescription>
             </div>
-            {actions.length > 0 && (
-              <Button variant="outline" size="sm" onClick={reset} className="gap-1.5">
-                <RotateCcw className="h-3.5 w-3.5" /> Clear scenario
+            <div className="flex flex-wrap gap-1.5">
+              <Button variant="outline" size="sm" onClick={exportPdf} className="gap-1.5">
+                <FileDown className="h-3.5 w-3.5" /> Export PDF
               </Button>
-            )}
+              <Button variant="outline" size="sm" onClick={exportCsv} className="gap-1.5">
+                <FileSpreadsheet className="h-3.5 w-3.5" /> Export CSV
+              </Button>
+              {actions.length > 0 && (
+                <Button variant="outline" size="sm" onClick={reset} className="gap-1.5">
+                  <RotateCcw className="h-3.5 w-3.5" /> Clear scenario
+                </Button>
+              )}
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -239,7 +330,7 @@ export default function TriBureauSimulator({ accounts }: { accounts: CreditAccou
               </p>
             </div>
             <div className="flex flex-wrap gap-1.5">
-              {eligiblePrograms(simMiddle ?? 0).map(pr => (
+              {programs.map(pr => (
                 <Badge key={pr.program} variant={pr.ok ? 'default' : 'outline'} className="text-[10px] gap-1">
                   {pr.ok ? <CheckCircle2 className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
                   {pr.program}
@@ -267,6 +358,7 @@ export default function TriBureauSimulator({ accounts }: { accounts: CreditAccou
               </h4>
               {baseCards.filter(c => c.balance > 0).map(c => {
                 const paid = paydownFor(c.id);
+                const blocked = gate.blockedAccountIds.has(c.id);
                 return (
                   <div key={c.id} className="rounded-lg border border-border/40 p-2.5 space-y-1.5">
                     <div className="flex items-center justify-between gap-2 text-sm">
@@ -275,19 +367,26 @@ export default function TriBureauSimulator({ accounts }: { accounts: CreditAccou
                         {fmt(c.balance)} / {fmt(c.limit)}
                       </span>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <Slider
-                        min={0}
-                        max={Math.max(1, Math.round(c.balance))}
-                        step={Math.max(1, Math.round(c.balance / 50))}
-                        value={[paid]}
-                        onValueChange={([v]) => setPaydown(c.id, v)}
-                        className="flex-1"
-                      />
-                      <span className="text-xs font-mono w-24 text-right shrink-0">
-                        pay {fmt(paid)}
-                      </span>
-                    </div>
+                    {blocked ? (
+                      <p className="flex items-start gap-1.5 text-[11px] text-prism-rose">
+                        <Lock className="h-3 w-3 shrink-0 mt-[1px]" />
+                        {gate.blockReasons[c.id]}
+                      </p>
+                    ) : (
+                      <div className="flex items-center gap-3">
+                        <Slider
+                          min={0}
+                          max={Math.max(1, Math.round(c.balance))}
+                          step={Math.max(1, Math.round(c.balance / 50))}
+                          value={[paid]}
+                          onValueChange={([v]) => setPaydown(c.id, v)}
+                          className="flex-1"
+                        />
+                        <span className="text-xs font-mono w-24 text-right shrink-0">
+                          pay {fmt(paid)}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -322,10 +421,14 @@ export default function TriBureauSimulator({ accounts }: { accounts: CreditAccou
                 <Search className="h-3.5 w-3.5" /> Wait before applying (months)
               </Label>
               <div className="flex items-center gap-3">
-                <Slider min={0} max={24} step={1} value={[inquiryWait?.months ?? 0]} onValueChange={([v]) => setInquiryWait(v)} className="flex-1" />
+                <Slider min={0} max={24} step={1} value={[inquiryWait?.months ?? 0]} onValueChange={([v]) => setInquiryWait(v)} disabled={inquiryBlocked} className="flex-1" />
                 <span className="text-sm font-mono w-10 text-right">{inquiryWait?.months ?? 0}</span>
               </div>
-              <p className="text-[11px] text-muted-foreground">Ages existing hard inquiries out of the 12-month window.</p>
+              <p className={cn('text-[11px]', inquiryBlocked ? 'text-prism-rose' : 'text-muted-foreground')}>
+                {inquiryBlocked
+                  ? gate.blockedKinds.find(b => b.kind === 'ageInquiries')?.reason
+                  : `Ages existing hard inquiries out of the ${sensitivity.inquiryWindowMonths}-month window.`}
+              </p>
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs">New hard inquiries you plan to take</Label>
@@ -366,16 +469,7 @@ export default function TriBureauSimulator({ accounts }: { accounts: CreditAccou
             <div className="rounded-lg border border-border/40 bg-muted/20 p-3 space-y-1.5">
               <p className="text-xs font-semibold">Scenario stack ({actions.length})</p>
               {actions.map(a => {
-                const name = 'accountId' in a
-                  ? tradelines.find(t => t.id === (a as any).accountId)?.account_name ?? 'Account'
-                  : '';
-                const label =
-                  a.kind === 'paydown' ? `Pay down ${fmt((a as any).amount)} on ${name}`
-                  : a.kind === 'dispute' ? `Remove negative on ${name}`
-                  : a.kind === 'limitIncrease' ? `+${fmt((a as any).amount)} limit on ${name}`
-                  : a.kind === 'ageInquiries' ? `Wait ${(a as any).months} months before applying`
-                  : a.kind === 'newInquiry' ? `Take ${(a as any).count} new hard inquiries`
-                  : `Add ${fmt((a as any).limit)} of new credit limit`;
+                const label = actionLabel(a, nameOf);
                 return (
                   <div key={a.id} className="flex items-center justify-between gap-2 text-xs">
                     <span className="text-muted-foreground truncate">{label}</span>
@@ -389,6 +483,18 @@ export default function TriBureauSimulator({ accounts }: { accounts: CreditAccou
           )}
         </CardContent>
       </Card>
+
+      {/* ─── Timeline ─── */}
+      <TriBureauTimelinePanel steps={timeline} />
+
+      {/* ─── Saved runs & comparison ─── */}
+      <TriBureauRunCompare runs={runs} onSave={saveRun} onDelete={id => setRuns(p => p.filter(r => r.id !== id))} canSave={actions.length > 0} />
+
+      {/* ─── Sensitivity ─── */}
+      <TriBureauSensitivityPanel value={sensitivity} onChange={setSensitivity} />
+
+      {/* ─── Missing-data checklist ─── */}
+      <TriBureauChecklistPanel checklists={checklists} gate={gate} />
 
       {/* ─── Utilization by card ─── */}
       {cards.length > 0 && (
@@ -553,7 +659,7 @@ export default function TriBureauSimulator({ accounts }: { accounts: CreditAccou
               <li>• Factor weights: derogatory marks 35%, utilization 30%, credit age 15%, mix 10%, file depth 10%.</li>
               <li>• Per-bureau sensitivity differs because each bureau is scored under a different model
                 ({BUREAUS.map(b => `${b} = ${BUREAU_PROFILE[b].mortgageModel}`).join(', ')}).</li>
-              <li>• Hard inquiries cost 3–5 pts each and only count for 12 months.</li>
+              <li>• Hard inquiries cost 3–5 pts each and only count for {sensitivity.inquiryWindowMonths} months (your sensitivity setting).</li>
               <li>• A single card above 75% utilization applies an extra 8–12 pt drag regardless of aggregate.</li>
               <li>• Dispute simulations assume the item is fully deleted, not just marked "disputed" — partial outcomes score lower.</li>
               <li>• Nothing here models payment-history recency beyond derogatory status, so a recent 30-day late may not be fully captured.</li>

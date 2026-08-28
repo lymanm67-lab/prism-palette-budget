@@ -143,7 +143,7 @@ export default function TriBureauRunCompare({
                   <tr className="border-b border-border/30">
                     <td className="py-1.5 pr-3 text-muted-foreground">Aggregate utilization</td>
                     {compare.map(r => {
-                      const avg = r.bureaus.filter(b => b.tradelineCountable !== false);
+                      const avg = r.bureaus.filter(b => b.projected != null);
                       const now = avg.length ? avg.reduce((s, b) => s + b.aggregateUtil, 0) / avg.length : 0;
                       const sim = avg.length ? avg.reduce((s, b) => s + b.simAggregateUtil, 0) / avg.length : 0;
                       return (
