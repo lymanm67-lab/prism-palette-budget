@@ -31,7 +31,7 @@ function computeAlerts(snap: MoneyPurposeSnapshot, threshold: number): DriftAler
             key: 'live',
             driftPts: drift,
             message: `LIVE is ${drift.toFixed(1)} pts above target — audit necessities before treating this as overspending; look for expense optimization, not lifestyle cuts to force a number.`,
-            action: { label: 'Review LIVE Categories', href: '/budgets/categories' },
+            action: { label: 'Review LIVE Categories', href: '/budgets' },
           });
         }
         break;
@@ -41,7 +41,7 @@ function computeAlerts(snap: MoneyPurposeSnapshot, threshold: number): DriftAler
             key: 'enjoy',
             driftPts: drift,
             message: `ENJOY exceeded its ceiling by ${drift.toFixed(1)} pts — redirect the excess back to ${debtActive ? 'debt' : 'wealth'}.`,
-            action: { label: debtActive ? 'Apply to Debt' : 'Invest It', href: debtActive ? '/debt' : '/planning/investments' },
+            action: { label: debtActive ? 'Apply to Debt' : 'Invest It', href: debtActive ? '/debt-payoff' : '/planning/investments' },
           });
         }
         break;
@@ -61,7 +61,7 @@ function computeAlerts(snap: MoneyPurposeSnapshot, threshold: number): DriftAler
             key: 'eliminate_debt',
             driftPts: -drift,
             message: `ELIMINATE DEBT is ${(-drift).toFixed(1)} pts below target — move idle cash to the highest-priority debt.`,
-            action: { label: 'Apply to Debt', href: '/debt' },
+            action: { label: 'Apply to Debt', href: '/debt-payoff' },
           });
         }
         break;

@@ -5,6 +5,7 @@ import { useHousehold } from '@/contexts/HouseholdContext';
 import { useBudgets, useCategories, useCategoryGroups, useTransactionsByDateRange } from '@/hooks/use-finance-data';
 import { classifyMoneyPurpose, consumesTakeHome, type MoneyPurpose } from '@/lib/budgeting/moneyPurpose';
 import { computeBlueprint5010, CORE_KEYS, type BlueprintOutput, type CoreKey } from '@/lib/budgeting/blueprint5010';
+import { projectPhase, type PhaseProjection } from '@/lib/budgeting/phaseProjection';
 
 export interface PurposeResolution {
   byCategory: Map<string, MoneyPurpose | null>;
@@ -152,6 +153,8 @@ export interface MoneyPurposeSnapshot {
   /** payroll taxes/benefits withheld (informational) */
   payrollDeductions: number;
   blueprint: BlueprintOutput;
+  /** automatic target-phase switching detail */
+  phaseProjection: PhaseProjection;
   monthsCovered: string[];
   /** true when the month is complete, so imported actuals are authoritative */
   isCompletedMonth: boolean;
@@ -225,12 +228,18 @@ export function useMoneyPurposeSnapshot(month: string, window: AverageWindow = 1
     const core = (src: PurposeTotals): Record<CoreKey, number> =>
       CORE_KEYS.reduce((acc, k) => ({ ...acc, [k]: src[k] }), {} as Record<CoreKey, number>);
 
+    const phaseProjection = projectPhase(month, {
+      debtActual: actual.eliminate_debt,
+      netIncome,
+    });
+
     const blueprint = computeBlueprint5010({
       netIncome,
       actual: core(actual),
       planned: core(planned),
       payrollWealth,
       employerWealth,
+      phase: phaseProjection.phase,
     });
 
     const monthsCovered = Array.from({ length: window }, (_, i) => addMonths(month, -i)).reverse();
@@ -244,6 +253,7 @@ export function useMoneyPurposeSnapshot(month: string, window: AverageWindow = 1
       employerWealth,
       payrollDeductions,
       blueprint,
+      phaseProjection,
       monthsCovered,
       isCompletedMonth,
       loading: bLoading || tLoading || eLoading,
