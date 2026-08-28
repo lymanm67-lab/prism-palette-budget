@@ -14,7 +14,7 @@ import PageOverview from '@/components/PageOverview';
 import { clusterDuplicates, confirmedDuplicateIds } from '@/lib/duplicate-detector';
 import { ScoreBreakdownTooltip } from '@/components/cleanup/ScoreBreakdownTooltip';
 import PrintInfographicButton from '@/components/reports/PrintInfographicButton';
-import type { InfographicSpec } from '@/lib/reports/infographic';
+import type { InfographicSpec, Tone } from '@/lib/reports/infographic';
 
 
 const MONTHLY_CAP = 400; // Matches the Money Leaks entry cap for Lovable/AI services
