@@ -165,9 +165,11 @@ export interface MoneyPurposeSnapshot {
  * Personal 50/10/20/20 snapshot. Business purposes and employer contributions
  * are excluded from every personal ratio.
  */
-export function useMoneyPurposeSnapshot(month: string, window: AverageWindow = 1): MoneyPurposeSnapshot {
+export function useMoneyPurposeSnapshot(monthInput: string, window: AverageWindow = 1): MoneyPurposeSnapshot {
+  // Callers may pass either `YYYY-MM` or a full `YYYY-MM-01` budget month key.
+  const month = monthInput.slice(0, 7);
   const resolution = usePurposeResolution();
-  const { data: budgets, isLoading: bLoading } = useBudgets(month);
+  const { data: budgets, isLoading: bLoading } = useBudgets(`${month}-01`);
   const { data: elections, isLoading: eLoading } = usePayrollElections();
 
   const startMonth = addMonths(month, -(window - 1));
