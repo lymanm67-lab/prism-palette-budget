@@ -50,6 +50,31 @@ export const BUREAU_PROFILE: Record<Bureau, {
 
 export const DEROGATORY_STATUSES = ['Collection', 'Charge-Off', 'Foreclosure', 'Repossession'];
 
+/** User-adjustable modeling assumptions. */
+export interface Sensitivity {
+  /** How many statement cycles of utilization the model averages. 1 = only the new balance. */
+  utilWindowMonths: number;
+  /** How long a hard inquiry is scored for (FICO published window is 12 months). */
+  inquiryWindowMonths: number;
+  /** Months you assume it takes a disputed item to actually delete. */
+  disputeLagMonths: number;
+}
+
+export const DEFAULT_SENSITIVITY: Sensitivity = {
+  utilWindowMonths: 1,
+  inquiryWindowMonths: 12,
+  disputeLagMonths: 2,
+};
+
+/** Fraction of the dispute benefit that is credited at the assumed timing. */
+export function disputeCredit(lagMonths: number): number {
+  if (lagMonths >= 4) return 1;
+  if (lagMonths >= 2) return 0.9;
+  if (lagMonths >= 1) return 0.7;
+  return 0.45;
+}
+
+
 export interface Tradeline {
   id: string;
   bureau: string;
@@ -205,7 +230,9 @@ function scoreFile(
   bureau: Bureau,
   st: AppliedState,
   inquiryDatesMonthsAgo: number[],
-  anchor: number | null,
+  sens: Sensitivity,
+  /** Base (pre-scenario) aggregate utilization, used for multi-cycle averaging. */
+  blendUtil: number | null,
 ): ScoreParts {
   const p = BUREAU_PROFILE[bureau];
   const live = st.lines.filter(l => !l.disputed);
@@ -213,12 +240,23 @@ function scoreFile(
   const revolving = live.filter(l => l.simLimit > 0);
   const totalBal = revolving.reduce((s, l) => s + l.simBalance, 0);
   const totalLimit = revolving.reduce((s, l) => s + l.simLimit, 0) + st.syntheticLimit;
-  const aggregateUtil = totalLimit > 0 ? (totalBal / totalLimit) * 100 : 0;
+  const rawUtil = totalLimit > 0 ? (totalBal / totalLimit) * 100 : 0;
 
-  const derogCount = live.filter(l => DEROGATORY_STATUSES.includes(l.account_status)).length;
+  // Utilization averaging window: with a window > 1 cycle the new balance is blended
+  // with the old one, so a pay-down shows up more slowly.
+  const w = Math.max(1, sens.utilWindowMonths);
+  const aggregateUtil = blendUtil == null || w === 1 ? rawUtil : (rawUtil + blendUtil * (w - 1)) / w;
+
+  // A disputed item only gets partial credit until the assumed deletion lag passes.
+  const credit = disputeCredit(sens.disputeLagMonths);
+  const disputedDerogs = st.lines.filter(l => l.disputed && DEROGATORY_STATUSES.includes(l.account_status)).length;
+  const derogCount =
+    live.filter(l => DEROGATORY_STATUSES.includes(l.account_status)).length + disputedDerogs * (1 - credit);
 
   const inquiries12mo =
-    inquiryDatesMonthsAgo.filter(m => m + st.inquiryAgeShiftMonths < 12).length + st.extraInquiries;
+    inquiryDatesMonthsAgo.filter(m => m + st.inquiryAgeShiftMonths < sens.inquiryWindowMonths).length +
+    st.extraInquiries;
+
 
   const now = Date.now();
   const dated = live.filter(l => l.date_opened);
@@ -236,7 +274,14 @@ function scoreFile(
     : 0;
   const worstCardDrag = worstCardUtil >= 90 ? 12 : worstCardUtil >= 75 ? 8 : worstCardUtil >= 50 ? 4 : 0;
 
-  const derogRaw = derogCount === 0 ? 100 : derogCount === 1 ? 52 : derogCount <= 3 ? 30 : 12;
+  // Interpolated so a partially-credited dispute moves the score proportionally.
+  const derogAnchors = [100, 52, 30, 12];
+  const dcClamped = Math.max(0, Math.min(3, derogCount));
+  const lo = Math.floor(dcClamped);
+  const hi = Math.min(3, lo + 1);
+  const derogRaw =
+    derogCount >= 3 ? 12 : derogAnchors[lo] + (derogAnchors[hi] - derogAnchors[lo]) * (dcClamped - lo);
+
   const derogScore = Math.max(0, 100 - (100 - derogRaw) * p.derogWeight);
 
   const ageScore = avgAgeMonths >= 96 ? 100 : avgAgeMonths >= 60 ? 82 : avgAgeMonths >= 36 ? 62 : avgAgeMonths >= 18 ? 42 : 24;
@@ -279,11 +324,14 @@ export interface SimulateInput {
   actions: ScenarioAction[];
   /** Reported per-bureau scores (from myFICO / report import) used as anchors. */
   reportedScores?: MortgageFico;
+  /** User-adjustable modeling assumptions. */
+  sensitivity?: Sensitivity;
 }
 
 /** Run the model for all three bureaus. */
 export function simulateTriBureau(input: SimulateInput): BureauEstimate[] {
   const { tradelines, inquiriesByBureau, actions, reportedScores } = input;
+  const sens = { ...DEFAULT_SENSITIVITY, ...(input.sensitivity || {}) };
 
   return BUREAUS.map<BureauEstimate>(bureau => {
     const lines = tradelines.filter(t => t.bureau === bureau);
@@ -302,8 +350,8 @@ export function simulateTriBureau(input: SimulateInput): BureauEstimate[] {
         tradelineCount: 0,
         derogCount: 0,
         simDerogCount: 0,
-        inquiries12mo: inq.filter(m => m < 12).length,
-        simInquiries12mo: inq.filter(m => m < 12).length,
+        inquiries12mo: inq.filter(m => m < sens.inquiryWindowMonths).length,
+        simInquiries12mo: inq.filter(m => m < sens.inquiryWindowMonths).length,
         avgAgeMonths: 0,
         dataInputs: [
           { label: 'Tradelines on file', present: false },
@@ -318,8 +366,8 @@ export function simulateTriBureau(input: SimulateInput): BureauEstimate[] {
     const baseState = applyActions(lines, []);
     const simState = applyActions(lines, actions);
 
-    const baseParts = scoreFile(bureau, baseState, inq, null);
-    const simParts = scoreFile(bureau, simState, inq, null);
+    const baseParts = scoreFile(bureau, baseState, inq, sens, null);
+    const simParts = scoreFile(bureau, simState, inq, sens, baseParts.aggregateUtil);
     const rawDelta = simParts.score - baseParts.score;
 
     // Thin-file damping: with 1–2 tradelines a single change swings the model wildly.
@@ -351,8 +399,8 @@ export function simulateTriBureau(input: SimulateInput): BureauEstimate[] {
       aggregateUtil: baseParts.aggregateUtil,
       simAggregateUtil: simParts.aggregateUtil,
       tradelineCount: lines.length,
-      derogCount: baseParts.derogCount,
-      simDerogCount: simParts.derogCount,
+      derogCount: Math.round(baseParts.derogCount),
+      simDerogCount: Math.round(simParts.derogCount * 10) / 10,
       inquiries12mo: baseParts.inquiries12mo,
       simInquiries12mo: simParts.inquiries12mo,
       avgAgeMonths: baseParts.avgAgeMonths,
