@@ -1791,6 +1791,16 @@ const Budgets = () => {
         ]}
       />
 
+      {/* 50/10/20/20 Money Blueprint (personal money only) */}
+      <MoneyBlueprintPanel month={month} expenseStructure={sectionTotals as any} />
+
+      <PayrollElectionsCard
+        month={month}
+        isCompletedMonth={new Date(`${month}-01T00:00:00Z`) < new Date(new Date().toISOString().slice(0, 8) + '01T00:00:00Z')}
+      />
+
+
+
       {/* Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <Card className="border-l-4 border-l-emerald-500">
