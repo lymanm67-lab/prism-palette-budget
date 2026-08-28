@@ -110,10 +110,12 @@ export function computeBlueprint5010(input: BlueprintInput): BlueprintOutput {
     const targetPct = targets[key];
     const targetAmount = Math.round(net * (targetPct / 100) * 100) / 100;
 
-    // Build Wealth counts payroll withholding toward the target without
-    // re-charging it against deposited net pay.
+    // Build Wealth is measured on a combined basis: payroll withholding plus
+    // the employer contribution both count toward the floor, without
+    // re-charging them against deposited net pay.
     const fromTakeHome = input.actual[key];
-    const actualAmount = key === 'build_wealth' ? fromTakeHome + payrollWealth : fromTakeHome;
+    const actualAmount =
+      key === 'build_wealth' ? fromTakeHome + payrollWealth + employerWealth : fromTakeHome;
     const actualPct = pct(actualAmount, net);
     const variance = Math.round((actualAmount - targetAmount) * 100) / 100;
 
