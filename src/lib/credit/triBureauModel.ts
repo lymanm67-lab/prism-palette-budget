@@ -320,7 +320,12 @@ export function simulateTriBureau(input: SimulateInput): BureauEstimate[] {
 
     const baseParts = scoreFile(bureau, baseState, inq, null);
     const simParts = scoreFile(bureau, simState, inq, null);
-    const modelDelta = simParts.score - baseParts.score;
+    const rawDelta = simParts.score - baseParts.score;
+
+    // Thin-file damping: with 1–2 tradelines a single change swings the model wildly.
+    // Real scores don't move that far in one step, so cap the reportable delta.
+    const deltaCap = lines.length >= 6 ? 140 : lines.length >= 4 ? 110 : lines.length >= 2 ? 85 : 60;
+    const modelDelta = Math.sign(rawDelta) * Math.min(Math.abs(rawDelta), deltaCap);
 
     // Anchor to the reported score when we have one, so the user sees their real
     // starting number with our modeled delta applied.
