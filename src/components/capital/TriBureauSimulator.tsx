@@ -158,6 +158,7 @@ export default function TriBureauSimulator({ accounts }: { accounts: CreditAccou
     );
   };
 
+  const inquiryBlocked = gate.blockedKinds.some(b => b.kind === 'ageInquiries');
   const inquiryWait = actions.find(a => a.kind === 'ageInquiries') as any;
   const setInquiryWait = (months: number) =>
     setActions(p => [
