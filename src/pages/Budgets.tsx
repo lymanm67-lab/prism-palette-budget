@@ -41,6 +41,8 @@ import NetWorthSummaryCard from '@/components/NetWorthSummaryCard';
 import { clusterDuplicates, softDeleteDuplicates } from '@/lib/duplicate-detector';
 import { ScoreBreakdownTooltip } from '@/components/cleanup/ScoreBreakdownTooltip';
 import { useQueryClient } from '@tanstack/react-query';
+import MoneyBlueprintPanel from '@/components/budget/MoneyBlueprintPanel';
+import PayrollElectionsCard from '@/components/budget/PayrollElectionsCard';
 
 const getMonth = (offset: number) => {
   const d = new Date();
@@ -1790,6 +1792,16 @@ const Budgets = () => {
           ['Subscriptions', '$50', '$50', '$0'],
         ]}
       />
+
+      {/* 50/10/20/20 Money Blueprint (personal money only) */}
+      <MoneyBlueprintPanel month={month} expenseStructure={sectionTotals as any} />
+
+      <PayrollElectionsCard
+        month={month}
+        isCompletedMonth={new Date(`${month}-01T00:00:00Z`) < new Date(new Date().toISOString().slice(0, 8) + '01T00:00:00Z')}
+      />
+
+
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

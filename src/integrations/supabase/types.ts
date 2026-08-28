@@ -885,6 +885,7 @@ export type Database = {
           group_id: string
           household_id: string
           id: string
+          money_purpose: Database["public"]["Enums"]["money_purpose"] | null
           name: string
           sort_order: number
         }
@@ -896,6 +897,7 @@ export type Database = {
           group_id: string
           household_id: string
           id?: string
+          money_purpose?: Database["public"]["Enums"]["money_purpose"] | null
           name: string
           sort_order?: number
         }
@@ -907,6 +909,7 @@ export type Database = {
           group_id?: string
           household_id?: string
           id?: string
+          money_purpose?: Database["public"]["Enums"]["money_purpose"] | null
           name?: string
           sort_order?: number
         }
@@ -1069,6 +1072,7 @@ export type Database = {
           expense_type: string
           household_id: string
           id: string
+          money_purpose: Database["public"]["Enums"]["money_purpose"] | null
           name: string
           sort_order: number
           target_percent_max: number | null
@@ -1082,6 +1086,7 @@ export type Database = {
           expense_type?: string
           household_id: string
           id?: string
+          money_purpose?: Database["public"]["Enums"]["money_purpose"] | null
           name: string
           sort_order?: number
           target_percent_max?: number | null
@@ -1095,6 +1100,7 @@ export type Database = {
           expense_type?: string
           household_id?: string
           id?: string
+          money_purpose?: Database["public"]["Enums"]["money_purpose"] | null
           name?: string
           sort_order?: number
           target_percent_max?: number | null
@@ -8037,6 +8043,72 @@ export type Database = {
           },
         ]
       }
+      payroll_elections: {
+        Row: {
+          amount: number
+          category_id: string | null
+          counts_as_wealth: boolean
+          created_at: string
+          effective_end: string | null
+          effective_start: string
+          household_id: string
+          id: string
+          is_employer: boolean
+          label: string
+          notes: string | null
+          owner: string
+          tax_treatment: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          category_id?: string | null
+          counts_as_wealth?: boolean
+          created_at?: string
+          effective_end?: string | null
+          effective_start?: string
+          household_id: string
+          id?: string
+          is_employer?: boolean
+          label: string
+          notes?: string | null
+          owner?: string
+          tax_treatment?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          category_id?: string | null
+          counts_as_wealth?: boolean
+          created_at?: string
+          effective_end?: string | null
+          effective_start?: string
+          household_id?: string
+          id?: string
+          is_employer?: boolean
+          label?: string
+          notes?: string | null
+          owner?: string
+          tax_treatment?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payroll_elections_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payroll_elections_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       plaid_items: {
         Row: {
           consent_expiration: string | null
@@ -10253,6 +10325,8 @@ export type Database = {
           id: string
           is_transfer: boolean
           merchant: string | null
+          money_purpose: Database["public"]["Enums"]["money_purpose"] | null
+          money_purpose_locked: boolean
           needs_review: boolean
           normalized_merchant: string | null
           notes: string | null
@@ -10273,6 +10347,8 @@ export type Database = {
           id?: string
           is_transfer?: boolean
           merchant?: string | null
+          money_purpose?: Database["public"]["Enums"]["money_purpose"] | null
+          money_purpose_locked?: boolean
           needs_review?: boolean
           normalized_merchant?: string | null
           notes?: string | null
@@ -10293,6 +10369,8 @@ export type Database = {
           id?: string
           is_transfer?: boolean
           merchant?: string | null
+          money_purpose?: Database["public"]["Enums"]["money_purpose"] | null
+          money_purpose_locked?: boolean
           needs_review?: boolean
           normalized_merchant?: string | null
           notes?: string | null
@@ -10804,6 +10882,14 @@ export type Database = {
         | "loan"
         | "other"
       app_role: "founder" | "admin" | "user"
+      money_purpose:
+        | "live"
+        | "enjoy"
+        | "build_wealth"
+        | "eliminate_debt"
+        | "business"
+        | "payroll_deduction"
+        | "employer_contribution"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -10940,6 +11026,15 @@ export const Constants = {
         "other",
       ],
       app_role: ["founder", "admin", "user"],
+      money_purpose: [
+        "live",
+        "enjoy",
+        "build_wealth",
+        "eliminate_debt",
+        "business",
+        "payroll_deduction",
+        "employer_contribution",
+      ],
     },
   },
 } as const

@@ -23,6 +23,8 @@ import { Loader2, Plus, Pencil, Trash2, GripVertical, ChevronDown, ChevronRight,
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import PageOverview from '@/components/PageOverview';
+import MoneyPurposeSelect from '@/components/budget/MoneyPurposeSelect';
+import { usePurposeResolution } from '@/hooks/use-money-purpose';
 
 const PRESET_COLORS = [
   '#7c3aed', '#2563eb', '#0891b2', '#059669', '#65a30d',
@@ -213,6 +215,8 @@ const Categories = () => {
       return next;
     });
   };
+
+  const purposeResolution = usePurposeResolution();
 
   // Filter groups by tab
   const filteredGroups = useMemo(() => {
@@ -633,6 +637,11 @@ const Categories = () => {
                                             {catSubs.length}
                                           </Badge>
                                         )}
+                                        <MoneyPurposeSelect
+                                          categoryId={cat.id}
+                                          value={purposeResolution.byCategory.get(cat.id) ?? null}
+                                          isOverride={purposeResolution.overridden.has(cat.id)}
+                                        />
                                       </div>
                                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                         {cIdx > 0 && (
