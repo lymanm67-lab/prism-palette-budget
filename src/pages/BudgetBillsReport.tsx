@@ -249,6 +249,190 @@ export default function BudgetBillsReport() {
 
   const autopayCount = (data?.bills ?? []).filter((b) => b.autopay_enabled).length;
 
+  // One-page color infographic of the selected month + the year's rollup.
+  const buildInfographic = useCallback((): InfographicSpec | null => {
+    if (!data) return null;
+    const periodLabel = `${MONTHS[monthNum]} ${yearNum}`;
+    const groups = new Map<string, { budgeted: number; actual: number }>();
+    for (const r of categoryRows) {
+      const g = groups.get(r.groupName) ?? { budgeted: 0, actual: 0 };
+      g.budgeted += r.budgeted;
+      g.actual += r.actual;
+      groups.set(r.groupName, g);
+    }
+    const over = categoryRows
+      .map((r) => ({ ...r, over: r.actual - r.budgeted }))
+      .filter((r) => r.budgeted > 0 && r.over > 0)
+      .sort((a, b) => b.over - a.over)
+      .slice(0, 8);
+    const upcoming = (data.bills ?? [])
+      .slice()
+      .sort((a, b) => Math.abs(Number(b.amount) || 0) - Math.abs(Number(a.amount) || 0))
+      .slice(0, 8);
+    const trendMonths = monthlyRows
+      .filter((r) => r.budgeted > 0 || r.actual > 0)
+      .filter((r) => r.index <= monthNum)
+      .slice(-3);
+
+    return {
+      title: 'Budgets & Bills',
+      period: periodLabel,
+      tagline: 'Plan the month. Pay the bills. Keep the surplus.',
+      glanceTitle: 'Month at a Glance',
+      glance: [
+        { label: 'Budgeted', value: formatCurrency(totals.budgeted), tone: 'blue' },
+        { label: 'Actual', value: formatCurrency(totals.actual), tone: 'red' },
+        {
+          label: totals.variance >= 0 ? 'Under Budget' : 'Over Budget',
+          value: formatCurrency(Math.abs(totals.variance)),
+          tone: totals.variance >= 0 ? 'green' : 'red',
+        },
+      ],
+      kpis: [
+        { title: 'Budgeted', value: formatCurrency(totals.budgeted), sub: 'Planned for the month', tone: 'green' },
+        { title: 'Actual Spent', value: formatCurrency(totals.actual), sub: 'Cleared transactions', tone: 'blue' },
+        {
+          title: totals.variance >= 0 ? 'Under Budget' : 'Over Budget',
+          value: formatCurrency(Math.abs(totals.variance)),
+          sub: totals.variance >= 0 ? 'Room still left' : 'Amount to recover',
+          tone: totals.variance >= 0 ? 'green' : 'red',
+        },
+        {
+          title: 'Recurring Bills',
+          value: formatCurrency(billsMonthlyTotal),
+          sub: `${data.bills.length} bills · ${autopayCount} on autopay`,
+          tone: 'purple',
+        },
+        {
+          title: 'Utilization',
+          value: `${totals.budgeted > 0 ? ((totals.actual / totals.budgeted) * 100).toFixed(1) : '0.0'}%`,
+          sub: 'of budget used',
+          tone: 'orange',
+        },
+      ],
+      donut: {
+        title: 'Where the Month Went',
+        legendHeader: 'Category Group',
+        totalLabel: 'Total Spent',
+        slices: Array.from(groups.entries())
+          .map(([label, g]) => ({ label, value: g.actual }))
+          .sort((a, b) => b.value - a.value)
+          .slice(0, 7),
+        footerNote: 'Every dollar has a purpose.',
+      },
+      tables: [
+        {
+          title: 'Top Over Budget Categories',
+          tone: 'red',
+          width: '3.6in',
+          columns: [
+            { label: 'Category', align: 'left' },
+            { label: 'Budget' },
+            { label: 'Actual' },
+            { label: 'Over' },
+          ],
+          rows: over.map((r) => [
+            { text: r.name, sub: r.groupName, tone: 'red' as const, bold: true, align: 'left' as const },
+            formatCurrency(r.budgeted),
+            { text: formatCurrency(r.actual), tone: 'red' as const, bold: true },
+            { text: `+${formatCurrency(r.over)}`, tone: 'red' as const, bold: true },
+          ]),
+          emptyMessage: 'No categories over budget this month.',
+        },
+        {
+          title: 'Largest Recurring Bills',
+          tone: 'navy',
+          width: '3.6in',
+          columns: [
+            { label: 'Bill', align: 'left' },
+            { label: 'Amount' },
+            { label: 'Frequency' },
+            { label: 'Autopay' },
+          ],
+          rows: upcoming.map((b) => [
+            { text: b.merchant_name || b.description || 'Bill', align: 'left' as const, bold: true },
+            formatCurrency(Math.abs(Number(b.amount) || 0)),
+            String(b.frequency ?? 'monthly'),
+            {
+              text: b.autopay_enabled ? 'Yes' : 'No',
+              tone: (b.autopay_enabled ? 'green' : 'grey') as const,
+            },
+          ]),
+          emptyMessage: 'No recurring bills recorded.',
+        },
+        {
+          title: `Budget vs Actual by Category Group — ${periodLabel}`,
+          tone: 'navy',
+          columns: [
+            { label: 'Category Group', align: 'left' },
+            { label: 'Budgeted' },
+            { label: 'Actual' },
+            { label: 'Variance' },
+            { label: 'Used' },
+          ],
+          rows: Array.from(groups.entries())
+            .sort((a, b) => b[1].actual - a[1].actual)
+            .map(([name, g]) => {
+              const v = g.budgeted - g.actual;
+              return [
+                { text: name, align: 'left' as const, bold: true, tone: (v < 0 ? 'red' : 'navy') as const },
+                formatCurrency(g.budgeted),
+                formatCurrency(g.actual),
+                {
+                  text: `${v < 0 ? '-' : '+'}${formatCurrency(Math.abs(v))}`,
+                  tone: (v < 0 ? 'red' : 'green') as const,
+                  bold: true,
+                },
+                `${g.budgeted > 0 ? ((g.actual / g.budgeted) * 100).toFixed(1) : '0.0'}%`,
+              ];
+            }),
+          totalRow: [
+            { text: 'TOTAL', align: 'left' as const },
+            { text: formatCurrency(totals.budgeted), tone: 'blue' as const },
+            { text: formatCurrency(totals.actual), tone: 'red' as const },
+            {
+              text: `${totals.variance >= 0 ? '+' : '-'}${formatCurrency(Math.abs(totals.variance))}`,
+              tone: (totals.variance >= 0 ? 'green' : 'red') as const,
+            },
+            `${totals.budgeted > 0 ? ((totals.actual / totals.budgeted) * 100).toFixed(1) : '0.0'}%`,
+          ],
+        },
+      ],
+      trend: {
+        title: 'Recent Months (Budget vs Actual)',
+        width: '2.9in',
+        points: trendMonths.map((r) => ({
+          label: `${r.label} ${String(yearNum).slice(2)}`,
+          primary: r.budgeted,
+          secondary: r.actual,
+        })),
+        primaryLabel: 'Budgeted',
+        secondaryLabel: 'Actual',
+        footerNote: 'Consistency compounds.',
+      },
+      panels: [
+        {
+          title: 'Bill Discipline Checklist',
+          tone: 'purple',
+          items: [
+            'Every bill has a due date and an owner',
+            'Autopay on for fixed, predictable bills',
+            'Variable bills reviewed before payment',
+            'Surplus swept to debt or savings',
+            'No bill paid from the wrong account',
+          ],
+        },
+      ],
+      commitment: {
+        label: 'MY COMMITMENT:',
+        text: 'I fund my plan first, pay bills on time, and send every surplus dollar to my goals.',
+        steps: ['PLAN\nTHE MONTH', 'PAY ON\nTIME', 'CUT THE\nLEAKS', 'BUILD\nWEALTH'],
+      },
+      slogan: 'DISCIPLINE TODAY. FREEDOM TOMORROW. LEGACY FOREVER.',
+    };
+  }, [data, categoryRows, monthlyRows, totals, billsMonthlyTotal, autopayCount, monthNum, yearNum, formatCurrency]);
+
+
   return (
     <div className="max-w-6xl mx-auto p-4 md:p-6 space-y-6">
       <div className="flex items-start justify-between gap-4 flex-wrap print:hidden">
