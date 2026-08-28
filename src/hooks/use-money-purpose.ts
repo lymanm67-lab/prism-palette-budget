@@ -188,6 +188,15 @@ export function useMoneyPurposeSnapshot(monthInput: string, window: AverageWindo
       planned[p] += Number(b.planned_amount) || 0;
     }
 
+    // Take-home = real payroll deposits only. Investment inflows (Stash),
+    // cash advances (Earnin), grocery reimbursements, and transfers between
+    // own accounts are NOT take-home pay and must not inflate the denominator.
+    const takeHomeCatIds = new Set<string>();
+    for (const id of resolution.incomeCategoryIds) {
+      const name = (catNameById.get(id) || '').toLowerCase();
+      if (/salary|payroll|paycheck|wages|net pay/.test(name)) takeHomeCatIds.add(id);
+    }
+
     for (const t of ((txns as any[]) || [])) {
       if (t.deleted_at || t.is_transfer) continue;
       const amount = Number(t.amount) || 0;
@@ -195,9 +204,13 @@ export function useMoneyPurposeSnapshot(monthInput: string, window: AverageWindo
 
       // Income is the denominator, never an allocation.
       if (catId && resolution.incomeCategoryIds.has(catId)) {
-        if (amount > 0) netIncome += amount;
+        if (amount > 0 && takeHomeCatIds.has(catId)) netIncome += amount;
         continue;
       }
+
+      // Inflows into expense/wealth categories (reimbursements, returned
+      // funds, Stash deposits) are not spending and never charge a bucket.
+      if (amount > 0) continue;
 
       const p = ((t.money_purpose as MoneyPurpose | null) || (catId ? resolution.byCategory.get(catId) : null)) as
         | MoneyPurpose
