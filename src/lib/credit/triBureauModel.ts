@@ -324,11 +324,14 @@ export interface SimulateInput {
   actions: ScenarioAction[];
   /** Reported per-bureau scores (from myFICO / report import) used as anchors. */
   reportedScores?: MortgageFico;
+  /** User-adjustable modeling assumptions. */
+  sensitivity?: Sensitivity;
 }
 
 /** Run the model for all three bureaus. */
 export function simulateTriBureau(input: SimulateInput): BureauEstimate[] {
   const { tradelines, inquiriesByBureau, actions, reportedScores } = input;
+  const sens = { ...DEFAULT_SENSITIVITY, ...(input.sensitivity || {}) };
 
   return BUREAUS.map<BureauEstimate>(bureau => {
     const lines = tradelines.filter(t => t.bureau === bureau);
@@ -347,8 +350,8 @@ export function simulateTriBureau(input: SimulateInput): BureauEstimate[] {
         tradelineCount: 0,
         derogCount: 0,
         simDerogCount: 0,
-        inquiries12mo: inq.filter(m => m < 12).length,
-        simInquiries12mo: inq.filter(m => m < 12).length,
+        inquiries12mo: inq.filter(m => m < sens.inquiryWindowMonths).length,
+        simInquiries12mo: inq.filter(m => m < sens.inquiryWindowMonths).length,
         avgAgeMonths: 0,
         dataInputs: [
           { label: 'Tradelines on file', present: false },
@@ -363,8 +366,8 @@ export function simulateTriBureau(input: SimulateInput): BureauEstimate[] {
     const baseState = applyActions(lines, []);
     const simState = applyActions(lines, actions);
 
-    const baseParts = scoreFile(bureau, baseState, inq, null);
-    const simParts = scoreFile(bureau, simState, inq, null);
+    const baseParts = scoreFile(bureau, baseState, inq, sens, null);
+    const simParts = scoreFile(bureau, simState, inq, sens, baseParts.aggregateUtil);
     const rawDelta = simParts.score - baseParts.score;
 
     // Thin-file damping: with 1–2 tradelines a single change swings the model wildly.
@@ -396,8 +399,8 @@ export function simulateTriBureau(input: SimulateInput): BureauEstimate[] {
       aggregateUtil: baseParts.aggregateUtil,
       simAggregateUtil: simParts.aggregateUtil,
       tradelineCount: lines.length,
-      derogCount: baseParts.derogCount,
-      simDerogCount: simParts.derogCount,
+      derogCount: Math.round(baseParts.derogCount),
+      simDerogCount: Math.round(simParts.derogCount * 10) / 10,
       inquiries12mo: baseParts.inquiries12mo,
       simInquiries12mo: simParts.inquiries12mo,
       avgAgeMonths: baseParts.avgAgeMonths,
