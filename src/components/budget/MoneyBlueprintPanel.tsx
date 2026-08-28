@@ -181,8 +181,20 @@ export default function MoneyBlueprintPanel({ month, expenseStructure }: Props) 
         </CardContent>
       </Card>
 
+      {/* ---------------- Automatic phase switching ---------------- */}
+      <div className="flex flex-wrap items-center gap-2 rounded-lg border border-primary/25 bg-primary/5 p-2.5 text-[11px]">
+        <Badge variant="outline" className="border-primary/40 text-[9px] uppercase">
+          {snap.phaseProjection.auto ? 'Auto phase' : 'Pinned'}
+        </Badge>
+        <span className="font-semibold">{PHASE_LABEL[bp.phase]}</span>
+        <span className="text-muted-foreground">{snap.phaseProjection.reason}</span>
+      </div>
+
       {/* ---------------- Drift alerts ---------------- */}
       <BlueprintDriftAlerts snap={snap} />
+
+      {/* ---------------- Fund the gap ---------------- */}
+      <FundTheGapCard snap={snap} month={month} />
 
       {/* ---------------- History chart ---------------- */}
       <BlueprintHistoryChart month={month} />
