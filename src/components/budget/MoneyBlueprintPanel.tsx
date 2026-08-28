@@ -119,7 +119,16 @@ export default function MoneyBlueprintPanel({ month, expenseStructure }: Props) 
                       <p>
                         Target {c.key === 'build_wealth' ? '≥' : '≤'} {c.targetPct}%
                       </p>
-                      <p className={cn('tabular-nums', c.variance === 0 ? '' : STATUS_TEXT[c.status])}>
+                      <p
+                        className={cn(
+                          'tabular-nums',
+                          c.underTarget
+                            ? 'text-emerald-600 dark:text-emerald-400'
+                            : c.variance === 0
+                              ? ''
+                              : STATUS_TEXT[c.status],
+                        )}
+                      >
                         {c.aboveTargetLabel ||
                           `Variance ${c.variance >= 0 ? '+' : ''}${formatCurrency(c.variance)}`}
                       </p>

@@ -43,6 +43,8 @@ export interface BlueprintCard {
   status: 'on' | 'watch' | 'off';
   /** true when the shortfall/overage is structurally acceptable (LIVE above target) */
   aboveTargetLabel?: string;
+  /** true when the label reports a positive under-target cushion (ceilings) */
+  underTarget?: boolean;
   /** BUILD WEALTH only: portion already satisfied by payroll withholding */
   fundedByPayroll?: number;
   remainingToTarget?: number;
