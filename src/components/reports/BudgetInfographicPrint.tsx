@@ -297,8 +297,9 @@ export default function BudgetInfographicPrint({ monthLabel, daysInMonth, catego
     <div class="panel" style="flex:1">
       <div class="panel-head" style="background:${NAVY}">Where My Money Went</div>
       <div style="display:flex;align-items:center;gap:6px;padding:8px">
-        <div>${donutSvg(slices, totalSpent)}</div>
-        <table style="flex:1"><thead><tr><th></th><th class="th" style="text-align:left">Category Group</th><th class="th" style="text-align:right">Spent</th><th class="th" style="text-align:right">% of Total</th></tr></thead><tbody>${legend}</tbody></table>
+        <div style="flex:0 0 220px">${donutSvg(slices, totalSpent)}</div>
+        <table style="flex:1;table-layout:fixed"><colgroup><col style="width:16px"/><col/><col style="width:66px"/><col style="width:52px"/></colgroup><thead><tr><th></th><th class="th" style="text-align:left">Category Group</th><th class="th" style="text-align:right">Spent</th><th class="th" style="text-align:right">% of Total</th></tr></thead><tbody>${legend}</tbody></table>
+
       </div>
       <div style="background:${NAVY};color:#fff;text-align:center;font-size:11px;font-style:italic;font-weight:700;padding:5px">Every dollar has a purpose.</div>
     </div>
