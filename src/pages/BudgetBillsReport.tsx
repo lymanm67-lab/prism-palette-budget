@@ -14,7 +14,7 @@ import InlineEditCell from '@/components/InlineEditCell';
 import PrintReportFrame from '@/components/print/PrintReportFrame';
 import ReconciliationCheckCard from '@/components/reports/ReconciliationCheckCard';
 import PrintInfographicButton from '@/components/reports/PrintInfographicButton';
-import type { InfographicSpec } from '@/lib/reports/infographic';
+import type { InfographicSpec, Tone } from '@/lib/reports/infographic';
 import { toast } from '@/hooks/use-toast';
 
 
@@ -358,7 +358,7 @@ export default function BudgetBillsReport() {
             String(b.frequency ?? 'monthly'),
             {
               text: b.autopay_enabled ? 'Yes' : 'No',
-              tone: (b.autopay_enabled ? 'green' : 'grey') as const,
+              tone: (b.autopay_enabled ? 'green' : 'grey') as Tone,
             },
           ]),
           emptyMessage: 'No recurring bills recorded.',
@@ -378,12 +378,12 @@ export default function BudgetBillsReport() {
             .map(([name, g]) => {
               const v = g.budgeted - g.actual;
               return [
-                { text: name, align: 'left' as const, bold: true, tone: (v < 0 ? 'red' : 'navy') as const },
+                { text: name, align: 'left' as const, bold: true, tone: (v < 0 ? 'red' : 'navy') as Tone },
                 formatCurrency(g.budgeted),
                 formatCurrency(g.actual),
                 {
                   text: `${v < 0 ? '-' : '+'}${formatCurrency(Math.abs(v))}`,
-                  tone: (v < 0 ? 'red' : 'green') as const,
+                  tone: (v < 0 ? 'red' : 'green') as Tone,
                   bold: true,
                 },
                 `${g.budgeted > 0 ? ((g.actual / g.budgeted) * 100).toFixed(1) : '0.0'}%`,
@@ -395,7 +395,7 @@ export default function BudgetBillsReport() {
             { text: formatCurrency(totals.actual), tone: 'red' as const },
             {
               text: `${totals.variance >= 0 ? '+' : '-'}${formatCurrency(Math.abs(totals.variance))}`,
-              tone: (totals.variance >= 0 ? 'green' : 'red') as const,
+              tone: (totals.variance >= 0 ? 'green' : 'red') as Tone,
             },
             `${totals.budgeted > 0 ? ((totals.actual / totals.budgeted) * 100).toFixed(1) : '0.0'}%`,
           ],
@@ -461,9 +461,11 @@ export default function BudgetBillsReport() {
           <Button variant={editMode ? 'default' : 'outline'} onClick={() => setEditMode((v) => !v)}>
             {editMode ? <><Check className="h-4 w-4 mr-2" /> Done editing</> : <><Pencil className="h-4 w-4 mr-2" /> Edit</>}
           </Button>
+          <PrintInfographicButton buildSpec={buildInfographic} disabled={isLoading} />
           <Button variant="secondary" onClick={() => window.print()}>
             <Printer className="h-4 w-4 mr-2" /> Print
           </Button>
+
         </div>
       </div>
 

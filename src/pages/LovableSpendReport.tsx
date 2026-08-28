@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useHousehold } from '@/contexts/HouseholdContext';
@@ -13,6 +13,9 @@ import { toast } from 'sonner';
 import PageOverview from '@/components/PageOverview';
 import { clusterDuplicates, confirmedDuplicateIds } from '@/lib/duplicate-detector';
 import { ScoreBreakdownTooltip } from '@/components/cleanup/ScoreBreakdownTooltip';
+import PrintInfographicButton from '@/components/reports/PrintInfographicButton';
+import type { InfographicSpec, Tone } from '@/lib/reports/infographic';
+
 
 const MONTHLY_CAP = 400; // Matches the Money Leaks entry cap for Lovable/AI services
 const MERCHANT_MATCH = '%lovable%';
@@ -122,6 +125,123 @@ export default function LovableSpendReport() {
     return (txns || []).filter(t => ids.has(t.id));
   }, [stats.clusters, txns]);
 
+  // One-page color infographic of AI-services spend
+  const buildInfographic = useCallback((): InfographicSpec | null => {
+    if (!txns?.length) return null;
+    const recent = stats.months.slice(0, 12);
+    const overCap = recent.filter((m) => m.total > MONTHLY_CAP);
+    const avgMonth = recent.length ? recent.reduce((s, m) => s + m.total, 0) / recent.length : 0;
+    const trend = stats.months.slice(0, 3).reverse();
+
+    return {
+      title: 'AI Services Spend',
+      period: 'Lovable — All Time',
+      tagline: 'Know the cost. Cut the waste. Keep the leverage.',
+      glanceTitle: 'At a Glance',
+      glance: [
+        { label: 'All-time', value: formatCurrency(stats.total), tone: 'red' },
+        { label: '2026 spend', value: formatCurrency(stats.ytd), tone: 'blue' },
+        { label: 'Charges', value: String(stats.count), tone: 'navy' },
+      ],
+      kpis: [
+        { title: 'All-Time Spend', value: formatCurrency(stats.total), sub: `${stats.count} charges`, tone: 'red' },
+        { title: '2026 Spend', value: formatCurrency(stats.ytd), sub: 'Year to date', tone: 'blue' },
+        { title: 'Avg / Month', value: formatCurrency(avgMonth), sub: `last ${recent.length} months`, tone: 'navy' },
+        { title: 'Monthly Cap', value: formatCurrency(MONTHLY_CAP), sub: `${overCap.length} months over cap`, tone: overCap.length ? 'orange' : 'green' },
+        {
+          title: 'Confirmed Duplicates',
+          value: String(confirmedDupes.length),
+          sub: confirmedDupes.length ? 'Ready to remove' : 'Clean',
+          tone: confirmedDupes.length ? 'red' : 'green',
+        },
+      ],
+      donut: {
+        title: 'Spend by Charge Size',
+        legendHeader: 'Charge Size',
+        totalLabel: 'Total Spent',
+        slices: stats.sizeRows.map((s) => ({ label: `${s.label} charges (${s.count})`, value: s.total })),
+        footerNote: 'Micro top-ups add up fast.',
+      },
+      tables: [
+        {
+          title: 'Monthly Cap Tracker',
+          tone: 'navy',
+          columns: [
+            { label: 'Month', align: 'left' },
+            { label: 'Spent' },
+            { label: 'Charges' },
+            { label: 'Cap' },
+            { label: 'Remaining' },
+          ],
+          rows: recent.map((m) => [
+            { text: monthLabel(m.prefix), align: 'left' as const, bold: true },
+            { text: formatCurrency(m.total), tone: (m.total > MONTHLY_CAP ? 'red' : 'navy') as Tone, bold: true },
+            String(m.count),
+            formatCurrency(MONTHLY_CAP),
+            {
+              text: `${m.remaining < 0 ? '-' : '+'}${formatCurrency(Math.abs(m.remaining))}`,
+              tone: (m.remaining < 0 ? 'red' : 'green') as Tone,
+              bold: true,
+            },
+          ]),
+          emptyMessage: 'No AI-services charges recorded.',
+          footerNote: overCap.length ? `${overCap.length} month(s) exceeded the ${formatCurrency(MONTHLY_CAP)} cap.` : 'Every month within cap.',
+          footerTone: overCap.length ? 'red' : 'green',
+        },
+        {
+          title: 'Duplicate-Charge Clusters',
+          tone: 'red',
+          columns: [
+            { label: 'Date', align: 'left' },
+            { label: 'Amount' },
+            { label: 'Charges' },
+            { label: 'Confidence' },
+          ],
+          rows: stats.clusters.slice(0, 8).map((c) => [
+            { text: c.date, align: 'left' as const, bold: true },
+            formatCurrency(Math.abs(c.amount)),
+            String(c.txns.length),
+            { text: `${c.scoreLabel} (${c.score}%)`, tone: (c.confirmed ? 'red' : 'orange') as Tone, bold: true },
+          ]),
+          emptyMessage: 'No same-day identical-charge clusters found.',
+        },
+      ],
+      trend: {
+        title: 'Recent Months vs Cap',
+        width: '2.9in',
+        points: trend.map((m) => ({
+          label: monthLabel(m.prefix).slice(0, 3).toUpperCase(),
+          primary: MONTHLY_CAP,
+          secondary: m.total,
+        })),
+        primaryLabel: 'Cap',
+        secondaryLabel: 'Spent',
+        deltaLabel: 'Head-room',
+        footerNote: 'Spend with intent, not by default.',
+      },
+      panels: [
+        {
+          title: 'Spend Discipline Rules',
+          tone: 'purple',
+          items: [
+            `Stay under ${formatCurrency(MONTHLY_CAP)} per month`,
+            'Remove double-imported charges monthly',
+            'Batch work instead of micro top-ups',
+            'Tie each charge to a shipped feature',
+            'Review this report before renewing',
+          ],
+        },
+      ],
+      commitment: {
+        label: 'MY COMMITMENT:',
+        text: 'Every dollar spent on tooling must return more than it costs.',
+        steps: ['TRACK\nEVERY CHARGE', 'CUT\nDUPLICATES', 'STAY UNDER\nTHE CAP', 'REINVEST\nTHE SAVINGS'],
+      },
+      slogan: 'MEASURE THE SPEND. MULTIPLY THE RETURN.',
+    };
+  }, [txns, stats, confirmedDupes, formatCurrency]);
+
+
   const softDelete = async (ids: string[], label: string) => {
     if (!household || ids.length === 0) return;
     const { error } = await supabase.from('transactions').update({ deleted_at: new Date().toISOString() }).in('id', ids);
@@ -173,10 +293,14 @@ export default function LovableSpendReport() {
           <h1 className="text-2xl font-display font-bold">Lovable AI Services — Spend Report</h1>
           <p className="text-sm text-muted-foreground">Duplicate detection · charge-size patterns · monthly cap tracking</p>
         </div>
-        <Button onClick={runCleanup} disabled={cleaning || confirmedDupes.length === 0} variant={confirmedDupes.length ? 'destructive' : 'outline'} className="gap-2">
-          {cleaning ? <Loader2 className="h-4 w-4 animate-spin" /> : <ScanSearch className="h-4 w-4" />}
-          {confirmedDupes.length ? `Remove ${confirmedDupes.length} confirmed duplicate${confirmedDupes.length === 1 ? '' : 's'}` : 'No confirmed duplicates'}
-        </Button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <PrintInfographicButton buildSpec={buildInfographic} />
+          <Button onClick={runCleanup} disabled={cleaning || confirmedDupes.length === 0} variant={confirmedDupes.length ? 'destructive' : 'outline'} className="gap-2">
+            {cleaning ? <Loader2 className="h-4 w-4 animate-spin" /> : <ScanSearch className="h-4 w-4" />}
+            {confirmedDupes.length ? `Remove ${confirmedDupes.length} confirmed duplicate${confirmedDupes.length === 1 ? '' : 's'}` : 'No confirmed duplicates'}
+          </Button>
+        </div>
+
       </div>
 
       {/* Summary cards */}
