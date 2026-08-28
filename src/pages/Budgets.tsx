@@ -41,6 +41,8 @@ import NetWorthSummaryCard from '@/components/NetWorthSummaryCard';
 import { clusterDuplicates, softDeleteDuplicates } from '@/lib/duplicate-detector';
 import { ScoreBreakdownTooltip } from '@/components/cleanup/ScoreBreakdownTooltip';
 import { useQueryClient } from '@tanstack/react-query';
+import MoneyBlueprintPanel from '@/components/budget/MoneyBlueprintPanel';
+import PayrollElectionsCard from '@/components/budget/PayrollElectionsCard';
 
 const getMonth = (offset: number) => {
   const d = new Date();
