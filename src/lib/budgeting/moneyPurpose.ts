@@ -102,6 +102,11 @@ const EMPLOYER_RULES: Rule[] = [
   { re: /employer|non[- ]?elective|9%\s*match/i, purpose: 'employer_contribution' },
 ];
 
+/** AI/app-development services — business tools, never personal spending. */
+const BUSINESS_RULES: Rule[] = [
+  { re: /\b(ai services?|lovable|chatgpt|openai|anthropic|claude|gamma|midjourney|copilot)\b/i, purpose: 'business' },
+];
+
 /** Wealth-building lines (payroll or from take-home). */
 const WEALTH_RULES: Rule[] = [
   { re: /\b(tda|457|403\s?\(?b\)?|401\s?\(?k\)?)\b/i, purpose: 'build_wealth' },
