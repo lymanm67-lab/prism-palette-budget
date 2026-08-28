@@ -13,7 +13,10 @@ import { Loader2, Printer, Receipt, Wallet, CalendarClock, Zap, Pencil, Check } 
 import InlineEditCell from '@/components/InlineEditCell';
 import PrintReportFrame from '@/components/print/PrintReportFrame';
 import ReconciliationCheckCard from '@/components/reports/ReconciliationCheckCard';
+import PrintInfographicButton from '@/components/reports/PrintInfographicButton';
+import type { InfographicSpec } from '@/lib/reports/infographic';
 import { toast } from '@/hooks/use-toast';
+
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
