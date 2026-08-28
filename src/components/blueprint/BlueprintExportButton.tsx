@@ -82,7 +82,7 @@ export function buildBlueprintSpec(snap: MoneyPurposeSnapshot, month: string): I
           ['New obligations (PSLF)', money(settlement.current.newObligations)],
           ['Net redirectable this month', money(settlement.current.netRedirectable)],
         ],
-        footerNote: settlement.settlementFullyComplete
+        footerNote: settlement.current.settlementFullyComplete
           ? 'Settlement fully complete'
           : `Next fee ${settlement.nextFee ? `${money(settlement.nextFee.amount)} due ${settlement.nextFee.date}` : '—'} · final fee ${settlement.finalFeeDate}`,
       },
