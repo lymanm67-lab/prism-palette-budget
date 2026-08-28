@@ -182,7 +182,7 @@ export function useCreateCategory() {
 export function useUpdateCategory() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string; name?: string; color?: string; group_id?: string; sort_order?: number }) => {
+    mutationFn: async ({ id, ...updates }: { id: string; name?: string; color?: string; group_id?: string; sort_order?: number; money_purpose?: string | null }) => {
       const { data, error } = await supabase
         .from('categories')
         .update(updates)
