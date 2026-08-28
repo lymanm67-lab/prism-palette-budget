@@ -141,7 +141,17 @@ export default function MoneyBlueprintPanel({ month, expenseStructure }: Props) 
                     </div>
                   </div>
                 </TooltipTrigger>
-                <TooltipContent className="max-w-xs text-xs">{c.tooltip}</TooltipContent>
+                <TooltipContent className="max-w-xs text-xs">
+                  <p>{c.tooltip}</p>
+                  {c.underTarget && (
+                    <p className="mt-1.5 border-t border-border/50 pt-1.5">
+                      “Under Target” means you spent less than this ceiling — a good thing. It is
+                      calculated as target ({c.targetPct}% of take-home ={' '}
+                      {formatCurrency(c.targetAmount)}) minus actual ({formatCurrency(c.actualAmount)}
+                      ). The difference is cushion you can redirect to Build Wealth or Eliminate Debt.
+                    </p>
+                  )}
+                </TooltipContent>
               </Tooltip>
             ))}
           </div>
