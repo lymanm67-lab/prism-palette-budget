@@ -633,6 +633,11 @@ const Categories = () => {
                                             {catSubs.length}
                                           </Badge>
                                         )}
+                                        <MoneyPurposeSelect
+                                          categoryId={cat.id}
+                                          value={purposeResolution.byCategory.get(cat.id) ?? null}
+                                          isOverride={purposeResolution.overridden.has(cat.id)}
+                                        />
                                       </div>
                                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                         {cIdx > 0 && (
