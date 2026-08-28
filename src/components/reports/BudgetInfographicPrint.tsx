@@ -264,7 +264,7 @@ export default function BudgetInfographicPrint({ monthLabel, daysInMonth, catego
   .th { font-size: 8.5px; font-weight: 800; letter-spacing: 0.04em; color: ${GREY}; text-transform: uppercase; padding: 5px 8px; border-bottom: 1.5px solid #d7dbe3; }
 </style></head>
 <body>
-<div style="max-width:7.8in;margin:0 auto;zoom:0.78">
+<div style="max-width:7.8in;margin:0 auto;zoom:0.73">
 
   <!-- Masthead -->
   <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;border-bottom:2px solid ${NAVY};padding-bottom:8px">
