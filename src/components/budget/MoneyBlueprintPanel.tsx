@@ -10,6 +10,10 @@ import { useMoneyPurposeSnapshot, type AverageWindow } from '@/hooks/use-money-p
 import { PHASE_LABEL, PURPOSE_META } from '@/lib/budgeting/moneyPurpose';
 import { cn } from '@/lib/utils';
 import { Info, PiggyBank, ShieldCheck, Sparkles, TrendingUp, Wallet } from 'lucide-react';
+import BlueprintHistoryChart from '@/components/blueprint/BlueprintHistoryChart';
+import BlueprintDriftAlerts from '@/components/blueprint/BlueprintDriftAlerts';
+import ReconciliationDrilldown from '@/components/blueprint/ReconciliationDrilldown';
+import BlueprintExportButton from '@/components/blueprint/BlueprintExportButton';
 
 interface ExpenseStructure {
   fixed: { budget: number; actual: number };
@@ -68,6 +72,7 @@ export default function MoneyBlueprintPanel({ month, expenseStructure }: Props) 
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
+              <BlueprintExportButton snap={snap} month={month} />
               <Badge variant="outline" className="border-primary/40 text-[10px] uppercase tracking-wide">
                 {PHASE_LABEL[bp.phase]}
               </Badge>
@@ -175,6 +180,12 @@ export default function MoneyBlueprintPanel({ month, expenseStructure }: Props) 
           </div>
         </CardContent>
       </Card>
+
+      {/* ---------------- Drift alerts ---------------- */}
+      <BlueprintDriftAlerts snap={snap} />
+
+      {/* ---------------- History chart ---------------- */}
+      <BlueprintHistoryChart month={month} />
 
       {/* ---------------- Wealth building ---------------- */}
       <div className="grid gap-4 lg:grid-cols-2">
@@ -370,6 +381,9 @@ export default function MoneyBlueprintPanel({ month, expenseStructure }: Props) 
           </p>
         </CardContent>
       </Card>
+
+      {/* ---------------- Every-dollar audit ---------------- */}
+      <ReconciliationDrilldown snap={snap} />
     </div>
   );
 }

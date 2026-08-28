@@ -102,6 +102,11 @@ const EMPLOYER_RULES: Rule[] = [
   { re: /employer|non[- ]?elective|9%\s*match/i, purpose: 'employer_contribution' },
 ];
 
+/** AI/app-development services — business tools, never personal spending. */
+const BUSINESS_RULES: Rule[] = [
+  { re: /\b(ai services?|lovable|chatgpt|openai|anthropic|claude|gamma|midjourney|copilot)\b/i, purpose: 'business' },
+];
+
 /** Wealth-building lines (payroll or from take-home). */
 const WEALTH_RULES: Rule[] = [
   { re: /\b(tda|457|403\s?\(?b\)?|401\s?\(?k\)?)\b/i, purpose: 'build_wealth' },
@@ -173,6 +178,9 @@ export function classifyMoneyPurpose(input: ClassifyInput): MoneyPurpose | null 
 
   // Business stays out of personal ratios entirely.
   if (budgetType === 'business') return 'business';
+
+  // AI / app-development services are business tools even in a personal group.
+  for (const r of BUSINESS_RULES) if (r.re.test(hay)) return 'business';
 
   const ordered: Rule[][] = [WEALTH_RULES, DEBT_RULES, LIVE_RULES, ENJOY_RULES, TAX_BENEFIT_RULES];
   for (const set of ordered) {
