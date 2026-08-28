@@ -228,12 +228,18 @@ export function useMoneyPurposeSnapshot(month: string, window: AverageWindow = 1
     const core = (src: PurposeTotals): Record<CoreKey, number> =>
       CORE_KEYS.reduce((acc, k) => ({ ...acc, [k]: src[k] }), {} as Record<CoreKey, number>);
 
+    const phaseProjection = projectPhase(month, {
+      debtActual: actual.eliminate_debt,
+      netIncome,
+    });
+
     const blueprint = computeBlueprint5010({
       netIncome,
       actual: core(actual),
       planned: core(planned),
       payrollWealth,
       employerWealth,
+      phase: phaseProjection.phase,
     });
 
     const monthsCovered = Array.from({ length: window }, (_, i) => addMonths(month, -i)).reverse();
