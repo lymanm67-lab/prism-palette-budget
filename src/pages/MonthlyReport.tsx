@@ -207,6 +207,23 @@ export default function MonthlyReport() {
 
   const printPDF = () => window.print();
 
+  // Last 3 months (incl. current selection) of budget vs actual for the infographic trend chart
+  const trendPoints = useMemo(() => {
+    const current = String(meta.month ?? selectedMonth ?? '').slice(0, 7);
+    if (!current) return [];
+    const months = monthOptions.filter((m) => m <= current).slice(-3);
+    return months.map((m) => {
+      const rep = reportByMonth.get(m);
+      const cats: any[] = (rep?.metadata?.by_category || []).filter((c: any) => matchesEntity(c.entity));
+      return {
+        label: monthLabel(m).replace(/(\w{3})\w* (\d{4})/, '$1 $2').toUpperCase(),
+        budget: cats.reduce((s, c) => s + (c.budget || 0), 0),
+        actual: cats.reduce((s, c) => s + (c.spent || 0), 0),
+      };
+    });
+  }, [meta.month, selectedMonth, monthOptions, reportByMonth, entity]);
+
+
   const stripFirstHeading = useMemo(() => {
     // The message repeats the "Monthly Report — YYYY-MM" heading; strip it for cleaner render
     if (!active?.message) return '';
