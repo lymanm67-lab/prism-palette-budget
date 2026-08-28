@@ -175,12 +175,12 @@ export default function LovableSpendReport() {
           ],
           rows: recent.map((m) => [
             { text: monthLabel(m.prefix), align: 'left' as const, bold: true },
-            { text: formatCurrency(m.total), tone: (m.total > MONTHLY_CAP ? 'red' : 'navy') as const, bold: true },
+            { text: formatCurrency(m.total), tone: (m.total > MONTHLY_CAP ? 'red' : 'navy') as Tone, bold: true },
             String(m.count),
             formatCurrency(MONTHLY_CAP),
             {
               text: `${m.remaining < 0 ? '-' : '+'}${formatCurrency(Math.abs(m.remaining))}`,
-              tone: (m.remaining < 0 ? 'red' : 'green') as const,
+              tone: (m.remaining < 0 ? 'red' : 'green') as Tone,
               bold: true,
             },
           ]),
@@ -201,7 +201,7 @@ export default function LovableSpendReport() {
             { text: c.date, align: 'left' as const, bold: true },
             formatCurrency(Math.abs(c.amount)),
             String(c.txns.length),
-            { text: `${c.scoreLabel} (${c.score}%)`, tone: (c.confirmed ? 'red' : 'orange') as const, bold: true },
+            { text: `${c.scoreLabel} (${c.score}%)`, tone: (c.confirmed ? 'red' : 'orange') as Tone, bold: true },
           ]),
           emptyMessage: 'No same-day identical-charge clusters found.',
         },
