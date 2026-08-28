@@ -41,10 +41,11 @@ const pct = (n: number) => `${n.toFixed(2)}%`;
 function purposeOf(group: string) {
   const g = group.toLowerCase();
   if (/(debt|loan|repayment)/.test(g)) return 'debt';
-  if (/(saving|invest|emergency|retire|growth|stock|goal)/.test(g)) return 'future';
+  if (/(saving|invest|emergency|retire|growth|stock|goal|wealth|fund|asset|equity|future)/.test(g)) return 'future';
   if (/(housing|utilit|insurance|food|grocer|transport|health|medical|tax)/.test(g)) return 'needs';
   return 'wants';
 }
+
 
 /** Build an SVG donut from group totals. */
 function donutSvg(slices: { label: string; value: number; color: string }[], total: number) {
