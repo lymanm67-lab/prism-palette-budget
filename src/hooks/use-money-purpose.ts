@@ -170,6 +170,7 @@ export function useMoneyPurposeSnapshot(monthInput: string, window: AverageWindo
   // Callers may pass either `YYYY-MM` or a full `YYYY-MM-01` budget month key.
   const month = monthInput.slice(0, 7);
   const resolution = usePurposeResolution();
+  const { data: categories } = useCategories();
   const { data: budgets, isLoading: bLoading } = useBudgets(`${month}-01`);
   const { data: elections, isLoading: eLoading } = usePayrollElections();
 
@@ -180,12 +181,24 @@ export function useMoneyPurposeSnapshot(monthInput: string, window: AverageWindo
     const planned = emptyTotals();
     const actual = emptyTotals();
     let netIncome = 0;
+    const catNameById = new Map<string, string>(
+      ((categories as any[]) || []).map((c: any) => [c.id, c.name || '']),
+    );
 
     for (const b of ((budgets as any[]) || [])) {
       if (resolution.incomeCategoryIds.has(b.category_id)) continue;
       const p = resolution.byCategory.get(b.category_id);
       if (!p) continue;
       planned[p] += Number(b.planned_amount) || 0;
+    }
+
+    // Take-home = real payroll deposits only. Investment inflows (Stash),
+    // cash advances (Earnin), grocery reimbursements, and transfers between
+    // own accounts are NOT take-home pay and must not inflate the denominator.
+    const takeHomeCatIds = new Set<string>();
+    for (const id of resolution.incomeCategoryIds) {
+      const name = (catNameById.get(id) || '').toLowerCase();
+      if (/salary|payroll|paycheck|wages|net pay/.test(name)) takeHomeCatIds.add(id);
     }
 
     for (const t of ((txns as any[]) || [])) {
@@ -195,9 +208,13 @@ export function useMoneyPurposeSnapshot(monthInput: string, window: AverageWindo
 
       // Income is the denominator, never an allocation.
       if (catId && resolution.incomeCategoryIds.has(catId)) {
-        if (amount > 0) netIncome += amount;
+        if (amount > 0 && takeHomeCatIds.has(catId)) netIncome += amount;
         continue;
       }
+
+      // Inflows into expense/wealth categories (reimbursements, returned
+      // funds, Stash deposits) are not spending and never charge a bucket.
+      if (amount > 0) continue;
 
       const p = ((t.money_purpose as MoneyPurpose | null) || (catId ? resolution.byCategory.get(catId) : null)) as
         | MoneyPurpose
@@ -261,7 +278,7 @@ export function useMoneyPurposeSnapshot(monthInput: string, window: AverageWindo
       isCompletedMonth,
       loading: bLoading || tLoading || eLoading,
     };
-  }, [budgets, txns, elections, resolution, window, month, bLoading, tLoading, eLoading]);
+  }, [budgets, txns, elections, resolution, categories, window, month, bLoading, tLoading, eLoading]);
 }
 
 export { consumesTakeHome };
