@@ -1,6 +1,8 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { LayoutTemplate } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import InfographicPreviewDialog from './InfographicPreviewDialog';
+
 
 export interface InfographicCategory {
   category?: string;
