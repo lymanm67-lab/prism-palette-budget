@@ -368,11 +368,9 @@ export function renderInfographic(spec: InfographicSpec): string {
         ${
           spec.commitment.steps?.length
             ? `<div style="flex:2;display:flex;align-items:center;justify-content:space-around;font-size:8px;font-weight:800;letter-spacing:0.04em;text-align:center">${spec.commitment.steps
-                .map(esc)
-                .join('<span>→</span>')
-                .replace(/(<span>→<\/span>)/g, '</span>$1<span>')
-                .replace(/^/, '<span>')
-                .concat('</span>')}</div>`
+                .map((s) => `<span>${esc(s).replace(/\n/g, '<br/>')}</span>`)
+                .join('<span>→</span>')}</div>`
+
             : ''
         }
       </div>`
