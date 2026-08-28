@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import PrintReportFrame from '@/components/print/PrintReportFrame';
 import ReconciliationCheckCard from '@/components/reports/ReconciliationCheckCard';
+import BudgetInfographicPrint from '@/components/reports/BudgetInfographicPrint';
+
 import ReactMarkdown from 'react-markdown';
 import { supabase } from '@/integrations/supabase/client';
 import { useHousehold } from '@/contexts/HouseholdContext';
@@ -205,6 +207,23 @@ export default function MonthlyReport() {
 
   const printPDF = () => window.print();
 
+  // Last 3 months (incl. current selection) of budget vs actual for the infographic trend chart
+  const trendPoints = useMemo(() => {
+    const current = String(meta.month ?? selectedMonth ?? '').slice(0, 7);
+    if (!current) return [];
+    const months = monthOptions.filter((m) => m <= current).sort().slice(-3);
+    return months.map((m) => {
+      const rep = reportByMonth.get(m);
+      const cats: any[] = (rep?.metadata?.by_category || []).filter((c: any) => matchesEntity(c.entity));
+      return {
+        label: monthLabel(m).replace(/(\w{3})\w* (\d{4})/, '$1 $2').toUpperCase(),
+        budget: cats.reduce((s, c) => s + (c.budget || 0), 0),
+        actual: cats.reduce((s, c) => s + (c.spent || 0), 0),
+      };
+    });
+  }, [meta.month, selectedMonth, monthOptions, reportByMonth, entity]);
+
+
   const stripFirstHeading = useMemo(() => {
     // The message repeats the "Monthly Report — YYYY-MM" heading; strip it for cleaner render
     if (!active?.message) return '';
@@ -260,10 +279,23 @@ export default function MonthlyReport() {
             <RefreshCcw className="h-4 w-4 mr-2" />
             Run last month
           </Button>
+          {active && (
+            <BudgetInfographicPrint
+              monthLabel={monthLabel(meta.month ?? selectedMonth)}
+              daysInMonth={(() => {
+                const m = String(meta.month ?? selectedMonth).slice(0, 7);
+                const [y, mo] = m.split('-').map(Number);
+                return new Date(Date.UTC(y, mo, 0)).getUTCDate();
+              })()}
+              categories={byCategory}
+              trend={trendPoints}
+            />
+          )}
           <Button onClick={printPDF} disabled={!active}>
             <Printer className="h-4 w-4 mr-2" />
             Print / Save PDF
           </Button>
+
         </div>
       </div>
 
