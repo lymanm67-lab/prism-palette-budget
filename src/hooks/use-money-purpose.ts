@@ -142,7 +142,8 @@ export function useMoneyPurposeMonth(month: string): MoneyPurposeMonth {
 
       const p = (t.money_purpose as MoneyPurpose | null) || (catId ? resolution.byCategory.get(catId) : null);
       if (!p) continue;
-      actual[p] += Math.abs(Math.min(amount, 0)) || (amount < 0 ? Math.abs(amount) : 0);
+      // expenses arrive as negative amounts; refunds (positive) net against the purpose
+      actual[p] += -amount;
     }
 
     const plannedAllocated = (['live', 'enjoy', 'build_wealth', 'eliminate_debt'] as const).reduce(
