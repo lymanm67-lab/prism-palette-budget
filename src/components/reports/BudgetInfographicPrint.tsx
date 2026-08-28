@@ -91,7 +91,7 @@ function donutSvg(slices: { label: string; value: number; color: string }[], tot
 
 function trendSvg(points: InfographicTrendPoint[]) {
   if (!points.length) return '';
-  const w = 300;
+  const w = 275;
   const h = 150;
   const padL = 46;
   const padB = 34;
@@ -330,12 +330,12 @@ export default function BudgetInfographicPrint({ monthLabel, daysInMonth, catego
 
   <!-- Bottom band -->
   <div style="display:flex;gap:8px;margin-top:10px">
-    <div class="panel" style="flex:1.15">
+    <div class="panel" style="flex:1.6">
       <div class="panel-head" style="background:${GREEN}">Budget Breakdown by Purpose</div>
       <div style="display:flex;padding:10px 4px">${purposeCards}</div>
       <div style="background:#f2f6fd;color:${BLUE};font-size:9.5px;font-style:italic;font-weight:700;text-align:center;padding:5px">Smart choices today create financial freedom tomorrow.</div>
     </div>
-    <div class="panel" style="flex:1.35">
+    <div class="panel" style="width:2.95in">
       <div class="panel-head" style="background:${NAVY}">Monthly Trend (3-Month View)</div>
       <div style="padding:6px;text-align:center">
         <div style="font-size:8.5px;margin-bottom:2px"><span style="color:${GREEN};font-weight:700">■ Budgeted</span> &nbsp; <span style="color:${BLUE};font-weight:700">■ Actual</span> &nbsp; <span style="color:${RED};font-weight:700">■ Over / (Under)</span></div>
@@ -343,7 +343,7 @@ export default function BudgetInfographicPrint({ monthLabel, daysInMonth, catego
       </div>
       <div style="background:#f4f6fa;color:${NAVY};font-size:9.5px;font-style:italic;font-weight:700;text-align:center;padding:5px">Staying consistent builds long-term wealth.</div>
     </div>
-    <div class="panel" style="width:2.4in">
+    <div class="panel" style="width:2.2in">
       <div class="panel-head" style="background:${PURPLE}">My Financial Priorities</div>
       <div style="padding:8px 10px">${priorities}</div>
     </div>
