@@ -179,6 +179,9 @@ export function classifyMoneyPurpose(input: ClassifyInput): MoneyPurpose | null 
   // Business stays out of personal ratios entirely.
   if (budgetType === 'business') return 'business';
 
+  // AI / app-development services are business tools even in a personal group.
+  for (const r of BUSINESS_RULES) if (r.re.test(hay)) return 'business';
+
   const ordered: Rule[][] = [WEALTH_RULES, DEBT_RULES, LIVE_RULES, ENJOY_RULES, TAX_BENEFIT_RULES];
   for (const set of ordered) {
     for (const r of set) if (r.re.test(name) || r.re.test(group)) return r.purpose;
