@@ -14,6 +14,8 @@ import BlueprintHistoryChart from '@/components/blueprint/BlueprintHistoryChart'
 import BlueprintDriftAlerts from '@/components/blueprint/BlueprintDriftAlerts';
 import ReconciliationDrilldown from '@/components/blueprint/ReconciliationDrilldown';
 import BlueprintExportButton from '@/components/blueprint/BlueprintExportButton';
+import FundTheGapCard from '@/components/blueprint/FundTheGapCard';
+import PurposeLedger from '@/components/blueprint/PurposeLedger';
 
 interface ExpenseStructure {
   fixed: { budget: number; actual: number };
