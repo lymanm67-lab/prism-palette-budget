@@ -185,7 +185,7 @@ export function useUpdateCategory() {
     mutationFn: async ({ id, ...updates }: { id: string; name?: string; color?: string; group_id?: string; sort_order?: number; money_purpose?: string | null }) => {
       const { data, error } = await supabase
         .from('categories')
-        .update(updates)
+        .update(updates as any)
         .eq('id', id)
         .select()
         .single();
