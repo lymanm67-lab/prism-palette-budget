@@ -461,9 +461,11 @@ export default function BudgetBillsReport() {
           <Button variant={editMode ? 'default' : 'outline'} onClick={() => setEditMode((v) => !v)}>
             {editMode ? <><Check className="h-4 w-4 mr-2" /> Done editing</> : <><Pencil className="h-4 w-4 mr-2" /> Edit</>}
           </Button>
+          <PrintInfographicButton buildSpec={buildInfographic} disabled={isLoading} />
           <Button variant="secondary" onClick={() => window.print()}>
             <Printer className="h-4 w-4 mr-2" /> Print
           </Button>
+
         </div>
       </div>
 
