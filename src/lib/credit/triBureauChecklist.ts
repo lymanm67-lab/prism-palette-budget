@@ -157,3 +157,34 @@ export function checklistSummary(lists: BureauChecklist[]) {
   const degrades = lists.flatMap(l => l.items.filter(i => i.severity === 'degrades').map(i => ({ bureau: l.bureau, ...i })));
   return { blocking, degrades, allReliable: blocking.length === 0 };
 }
+
+export interface DataWarning {
+  severity: 'blocking' | 'degrades';
+  text: string;
+}
+
+/**
+ * Flat, plain-English list of everything that makes this simulation less trustworthy.
+ * Shown inline in the simulator AND embedded in the PDF/CSV exports so a printed
+ * copy always carries its own caveats.
+ */
+export function buildWarnings(lists: BureauChecklist[], gate: ReliabilityGate): DataWarning[] {
+  const out: DataWarning[] = [];
+  for (const cl of lists) {
+    for (const it of cl.items) {
+      if (it.severity === 'ok') continue;
+      const accts = it.accounts.length ? ` (${it.accounts.slice(0, 4).join(', ')}${it.accounts.length > 4 ? '…' : ''})` : '';
+      out.push({ severity: it.severity, text: `${cl.bureau} — ${it.field}: ${it.detail}${accts}` });
+    }
+  }
+  for (const bk of gate.blockedKinds) out.push({ severity: 'degrades', text: `Input disabled — ${bk.reason}` });
+  const blockedCount = gate.blockedAccountIds.size;
+  if (blockedCount > 0) {
+    out.push({
+      severity: 'blocking',
+      text: `${blockedCount} account(s) cannot be simulated at all until their limit or balance is filled in.`,
+    });
+  }
+  // Blocking first, then degrades.
+  return out.sort((a, b) => (a.severity === b.severity ? 0 : a.severity === 'blocking' ? -1 : 1));
+}

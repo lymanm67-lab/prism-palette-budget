@@ -3,13 +3,15 @@
 import type { InfographicSpec } from '@/lib/reports/infographic';
 import { BUREAU_PROFILE, type BureauEstimate, type CardUtilization, type Sensitivity } from './triBureauModel';
 import type { TimelineStep } from './triBureauTimeline';
-import type { BureauChecklist } from './triBureauChecklist';
+import type { BureauChecklist, DataWarning } from './triBureauChecklist';
 
 export interface ExportPayload {
   estimates: BureauEstimate[];
   cards: CardUtilization[];
   timeline: TimelineStep[];
   checklists: BureauChecklist[];
+  /** Plain-English data-quality caveats, embedded in every export. */
+  warnings: DataWarning[];
   sensitivity: Sensitivity;
   actionSummary: string[];
   baseMiddle: number | null;
@@ -47,6 +49,16 @@ export function buildTriBureauCsv(p: ExportPayload): string {
   add('Summary', 'Qualifying score (middle) now', p.baseMiddle ?? '—', 'Middle of three is what underwriting uses');
   add('Summary', 'Qualifying score projected', p.simMiddle ?? '—', '');
   add('Summary', 'Projected change', (p.simMiddle ?? 0) - (p.baseMiddle ?? 0), 'points');
+  add('');
+
+  add('DATA QUALITY WARNINGS', 'SEVERITY', 'ISSUE');
+  if (p.warnings.length === 0) {
+    add('', 'ok', 'No data-quality issues detected — all required fields present on all three bureaus.');
+  } else {
+    for (const w of p.warnings) {
+      add('', w.severity === 'blocking' ? 'BLOCKING — do not rely on this output' : 'DEGRADES accuracy', w.text);
+    }
+  }
   add('');
 
   add('BUREAU', 'MORTGAGE MODEL', 'CURRENT', 'PROJECTED', 'DELTA', 'RANGE (±MARGIN)', 'UTIL NOW %', 'UTIL PROJ %', 'TRADELINES', 'DEROGS NOW', 'DEROGS PROJ', 'INQ 12MO NOW', 'INQ 12MO PROJ');
@@ -152,6 +164,16 @@ export function buildTriBureauSpec(p: ExportPayload): InfographicSpec {
       { label: 'Qualifying projected', value: p.simMiddle != null ? String(p.simMiddle) : '—', tone: delta >= 0 ? 'green' : 'red' },
       { label: 'Change', value: `${delta > 0 ? '+' : ''}${delta} pts`, tone: delta >= 0 ? 'green' : 'red' },
       { label: 'Actions stacked', value: String(p.actionSummary.length) },
+      {
+        label: 'Data quality',
+        value:
+          p.warnings.some(w => w.severity === 'blocking')
+            ? 'UNRELIABLE'
+            : p.warnings.length
+              ? `${p.warnings.length} caveats`
+              : 'Complete',
+        tone: p.warnings.some(w => w.severity === 'blocking') ? 'red' : p.warnings.length ? 'orange' : 'green',
+      },
     ],
     kpis: p.estimates.map(e => ({
       title: `${e.bureau} · ${BUREAU_PROFILE[e.bureau].mortgageModel}`,
@@ -231,6 +253,15 @@ export function buildTriBureauSpec(p: ExportPayload): InfographicSpec {
       },
     ],
     panels: [
+      {
+        title: p.warnings.some(w => w.severity === 'blocking')
+          ? 'DATA QUALITY WARNINGS — output is unreliable'
+          : 'Data quality warnings',
+        tone: p.warnings.some(w => w.severity === 'blocking') ? 'red' : 'orange',
+        items: p.warnings.length
+          ? p.warnings.slice(0, 10).map(w => `${w.severity === 'blocking' ? '[BLOCKING] ' : '[degrades] '}${w.text}`)
+          : ['No data-quality issues detected — all required fields present on all three bureaus.'],
+      },
       {
         title: 'Scenario stack',
         tone: 'orange',
