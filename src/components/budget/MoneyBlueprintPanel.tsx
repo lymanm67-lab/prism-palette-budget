@@ -181,6 +181,12 @@ export default function MoneyBlueprintPanel({ month, expenseStructure }: Props) 
         </CardContent>
       </Card>
 
+      {/* ---------------- Drift alerts ---------------- */}
+      <BlueprintDriftAlerts snap={snap} />
+
+      {/* ---------------- History chart ---------------- */}
+      <BlueprintHistoryChart month={month} />
+
       {/* ---------------- Wealth building ---------------- */}
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
@@ -375,6 +381,9 @@ export default function MoneyBlueprintPanel({ month, expenseStructure }: Props) 
           </p>
         </CardContent>
       </Card>
+
+      {/* ---------------- Every-dollar audit ---------------- */}
+      <ReconciliationDrilldown snap={snap} />
     </div>
   );
 }
