@@ -170,6 +170,7 @@ export function useMoneyPurposeSnapshot(monthInput: string, window: AverageWindo
   // Callers may pass either `YYYY-MM` or a full `YYYY-MM-01` budget month key.
   const month = monthInput.slice(0, 7);
   const resolution = usePurposeResolution();
+  const { data: categories } = useCategories();
   const { data: budgets, isLoading: bLoading } = useBudgets(`${month}-01`);
   const { data: elections, isLoading: eLoading } = usePayrollElections();
 
