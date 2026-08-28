@@ -685,7 +685,10 @@ const Reports = () => {
           </PopoverContent>
         </Popover>
 
+        <PrintInfographicButton buildSpec={buildInfographic} label="Infographic" filename={`report-${activeTab}-${startDate}-to-${endDate}`} />
+
         {/* Export Dropdown */}
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="gap-2">
