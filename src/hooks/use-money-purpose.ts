@@ -153,6 +153,8 @@ export interface MoneyPurposeSnapshot {
   /** payroll taxes/benefits withheld (informational) */
   payrollDeductions: number;
   blueprint: BlueprintOutput;
+  /** automatic target-phase switching detail */
+  phaseProjection: PhaseProjection;
   monthsCovered: string[];
   /** true when the month is complete, so imported actuals are authoritative */
   isCompletedMonth: boolean;
