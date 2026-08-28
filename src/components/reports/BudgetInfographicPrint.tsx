@@ -97,8 +97,8 @@ function trendSvg(points: InfographicTrendPoint[]) {
   const padB = 34;
   const max = Math.max(...points.flatMap((p) => [p.budget, p.actual]), 1) * 1.12;
   const bw = (w - padL - 10) / points.length;
-  const scale = (v: number) => (h - padB) * (1 - v / (max * 1.1));
-  const gridVals = [0, 0.25, 0.5, 0.75, 1].map((f) => f * max * 1.1);
+  const scale = (v: number) => 7 + (h - padB - 7) * (1 - v / max);
+  const gridVals = [0, 0.25, 0.5, 0.75, 1].map((f) => f * max);
   const grid = gridVals
     .map(
       (v) =>
