@@ -91,7 +91,7 @@ function donutSvg(slices: { label: string; value: number; color: string }[], tot
 
 function trendSvg(points: InfographicTrendPoint[]) {
   if (!points.length) return '';
-  const w = 330;
+  const w = 300;
   const h = 150;
   const padL = 46;
   const padB = 34;
@@ -297,13 +297,13 @@ export default function BudgetInfographicPrint({ monthLabel, daysInMonth, catego
     <div class="panel" style="flex:1">
       <div class="panel-head" style="background:${NAVY}">Where My Money Went</div>
       <div style="display:flex;align-items:center;gap:6px;padding:8px">
-        <div style="flex:0 0 220px">${donutSvg(slices, totalSpent)}</div>
-        <table style="flex:1;table-layout:fixed"><colgroup><col style="width:16px"/><col/><col style="width:66px"/><col style="width:52px"/></colgroup><thead><tr><th></th><th class="th" style="text-align:left">Category Group</th><th class="th" style="text-align:right">Spent</th><th class="th" style="text-align:right">% of Total</th></tr></thead><tbody>${legend}</tbody></table>
+        <div style="flex:0 0 200px">${donutSvg(slices, totalSpent)}</div>
+        <table style="flex:1;table-layout:fixed"><colgroup><col style="width:16px"/><col/><col style="width:72px"/><col style="width:50px"/></colgroup><thead><tr><th></th><th class="th" style="text-align:left">Category Group</th><th class="th" style="text-align:right">Spent</th><th class="th" style="text-align:right">% of Total</th></tr></thead><tbody>${legend}</tbody></table>
 
       </div>
       <div style="background:${NAVY};color:#fff;text-align:center;font-size:11px;font-style:italic;font-weight:700;padding:5px">Every dollar has a purpose.</div>
     </div>
-    <div class="panel" style="width:3.5in">
+    <div class="panel" style="width:3.3in">
       <div class="panel-head" style="background:${RED}">Top Over Budget Categories</div>
       <table><thead><tr><th class="th" style="text-align:left">Category</th><th class="th">Budget</th><th class="th">Actual</th><th class="th">Over</th></tr></thead>
       <tbody>${overRows || `<tr><td colspan="4" style="padding:16px;text-align:center;font-size:10px;color:${GREEN};font-weight:700">No categories over budget this month.</td></tr>`}</tbody></table>
@@ -335,7 +335,7 @@ export default function BudgetInfographicPrint({ monthLabel, daysInMonth, catego
       <div style="display:flex;padding:10px 4px">${purposeCards}</div>
       <div style="background:#f2f6fd;color:${BLUE};font-size:9.5px;font-style:italic;font-weight:700;text-align:center;padding:5px">Smart choices today create financial freedom tomorrow.</div>
     </div>
-    <div class="panel" style="flex:1.1">
+    <div class="panel" style="flex:1.35">
       <div class="panel-head" style="background:${NAVY}">Monthly Trend (3-Month View)</div>
       <div style="padding:6px;text-align:center">
         <div style="font-size:8.5px;margin-bottom:2px"><span style="color:${GREEN};font-weight:700">■ Budgeted</span> &nbsp; <span style="color:${BLUE};font-weight:700">■ Actual</span> &nbsp; <span style="color:${RED};font-weight:700">■ Over / (Under)</span></div>
