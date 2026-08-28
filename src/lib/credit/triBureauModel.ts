@@ -274,7 +274,14 @@ function scoreFile(
     : 0;
   const worstCardDrag = worstCardUtil >= 90 ? 12 : worstCardUtil >= 75 ? 8 : worstCardUtil >= 50 ? 4 : 0;
 
-  const derogRaw = derogCount === 0 ? 100 : derogCount === 1 ? 52 : derogCount <= 3 ? 30 : 12;
+  // Interpolated so a partially-credited dispute moves the score proportionally.
+  const derogAnchors = [100, 52, 30, 12];
+  const dcClamped = Math.max(0, Math.min(3, derogCount));
+  const lo = Math.floor(dcClamped);
+  const hi = Math.min(3, lo + 1);
+  const derogRaw =
+    derogCount >= 3 ? 12 : derogAnchors[lo] + (derogAnchors[hi] - derogAnchors[lo]) * (dcClamped - lo);
+
   const derogScore = Math.max(0, 100 - (100 - derogRaw) * p.derogWeight);
 
   const ageScore = avgAgeMonths >= 96 ? 100 : avgAgeMonths >= 60 ? 82 : avgAgeMonths >= 36 ? 62 : avgAgeMonths >= 18 ? 42 : 24;
