@@ -117,14 +117,14 @@ export default function MoneyBlueprintPanel({ month, expenseStructure }: Props) 
                     </p>
                     <div className="mt-2 space-y-0.5 text-[10px] text-muted-foreground">
                       <p>
-                        Target {c.key === 'build_wealth' ? '≥' : '≤'} {c.targetPct}%
+                        Target {c.key === 'build_wealth' || c.key === 'eliminate_debt' ? '≥' : '≤'} {c.targetPct}%
                       </p>
                       <p
                         className={cn(
                           'tabular-nums',
                           c.underTarget
                             ? 'text-emerald-600 dark:text-emerald-400'
-                            : c.key === 'build_wealth' && (c.remainingToTarget || 0) > 0
+                            : (c.key === 'build_wealth' || c.key === 'eliminate_debt') && (c.remainingToTarget || 0) > 0
                               ? 'text-amber-600 dark:text-amber-400'
                               : c.variance === 0
                                 ? ''
