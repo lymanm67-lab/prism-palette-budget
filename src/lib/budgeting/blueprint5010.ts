@@ -136,9 +136,8 @@ export function computeBlueprint5010(input: BlueprintInput): BlueprintOutput {
     if (key === 'live' && variance > 0) {
       card.aboveTargetLabel = `Above Target by ${money(variance)}`;
     }
-    // Ceiling purposes: coming in under target is a win, so present it as a
-    // positive cushion rather than a negative variance.
-    if (key !== 'build_wealth' && variance < 0) {
+    // LIVE and ENJOY are ceilings: coming in under target is a win.
+    if ((key === 'live' || key === 'enjoy') && variance < 0) {
       card.aboveTargetLabel = `Under Target by ${money(-variance)}`;
       card.underTarget = true;
     }
@@ -151,6 +150,15 @@ export function computeBlueprint5010(input: BlueprintInput): BlueprintOutput {
         card.aboveTargetLabel = `Gap to Close ${money(card.remainingToTarget)}`;
       } else {
         card.aboveTargetLabel = `Floor Met · ${money(-variance)} above`;
+        card.underTarget = true;
+      }
+    }
+    if (key === 'eliminate_debt') {
+      card.remainingToTarget = Math.max(0, Math.round((targetAmount - actualAmount) * 100) / 100);
+      if (card.remainingToTarget > 0) {
+        card.aboveTargetLabel = `Gap to Close ${money(card.remainingToTarget)}`;
+      } else {
+        card.aboveTargetLabel = `Floor Met · ${money(variance)} above`;
         card.underTarget = true;
       }
     }
@@ -194,7 +202,8 @@ export function computeBlueprint5010(input: BlueprintInput): BlueprintOutput {
 
   // Alignment score: 100 minus the summed distance from each target band.
   const penalty = cards.reduce((s, c) => {
-    const miss = c.key === 'build_wealth' ? Math.max(0, c.targetPct - c.actualPct) : Math.max(0, c.actualPct - c.targetPct);
+    const isFloor = c.key === 'build_wealth' || c.key === 'eliminate_debt';
+    const miss = isFloor ? Math.max(0, c.targetPct - c.actualPct) : Math.max(0, c.actualPct - c.targetPct);
     return s + miss;
   }, 0);
   const alignmentScore = Math.max(0, Math.min(100, Math.round(100 - penalty * 1.5)));
