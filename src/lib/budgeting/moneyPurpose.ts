@@ -212,7 +212,9 @@ export function statusFor(
   // ENJOY are spending ceilings. Exceeding the debt target is therefore green.
   const isFloor = purpose === 'build_wealth' || purpose === 'eliminate_debt';
   const diff = isFloor ? actualPct - target : target - actualPct;
-  if (diff >= 0) return 'on';
+  // Allow a one-point rounding/timing tolerance so a small monthly variance
+  // does not incorrectly flag an otherwise aligned bucket amber.
+  if (diff >= -1) return 'on';
   if (diff >= -5) return 'watch';
   return 'off';
 }
