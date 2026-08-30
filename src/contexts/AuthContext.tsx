@@ -44,6 +44,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const { data, error } = await supabase.functions.invoke('check-subscription');
       if (error) throw error;
+      if (!data) return; // degraded response — keep previous state
       const hasFullAccessRole = data.has_full_access_role ?? false;
       setIsFounder(hasFullAccessRole);
       setSubscribed(data.subscribed ?? false);
@@ -57,9 +58,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSubscriptionTier(null);
       }
     } catch (err) {
-      console.error('check-subscription error:', err);
+      // Backend blips (503 / degraded edge runtime) must never block the UI.
+      console.warn('check-subscription unavailable, retaining last known state:', err);
     }
   };
+
 
   useEffect(() => {
     let isMounted = true;
