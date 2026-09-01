@@ -117,6 +117,7 @@ const RetirementDashboard = lazy(() => import("@/pages/RetirementDashboard"));
 const InvestmentPortfolio = lazy(() => import("./pages/InvestmentPortfolio"));
 const RetirementTaxCenter = lazy(() => import("./pages/RetirementTaxCenter"));
 const TravelFund = lazy(() => import("./pages/TravelFund"));
+const ZeroBasedPlan = lazy(() => import("./pages/ZeroBasedPlan"));
 const RetirementHub = lazy(() => import("@/pages/RetirementHub"));
 const HealthDashboard = lazy(() => import("@/pages/health/HealthDashboard"));
 const ContentEditor = lazy(() => import("@/pages/admin/ContentEditor"));
