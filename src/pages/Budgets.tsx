@@ -24,7 +24,7 @@ import CategoryCombobox from '@/components/CategoryCombobox';
 import { useBusinessProfiles } from '@/hooks/use-business-data';
 import { useSmartBudget } from '@/hooks/use-financial-intelligence';
 import { useCurrency } from '@/hooks/use-currency';
-import { Loader2, Plus, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Eye, EyeOff, Settings2, TrendingUp, AlertTriangle, CheckCircle2, PiggyBank, Sparkles, Copy, ClipboardCheck, MoreHorizontal, BookOpen, Printer, X, Scale, FileUp, Receipt, ArrowRightLeft } from 'lucide-react';
+import { Loader2, Wallet, LayoutGrid, ListChecks, Plus, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Eye, EyeOff, Settings2, TrendingUp, AlertTriangle, CheckCircle2, PiggyBank, Sparkles, Copy, ClipboardCheck, MoreHorizontal, BookOpen, Printer, X, Scale, FileUp, Receipt, ArrowRightLeft } from 'lucide-react';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -44,6 +44,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import MoneyBlueprintPanel from '@/components/budget/MoneyBlueprintPanel';
 import PayrollElectionsCard from '@/components/budget/PayrollElectionsCard';
 import DebtCashFlowRelease from '@/components/budget/DebtCashFlowRelease';
+import ZeroBasedPlanBoard from '@/components/budget/ZeroBasedPlanBoard';
 
 const getMonth = (offset: number) => {
   const d = new Date();
@@ -99,6 +100,20 @@ interface BudgetRow {
   received: number;
   categories: { name: string; color: string } | null;
 }
+
+/**
+ * The budget page reads as one ordered flow: what came in, what it is assigned to,
+ * the line-by-line budget, the month-end forecast, then the plan summary cards.
+ */
+type BudgetStep = 'income' | 'assign' | 'budget' | 'forecast' | 'plan';
+
+const BUDGET_STEPS: { key: BudgetStep; label: string; icon: typeof Wallet; hint: string }[] = [
+  { key: 'income', label: 'Income', icon: Wallet, hint: 'Start with the money that actually lands — paychecks, payroll deductions and other deposits.' },
+  { key: 'assign', label: 'Assign', icon: ListChecks, hint: 'Give every dollar a purpose using the 45/10/25/20 blueprint and freed debt cash.' },
+  { key: 'budget', label: 'Budget', icon: PiggyBank, hint: 'Set and adjust each category line, then check planned against actual.' },
+  { key: 'forecast', label: 'Forecast', icon: TrendingUp, hint: 'See where this month lands at your current spending pace.' },
+  { key: 'plan', label: 'Plan', icon: LayoutGrid, hint: 'Your six summary cards: Live, Enjoy, Build Wealth, Eliminate Debt, Business and Buffer.' },
+];
 
 const Budgets = () => {
   const { formatCurrency } = useCurrency();
@@ -301,6 +316,10 @@ const Budgets = () => {
   const [smartSuggestions, setSmartSuggestions] = useState<{ category_id: string; category_name: string; monthly_average: number; suggested_budget: number; selected: boolean }[]>([]);
   const smartBudget = useSmartBudget();
   const [printPreview, setPrintPreview] = useState(false);
+  /** Print output always includes every step, regardless of the active tab. */
+  const isPrinting = printPreview;
+  const stepIndex = Math.max(0, BUDGET_STEPS.findIndex(s => s.key === viewTab));
+  const activeStep = BUDGET_STEPS[stepIndex];
   const [printOrientation, setPrintOrientation] = useState<'portrait' | 'landscape'>('portrait');
   const [paystubOpen, setPaystubOpen] = useState(false);
   const [billScanOpen, setBillScanOpen] = useState(false);
