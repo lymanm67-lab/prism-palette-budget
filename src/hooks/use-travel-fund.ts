@@ -53,7 +53,9 @@ export function useTravelSettings() {
     };
   }, [query.data]);
 
-  return { settings, isLoading: query.isLoading, save };
+  // `configured` is false until a real travel_settings row exists, so callers
+  // never treat the $500 default as a contribution the user actually set up.
+  return { settings, configured: !!query.data, isLoading: query.isLoading, save };
 }
 
 function normalizeTrip(r: any): TravelTrip {

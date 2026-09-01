@@ -176,7 +176,7 @@ export function useMoneyPurposeSnapshot(monthInput: string, window: AverageWindo
   const { data: categories } = useCategories();
   const { data: budgets, isLoading: bLoading } = useBudgets(`${month}-01`);
   const { data: elections, isLoading: eLoading } = usePayrollElections();
-  const { settings: travelSettings } = useTravelSettings();
+  const { settings: travelSettings, configured: travelConfigured } = useTravelSettings();
 
   const startMonth = addMonths(month, -(window - 1));
   const { data: txns, isLoading: tLoading } = useTransactionsByDateRange(`${startMonth}-01`, monthEnd(month));
@@ -186,6 +186,7 @@ export function useMoneyPurposeSnapshot(monthInput: string, window: AverageWindo
     const planned = emptyTotals();
     const actual = emptyTotals();
     let netIncome = 0;
+    let businessInflow = 0;
     const catNameById = new Map<string, string>(
       ((categories as any[]) || []).map((c: any) => [c.id, c.name || '']),
     );
@@ -211,15 +212,23 @@ export function useMoneyPurposeSnapshot(monthInput: string, window: AverageWindo
       const amount = Number(t.amount) || 0;
       const catId = t.category_id as string | null;
 
+      const purposeOfCat = (t.money_purpose as MoneyPurpose | null) ||
+        (catId ? resolution.byCategory.get(catId) : null);
+
       // Income is the denominator, never an allocation.
       if (catId && resolution.incomeCategoryIds.has(catId)) {
         if (amount > 0 && takeHomeCatIds.has(catId)) netIncome += amount;
+        // Business revenue is not take-home, but it does fund business spending.
+        else if (amount > 0 && purposeOfCat === 'business') businessInflow += amount;
         continue;
       }
 
       // Inflows into expense/wealth categories (reimbursements, returned
       // funds, Stash deposits) are not spending and never charge a bucket.
-      if (amount > 0) continue;
+      if (amount > 0) {
+        if (purposeOfCat === 'business') businessInflow += amount;
+        continue;
+      }
 
       const p = ((t.money_purpose as MoneyPurpose | null) || (catId ? resolution.byCategory.get(catId) : null)) as
         | MoneyPurpose
@@ -240,6 +249,7 @@ export function useMoneyPurposeSnapshot(monthInput: string, window: AverageWindo
       actual[k] = Math.round((actual[k] / divisor) * 100) / 100;
     }
     netIncome = Math.round((netIncome / divisor) * 100) / 100;
+    businessInflow = Math.round((businessInflow / divisor) * 100) / 100;
 
     const active = electionsForMonth(elections, month);
     const payrollWealth = active
@@ -260,8 +270,12 @@ export function useMoneyPurposeSnapshot(monthInput: string, window: AverageWindo
 
     // LAYER A (total cash flow) inputs. Business money never enters personal
     // ratios, but it does leave the checking account, so the zero-based
-    // equation has to see it.
-    const sinkingFunds = Math.round((Number(travelSettings?.monthly_target) || 0) * 100) / 100;
+    // equation has to see it — net of business revenue that funds it.
+    // Sinking funds only count once a travel fund is actually configured; the
+    // hook's $500 default is a form placeholder, not a real assignment.
+    const sinkingFunds = travelConfigured
+      ? Math.round((Number(travelSettings?.monthly_target) || 0) * 100) / 100
+      : 0;
     const oneTimeExpenses =
       Math.round(
         SETTLEMENT_FEES.filter((f) => f.date.slice(0, 7) === month).reduce((s, f) => s + f.amount, 0) * 100,
@@ -275,6 +289,7 @@ export function useMoneyPurposeSnapshot(monthInput: string, window: AverageWindo
       employerWealth,
       phase: phaseProjection.phase,
       businessOutflow: actual.business,
+      businessInflow,
       sinkingFunds,
       oneTimeExpenses,
     });
@@ -296,7 +311,7 @@ export function useMoneyPurposeSnapshot(monthInput: string, window: AverageWindo
       isCompletedMonth,
       loading: bLoading || tLoading || eLoading,
     };
-  }, [budgets, txns, elections, resolution, categories, window, month, travelSettings, bLoading, tLoading, eLoading]);
+  }, [budgets, txns, elections, resolution, categories, window, month, travelSettings, travelConfigured, bLoading, tLoading, eLoading]);
 }
 
 export { consumesTakeHome };

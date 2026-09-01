@@ -29,6 +29,8 @@ export interface BlueprintInput {
   phase?: FreedomPhase;
   /** LAYER A only: business money paid out of the personal account this month. */
   businessOutflow?: number;
+  /** LAYER A only: business deposits/revenue landing in the same account. */
+  businessInflow?: number;
   /** LAYER A only: sinking fund contributions (travel, annual bills, goals). */
   sinkingFunds?: number;
   /** LAYER A only: cash intentionally parked in Buffer this month. */
@@ -68,6 +70,9 @@ export interface Reconciliation {
   unallocated: number;
   // ----- LAYER A: total cash flow, zero-based -----
   businessOutflow: number;
+  businessInflow: number;
+  /** businessOutflow minus businessInflow, floored at 0. */
+  businessNet: number;
   sinkingFunds: number;
   bufferAssignment: number;
   oneTimeExpenses: number;
@@ -189,6 +194,10 @@ export function computeBlueprint5010(input: BlueprintInput): BlueprintOutput {
   });
 
   const businessOutflow = round2(Number(input.businessOutflow) || 0);
+  const businessInflow = round2(Number(input.businessInflow) || 0);
+  // Business revenue funds business spending first; only the uncovered part is
+  // a claim on take-home pay.
+  const businessNet = round2(Math.max(0, businessOutflow - businessInflow));
   const sinkingFunds = round2(Number(input.sinkingFunds) || 0);
   const bufferAssignment = round2(Number(input.bufferAssignment) || 0);
   const oneTimeExpenses = round2(Number(input.oneTimeExpenses) || 0);
@@ -197,7 +206,7 @@ export function computeBlueprint5010(input: BlueprintInput): BlueprintOutput {
     net - input.actual.live - input.actual.enjoy - input.actual.build_wealth - input.actual.eliminate_debt,
   );
   const unassigned = round2(
-    unallocated - businessOutflow - sinkingFunds - bufferAssignment - oneTimeExpenses,
+    unallocated - businessNet - sinkingFunds - bufferAssignment - oneTimeExpenses,
   );
 
   const reconciliation: Reconciliation = {
@@ -208,6 +217,8 @@ export function computeBlueprint5010(input: BlueprintInput): BlueprintOutput {
     eliminateDebt: input.actual.eliminate_debt,
     unallocated,
     businessOutflow,
+    businessInflow,
+    businessNet,
     sinkingFunds,
     bufferAssignment,
     oneTimeExpenses,
@@ -222,7 +233,11 @@ export function computeBlueprint5010(input: BlueprintInput): BlueprintOutput {
         amount: round2(input.actual.build_wealth),
       },
       { key: 'eliminate_debt', label: 'Eliminate Debt', amount: round2(input.actual.eliminate_debt) },
-      { key: 'business', label: 'Business expenses', amount: businessOutflow },
+      {
+        key: 'business',
+        label: businessInflow > 0 ? 'Business expenses (net of business income)' : 'Business expenses',
+        amount: businessNet,
+      },
       { key: 'sinking', label: 'Sinking funds', amount: sinkingFunds },
       { key: 'buffer', label: 'Buffer assignment', amount: bufferAssignment },
       { key: 'one_time', label: 'One-time expenses', amount: oneTimeExpenses },
@@ -312,7 +327,7 @@ export function overallocationCauses(
       intentional: c.key === 'build_wealth' || c.key === 'eliminate_debt',
     }));
   for (const extra of [
-    { label: 'Business expenses', amount: reconciliation.businessOutflow },
+    { label: 'Business expenses (net of business income)', amount: reconciliation.businessNet },
     { label: 'Sinking funds', amount: reconciliation.sinkingFunds },
     { label: 'Buffer assignment', amount: reconciliation.bufferAssignment },
     { label: 'One-time expenses', amount: reconciliation.oneTimeExpenses },
