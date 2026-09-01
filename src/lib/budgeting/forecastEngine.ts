@@ -39,6 +39,8 @@ export interface ForecastAssumptions {
   takeHome: number;
   liveLines: ForecastLine[];
   enjoyPlanned: number;
+  /** Itemized, dated ENJOY commitments (Session 3). */
+  enjoyLines?: ForecastLine[];
   businessLines: ForecastLine[];
   debts: ForecastDebt[];
   /** Take-home dollars sent to wealth, effective-dated. */
