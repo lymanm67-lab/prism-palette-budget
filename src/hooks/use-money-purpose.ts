@@ -210,7 +210,13 @@ export function useMoneyPurposeSnapshot(monthInput: string, window: AverageWindo
       }
       const p = resolution.byCategory.get(b.category_id);
       if (!p) continue;
-      planned[p] += Number(b.planned_amount) || 0;
+      // Payroll-withheld lines (HSA, TDA, Roth, 457b, taxes, benefits) are
+      // already outside net pay — never charge them against take-home again.
+      const key = resolution.payrollCategoryIds.has(b.category_id)
+        ? (p === 'build_wealth' ? 'payroll_deduction' : p)
+        : p;
+      planned[key] += Number(b.planned_amount) || 0;
+
     }
     plannedTakeHome = Math.round(plannedTakeHome * 100) / 100;
 
