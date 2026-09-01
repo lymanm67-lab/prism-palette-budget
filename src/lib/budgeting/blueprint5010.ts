@@ -327,7 +327,7 @@ export function overallocationCauses(
       intentional: c.key === 'build_wealth' || c.key === 'eliminate_debt',
     }));
   for (const extra of [
-    { label: 'Business expenses', amount: reconciliation.businessOutflow },
+    { label: 'Business expenses (net of business income)', amount: reconciliation.businessNet },
     { label: 'Sinking funds', amount: reconciliation.sinkingFunds },
     { label: 'Buffer assignment', amount: reconciliation.bufferAssignment },
     { label: 'One-time expenses', amount: reconciliation.oneTimeExpenses },
