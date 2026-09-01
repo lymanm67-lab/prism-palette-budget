@@ -3,7 +3,9 @@
 // Pure functions only, so the What-If simulator can re-run the whole forecast
 // on every keystroke without touching the database.
 
-import { CORE_TARGETS, type MoneyPurpose } from '@/lib/budgeting/moneyPurpose';
+import { PHASE_TARGETS, type MoneyPurpose } from '@/lib/budgeting/moneyPurpose';
+
+const CORE_TARGETS = PHASE_TARGETS[1];
 
 export interface ForecastLine {
   label: string;
