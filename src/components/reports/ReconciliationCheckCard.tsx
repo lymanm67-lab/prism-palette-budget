@@ -103,7 +103,8 @@ export default function ReconciliationCheckCard({
   });
 
   const findings = data?.findings ?? [];
-  const autoFixable = useMemo(() => findings.filter(isAutoFixable), [findings]);
+  const bulkFixable = useMemo(() => findings.filter(isBulkFixable), [findings]);
+
 
   const applyFix = async (f: RecFinding) => {
     setBusy(f.id);
