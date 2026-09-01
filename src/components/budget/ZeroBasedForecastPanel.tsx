@@ -255,6 +255,9 @@ export default function ZeroBasedForecastPanel() {
         </CardContent>
       </Card>
 
+      <WhatIfOutcomes months={months} thresholds={thresholds} />
+
+
       <Card className="glass-card">
         <CardHeader>
           <CardTitle>Month-by-month plan</CardTitle>
