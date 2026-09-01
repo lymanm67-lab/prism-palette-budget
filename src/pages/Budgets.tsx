@@ -2084,11 +2084,7 @@ const Budgets = () => {
                     <Card className="overflow-hidden mt-2">
                       <CardContent className="p-2 space-y-1">
                         <div className="sm:hidden px-3 py-1.5 text-xs font-medium text-muted-foreground border-b">Expenses</div>
-                        {renderSection('fixed', biz.grouped.fixed, biz.totals.fixed, `all_${bizKey}_fixed`)}
-                        {renderSection('debt', biz.grouped.debt, biz.totals.debt, `all_${bizKey}_debt`)}
-                        {renderSection('wealth', biz.grouped.wealth, biz.totals.wealth, `all_${bizKey}_wealth`)}
-                        {renderSection('flexible', biz.grouped.flexible, biz.totals.flexible, `all_${bizKey}_flexible`)}
-                        {renderSection('non_monthly', biz.grouped.non_monthly, biz.totals.non_monthly, `all_${bizKey}_non_monthly`)}
+                        {biz.byGroup.map((grp: any) => renderSection(grp.expenseType, grp.items, grp.totals, `all_${bizKey}_grp_${grp.id}`, grp.name))}
                       </CardContent>
                     </Card>
                     <div className="flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 bg-primary/5 rounded-lg text-sm mt-2 mb-4">
