@@ -249,6 +249,7 @@ export function useMoneyPurposeSnapshot(monthInput: string, window: AverageWindo
       actual[k] = Math.round((actual[k] / divisor) * 100) / 100;
     }
     netIncome = Math.round((netIncome / divisor) * 100) / 100;
+    businessInflow = Math.round((businessInflow / divisor) * 100) / 100;
 
     const active = electionsForMonth(elections, month);
     const payrollWealth = active
