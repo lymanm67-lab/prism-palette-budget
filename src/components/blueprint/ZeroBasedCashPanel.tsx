@@ -31,10 +31,18 @@ const ASSIGN_TARGETS = [
   { label: 'Buffer', href: '/planning/budget' },
 ];
 
+/** Layer A lines a user can assign cash to by hand. */
+const EDITABLE_LINES: Record<string, LayerAField | undefined> = {
+  sinking: 'sinking_funds',
+  buffer: 'buffer_assignment',
+  one_time: 'one_time_expenses',
+};
+
 export default function ZeroBasedCashPanel({ snap, month }: Props) {
   const { formatCurrency } = useCurrency();
   const r = snap.blueprint.reconciliation;
   const ledger = usePurposeLedger(month);
+  const { save } = useLayerAAssignments(month);
 
   const unidentified = ledger.excluded.find((e) => e.label === 'Unclassified');
   const causes = overallocationCauses(snap.blueprint.cards, r);
@@ -186,7 +194,7 @@ export default function ZeroBasedCashPanel({ snap, month }: Props) {
               <HelpCircle className="mt-px h-3 w-3 shrink-0" />
               {r.sinkingFunds === 0 && 'Sinking fund contribution: Amount Needed. '}
               {r.bufferAssignment === 0 && 'Buffer assignment: Amount Needed. '}
-              Nothing is invented here — untracked jobs stay at $0.00 until you set them.
+              Nothing is invented here — click any editable amount above to assign cash to that job.
             </p>
           )}
 
