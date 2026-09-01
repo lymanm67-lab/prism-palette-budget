@@ -87,6 +87,8 @@ export interface ForecastMonth {
   takeHome: number;
   live: number;
   enjoy: number;
+  /** Unused portion of the ENJOY target — redirectable cash, not spending. */
+  enjoyHeadroom: number;
   buildWealthTakeHome: number;
   buildWealthEmployee: number;
   buildWealthEmployer: number;
