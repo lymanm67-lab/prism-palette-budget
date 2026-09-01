@@ -212,15 +212,23 @@ export function useMoneyPurposeSnapshot(monthInput: string, window: AverageWindo
       const amount = Number(t.amount) || 0;
       const catId = t.category_id as string | null;
 
+      const purposeOfCat = (t.money_purpose as MoneyPurpose | null) ||
+        (catId ? resolution.byCategory.get(catId) : null);
+
       // Income is the denominator, never an allocation.
       if (catId && resolution.incomeCategoryIds.has(catId)) {
         if (amount > 0 && takeHomeCatIds.has(catId)) netIncome += amount;
+        // Business revenue is not take-home, but it does fund business spending.
+        else if (amount > 0 && purposeOfCat === 'business') businessInflow += amount;
         continue;
       }
 
       // Inflows into expense/wealth categories (reimbursements, returned
       // funds, Stash deposits) are not spending and never charge a bucket.
-      if (amount > 0) continue;
+      if (amount > 0) {
+        if (purposeOfCat === 'business') businessInflow += amount;
+        continue;
+      }
 
       const p = ((t.money_purpose as MoneyPurpose | null) || (catId ? resolution.byCategory.get(catId) : null)) as
         | MoneyPurpose
