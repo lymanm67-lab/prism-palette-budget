@@ -255,6 +255,15 @@ export function useMoneyPurposeSnapshot(monthInput: string, window: AverageWindo
       netIncome,
     });
 
+    // LAYER A (total cash flow) inputs. Business money never enters personal
+    // ratios, but it does leave the checking account, so the zero-based
+    // equation has to see it.
+    const sinkingFunds = Math.round((Number(travelSettings?.monthly_target) || 0) * 100) / 100;
+    const oneTimeExpenses =
+      Math.round(
+        SETTLEMENT_FEES.filter((f) => f.date.slice(0, 7) === month).reduce((s, f) => s + f.amount, 0) * 100,
+      ) / 100;
+
     const blueprint = computeBlueprint5010({
       netIncome,
       actual: core(actual),
@@ -262,7 +271,11 @@ export function useMoneyPurposeSnapshot(monthInput: string, window: AverageWindo
       payrollWealth,
       employerWealth,
       phase: phaseProjection.phase,
+      businessOutflow: actual.business,
+      sinkingFunds,
+      oneTimeExpenses,
     });
+
 
     const monthsCovered = Array.from({ length: window }, (_, i) => addMonths(month, -i)).reverse();
     const isCompletedMonth = monthEnd(month) < new Date().toISOString().slice(0, 10);
