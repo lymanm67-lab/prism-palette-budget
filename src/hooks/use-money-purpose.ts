@@ -312,6 +312,7 @@ export function useMoneyPurposeSnapshot(monthInput: string, window: AverageWindo
       sinkingFunds,
       bufferAssignment,
       oneTimeExpenses,
+      inProgress: !monthIsComplete,
     });
 
 
