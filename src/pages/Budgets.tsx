@@ -728,9 +728,40 @@ const Budgets = () => {
       const items = budgetItems.filter(b => bizCatIds.has(b.category_id));
       const grouped = groupBudgetsByExpenseType(items);
       const totals = calcSectionTotals(grouped);
-      return { name: biz.name, id: biz.id, items, grouped, totals, catIds: bizCatIds };
+
+      // Break expense rows out by their real category group (e.g. "Business Operating
+      // Expenses", "Marketing & Media") instead of collapsing every group into the
+      // shared expense-type buckets — that made rows look misfiled.
+      const catGroupId = new Map(categories.map(c => [c.id, c.group_id as string]));
+      const groupMeta = new Map(
+        (categoryGroups as any[])
+          .filter((g: any) => bizGroupIds.has(g.id))
+          .map((g: any) => [g.id, { name: g.name as string, sort: g.sort_order ?? 999, expenseType: (g.expense_type || 'flexible') as ExpenseType }])
+      );
+      const byGroupMap = new Map<string, BudgetRow[]>();
+      for (const b of items) {
+        const gid = catGroupId.get(b.category_id);
+        if (!gid) continue;
+        const meta = groupMeta.get(gid);
+        if (!meta || meta.expenseType === 'income' || meta.expenseType === 'payroll_deduction') continue;
+        if (hideZeroAmounts && b.planned_amount === 0) continue;
+        if (hiddenBudgetIds.has(b.id)) continue;
+        if (!byGroupMap.has(gid)) byGroupMap.set(gid, []);
+        byGroupMap.get(gid)!.push(b);
+      }
+      const byGroup = Array.from(byGroupMap.entries())
+        .map(([gid, rows]) => {
+          const meta = groupMeta.get(gid)!;
+          rows.sort((a, b) => (categoryNameById.get(a.category_id) || '').localeCompare(categoryNameById.get(b.category_id) || ''));
+          const budget = rows.reduce((s, r) => s + r.planned_amount, 0);
+          const actual = rows.reduce((s, r) => s + r.spent, 0);
+          return { id: gid, name: meta.name, expenseType: meta.expenseType, items: rows, totals: { budget, actual, remaining: budget - actual } };
+        })
+        .sort((a, b) => (groupMeta.get(a.id)!.sort - groupMeta.get(b.id)!.sort) || a.name.localeCompare(b.name));
+
+      return { name: biz.name, id: biz.id, items, grouped, totals, catIds: bizCatIds, byGroup };
     }).filter(b => b.items.length > 0);
-  }, [categories, categoryGroups, businessList, budgetItems, groupBudgetsByExpenseType, calcSectionTotals]);
+  }, [categories, categoryGroups, businessList, budgetItems, groupBudgetsByExpenseType, calcSectionTotals, categoryNameById, hideZeroAmounts, hiddenBudgetIds]);
 
   // Compute all collapsible section keys for expand/collapse all
   const getAllSectionKeys = useCallback(() => {
