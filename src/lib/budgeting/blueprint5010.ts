@@ -186,17 +186,47 @@ export function computeBlueprint5010(input: BlueprintInput): BlueprintOutput {
     return card;
   });
 
+  const businessOutflow = round2(Number(input.businessOutflow) || 0);
+  const sinkingFunds = round2(Number(input.sinkingFunds) || 0);
+  const bufferAssignment = round2(Number(input.bufferAssignment) || 0);
+  const oneTimeExpenses = round2(Number(input.oneTimeExpenses) || 0);
+
+  const unallocated = round2(
+    net - input.actual.live - input.actual.enjoy - input.actual.build_wealth - input.actual.eliminate_debt,
+  );
+  const unassigned = round2(
+    unallocated - businessOutflow - sinkingFunds - bufferAssignment - oneTimeExpenses,
+  );
+
   const reconciliation: Reconciliation = {
     netIncome: net,
     live: input.actual.live,
     enjoy: input.actual.enjoy,
     buildWealthFromTakeHome: input.actual.build_wealth,
     eliminateDebt: input.actual.eliminate_debt,
-    unallocated:
-      Math.round(
-        (net - input.actual.live - input.actual.enjoy - input.actual.build_wealth - input.actual.eliminate_debt) * 100,
-      ) / 100,
+    unallocated,
+    businessOutflow,
+    sinkingFunds,
+    bufferAssignment,
+    oneTimeExpenses,
+    unassigned,
+    overallocated: unassigned < -0.004,
+    lines: [
+      { key: 'live', label: 'Live', amount: round2(input.actual.live) },
+      { key: 'enjoy', label: 'Enjoy', amount: round2(input.actual.enjoy) },
+      {
+        key: 'build_wealth',
+        label: 'Build Wealth from take-home',
+        amount: round2(input.actual.build_wealth),
+      },
+      { key: 'eliminate_debt', label: 'Eliminate Debt', amount: round2(input.actual.eliminate_debt) },
+      { key: 'business', label: 'Business expenses', amount: businessOutflow },
+      { key: 'sinking', label: 'Sinking funds', amount: sinkingFunds },
+      { key: 'buffer', label: 'Buffer assignment', amount: bufferAssignment },
+      { key: 'one_time', label: 'One-time expenses', amount: oneTimeExpenses },
+    ],
   };
+
 
   const employeeTotal = payrollWealth + input.actual.build_wealth;
   const wealth: WealthPanel = {
