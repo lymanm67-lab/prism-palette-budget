@@ -29,6 +29,8 @@ export interface BlueprintInput {
   phase?: FreedomPhase;
   /** LAYER A only: business money paid out of the personal account this month. */
   businessOutflow?: number;
+  /** LAYER A only: business deposits/revenue landing in the same account. */
+  businessInflow?: number;
   /** LAYER A only: sinking fund contributions (travel, annual bills, goals). */
   sinkingFunds?: number;
   /** LAYER A only: cash intentionally parked in Buffer this month. */
