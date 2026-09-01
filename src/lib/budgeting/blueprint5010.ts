@@ -194,6 +194,10 @@ export function computeBlueprint5010(input: BlueprintInput): BlueprintOutput {
   });
 
   const businessOutflow = round2(Number(input.businessOutflow) || 0);
+  const businessInflow = round2(Number(input.businessInflow) || 0);
+  // Business revenue funds business spending first; only the uncovered part is
+  // a claim on take-home pay.
+  const businessNet = round2(Math.max(0, businessOutflow - businessInflow));
   const sinkingFunds = round2(Number(input.sinkingFunds) || 0);
   const bufferAssignment = round2(Number(input.bufferAssignment) || 0);
   const oneTimeExpenses = round2(Number(input.oneTimeExpenses) || 0);
@@ -202,7 +206,7 @@ export function computeBlueprint5010(input: BlueprintInput): BlueprintOutput {
     net - input.actual.live - input.actual.enjoy - input.actual.build_wealth - input.actual.eliminate_debt,
   );
   const unassigned = round2(
-    unallocated - businessOutflow - sinkingFunds - bufferAssignment - oneTimeExpenses,
+    unallocated - businessNet - sinkingFunds - bufferAssignment - oneTimeExpenses,
   );
 
   const reconciliation: Reconciliation = {
@@ -213,6 +217,8 @@ export function computeBlueprint5010(input: BlueprintInput): BlueprintOutput {
     eliminateDebt: input.actual.eliminate_debt,
     unallocated,
     businessOutflow,
+    businessInflow,
+    businessNet,
     sinkingFunds,
     bufferAssignment,
     oneTimeExpenses,
@@ -227,7 +233,11 @@ export function computeBlueprint5010(input: BlueprintInput): BlueprintOutput {
         amount: round2(input.actual.build_wealth),
       },
       { key: 'eliminate_debt', label: 'Eliminate Debt', amount: round2(input.actual.eliminate_debt) },
-      { key: 'business', label: 'Business expenses', amount: businessOutflow },
+      {
+        key: 'business',
+        label: businessInflow > 0 ? 'Business expenses (net of business income)' : 'Business expenses',
+        amount: businessNet,
+      },
       { key: 'sinking', label: 'Sinking funds', amount: sinkingFunds },
       { key: 'buffer', label: 'Buffer assignment', amount: bufferAssignment },
       { key: 'one_time', label: 'One-time expenses', amount: oneTimeExpenses },
