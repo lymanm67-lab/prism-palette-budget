@@ -62,7 +62,7 @@ type ExpenseType = 'income' | 'fixed' | 'flexible' | 'non_monthly' | 'payroll_de
 const EXPENSE_TYPE_LABELS: Record<ExpenseType, string> = {
   income: 'Income',
   payroll_deduction: 'Payroll & Pre-Tax Deductions',
-  fixed: 'Fixed',
+  fixed: 'Fixed (LIVE)',
   flexible: 'Flexible',
   non_monthly: 'Non-Monthly',
 };
@@ -83,13 +83,14 @@ const BAR_COLORS: Record<ExpenseType, string> = {
   non_monthly: 'bg-purple-500',
 };
 
-// Ramit Sethi's Conscious Spending Plan ranges (% of net income)
-// Fixed Costs 50-60%, Investments+Savings 15-20%, Guilt-Free 20-35%
+// 50/10/20/20 Money Blueprint ranges (% of take-home)
+// Fixed commitments are LIVE (50%); discretionary lines land in ENJOY (10%)
 const BENCHMARK_RANGES: Partial<Record<ExpenseType, { min: number; max: number; label: string }>> = {
-  fixed: { min: 50, max: 60, label: 'Fixed Costs 50–60%' },
-  flexible: { min: 15, max: 20, label: 'Investments + Savings 15–20%' },
-  non_monthly: { min: 20, max: 35, label: 'Guilt-Free 20–35%' },
+  fixed: { min: 45, max: 50, label: 'LIVE (fixed) 45–50%' },
+  flexible: { min: 0, max: 10, label: 'ENJOY (flexible) ≤ 10%' },
+  non_monthly: { min: 0, max: 10, label: 'ENJOY (non-monthly) ≤ 10%' },
 };
+
 
 interface BudgetRow {
   id: string;
