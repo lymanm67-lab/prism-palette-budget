@@ -1,6 +1,6 @@
 // Automatic target-phase switching.
 //
-// The 50/10/20/20 targets step to 50/10/30/10 and finally 50/10/40/0 as debt
+// The 45/10/25/20 targets step to 50/10/30/10 and finally 50/10/40/0 as debt
 // elimination winds down. The switch is PROJECTED from the known settlement
 // schedule and remaining debt obligations, so the plan changes on the month the
 // obligation actually clears — not months later once averages catch up.

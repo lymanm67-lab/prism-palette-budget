@@ -1,4 +1,4 @@
-// Money Purpose™ — the 50/10/20/20 classification layer.
+// Money Purpose™ — the 45/10/25/20 classification layer.
 //
 // This is INDEPENDENT of the existing Fixed / Flexible / Non-Monthly
 // "expense type" attribute. Expense Type answers "what kind of expense is
@@ -15,7 +15,7 @@ export type MoneyPurpose =
   | 'payroll_deduction'
   | 'employer_contribution';
 
-/** The four purposes that make up the personal 50/10/20/20 blueprint. */
+/** The four purposes that make up the personal 45/10/25/20 blueprint. */
 export const PERSONAL_PURPOSES: MoneyPurpose[] = ['live', 'enjoy', 'build_wealth', 'eliminate_debt'];
 
 /** Purposes that must NEVER be counted inside personal ratios. */
@@ -56,7 +56,7 @@ export const PURPOSE_META: Record<
   business: {
     label: 'Business',
     short: 'BUSINESS',
-    tooltip: 'Business income and expenses. Excluded from personal 50/10/20/20 ratios.',
+    tooltip: 'Business income and expenses. Excluded from personal 45/10/25/20 ratios.',
     color: '#64748b',
     token: 'text-slate-600 dark:text-slate-300',
   },

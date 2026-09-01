@@ -1,4 +1,4 @@
-// 50/10/20/20 engine — targets, reconciliation and freedom indicators.
+// 45/10/25/20 engine — targets, reconciliation and freedom indicators.
 //
 // Accounting rules baked in here (see PrismMoney enhancement §18, §20–26):
 //  - Net pay is AFTER payroll taxes, benefits and payroll wealth contributions.
@@ -227,7 +227,7 @@ export function computeBlueprint5010(input: BlueprintInput): BlueprintOutput {
     { key: 'freeCash', label: 'Monthly Free Cash Flow', value: money(reconciliation.unallocated) },
     { key: 'redirect', label: 'Debt-to-Wealth Redirect', value: money(debtCard.actualAmount), hint: 'Available to invest once debt clears' },
     { key: 'employerBoost', label: 'Employer Wealth Boost', value: money(wealth.employerBoost) },
-    { key: 'alignment', label: '50/10/20/20 Alignment', value: `${alignmentScore}` },
+    { key: 'alignment', label: '45/10/25/20 Alignment', value: `${alignmentScore}` },
     { key: 'wealthGap', label: 'Remaining to Wealth Target', value: money(wealthCard.remainingToTarget || 0) },
   ];
 

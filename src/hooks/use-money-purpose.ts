@@ -163,7 +163,7 @@ export interface MoneyPurposeSnapshot {
 }
 
 /**
- * Personal 50/10/20/20 snapshot. Business purposes and employer contributions
+ * Personal 45/10/25/20 snapshot. Business purposes and employer contributions
  * are excluded from every personal ratio.
  */
 export function useMoneyPurposeSnapshot(monthInput: string, window: AverageWindow = 1): MoneyPurposeSnapshot {

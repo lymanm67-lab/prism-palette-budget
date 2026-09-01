@@ -55,7 +55,7 @@ export default function BlueprintHistoryChart({ month }: { month: string }) {
         </div>
         <p className="text-[11px] text-muted-foreground">
           Each line is the actual share of take-home pay. Dashed guides are the current-phase targets; target shifts
-          (50/10/20/20 → 50/10/30/10 → 50/10/40/0) happen automatically as debt clears.
+          (45/10/25/20 → 50/10/30/10 → 50/10/40/0) happen automatically as debt clears.
         </p>
       </CardHeader>
       <CardContent>
