@@ -211,10 +211,11 @@ export default function ZeroBasedPlanBoard({
               <CardContent className="space-y-2">
                 <p className="text-2xl font-bold">{formatCurrency(c.amount)}</p>
                 <Progress value={Math.min(100, (c.pct / Math.max(c.target, 1)) * 100)} />
-                <p className="text-xs text-muted-foreground">
-                  {c.pct}% of take-home · target {c.target}% ({formatCurrency(round2((takeHome * c.target) / 100))})
-                </p>
-                <p className="text-xs text-muted-foreground">{c.note}</p>
+                 <p className="text-xs text-muted-foreground">
+                   {c.pct}% of take-home · target {c.ceiling ? '≤' : '≥'} {c.target}% ({formatCurrency(targetAmount)})
+                 </p>
+                 <p className={`text-xs ${met ? 'text-emerald-500' : 'text-amber-500'}`}>{detail}</p>
+                 <p className="text-xs text-muted-foreground">{c.note}</p>
               </CardContent>
             </Card>
           );
