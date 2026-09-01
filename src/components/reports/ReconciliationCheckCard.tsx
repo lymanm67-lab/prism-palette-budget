@@ -8,11 +8,24 @@ import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, CheckCircle2, Loader2, ShieldCheck, Wand2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import {
   runReconciliationCheck,
   isAutoFixable,
+  isBulkFixable,
   type RecFinding,
   type RecTxn,
 } from '@/lib/reconciliationCheck';
+
 
 /**
  * Pre-export gate: flags income / transfer / spending misclassifications for a
