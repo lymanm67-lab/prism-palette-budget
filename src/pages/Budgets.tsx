@@ -89,7 +89,6 @@ const BENCHMARK_RANGES: Partial<Record<ExpenseType, { min: number; max: number; 
   fixed: { min: 40, max: 45, label: 'LIVE (fixed essentials) 45%' },
   flexible: { min: 0, max: 10, label: 'ENJOY (flexible) ≤ 10%' },
   non_monthly: { min: 0, max: 10, label: 'ENJOY (non-monthly) ≤ 10%' },
-  payroll_deduction: { min: 20, max: 25, label: 'BUILD WEALTH (payroll & pre-tax) 25%' },
 };
 
 
@@ -1142,7 +1141,7 @@ const Budgets = () => {
             {isOpen ? <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" /> : <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0 rotate-180" />}
             <span className={cn('flex-1 font-display font-semibold text-sm sm:text-base flex items-center gap-2', EXPENSE_TYPE_COLORS[type])}>
               {EXPENSE_TYPE_LABELS[type]}
-              {/* Ramit Conscious Spending range pill + band visualizer */}
+              {/* 45/10/25/20 blueprint range pill + band visualizer */}
               {!isIncome && netIncome > 0 && totals.budget > 0 && benchmark && (
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -1176,7 +1175,7 @@ const Budgets = () => {
                   </TooltipTrigger>
                   <TooltipContent>
                     <p className="text-xs">{benchmark.label}</p>
-                    <p className="text-xs text-muted-foreground">Ramit Sethi Conscious Spending Plan</p>
+                    <p className="text-xs text-muted-foreground">45/10/25/20 Money Blueprint</p>
                   </TooltipContent>
                 </Tooltip>
               )}
@@ -1372,9 +1371,9 @@ const Budgets = () => {
                 <PieChart>
                   <Pie
                     data={[
-                      { name: 'Fixed', value: sectionTotals.fixed.budget, color: '#3b82f6' },
-                      { name: 'Flexible', value: sectionTotals.flexible.budget, color: '#f59e0b' },
-                      { name: 'Non-Monthly', value: sectionTotals.non_monthly.budget, color: '#a855f7' },
+                      { name: 'LIVE', value: sectionTotals.fixed.budget, color: '#3b82f6' },
+                      { name: 'ENJOY', value: sectionTotals.flexible.budget, color: '#f59e0b' },
+                      { name: 'ENJOY (non-monthly)', value: sectionTotals.non_monthly.budget, color: '#a855f7' },
                     ].filter(d => d.value > 0)}
                     cx="50%"
                     cy="50%"
@@ -1403,9 +1402,9 @@ const Budgets = () => {
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={[
                   { name: 'Income', budget: totalIncomeBudget, actual: totalIncomeActual },
-                  { name: 'Fixed', budget: sectionTotals.fixed.budget, actual: sectionTotals.fixed.actual },
-                  { name: 'Flexible', budget: sectionTotals.flexible.budget, actual: sectionTotals.flexible.actual },
-                  { name: 'Non-Monthly', budget: sectionTotals.non_monthly.budget, actual: sectionTotals.non_monthly.actual },
+                  { name: 'LIVE', budget: sectionTotals.fixed.budget, actual: sectionTotals.fixed.actual },
+                  { name: 'ENJOY', budget: sectionTotals.flexible.budget, actual: sectionTotals.flexible.actual },
+                  { name: 'ENJOY (non-monthly)', budget: sectionTotals.non_monthly.budget, actual: sectionTotals.non_monthly.actual },
                 ]} barGap={2}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                   <XAxis dataKey="name" tick={{ fontSize: 10 }} />
@@ -1466,11 +1465,11 @@ const Budgets = () => {
                 : ` You are ${formatCurrency(Math.abs(totalExpenseRemaining))} over budget.`}
             </p>
             <p>
-              <strong>Fixed expenses:</strong> {formatCurrency(sectionTotals.fixed.actual)} of {formatCurrency(sectionTotals.fixed.budget)} budgeted
+              <strong>LIVE (fixed):</strong> {formatCurrency(sectionTotals.fixed.actual)} of {formatCurrency(sectionTotals.fixed.budget)} budgeted
               ({sectionTotals.fixed.remaining < 0 ? `${formatCurrency(Math.abs(sectionTotals.fixed.remaining))} over` : `${formatCurrency(sectionTotals.fixed.remaining)} remaining`}).{' '}
-              <strong>Flexible:</strong> {formatCurrency(sectionTotals.flexible.actual)} of {formatCurrency(sectionTotals.flexible.budget)}
+              <strong>ENJOY (flexible):</strong> {formatCurrency(sectionTotals.flexible.actual)} of {formatCurrency(sectionTotals.flexible.budget)}
               ({sectionTotals.flexible.remaining < 0 ? `${formatCurrency(Math.abs(sectionTotals.flexible.remaining))} over` : `${formatCurrency(sectionTotals.flexible.remaining)} remaining`}).{' '}
-              <strong>Non-Monthly:</strong> {formatCurrency(sectionTotals.non_monthly.actual)} of {formatCurrency(sectionTotals.non_monthly.budget)}
+              <strong>ENJOY (non-monthly):</strong> {formatCurrency(sectionTotals.non_monthly.actual)} of {formatCurrency(sectionTotals.non_monthly.budget)}
               ({sectionTotals.non_monthly.remaining < 0 ? `${formatCurrency(Math.abs(sectionTotals.non_monthly.remaining))} over` : `${formatCurrency(sectionTotals.non_monthly.remaining)} remaining`}).
             </p>
 
@@ -2502,9 +2501,9 @@ const Budgets = () => {
               <PieChart>
                 <Pie
                   data={[
-                    { name: 'Fixed', value: sectionTotals.fixed.budget, color: '#3b82f6' },
-                    { name: 'Flexible', value: sectionTotals.flexible.budget, color: '#f59e0b' },
-                    { name: 'Non-Monthly', value: sectionTotals.non_monthly.budget, color: '#a855f7' },
+                    { name: 'LIVE', value: sectionTotals.fixed.budget, color: '#3b82f6' },
+                    { name: 'ENJOY', value: sectionTotals.flexible.budget, color: '#f59e0b' },
+                    { name: 'ENJOY (non-monthly)', value: sectionTotals.non_monthly.budget, color: '#a855f7' },
                   ].filter(d => d.value > 0)}
                   cx="50%"
                   cy="50%"
@@ -2533,9 +2532,9 @@ const Budgets = () => {
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={[
                 { name: 'Income', budget: totalIncomeBudget, actual: totalIncomeActual },
-                { name: 'Fixed', budget: sectionTotals.fixed.budget, actual: sectionTotals.fixed.actual },
-                { name: 'Flexible', budget: sectionTotals.flexible.budget, actual: sectionTotals.flexible.actual },
-                { name: 'Non-Monthly', budget: sectionTotals.non_monthly.budget, actual: sectionTotals.non_monthly.actual },
+                { name: 'LIVE', budget: sectionTotals.fixed.budget, actual: sectionTotals.fixed.actual },
+                { name: 'ENJOY', budget: sectionTotals.flexible.budget, actual: sectionTotals.flexible.actual },
+                { name: 'ENJOY (non-monthly)', budget: sectionTotals.non_monthly.budget, actual: sectionTotals.non_monthly.actual },
               ]} barGap={2}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                 <XAxis dataKey="name" tick={{ fontSize: 10 }} />
@@ -2562,11 +2561,11 @@ const Budgets = () => {
               : ` You are ${formatCurrency(Math.abs(totalExpenseRemaining))} over budget.`}
           </p>
           <p className="mt-1">
-            <strong>Fixed expenses:</strong> {formatCurrency(sectionTotals.fixed.actual)} of {formatCurrency(sectionTotals.fixed.budget)} budgeted
+            <strong>LIVE (fixed):</strong> {formatCurrency(sectionTotals.fixed.actual)} of {formatCurrency(sectionTotals.fixed.budget)} budgeted
             ({sectionTotals.fixed.remaining < 0 ? `${formatCurrency(Math.abs(sectionTotals.fixed.remaining))} over` : `${formatCurrency(sectionTotals.fixed.remaining)} remaining`}).{' '}
-            <strong>Flexible:</strong> {formatCurrency(sectionTotals.flexible.actual)} of {formatCurrency(sectionTotals.flexible.budget)}
+            <strong>ENJOY (flexible):</strong> {formatCurrency(sectionTotals.flexible.actual)} of {formatCurrency(sectionTotals.flexible.budget)}
             ({sectionTotals.flexible.remaining < 0 ? `${formatCurrency(Math.abs(sectionTotals.flexible.remaining))} over` : `${formatCurrency(sectionTotals.flexible.remaining)} remaining`}).{' '}
-            <strong>Non-Monthly:</strong> {formatCurrency(sectionTotals.non_monthly.actual)} of {formatCurrency(sectionTotals.non_monthly.budget)}
+            <strong>ENJOY (non-monthly):</strong> {formatCurrency(sectionTotals.non_monthly.actual)} of {formatCurrency(sectionTotals.non_monthly.budget)}
             ({sectionTotals.non_monthly.remaining < 0 ? `${formatCurrency(Math.abs(sectionTotals.non_monthly.remaining))} over` : `${formatCurrency(sectionTotals.non_monthly.remaining)} remaining`}).
           </p>
           {unallocated !== 0 && (
