@@ -728,9 +728,40 @@ const Budgets = () => {
       const items = budgetItems.filter(b => bizCatIds.has(b.category_id));
       const grouped = groupBudgetsByExpenseType(items);
       const totals = calcSectionTotals(grouped);
-      return { name: biz.name, id: biz.id, items, grouped, totals, catIds: bizCatIds };
+
+      // Break expense rows out by their real category group (e.g. "Business Operating
+      // Expenses", "Marketing & Media") instead of collapsing every group into the
+      // shared expense-type buckets — that made rows look misfiled.
+      const catGroupId = new Map(categories.map(c => [c.id, c.group_id as string]));
+      const groupMeta = new Map(
+        (categoryGroups as any[])
+          .filter((g: any) => bizGroupIds.has(g.id))
+          .map((g: any) => [g.id, { name: g.name as string, sort: g.sort_order ?? 999, expenseType: (g.expense_type || 'flexible') as ExpenseType }])
+      );
+      const byGroupMap = new Map<string, BudgetRow[]>();
+      for (const b of items) {
+        const gid = catGroupId.get(b.category_id);
+        if (!gid) continue;
+        const meta = groupMeta.get(gid);
+        if (!meta || meta.expenseType === 'income' || meta.expenseType === 'payroll_deduction') continue;
+        if (hideZeroAmounts && b.planned_amount === 0) continue;
+        if (hiddenBudgetIds.has(b.id)) continue;
+        if (!byGroupMap.has(gid)) byGroupMap.set(gid, []);
+        byGroupMap.get(gid)!.push(b);
+      }
+      const byGroup = Array.from(byGroupMap.entries())
+        .map(([gid, rows]) => {
+          const meta = groupMeta.get(gid)!;
+          rows.sort((a, b) => (categoryNameById.get(a.category_id) || '').localeCompare(categoryNameById.get(b.category_id) || ''));
+          const budget = rows.reduce((s, r) => s + r.planned_amount, 0);
+          const actual = rows.reduce((s, r) => s + r.spent, 0);
+          return { id: gid, name: meta.name, expenseType: meta.expenseType, items: rows, totals: { budget, actual, remaining: budget - actual } };
+        })
+        .sort((a, b) => (groupMeta.get(a.id)!.sort - groupMeta.get(b.id)!.sort) || a.name.localeCompare(b.name));
+
+      return { name: biz.name, id: biz.id, items, grouped, totals, catIds: bizCatIds, byGroup };
     }).filter(b => b.items.length > 0);
-  }, [categories, categoryGroups, businessList, budgetItems, groupBudgetsByExpenseType, calcSectionTotals]);
+  }, [categories, categoryGroups, businessList, budgetItems, groupBudgetsByExpenseType, calcSectionTotals, categoryNameById, hideZeroAmounts, hiddenBudgetIds]);
 
   // Compute all collapsible section keys for expand/collapse all
   const getAllSectionKeys = useCallback(() => {
@@ -738,12 +769,14 @@ const Budgets = () => {
     if (budgetType === 'all') {
       for (const biz of (perBusinessData || [])) {
         const bizKey = biz.name.replace(/\s+/g, '_');
-        keys.push(`all_${bizKey}_income`, `all_${bizKey}_fixed`, `all_${bizKey}_flexible`, `all_${bizKey}_non_monthly`);
+        keys.push(`all_${bizKey}_income`);
+        for (const grp of (biz.byGroup || [])) keys.push(`all_${bizKey}_grp_${grp.id}`);
       }
     } else if (budgetType === 'business') {
       for (const biz of (perBusinessData || [])) {
         const bizKey = biz.name.replace(/\s+/g, '_');
-        keys.push(`${bizKey}_income`, `${bizKey}_fixed`, `${bizKey}_flexible`, `${bizKey}_non_monthly`);
+        keys.push(`${bizKey}_income`);
+        for (const grp of (biz.byGroup || [])) keys.push(`${bizKey}_grp_${grp.id}`);
       }
     }
     return keys;
@@ -1133,7 +1166,7 @@ const Budgets = () => {
   };
 
   // Render a section (accordion) — optionally pass custom totals for per-business rendering
-  const renderSection = (type: ExpenseType, items: BudgetRow[], customTotals?: { budget: number; actual: number; remaining: number }, sectionKey?: string) => {
+  const renderSection = (type: ExpenseType, items: BudgetRow[], customTotals?: { budget: number; actual: number; remaining: number }, sectionKey?: string, labelOverride?: string) => {
     const totals = customTotals || sectionTotals[type];
     const key = sectionKey || type;
     const isOpen = openSections[key] ?? true;
@@ -1159,7 +1192,7 @@ const Budgets = () => {
           <button className="w-full flex items-center gap-2 sm:gap-3 py-3 px-3 hover:bg-muted/30 rounded-lg transition-colors text-left">
             {isOpen ? <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" /> : <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0 rotate-180" />}
             <span className={cn('flex-1 font-display font-semibold text-sm sm:text-base flex items-center gap-2', EXPENSE_TYPE_COLORS[type])}>
-              {EXPENSE_TYPE_LABELS[type]}
+              {labelOverride || EXPENSE_TYPE_LABELS[type]}
               {/* 45/10/25/20 blueprint range pill + band visualizer */}
               {!isIncome && netIncome > 0 && totals.budget > 0 && benchmark && (
                 <Tooltip>
@@ -2053,11 +2086,7 @@ const Budgets = () => {
                     <Card className="overflow-hidden mt-2">
                       <CardContent className="p-2 space-y-1">
                         <div className="sm:hidden px-3 py-1.5 text-xs font-medium text-muted-foreground border-b">Expenses</div>
-                        {renderSection('fixed', biz.grouped.fixed, biz.totals.fixed, `all_${bizKey}_fixed`)}
-                        {renderSection('debt', biz.grouped.debt, biz.totals.debt, `all_${bizKey}_debt`)}
-                        {renderSection('wealth', biz.grouped.wealth, biz.totals.wealth, `all_${bizKey}_wealth`)}
-                        {renderSection('flexible', biz.grouped.flexible, biz.totals.flexible, `all_${bizKey}_flexible`)}
-                        {renderSection('non_monthly', biz.grouped.non_monthly, biz.totals.non_monthly, `all_${bizKey}_non_monthly`)}
+                        {biz.byGroup.map((grp: any) => renderSection(grp.expenseType, grp.items, grp.totals, `all_${bizKey}_grp_${grp.id}`, grp.name))}
                       </CardContent>
                     </Card>
                     <div className="flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 bg-primary/5 rounded-lg text-sm mt-2 mb-4">
@@ -2113,11 +2142,7 @@ const Budgets = () => {
                     <Card className="overflow-hidden mt-2">
                       <CardContent className="p-2 space-y-1">
                         <div className="sm:hidden px-3 py-1.5 text-xs font-medium text-muted-foreground border-b">Expenses</div>
-                        {renderSection('fixed', biz.grouped.fixed, biz.totals.fixed, `${bizKey}_fixed`)}
-                        {renderSection('debt', biz.grouped.debt, biz.totals.debt, `${bizKey}_debt`)}
-                        {renderSection('wealth', biz.grouped.wealth, biz.totals.wealth, `${bizKey}_wealth`)}
-                        {renderSection('flexible', biz.grouped.flexible, biz.totals.flexible, `${bizKey}_flexible`)}
-                        {renderSection('non_monthly', biz.grouped.non_monthly, biz.totals.non_monthly, `${bizKey}_non_monthly`)}
+                        {biz.byGroup.map((grp: any) => renderSection(grp.expenseType, grp.items, grp.totals, `${bizKey}_grp_${grp.id}`, grp.name))}
                       </CardContent>
                     </Card>
 
