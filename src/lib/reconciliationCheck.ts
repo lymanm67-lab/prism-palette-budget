@@ -135,20 +135,29 @@ export function runReconciliationCheck(txns: RecTxn[]): RecFinding[] {
     // 3. Positive amount in an expense category = income or refund misfiled.
     if (amount > 0 && !t.is_transfer && !isIncomeGroup(t.groupName)) {
       const refundish = REFUND_HINTS.some((h) => text.includes(h));
+      // Uncategorized rows carry no signal about intent, so never auto-rewrite them.
+      const uncategorized = !t.category_id || !t.groupName;
       push({
         id: `pos-${t.id}`,
         txnId: t.id,
-        severity: refundish ? 'low' : 'medium',
-        title: refundish ? 'Refund sitting in a spending category' : 'Income filed as spending',
+        severity: refundish || uncategorized ? 'low' : 'medium',
+        title: refundish
+          ? 'Refund sitting in a spending category'
+          : uncategorized
+            ? 'Deposit with no category'
+            : 'Income filed as spending',
         detail: `${label(t)} (${t.date}) is a deposit of ${amount.toFixed(2)} but sits in ${t.categoryName ?? 'an expense category'}${t.groupName ? ` (${t.groupName})` : ''}.`,
         suggestion: refundish
           ? 'Keep the category so the refund offsets that category, or mark it as a transfer if it was a reimbursement between your accounts.'
-          : 'Move it to an income category so it stops reducing your reported spending.',
-        fix: refundish ? 'review_only' : 'recategorize_income',
+          : uncategorized
+            ? 'Review it and pick an income, refund or transfer category — it is not safe to reclassify automatically.'
+            : 'Move it to an income category so it stops reducing your reported spending.',
+        fix: refundish || uncategorized ? 'review_only' : 'recategorize_income',
         txn: t,
       });
       continue;
     }
+
 
     // 4. Negative amount in an income category = expense misfiled as income.
     if (amount < 0 && !t.is_transfer && isIncomeGroup(t.groupName) && !isDeductionGroup(t.groupName)) {
