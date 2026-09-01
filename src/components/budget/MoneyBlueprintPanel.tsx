@@ -447,6 +447,9 @@ export default function MoneyBlueprintPanel({ month, expenseStructure }: Props) 
 
       {/* ---------------- Per-month bucket ledger ---------------- */}
       <PurposeLedger month={month} netIncome={snap.netIncome} />
+        </TabsContent>
+      </Tabs>
     </div>
+
   );
 }
