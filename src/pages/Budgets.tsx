@@ -61,10 +61,10 @@ type ExpenseType = 'income' | 'fixed' | 'flexible' | 'non_monthly' | 'payroll_de
 
 const EXPENSE_TYPE_LABELS: Record<ExpenseType, string> = {
   income: 'Income',
-  payroll_deduction: 'Payroll & Pre-Tax Deductions',
-  fixed: 'Fixed (LIVE)',
-  flexible: 'Flexible',
-  non_monthly: 'Non-Monthly',
+  payroll_deduction: 'BUILD WEALTH — Payroll & Pre-Tax (25%)',
+  fixed: 'LIVE — Fixed Essentials (45%)',
+  flexible: 'ENJOY — Flexible Spending (10%)',
+  non_monthly: 'ENJOY — Non-Monthly & Sinking Funds',
 };
 
 const EXPENSE_TYPE_COLORS: Record<ExpenseType, string> = {
