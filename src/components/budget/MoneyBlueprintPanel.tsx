@@ -16,6 +16,9 @@ import ReconciliationDrilldown from '@/components/blueprint/ReconciliationDrilld
 import BlueprintExportButton from '@/components/blueprint/BlueprintExportButton';
 import FundTheGapCard from '@/components/blueprint/FundTheGapCard';
 import PurposeLedger from '@/components/blueprint/PurposeLedger';
+import ZeroBasedCashPanel from '@/components/blueprint/ZeroBasedCashPanel';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 
 interface ExpenseStructure {
   fixed: { budget: number; actual: number };
