@@ -1847,24 +1847,6 @@ const Budgets = () => {
         </CardContent>
       </Card>
 
-      {/* STEP 1 — INCOME: what actually came in, before anything is assigned */}
-      {(viewTab === 'income' || isPrinting) && (
-        <PayrollElectionsCard
-          month={month}
-          isCompletedMonth={month.slice(0, 7) < new Date().toISOString().slice(0, 7)}
-        />
-      )}
-
-      {/* STEP 2 — ASSIGN: give every dollar a purpose */}
-      {(viewTab === 'assign' || isPrinting) && (
-        <>
-          <MoneyBlueprintPanel month={month} expenseStructure={sectionTotals as any} />
-          <DebtCashFlowRelease month={month} />
-        </>
-      )}
-
-
-
       {/* Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <Card className="border-l-4 border-l-emerald-500">
@@ -1904,6 +1886,24 @@ const Budgets = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* STEP 1 — INCOME: what actually came in, before anything is assigned */}
+      {(viewTab === 'income' || isPrinting) && (
+        <PayrollElectionsCard
+          month={month}
+          isCompletedMonth={month.slice(0, 7) < new Date().toISOString().slice(0, 7)}
+        />
+      )}
+
+      {/* STEP 2 — ASSIGN: give every dollar a purpose */}
+      {(viewTab === 'assign' || isPrinting) && (
+        <>
+          <MoneyBlueprintPanel month={month} expenseStructure={sectionTotals as any} />
+          <DebtCashFlowRelease month={month} />
+        </>
+      )}
+
+
 
       {(viewTab === 'budget' || isPrinting) && (
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6">
