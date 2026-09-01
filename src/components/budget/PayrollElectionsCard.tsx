@@ -84,7 +84,7 @@ export default function PayrollElectionsCard({ month, isCompletedMonth }: Props)
     mutationFn: async (id: string) => {
       const { error } = await supabase
         .from('payroll_elections' as any)
-        .update({ effective_end: `${month}-01` } as any)
+        .update({ effective_end: monthStart } as any)
         .eq('id', id);
       if (error) throw error;
     },
@@ -92,7 +92,9 @@ export default function PayrollElectionsCard({ month, isCompletedMonth }: Props)
       qc.invalidateQueries({ queryKey: ['payroll-elections'] });
       toast.success('Election ended');
     },
+    onError: (e: any) => toast.error(e.message),
   });
+
 
   const employeeWealth = active.filter((e) => e.counts_as_wealth && !e.is_employer);
   const employer = active.filter((e) => e.is_employer);
