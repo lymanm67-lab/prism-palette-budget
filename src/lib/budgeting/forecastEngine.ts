@@ -344,3 +344,105 @@ export function buildForecast(a: ForecastAssumptions): ForecastMonth[] {
 }
 
 export type { MoneyPurpose };
+
+// ───────────────────────────────────────────────────────────────────────────
+// Derived outcomes so the What-If simulator can show payoff dates, the
+// vacation-fund timeline, buffer health and live 45/10/25/20 percentages.
+// ───────────────────────────────────────────────────────────────────────────
+
+export interface ForecastPayoff {
+  id: string;
+  name: string;
+  /** Month the balance first reaches $0, or null if not within the horizon. */
+  month: string | null;
+  startBalance: number;
+  endBalance: number;
+}
+
+export interface ForecastSummary {
+  payoffs: ForecastPayoff[];
+  debtFreeMonth: string | null;
+  debtStart: number;
+  debtEnd: number;
+  travelFundStartMonth: string | null;
+  travelFundTotal: number;
+  travelFundMilestones: { amount: number; month: string }[];
+  bufferEnding: number;
+  bufferLow: number;
+  bufferLowMonth: string | null;
+  avgPct: Record<'live' | 'enjoy' | 'build_wealth' | 'eliminate_debt', number>;
+  targetPct: Record<'live' | 'enjoy' | 'build_wealth' | 'eliminate_debt', number>;
+  wealthContributed: number;
+}
+
+const TRAVEL_MILESTONES = [1000, 3000, 6000];
+
+export function summarizeForecast(months: ForecastMonth[]): ForecastSummary {
+  const empty = { live: 0, enjoy: 0, build_wealth: 0, eliminate_debt: 0 };
+  if (!months.length) {
+    return {
+      payoffs: [], debtFreeMonth: null, debtStart: 0, debtEnd: 0,
+      travelFundStartMonth: null, travelFundTotal: 0, travelFundMilestones: [],
+      bufferEnding: 0, bufferLow: 0, bufferLowMonth: null,
+      avgPct: { ...empty }, targetPct: { ...CORE_TARGETS }, wealthContributed: 0,
+    };
+  }
+
+  const first = months[0];
+  const last = months[months.length - 1];
+  const total = (m: ForecastMonth) => m.debtBalances.reduce((s, d) => s + d.balance, 0);
+
+  const payoffs: ForecastPayoff[] = first.debtBalances.map((d) => {
+    const paid = months.find((m) => (m.debtBalances.find((x) => x.id === d.id)?.balance ?? 0) <= 0.01);
+    const startBalance = d.balance + d.payment;
+    return {
+      id: d.id,
+      name: d.name,
+      month: paid ? paid.month : null,
+      startBalance: round2(startBalance),
+      endBalance: round2(last.debtBalances.find((x) => x.id === d.id)?.balance ?? 0),
+    };
+  });
+
+  const travelStart = months.find((m) => m.travelFund > 0.01) || null;
+  const travelFundMilestones = TRAVEL_MILESTONES.flatMap((amount) => {
+    const hit = months.find((m) => m.travelFund >= amount);
+    return hit ? [{ amount, month: hit.month }] : [];
+  });
+
+  let bufferLow = months[0].bufferEnding;
+  let bufferLowMonth = months[0].month;
+  for (const m of months) {
+    if (m.bufferEnding < bufferLow) {
+      bufferLow = m.bufferEnding;
+      bufferLowMonth = m.month;
+    }
+  }
+
+  const avg = (pick: (m: ForecastMonth) => number) =>
+    round2(months.reduce((s, m) => s + pick(m), 0) / months.length);
+
+  const debtFree = months.find((m) => total(m) <= 0.01) || null;
+
+  return {
+    payoffs,
+    debtFreeMonth: debtFree ? debtFree.month : null,
+    debtStart: round2(total(first) + first.eliminateDebt),
+    debtEnd: round2(total(last)),
+    travelFundStartMonth: travelStart ? travelStart.month : null,
+    travelFundTotal: round2(last.travelFund),
+    travelFundMilestones,
+    bufferEnding: round2(last.bufferEnding),
+    bufferLow: round2(bufferLow),
+    bufferLowMonth,
+    avgPct: {
+      live: avg((m) => m.pct.live),
+      enjoy: avg((m) => m.pct.enjoy),
+      build_wealth: avg((m) => m.pct.build_wealth),
+      eliminate_debt: avg((m) => m.pct.eliminate_debt),
+    },
+    targetPct: { ...CORE_TARGETS },
+    wealthContributed: round2(months.reduce((s, m) => s + m.buildWealthCombined, 0)),
+  };
+}
+
