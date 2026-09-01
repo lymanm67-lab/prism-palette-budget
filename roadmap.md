@@ -10,7 +10,7 @@
 ## Statement imports (done 2026-09-01)
 - [x] Aug 2026 statements imported with count-based dedupe: MyUSA MAIN SHARE, SoFi Checking, EverBank Checking, IU CU BUSINESSFREE
 
-## Session 2 — Buffer + business expense ledger
+## Session 2 — Buffer + business expense ledger (DONE)
 - [ ] Buffer panel: starting → additions → withdrawals → one-time expenses → ending; only ending balance counts in the month's allocation
 - [ ] Editable Healthy / Caution / Tight thresholds
 - [ ] BetrLink settlement fees $371.48 / $555.15 / $355.28 draw from Buffer as one-time expenses, shown apart from monthly debt payments
@@ -29,14 +29,14 @@
 - [ ] Reset balances: 2306 $1,453.75, 3004 $3,363.40, student loans ~$105,000
 - [ ] PSLF: 55/120 complete, 65 remaining, ~2032 forgiveness, "PSLF Strategy: Pay Required Amount, Preserve Forgiveness", no extra-principal suggestions
 
-## Session 5 — Money Redirects engine
+## Session 5 — Money Redirects engine (DONE)
 - [ ] Money Redirects page: freed cash shown as a flow, never as new spending ($49 → Resend $20 → Allstate $10.92 → $18.08 remaining)
 - [ ] Schedulable + editable redirects, including the $888 pool split ($390 PSLF, $298 vacation snowball, $200 Build Wealth)
 - [ ] Trigger: vacation debt hits $0 → offer redirect into Travel Fund at $500/month
 - [ ] Trigger: July 2027 $100 raise → default into HSA
 - [ ] Build Wealth take-home: $277/mo now, $485/mo from Jan 2027 ($277 + $208 First Million Accelerator); $451.67 employee payroll, $516 employer retirement, $500 Jan + $500 Jul employer HSA stay informational (never double-deducted from $4,250.02)
 
-## Session 6 — Forecast, scenarios, infographics, dashboard
+## Session 6 — Forecast, scenarios, infographics, dashboard (DONE)
 - [ ] Month-by-month forecast from Sep 2026 over 12 / 24 / 60 months: every bucket, unassigned cash, 45/10/25/20 comparison
 - [ ] Change flags per month (payment ended, subscription added, employer HSA, raise redirected, fee paid, loan cleared, Vacation Fund activated)
 - [ ] "What If?" simulator recalculating Buffer, percentages, payoff dates, Vacation Fund timeline, wealth totals live
