@@ -1972,6 +1972,8 @@ const Budgets = () => {
         <>
           <MoneyBlueprintPanel month={month} expenseStructure={sectionTotals as any} />
           <DebtCashFlowRelease month={month} />
+          <DebtPayoffTracker />
+
         </>
       )}
 
