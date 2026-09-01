@@ -270,8 +270,12 @@ export function useMoneyPurposeSnapshot(monthInput: string, window: AverageWindo
 
     // LAYER A (total cash flow) inputs. Business money never enters personal
     // ratios, but it does leave the checking account, so the zero-based
-    // equation has to see it.
-    const sinkingFunds = Math.round((Number(travelSettings?.monthly_target) || 0) * 100) / 100;
+    // equation has to see it — net of business revenue that funds it.
+    // Sinking funds only count once a travel fund is actually configured; the
+    // hook's $500 default is a form placeholder, not a real assignment.
+    const sinkingFunds = travelConfigured
+      ? Math.round((Number(travelSettings?.monthly_target) || 0) * 100) / 100
+      : 0;
     const oneTimeExpenses =
       Math.round(
         SETTLEMENT_FEES.filter((f) => f.date.slice(0, 7) === month).reduce((s, f) => s + f.amount, 0) * 100,
@@ -285,6 +289,7 @@ export function useMoneyPurposeSnapshot(monthInput: string, window: AverageWindo
       employerWealth,
       phase: phaseProjection.phase,
       businessOutflow: actual.business,
+      businessInflow,
       sinkingFunds,
       oneTimeExpenses,
     });
