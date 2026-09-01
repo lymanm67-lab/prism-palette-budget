@@ -315,12 +315,14 @@ export function buildForecast(a: ForecastAssumptions): ForecastMonth[] {
     }
 
     const p = (n: number) => (takeHome > 0 ? round2((n / takeHome) * 100) : 0);
+    const enjoyHeadroom = round2(Math.max(0, (takeHome * CORE_TARGETS.enjoy) / 100 - enjoy));
 
     out.push({
       month,
       takeHome,
       live,
       enjoy,
+      enjoyHeadroom,
       buildWealthTakeHome: wealthTakeHome,
       buildWealthEmployee: a.employeePayrollWealth,
       buildWealthEmployer: employer,
