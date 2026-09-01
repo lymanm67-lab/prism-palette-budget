@@ -177,8 +177,15 @@ export function buildForecast(a: ForecastAssumptions): ForecastMonth[] {
     }
     prevLive = live;
 
-    // ── ENJOY (+ Travel Fund once vacation debt clears) ────────────────────
-    let enjoy = a.enjoyPlanned;
+    // ── ENJOY (itemized lines + Travel Fund once vacation debt clears) ─────
+    const enjoyActive = (a.enjoyLines || []).filter((l) => activeIn(l, month));
+    let enjoy = round2(a.enjoyPlanned + enjoyActive.reduce((s, l) => s + l.amount, 0));
+    for (const l of enjoyActive) {
+      if (l.startMonth === month && i > 0) {
+        flags.push({ flag: 'subscription_added', detail: `${l.label} $${l.amount.toFixed(2)} (Enjoy)` });
+      }
+      if (l.endMonth === month) flags.push({ flag: 'payment_ended', detail: `${l.label} ends` });
+    }
     if (travelFundActive && a.travelFundMonthly) {
       enjoy = round2(enjoy + a.travelFundMonthly);
       travelFundTotal = round2(travelFundTotal + a.travelFundMonthly);
