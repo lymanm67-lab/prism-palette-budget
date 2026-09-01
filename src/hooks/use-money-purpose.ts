@@ -6,6 +6,9 @@ import { useBudgets, useCategories, useCategoryGroups, useTransactionsByDateRang
 import { classifyMoneyPurpose, consumesTakeHome, type MoneyPurpose } from '@/lib/budgeting/moneyPurpose';
 import { computeBlueprint5010, CORE_KEYS, type BlueprintOutput, type CoreKey } from '@/lib/budgeting/blueprint5010';
 import { projectPhase, type PhaseProjection } from '@/lib/budgeting/phaseProjection';
+import { SETTLEMENT_FEES } from '@/lib/budgeting/settlementStepDown';
+import { useTravelSettings } from '@/hooks/use-travel-fund';
+
 
 export interface PurposeResolution {
   byCategory: Map<string, MoneyPurpose | null>;
