@@ -123,7 +123,7 @@ export function redirectsInfographic(flows: RedirectFlow[], totals: RedirectTota
       columns: [{ label: 'Target' }, { label: 'Amount', align: 'right' as const }, { label: 'Starts' }],
       rows: f.legs.map((l) => [l.targetLabel, money2(l.amount), monthLabel(l.startMonth)]),
       footerNote: f.unassigned > 0.01 ? `${money2(f.unassigned)} still needs a job` : 'Fully assigned',
-      footerTone: (f.unassigned > 0.01 ? 'orange' : 'green') as const,
+      footerTone: f.unassigned > 0.01 ? ('orange' as const) : ('green' as const),
     })),
     slogan: 'PrismMoney™',
     zoom: 0.92,

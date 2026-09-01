@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { Helmet } from 'react-helmet-async';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import BufferPanel from '@/components/budget/BufferPanel';
 import BusinessLedgerPanel from '@/components/budget/BusinessLedgerPanel';
@@ -56,14 +55,6 @@ export default function ZeroBasedPlan() {
 
   return (
     <div className="container mx-auto space-y-6 px-4 py-6">
-      <Helmet>
-        <title>Zero-Based Plan | Buffer, Business & Redirects</title>
-        <meta
-          name="description"
-          content="Track your cash buffer, itemized business expenses, money redirects and the 12/24/60-month zero-based forecast in one place."
-        />
-      </Helmet>
-
       <header>
         <h1 className="text-3xl font-bold tracking-tight">Zero-Based Plan</h1>
         <p className="text-muted-foreground">
