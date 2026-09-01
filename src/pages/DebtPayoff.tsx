@@ -672,6 +672,12 @@ const DebtPayoff = () => {
             </Card>
           )}
 
+          {/* Per-debt cards: payoff date, interest avoided, snowball, PSLF */}
+          {!itemsLoading && (dbItems || []).length > 0 && (
+            <DebtCardsPanel items={dbItems as any[]} />
+          )}
+
+
           {debts.length > 0 && (
             <>
               {/* Summary */}
