@@ -1133,7 +1133,7 @@ const Budgets = () => {
   };
 
   // Render a section (accordion) — optionally pass custom totals for per-business rendering
-  const renderSection = (type: ExpenseType, items: BudgetRow[], customTotals?: { budget: number; actual: number; remaining: number }, sectionKey?: string) => {
+  const renderSection = (type: ExpenseType, items: BudgetRow[], customTotals?: { budget: number; actual: number; remaining: number }, sectionKey?: string, labelOverride?: string) => {
     const totals = customTotals || sectionTotals[type];
     const key = sectionKey || type;
     const isOpen = openSections[key] ?? true;
