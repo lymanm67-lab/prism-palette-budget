@@ -31,6 +31,17 @@ export default function ZeroBasedForecastPanel() {
   const oneTimes = useBufferOneTime();
   const redirects = useMoneyRedirects();
   const { data: debts } = useHouseholdDebts();
+  const { settings } = useBufferSettings();
+
+  const thresholds = useMemo(
+    () => ({
+      healthy_min: Number(settings?.healthy_min ?? 1000),
+      caution_min: Number(settings?.caution_min ?? 500),
+      tight_min: Number(settings?.tight_min ?? 0),
+    }),
+    [settings],
+  );
+
 
   const [knobs, setKnobs] = useState<WhatIfKnobs>(DEFAULT_KNOBS);
   const set = <K extends keyof WhatIfKnobs>(key: K, value: WhatIfKnobs[K]) =>
