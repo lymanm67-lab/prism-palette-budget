@@ -440,3 +440,55 @@ export function printInfographic(spec: InfographicSpec): boolean {
   setTimeout(() => w.print(), 400);
   return true;
 }
+
+/** Rasterise the spec offscreen and download it as a PNG or a single-page PDF. */
+export async function exportInfographic(
+  spec: InfographicSpec,
+  kind: 'png' | 'pdf',
+  filename = 'prism-report',
+): Promise<void> {
+  const [{ default: html2canvas }, jspdf] = await Promise.all([
+    import('html2canvas'),
+    kind === 'pdf' ? import('jspdf') : Promise.resolve(null as any),
+  ]);
+
+  const frame = document.createElement('iframe');
+  frame.style.cssText = 'position:fixed;left:-10000px;top:0;width:1400px;height:2000px;border:0;';
+  document.body.appendChild(frame);
+
+  try {
+    const doc = frame.contentDocument!;
+    doc.open();
+    doc.write(renderInfographic(spec));
+    doc.close();
+    await new Promise((r) => setTimeout(r, 350));
+
+    const target = (doc.getElementById('sheet') as HTMLElement) || doc.body;
+    const canvas = await html2canvas(target, { scale: 2, backgroundColor: '#ffffff', logging: false });
+
+    if (kind === 'png') {
+      const a = document.createElement('a');
+      a.href = canvas.toDataURL('image/png');
+      a.download = `${filename}.png`;
+      a.click();
+      return;
+    }
+
+    const landscape = canvas.width >= canvas.height;
+    const pdf = new jspdf.jsPDF({
+      orientation: landscape ? 'landscape' : 'portrait',
+      unit: 'pt',
+      format: 'letter',
+    });
+    const pw = pdf.internal.pageSize.getWidth();
+    const ph = pdf.internal.pageSize.getHeight();
+    const scale = Math.min(pw / canvas.width, ph / canvas.height);
+    const w = canvas.width * scale;
+    const h = canvas.height * scale;
+    pdf.addImage(canvas.toDataURL('image/png'), 'PNG', (pw - w) / 2, (ph - h) / 2, w, h);
+    pdf.save(`${filename}.pdf`);
+  } finally {
+    frame.remove();
+  }
+}
+
