@@ -57,6 +57,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTTS } from '@/hooks/use-tts';
 import PageOverview from '@/components/PageOverview';
 import DebtInsights from '@/components/DebtInsights';
+import DebtCardsPanel from '@/components/budget/DebtCardsPanel';
 import { RelatedToolsBar } from '@/components/planning/RelatedToolsBar';
 import { DebtStatementScanner } from '@/components/DebtStatementScanner';
 import { Target, FileUp } from 'lucide-react';
