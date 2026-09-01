@@ -156,6 +156,27 @@ export default function ZeroBasedPlanBoard({
         <Badge variant="outline">Phase 1</Badge>
       </div>
 
+      <Card className="glass-card">
+        <CardContent className="space-y-1.5 p-4 text-xs text-muted-foreground">
+          <p>
+            <span className="font-semibold text-foreground">How to read these cards.</span> Each card shows the
+            dollars going to that purpose this month and what percent of your{' '}
+            {formatCurrency(takeHome)} take-home that is. The big number is the amount funded — not a shortfall.
+          </p>
+          <p>
+            <span className="font-medium text-foreground">Live and Enjoy are ceilings</span> — staying at or below
+            target is good. <span className="font-medium text-foreground">Build Wealth and Eliminate Debt are
+            floors</span> — anything below target shows the exact dollars still needed to reach it (“gap to close”).
+          </p>
+          <p>
+            <span className="font-medium text-foreground">Buffer</span> is your month-end cash cushion from the
+            Buffer tab. It reads critical when the tracked balance is below {formatCurrency(thresholds.tight_min)} —
+            including when no buffer balance has been entered yet, so add your real starting balance in the Buffer
+            tab to see a true status.
+          </p>
+        </CardContent>
+      </Card>
+
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {cards.map((c) => {
           const Icon = c.icon;
