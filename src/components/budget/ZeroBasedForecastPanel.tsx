@@ -14,6 +14,7 @@ import { useCurrency } from '@/hooks/use-currency';
 import PrintInfographicButton from '@/components/reports/PrintInfographicButton';
 import { useBufferOneTime, useBusinessExpenses, useRecurringPurposeLines, useMoneyRedirects, useBufferSettings } from '@/hooks/use-zero-based';
 import { useHouseholdDebts } from '@/hooks/use-household-debts';
+import { useDebtActuals } from '@/hooks/use-debt-actuals';
 import { buildForecast, monthLabel, CHANGE_FLAG_LABEL, type ForecastMonth } from '@/lib/budgeting/forecastEngine';
 import { buildAssumptions, DEFAULT_KNOBS, type WhatIfKnobs } from '@/lib/budgeting/forecastInputs';
 import { buildRedirectFlows, redirectFlagInputs } from '@/lib/budgeting/redirects';
@@ -32,6 +33,7 @@ export default function ZeroBasedForecastPanel() {
   const redirects = useMoneyRedirects();
   const { data: debts } = useHouseholdDebts();
   const { settings } = useBufferSettings();
+  const { paymentMap } = useDebtActuals(4);
 
   const thresholds = useMemo(
     () => ({
@@ -81,11 +83,12 @@ export default function ZeroBasedForecastPanel() {
           ],
           wealthTakeHome: [{ fromMonth: currentMonth(), amount: 0 }, { fromMonth: '2028-01', amount: 250 }],
           redirects: redirectFlags,
+          observedPayments: paymentMap,
         },
         knobs,
       ),
     );
-  }, [debts, lines.rows, business.rows, oneTimes.rows, redirectFlags, knobs]);
+  }, [debts, lines.rows, business.rows, oneTimes.rows, redirectFlags, paymentMap, knobs]);
 
   const chartData = useMemo(
     () =>
@@ -250,6 +253,18 @@ export default function ZeroBasedForecastPanel() {
                 <div className="text-xs text-muted-foreground">Roll cleared payments into the next debt.</div>
               </div>
               <Switch checked={knobs.snowball} onCheckedChange={(v) => set('snowball', v)} />
+            </div>
+            <div className="flex items-center justify-between rounded-lg border border-border/60 p-3">
+              <div>
+                <div className="text-sm font-medium">Use real payments</div>
+                <div className="text-xs text-muted-foreground">
+                  Drive payoff dates from bank statements instead of stored minimums.
+                </div>
+              </div>
+              <Switch
+                checked={knobs.useActualPayments}
+                onCheckedChange={(v) => set('useActualPayments', v)}
+              />
             </div>
           </div>
         </CardContent>
