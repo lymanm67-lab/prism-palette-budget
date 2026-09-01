@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import BufferPanel from '@/components/budget/BufferPanel';
 import BusinessLedgerPanel from '@/components/budget/BusinessLedgerPanel';
@@ -19,6 +19,10 @@ export default function ZeroBasedPlan() {
   const { settings } = useBufferSettings();
   const redirects = useMoneyRedirects();
   const { data: debts } = useHouseholdDebts();
+
+  useEffect(() => {
+    document.title = 'Zero-Based Plan | Buffer, Business & Redirects';
+  }, []);
 
   const rolled = useMemo(
     () =>
