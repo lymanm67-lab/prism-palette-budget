@@ -1395,9 +1395,10 @@ const Budgets = () => {
                   >
                     {[
                       { color: '#3b82f6' },
+                      { color: '#f43f5e' },
                       { color: '#f59e0b' },
                       { color: '#a855f7' },
-                    ].filter((_, i) => [sectionTotals.fixed.budget, sectionTotals.flexible.budget, sectionTotals.non_monthly.budget][i] > 0)
+                    ].filter((_, i) => [sectionTotals.fixed.budget, sectionTotals.debt.budget, sectionTotals.flexible.budget, sectionTotals.non_monthly.budget][i] > 0)
                      .map((entry, idx) => (
                       <Cell key={idx} fill={entry.color} />
                     ))}
@@ -2532,9 +2533,10 @@ const Budgets = () => {
                 >
                   {[
                     { color: '#3b82f6' },
+                    { color: '#f43f5e' },
                     { color: '#f59e0b' },
                     { color: '#a855f7' },
-                  ].filter((_, i) => [sectionTotals.fixed.budget, sectionTotals.flexible.budget, sectionTotals.non_monthly.budget][i] > 0)
+                  ].filter((_, i) => [sectionTotals.fixed.budget, sectionTotals.debt.budget, sectionTotals.flexible.budget, sectionTotals.non_monthly.budget][i] > 0)
                    .map((entry, idx) => (
                     <Cell key={idx} fill={entry.color} />
                   ))}
