@@ -176,7 +176,7 @@ export function useMoneyPurposeSnapshot(monthInput: string, window: AverageWindo
   const { data: categories } = useCategories();
   const { data: budgets, isLoading: bLoading } = useBudgets(`${month}-01`);
   const { data: elections, isLoading: eLoading } = usePayrollElections();
-  const { settings: travelSettings } = useTravelSettings();
+  const { settings: travelSettings, configured: travelConfigured } = useTravelSettings();
 
   const startMonth = addMonths(month, -(window - 1));
   const { data: txns, isLoading: tLoading } = useTransactionsByDateRange(`${startMonth}-01`, monthEnd(month));
