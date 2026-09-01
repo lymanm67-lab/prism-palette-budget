@@ -83,12 +83,13 @@ const BAR_COLORS: Record<ExpenseType, string> = {
   non_monthly: 'bg-purple-500',
 };
 
-// 50/10/20/20 Money Blueprint ranges (% of take-home)
-// Fixed commitments are LIVE (50%); discretionary lines land in ENJOY (10%)
+// 45/10/25/20 Money Blueprint ranges (% of take-home)
+// Fixed commitments are LIVE (45%); discretionary lines land in ENJOY (10%)
 const BENCHMARK_RANGES: Partial<Record<ExpenseType, { min: number; max: number; label: string }>> = {
-  fixed: { min: 45, max: 50, label: 'LIVE (fixed) 45–50%' },
+  fixed: { min: 40, max: 45, label: 'LIVE (fixed essentials) 45%' },
   flexible: { min: 0, max: 10, label: 'ENJOY (flexible) ≤ 10%' },
   non_monthly: { min: 0, max: 10, label: 'ENJOY (non-monthly) ≤ 10%' },
+  payroll_deduction: { min: 20, max: 25, label: 'BUILD WEALTH (payroll & pre-tax) 25%' },
 };
 
 
