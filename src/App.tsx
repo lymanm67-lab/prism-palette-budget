@@ -291,6 +291,7 @@ const App = () => (
               <Route path="/retirement" element={<Suspense fallback={<PageLoader />}><RetirementHub /></Suspense>} />
               <Route path="/planning/retirement-tax" element={<Suspense fallback={<PageLoader />}><RetirementTaxCenter /></Suspense>} />
               <Route path="/planning/travel-fund" element={<Suspense fallback={<PageLoader />}><TravelFund /></Suspense>} />
+              <Route path="/planning/zero-based" element={<Suspense fallback={<PageLoader />}><ZeroBasedPlan /></Suspense>} />
               <Route path="/investments/portfolio" element={<Suspense fallback={<PageLoader />}><InvestmentPortfolio /></Suspense>} />
               <Route path="/health" element={<Suspense fallback={<PageLoader />}><HealthDashboard /></Suspense>} />
               <Route path="/admin/content-editor" element={<Suspense fallback={<PageLoader />}><ContentEditor /></Suspense>} />
