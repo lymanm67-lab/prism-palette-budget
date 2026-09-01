@@ -375,7 +375,9 @@ Deno.serve(async (req) => {
         .from('plaid_items')
         .select('id, plaid_item_id, plaid_access_token, institution_name')
         .eq('household_id', household_id)
-        .eq('status', 'active');
+        .eq('status', 'active')
+        // MX/SnapTrade connections share this table but hold non-Plaid tokens.
+        .or('provider_type.is.null,provider_type.eq.plaid');
 
       if (itemsError || !plaidItems?.length) {
         return new Response(JSON.stringify({ error: 'No connected bank accounts found.' }), {
@@ -703,7 +705,8 @@ Deno.serve(async (req) => {
         .from('plaid_items')
         .select('id, plaid_access_token, institution_name')
         .eq('household_id', household_id)
-        .eq('status', 'active');
+        .eq('status', 'active')
+        .or('provider_type.is.null,provider_type.eq.plaid');
 
       if (!plaidItems?.length) {
         return new Response(JSON.stringify({ error: 'No connected bank accounts found.' }), {
