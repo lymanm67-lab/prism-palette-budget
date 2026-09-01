@@ -395,10 +395,12 @@ export function renderInfographic(spec: InfographicSpec): string {
       </div>`
     : '';
 
+  const fmt = INFOGRAPHIC_FORMATS[spec.format ?? 'letter-portrait'];
+
   return `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><title>${esc(spec.title)}${spec.period ? ` — ${esc(spec.period)}` : ''}</title>
 <style>
-  @page { size: letter portrait; margin: 0.35in; }
+  @page { size: ${fmt.page}; margin: 0.35in; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; color: ${NAVY}; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   table { border-collapse: collapse; width: 100%; }
@@ -407,7 +409,8 @@ export function renderInfographic(spec: InfographicSpec): string {
   .th { font-size: 8.5px; font-weight: 800; letter-spacing: 0.04em; color: ${GREY}; text-transform: uppercase; padding: 5px 8px; border-bottom: 1.5px solid #d7dbe3; }
 </style></head>
 <body>
-<div style="max-width:7.8in;margin:0 auto;zoom:${spec.zoom ?? 0.73}">
+<div id="sheet" style="max-width:${fmt.width};margin:0 auto;zoom:${spec.zoom ?? fmt.zoom}">
+
   <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;border-bottom:2px solid ${NAVY};padding-bottom:8px">
     <div style="flex:1;text-align:center">
       <div style="font-size:30px;font-weight:900;letter-spacing:-0.5px;color:${NAVY}">${esc(spec.title.toUpperCase())}</div>
