@@ -36,6 +36,7 @@ const EDITABLE_LINES: Record<string, LayerAField | undefined> = {
   sinking: 'sinking_funds',
   buffer: 'buffer_assignment',
   one_time: 'one_time_expenses',
+  business: 'business_outflow',
 };
 
 export default function ZeroBasedCashPanel({ snap, month }: Props) {
@@ -101,6 +102,30 @@ export default function ZeroBasedCashPanel({ snap, month }: Props) {
                   ))
                 )}
               </div>
+              {r.businessNet > 0 && (
+                <div className="rounded-lg border border-red-500/20 bg-background/40 p-2.5">
+                  <p className="text-[11px] font-medium">What "business expenses over-allocated" means</p>
+                  <p className="mt-0.5 text-[10px] text-muted-foreground">
+                    Business spending of {formatCurrency(r.businessOutflow)} was paid from this account but only{' '}
+                    {formatCurrency(r.businessInflow)} of business income landed in it, so{' '}
+                    {formatCurrency(r.businessNet)} of personal take-home covered the business. Fix it one of two
+                    ways: record the missing business income / owner reimbursement below, or lower the business
+                    spending figure if some of it was personal.
+                  </p>
+                  <div className="mt-2 flex items-center justify-between gap-2 text-xs">
+                    <span>Business income this month (editable)</span>
+                    <InlineEditCell
+                      type="number"
+                      value={String(r.businessInflow)}
+                      formatter={(v) => formatCurrency(Number(v) || 0)}
+                      className="tabular-nums text-right"
+                      onSave={async (v) => {
+                        await save.mutateAsync({ business_inflow: v === '' ? null : Number(v) } as any);
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
             </>
           ) : (
             <>

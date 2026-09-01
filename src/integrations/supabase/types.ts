@@ -6497,6 +6497,8 @@ export type Database = {
       layer_a_assignments: {
         Row: {
           buffer_assignment: number | null
+          business_inflow: number | null
+          business_outflow: number | null
           created_at: string
           household_id: string
           id: string
@@ -6508,6 +6510,8 @@ export type Database = {
         }
         Insert: {
           buffer_assignment?: number | null
+          business_inflow?: number | null
+          business_outflow?: number | null
           created_at?: string
           household_id: string
           id?: string
@@ -6519,6 +6523,8 @@ export type Database = {
         }
         Update: {
           buffer_assignment?: number | null
+          business_inflow?: number | null
+          business_outflow?: number | null
           created_at?: string
           household_id?: string
           id?: string
