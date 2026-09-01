@@ -335,6 +335,12 @@ export default function MonthlyReport() {
             })()}
             periodLabel={monthLabel(meta.month ?? selectedMonth)}
           />
+
+          {/* Payroll elections — single source of truth for Build Wealth */}
+          <div className="print:hidden">
+            <PayrollElectionsCard month={`${String(meta.month ?? selectedMonth).slice(0, 7)}-01`} />
+          </div>
+
           {/* Hero header */}
           <div className="rounded-2xl overflow-hidden border bg-gradient-to-br from-prism-orange/10 via-background to-background print:border-black">
             <div className="p-6 md:p-8 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
