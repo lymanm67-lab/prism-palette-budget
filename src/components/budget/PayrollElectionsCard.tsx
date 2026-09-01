@@ -36,21 +36,25 @@ export default function PayrollElectionsCard({ month, isCompletedMonth }: Props)
   const qc = useQueryClient();
   const { data: elections } = usePayrollElections();
   const [open, setOpen] = useState(false);
+  /** `month` may arrive as `YYYY-MM` or `YYYY-MM-01`; normalise both forms. */
+  const ym = month.slice(0, 7);
+  const monthStart = `${ym}-01`;
   const [form, setForm] = useState({
     label: '',
     amount: '',
     tax_treatment: 'pre_tax',
     counts_as_wealth: true,
     is_employer: false,
-    effective_start: `${month}-01`,
+    effective_start: monthStart,
     effective_end: '',
   });
 
-  const active = useMemo(() => electionsForMonth(elections, month), [elections, month]);
+  const active = useMemo(() => electionsForMonth(elections, ym), [elections, ym]);
   const future = useMemo(
-    () => (elections || []).filter((e) => e.effective_start > `${month}-01`),
-    [elections, month],
+    () => (elections || []).filter((e) => e.effective_start > monthStart),
+    [elections, monthStart],
   );
+
 
   const save = useMutation({
     mutationFn: async () => {
@@ -80,7 +84,7 @@ export default function PayrollElectionsCard({ month, isCompletedMonth }: Props)
     mutationFn: async (id: string) => {
       const { error } = await supabase
         .from('payroll_elections' as any)
-        .update({ effective_end: `${month}-01` } as any)
+        .update({ effective_end: monthStart } as any)
         .eq('id', id);
       if (error) throw error;
     },
@@ -88,7 +92,9 @@ export default function PayrollElectionsCard({ month, isCompletedMonth }: Props)
       qc.invalidateQueries({ queryKey: ['payroll-elections'] });
       toast.success('Election ended');
     },
+    onError: (e: any) => toast.error(e.message),
   });
+
 
   const employeeWealth = active.filter((e) => e.counts_as_wealth && !e.is_employer);
   const employer = active.filter((e) => e.is_employer);

@@ -8,11 +8,24 @@ import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, CheckCircle2, Loader2, ShieldCheck, Wand2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import {
   runReconciliationCheck,
   isAutoFixable,
+  isBulkFixable,
   type RecFinding,
   type RecTxn,
 } from '@/lib/reconciliationCheck';
+
 
 /**
  * Pre-export gate: flags income / transfer / spending misclassifications for a
@@ -90,7 +103,8 @@ export default function ReconciliationCheckCard({
   });
 
   const findings = data?.findings ?? [];
-  const autoFixable = useMemo(() => findings.filter(isAutoFixable), [findings]);
+  const bulkFixable = useMemo(() => findings.filter(isBulkFixable), [findings]);
+
 
   const applyFix = async (f: RecFinding) => {
     setBusy(f.id);
@@ -135,7 +149,7 @@ export default function ReconciliationCheckCard({
   };
 
   const applyAll = async () => {
-    for (const f of autoFixable) await applyFix(f);
+    for (const f of bulkFixable) await applyFix(f);
   };
 
   return (
@@ -151,14 +165,37 @@ export default function ReconciliationCheckCard({
               {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
               Re-scan
             </Button>
-            {autoFixable.length > 0 && (
-              <Button size="sm" onClick={applyAll} disabled={!!busy}>
-                <Wand2 className="h-4 w-4 mr-1" />
-                Fix {autoFixable.length} automatically
-              </Button>
+            {bulkFixable.length > 0 && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button size="sm" disabled={!!busy}>
+                    <Wand2 className="h-4 w-4 mr-1" />
+                    Flag {bulkFixable.length} transfer{bulkFixable.length === 1 ? '' : 's'}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      Update transfer flags on {bulkFixable.length} transaction
+                      {bulkFixable.length === 1 ? '' : 's'}?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This only adds or removes the transfer flag — no categories are changed.
+                      Transfer pairs are detected by matching amounts across accounts, so review the
+                      list below first. You can undo any item by toggling its transfer flag on the
+                      transaction.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={applyAll}>Apply flags</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             )}
           </div>
         </div>
+
         <p className="text-xs text-muted-foreground">
           Run this before exporting: it catches income booked as spending, spending booked as
           income, and internal transfers that are being double counted.
