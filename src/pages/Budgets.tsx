@@ -785,12 +785,25 @@ const Budgets = () => {
 
     const items: { category_id: string; name: string; color: string; budget: number; spent: number; projected: number; type: ExpenseType }[] = [];
 
+    // Confidence in the daily pace grows as the month progresses. Early in the
+    // month a single day of spending must not be multiplied out to a full month.
+    const paceWeight = totalDays > 0 ? Math.min(1, daysPassed / Math.max(7, totalDays * 0.25)) : 1;
+
     for (const b of budgetItems) {
       const type = categoryExpenseType.get(b.category_id) || 'flexible';
       const isIncome = type === 'income';
       const actual = isIncome ? b.received : b.spent;
       const dailyRate = daysPassed > 0 ? actual / daysPassed : 0;
-      const projected = actual + dailyRate * daysRemaining;
+
+      let projected: number;
+      if (type === 'fixed' || type === 'payroll_deduction' || type === 'non_monthly' || isIncome) {
+        // These land on their planned amount — they don't scale with daily pace.
+        projected = Math.max(actual, b.planned_amount);
+      } else {
+        const paced = actual + dailyRate * daysRemaining;
+        const planned = Math.max(actual, b.planned_amount);
+        projected = paced * paceWeight + planned * (1 - paceWeight);
+      }
 
       items.push({
         category_id: b.category_id,
@@ -802,6 +815,7 @@ const Budgets = () => {
         type,
       });
     }
+
 
     const totals = {
       income: { budget: 0, actual: 0, projected: 0 },
