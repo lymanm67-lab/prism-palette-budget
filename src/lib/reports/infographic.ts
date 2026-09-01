@@ -112,7 +112,26 @@ export interface InfographicSpec {
   disclaimer?: string;
   /** 1 = no shrink. Lower values fit more content on one sheet. */
   zoom?: number;
+  /** Page geometry preset. Defaults to letter portrait. */
+  format?: InfographicFormat;
 }
+
+export type InfographicFormat =
+  | 'letter-portrait'
+  | 'letter-landscape'
+  | 'social'
+  | 'presentation';
+
+export const INFOGRAPHIC_FORMATS: Record<
+  InfographicFormat,
+  { label: string; page: string; width: string; zoom: number }
+> = {
+  'letter-portrait': { label: 'Letter · portrait', page: 'letter portrait', width: '7.8in', zoom: 0.73 },
+  'letter-landscape': { label: 'Letter · landscape', page: 'letter landscape', width: '10.3in', zoom: 0.78 },
+  social: { label: 'Social square (1080)', page: '1080px 1080px', width: '10.4in', zoom: 0.95 },
+  presentation: { label: 'Presentation 16:9', page: '13.33in 7.5in', width: '12.6in', zoom: 0.82 },
+};
+
 
 const esc = (v: unknown) =>
   String(v ?? '')
