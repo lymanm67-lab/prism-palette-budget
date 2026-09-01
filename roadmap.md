@@ -17,7 +17,7 @@
 - [ ] Business expense ledger: vendor, brand, purpose, tax class, renewal date, payment method, entity
 - [ ] Seed Resend $20 (business expense) + ChatGPT $20 (AI Services); $720.68 Business Advance = owner investment, excluded from business expense subtotal
 
-## Session 3 — Itemized recurring LIVE / ENJOY
+## Session 3 — Itemized recurring LIVE / ENJOY (DONE — Zero-Based Plan → Live & Enjoy Lines)
 - [ ] Individual dated lines: rent 1,100 · electric 51 · gas 112 · water 95 · Verizon 70 · GEICO 159 · term life 249.96 · renters 22 · fuel 35 · Allstate Roadside 10.92 (from Oct 2026)
 - [ ] ENJOY reports its real level (e.g. 2.1%); unused portion of the 10% surfaces as redirectable cash, not spending
 
@@ -42,6 +42,11 @@
 - [ ] "What If?" simulator recalculating Buffer, percentages, payoff dates, Vacation Fund timeline, wealth totals live
 - [ ] Infographic report types in the existing export engine: monthly snapshot, debt payoff roadmap, wealth building, 45/10/25/20 scorecard, vacation fund, year-end — PNG / PDF / print, landscape / portrait / letter / social / presentation, dark-navy palette
 - [ ] Dashboard "YOUR UPDATED PLAN — SMART CHANGES. STRONGER FUTURE." with six cards (Live, Enjoy, Build Wealth, Eliminate Debt, Business, Buffer) + top indicators, framing intentional debt overage as strategy
+
+## Session 7 — Real monthly debt payments (DONE — Zero-Based Plan → Debt Actuals)
+
+## Budget page flow (NEW)
+- [ ] Review /budgets information architecture: reorder into a natural top-to-bottom flow (income → assign → buckets → bills → review), reduce competing tab rows and duplicate controls
 
 ## Open items from earlier
 - [ ] Enter September 2026 actual spending, review LIVE / ENJOY / DEBT impact, adjust plan

@@ -21,6 +21,8 @@ export interface WhatIfKnobs {
   bufferStarting: number;
   /** Turn the vacation snowball on/off. */
   snowball: boolean;
+  /** Use observed bank-statement payments instead of stored minimums. */
+  useActualPayments: boolean;
 }
 
 export const DEFAULT_KNOBS: WhatIfKnobs = {
@@ -35,6 +37,7 @@ export const DEFAULT_KNOBS: WhatIfKnobs = {
   raiseAmount: 100,
   bufferStarting: 0,
   snowball: true,
+  useActualPayments: true,
 };
 
 export interface ForecastSourceData {
@@ -62,6 +65,8 @@ export interface ForecastSourceData {
   employerHsa: { month: string; amount: number }[];
   wealthTakeHome: { fromMonth: string; amount: number }[];
   redirects?: { startMonth: string; sourceLabel: string; targetLabel: string; amount: number }[];
+  /** Session 7: observed monthly payment per debt id, from bank statements. */
+  observedPayments?: Record<string, number>;
 }
 
 const isVacation = (name: string) => /vacation/i.test(name || '');
@@ -74,6 +79,15 @@ export function buildAssumptions(src: ForecastSourceData, k: WhatIfKnobs): Forec
     .map((l) => ({
       label: l.label,
       amount: Math.round(Number(l.amount || 0) * liveMult * 100) / 100,
+      startMonth: l.start_month,
+      endMonth: l.end_month,
+    }));
+
+  const enjoyLines: ForecastLine[] = src.recurringLines
+    .filter((l) => l.purpose === 'enjoy')
+    .map((l) => ({
+      label: l.label,
+      amount: Number(l.amount || 0),
       startMonth: l.start_month,
       endMonth: l.end_month,
     }));
@@ -96,12 +110,17 @@ export function buildAssumptions(src: ForecastSourceData, k: WhatIfKnobs): Forec
   const debts: ForecastDebt[] = src.debts.map((d) => {
     const extraStored = Number(d.extra_payment || 0);
     const bonus = k.extraDebt > 0 && smallestVacation && d.id === smallestVacation.id ? k.extraDebt : 0;
+    const observed = k.useActualPayments ? src.observedPayments?.[d.id] : undefined;
+    const stored = Number(d.minimum_payment || 0);
+    const separate = Number(d.settlement_separate_payment || 0);
+    // Observed totals include any separately billed leg, so don't double count it.
+    const minimum = observed && observed > 0 ? Math.max(0, observed - separate) : stored;
     return {
       id: d.id,
       name: d.name,
       balance: Number(d.balance || 0),
       apr: Number(d.interest_rate || 0),
-      minimum: Number(d.minimum_payment || 0),
+      minimum,
       extra: extraStored + bonus,
       separatePayment: Number(d.settlement_separate_payment || 0),
       isBusiness: Number(d.business_split_pct || 0) >= 100,
@@ -121,6 +140,7 @@ export function buildAssumptions(src: ForecastSourceData, k: WhatIfKnobs): Forec
     takeHome: k.takeHome,
     liveLines,
     enjoyPlanned: k.enjoyPlanned,
+    enjoyLines,
     businessLines,
     debts,
     wealthTakeHome,

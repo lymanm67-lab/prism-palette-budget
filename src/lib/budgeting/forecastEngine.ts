@@ -39,6 +39,8 @@ export interface ForecastAssumptions {
   takeHome: number;
   liveLines: ForecastLine[];
   enjoyPlanned: number;
+  /** Itemized, dated ENJOY commitments (Session 3). */
+  enjoyLines?: ForecastLine[];
   businessLines: ForecastLine[];
   debts: ForecastDebt[];
   /** Take-home dollars sent to wealth, effective-dated. */
@@ -85,6 +87,8 @@ export interface ForecastMonth {
   takeHome: number;
   live: number;
   enjoy: number;
+  /** Unused portion of the ENJOY target — redirectable cash, not spending. */
+  enjoyHeadroom: number;
   buildWealthTakeHome: number;
   buildWealthEmployee: number;
   buildWealthEmployer: number;
@@ -173,8 +177,15 @@ export function buildForecast(a: ForecastAssumptions): ForecastMonth[] {
     }
     prevLive = live;
 
-    // ── ENJOY (+ Travel Fund once vacation debt clears) ────────────────────
-    let enjoy = a.enjoyPlanned;
+    // ── ENJOY (itemized lines + Travel Fund once vacation debt clears) ─────
+    const enjoyActive = (a.enjoyLines || []).filter((l) => activeIn(l, month));
+    let enjoy = round2(a.enjoyPlanned + enjoyActive.reduce((s, l) => s + l.amount, 0));
+    for (const l of enjoyActive) {
+      if (l.startMonth === month && i > 0) {
+        flags.push({ flag: 'subscription_added', detail: `${l.label} $${l.amount.toFixed(2)} (Enjoy)` });
+      }
+      if (l.endMonth === month) flags.push({ flag: 'payment_ended', detail: `${l.label} ends` });
+    }
     if (travelFundActive && a.travelFundMonthly) {
       enjoy = round2(enjoy + a.travelFundMonthly);
       travelFundTotal = round2(travelFundTotal + a.travelFundMonthly);
@@ -304,12 +315,14 @@ export function buildForecast(a: ForecastAssumptions): ForecastMonth[] {
     }
 
     const p = (n: number) => (takeHome > 0 ? round2((n / takeHome) * 100) : 0);
+    const enjoyHeadroom = round2(Math.max(0, (takeHome * CORE_TARGETS.enjoy) / 100 - enjoy));
 
     out.push({
       month,
       takeHome,
       live,
       enjoy,
+      enjoyHeadroom,
       buildWealthTakeHome: wealthTakeHome,
       buildWealthEmployee: a.employeePayrollWealth,
       buildWealthEmployer: employer,
@@ -373,6 +386,9 @@ export interface ForecastSummary {
   avgPct: Record<'live' | 'enjoy' | 'build_wealth' | 'eliminate_debt', number>;
   targetPct: Record<'live' | 'enjoy' | 'build_wealth' | 'eliminate_debt', number>;
   wealthContributed: number;
+  /** Total unused ENJOY allowance across the horizon (redirectable cash). */
+  enjoyHeadroomTotal: number;
+  enjoyHeadroomMonthly: number;
 }
 
 const TRAVEL_MILESTONES = [1000, 3000, 6000];
@@ -385,6 +401,7 @@ export function summarizeForecast(months: ForecastMonth[]): ForecastSummary {
       travelFundStartMonth: null, travelFundTotal: 0, travelFundMilestones: [],
       bufferEnding: 0, bufferLow: 0, bufferLowMonth: null,
       avgPct: { ...empty }, targetPct: { ...CORE_TARGETS }, wealthContributed: 0,
+      enjoyHeadroomTotal: 0, enjoyHeadroomMonthly: 0,
     };
   }
 
@@ -443,6 +460,8 @@ export function summarizeForecast(months: ForecastMonth[]): ForecastSummary {
     },
     targetPct: { ...CORE_TARGETS },
     wealthContributed: round2(months.reduce((s, m) => s + m.buildWealthCombined, 0)),
+    enjoyHeadroomTotal: round2(months.reduce((s, m) => s + m.enjoyHeadroom, 0)),
+    enjoyHeadroomMonthly: round2(months.reduce((s, m) => s + m.enjoyHeadroom, 0) / months.length),
   };
 }
 
