@@ -70,6 +70,9 @@ export interface Reconciliation {
   unallocated: number;
   // ----- LAYER A: total cash flow, zero-based -----
   businessOutflow: number;
+  businessInflow: number;
+  /** businessOutflow minus businessInflow, floored at 0. */
+  businessNet: number;
   sinkingFunds: number;
   bufferAssignment: number;
   oneTimeExpenses: number;
