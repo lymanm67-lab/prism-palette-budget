@@ -180,8 +180,17 @@ export default function ZeroBasedPlanBoard({
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {cards.map((c) => {
           const Icon = c.icon;
-          const met = c.ceiling ? c.pct <= c.target + 1 : c.pct >= c.target - 1;
-          return (
+           const met = c.ceiling ? c.pct <= c.target + 1 : c.pct >= c.target - 1;
+           const targetAmount = round2((takeHome * c.target) / 100);
+           const diff = round2(Math.abs(targetAmount - c.amount));
+           const detail = c.ceiling
+             ? met
+               ? `${formatCurrency(diff)} under the cap — redirectable cash`
+               : `${formatCurrency(diff)} over the cap`
+             : met
+               ? `${formatCurrency(diff)} above the floor`
+               : `Gap to close: ${formatCurrency(diff)} more needed to hit the floor`;
+           return (
             <Card key={c.key} className="glass-card">
               <CardHeader className="pb-2">
                 <CardTitle className="flex items-center justify-between text-sm font-medium">
