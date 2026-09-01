@@ -1,8 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import InlineEditCell from '@/components/InlineEditCell';
 import { useCurrency } from '@/hooks/use-currency';
 import { usePurposeLedger } from '@/hooks/use-purpose-ledger';
+import { useLayerAAssignments, type LayerAField } from '@/hooks/use-layer-a-assignments';
 import { overallocationCauses } from '@/lib/budgeting/blueprint5010';
 import type { MoneyPurposeSnapshot } from '@/hooks/use-money-purpose';
 import { cn } from '@/lib/utils';
