@@ -769,12 +769,14 @@ const Budgets = () => {
     if (budgetType === 'all') {
       for (const biz of (perBusinessData || [])) {
         const bizKey = biz.name.replace(/\s+/g, '_');
-        keys.push(`all_${bizKey}_income`, `all_${bizKey}_fixed`, `all_${bizKey}_flexible`, `all_${bizKey}_non_monthly`);
+        keys.push(`all_${bizKey}_income`);
+        for (const grp of (biz.byGroup || [])) keys.push(`all_${bizKey}_grp_${grp.id}`);
       }
     } else if (budgetType === 'business') {
       for (const biz of (perBusinessData || [])) {
         const bizKey = biz.name.replace(/\s+/g, '_');
-        keys.push(`${bizKey}_income`, `${bizKey}_fixed`, `${bizKey}_flexible`, `${bizKey}_non_monthly`);
+        keys.push(`${bizKey}_income`);
+        for (const grp of (biz.byGroup || [])) keys.push(`${bizKey}_grp_${grp.id}`);
       }
     }
     return keys;
