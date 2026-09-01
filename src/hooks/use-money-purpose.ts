@@ -259,6 +259,13 @@ export function useMoneyPurposeSnapshot(monthInput: string, window: AverageWindo
     netIncome = Math.round((netIncome / divisor) * 100) / 100;
     businessInflow = Math.round((businessInflow / divisor) * 100) / 100;
 
+    // Mid-month, payroll deposits may not have landed yet while spending has.
+    // Using $0 received as the basis would fake an over-allocation, so an
+    // in-progress month falls back to the budgeted take-home.
+    const monthIsComplete = monthEnd(month) < new Date().toISOString().slice(0, 10);
+    if (!monthIsComplete && plannedTakeHome > netIncome) netIncome = plannedTakeHome;
+
+
     const active = electionsForMonth(elections, month);
     const payrollWealth = active
       .filter((e) => e.counts_as_wealth && !e.is_employer)
