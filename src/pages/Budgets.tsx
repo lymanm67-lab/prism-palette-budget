@@ -24,7 +24,7 @@ import CategoryCombobox from '@/components/CategoryCombobox';
 import { useBusinessProfiles } from '@/hooks/use-business-data';
 import { useSmartBudget } from '@/hooks/use-financial-intelligence';
 import { useCurrency } from '@/hooks/use-currency';
-import { Loader2, Plus, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Eye, EyeOff, Settings2, TrendingUp, AlertTriangle, CheckCircle2, PiggyBank, Sparkles, Copy, ClipboardCheck, MoreHorizontal, BookOpen, Printer, X, Scale, FileUp, Receipt, ArrowRightLeft } from 'lucide-react';
+import { Loader2, Wallet, LayoutGrid, ListChecks, Plus, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Eye, EyeOff, Settings2, TrendingUp, AlertTriangle, CheckCircle2, PiggyBank, Sparkles, Copy, ClipboardCheck, MoreHorizontal, BookOpen, Printer, X, Scale, FileUp, Receipt, ArrowRightLeft } from 'lucide-react';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -44,6 +44,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import MoneyBlueprintPanel from '@/components/budget/MoneyBlueprintPanel';
 import PayrollElectionsCard from '@/components/budget/PayrollElectionsCard';
 import DebtCashFlowRelease from '@/components/budget/DebtCashFlowRelease';
+import ZeroBasedPlanBoard from '@/components/budget/ZeroBasedPlanBoard';
 
 const getMonth = (offset: number) => {
   const d = new Date();
@@ -99,6 +100,20 @@ interface BudgetRow {
   received: number;
   categories: { name: string; color: string } | null;
 }
+
+/**
+ * The budget page reads as one ordered flow: what came in, what it is assigned to,
+ * the line-by-line budget, the month-end forecast, then the plan summary cards.
+ */
+type BudgetStep = 'income' | 'assign' | 'budget' | 'forecast' | 'plan';
+
+const BUDGET_STEPS: { key: BudgetStep; label: string; icon: typeof Wallet; hint: string }[] = [
+  { key: 'income', label: 'Income', icon: Wallet, hint: 'Start with the money that actually lands — paychecks, payroll deductions and other deposits.' },
+  { key: 'assign', label: 'Assign', icon: ListChecks, hint: 'Give every dollar a purpose using the 45/10/25/20 blueprint and freed debt cash.' },
+  { key: 'budget', label: 'Budget', icon: PiggyBank, hint: 'Set and adjust each category line, then check planned against actual.' },
+  { key: 'forecast', label: 'Forecast', icon: TrendingUp, hint: 'See where this month lands at your current spending pace.' },
+  { key: 'plan', label: 'Plan', icon: LayoutGrid, hint: 'Your six summary cards: Live, Enjoy, Build Wealth, Eliminate Debt, Business and Buffer.' },
+];
 
 const Budgets = () => {
   const { formatCurrency } = useCurrency();
@@ -294,13 +309,17 @@ const Budgets = () => {
   }, [selectedBudgetIds, deleteBudget]);
   const [copyingForward, setCopyingForward] = useState(false);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({ income: true, payroll_deduction: true, fixed: true, flexible: true, non_monthly: true });
-  const [viewTab, setViewTab] = useState<'budget' | 'forecast'>('budget');
+  const [viewTab, setViewTab] = useState<BudgetStep>('income');
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [quickAddForm, setQuickAddForm] = useState({ name: '', group_id: '', color: '#7c5cf5' });
   const [smartBudgetOpen, setSmartBudgetOpen] = useState(false);
   const [smartSuggestions, setSmartSuggestions] = useState<{ category_id: string; category_name: string; monthly_average: number; suggested_budget: number; selected: boolean }[]>([]);
   const smartBudget = useSmartBudget();
   const [printPreview, setPrintPreview] = useState(false);
+  /** Print output always includes every step, regardless of the active tab. */
+  const isPrinting = printPreview;
+  const stepIndex = Math.max(0, BUDGET_STEPS.findIndex(s => s.key === viewTab));
+  const activeStep = BUDGET_STEPS[stepIndex];
   const [printOrientation, setPrintOrientation] = useState<'portrait' | 'landscape'>('portrait');
   const [paystubOpen, setPaystubOpen] = useState(false);
   const [billScanOpen, setBillScanOpen] = useState(false);
@@ -1734,19 +1753,31 @@ const Budgets = () => {
 
         {/* Row 2: Tabs */}
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-          <Tabs value={budgetType} onValueChange={(v) => setBudgetType(v as 'personal' | 'business' | 'all')}>
-            <TabsList>
-              <TabsTrigger value="personal">Personal</TabsTrigger>
-              <TabsTrigger value="business">Business</TabsTrigger>
-              <TabsTrigger value="all">All</TabsTrigger>
+          <Tabs value={viewTab} onValueChange={(v) => setViewTab(v as BudgetStep)} className="w-full">
+            <TabsList className="w-full flex-wrap justify-start">
+              {BUDGET_STEPS.map((step, idx) => {
+                const StepIcon = step.icon;
+                return (
+                  <TabsTrigger key={step.key} value={step.key} className="gap-1.5">
+                    <span className="hidden sm:inline text-[10px] font-semibold text-muted-foreground">{idx + 1}</span>
+                    <StepIcon className="h-3.5 w-3.5" />
+                    {step.label}
+                  </TabsTrigger>
+                );
+              })}
             </TabsList>
           </Tabs>
-          <Tabs value={viewTab} onValueChange={(v) => setViewTab(v as 'budget' | 'forecast')}>
-            <TabsList>
-              <TabsTrigger value="budget">Budget</TabsTrigger>
-              <TabsTrigger value="forecast" className="gap-1.5"><TrendingUp className="h-3.5 w-3.5" /> Forecast</TabsTrigger>
-            </TabsList>
-          </Tabs>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">Showing</span>
+            <Select value={budgetType} onValueChange={(v) => setBudgetType(v as 'personal' | 'business' | 'all')}>
+              <SelectTrigger className="h-8 w-[150px] text-sm"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="personal">Personal</SelectItem>
+                <SelectItem value="business">Business</SelectItem>
+                <SelectItem value="all">Personal + Business</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           {budgetType === 'business' && businessList.length > 0 && (
             <Select value={selectedBusiness} onValueChange={setSelectedBusiness}>
               <SelectTrigger className="w-[220px] h-8 text-sm"><SelectValue placeholder="All Businesses" /></SelectTrigger>
@@ -1794,18 +1825,27 @@ const Budgets = () => {
         ]}
       />
 
-      {/* 45/10/25/20 Money Blueprint (personal money only) */}
-      <MoneyBlueprintPanel month={month} expenseStructure={sectionTotals as any} />
-
-      {/* Debt settlement step-down, fee reserve and true redirectable cash flow */}
-      <DebtCashFlowRelease month={month} />
-
-      <PayrollElectionsCard
-        month={month}
-        isCompletedMonth={month.slice(0, 7) < new Date().toISOString().slice(0, 7)}
-      />
-
-
+      {/* Step guidance — one sentence per step so the flow reads top to bottom */}
+      <Card className="border-l-4 border-l-primary/60 print:hidden">
+        <CardContent className="flex flex-wrap items-center gap-3 p-4">
+          <span className="text-xs font-bold uppercase tracking-widest text-primary">
+            Step {stepIndex + 1} of {BUDGET_STEPS.length} — {activeStep.label}
+          </span>
+          <p className="flex-1 text-sm text-muted-foreground">{activeStep.hint}</p>
+          <div className="flex gap-2">
+            {stepIndex > 0 && (
+              <Button variant="outline" size="sm" onClick={() => setViewTab(BUDGET_STEPS[stepIndex - 1].key)}>
+                Back: {BUDGET_STEPS[stepIndex - 1].label}
+              </Button>
+            )}
+            {stepIndex < BUDGET_STEPS.length - 1 && (
+              <Button size="sm" onClick={() => setViewTab(BUDGET_STEPS[stepIndex + 1].key)}>
+                Next: {BUDGET_STEPS[stepIndex + 1].label}
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -1847,7 +1887,25 @@ const Budgets = () => {
         </Card>
       </div>
 
-      {viewTab === 'budget' ? (
+      {/* STEP 1 — INCOME: what actually came in, before anything is assigned */}
+      {(viewTab === 'income' || isPrinting) && (
+        <PayrollElectionsCard
+          month={month}
+          isCompletedMonth={month.slice(0, 7) < new Date().toISOString().slice(0, 7)}
+        />
+      )}
+
+      {/* STEP 2 — ASSIGN: give every dollar a purpose */}
+      {(viewTab === 'assign' || isPrinting) && (
+        <>
+          <MoneyBlueprintPanel month={month} expenseStructure={sectionTotals as any} />
+          <DebtCashFlowRelease month={month} />
+        </>
+      )}
+
+
+
+      {(viewTab === 'budget' || isPrinting) && (
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6">
         {/* Main budget table */}
         <div className="space-y-2">
@@ -2228,8 +2286,10 @@ const Budgets = () => {
           <PayrollAnalysisWidget month={month} />
         </div>
       </div>
-      ) : (
-      /* ============ FORECAST TAB ============ */
+      )}
+
+      {/* STEP 4 — FORECAST: where this month lands at the current pace */}
+      {(viewTab === 'forecast' || isPrinting) && (
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6">
         <div className="space-y-4">
           {/* Progress through month */}
@@ -2404,6 +2464,13 @@ const Budgets = () => {
           </Card>
         </div>
       </div>
+      )}
+
+      {/* STEP 5 — PLAN: the six summary cards */}
+      {(viewTab === 'plan' || isPrinting) && (
+        <div className="print:hidden">
+          <ZeroBasedPlanBoard takeHome={totalIncomeBudget || undefined} />
+        </div>
       )}
 
       {/* ============ PRINT-ONLY: Charts & Narrative ============ */}

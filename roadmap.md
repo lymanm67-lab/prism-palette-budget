@@ -45,8 +45,8 @@
 
 ## Session 7 — Real monthly debt payments (DONE — Zero-Based Plan → Debt Actuals)
 
-## Budget page flow (NEW)
-- [ ] Review /budgets information architecture: reorder into a natural top-to-bottom flow (income → assign → buckets → bills → review), reduce competing tab rows and duplicate controls
+## Budget page flow (DONE)
+- [x] Single 5-step tab order on /budgets: Income → Assign → Budget → Forecast → Plan, scope moved to a Showing selector, step guidance with Back/Next
 
 ## Open items from earlier
 - [ ] Enter September 2026 actual spending, review LIVE / ENJOY / DEBT impact, adjust plan
