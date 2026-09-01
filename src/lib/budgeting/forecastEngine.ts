@@ -401,6 +401,7 @@ export function summarizeForecast(months: ForecastMonth[]): ForecastSummary {
       travelFundStartMonth: null, travelFundTotal: 0, travelFundMilestones: [],
       bufferEnding: 0, bufferLow: 0, bufferLowMonth: null,
       avgPct: { ...empty }, targetPct: { ...CORE_TARGETS }, wealthContributed: 0,
+      enjoyHeadroomTotal: 0, enjoyHeadroomMonthly: 0,
     };
   }
 
@@ -459,6 +460,8 @@ export function summarizeForecast(months: ForecastMonth[]): ForecastSummary {
     },
     targetPct: { ...CORE_TARGETS },
     wealthContributed: round2(months.reduce((s, m) => s + m.buildWealthCombined, 0)),
+    enjoyHeadroomTotal: round2(months.reduce((s, m) => s + m.enjoyHeadroom, 0)),
+    enjoyHeadroomMonthly: round2(months.reduce((s, m) => s + m.enjoyHeadroom, 0) / months.length),
   };
 }
 
