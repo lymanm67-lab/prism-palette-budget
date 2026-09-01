@@ -6494,6 +6494,50 @@ export type Database = {
           },
         ]
       }
+      layer_a_assignments: {
+        Row: {
+          buffer_assignment: number | null
+          created_at: string
+          household_id: string
+          id: string
+          month: string
+          notes: string | null
+          one_time_expenses: number | null
+          sinking_funds: number | null
+          updated_at: string
+        }
+        Insert: {
+          buffer_assignment?: number | null
+          created_at?: string
+          household_id: string
+          id?: string
+          month: string
+          notes?: string | null
+          one_time_expenses?: number | null
+          sinking_funds?: number | null
+          updated_at?: string
+        }
+        Update: {
+          buffer_assignment?: number | null
+          created_at?: string
+          household_id?: string
+          id?: string
+          month?: string
+          notes?: string | null
+          one_time_expenses?: number | null
+          sinking_funds?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "layer_a_assignments_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       legacy_letters: {
         Row: {
           attachment_name: string | null

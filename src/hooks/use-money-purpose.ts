@@ -8,6 +8,7 @@ import { computeBlueprint5010, CORE_KEYS, type BlueprintOutput, type CoreKey } f
 import { projectPhase, type PhaseProjection } from '@/lib/budgeting/phaseProjection';
 import { SETTLEMENT_FEES } from '@/lib/budgeting/settlementStepDown';
 import { useTravelSettings } from '@/hooks/use-travel-fund';
+import { useLayerAAssignments } from '@/hooks/use-layer-a-assignments';
 
 
 export interface PurposeResolution {
@@ -177,6 +178,7 @@ export function useMoneyPurposeSnapshot(monthInput: string, window: AverageWindo
   const { data: budgets, isLoading: bLoading } = useBudgets(`${month}-01`);
   const { data: elections, isLoading: eLoading } = usePayrollElections();
   const { settings: travelSettings, configured: travelConfigured } = useTravelSettings();
+  const { assignment: layerA } = useLayerAAssignments(month);
 
   const startMonth = addMonths(month, -(window - 1));
   const { data: txns, isLoading: tLoading } = useTransactionsByDateRange(`${startMonth}-01`, monthEnd(month));
@@ -273,13 +275,17 @@ export function useMoneyPurposeSnapshot(monthInput: string, window: AverageWindo
     // equation has to see it — net of business revenue that funds it.
     // Sinking funds only count once a travel fund is actually configured; the
     // hook's $500 default is a form placeholder, not a real assignment.
-    const sinkingFunds = travelConfigured
+    const derivedSinking = travelConfigured
       ? Math.round((Number(travelSettings?.monthly_target) || 0) * 100) / 100
       : 0;
-    const oneTimeExpenses =
+    const derivedOneTime =
       Math.round(
         SETTLEMENT_FEES.filter((f) => f.date.slice(0, 7) === month).reduce((s, f) => s + f.amount, 0) * 100,
       ) / 100;
+    // A hand-entered assignment always wins over the derived figure.
+    const sinkingFunds = layerA.sinking_funds ?? derivedSinking;
+    const oneTimeExpenses = layerA.one_time_expenses ?? derivedOneTime;
+    const bufferAssignment = layerA.buffer_assignment ?? 0;
 
     const blueprint = computeBlueprint5010({
       netIncome,
@@ -291,6 +297,7 @@ export function useMoneyPurposeSnapshot(monthInput: string, window: AverageWindo
       businessOutflow: actual.business,
       businessInflow,
       sinkingFunds,
+      bufferAssignment,
       oneTimeExpenses,
     });
 
@@ -311,7 +318,7 @@ export function useMoneyPurposeSnapshot(monthInput: string, window: AverageWindo
       isCompletedMonth,
       loading: bLoading || tLoading || eLoading,
     };
-  }, [budgets, txns, elections, resolution, categories, window, month, travelSettings, travelConfigured, bLoading, tLoading, eLoading]);
+  }, [budgets, txns, elections, resolution, categories, window, month, travelSettings, travelConfigured, layerA.sinking_funds, layerA.buffer_assignment, layerA.one_time_expenses, bLoading, tLoading, eLoading]);
 }
 
 export { consumesTakeHome };

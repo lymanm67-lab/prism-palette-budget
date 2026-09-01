@@ -1,8 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import InlineEditCell from '@/components/InlineEditCell';
 import { useCurrency } from '@/hooks/use-currency';
 import { usePurposeLedger } from '@/hooks/use-purpose-ledger';
+import { useLayerAAssignments, type LayerAField } from '@/hooks/use-layer-a-assignments';
 import { overallocationCauses } from '@/lib/budgeting/blueprint5010';
 import type { MoneyPurposeSnapshot } from '@/hooks/use-money-purpose';
 import { cn } from '@/lib/utils';
@@ -29,10 +31,18 @@ const ASSIGN_TARGETS = [
   { label: 'Buffer', href: '/planning/budget' },
 ];
 
+/** Layer A lines a user can assign cash to by hand. */
+const EDITABLE_LINES: Record<string, LayerAField | undefined> = {
+  sinking: 'sinking_funds',
+  buffer: 'buffer_assignment',
+  one_time: 'one_time_expenses',
+};
+
 export default function ZeroBasedCashPanel({ snap, month }: Props) {
   const { formatCurrency } = useCurrency();
   const r = snap.blueprint.reconciliation;
   const ledger = usePurposeLedger(month);
+  const { save } = useLayerAAssignments(month);
 
   const unidentified = ledger.excluded.find((e) => e.label === 'Unclassified');
   const causes = overallocationCauses(snap.blueprint.cards, r);
@@ -137,12 +147,30 @@ export default function ZeroBasedCashPanel({ snap, month }: Props) {
             <span>Take-home income</span>
             <span className="tabular-nums">{formatCurrency(r.netIncome)}</span>
           </div>
-          {r.lines.map((l) => (
-            <div key={l.key} className="flex justify-between px-2 py-1">
-              <span>− {l.label}</span>
-              <span className="tabular-nums">{formatCurrency(l.amount)}</span>
-            </div>
-          ))}
+          {r.lines.map((l) => {
+            const field = EDITABLE_LINES[l.key];
+            return (
+              <div key={l.key} className="flex items-center justify-between gap-2 px-2 py-1">
+                <span>
+                  − {l.label}
+                  {field && <span className="ml-1 text-[10px] text-muted-foreground">(editable)</span>}
+                </span>
+                {field ? (
+                  <InlineEditCell
+                    type="number"
+                    value={String(l.amount)}
+                    formatter={(v) => formatCurrency(Number(v) || 0)}
+                    className="tabular-nums text-right"
+                    onSave={async (v) => {
+                      await save.mutateAsync({ [field]: v === '' ? null : Number(v) } as any);
+                    }}
+                  />
+                ) : (
+                  <span className="tabular-nums">{formatCurrency(l.amount)}</span>
+                )}
+              </div>
+            );
+          })}
           <div className="flex justify-between border-t px-2 py-1 text-muted-foreground">
             <span>Total assigned</span>
             <span className="tabular-nums">{formatCurrency(Math.round(assigned * 100) / 100)}</span>
@@ -166,7 +194,7 @@ export default function ZeroBasedCashPanel({ snap, month }: Props) {
               <HelpCircle className="mt-px h-3 w-3 shrink-0" />
               {r.sinkingFunds === 0 && 'Sinking fund contribution: Amount Needed. '}
               {r.bufferAssignment === 0 && 'Buffer assignment: Amount Needed. '}
-              Nothing is invented here — untracked jobs stay at $0.00 until you set them.
+              Nothing is invented here — click any editable amount above to assign cash to that job.
             </p>
           )}
 
