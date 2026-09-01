@@ -3,6 +3,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import PrintReportFrame from '@/components/print/PrintReportFrame';
 import ReconciliationCheckCard from '@/components/reports/ReconciliationCheckCard';
 import BudgetInfographicPrint from '@/components/reports/BudgetInfographicPrint';
+import PayrollElectionsCard from '@/components/budget/PayrollElectionsCard';
+
 
 import ReactMarkdown from 'react-markdown';
 import { supabase } from '@/integrations/supabase/client';
