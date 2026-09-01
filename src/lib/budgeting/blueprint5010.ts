@@ -278,6 +278,12 @@ export function computeBlueprint5010(input: BlueprintInput): BlueprintOutput {
     },
     { key: 'debtRate', label: 'Debt Elimination Rate', value: `${debtCard.actualPct.toFixed(1)}%` },
     { key: 'freeCash', label: 'Monthly Free Cash Flow', value: money(reconciliation.unallocated) },
+    {
+      key: 'unassigned',
+      label: 'Unassigned Cash',
+      value: money(reconciliation.unassigned),
+      hint: reconciliation.unassigned === 0 ? 'Every dollar has a job' : 'Target $0.00 — give this money a job',
+    },
     { key: 'redirect', label: 'Debt-to-Wealth Redirect', value: money(debtCard.actualAmount), hint: 'Available to invest once debt clears' },
     { key: 'employerBoost', label: 'Employer Wealth Boost', value: money(wealth.employerBoost) },
     { key: 'alignment', label: '45/10/25/20 Alignment', value: `${alignmentScore}` },
@@ -286,3 +292,33 @@ export function computeBlueprint5010(input: BlueprintInput): BlueprintOutput {
 
   return { phase, cards, reconciliation, wealth, enjoy, indicators, alignmentScore };
 }
+
+/**
+ * Which buckets pushed the month over its income. Only ceilings (LIVE, ENJOY)
+ * and any bucket above its target can "cause" an overallocation — funding
+ * Build Wealth or Eliminate Debt above target is intentional, so it is named
+ * as a deliberate choice rather than a fault.
+ */
+export function overallocationCauses(
+  cards: BlueprintCard[],
+  reconciliation: Reconciliation,
+): { label: string; amount: number; intentional: boolean }[] {
+  if (!reconciliation.overallocated) return [];
+  const causes = cards
+    .filter((c) => c.variance > 0)
+    .map((c) => ({
+      label: c.label,
+      amount: round2(c.variance),
+      intentional: c.key === 'build_wealth' || c.key === 'eliminate_debt',
+    }));
+  for (const extra of [
+    { label: 'Business expenses', amount: reconciliation.businessOutflow },
+    { label: 'Sinking funds', amount: reconciliation.sinkingFunds },
+    { label: 'Buffer assignment', amount: reconciliation.bufferAssignment },
+    { label: 'One-time expenses', amount: reconciliation.oneTimeExpenses },
+  ]) {
+    if (extra.amount > 0) causes.push({ ...extra, intentional: true });
+  }
+  return causes.sort((a, b) => b.amount - a.amount);
+}
+
