@@ -1159,7 +1159,7 @@ const Budgets = () => {
           <button className="w-full flex items-center gap-2 sm:gap-3 py-3 px-3 hover:bg-muted/30 rounded-lg transition-colors text-left">
             {isOpen ? <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" /> : <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0 rotate-180" />}
             <span className={cn('flex-1 font-display font-semibold text-sm sm:text-base flex items-center gap-2', EXPENSE_TYPE_COLORS[type])}>
-              {EXPENSE_TYPE_LABELS[type]}
+              {labelOverride || EXPENSE_TYPE_LABELS[type]}
               {/* 45/10/25/20 blueprint range pill + band visualizer */}
               {!isIncome && netIncome > 0 && totals.budget > 0 && benchmark && (
                 <Tooltip>
