@@ -67,7 +67,7 @@ export default function MoneyBlueprintPanel({ month, expenseStructure }: Props) 
             <div>
               <CardTitle className="font-display flex items-center gap-2 text-base">
                 <Sparkles className="h-4 w-4 text-primary" />
-                50 / 10 / 20 / 20 Money Blueprint
+                45 / 10 / 25 / 20 Money Blueprint
               </CardTitle>
               <p className="mt-1 text-xs text-muted-foreground">
                 Every dollar has a purpose. Personal money only — business and employer-paid dollars are excluded.

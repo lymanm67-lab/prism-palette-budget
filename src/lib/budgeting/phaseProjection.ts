@@ -1,6 +1,6 @@
 // Automatic target-phase switching.
 //
-// The 45/10/25/20 targets step to 50/10/30/10 and finally 50/10/40/0 as debt
+// The 45/10/25/20 targets step to 45/10/35/10 and finally 45/10/45/0 as debt
 // elimination winds down. The switch is PROJECTED from the known settlement
 // schedule and remaining debt obligations, so the plan changes on the month the
 // obligation actually clears — not months later once averages catch up.
@@ -55,15 +55,15 @@ export function projectPhase(
 
   if (settlementDone && scheduledDebt <= 0) {
     projectedPhase = 3;
-    reason = 'All known debt obligations projected complete — Build Wealth target steps to 40% and Debt to 0%.';
+    reason = 'All known debt obligations projected complete — Build Wealth target steps to 45% and Debt to 0%.';
   } else if (regularDone || settlementDone) {
     projectedPhase = 2;
     reason = settlementDone
-      ? `Settlement fully complete, ${money(scheduledDebt)}/mo of scheduled debt remains — targets step to 30% Build Wealth / 10% Debt.`
-      : `Regular settlement payments end ${plan.regularPaymentsEndMonth}; remaining obligations ${money(scheduledDebt)}/mo — targets step to 30% / 10%.`;
+      ? `Settlement fully complete, ${money(scheduledDebt)}/mo of scheduled debt remains — targets step to 35% Build Wealth / 10% Debt.`
+      : `Regular settlement payments end ${plan.regularPaymentsEndMonth}; remaining obligations ${money(scheduledDebt)}/mo — targets step to 35% / 10%.`;
   } else {
     projectedPhase = 1;
-    reason = `Debt elimination still running (${money(scheduledDebt)}/mo scheduled) — targets stay 20% Build Wealth / 20% Debt.`;
+    reason = `Debt elimination still running (${money(scheduledDebt)}/mo scheduled) — targets stay 25% Build Wealth / 20% Debt.`;
   }
 
   if (opts.override) {
