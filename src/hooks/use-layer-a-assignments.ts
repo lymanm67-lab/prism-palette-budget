@@ -11,6 +11,10 @@ export interface LayerAAssignment {
   buffer_assignment: number | null;
   /** Manual override for one-time expenses assigned this month. */
   one_time_expenses: number | null;
+  /** Manual override for business money that left the personal account. */
+  business_outflow: number | null;
+  /** Manual override for business revenue/reimbursement that landed in it. */
+  business_inflow: number | null;
   notes: string | null;
 }
 
@@ -60,6 +64,8 @@ export function useLayerAAssignments(month: string) {
       sinking_funds: num(row?.sinking_funds),
       buffer_assignment: num(row?.buffer_assignment),
       one_time_expenses: num(row?.one_time_expenses),
+      business_outflow: num(row?.business_outflow),
+      business_inflow: num(row?.business_inflow),
       notes: row?.notes ?? null,
     } as LayerAAssignment,
     isLoading: query.isLoading,

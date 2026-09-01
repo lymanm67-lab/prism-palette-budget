@@ -294,8 +294,8 @@ export function useMoneyPurposeSnapshot(monthInput: string, window: AverageWindo
       payrollWealth,
       employerWealth,
       phase: phaseProjection.phase,
-      businessOutflow: actual.business,
-      businessInflow,
+      businessOutflow: layerA.business_outflow ?? actual.business,
+      businessInflow: layerA.business_inflow ?? businessInflow,
       sinkingFunds,
       bufferAssignment,
       oneTimeExpenses,
@@ -318,7 +318,7 @@ export function useMoneyPurposeSnapshot(monthInput: string, window: AverageWindo
       isCompletedMonth,
       loading: bLoading || tLoading || eLoading,
     };
-  }, [budgets, txns, elections, resolution, categories, window, month, travelSettings, travelConfigured, layerA.sinking_funds, layerA.buffer_assignment, layerA.one_time_expenses, bLoading, tLoading, eLoading]);
+  }, [budgets, txns, elections, resolution, categories, window, month, travelSettings, travelConfigured, layerA.sinking_funds, layerA.buffer_assignment, layerA.one_time_expenses, layerA.business_inflow, layerA.business_outflow, bLoading, tLoading, eLoading]);
 }
 
 export { consumesTakeHome };
