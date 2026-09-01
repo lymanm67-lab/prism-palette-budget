@@ -262,7 +262,7 @@ export function computeBlueprint5010(input: BlueprintInput): BlueprintOutput {
   const alignmentScore = Math.max(0, Math.min(100, Math.round(100 - penalty * 1.5)));
 
   const indicators = [
-    { key: 'liveRatio', label: 'LIVE Ratio', value: `${liveCard.actualPct.toFixed(1)}%`, hint: 'Target ≤ 50%' },
+    { key: 'liveRatio', label: 'LIVE Ratio', value: `${liveCard.actualPct.toFixed(1)}%`, hint: `Target ≤ ${liveCard.targetPct}%` },
     { key: 'enjoyRatio', label: 'Enjoy Ratio', value: `${enjoyCard.actualPct.toFixed(1)}%`, hint: 'Ceiling, not a quota' },
     {
       key: 'employeeWealthRate',
