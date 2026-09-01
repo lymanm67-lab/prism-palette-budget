@@ -153,13 +153,41 @@ export default function MoneyBlueprintPanel({ month, expenseStructure }: Props) 
                         {c.aboveTargetLabel ||
                           `Variance ${c.variance >= 0 ? '+' : ''}${formatCurrency(c.variance)}`}
                       </p>
+                      {/* Real vs planned, every card */}
+                      <p className="tabular-nums">
+                        Planned {formatCurrency(c.plannedAmount)} · Actual {formatCurrency(c.actualAmount)}
+                        {c.plannedAmount > 0 && (
+                          <span
+                            className={cn(
+                              ' ',
+                              c.actualAmount - c.plannedAmount > 0
+                                ? c.key === 'build_wealth' || c.key === 'eliminate_debt'
+                                  ? 'text-emerald-600 dark:text-emerald-400'
+                                  : 'text-amber-600 dark:text-amber-400'
+                                : 'text-muted-foreground',
+                            )}
+                          >
+                            ({c.actualAmount - c.plannedAmount >= 0 ? '+' : '−'}
+                            {formatCurrency(Math.abs(c.actualAmount - c.plannedAmount))} vs plan)
+                          </span>
+                        )}
+                      </p>
                       {c.key === 'build_wealth' && (
-                        <p className="text-emerald-600 dark:text-emerald-400">
-                          {formatCurrency(c.fundedByPayroll || 0)} already funded via payroll ·{' '}
-                          {formatCurrency(c.remainingToTarget || 0)} remaining
-                        </p>
+                        <>
+                          <p className="text-emerald-600 dark:text-emerald-400">
+                            Employee {formatCurrency(bp.wealth.employeeTotal)} (payroll{' '}
+                            {formatCurrency(bp.wealth.employeePayroll)} + cash{' '}
+                            {formatCurrency(bp.wealth.fromTakeHome)})
+                          </p>
+                          <p className="text-sky-600 dark:text-sky-400">
+                            Employer {formatCurrency(bp.wealth.employerBoost)} · Combined{' '}
+                            {formatCurrency(bp.wealth.combinedTotal)}
+                          </p>
+                          <p>{formatCurrency(c.remainingToTarget || 0)} remaining to target</p>
+                        </>
                       )}
                     </div>
+
                   </div>
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs text-xs">
