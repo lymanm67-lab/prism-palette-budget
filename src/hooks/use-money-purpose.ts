@@ -318,7 +318,7 @@ export function useMoneyPurposeSnapshot(monthInput: string, window: AverageWindo
       isCompletedMonth,
       loading: bLoading || tLoading || eLoading,
     };
-  }, [budgets, txns, elections, resolution, categories, window, month, travelSettings, travelConfigured, layerA, bLoading, tLoading, eLoading]);
+  }, [budgets, txns, elections, resolution, categories, window, month, travelSettings, travelConfigured, layerA.sinking_funds, layerA.buffer_assignment, layerA.one_time_expenses, bLoading, tLoading, eLoading]);
 }
 
 export { consumesTakeHome };
