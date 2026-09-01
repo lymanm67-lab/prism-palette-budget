@@ -386,6 +386,9 @@ export interface ForecastSummary {
   avgPct: Record<'live' | 'enjoy' | 'build_wealth' | 'eliminate_debt', number>;
   targetPct: Record<'live' | 'enjoy' | 'build_wealth' | 'eliminate_debt', number>;
   wealthContributed: number;
+  /** Total unused ENJOY allowance across the horizon (redirectable cash). */
+  enjoyHeadroomTotal: number;
+  enjoyHeadroomMonthly: number;
 }
 
 const TRAVEL_MILESTONES = [1000, 3000, 6000];
