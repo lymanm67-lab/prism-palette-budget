@@ -177,3 +177,55 @@ export function pslfStatus(debt: DebtInput, start: Date = new Date()) {
     : addMonths(start, remaining - 1);
   return { made, required, remaining, forgiveness };
 }
+
+export interface ScheduleRow {
+  month: string;
+  monthLabel: string;
+  payment: number;
+  interest: number;
+  principal: number;
+  endingBalance: number;
+}
+
+/**
+ * Month-by-month payment breakdown for a single debt: how much of each payment
+ * is interest, how much reduces the balance, and the balance that remains.
+ */
+export function amortizationSchedule(
+  balance: number,
+  apr: number,
+  payment: number,
+  start: Date = new Date(),
+  maxMonths = 360,
+): ScheduleRow[] {
+  const rows: ScheduleRow[] = [];
+  let bal = Math.max(0, balance);
+  const r = Math.max(0, apr) / 100 / 12;
+  if (bal <= 0 || payment <= 0) return rows;
+
+  for (let i = 0; i < maxMonths && bal > 0.01; i++) {
+    const d = addMonths(start, i);
+    const interest = round2(bal * r);
+    const pay = Math.min(payment, round2(bal + interest));
+    const principal = round2(pay - interest);
+    if (principal <= 0) break; // payment never clears the interest
+    bal = round2(bal + interest - pay);
+    rows.push({
+      month: monthKey(d),
+      monthLabel: d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+      payment: pay,
+      interest,
+      principal,
+      endingBalance: Math.max(0, bal),
+    });
+  }
+  return rows;
+}
+
+/** Balance cleared over the next `n` months as a share of today's balance. */
+export function clearedShare(rows: ScheduleRow[], balance: number, n = 12) {
+  if (balance <= 0 || !rows.length) return 0;
+  const slice = rows.slice(0, n);
+  const cleared = balance - (slice.length ? slice[slice.length - 1].endingBalance : balance);
+  return Math.max(0, Math.min(100, Math.round((cleared / balance) * 100)));
+}
