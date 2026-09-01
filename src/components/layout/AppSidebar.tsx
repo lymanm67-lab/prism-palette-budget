@@ -71,6 +71,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { to: '/bill-negotiation', icon: Scissors, label: 'Bill Negotiation', color: 'text-prism-rose' },
       { to: '/debt-payoff', icon: TrendingDown, label: 'Debt Payoff', color: 'text-prism-rose' },
       { to: '/planning/travel-fund', icon: Plane, label: 'Annual Travel Fund', color: 'text-prism-sky' },
+      { to: '/planning/zero-based', icon: Wallet, label: 'Zero-Based Plan', color: 'text-prism-teal' },
     ],
   },
   {
