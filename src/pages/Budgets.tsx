@@ -1802,7 +1802,7 @@ const Budgets = () => {
 
       <PayrollElectionsCard
         month={month}
-        isCompletedMonth={new Date(`${month}-01T00:00:00Z`) < new Date(new Date().toISOString().slice(0, 8) + '01T00:00:00Z')}
+        isCompletedMonth={month.slice(0, 7) < new Date().toISOString().slice(0, 7)}
       />
 
 
