@@ -57,12 +57,13 @@ const formatMonth = (monthStr: string) => {
   return new Date(+y, +m - 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 };
 
-type ExpenseType = 'income' | 'fixed' | 'flexible' | 'non_monthly' | 'payroll_deduction';
+type ExpenseType = 'income' | 'fixed' | 'flexible' | 'non_monthly' | 'payroll_deduction' | 'debt';
 
 const EXPENSE_TYPE_LABELS: Record<ExpenseType, string> = {
   income: 'Income',
   payroll_deduction: 'BUILD WEALTH — Payroll & Pre-Tax (25%)',
   fixed: 'LIVE — Fixed Essentials (45%)',
+  debt: 'ELIMINATE DEBT — Debt Payoff (20%)',
   flexible: 'ENJOY — Flexible Spending (10%)',
   non_monthly: 'ENJOY — Non-Monthly & Sinking Funds',
 };
@@ -71,6 +72,7 @@ const EXPENSE_TYPE_COLORS: Record<ExpenseType, string> = {
   income: 'text-emerald-600 dark:text-emerald-400',
   payroll_deduction: 'text-sky-600 dark:text-sky-400',
   fixed: 'text-primary',
+  debt: 'text-rose-600 dark:text-rose-400',
   flexible: 'text-amber-600 dark:text-amber-400',
   non_monthly: 'text-purple-600 dark:text-purple-400',
 };
@@ -79,6 +81,7 @@ const BAR_COLORS: Record<ExpenseType, string> = {
   income: 'bg-emerald-500',
   payroll_deduction: 'bg-sky-500',
   fixed: 'bg-primary',
+  debt: 'bg-rose-500',
   flexible: 'bg-amber-500',
   non_monthly: 'bg-purple-500',
 };
@@ -87,6 +90,7 @@ const BAR_COLORS: Record<ExpenseType, string> = {
 // Fixed commitments are LIVE (45%); discretionary lines land in ENJOY (10%)
 const BENCHMARK_RANGES: Partial<Record<ExpenseType, { min: number; max: number; label: string }>> = {
   fixed: { min: 40, max: 45, label: 'LIVE (fixed essentials) 45%' },
+  debt: { min: 15, max: 25, label: 'ELIMINATE DEBT 20%' },
   flexible: { min: 0, max: 10, label: 'ENJOY (flexible) ≤ 10%' },
   non_monthly: { min: 0, max: 10, label: 'ENJOY (non-monthly) ≤ 10%' },
 };
@@ -309,7 +313,7 @@ const Budgets = () => {
     setSelectedBudgetIds(new Set());
   }, [selectedBudgetIds, deleteBudget]);
   const [copyingForward, setCopyingForward] = useState(false);
-  const [openSections, setOpenSections] = useState<Record<string, boolean>>({ income: true, payroll_deduction: true, fixed: true, flexible: true, non_monthly: true });
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({ income: true, payroll_deduction: true, fixed: true, debt: true, flexible: true, non_monthly: true });
   const [viewTab, setViewTab] = useState<BudgetStep>('income');
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [quickAddForm, setQuickAddForm] = useState({ name: '', group_id: '', color: '#7c5cf5' });
@@ -350,7 +354,11 @@ const Budgets = () => {
     }
     const catMap = new Map<string, ExpenseType>();
     for (const c of categories) {
-      catMap.set(c.id, groupMap.get(c.group_id) || 'flexible');
+      // Debt payoff lines (BetrLink settlement, vacation loans, etc.) live in their
+      // own ELIMINATE DEBT bucket instead of inflating LIVE fixed costs.
+      const groupType = groupMap.get(c.group_id) || 'flexible';
+      const isDebt = (c as any).money_purpose === 'eliminate_debt' && groupType !== 'income' && groupType !== 'payroll_deduction';
+      catMap.set(c.id, isDebt ? 'debt' : groupType);
     }
     return catMap;
   }, [categories, categoryGroups]);
@@ -634,7 +642,7 @@ const Budgets = () => {
   }, [categories]);
 
   const groupBudgetsByExpenseType = useCallback((items: BudgetRow[]) => {
-    const groups: Record<ExpenseType, BudgetRow[]> = { income: [], payroll_deduction: [], fixed: [], flexible: [], non_monthly: [] };
+    const groups: Record<ExpenseType, BudgetRow[]> = { income: [], payroll_deduction: [], fixed: [], flexible: [], non_monthly: [], debt: [] };
     for (const b of items) {
       if (hideZeroAmounts && b.planned_amount === 0) continue;
       if (hiddenBudgetIds.has(b.id)) continue;
@@ -676,6 +684,7 @@ const Budgets = () => {
       fixed: { budget: 0, actual: 0, remaining: 0 },
       flexible: { budget: 0, actual: 0, remaining: 0 },
       non_monthly: { budget: 0, actual: 0, remaining: 0 },
+      debt: { budget: 0, actual: 0, remaining: 0 },
     };
     for (const [type, items] of Object.entries(grouped)) {
       const t = type as ExpenseType;
@@ -715,7 +724,7 @@ const Budgets = () => {
 
   // Compute all collapsible section keys for expand/collapse all
   const getAllSectionKeys = useCallback(() => {
-    const keys = ['income', 'payroll_deduction', 'fixed', 'flexible', 'non_monthly'];
+    const keys = ['income', 'payroll_deduction', 'fixed', 'debt', 'flexible', 'non_monthly'];
     if (budgetType === 'all') {
       for (const biz of (perBusinessData || [])) {
         const bizKey = biz.name.replace(/\s+/g, '_');
@@ -735,15 +744,15 @@ const Budgets = () => {
   const totalIncomeRemaining = sectionTotals.income.remaining;
 
   // Exclude payroll deductions from expense totals — they're already deducted before net pay
-  const totalExpenseBudget = sectionTotals.fixed.budget + sectionTotals.flexible.budget + sectionTotals.non_monthly.budget;
-  const totalExpenseActual = sectionTotals.fixed.actual + sectionTotals.flexible.actual + sectionTotals.non_monthly.actual;
+  const totalExpenseBudget = sectionTotals.fixed.budget + sectionTotals.debt.budget + sectionTotals.flexible.budget + sectionTotals.non_monthly.budget;
+  const totalExpenseActual = sectionTotals.fixed.actual + sectionTotals.debt.actual + sectionTotals.flexible.actual + sectionTotals.non_monthly.actual;
   const totalExpenseRemaining = totalExpenseBudget - totalExpenseActual;
 
   // Gross income = net income + payroll deductions
   const grossIncomeBudget = totalIncomeBudget + sectionTotals.payroll_deduction.budget;
 
   // Net expenses exclude payroll deductions for unallocated calc
-  const netExpenseBudget = sectionTotals.fixed.budget + sectionTotals.flexible.budget + sectionTotals.non_monthly.budget;
+  const netExpenseBudget = sectionTotals.fixed.budget + sectionTotals.debt.budget + sectionTotals.flexible.budget + sectionTotals.non_monthly.budget;
 
   // Net income = gross income - payroll deductions (taxes, insurance, retirement)
   const payrollDeductionBudget = sectionTotals.payroll_deduction.budget;
@@ -751,7 +760,7 @@ const Budgets = () => {
 
   // Owner Contribution: when Business expenses exceed Business income, Personal funds the gap.
   // Treat it as an expense on Personal and as income on Business so each tab balances independently.
-  const businessExpenseBudget = businessSectionTotals.fixed.budget + businessSectionTotals.flexible.budget + businessSectionTotals.non_monthly.budget;
+  const businessExpenseBudget = businessSectionTotals.fixed.budget + businessSectionTotals.debt.budget + businessSectionTotals.flexible.budget + businessSectionTotals.non_monthly.budget;
   const businessIncomeBudget = businessSectionTotals.income.budget;
   const ownerContribution = Math.max(0, businessExpenseBudget - businessIncomeBudget);
 
@@ -797,7 +806,7 @@ const Budgets = () => {
       const dailyRate = daysPassed > 0 ? actual / daysPassed : 0;
 
       let projected: number;
-      if (type === 'fixed' || type === 'payroll_deduction' || type === 'non_monthly' || isIncome) {
+      if (type === 'fixed' || type === 'debt' || type === 'payroll_deduction' || type === 'non_monthly' || isIncome) {
         // These land on their planned amount — they don't scale with daily pace.
         projected = Math.max(actual, b.planned_amount);
       } else {
@@ -1372,6 +1381,7 @@ const Budgets = () => {
                   <Pie
                     data={[
                       { name: 'LIVE', value: sectionTotals.fixed.budget, color: '#3b82f6' },
+                    { name: 'ELIMINATE DEBT', value: sectionTotals.debt.budget, color: '#f43f5e' },
                       { name: 'ENJOY', value: sectionTotals.flexible.budget, color: '#f59e0b' },
                       { name: 'ENJOY (non-monthly)', value: sectionTotals.non_monthly.budget, color: '#a855f7' },
                     ].filter(d => d.value > 0)}
@@ -1403,6 +1413,7 @@ const Budgets = () => {
                 <BarChart data={[
                   { name: 'Income', budget: totalIncomeBudget, actual: totalIncomeActual },
                   { name: 'LIVE', budget: sectionTotals.fixed.budget, actual: sectionTotals.fixed.actual },
+                  { name: 'ELIMINATE DEBT', budget: sectionTotals.debt.budget, actual: sectionTotals.debt.actual },
                   { name: 'ENJOY', budget: sectionTotals.flexible.budget, actual: sectionTotals.flexible.actual },
                   { name: 'ENJOY (non-monthly)', budget: sectionTotals.non_monthly.budget, actual: sectionTotals.non_monthly.actual },
                 ]} barGap={2}>
@@ -1433,6 +1444,7 @@ const Budgets = () => {
               <tbody>
                 {printBudgetRows('income', groupedBudgets.income)}
                 {printBudgetRows('fixed', groupedBudgets.fixed)}
+                {printBudgetRows('debt', groupedBudgets.debt)}
                 {printBudgetRows('flexible', groupedBudgets.flexible)}
                 {printBudgetRows('non_monthly', groupedBudgets.non_monthly)}
               </tbody>
@@ -1475,7 +1487,7 @@ const Budgets = () => {
 
             {/* Overspent line items */}
             {(() => {
-              const allExpenseItems = [...groupedBudgets.fixed, ...groupedBudgets.flexible, ...groupedBudgets.non_monthly];
+              const allExpenseItems = [...groupedBudgets.fixed, ...groupedBudgets.debt, ...groupedBudgets.flexible, ...groupedBudgets.non_monthly];
               const overspent = allExpenseItems
                 .filter(b => b.spent > b.planned_amount && b.planned_amount > 0)
                 .sort((a, b) => (b.spent - b.planned_amount) - (a.spent - a.planned_amount));
@@ -1989,6 +2001,7 @@ const Budgets = () => {
                     <CardContent className="p-2 space-y-1">
                       <div className="sm:hidden px-3 py-1.5 text-xs font-medium text-muted-foreground border-b">Expenses</div>
                       {renderSection('fixed', personalGroupedBudgets.fixed)}
+                      {renderSection('debt', personalGroupedBudgets.debt)}
                       {renderSection('flexible', personalGroupedBudgets.flexible)}
                       {renderSection('non_monthly', personalGroupedBudgets.non_monthly)}
                     </CardContent>
@@ -1997,7 +2010,7 @@ const Budgets = () => {
                   <div className="flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 bg-emerald-500/5 rounded-lg text-sm">
                     <span className="flex-1 font-medium text-emerald-600 dark:text-emerald-400">Personal Subtotal</span>
                     <span className="text-right tabular-nums sm:w-[90px] font-medium">
-                      {formatCurrency(personalSectionTotals.income.budget - (personalSectionTotals.fixed.budget + personalSectionTotals.flexible.budget + personalSectionTotals.non_monthly.budget))}
+                      {formatCurrency(personalSectionTotals.income.budget - (personalSectionTotals.fixed.budget + personalSectionTotals.debt.budget + personalSectionTotals.flexible.budget + personalSectionTotals.non_monthly.budget))}
                     </span>
                   </div>
                 </>
@@ -2006,7 +2019,7 @@ const Budgets = () => {
               {/* BUSINESS SECTIONS — one per entity */}
               {perBusinessData.length > 0 && perBusinessData.map((biz, idx) => {
                 const bizIncomeBudget = biz.totals.income.budget;
-                const bizExpenseBudget = biz.totals.fixed.budget + biz.totals.flexible.budget + biz.totals.non_monthly.budget;
+                const bizExpenseBudget = biz.totals.fixed.budget + biz.totals.debt.budget + biz.totals.flexible.budget + biz.totals.non_monthly.budget;
                 const bizNet = bizIncomeBudget - bizExpenseBudget;
                 const bizKey = biz.name.replace(/\s+/g, '_');
 
@@ -2028,6 +2041,7 @@ const Budgets = () => {
                       <CardContent className="p-2 space-y-1">
                         <div className="sm:hidden px-3 py-1.5 text-xs font-medium text-muted-foreground border-b">Expenses</div>
                         {renderSection('fixed', biz.grouped.fixed, biz.totals.fixed, `all_${bizKey}_fixed`)}
+                        {renderSection('debt', biz.grouped.debt, biz.totals.debt, `all_${bizKey}_debt`)}
                         {renderSection('flexible', biz.grouped.flexible, biz.totals.flexible, `all_${bizKey}_flexible`)}
                         {renderSection('non_monthly', biz.grouped.non_monthly, biz.totals.non_monthly, `all_${bizKey}_non_monthly`)}
                       </CardContent>
@@ -2058,8 +2072,8 @@ const Budgets = () => {
               {(selectedBusiness === 'all' ? perBusinessData : perBusinessData.filter(b => b.id === selectedBusiness)).map((biz, idx) => {
                 const bizIncomeBudget = biz.totals.income.budget;
                 const bizIncomeActual = biz.totals.income.actual;
-                const bizExpenseBudget = biz.totals.fixed.budget + biz.totals.flexible.budget + biz.totals.non_monthly.budget;
-                const bizExpenseActual = biz.totals.fixed.actual + biz.totals.flexible.actual + biz.totals.non_monthly.actual;
+                const bizExpenseBudget = biz.totals.fixed.budget + biz.totals.debt.budget + biz.totals.flexible.budget + biz.totals.non_monthly.budget;
+                const bizExpenseActual = biz.totals.fixed.actual + biz.totals.debt.actual + biz.totals.flexible.actual + biz.totals.non_monthly.actual;
                 const bizNet = bizIncomeBudget - bizExpenseBudget;
                 const bizKey = biz.name.replace(/\s+/g, '_');
 
@@ -2086,6 +2100,7 @@ const Budgets = () => {
                       <CardContent className="p-2 space-y-1">
                         <div className="sm:hidden px-3 py-1.5 text-xs font-medium text-muted-foreground border-b">Expenses</div>
                         {renderSection('fixed', biz.grouped.fixed, biz.totals.fixed, `${bizKey}_fixed`)}
+                        {renderSection('debt', biz.grouped.debt, biz.totals.debt, `${bizKey}_debt`)}
                         {renderSection('flexible', biz.grouped.flexible, biz.totals.flexible, `${bizKey}_flexible`)}
                         {renderSection('non_monthly', biz.grouped.non_monthly, biz.totals.non_monthly, `${bizKey}_non_monthly`)}
                       </CardContent>
@@ -2169,6 +2184,7 @@ const Budgets = () => {
                   </div>
                   <div className="sm:hidden px-3 py-1.5 text-xs font-medium text-muted-foreground border-b">Expenses</div>
                   {renderSection('fixed', groupedBudgets.fixed)}
+                  {renderSection('debt', groupedBudgets.debt)}
                   {renderSection('flexible', groupedBudgets.flexible)}
                   {renderSection('non_monthly', groupedBudgets.non_monthly)}
                 </CardContent>
@@ -2272,7 +2288,7 @@ const Budgets = () => {
                   </div>
                 </div>
               )}
-              {(['fixed', 'flexible', 'non_monthly'] as ExpenseType[]).map(type => {
+              {(['fixed', 'debt', 'flexible', 'non_monthly'] as ExpenseType[]).map(type => {
                 const t = sectionTotals[type];
                 const pct = t.budget > 0 ? Math.min((t.actual / t.budget) * 100, 100) : 0;
                 const over = t.remaining < 0;
@@ -2502,6 +2518,7 @@ const Budgets = () => {
                 <Pie
                   data={[
                     { name: 'LIVE', value: sectionTotals.fixed.budget, color: '#3b82f6' },
+                    { name: 'ELIMINATE DEBT', value: sectionTotals.debt.budget, color: '#f43f5e' },
                     { name: 'ENJOY', value: sectionTotals.flexible.budget, color: '#f59e0b' },
                     { name: 'ENJOY (non-monthly)', value: sectionTotals.non_monthly.budget, color: '#a855f7' },
                   ].filter(d => d.value > 0)}
@@ -2533,6 +2550,7 @@ const Budgets = () => {
               <BarChart data={[
                 { name: 'Income', budget: totalIncomeBudget, actual: totalIncomeActual },
                 { name: 'LIVE', budget: sectionTotals.fixed.budget, actual: sectionTotals.fixed.actual },
+                  { name: 'ELIMINATE DEBT', budget: sectionTotals.debt.budget, actual: sectionTotals.debt.actual },
                 { name: 'ENJOY', budget: sectionTotals.flexible.budget, actual: sectionTotals.flexible.actual },
                 { name: 'ENJOY (non-monthly)', budget: sectionTotals.non_monthly.budget, actual: sectionTotals.non_monthly.actual },
               ]} barGap={2}>
