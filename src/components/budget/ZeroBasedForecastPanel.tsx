@@ -12,12 +12,14 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { RotateCcw, TrendingUp } from 'lucide-react';
 import { useCurrency } from '@/hooks/use-currency';
 import PrintInfographicButton from '@/components/reports/PrintInfographicButton';
-import { useBufferOneTime, useBusinessExpenses, useRecurringPurposeLines, useMoneyRedirects } from '@/hooks/use-zero-based';
+import { useBufferOneTime, useBusinessExpenses, useRecurringPurposeLines, useMoneyRedirects, useBufferSettings } from '@/hooks/use-zero-based';
 import { useHouseholdDebts } from '@/hooks/use-household-debts';
 import { buildForecast, monthLabel, CHANGE_FLAG_LABEL, type ForecastMonth } from '@/lib/budgeting/forecastEngine';
 import { buildAssumptions, DEFAULT_KNOBS, type WhatIfKnobs } from '@/lib/budgeting/forecastInputs';
 import { buildRedirectFlows, redirectFlagInputs } from '@/lib/budgeting/redirects';
 import { forecastInfographic } from '@/lib/reports/zeroBasedInfographics';
+import WhatIfOutcomes from '@/components/budget/WhatIfOutcomes';
+
 
 const HORIZONS: (12 | 24 | 60)[] = [12, 24, 60];
 const currentMonth = () => new Date().toISOString().slice(0, 7);
