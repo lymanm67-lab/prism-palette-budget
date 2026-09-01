@@ -60,7 +60,23 @@ export default function MoneyBlueprintPanel({ month, expenseStructure }: Props) 
 
   return (
     <div className="space-y-4">
+      <Tabs defaultValue="cashflow" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-2 sm:w-auto sm:inline-flex">
+          <TabsTrigger value="cashflow" className="text-xs">
+            Total Cash Flow (Zero-Based)
+          </TabsTrigger>
+          <TabsTrigger value="framework" className="text-xs">
+            45/10/25/20 Scorecard
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="cashflow" className="space-y-4">
+          <ZeroBasedCashPanel snap={snap} month={month} />
+        </TabsContent>
+
+        <TabsContent value="framework" className="space-y-4">
       {/* ---------------- Header ---------------- */}
+
       <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
         <CardHeader className="pb-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
