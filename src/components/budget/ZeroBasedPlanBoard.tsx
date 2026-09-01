@@ -169,11 +169,14 @@ export default function ZeroBasedPlanBoard({
             floors</span> — anything below target shows the exact dollars still needed to reach it (“gap to close”).
           </p>
           <p>
-            <span className="font-medium text-foreground">Buffer</span> is your month-end cash cushion from the
-            Buffer tab. It reads critical when the tracked balance is below {formatCurrency(thresholds.tight_min)} —
-            including when no buffer balance has been entered yet, so add your real starting balance in the Buffer
-            tab to see a true status.
+            <span className="font-medium text-foreground">Buffer</span> is your month-end cash cushion, tracked on the{' '}
+            <Link to="/planning/zero-based" className="underline font-medium text-foreground">
+              Zero-Based Plan → Buffer tab
+            </Link>
+            . It reads critical when the tracked balance is below {formatCurrency(thresholds.tight_min)} — including
+            when no buffer balance has been entered yet.
           </p>
+
         </CardContent>
       </Card>
 
