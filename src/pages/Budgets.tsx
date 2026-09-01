@@ -2483,7 +2483,7 @@ const Budgets = () => {
       {/* STEP 5 — PLAN: the six summary cards */}
       {(viewTab === 'plan' || isPrinting) && (
         <div className="print:hidden">
-          <ZeroBasedPlanBoard takeHome={totalIncomeBudget || undefined} />
+          <ZeroBasedPlanBoard />
         </div>
       )}
 

@@ -156,11 +156,41 @@ export default function ZeroBasedPlanBoard({
         <Badge variant="outline">Phase 1</Badge>
       </div>
 
+      <Card className="glass-card">
+        <CardContent className="space-y-1.5 p-4 text-xs text-muted-foreground">
+          <p>
+            <span className="font-semibold text-foreground">How to read these cards.</span> Each card shows the
+            dollars going to that purpose this month and what percent of your{' '}
+            {formatCurrency(takeHome)} take-home that is. The big number is the amount funded — not a shortfall.
+          </p>
+          <p>
+            <span className="font-medium text-foreground">Live and Enjoy are ceilings</span> — staying at or below
+            target is good. <span className="font-medium text-foreground">Build Wealth and Eliminate Debt are
+            floors</span> — anything below target shows the exact dollars still needed to reach it (“gap to close”).
+          </p>
+          <p>
+            <span className="font-medium text-foreground">Buffer</span> is your month-end cash cushion from the
+            Buffer tab. It reads critical when the tracked balance is below {formatCurrency(thresholds.tight_min)} —
+            including when no buffer balance has been entered yet, so add your real starting balance in the Buffer
+            tab to see a true status.
+          </p>
+        </CardContent>
+      </Card>
+
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {cards.map((c) => {
           const Icon = c.icon;
-          const met = c.ceiling ? c.pct <= c.target + 1 : c.pct >= c.target - 1;
-          return (
+           const met = c.ceiling ? c.pct <= c.target + 1 : c.pct >= c.target - 1;
+           const targetAmount = round2((takeHome * c.target) / 100);
+           const diff = round2(Math.abs(targetAmount - c.amount));
+           const detail = c.ceiling
+             ? met
+               ? `${formatCurrency(diff)} under the cap — redirectable cash`
+               : `${formatCurrency(diff)} over the cap`
+             : met
+               ? `${formatCurrency(diff)} above the floor`
+               : `Gap to close: ${formatCurrency(diff)} more needed to hit the floor`;
+           return (
             <Card key={c.key} className="glass-card">
               <CardHeader className="pb-2">
                 <CardTitle className="flex items-center justify-between text-sm font-medium">
@@ -181,10 +211,11 @@ export default function ZeroBasedPlanBoard({
               <CardContent className="space-y-2">
                 <p className="text-2xl font-bold">{formatCurrency(c.amount)}</p>
                 <Progress value={Math.min(100, (c.pct / Math.max(c.target, 1)) * 100)} />
-                <p className="text-xs text-muted-foreground">
-                  {c.pct}% of take-home · target {c.target}% ({formatCurrency(round2((takeHome * c.target) / 100))})
-                </p>
-                <p className="text-xs text-muted-foreground">{c.note}</p>
+                 <p className="text-xs text-muted-foreground">
+                   {c.pct}% of take-home · target {c.ceiling ? '≤' : '≥'} {c.target}% ({formatCurrency(targetAmount)})
+                 </p>
+                 <p className={`text-xs ${met ? 'text-emerald-500' : 'text-amber-500'}`}>{detail}</p>
+                 <p className="text-xs text-muted-foreground">{c.note}</p>
               </CardContent>
             </Card>
           );
@@ -229,6 +260,12 @@ export default function ZeroBasedPlanBoard({
             <p className="text-xs text-muted-foreground">
               Healthy at {formatCurrency(thresholds.healthy_min)} · tight below {formatCurrency(thresholds.caution_min)}
             </p>
+            {bufferEnding <= 0 && (
+              <p className="text-xs text-amber-500">
+                No buffer balance recorded for {monthLabel(month)} yet — enter your real starting balance in the
+                Buffer tab and this status will update.
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>
