@@ -260,6 +260,12 @@ export default function ZeroBasedPlanBoard({
             <p className="text-xs text-muted-foreground">
               Healthy at {formatCurrency(thresholds.healthy_min)} · tight below {formatCurrency(thresholds.caution_min)}
             </p>
+            {bufferEnding <= 0 && (
+              <p className="text-xs text-amber-500">
+                No buffer balance recorded for {monthLabel(month)} yet — enter your real starting balance in the
+                Buffer tab and this status will update.
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>
