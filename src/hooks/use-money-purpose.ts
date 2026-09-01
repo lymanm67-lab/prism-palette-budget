@@ -296,7 +296,7 @@ export function useMoneyPurposeSnapshot(monthInput: string, window: AverageWindo
       isCompletedMonth,
       loading: bLoading || tLoading || eLoading,
     };
-  }, [budgets, txns, elections, resolution, categories, window, month, bLoading, tLoading, eLoading]);
+  }, [budgets, txns, elections, resolution, categories, window, month, travelSettings, bLoading, tLoading, eLoading]);
 }
 
 export { consumesTakeHome };
