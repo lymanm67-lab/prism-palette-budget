@@ -209,19 +209,27 @@ export function computeBlueprint5010(input: BlueprintInput): BlueprintOutput {
   const bufferAssignment = round2(Number(input.bufferAssignment) || 0);
   const oneTimeExpenses = round2(Number(input.oneTimeExpenses) || 0);
 
-  const unallocated = round2(
-    net - input.actual.live - input.actual.enjoy - input.actual.build_wealth - input.actual.eliminate_debt,
-  );
+  // While a month is in progress, take-home is the budgeted deposit, so each
+  // bucket is credited with what it is committed to (planned) rather than what
+  // has cleared so far. Otherwise the plan looks like unassigned cash.
+  const committed = (key: CoreKey) =>
+    round2(input.inProgress ? Math.max(input.actual[key], input.planned[key] || 0) : input.actual[key]);
+  const cLive = committed('live');
+  const cEnjoy = committed('enjoy');
+  const cWealth = committed('build_wealth');
+  const cDebt = committed('eliminate_debt');
+
+  const unallocated = round2(net - cLive - cEnjoy - cWealth - cDebt);
   const unassigned = round2(
     unallocated - businessNet - sinkingFunds - bufferAssignment - oneTimeExpenses,
   );
 
   const reconciliation: Reconciliation = {
     netIncome: net,
-    live: input.actual.live,
-    enjoy: input.actual.enjoy,
-    buildWealthFromTakeHome: input.actual.build_wealth,
-    eliminateDebt: input.actual.eliminate_debt,
+    live: cLive,
+    enjoy: cEnjoy,
+    buildWealthFromTakeHome: cWealth,
+    eliminateDebt: cDebt,
     unallocated,
     businessOutflow,
     businessInflow,
@@ -232,14 +240,15 @@ export function computeBlueprint5010(input: BlueprintInput): BlueprintOutput {
     unassigned,
     overallocated: unassigned < -0.004,
     lines: [
-      { key: 'live', label: 'Live', amount: round2(input.actual.live) },
-      { key: 'enjoy', label: 'Enjoy', amount: round2(input.actual.enjoy) },
+      { key: 'live', label: 'Live', amount: cLive },
+      { key: 'enjoy', label: 'Enjoy', amount: cEnjoy },
       {
         key: 'build_wealth',
         label: 'Build Wealth from take-home',
-        amount: round2(input.actual.build_wealth),
+        amount: cWealth,
       },
-      { key: 'eliminate_debt', label: 'Eliminate Debt', amount: round2(input.actual.eliminate_debt) },
+      { key: 'eliminate_debt', label: 'Eliminate Debt', amount: cDebt },
+
       {
         key: 'business',
         label: businessInflow > 0 ? 'Business expenses (net of business income)' : 'Business expenses',
