@@ -76,13 +76,18 @@ export const PURPOSE_META: Record<
   },
 };
 
-/** Target bands per phase of the Financial Freedom progression. */
+/**
+ * Target bands per phase of the Financial Freedom progression.
+ *
+ * The living base (LIVE 45 / ENJOY 10) is constant; as debt elimination winds
+ * down, the debt share rolls into Build Wealth. Every phase totals 100%.
+ */
 export type FreedomPhase = 1 | 2 | 3;
 
 export const PHASE_TARGETS: Record<FreedomPhase, Record<'live' | 'enjoy' | 'build_wealth' | 'eliminate_debt', number>> = {
-  1: { live: 50, enjoy: 10, build_wealth: 20, eliminate_debt: 20 },
-  2: { live: 50, enjoy: 10, build_wealth: 30, eliminate_debt: 10 },
-  3: { live: 50, enjoy: 10, build_wealth: 40, eliminate_debt: 0 },
+  1: { live: 45, enjoy: 10, build_wealth: 25, eliminate_debt: 20 },
+  2: { live: 45, enjoy: 10, build_wealth: 35, eliminate_debt: 10 },
+  3: { live: 45, enjoy: 10, build_wealth: 45, eliminate_debt: 0 },
 };
 
 export const PHASE_LABEL: Record<FreedomPhase, string> = {
@@ -90,6 +95,7 @@ export const PHASE_LABEL: Record<FreedomPhase, string> = {
   2: 'Phase 2 — Transition',
   3: 'Phase 3 — Wealth Acceleration',
 };
+
 
 // ---------------------------------------------------------------------------
 // Smart mapping
