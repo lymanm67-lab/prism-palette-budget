@@ -1,4 +1,6 @@
 import { useMemo } from 'react';
+import { Link } from 'react-router-dom';
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -169,11 +171,14 @@ export default function ZeroBasedPlanBoard({
             floors</span> — anything below target shows the exact dollars still needed to reach it (“gap to close”).
           </p>
           <p>
-            <span className="font-medium text-foreground">Buffer</span> is your month-end cash cushion from the
-            Buffer tab. It reads critical when the tracked balance is below {formatCurrency(thresholds.tight_min)} —
-            including when no buffer balance has been entered yet, so add your real starting balance in the Buffer
-            tab to see a true status.
+            <span className="font-medium text-foreground">Buffer</span> is your month-end cash cushion, tracked on the{' '}
+            <Link to="/planning/zero-based" className="underline font-medium text-foreground">
+              Zero-Based Plan → Buffer tab
+            </Link>
+            . It reads critical when the tracked balance is below {formatCurrency(thresholds.tight_min)} — including
+            when no buffer balance has been entered yet.
           </p>
+
         </CardContent>
       </Card>
 
@@ -262,10 +267,11 @@ export default function ZeroBasedPlanBoard({
             </p>
             {bufferEnding <= 0 && (
               <p className="text-xs text-amber-500">
-                No buffer balance recorded for {monthLabel(month)} yet — enter your real starting balance in the
-                Buffer tab and this status will update.
+                No buffer balance recorded for {monthLabel(month)} yet — enter your starting balance on the{' '}
+                <Link to="/planning/zero-based" className="underline">Zero-Based Plan → Buffer tab</Link>.
               </p>
             )}
+
           </CardContent>
         </Card>
       </div>
