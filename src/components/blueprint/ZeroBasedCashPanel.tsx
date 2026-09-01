@@ -139,12 +139,30 @@ export default function ZeroBasedCashPanel({ snap, month }: Props) {
             <span>Take-home income</span>
             <span className="tabular-nums">{formatCurrency(r.netIncome)}</span>
           </div>
-          {r.lines.map((l) => (
-            <div key={l.key} className="flex justify-between px-2 py-1">
-              <span>− {l.label}</span>
-              <span className="tabular-nums">{formatCurrency(l.amount)}</span>
-            </div>
-          ))}
+          {r.lines.map((l) => {
+            const field = EDITABLE_LINES[l.key];
+            return (
+              <div key={l.key} className="flex items-center justify-between gap-2 px-2 py-1">
+                <span>
+                  − {l.label}
+                  {field && <span className="ml-1 text-[10px] text-muted-foreground">(editable)</span>}
+                </span>
+                {field ? (
+                  <InlineEditCell
+                    type="number"
+                    value={String(l.amount)}
+                    formatter={(v) => formatCurrency(Number(v) || 0)}
+                    className="tabular-nums text-right"
+                    onSave={async (v) => {
+                      await save.mutateAsync({ [field]: v === '' ? null : Number(v) } as any);
+                    }}
+                  />
+                ) : (
+                  <span className="tabular-nums">{formatCurrency(l.amount)}</span>
+                )}
+              </div>
+            );
+          })}
           <div className="flex justify-between border-t px-2 py-1 text-muted-foreground">
             <span>Total assigned</span>
             <span className="tabular-nums">{formatCurrency(Math.round(assigned * 100) / 100)}</span>
