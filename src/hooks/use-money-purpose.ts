@@ -193,13 +193,6 @@ export function useMoneyPurposeSnapshot(monthInput: string, window: AverageWindo
       ((categories as any[]) || []).map((c: any) => [c.id, c.name || '']),
     );
 
-    for (const b of ((budgets as any[]) || [])) {
-      if (resolution.incomeCategoryIds.has(b.category_id)) continue;
-      const p = resolution.byCategory.get(b.category_id);
-      if (!p) continue;
-      planned[p] += Number(b.planned_amount) || 0;
-    }
-
     // Take-home = real payroll deposits only. Investment inflows (Stash),
     // cash advances (Earnin), grocery reimbursements, and transfers between
     // own accounts are NOT take-home pay and must not inflate the denominator.
@@ -208,6 +201,19 @@ export function useMoneyPurposeSnapshot(monthInput: string, window: AverageWindo
       const name = (catNameById.get(id) || '').toLowerCase();
       if (/salary|payroll|paycheck|wages|net pay/.test(name)) takeHomeCatIds.add(id);
     }
+
+    let plannedTakeHome = 0;
+    for (const b of ((budgets as any[]) || [])) {
+      if (resolution.incomeCategoryIds.has(b.category_id)) {
+        if (takeHomeCatIds.has(b.category_id)) plannedTakeHome += Number(b.planned_amount) || 0;
+        continue;
+      }
+      const p = resolution.byCategory.get(b.category_id);
+      if (!p) continue;
+      planned[p] += Number(b.planned_amount) || 0;
+    }
+    plannedTakeHome = Math.round(plannedTakeHome * 100) / 100;
+
 
     for (const t of ((txns as any[]) || [])) {
       if (t.deleted_at || t.is_transfer) continue;
@@ -252,6 +258,13 @@ export function useMoneyPurposeSnapshot(monthInput: string, window: AverageWindo
     }
     netIncome = Math.round((netIncome / divisor) * 100) / 100;
     businessInflow = Math.round((businessInflow / divisor) * 100) / 100;
+
+    // Mid-month, payroll deposits may not have landed yet while spending has.
+    // Using $0 received as the basis would fake an over-allocation, so an
+    // in-progress month falls back to the budgeted take-home.
+    const monthIsComplete = monthEnd(month) < new Date().toISOString().slice(0, 10);
+    if (!monthIsComplete && plannedTakeHome > netIncome) netIncome = plannedTakeHome;
+
 
     const active = electionsForMonth(elections, month);
     const payrollWealth = active
