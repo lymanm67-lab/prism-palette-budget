@@ -44,6 +44,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import MoneyBlueprintPanel from '@/components/budget/MoneyBlueprintPanel';
 import PayrollElectionsCard from '@/components/budget/PayrollElectionsCard';
 import DebtCashFlowRelease from '@/components/budget/DebtCashFlowRelease';
+import DebtPayoffTracker from '@/components/budget/DebtPayoffTracker';
+
 import ZeroBasedPlanBoard from '@/components/budget/ZeroBasedPlanBoard';
 
 const getMonth = (offset: number) => {
