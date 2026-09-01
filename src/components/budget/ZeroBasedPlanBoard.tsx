@@ -95,10 +95,7 @@ export default function ZeroBasedPlanBoard({
   const bufferEnding = bufferNow ? bufferNow.endingBalance : 0;
   const bStatus = bufferStatus(bufferEnding, thresholds);
 
-  const takeHomeWealth = round2(
-    Math.max(0, (takeHome * TARGETS.build_wealth) / 100 - payrollWealth) > 0 ? 0 : 0,
-  );
-  const wealthCombined = round2(payrollWealth + employerWealth + takeHomeWealth);
+  const wealthCombined = round2(payrollWealth + employerWealth);
   const pct = (n: number) => (takeHome > 0 ? round2((n / takeHome) * 100) : 0);
 
   const cards = [

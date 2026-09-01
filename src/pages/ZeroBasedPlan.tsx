@@ -1,6 +1,9 @@
 import { useEffect, useMemo } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import BufferPanel from '@/components/budget/BufferPanel';
+import ZeroBasedPlanBoard from '@/components/budget/ZeroBasedPlanBoard';
+import RecurringLinesPanel from '@/components/budget/RecurringLinesPanel';
+import DebtActualsPanel from '@/components/budget/DebtActualsPanel';
 import BusinessLedgerPanel from '@/components/budget/BusinessLedgerPanel';
 import MoneyRedirectsPanel from '@/components/budget/MoneyRedirectsPanel';
 import ZeroBasedForecastPanel from '@/components/budget/ZeroBasedForecastPanel';
@@ -62,13 +65,17 @@ export default function ZeroBasedPlan() {
       <header>
         <h1 className="text-3xl font-bold tracking-tight">Zero-Based Plan</h1>
         <p className="text-muted-foreground">
-          Buffer thresholds, the business ledger, freed-cash redirects and the long-range forecast.
+          Itemized Live and Enjoy lines, real debt payments, buffer thresholds, the business ledger, freed-cash redirects and the long-range forecast.
         </p>
       </header>
+
+      <ZeroBasedPlanBoard />
 
       <Tabs defaultValue="buffer">
         <TabsList className="flex-wrap">
           <TabsTrigger value="buffer">Buffer</TabsTrigger>
+          <TabsTrigger value="lines">Live &amp; Enjoy Lines</TabsTrigger>
+          <TabsTrigger value="debt-actuals">Debt Actuals</TabsTrigger>
           <TabsTrigger value="business">Business Ledger</TabsTrigger>
           <TabsTrigger value="redirects">Money Redirects</TabsTrigger>
           <TabsTrigger value="forecast">Forecast</TabsTrigger>
@@ -83,6 +90,14 @@ export default function ZeroBasedPlan() {
             />
           </div>
           <BufferPanel />
+        </TabsContent>
+
+        <TabsContent value="lines" className="mt-6">
+          <RecurringLinesPanel />
+        </TabsContent>
+
+        <TabsContent value="debt-actuals" className="mt-6">
+          <DebtActualsPanel />
         </TabsContent>
 
         <TabsContent value="business" className="mt-6">
