@@ -108,8 +108,10 @@ export interface BlueprintOutput {
 }
 
 const pct = (n: number, d: number) => (d > 0 ? Math.round((n / d) * 1000) / 10 : 0);
+const round2 = (n: number) => Math.round((Number(n) || 0) * 100) / 100;
 const money = (n: number) =>
   n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 });
+
 
 /** Phase is derived from how much debt elimination is still running. */
 export function derivePhase(debtActual: number, netIncome: number): FreedomPhase {
