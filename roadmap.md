@@ -51,3 +51,7 @@
 ## Open items from earlier
 - [ ] Enter September 2026 actual spending, review LIVE / ENJOY / DEBT impact, adjust plan
 - [ ] Categorize newly imported transactions (currently flagged needs_review) so the budget balances
+
+## New (requested 2026-09-01)
+- [ ] Real consulting payment schedule: quarterly $1,925.29 lands Oct 2026, Jan/Apr/Jul/Oct 2027, Jan 2028 (not just an October budget row) + cash flow forecast picks up the schedule
+- [ ] Debt payoff tracker on /budgets: per-payment balance reduction for each vacation loan (2306, 3004) and BetrLink, with payoff dates and progress bars
