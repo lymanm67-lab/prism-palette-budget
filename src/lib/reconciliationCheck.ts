@@ -194,3 +194,11 @@ export function runReconciliationCheck(txns: RecTxn[]): RecFinding[] {
 }
 
 export const isAutoFixable = (f: RecFinding) => f.fix !== 'review_only';
+
+/**
+ * Only reversible flag changes may be applied in bulk. Category rewrites move
+ * money between reports, so they stay one-by-one and explicit.
+ */
+export const isBulkFixable = (f: RecFinding) =>
+  f.fix === 'mark_transfer' || f.fix === 'unmark_transfer';
+
