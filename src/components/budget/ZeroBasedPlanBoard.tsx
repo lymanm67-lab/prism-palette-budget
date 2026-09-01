@@ -265,10 +265,11 @@ export default function ZeroBasedPlanBoard({
             </p>
             {bufferEnding <= 0 && (
               <p className="text-xs text-amber-500">
-                No buffer balance recorded for {monthLabel(month)} yet — enter your real starting balance in the
-                Buffer tab and this status will update.
+                No buffer balance recorded for {monthLabel(month)} yet — enter your starting balance on the{' '}
+                <Link to="/planning/zero-based" className="underline">Zero-Based Plan → Buffer tab</Link>.
               </p>
             )}
+
           </CardContent>
         </Card>
       </div>
