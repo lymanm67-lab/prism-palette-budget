@@ -1,4 +1,4 @@
-// Money Purpose™ — the 50/10/20/20 classification layer.
+// Money Purpose™ — the 45/10/25/20 classification layer.
 //
 // This is INDEPENDENT of the existing Fixed / Flexible / Non-Monthly
 // "expense type" attribute. Expense Type answers "what kind of expense is
@@ -15,7 +15,7 @@ export type MoneyPurpose =
   | 'payroll_deduction'
   | 'employer_contribution';
 
-/** The four purposes that make up the personal 50/10/20/20 blueprint. */
+/** The four purposes that make up the personal 45/10/25/20 blueprint. */
 export const PERSONAL_PURPOSES: MoneyPurpose[] = ['live', 'enjoy', 'build_wealth', 'eliminate_debt'];
 
 /** Purposes that must NEVER be counted inside personal ratios. */
@@ -56,7 +56,7 @@ export const PURPOSE_META: Record<
   business: {
     label: 'Business',
     short: 'BUSINESS',
-    tooltip: 'Business income and expenses. Excluded from personal 50/10/20/20 ratios.',
+    tooltip: 'Business income and expenses. Excluded from personal 45/10/25/20 ratios.',
     color: '#64748b',
     token: 'text-slate-600 dark:text-slate-300',
   },
@@ -76,13 +76,18 @@ export const PURPOSE_META: Record<
   },
 };
 
-/** Target bands per phase of the Financial Freedom progression. */
+/**
+ * Target bands per phase of the Financial Freedom progression.
+ *
+ * The living base (LIVE 45 / ENJOY 10) is constant; as debt elimination winds
+ * down, the debt share rolls into Build Wealth. Every phase totals 100%.
+ */
 export type FreedomPhase = 1 | 2 | 3;
 
 export const PHASE_TARGETS: Record<FreedomPhase, Record<'live' | 'enjoy' | 'build_wealth' | 'eliminate_debt', number>> = {
-  1: { live: 50, enjoy: 10, build_wealth: 20, eliminate_debt: 20 },
-  2: { live: 50, enjoy: 10, build_wealth: 30, eliminate_debt: 10 },
-  3: { live: 50, enjoy: 10, build_wealth: 40, eliminate_debt: 0 },
+  1: { live: 45, enjoy: 10, build_wealth: 25, eliminate_debt: 20 },
+  2: { live: 45, enjoy: 10, build_wealth: 35, eliminate_debt: 10 },
+  3: { live: 45, enjoy: 10, build_wealth: 45, eliminate_debt: 0 },
 };
 
 export const PHASE_LABEL: Record<FreedomPhase, string> = {
@@ -90,6 +95,7 @@ export const PHASE_LABEL: Record<FreedomPhase, string> = {
   2: 'Phase 2 — Transition',
   3: 'Phase 3 — Wealth Acceleration',
 };
+
 
 // ---------------------------------------------------------------------------
 // Smart mapping

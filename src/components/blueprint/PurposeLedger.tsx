@@ -11,7 +11,7 @@ import { PURPOSE_META } from '@/lib/budgeting/moneyPurpose';
 import { cn } from '@/lib/utils';
 
 /**
- * Per-month, line-level proof of the 50/10/20/20 percentages: every transaction
+ * Per-month, line-level proof of the 45/10/25/20 percentages: every transaction
  * and payroll item that lands in each bucket, plus everything deliberately
  * excluded and why.
  */

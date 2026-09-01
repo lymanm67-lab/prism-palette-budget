@@ -3,6 +3,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import PrintReportFrame from '@/components/print/PrintReportFrame';
 import ReconciliationCheckCard from '@/components/reports/ReconciliationCheckCard';
 import BudgetInfographicPrint from '@/components/reports/BudgetInfographicPrint';
+import PayrollElectionsCard from '@/components/budget/PayrollElectionsCard';
+
 
 import ReactMarkdown from 'react-markdown';
 import { supabase } from '@/integrations/supabase/client';
@@ -335,6 +337,12 @@ export default function MonthlyReport() {
             })()}
             periodLabel={monthLabel(meta.month ?? selectedMonth)}
           />
+
+          {/* Payroll elections — single source of truth for Build Wealth */}
+          <div className="print:hidden">
+            <PayrollElectionsCard month={`${String(meta.month ?? selectedMonth).slice(0, 7)}-01`} />
+          </div>
+
           {/* Hero header */}
           <div className="rounded-2xl overflow-hidden border bg-gradient-to-br from-prism-orange/10 via-background to-background print:border-black">
             <div className="p-6 md:p-8 flex flex-col md:flex-row md:items-end md:justify-between gap-4">

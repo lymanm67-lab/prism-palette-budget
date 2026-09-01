@@ -27,7 +27,7 @@ export function buildBlueprintSpec(snap: MoneyPurposeSnapshot, month: string): I
   return {
     title: 'Money Blueprint',
     period: monthLabel(month),
-    tagline: '50 / 10 / 20 / 20 — every dollar has a purpose',
+    tagline: '45 / 10 / 25 / 20 — every dollar has a purpose',
     glance: [
       { label: 'Phase', value: PHASE_LABEL[bp.phase].split('—')[0].trim(), tone: 'purple' },
       { label: 'Alignment', value: `${bp.alignmentScore}/100`, tone: 'green' },

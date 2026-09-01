@@ -16,6 +16,9 @@ import ReconciliationDrilldown from '@/components/blueprint/ReconciliationDrilld
 import BlueprintExportButton from '@/components/blueprint/BlueprintExportButton';
 import FundTheGapCard from '@/components/blueprint/FundTheGapCard';
 import PurposeLedger from '@/components/blueprint/PurposeLedger';
+import ZeroBasedCashPanel from '@/components/blueprint/ZeroBasedCashPanel';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 
 interface ExpenseStructure {
   fixed: { budget: number; actual: number };
@@ -60,14 +63,30 @@ export default function MoneyBlueprintPanel({ month, expenseStructure }: Props) 
 
   return (
     <div className="space-y-4">
+      <Tabs defaultValue="cashflow" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-2 sm:w-auto sm:inline-flex">
+          <TabsTrigger value="cashflow" className="text-xs">
+            Total Cash Flow (Zero-Based)
+          </TabsTrigger>
+          <TabsTrigger value="framework" className="text-xs">
+            45/10/25/20 Scorecard
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="cashflow" className="space-y-4">
+          <ZeroBasedCashPanel snap={snap} month={month} />
+        </TabsContent>
+
+        <TabsContent value="framework" className="space-y-4">
       {/* ---------------- Header ---------------- */}
+
       <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
         <CardHeader className="pb-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <CardTitle className="font-display flex items-center gap-2 text-base">
                 <Sparkles className="h-4 w-4 text-primary" />
-                50 / 10 / 20 / 20 Money Blueprint
+                45 / 10 / 25 / 20 Money Blueprint
               </CardTitle>
               <p className="mt-1 text-xs text-muted-foreground">
                 Every dollar has a purpose. Personal money only — business and employer-paid dollars are excluded.
@@ -134,13 +153,41 @@ export default function MoneyBlueprintPanel({ month, expenseStructure }: Props) 
                         {c.aboveTargetLabel ||
                           `Variance ${c.variance >= 0 ? '+' : ''}${formatCurrency(c.variance)}`}
                       </p>
+                      {/* Real vs planned, every card */}
+                      <p className="tabular-nums">
+                        Planned {formatCurrency(c.plannedAmount)} · Actual {formatCurrency(c.actualAmount)}
+                        {c.plannedAmount > 0 && (
+                          <span
+                            className={cn(
+                              ' ',
+                              c.actualAmount - c.plannedAmount > 0
+                                ? c.key === 'build_wealth' || c.key === 'eliminate_debt'
+                                  ? 'text-emerald-600 dark:text-emerald-400'
+                                  : 'text-amber-600 dark:text-amber-400'
+                                : 'text-muted-foreground',
+                            )}
+                          >
+                            ({c.actualAmount - c.plannedAmount >= 0 ? '+' : '−'}
+                            {formatCurrency(Math.abs(c.actualAmount - c.plannedAmount))} vs plan)
+                          </span>
+                        )}
+                      </p>
                       {c.key === 'build_wealth' && (
-                        <p className="text-emerald-600 dark:text-emerald-400">
-                          {formatCurrency(c.fundedByPayroll || 0)} already funded via payroll ·{' '}
-                          {formatCurrency(c.remainingToTarget || 0)} remaining
-                        </p>
+                        <>
+                          <p className="text-emerald-600 dark:text-emerald-400">
+                            Employee {formatCurrency(bp.wealth.employeeTotal)} (payroll{' '}
+                            {formatCurrency(bp.wealth.employeePayroll)} + cash{' '}
+                            {formatCurrency(bp.wealth.fromTakeHome)})
+                          </p>
+                          <p className="text-sky-600 dark:text-sky-400">
+                            Employer {formatCurrency(bp.wealth.employerBoost)} · Combined{' '}
+                            {formatCurrency(bp.wealth.combinedTotal)}
+                          </p>
+                          <p>{formatCurrency(c.remainingToTarget || 0)} remaining to target</p>
+                        </>
                       )}
                     </div>
+
                   </div>
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs text-xs">
@@ -431,6 +478,9 @@ export default function MoneyBlueprintPanel({ month, expenseStructure }: Props) 
 
       {/* ---------------- Per-month bucket ledger ---------------- */}
       <PurposeLedger month={month} netIncome={snap.netIncome} />
+        </TabsContent>
+      </Tabs>
     </div>
+
   );
 }

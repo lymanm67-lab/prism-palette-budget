@@ -1794,7 +1794,7 @@ const Budgets = () => {
         ]}
       />
 
-      {/* 50/10/20/20 Money Blueprint (personal money only) */}
+      {/* 45/10/25/20 Money Blueprint (personal money only) */}
       <MoneyBlueprintPanel month={month} expenseStructure={sectionTotals as any} />
 
       {/* Debt settlement step-down, fee reserve and true redirectable cash flow */}

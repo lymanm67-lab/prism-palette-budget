@@ -39,7 +39,7 @@ function monthWealth(elections: PayrollElection[] | undefined, month: string) {
 }
 
 /**
- * Month-by-month actual vs target 50/10/20/20 history over the last `months`
+ * Month-by-month actual vs target 45/10/25/20 history over the last `months`
  * months ending at `month`.
  */
 export function useBlueprintHistory(month: string, months: 3 | 6 | 12 = 6) {
