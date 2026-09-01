@@ -27,6 +27,14 @@ export interface BlueprintInput {
   /** Employer-paid retirement/HSA contributions. */
   employerWealth: number;
   phase?: FreedomPhase;
+  /** LAYER A only: business money paid out of the personal account this month. */
+  businessOutflow?: number;
+  /** LAYER A only: sinking fund contributions (travel, annual bills, goals). */
+  sinkingFunds?: number;
+  /** LAYER A only: cash intentionally parked in Buffer this month. */
+  bufferAssignment?: number;
+  /** LAYER A only: dated one-time expenses (settlement fees, etc.). */
+  oneTimeExpenses?: number;
 }
 
 export interface BlueprintCard {
@@ -56,8 +64,21 @@ export interface Reconciliation {
   enjoy: number;
   buildWealthFromTakeHome: number;
   eliminateDebt: number;
+  /** Personal four-bucket leftover (LAYER B free cash). */
   unallocated: number;
+  // ----- LAYER A: total cash flow, zero-based -----
+  businessOutflow: number;
+  sinkingFunds: number;
+  bufferAssignment: number;
+  oneTimeExpenses: number;
+  /** Take-home minus EVERY job a dollar was given. Target: 0.00 */
+  unassigned: number;
+  /** true when more was assigned than came in */
+  overallocated: boolean;
+  /** Ordered assignment lines for the Layer A statement. */
+  lines: { key: string; label: string; amount: number }[];
 }
+
 
 export interface WealthPanel {
   employeePayroll: number;
