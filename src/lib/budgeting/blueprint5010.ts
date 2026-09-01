@@ -37,7 +37,14 @@ export interface BlueprintInput {
   bufferAssignment?: number;
   /** LAYER A only: dated one-time expenses (settlement fees, etc.). */
   oneTimeExpenses?: number;
+  /**
+   * LAYER A only: the month is still in progress. Take-home is the budgeted
+   * figure, so assignments must use each bucket's committed amount
+   * (max of planned and actual) instead of spend-to-date.
+   */
+  inProgress?: boolean;
 }
+
 
 export interface BlueprintCard {
   key: CoreKey;
