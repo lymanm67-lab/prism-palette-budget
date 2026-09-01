@@ -723,6 +723,111 @@ export type Database = {
           },
         ]
       }
+      buffer_ledger: {
+        Row: {
+          additions: number
+          created_at: string
+          household_id: string
+          id: string
+          month: string
+          notes: string | null
+          starting_balance: number
+          updated_at: string
+          withdrawals: number
+        }
+        Insert: {
+          additions?: number
+          created_at?: string
+          household_id: string
+          id?: string
+          month: string
+          notes?: string | null
+          starting_balance?: number
+          updated_at?: string
+          withdrawals?: number
+        }
+        Update: {
+          additions?: number
+          created_at?: string
+          household_id?: string
+          id?: string
+          month?: string
+          notes?: string | null
+          starting_balance?: number
+          updated_at?: string
+          withdrawals?: number
+        }
+        Relationships: []
+      }
+      buffer_one_time_expenses: {
+        Row: {
+          amount: number
+          created_at: string
+          due_date: string
+          household_id: string
+          id: string
+          is_paid: boolean
+          label: string
+          notes: string | null
+          source: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          due_date: string
+          household_id: string
+          id?: string
+          is_paid?: boolean
+          label: string
+          notes?: string | null
+          source?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          due_date?: string
+          household_id?: string
+          id?: string
+          is_paid?: boolean
+          label?: string
+          notes?: string | null
+          source?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      buffer_settings: {
+        Row: {
+          caution_min: number
+          created_at: string
+          healthy_min: number
+          household_id: string
+          id: string
+          tight_min: number
+          updated_at: string
+        }
+        Insert: {
+          caution_min?: number
+          created_at?: string
+          healthy_min?: number
+          household_id: string
+          id?: string
+          tight_min?: number
+          updated_at?: string
+        }
+        Update: {
+          caution_min?: number
+          created_at?: string
+          healthy_min?: number
+          household_id?: string
+          id?: string
+          tight_min?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       business_credit_steps: {
         Row: {
           completed_at: string | null
@@ -766,6 +871,63 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      business_expenses: {
+        Row: {
+          amount: number
+          brand: string | null
+          created_at: string
+          entity: string | null
+          frequency: string
+          household_id: string
+          id: string
+          is_active: boolean
+          is_owner_investment: boolean
+          notes: string | null
+          payment_method: string | null
+          purpose: string | null
+          renewal_date: string | null
+          tax_class: string
+          updated_at: string
+          vendor: string
+        }
+        Insert: {
+          amount?: number
+          brand?: string | null
+          created_at?: string
+          entity?: string | null
+          frequency?: string
+          household_id: string
+          id?: string
+          is_active?: boolean
+          is_owner_investment?: boolean
+          notes?: string | null
+          payment_method?: string | null
+          purpose?: string | null
+          renewal_date?: string | null
+          tax_class?: string
+          updated_at?: string
+          vendor: string
+        }
+        Update: {
+          amount?: number
+          brand?: string | null
+          created_at?: string
+          entity?: string | null
+          frequency?: string
+          household_id?: string
+          id?: string
+          is_active?: boolean
+          is_owner_investment?: boolean
+          notes?: string | null
+          payment_method?: string | null
+          purpose?: string | null
+          renewal_date?: string | null
+          tax_class?: string
+          updated_at?: string
+          vendor?: string
+        }
+        Relationships: []
       }
       business_profiles: {
         Row: {
@@ -1651,6 +1813,7 @@ export type Database = {
       debt_items: {
         Row: {
           account_id: string | null
+          apr_source: string | null
           balance: number
           business_name: string | null
           business_split_pct: number
@@ -1658,6 +1821,7 @@ export type Database = {
           deferred_until: string | null
           due_date: string | null
           due_day: number | null
+          extra_payment: number
           forgiveness_date: string | null
           forgiveness_eligible: boolean
           forgiveness_note: string | null
@@ -1666,12 +1830,17 @@ export type Database = {
           interest_rate: number
           minimum_payment: number
           name: string
+          original_payoff_date: string | null
           plan_id: string
+          pslf_payments_made: number | null
+          pslf_payments_required: number | null
+          settlement_separate_payment: number
           sort_order: number
           target_payoff_date: string | null
         }
         Insert: {
           account_id?: string | null
+          apr_source?: string | null
           balance?: number
           business_name?: string | null
           business_split_pct?: number
@@ -1679,6 +1848,7 @@ export type Database = {
           deferred_until?: string | null
           due_date?: string | null
           due_day?: number | null
+          extra_payment?: number
           forgiveness_date?: string | null
           forgiveness_eligible?: boolean
           forgiveness_note?: string | null
@@ -1687,12 +1857,17 @@ export type Database = {
           interest_rate?: number
           minimum_payment?: number
           name: string
+          original_payoff_date?: string | null
           plan_id: string
+          pslf_payments_made?: number | null
+          pslf_payments_required?: number | null
+          settlement_separate_payment?: number
           sort_order?: number
           target_payoff_date?: string | null
         }
         Update: {
           account_id?: string | null
+          apr_source?: string | null
           balance?: number
           business_name?: string | null
           business_split_pct?: number
@@ -1700,6 +1875,7 @@ export type Database = {
           deferred_until?: string | null
           due_date?: string | null
           due_day?: number | null
+          extra_payment?: number
           forgiveness_date?: string | null
           forgiveness_eligible?: boolean
           forgiveness_note?: string | null
@@ -1708,7 +1884,11 @@ export type Database = {
           interest_rate?: number
           minimum_payment?: number
           name?: string
+          original_payoff_date?: string | null
           plan_id?: string
+          pslf_payments_made?: number | null
+          pslf_payments_required?: number | null
+          settlement_separate_payment?: number
           sort_order?: number
           target_payoff_date?: string | null
         }
@@ -7843,6 +8023,63 @@ export type Database = {
           },
         ]
       }
+      money_redirects: {
+        Row: {
+          created_at: string
+          end_month: string | null
+          group_key: string | null
+          household_id: string
+          id: string
+          notes: string | null
+          sort_order: number
+          source_amount: number
+          source_label: string
+          start_month: string
+          status: string
+          target_amount: number
+          target_label: string
+          target_purpose: Database["public"]["Enums"]["money_purpose"] | null
+          trigger_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          end_month?: string | null
+          group_key?: string | null
+          household_id: string
+          id?: string
+          notes?: string | null
+          sort_order?: number
+          source_amount?: number
+          source_label: string
+          start_month: string
+          status?: string
+          target_amount?: number
+          target_label: string
+          target_purpose?: Database["public"]["Enums"]["money_purpose"] | null
+          trigger_type?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          end_month?: string | null
+          group_key?: string | null
+          household_id?: string
+          id?: string
+          notes?: string | null
+          sort_order?: number
+          source_amount?: number
+          source_label?: string
+          start_month?: string
+          status?: string
+          target_amount?: number
+          target_label?: string
+          target_purpose?: Database["public"]["Enums"]["money_purpose"] | null
+          trigger_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       monthly_financial_reviews: {
         Row: {
           concerns: Json | null
@@ -8438,6 +8675,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      recurring_purpose_lines: {
+        Row: {
+          amount: number
+          category_id: string | null
+          created_at: string
+          end_month: string | null
+          household_id: string
+          id: string
+          label: string
+          notes: string | null
+          purpose: Database["public"]["Enums"]["money_purpose"]
+          sort_order: number
+          start_month: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          category_id?: string | null
+          created_at?: string
+          end_month?: string | null
+          household_id: string
+          id?: string
+          label: string
+          notes?: string | null
+          purpose?: Database["public"]["Enums"]["money_purpose"]
+          sort_order?: number
+          start_month: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          category_id?: string | null
+          created_at?: string
+          end_month?: string | null
+          household_id?: string
+          id?: string
+          label?: string
+          notes?: string | null
+          purpose?: Database["public"]["Enums"]["money_purpose"]
+          sort_order?: number
+          start_month?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       recurring_transactions: {
         Row: {

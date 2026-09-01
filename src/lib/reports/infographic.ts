@@ -112,7 +112,26 @@ export interface InfographicSpec {
   disclaimer?: string;
   /** 1 = no shrink. Lower values fit more content on one sheet. */
   zoom?: number;
+  /** Page geometry preset. Defaults to letter portrait. */
+  format?: InfographicFormat;
 }
+
+export type InfographicFormat =
+  | 'letter-portrait'
+  | 'letter-landscape'
+  | 'social'
+  | 'presentation';
+
+export const INFOGRAPHIC_FORMATS: Record<
+  InfographicFormat,
+  { label: string; page: string; width: string; zoom: number }
+> = {
+  'letter-portrait': { label: 'Letter · portrait', page: 'letter portrait', width: '7.8in', zoom: 0.73 },
+  'letter-landscape': { label: 'Letter · landscape', page: 'letter landscape', width: '10.3in', zoom: 0.78 },
+  social: { label: 'Social square (1080)', page: '1080px 1080px', width: '10.4in', zoom: 0.95 },
+  presentation: { label: 'Presentation 16:9', page: '13.33in 7.5in', width: '12.6in', zoom: 0.82 },
+};
+
 
 const esc = (v: unknown) =>
   String(v ?? '')
@@ -376,10 +395,12 @@ export function renderInfographic(spec: InfographicSpec): string {
       </div>`
     : '';
 
+  const fmt = INFOGRAPHIC_FORMATS[spec.format ?? 'letter-portrait'];
+
   return `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><title>${esc(spec.title)}${spec.period ? ` — ${esc(spec.period)}` : ''}</title>
 <style>
-  @page { size: letter portrait; margin: 0.35in; }
+  @page { size: ${fmt.page}; margin: 0.35in; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; color: ${NAVY}; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   table { border-collapse: collapse; width: 100%; }
@@ -388,7 +409,8 @@ export function renderInfographic(spec: InfographicSpec): string {
   .th { font-size: 8.5px; font-weight: 800; letter-spacing: 0.04em; color: ${GREY}; text-transform: uppercase; padding: 5px 8px; border-bottom: 1.5px solid #d7dbe3; }
 </style></head>
 <body>
-<div style="max-width:7.8in;margin:0 auto;zoom:${spec.zoom ?? 0.73}">
+<div id="sheet" style="max-width:${fmt.width};margin:0 auto;zoom:${spec.zoom ?? fmt.zoom}">
+
   <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;border-bottom:2px solid ${NAVY};padding-bottom:8px">
     <div style="flex:1;text-align:center">
       <div style="font-size:30px;font-weight:900;letter-spacing:-0.5px;color:${NAVY}">${esc(spec.title.toUpperCase())}</div>
@@ -418,3 +440,55 @@ export function printInfographic(spec: InfographicSpec): boolean {
   setTimeout(() => w.print(), 400);
   return true;
 }
+
+/** Rasterise the spec offscreen and download it as a PNG or a single-page PDF. */
+export async function exportInfographic(
+  spec: InfographicSpec,
+  kind: 'png' | 'pdf',
+  filename = 'prism-report',
+): Promise<void> {
+  const [{ default: html2canvas }, jspdf] = await Promise.all([
+    import('html2canvas'),
+    kind === 'pdf' ? import('jspdf') : Promise.resolve(null as any),
+  ]);
+
+  const frame = document.createElement('iframe');
+  frame.style.cssText = 'position:fixed;left:-10000px;top:0;width:1400px;height:2000px;border:0;';
+  document.body.appendChild(frame);
+
+  try {
+    const doc = frame.contentDocument!;
+    doc.open();
+    doc.write(renderInfographic(spec));
+    doc.close();
+    await new Promise((r) => setTimeout(r, 350));
+
+    const target = (doc.getElementById('sheet') as HTMLElement) || doc.body;
+    const canvas = await html2canvas(target, { scale: 2, backgroundColor: '#ffffff', logging: false });
+
+    if (kind === 'png') {
+      const a = document.createElement('a');
+      a.href = canvas.toDataURL('image/png');
+      a.download = `${filename}.png`;
+      a.click();
+      return;
+    }
+
+    const landscape = canvas.width >= canvas.height;
+    const pdf = new jspdf.jsPDF({
+      orientation: landscape ? 'landscape' : 'portrait',
+      unit: 'pt',
+      format: 'letter',
+    });
+    const pw = pdf.internal.pageSize.getWidth();
+    const ph = pdf.internal.pageSize.getHeight();
+    const scale = Math.min(pw / canvas.width, ph / canvas.height);
+    const w = canvas.width * scale;
+    const h = canvas.height * scale;
+    pdf.addImage(canvas.toDataURL('image/png'), 'PNG', (pw - w) / 2, (ph - h) / 2, w, h);
+    pdf.save(`${filename}.pdf`);
+  } finally {
+    frame.remove();
+  }
+}
+
