@@ -11,7 +11,7 @@ import { toast } from '@/hooks/use-toast';
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { AssumptionsPanel } from '@/components/stress-test/AssumptionsPanel';
 import { PercentileChart } from '@/components/stress-test/PercentileChart';
-import { SensitivityTable } from '@/components/stress-test/SensitivityTable';
+import { HowToGuide } from '@/components/stress-test/HowToGuide';
 import { SuccessProbabilityCard } from '@/components/stress-test/SuccessProbabilityCard';
 import { WorstCasePanel } from '@/components/stress-test/WorstCasePanel';
 import { DisclaimerBlock } from '@/components/investment/DisclaimerBlock';
