@@ -24,6 +24,8 @@ export default function Reserves() {
 
       <FinancialResilienceSection />
       <EmergencyFundCard />
+      <RedirectExcessPanel />
+
 
       <div className="grid gap-6 lg:grid-cols-2">
         <VehicleMaintenanceCard />
