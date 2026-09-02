@@ -146,7 +146,7 @@ export function PositionDialog({
     setAutoFilled([]);
     lastLookedUp.current = position?.ticker ?? '';
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, position?.id, position?.updated_at, position?.cost_basis, position?.shares, role]);
+  }, [open, position?.id, position?.cost_basis, position?.shares, position?.avg_price, role]);
 
   // Auto-fill shortly after a ticker is typed, without needing the refresh button.
   useEffect(() => {
