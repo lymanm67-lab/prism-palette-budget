@@ -574,7 +574,7 @@ const Budgets = () => {
   // businessOffsets: keyed by PERSONAL category id => { bizAmount, bizCategory, pct, bizCategoryId }
   // bizActualsFromOffsets: keyed by BUSINESS category id => total $ to add to its actual (mirrors personal raw actual × pct)
   const { businessOffsets, bizActualsFromOffsets } = useMemo(() => {
-    const offsets = new Map<string, { bizAmount: number; bizCategory: string; pct: number; bizCategoryId?: string }>();
+    const offsets = new Map<string, { bizAmount: number; personalAmount: number; bizCategory: string; pct: number; bizCategoryId?: string }>();
     const bizActuals = new Map<string, number>();
     if (!categories || !categoryGroups || !budgets) return { businessOffsets: offsets, bizActualsFromOffsets: bizActuals };
 
@@ -600,7 +600,7 @@ const Budgets = () => {
 
         const totalOriginal = personalBudget.planned_amount + bizBudget.planned_amount;
         const pct = Math.round((bizBudget.planned_amount / totalOriginal) * 100);
-        offsets.set(personalCat.id, { bizAmount: bizBudget.planned_amount, bizCategory: bizCat.name, pct, bizCategoryId: bizCat.id });
+        offsets.set(personalCat.id, { bizAmount: bizBudget.planned_amount, personalAmount: personalBudget.planned_amount, bizCategory: bizCat.name, pct, bizCategoryId: bizCat.id });
 
         // Mirror personal raw actual onto the business category ONLY when the
         // business side has no direct transactions and no explicit splits — otherwise
@@ -628,7 +628,7 @@ const Budgets = () => {
       const bizAmount = Math.round(budget.planned_amount * (config.pct / 100) * 100) / 100;
       // Find the matching business category by name (e.g. business "BetrLink") for actuals mirroring
       const bizCat = bizCats.find(c => c.name.toLowerCase() === name);
-      offsets.set(cat.id, { bizAmount, bizCategory: bizCat?.name || config.label, pct: config.pct, bizCategoryId: bizCat?.id });
+      offsets.set(cat.id, { bizAmount, personalAmount: budget.planned_amount - bizAmount, bizCategory: bizCat?.name || config.label, pct: config.pct, bizCategoryId: bizCat?.id });
       if (bizCat) {
         const personalRaw = spentByCategory[cat.id] || 0;
         const bizRaw = spentByCategory[bizCat.id] || 0;
@@ -754,6 +754,15 @@ const Budgets = () => {
       .filter(([type]) => type !== 'income')
       .reduce((sum, [, items]) => sum + items.reduce((s, b) => s + Math.max(0, b.planned_amount), 0), 0);
   }, [businessBudgetItems, groupBudgetsByExpenseType]);
+
+  // Total planned personal spending for the month — the denominator for each
+  // personal category's share of the personal budget.
+  const personalPlannedTotal = useMemo(() => {
+    const grouped = groupBudgetsByExpenseType(personalBudgetItems);
+    return (Object.entries(grouped) as [ExpenseType, BudgetRow[]][])
+      .filter(([type]) => type !== 'income')
+      .reduce((sum, [, items]) => sum + items.reduce((s, b) => s + Math.max(0, b.planned_amount), 0), 0);
+  }, [personalBudgetItems, groupBudgetsByExpenseType]);
   const personalGroupedBudgets = useMemo(() => groupBudgetsByExpenseType(personalBudgetItems), [groupBudgetsByExpenseType, personalBudgetItems]);
   const businessGroupedBudgets = useMemo(() => groupBudgetsByExpenseType(businessBudgetItems), [groupBudgetsByExpenseType, businessBudgetItems]);
 
@@ -1131,15 +1140,35 @@ const Budgets = () => {
     const pct = effectiveBudget > 0 ? Math.min((actual / effectiveBudget) * 100, 100) : 0;
     const overBudget = !isCreditLine && remaining < -0.005;
 
-    const offsetBadge = bizOffset ? (
+    const isPersonalRow = personalCategoryIds.has(b.category_id);
+
+    // Personal-side badges: for shared costs, show what percentage of the cost stays
+    // on the personal budget; for every personal row, show its share of the personal budget.
+    const personalSplitBadge = isPersonalRow && bizOffset ? (
       <Tooltip>
         <TooltipTrigger asChild>
           <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-sky-500/10 text-sky-600 dark:text-sky-400 font-medium shrink-0 cursor-default whitespace-nowrap">
-            {bizOffset.pct}% → Biz
+            {100 - bizOffset.pct}% Personal
           </span>
         </TooltipTrigger>
         <TooltipContent>
-          <p>{formatCurrency(bizOffset.bizAmount)}/mo offset to {bizOffset.bizCategory}</p>
+          <p>{formatCurrency(bizOffset.personalAmount)}/mo stays on personal ({bizOffset.pct}% charged to business {bizOffset.bizCategory})</p>
+        </TooltipContent>
+      </Tooltip>
+    ) : null;
+
+    const personalBudgetPct = isPersonalRow && !isIncome && personalPlannedTotal > 0 && b.planned_amount > 0
+      ? (b.planned_amount / personalPlannedTotal) * 100
+      : null;
+    const personalSharePctBadge = personalBudgetPct != null ? (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground font-medium shrink-0 cursor-default whitespace-nowrap">
+            {personalBudgetPct.toFixed(1)}% of budget
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{formatCurrency(b.planned_amount)} of the {formatCurrency(personalPlannedTotal)} personal budget</p>
         </TooltipContent>
       </Tooltip>
     ) : null;
@@ -1183,7 +1212,8 @@ const Budgets = () => {
           <Checkbox checked={selectedBudgetIds.has(b.id)} onCheckedChange={() => toggleBudgetSelection(b.id)} className="shrink-0" />
           <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: b.categories?.color || 'hsl(var(--primary))' }} />
           <span className="flex-1 text-sm font-medium truncate">{b.categories?.name || 'Unknown'}</span>
-          {offsetBadge}
+          {personalSplitBadge}
+          {personalSharePctBadge}
           {bizSplitBadge}
           {bizSharePctBadge}
           {b.rollover && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium shrink-0">↻</span>}
@@ -1234,7 +1264,8 @@ const Budgets = () => {
           <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: b.categories?.color || 'hsl(var(--primary))' }} />
           <div className="flex-1 min-w-0 flex items-center gap-1.5">
             <span className="text-sm font-medium truncate">{b.categories?.name || 'Unknown'}</span>
-            {offsetBadge}
+            {personalSplitBadge}
+            {personalSharePctBadge}
             {bizSplitBadge}
             {bizSharePctBadge}
             {b.rollover && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium shrink-0">↻</span>}
