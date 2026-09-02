@@ -47,6 +47,8 @@ import DebtCashFlowRelease from '@/components/budget/DebtCashFlowRelease';
 import DebtPayoffTracker from '@/components/budget/DebtPayoffTracker';
 
 import ZeroBasedPlanBoard from '@/components/budget/ZeroBasedPlanBoard';
+import CapitalEventsPanel from '@/components/budget/CapitalEventsPanel';
+import { Coins } from 'lucide-react';
 
 const getMonth = (offset: number) => {
   const d = new Date();
