@@ -628,7 +628,7 @@ const Budgets = () => {
       const bizAmount = Math.round(budget.planned_amount * (config.pct / 100) * 100) / 100;
       // Find the matching business category by name (e.g. business "BetrLink") for actuals mirroring
       const bizCat = bizCats.find(c => c.name.toLowerCase() === name);
-      offsets.set(cat.id, { bizAmount, bizCategory: bizCat?.name || config.label, pct: config.pct, bizCategoryId: bizCat?.id });
+      offsets.set(cat.id, { bizAmount, personalAmount: budget.planned_amount - bizAmount, bizCategory: bizCat?.name || config.label, pct: config.pct, bizCategoryId: bizCat?.id });
       if (bizCat) {
         const personalRaw = spentByCategory[cat.id] || 0;
         const bizRaw = spentByCategory[bizCat.id] || 0;
