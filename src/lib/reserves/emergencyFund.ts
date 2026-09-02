@@ -568,3 +568,55 @@ export function excessSplit(
     blocked,
   };
 }
+
+export interface RedirectPlan {
+  enabled: boolean;
+  blocked: boolean;
+  blockedReason: string | null;
+  floor: number;
+  /** Cash sitting above the protected emergency floor. */
+  surplusAboveFloor: number;
+  monthlyExcess: number;
+  /** Total that may be redirected this month. */
+  available: number;
+  investmentsPct: number;
+  otherPct: number;
+  toInvestments: number;
+  toOtherGoals: number;
+}
+
+/**
+ * Floor-first redirect waterfall. The emergency floor is protected before any
+ * dollar is proposed, and nothing moves until the household approves it.
+ */
+export function redirectPlan(em: ReserveSummary, monthlyExcess: number): RedirectPlan {
+  const f = em.fund;
+  const invPct = Math.max(0, Math.min(100, Number(f.redirect_investments_pct || 0)));
+  const otherPct = Math.max(0, 100 - invPct);
+  const floor = Number(f.primary_target || 0);
+  const surplusAboveFloor = r2(Math.max(0, em.balance - floor));
+  const excess = r2(Math.max(0, Number(monthlyExcess) || 0));
+
+  let blockedReason: string | null = null;
+  if (em.remainingToPrimary > 0) {
+    blockedReason = `The ${money0(floor)} emergency cash floor is not protected yet — ${money0(em.remainingToPrimary)} to go.`;
+  } else if (f.contributions_paused) {
+    blockedReason = 'Contributions are paused, so no redirect is proposed this month.';
+  }
+
+  const available = blockedReason ? 0 : r2(surplusAboveFloor + excess);
+
+  return {
+    enabled: !!f.redirect_excess_enabled,
+    blocked: !!blockedReason,
+    blockedReason,
+    floor,
+    surplusAboveFloor,
+    monthlyExcess: excess,
+    available,
+    investmentsPct: invPct,
+    otherPct,
+    toInvestments: r2((available * invPct) / 100),
+    toOtherGoals: r2((available * otherPct) / 100),
+  };
+}
