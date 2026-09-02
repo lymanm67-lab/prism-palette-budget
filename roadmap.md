@@ -83,8 +83,8 @@
 - [x] Optional "Redirect Excess Cash to Investments" rule with editable split (default 60% SoFi Investments / 40% other goals), manual approval required
 
 ## Session 7 — Live SoFi balances + redirect (2026-09-02)
-- [ ] Emergency Cash card follows a linked SoFi bank account balance (stale-feed fallback, manual override)
-- [ ] SoFi Investments card totals real SoFi investment accounts with editable balances
-- [ ] Redirect Excess Cash panel: floor-first waterfall + "Mark transferred" writing reserve transactions
-- [ ] Budgets business view: show each category's percentage of the business budget
-- [ ] Business-side budget rows show the percentage charged to business (e.g. Rent 14%) alongside share of the business budget
+- [x] Emergency Cash card follows a linked SoFi bank account balance (stale-feed fallback, manual override)
+- [x] SoFi Investments card totals real SoFi investment accounts with editable balances
+- [x] Redirect Excess Cash panel: floor-first waterfall + "Mark transferred" writing reserve transactions
+- [x] Budgets business view: show each category's percentage of the business budget
+- [x] Business-side budget rows show the percentage charged to business (e.g. Rent 14%) alongside share of the business budget
