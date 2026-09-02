@@ -47,7 +47,25 @@ export interface StressAssumptions {
   employerContribution: number;
   hsaContribution: number;
   hsaEmployerContribution: number;
-  contributionGrowthPct: number;
+  contributionGrowthPct: number; // pay-raise driven contribution growth
+
+  // Household (spouse) — invested assets and guaranteed income kept identifiable
+  includeSpouse: boolean;
+  spouseCurrentAge: number;
+  spouseRetirementAge: number;
+  spouseBalance: number;
+  spouseContribution: number; // annual employee + employer
+  spouseSocialSecurityAnnual: number;
+  spouseSocialSecurityStartAge: number;
+
+  // Accelerators (money redirected into investing rather than new take-home)
+  debtRedirectAnnual: number; // freed-up debt payments redirected to investing
+  debtRedirectStartAge: number | null;
+  taxRefundRedirectAnnual: number; // annual refund / bonus redirected
+  postRetirementIncomeAnnual: number; // continued work or consulting income
+  postRetirementIncomeEndAge: number | null;
+  withdrawalStartAge: number | null; // no portfolio withdrawals before this age
+
 
   // Markets & inflation
   expectedReturnPct: number;
