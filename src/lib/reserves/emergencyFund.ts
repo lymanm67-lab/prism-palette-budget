@@ -354,6 +354,15 @@ export function summarizeReserve(
     });
   }
 
+  if (link?.stale) {
+    guardrails.push({
+      id: 'link-stale',
+      severity: 'warning',
+      message: `${link.institution} ${link.name} has not synced since ${link.syncedAt?.slice(0, 10)}. Showing the last tracked balance until the feed updates.`,
+    });
+  }
+
+
   return {
     fund,
     balance,
