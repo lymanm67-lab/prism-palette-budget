@@ -1,20 +1,50 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { HelpCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { HelpCircle, Volume2, Square } from 'lucide-react';
+import { useTTS } from '@/hooks/use-tts';
+
+const NARRATION = `How to use this stress test.
+This tool runs thousands of lifetime market scenarios instead of assuming one fixed return every year.
+Step one: choose whose plan to test. Household shows the combined picture, Lyman shows your individual assets and income, and Kateri shows your wife's view. Ten thousand simulations gives the most stable answer.
+Step two: set what counts as success. Portfolio never reaches zero is the core test. Preserve original principal, fund long-term care, and test a legacy target are optional. Your legacy target is four million dollars by age eighty-five. Minimum portfolio floor and minimum annual income are optional safety rails, and zero turns them off. For your plan, try a floor of fifty thousand dollars and an income floor near forty thousand five hundred dollars.
+Step three: confirm ages and invested assets. Current age fifty-eight, retirement age eighty-five for your legacy plan, and life expectancy one hundred. Enter invested assets only. Emergency cash stays out because it is liquidity, not an investment.
+Step four: contributions and accelerators. Enter your payroll contributions, employer contributions, and health savings account deposits, with a three percent annual raise rate. Turn on legacy plan, never withdraw from retirement accounts, if your accounts are meant to fund the trust and foundation. Then add freed debt payments, tax refunds, and any continued work income.
+Step five: market and inflation assumptions. Eight percent expected return, fifteen percent volatility, three percent general inflation, five percent healthcare and long-term care inflation, and roughly ten to fifteen percent effective tax on withdrawals.
+Step six: retirement spending and guaranteed income. Spending is split into essentials, discretionary, healthcare, and travel, and guaranteed income is subtracted before any withdrawal. Your Social Security is forty-two thousand four hundred eighty dollars per year starting at age seventy. Kateri's pension is seventy-eight thousand seven hundred eight dollars per year starting at age sixty-two.
+Step seven: the long-term care event. Choose the care setting, the age care begins, the number of years, and the annual cost. Your Nationwide policy applies about fifty-one thousand seven hundred fifty-six dollars of benefit per year.
+Reading the results: success probability is the share of simulations that pass every active rule. Median ending is the midpoint outcome. The tenth percentile is your stress case. Legacy probability is the chance of hitting your target by the target age. Use the sequence of returns, crisis, inflation, and spending grids, plus top risks, to decide your next move.
+All results are estimates, not guarantees.`;
 
 export function HowToGuide() {
+  const { speak, stop, isSpeaking } = useTTS();
+
   return (
     <Card className="border-border/60 bg-card/60 backdrop-blur">
       <CardHeader className="pb-2">
-        <div className="flex items-center gap-2">
-          <HelpCircle className="h-4 w-4 text-primary" />
-          <CardTitle className="text-base">How to use this stress test</CardTitle>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <HelpCircle className="h-4 w-4 text-primary" />
+              <CardTitle className="text-base">How to use this stress test</CardTitle>
+            </div>
+            <CardDescription>
+              Recommended values for your plan and what each field controls.
+            </CardDescription>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => (isSpeaking ? stop() : speak(NARRATION))}
+            aria-label={isSpeaking ? 'Stop narration' : 'Listen to the guide'}
+          >
+            {isSpeaking ? <Square className="mr-2 h-3.5 w-3.5" /> : <Volume2 className="mr-2 h-3.5 w-3.5" />}
+            {isSpeaking ? 'Stop' : 'Listen'}
+          </Button>
         </div>
-        <CardDescription>
-          Recommended values for your plan and what each field controls.
-        </CardDescription>
       </CardHeader>
       <CardContent className="pt-0">
+
         <Accordion type="multiple" defaultValue={['run', 'success', 'ages', 'contrib', 'markets', 'spending', 'ltc', 'reading']}>
           <AccordionItem value="run">
             <AccordionTrigger className="text-sm">Running the test</AccordionTrigger>
