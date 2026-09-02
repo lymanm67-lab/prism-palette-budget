@@ -28,9 +28,9 @@ export function TaxAndAccountsPanel() {
             </TableHeader>
             <TableBody>
               {byAccount.map((a) => (
-                <TableRow key={a.account}>
-                  <TableCell className="font-medium">{ACCOUNT_TYPES.find((x) => x.value === a.account)?.label ?? a.account}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{ACCOUNT_TYPES.find((x) => x.value === a.account)?.tax ?? '—'}</TableCell>
+                <TableRow key={a.account_type}>
+                  <TableCell className="font-medium">{ACCOUNT_TYPES.find((x) => x.value === a.account_type)?.label ?? a.account_type}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{ACCOUNT_TYPES.find((x) => x.value === a.account_type)?.tax ?? '—'}</TableCell>
                   <TableCell className="text-right">{money(a.value, 2)}</TableCell>
                   <TableCell className="text-right">{pct(totals.value > 0 ? (a.value / totals.value) * 100 : 0)}</TableCell>
                 </TableRow>
