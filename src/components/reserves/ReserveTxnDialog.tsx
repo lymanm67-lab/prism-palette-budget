@@ -135,15 +135,17 @@ export function ReserveTxnDialog({ fund, defaultDirection = 'contribution', trig
                 <Input id="rt-reason" placeholder="e.g. ER visit copay"
                   value={reason} onChange={(e) => setReason(e.target.value)} />
               </div>
-              <div className="space-y-1.5">
-                <Label>Category</Label>
-                <Select value={category} onValueChange={setCategory}>
-                  <SelectTrigger><SelectValue placeholder="Pick a category" /></SelectTrigger>
-                  <SelectContent>
-                    {categories.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
+              {fund.kind !== 'investment' && (
+                <div className="space-y-1.5">
+                  <Label>Category</Label>
+                  <Select value={category} onValueChange={setCategory}>
+                    <SelectTrigger><SelectValue placeholder="Pick a category" /></SelectTrigger>
+                    <SelectContent>
+                      {categories.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </>
           )}
 
