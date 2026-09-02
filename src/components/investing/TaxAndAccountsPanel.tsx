@@ -75,7 +75,7 @@ export function TaxAndAccountsPanel() {
                       <TableCell className="font-medium">{p.ticker}</TableCell>
                       <TableCell><Badge variant="outline" className={ROLE_META[p.role].accent}>{p.role}</Badge></TableCell>
                       <TableCell className="text-sm">{ACCOUNT_TYPES.find((x) => x.value === p.account_type)?.label ?? p.account_type}</TableCell>
-                      <TableCell className="text-sm">{taxable ? holdingPeriodStatus(p.entry_date) : 'Not taxable while held'}</TableCell>
+                      <TableCell className="text-sm">{taxable ? holdingPeriodStatus(p.entry_date).label : 'Not taxable while held'}</TableCell>
                       <TableCell className={`text-right ${gain >= 0 ? 'text-emerald-400' : 'text-destructive'}`}>{money(gain, 2)}</TableCell>
                       <TableCell className="text-right">{money(Number(p.dividend_income_ytd ?? 0), 2)}</TableCell>
                       <TableCell className="capitalize text-sm">{(p.dividend_instruction ?? 'reinvest').replace('_', ' ')}</TableCell>
