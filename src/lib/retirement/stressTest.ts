@@ -570,7 +570,50 @@ export const CRISIS_SCENARIOS: { key: string; label: string; description: string
   },
 ];
 
+/** Compares the sequence-risk defenses on and off, one at a time and combined. */
+export function sequenceControlGrid(
+  a: StressAssumptions,
+  goals: StressGoals,
+  runs: number,
+): SensitivityPoint[] {
+  const variants: { label: string; patch: Partial<StressAssumptions> }[] = [
+    { label: 'Your current settings', patch: {} },
+    {
+      label: 'No defenses (all off)',
+      patch: { badFirstDecadeEnabled: false, cashBridgeYears: 0, guardrailRulesEnabled: false },
+    },
+    {
+      label: 'Bad first decade only',
+      patch: { badFirstDecadeEnabled: true, cashBridgeYears: 0, guardrailRulesEnabled: false },
+    },
+    {
+      label: 'Bad decade + 2-year cash bridge',
+      patch: { badFirstDecadeEnabled: true, cashBridgeYears: 2, guardrailRulesEnabled: false },
+    },
+    {
+      label: 'Bad decade + guardrail spending rules',
+      patch: { badFirstDecadeEnabled: true, cashBridgeYears: 0, guardrailRulesEnabled: true },
+    },
+    {
+      label: 'Bad decade + bridge + guardrails',
+      patch: { badFirstDecadeEnabled: true, cashBridgeYears: 3, guardrailRulesEnabled: true },
+    },
+  ];
+  return variants.map((v) => {
+    const res = runStressTest({ ...a, ...v.patch }, goals, runs);
+    return {
+      label: v.label,
+      successProbability: res.successProbability,
+      medianEnding: res.medianEnding,
+      p10Ending: res.p10Ending,
+      legacyProbability: res.legacyProbability,
+      depletionAge: res.medianDepletionAge,
+    };
+  });
+}
+
 export function sequenceRiskGrid(a: StressAssumptions, goals: StressGoals, runs: number): SensitivityPoint[] {
+
   const declines = [20, 30, 40];
   const offsets: { label: string; offset: number }[] = [
     { label: '5 yrs before retirement', offset: -5 },
