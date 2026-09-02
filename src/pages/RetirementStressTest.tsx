@@ -13,6 +13,7 @@ import { AssumptionsPanel } from '@/components/stress-test/AssumptionsPanel';
 import { PercentileChart } from '@/components/stress-test/PercentileChart';
 import { SensitivityTable } from '@/components/stress-test/SensitivityTable';
 import { HowToGuide } from '@/components/stress-test/HowToGuide';
+import { SequenceRiskPanel } from '@/components/stress-test/SequenceRiskPanel';
 import { SuccessProbabilityCard } from '@/components/stress-test/SuccessProbabilityCard';
 import { WorstCasePanel } from '@/components/stress-test/WorstCasePanel';
 import { DisclaimerBlock } from '@/components/investment/DisclaimerBlock';
@@ -91,6 +92,37 @@ export default function RetirementStressTest() {
       </header>
 
       <HowToGuide />
+
+      <div className="pt-2">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Step 1 · Set your inputs</h2>
+        <p className="text-xs text-muted-foreground">Ages, invested assets, contributions, market assumptions, retirement spending and guaranteed income.</p>
+      </div>
+
+      {isLoading && <Skeleton className="h-40 w-full" />}
+
+      <AssumptionsPanel
+        assumptions={assumptions}
+        goals={goals}
+        emergencyCash={emergencyCash}
+        onChange={(patch) => setOverrides((p) => ({ ...p, ...patch }))}
+        onGoalsChange={(patch) => setGoals((g) => ({ ...g, ...patch }))}
+        onReset={() => setOverrides({})}
+      />
+
+      <div className="pt-2">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Step 2 · Choose your defenses</h2>
+        <p className="text-xs text-muted-foreground">Sequence-of-returns protections: bad-first-decade ordering, a cash bridge and dynamic guardrail spending rules.</p>
+      </div>
+
+      <SequenceRiskPanel
+        assumptions={assumptions}
+        onChange={(patch) => setOverrides((p) => ({ ...p, ...patch }))}
+      />
+
+      <div className="pt-2">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Step 3 · Run the simulation</h2>
+        <p className="text-xs text-muted-foreground">Pick whose plan to test and how many lifetime paths to run.</p>
+      </div>
 
       {/* Run controls */}
       <Card className="border-border/60 bg-card/60 backdrop-blur">
@@ -206,14 +238,6 @@ export default function RetirementStressTest() {
 
       {isLoading && <Skeleton className="h-40 w-full" />}
 
-      <AssumptionsPanel
-        assumptions={assumptions}
-        goals={goals}
-        emergencyCash={emergencyCash}
-        onChange={(patch) => setOverrides((p) => ({ ...p, ...patch }))}
-        onGoalsChange={(patch) => setGoals((g) => ({ ...g, ...patch }))}
-        onReset={() => setOverrides({})}
-      />
 
       {isRunning && (
         <Card className="border-border/60 bg-card/60">
@@ -228,6 +252,11 @@ export default function RetirementStressTest() {
 
       {base && output && (
         <>
+          <div className="pt-2">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Step 4 · Your results</h2>
+            <p className="text-xs text-muted-foreground">Success odds, the range of outcomes and how much of your essential spending is already guaranteed.</p>
+          </div>
+
           <SuccessProbabilityCard result={base} legacyTarget={goals.legacyTarget} legacyAge={goals.legacyTargetAge} />
 
           <PercentileChart result={base} lifeExpectancy={assumptions.lifeExpectancy} />
@@ -259,6 +288,17 @@ export default function RetirementStressTest() {
               </div>
             </CardContent>
           </Card>
+
+          <div className="pt-2">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Step 5 · Stress tests</h2>
+            <p className="text-xs text-muted-foreground">What breaks the plan: bad early markets, crises, inflation, long-term care, timing and spending.</p>
+          </div>
+
+          <SensitivityTable
+            title="Sequence-Risk Defenses Compared"
+            description="Your current sequence-risk settings against having no defenses, and each defense added one at a time."
+            rows={output.sequenceControls}
+          />
 
           <SensitivityTable
             title="Sequence-of-Returns Risk"
@@ -326,6 +366,11 @@ export default function RetirementStressTest() {
               </CardContent>
             </Card>
           )}
+
+          <div className="pt-2">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Step 6 · What to do next</h2>
+            <p className="text-xs text-muted-foreground">Worst case, your biggest risks and the changes that move the odds most.</p>
+          </div>
 
           <WorstCasePanel assumptions={assumptions} goals={goals} />
 
@@ -410,6 +455,11 @@ export default function RetirementStressTest() {
           </Card>
         </>
       )}
+
+      <div className="pt-2">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Records</h2>
+        <p className="text-xs text-muted-foreground">Saved scenarios and your annual review history.</p>
+      </div>
 
       {/* Scenario comparison */}
       {scenarios.length > 0 && (
