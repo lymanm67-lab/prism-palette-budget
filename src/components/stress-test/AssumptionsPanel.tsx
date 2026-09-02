@@ -27,6 +27,11 @@ export function AssumptionsPanel({
   onReset: () => void;
   emergencyCash: number;
 }) {
+  const yearsToRetirement = Math.max(0, assumptions.retirementAge - assumptions.currentAge);
+  const projectedIncome =
+    assumptions.currentEarnedIncomeAnnual *
+    Math.pow(1 + assumptions.contributionGrowthPct / 100, yearsToRetirement);
+
   const num = (key: NumKeys | 'debtRedirectStartAge' | 'postRetirementIncomeEndAge' | 'withdrawalStartAge', label: string, step = 1) => {
     const nullable =
       key === 'debtRedirectStartAge' || key === 'postRetirementIncomeEndAge' || key === 'withdrawalStartAge';
