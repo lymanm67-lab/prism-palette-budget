@@ -31,7 +31,7 @@ import {
 const labelFor = (list: readonly { value: string; label: string }[], v: string) =>
   list.find(i => i.value === v)?.label ?? v;
 
-export default function CapitalEventsPanel() {
+export default function CapitalEventsPanel({ month }: { month?: string }) {
   const { formatCurrency } = useCurrency();
   const { data: events } = useCapitalEvents();
   const { data: ledger } = useReserveLedger();
@@ -40,7 +40,10 @@ export default function CapitalEventsPanel() {
   const createEntry = useCreateReserveEntry();
   const deleteEntry = useSoftDeleteReserveEntry();
 
-  const reserve = useMemo(() => summariseReserve(ledger), [ledger]);
+  const reserve = useMemo(() => summariseReserve(ledger, month), [ledger, month]);
+  const monthLabel = month
+    ? new Date(`${month.slice(0, 7)}-01T00:00:00`).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })
+    : null;
   const miscounted = (events || []).filter(
     e => e.is_recurring || e.include_in_budget_pct || e.include_in_allocation_pct,
   );
@@ -143,18 +146,26 @@ export default function CapitalEventsPanel() {
             <CardTitle>Business Capital Reserve</CardTitle>
           </div>
           <CardDescription>
-            Tracked independently of monthly take-home pay. Expenses paid from this reserve are never deducted
-            from the personal monthly budget.
+            {monthLabel ? `${monthLabel} activity. ` : ''}Tracked independently of monthly take-home pay.
+            Expenses paid from this reserve are never deducted from the personal monthly budget.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
+            {monthLabel && (
+              <div>
+                <p className="text-xs text-muted-foreground">Carried in</p>
+                <p className="font-display text-xl font-bold">{formatCurrency(reserve.carryIn)}</p>
+              </div>
+            )}
             <div>
-              <p className="text-xs text-muted-foreground">Capital added (funding)</p>
+              <p className="text-xs text-muted-foreground">
+                {monthLabel ? 'Capital added this month' : 'Capital added (funding)'}
+              </p>
               <p className="font-display text-xl font-bold">{formatCurrency(reserve.added)}</p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Amount used</p>
+              <p className="text-xs text-muted-foreground">{monthLabel ? 'Amount used this month' : 'Amount used'}</p>
               <p className="font-display text-xl font-bold text-destructive">{formatCurrency(reserve.spent)}</p>
             </div>
             <div>
@@ -169,6 +180,9 @@ export default function CapitalEventsPanel() {
           <Progress value={reserve.pctRemaining} />
           <p className="text-xs text-muted-foreground">
             Ending reserve = beginning reserve + capital added − business expenses paid from reserve.
+            {monthLabel && reserve.added === 0 && reserve.spent === 0
+              ? ` No reserve activity in ${monthLabel}.`
+              : ''}
           </p>
         </CardContent>
       </Card>
