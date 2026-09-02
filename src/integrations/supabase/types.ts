@@ -9006,6 +9006,159 @@ export type Database = {
           },
         ]
       }
+      reserve_funds: {
+        Row: {
+          account_id: string | null
+          account_type: string | null
+          ceiling_target: number
+          contributions_paused: boolean
+          created_at: string
+          essential_monthly_expenses: number
+          goal_label: string | null
+          household_id: string
+          id: string
+          institution_label: string | null
+          kind: string
+          liquidity_class: string
+          market_value: number
+          monthly_contribution: number
+          name: string
+          notes: string | null
+          primary_target: number
+          redirect_excess_enabled: boolean
+          redirect_investments_pct: number
+          redirect_other_pct: number
+          sort_order: number
+          stage1_target: number
+          starting_balance: number
+          updated_at: string
+        }
+        Insert: {
+          account_id?: string | null
+          account_type?: string | null
+          ceiling_target?: number
+          contributions_paused?: boolean
+          created_at?: string
+          essential_monthly_expenses?: number
+          goal_label?: string | null
+          household_id: string
+          id?: string
+          institution_label?: string | null
+          kind?: string
+          liquidity_class?: string
+          market_value?: number
+          monthly_contribution?: number
+          name: string
+          notes?: string | null
+          primary_target?: number
+          redirect_excess_enabled?: boolean
+          redirect_investments_pct?: number
+          redirect_other_pct?: number
+          sort_order?: number
+          stage1_target?: number
+          starting_balance?: number
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string | null
+          account_type?: string | null
+          ceiling_target?: number
+          contributions_paused?: boolean
+          created_at?: string
+          essential_monthly_expenses?: number
+          goal_label?: string | null
+          household_id?: string
+          id?: string
+          institution_label?: string | null
+          kind?: string
+          liquidity_class?: string
+          market_value?: number
+          monthly_contribution?: number
+          name?: string
+          notes?: string | null
+          primary_target?: number
+          redirect_excess_enabled?: boolean
+          redirect_investments_pct?: number
+          redirect_other_pct?: number
+          sort_order?: number
+          stage1_target?: number
+          starting_balance?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reserve_funds_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reserve_funds_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reserve_transactions: {
+        Row: {
+          amount: number
+          category: string | null
+          created_at: string
+          direction: string
+          fund_id: string
+          household_id: string
+          id: string
+          notes: string | null
+          reason: string | null
+          txn_date: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          category?: string | null
+          created_at?: string
+          direction?: string
+          fund_id: string
+          household_id: string
+          id?: string
+          notes?: string | null
+          reason?: string | null
+          txn_date?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          category?: string | null
+          created_at?: string
+          direction?: string
+          fund_id?: string
+          household_id?: string
+          id?: string
+          notes?: string | null
+          reason?: string | null
+          txn_date?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reserve_transactions_fund_id_fkey"
+            columns: ["fund_id"]
+            isOneToOne: false
+            referencedRelation: "reserve_funds"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reserve_transactions_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       retirement_accounts: {
         Row: {
           account_kind: string

@@ -66,3 +66,18 @@
 - [x] Backfill all missing budget lines Jan 2026 → Sep 2026 from real activity
 - [x] Earnin advances/repayments moved out of Other Income to "Earnin Cash Advance" (eliminate_debt)
 - [x] Shared lines labelled with personal/business split %: Auto Insurance 53/47, Utilities 69/31, BetrLink Debt 63/37, Restaurants 50/50
+
+## Session 6 — Emergency Fund & Liquidity Management (2026-09-02)
+- [x] `reserve_funds` + `reserve_transactions` tables (household RLS), separate from buffer_ledger
+- [x] Tiered Emergency Fund: Stage 1 $2,000 / Primary $5,000 (default goal) / Ceiling $7,000
+- [x] SoFi Bank as dedicated Emergency Fund institution; emergency cash never mixed with Buffer, Vacation, HSA, Retirement, Brokerage or Business Capital Reserve
+- [x] Emergency Fund card: balances, remaining to Stage 1 / Primary, % funded, monthly transfer, YTD contributions & withdrawals, estimated completion, months of essentials covered, progress bar
+- [x] Liquidity classification per reserve: emergency_cash / short_term_savings / investment / retirement / other — only emergency_cash counts toward the $5,000 target
+- [x] SoFi Investments tracked separately (balance, contributions, withdrawals, gain/loss, market value, account type, goal) and excluded from the Emergency Fund balance
+- [x] Priority ladder 1–5 (Stage 1 floor → minimums + core retirement → vacation debt → freed cash to $5,000 → stop and redirect surplus)
+- [x] "Buffer Sweep to SoFi Emergency Fund" transaction type, single-counted
+- [x] Emergency withdrawal capture (date, amount, reason, category, notes) + automatic Replenishment Needed status
+- [x] Vehicle Maintenance sinking fund (tires, brakes, batteries, repairs, routine service) for three paid-off vehicles
+- [x] Financial Resilience dashboard: liquid reserves vs investments visually separated
+- [x] Guardrails: below $2,000 floor, vacation/discretionary misuse, investments counted as emergency cash, buffer double-count, same balance classified as both cash and investment
+- [x] Optional "Redirect Excess Cash to Investments" rule with editable split (default 60% SoFi Investments / 40% other goals), manual approval required
