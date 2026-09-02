@@ -456,10 +456,12 @@ export default function RetirementStressTest() {
         </>
       )}
 
+      {(scenarios.length > 0 || snapshots.length > 0) && (
       <div className="pt-2">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Records</h2>
         <p className="text-xs text-muted-foreground">Saved scenarios and your annual review history.</p>
       </div>
+      )}
 
       {/* Scenario comparison */}
       {scenarios.length > 0 && (
