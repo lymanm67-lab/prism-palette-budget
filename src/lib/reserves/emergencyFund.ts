@@ -239,7 +239,11 @@ export function summarizeReserve(
   const losses = sum('loss');
   const ytdContributions = r2(sum('contribution', true) + sum('buffer_transfer', true) + sum('interest', true));
   const ytdWithdrawals = sum('withdrawal', true);
-  const balance = reserveBalance(fund, txns);
+  const trackedBalance = reserveBalance(fund, txns);
+  const link = ctx.link ?? null;
+  const linkUsable = !!link && link.balance != null && !link.stale;
+  const balance = linkUsable ? r2(Number(link!.balance)) : trackedBalance;
+
 
   const stage1 = Number(fund.stage1_target || 0);
   const primary = Number(fund.primary_target || 0);
