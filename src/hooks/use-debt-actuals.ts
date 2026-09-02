@@ -31,7 +31,13 @@ function useDebtPaymentTxns(lookbackMonths = 5) {
         .order('date', { ascending: false })
         .limit(2000);
       if (error) throw error;
-      return (data || []) as ActualTxn[];
+      return ((data || []) as any[]).map((t) => ({
+        id: t.id,
+        date: t.date,
+        merchant: t.merchant,
+        description: t.notes ?? undefined,
+        amount: t.amount,
+      })) as ActualTxn[];
     },
   });
 }
