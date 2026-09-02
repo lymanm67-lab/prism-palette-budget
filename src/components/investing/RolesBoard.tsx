@@ -227,6 +227,20 @@ export function PositionDialog({
           <div className="space-y-1">
             <Label>Dividends received YTD</Label>
             <Input type="number" step="0.01" value={draft.dividend_income_ytd ?? 0} onChange={(e) => set({ dividend_income_ytd: Number(e.target.value) })} />
+            {recordedDividendYtd > 0 && (
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>Recorded payments: {money(recordedDividendYtd, 2)}</span>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  className="h-6 px-2"
+                  onClick={() => set({ dividend_income_ytd: recordedDividendYtd })}
+                >
+                  Use recorded
+                </Button>
+              </div>
+            )}
           </div>
           <div className="space-y-1">
             <Label>Position cap (% of portfolio)</Label>
