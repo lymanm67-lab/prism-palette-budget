@@ -161,9 +161,17 @@ export function useStressAssumptionsSource() {
       inflationPct: Number(p.inflation_pct ?? 3),
       socialSecurityAnnual: Number(p.ss_monthly_estimate || 0) * 12 || FALLBACK_ASSUMPTIONS.socialSecurityAnnual,
       socialSecurityStartAge: Number(p.ss_claiming_age ?? 70),
-      pensionAnnual: pensionAnnual + Number(p.spouse_pension_monthly || 0) * 12,
+      // Pension rows are the source of truth; only fall back to the plan's
+      // spouse_pension_monthly field when no spouse pension row exists (avoids double counting).
+      pensionAnnual:
+        spousePensionAnnual > 0
+          ? pensionAnnual
+          : pensionAnnual + Number(p.spouse_pension_monthly || 0) * 12,
+      pensionStartAge:
+        spousePensionAnnual > 0 ? spousePensionStartAge : FALLBACK_ASSUMPTIONS.pensionStartAge,
     };
   }, [plan.data, pensions.data, spouse.data]);
+
 
   const parts = useMemo(
     () => ({
