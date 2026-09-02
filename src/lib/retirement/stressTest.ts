@@ -381,16 +381,32 @@ export function runStressTest(
           essentialAtRet = essential + healthcare;
         }
 
-        const available = bal + hsa;
+        const available = bal + hsa + cash;
         if (fromPortfolio > available) {
           cutNeeded = true;
           if (ltcNeed > 0) ltcCovered = false;
           fromPortfolio = available;
         }
-        // Draw taxable/retirement first, HSA last
-        const fromBal = Math.min(bal, fromPortfolio);
+        // In a down year, spend the cash bridge first so shares are not sold low
+        let remaining = fromPortfolio;
+        if (cash > 0 && ret < 0) {
+          const fromCash = Math.min(cash, remaining);
+          cash -= fromCash;
+          remaining -= fromCash;
+        }
+        // Draw taxable/retirement next, HSA last, then any remaining bridge cash
+        const fromBal = Math.min(bal, remaining);
         bal -= fromBal;
-        hsa -= Math.min(hsa, fromPortfolio - fromBal);
+        remaining -= fromBal;
+        const fromHsaDraw = Math.min(hsa, remaining);
+        hsa -= fromHsaDraw;
+        remaining -= fromHsaDraw;
+        if (remaining > 0 && cash > 0) {
+          const extra = Math.min(cash, remaining);
+          cash -= extra;
+          remaining -= extra;
+        }
+
 
         if (!deferring && guaranteed + (available - fromPortfolio > 0 ? need - guaranteed : 0) < (goals.minimumAnnualIncome ?? 0)) {
           incomeMet = false;
