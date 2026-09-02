@@ -86,5 +86,21 @@
 - [x] Emergency Cash card follows a linked SoFi bank account balance (stale-feed fallback, manual override)
 - [x] SoFi Investments card totals real SoFi investment accounts with editable balances
 - [x] Redirect Excess Cash panel: floor-first waterfall + "Mark transferred" writing reserve transactions
-- [x] Budgets business view: show each category's percentage of the business budget
-- [x] Business-side budget rows show the percentage charged to business (e.g. Rent 14%) alongside share of the business budget
+ - [x] Budgets business view: show each category's percentage of the business budget
+ - [x] Business-side budget rows show the percentage charged to business (e.g. Rent 14%) alongside share of the business budget
+ - [x] Personal-side budget rows show the percentage staying on personal (e.g. Rent 86%) alongside share of the personal budget
+
+## New (requested 2026-09-02) — Monte Carlo Retirement Stress Test module
+- [ ] Sidebar navigation tab for Retirement Stress Test, easy to find
+- [ ] Monte Carlo engine: 1k / 5k / 10k simulations with variable returns, inflation, healthcare, longevity
+- [ ] Pull existing Prism plan data (balances, contributions, HSA, SS, pension, debt, emergency fund, etc.) with manual overrides
+- [ ] Success definitions: portfolio survival, floor, legacy, income, principal, LTC, multi-goal
+- [ ] Large probability card with interpretation bands
+- [ ] Outcome distribution (10/25/50/75/90 percentiles) at key ages
+- [ ] Sequence-of-returns risk section
+- [ ] Historical crisis stress tests
+- [ ] Inflation / LTC / income floor / retirement age / contribution / spending sensitivity
+- [ ] Dynamic spending guardrails + worst-case mode
+- [ ] Risk ranking + scenario comparison + recommended actions
+- [ ] Annual Monte Carlo Review save + historical chart
+- [ ] Disclaimer
