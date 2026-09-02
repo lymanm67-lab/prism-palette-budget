@@ -15,6 +15,8 @@ export interface LayerAAssignment {
   business_outflow: number | null;
   /** Manual override for business revenue/reimbursement that landed in it. */
   business_inflow: number | null;
+  /** When on, the app fills the balancing figures itself every month. */
+  auto_balance: boolean;
   notes: string | null;
 }
 
