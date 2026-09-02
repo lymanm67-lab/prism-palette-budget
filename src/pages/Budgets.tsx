@@ -47,6 +47,8 @@ import DebtCashFlowRelease from '@/components/budget/DebtCashFlowRelease';
 import DebtPayoffTracker from '@/components/budget/DebtPayoffTracker';
 
 import ZeroBasedPlanBoard from '@/components/budget/ZeroBasedPlanBoard';
+import CapitalEventsPanel from '@/components/budget/CapitalEventsPanel';
+import { Coins } from 'lucide-react';
 
 const getMonth = (offset: number) => {
   const d = new Date();
@@ -115,7 +117,7 @@ interface BudgetRow {
  * The budget page reads as one ordered flow: what came in, what it is assigned to,
  * the line-by-line budget, the month-end forecast, then the plan summary cards.
  */
-type BudgetStep = 'income' | 'assign' | 'budget' | 'forecast' | 'plan';
+type BudgetStep = 'income' | 'assign' | 'budget' | 'forecast' | 'plan' | 'capital';
 
 const BUDGET_STEPS: { key: BudgetStep; label: string; icon: typeof Wallet; hint: string }[] = [
   { key: 'income', label: 'Income', icon: Wallet, hint: 'Start with the money that actually lands — paychecks, payroll deductions and other deposits.' },
@@ -123,6 +125,7 @@ const BUDGET_STEPS: { key: BudgetStep; label: string; icon: typeof Wallet; hint:
   { key: 'budget', label: 'Budget', icon: PiggyBank, hint: 'Set and adjust each category line, then check planned against actual.' },
   { key: 'forecast', label: 'Forecast', icon: TrendingUp, hint: 'See where this month lands at your current spending pace.' },
   { key: 'plan', label: 'Plan', icon: LayoutGrid, hint: 'Your six summary cards: Live, Enjoy, Build Wealth, Eliminate Debt, Business and Buffer.' },
+  { key: 'capital', label: 'Capital Events', icon: Coins, hint: 'One-time funding events and the Business Capital Reserve — kept out of recurring income and the 45/10/25/20 percentages.' },
 ];
 
 const Budgets = () => {
@@ -2546,6 +2549,12 @@ const Budgets = () => {
       {(viewTab === 'plan' || isPrinting) && (
         <div className="print:hidden">
           <ZeroBasedPlanBoard />
+        </div>
+      )}
+
+      {viewTab === 'capital' && (
+        <div className="print:hidden">
+          <CapitalEventsPanel />
         </div>
       )}
 
