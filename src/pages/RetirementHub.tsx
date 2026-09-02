@@ -15,6 +15,7 @@ const CompoundingCrossover = lazy(() => import('@/pages/CompoundingCrossover'));
 const CrossoverTracker = lazy(() => import('@/pages/CrossoverTracker'));
 const RetirementTracker = lazy(() => import('@/pages/RetirementTracker'));
 const InvestmentPortfolio = lazy(() => import('@/pages/InvestmentPortfolio'));
+const RetirementStressTest = lazy(() => import('@/pages/RetirementStressTest'));
 
 type TabDef = {
   key: string;
