@@ -151,14 +151,14 @@ export function useInvSettings() {
     queryKey: [K.settings, householdId],
     enabled: !!householdId,
     queryFn: async (): Promise<InvSettings | null> => {
-      const { data, error } = await supabase
+      const { data, error } = await sb
         .from('inv_settings')
         .select('*')
         .eq('household_id', householdId!)
         .maybeSingle();
       if (error) throw error;
       if (data) return data as unknown as InvSettings;
-      const { data: created, error: insErr } = await supabase
+      const { data: created, error: insErr } = await sb
         .from('inv_settings')
         .insert({ household_id: householdId! })
         .select('*')
@@ -175,7 +175,7 @@ export function useUpdateInvSettings() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (patch: Partial<InvSettings>) => {
-      const { error } = await supabase
+      const { error } = await sb
         .from('inv_settings')
         .update(patch)
         .eq('household_id', householdId!);
@@ -198,7 +198,7 @@ export function useRoleTargets() {
     queryKey: [K.targets, householdId],
     enabled: !!householdId,
     queryFn: async (): Promise<RoleTarget[]> => {
-      const { data, error } = await supabase
+      const { data, error } = await sb
         .from('inv_role_targets')
         .select('*')
         .eq('household_id', householdId!)
@@ -218,7 +218,7 @@ export function useRoleTargets() {
         risk_bucket: ROLE_META[role].riskBucket,
         sort_order: i,
       }));
-      const { data: created, error: insErr } = await supabase
+      const { data: created, error: insErr } = await sb
         .from('inv_role_targets')
         .insert(seed)
         .select('*');
@@ -249,7 +249,7 @@ export function useRolePositions() {
     queryKey: [K.positions, householdId],
     enabled: !!householdId,
     queryFn: async (): Promise<RolePosition[]> => {
-      const { data, error } = await supabase
+      const { data, error } = await sb
         .from('inv_role_positions')
         .select('*')
         .eq('household_id', householdId!)
@@ -272,7 +272,7 @@ export function useSavePosition() {
         const { error } = await sb.from('inv_role_positions').update(rest).eq('id', id);
         if (error) throw error;
       } else {
-        const { error } = await supabase
+        const { error } = await sb
           .from('inv_role_positions')
           .insert({ ...rest, household_id: householdId! });
         if (error) throw error;
@@ -290,7 +290,7 @@ export function useDeletePosition() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
+      const { error } = await sb
         .from('inv_role_positions')
         .update({ deleted_at: new Date().toISOString() })
         .eq('id', id);
@@ -313,7 +313,7 @@ export function useInvContributions() {
     queryKey: [K.contributions, householdId],
     enabled: !!householdId,
     queryFn: async (): Promise<InvContribution[]> => {
-      const { data, error } = await supabase
+      const { data, error } = await sb
         .from('inv_contributions')
         .select('*')
         .eq('household_id', householdId!)
@@ -331,7 +331,7 @@ export function useAddContribution() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (input: Partial<InvContribution>) => {
-      const { error } = await supabase
+      const { error } = await sb
         .from('inv_contributions')
         .insert({ ...input, household_id: householdId! });
       if (error) throw error;
@@ -353,7 +353,7 @@ export function useFundHoldings() {
     queryKey: [K.fundHoldings, householdId],
     enabled: !!householdId,
     queryFn: async (): Promise<FundHoldingRow[]> => {
-      const { data, error } = await supabase
+      const { data, error } = await sb
         .from('inv_security_holdings')
         .select('*')
         .eq('household_id', householdId!)
@@ -373,7 +373,7 @@ export function useInvDecisions() {
     queryKey: [K.decisions, householdId],
     enabled: !!householdId,
     queryFn: async (): Promise<InvDecision[]> => {
-      const { data, error } = await supabase
+      const { data, error } = await sb
         .from('inv_decisions')
         .select('*')
         .eq('household_id', householdId!)
@@ -396,7 +396,7 @@ export function useSaveDecision() {
         const { error } = await sb.from('inv_decisions').update(rest).eq('id', id);
         if (error) throw error;
       } else {
-        const { error } = await supabase
+        const { error } = await sb
           .from('inv_decisions')
           .insert({ ...rest, household_id: householdId! });
         if (error) throw error;
@@ -419,7 +419,7 @@ export function useInvReviews() {
     queryKey: [K.reviews, householdId],
     enabled: !!householdId,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await sb
         .from('inv_reviews')
         .select('*')
         .eq('household_id', householdId!)
@@ -436,7 +436,7 @@ export function useSaveReview() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (input: { review_type: string; period_label: string; answers: Record<string, unknown>; metrics: Record<string, unknown>; notes?: string }) => {
-      const { error } = await supabase
+      const { error } = await sb
         .from('inv_reviews')
         .upsert({ ...input, household_id: householdId! }, { onConflict: 'household_id,review_type,period_label' });
       if (error) throw error;
@@ -458,7 +458,7 @@ export function useRoleWatchlist() {
     queryKey: [K.watchlist, householdId],
     enabled: !!householdId,
     queryFn: async (): Promise<WatchlistItem[]> => {
-      const { data, error } = await supabase
+      const { data, error } = await sb
         .from('inv_watchlist_items')
         .select('*')
         .eq('household_id', householdId!)
@@ -481,7 +481,7 @@ export function useSaveWatchlistItem() {
         const { error } = await sb.from('inv_watchlist_items').update(rest).eq('id', id);
         if (error) throw error;
       } else {
-        const { error } = await supabase
+        const { error } = await sb
           .from('inv_watchlist_items')
           .insert({ ...rest, household_id: householdId! });
         if (error) throw error;
@@ -499,7 +499,7 @@ export function useDeleteWatchlistItem() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
+      const { error } = await sb
         .from('inv_watchlist_items')
         .update({ deleted_at: new Date().toISOString() })
         .eq('id', id);
@@ -519,7 +519,7 @@ export function useInvScenarios() {
     queryKey: [K.scenarios, householdId],
     enabled: !!householdId,
     queryFn: async (): Promise<InvScenario[]> => {
-      const { data, error } = await supabase
+      const { data, error } = await sb
         .from('inv_scenarios')
         .select('*')
         .eq('household_id', householdId!)
@@ -537,7 +537,7 @@ export function useSaveScenario() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (input: { name: string; allocations: Record<string, number>; results?: Record<string, unknown>; notes?: string }) => {
-      const { error } = await supabase
+      const { error } = await sb
         .from('inv_scenarios')
         .insert({ ...input, household_id: householdId! });
       if (error) throw error;
@@ -614,7 +614,7 @@ export function useMarketLookup() {
         holding_name: h.name,
         weight_pct: h.weightPct,
       }));
-      await supabase
+      await sb
         .from('inv_security_holdings')
         .delete()
         .eq('household_id', householdId!)
