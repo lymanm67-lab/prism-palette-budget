@@ -50,12 +50,13 @@ export function ReviewsPanel() {
           </div>
           <Progress value={fit.score} />
           <ul className="space-y-1 text-sm">
-            {fit.factors.map((f) => (
-              <li key={f.label} className="flex justify-between gap-4">
-                <span className="text-muted-foreground">{f.label}</span>
-                <span>{f.detail}</span>
-              </li>
-            ))}
+            {fit.factors.length === 0 ? (
+              <li className="text-muted-foreground">No plan gaps detected — targets, drift, overlap and reserves all check out.</li>
+            ) : (
+              fit.factors.map((f) => (
+                <li key={f} className="text-muted-foreground">{f}</li>
+              ))
+            )}
           </ul>
         </CardContent>
       </Card>
@@ -137,11 +138,11 @@ export function ReviewsPanel() {
             disabled={save.isPending}
             onClick={async () => {
               await save.mutateAsync({
-                kind,
+                review_type: kind,
+                period_label: new Date().toISOString().slice(0, 10),
+                answers: {},
+                metrics: { fit_score: Math.round(fit.score), portfolio_value: totals.value },
                 notes,
-                fit_score: Math.round(fit.score),
-                portfolio_value: totals.value,
-                reviewed_on: new Date().toISOString().slice(0, 10),
               });
               setNotes('');
             }}

@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Link } from 'react-router-dom';
 import { Activity } from 'lucide-react';
-import { ROLES, ROLE_META, declineStress, money, pct } from '@/lib/investing/roles';
+import { ROLES, ROLE_META, stressLevels, money, pct } from '@/lib/investing/roles';
 import { useInvestingMetrics } from '@/hooks/use-investing-metrics';
 import { useInvScenarios, useSaveScenario } from '@/hooks/use-investing';
 
@@ -44,7 +44,7 @@ export function ScenarioPanel() {
   }, [blended.r, years, monthly, totals.value]);
 
   const higherRiskPct = Number(mix.CONVICTION ?? 0) + Number(mix.CATALYST ?? 0);
-  const stress = declineStress(totals.value, higherRiskPct);
+  const stress = stressLevels(totals.value);
 
   return (
     <div className="space-y-4">
@@ -105,12 +105,15 @@ export function ScenarioPanel() {
               onClick={() =>
                 save.mutate({
                   name,
-                  mix,
-                  monthly_contribution: monthly,
-                  years,
-                  expected_return: blended.r,
-                  volatility: blended.v,
-                  projected_value: projected,
+                  allocations: mix,
+                  results: {
+                    monthly_contribution: monthly,
+                    years,
+                    expected_return: blended.r,
+                    volatility: blended.v,
+                    projected_value: projected,
+                    higher_risk_pct: higherRiskPct,
+                  },
                 })
               }
             >
