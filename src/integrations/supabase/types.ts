@@ -1038,6 +1038,137 @@ export type Database = {
           },
         ]
       }
+      capital_events: {
+        Row: {
+          cost_basis: number | null
+          created_at: string
+          deleted_at: string | null
+          description: string
+          destination: string
+          estimated_gain_loss: number | null
+          event_date: string
+          event_type: string
+          gross_amount: number
+          household_id: string
+          id: string
+          include_in_allocation_pct: boolean
+          include_in_budget_pct: boolean
+          is_recurring: boolean
+          source: string | null
+          tax_notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          cost_basis?: number | null
+          created_at?: string
+          deleted_at?: string | null
+          description?: string
+          destination?: string
+          estimated_gain_loss?: number | null
+          event_date?: string
+          event_type?: string
+          gross_amount?: number
+          household_id: string
+          id?: string
+          include_in_allocation_pct?: boolean
+          include_in_budget_pct?: boolean
+          is_recurring?: boolean
+          source?: string | null
+          tax_notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cost_basis?: number | null
+          created_at?: string
+          deleted_at?: string | null
+          description?: string
+          destination?: string
+          estimated_gain_loss?: number | null
+          event_date?: string
+          event_type?: string
+          gross_amount?: number
+          household_id?: string
+          id?: string
+          include_in_allocation_pct?: boolean
+          include_in_budget_pct?: boolean
+          is_recurring?: boolean
+          source?: string | null
+          tax_notes?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "capital_events_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      capital_reserve_ledger: {
+        Row: {
+          amount: number
+          capital_event_id: string | null
+          created_at: string
+          deleted_at: string | null
+          description: string
+          direction: string
+          entry_date: string
+          expense_category: string | null
+          funding_source: string
+          household_id: string
+          id: string
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          capital_event_id?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          description?: string
+          direction?: string
+          entry_date?: string
+          expense_category?: string | null
+          funding_source?: string
+          household_id: string
+          id?: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          capital_event_id?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          description?: string
+          direction?: string
+          entry_date?: string
+          expense_category?: string | null
+          funding_source?: string
+          household_id?: string
+          id?: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "capital_reserve_ledger_capital_event_id_fkey"
+            columns: ["capital_event_id"]
+            isOneToOne: false
+            referencedRelation: "capital_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "capital_reserve_ledger_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           baseline_locked: boolean
