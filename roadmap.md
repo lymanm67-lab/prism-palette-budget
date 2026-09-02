@@ -107,3 +107,4 @@
 
 ## New (requested 2026-09-02) — Non-monthly / irregular expense planning
 - [ ] Add sinking-fund style non-monthly expenses for personal AND business (oil changes, car registration, LLC registered-agent annual fee, domain/website renewals, etc.) so annual costs are budgeted monthly instead of missing from the plan
+- [ ] Fix double-subtraction of payroll deductions in personal unallocated calc (src/pages/Budgets.tsx) — should show $665.77 left to assign
