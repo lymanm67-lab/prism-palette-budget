@@ -10,12 +10,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle, Info, ShieldCheck, Minus, Plus, ArrowRightLeft, Check, Clock, Circle } from 'lucide-react';
 import { ReserveTxnDialog } from './ReserveTxnDialog';
-import { useReserves } from '@/hooks/use-reserves';
+import { useReserves, useLinkableAccounts } from '@/hooks/use-reserves';
+import { AccountLinkRow } from './AccountLinkRow';
 import {
   summarizeReserve, fundingPriorities, excessSplit, STATUS_LABEL, DIRECTION_LABEL,
-  LIQUIDITY_LABEL, LIQUIDITY_CLASSES,
+  LIQUIDITY_LABEL, LIQUIDITY_CLASSES, fundLink,
   type GuardrailContext,
 } from '@/lib/reserves/emergencyFund';
+
 
 const money = (n: number) =>
   n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
