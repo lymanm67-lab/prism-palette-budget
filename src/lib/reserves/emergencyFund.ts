@@ -378,6 +378,9 @@ export function summarizeReserve(
     belowGoal: remainingToPrimary,
     lastWithdrawal,
     guardrails,
+    trackedBalance,
+    link,
+
   };
 }
 
