@@ -90,11 +90,15 @@ Deno.serve(async (req) => {
     let name: string | null = null;
     let sector: string | null = null;
     let industry: string | null = null;
+    let dividendYield: number | null = null;
+    let expenseRatio: number | null = null;
 
     try {
       const profile = await av({ function: 'ETF_PROFILE', symbol }, apiKey);
       const holdings = (profile['holdings'] as Json[] | undefined) ?? [];
       if (holdings.length > 0) securityType = 'etf';
+      if (profile['dividend_yield']) dividendYield = Number(profile['dividend_yield']) * 100;
+      if (profile['net_expense_ratio']) expenseRatio = Number(profile['net_expense_ratio']) * 100;
     } catch {
       // not an ETF or lookup failed — fall through to OVERVIEW
     }
@@ -106,11 +110,32 @@ Deno.serve(async (req) => {
         name = (overview['Name'] as string) || null;
         sector = (overview['Sector'] as string) || null;
         industry = (overview['Industry'] as string) || null;
+        if (overview['DividendYield']) dividendYield = Number(overview['DividendYield']) * 100;
         if (assetType.includes('etf')) securityType = 'etf';
         else if (assetType.includes('common stock') || assetType === 'equity') securityType = 'stock';
         else if (assetType.includes('mutual fund')) securityType = 'mutual_fund';
       } catch {
         // leave unverified — the UI shows "Instrument requires verification"
+      }
+    }
+
+    // ETFs have no OVERVIEW record — fall back to symbol search for a display name.
+    if (!name) {
+      try {
+        const search = await av({ function: 'SYMBOL_SEARCH', keywords: symbol }, apiKey);
+        const matches = (search['bestMatches'] as Json[] | undefined) ?? [];
+        const exact = matches.find((m) => String(m['1. symbol'] ?? '').toUpperCase() === symbol) ?? matches[0];
+        if (exact) {
+          name = String(exact['2. name'] ?? '') || null;
+          const t = String(exact['3. type'] ?? '').toLowerCase();
+          if (securityType === 'unverified') {
+            if (t === 'etf') securityType = 'etf';
+            else if (t === 'equity') securityType = 'stock';
+            else if (t.includes('mutual')) securityType = 'mutual_fund';
+          }
+        }
+      } catch {
+        // ignore — name stays blank for manual entry
       }
     }
 
@@ -122,6 +147,8 @@ Deno.serve(async (req) => {
       verified: securityType !== 'unverified',
       sector,
       industry,
+      dividendYield: Number.isFinite(dividendYield as number) ? dividendYield : null,
+      expenseRatio: Number.isFinite(expenseRatio as number) ? expenseRatio : null,
       asOf: new Date().toISOString(),
     });
   } catch (err) {

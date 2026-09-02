@@ -560,6 +560,8 @@ export interface QuoteResult {
   verified: boolean;
   sector: string | null;
   industry: string | null;
+  dividendYield?: number | null;
+  expenseRatio?: number | null;
 }
 
 export function useMarketLookup() {

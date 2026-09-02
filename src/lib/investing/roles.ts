@@ -5,6 +5,15 @@ export type InvestmentRole = 'CORE' | 'MOMENTUM' | 'GUARDRAIL' | 'CONVICTION' | 
 
 export const ROLES: InvestmentRole[] = ['CORE', 'MOMENTUM', 'GUARDRAIL', 'CONVICTION', 'CATALYST'];
 
+/** Suggested per-position cap (% of portfolio) by role — a starting point, always editable. */
+export const DEFAULT_ROLE_POSITION_CAP: Record<InvestmentRole, number> = {
+  CORE: 40,
+  MOMENTUM: 20,
+  GUARDRAIL: 20,
+  CONVICTION: 10,
+  CATALYST: 10,
+};
+
 export interface RoleMeta {
   role: InvestmentRole;
   purpose: string;

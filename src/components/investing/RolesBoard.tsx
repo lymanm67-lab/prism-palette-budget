@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ import { Plus, RefreshCw, Trash2, Pencil, ShieldAlert, Download } from 'lucide-r
 import {
   ACCOUNT_TYPES,
   CATALYST_CATEGORIES,
+  DEFAULT_ROLE_POSITION_CAP,
   POSITION_STATUSES,
   ROLES,
   ROLE_META,
@@ -64,25 +65,75 @@ export function PositionDialog({
 }) {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<Partial<RolePosition>>(position ?? emptyPosition(role ?? 'CORE'));
+  const [autoFilled, setAutoFilled] = useState<string[]>([]);
+  const lastLookedUp = useRef<string>(position?.ticker ?? '');
   const save = useSavePosition();
   const { quote, holdings } = useMarketLookup();
 
   const set = (patch: Partial<RolePosition>) => setDraft((d) => ({ ...d, ...patch }));
   const isTactical = draft.role === 'CONVICTION' || draft.role === 'CATALYST';
 
-  const lookup = async () => {
-    if (!draft.ticker) return;
-    const result = await quote.mutateAsync(draft.ticker.toUpperCase());
-    set({
-      ticker: result.symbol,
-      name: result.name ?? draft.name,
-      security_type: result.securityType,
-      verified: result.verified,
-      current_price: result.price ?? draft.current_price,
-      price_updated_at: new Date().toISOString(),
+  const lookup = async (rawTicker?: string) => {
+    const ticker = (rawTicker ?? draft.ticker ?? '').trim().toUpperCase();
+    if (!ticker) return;
+    lastLookedUp.current = ticker;
+    const result = await quote.mutateAsync(ticker);
+    const filled: string[] = [];
+
+    setDraft((d) => {
+      const patch: Partial<RolePosition> = {
+        ticker: result.symbol,
+        security_type: result.securityType,
+        verified: result.verified,
+        price_updated_at: new Date().toISOString(),
+      };
+
+      if (result.name && !d.name) {
+        patch.name = result.name;
+        filled.push('security name');
+      }
+      if (result.price != null) {
+        patch.current_price = result.price;
+        filled.push('current price');
+      }
+
+      const price = result.price ?? d.current_price ?? 0;
+      const shares = Number(d.shares ?? 0);
+      if (!d.cost_basis && price > 0 && shares > 0) {
+        patch.cost_basis = Number((price * shares).toFixed(2));
+        filled.push('cost basis (shares × price — edit to your actual basis)');
+      }
+      if (!d.entry_date) {
+        patch.entry_date = new Date().toISOString().slice(0, 10);
+        filled.push('entry date (today)');
+      }
+      const roleForCap = (d.role ?? 'CORE') as InvestmentRole;
+      if (d.max_pct == null) {
+        patch.max_pct = DEFAULT_ROLE_POSITION_CAP[roleForCap];
+        filled.push(`position cap (${roleForCap} default)`);
+      }
+      const value = price * shares;
+      if (!d.dividend_income_ytd && result.dividendYield != null && result.dividendYield > 0 && value > 0) {
+        const monthsElapsed = new Date().getMonth() + 1;
+        patch.dividend_income_ytd = Number(((value * (result.dividendYield / 100)) * (monthsElapsed / 12)).toFixed(2));
+        filled.push('dividends YTD (estimated from yield)');
+      }
+
+      return { ...d, ...patch };
     });
+
+    setAutoFilled(filled);
     if (result.securityType === 'etf') holdings.mutate(result.symbol);
   };
+
+  // Auto-fill shortly after a ticker is typed, without needing the refresh button.
+  useEffect(() => {
+    const ticker = (draft.ticker ?? '').trim().toUpperCase();
+    if (!open || ticker.length < 2 || ticker === lastLookedUp.current || quote.isPending) return;
+    const t = setTimeout(() => { void lookup(ticker); }, 700);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draft.ticker, open]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -120,10 +171,17 @@ export function PositionDialog({
             <Label>Ticker</Label>
             <div className="flex gap-2">
               <Input value={draft.ticker ?? ''} onChange={(e) => set({ ticker: e.target.value.toUpperCase() })} placeholder="SPMO" />
-              <Button type="button" variant="outline" size="icon" onClick={lookup} disabled={quote.isPending} aria-label="Look up security">
+              <Button type="button" variant="outline" size="icon" onClick={() => void lookup()} disabled={quote.isPending} aria-label="Look up security">
                 <RefreshCw className={`h-4 w-4 ${quote.isPending ? 'animate-spin' : ''}`} />
               </Button>
             </div>
+            <p className="text-xs text-muted-foreground">
+              {quote.isPending
+                ? 'Looking up security…'
+                : autoFilled.length > 0
+                  ? `Auto-filled: ${autoFilled.join(', ')}.`
+                  : 'Type a ticker — Prism fills in the details automatically.'}
+            </p>
           </div>
           <div className="space-y-1">
             <Label>Security name</Label>
