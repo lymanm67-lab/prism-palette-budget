@@ -298,6 +298,8 @@ export function runStressTest(
       }
 
       bal = bal * (1 + ret) + contributions;
+      cash = cash * (1 + bridgeYield);
+
 
       if (!working) {
         // Guaranteed income (kept separate from portfolio withdrawals)
