@@ -42,7 +42,7 @@ export interface GainLossReport {
   };
 }
 
-export interface GainLossInputPosition extends PositionLike {
+export interface GainLossInputPosition extends Omit<PositionLike, 'cost_basis'> {
   id: string;
   ticker: string;
   name?: string | null;
