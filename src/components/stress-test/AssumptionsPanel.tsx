@@ -27,6 +27,11 @@ export function AssumptionsPanel({
   onReset: () => void;
   emergencyCash: number;
 }) {
+  const yearsToRetirement = Math.max(0, assumptions.retirementAge - assumptions.currentAge);
+  const projectedIncome =
+    assumptions.currentEarnedIncomeAnnual *
+    Math.pow(1 + assumptions.contributionGrowthPct / 100, yearsToRetirement);
+
   const num = (key: NumKeys | 'debtRedirectStartAge' | 'postRetirementIncomeEndAge' | 'withdrawalStartAge', label: string, step = 1) => {
     const nullable =
       key === 'debtRedirectStartAge' || key === 'postRetirementIncomeEndAge' || key === 'withdrawalStartAge';
@@ -201,6 +206,7 @@ export function AssumptionsPanel({
                 />
               </label>
               <div className="grid gap-3 sm:grid-cols-3">
+                {num('currentEarnedIncomeAnnual', 'Gross earned income today ($/yr)', 500)}
                 {num('debtRedirectAnnual', 'Freed debt payments redirected ($/yr)', 100)}
                 {num('debtRedirectStartAge', 'Redirect starts at age')}
                 {num('taxRefundRedirectAnnual', 'Tax refunds / bonuses invested ($/yr)', 100)}
@@ -208,6 +214,43 @@ export function AssumptionsPanel({
                 {num('postRetirementIncomeEndAge', 'Work income ends at age')}
                 {num('withdrawalStartAge', 'First portfolio withdrawal at age')}
               </div>
+              {assumptions.currentEarnedIncomeAnnual > 0 && (
+                <div className="mt-3 rounded-lg border border-border/50 p-3 text-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">
+                      Projected earned income at age {assumptions.retirementAge} (
+                      {assumptions.contributionGrowthPct}%/yr raises)
+                    </span>
+                    <span className="font-semibold tabular-nums">
+                      {projectedIncome.toLocaleString('en-US', {
+                        style: 'currency',
+                        currency: 'USD',
+                        maximumFractionDigits: 0,
+                      })}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    ≈{' '}
+                    {(projectedIncome * 0.719).toLocaleString('en-US', {
+                      style: 'currency',
+                      currency: 'USD',
+                      maximumFractionDigits: 0,
+                    })}{' '}
+                    take-home at today's 71.9% net-to-gross ratio. Employer retirement contributions
+                    (9% of pay) rise with the same {assumptions.contributionGrowthPct}% raises and stay
+                    outside take-home.
+                  </p>
+                  <button
+                    type="button"
+                    className="mt-2 text-xs text-primary underline"
+                    onClick={() =>
+                      onChange({ postRetirementIncomeAnnual: Math.round(projectedIncome) })
+                    }
+                  >
+                    Use this as continued work income
+                  </button>
+                </div>
+              )}
               <p className="mt-3 text-xs text-muted-foreground">
                 Contribution growth of {assumptions.contributionGrowthPct}%/yr models your annual pay raise.
                 Continued work income and delayed withdrawals let the portfolio compound instead of being drawn
