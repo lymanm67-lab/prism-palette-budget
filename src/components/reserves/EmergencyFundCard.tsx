@@ -98,14 +98,21 @@ export function EmergencyFundCard({
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div>
             <CardTitle className="flex items-center gap-2 text-base">
-              <ShieldCheck className="h-4 w-4 text-prism-teal" /> Emergency Fund
+              <ShieldCheck className="h-4 w-4 text-prism-teal" /> SoFi Emergency Cash
             </CardTitle>
             <p className="mt-1 text-xs text-muted-foreground">
-              Dedicated liquid cash for true unexpected events — held in{' '}
-              {emergency.institution_label || 'a high-yield savings account'}. Separate from the monthly Buffer.
+              Dedicated liquid cash for true unexpected events — held at{' '}
+              {emergency.institution_label || 'SoFi Bank'}. Liquid, readily accessible and not exposed to
+              market volatility. Separate from the monthly Buffer, Vacation Fund, Vehicle Fund, HSA,
+              retirement, brokerage and the Business Capital Reserve.
             </p>
           </div>
-          <Badge className={statusTone} variant="secondary">{STATUS_LABEL[s.status]}</Badge>
+          <div className="flex flex-col items-end gap-1.5">
+            <Badge className={statusTone} variant="secondary">{STATUS_LABEL[s.status]}</Badge>
+            <Badge variant="outline" className="text-[10px]">
+              {LIQUIDITY_LABEL[emergency.liquidity_class]}
+            </Badge>
+          </div>
         </div>
       </CardHeader>
 
