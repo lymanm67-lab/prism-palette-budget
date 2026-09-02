@@ -84,8 +84,12 @@ export const FALLBACK_ASSUMPTIONS: StressAssumptions = {
   ltcStartAge: 82,
   ltcYears: 3,
   ltcAnnualCost: LTC_COST_PRESETS.assisted,
-  ltcInsuranceBenefit: 0,
+  // Nationwide CareMatters Together (linked-benefit, cash indemnity, 3% compound,
+  // 72 full monthly payments, guaranteed death benefit + surrender value):
+  // illustrated $4,313/mo per insured at older-insured age 85 = $51,756/yr.
+  ltcInsuranceBenefit: 51_756,
   ltcHsaOffset: 0,
+
   extraOneTimeExpense: 0,
   extraOneTimeExpenseAge: null,
   returnHaircutPct: 0,
