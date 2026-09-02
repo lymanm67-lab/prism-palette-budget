@@ -485,6 +485,14 @@ const Budgets = () => {
     return { expChange, expPct, incChange, incPct, currExpenses, currIncome, topIncreases, topDecreases };
   }, [spentByCategory, receivedByCategory, prevMonthSpending, categories]);
 
+  // Categories flagged with money_purpose = 'business' are business-side spending even when
+  // they sit in a personal group (e.g. Owner Contribution to Business) — keep them out of
+  // personal LIVE essentials so the 45/10/25/20 bands stay accurate.
+  const businessPurposeCategoryIds = useMemo(() => {
+    if (!categories) return new Set<string>();
+    return new Set((categories as any[]).filter(c => c.money_purpose === 'business').map(c => c.id));
+  }, [categories]);
+
   // Filter categories by budget type AND selected business
   const filteredCategoryIds = useMemo(() => {
     if (!categories || !categoryGroups) return new Set<string>();
@@ -500,21 +508,31 @@ const Budgets = () => {
         })
         .map((g: any) => g.id)
     );
-    return new Set(categories.filter(c => groupIds.has(c.group_id)).map(c => c.id));
-  }, [categories, categoryGroups, budgetType, selectedBusiness]);
+    return new Set(
+      categories
+        .filter(c => {
+          const inGroup = groupIds.has(c.group_id);
+          if (budgetType === 'personal') return inGroup && !businessPurposeCategoryIds.has(c.id);
+          if (budgetType === 'business') return inGroup || businessPurposeCategoryIds.has(c.id);
+          return inGroup;
+        })
+        .map(c => c.id)
+    );
+  }, [categories, categoryGroups, budgetType, selectedBusiness, businessPurposeCategoryIds]);
 
   // For "all" mode, separate personal vs business category IDs
   const personalCategoryIds = useMemo(() => {
     if (!categories || !categoryGroups) return new Set<string>();
     const groupIds = new Set((categoryGroups as any[]).filter((g: any) => (g.budget_type || 'personal') === 'personal').map((g: any) => g.id));
-    return new Set(categories.filter(c => groupIds.has(c.group_id)).map(c => c.id));
-  }, [categories, categoryGroups]);
+    return new Set(categories.filter(c => groupIds.has(c.group_id) && !businessPurposeCategoryIds.has(c.id)).map(c => c.id));
+  }, [categories, categoryGroups, businessPurposeCategoryIds]);
 
   const businessCategoryIds = useMemo(() => {
     if (!categories || !categoryGroups) return new Set<string>();
     const groupIds = new Set((categoryGroups as any[]).filter((g: any) => (g.budget_type || 'personal') === 'business').map((g: any) => g.id));
-    return new Set(categories.filter(c => groupIds.has(c.group_id)).map(c => c.id));
-  }, [categories, categoryGroups]);
+    return new Set(categories.filter(c => groupIds.has(c.group_id) || businessPurposeCategoryIds.has(c.id)).map(c => c.id));
+  }, [categories, categoryGroups, businessPurposeCategoryIds]);
+
 
   // For payroll_deduction categories, treat budgeted amount as actual (auto-deducted from paycheck)
   const payrollCatIdsSet = useMemo(() => {
