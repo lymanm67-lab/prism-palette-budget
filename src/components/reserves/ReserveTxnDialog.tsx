@@ -16,7 +16,9 @@ import {
 } from '@/lib/reserves/emergencyFund';
 import { useReserves } from '@/hooks/use-reserves';
 
-const DIRECTIONS: ReserveDirection[] = ['contribution', 'buffer_transfer', 'interest', 'withdrawal', 'adjustment'];
+const DIRECTIONS: ReserveDirection[] = [
+  'contribution', 'buffer_transfer', 'interest', 'withdrawal', 'gain', 'loss', 'adjustment',
+];
 
 interface Props {
   fund: ReserveFund;
