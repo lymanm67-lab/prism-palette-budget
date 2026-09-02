@@ -117,6 +117,7 @@ const BeltProgress = lazy(() => import("@/pages/BeltProgress"));
 const RetirementDashboard = lazy(() => import("@/pages/RetirementDashboard"));
 const InvestmentPortfolio = lazy(() => import("./pages/InvestmentPortfolio"));
 const RetirementTaxCenter = lazy(() => import("./pages/RetirementTaxCenter"));
+const RetirementStressTest = lazy(() => import("./pages/RetirementStressTest"));
 const TravelFund = lazy(() => import("./pages/TravelFund"));
 const ZeroBasedPlan = lazy(() => import("./pages/ZeroBasedPlan"));
 const Reserves = lazy(() => import("./pages/Reserves"));
@@ -293,6 +294,7 @@ const App = () => (
               <Route path="/retirement-optimizer" element={<Suspense fallback={<PageLoader />}><RetirementDashboard /></Suspense>} />
               <Route path="/retirement" element={<Suspense fallback={<PageLoader />}><RetirementHub /></Suspense>} />
               <Route path="/planning/retirement-tax" element={<Suspense fallback={<PageLoader />}><RetirementTaxCenter /></Suspense>} />
+              <Route path="/planning/stress-test" element={<Suspense fallback={<PageLoader />}><RetirementStressTest /></Suspense>} />
               <Route path="/planning/travel-fund" element={<Suspense fallback={<PageLoader />}><TravelFund /></Suspense>} />
               <Route path="/planning/zero-based" element={<Suspense fallback={<PageLoader />}><ZeroBasedPlan /></Suspense>} />
               <Route path="/planning/reserves" element={<Suspense fallback={<PageLoader />}><Reserves /></Suspense>} />

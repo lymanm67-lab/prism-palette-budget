@@ -3,7 +3,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectGroup, SelectLabel, SelectItem } from '@/components/ui/select';
-import { Sparkles, Download, TrendingUp, Wand2, Target, TrendingDown, Coins } from 'lucide-react';
+import { Sparkles, Download, TrendingUp, Wand2, Target, TrendingDown, Coins, Activity } from 'lucide-react';
 import { RelatedToolsBar } from '@/components/planning/RelatedToolsBar';
 import { useQueryClient } from '@tanstack/react-query';
 import { useInvestmentPlan } from '@/hooks/use-investment-plan';
@@ -218,6 +218,11 @@ export default function InvestmentPlanning() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" asChild>
+            <a href="/planning/stress-test">
+              <Activity className="h-4 w-4 mr-1" /> Stress test this plan
+            </a>
+          </Button>
           <Button variant="outline" size="sm" onClick={handleLoadSample} disabled={loadingSample || !household}>
             <Wand2 className="h-4 w-4 mr-1" /> {loadingSample ? 'Loading…' : 'Load Montgomery sample'}
           </Button>

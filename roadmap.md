@@ -90,17 +90,20 @@
  - [x] Business-side budget rows show the percentage charged to business (e.g. Rent 14%) alongside share of the business budget
  - [x] Personal-side budget rows show the percentage staying on personal (e.g. Rent 86%) alongside share of the personal budget
 
-## New (requested 2026-09-02) — Monte Carlo Retirement Stress Test module
-- [ ] Sidebar navigation tab for Retirement Stress Test, easy to find
-- [ ] Monte Carlo engine: 1k / 5k / 10k simulations with variable returns, inflation, healthcare, longevity
-- [ ] Pull existing Prism plan data (balances, contributions, HSA, SS, pension, debt, emergency fund, etc.) with manual overrides
-- [ ] Success definitions: portfolio survival, floor, legacy, income, principal, LTC, multi-goal
-- [ ] Large probability card with interpretation bands
-- [ ] Outcome distribution (10/25/50/75/90 percentiles) at key ages
-- [ ] Sequence-of-returns risk section
-- [ ] Historical crisis stress tests
-- [ ] Inflation / LTC / income floor / retirement age / contribution / spending sensitivity
-- [ ] Dynamic spending guardrails + worst-case mode
-- [ ] Risk ranking + scenario comparison + recommended actions
-- [ ] Annual Monte Carlo Review save + historical chart
-- [ ] Disclaimer
+## Monte Carlo Retirement Stress Test module — DONE 2026-09-02 (/planning/stress-test)
+- [x] Sidebar navigation tab for Retirement Stress Test, easy to find
+- [x] Monte Carlo engine: 1k / 5k / 10k simulations with variable returns, inflation, healthcare, longevity
+- [x] Pull existing Prism plan data (balances, contributions, HSA, SS, pension, debt, emergency fund, etc.) with manual overrides
+- [x] Success definitions: portfolio survival, floor, legacy, income, principal, LTC, multi-goal
+- [x] Large probability card with interpretation bands
+- [x] Outcome distribution (10/25/50/75/90 percentiles) at key ages
+- [x] Sequence-of-returns risk section
+- [x] Historical crisis stress tests
+- [x] Inflation / LTC / income floor / retirement age / contribution / spending sensitivity
+- [x] Dynamic spending guardrails + worst-case mode
+- [x] Risk ranking + scenario comparison + recommended actions
+- [x] Annual Monte Carlo Review save + historical chart
+- [x] Disclaimer
+
+## New (requested 2026-09-02) — Non-monthly / irregular expense planning
+- [ ] Add sinking-fund style non-monthly expenses for personal AND business (oil changes, car registration, LLC registered-agent annual fee, domain/website renewals, etc.) so annual costs are budgeted monthly instead of missing from the plan

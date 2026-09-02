@@ -15,6 +15,7 @@ const CompoundingCrossover = lazy(() => import('@/pages/CompoundingCrossover'));
 const CrossoverTracker = lazy(() => import('@/pages/CrossoverTracker'));
 const RetirementTracker = lazy(() => import('@/pages/RetirementTracker'));
 const InvestmentPortfolio = lazy(() => import('@/pages/InvestmentPortfolio'));
+const RetirementStressTest = lazy(() => import('@/pages/RetirementStressTest'));
 
 type TabDef = {
   key: string;
@@ -87,6 +88,13 @@ const TABS: TabDef[] = [
     blurb: 'Annual contribution versus expected return tracking.',
     icon: HeartPulse,
     Component: CrossoverTracker as TabDef['Component'],
+  },
+  {
+    key: 'stress-test',
+    label: 'Monte Carlo Stress Test',
+    blurb: 'Thousands of market, inflation, healthcare and longevity scenarios — probability of success, not one average return.',
+    icon: Gauge,
+    Component: RetirementStressTest as TabDef['Component'],
   },
 ];
 

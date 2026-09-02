@@ -9769,6 +9769,93 @@ export type Database = {
           },
         ]
       }
+      stress_test_scenarios: {
+        Row: {
+          assumptions: Json
+          created_at: string
+          deleted_at: string | null
+          goals: Json
+          household_id: string
+          id: string
+          name: string
+          results: Json | null
+          runs: number
+          slot: string
+          updated_at: string
+        }
+        Insert: {
+          assumptions?: Json
+          created_at?: string
+          deleted_at?: string | null
+          goals?: Json
+          household_id: string
+          id?: string
+          name: string
+          results?: Json | null
+          runs?: number
+          slot?: string
+          updated_at?: string
+        }
+        Update: {
+          assumptions?: Json
+          created_at?: string
+          deleted_at?: string | null
+          goals?: Json
+          household_id?: string
+          id?: string
+          name?: string
+          results?: Json | null
+          runs?: number
+          slot?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      stress_test_snapshots: {
+        Row: {
+          assumptions: Json
+          created_at: string
+          deleted_at: string | null
+          depletion_probability: number
+          household_id: string
+          id: string
+          legacy_probability: number
+          monthly_contribution: number
+          notes: string | null
+          portfolio_balance: number
+          snapshot_date: string
+          success_probability: number
+        }
+        Insert: {
+          assumptions?: Json
+          created_at?: string
+          deleted_at?: string | null
+          depletion_probability?: number
+          household_id: string
+          id?: string
+          legacy_probability?: number
+          monthly_contribution?: number
+          notes?: string | null
+          portfolio_balance?: number
+          snapshot_date?: string
+          success_probability?: number
+        }
+        Update: {
+          assumptions?: Json
+          created_at?: string
+          deleted_at?: string | null
+          depletion_probability?: number
+          household_id?: string
+          id?: string
+          legacy_probability?: number
+          monthly_contribution?: number
+          notes?: string | null
+          portfolio_balance?: number
+          snapshot_date?: string
+          success_probability?: number
+        }
+        Relationships: []
+      }
       subcategories: {
         Row: {
           category_id: string
