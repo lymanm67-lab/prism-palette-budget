@@ -195,11 +195,11 @@ export function AssumptionsPanel({
             <AccordionContent>
               <div className="grid gap-3 sm:grid-cols-3">
                 {num('debtRedirectAnnual', 'Freed debt payments redirected ($/yr)', 100)}
-                {num('debtRedirectStartAge' as NumKeys, 'Redirect starts at age')}
+                {num('debtRedirectStartAge', 'Redirect starts at age')}
                 {num('taxRefundRedirectAnnual', 'Tax refunds / bonuses invested ($/yr)', 100)}
                 {num('postRetirementIncomeAnnual', 'Continued work income ($/yr)', 500)}
-                {num('postRetirementIncomeEndAge' as NumKeys, 'Work income ends at age')}
-                {num('withdrawalStartAge' as NumKeys, 'First portfolio withdrawal at age')}
+                {num('postRetirementIncomeEndAge', 'Work income ends at age')}
+                {num('withdrawalStartAge', 'First portfolio withdrawal at age')}
               </div>
               <p className="mt-3 text-xs text-muted-foreground">
                 Contribution growth of {assumptions.contributionGrowthPct}%/yr models your annual pay raise.
