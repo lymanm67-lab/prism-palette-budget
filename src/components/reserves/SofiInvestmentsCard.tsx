@@ -8,7 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { TrendingUp, Info, Minus, Plus } from 'lucide-react';
 import { ReserveTxnDialog } from './ReserveTxnDialog';
-import { useReserves } from '@/hooks/use-reserves';
+import { useReserves, useLinkableAccounts } from '@/hooks/use-reserves';
 import {
   summarizeReserve, LIQUIDITY_CLASSES, LIQUIDITY_LABEL,
 } from '@/lib/reserves/emergencyFund';
@@ -33,12 +33,29 @@ function Stat({ label, value, sub, tone }: { label: string; value: string; sub?:
  */
 export function SofiInvestmentsCard() {
   const { funds, txns, updateFund, isLoading } = useReserves();
+  const { accounts, updateBalance } = useLinkableAccounts();
   const [editing, setEditing] = useState(false);
+  const [balanceEdits, setBalanceEdits] = useState<Record<string, string>>({});
   const [marketValue, setMarketValue] = useState('');
   const [accountType, setAccountType] = useState('');
   const [goal, setGoal] = useState('');
 
   const fund = useMemo(() => funds.find((f) => f.kind === 'investment') || null, [funds]);
+
+  /** Real SoFi brokerage / IRA accounts held in the accounts ledger. */
+  const sofiAccounts = useMemo(
+    () =>
+      accounts.filter(
+        (a) =>
+          ['investment', 'other'].includes(a.account_type) &&
+          `${a.institution || ''} ${a.name}`.toLowerCase().includes('sofi'),
+      ),
+    [accounts],
+  );
+  const liveTotal = useMemo(
+    () => sofiAccounts.reduce((sum, a) => sum + Number(a.balance || 0), 0),
+    [sofiAccounts],
+  );
   const summary = useMemo(() => (fund ? summarizeReserve(fund, txns) : null), [fund, txns]);
 
   if (isLoading) return <Card className="h-48 animate-pulse" />;
@@ -53,7 +70,9 @@ export function SofiInvestmentsCard() {
 
   const s = summary;
   const netGainLoss = s.gains - s.losses;
-  const marketVal = fund.market_value > 0 ? fund.market_value : s.balance;
+  const marketVal = sofiAccounts.length > 0
+    ? liveTotal
+    : fund.market_value > 0 ? fund.market_value : s.balance;
 
   const startEdit = () => {
     setMarketValue(String(fund.market_value));
@@ -96,12 +115,75 @@ export function SofiInvestmentsCard() {
       <CardContent className="space-y-4">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <Stat label="Investment account balance" value={money2(s.balance)} sub="Cost basis of contributions" />
-          <Stat label="Current market value" value={money2(marketVal)} sub="Updated manually" />
+          <Stat
+            label="Current market value"
+            value={money2(marketVal)}
+            sub={sofiAccounts.length > 0
+              ? `${sofiAccounts.length} real SoFi account${sofiAccounts.length === 1 ? '' : 's'}`
+              : 'Updated manually'}
+          />
           <Stat label="Gains / losses" value={`${netGainLoss >= 0 ? '+' : '−'}${money2(Math.abs(netGainLoss))}`}
             tone={netGainLoss >= 0 ? 'text-emerald-500' : 'text-destructive'} sub="Logged gain and loss entries" />
           <Stat label="Contributions" value={money2(s.contributed)} />
           <Stat label="Withdrawals" value={money2(s.withdrawn)} />
           <Stat label="Account type" value={fund.account_type || '—'} sub={fund.goal_label || 'Set an investment goal'} />
+        </div>
+
+        <div className="rounded-lg border border-border/60 p-3">
+          <p className="text-sm font-medium">SoFi investment accounts</p>
+          <p className="text-xs text-muted-foreground">
+            Balances come straight from your accounts ledger. Update one here and the card total follows.
+          </p>
+          {sofiAccounts.length === 0 ? (
+            <p className="mt-2 text-xs text-muted-foreground">
+              No SoFi investment accounts found. Add them on the Accounts page (institution “SoFi”, type
+              Investment) and they appear here automatically.
+            </p>
+          ) : (
+            <div className="mt-3 space-y-2">
+              {sofiAccounts.map((a) => (
+                <div key={a.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md bg-muted/30 px-3 py-2">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium">{a.name}</p>
+                    <p className="text-[11px] text-muted-foreground">
+                      {(a.institution || 'SoFi')} · {a.account_type}
+                      {a.last_synced_at ? ` · updated ${new Date(a.last_synced_at).toLocaleDateString()}` : ''}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      className="h-8 w-32 text-right tabular-nums"
+                      type="number"
+                      step="0.01"
+                      aria-label={`${a.name} balance`}
+                      value={balanceEdits[a.id] ?? String(a.balance)}
+                      onChange={(e) => setBalanceEdits((p) => ({ ...p, [a.id]: e.target.value }))}
+                    />
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={
+                        updateBalance.isPending ||
+                        (balanceEdits[a.id] ?? String(a.balance)) === String(a.balance)
+                      }
+                      onClick={() =>
+                        updateBalance.mutate({
+                          id: a.id,
+                          balance: Number(balanceEdits[a.id] ?? a.balance) || 0,
+                        })
+                      }
+                    >
+                      Save
+                    </Button>
+                  </div>
+                </div>
+              ))}
+              <div className="flex justify-between border-t border-border/60 pt-2 text-sm font-semibold">
+                <span>Total SoFi investments</span>
+                <span className="tabular-nums">{money2(liveTotal)}</span>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="rounded-lg border border-border/60 p-3">

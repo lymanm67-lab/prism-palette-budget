@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useHousehold } from '@/contexts/HouseholdContext';
-import type { ReserveFund, ReserveTxn } from '@/lib/reserves/emergencyFund';
+import type { ReserveFund, ReserveTxn, LinkableAccount } from '@/lib/reserves/emergencyFund';
 
 const sb = supabase as any;
 
@@ -154,4 +154,50 @@ export function useReserves() {
     addTxn,
     removeTxn,
   };
+}
+
+/** Accounts that a reserve fund can be linked to, plus a balance updater. */
+export function useLinkableAccounts() {
+  const { household } = useHousehold();
+  const qc = useQueryClient();
+
+  const query = useQuery({
+    queryKey: ['reserve_linkable_accounts', household?.id],
+    enabled: !!household,
+    queryFn: async () => {
+      const { data, error } = await sb
+        .from('accounts')
+        .select('id,name,institution,account_type,balance,last_synced_at,provider_type')
+        .eq('household_id', household!.id)
+        .is('deleted_at', null)
+        .order('institution', { ascending: true });
+      if (error) throw error;
+      return (data as any[]).map((a) => ({
+        id: a.id,
+        name: a.name,
+        institution: a.institution,
+        account_type: a.account_type,
+        balance: Number(a.balance || 0),
+        last_synced_at: a.last_synced_at,
+        provider_type: a.provider_type,
+      })) as LinkableAccount[];
+    },
+  });
+
+  const updateBalance = useMutation({
+    mutationFn: async ({ id, balance }: { id: string; balance: number }) => {
+      const { error } = await sb
+        .from('accounts')
+        .update({ balance, last_synced_at: new Date().toISOString() })
+        .eq('id', id);
+      if (error) throw error;
+      return id;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['reserve_linkable_accounts'] });
+      qc.invalidateQueries({ queryKey: ['accounts'] });
+    },
+  });
+
+  return { accounts: query.data || [], isLoading: query.isLoading, updateBalance };
 }

@@ -3,6 +3,8 @@ import { EmergencyFundCard } from '@/components/reserves/EmergencyFundCard';
 import { VehicleMaintenanceCard } from '@/components/reserves/VehicleMaintenanceCard';
 import { SofiInvestmentsCard } from '@/components/reserves/SofiInvestmentsCard';
 import { FinancialResilienceSection } from '@/components/reserves/FinancialResilienceSection';
+import { RedirectExcessPanel } from '@/components/reserves/RedirectExcessPanel';
+
 
 export default function Reserves() {
   useEffect(() => {
@@ -22,6 +24,8 @@ export default function Reserves() {
 
       <FinancialResilienceSection />
       <EmergencyFundCard />
+      <RedirectExcessPanel />
+
 
       <div className="grid gap-6 lg:grid-cols-2">
         <VehicleMaintenanceCard />

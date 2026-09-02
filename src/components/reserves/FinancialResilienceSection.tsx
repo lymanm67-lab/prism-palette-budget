@@ -3,13 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Droplets, LineChart, ShieldAlert } from 'lucide-react';
-import { useReserves } from '@/hooks/use-reserves';
+import { useReserves, useLinkableAccounts } from '@/hooks/use-reserves';
 import { useBufferMonths, useBufferOneTime, useBufferSettings } from '@/hooks/use-zero-based';
 import { useTravelTrips } from '@/hooks/use-travel-fund';
 import { useWealthOSData } from '@/hooks/use-wealth-os';
 import { useHouseholdDebts } from '@/hooks/use-household-debts';
 import { rollBuffer } from '@/lib/budgeting/bufferLedger';
-import { summarizeReserve } from '@/lib/reserves/emergencyFund';
+import { summarizeReserve, fundLink } from '@/lib/reserves/emergencyFund';
 
 const money2 = (n: number) =>
   n.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 });
@@ -32,6 +32,7 @@ function Row({ label, value, note }: { label: string; value: string; note?: stri
  */
 export function FinancialResilienceSection() {
   const { emergency, vehicle, funds, txns } = useReserves();
+  const { accounts } = useLinkableAccounts();
   const months = useBufferMonths();
   const oneTimes = useBufferOneTime();
   const { settings } = useBufferSettings();
@@ -56,8 +57,21 @@ export function FinancialResilienceSection() {
   }, [months.rows, oneTimes.rows, settings]);
 
   const emSummary = useMemo(
-    () => (emergency ? summarizeReserve(emergency, txns) : null),
-    [emergency, txns],
+    () => (emergency ? summarizeReserve(emergency, txns, { link: fundLink(emergency, accounts) }) : null),
+    [emergency, txns, accounts],
+  );
+
+  /** Real SoFi investment accounts, so both cards agree on the same total. */
+  const sofiInvestmentTotal = useMemo(
+    () =>
+      accounts
+        .filter(
+          (a) =>
+            ['investment', 'other'].includes(a.account_type) &&
+            `${a.institution || ''} ${a.name}`.toLowerCase().includes('sofi'),
+        )
+        .reduce((s, a) => s + Number(a.balance || 0), 0),
+    [accounts],
   );
   const vehicleBalance = useMemo(
     () => (vehicle ? summarizeReserve(vehicle, txns).balance : 0),
@@ -65,10 +79,12 @@ export function FinancialResilienceSection() {
   );
   const investmentReserves = useMemo(
     () =>
-      funds
-        .filter((f) => f.liquidity_class === 'investment')
-        .reduce((s, f) => s + (f.market_value > 0 ? f.market_value : summarizeReserve(f, txns).balance), 0),
-    [funds, txns],
+      sofiInvestmentTotal > 0
+        ? sofiInvestmentTotal
+        : funds
+            .filter((f) => f.liquidity_class === 'investment')
+            .reduce((s, f) => s + (f.market_value > 0 ? f.market_value : summarizeReserve(f, txns).balance), 0),
+    [funds, txns, sofiInvestmentTotal],
   );
 
   const vacationReserve = useMemo(

@@ -646,6 +646,18 @@ const Budgets = () => {
     return { businessOffsets: offsets, bizActualsFromOffsets: bizActuals };
   }, [categories, categoryGroups, budgets, month, spentByCategory, splitActualCategoryIds]);
 
+  // Business-side view of the same splits: business category id => share charged to
+  // the business and the personal counterpart it is split from.
+  const bizShareByCategoryId = useMemo(() => {
+    const m = new Map<string, { pct: number; amount: number; personalName: string }>();
+    for (const [personalCatId, off] of businessOffsets.entries()) {
+      if (!off.bizCategoryId) continue;
+      const personalName = (categories as any[] | undefined)?.find((c: any) => c.id === personalCatId)?.name || 'personal';
+      m.set(off.bizCategoryId, { pct: off.pct, amount: off.bizAmount, personalName });
+    }
+    return m;
+  }, [businessOffsets, categories]);
+
   // Categories whose NAME encodes a personal/business split (e.g. "Utilities — Personal 69%").
   // Transactions land entirely on one side, so scale that side's actual by its own percentage
   // and mirror the remainder onto the counterpart category when it has no direct activity.
@@ -733,6 +745,15 @@ const Budgets = () => {
   // For "all" mode: split budgets by entity
   const personalBudgetItems = useMemo(() => budgetItems.filter(b => personalCategoryIds.has(b.category_id)), [budgetItems, personalCategoryIds]);
   const businessBudgetItems = useMemo(() => budgetItems.filter(b => businessCategoryIds.has(b.category_id)), [budgetItems, businessCategoryIds]);
+
+  // Total planned business spending for the month — the denominator for each
+  // business category's share of the business budget.
+  const businessPlannedTotal = useMemo(() => {
+    const grouped = groupBudgetsByExpenseType(businessBudgetItems);
+    return (Object.entries(grouped) as [ExpenseType, BudgetRow[]][])
+      .filter(([type]) => type !== 'income')
+      .reduce((sum, [, items]) => sum + items.reduce((s, b) => s + Math.max(0, b.planned_amount), 0), 0);
+  }, [businessBudgetItems, groupBudgetsByExpenseType]);
   const personalGroupedBudgets = useMemo(() => groupBudgetsByExpenseType(personalBudgetItems), [groupBudgetsByExpenseType, personalBudgetItems]);
   const businessGroupedBudgets = useMemo(() => groupBudgetsByExpenseType(businessBudgetItems), [groupBudgetsByExpenseType, businessBudgetItems]);
 
@@ -1123,6 +1144,38 @@ const Budgets = () => {
       </Tooltip>
     ) : null;
 
+    // Business-side badges: what percentage of the shared cost is charged to the
+    // business, and what share of the whole business budget this line represents.
+    const bizShare = bizShareByCategoryId.get(b.category_id);
+    const isBizRow = businessCategoryIds.has(b.category_id);
+    const bizSplitBadge = isBizRow && bizShare ? (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-sky-500/10 text-sky-600 dark:text-sky-400 font-medium shrink-0 cursor-default whitespace-nowrap">
+            {bizShare.pct}% Business
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{formatCurrency(bizShare.amount)}/mo charged to the business ({100 - bizShare.pct}% stays on personal {bizShare.personalName})</p>
+        </TooltipContent>
+      </Tooltip>
+    ) : null;
+    const bizBudgetPct = isBizRow && !isIncome && businessPlannedTotal > 0 && b.planned_amount > 0
+      ? (b.planned_amount / businessPlannedTotal) * 100
+      : null;
+    const bizSharePctBadge = bizBudgetPct != null ? (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground font-medium shrink-0 cursor-default whitespace-nowrap">
+            {bizBudgetPct.toFixed(1)}% of budget
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{formatCurrency(b.planned_amount)} of the {formatCurrency(businessPlannedTotal)} business budget</p>
+        </TooltipContent>
+      </Tooltip>
+    ) : null;
+
     return (
       <div key={b.id} className={cn("group py-2.5 px-3 hover:bg-muted/30 rounded-lg transition-colors", selectedBudgetIds.has(b.id) && "bg-primary/5")}>
         {/* Mobile: stacked layout */}
@@ -1131,6 +1184,8 @@ const Budgets = () => {
           <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: b.categories?.color || 'hsl(var(--primary))' }} />
           <span className="flex-1 text-sm font-medium truncate">{b.categories?.name || 'Unknown'}</span>
           {offsetBadge}
+          {bizSplitBadge}
+          {bizSharePctBadge}
           {b.rollover && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium shrink-0">↻</span>}
           {b.planned_amount === 0 && (
             <Tooltip>
@@ -1180,6 +1235,8 @@ const Budgets = () => {
           <div className="flex-1 min-w-0 flex items-center gap-1.5">
             <span className="text-sm font-medium truncate">{b.categories?.name || 'Unknown'}</span>
             {offsetBadge}
+            {bizSplitBadge}
+            {bizSharePctBadge}
             {b.rollover && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium shrink-0">↻</span>}
             {rolloverAmt > 0 && <span className="text-[10px] text-emerald-600 dark:text-emerald-400 shrink-0">+{formatCurrency(rolloverAmt)}</span>}
           </div>

@@ -10,12 +10,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle, Info, ShieldCheck, Minus, Plus, ArrowRightLeft, Check, Clock, Circle } from 'lucide-react';
 import { ReserveTxnDialog } from './ReserveTxnDialog';
-import { useReserves } from '@/hooks/use-reserves';
+import { useReserves, useLinkableAccounts } from '@/hooks/use-reserves';
+import { AccountLinkRow } from './AccountLinkRow';
 import {
   summarizeReserve, fundingPriorities, excessSplit, STATUS_LABEL, DIRECTION_LABEL,
-  LIQUIDITY_LABEL, LIQUIDITY_CLASSES,
+  LIQUIDITY_LABEL, LIQUIDITY_CLASSES, fundLink,
   type GuardrailContext,
 } from '@/lib/reserves/emergencyFund';
+
 
 const money = (n: number) =>
   n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
@@ -44,15 +46,22 @@ export function EmergencyFundCard({
   freedMonthly = 0,
 }: Props) {
   const { emergency, txns, updateFund, removeTxn, isLoading } = useReserves();
+  const { accounts } = useLinkableAccounts();
   const [editing, setEditing] = useState(false);
   const [contrib, setContrib] = useState('');
   const [essential, setEssential] = useState('');
   const [excess, setExcess] = useState('500');
 
-  const summary = useMemo(
-    () => (emergency ? summarizeReserve(emergency, txns, guardrailContext) : null),
-    [emergency, txns, guardrailContext],
+  const link = useMemo(
+    () => (emergency ? fundLink(emergency, accounts) : null),
+    [emergency, accounts],
   );
+
+  const summary = useMemo(
+    () => (emergency ? summarizeReserve(emergency, txns, { ...guardrailContext, link }) : null),
+    [emergency, txns, guardrailContext, link],
+  );
+
 
   const priorities = useMemo(
     () => (summary ? fundingPriorities(summary, { vacationDebtBalance, freedMonthly }) : []),
@@ -131,7 +140,12 @@ export function EmergencyFundCard({
               <p className="text-3xl font-bold tabular-nums">{money2(s.balance)}</p>
               <p className="text-xs text-muted-foreground">
                 {Math.round(s.pctFunded * 100)}% of the {money(emergency.primary_target)} primary goal
+                {' · '}
+                {s.link && !s.link.stale
+                  ? `Live balance from ${s.link.institution} ${s.link.name}`
+                  : 'Tracked from logged movements'}
               </p>
+
             </div>
             <div className="flex gap-2">
               <ReserveTxnDialog
@@ -184,7 +198,15 @@ export function EmergencyFundCard({
             sub={s.belowGoal > 0 ? `${money2(s.belowGoal)} below the ${money(emergency.primary_target)} goal` : 'At or above goal'} />
         </div>
 
+        <AccountLinkRow
+          accounts={accounts.filter((a) => ['checking', 'savings', 'other'].includes(a.account_type))}
+          link={s.link}
+          hint="Link the SoFi cash account holding the emergency fund — the balance then follows that account."
+          onLink={(accountId) => updateFund.mutate({ id: emergency.id, account_id: accountId })}
+        />
+
         <div className="rounded-lg border border-border/60 p-3">
+
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <p className="text-sm font-medium">Liquidity classification</p>

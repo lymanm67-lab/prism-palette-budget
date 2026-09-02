@@ -169,6 +169,11 @@ export interface ReserveSummary {
   belowGoal: number;
   lastWithdrawal: ReserveTxn | null;
   guardrails: Guardrail[];
+  /** Balance derived from logged reserve movements only. */
+  trackedBalance: number;
+  /** Linked institution account, when the fund follows a real account. */
+  link: LinkedAccountInfo | null;
+
 }
 
 const r2 = (n: number) => Math.round(n * 100) / 100;
@@ -197,7 +202,70 @@ export function nonEmergencyFlag(text: string): string | null {
   return null;
 }
 
+/** A bank/brokerage account that a reserve fund follows. */
+export interface LinkedAccountInfo {
+  id: string;
+  name: string;
+  institution: string;
+  accountType: string;
+  balance: number;
+  syncedAt: string | null;
+  providerType: string | null;
+  /** True when an automated feed has not refreshed for more than 48 hours. */
+  stale: boolean;
+}
+
+export interface LinkableAccount {
+  id: string;
+  name: string;
+  institution: string | null;
+  account_type: string;
+  balance: number;
+  last_synced_at: string | null;
+  provider_type: string | null;
+}
+
+const STALE_MS = 48 * 60 * 60 * 1000;
+
+/** Builds link info for a fund, or null when no account is linked. */
+export function fundLink(
+  fund: Pick<ReserveFund, 'account_id'>,
+  accounts: LinkableAccount[],
+): LinkedAccountInfo | null {
+  if (!fund.account_id) return null;
+  const a = accounts.find((x) => x.id === fund.account_id);
+  if (!a) return null;
+  const automated = !!a.provider_type && a.provider_type !== 'manual';
+  const synced = a.last_synced_at ? new Date(a.last_synced_at).getTime() : null;
+  return {
+    id: a.id,
+    name: a.name,
+    institution: a.institution || '—',
+    accountType: a.account_type,
+    balance: Number(a.balance || 0),
+    syncedAt: a.last_synced_at,
+    providerType: a.provider_type,
+    stale: automated && synced != null && Date.now() - synced > STALE_MS,
+  };
+}
+
+/** Accounts at an institution matching a reserve fund's institution label. */
+export function matchInstitutionAccounts(
+  label: string | null,
+  accounts: LinkableAccount[],
+  accountTypes: string[],
+): LinkableAccount[] {
+  const token = (label || '').trim().split(/\s+/)[0].toLowerCase();
+  if (!token) return [];
+  return accounts.filter(
+    (a) =>
+      accountTypes.includes(a.account_type) &&
+      `${a.institution || ''} ${a.name}`.toLowerCase().includes(token),
+  );
+}
+
 export interface GuardrailContext {
+
   /** Ending monthly Buffer balance — used to detect double-counted money. */
   bufferBalance?: number;
   /** Vacation / travel reserve balance — must stay distinct from emergency cash. */
@@ -206,6 +274,12 @@ export interface GuardrailContext {
   vehicleBalance?: number;
   /** Funds classified as investments, so misclassification can be flagged. */
   investmentFunds?: { name: string; liquidity_class: LiquidityClass; market_value: number }[];
+  /**
+   * Live balance of the linked institution account. When present it replaces the
+   * manually tracked balance so the card follows the real account.
+   */
+  link?: LinkedAccountInfo | null;
+
 }
 
 export function summarizeReserve(
@@ -233,7 +307,11 @@ export function summarizeReserve(
   const losses = sum('loss');
   const ytdContributions = r2(sum('contribution', true) + sum('buffer_transfer', true) + sum('interest', true));
   const ytdWithdrawals = sum('withdrawal', true);
-  const balance = reserveBalance(fund, txns);
+  const trackedBalance = reserveBalance(fund, txns);
+  const link = ctx.link ?? null;
+  const linkUsable = !!link && link.balance != null && !link.stale;
+  const balance = linkUsable ? r2(Number(link!.balance)) : trackedBalance;
+
 
   const stage1 = Number(fund.stage1_target || 0);
   const primary = Number(fund.primary_target || 0);
@@ -339,6 +417,15 @@ export function summarizeReserve(
     });
   }
 
+  if (link?.stale) {
+    guardrails.push({
+      id: 'link-stale',
+      severity: 'warning',
+      message: `${link.institution} ${link.name} has not synced since ${link.syncedAt?.slice(0, 10)}. Showing the last tracked balance until the feed updates.`,
+    });
+  }
+
+
   return {
     fund,
     balance,
@@ -363,6 +450,9 @@ export function summarizeReserve(
     belowGoal: remainingToPrimary,
     lastWithdrawal,
     guardrails,
+    trackedBalance,
+    link,
+
   };
 }
 
@@ -476,5 +566,57 @@ export function excessSplit(
     investmentsPct: invPct,
     otherPct,
     blocked,
+  };
+}
+
+export interface RedirectPlan {
+  enabled: boolean;
+  blocked: boolean;
+  blockedReason: string | null;
+  floor: number;
+  /** Cash sitting above the protected emergency floor. */
+  surplusAboveFloor: number;
+  monthlyExcess: number;
+  /** Total that may be redirected this month. */
+  available: number;
+  investmentsPct: number;
+  otherPct: number;
+  toInvestments: number;
+  toOtherGoals: number;
+}
+
+/**
+ * Floor-first redirect waterfall. The emergency floor is protected before any
+ * dollar is proposed, and nothing moves until the household approves it.
+ */
+export function redirectPlan(em: ReserveSummary, monthlyExcess: number): RedirectPlan {
+  const f = em.fund;
+  const invPct = Math.max(0, Math.min(100, Number(f.redirect_investments_pct || 0)));
+  const otherPct = Math.max(0, 100 - invPct);
+  const floor = Number(f.primary_target || 0);
+  const surplusAboveFloor = r2(Math.max(0, em.balance - floor));
+  const excess = r2(Math.max(0, Number(monthlyExcess) || 0));
+
+  let blockedReason: string | null = null;
+  if (em.remainingToPrimary > 0) {
+    blockedReason = `The ${money0(floor)} emergency cash floor is not protected yet — ${money0(em.remainingToPrimary)} to go.`;
+  } else if (f.contributions_paused) {
+    blockedReason = 'Contributions are paused, so no redirect is proposed this month.';
+  }
+
+  const available = blockedReason ? 0 : r2(surplusAboveFloor + excess);
+
+  return {
+    enabled: !!f.redirect_excess_enabled,
+    blocked: !!blockedReason,
+    blockedReason,
+    floor,
+    surplusAboveFloor,
+    monthlyExcess: excess,
+    available,
+    investmentsPct: invPct,
+    otherPct,
+    toInvestments: r2((available * invPct) / 100),
+    toOtherGoals: r2((available * otherPct) / 100),
   };
 }
