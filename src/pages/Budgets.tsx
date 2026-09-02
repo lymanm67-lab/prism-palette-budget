@@ -1050,9 +1050,10 @@ const Budgets = () => {
     const rawActual = actual;
     const rolloverAmt = rolloverAmounts.get(b.category_id) || 0;
     const effectiveBudget = b.planned_amount + rolloverAmt;
+    const isCreditLine = b.planned_amount < 0; // reimbursement / credit lines are not overspend
     const remaining = effectiveBudget - actual;
     const pct = effectiveBudget > 0 ? Math.min((actual / effectiveBudget) * 100, 100) : 0;
-    const overBudget = remaining < -0.005;
+    const overBudget = !isCreditLine && remaining < -0.005;
 
     const offsetBadge = bizOffset ? (
       <Tooltip>
