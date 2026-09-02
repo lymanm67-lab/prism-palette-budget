@@ -198,7 +198,15 @@ export function EmergencyFundCard({
             sub={s.belowGoal > 0 ? `${money2(s.belowGoal)} below the ${money(emergency.primary_target)} goal` : 'At or above goal'} />
         </div>
 
+        <AccountLinkRow
+          accounts={accounts.filter((a) => ['checking', 'savings', 'other'].includes(a.account_type))}
+          link={s.link}
+          hint="Link the SoFi cash account holding the emergency fund — the balance then follows that account."
+          onLink={(accountId) => updateFund.mutate({ id: emergency.id, account_id: accountId })}
+        />
+
         <div className="rounded-lg border border-border/60 p-3">
+
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <p className="text-sm font-medium">Liquidity classification</p>
