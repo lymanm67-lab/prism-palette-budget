@@ -423,8 +423,9 @@ export function runStressTest(
 
       if (bal < 0) bal = 0;
       if (hsa < 0) hsa = 0;
+      if (cash < 0) cash = 0;
 
-      const total = bal + hsa;
+      const total = bal + hsa + cash;
       if (total < lowest) lowest = total;
       if (total <= 0 && depletionAge == null) depletionAge = age;
       if (goals.legacyTarget != null && age === goals.legacyTargetAge && total >= goals.legacyTarget) {
@@ -433,7 +434,8 @@ export function runStressTest(
       balancesByYear[y].push(total);
     }
 
-    const ending = bal + hsa;
+    const ending = bal + hsa + cash;
+
     endings.push(ending);
     lowests.push(lowest);
     if (depletionAge != null) {
