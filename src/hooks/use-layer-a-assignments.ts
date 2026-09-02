@@ -15,10 +15,12 @@ export interface LayerAAssignment {
   business_outflow: number | null;
   /** Manual override for business revenue/reimbursement that landed in it. */
   business_inflow: number | null;
+  /** When on, the app fills the balancing figures itself every month. */
+  auto_balance: boolean;
   notes: string | null;
 }
 
-export type LayerAField = keyof Omit<LayerAAssignment, 'notes'>;
+export type LayerAField = keyof Omit<LayerAAssignment, 'notes' | 'auto_balance'>;
 
 /**
  * Per-month, hand-entered Layer A cash assignments. Nothing is invented —
@@ -39,7 +41,21 @@ export function useLayerAAssignments(month: string) {
         .eq('month', month)
         .maybeSingle();
       if (error) throw error;
-      return (data || null) as (LayerAAssignment & { id: string }) | null;
+      if (data) return data as LayerAAssignment & { id: string };
+
+      // No row yet: inherit the auto-balance preference from the latest month
+      // that has one, so the setting carries forward without re-picking it.
+      const { data: prior } = await sb
+        .from('layer_a_assignments')
+        .select('auto_balance,month')
+        .eq('household_id', household!.id)
+        .lt('month', month)
+        .order('month', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      return (prior ? ({ auto_balance: !!prior.auto_balance } as any) : null) as
+        | (LayerAAssignment & { id: string })
+        | null;
     },
   });
 
@@ -66,6 +82,7 @@ export function useLayerAAssignments(month: string) {
       one_time_expenses: num(row?.one_time_expenses),
       business_outflow: num(row?.business_outflow),
       business_inflow: num(row?.business_inflow),
+      auto_balance: !!row?.auto_balance,
       notes: row?.notes ?? null,
     } as LayerAAssignment,
     isLoading: query.isLoading,
