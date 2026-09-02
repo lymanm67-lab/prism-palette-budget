@@ -218,6 +218,11 @@ export default function InvestmentPlanning() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" asChild>
+            <a href="/planning/stress-test">
+              <Activity className="h-4 w-4 mr-1" /> Stress test this plan
+            </a>
+          </Button>
           <Button variant="outline" size="sm" onClick={handleLoadSample} disabled={loadingSample || !household}>
             <Wand2 className="h-4 w-4 mr-1" /> {loadingSample ? 'Loading…' : 'Load Montgomery sample'}
           </Button>
