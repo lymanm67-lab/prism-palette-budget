@@ -18,6 +18,8 @@ const K = {
   reviews: 'inv-reviews',
   watchlist: 'inv-watchlist-items',
   scenarios: 'inv-scenarios',
+  lots: 'inv-position-lots',
+  dividends: 'inv-dividends',
 };
 
 export interface InvSettings {
