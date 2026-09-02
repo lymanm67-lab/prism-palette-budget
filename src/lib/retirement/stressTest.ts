@@ -361,7 +361,9 @@ export function runStressTest(
     if (legacyMet) legacyHits++;
     if (incomeMet) incomeFloorHits++;
     if (cutNeeded) spendingCuts++;
-    if (ending >= a.portfolioBalance + a.hsaBalance) principalPreserved++;
+    const startingPrincipal =
+      a.portfolioBalance + a.hsaBalance + (a.includeSpouse ? a.spouseBalance : 0);
+    if (ending >= startingPrincipal) principalPreserved++;
     if (ltcCovered) ltcFunded++;
 
     // Success = every selected goal met
@@ -370,7 +372,7 @@ export function runStressTest(
     if (goals.minimumFloor != null && lowest < goals.minimumFloor) ok = false;
     if (goals.legacyTarget != null && !legacyMet) ok = false;
     if (goals.minimumAnnualIncome != null && !incomeMet) ok = false;
-    if (goals.preservePrincipal && ending < a.portfolioBalance + a.hsaBalance) ok = false;
+    if (goals.preservePrincipal && ending < startingPrincipal) ok = false;
     if (goals.fundLtc && !ltcCovered) ok = false;
     if (ok) successes++;
   }
@@ -392,7 +394,12 @@ export function runStressTest(
   });
 
   const essentials = essentialAtRet || a.essentialSpend + a.healthcareSpend;
-  const guaranteed = guaranteedAtRet || a.socialSecurityAnnual + a.pensionAnnual + a.otherGuaranteedAnnual;
+  const guaranteed =
+    guaranteedAtRet ||
+    a.socialSecurityAnnual +
+      (a.includeSpouse ? a.spouseSocialSecurityAnnual : 0) +
+      a.pensionAnnual +
+      a.otherGuaranteedAnnual;
 
   return {
     runs,
