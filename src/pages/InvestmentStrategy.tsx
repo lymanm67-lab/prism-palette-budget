@@ -13,6 +13,8 @@ import { AiRecommendationsPanel } from '@/components/investing/AiRecommendations
 import { WatchlistPanel } from '@/components/investing/WatchlistPanel';
 import { ScenarioPanel } from '@/components/investing/ScenarioPanel';
 import { ReviewsPanel } from '@/components/investing/ReviewsPanel';
+import { GainLossPanel } from '@/components/investing/GainLossPanel';
+import { DividendTracker } from '@/components/investing/DividendTracker';
 import { useInvestingMetrics } from '@/hooks/use-investing-metrics';
 import { ROLE_META, ROLES, money, pct } from '@/lib/investing/roles';
 
