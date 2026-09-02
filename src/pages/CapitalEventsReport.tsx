@@ -95,12 +95,14 @@ export default function CapitalEventsReport() {
       </div>
 
       <PageOverview
-        pageKey="capital-events-report"
-        title="How to read this report"
-        bullets={[
-          'Every capital event shows its gross proceeds, cost basis and estimated gain or loss.',
-          'The reserve cash flow graph tracks money added versus business expenses paid from the reserve.',
-          'Reserve spending never reduces your monthly personal budget — it draws from the reserve balance.',
+        title="Capital Events Report"
+        description="One-time asset conversions and the Business Capital Reserve they fund."
+        icon={Coins}
+        ttsScript="This report shows every capital event with its gross proceeds, cost basis and estimated gain, plus a reserve cash flow graph tracking money added versus business expenses paid from the reserve."
+        features={[
+          'Every capital event shows gross proceeds, cost basis and estimated gain or loss',
+          'Reserve cash flow graph tracks funding in versus business expenses paid out',
+          'Reserve spending never reduces your monthly personal budget',
         ]}
       />
 
