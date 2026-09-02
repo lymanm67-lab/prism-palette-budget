@@ -15,9 +15,12 @@ import { SensitivityTable } from '@/components/stress-test/SensitivityTable';
 import { SuccessProbabilityCard } from '@/components/stress-test/SuccessProbabilityCard';
 import { WorstCasePanel } from '@/components/stress-test/WorstCasePanel';
 import { DisclaimerBlock } from '@/components/investment/DisclaimerBlock';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import {
   DEFAULT_GOALS,
+  applyPerspective,
   guardrailAdvice,
+  type StressPerspective,
   type StressAssumptions,
   type StressGoals,
 } from '@/lib/retirement/stressTest';
@@ -40,7 +43,7 @@ const SLOTS = [
 ];
 
 export default function RetirementStressTest() {
-  const { derived, isLoading, emergencyCash } = useStressAssumptionsSource();
+  const { derived, parts, isLoading, emergencyCash } = useStressAssumptionsSource();
   const { run, output, isRunning, error } = useStressRunner();
   const { scenarios, save, remove } = useStressScenarios();
   const { snapshots, add: addSnapshot } = useStressSnapshots();
@@ -49,8 +52,12 @@ export default function RetirementStressTest() {
   const [goals, setGoals] = useState<StressGoals>(DEFAULT_GOALS);
   const [runs, setRuns] = useState(10_000);
   const [hasRun, setHasRun] = useState(false);
+  const [view, setView] = useState<StressPerspective>('household');
 
-  const assumptions = useMemo<StressAssumptions>(() => ({ ...derived, ...overrides }), [derived, overrides]);
+  const assumptions = useMemo<StressAssumptions>(
+    () => applyPerspective({ ...derived, ...overrides }, view, parts),
+    [derived, overrides, view, parts],
+  );
 
   useEffect(() => {
     document.title = 'Retirement Stress Test | PrismMoney';
@@ -85,6 +92,19 @@ export default function RetirementStressTest() {
       {/* Run controls */}
       <Card className="border-border/60 bg-card/60 backdrop-blur">
         <CardContent className="flex flex-wrap items-end gap-4 pt-6">
+          <div className="space-y-1">
+            <p className="text-xs text-muted-foreground">Whose plan</p>
+            <ToggleGroup
+              type="single"
+              value={view}
+              onValueChange={(v) => v && setView(v as StressPerspective)}
+              className="justify-start"
+            >
+              <ToggleGroupItem value="household" className="px-3 text-xs">Household</ToggleGroupItem>
+              <ToggleGroupItem value="self" className="px-3 text-xs">Lyman</ToggleGroupItem>
+              <ToggleGroupItem value="spouse" className="px-3 text-xs">Kateri</ToggleGroupItem>
+            </ToggleGroup>
+          </div>
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground">Simulations</p>
             <Select value={String(runs)} onValueChange={(v) => setRuns(Number(v))}>

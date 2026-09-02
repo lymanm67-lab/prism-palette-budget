@@ -95,11 +95,29 @@ export function useStressAssumptionsSource() {
   const spouse = useInvestmentSpouse(plan.data?.id);
   const reserves = useReserves();
 
+  const pensionParts = useMemo(() => {
+    const rows = (pensions.data ?? []) as any[];
+    const amt = (x: any) => Number(x.monthly_amount || x.monthly_benefit || 0) * 12;
+    const total = rows.reduce((s, x) => s + amt(x), 0);
+    const spouseTotal = rows.filter((x) => x.owner === 'spouse').reduce((s, x) => s + amt(x), 0);
+    return {
+      self: Math.max(0, total - spouseTotal),
+      spouse: spouseTotal,
+      spouseStartAge: Number(rows.find((x) => x.owner === 'spouse')?.start_age ?? 62),
+    };
+  }, [pensions.data]);
+
   const derived = useMemo<StressAssumptions>(() => {
     const p = plan.data;
-    const pensionAnnual = (pensions.data ?? []).reduce(
-      (s: number, x: any) => s + Number(x.monthly_benefit || 0) * 12,
-      0,
+    const pensionRows = (pensions.data ?? []) as any[];
+    const pensionAmount = (x: any) => Number(x.monthly_amount || x.monthly_benefit || 0) * 12;
+    const pensionAnnual = pensionRows.reduce((s: number, x: any) => s + pensionAmount(x), 0);
+    const spousePensionAnnual = pensionRows
+      .filter((x) => x.owner === 'spouse')
+      .reduce((s: number, x: any) => s + pensionAmount(x), 0);
+    const selfPensionAnnual = Math.max(0, pensionAnnual - spousePensionAnnual);
+    const spousePensionStartAge = Number(
+      pensionRows.find((x) => x.owner === 'spouse')?.start_age ?? 62,
     );
     const sp = spouse.data as any;
     const spouseFields = {
@@ -144,8 +162,18 @@ export function useStressAssumptionsSource() {
     };
   }, [plan.data, pensions.data, spouse.data]);
 
+  const parts = useMemo(
+    () => ({
+      selfPensionAnnual: pensionParts.self,
+      spousePensionAnnual: pensionParts.spouse,
+      spousePensionStartAge: pensionParts.spouseStartAge,
+    }),
+    [pensionParts],
+  );
+
   return {
     derived,
+    parts,
     isLoading: plan.isLoading || reserves.isLoading,
     planId: plan.data?.id ?? null,
     emergencyFund: reserves.emergency,
