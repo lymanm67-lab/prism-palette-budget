@@ -159,17 +159,43 @@ export function EmergencyFundCard({
           <Stat label="Optional ceiling" value={money(emergency.ceiling_target)}
             sub={s.remainingToCeiling > 0 ? `${money2(s.remainingToCeiling)} above goal` : 'Reached'} />
           <Stat label="Percentage funded" value={`${Math.round(s.pctFunded * 100)}%`} sub="Against the primary goal" />
-          <Stat label="Monthly contribution" value={money2(s.monthlyContribution)}
+          <Stat label="Monthly transfer to SoFi" value={money2(s.monthlyContribution)}
             sub={s.monthlyContribution === 0 ? 'Paused — goal met' : 'Automatic'} />
+          <Stat label="YTD contributions" value={money2(s.ytdContributions)}
+            sub={s.bufferTransferred > 0 ? `Includes ${money2(s.bufferTransferred)} of buffer sweeps` : 'Contributions, sweeps & interest'} />
+          <Stat label="YTD withdrawals" value={money2(s.ytdWithdrawals)}
+            sub={s.withdrawn > 0 ? `${money2(s.withdrawn)} withdrawn all-time` : 'No withdrawals'} />
           <Stat label="Estimated completion"
             value={s.goalDate ? new Date(s.goalDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : '—'}
             sub={s.monthsToGoal == null ? 'Set a contribution to project' : s.monthsToGoal === 0 ? 'Goal reached' : `${s.monthsToGoal} months`} />
           <Stat label="Months of essentials covered"
             value={s.monthsCovered == null ? '—' : `${s.monthsCovered.toFixed(1)} mo`}
             sub={emergency.essential_monthly_expenses > 0 ? `At ${money(emergency.essential_monthly_expenses)}/mo essentials` : 'Set essential expenses'} />
-          <Stat label="Replenishment needed"
+          <Stat label="Amount required to replenish"
             value={money2(s.replenishmentNeeded)}
-            sub={s.withdrawn > 0 ? `${money2(s.withdrawn)} withdrawn to date` : 'No withdrawals'} />
+            sub={s.belowGoal > 0 ? `${money2(s.belowGoal)} below the ${money(emergency.primary_target)} goal` : 'At or above goal'} />
+        </div>
+
+        <div className="rounded-lg border border-border/60 p-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <p className="text-sm font-medium">Liquidity classification</p>
+              <p className="text-xs text-muted-foreground">
+                Only balances classified Emergency Cash count toward the {money(emergency.primary_target)} target.
+              </p>
+            </div>
+            <Select
+              value={emergency.liquidity_class}
+              onValueChange={(v) => updateFund.mutate({ id: emergency.id, liquidity_class: v })}
+            >
+              <SelectTrigger className="w-[200px]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {LIQUIDITY_CLASSES.map((c) => (
+                  <SelectItem key={c} value={c}>{LIQUIDITY_LABEL[c]}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {s.guardrails.map((g) => (
