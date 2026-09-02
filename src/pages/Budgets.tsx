@@ -754,6 +754,15 @@ const Budgets = () => {
       .filter(([type]) => type !== 'income')
       .reduce((sum, [, items]) => sum + items.reduce((s, b) => s + Math.max(0, b.planned_amount), 0), 0);
   }, [businessBudgetItems, groupBudgetsByExpenseType]);
+
+  // Total planned personal spending for the month — the denominator for each
+  // personal category's share of the personal budget.
+  const personalPlannedTotal = useMemo(() => {
+    const grouped = groupBudgetsByExpenseType(personalBudgetItems);
+    return (Object.entries(grouped) as [ExpenseType, BudgetRow[]][])
+      .filter(([type]) => type !== 'income')
+      .reduce((sum, [, items]) => sum + items.reduce((s, b) => s + Math.max(0, b.planned_amount), 0), 0);
+  }, [personalBudgetItems, groupBudgetsByExpenseType]);
   const personalGroupedBudgets = useMemo(() => groupBudgetsByExpenseType(personalBudgetItems), [groupBudgetsByExpenseType, personalBudgetItems]);
   const businessGroupedBudgets = useMemo(() => groupBudgetsByExpenseType(businessBudgetItems), [groupBudgetsByExpenseType, businessBudgetItems]);
 
