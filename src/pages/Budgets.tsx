@@ -485,6 +485,14 @@ const Budgets = () => {
     return { expChange, expPct, incChange, incPct, currExpenses, currIncome, topIncreases, topDecreases };
   }, [spentByCategory, receivedByCategory, prevMonthSpending, categories]);
 
+  // Categories flagged with money_purpose = 'business' are business-side spending even when
+  // they sit in a personal group (e.g. Owner Contribution to Business) — keep them out of
+  // personal LIVE essentials so the 45/10/25/20 bands stay accurate.
+  const businessPurposeCategoryIds = useMemo(() => {
+    if (!categories) return new Set<string>();
+    return new Set((categories as any[]).filter(c => c.money_purpose === 'business').map(c => c.id));
+  }, [categories]);
+
   // Filter categories by budget type AND selected business
   const filteredCategoryIds = useMemo(() => {
     if (!categories || !categoryGroups) return new Set<string>();
@@ -500,21 +508,31 @@ const Budgets = () => {
         })
         .map((g: any) => g.id)
     );
-    return new Set(categories.filter(c => groupIds.has(c.group_id)).map(c => c.id));
-  }, [categories, categoryGroups, budgetType, selectedBusiness]);
+    return new Set(
+      categories
+        .filter(c => {
+          const inGroup = groupIds.has(c.group_id);
+          if (budgetType === 'personal') return inGroup && !businessPurposeCategoryIds.has(c.id);
+          if (budgetType === 'business') return inGroup || businessPurposeCategoryIds.has(c.id);
+          return inGroup;
+        })
+        .map(c => c.id)
+    );
+  }, [categories, categoryGroups, budgetType, selectedBusiness, businessPurposeCategoryIds]);
 
   // For "all" mode, separate personal vs business category IDs
   const personalCategoryIds = useMemo(() => {
     if (!categories || !categoryGroups) return new Set<string>();
     const groupIds = new Set((categoryGroups as any[]).filter((g: any) => (g.budget_type || 'personal') === 'personal').map((g: any) => g.id));
-    return new Set(categories.filter(c => groupIds.has(c.group_id)).map(c => c.id));
-  }, [categories, categoryGroups]);
+    return new Set(categories.filter(c => groupIds.has(c.group_id) && !businessPurposeCategoryIds.has(c.id)).map(c => c.id));
+  }, [categories, categoryGroups, businessPurposeCategoryIds]);
 
   const businessCategoryIds = useMemo(() => {
     if (!categories || !categoryGroups) return new Set<string>();
     const groupIds = new Set((categoryGroups as any[]).filter((g: any) => (g.budget_type || 'personal') === 'business').map((g: any) => g.id));
-    return new Set(categories.filter(c => groupIds.has(c.group_id)).map(c => c.id));
-  }, [categories, categoryGroups]);
+    return new Set(categories.filter(c => groupIds.has(c.group_id) || businessPurposeCategoryIds.has(c.id)).map(c => c.id));
+  }, [categories, categoryGroups, businessPurposeCategoryIds]);
+
 
   // For payroll_deduction categories, treat budgeted amount as actual (auto-deducted from paycheck)
   const payrollCatIdsSet = useMemo(() => {
@@ -628,6 +646,34 @@ const Budgets = () => {
     return { businessOffsets: offsets, bizActualsFromOffsets: bizActuals };
   }, [categories, categoryGroups, budgets, month, spentByCategory, splitActualCategoryIds]);
 
+  // Categories whose NAME encodes a personal/business split (e.g. "Utilities — Personal 69%").
+  // Transactions land entirely on one side, so scale that side's actual by its own percentage
+  // and mirror the remainder onto the counterpart category when it has no direct activity.
+  const nameSplitPlan = useMemo(() => {
+    const scale = new Map<string, number>();          // catId => fraction of raw actual it keeps
+    const mirror = new Map<string, number>();         // counterpart catId => $ to add
+    if (!categories) return { scale, mirror };
+    const re = /[—–-]\s*(Personal|Business)\s*(\d{1,3})\s*%/i;
+    const parse = (name: string) => {
+      const m = name.match(re);
+      return m ? { side: m[1].toLowerCase(), pct: Number(m[2]), base: name.slice(0, m.index).trim() } : null;
+    };
+    const parsed = (categories as any[])
+      .map(c => ({ c, p: parse(c.name || '') }))
+      .filter(x => x.p) as { c: any; p: { side: string; pct: number; base: string } }[];
+
+    for (const { c, p } of parsed) {
+      const raw = spentByCategory[c.id] || 0;
+      if (raw <= 0) continue;
+      scale.set(c.id, p.pct / 100);
+      const counterpart = parsed.find(o => o.c.id !== c.id && o.p.base === p.base && o.p.side !== p.side);
+      if (counterpart && (spentByCategory[counterpart.c.id] || 0) === 0) {
+        mirror.set(counterpart.c.id, (mirror.get(counterpart.c.id) || 0) + raw * (counterpart.p.pct / 100));
+      }
+    }
+    return { scale, mirror };
+  }, [categories, spentByCategory]);
+
   // Build effective per-category spent that accounts for offsets so totals and rows agree
   const effectiveSpentByCategory = useMemo(() => {
     const m: Record<string, number> = { ...spentByCategory };
@@ -641,8 +687,17 @@ const Budgets = () => {
     for (const [bizCatId, addAmt] of bizActualsFromOffsets.entries()) {
       m[bizCatId] = (m[bizCatId] || 0) + addAmt;
     }
+    // Name-encoded percentage splits
+    for (const [catId, frac] of nameSplitPlan.scale.entries()) {
+      if (splitActualCategoryIds.has(catId)) continue;
+      m[catId] = (m[catId] || 0) * frac;
+    }
+    for (const [catId, addAmt] of nameSplitPlan.mirror.entries()) {
+      m[catId] = (m[catId] || 0) + addAmt;
+    }
     return m;
-  }, [spentByCategory, businessOffsets, bizActualsFromOffsets, splitActualCategoryIds]);
+  }, [spentByCategory, businessOffsets, bizActualsFromOffsets, splitActualCategoryIds, nameSplitPlan]);
+
 
   const budgetItems: BudgetRow[] = (budgets || []).map(b => ({
     ...b,
@@ -1050,9 +1105,10 @@ const Budgets = () => {
     const rawActual = actual;
     const rolloverAmt = rolloverAmounts.get(b.category_id) || 0;
     const effectiveBudget = b.planned_amount + rolloverAmt;
+    const isCreditLine = b.planned_amount < 0; // reimbursement / credit lines are not overspend
     const remaining = effectiveBudget - actual;
     const pct = effectiveBudget > 0 ? Math.min((actual / effectiveBudget) * 100, 100) : 0;
-    const overBudget = remaining < -0.005;
+    const overBudget = !isCreditLine && remaining < -0.005;
 
     const offsetBadge = bizOffset ? (
       <Tooltip>
