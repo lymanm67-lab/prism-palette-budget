@@ -170,16 +170,40 @@ export function useSoftDeleteReserveEntry() {
   });
 }
 
-/** Ending Reserve = Beginning Reserve + Capital Added - Business Expenses Paid From Reserve */
-export function summariseReserve(entries: ReserveEntry[] | undefined) {
+/** Ending Reserve = Beginning Reserve + Capital Added - Business Expenses Paid From Reserve.
+ * When `monthPrefix` (YYYY-MM) is passed, figures are scoped to that month with a carry-in
+ * balance from all prior activity. */
+export function summariseReserve(entries: ReserveEntry[] | undefined, monthPrefix?: string) {
   const rows = entries || [];
-  const added = rows.filter(r => r.direction === 'added').reduce((s, r) => s + Number(r.amount), 0);
-  const spent = rows.filter(r => r.direction === 'spent').reduce((s, r) => s + Number(r.amount), 0);
-  const ending = added - spent;
+  const sum = (list: ReserveEntry[], dir: 'added' | 'spent') =>
+    list.filter(r => r.direction === dir).reduce((s, r) => s + Number(r.amount), 0);
+
+  if (!monthPrefix) {
+    const added = sum(rows, 'added');
+    const spent = sum(rows, 'spent');
+    const ending = added - spent;
+    return {
+      carryIn: 0,
+      added,
+      spent,
+      ending,
+      pctRemaining: added > 0 ? Math.max(0, Math.min(100, (ending / added) * 100)) : 0,
+    };
+  }
+
+  const key = monthPrefix.slice(0, 7);
+  const prior = rows.filter(r => r.entry_date.slice(0, 7) < key);
+  const inMonth = rows.filter(r => r.entry_date.slice(0, 7) === key);
+  const carryIn = sum(prior, 'added') - sum(prior, 'spent');
+  const added = sum(inMonth, 'added');
+  const spent = sum(inMonth, 'spent');
+  const ending = carryIn + added - spent;
+  const available = carryIn + added;
   return {
+    carryIn,
     added,
     spent,
     ending,
-    pctRemaining: added > 0 ? Math.max(0, Math.min(100, (ending / added) * 100)) : 0,
+    pctRemaining: available > 0 ? Math.max(0, Math.min(100, (ending / available) * 100)) : 0,
   };
 }
