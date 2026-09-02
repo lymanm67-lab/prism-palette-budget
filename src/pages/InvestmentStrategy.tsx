@@ -91,6 +91,8 @@ export default function InvestmentStrategy() {
 
         <TabsContent value="roles" className="mt-4"><RolesBoard /></TabsContent>
         <TabsContent value="targets" className="mt-4"><AllocationTargets /></TabsContent>
+        <TabsContent value="gainloss" className="mt-4"><GainLossPanel /></TabsContent>
+        <TabsContent value="income" className="mt-4"><DividendTracker /></TabsContent>
         <TabsContent value="priority" className="mt-4"><CapitalPriorityPanel /></TabsContent>
         <TabsContent value="risk" className="mt-4"><RiskPanel /></TabsContent>
         <TabsContent value="discipline" className="mt-4"><DisciplinePanel /></TabsContent>
