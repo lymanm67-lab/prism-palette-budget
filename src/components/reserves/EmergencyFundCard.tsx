@@ -46,15 +46,22 @@ export function EmergencyFundCard({
   freedMonthly = 0,
 }: Props) {
   const { emergency, txns, updateFund, removeTxn, isLoading } = useReserves();
+  const { accounts } = useLinkableAccounts();
   const [editing, setEditing] = useState(false);
   const [contrib, setContrib] = useState('');
   const [essential, setEssential] = useState('');
   const [excess, setExcess] = useState('500');
 
-  const summary = useMemo(
-    () => (emergency ? summarizeReserve(emergency, txns, guardrailContext) : null),
-    [emergency, txns, guardrailContext],
+  const link = useMemo(
+    () => (emergency ? fundLink(emergency, accounts) : null),
+    [emergency, accounts],
   );
+
+  const summary = useMemo(
+    () => (emergency ? summarizeReserve(emergency, txns, { ...guardrailContext, link }) : null),
+    [emergency, txns, guardrailContext, link],
+  );
+
 
   const priorities = useMemo(
     () => (summary ? fundingPriorities(summary, { vacationDebtBalance, freedMonthly }) : []),
