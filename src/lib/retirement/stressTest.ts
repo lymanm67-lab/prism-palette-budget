@@ -219,7 +219,7 @@ export function runStressTest(
 
   for (let r = 0; r < runs; r++) {
     const rand = mulberry32(seed + r * 7919);
-    let bal = a.portfolioBalance;
+    let bal = a.portfolioBalance + (a.includeSpouse ? a.spouseBalance : 0);
     let hsa = a.hsaBalance;
     let lowest = bal + hsa;
     let depletionAge: number | null = null;
@@ -232,6 +232,7 @@ export function runStressTest(
 
     for (let y = 1; y <= years; y++) {
       const age = a.currentAge + y;
+      const spouseAge = age + (a.spouseCurrentAge - a.currentAge);
       const t = y; // years from today, for inflating flows
       let ret = normal(rand, mean, sd);
       if (a.marketShockAge != null && age === a.marketShockAge) {
@@ -239,23 +240,47 @@ export function runStressTest(
       }
 
       const working = age <= a.retirementAge;
+      const growth = Math.pow(1 + cGrowth, t - 1);
 
+      // ---- Contributions (keep growing while either spouse still works) ----
+      let contributions = 0;
       if (working) {
-        const growth = Math.pow(1 + cGrowth, t - 1);
-        bal = bal * (1 + ret) + (a.employeeContribution + a.employerContribution) * growth;
+        contributions += (a.employeeContribution + a.employerContribution) * growth;
+        if (a.debtRedirectAnnual > 0 && (a.debtRedirectStartAge == null || age >= a.debtRedirectStartAge)) {
+          contributions += a.debtRedirectAnnual * growth;
+        }
+        contributions += a.taxRefundRedirectAnnual * Math.pow(1 + infl, t - 1);
         hsa = hsa * (1 + ret) + (a.hsaContribution + a.hsaEmployerContribution) * growth;
       } else {
+        hsa = hsa * (1 + ret);
+      }
+      if (a.includeSpouse && spouseAge <= a.spouseRetirementAge) {
+        contributions += a.spouseContribution * growth;
+      }
+
+      bal = bal * (1 + ret) + contributions;
+
+      if (!working) {
         // Guaranteed income (kept separate from portfolio withdrawals)
         const ss =
           age >= a.socialSecurityStartAge
             ? a.socialSecurityAnnual * Math.pow(1 + a.socialSecurityColaPct / 100, t)
+            : 0;
+        const spouseSs =
+          a.includeSpouse && spouseAge >= a.spouseSocialSecurityStartAge
+            ? a.spouseSocialSecurityAnnual * Math.pow(1 + a.socialSecurityColaPct / 100, t)
             : 0;
         const pension =
           age >= a.pensionStartAge
             ? a.pensionAnnual * Math.pow(1 + a.pensionColaPct / 100, t)
             : 0;
         const other = a.otherGuaranteedAnnual * Math.pow(1 + infl, t);
-        const guaranteed = ss + pension + other;
+        const work =
+          a.postRetirementIncomeAnnual > 0 &&
+          (a.postRetirementIncomeEndAge == null || age <= a.postRetirementIncomeEndAge)
+            ? a.postRetirementIncomeAnnual * Math.pow(1 + infl, t)
+            : 0;
+        const guaranteed = ss + spouseSs + pension + other + work;
 
         // Spending needs, each on its own inflation track
         const essential =
@@ -281,6 +306,9 @@ export function runStressTest(
         let fromPortfolio = Math.max(0, need - guaranteed);
         // Gross up for taxes on portfolio withdrawals only
         fromPortfolio = fromPortfolio * (1 + tax);
+        // Deferred withdrawals: no portfolio draws before the chosen age
+        const deferring = a.withdrawalStartAge != null && age < a.withdrawalStartAge;
+        if (deferring) fromPortfolio = 0;
 
         if (age === a.retirementAge + 1 && r === 0) {
           guaranteedAtRet = guaranteed;
@@ -298,16 +326,14 @@ export function runStressTest(
         bal -= fromBal;
         hsa -= Math.min(hsa, fromPortfolio - fromBal);
 
-        bal = bal * (1 + ret);
-        hsa = hsa * (1 + ret);
-
-        if (guaranteed + (available - fromPortfolio > 0 ? need - guaranteed : 0) < (goals.minimumAnnualIncome ?? 0)) {
+        if (!deferring && guaranteed + (available - fromPortfolio > 0 ? need - guaranteed : 0) < (goals.minimumAnnualIncome ?? 0)) {
           incomeMet = false;
         }
-        if (goals.minimumAnnualIncome != null && available <= 0 && guaranteed < goals.minimumAnnualIncome) {
+        if (!deferring && goals.minimumAnnualIncome != null && available <= 0 && guaranteed < goals.minimumAnnualIncome) {
           incomeMet = false;
         }
       }
+
 
       if (a.extraOneTimeExpenseAge != null && age === a.extraOneTimeExpenseAge) {
         bal -= a.extraOneTimeExpense;
