@@ -117,3 +117,5 @@
 ## Investing — AI role recommendations
 - [ ] AI recommendations per investment role (max 7 ETFs/stocks per role), 6-month reevaluation cadence
 - [ ] Sequence-of-return-risk controls in Monte Carlo (bad-first-decade ordering, cash/bond bridge, dynamic guardrails)
+
+- [ ] Retirement Stress Test page: reorder sections into a logical flow; collapse "How to use this" by default
