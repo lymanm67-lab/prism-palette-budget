@@ -742,3 +742,67 @@ export function guardrailAdvice(res: StressResult): { tone: 'cut' | 'hold' | 'ra
     detail: 'Spending is well matched to the plan. Re-check after major market moves or a change in income.',
   };
 }
+
+/* ------------------------------ Perspectives ----------------------------- */
+
+export type StressPerspective = 'household' | 'self' | 'spouse';
+
+export interface PerspectiveParts {
+  selfPensionAnnual: number;
+  spousePensionAnnual: number;
+  spousePensionStartAge: number;
+}
+
+/**
+ * Re-frames household assumptions for a single person. Shared retirement
+ * spending is split 50/50 so an individual view is not asked to fund the
+ * whole household on its own.
+ */
+export function applyPerspective(
+  a: StressAssumptions,
+  view: StressPerspective,
+  parts: PerspectiveParts,
+): StressAssumptions {
+  if (view === 'household') return a;
+
+  const half = (n: number) => n / 2;
+  const shared = {
+    essentialSpend: half(a.essentialSpend),
+    discretionarySpend: half(a.discretionarySpend),
+    healthcareSpend: half(a.healthcareSpend),
+    travelSpend: half(a.travelSpend),
+    includeSpouse: false,
+    spouseBalance: 0,
+    spouseContribution: 0,
+    spouseSocialSecurityAnnual: 0,
+  };
+
+  if (view === 'self') {
+    return {
+      ...a,
+      ...shared,
+      pensionAnnual: parts.selfPensionAnnual,
+    };
+  }
+
+  // Spouse-only view: swap in the spouse's own ages, assets and income.
+  return {
+    ...a,
+    ...shared,
+    currentAge: a.spouseCurrentAge,
+    retirementAge: a.spouseRetirementAge,
+    portfolioBalance: a.spouseBalance,
+    hsaBalance: 0,
+    employeeContribution: a.spouseContribution,
+    employerContribution: 0,
+    hsaContribution: 0,
+    hsaEmployerContribution: 0,
+    socialSecurityAnnual: a.spouseSocialSecurityAnnual,
+    socialSecurityStartAge: a.spouseSocialSecurityStartAge,
+    pensionAnnual: parts.spousePensionAnnual,
+    pensionStartAge: parts.spousePensionStartAge,
+    debtRedirectAnnual: 0,
+    taxRefundRedirectAnnual: 0,
+    postRetirementIncomeAnnual: 0,
+  };
+}
