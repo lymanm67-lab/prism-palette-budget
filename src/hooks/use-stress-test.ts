@@ -42,6 +42,8 @@ export const FALLBACK_ASSUMPTIONS: StressAssumptions = {
   hsaContribution: 0,
   hsaEmployerContribution: 0,
   contributionGrowthPct: 3,
+  // Gross earned income today ($5,911.67/mo IU stub); grows at the pay-raise rate.
+  currentEarnedIncomeAnnual: 70_940,
   includeSpouse: true,
   spouseCurrentAge: 56,
   spouseRetirementAge: 62,
@@ -161,6 +163,8 @@ export function useStressAssumptionsSource() {
       hsaContribution: Number(p.hsa_monthly_contribution || 0) * 12,
       hsaEmployerContribution: Number(p.hsa_employer_contribution || 0) * 12,
       contributionGrowthPct: Number(p.annual_raise_pct ?? 3),
+      currentEarnedIncomeAnnual:
+        Number(p.current_monthly_income || 0) * 12 || FALLBACK_ASSUMPTIONS.currentEarnedIncomeAnnual,
       expectedReturnPct: Number(p.expected_return_pct ?? 8),
       inflationPct: Number(p.inflation_pct ?? 3),
       socialSecurityAnnual: Number(p.ss_monthly_estimate || 0) * 12 || FALLBACK_ASSUMPTIONS.socialSecurityAnnual,

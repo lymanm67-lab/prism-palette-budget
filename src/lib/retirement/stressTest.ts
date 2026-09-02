@@ -48,6 +48,7 @@ export interface StressAssumptions {
   hsaContribution: number;
   hsaEmployerContribution: number;
   contributionGrowthPct: number; // pay-raise driven contribution growth
+  currentEarnedIncomeAnnual: number; // today's gross earned income (grows with pay raises)
 
   // Household (spouse) — invested assets and guaranteed income kept identifiable
   includeSpouse: boolean;
