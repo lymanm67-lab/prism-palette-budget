@@ -27,18 +27,26 @@ export function AssumptionsPanel({
   onReset: () => void;
   emergencyCash: number;
 }) {
-  const num = (key: NumKeys, label: string, step = 1) => (
-    <div className="space-y-1" key={key}>
-      <Label htmlFor={key} className="text-xs">{label}</Label>
-      <Input
-        id={key}
-        type="number"
-        step={step}
-        value={assumptions[key] as number}
-        onChange={(e) => onChange({ [key]: Number(e.target.value) } as Partial<StressAssumptions>)}
-      />
-    </div>
-  );
+  const num = (key: NumKeys | 'debtRedirectStartAge' | 'postRetirementIncomeEndAge' | 'withdrawalStartAge', label: string, step = 1) => {
+    const nullable =
+      key === 'debtRedirectStartAge' || key === 'postRetirementIncomeEndAge' || key === 'withdrawalStartAge';
+    return (
+      <div className="space-y-1" key={key}>
+        <Label htmlFor={key} className="text-xs">{label}</Label>
+        <Input
+          id={key}
+          type="number"
+          step={step}
+          value={(assumptions[key] as number | null) ?? 0}
+          onChange={(e) => {
+            const v = Number(e.target.value);
+            onChange({ [key]: nullable && !v ? null : v } as Partial<StressAssumptions>);
+          }}
+        />
+      </div>
+    );
+  };
+
 
   return (
     <Card className="border-border/60 bg-card/60 backdrop-blur">
