@@ -35,7 +35,7 @@ export function FinancialResilienceSection() {
   const months = useBufferMonths();
   const oneTimes = useBufferOneTime();
   const { settings } = useBufferSettings();
-  const { data: trips } = useTravelTrips();
+  const { trips } = useTravelTrips();
   const { data: wealth } = useWealthOSData();
   const { data: debts } = useHouseholdDebts();
 
