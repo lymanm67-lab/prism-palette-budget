@@ -600,7 +600,7 @@ const Budgets = () => {
 
         const totalOriginal = personalBudget.planned_amount + bizBudget.planned_amount;
         const pct = Math.round((bizBudget.planned_amount / totalOriginal) * 100);
-        offsets.set(personalCat.id, { bizAmount: bizBudget.planned_amount, bizCategory: bizCat.name, pct, bizCategoryId: bizCat.id });
+        offsets.set(personalCat.id, { bizAmount: bizBudget.planned_amount, personalAmount: personalBudget.planned_amount, bizCategory: bizCat.name, pct, bizCategoryId: bizCat.id });
 
         // Mirror personal raw actual onto the business category ONLY when the
         // business side has no direct transactions and no explicit splits — otherwise
