@@ -44,8 +44,10 @@ export function ReserveTxnDialog({ fund, defaultDirection = 'contribution', trig
     : null;
 
   const availableDirections = fund.kind === 'emergency'
-    ? DIRECTIONS
-    : DIRECTIONS.filter((d) => d !== 'buffer_transfer');
+    ? DIRECTIONS.filter((d) => d !== 'gain' && d !== 'loss')
+    : fund.kind === 'investment'
+      ? DIRECTIONS.filter((d) => d !== 'buffer_transfer' && d !== 'interest')
+      : DIRECTIONS.filter((d) => d !== 'buffer_transfer' && d !== 'gain' && d !== 'loss');
 
   const reset = () => {
     setDirection(defaultDirection);
