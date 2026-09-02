@@ -89,6 +89,8 @@ export default function RetirementStressTest() {
         </p>
       </header>
 
+      <HowToGuide />
+
       {/* Run controls */}
       <Card className="border-border/60 bg-card/60 backdrop-blur">
         <CardContent className="flex flex-wrap items-end gap-4 pt-6">
