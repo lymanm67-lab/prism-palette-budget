@@ -9,6 +9,7 @@ import { CapitalPriorityPanel } from '@/components/investing/CapitalPriorityPane
 import { RiskPanel } from '@/components/investing/RiskPanel';
 import { DisciplinePanel } from '@/components/investing/DisciplinePanel';
 import { TaxAndAccountsPanel } from '@/components/investing/TaxAndAccountsPanel';
+import { AiRecommendationsPanel } from '@/components/investing/AiRecommendationsPanel';
 import { WatchlistPanel } from '@/components/investing/WatchlistPanel';
 import { ScenarioPanel } from '@/components/investing/ScenarioPanel';
 import { ReviewsPanel } from '@/components/investing/ReviewsPanel';
@@ -78,6 +79,7 @@ export default function InvestmentStrategy() {
           <TabsTrigger value="risk">Risk &amp; overlap</TabsTrigger>
           <TabsTrigger value="discipline">Buy / sell discipline</TabsTrigger>
           <TabsTrigger value="tax">Accounts &amp; tax</TabsTrigger>
+          <TabsTrigger value="ai">AI candidates</TabsTrigger>
           <TabsTrigger value="watchlist">Watchlist</TabsTrigger>
           <TabsTrigger value="scenarios">Scenarios</TabsTrigger>
           <TabsTrigger value="reviews">Reviews &amp; attribution</TabsTrigger>
@@ -89,6 +91,7 @@ export default function InvestmentStrategy() {
         <TabsContent value="risk" className="mt-4"><RiskPanel /></TabsContent>
         <TabsContent value="discipline" className="mt-4"><DisciplinePanel /></TabsContent>
         <TabsContent value="tax" className="mt-4"><TaxAndAccountsPanel /></TabsContent>
+        <TabsContent value="ai" className="mt-4"><AiRecommendationsPanel /></TabsContent>
         <TabsContent value="watchlist" className="mt-4"><WatchlistPanel /></TabsContent>
         <TabsContent value="scenarios" className="mt-4"><ScenarioPanel /></TabsContent>
         <TabsContent value="reviews" className="mt-4"><ReviewsPanel /></TabsContent>
