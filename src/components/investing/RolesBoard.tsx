@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ import { Plus, RefreshCw, Trash2, Pencil, ShieldAlert, Download } from 'lucide-r
 import {
   ACCOUNT_TYPES,
   CATALYST_CATEGORIES,
+  DEFAULT_ROLE_POSITION_CAP,
   POSITION_STATUSES,
   ROLES,
   ROLE_META,
@@ -170,10 +171,17 @@ export function PositionDialog({
             <Label>Ticker</Label>
             <div className="flex gap-2">
               <Input value={draft.ticker ?? ''} onChange={(e) => set({ ticker: e.target.value.toUpperCase() })} placeholder="SPMO" />
-              <Button type="button" variant="outline" size="icon" onClick={lookup} disabled={quote.isPending} aria-label="Look up security">
+              <Button type="button" variant="outline" size="icon" onClick={() => void lookup()} disabled={quote.isPending} aria-label="Look up security">
                 <RefreshCw className={`h-4 w-4 ${quote.isPending ? 'animate-spin' : ''}`} />
               </Button>
             </div>
+            <p className="text-xs text-muted-foreground">
+              {quote.isPending
+                ? 'Looking up security…'
+                : autoFilled.length > 0
+                  ? `Auto-filled: ${autoFilled.join(', ')}.`
+                  : 'Type a ticker — Prism fills in the details automatically.'}
+            </p>
           </div>
           <div className="space-y-1">
             <Label>Security name</Label>
