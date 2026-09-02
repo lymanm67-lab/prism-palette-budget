@@ -332,7 +332,9 @@ export function RolesBoard() {
               <Download className="mr-2 h-4 w-4" /> Load my current holdings
             </Button>
           )}
+          <CostBasisImport />
           <PositionDialog trigger={<Button><Plus className="mr-2 h-4 w-4" /> Add position</Button>} />
+
         </div>
       </div>
 
