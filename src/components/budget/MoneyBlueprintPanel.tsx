@@ -53,6 +53,8 @@ const WINDOWS: { value: AverageWindow; label: string }[] = [
   { value: 12, label: '12-Mo Avg' },
 ];
 
+import AutoAssignCard from '@/components/budget/AutoAssignCard';
+
 export default function MoneyBlueprintPanel({ month, expenseStructure }: Props) {
   const { formatCurrency } = useCurrency();
   const [window, setWindow] = useState<AverageWindow>(1);
@@ -74,6 +76,7 @@ export default function MoneyBlueprintPanel({ month, expenseStructure }: Props) 
         </TabsList>
 
         <TabsContent value="cashflow" className="space-y-4">
+          <AutoAssignCard reconciliation={bp.reconciliation} month={month} />
           <ZeroBasedCashPanel snap={snap} month={month} />
         </TabsContent>
 
