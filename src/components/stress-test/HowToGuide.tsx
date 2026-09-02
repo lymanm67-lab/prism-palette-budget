@@ -1,8 +1,10 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
-import { HelpCircle, Volume2, Square } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { HelpCircle, Volume2, Square, ChevronDown } from 'lucide-react';
 import { useTTS } from '@/hooks/use-tts';
+import { useState } from 'react';
 
 const NARRATION = `How to use this stress test.
 This tool runs thousands of lifetime market scenarios instead of assuming one fixed return every year.
@@ -18,8 +20,10 @@ All results are estimates, not guarantees.`;
 
 export function HowToGuide() {
   const { speak, stop, isSpeaking } = useTTS();
+  const [open, setOpen] = useState(false);
 
   return (
+    <Collapsible open={open} onOpenChange={setOpen} asChild>
     <Card className="border-border/60 bg-card/60 backdrop-blur">
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-3">
@@ -41,11 +45,18 @@ export function HowToGuide() {
             {isSpeaking ? <Square className="mr-2 h-3.5 w-3.5" /> : <Volume2 className="mr-2 h-3.5 w-3.5" />}
             {isSpeaking ? 'Stop' : 'Listen'}
           </Button>
+          <CollapsibleTrigger asChild>
+            <Button variant="ghost" size="sm" aria-label={open ? 'Hide guide' : 'Show guide'}>
+              {open ? 'Hide' : 'Show guide'}
+              <ChevronDown className={`ml-1.5 h-3.5 w-3.5 transition-transform ${open ? 'rotate-180' : ''}`} />
+            </Button>
+          </CollapsibleTrigger>
         </div>
       </CardHeader>
+      <CollapsibleContent>
       <CardContent className="pt-0">
 
-        <Accordion type="multiple" defaultValue={['run', 'success', 'ages', 'contrib', 'markets', 'spending', 'ltc', 'reading']}>
+        <Accordion type="multiple" defaultValue={[]}>
           <AccordionItem value="run">
             <AccordionTrigger className="text-sm">Running the test</AccordionTrigger>
             <AccordionContent className="space-y-2 text-sm text-muted-foreground">
