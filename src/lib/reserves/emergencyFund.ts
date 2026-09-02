@@ -1,28 +1,60 @@
-// Reserve fund engine — Emergency Fund + Vehicle Maintenance sinking fund.
+// Reserve fund engine — SoFi Emergency Cash, Vehicle Maintenance sinking fund
+// and SoFi Investments.
 //
-// Hard rule: the monthly Buffer and the Emergency Fund are DIFFERENT pools.
-// Buffer = short-term cash left in the current month's budget for normal
-// irregular expenses. Emergency Fund = dedicated liquid cash held only for
-// true unexpected financial events. Money moved from Buffer into the Emergency
-// Fund is recorded once, as a `buffer_transfer`, and is never counted in both.
+// Hard rules enforced here:
+//  1. The monthly Buffer and the Emergency Fund are DIFFERENT pools. Buffer is
+//     current-month flexibility for normal irregular expenses. The Emergency
+//     Fund is a dedicated reserve for true unexpected financial events. Money
+//     moved between them is recorded once, as a `buffer_transfer`
+//     ("Buffer Sweep to SoFi Emergency Fund"), never counted twice.
+//  2. Only balances classified `emergency_cash` count toward the $5,000 target.
+//     Investment market value never counts as emergency cash — the first $5,000
+//     stays on the cash side.
 
-export type ReserveKind = 'emergency' | 'vehicle';
+export type ReserveKind = 'emergency' | 'vehicle' | 'investment' | 'other';
+
+export type LiquidityClass =
+  | 'emergency_cash'
+  | 'short_term_savings'
+  | 'investment'
+  | 'retirement'
+  | 'other';
+
+export const LIQUIDITY_LABEL: Record<LiquidityClass, string> = {
+  emergency_cash: 'Emergency Cash',
+  short_term_savings: 'Short-Term Savings',
+  investment: 'Investment',
+  retirement: 'Retirement',
+  other: 'Other',
+};
+
+export const LIQUIDITY_CLASSES: LiquidityClass[] = [
+  'emergency_cash',
+  'short_term_savings',
+  'investment',
+  'retirement',
+  'other',
+];
 
 export type ReserveDirection =
   | 'contribution'
   | 'buffer_transfer'
   | 'interest'
   | 'withdrawal'
+  | 'gain'
+  | 'loss'
   | 'adjustment';
 
 /** Directions that add to the reserve. */
-const INFLOW: ReserveDirection[] = ['contribution', 'buffer_transfer', 'interest', 'adjustment'];
+const INFLOW: ReserveDirection[] = ['contribution', 'buffer_transfer', 'interest', 'gain', 'adjustment'];
 
 export const DIRECTION_LABEL: Record<ReserveDirection, string> = {
-  contribution: 'Monthly contribution',
-  buffer_transfer: 'Buffer Transfer to Emergency Fund',
+  contribution: 'Contribution',
+  buffer_transfer: 'Buffer Sweep to SoFi Emergency Fund',
   interest: 'Interest earned',
   withdrawal: 'Withdrawal',
+  gain: 'Investment gain',
+  loss: 'Investment loss',
   adjustment: 'Manual adjustment',
 };
 
@@ -32,6 +64,10 @@ export interface ReserveFund {
   name: string;
   account_id: string | null;
   institution_label: string | null;
+  liquidity_class: LiquidityClass;
+  account_type: string | null;
+  goal_label: string | null;
+  market_value: number;
   stage1_target: number;
   primary_target: number;
   ceiling_target: number;
@@ -39,6 +75,9 @@ export interface ReserveFund {
   contributions_paused: boolean;
   essential_monthly_expenses: number;
   starting_balance: number;
+  redirect_excess_enabled: boolean;
+  redirect_investments_pct: number;
+  redirect_other_pct: number;
   notes: string | null;
   sort_order: number;
 }
@@ -56,12 +95,13 @@ export interface ReserveTxn {
 
 /** Emergency-only withdrawal reasons. Anything not on this list is not an emergency. */
 export const EMERGENCY_CATEGORIES = [
-  'Unexpected medical expense',
+  'Medical emergency',
   'Insurance deductible',
   'Emergency travel',
   'Temporary income interruption',
-  'Major unexpected transportation expense',
+  'Major unexpected vehicle repair',
   'Urgent household expense',
+  'Family emergency',
   'Other emergency',
 ] as const;
 
@@ -69,9 +109,9 @@ export const EMERGENCY_CATEGORIES = [
 export const VEHICLE_CATEGORIES = [
   'Tires',
   'Brakes',
-  'Battery',
-  'Routine service',
-  'Repair',
+  'Batteries',
+  'Repairs',
+  'Routine maintenance',
   'Other maintenance',
 ] as const;
 
@@ -80,10 +120,11 @@ export const VEHICLE_CATEGORIES = [
  * guardrail when a withdrawal reason looks like planned or discretionary spend.
  */
 const NON_EMERGENCY_PATTERNS: { re: RegExp; label: string }[] = [
-  { re: /\bvacation|\btrip\b|cruise|resort|hawaii|flight deal|holiday travel/i, label: 'planned vacation' },
+  { re: /\bvacation|\btrip\b|cruise|resort|hawaii|flight deal|holiday travel/i, label: 'a planned vacation' },
   { re: /subscription|streaming|netflix|spotify|membership/i, label: 'a subscription' },
-  { re: /dining|restaurant|takeout|coffee|shopping|clothes|clothing|gift|entertainment|concert/i, label: 'discretionary spending' },
+  { re: /dining|restaurant|takeout|coffee|shopping|clothes|clothing|gift|entertainment|concert/i, label: 'ordinary discretionary spending' },
   { re: /\brent\b|utilit|groceries|phone bill|routine|monthly bill/i, label: 'a routine monthly expense' },
+  { re: /invest|brokerage|stock|etf|crypto/i, label: 'an investment transfer' },
 ];
 
 export type ReserveStatus = 'unfunded' | 'building' | 'stage1_met' | 'funded' | 'replenishment_needed';
@@ -109,6 +150,10 @@ export interface ReserveSummary {
   bufferTransferred: number;
   interest: number;
   withdrawn: number;
+  gains: number;
+  losses: number;
+  ytdContributions: number;
+  ytdWithdrawals: number;
   status: ReserveStatus;
   remainingToStage1: number;
   remainingToPrimary: number;
@@ -120,6 +165,8 @@ export interface ReserveSummary {
   monthsCovered: number | null;
   /** Amount needed to get back to the primary target after a withdrawal. */
   replenishmentNeeded: number;
+  /** Amount currently sitting below the primary goal. */
+  belowGoal: number;
   lastWithdrawal: ReserveTxn | null;
   guardrails: Guardrail[];
 }
@@ -157,6 +204,8 @@ export interface GuardrailContext {
   vacationReserve?: number;
   /** Vehicle sinking-fund balance, so vehicle spend is checked against it first. */
   vehicleBalance?: number;
+  /** Funds classified as investments, so misclassification can be flagged. */
+  investmentFunds?: { name: string; liquidity_class: LiquidityClass; market_value: number }[];
 }
 
 export function summarizeReserve(
@@ -168,13 +217,22 @@ export function summarizeReserve(
     .filter((t) => t.fund_id === fund.id)
     .sort((a, b) => b.txn_date.localeCompare(a.txn_date));
 
-  const sum = (dir: ReserveDirection) =>
-    r2(txns.filter((t) => t.direction === dir).reduce((s, t) => s + Math.abs(Number(t.amount || 0)), 0));
+  const year = String(new Date().getFullYear());
+  const sum = (dir: ReserveDirection, ytdOnly = false) =>
+    r2(
+      txns
+        .filter((t) => t.direction === dir && (!ytdOnly || (t.txn_date || '').startsWith(year)))
+        .reduce((s, t) => s + Math.abs(Number(t.amount || 0)), 0),
+    );
 
   const contributed = sum('contribution');
   const bufferTransferred = sum('buffer_transfer');
   const interest = sum('interest');
   const withdrawn = sum('withdrawal');
+  const gains = sum('gain');
+  const losses = sum('loss');
+  const ytdContributions = r2(sum('contribution', true) + sum('buffer_transfer', true) + sum('interest', true));
+  const ytdWithdrawals = sum('withdrawal', true);
   const balance = reserveBalance(fund, txns);
 
   const stage1 = Number(fund.stage1_target || 0);
@@ -190,16 +248,17 @@ export function summarizeReserve(
   const everFunded = balance + withdrawn >= primary && primary > 0;
 
   let status: ReserveStatus;
-  if (balance <= 0) status = 'unfunded';
+  if (primary <= 0) status = 'funded';
+  else if (balance <= 0) status = 'unfunded';
   else if (remainingToPrimary <= 0) status = 'funded';
   else if (everFunded && withdrawn > 0) status = 'replenishment_needed';
   else if (remainingToStage1 <= 0) status = 'stage1_met';
   else status = 'building';
 
-  // Priority 5: contributions stop once the primary goal is met, unless the
+  // Priority 6: contributions stop once the primary goal is met, unless the
   // fund has been drawn down or the household risk profile changed.
   const monthlyContribution =
-    fund.contributions_paused || (remainingToPrimary <= 0 && status === 'funded')
+    fund.contributions_paused || (remainingToPrimary <= 0 && status === 'funded' && primary > 0)
       ? 0
       : Number(fund.monthly_contribution || 0);
 
@@ -218,18 +277,25 @@ export function summarizeReserve(
 
   const guardrails: Guardrail[] = [];
   if (fund.kind === 'emergency') {
+    if (fund.liquidity_class !== 'emergency_cash') {
+      guardrails.push({
+        id: 'wrong-class',
+        severity: 'critical',
+        message: `This fund is classified as ${LIQUIDITY_LABEL[fund.liquidity_class]}. Only balances classified Emergency Cash count toward the ${money0(primary)} target.`,
+      });
+    }
     if (balance > 0 && balance < stage1) {
       guardrails.push({
         id: 'below-stage1',
         severity: 'critical',
-        message: `Emergency Fund is below the $${stage1.toLocaleString()} Stage 1 floor. Rebuild this before anything optional.`,
+        message: `SoFi Emergency Cash is below the ${money0(stage1)} Stage 1 floor. Rebuild this before anything optional.`,
       });
     }
     if (status === 'replenishment_needed') {
       guardrails.push({
         id: 'replenish',
         severity: 'warning',
-        message: `Replenishment Needed — add $${replenishmentNeeded.toLocaleString()} to get back to the $${primary.toLocaleString()} target.`,
+        message: `Replenishment Needed — add ${money0(replenishmentNeeded)} to get back to the ${money0(primary)} goal.`,
       });
     }
     for (const t of txns.filter((x) => x.direction === 'withdrawal')) {
@@ -238,7 +304,16 @@ export function summarizeReserve(
         guardrails.push({
           id: `misuse-${t.id}`,
           severity: 'critical',
-          message: `${t.txn_date}: this withdrawal looks like ${flag}, not a true emergency. Planned vacations, entertainment, subscriptions and routine bills are not emergencies.`,
+          message: `${t.txn_date}: this withdrawal looks like ${flag}, not a true emergency. Planned vacations, entertainment, subscriptions and routine expenses are not emergencies.`,
+        });
+      }
+    }
+    for (const f of ctx.investmentFunds || []) {
+      if (f.liquidity_class === 'emergency_cash' && f.market_value > 0) {
+        guardrails.push({
+          id: `invest-as-cash-${f.name}`,
+          severity: 'critical',
+          message: `${f.name} holds ${money0(f.market_value)} of market value but is classified Emergency Cash. Investments are exposed to market volatility and must not count toward the emergency target.`,
         });
       }
     }
@@ -253,7 +328,7 @@ export function summarizeReserve(
       guardrails.push({
         id: 'buffer-double-count',
         severity: 'warning',
-        message: `$${bufferTransferred.toLocaleString()} was transferred out of Buffer into the Emergency Fund, but the Buffer balance still includes it. Reduce the Buffer so the money is only counted once.`,
+        message: `${money0(bufferTransferred)} was swept out of Buffer into SoFi Emergency Cash, but the Buffer balance still appears to include it. Reduce the Buffer so the money is only counted once.`,
       });
     }
   } else if (fund.kind === 'vehicle' && balance <= 0 && Number(fund.monthly_contribution || 0) === 0) {
@@ -271,6 +346,10 @@ export function summarizeReserve(
     bufferTransferred,
     interest,
     withdrawn,
+    gains,
+    losses,
+    ytdContributions,
+    ytdWithdrawals,
     status,
     remainingToStage1,
     remainingToPrimary,
@@ -281,9 +360,14 @@ export function summarizeReserve(
     goalDate,
     monthsCovered,
     replenishmentNeeded,
+    belowGoal: remainingToPrimary,
     lastWithdrawal,
     guardrails,
   };
+}
+
+function money0(n: number) {
+  return n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
 }
 
 export interface FundingPriority {
@@ -294,9 +378,9 @@ export interface FundingPriority {
 }
 
 /**
- * Priority ladder. Emergency floor first, then required debt + core retirement,
- * then high-interest vacation debt, then freed cash into the Emergency Fund up
- * to the primary target, then redirect the surplus elsewhere.
+ * Priority ladder. Emergency floor first, then required debt, then core payroll
+ * retirement + employer contributions, then high-interest vacation debt, then
+ * freed cash into SoFi Emergency Cash up to $5,000, then stop and redirect.
  */
 export function fundingPriorities(
   em: ReserveSummary,
@@ -309,43 +393,88 @@ export function fundingPriorities(
   return [
     {
       order: 1,
-      label: `Build the Emergency Fund to $${em.fund.stage1_target.toLocaleString()}`,
+      label: `Build SoFi Emergency Cash to ${money0(em.fund.stage1_target)}`,
       detail: stage1Done
         ? 'Stage 1 floor is in place.'
-        : `$${em.remainingToStage1.toLocaleString()} to go — fund this as quickly as reasonably possible.`,
+        : `${money0(em.remainingToStage1)} to go — fund this as quickly as reasonably possible.`,
       state: stage1Done ? 'done' : 'active',
     },
     {
       order: 2,
-      label: 'Keep required debt payments and core retirement/HSA contributions running',
-      detail: 'Never pause minimums or employer-matched contributions to build cash.',
+      label: 'Keep required debt payments running',
+      detail: 'Minimums and settlement schedules are never paused to build cash.',
       state: 'active',
     },
     {
       order: 3,
-      label: 'Attack high-interest vacation debt and finish settlement obligations',
-      detail: vacGone
-        ? 'Vacation debt is cleared.'
-        : `$${opts.vacationDebtBalance.toLocaleString()} of vacation debt remaining.`,
-      state: vacGone ? 'done' : stage1Done ? 'active' : 'waiting',
+      label: 'Keep core payroll retirement and employer contributions running',
+      detail: 'Never give up matched or employer-funded money to build cash.',
+      state: 'active',
     },
     {
       order: 4,
-      label: `Redirect freed debt payment into the Emergency Fund up to $${em.fund.primary_target.toLocaleString()}`,
-      detail: !vacGone
-        ? `Waiting on vacation payoff — about $${opts.freedMonthly.toLocaleString()}/mo will be freed.`
-        : funded
-          ? 'Primary goal reached.'
-          : `$${em.remainingToPrimary.toLocaleString()} to go at $${opts.freedMonthly.toLocaleString()}/mo of freed cash.`,
-      state: funded ? 'done' : vacGone ? 'active' : 'waiting',
+      label: 'Eliminate high-interest vacation debt and finish settlement obligations',
+      detail: vacGone
+        ? 'Vacation debt is cleared.'
+        : `${money0(opts.vacationDebtBalance)} of vacation debt remaining.`,
+      state: vacGone ? 'done' : stage1Done ? 'active' : 'waiting',
     },
     {
       order: 5,
+      label: `Redirect freed debt payment into SoFi Emergency Cash up to ${money0(em.fund.primary_target)}`,
+      detail: !vacGone
+        ? `Waiting on vacation payoff — about ${money0(opts.freedMonthly)}/mo will be freed.`
+        : funded
+          ? 'Primary goal reached.'
+          : `${money0(em.remainingToPrimary)} to go at ${money0(opts.freedMonthly)}/mo of freed cash.`,
+      state: funded ? 'done' : vacGone ? 'active' : 'waiting',
+    },
+    {
+      order: 6,
       label: 'At the goal, stop automatic contributions and redirect the surplus',
       detail: funded
-        ? 'Send further dollars to the Vacation Fund, HSA, retirement, investments and other savings goals.'
-        : 'Kicks in once the Emergency Fund is fully funded (unless it is used or your risk profile changes).',
+        ? 'Surplus can go to SoFi Investments, the Vacation Fund, HSA, retirement or other goals — each transfer needs your approval.'
+        : 'Kicks in once emergency cash is fully funded (unless it is used or your risk profile changes).',
       state: funded ? 'active' : 'waiting',
     },
   ];
+}
+
+export interface ExcessSplit {
+  enabled: boolean;
+  /** Cash floor that must remain untouched. */
+  floor: number;
+  excessMonthly: number;
+  toInvestments: number;
+  toOtherGoals: number;
+  investmentsPct: number;
+  otherPct: number;
+  /** True when the floor is not yet protected, so nothing may be redirected. */
+  blocked: boolean;
+}
+
+/**
+ * Splits monthly excess savings once the emergency cash floor is protected.
+ * Never moves money automatically — the UI requires explicit approval.
+ */
+export function excessSplit(
+  em: ReserveSummary,
+  excessMonthly: number,
+): ExcessSplit {
+  const f = em.fund;
+  const invPct = Math.max(0, Math.min(100, Number(f.redirect_investments_pct || 0)));
+  const otherPct = Math.max(0, 100 - invPct);
+  const blocked = em.remainingToPrimary > 0;
+  const usable = blocked ? 0 : Math.max(0, excessMonthly);
+
+  return {
+    enabled: !!f.redirect_excess_enabled,
+    floor: Number(f.primary_target || 0),
+    excessMonthly: r2(excessMonthly),
+    toInvestments: r2((usable * invPct) / 100),
+    toOtherGoals: r2((usable * otherPct) / 100),
+    investmentsPct: invPct,
+    otherPct,
+    blocked,
+  };
 }
