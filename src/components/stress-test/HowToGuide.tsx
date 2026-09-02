@@ -178,6 +178,8 @@ export function HowToGuide() {
           </AccordionItem>
         </Accordion>
       </CardContent>
+      </CollapsibleContent>
     </Card>
+    </Collapsible>
   );
 }
