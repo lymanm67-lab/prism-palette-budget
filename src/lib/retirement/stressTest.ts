@@ -271,9 +271,15 @@ export function runStressTest(
       if (a.marketShockAge != null && age === a.marketShockAge) {
         ret = -Math.abs(a.marketShockPct) / 100;
       }
+      // Bad-first-decade ordering: force the weak returns into the early
+      // retirement years, where withdrawals do the most damage.
+      if (badDecade && age > a.retirementAge && age <= a.retirementAge + badYears) {
+        ret -= badHaircut;
+      }
 
       const working = age <= a.retirementAge;
       const growth = Math.pow(1 + cGrowth, t - 1);
+
 
       // ---- Contributions (keep growing while either spouse still works) ----
       let contributions = 0;
