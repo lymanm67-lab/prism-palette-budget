@@ -6,12 +6,14 @@ import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle, Info, ShieldCheck, Minus, Plus, ArrowRightLeft, Check, Clock, Circle } from 'lucide-react';
 import { ReserveTxnDialog } from './ReserveTxnDialog';
 import { useReserves } from '@/hooks/use-reserves';
 import {
-  summarizeReserve, fundingPriorities, STATUS_LABEL, DIRECTION_LABEL,
+  summarizeReserve, fundingPriorities, excessSplit, STATUS_LABEL, DIRECTION_LABEL,
+  LIQUIDITY_LABEL, LIQUIDITY_CLASSES,
   type GuardrailContext,
 } from '@/lib/reserves/emergencyFund';
 
@@ -45,6 +47,7 @@ export function EmergencyFundCard({
   const [editing, setEditing] = useState(false);
   const [contrib, setContrib] = useState('');
   const [essential, setEssential] = useState('');
+  const [excess, setExcess] = useState('500');
 
   const summary = useMemo(
     () => (emergency ? summarizeReserve(emergency, txns, guardrailContext) : null),
@@ -56,8 +59,13 @@ export function EmergencyFundCard({
     [summary, vacationDebtBalance, freedMonthly],
   );
 
+  const split = useMemo(
+    () => (summary ? excessSplit(summary, Number(excess) || 0) : null),
+    [summary, excess],
+  );
+
   if (isLoading) return <Card className="h-64 animate-pulse" />;
-  if (!emergency || !summary) {
+  if (!emergency || !summary || !split) {
     return (
       <Card>
         <CardHeader><CardTitle className="text-base">Emergency Fund</CardTitle></CardHeader>
