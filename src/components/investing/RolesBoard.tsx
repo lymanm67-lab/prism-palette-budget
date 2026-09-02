@@ -138,6 +138,16 @@ export function PositionDialog({
     if (result.securityType === 'etf') holdings.mutate(result.symbol);
   };
 
+  // Re-seed the form every time the dialog opens so it reflects the latest saved
+  // position (e.g. after a cost-basis import) and never carries over a previous draft.
+  useEffect(() => {
+    if (!open) return;
+    setDraft(position ? { ...position } : emptyPosition(role ?? 'CORE'));
+    setAutoFilled([]);
+    lastLookedUp.current = position?.ticker ?? '';
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, position?.id, position?.updated_at, position?.cost_basis, position?.shares, role]);
+
   // Auto-fill shortly after a ticker is typed, without needing the refresh button.
   useEffect(() => {
     const ticker = (draft.ticker ?? '').trim().toUpperCase();
