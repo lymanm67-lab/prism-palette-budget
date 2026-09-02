@@ -77,6 +77,8 @@ export default function InvestmentStrategy() {
         <TabsList className="flex h-auto flex-wrap justify-start">
           <TabsTrigger value="roles">Roles &amp; holdings</TabsTrigger>
           <TabsTrigger value="targets">Targets &amp; drift</TabsTrigger>
+          <TabsTrigger value="gainloss">Gain / loss</TabsTrigger>
+          <TabsTrigger value="income">Dividends &amp; income</TabsTrigger>
           <TabsTrigger value="priority">Capital priority</TabsTrigger>
           <TabsTrigger value="risk">Risk &amp; overlap</TabsTrigger>
           <TabsTrigger value="discipline">Buy / sell discipline</TabsTrigger>
