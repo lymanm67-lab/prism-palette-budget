@@ -11,12 +11,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { CheckCircle2, AlertTriangle, ArrowRight } from 'lucide-react';
 import { ACCOUNT_TYPES, FUNDING_SOURCES, ROLE_META, money, pct } from '@/lib/investing/roles';
 import { useInvestingMetrics } from '@/hooks/use-investing-metrics';
-import { useInvContributions, useSaveContribution } from '@/hooks/use-investing';
+import { useInvContributions, useAddContribution } from '@/hooks/use-investing';
 
 export function CapitalPriorityPanel() {
   const { priority, nextDollar, allocation } = useInvestingMetrics();
+  const nextRow = allocation.rows.find((r) => r.role === nextDollar?.role);
+  const nextTicker = nextRow?.positions[0]?.ticker ?? null;
   const contributions = useInvContributions();
-  const saveContribution = useSaveContribution();
+  const saveContribution = useAddContribution();
   const [amount, setAmount] = useState(250);
   const [source, setSource] = useState('monthly_surplus');
   const [account, setAccount] = useState('sofi_investments');
@@ -34,9 +36,9 @@ export function CapitalPriorityPanel() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          {priority.checks.map((c) => (
+          {priority.steps.map((c) => (
             <div key={c.label} className="flex items-start gap-3 rounded-md border border-border/60 p-3">
-              {c.passed ? (
+              {c.met ? (
                 <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
               ) : (
                 <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
@@ -47,7 +49,7 @@ export function CapitalPriorityPanel() {
               </div>
             </div>
           ))}
-          {!priority.clear && (
+          {!priority.clearedToInvest && (
             <p className="text-sm text-amber-400">
               New investment dollars are flagged as out of sequence until these are handled. This is guidance, not a lock — you can still record a contribution.
             </p>
@@ -66,11 +68,11 @@ export function CapitalPriorityPanel() {
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="outline" className={ROLE_META[nextDollar.role].accent}>{nextDollar.role}</Badge>
                 <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                <span className="font-medium">{nextDollar.ticker ?? 'Choose a holding for this role'}</span>
+                <span className="font-medium">{nextTicker ?? 'Choose a holding for this role'}</span>
               </div>
               <p className="mt-2 text-sm text-muted-foreground">{nextDollar.reason}</p>
               <p className="mt-1 text-sm">
-                Gap to target: <strong>{money(nextDollar.dollarGap)}</strong> · current {pct(nextDollar.currentPct)} vs target {pct(nextDollar.targetPct, 0)}
+                Gap to target: <strong>{money(nextRow?.dollarGap ?? 0)}</strong> · current {pct(nextRow?.currentPct ?? 0)} vs target {pct(nextRow?.targetPct ?? 0, 0)}
               </p>
             </div>
           ) : (
@@ -115,7 +117,7 @@ export function CapitalPriorityPanel() {
                 <AlertDialogTitle>Record {money(amount)} to {nextDollar?.role}?</AlertDialogTitle>
                 <AlertDialogDescription>
                   Prism records this contribution against your plan. It does not place a trade, move money, or connect to your brokerage.
-                  {!priority.clear && ' Your capital priority checks are not all clear — this will be logged as out of sequence.'}
+                  {!priority.clearedToInvest && ' Your capital priority checks are not all clear — this will be logged as out of sequence.'}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -125,13 +127,12 @@ export function CapitalPriorityPanel() {
                     nextDollar &&
                     saveContribution.mutate({
                       role: nextDollar.role,
-                      ticker: nextDollar.ticker,
                       amount,
-                      funding_source: source,
+                      source,
                       account_type: account,
-                      approved: true,
-                      priority_clear: priority.clear,
-                      notes: note || null,
+                      notes: [note, nextTicker ? `Holding: ${nextTicker}` : null, priority.clearedToInvest ? 'In sequence' : 'Out of sequence']
+                        .filter(Boolean)
+                        .join(' · ') || null,
                       contributed_on: new Date().toISOString().slice(0, 10),
                     })
                   }
@@ -148,10 +149,9 @@ export function CapitalPriorityPanel() {
                 <TableRow>
                   <TableHead>Date</TableHead>
                   <TableHead>Role</TableHead>
-                  <TableHead>Holding</TableHead>
                   <TableHead>Source</TableHead>
                   <TableHead className="text-right">Amount</TableHead>
-                  <TableHead>Sequence</TableHead>
+                  <TableHead>Note</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -159,12 +159,9 @@ export function CapitalPriorityPanel() {
                   <TableRow key={r.id}>
                     <TableCell>{r.contributed_on}</TableCell>
                     <TableCell>{r.role}</TableCell>
-                    <TableCell>{r.ticker ?? '—'}</TableCell>
-                    <TableCell>{FUNDING_SOURCES.find((f) => f.value === r.funding_source)?.label ?? r.funding_source}</TableCell>
+                    <TableCell>{FUNDING_SOURCES.find((f) => f.value === r.source)?.label ?? r.source}</TableCell>
                     <TableCell className="text-right">{money(Number(r.amount), 2)}</TableCell>
-                    <TableCell>
-                      {r.priority_clear ? <Badge variant="secondary">In sequence</Badge> : <Badge variant="outline" className="border-amber-500/40 text-amber-400">Out of sequence</Badge>}
-                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{r.notes ?? '—'}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
