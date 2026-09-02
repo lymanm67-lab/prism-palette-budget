@@ -108,6 +108,21 @@ export interface StressAssumptions {
   extraOneTimeExpense: number;
   extraOneTimeExpenseAge: number | null;
   returnHaircutPct: number; // subtract from expected return (crisis modelling)
+
+  // ---- Sequence-of-returns controls (explicit toggles) ----
+  /** Force the worst returns into the first years of retirement. */
+  badFirstDecadeEnabled: boolean;
+  badFirstDecadeYears: number; // how many early-retirement years are stressed
+  badFirstDecadeHaircutPct: number; // points subtracted from returns in those years
+  /** Cash/short-bond bridge carved out at retirement, spent instead of selling in down years. */
+  cashBridgeYears: number; // years of essentials + healthcare held in the bridge
+  cashBridgeYieldPct: number; // yield on the bridge sleeve
+  /** Dynamic guardrail spending rules (Guyton-Klinger style bands). */
+  guardrailRulesEnabled: boolean;
+  guardrailBandPct: number; // deviation from the plan path that triggers a change
+  guardrailCutPct: number; // discretionary + travel cut when below the lower band
+  guardrailRaisePct: number; // discretionary + travel raise when above the upper band
+
 }
 
 export interface StressGoals {
@@ -218,10 +233,26 @@ export function runStressTest(
 
   const ltcCost = a.ltcSetting === 'none' ? 0 : a.ltcAnnualCost || LTC_COST_PRESETS[a.ltcSetting];
 
+  // Sequence-of-returns controls
+  const bridgeYears = Math.max(0, a.cashBridgeYears ?? 0);
+  const bridgeYield = (a.cashBridgeYieldPct ?? 0) / 100;
+  const badDecade = !!a.badFirstDecadeEnabled;
+  const badYears = Math.max(0, a.badFirstDecadeYears ?? 10);
+  const badHaircut = (a.badFirstDecadeHaircutPct ?? 0) / 100;
+  const useGuardrails = !!a.guardrailRulesEnabled;
+  const grBand = Math.max(1, a.guardrailBandPct ?? 15) / 100;
+  const grCut = Math.max(0, a.guardrailCutPct ?? 10) / 100;
+  const grRaise = Math.max(0, a.guardrailRaisePct ?? 5) / 100;
+
   for (let r = 0; r < runs; r++) {
     const rand = mulberry32(seed + r * 7919);
     let bal = a.portfolioBalance + (a.includeSpouse ? a.spouseBalance : 0);
     let hsa = a.hsaBalance;
+    let cash = 0; // cash bridge sleeve (carved out of the portfolio at retirement)
+    let bridgeFunded = false;
+    let refBal = 0; // plan reference balance at retirement, for guardrail bands
+    let refAge = 0;
+    let spendFactor = 1; // guardrail-adjusted discretionary/travel multiplier
     let lowest = bal + hsa;
     let depletionAge: number | null = null;
     let legacyMet = false;
@@ -231,6 +262,7 @@ export function runStressTest(
 
     balancesByYear[0].push(bal + hsa);
 
+
     for (let y = 1; y <= years; y++) {
       const age = a.currentAge + y;
       const spouseAge = age + (a.spouseCurrentAge - a.currentAge);
@@ -239,9 +271,15 @@ export function runStressTest(
       if (a.marketShockAge != null && age === a.marketShockAge) {
         ret = -Math.abs(a.marketShockPct) / 100;
       }
+      // Bad-first-decade ordering: force the weak returns into the early
+      // retirement years, where withdrawals do the most damage.
+      if (badDecade && age > a.retirementAge && age <= a.retirementAge + badYears) {
+        ret -= badHaircut;
+      }
 
       const working = age <= a.retirementAge;
       const growth = Math.pow(1 + cGrowth, t - 1);
+
 
       // ---- Contributions (keep growing while either spouse still works) ----
       let contributions = 0;
@@ -260,6 +298,8 @@ export function runStressTest(
       }
 
       bal = bal * (1 + ret) + contributions;
+      cash = cash * (1 + bridgeYield);
+
 
       if (!working) {
         // Guaranteed income (kept separate from portfolio withdrawals)
@@ -286,9 +326,34 @@ export function runStressTest(
         // Spending needs, each on its own inflation track
         const essential =
           a.essentialSpend * Math.pow(1 + Math.max(infl, houseInfl * 0.5 + infl * 0.5), t);
-        const discretionary = a.discretionarySpend * Math.pow(1 + infl + wGrowth, t);
         const healthcare = a.healthcareSpend * Math.pow(1 + hcInfl, t);
-        const travel = a.travelSpend * Math.pow(1 + travelInfl, t);
+
+        // ---- Cash bridge: carve a sleeve out of the portfolio at retirement ----
+        if (bridgeYears > 0 && !bridgeFunded) {
+          const targetBridge = bridgeYears * (essential + healthcare);
+          cash = Math.min(bal, targetBridge);
+          bal -= cash;
+          bridgeFunded = true;
+        }
+
+        // ---- Dynamic guardrails: adjust flexible spending inside bands ----
+        if (refBal === 0) {
+          refBal = bal + hsa + cash;
+          refAge = age;
+        }
+        if (useGuardrails && refBal > 0) {
+          const planPath = refBal * Math.pow(1 + infl, age - refAge);
+          const actual = bal + hsa + cash;
+          if (actual < planPath * (1 - grBand)) {
+            spendFactor = Math.max(0.6, spendFactor * (1 - grCut));
+          } else if (actual > planPath * (1 + grBand)) {
+            spendFactor = Math.min(1.25, spendFactor * (1 + grRaise));
+          }
+        }
+
+        const discretionary = a.discretionarySpend * Math.pow(1 + infl + wGrowth, t) * spendFactor;
+        const travel = a.travelSpend * Math.pow(1 + travelInfl, t) * spendFactor;
+
 
         let ltcNeed = 0;
         if (
@@ -316,16 +381,32 @@ export function runStressTest(
           essentialAtRet = essential + healthcare;
         }
 
-        const available = bal + hsa;
+        const available = bal + hsa + cash;
         if (fromPortfolio > available) {
           cutNeeded = true;
           if (ltcNeed > 0) ltcCovered = false;
           fromPortfolio = available;
         }
-        // Draw taxable/retirement first, HSA last
-        const fromBal = Math.min(bal, fromPortfolio);
+        // In a down year, spend the cash bridge first so shares are not sold low
+        let remaining = fromPortfolio;
+        if (cash > 0 && ret < 0) {
+          const fromCash = Math.min(cash, remaining);
+          cash -= fromCash;
+          remaining -= fromCash;
+        }
+        // Draw taxable/retirement next, HSA last, then any remaining bridge cash
+        const fromBal = Math.min(bal, remaining);
         bal -= fromBal;
-        hsa -= Math.min(hsa, fromPortfolio - fromBal);
+        remaining -= fromBal;
+        const fromHsaDraw = Math.min(hsa, remaining);
+        hsa -= fromHsaDraw;
+        remaining -= fromHsaDraw;
+        if (remaining > 0 && cash > 0) {
+          const extra = Math.min(cash, remaining);
+          cash -= extra;
+          remaining -= extra;
+        }
+
 
         if (!deferring && guaranteed + (available - fromPortfolio > 0 ? need - guaranteed : 0) < (goals.minimumAnnualIncome ?? 0)) {
           incomeMet = false;
@@ -342,8 +423,9 @@ export function runStressTest(
 
       if (bal < 0) bal = 0;
       if (hsa < 0) hsa = 0;
+      if (cash < 0) cash = 0;
 
-      const total = bal + hsa;
+      const total = bal + hsa + cash;
       if (total < lowest) lowest = total;
       if (total <= 0 && depletionAge == null) depletionAge = age;
       if (goals.legacyTarget != null && age === goals.legacyTargetAge && total >= goals.legacyTarget) {
@@ -352,7 +434,8 @@ export function runStressTest(
       balancesByYear[y].push(total);
     }
 
-    const ending = bal + hsa;
+    const ending = bal + hsa + cash;
+
     endings.push(ending);
     lowests.push(lowest);
     if (depletionAge != null) {
@@ -487,7 +570,50 @@ export const CRISIS_SCENARIOS: { key: string; label: string; description: string
   },
 ];
 
+/** Compares the sequence-risk defenses on and off, one at a time and combined. */
+export function sequenceControlGrid(
+  a: StressAssumptions,
+  goals: StressGoals,
+  runs: number,
+): SensitivityPoint[] {
+  const variants: { label: string; patch: Partial<StressAssumptions> }[] = [
+    { label: 'Your current settings', patch: {} },
+    {
+      label: 'No defenses (all off)',
+      patch: { badFirstDecadeEnabled: false, cashBridgeYears: 0, guardrailRulesEnabled: false },
+    },
+    {
+      label: 'Bad first decade only',
+      patch: { badFirstDecadeEnabled: true, cashBridgeYears: 0, guardrailRulesEnabled: false },
+    },
+    {
+      label: 'Bad decade + 2-year cash bridge',
+      patch: { badFirstDecadeEnabled: true, cashBridgeYears: 2, guardrailRulesEnabled: false },
+    },
+    {
+      label: 'Bad decade + guardrail spending rules',
+      patch: { badFirstDecadeEnabled: true, cashBridgeYears: 0, guardrailRulesEnabled: true },
+    },
+    {
+      label: 'Bad decade + bridge + guardrails',
+      patch: { badFirstDecadeEnabled: true, cashBridgeYears: 3, guardrailRulesEnabled: true },
+    },
+  ];
+  return variants.map((v) => {
+    const res = runStressTest({ ...a, ...v.patch }, goals, runs);
+    return {
+      label: v.label,
+      successProbability: res.successProbability,
+      medianEnding: res.medianEnding,
+      p10Ending: res.p10Ending,
+      legacyProbability: res.legacyProbability,
+      depletionAge: res.medianDepletionAge,
+    };
+  });
+}
+
 export function sequenceRiskGrid(a: StressAssumptions, goals: StressGoals, runs: number): SensitivityPoint[] {
+
   const declines = [20, 30, 40];
   const offsets: { label: string; offset: number }[] = [
     { label: '5 yrs before retirement', offset: -5 },

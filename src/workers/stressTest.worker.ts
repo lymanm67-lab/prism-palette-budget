@@ -12,6 +12,7 @@ import {
   retirementAgeGrid,
   runStressTest,
   sequenceRiskGrid,
+  sequenceControlGrid,
   spendingSensitivity,
   CRISIS_SCENARIOS,
   type StressAssumptions,
@@ -38,6 +39,7 @@ self.onmessage = (e: MessageEvent<WorkerRequest>) => {
       id,
       base,
       sequence: sequenceRiskGrid(assumptions, goals, gridRuns),
+      sequenceControls: sequenceControlGrid(assumptions, goals, gridRuns),
       crises: CRISIS_SCENARIOS.map((c) => {
         const res = runStressTest({ ...assumptions, ...c.patch }, goals, gridRuns);
         return {
