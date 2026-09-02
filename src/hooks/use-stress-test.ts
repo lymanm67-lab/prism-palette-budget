@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { useInvestmentPlan } from '@/hooks/use-investment-plan';
-import { useInvestmentPensions } from '@/hooks/use-investment-v2';
+import { useInvestmentPensions, useInvestmentSpouse } from '@/hooks/use-investment-v2';
 import { useReserves } from '@/hooks/use-reserves';
 import {
   DEFAULT_GOALS,
@@ -42,6 +42,19 @@ export const FALLBACK_ASSUMPTIONS: StressAssumptions = {
   hsaContribution: 0,
   hsaEmployerContribution: 0,
   contributionGrowthPct: 3,
+  includeSpouse: true,
+  spouseCurrentAge: 56,
+  spouseRetirementAge: 62,
+  spouseBalance: 0,
+  spouseContribution: 0,
+  spouseSocialSecurityAnnual: 0,
+  spouseSocialSecurityStartAge: 67,
+  debtRedirectAnnual: 0,
+  debtRedirectStartAge: null,
+  taxRefundRedirectAnnual: 0,
+  postRetirementIncomeAnnual: 0,
+  postRetirementIncomeEndAge: null,
+  withdrawalStartAge: null,
   expectedReturnPct: 8,
   volatilityPct: 15,
   inflationPct: 3,
@@ -79,6 +92,7 @@ export const FALLBACK_ASSUMPTIONS: StressAssumptions = {
 export function useStressAssumptionsSource() {
   const plan = useInvestmentPlan();
   const pensions = useInvestmentPensions(plan.data?.id);
+  const spouse = useInvestmentSpouse(plan.data?.id);
   const reserves = useReserves();
 
   const derived = useMemo<StressAssumptions>(() => {
@@ -87,7 +101,24 @@ export function useStressAssumptionsSource() {
       (s: number, x: any) => s + Number(x.monthly_benefit || 0) * 12,
       0,
     );
-    if (!p) return { ...FALLBACK_ASSUMPTIONS, pensionAnnual: pensionAnnual || FALLBACK_ASSUMPTIONS.pensionAnnual };
+    const sp = spouse.data as any;
+    const spouseFields = {
+      includeSpouse: !!sp,
+      spouseCurrentAge: Number(sp?.current_age ?? FALLBACK_ASSUMPTIONS.spouseCurrentAge),
+      spouseRetirementAge: Number(sp?.retirement_age ?? FALLBACK_ASSUMPTIONS.spouseRetirementAge),
+      spouseBalance: Number(sp?.current_balance ?? 0),
+      spouseContribution:
+        (Number(sp?.monthly_employee_contribution ?? 0) + Number(sp?.monthly_employer_contribution ?? 0)) * 12,
+      spouseSocialSecurityAnnual: Number(sp?.ss_monthly_estimate ?? 0) * 12,
+      spouseSocialSecurityStartAge: Number(sp?.ss_claiming_age ?? 67),
+    };
+
+    if (!p)
+      return {
+        ...FALLBACK_ASSUMPTIONS,
+        ...spouseFields,
+        pensionAnnual: pensionAnnual || FALLBACK_ASSUMPTIONS.pensionAnnual,
+      };
 
     const employee = Number(p.monthly_employee_contribution || 0) * 12;
     const employer = Number(p.monthly_employer_contribution || 0) * 12;
@@ -95,6 +126,7 @@ export function useStressAssumptionsSource() {
 
     return {
       ...FALLBACK_ASSUMPTIONS,
+      ...spouseFields,
       currentAge: Number(p.current_age ?? FALLBACK_ASSUMPTIONS.currentAge),
       retirementAge: Number(p.retirement_age ?? FALLBACK_ASSUMPTIONS.retirementAge),
       portfolioBalance: Number(p.current_balance || 0),
@@ -110,7 +142,7 @@ export function useStressAssumptionsSource() {
       socialSecurityStartAge: Number(p.ss_claiming_age ?? 70),
       pensionAnnual: pensionAnnual + Number(p.spouse_pension_monthly || 0) * 12,
     };
-  }, [plan.data, pensions.data]);
+  }, [plan.data, pensions.data, spouse.data]);
 
   return {
     derived,
