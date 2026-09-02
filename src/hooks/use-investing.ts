@@ -18,6 +18,8 @@ const K = {
   reviews: 'inv-reviews',
   watchlist: 'inv-watchlist-items',
   scenarios: 'inv-scenarios',
+  lots: 'inv-position-lots',
+  dividends: 'inv-dividends',
 };
 
 export interface InvSettings {
@@ -635,6 +637,171 @@ export function useMarketLookup() {
   });
 
   return { quote, holdings };
+}
+
+/* --------------------------------- lots --------------------------------- */
+
+export interface PositionLot {
+  id: string;
+  household_id: string;
+  position_id: string | null;
+  ticker: string;
+  trade_date: string;
+  shares: number;
+  price_per_share: number;
+  fees: number;
+  total_cost: number;
+  account_type: string | null;
+  source: string;
+  external_id: string | null;
+  notes: string | null;
+}
+
+export function usePositionLots() {
+  const { household } = useHousehold();
+  const householdId = household?.id;
+  return useQuery({
+    queryKey: [K.lots, householdId],
+    enabled: !!householdId,
+    queryFn: async (): Promise<PositionLot[]> => {
+      const { data, error } = await sb
+        .from('inv_position_lots')
+        .select('*')
+        .eq('household_id', householdId!)
+        .is('deleted_at', null)
+        .order('trade_date', { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as unknown as PositionLot[];
+    },
+  });
+}
+
+export function useSaveLots() {
+  const { household } = useHousehold();
+  const householdId = household?.id;
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (lots: Partial<PositionLot>[]) => {
+      if (lots.length === 0) return 0;
+      const rows = lots.map((l) => ({ ...l, household_id: householdId! }));
+      const { data, error } = await sb
+        .from('inv_position_lots')
+        .upsert(rows, {
+          onConflict: 'household_id,ticker,trade_date,shares,price_per_share',
+          ignoreDuplicates: false,
+        })
+        .select('id');
+      if (error) throw error;
+      return (data ?? []).length;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [K.lots] });
+      qc.invalidateQueries({ queryKey: [K.positions] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+}
+
+export function useDeleteLot() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await sb
+        .from('inv_position_lots')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [K.lots] });
+      qc.invalidateQueries({ queryKey: [K.positions] });
+      toast.success('Lot removed');
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+}
+
+/* ------------------------------- dividends ------------------------------- */
+
+export interface InvDividend {
+  id: string;
+  household_id: string;
+  position_id: string | null;
+  ticker: string;
+  pay_date: string;
+  amount: number;
+  income_type: string;
+  account_type: string | null;
+  source: string;
+  notes: string | null;
+}
+
+export const INCOME_TYPES = [
+  { value: 'dividend', label: 'Dividend' },
+  { value: 'qualified_dividend', label: 'Qualified dividend' },
+  { value: 'interest', label: 'Interest' },
+  { value: 'capital_gain_distribution', label: 'Capital gain distribution' },
+  { value: 'other', label: 'Other income' },
+];
+
+export function useInvDividends() {
+  const { household } = useHousehold();
+  const householdId = household?.id;
+  return useQuery({
+    queryKey: [K.dividends, householdId],
+    enabled: !!householdId,
+    queryFn: async (): Promise<InvDividend[]> => {
+      const { data, error } = await sb
+        .from('inv_dividends')
+        .select('*')
+        .eq('household_id', householdId!)
+        .is('deleted_at', null)
+        .order('pay_date', { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as unknown as InvDividend[];
+    },
+  });
+}
+
+export function useSaveDividend() {
+  const { household } = useHousehold();
+  const householdId = household?.id;
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: Partial<InvDividend> & { id?: string }) => {
+      const { id, ...rest } = input;
+      if (id) {
+        const { error } = await sb.from('inv_dividends').update(rest).eq('id', id);
+        if (error) throw error;
+      } else {
+        const { error } = await sb.from('inv_dividends').insert({ ...rest, household_id: householdId! });
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [K.dividends] });
+      toast.success('Income recorded');
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+}
+
+export function useDeleteDividend() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await sb
+        .from('inv_dividends')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [K.dividends] });
+      toast.success('Income entry removed');
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 }
 
 export type { InvestmentRole };

@@ -5939,6 +5939,127 @@ export type Database = {
           },
         ]
       }
+      inv_dividends: {
+        Row: {
+          account_type: string | null
+          amount: number
+          created_at: string
+          deleted_at: string | null
+          household_id: string
+          id: string
+          income_type: string
+          notes: string | null
+          pay_date: string
+          position_id: string | null
+          source: string
+          ticker: string
+          updated_at: string
+        }
+        Insert: {
+          account_type?: string | null
+          amount?: number
+          created_at?: string
+          deleted_at?: string | null
+          household_id: string
+          id?: string
+          income_type?: string
+          notes?: string | null
+          pay_date: string
+          position_id?: string | null
+          source?: string
+          ticker: string
+          updated_at?: string
+        }
+        Update: {
+          account_type?: string | null
+          amount?: number
+          created_at?: string
+          deleted_at?: string | null
+          household_id?: string
+          id?: string
+          income_type?: string
+          notes?: string | null
+          pay_date?: string
+          position_id?: string | null
+          source?: string
+          ticker?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inv_dividends_position_id_fkey"
+            columns: ["position_id"]
+            isOneToOne: false
+            referencedRelation: "inv_role_positions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inv_position_lots: {
+        Row: {
+          account_type: string | null
+          created_at: string
+          deleted_at: string | null
+          external_id: string | null
+          fees: number
+          household_id: string
+          id: string
+          notes: string | null
+          position_id: string | null
+          price_per_share: number
+          shares: number
+          source: string
+          ticker: string
+          total_cost: number
+          trade_date: string
+          updated_at: string
+        }
+        Insert: {
+          account_type?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          external_id?: string | null
+          fees?: number
+          household_id: string
+          id?: string
+          notes?: string | null
+          position_id?: string | null
+          price_per_share?: number
+          shares?: number
+          source?: string
+          ticker: string
+          total_cost?: number
+          trade_date: string
+          updated_at?: string
+        }
+        Update: {
+          account_type?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          external_id?: string | null
+          fees?: number
+          household_id?: string
+          id?: string
+          notes?: string | null
+          position_id?: string | null
+          price_per_share?: number
+          shares?: number
+          source?: string
+          ticker?: string
+          total_cost?: number
+          trade_date?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inv_position_lots_position_id_fkey"
+            columns: ["position_id"]
+            isOneToOne: false
+            referencedRelation: "inv_role_positions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inv_reviews: {
         Row: {
           answers: Json

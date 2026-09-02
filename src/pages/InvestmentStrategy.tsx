@@ -13,6 +13,8 @@ import { AiRecommendationsPanel } from '@/components/investing/AiRecommendations
 import { WatchlistPanel } from '@/components/investing/WatchlistPanel';
 import { ScenarioPanel } from '@/components/investing/ScenarioPanel';
 import { ReviewsPanel } from '@/components/investing/ReviewsPanel';
+import { GainLossPanel } from '@/components/investing/GainLossPanel';
+import { DividendTracker } from '@/components/investing/DividendTracker';
 import { useInvestingMetrics } from '@/hooks/use-investing-metrics';
 import { ROLE_META, ROLES, money, pct } from '@/lib/investing/roles';
 
@@ -75,6 +77,8 @@ export default function InvestmentStrategy() {
         <TabsList className="flex h-auto flex-wrap justify-start">
           <TabsTrigger value="roles">Roles &amp; holdings</TabsTrigger>
           <TabsTrigger value="targets">Targets &amp; drift</TabsTrigger>
+          <TabsTrigger value="gainloss">Gain / loss</TabsTrigger>
+          <TabsTrigger value="income">Dividends &amp; income</TabsTrigger>
           <TabsTrigger value="priority">Capital priority</TabsTrigger>
           <TabsTrigger value="risk">Risk &amp; overlap</TabsTrigger>
           <TabsTrigger value="discipline">Buy / sell discipline</TabsTrigger>
@@ -87,6 +91,8 @@ export default function InvestmentStrategy() {
 
         <TabsContent value="roles" className="mt-4"><RolesBoard /></TabsContent>
         <TabsContent value="targets" className="mt-4"><AllocationTargets /></TabsContent>
+        <TabsContent value="gainloss" className="mt-4"><GainLossPanel /></TabsContent>
+        <TabsContent value="income" className="mt-4"><DividendTracker /></TabsContent>
         <TabsContent value="priority" className="mt-4"><CapitalPriorityPanel /></TabsContent>
         <TabsContent value="risk" className="mt-4"><RiskPanel /></TabsContent>
         <TabsContent value="discipline" className="mt-4"><DisciplinePanel /></TabsContent>

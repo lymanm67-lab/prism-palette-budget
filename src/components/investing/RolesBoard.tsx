@@ -25,7 +25,7 @@ import {
   securityTypeLabel,
   type InvestmentRole,
 } from '@/lib/investing/roles';
-import { useDeletePosition, useMarketLookup, useSavePosition, type RolePosition } from '@/hooks/use-investing';
+import { useDeletePosition, useInvDividends, useMarketLookup, useSavePosition, type RolePosition } from '@/hooks/use-investing';
 import { CostBasisImport } from '@/components/investing/CostBasisImport';
 import { useInvestingMetrics } from '@/hooks/use-investing-metrics';
 
@@ -73,6 +73,17 @@ export function PositionDialog({
 
   const set = (patch: Partial<RolePosition>) => setDraft((d) => ({ ...d, ...patch }));
   const isTactical = draft.role === 'CONVICTION' || draft.role === 'CATALYST';
+
+  // Dividends received this year, derived from recorded payments for this ticker.
+  const { data: dividendRows = [] } = useInvDividends();
+  const currentYear = String(new Date().getFullYear());
+  const recordedDividendYtd = dividendRows
+    .filter(
+      (d) =>
+        d.pay_date.startsWith(currentYear) &&
+        (d.position_id === position?.id || d.ticker.toUpperCase() === (draft.ticker ?? '').trim().toUpperCase()),
+    )
+    .reduce((s, d) => s + Number(d.amount || 0), 0);
 
   const lookup = async (rawTicker?: string) => {
     const ticker = (rawTicker ?? draft.ticker ?? '').trim().toUpperCase();
@@ -227,6 +238,20 @@ export function PositionDialog({
           <div className="space-y-1">
             <Label>Dividends received YTD</Label>
             <Input type="number" step="0.01" value={draft.dividend_income_ytd ?? 0} onChange={(e) => set({ dividend_income_ytd: Number(e.target.value) })} />
+            {recordedDividendYtd > 0 && (
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>Recorded payments: {money(recordedDividendYtd, 2)}</span>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  className="h-6 px-2"
+                  onClick={() => set({ dividend_income_ytd: recordedDividendYtd })}
+                >
+                  Use recorded
+                </Button>
+              </div>
+            )}
           </div>
           <div className="space-y-1">
             <Label>Position cap (% of portfolio)</Label>
