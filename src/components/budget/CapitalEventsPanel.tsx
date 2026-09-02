@@ -13,7 +13,7 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
-import { AlertTriangle, Coins, Plus, Trash2, Wallet } from 'lucide-react';
+import { AlertTriangle, ChevronDown, Coins, Plus, Trash2, Wallet } from 'lucide-react';
 import { useCurrency } from '@/hooks/use-currency';
 import {
   CAPITAL_DESTINATIONS,
@@ -46,6 +46,20 @@ export default function CapitalEventsPanel({ month }: { month?: string }) {
     : null;
   const miscounted = (events || []).filter(
     e => e.is_recurring || e.include_in_budget_pct || e.include_in_allocation_pct,
+  );
+
+  const [open, setOpen] = useState({ reserve: true, ledger: true, events: true });
+  const toggle = (k: 'reserve' | 'ledger' | 'events') => setOpen(o => ({ ...o, [k]: !o[k] }));
+  const Chevron = ({ section }: { section: 'reserve' | 'ledger' | 'events' }) => (
+    <Button
+      variant="ghost"
+      size="icon"
+      aria-label={open[section] ? 'Collapse section' : 'Expand section'}
+      aria-expanded={open[section]}
+      onClick={() => toggle(section)}
+    >
+      <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${open[section] ? '' : '-rotate-90'}`} />
+    </Button>
   );
 
   const [showEvent, setShowEvent] = useState(false);
@@ -141,15 +155,19 @@ export default function CapitalEventsPanel({ month }: { month?: string }) {
       {/* Reserve card */}
       <Card className="border-primary/30">
         <CardHeader className="pb-3">
-          <div className="flex items-center gap-2">
-            <Wallet className="h-5 w-5 text-primary" />
-            <CardTitle>Business Capital Reserve</CardTitle>
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Wallet className="h-5 w-5 text-primary" />
+              <CardTitle>Business Capital Reserve</CardTitle>
+            </div>
+            <Chevron section="reserve" />
           </div>
           <CardDescription>
             {monthLabel ? `${monthLabel} activity. ` : ''}Tracked independently of monthly take-home pay.
             Expenses paid from this reserve are never deducted from the personal monthly budget.
           </CardDescription>
         </CardHeader>
+        {open.reserve && (
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
             {monthLabel && (
@@ -185,6 +203,7 @@ export default function CapitalEventsPanel({ month }: { month?: string }) {
               : ''}
           </p>
         </CardContent>
+        )}
       </Card>
 
       {/* Reserve ledger */}
@@ -194,10 +213,14 @@ export default function CapitalEventsPanel({ month }: { month?: string }) {
             <CardTitle className="text-base">Reserve ledger</CardTitle>
             <CardDescription>Every dollar in and out of the reserve, with its funding source.</CardDescription>
           </div>
-          <Button size="sm" variant="outline" onClick={() => setShowSpend(v => !v)}>
-            <Plus className="mr-1 h-4 w-4" /> Record expense
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button size="sm" variant="outline" onClick={() => { setOpen(o => ({ ...o, ledger: true })); setShowSpend(v => !v); }}>
+              <Plus className="mr-1 h-4 w-4" /> Record expense
+            </Button>
+            <Chevron section="ledger" />
+          </div>
         </CardHeader>
+        {open.ledger && (
         <CardContent className="space-y-4">
           {showSpend && (
             <div className="grid gap-3 rounded-lg border p-4 md:grid-cols-3">
@@ -278,6 +301,7 @@ export default function CapitalEventsPanel({ month }: { month?: string }) {
             </TableBody>
           </Table>
         </CardContent>
+        )}
       </Card>
 
       {/* Capital events history */}
@@ -290,10 +314,14 @@ export default function CapitalEventsPanel({ month }: { month?: string }) {
             </div>
             <CardDescription>One-time funding events — excluded from recurring income and allocation percentages.</CardDescription>
           </div>
-          <Button size="sm" variant="outline" onClick={() => setShowEvent(v => !v)}>
-            <Plus className="mr-1 h-4 w-4" /> Add event
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button size="sm" variant="outline" onClick={() => { setOpen(o => ({ ...o, events: true })); setShowEvent(v => !v); }}>
+              <Plus className="mr-1 h-4 w-4" /> Add event
+            </Button>
+            <Chevron section="events" />
+          </div>
         </CardHeader>
+        {open.events && (
         <CardContent className="space-y-4">
           {showEvent && (
             <div className="grid gap-3 rounded-lg border p-4 md:grid-cols-3">
@@ -398,6 +426,7 @@ export default function CapitalEventsPanel({ month }: { month?: string }) {
             </TableBody>
           </Table>
         </CardContent>
+        )}
       </Card>
 
       <Card className="bg-muted/30">
