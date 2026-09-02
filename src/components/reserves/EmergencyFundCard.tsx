@@ -223,6 +223,73 @@ export function EmergencyFundCard({
         </div>
 
         <div className="rounded-lg border border-border/60 p-3">
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div>
+              <p className="text-sm font-medium">Redirect Excess Cash to Investments</p>
+              <p className="text-xs text-muted-foreground">
+                Optional. Preserves the {money(emergency.primary_target)} emergency cash floor. Nothing moves
+                automatically — you approve every transfer.
+              </p>
+            </div>
+            <Switch
+              checked={emergency.redirect_excess_enabled}
+              onCheckedChange={(v) => updateFund.mutate({ id: emergency.id, redirect_excess_enabled: v })}
+            />
+          </div>
+
+          {emergency.redirect_excess_enabled && (
+            <div className="mt-3 space-y-3">
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="ef-excess">Excess monthly savings</Label>
+                  <Input id="ef-excess" type="number" step="0.01" value={excess}
+                    onChange={(e) => setExcess(e.target.value)} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="ef-invpct">% to SoFi Investments</Label>
+                  <Input id="ef-invpct" type="number" min="0" max="100"
+                    value={emergency.redirect_investments_pct}
+                    onChange={(e) => {
+                      const pct = Math.max(0, Math.min(100, Number(e.target.value) || 0));
+                      updateFund.mutate({
+                        id: emergency.id,
+                        redirect_investments_pct: pct,
+                        redirect_other_pct: 100 - pct,
+                      });
+                    }} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>% to Vacation / HSA / other goals</Label>
+                  <Input value={`${split.otherPct}%`} readOnly className="bg-muted/40" />
+                </div>
+              </div>
+
+              {split.blocked ? (
+                <Alert>
+                  <Info className="h-4 w-4" />
+                  <AlertDescription className="text-xs">
+                    The {money(emergency.primary_target)} cash floor is not protected yet
+                    ({money2(s.remainingToPrimary)} to go). Excess cash stays in SoFi Emergency Cash until
+                    the floor is met — the investing features become much more useful after that.
+                  </AlertDescription>
+                </Alert>
+              ) : (
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-lg border border-border/60 p-3">
+                    <p className="text-xs text-muted-foreground">{split.investmentsPct}% to SoFi Investments</p>
+                    <p className="mt-1 text-lg font-semibold tabular-nums">{money2(split.toInvestments)}</p>
+                  </div>
+                  <div className="rounded-lg border border-border/60 p-3">
+                    <p className="text-xs text-muted-foreground">{split.otherPct}% to Vacation / HSA / other goals</p>
+                    <p className="mt-1 text-lg font-semibold tabular-nums">{money2(split.toOtherGoals)}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="rounded-lg border border-border/60 p-3">
           <div className="flex items-center justify-between gap-2">
             <p className="text-sm font-medium">Settings</p>
             {editing ? (
