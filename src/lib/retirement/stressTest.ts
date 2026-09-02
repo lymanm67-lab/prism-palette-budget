@@ -326,9 +326,34 @@ export function runStressTest(
         // Spending needs, each on its own inflation track
         const essential =
           a.essentialSpend * Math.pow(1 + Math.max(infl, houseInfl * 0.5 + infl * 0.5), t);
-        const discretionary = a.discretionarySpend * Math.pow(1 + infl + wGrowth, t);
         const healthcare = a.healthcareSpend * Math.pow(1 + hcInfl, t);
-        const travel = a.travelSpend * Math.pow(1 + travelInfl, t);
+
+        // ---- Cash bridge: carve a sleeve out of the portfolio at retirement ----
+        if (bridgeYears > 0 && !bridgeFunded) {
+          const targetBridge = bridgeYears * (essential + healthcare);
+          cash = Math.min(bal, targetBridge);
+          bal -= cash;
+          bridgeFunded = true;
+        }
+
+        // ---- Dynamic guardrails: adjust flexible spending inside bands ----
+        if (refBal === 0) {
+          refBal = bal + hsa + cash;
+          refAge = age;
+        }
+        if (useGuardrails && refBal > 0) {
+          const planPath = refBal * Math.pow(1 + infl, age - refAge);
+          const actual = bal + hsa + cash;
+          if (actual < planPath * (1 - grBand)) {
+            spendFactor = Math.max(0.6, spendFactor * (1 - grCut));
+          } else if (actual > planPath * (1 + grBand)) {
+            spendFactor = Math.min(1.25, spendFactor * (1 + grRaise));
+          }
+        }
+
+        const discretionary = a.discretionarySpend * Math.pow(1 + infl + wGrowth, t) * spendFactor;
+        const travel = a.travelSpend * Math.pow(1 + travelInfl, t) * spendFactor;
+
 
         let ltcNeed = 0;
         if (
