@@ -202,7 +202,70 @@ export function nonEmergencyFlag(text: string): string | null {
   return null;
 }
 
+/** A bank/brokerage account that a reserve fund follows. */
+export interface LinkedAccountInfo {
+  id: string;
+  name: string;
+  institution: string;
+  accountType: string;
+  balance: number;
+  syncedAt: string | null;
+  providerType: string | null;
+  /** True when an automated feed has not refreshed for more than 48 hours. */
+  stale: boolean;
+}
+
+export interface LinkableAccount {
+  id: string;
+  name: string;
+  institution: string | null;
+  account_type: string;
+  balance: number;
+  last_synced_at: string | null;
+  provider_type: string | null;
+}
+
+const STALE_MS = 48 * 60 * 60 * 1000;
+
+/** Builds link info for a fund, or null when no account is linked. */
+export function fundLink(
+  fund: Pick<ReserveFund, 'account_id'>,
+  accounts: LinkableAccount[],
+): LinkedAccountInfo | null {
+  if (!fund.account_id) return null;
+  const a = accounts.find((x) => x.id === fund.account_id);
+  if (!a) return null;
+  const automated = !!a.provider_type && a.provider_type !== 'manual';
+  const synced = a.last_synced_at ? new Date(a.last_synced_at).getTime() : null;
+  return {
+    id: a.id,
+    name: a.name,
+    institution: a.institution || '—',
+    accountType: a.account_type,
+    balance: Number(a.balance || 0),
+    syncedAt: a.last_synced_at,
+    providerType: a.provider_type,
+    stale: automated && synced != null && Date.now() - synced > STALE_MS,
+  };
+}
+
+/** Accounts at an institution matching a reserve fund's institution label. */
+export function matchInstitutionAccounts(
+  label: string | null,
+  accounts: LinkableAccount[],
+  accountTypes: string[],
+): LinkableAccount[] {
+  const token = (label || '').trim().split(/\s+/)[0].toLowerCase();
+  if (!token) return [];
+  return accounts.filter(
+    (a) =>
+      accountTypes.includes(a.account_type) &&
+      `${a.institution || ''} ${a.name}`.toLowerCase().includes(token),
+  );
+}
+
 export interface GuardrailContext {
+
   /** Ending monthly Buffer balance — used to detect double-counted money. */
   bufferBalance?: number;
   /** Vacation / travel reserve balance — must stay distinct from emergency cash. */
