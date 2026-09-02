@@ -574,7 +574,7 @@ const Budgets = () => {
   // businessOffsets: keyed by PERSONAL category id => { bizAmount, bizCategory, pct, bizCategoryId }
   // bizActualsFromOffsets: keyed by BUSINESS category id => total $ to add to its actual (mirrors personal raw actual × pct)
   const { businessOffsets, bizActualsFromOffsets } = useMemo(() => {
-    const offsets = new Map<string, { bizAmount: number; bizCategory: string; pct: number; bizCategoryId?: string }>();
+    const offsets = new Map<string, { bizAmount: number; personalAmount: number; bizCategory: string; pct: number; bizCategoryId?: string }>();
     const bizActuals = new Map<string, number>();
     if (!categories || !categoryGroups || !budgets) return { businessOffsets: offsets, bizActualsFromOffsets: bizActuals };
 
