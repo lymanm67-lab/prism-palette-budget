@@ -25,7 +25,7 @@ import {
   securityTypeLabel,
   type InvestmentRole,
 } from '@/lib/investing/roles';
-import { useDeletePosition, useMarketLookup, useSavePosition, type RolePosition } from '@/hooks/use-investing';
+import { useDeletePosition, useInvDividends, useMarketLookup, useSavePosition, type RolePosition } from '@/hooks/use-investing';
 import { CostBasisImport } from '@/components/investing/CostBasisImport';
 import { useInvestingMetrics } from '@/hooks/use-investing-metrics';
 
