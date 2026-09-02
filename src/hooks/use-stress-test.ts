@@ -62,8 +62,10 @@ export const FALLBACK_ASSUMPTIONS: StressAssumptions = {
   healthcareInflationPct: 5.5,
   ltcInflationPct: 4.5,
   travelInflationPct: 3,
-  essentialSpend: 42_000,
-  discretionarySpend: 12_000,
+  // Retirement spending is grounded in the household's real plan:
+  // Live (essentials) ~$1,657/mo, Enjoy (discretionary) ~$288/mo, travel fund $500/mo.
+  essentialSpend: 22_000,
+  discretionarySpend: 3_500,
   healthcareSpend: 9_000,
   travelSpend: 6_000,
   withdrawalGrowthPct: 0,
@@ -71,9 +73,10 @@ export const FALLBACK_ASSUMPTIONS: StressAssumptions = {
   socialSecurityStartAge: 70,
   socialSecurityColaPct: 2.5,
   pensionAnnual: 0,
-  pensionStartAge: 65,
+  pensionStartAge: 62,
   pensionColaPct: 1.5,
   otherGuaranteedAnnual: 0,
+
   effectiveTaxRatePct: 15,
   marketShockPct: 30,
   marketShockAge: null,
