@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -10,14 +10,12 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { money } from '@/lib/investing/roles';
-import { useRolePositions, useSavePosition } from '@/hooks/use-investing';
+import { useRolePositions, useSavePosition, useSaveLots, usePositionLots } from '@/hooks/use-investing';
+import { parseLotCsv, rollupLots, groupLotsByTicker, lotHoldingPeriod, type ParsedLot } from '@/lib/investing/lots';
 
 const sb = supabase as any;
 
-interface ParsedRow {
-  ticker: string;
-  shares: number | null;
-  costBasis: number | null;
+interface PreviewLot extends ParsedLot {
   matched: boolean;
   source: string;
 }
@@ -34,6 +32,7 @@ function findIdx(header: string[], candidates: string[]): number {
   return header.findIndex((h) => candidates.some((c) => h.includes(c)));
 }
 
+/** Legacy blended parser, kept for simple "Symbol, Shares, Cost Basis" exports. */
 export function parseCostBasisCsv(text: string): { ticker: string; shares: number | null; costBasis: number | null }[] {
   const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
   if (lines.length === 0) return [];
@@ -68,26 +67,27 @@ export function parseCostBasisCsv(text: string): { ticker: string; shares: numbe
 export function CostBasisImport() {
   const { household } = useHousehold();
   const { data: positions = [] } = useRolePositions();
+  const { data: existingLots = [] } = usePositionLots();
   const save = useSavePosition();
+  const saveLots = useSaveLots();
   const [open, setOpen] = useState(false);
   const [raw, setRaw] = useState('');
-  const [rows, setRows] = useState<ParsedRow[]>([]);
+  const [lots, setLots] = useState<PreviewLot[]>([]);
   const [busy, setBusy] = useState(false);
 
-  const tickers = new Set(positions.map((p) => p.ticker.toUpperCase()));
+  const tickers = useMemo(() => new Set(positions.map((p) => p.ticker.toUpperCase())), [positions]);
 
-  const toParsed = (
-    list: { ticker: string; shares: number | null; costBasis: number | null }[],
-    source: string,
-  ): ParsedRow[] => list.map((r) => ({ ...r, matched: tickers.has(r.ticker), source }));
+  const toPreview = (list: ParsedLot[], source: string): PreviewLot[] =>
+    list.map((l) => ({ ...l, matched: tickers.has(l.ticker.toUpperCase()), source }));
 
   const handleCsvText = (text: string) => {
-    const parsed = parseCostBasisCsv(text);
+    const { lots: parsed, skipped } = parseLotCsv(text);
     if (parsed.length === 0) {
-      toast.error('No rows found. Expect columns like Symbol, Shares, Cost Basis.');
+      toast.error('No lots found. Expect columns like Symbol, Date acquired, Quantity, Price and Cost basis.');
       return;
     }
-    setRows(toParsed(parsed, 'CSV'));
+    setLots(toPreview(parsed, 'CSV'));
+    toast.success(`Detected ${parsed.length} lot(s)${skipped > 0 ? `, skipped ${skipped} row(s)` : ''}`);
   };
 
   const handleFile = async (file: File | undefined) => {
@@ -101,22 +101,29 @@ export function CostBasisImport() {
     try {
       const { data, error } = await sb
         .from('investment_holdings')
-        .select('symbol, quantity, cost_basis')
+        .select('symbol, quantity, cost_basis, updated_at')
         .eq('household_id', household.id)
         .not('cost_basis', 'is', null);
       if (error) throw error;
-      const list = (data ?? [])
-        .filter((h: any) => h.symbol)
-        .map((h: any) => ({
-          ticker: String(h.symbol).toUpperCase(),
-          shares: h.quantity ?? null,
-          costBasis: h.cost_basis ?? null,
-        }));
+      const list: ParsedLot[] = (data ?? [])
+        .filter((h: any) => h.symbol && Number(h.cost_basis) > 0)
+        .map((h: any) => {
+          const shares = Number(h.quantity ?? 0);
+          const total = Number(h.cost_basis ?? 0);
+          return {
+            ticker: String(h.symbol).toUpperCase(),
+            trade_date: (h.updated_at ?? new Date().toISOString()).slice(0, 10),
+            shares,
+            price_per_share: shares > 0 ? total / shares : 0,
+            fees: 0,
+            total_cost: total,
+          };
+        });
       if (list.length === 0) {
-        toast.error('No brokerage cost basis found. Sync your brokerage or use CSV instead.');
+        toast.error('No brokerage cost basis found. Connect Charles Schwab on Accounts, or use a CSV instead.');
         return;
       }
-      setRows(toParsed(list, 'Brokerage'));
+      setLots(toPreview(list, 'Brokerage'));
       toast.success(`Found ${list.length} holding(s) with cost basis`);
     } catch (e) {
       toast.error((e as Error).message);
@@ -125,23 +132,56 @@ export function CostBasisImport() {
     }
   };
 
-  const applicable = rows.filter((r) => r.matched && r.costBasis != null && r.costBasis > 0);
+  const applicable = lots.filter((l) => l.matched);
+  const grouped = useMemo(() => groupLotsByTicker(applicable), [applicable]);
 
   const apply = async () => {
     setBusy(true);
     try {
-      for (const r of applicable) {
-        const target = positions.find((p) => p.ticker.toUpperCase() === r.ticker);
+      let lotCount = 0;
+      for (const [ticker, group] of grouped.entries()) {
+        const target = positions.find((p) => p.ticker.toUpperCase() === ticker);
         if (!target) continue;
+
+        const keptExisting = existingLots.filter(
+          (l) => l.ticker.toUpperCase() === ticker && l.source !== group[0].source.toLowerCase(),
+        );
+
+        await saveLots.mutateAsync(
+          group.map((l) => ({
+            position_id: target.id,
+            ticker,
+            trade_date: l.trade_date,
+            shares: l.shares,
+            price_per_share: l.price_per_share,
+            fees: l.fees,
+            total_cost: l.total_cost,
+            account_type: target.account_type,
+            source: l.source.toLowerCase() === 'csv' ? 'csv' : 'brokerage',
+          })),
+        );
+        lotCount += group.length;
+
+        const roll = rollupLots([...group, ...keptExisting.map((l) => ({
+          ticker: l.ticker,
+          trade_date: l.trade_date,
+          shares: Number(l.shares),
+          price_per_share: Number(l.price_per_share),
+          fees: Number(l.fees),
+          total_cost: Number(l.total_cost),
+        }))]);
+
         await save.mutateAsync({
           id: target.id,
-          cost_basis: r.costBasis!,
-          ...(r.shares != null && r.shares > 0 ? { shares: r.shares } : {}),
+          cost_basis: roll.costBasis,
+          ...(roll.shares > 0 ? { shares: roll.shares } : {}),
+          ...(roll.avgPrice != null ? { avg_price: roll.avgPrice } : {}),
+          ...(roll.earliestTradeDate ? { entry_date: roll.earliestTradeDate } : {}),
         });
       }
-      toast.success(`Updated cost basis on ${applicable.length} position(s)`);
+      toast.success(`Saved ${lotCount} lot(s) across ${grouped.size} position(s)`);
       setOpen(false);
-      setRows([]);
+      setLots([]);
       setRaw('');
     } catch (e) {
       toast.error((e as Error).message);
@@ -157,12 +197,13 @@ export function CostBasisImport() {
           <Upload className="mr-2 h-4 w-4" /> Import cost basis
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-3xl">
         <DialogHeader>
-          <DialogTitle>Import cost basis</DialogTitle>
+          <DialogTitle>Import cost basis (lot level)</DialogTitle>
           <DialogDescription>
-            Pull cost basis from your linked brokerage, or paste/upload a broker CSV with Symbol, Shares and Cost Basis columns.
-            Nothing is applied until you confirm.
+            Paste or upload a broker lot export (Schwab, Fidelity, SoFi or generic) with symbol, date acquired, quantity and price, or
+            pull cost basis from a linked brokerage. Each lot is saved separately and your position shares, total cost basis and average
+            price are recalculated from the lots. Nothing is applied until you confirm.
           </DialogDescription>
         </DialogHeader>
 
@@ -184,11 +225,11 @@ export function CostBasisImport() {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="cost-basis-paste">Or paste CSV rows</Label>
+            <Label htmlFor="cost-basis-paste">Or paste lot rows</Label>
             <Textarea
               id="cost-basis-paste"
               rows={4}
-              placeholder={'Symbol,Shares,Cost Basis\nDRAM,10,524.00'}
+              placeholder={'Symbol,Date acquired,Quantity,Price per share,Fees\nDRAM,06/14/2026,10,52.40,0'}
               value={raw}
               onChange={(e) => setRaw(e.target.value)}
             />
@@ -197,28 +238,32 @@ export function CostBasisImport() {
             </Button>
           </div>
 
-          {rows.length > 0 && (
+          {lots.length > 0 && (
             <div className="max-h-72 overflow-auto rounded-md border border-border/60">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Ticker</TableHead>
+                    <TableHead>Acquired</TableHead>
                     <TableHead className="text-right">Shares</TableHead>
-                    <TableHead className="text-right">Cost basis</TableHead>
-                    <TableHead>Source</TableHead>
+                    <TableHead className="text-right">Price</TableHead>
+                    <TableHead className="text-right">Total cost</TableHead>
+                    <TableHead>Holding</TableHead>
                     <TableHead>Match</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {rows.map((r, i) => (
-                    <TableRow key={`${r.ticker}-${i}`}>
-                      <TableCell className="font-medium">{r.ticker}</TableCell>
-                      <TableCell className="text-right">{r.shares ?? '—'}</TableCell>
-                      <TableCell className="text-right">{r.costBasis != null ? money(r.costBasis, 2) : '—'}</TableCell>
-                      <TableCell className="text-xs text-muted-foreground">{r.source}</TableCell>
+                  {lots.map((l, i) => (
+                    <TableRow key={`${l.ticker}-${l.trade_date}-${i}`}>
+                      <TableCell className="font-medium">{l.ticker}</TableCell>
+                      <TableCell>{l.trade_date}</TableCell>
+                      <TableCell className="text-right">{l.shares}</TableCell>
+                      <TableCell className="text-right">{money(l.price_per_share, 2)}</TableCell>
+                      <TableCell className="text-right">{money(l.total_cost, 2)}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground">{lotHoldingPeriod(l.trade_date).label}</TableCell>
                       <TableCell>
-                        {r.matched ? (
-                          <Badge variant="secondary">Will update</Badge>
+                        {l.matched ? (
+                          <Badge variant="secondary">Will import</Badge>
                         ) : (
                           <Badge variant="outline" className="border-amber-500/40 text-amber-400">No position</Badge>
                         )}
@@ -234,7 +279,7 @@ export function CostBasisImport() {
         <DialogFooter>
           <Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
           <Button onClick={apply} disabled={busy || applicable.length === 0}>
-            Apply to {applicable.length} position(s)
+            Import {applicable.length} lot(s) into {grouped.size} position(s)
           </Button>
         </DialogFooter>
       </DialogContent>
