@@ -147,8 +147,79 @@ export function useInvestingMetrics() {
     [allocation, driftBand, overlap.score, concentration, tacticalPct, tacticalWarn, emergency.intact, documented, tacticalPositions.length],
   );
 
-  const stress = useMemo(() => declineStress(allocation.total, allocation.rows), [allocation]);
-  const risk = useMemo(() => riskBudget(allocation.rows), [allocation.rows]);
+  const stress = useMemo(() => stressLevels(allocation.total), [allocation.total]);
+
+  // Position-level guardrail rows + largest holding, in the shape the UI renders.
+  const concentrationView = useMemo(() => {
+    const total = allocation.total;
+    const rows = positions
+      .map((p) => {
+        const value = positionValue(p as any);
+        const cap = Number(p.max_pct ?? 0) || null;
+        const pctOfPortfolio = total > 0 ? (value / total) * 100 : 0;
+        return {
+          id: p.id,
+          ticker: p.ticker,
+          role: p.role as InvestmentRole,
+          value,
+          pctOfPortfolio,
+          cap,
+          breach: cap ? pctOfPortfolio > cap : false,
+        };
+      })
+      .sort((a, b) => b.value - a.value);
+    return { rows, largest: rows[0] ?? null, limits: concentration };
+  }, [positions, allocation.total, concentration]);
+
+  const overlapView = useMemo(
+    () => ({
+      score: overlap.score,
+      sectors: overlap.sectors,
+      rows: overlap.rows.map((r) => ({
+        ...r,
+        viaTickers: [...new Set(r.funds.map((f) => f.ticker))],
+      })),
+    }),
+    [overlap],
+  );
+
+  const riskView = useMemo(() => {
+    const higherRiskValue = positions
+      .filter((p) => p.role === 'CONVICTION' || p.role === 'CATALYST')
+      .reduce((s, p) => s + positionValue(p as any), 0);
+    return {
+      buckets: riskBudget(allocation.rows),
+      higherRiskPct: tacticalPct,
+      higherRiskValue,
+      warnPct: tacticalWarn,
+      overBudget: tacticalPct > tacticalWarn,
+    };
+  }, [allocation.rows, positions, tacticalPct, tacticalWarn]);
+
+  const byAccount = useMemo(() => {
+    const map = new Map<string, number>();
+    positions.forEach((p) => {
+      map.set(p.account_type, (map.get(p.account_type) ?? 0) + positionValue(p as any));
+    });
+    return [...map.entries()]
+      .map(([account_type, value]) => ({
+        account_type,
+        value,
+        pct: allocation.total > 0 ? (value / allocation.total) * 100 : 0,
+      }))
+      .sort((a, b) => b.value - a.value);
+  }, [positions, allocation.total]);
+
+  const priorityView = useMemo(
+    () => ({
+      ...priority,
+      clear: priority.clearedToInvest,
+      checks: priority.steps.map((s) => ({ label: s.label, passed: s.met, detail: s.detail })),
+    }),
+    [priority],
+  );
+
+  const fitView = useMemo(() => ({ ...fit, factors: fit.notes }), [fit]);
 
   return {
     loading: settingsQ.isLoading || targetsQ.isLoading || positionsQ.isLoading,
@@ -157,18 +228,21 @@ export function useInvestingMetrics() {
     positions,
     fundHoldings,
     allocation,
-    concentration,
-    overlap,
+    concentration: concentrationView,
+    concentrationLimits: concentration,
+    overlap: overlapView,
     emergency,
     highInterestBalance,
-    priority,
+    priority: priorityView,
     nextDollar,
     totals,
     tacticalPct,
-    fit,
+    fit: fitView,
     stress,
-    risk,
+    risk: riskView,
+    byAccount,
     driftBand,
     tacticalWarn,
   };
 }
+

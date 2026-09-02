@@ -517,7 +517,7 @@ export function holdingPeriod(entryDate?: string | null): { days: number; longTe
   return { days, longTerm: days > 365 };
 }
 
-export function saleEstimate(p: PositionLike, sharesSold: number, taxRatePct: number) {
+export function saleEstimate(p: PositionLike, sharesSold: number, taxRatePct = 15) {
   const shares = Number(p.shares ?? 0);
   const fraction = shares > 0 ? Math.min(1, sharesSold / shares) : 0;
   const proceeds = positionValue(p) * fraction;
@@ -532,6 +532,21 @@ export function saleEstimate(p: PositionLike, sharesSold: number, taxRatePct: nu
     netProceeds: proceeds - taxable * (taxRatePct / 100),
     longTerm: holdingPeriod(p.entry_date)?.longTerm ?? false,
   };
+}
+
+export function stressLevels(total: number) {
+  return [10, 20, 30].map((declinePct) => ({
+    declinePct,
+    label: `-${declinePct}%`,
+    loss: total * (declinePct / 100),
+    value: total * (1 - declinePct / 100),
+  }));
+}
+
+export function holdingPeriodStatus(entryDate?: string | null): { days: number; longTerm: boolean; label: string } {
+  const hp = holdingPeriod(entryDate);
+  if (!hp) return { days: 0, longTerm: false, label: 'Entry date not set' };
+  return { ...hp, label: hp.longTerm ? `Long-term (${hp.days} days held)` : `Short-term (${hp.days} days held)` };
 }
 
 function fmt(n: number): string {
