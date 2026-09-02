@@ -64,7 +64,7 @@ export function buildGainLossReport(
   lotCounts: Record<string, number> = {},
 ): GainLossReport {
   const rows: GainLossPosition[] = positions.map((p) => {
-    const currentValue = positionValue(p);
+    const currentValue = positionValue({ ...p, cost_basis: Number(p.cost_basis ?? 0) });
     const costBasis = Number(p.cost_basis ?? 0);
     const basisMissing = !(costBasis > 0);
     const gain = basisMissing ? 0 : currentValue - costBasis;
