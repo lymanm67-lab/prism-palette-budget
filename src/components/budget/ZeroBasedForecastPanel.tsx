@@ -15,6 +15,7 @@ import PrintInfographicButton from '@/components/reports/PrintInfographicButton'
 import { useBufferOneTime, useBusinessExpenses, useRecurringPurposeLines, useMoneyRedirects, useBufferSettings } from '@/hooks/use-zero-based';
 import { useHouseholdDebts } from '@/hooks/use-household-debts';
 import { useDebtActuals } from '@/hooks/use-debt-actuals';
+import { useMoneyPurposeSnapshot } from '@/hooks/use-money-purpose';
 import { buildForecast, monthLabel, CHANGE_FLAG_LABEL, type ForecastMonth } from '@/lib/budgeting/forecastEngine';
 import { buildAssumptions, DEFAULT_KNOBS, type WhatIfKnobs } from '@/lib/budgeting/forecastInputs';
 import { buildRedirectFlows, redirectFlagInputs } from '@/lib/budgeting/redirects';
@@ -34,6 +35,7 @@ export default function ZeroBasedForecastPanel() {
   const { data: debts } = useHouseholdDebts();
   const { settings } = useBufferSettings();
   const { paymentMap } = useDebtActuals(4);
+  const snap = useMoneyPurposeSnapshot(currentMonth(), 1);
 
   const thresholds = useMemo(
     () => ({
@@ -75,8 +77,8 @@ export default function ZeroBasedForecastPanel() {
           businessExpenses: (business.rows || []) as any,
           debts: debts as any[],
           bufferOneTimes: (oneTimes.rows || []) as any,
-          employeePayrollWealth: 451.67,
-          employerRetirement: 516.56,
+          employeePayrollWealth: snap.payrollWealth,
+          employerRetirement: snap.employerWealth,
           employerHsa: [
             { month: '2027-01', amount: 500 },
             { month: '2027-07', amount: 500 },

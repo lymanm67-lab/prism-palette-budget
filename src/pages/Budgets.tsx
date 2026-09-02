@@ -45,6 +45,7 @@ import MoneyBlueprintPanel from '@/components/budget/MoneyBlueprintPanel';
 import PayrollElectionsCard from '@/components/budget/PayrollElectionsCard';
 import DebtCashFlowRelease from '@/components/budget/DebtCashFlowRelease';
 import DebtPayoffTracker from '@/components/budget/DebtPayoffTracker';
+import PayoffTimelinePanel from '@/components/budget/PayoffTimelinePanel';
 
 import ZeroBasedPlanBoard from '@/components/budget/ZeroBasedPlanBoard';
 import CapitalEventsPanel from '@/components/budget/CapitalEventsPanel';
@@ -1978,6 +1979,7 @@ const Budgets = () => {
           <MoneyBlueprintPanel month={month} expenseStructure={sectionTotals as any} />
           <DebtCashFlowRelease month={month} />
           <DebtPayoffTracker />
+          <PayoffTimelinePanel />
 
         </>
       )}

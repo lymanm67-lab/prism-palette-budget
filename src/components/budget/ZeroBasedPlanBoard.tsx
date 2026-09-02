@@ -15,6 +15,7 @@ import {
   DEFAULT_BUFFER_SETTINGS,
 } from '@/hooks/use-zero-based';
 import { useDebtActuals } from '@/hooks/use-debt-actuals';
+import { useMoneyPurposeSnapshot } from '@/hooks/use-money-purpose';
 import { rollBuffer, bufferStatus, BUFFER_STATUS_LABEL } from '@/lib/budgeting/bufferLedger';
 import { PHASE_TARGETS, PURPOSE_META } from '@/lib/budgeting/moneyPurpose';
 import { monthLabel } from '@/lib/budgeting/forecastEngine';
@@ -32,11 +33,7 @@ interface Props {
   employerWealth?: number;
 }
 
-export default function ZeroBasedPlanBoard({
-  takeHome = 4250.02,
-  payrollWealth = 451.67,
-  employerWealth = 516.56,
-}: Props) {
+export default function ZeroBasedPlanBoard(props: Props) {
   const { formatCurrency } = useCurrency();
   const lines = useRecurringPurposeLines();
   const business = useBusinessExpenses();
@@ -46,6 +43,11 @@ export default function ZeroBasedPlanBoard({
   const { actuals } = useDebtActuals(4);
 
   const month = thisMonth();
+  // Real figures come from the household snapshot; props only override for print/preview.
+  const snap = useMoneyPurposeSnapshot(month, 1);
+  const takeHome = round2(props.takeHome ?? snap.netIncome);
+  const payrollWealth = round2(props.payrollWealth ?? snap.payrollWealth);
+  const employerWealth = round2(props.employerWealth ?? snap.employerWealth);
   const activeLines = (purpose: string) =>
     (lines.rows || [])
       .filter((l) => l.purpose === purpose)

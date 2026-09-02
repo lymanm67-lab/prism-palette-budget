@@ -54,7 +54,7 @@ export default function ReconciliationCheckCard({
         const { data: page_, error } = await supabase
           .from('transactions')
           .select(
-            'id, date, merchant, description, amount, is_transfer, account_id, category_id, categories(name, category_groups(name, budget_type))',
+            'id, date, merchant, notes, amount, is_transfer, account_id, category_id, categories(name, category_groups(name, budget_type))',
           )
           .eq('household_id', household!.id)
           .is('deleted_at', null)
@@ -71,7 +71,7 @@ export default function ReconciliationCheckCard({
         id: r.id,
         date: r.date,
         merchant: r.merchant,
-        description: r.description,
+        description: r.notes ?? r.merchant ?? null,
         amount: Number(r.amount) || 0,
         is_transfer: r.is_transfer,
         account_id: r.account_id,
