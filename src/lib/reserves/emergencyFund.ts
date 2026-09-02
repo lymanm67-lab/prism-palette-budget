@@ -206,6 +206,12 @@ export interface GuardrailContext {
   vehicleBalance?: number;
   /** Funds classified as investments, so misclassification can be flagged. */
   investmentFunds?: { name: string; liquidity_class: LiquidityClass; market_value: number }[];
+  /**
+   * Live balance of the linked institution account. When present it replaces the
+   * manually tracked balance so the card follows the real account.
+   */
+  link?: LinkedAccountInfo | null;
+
 }
 
 export function summarizeReserve(
