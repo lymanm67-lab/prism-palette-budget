@@ -88,6 +88,13 @@ const TABS: TabDef[] = [
     icon: HeartPulse,
     Component: CrossoverTracker as TabDef['Component'],
   },
+  {
+    key: 'stress-test',
+    label: 'Monte Carlo Stress Test',
+    blurb: 'Thousands of market, inflation, healthcare and longevity scenarios — probability of success, not one average return.',
+    icon: Gauge,
+    Component: RetirementStressTest as TabDef['Component'],
+  },
 ];
 
 function PanelLoader() {
