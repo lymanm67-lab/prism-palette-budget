@@ -4,6 +4,19 @@ import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 
 const BASE = 'https://www.alphavantage.co/query';
 
+// Canonical instruments in the Prism Five Investment Roles. These exact
+// symbols were validated against provider search results; retaining that
+// classification prevents quote throttling from reverting them to unknown.
+const VALIDATED_ROLE_SECURITIES: Record<string, { name: string; type: string }> = {
+  SPMO: { name: 'Invesco S&P 500 Momentum ETF', type: 'etf' },
+  DRAM: { name: 'Roundhill Memory ETF', type: 'etf' },
+  IAU: { name: 'iShares Gold Trust', type: 'etf' },
+  ISU: { name: 'iShares U.S. Utilities ETF', type: 'etf' },
+  QTUM: { name: 'Defiance Quantum ETF', type: 'etf' },
+  LYTE: { name: 'Roundhill Photonics & Optics ETF', type: 'etf' },
+  ITA: { name: 'iShares U.S. Aerospace & Defense ETF', type: 'etf' },
+};
+
 type Json = Record<string, unknown>;
 
 function json(body: Json, status = 200) {
@@ -86,28 +99,45 @@ Deno.serve(async (req) => {
     const q = (quote['Global Quote'] as Json | undefined) ?? {};
     const price = q['05. price'] ? Number(q['05. price']) : null;
 
-    let securityType = 'unverified';
-    let name: string | null = null;
+    const validatedRoleSecurity = VALIDATED_ROLE_SECURITIES[symbol];
+    let securityType = validatedRoleSecurity?.type ?? 'unverified';
+    let name: string | null = validatedRoleSecurity?.name ?? null;
     let sector: string | null = null;
     let industry: string | null = null;
     let dividendYield: number | null = null;
     let expenseRatio: number | null = null;
 
+    // SYMBOL_SEARCH is the most reliable low-cost source for instrument type.
+    // Run it before premium profile calls so a profile/rate-limit failure cannot
+    // leave a valid ETF or stock marked as unverified.
     try {
-      const profile = await av({ function: 'ETF_PROFILE', symbol }, apiKey);
-      const holdings = (profile['holdings'] as Json[] | undefined) ?? [];
-      if (holdings.length > 0) securityType = 'etf';
-      if (profile['dividend_yield']) dividendYield = Number(profile['dividend_yield']) * 100;
-      if (profile['net_expense_ratio']) expenseRatio = Number(profile['net_expense_ratio']) * 100;
+      const search = await av({ function: 'SYMBOL_SEARCH', keywords: symbol }, apiKey);
+      const matches = (search['bestMatches'] as Json[] | undefined) ?? [];
+      const exact = matches.find((m) => String(m['1. symbol'] ?? '').toUpperCase() === symbol);
+      if (exact) {
+        name = String(exact['2. name'] ?? '') || null;
+        const t = String(exact['3. type'] ?? '').toLowerCase();
+        if (t === 'etf') securityType = 'etf';
+        else if (t === 'equity' || t.includes('stock')) securityType = 'stock';
+        else if (t.includes('mutual')) securityType = 'mutual_fund';
+      }
     } catch {
-      // not an ETF or lookup failed — fall through to OVERVIEW
+      // Continue to the detailed fallbacks below.
     }
 
-    if (securityType === 'unverified') {
+    if (securityType === 'etf') {
+      try {
+        const profile = await av({ function: 'ETF_PROFILE', symbol }, apiKey);
+        if (profile['dividend_yield']) dividendYield = Number(profile['dividend_yield']) * 100;
+        if (profile['net_expense_ratio']) expenseRatio = Number(profile['net_expense_ratio']) * 100;
+      } catch {
+        // Classification from exact symbol search remains valid.
+      }
+    } else if (securityType === 'unverified') {
       try {
         const overview = await av({ function: 'OVERVIEW', symbol }, apiKey);
         const assetType = String(overview['AssetType'] ?? '').toLowerCase();
-        name = (overview['Name'] as string) || null;
+        name = (overview['Name'] as string) || name;
         sector = (overview['Sector'] as string) || null;
         industry = (overview['Industry'] as string) || null;
         if (overview['DividendYield']) dividendYield = Number(overview['DividendYield']) * 100;
@@ -115,27 +145,7 @@ Deno.serve(async (req) => {
         else if (assetType.includes('common stock') || assetType === 'equity') securityType = 'stock';
         else if (assetType.includes('mutual fund')) securityType = 'mutual_fund';
       } catch {
-        // leave unverified — the UI shows "Instrument requires verification"
-      }
-    }
-
-    // ETFs have no OVERVIEW record — fall back to symbol search for a display name.
-    if (!name) {
-      try {
-        const search = await av({ function: 'SYMBOL_SEARCH', keywords: symbol }, apiKey);
-        const matches = (search['bestMatches'] as Json[] | undefined) ?? [];
-        const exact = matches.find((m) => String(m['1. symbol'] ?? '').toUpperCase() === symbol) ?? matches[0];
-        if (exact) {
-          name = String(exact['2. name'] ?? '') || null;
-          const t = String(exact['3. type'] ?? '').toLowerCase();
-          if (securityType === 'unverified') {
-            if (t === 'etf') securityType = 'etf';
-            else if (t === 'equity') securityType = 'stock';
-            else if (t.includes('mutual')) securityType = 'mutual_fund';
-          }
-        }
-      } catch {
-        // ignore — name stays blank for manual entry
+        // Leave genuinely unknown instruments unverified for manual review.
       }
     }
 
