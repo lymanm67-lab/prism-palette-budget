@@ -26,6 +26,7 @@ import {
   type InvestmentRole,
 } from '@/lib/investing/roles';
 import { useDeletePosition, useMarketLookup, useSavePosition, type RolePosition } from '@/hooks/use-investing';
+import { CostBasisImport } from '@/components/investing/CostBasisImport';
 import { useInvestingMetrics } from '@/hooks/use-investing-metrics';
 
 const STARTER: Array<Partial<RolePosition>> = [
