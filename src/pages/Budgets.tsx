@@ -46,6 +46,7 @@ import PayrollElectionsCard from '@/components/budget/PayrollElectionsCard';
 import DebtCashFlowRelease from '@/components/budget/DebtCashFlowRelease';
 import DebtPayoffTracker from '@/components/budget/DebtPayoffTracker';
 import PayoffTimelinePanel from '@/components/budget/PayoffTimelinePanel';
+import AssignAutoBalance from '@/components/budget/AssignAutoBalance';
 
 import ZeroBasedPlanBoard from '@/components/budget/ZeroBasedPlanBoard';
 import CapitalEventsPanel from '@/components/budget/CapitalEventsPanel';
@@ -1976,6 +1977,7 @@ const Budgets = () => {
       {/* STEP 2 — ASSIGN: give every dollar a purpose */}
       {(viewTab === 'assign' || isPrinting) && (
         <>
+          <AssignAutoBalance month={month} />
           <MoneyBlueprintPanel month={month} expenseStructure={sectionTotals as any} />
           <DebtCashFlowRelease month={month} />
           <DebtPayoffTracker />

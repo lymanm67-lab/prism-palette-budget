@@ -59,3 +59,10 @@
 ## New (requested 2026-09-02)
 - [x] Capital Events report page (/reports/capital-events): per-event funding source, cost basis, gain, reserve cash flow graph
 - [x] Collapsible sections with chevron arrows: Business Capital Reserve, Reserve Ledger, Capital Events History
+
+## Session 5 — Budget hygiene + Assign step automation (2026-09-02)
+- [x] Mount Auto-Assign card on the /budgets Assign step (runs Layer A balancing, keeps Buffer balanced)
+- [x] Payoff timeline visible on the Assign step
+- [x] Backfill all missing budget lines Jan 2026 → Sep 2026 from real activity
+- [x] Earnin advances/repayments moved out of Other Income to "Earnin Cash Advance" (eliminate_debt)
+- [x] Shared lines labelled with personal/business split %: Auto Insurance 53/47, Utilities 69/31, BetrLink Debt 63/37, Restaurants 50/50
