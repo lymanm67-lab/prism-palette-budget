@@ -6,7 +6,7 @@ import {
   computeAllocation,
   computeConcentration,
   computeOverlap,
-  declineStress,
+  stressLevels,
   evaluateCapitalPriority,
   nextDollarTarget,
   riskBudget,
