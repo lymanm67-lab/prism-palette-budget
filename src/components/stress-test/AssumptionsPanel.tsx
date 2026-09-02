@@ -229,6 +229,17 @@ export function AssumptionsPanel({
                       })}
                     </span>
                   </div>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    ≈{' '}
+                    {(projectedIncome * 0.719).toLocaleString('en-US', {
+                      style: 'currency',
+                      currency: 'USD',
+                      maximumFractionDigits: 0,
+                    })}{' '}
+                    take-home at today's 71.9% net-to-gross ratio. Employer retirement contributions
+                    (9% of pay) rise with the same {assumptions.contributionGrowthPct}% raises and stay
+                    outside take-home.
+                  </p>
                   <button
                     type="button"
                     className="mt-2 text-xs text-primary underline"
