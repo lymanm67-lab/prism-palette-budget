@@ -108,6 +108,21 @@ export interface StressAssumptions {
   extraOneTimeExpense: number;
   extraOneTimeExpenseAge: number | null;
   returnHaircutPct: number; // subtract from expected return (crisis modelling)
+
+  // ---- Sequence-of-returns controls (explicit toggles) ----
+  /** Force the worst returns into the first years of retirement. */
+  badFirstDecadeEnabled: boolean;
+  badFirstDecadeYears: number; // how many early-retirement years are stressed
+  badFirstDecadeHaircutPct: number; // points subtracted from returns in those years
+  /** Cash/short-bond bridge carved out at retirement, spent instead of selling in down years. */
+  cashBridgeYears: number; // years of essentials + healthcare held in the bridge
+  cashBridgeYieldPct: number; // yield on the bridge sleeve
+  /** Dynamic guardrail spending rules (Guyton-Klinger style bands). */
+  guardrailRulesEnabled: boolean;
+  guardrailBandPct: number; // deviation from the plan path that triggers a change
+  guardrailCutPct: number; // discretionary + travel cut when below the lower band
+  guardrailRaisePct: number; // discretionary + travel raise when above the upper band
+
 }
 
 export interface StressGoals {
