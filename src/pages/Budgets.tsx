@@ -2556,7 +2556,7 @@ const Budgets = () => {
 
       {viewTab === 'capital' && (
         <div className="print:hidden">
-          <CapitalEventsPanel />
+          <CapitalEventsPanel month={month} />
         </div>
       )}
 
