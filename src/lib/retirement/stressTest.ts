@@ -694,6 +694,11 @@ export function recommendedActions(a: StressAssumptions, goals: StressGoals, run
     { label: 'Increase HSA funding', detail: '+$200/mo to HSA', patch: { hsaContribution: a.hsaContribution + 2400 } },
     { label: 'Reduce investment risk near retirement', detail: 'Volatility −4 points', patch: { volatilityPct: Math.max(4, a.volatilityPct - 4) } },
     { label: 'Maintain LTC protection', detail: 'Insurance benefit +$50k/yr', patch: { ltcInsuranceBenefit: a.ltcInsuranceBenefit + 50_000 } },
+    { label: 'Redirect freed-up debt payments', detail: '+$500/mo once debts clear', patch: { debtRedirectAnnual: a.debtRedirectAnnual + 6_000 } },
+    { label: 'Redirect tax refunds & bonuses', detail: '+$3,000/yr invested', patch: { taxRefundRedirectAnnual: a.taxRefundRedirectAnnual + 3_000 } },
+    { label: 'Keep some earned income in early retirement', detail: '$20k/yr for 5 years', patch: { postRetirementIncomeAnnual: a.postRetirementIncomeAnnual + 20_000, postRetirementIncomeEndAge: a.retirementAge + 5 } },
+    { label: 'Delay portfolio withdrawals', detail: 'No draws until age 72', patch: { withdrawalStartAge: 72 } },
+
   ];
 
   const actions = candidates
