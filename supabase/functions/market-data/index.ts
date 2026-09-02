@@ -4,6 +4,19 @@ import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 
 const BASE = 'https://www.alphavantage.co/query';
 
+// Canonical instruments in the Prism Five Investment Roles. These exact
+// symbols were validated against provider search results; retaining that
+// classification prevents quote throttling from reverting them to unknown.
+const VALIDATED_ROLE_SECURITIES: Record<string, { name: string; type: string }> = {
+  SPMO: { name: 'Invesco S&P 500 Momentum ETF', type: 'etf' },
+  DRAM: { name: 'Roundhill Memory ETF', type: 'etf' },
+  IAU: { name: 'iShares Gold Trust', type: 'etf' },
+  ISU: { name: 'iShares U.S. Utilities ETF', type: 'etf' },
+  QTUM: { name: 'Defiance Quantum ETF', type: 'etf' },
+  LYTE: { name: 'Roundhill Photonics & Optics ETF', type: 'etf' },
+  ITA: { name: 'iShares U.S. Aerospace & Defense ETF', type: 'etf' },
+};
+
 type Json = Record<string, unknown>;
 
 function json(body: Json, status = 200) {
@@ -86,8 +99,9 @@ Deno.serve(async (req) => {
     const q = (quote['Global Quote'] as Json | undefined) ?? {};
     const price = q['05. price'] ? Number(q['05. price']) : null;
 
-    let securityType = 'unverified';
-    let name: string | null = null;
+    const validatedRoleSecurity = VALIDATED_ROLE_SECURITIES[symbol];
+    let securityType = validatedRoleSecurity?.type ?? 'unverified';
+    let name: string | null = validatedRoleSecurity?.name ?? null;
     let sector: string | null = null;
     let industry: string | null = null;
     let dividendYield: number | null = null;
