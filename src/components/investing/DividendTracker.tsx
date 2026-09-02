@@ -185,8 +185,8 @@ export function DividendTracker() {
                     <Select value={form.account_type} onValueChange={(v) => setForm({ ...form, account_type: v })}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        {ACCOUNT_TYPES.map((a: any) => (
-                          <SelectItem key={a.value ?? a} value={a.value ?? a}>{a.label ?? a}</SelectItem>
+                        {ACCOUNT_TYPES.map((a) => (
+                          <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
