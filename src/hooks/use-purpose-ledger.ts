@@ -70,7 +70,7 @@ export function usePurposeLedger(month: string): PurposeLedger {
       const amount = Number(t.amount) || 0;
       const catId = t.category_id as string | null;
       const categoryName = t.categories?.name || 'Uncategorized';
-      const description = t.merchant_name || t.description || t.name || 'Transaction';
+      const description = t.merchant || t.normalized_merchant || t.notes || 'Transaction';
 
       if (t.is_transfer) {
         addExcluded('Transfers', 'Internal movement — never counted as spending', Math.abs(amount));

@@ -23,7 +23,7 @@ function useDebtPaymentTxns(lookbackMonths = 5) {
     queryFn: async () => {
       const { data, error } = await sb
         .from('transactions')
-        .select('id,date,merchant,description,amount')
+        .select('id,date,merchant,notes,amount')
         .eq('household_id', household!.id)
         .is('deleted_at', null)
         .lt('amount', 0)
