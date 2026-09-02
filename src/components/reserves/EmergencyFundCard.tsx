@@ -140,7 +140,12 @@ export function EmergencyFundCard({
               <p className="text-3xl font-bold tabular-nums">{money2(s.balance)}</p>
               <p className="text-xs text-muted-foreground">
                 {Math.round(s.pctFunded * 100)}% of the {money(emergency.primary_target)} primary goal
+                {' · '}
+                {s.link && !s.link.stale
+                  ? `Live balance from ${s.link.institution} ${s.link.name}`
+                  : 'Tracked from logged movements'}
               </p>
+
             </div>
             <div className="flex gap-2">
               <ReserveTxnDialog
