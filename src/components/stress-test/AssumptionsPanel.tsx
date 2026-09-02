@@ -27,18 +27,26 @@ export function AssumptionsPanel({
   onReset: () => void;
   emergencyCash: number;
 }) {
-  const num = (key: NumKeys, label: string, step = 1) => (
-    <div className="space-y-1" key={key}>
-      <Label htmlFor={key} className="text-xs">{label}</Label>
-      <Input
-        id={key}
-        type="number"
-        step={step}
-        value={assumptions[key] as number}
-        onChange={(e) => onChange({ [key]: Number(e.target.value) } as Partial<StressAssumptions>)}
-      />
-    </div>
-  );
+  const num = (key: NumKeys | 'debtRedirectStartAge' | 'postRetirementIncomeEndAge' | 'withdrawalStartAge', label: string, step = 1) => {
+    const nullable =
+      key === 'debtRedirectStartAge' || key === 'postRetirementIncomeEndAge' || key === 'withdrawalStartAge';
+    return (
+      <div className="space-y-1" key={key}>
+        <Label htmlFor={key} className="text-xs">{label}</Label>
+        <Input
+          id={key}
+          type="number"
+          step={step}
+          value={(assumptions[key] as number | null) ?? 0}
+          onChange={(e) => {
+            const v = Number(e.target.value);
+            onChange({ [key]: nullable && !v ? null : v } as Partial<StressAssumptions>);
+          }}
+        />
+      </div>
+    );
+  };
+
 
   return (
     <Card className="border-border/60 bg-card/60 backdrop-blur">
@@ -156,6 +164,51 @@ export function AssumptionsPanel({
               </p>
             </AccordionContent>
           </AccordionItem>
+
+          <AccordionItem value="household">
+            <AccordionTrigger className="text-sm">Household (spouse assets &amp; income)</AccordionTrigger>
+            <AccordionContent>
+              <label className="mb-3 flex items-center justify-between rounded-lg border border-border/50 p-3 text-sm">
+                Include spouse assets, contributions &amp; Social Security
+                <Switch
+                  checked={assumptions.includeSpouse}
+                  onCheckedChange={(v) => onChange({ includeSpouse: v })}
+                />
+              </label>
+              <div className="grid gap-3 sm:grid-cols-3">
+                {num('spouseCurrentAge', 'Spouse current age')}
+                {num('spouseRetirementAge', 'Spouse retirement age')}
+                {num('spouseBalance', 'Spouse invested balance ($)', 100)}
+                {num('spouseContribution', 'Spouse contributions ($/yr)', 100)}
+                {num('spouseSocialSecurityAnnual', 'Spouse Social Security ($/yr)', 500)}
+                {num('spouseSocialSecurityStartAge', 'Spouse SS start age')}
+              </div>
+              <p className="mt-3 text-xs text-muted-foreground">
+                Spouse contributions keep flowing until the spouse retirement age, even if you retire first.
+                A spouse pension entered in your plan is already included in the pension line.
+              </p>
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="accelerators">
+            <AccordionTrigger className="text-sm">Working longer &amp; redirected cash</AccordionTrigger>
+            <AccordionContent>
+              <div className="grid gap-3 sm:grid-cols-3">
+                {num('debtRedirectAnnual', 'Freed debt payments redirected ($/yr)', 100)}
+                {num('debtRedirectStartAge', 'Redirect starts at age')}
+                {num('taxRefundRedirectAnnual', 'Tax refunds / bonuses invested ($/yr)', 100)}
+                {num('postRetirementIncomeAnnual', 'Continued work income ($/yr)', 500)}
+                {num('postRetirementIncomeEndAge', 'Work income ends at age')}
+                {num('withdrawalStartAge', 'First portfolio withdrawal at age')}
+              </div>
+              <p className="mt-3 text-xs text-muted-foreground">
+                Contribution growth of {assumptions.contributionGrowthPct}%/yr models your annual pay raise.
+                Continued work income and delayed withdrawals let the portfolio compound instead of being drawn
+                down. Set an age to 0 to clear it.
+              </p>
+            </AccordionContent>
+          </AccordionItem>
+
 
           <AccordionItem value="markets">
             <AccordionTrigger className="text-sm">Markets &amp; inflation</AccordionTrigger>

@@ -47,7 +47,25 @@ export interface StressAssumptions {
   employerContribution: number;
   hsaContribution: number;
   hsaEmployerContribution: number;
-  contributionGrowthPct: number;
+  contributionGrowthPct: number; // pay-raise driven contribution growth
+
+  // Household (spouse) — invested assets and guaranteed income kept identifiable
+  includeSpouse: boolean;
+  spouseCurrentAge: number;
+  spouseRetirementAge: number;
+  spouseBalance: number;
+  spouseContribution: number; // annual employee + employer
+  spouseSocialSecurityAnnual: number;
+  spouseSocialSecurityStartAge: number;
+
+  // Accelerators (money redirected into investing rather than new take-home)
+  debtRedirectAnnual: number; // freed-up debt payments redirected to investing
+  debtRedirectStartAge: number | null;
+  taxRefundRedirectAnnual: number; // annual refund / bonus redirected
+  postRetirementIncomeAnnual: number; // continued work or consulting income
+  postRetirementIncomeEndAge: number | null;
+  withdrawalStartAge: number | null; // no portfolio withdrawals before this age
+
 
   // Markets & inflation
   expectedReturnPct: number;
@@ -201,7 +219,7 @@ export function runStressTest(
 
   for (let r = 0; r < runs; r++) {
     const rand = mulberry32(seed + r * 7919);
-    let bal = a.portfolioBalance;
+    let bal = a.portfolioBalance + (a.includeSpouse ? a.spouseBalance : 0);
     let hsa = a.hsaBalance;
     let lowest = bal + hsa;
     let depletionAge: number | null = null;
@@ -214,6 +232,7 @@ export function runStressTest(
 
     for (let y = 1; y <= years; y++) {
       const age = a.currentAge + y;
+      const spouseAge = age + (a.spouseCurrentAge - a.currentAge);
       const t = y; // years from today, for inflating flows
       let ret = normal(rand, mean, sd);
       if (a.marketShockAge != null && age === a.marketShockAge) {
@@ -221,23 +240,47 @@ export function runStressTest(
       }
 
       const working = age <= a.retirementAge;
+      const growth = Math.pow(1 + cGrowth, t - 1);
 
+      // ---- Contributions (keep growing while either spouse still works) ----
+      let contributions = 0;
       if (working) {
-        const growth = Math.pow(1 + cGrowth, t - 1);
-        bal = bal * (1 + ret) + (a.employeeContribution + a.employerContribution) * growth;
+        contributions += (a.employeeContribution + a.employerContribution) * growth;
+        if (a.debtRedirectAnnual > 0 && (a.debtRedirectStartAge == null || age >= a.debtRedirectStartAge)) {
+          contributions += a.debtRedirectAnnual * growth;
+        }
+        contributions += a.taxRefundRedirectAnnual * Math.pow(1 + infl, t - 1);
         hsa = hsa * (1 + ret) + (a.hsaContribution + a.hsaEmployerContribution) * growth;
       } else {
+        hsa = hsa * (1 + ret);
+      }
+      if (a.includeSpouse && spouseAge <= a.spouseRetirementAge) {
+        contributions += a.spouseContribution * growth;
+      }
+
+      bal = bal * (1 + ret) + contributions;
+
+      if (!working) {
         // Guaranteed income (kept separate from portfolio withdrawals)
         const ss =
           age >= a.socialSecurityStartAge
             ? a.socialSecurityAnnual * Math.pow(1 + a.socialSecurityColaPct / 100, t)
+            : 0;
+        const spouseSs =
+          a.includeSpouse && spouseAge >= a.spouseSocialSecurityStartAge
+            ? a.spouseSocialSecurityAnnual * Math.pow(1 + a.socialSecurityColaPct / 100, t)
             : 0;
         const pension =
           age >= a.pensionStartAge
             ? a.pensionAnnual * Math.pow(1 + a.pensionColaPct / 100, t)
             : 0;
         const other = a.otherGuaranteedAnnual * Math.pow(1 + infl, t);
-        const guaranteed = ss + pension + other;
+        const work =
+          a.postRetirementIncomeAnnual > 0 &&
+          (a.postRetirementIncomeEndAge == null || age <= a.postRetirementIncomeEndAge)
+            ? a.postRetirementIncomeAnnual * Math.pow(1 + infl, t)
+            : 0;
+        const guaranteed = ss + spouseSs + pension + other + work;
 
         // Spending needs, each on its own inflation track
         const essential =
@@ -263,6 +306,9 @@ export function runStressTest(
         let fromPortfolio = Math.max(0, need - guaranteed);
         // Gross up for taxes on portfolio withdrawals only
         fromPortfolio = fromPortfolio * (1 + tax);
+        // Deferred withdrawals: no portfolio draws before the chosen age
+        const deferring = a.withdrawalStartAge != null && age < a.withdrawalStartAge;
+        if (deferring) fromPortfolio = 0;
 
         if (age === a.retirementAge + 1 && r === 0) {
           guaranteedAtRet = guaranteed;
@@ -280,16 +326,14 @@ export function runStressTest(
         bal -= fromBal;
         hsa -= Math.min(hsa, fromPortfolio - fromBal);
 
-        bal = bal * (1 + ret);
-        hsa = hsa * (1 + ret);
-
-        if (guaranteed + (available - fromPortfolio > 0 ? need - guaranteed : 0) < (goals.minimumAnnualIncome ?? 0)) {
+        if (!deferring && guaranteed + (available - fromPortfolio > 0 ? need - guaranteed : 0) < (goals.minimumAnnualIncome ?? 0)) {
           incomeMet = false;
         }
-        if (goals.minimumAnnualIncome != null && available <= 0 && guaranteed < goals.minimumAnnualIncome) {
+        if (!deferring && goals.minimumAnnualIncome != null && available <= 0 && guaranteed < goals.minimumAnnualIncome) {
           incomeMet = false;
         }
       }
+
 
       if (a.extraOneTimeExpenseAge != null && age === a.extraOneTimeExpenseAge) {
         bal -= a.extraOneTimeExpense;
@@ -317,7 +361,9 @@ export function runStressTest(
     if (legacyMet) legacyHits++;
     if (incomeMet) incomeFloorHits++;
     if (cutNeeded) spendingCuts++;
-    if (ending >= a.portfolioBalance + a.hsaBalance) principalPreserved++;
+    const startingPrincipal =
+      a.portfolioBalance + a.hsaBalance + (a.includeSpouse ? a.spouseBalance : 0);
+    if (ending >= startingPrincipal) principalPreserved++;
     if (ltcCovered) ltcFunded++;
 
     // Success = every selected goal met
@@ -326,7 +372,7 @@ export function runStressTest(
     if (goals.minimumFloor != null && lowest < goals.minimumFloor) ok = false;
     if (goals.legacyTarget != null && !legacyMet) ok = false;
     if (goals.minimumAnnualIncome != null && !incomeMet) ok = false;
-    if (goals.preservePrincipal && ending < a.portfolioBalance + a.hsaBalance) ok = false;
+    if (goals.preservePrincipal && ending < startingPrincipal) ok = false;
     if (goals.fundLtc && !ltcCovered) ok = false;
     if (ok) successes++;
   }
@@ -348,7 +394,12 @@ export function runStressTest(
   });
 
   const essentials = essentialAtRet || a.essentialSpend + a.healthcareSpend;
-  const guaranteed = guaranteedAtRet || a.socialSecurityAnnual + a.pensionAnnual + a.otherGuaranteedAnnual;
+  const guaranteed =
+    guaranteedAtRet ||
+    a.socialSecurityAnnual +
+      (a.includeSpouse ? a.spouseSocialSecurityAnnual : 0) +
+      a.pensionAnnual +
+      a.otherGuaranteedAnnual;
 
   return {
     runs,
@@ -643,6 +694,11 @@ export function recommendedActions(a: StressAssumptions, goals: StressGoals, run
     { label: 'Increase HSA funding', detail: '+$200/mo to HSA', patch: { hsaContribution: a.hsaContribution + 2400 } },
     { label: 'Reduce investment risk near retirement', detail: 'Volatility −4 points', patch: { volatilityPct: Math.max(4, a.volatilityPct - 4) } },
     { label: 'Maintain LTC protection', detail: 'Insurance benefit +$50k/yr', patch: { ltcInsuranceBenefit: a.ltcInsuranceBenefit + 50_000 } },
+    { label: 'Redirect freed-up debt payments', detail: '+$500/mo once debts clear', patch: { debtRedirectAnnual: a.debtRedirectAnnual + 6_000 } },
+    { label: 'Redirect tax refunds & bonuses', detail: '+$3,000/yr invested', patch: { taxRefundRedirectAnnual: a.taxRefundRedirectAnnual + 3_000 } },
+    { label: 'Keep some earned income in early retirement', detail: '$20k/yr for 5 years', patch: { postRetirementIncomeAnnual: a.postRetirementIncomeAnnual + 20_000, postRetirementIncomeEndAge: a.retirementAge + 5 } },
+    { label: 'Delay portfolio withdrawals', detail: 'No draws until age 72', patch: { withdrawalStartAge: 72 } },
+
   ];
 
   const actions = candidates
