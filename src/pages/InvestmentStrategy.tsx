@@ -16,19 +16,14 @@ import { useInvestingMetrics } from '@/hooks/use-investing-metrics';
 import { ROLE_META, ROLES, money, pct } from '@/lib/investing/roles';
 
 export default function InvestmentStrategy() {
-  const { loading, totals, allocation, risk, fit, priority } = useInvestingMetrics();
+  const { loading, totals, allocation, positions, tacticalPct, tacticalWarn, fit, priority } = useInvestingMetrics();
+
+  useEffect(() => {
+    document.title = 'Investment Strategy — Five Investment Roles | Prism';
+  }, []);
 
   return (
     <div className="space-y-6 p-4 md:p-6">
-      <Helmet>
-        <title>Investment Strategy — Five Investment Roles | Prism</title>
-        <meta
-          name="description"
-          content="Give every investment a job with the Prism Five Investment Roles: Core, Momentum, Guardrail, Conviction, and Catalyst, connected to your cash flow, debt, reserves, taxes, and legacy plan."
-        />
-        <link rel="canonical" href="https://prismbudget.com/investing/strategy" />
-      </Helmet>
-
       <header className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight">Strategy Control Center</h1>
         <p className="text-muted-foreground">
@@ -43,10 +38,10 @@ export default function InvestmentStrategy() {
       ) : (
         <div className="grid gap-4 md:grid-cols-4">
           {[
-            { label: 'Role portfolio value', value: money(totals.value), sub: `${totals.count} positions across ${allocation.rows.filter((r) => r.value > 0).length} roles` },
+            { label: 'Role portfolio value', value: money(totals.value), sub: `${positions.length} positions across ${allocation.rows.filter((r) => r.value > 0).length} roles` },
             { label: 'Strategy Fit Score', value: `${Math.round(fit.score)}/100`, sub: 'How closely today matches your plan' },
-            { label: 'Higher-risk share', value: pct(risk.higherRiskPct), sub: `Warning line ${pct(risk.warnPct, 0)}` },
-            { label: 'Capital priority', value: priority.clear ? 'Clear to invest' : 'Earlier claims first', sub: priority.clear ? 'Reserve floor and debt checks pass' : 'See Capital Priority tab' },
+            { label: 'Higher-risk share', value: pct(tacticalPct), sub: `Warning line ${pct(tacticalWarn, 0)}` },
+            { label: 'Capital priority', value: priority.clearedToInvest ? 'Clear to invest' : 'Earlier claims first', sub: priority.clearedToInvest ? 'Reserve floor and debt checks pass' : 'See Capital Priority tab' },
           ].map((s) => (
             <Card key={s.label} className="border-border/60 bg-card/60 backdrop-blur">
               <CardHeader className="pb-1">
