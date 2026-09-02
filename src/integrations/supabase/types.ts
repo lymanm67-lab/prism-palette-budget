@@ -5770,6 +5770,695 @@ export type Database = {
           },
         ]
       }
+      inv_concentration_limits: {
+        Row: {
+          created_at: string
+          household_id: string
+          id: string
+          max_pct: number
+          scope: string
+          scope_key: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          household_id: string
+          id?: string
+          max_pct?: number
+          scope: string
+          scope_key?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          household_id?: string
+          id?: string
+          max_pct?: number
+          scope?: string
+          scope_key?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inv_concentration_limits_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inv_contributions: {
+        Row: {
+          account_type: string
+          amount: number
+          contributed_on: string
+          created_at: string
+          deleted_at: string | null
+          household_id: string
+          id: string
+          is_employer: boolean
+          is_transfer: boolean
+          notes: string | null
+          position_id: string | null
+          role: string | null
+          source: string
+          updated_at: string
+        }
+        Insert: {
+          account_type?: string
+          amount?: number
+          contributed_on?: string
+          created_at?: string
+          deleted_at?: string | null
+          household_id: string
+          id?: string
+          is_employer?: boolean
+          is_transfer?: boolean
+          notes?: string | null
+          position_id?: string | null
+          role?: string | null
+          source?: string
+          updated_at?: string
+        }
+        Update: {
+          account_type?: string
+          amount?: number
+          contributed_on?: string
+          created_at?: string
+          deleted_at?: string | null
+          household_id?: string
+          id?: string
+          is_employer?: boolean
+          is_transfer?: boolean
+          notes?: string | null
+          position_id?: string | null
+          role?: string | null
+          source?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inv_contributions_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inv_contributions_position_id_fkey"
+            columns: ["position_id"]
+            isOneToOne: false
+            referencedRelation: "inv_role_positions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inv_decisions: {
+        Row: {
+          action: string
+          actual_outcome: string | null
+          amount: number | null
+          created_at: string
+          decided_on: string
+          deleted_at: string | null
+          expected_outcome: string | null
+          household_id: string
+          id: string
+          outcome_recorded_on: string | null
+          reason: string | null
+          review_date: string | null
+          risk_considered: string | null
+          role: string | null
+          ticker: string | null
+          updated_at: string
+        }
+        Insert: {
+          action: string
+          actual_outcome?: string | null
+          amount?: number | null
+          created_at?: string
+          decided_on?: string
+          deleted_at?: string | null
+          expected_outcome?: string | null
+          household_id: string
+          id?: string
+          outcome_recorded_on?: string | null
+          reason?: string | null
+          review_date?: string | null
+          risk_considered?: string | null
+          role?: string | null
+          ticker?: string | null
+          updated_at?: string
+        }
+        Update: {
+          action?: string
+          actual_outcome?: string | null
+          amount?: number | null
+          created_at?: string
+          decided_on?: string
+          deleted_at?: string | null
+          expected_outcome?: string | null
+          household_id?: string
+          id?: string
+          outcome_recorded_on?: string | null
+          reason?: string | null
+          review_date?: string | null
+          risk_considered?: string | null
+          role?: string | null
+          ticker?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inv_decisions_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inv_reviews: {
+        Row: {
+          answers: Json
+          created_at: string
+          household_id: string
+          id: string
+          metrics: Json
+          notes: string | null
+          period_label: string
+          review_type: string
+          updated_at: string
+        }
+        Insert: {
+          answers?: Json
+          created_at?: string
+          household_id: string
+          id?: string
+          metrics?: Json
+          notes?: string | null
+          period_label: string
+          review_type?: string
+          updated_at?: string
+        }
+        Update: {
+          answers?: Json
+          created_at?: string
+          household_id?: string
+          id?: string
+          metrics?: Json
+          notes?: string | null
+          period_label?: string
+          review_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inv_reviews_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inv_role_positions: {
+        Row: {
+          account_id: string | null
+          account_label: string | null
+          account_type: string
+          avg_price: number | null
+          catalyst: string | null
+          catalyst_category: string | null
+          catalyst_state: string | null
+          catalyst_why: string | null
+          cost_basis: number
+          created_at: string
+          current_price: number | null
+          deleted_at: string | null
+          dividend_income_ytd: number
+          dividend_instruction: string
+          entry_date: string | null
+          entry_price: number | null
+          exit_criteria: string | null
+          expected_holding_period: string | null
+          expected_opportunity: string | null
+          household_id: string
+          id: string
+          invalidation: string | null
+          max_pct: number | null
+          name: string | null
+          notes: string | null
+          price_updated_at: string | null
+          review_date: string | null
+          risk_level: string | null
+          role: string
+          security_type: string
+          shares: number
+          sort_order: number
+          status: string
+          target_pct: number | null
+          thesis: string | null
+          thesis_state: string
+          ticker: string
+          updated_at: string
+          verified: boolean
+        }
+        Insert: {
+          account_id?: string | null
+          account_label?: string | null
+          account_type?: string
+          avg_price?: number | null
+          catalyst?: string | null
+          catalyst_category?: string | null
+          catalyst_state?: string | null
+          catalyst_why?: string | null
+          cost_basis?: number
+          created_at?: string
+          current_price?: number | null
+          deleted_at?: string | null
+          dividend_income_ytd?: number
+          dividend_instruction?: string
+          entry_date?: string | null
+          entry_price?: number | null
+          exit_criteria?: string | null
+          expected_holding_period?: string | null
+          expected_opportunity?: string | null
+          household_id: string
+          id?: string
+          invalidation?: string | null
+          max_pct?: number | null
+          name?: string | null
+          notes?: string | null
+          price_updated_at?: string | null
+          review_date?: string | null
+          risk_level?: string | null
+          role: string
+          security_type?: string
+          shares?: number
+          sort_order?: number
+          status?: string
+          target_pct?: number | null
+          thesis?: string | null
+          thesis_state?: string
+          ticker: string
+          updated_at?: string
+          verified?: boolean
+        }
+        Update: {
+          account_id?: string | null
+          account_label?: string | null
+          account_type?: string
+          avg_price?: number | null
+          catalyst?: string | null
+          catalyst_category?: string | null
+          catalyst_state?: string | null
+          catalyst_why?: string | null
+          cost_basis?: number
+          created_at?: string
+          current_price?: number | null
+          deleted_at?: string | null
+          dividend_income_ytd?: number
+          dividend_instruction?: string
+          entry_date?: string | null
+          entry_price?: number | null
+          exit_criteria?: string | null
+          expected_holding_period?: string | null
+          expected_opportunity?: string | null
+          household_id?: string
+          id?: string
+          invalidation?: string | null
+          max_pct?: number | null
+          name?: string | null
+          notes?: string | null
+          price_updated_at?: string | null
+          review_date?: string | null
+          risk_level?: string | null
+          role?: string
+          security_type?: string
+          shares?: number
+          sort_order?: number
+          status?: string
+          target_pct?: number | null
+          thesis?: string | null
+          thesis_state?: string
+          ticker?: string
+          updated_at?: string
+          verified?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inv_role_positions_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inv_role_targets: {
+        Row: {
+          benchmark_label: string | null
+          benchmark_ticker: string | null
+          created_at: string
+          expected_return_pct: number
+          household_id: string
+          id: string
+          max_pct: number | null
+          risk_bucket: string
+          role: string
+          sort_order: number
+          target_pct: number
+          updated_at: string
+          volatility_pct: number
+        }
+        Insert: {
+          benchmark_label?: string | null
+          benchmark_ticker?: string | null
+          created_at?: string
+          expected_return_pct?: number
+          household_id: string
+          id?: string
+          max_pct?: number | null
+          risk_bucket?: string
+          role: string
+          sort_order?: number
+          target_pct?: number
+          updated_at?: string
+          volatility_pct?: number
+        }
+        Update: {
+          benchmark_label?: string | null
+          benchmark_ticker?: string | null
+          created_at?: string
+          expected_return_pct?: number
+          household_id?: string
+          id?: string
+          max_pct?: number | null
+          risk_bucket?: string
+          role?: string
+          sort_order?: number
+          target_pct?: number
+          updated_at?: string
+          volatility_pct?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inv_role_targets_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inv_scenarios: {
+        Row: {
+          allocations: Json
+          created_at: string
+          deleted_at: string | null
+          household_id: string
+          id: string
+          name: string
+          notes: string | null
+          results: Json | null
+          updated_at: string
+        }
+        Insert: {
+          allocations?: Json
+          created_at?: string
+          deleted_at?: string | null
+          household_id: string
+          id?: string
+          name: string
+          notes?: string | null
+          results?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          allocations?: Json
+          created_at?: string
+          deleted_at?: string | null
+          household_id?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          results?: Json | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inv_scenarios_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inv_securities: {
+        Row: {
+          asset_class: string | null
+          country: string | null
+          created_at: string
+          dividend_yield: number | null
+          expense_ratio: number | null
+          household_id: string
+          id: string
+          industry: string | null
+          name: string | null
+          price: number | null
+          price_updated_at: string | null
+          raw: Json | null
+          sector: string | null
+          security_type: string
+          source: string | null
+          ticker: string
+          updated_at: string
+          verified: boolean
+          volatility_pct: number | null
+        }
+        Insert: {
+          asset_class?: string | null
+          country?: string | null
+          created_at?: string
+          dividend_yield?: number | null
+          expense_ratio?: number | null
+          household_id: string
+          id?: string
+          industry?: string | null
+          name?: string | null
+          price?: number | null
+          price_updated_at?: string | null
+          raw?: Json | null
+          sector?: string | null
+          security_type?: string
+          source?: string | null
+          ticker: string
+          updated_at?: string
+          verified?: boolean
+          volatility_pct?: number | null
+        }
+        Update: {
+          asset_class?: string | null
+          country?: string | null
+          created_at?: string
+          dividend_yield?: number | null
+          expense_ratio?: number | null
+          household_id?: string
+          id?: string
+          industry?: string | null
+          name?: string | null
+          price?: number | null
+          price_updated_at?: string | null
+          raw?: Json | null
+          sector?: string | null
+          security_type?: string
+          source?: string | null
+          ticker?: string
+          updated_at?: string
+          verified?: boolean
+          volatility_pct?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inv_securities_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inv_security_holdings: {
+        Row: {
+          country: string | null
+          created_at: string
+          holding_name: string
+          holding_symbol: string | null
+          household_id: string
+          id: string
+          industry: string | null
+          sector: string | null
+          ticker: string
+          updated_at: string
+          weight_pct: number
+        }
+        Insert: {
+          country?: string | null
+          created_at?: string
+          holding_name: string
+          holding_symbol?: string | null
+          household_id: string
+          id?: string
+          industry?: string | null
+          sector?: string | null
+          ticker: string
+          updated_at?: string
+          weight_pct?: number
+        }
+        Update: {
+          country?: string | null
+          created_at?: string
+          holding_name?: string
+          holding_symbol?: string | null
+          household_id?: string
+          id?: string
+          industry?: string | null
+          sector?: string | null
+          ticker?: string
+          updated_at?: string
+          weight_pct?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inv_security_holdings_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inv_settings: {
+        Row: {
+          conviction_catalyst_warn_pct: number
+          created_at: string
+          default_dividend_instruction: string
+          drift_band_pct: number
+          emergency_floor_override: number | null
+          household_id: string
+          id: string
+          legacy_goal_age: number
+          legacy_goal_amount: number
+          updated_at: string
+        }
+        Insert: {
+          conviction_catalyst_warn_pct?: number
+          created_at?: string
+          default_dividend_instruction?: string
+          drift_band_pct?: number
+          emergency_floor_override?: number | null
+          household_id: string
+          id?: string
+          legacy_goal_age?: number
+          legacy_goal_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          conviction_catalyst_warn_pct?: number
+          created_at?: string
+          default_dividend_instruction?: string
+          drift_band_pct?: number
+          emergency_floor_override?: number | null
+          household_id?: string
+          id?: string
+          legacy_goal_age?: number
+          legacy_goal_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inv_settings_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: true
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inv_watchlist_items: {
+        Row: {
+          candidate_role: string
+          catalyst: string | null
+          created_at: string
+          current_price: number | null
+          decision_status: string
+          deleted_at: string | null
+          desired_entry_price: number | null
+          household_id: string
+          id: string
+          name: string | null
+          price_updated_at: string | null
+          research_notes: string | null
+          review_date: string | null
+          security_type: string
+          thesis: string | null
+          ticker: string
+          updated_at: string
+          verified: boolean
+        }
+        Insert: {
+          candidate_role?: string
+          catalyst?: string | null
+          created_at?: string
+          current_price?: number | null
+          decision_status?: string
+          deleted_at?: string | null
+          desired_entry_price?: number | null
+          household_id: string
+          id?: string
+          name?: string | null
+          price_updated_at?: string | null
+          research_notes?: string | null
+          review_date?: string | null
+          security_type?: string
+          thesis?: string | null
+          ticker: string
+          updated_at?: string
+          verified?: boolean
+        }
+        Update: {
+          candidate_role?: string
+          catalyst?: string | null
+          created_at?: string
+          current_price?: number | null
+          decision_status?: string
+          deleted_at?: string | null
+          desired_entry_price?: number | null
+          household_id?: string
+          id?: string
+          name?: string | null
+          price_updated_at?: string | null
+          research_notes?: string | null
+          review_date?: string | null
+          security_type?: string
+          thesis?: string | null
+          ticker?: string
+          updated_at?: string
+          verified?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inv_watchlist_items_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       investment_asset_tags: {
         Row: {
           amount_override: number | null

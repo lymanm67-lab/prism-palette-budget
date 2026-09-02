@@ -89,6 +89,8 @@ const RulesManager = lazy(() => import("@/pages/RulesManager"));
 const AppStoreReadiness = lazy(() => import("@/pages/AppStoreReadiness"));
 const CrossoverTracker = lazy(() => import("@/pages/CrossoverTracker"));
 const InvestmentPlanning = lazy(() => import("@/pages/InvestmentPlanning"));
+const InvestmentStrategy = lazy(() => import("@/pages/InvestmentStrategy"));
+
 const MoneyCoach = lazy(() => import("@/pages/MoneyCoach"));
 const PaycheckDeployment = lazy(() => import("@/pages/PaycheckDeployment"));
 const PaycheckDeploymentRules = lazy(() => import("@/pages/PaycheckDeploymentRules"));
@@ -273,6 +275,8 @@ const App = () => (
               <Route path="/app-store-readiness" element={<Suspense fallback={<PageLoader />}><AppStoreReadiness /></Suspense>} />
               <Route path="/crossover-tracker" element={<Suspense fallback={<PageLoader />}><CrossoverTracker /></Suspense>} />
               <Route path="/planning/investments" element={<Suspense fallback={<PageLoader />}><InvestmentPlanning /></Suspense>} />
+              <Route path="/investing/strategy" element={<Suspense fallback={<PageLoader />}><InvestmentStrategy /></Suspense>} />
+
               <Route path="/legacy" element={<Suspense fallback={<PageLoader />}><LegacyMode /></Suspense>} />
               <Route path="/legacy/family" element={<Suspense fallback={<PageLoader />}><FamilyLegacy /></Suspense>} />
               <Route path="/legacy/belts" element={<Suspense fallback={<PageLoader />}><BeltProgress /></Suspense>} />
