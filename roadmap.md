@@ -87,3 +87,4 @@
 - [ ] SoFi Investments card totals real SoFi investment accounts with editable balances
 - [ ] Redirect Excess Cash panel: floor-first waterfall + "Mark transferred" writing reserve transactions
 - [ ] Budgets business view: show each category's percentage of the business budget
+- [ ] Business-side budget rows show the percentage charged to business (e.g. Rent 14%) alongside share of the business budget
