@@ -26,6 +26,7 @@ import {
   type InvestmentRole,
 } from '@/lib/investing/roles';
 import { useDeletePosition, useMarketLookup, useSavePosition, type RolePosition } from '@/hooks/use-investing';
+import { CostBasisImport } from '@/components/investing/CostBasisImport';
 import { useInvestingMetrics } from '@/hooks/use-investing-metrics';
 
 const STARTER: Array<Partial<RolePosition>> = [
@@ -332,7 +333,9 @@ export function RolesBoard() {
               <Download className="mr-2 h-4 w-4" /> Load my current holdings
             </Button>
           )}
+          <CostBasisImport />
           <PositionDialog trigger={<Button><Plus className="mr-2 h-4 w-4" /> Add position</Button>} />
+
         </div>
       </div>
 
