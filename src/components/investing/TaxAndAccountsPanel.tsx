@@ -28,9 +28,9 @@ export function TaxAndAccountsPanel() {
             </TableHeader>
             <TableBody>
               {byAccount.map((a) => (
-                <TableRow key={a.account}>
-                  <TableCell className="font-medium">{ACCOUNT_TYPES.find((x) => x.value === a.account)?.label ?? a.account}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{ACCOUNT_TYPES.find((x) => x.value === a.account)?.tax ?? '—'}</TableCell>
+                <TableRow key={a.account_type}>
+                  <TableCell className="font-medium">{ACCOUNT_TYPES.find((x) => x.value === a.account_type)?.label ?? a.account_type}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{ACCOUNT_TYPES.find((x) => x.value === a.account_type)?.tax ?? '—'}</TableCell>
                   <TableCell className="text-right">{money(a.value, 2)}</TableCell>
                   <TableCell className="text-right">{pct(totals.value > 0 ? (a.value / totals.value) * 100 : 0)}</TableCell>
                 </TableRow>
@@ -75,7 +75,7 @@ export function TaxAndAccountsPanel() {
                       <TableCell className="font-medium">{p.ticker}</TableCell>
                       <TableCell><Badge variant="outline" className={ROLE_META[p.role].accent}>{p.role}</Badge></TableCell>
                       <TableCell className="text-sm">{ACCOUNT_TYPES.find((x) => x.value === p.account_type)?.label ?? p.account_type}</TableCell>
-                      <TableCell className="text-sm">{taxable ? holdingPeriodStatus(p.entry_date) : 'Not taxable while held'}</TableCell>
+                      <TableCell className="text-sm">{taxable ? holdingPeriodStatus(p.entry_date).label : 'Not taxable while held'}</TableCell>
                       <TableCell className={`text-right ${gain >= 0 ? 'text-emerald-400' : 'text-destructive'}`}>{money(gain, 2)}</TableCell>
                       <TableCell className="text-right">{money(Number(p.dividend_income_ytd ?? 0), 2)}</TableCell>
                       <TableCell className="capitalize text-sm">{(p.dividend_instruction ?? 'reinvest').replace('_', ' ')}</TableCell>

@@ -113,3 +113,7 @@
 - [ ] Prism Five Investment Roles module (CORE / MOMENTUM / GUARDRAIL / CONVICTION / CATALYST)
 - [ ] Market data via Alpha Vantage (user has API key) instead of FMP
 - [ ] Text-to-speech narration for "How to use this stress test"
+
+## Investing — AI role recommendations
+- [ ] AI recommendations per investment role (max 7 ETFs/stocks per role), 6-month reevaluation cadence
+- [ ] Sequence-of-return-risk controls in Monte Carlo (bad-first-decade ordering, cash/bond bridge, dynamic guardrails)

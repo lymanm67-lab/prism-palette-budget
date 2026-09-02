@@ -97,7 +97,7 @@ export function DisciplinePanel() {
                 <span>Estimated proceeds: <strong>{money(estimate?.proceeds ?? 0, 2)}</strong></span>
                 <span>Estimated cost basis sold: {money(estimate?.basis ?? 0, 2)}</span>
                 <span>Estimated gain/loss: {money(estimate?.gain ?? 0, 2)}</span>
-                <span>Holding period: {holdingPeriodStatus(selected.entry_date)}</span>
+                <span>Holding period: {holdingPeriodStatus(selected.entry_date).label}</span>
               </div>
               <p className="mt-1 text-xs text-muted-foreground">
                 Estimates only, using the price and cost basis on file. Sale proceeds are not taxable gain. Confirm actual figures with your brokerage and tax advisor.
@@ -117,10 +117,10 @@ export function DisciplinePanel() {
                 action: 'sell',
                 role: selected?.role,
                 ticker: selected?.ticker,
-                shares,
-                reason_code: reasonCode,
-                reason: SELL_REASONS.find((r) => r.value === reasonCode)?.label,
-                notes,
+                amount: estimate?.proceeds ?? null,
+                reason: [SELL_REASONS.find((r) => r.value === reasonCode)?.label, `${shares} shares`, notes]
+                  .filter(Boolean)
+                  .join(' · '),
                 expected_outcome: 'Recorded in the decision journal for later review',
               })
             }
