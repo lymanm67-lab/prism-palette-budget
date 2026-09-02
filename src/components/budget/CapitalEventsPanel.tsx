@@ -426,6 +426,7 @@ export default function CapitalEventsPanel({ month }: { month?: string }) {
             </TableBody>
           </Table>
         </CardContent>
+        )}
       </Card>
 
       <Card className="bg-muted/30">
