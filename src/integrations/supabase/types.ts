@@ -9009,18 +9009,25 @@ export type Database = {
       reserve_funds: {
         Row: {
           account_id: string | null
+          account_type: string | null
           ceiling_target: number
           contributions_paused: boolean
           created_at: string
           essential_monthly_expenses: number
+          goal_label: string | null
           household_id: string
           id: string
           institution_label: string | null
           kind: string
+          liquidity_class: string
+          market_value: number
           monthly_contribution: number
           name: string
           notes: string | null
           primary_target: number
+          redirect_excess_enabled: boolean
+          redirect_investments_pct: number
+          redirect_other_pct: number
           sort_order: number
           stage1_target: number
           starting_balance: number
@@ -9028,18 +9035,25 @@ export type Database = {
         }
         Insert: {
           account_id?: string | null
+          account_type?: string | null
           ceiling_target?: number
           contributions_paused?: boolean
           created_at?: string
           essential_monthly_expenses?: number
+          goal_label?: string | null
           household_id: string
           id?: string
           institution_label?: string | null
           kind?: string
+          liquidity_class?: string
+          market_value?: number
           monthly_contribution?: number
           name: string
           notes?: string | null
           primary_target?: number
+          redirect_excess_enabled?: boolean
+          redirect_investments_pct?: number
+          redirect_other_pct?: number
           sort_order?: number
           stage1_target?: number
           starting_balance?: number
@@ -9047,18 +9061,25 @@ export type Database = {
         }
         Update: {
           account_id?: string | null
+          account_type?: string | null
           ceiling_target?: number
           contributions_paused?: boolean
           created_at?: string
           essential_monthly_expenses?: number
+          goal_label?: string | null
           household_id?: string
           id?: string
           institution_label?: string | null
           kind?: string
+          liquidity_class?: string
+          market_value?: number
           monthly_contribution?: number
           name?: string
           notes?: string | null
           primary_target?: number
+          redirect_excess_enabled?: boolean
+          redirect_investments_pct?: number
+          redirect_other_pct?: number
           sort_order?: number
           stage1_target?: number
           starting_balance?: number
