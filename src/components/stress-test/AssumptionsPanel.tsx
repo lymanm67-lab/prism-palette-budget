@@ -193,6 +193,13 @@ export function AssumptionsPanel({
           <AccordionItem value="accelerators">
             <AccordionTrigger className="text-sm">Working longer &amp; redirected cash</AccordionTrigger>
             <AccordionContent>
+              <label className="mb-3 flex items-center justify-between rounded-lg border border-border/50 p-3 text-sm">
+                Legacy plan — never withdraw from retirement accounts
+                <Switch
+                  checked={(assumptions.withdrawalStartAge ?? 0) >= 999}
+                  onCheckedChange={(v) => onChange({ withdrawalStartAge: v ? 999 : null })}
+                />
+              </label>
               <div className="grid gap-3 sm:grid-cols-3">
                 {num('debtRedirectAnnual', 'Freed debt payments redirected ($/yr)', 100)}
                 {num('debtRedirectStartAge', 'Redirect starts at age')}
