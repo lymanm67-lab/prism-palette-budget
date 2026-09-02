@@ -233,10 +233,26 @@ export function runStressTest(
 
   const ltcCost = a.ltcSetting === 'none' ? 0 : a.ltcAnnualCost || LTC_COST_PRESETS[a.ltcSetting];
 
+  // Sequence-of-returns controls
+  const bridgeYears = Math.max(0, a.cashBridgeYears ?? 0);
+  const bridgeYield = (a.cashBridgeYieldPct ?? 0) / 100;
+  const badDecade = !!a.badFirstDecadeEnabled;
+  const badYears = Math.max(0, a.badFirstDecadeYears ?? 10);
+  const badHaircut = (a.badFirstDecadeHaircutPct ?? 0) / 100;
+  const useGuardrails = !!a.guardrailRulesEnabled;
+  const grBand = Math.max(1, a.guardrailBandPct ?? 15) / 100;
+  const grCut = Math.max(0, a.guardrailCutPct ?? 10) / 100;
+  const grRaise = Math.max(0, a.guardrailRaisePct ?? 5) / 100;
+
   for (let r = 0; r < runs; r++) {
     const rand = mulberry32(seed + r * 7919);
     let bal = a.portfolioBalance + (a.includeSpouse ? a.spouseBalance : 0);
     let hsa = a.hsaBalance;
+    let cash = 0; // cash bridge sleeve (carved out of the portfolio at retirement)
+    let bridgeFunded = false;
+    let refBal = 0; // plan reference balance at retirement, for guardrail bands
+    let refAge = 0;
+    let spendFactor = 1; // guardrail-adjusted discretionary/travel multiplier
     let lowest = bal + hsa;
     let depletionAge: number | null = null;
     let legacyMet = false;
@@ -245,6 +261,7 @@ export function runStressTest(
     let ltcCovered = true;
 
     balancesByYear[0].push(bal + hsa);
+
 
     for (let y = 1; y <= years; y++) {
       const age = a.currentAge + y;
