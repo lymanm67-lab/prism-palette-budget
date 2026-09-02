@@ -6496,6 +6496,7 @@ export type Database = {
       }
       layer_a_assignments: {
         Row: {
+          auto_balance: boolean
           buffer_assignment: number | null
           business_inflow: number | null
           business_outflow: number | null
@@ -6509,6 +6510,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          auto_balance?: boolean
           buffer_assignment?: number | null
           business_inflow?: number | null
           business_outflow?: number | null
@@ -6522,6 +6524,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          auto_balance?: boolean
           buffer_assignment?: number | null
           business_inflow?: number | null
           business_outflow?: number | null
