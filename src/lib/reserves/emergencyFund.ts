@@ -169,6 +169,11 @@ export interface ReserveSummary {
   belowGoal: number;
   lastWithdrawal: ReserveTxn | null;
   guardrails: Guardrail[];
+  /** Balance derived from logged reserve movements only. */
+  trackedBalance: number;
+  /** Linked institution account, when the fund follows a real account. */
+  link: LinkedAccountInfo | null;
+
 }
 
 const r2 = (n: number) => Math.round(n * 100) / 100;
