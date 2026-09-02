@@ -74,6 +74,17 @@ export function PositionDialog({
   const set = (patch: Partial<RolePosition>) => setDraft((d) => ({ ...d, ...patch }));
   const isTactical = draft.role === 'CONVICTION' || draft.role === 'CATALYST';
 
+  // Dividends received this year, derived from recorded payments for this ticker.
+  const { data: dividendRows = [] } = useInvDividends();
+  const currentYear = String(new Date().getFullYear());
+  const recordedDividendYtd = dividendRows
+    .filter(
+      (d) =>
+        d.pay_date.startsWith(currentYear) &&
+        (d.position_id === position?.id || d.ticker.toUpperCase() === (draft.ticker ?? '').trim().toUpperCase()),
+    )
+    .reduce((s, d) => s + Number(d.amount || 0), 0);
+
   const lookup = async (rawTicker?: string) => {
     const ticker = (rawTicker ?? draft.ticker ?? '').trim().toUpperCase();
     if (!ticker) return;
