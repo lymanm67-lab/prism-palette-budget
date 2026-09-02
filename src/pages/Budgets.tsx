@@ -1140,15 +1140,35 @@ const Budgets = () => {
     const pct = effectiveBudget > 0 ? Math.min((actual / effectiveBudget) * 100, 100) : 0;
     const overBudget = !isCreditLine && remaining < -0.005;
 
-    const offsetBadge = bizOffset ? (
+    const isPersonalRow = personalCategoryIds.has(b.category_id);
+
+    // Personal-side badges: for shared costs, show what percentage of the cost stays
+    // on the personal budget; for every personal row, show its share of the personal budget.
+    const personalSplitBadge = isPersonalRow && bizOffset ? (
       <Tooltip>
         <TooltipTrigger asChild>
           <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-sky-500/10 text-sky-600 dark:text-sky-400 font-medium shrink-0 cursor-default whitespace-nowrap">
-            {bizOffset.pct}% → Biz
+            {100 - bizOffset.pct}% Personal
           </span>
         </TooltipTrigger>
         <TooltipContent>
-          <p>{formatCurrency(bizOffset.bizAmount)}/mo offset to {bizOffset.bizCategory}</p>
+          <p>{formatCurrency(bizOffset.personalAmount)}/mo stays on personal ({bizOffset.pct}% charged to business {bizOffset.bizCategory})</p>
+        </TooltipContent>
+      </Tooltip>
+    ) : null;
+
+    const personalBudgetPct = isPersonalRow && !isIncome && personalPlannedTotal > 0 && b.planned_amount > 0
+      ? (b.planned_amount / personalPlannedTotal) * 100
+      : null;
+    const personalSharePctBadge = personalBudgetPct != null ? (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground font-medium shrink-0 cursor-default whitespace-nowrap">
+            {personalBudgetPct.toFixed(1)}% of budget
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{formatCurrency(b.planned_amount)} of the {formatCurrency(personalPlannedTotal)} personal budget</p>
         </TooltipContent>
       </Tooltip>
     ) : null;
