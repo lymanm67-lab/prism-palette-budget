@@ -82,6 +82,7 @@ export function useLayerAAssignments(month: string) {
       one_time_expenses: num(row?.one_time_expenses),
       business_outflow: num(row?.business_outflow),
       business_inflow: num(row?.business_inflow),
+      auto_balance: !!row?.auto_balance,
       notes: row?.notes ?? null,
     } as LayerAAssignment,
     isLoading: query.isLoading,
