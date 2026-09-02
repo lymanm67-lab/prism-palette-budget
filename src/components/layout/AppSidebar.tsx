@@ -83,6 +83,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { to: '/investments', icon: TrendingUp, label: 'Investment Holdings', color: 'text-prism-indigo' },
       { to: '/planning/investments', icon: Sparkles, label: 'Investment Planning', color: 'text-prism-amber' },
       { to: '/planning/retirement-tax', icon: Sparkles, label: 'Retirement Tax Center', color: 'text-prism-amber' },
+      { to: '/planning/stress-test', icon: Activity, label: 'Retirement Stress Test', color: 'text-prism-rose' },
       { to: '/ltc', icon: ShieldCheck, label: 'Long-Term Care', color: 'text-prism-sky' },
       { to: '/home-buying', icon: Home, label: 'Home Buying', color: 'text-prism-amber' },
     ],
