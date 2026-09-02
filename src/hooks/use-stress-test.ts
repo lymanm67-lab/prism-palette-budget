@@ -96,6 +96,16 @@ export const FALLBACK_ASSUMPTIONS: StressAssumptions = {
   extraOneTimeExpense: 0,
   extraOneTimeExpenseAge: null,
   returnHaircutPct: 0,
+  badFirstDecadeEnabled: false,
+  badFirstDecadeYears: 10,
+  badFirstDecadeHaircutPct: 6,
+  cashBridgeYears: 0,
+  cashBridgeYieldPct: 3,
+  guardrailRulesEnabled: false,
+  guardrailBandPct: 15,
+  guardrailCutPct: 10,
+  guardrailRaisePct: 5,
+
 };
 
 /** Assumptions derived from the user's real Prism plan; each is overridable. */
