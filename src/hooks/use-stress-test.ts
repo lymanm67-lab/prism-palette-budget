@@ -21,6 +21,7 @@ const sb = supabase as any;
 export interface StressRunOutput {
   base: StressResult;
   sequence: SensitivityPoint[];
+  sequenceControls: SensitivityPoint[];
   crises: (SensitivityPoint & { key: string; description: string })[];
   inflation: SensitivityPoint[];
   ltc: SensitivityPoint[];
