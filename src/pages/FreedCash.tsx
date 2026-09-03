@@ -50,6 +50,9 @@ export default function FreedCash() {
               <TabsTrigger value="verify">Verify</TabsTrigger>
               <TabsTrigger value="renewals">Renewals</TabsTrigger>
               <TabsTrigger value="gate">Subscription Gate</TabsTrigger>
+              <TabsTrigger value="redirects">Redirects</TabsTrigger>
+              <TabsTrigger value="sweep">Sweep</TabsTrigger>
+              <TabsTrigger value="review">Monthly review</TabsTrigger>
             </TabsList>
 
             <TabsContent value="sources">
@@ -64,6 +67,16 @@ export default function FreedCash() {
             <TabsContent value="gate">
               <SubscriptionGate sources={list} />
             </TabsContent>
+            <TabsContent value="redirects">
+              <RedirectLedger sources={list} redirects={redirects ?? []} />
+            </TabsContent>
+            <TabsContent value="sweep">
+              <SweepWaterfall sources={list} redirects={redirects ?? []} />
+            </TabsContent>
+            <TabsContent value="review">
+              <MonthlyFreedCashReview sources={list} redirects={redirects ?? []} />
+            </TabsContent>
+
           </Tabs>
         </>
       )}
