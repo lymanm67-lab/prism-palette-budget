@@ -299,3 +299,299 @@ export function useDeleteGateRequest() {
     onError: (e: Error) => toast.error(e.message),
   });
 }
+
+/* ---------------------------------------------------------------- Phase 3
+ * Redirect ledger, sweep waterfall, monthly review.
+ * ------------------------------------------------------------------------ */
+
+export const REDIRECT_DESTINATIONS = [
+  { value: 'emergency_fund', label: 'Emergency fund (SoFi)' },
+  { value: 'debt_payoff', label: 'Debt payoff (snowball)' },
+  { value: 'investing', label: 'Investing / Build Wealth' },
+  { value: 'buffer', label: 'Buffer' },
+  { value: 'travel', label: 'Travel fund' },
+  { value: 'business_reserve', label: 'Business capital reserve' },
+  { value: 'goal', label: 'Specific goal' },
+] as const;
+
+export const REDIRECT_STATUSES = [
+  { value: 'planned', label: 'Planned' },
+  { value: 'active', label: 'Active' },
+  { value: 'paused', label: 'Paused' },
+  { value: 'completed', label: 'Completed' },
+] as const;
+
+export interface FreedCashRedirect {
+  id: string;
+  household_id: string;
+  source_id: string | null;
+  destination_type: string;
+  destination_label: string | null;
+  monthly_amount: number;
+  start_date: string;
+  status: string;
+  confirmed_moved: boolean;
+  last_confirmed_on: string | null;
+  notes: string | null;
+}
+
+export interface FreedCashSettings {
+  id?: string;
+  household_id?: string;
+  emergency_floor: number;
+  waterfall: string[];
+  sweep_mode: string;
+}
+
+export interface FreedCashReview {
+  id: string;
+  household_id: string;
+  review_month: string;
+  verified_monthly: number;
+  redirected_monthly: number;
+  unassigned_monthly: number;
+  capture_rate: number;
+  wins: string | null;
+  leaks_found: string | null;
+  next_actions: string | null;
+}
+
+export function destinationLabel(value: string) {
+  return REDIRECT_DESTINATIONS.find((d) => d.value === value)?.label ?? value;
+}
+
+export function useFreedCashRedirects() {
+  const { household } = useHousehold();
+  return useQuery({
+    queryKey: ['freed-cash-redirects', household?.id],
+    enabled: !!household?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('freed_cash_redirects')
+        .select('*')
+        .eq('household_id', household!.id)
+        .is('deleted_at', null)
+        .order('start_date', { ascending: false });
+      if (error) throw error;
+      return (data || []) as unknown as FreedCashRedirect[];
+    },
+  });
+}
+
+export function useSaveRedirect() {
+  const { household } = useHousehold();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: Partial<FreedCashRedirect> & { id?: string }) => {
+      if (!household?.id) throw new Error('No household');
+      const payload = { ...input, household_id: household.id };
+      if (input.id) {
+        const { error } = await supabase
+          .from('freed_cash_redirects')
+          .update(payload as never)
+          .eq('id', input.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('freed_cash_redirects').insert(payload as never);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['freed-cash-redirects'] });
+      toast.success('Redirect saved');
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+}
+
+export function useDeleteRedirect() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('freed_cash_redirects')
+        .update({ deleted_at: new Date().toISOString() } as never)
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['freed-cash-redirects'] });
+      toast.success('Removed');
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+}
+
+const DEFAULT_SETTINGS: FreedCashSettings = {
+  emergency_floor: 2000,
+  waterfall: ['emergency_fund', 'debt_payoff', 'investing', 'buffer', 'goal'],
+  sweep_mode: 'manual',
+};
+
+export function useFreedCashSettings() {
+  const { household } = useHousehold();
+  return useQuery({
+    queryKey: ['freed-cash-settings', household?.id],
+    enabled: !!household?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('freed_cash_settings')
+        .select('*')
+        .eq('household_id', household!.id)
+        .maybeSingle();
+      if (error) throw error;
+      if (!data) return DEFAULT_SETTINGS;
+      const row = data as unknown as FreedCashSettings & { waterfall: unknown };
+      return {
+        ...row,
+        waterfall: Array.isArray(row.waterfall) ? (row.waterfall as string[]) : DEFAULT_SETTINGS.waterfall,
+        emergency_floor: Number(row.emergency_floor),
+      } as FreedCashSettings;
+    },
+  });
+}
+
+export function useSaveFreedCashSettings() {
+  const { household } = useHousehold();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: Partial<FreedCashSettings>) => {
+      if (!household?.id) throw new Error('No household');
+      const { error } = await supabase
+        .from('freed_cash_settings')
+        .upsert({ ...input, household_id: household.id } as never, { onConflict: 'household_id' });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['freed-cash-settings'] });
+      toast.success('Sweep settings saved');
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+}
+
+export function useFreedCashReviews() {
+  const { household } = useHousehold();
+  return useQuery({
+    queryKey: ['freed-cash-reviews', household?.id],
+    enabled: !!household?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('freed_cash_reviews')
+        .select('*')
+        .eq('household_id', household!.id)
+        .is('deleted_at', null)
+        .order('review_month', { ascending: false });
+      if (error) throw error;
+      return (data || []) as unknown as FreedCashReview[];
+    },
+  });
+}
+
+export function useSaveFreedCashReview() {
+  const { household } = useHousehold();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: Partial<FreedCashReview> & { id?: string }) => {
+      if (!household?.id) throw new Error('No household');
+      const payload = { ...input, household_id: household.id };
+      if (input.id) {
+        const { error } = await supabase
+          .from('freed_cash_reviews')
+          .update(payload as never)
+          .eq('id', input.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('freed_cash_reviews').insert(payload as never);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['freed-cash-reviews'] });
+      toast.success('Monthly review saved');
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+}
+
+export interface RedirectCapacity {
+  verifiedMonthly: number;
+  assignedMonthly: number;
+  unassignedMonthly: number;
+  confirmedMonthly: number;
+  assignedByDestination: { destination: string; monthly: number }[];
+}
+
+/** Only verified savings can be redirected; paused/completed redirects free capacity back up. */
+export function redirectCapacity(
+  sources: FreedCashSource[],
+  redirects: FreedCashRedirect[],
+): RedirectCapacity {
+  const verifiedMonthly = sources
+    .filter((s) => s.status === 'verified')
+    .reduce((sum, s) => sum + monthlySavings(s), 0);
+
+  const live = redirects.filter((r) => r.status === 'planned' || r.status === 'active');
+  const assignedMonthly = live.reduce((sum, r) => sum + Number(r.monthly_amount), 0);
+  const confirmedMonthly = live
+    .filter((r) => r.confirmed_moved)
+    .reduce((sum, r) => sum + Number(r.monthly_amount), 0);
+
+  const byDest = new Map<string, number>();
+  for (const r of live) {
+    byDest.set(r.destination_type, (byDest.get(r.destination_type) ?? 0) + Number(r.monthly_amount));
+  }
+
+  return {
+    verifiedMonthly,
+    assignedMonthly,
+    unassignedMonthly: Math.max(0, verifiedMonthly - assignedMonthly),
+    confirmedMonthly,
+    assignedByDestination: [...byDest.entries()].map(([destination, monthly]) => ({ destination, monthly })),
+  };
+}
+
+export interface WaterfallStep {
+  destination: string;
+  label: string;
+  amount: number;
+  reason: string;
+}
+
+/**
+ * Sweep the unassigned verified savings through the priority waterfall.
+ * The emergency fund is filled to its floor first; whatever remains flows to the next jobs.
+ */
+export function buildWaterfall(
+  unassigned: number,
+  settings: FreedCashSettings,
+  emergencyBalance: number,
+): WaterfallStep[] {
+  let remaining = Math.max(0, unassigned);
+  const steps: WaterfallStep[] = [];
+  const order = settings.waterfall?.length ? settings.waterfall : DEFAULT_SETTINGS.waterfall;
+
+  for (const destination of order) {
+    if (remaining <= 0.01) break;
+    let amount = remaining;
+    let reason = 'Receives the remaining freed cash';
+
+    if (destination === 'emergency_fund') {
+      const gap = Math.max(0, settings.emergency_floor - emergencyBalance);
+      amount = Math.min(remaining, gap);
+      reason =
+        gap > 0
+          ? `Fill to the $${settings.emergency_floor.toLocaleString()} floor (gap $${gap.toFixed(2)})`
+          : 'Floor already protected — skipped';
+    }
+
+    if (amount > 0.01) {
+      steps.push({ destination, label: destinationLabel(destination), amount, reason });
+      remaining -= amount;
+    } else {
+      steps.push({ destination, label: destinationLabel(destination), amount: 0, reason });
+    }
+  }
+
+  return steps;
+}
