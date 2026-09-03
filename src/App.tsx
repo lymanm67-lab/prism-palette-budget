@@ -303,6 +303,7 @@ const App = () => (
               <Route path="/planning/travel-fund" element={<Suspense fallback={<PageLoader />}><TravelFund /></Suspense>} />
               <Route path="/planning/zero-based" element={<Suspense fallback={<PageLoader />}><ZeroBasedPlan /></Suspense>} />
               <Route path="/planning/reserves" element={<Suspense fallback={<PageLoader />}><Reserves /></Suspense>} />
+              <Route path="/planning/freed-cash" element={<Suspense fallback={<PageLoader />}><FreedCash /></Suspense>} />
               <Route path="/investments/portfolio" element={<Suspense fallback={<PageLoader />}><InvestmentPortfolio /></Suspense>} />
               <Route path="/health" element={<Suspense fallback={<PageLoader />}><HealthDashboard /></Suspense>} />
               <Route path="/admin/content-editor" element={<Suspense fallback={<PageLoader />}><ContentEditor /></Suspense>} />
