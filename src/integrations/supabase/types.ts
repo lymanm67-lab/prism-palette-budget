@@ -4067,6 +4067,143 @@ export type Database = {
         }
         Relationships: []
       }
+      freed_cash_redirects: {
+        Row: {
+          confirmed_moved: boolean
+          created_at: string
+          deleted_at: string | null
+          destination_label: string | null
+          destination_type: string
+          household_id: string
+          id: string
+          last_confirmed_on: string | null
+          monthly_amount: number
+          notes: string | null
+          source_id: string | null
+          start_date: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          confirmed_moved?: boolean
+          created_at?: string
+          deleted_at?: string | null
+          destination_label?: string | null
+          destination_type?: string
+          household_id: string
+          id?: string
+          last_confirmed_on?: string | null
+          monthly_amount?: number
+          notes?: string | null
+          source_id?: string | null
+          start_date?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          confirmed_moved?: boolean
+          created_at?: string
+          deleted_at?: string | null
+          destination_label?: string | null
+          destination_type?: string
+          household_id?: string
+          id?: string
+          last_confirmed_on?: string | null
+          monthly_amount?: number
+          notes?: string | null
+          source_id?: string | null
+          start_date?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "freed_cash_redirects_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "freed_cash_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      freed_cash_reviews: {
+        Row: {
+          capture_rate: number
+          created_at: string
+          deleted_at: string | null
+          household_id: string
+          id: string
+          leaks_found: string | null
+          next_actions: string | null
+          redirected_monthly: number
+          review_month: string
+          unassigned_monthly: number
+          updated_at: string
+          verified_monthly: number
+          wins: string | null
+        }
+        Insert: {
+          capture_rate?: number
+          created_at?: string
+          deleted_at?: string | null
+          household_id: string
+          id?: string
+          leaks_found?: string | null
+          next_actions?: string | null
+          redirected_monthly?: number
+          review_month: string
+          unassigned_monthly?: number
+          updated_at?: string
+          verified_monthly?: number
+          wins?: string | null
+        }
+        Update: {
+          capture_rate?: number
+          created_at?: string
+          deleted_at?: string | null
+          household_id?: string
+          id?: string
+          leaks_found?: string | null
+          next_actions?: string | null
+          redirected_monthly?: number
+          review_month?: string
+          unassigned_monthly?: number
+          updated_at?: string
+          verified_monthly?: number
+          wins?: string | null
+        }
+        Relationships: []
+      }
+      freed_cash_settings: {
+        Row: {
+          created_at: string
+          emergency_floor: number
+          household_id: string
+          id: string
+          sweep_mode: string
+          updated_at: string
+          waterfall: Json
+        }
+        Insert: {
+          created_at?: string
+          emergency_floor?: number
+          household_id: string
+          id?: string
+          sweep_mode?: string
+          updated_at?: string
+          waterfall?: Json
+        }
+        Update: {
+          created_at?: string
+          emergency_floor?: number
+          household_id?: string
+          id?: string
+          sweep_mode?: string
+          updated_at?: string
+          waterfall?: Json
+        }
+        Relationships: []
+      }
       freed_cash_sources: {
         Row: {
           added_fees: number
