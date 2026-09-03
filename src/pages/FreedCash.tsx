@@ -62,6 +62,7 @@ export default function FreedCash() {
               <TabsTrigger value="review">Monthly review</TabsTrigger>
               <TabsTrigger value="utilities">Utility savings</TabsTrigger>
               <TabsTrigger value="keep">Keep Score</TabsTrigger>
+              <TabsTrigger value="lifetime">Lifetime</TabsTrigger>
               <TabsTrigger value="history">History</TabsTrigger>
               <TabsTrigger value="vendors">Vendors</TabsTrigger>
               <TabsTrigger value="report">Report</TabsTrigger>
