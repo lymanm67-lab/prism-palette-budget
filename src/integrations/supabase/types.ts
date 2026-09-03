@@ -4007,6 +4007,78 @@ export type Database = {
           },
         ]
       }
+      freed_cash_sources: {
+        Row: {
+          added_fees: number
+          billing_frequency: string
+          category: string | null
+          classification: string
+          created_at: string
+          deleted_at: string | null
+          effective_date: string
+          entity_scope: string
+          household_id: string
+          id: string
+          is_temporary: boolean
+          name: string
+          new_amount: number
+          notes: string | null
+          original_amount: number
+          resume_date: string | null
+          source_type: string
+          status: string
+          updated_at: string
+          vendor: string | null
+          verified_at: string | null
+        }
+        Insert: {
+          added_fees?: number
+          billing_frequency?: string
+          category?: string | null
+          classification?: string
+          created_at?: string
+          deleted_at?: string | null
+          effective_date?: string
+          entity_scope?: string
+          household_id: string
+          id?: string
+          is_temporary?: boolean
+          name: string
+          new_amount?: number
+          notes?: string | null
+          original_amount?: number
+          resume_date?: string | null
+          source_type?: string
+          status?: string
+          updated_at?: string
+          vendor?: string | null
+          verified_at?: string | null
+        }
+        Update: {
+          added_fees?: number
+          billing_frequency?: string
+          category?: string | null
+          classification?: string
+          created_at?: string
+          deleted_at?: string | null
+          effective_date?: string
+          entity_scope?: string
+          household_id?: string
+          id?: string
+          is_temporary?: boolean
+          name?: string
+          new_amount?: number
+          notes?: string | null
+          original_amount?: number
+          resume_date?: string | null
+          source_type?: string
+          status?: string
+          updated_at?: string
+          vendor?: string | null
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
       funding_scenarios: {
         Row: {
           amount: number
