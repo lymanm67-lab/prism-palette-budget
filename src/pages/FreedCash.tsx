@@ -12,6 +12,7 @@ import { VendorHistory } from '@/components/freed-cash/VendorHistory';
 import { KeepScoreBoard } from '@/components/freed-cash/KeepScoreBoard';
 import { FreedCashImpactReport } from '@/components/freed-cash/FreedCashImpactReport';
 import { UtilitySavings } from '@/components/freed-cash/UtilitySavings';
+import { LifetimeSavings } from '@/components/freed-cash/LifetimeSavings';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
