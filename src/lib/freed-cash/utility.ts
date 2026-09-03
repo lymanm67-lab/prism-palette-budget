@@ -9,7 +9,8 @@
 export const CLEARVIEW = {
   vendorMatch: 'clearview',
   formerSupplier: 'Clearview Energy',
-  currentSupplier: 'Ohio Edison',
+  currentSupplier: 'First Energy (previously Ohio Edison)',
+  gasSupplier: 'Enbridge',
   cancellationFee: 0,
   avgKwh: 586,
   formerMonthlyCost: 159.4,
@@ -22,7 +23,7 @@ export const CLEARVIEW = {
   recentBill: {
     kwh: 614,
     clearviewCharge: 166.06,
-    ohioEdisonEstimate: 67.05,
+    currentSupplierEstimate: 67.05,
     savings: 99.01,
   },
 } as const;

@@ -149,6 +149,7 @@ export function UtilitySavings({ sources, redirects }: Props) {
           </div>
           <CardDescription>
             Utility reduction → freed cash. This is an expense reduction, not new income, salary or take-home pay.
+            Gas is supplied by {CLEARVIEW.gasSupplier} and is tracked separately from this electric Clearview savings.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -195,7 +196,7 @@ export function UtilitySavings({ sources, redirects }: Props) {
         <CardContent className="grid gap-4 text-sm sm:grid-cols-4">
           <Stat label="Recent usage" value={`${CLEARVIEW.recentBill.kwh} kWh`} />
           <Stat label="Clearview charge" value={money(CLEARVIEW.recentBill.clearviewCharge)} />
-          <Stat label="Ohio Edison at comparison rate" value={money(CLEARVIEW.recentBill.ohioEdisonEstimate)} />
+          <Stat label="First Energy at comparison rate" value={money(CLEARVIEW.recentBill.currentSupplierEstimate)} />
           <Stat label="Savings on that bill" value={money(CLEARVIEW.recentBill.savings)} />
         </CardContent>
       </Card>
