@@ -73,6 +73,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { to: '/planning/travel-fund', icon: Plane, label: 'Annual Travel Fund', color: 'text-prism-sky' },
       { to: '/planning/zero-based', icon: Wallet, label: 'Zero-Based Plan', color: 'text-prism-teal' },
       { to: '/planning/reserves', icon: ShieldCheck, label: 'Emergency Fund & Liquidity', color: 'text-prism-teal' },
+      { to: '/planning/freed-cash', icon: Scissors, label: 'Freed Cash Engine', color: 'text-prism-amber' },
     ],
   },
   {
