@@ -90,9 +90,19 @@ export function useSafeToSpend(scope: StsScope = 'combined'): SafeToSpendResult 
       if (scope === 'personal' && isBusiness) continue;
       if (scope === 'business' && !isBusiness) continue;
       const expType = group?.expense_type || 'flexible';
+      const catName = (b.categories?.name || '').toLowerCase();
+      // In combined view, internal owner funding is a transfer between the personal and
+      // business sides of the same household — counting it would double-count the money.
+      const isInternalFunding =
+        catName.includes('owner contribution to business') ||
+        catName.includes('owner capital infusion') ||
+        catName.includes('owner draw');
+      if (scope === 'combined' && isInternalFunding) continue;
       if (expType === 'income') {
         budgetIncome += b.planned_amount || 0;
-      } else if (expType !== 'equity') {
+      } else if (expType !== 'equity' && expType !== 'payroll_deduction') {
+        // Payroll deductions are withheld before take-home pay, so they are not
+        // spendable cash and must not be subtracted from net income again.
         budgetExpenses += b.planned_amount || 0;
       }
     }
@@ -157,7 +167,11 @@ export function useSafeToSpend(scope: StsScope = 'combined'): SafeToSpendResult 
     // Investing + Savings reserve from deployment rules (defaults 10/10 if unset)
     const investingPct = deploymentRules?.invest_target ?? 10;
     const savingsPct = deploymentRules?.savings_target ?? 10;
-    const deploymentReserve = effectiveIncome * ((investingPct + savingsPct) / 100);
+    // When a budget baseline exists, savings/investing already have their own budget lines
+    // (Emergency Fund, Stocks, etc.), so applying the deployment reserve again double-counts.
+    const deploymentReserve = budgetExpenses > 0
+      ? 0
+      : effectiveIncome * ((investingPct + savingsPct) / 100);
 
     // Base monthly safe-to-spend: income - expenses - deployment reserve - optional spent adjustment
     const baseMonthlySafe = effectiveIncome - effectiveExpenses - deploymentReserve - spentAdjustment;
