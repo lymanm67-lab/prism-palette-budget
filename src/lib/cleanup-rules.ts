@@ -7,6 +7,7 @@ export interface MerchantAlias {
 }
 
 export const MERCHANT_ALIASES: MerchantAlias[] = [
+  { pattern: /^movable\b/i,           canonical: 'Lovable AI Services', categoryName: 'Lovable' },
   { pattern: /^movable\s+feast/i,       canonical: 'Lovable AI Services', categoryName: 'Lovable' },
   { pattern: /^lovable(\s+dover)?\b/i,  canonical: 'Lovable AI Services', categoryName: 'Lovable' },
 ];
