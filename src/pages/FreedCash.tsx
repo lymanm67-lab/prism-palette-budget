@@ -11,6 +11,7 @@ import { FreedCashTimeline } from '@/components/freed-cash/FreedCashTimeline';
 import { VendorHistory } from '@/components/freed-cash/VendorHistory';
 import { KeepScoreBoard } from '@/components/freed-cash/KeepScoreBoard';
 import { FreedCashImpactReport } from '@/components/freed-cash/FreedCashImpactReport';
+import { UtilitySavings } from '@/components/freed-cash/UtilitySavings';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -57,6 +58,7 @@ export default function FreedCash() {
               <TabsTrigger value="redirects">Redirects</TabsTrigger>
               <TabsTrigger value="sweep">Sweep</TabsTrigger>
               <TabsTrigger value="review">Monthly review</TabsTrigger>
+              <TabsTrigger value="utilities">Utility savings</TabsTrigger>
               <TabsTrigger value="keep">Keep Score</TabsTrigger>
               <TabsTrigger value="history">History</TabsTrigger>
               <TabsTrigger value="vendors">Vendors</TabsTrigger>
@@ -83,6 +85,9 @@ export default function FreedCash() {
             </TabsContent>
             <TabsContent value="review">
               <MonthlyFreedCashReview sources={list} redirects={redirects ?? []} />
+            </TabsContent>
+            <TabsContent value="utilities">
+              <UtilitySavings sources={list} redirects={redirects ?? []} />
             </TabsContent>
             <TabsContent value="keep">
               <KeepScoreBoard sources={list} />
