@@ -48,7 +48,7 @@ interface Props {
 const emptyBill = {
   billing_month: new Date().toISOString().slice(0, 7) + '-01',
   kwh_used: 0,
-  supplier: CLEARVIEW.currentSupplier,
+  supplier: CLEARVIEW.currentSupplier as string,
   rate_per_kwh: Number(CLEARVIEW.currentRatePerKwh.toFixed(5)),
   actual_cost: 0,
   benchmark_cost: 0,
