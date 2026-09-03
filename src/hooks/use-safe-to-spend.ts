@@ -90,9 +90,19 @@ export function useSafeToSpend(scope: StsScope = 'combined'): SafeToSpendResult 
       if (scope === 'personal' && isBusiness) continue;
       if (scope === 'business' && !isBusiness) continue;
       const expType = group?.expense_type || 'flexible';
+      const catName = (b.categories?.name || '').toLowerCase();
+      // In combined view, internal owner funding is a transfer between the personal and
+      // business sides of the same household — counting it would double-count the money.
+      const isInternalFunding =
+        catName.includes('owner contribution to business') ||
+        catName.includes('owner capital infusion') ||
+        catName.includes('owner draw');
+      if (scope === 'combined' && isInternalFunding) continue;
       if (expType === 'income') {
         budgetIncome += b.planned_amount || 0;
-      } else if (expType !== 'equity') {
+      } else if (expType !== 'equity' && expType !== 'payroll_deduction') {
+        // Payroll deductions are withheld before take-home pay, so they are not
+        // spendable cash and must not be subtracted from net income again.
         budgetExpenses += b.planned_amount || 0;
       }
     }
