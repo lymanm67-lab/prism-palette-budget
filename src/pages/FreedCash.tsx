@@ -4,13 +4,19 @@ import { FreedCashSourceList } from '@/components/freed-cash/FreedCashSourceList
 import { VerificationQueue } from '@/components/freed-cash/VerificationQueue';
 import { RenewalWatch } from '@/components/freed-cash/RenewalWatch';
 import { SubscriptionGate } from '@/components/freed-cash/SubscriptionGate';
+import { RedirectLedger } from '@/components/freed-cash/RedirectLedger';
+import { SweepWaterfall } from '@/components/freed-cash/SweepWaterfall';
+import { MonthlyFreedCashReview } from '@/components/freed-cash/MonthlyFreedCashReview';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { summarizeFreedCash, useFreedCashSources } from '@/hooks/use-freed-cash';
+import { summarizeFreedCash, useFreedCashSources, useFreedCashRedirects } from '@/hooks/use-freed-cash';
+
 
 export default function FreedCash() {
   const { data: sources, isLoading } = useFreedCashSources();
+  const { data: redirects } = useFreedCashRedirects();
+
 
   useEffect(() => {
     document.title = 'Freed Cash Engine | PrismMoney';
@@ -44,6 +50,9 @@ export default function FreedCash() {
               <TabsTrigger value="verify">Verify</TabsTrigger>
               <TabsTrigger value="renewals">Renewals</TabsTrigger>
               <TabsTrigger value="gate">Subscription Gate</TabsTrigger>
+              <TabsTrigger value="redirects">Redirects</TabsTrigger>
+              <TabsTrigger value="sweep">Sweep</TabsTrigger>
+              <TabsTrigger value="review">Monthly review</TabsTrigger>
             </TabsList>
 
             <TabsContent value="sources">
@@ -58,6 +67,16 @@ export default function FreedCash() {
             <TabsContent value="gate">
               <SubscriptionGate sources={list} />
             </TabsContent>
+            <TabsContent value="redirects">
+              <RedirectLedger sources={list} redirects={redirects ?? []} />
+            </TabsContent>
+            <TabsContent value="sweep">
+              <SweepWaterfall sources={list} redirects={redirects ?? []} />
+            </TabsContent>
+            <TabsContent value="review">
+              <MonthlyFreedCashReview sources={list} redirects={redirects ?? []} />
+            </TabsContent>
+
           </Tabs>
         </>
       )}
