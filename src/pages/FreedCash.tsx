@@ -57,6 +57,10 @@ export default function FreedCash() {
               <TabsTrigger value="redirects">Redirects</TabsTrigger>
               <TabsTrigger value="sweep">Sweep</TabsTrigger>
               <TabsTrigger value="review">Monthly review</TabsTrigger>
+              <TabsTrigger value="keep">Keep Score</TabsTrigger>
+              <TabsTrigger value="history">History</TabsTrigger>
+              <TabsTrigger value="vendors">Vendors</TabsTrigger>
+              <TabsTrigger value="report">Report</TabsTrigger>
             </TabsList>
 
             <TabsContent value="sources">
