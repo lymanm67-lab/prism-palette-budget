@@ -119,3 +119,8 @@
 - [ ] Sequence-of-return-risk controls in Monte Carlo (bad-first-decade ordering, cash/bond bridge, dynamic guardrails)
 
 - [ ] Retirement Stress Test page: reorder sections into a logical flow; collapse "How to use this" by default
+
+## Freed Cash Engine — real data walkthrough (requested 2026-09-03)
+- [ ] Record real canceled subscriptions / reductions in freed_cash_sources
+- [ ] Verify them (statement evidence) and redirect into SoFi Emergency Fund, debt, investments
+- [ ] Confirm freed-cash numbers reconcile to actual bank activity
