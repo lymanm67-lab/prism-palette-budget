@@ -123,6 +123,7 @@ const RetirementStressTest = lazy(() => import("./pages/RetirementStressTest"));
 const TravelFund = lazy(() => import("./pages/TravelFund"));
 const ZeroBasedPlan = lazy(() => import("./pages/ZeroBasedPlan"));
 const Reserves = lazy(() => import("./pages/Reserves"));
+const FreedCash = lazy(() => import("./pages/FreedCash"));
 const RetirementHub = lazy(() => import("@/pages/RetirementHub"));
 const HealthDashboard = lazy(() => import("@/pages/health/HealthDashboard"));
 const ContentEditor = lazy(() => import("@/pages/admin/ContentEditor"));
