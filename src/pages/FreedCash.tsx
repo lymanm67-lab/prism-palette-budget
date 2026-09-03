@@ -69,7 +69,10 @@ export default function FreedCash() {
             </TabsList>
 
             <TabsContent value="sources">
-              <FreedCashSourceList sources={list} />
+              <FreedCashSourceList sources={all} />
+            </TabsContent>
+            <TabsContent value="lifetime">
+              <LifetimeSavings sources={all} />
             </TabsContent>
             <TabsContent value="verify">
               <VerificationQueue sources={list} />
