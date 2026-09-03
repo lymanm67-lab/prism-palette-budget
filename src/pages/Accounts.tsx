@@ -282,6 +282,7 @@ const Accounts = () => {
         syncSnapTrade.mutateAsync(),
       ]);
 
+      await runDupeGuard();
       qc.invalidateQueries({ queryKey: ['accounts'] });
       qc.invalidateQueries({ queryKey: ['transactions'] });
       qc.invalidateQueries({ queryKey: ['investment_holdings'] });
