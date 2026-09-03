@@ -29,6 +29,7 @@ export const FREED_CASH_STATUSES = [
   { value: 'confirmed', label: 'Confirmed by vendor' },
   { value: 'verified', label: 'Verified on statement' },
   { value: 'reversed', label: 'Reversed / reactivated' },
+  { value: 'historical', label: 'Historical (already cancelled)' },
 ] as const;
 
 export const VERIFICATION_METHODS = [
@@ -131,6 +132,7 @@ export function summarizeFreedCash(sources: FreedCashSource[]): FreedCashTotals 
   let verifiedCount = 0;
 
   for (const s of sources) {
+    if (s.status === 'historical') continue; // historical items are lifetime-only
     const m = monthlySavings(s);
     if (s.status === 'verified') {
       monthlyVerified += m;
@@ -662,4 +664,82 @@ export function useDeleteUtilityBill() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
+}
+
+// ---------------------------------------------------------------------------
+// Lifetime (historical) savings: accrued avoided spend from cancel date → today
+// ---------------------------------------------------------------------------
+
+export function monthsSince(dateStr: string, now = new Date()): number {
+  const d = new Date(dateStr);
+  if (Number.isNaN(d.getTime())) return 0;
+  const months =
+    (now.getFullYear() - d.getFullYear()) * 12 + (now.getMonth() - d.getMonth()) +
+    (now.getDate() >= d.getDate() ? 0 : -1);
+  return Math.max(0, months);
+}
+
+/** Accrued avoided spend for one source: monthly savings x months since effective date. */
+export function accruedSavings(s: FreedCashSource, now = new Date()): number {
+  return monthlySavings(s) * monthsSince(s.effective_date, now);
+}
+
+export interface LifetimeSavings {
+  total: number;
+  historicalTotal: number;
+  activeTotal: number;
+  byYear: { year: string; amount: number; count: number }[];
+  byVendor: { vendor: string; amount: number; monthly: number; count: number }[];
+  rows: { source: FreedCashSource; months: number; monthly: number; accrued: number }[];
+}
+
+/**
+ * Lifetime savings across every non-reversed source, historical included.
+ * Historical rows only ever contribute here — never to the active monthly figure.
+ */
+export function summarizeLifetime(sources: FreedCashSource[], now = new Date()): LifetimeSavings {
+  const rows = sources
+    .filter((s) => s.status !== 'reversed')
+    .map((s) => ({
+      source: s,
+      months: monthsSince(s.effective_date, now),
+      monthly: monthlySavings(s),
+      accrued: accruedSavings(s, now),
+    }))
+    .sort((a, b) => b.accrued - a.accrued);
+
+  const yearMap = new Map<string, { amount: number; count: number }>();
+  const vendorMap = new Map<string, { amount: number; monthly: number; count: number }>();
+  let historicalTotal = 0;
+  let activeTotal = 0;
+
+  for (const r of rows) {
+    if (r.source.status === 'historical') historicalTotal += r.accrued;
+    else activeTotal += r.accrued;
+
+    const year = (r.source.effective_date ?? '').slice(0, 4) || 'Undated';
+    const y = yearMap.get(year) ?? { amount: 0, count: 0 };
+    yearMap.set(year, { amount: y.amount + r.accrued, count: y.count + 1 });
+
+    const vendor = r.source.vendor?.trim() || r.source.name;
+    const v = vendorMap.get(vendor) ?? { amount: 0, monthly: 0, count: 0 };
+    vendorMap.set(vendor, {
+      amount: v.amount + r.accrued,
+      monthly: v.monthly + r.monthly,
+      count: v.count + 1,
+    });
+  }
+
+  return {
+    total: historicalTotal + activeTotal,
+    historicalTotal,
+    activeTotal,
+    byYear: [...yearMap.entries()]
+      .map(([year, v]) => ({ year, ...v }))
+      .sort((a, b) => b.year.localeCompare(a.year)),
+    byVendor: [...vendorMap.entries()]
+      .map(([vendor, v]) => ({ vendor, ...v }))
+      .sort((a, b) => b.amount - a.amount),
+    rows,
+  };
 }

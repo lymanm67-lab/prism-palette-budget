@@ -12,6 +12,7 @@ import { VendorHistory } from '@/components/freed-cash/VendorHistory';
 import { KeepScoreBoard } from '@/components/freed-cash/KeepScoreBoard';
 import { FreedCashImpactReport } from '@/components/freed-cash/FreedCashImpactReport';
 import { UtilitySavings } from '@/components/freed-cash/UtilitySavings';
+import { LifetimeSavings } from '@/components/freed-cash/LifetimeSavings';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -27,7 +28,9 @@ export default function FreedCash() {
     document.title = 'Freed Cash Engine | PrismMoney';
   }, []);
 
-  const list = sources ?? [];
+  const all = sources ?? [];
+  // Historical (already-cancelled) items only count toward lifetime savings.
+  const list = useMemo(() => all.filter((s) => s.status !== 'historical'), [all]);
   const totals = useMemo(() => summarizeFreedCash(list), [list]);
 
   return (
@@ -60,13 +63,17 @@ export default function FreedCash() {
               <TabsTrigger value="review">Monthly review</TabsTrigger>
               <TabsTrigger value="utilities">Utility savings</TabsTrigger>
               <TabsTrigger value="keep">Keep Score</TabsTrigger>
+              <TabsTrigger value="lifetime">Lifetime</TabsTrigger>
               <TabsTrigger value="history">History</TabsTrigger>
               <TabsTrigger value="vendors">Vendors</TabsTrigger>
               <TabsTrigger value="report">Report</TabsTrigger>
             </TabsList>
 
             <TabsContent value="sources">
-              <FreedCashSourceList sources={list} />
+              <FreedCashSourceList sources={all} />
+            </TabsContent>
+            <TabsContent value="lifetime">
+              <LifetimeSavings sources={all} />
             </TabsContent>
             <TabsContent value="verify">
               <VerificationQueue sources={list} />
