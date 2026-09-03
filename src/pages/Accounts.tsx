@@ -15,6 +15,7 @@ import { useAccounts, useCreateAccount, useUpdateAccount, useDeleteAccount } fro
 import { useSyncSnapTrade, useSnapTradeConnections, useRevokeSnapTrade, useReconnectSnapTrade, usePlaidConnections, useRevokePlaid } from '@/hooks/use-investment-data';
 import { formatDate } from '@/lib/seed-data';
 import { useCurrency } from '@/hooks/use-currency';
+import { flagRefreshDuplicates } from '@/lib/refresh-dupe-guard';
 import { Plus, Landmark, CreditCard, TrendingUp, PiggyBank, Car, Loader2, Trash2, Upload, Pencil, Check, X, MoreHorizontal, BookOpen, Link2, RefreshCw, AlertTriangle, Clock, Unlink, RotateCcw } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 import PlaidLinkButton, { type PlaidLinkButtonHandle } from '@/components/PlaidLinkButton';
