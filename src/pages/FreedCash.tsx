@@ -7,6 +7,10 @@ import { SubscriptionGate } from '@/components/freed-cash/SubscriptionGate';
 import { RedirectLedger } from '@/components/freed-cash/RedirectLedger';
 import { SweepWaterfall } from '@/components/freed-cash/SweepWaterfall';
 import { MonthlyFreedCashReview } from '@/components/freed-cash/MonthlyFreedCashReview';
+import { FreedCashTimeline } from '@/components/freed-cash/FreedCashTimeline';
+import { VendorHistory } from '@/components/freed-cash/VendorHistory';
+import { KeepScoreBoard } from '@/components/freed-cash/KeepScoreBoard';
+import { FreedCashImpactReport } from '@/components/freed-cash/FreedCashImpactReport';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -53,6 +57,10 @@ export default function FreedCash() {
               <TabsTrigger value="redirects">Redirects</TabsTrigger>
               <TabsTrigger value="sweep">Sweep</TabsTrigger>
               <TabsTrigger value="review">Monthly review</TabsTrigger>
+              <TabsTrigger value="keep">Keep Score</TabsTrigger>
+              <TabsTrigger value="history">History</TabsTrigger>
+              <TabsTrigger value="vendors">Vendors</TabsTrigger>
+              <TabsTrigger value="report">Report</TabsTrigger>
             </TabsList>
 
             <TabsContent value="sources">
@@ -76,6 +84,19 @@ export default function FreedCash() {
             <TabsContent value="review">
               <MonthlyFreedCashReview sources={list} redirects={redirects ?? []} />
             </TabsContent>
+            <TabsContent value="keep">
+              <KeepScoreBoard sources={list} />
+            </TabsContent>
+            <TabsContent value="history">
+              <FreedCashTimeline sources={list} redirects={redirects ?? []} />
+            </TabsContent>
+            <TabsContent value="vendors">
+              <VendorHistory sources={list} />
+            </TabsContent>
+            <TabsContent value="report">
+              <FreedCashImpactReport sources={list} redirects={redirects ?? []} />
+            </TabsContent>
+
 
           </Tabs>
         </>
