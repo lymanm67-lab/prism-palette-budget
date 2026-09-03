@@ -132,6 +132,7 @@ export function summarizeFreedCash(sources: FreedCashSource[]): FreedCashTotals 
   let verifiedCount = 0;
 
   for (const s of sources) {
+    if (s.status === 'historical') continue; // historical items are lifetime-only
     const m = monthlySavings(s);
     if (s.status === 'verified') {
       monthlyVerified += m;
