@@ -27,7 +27,9 @@ export default function FreedCash() {
     document.title = 'Freed Cash Engine | PrismMoney';
   }, []);
 
-  const list = sources ?? [];
+  const all = sources ?? [];
+  // Historical (already-cancelled) items only count toward lifetime savings.
+  const list = useMemo(() => all.filter((s) => s.status !== 'historical'), [all]);
   const totals = useMemo(() => summarizeFreedCash(list), [list]);
 
   return (
