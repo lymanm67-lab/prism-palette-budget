@@ -205,6 +205,19 @@ const Accounts = () => {
     return true;
   }, [qc, requestPlaidRelink]);
 
+  // Duplicate guard — flags extra same-day/same-amount copies for review (Lovable exempt).
+  const runDupeGuard = async () => {
+    if (!household) return;
+    try {
+      const flagged = await flagRefreshDuplicates(household.id);
+      if (flagged > 0) {
+        toast.warning(`${flagged} possible duplicate transaction${flagged === 1 ? '' : 's'} flagged for review`, {
+          description: 'Lovable charges are excluded. Review them in Data Cleanup.',
+        });
+      }
+    } catch { /* non-blocking */ }
+  };
+
   const handleRefreshSingleAccount = async (accountId: string, providerType: string | null, institution: string | null) => {
     if (!household) return;
     setRefreshingAccountId(accountId);
