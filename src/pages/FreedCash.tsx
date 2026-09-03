@@ -84,6 +84,19 @@ export default function FreedCash() {
             <TabsContent value="review">
               <MonthlyFreedCashReview sources={list} redirects={redirects ?? []} />
             </TabsContent>
+            <TabsContent value="keep">
+              <KeepScoreBoard sources={list} />
+            </TabsContent>
+            <TabsContent value="history">
+              <FreedCashTimeline sources={list} redirects={redirects ?? []} />
+            </TabsContent>
+            <TabsContent value="vendors">
+              <VendorHistory sources={list} />
+            </TabsContent>
+            <TabsContent value="report">
+              <FreedCashImpactReport sources={list} redirects={redirects ?? []} />
+            </TabsContent>
+
 
           </Tabs>
         </>
