@@ -15,6 +15,7 @@ import { useAccounts, useCreateAccount, useUpdateAccount, useDeleteAccount } fro
 import { useSyncSnapTrade, useSnapTradeConnections, useRevokeSnapTrade, useReconnectSnapTrade, usePlaidConnections, useRevokePlaid } from '@/hooks/use-investment-data';
 import { formatDate } from '@/lib/seed-data';
 import { useCurrency } from '@/hooks/use-currency';
+import { flagRefreshDuplicates } from '@/lib/refresh-dupe-guard';
 import { Plus, Landmark, CreditCard, TrendingUp, PiggyBank, Car, Loader2, Trash2, Upload, Pencil, Check, X, MoreHorizontal, BookOpen, Link2, RefreshCw, AlertTriangle, Clock, Unlink, RotateCcw } from 'lucide-react';
 import type { Database } from '@/integrations/supabase/types';
 import PlaidLinkButton, { type PlaidLinkButtonHandle } from '@/components/PlaidLinkButton';
@@ -205,6 +206,19 @@ const Accounts = () => {
     return true;
   }, [qc, requestPlaidRelink]);
 
+  // Duplicate guard — flags extra same-day/same-amount copies for review (Lovable exempt).
+  const runDupeGuard = async () => {
+    if (!household) return;
+    try {
+      const flagged = await flagRefreshDuplicates(household.id);
+      if (flagged > 0) {
+        toast.warning(`${flagged} possible duplicate transaction${flagged === 1 ? '' : 's'} flagged for review`, {
+          description: 'Lovable charges are excluded. Review them in Data Cleanup.',
+        });
+      }
+    } catch { /* non-blocking */ }
+  };
+
   const handleRefreshSingleAccount = async (accountId: string, providerType: string | null, institution: string | null) => {
     if (!household) return;
     setRefreshingAccountId(accountId);
@@ -246,10 +260,11 @@ const Accounts = () => {
         }
       }
 
-
+      await runDupeGuard();
       qc.invalidateQueries({ queryKey: ['accounts'] });
       qc.invalidateQueries({ queryKey: ['transactions'] });
       qc.invalidateQueries({ queryKey: ['investment_holdings'] });
+
     } catch (err: any) {
       toast.error(err.message || 'Failed to refresh account');
     }
@@ -281,6 +296,7 @@ const Accounts = () => {
         syncSnapTrade.mutateAsync(),
       ]);
 
+      await runDupeGuard();
       qc.invalidateQueries({ queryKey: ['accounts'] });
       qc.invalidateQueries({ queryKey: ['transactions'] });
       qc.invalidateQueries({ queryKey: ['investment_holdings'] });
