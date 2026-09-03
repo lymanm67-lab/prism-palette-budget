@@ -9,7 +9,7 @@
 export const CLEARVIEW = {
   vendorMatch: 'clearview',
   formerSupplier: 'Clearview Energy',
-  currentSupplier: 'First Energy (previously Ohio Edison)',
+  currentSupplier: 'First Energy',
   gasSupplier: 'Enbridge',
   cancellationFee: 0,
   avgKwh: 586,
