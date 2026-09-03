@@ -15,6 +15,8 @@ import { summarizeFreedCash, useFreedCashSources, useFreedCashRedirects } from '
 
 export default function FreedCash() {
   const { data: sources, isLoading } = useFreedCashSources();
+  const { data: redirects } = useFreedCashRedirects();
+
 
   useEffect(() => {
     document.title = 'Freed Cash Engine | PrismMoney';
