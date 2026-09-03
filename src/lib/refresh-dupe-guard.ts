@@ -5,7 +5,7 @@ import { clusterDuplicates, type DupeTxn } from '@/lib/duplicate-detector';
  * Merchants that legitimately post multiple identical same-day charges
  * (Lovable AI credit top-ups), so they must never be flagged as duplicates.
  */
-const DUPE_GUARD_EXEMPT = [/lovable/i, /movable\s+feast/i];
+const DUPE_GUARD_EXEMPT = [/lovable/i, /movable/i];
 
 export function isDupeGuardExempt(merchant?: string | null): boolean {
   const m = String(merchant || '');
