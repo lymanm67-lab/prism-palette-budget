@@ -1,8 +1,12 @@
 import { useEffect, useMemo } from 'react';
 import { FreedCashSummary } from '@/components/freed-cash/FreedCashSummary';
 import { FreedCashSourceList } from '@/components/freed-cash/FreedCashSourceList';
+import { VerificationQueue } from '@/components/freed-cash/VerificationQueue';
+import { RenewalWatch } from '@/components/freed-cash/RenewalWatch';
+import { SubscriptionGate } from '@/components/freed-cash/SubscriptionGate';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { summarizeFreedCash, useFreedCashSources } from '@/hooks/use-freed-cash';
 
 export default function FreedCash() {
@@ -33,7 +37,28 @@ export default function FreedCash() {
       ) : (
         <>
           <FreedCashSummary totals={totals} />
-          <FreedCashSourceList sources={list} />
+
+          <Tabs defaultValue="sources" className="space-y-4">
+            <TabsList className="flex w-full flex-wrap">
+              <TabsTrigger value="sources">Sources</TabsTrigger>
+              <TabsTrigger value="verify">Verify</TabsTrigger>
+              <TabsTrigger value="renewals">Renewals</TabsTrigger>
+              <TabsTrigger value="gate">Subscription Gate</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="sources">
+              <FreedCashSourceList sources={list} />
+            </TabsContent>
+            <TabsContent value="verify">
+              <VerificationQueue sources={list} />
+            </TabsContent>
+            <TabsContent value="renewals">
+              <RenewalWatch sources={list} />
+            </TabsContent>
+            <TabsContent value="gate">
+              <SubscriptionGate sources={list} />
+            </TabsContent>
+          </Tabs>
         </>
       )}
 
