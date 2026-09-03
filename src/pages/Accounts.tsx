@@ -246,10 +246,11 @@ const Accounts = () => {
         }
       }
 
-
+      await runDupeGuard();
       qc.invalidateQueries({ queryKey: ['accounts'] });
       qc.invalidateQueries({ queryKey: ['transactions'] });
       qc.invalidateQueries({ queryKey: ['investment_holdings'] });
+
     } catch (err: any) {
       toast.error(err.message || 'Failed to refresh account');
     }
