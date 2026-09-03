@@ -31,6 +31,27 @@ export const FREED_CASH_STATUSES = [
   { value: 'reversed', label: 'Reversed / reactivated' },
 ] as const;
 
+export const VERIFICATION_METHODS = [
+  { value: 'bank_statement', label: 'Bank / card statement' },
+  { value: 'vendor_email', label: 'Vendor confirmation email' },
+  { value: 'account_portal', label: 'Vendor account portal' },
+  { value: 'transaction_absent', label: 'Charge no longer appears' },
+  { value: 'other', label: 'Other' },
+] as const;
+
+export const REACTIVATION_RISKS = [
+  { value: 'low', label: 'Low' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'high', label: 'High' },
+] as const;
+
+export const GATE_DECISIONS = [
+  { value: 'pending', label: 'Pending review' },
+  { value: 'approved', label: 'Approved' },
+  { value: 'declined', label: 'Declined' },
+  { value: 'deferred', label: 'Deferred' },
+] as const;
+
 export interface FreedCashSource {
   id: string;
   household_id: string;
@@ -50,9 +71,32 @@ export interface FreedCashSource {
   is_temporary: boolean;
   resume_date: string | null;
   notes: string | null;
+  verification_method: string | null;
+  verification_evidence: string | null;
+  statement_checked_date: string | null;
+  next_renewal_date: string | null;
+  renewal_amount: number | null;
+  reactivation_risk: string;
 }
 
 export type FreedCashInput = Omit<FreedCashSource, 'id' | 'household_id' | 'verified_at'>;
+
+export interface GateRequest {
+  id: string;
+  household_id: string;
+  name: string;
+  vendor: string | null;
+  amount: number;
+  billing_frequency: string;
+  entity_scope: string;
+  reason: string | null;
+  expected_value: string | null;
+  replaces_source_id: string | null;
+  replaces_note: string | null;
+  decision: string;
+  decision_date: string | null;
+  reviewer_notes: string | null;
+}
 
 /** Normalize any billing frequency to a monthly figure. */
 export function toMonthly(amount: number, frequency: string): number {
