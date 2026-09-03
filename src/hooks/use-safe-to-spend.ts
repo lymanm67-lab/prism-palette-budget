@@ -167,7 +167,11 @@ export function useSafeToSpend(scope: StsScope = 'combined'): SafeToSpendResult 
     // Investing + Savings reserve from deployment rules (defaults 10/10 if unset)
     const investingPct = deploymentRules?.invest_target ?? 10;
     const savingsPct = deploymentRules?.savings_target ?? 10;
-    const deploymentReserve = effectiveIncome * ((investingPct + savingsPct) / 100);
+    // When a budget baseline exists, savings/investing already have their own budget lines
+    // (Emergency Fund, Stocks, etc.), so applying the deployment reserve again double-counts.
+    const deploymentReserve = budgetExpenses > 0
+      ? 0
+      : effectiveIncome * ((investingPct + savingsPct) / 100);
 
     // Base monthly safe-to-spend: income - expenses - deployment reserve - optional spent adjustment
     const baseMonthlySafe = effectiveIncome - effectiveExpenses - deploymentReserve - spentAdjustment;
