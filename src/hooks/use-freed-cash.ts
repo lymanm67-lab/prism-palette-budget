@@ -595,3 +595,71 @@ export function buildWaterfall(
 
   return steps;
 }
+
+/* ------------------------------------------------------- Utility bill tracking
+ * Clearview Energy cancellation: realized (not assumed) electricity savings.
+ * ---------------------------------------------------------------------------- */
+
+export function useUtilityBills() {
+  const { household } = useHousehold();
+  return useQuery({
+    queryKey: ['freed-cash-utility-bills', household?.id],
+    enabled: !!household?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('freed_cash_utility_bills')
+        .select('*')
+        .eq('household_id', household!.id)
+        .is('deleted_at', null)
+        .order('billing_month', { ascending: false });
+      if (error) throw error;
+      return (data || []) as unknown as import('@/lib/freed-cash/utility').UtilityBill[];
+    },
+  });
+}
+
+export function useSaveUtilityBill() {
+  const { household } = useHousehold();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (
+      input: Partial<import('@/lib/freed-cash/utility').UtilityBillInput> & { id?: string },
+    ) => {
+      if (!household?.id) throw new Error('No household');
+      const payload = { ...input, household_id: household.id };
+      if (input.id) {
+        const { error } = await supabase
+          .from('freed_cash_utility_bills')
+          .update(payload as never)
+          .eq('id', input.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('freed_cash_utility_bills').insert(payload as never);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['freed-cash-utility-bills'] });
+      toast.success('Electric bill saved');
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+}
+
+export function useDeleteUtilityBill() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('freed_cash_utility_bills')
+        .update({ deleted_at: new Date().toISOString() } as never)
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['freed-cash-utility-bills'] });
+      toast.success('Bill removed');
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+}

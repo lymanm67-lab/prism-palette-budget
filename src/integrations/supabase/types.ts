@@ -4294,6 +4294,65 @@ export type Database = {
         }
         Relationships: []
       }
+      freed_cash_utility_bills: {
+        Row: {
+          actual_cost: number
+          benchmark_cost: number
+          billing_month: string
+          created_at: string
+          deleted_at: string | null
+          household_id: string
+          id: string
+          kwh_used: number
+          notes: string | null
+          rate_per_kwh: number | null
+          source_id: string | null
+          supplier: string | null
+          updated_at: string
+          utility_type: string
+        }
+        Insert: {
+          actual_cost?: number
+          benchmark_cost?: number
+          billing_month: string
+          created_at?: string
+          deleted_at?: string | null
+          household_id: string
+          id?: string
+          kwh_used?: number
+          notes?: string | null
+          rate_per_kwh?: number | null
+          source_id?: string | null
+          supplier?: string | null
+          updated_at?: string
+          utility_type?: string
+        }
+        Update: {
+          actual_cost?: number
+          benchmark_cost?: number
+          billing_month?: string
+          created_at?: string
+          deleted_at?: string | null
+          household_id?: string
+          id?: string
+          kwh_used?: number
+          notes?: string | null
+          rate_per_kwh?: number | null
+          source_id?: string | null
+          supplier?: string | null
+          updated_at?: string
+          utility_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "freed_cash_utility_bills_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "freed_cash_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       funding_scenarios: {
         Row: {
           amount: number
