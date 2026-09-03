@@ -31,6 +31,27 @@ export const FREED_CASH_STATUSES = [
   { value: 'reversed', label: 'Reversed / reactivated' },
 ] as const;
 
+export const VERIFICATION_METHODS = [
+  { value: 'bank_statement', label: 'Bank / card statement' },
+  { value: 'vendor_email', label: 'Vendor confirmation email' },
+  { value: 'account_portal', label: 'Vendor account portal' },
+  { value: 'transaction_absent', label: 'Charge no longer appears' },
+  { value: 'other', label: 'Other' },
+] as const;
+
+export const REACTIVATION_RISKS = [
+  { value: 'low', label: 'Low' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'high', label: 'High' },
+] as const;
+
+export const GATE_DECISIONS = [
+  { value: 'pending', label: 'Pending review' },
+  { value: 'approved', label: 'Approved' },
+  { value: 'declined', label: 'Declined' },
+  { value: 'deferred', label: 'Deferred' },
+] as const;
+
 export interface FreedCashSource {
   id: string;
   household_id: string;
@@ -50,9 +71,32 @@ export interface FreedCashSource {
   is_temporary: boolean;
   resume_date: string | null;
   notes: string | null;
+  verification_method: string | null;
+  verification_evidence: string | null;
+  statement_checked_date: string | null;
+  next_renewal_date: string | null;
+  renewal_amount: number | null;
+  reactivation_risk: string;
 }
 
 export type FreedCashInput = Omit<FreedCashSource, 'id' | 'household_id' | 'verified_at'>;
+
+export interface GateRequest {
+  id: string;
+  household_id: string;
+  name: string;
+  vendor: string | null;
+  amount: number;
+  billing_frequency: string;
+  entity_scope: string;
+  reason: string | null;
+  expected_value: string | null;
+  replaces_source_id: string | null;
+  replaces_note: string | null;
+  decision: string;
+  decision_date: string | null;
+  reviewer_notes: string | null;
+}
 
 /** Normalize any billing frequency to a monthly figure. */
 export function toMonthly(amount: number, frequency: string): number {
@@ -170,6 +214,86 @@ export function useDeleteFreedCashSource() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['freed-cash-sources'] });
+      toast.success('Removed');
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+}
+
+/** Sources whose savings could reverse: renewal due soon, temporary pause resuming, or high risk. */
+export function upcomingRenewalRisks(sources: FreedCashSource[], withinDays = 60) {
+  const now = new Date();
+  const limit = new Date(now.getTime() + withinDays * 86400000);
+  return sources
+    .map((s) => {
+      const dates: { label: string; date: string }[] = [];
+      if (s.next_renewal_date) dates.push({ label: 'Renewal', date: s.next_renewal_date });
+      if (s.is_temporary && s.resume_date) dates.push({ label: 'Pause ends', date: s.resume_date });
+      const next = dates
+        .filter((d) => new Date(d.date) <= limit)
+        .sort((a, b) => a.date.localeCompare(b.date))[0];
+      return next ? { source: s, label: next.label, date: next.date } : null;
+    })
+    .filter((x): x is { source: FreedCashSource; label: string; date: string } => !!x)
+    .sort((a, b) => a.date.localeCompare(b.date));
+}
+
+export function useGateRequests() {
+  const { household } = useHousehold();
+  return useQuery({
+    queryKey: ['freed-cash-gate', household?.id],
+    enabled: !!household?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('freed_cash_gate_requests')
+        .select('*')
+        .eq('household_id', household!.id)
+        .is('deleted_at', null)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return (data || []) as unknown as GateRequest[];
+    },
+  });
+}
+
+export function useSaveGateRequest() {
+  const { household } = useHousehold();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: Partial<GateRequest> & { id?: string }) => {
+      if (!household?.id) throw new Error('No household');
+      const payload = { ...input, household_id: household.id };
+      if (input.id) {
+        const { error } = await supabase
+          .from('freed_cash_gate_requests')
+          .update(payload as never)
+          .eq('id', input.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('freed_cash_gate_requests').insert(payload as never);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['freed-cash-gate'] });
+      toast.success('Subscription Gate request saved');
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+}
+
+export function useDeleteGateRequest() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('freed_cash_gate_requests')
+        .update({ deleted_at: new Date().toISOString() } as never)
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['freed-cash-gate'] });
       toast.success('Removed');
     },
     onError: (e: Error) => toast.error(e.message),

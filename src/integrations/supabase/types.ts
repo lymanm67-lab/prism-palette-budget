@@ -4007,6 +4007,66 @@ export type Database = {
           },
         ]
       }
+      freed_cash_gate_requests: {
+        Row: {
+          amount: number
+          billing_frequency: string
+          created_at: string
+          decision: string
+          decision_date: string | null
+          deleted_at: string | null
+          entity_scope: string
+          expected_value: string | null
+          household_id: string
+          id: string
+          name: string
+          reason: string | null
+          replaces_note: string | null
+          replaces_source_id: string | null
+          reviewer_notes: string | null
+          updated_at: string
+          vendor: string | null
+        }
+        Insert: {
+          amount?: number
+          billing_frequency?: string
+          created_at?: string
+          decision?: string
+          decision_date?: string | null
+          deleted_at?: string | null
+          entity_scope?: string
+          expected_value?: string | null
+          household_id: string
+          id?: string
+          name: string
+          reason?: string | null
+          replaces_note?: string | null
+          replaces_source_id?: string | null
+          reviewer_notes?: string | null
+          updated_at?: string
+          vendor?: string | null
+        }
+        Update: {
+          amount?: number
+          billing_frequency?: string
+          created_at?: string
+          decision?: string
+          decision_date?: string | null
+          deleted_at?: string | null
+          entity_scope?: string
+          expected_value?: string | null
+          household_id?: string
+          id?: string
+          name?: string
+          reason?: string | null
+          replaces_note?: string | null
+          replaces_source_id?: string | null
+          reviewer_notes?: string | null
+          updated_at?: string
+          vendor?: string | null
+        }
+        Relationships: []
+      }
       freed_cash_sources: {
         Row: {
           added_fees: number
@@ -4022,13 +4082,19 @@ export type Database = {
           is_temporary: boolean
           name: string
           new_amount: number
+          next_renewal_date: string | null
           notes: string | null
           original_amount: number
+          reactivation_risk: string
+          renewal_amount: number | null
           resume_date: string | null
           source_type: string
+          statement_checked_date: string | null
           status: string
           updated_at: string
           vendor: string | null
+          verification_evidence: string | null
+          verification_method: string | null
           verified_at: string | null
         }
         Insert: {
@@ -4045,13 +4111,19 @@ export type Database = {
           is_temporary?: boolean
           name: string
           new_amount?: number
+          next_renewal_date?: string | null
           notes?: string | null
           original_amount?: number
+          reactivation_risk?: string
+          renewal_amount?: number | null
           resume_date?: string | null
           source_type?: string
+          statement_checked_date?: string | null
           status?: string
           updated_at?: string
           vendor?: string | null
+          verification_evidence?: string | null
+          verification_method?: string | null
           verified_at?: string | null
         }
         Update: {
@@ -4068,13 +4140,19 @@ export type Database = {
           is_temporary?: boolean
           name?: string
           new_amount?: number
+          next_renewal_date?: string | null
           notes?: string | null
           original_amount?: number
+          reactivation_risk?: string
+          renewal_amount?: number | null
           resume_date?: string | null
           source_type?: string
+          statement_checked_date?: string | null
           status?: string
           updated_at?: string
           vendor?: string | null
+          verification_evidence?: string | null
+          verification_method?: string | null
           verified_at?: string | null
         }
         Relationships: []
