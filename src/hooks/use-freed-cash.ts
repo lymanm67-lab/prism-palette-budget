@@ -219,3 +219,83 @@ export function useDeleteFreedCashSource() {
     onError: (e: Error) => toast.error(e.message),
   });
 }
+
+/** Sources whose savings could reverse: renewal due soon, temporary pause resuming, or high risk. */
+export function upcomingRenewalRisks(sources: FreedCashSource[], withinDays = 60) {
+  const now = new Date();
+  const limit = new Date(now.getTime() + withinDays * 86400000);
+  return sources
+    .map((s) => {
+      const dates: { label: string; date: string }[] = [];
+      if (s.next_renewal_date) dates.push({ label: 'Renewal', date: s.next_renewal_date });
+      if (s.is_temporary && s.resume_date) dates.push({ label: 'Pause ends', date: s.resume_date });
+      const next = dates
+        .filter((d) => new Date(d.date) <= limit)
+        .sort((a, b) => a.date.localeCompare(b.date))[0];
+      return next ? { source: s, label: next.label, date: next.date } : null;
+    })
+    .filter((x): x is { source: FreedCashSource; label: string; date: string } => !!x)
+    .sort((a, b) => a.date.localeCompare(b.date));
+}
+
+export function useGateRequests() {
+  const { household } = useHousehold();
+  return useQuery({
+    queryKey: ['freed-cash-gate', household?.id],
+    enabled: !!household?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('freed_cash_gate_requests')
+        .select('*')
+        .eq('household_id', household!.id)
+        .is('deleted_at', null)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return (data || []) as unknown as GateRequest[];
+    },
+  });
+}
+
+export function useSaveGateRequest() {
+  const { household } = useHousehold();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: Partial<GateRequest> & { id?: string }) => {
+      if (!household?.id) throw new Error('No household');
+      const payload = { ...input, household_id: household.id };
+      if (input.id) {
+        const { error } = await supabase
+          .from('freed_cash_gate_requests')
+          .update(payload as never)
+          .eq('id', input.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('freed_cash_gate_requests').insert(payload as never);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['freed-cash-gate'] });
+      toast.success('Subscription Gate request saved');
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+}
+
+export function useDeleteGateRequest() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('freed_cash_gate_requests')
+        .update({ deleted_at: new Date().toISOString() } as never)
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['freed-cash-gate'] });
+      toast.success('Removed');
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+}
