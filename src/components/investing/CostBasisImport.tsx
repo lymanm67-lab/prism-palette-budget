@@ -95,10 +95,36 @@ export function CostBasisImport() {
     handleCsvText(await file.text());
   };
 
+  /** Pull fresh holdings from SnapTrade (Schwab) before reading the table. */
+  const refreshFromSnapTrade = async () => {
+    if (!household?.id) return;
+    const { data: conns } = await sb
+      .from('snaptrade_connections')
+      .select('id, status')
+      .eq('household_id', household.id)
+      .order('created_at', { ascending: false })
+      .limit(1);
+    const connectionId = (conns as any[])?.[0]?.id;
+    if (!connectionId) {
+      toast.info('No linked brokerage found — connect Charles Schwab on Accounts, or import a CSV.');
+      return;
+    }
+    const { data, error } = await supabase.functions.invoke('snaptrade/sync-accounts', {
+      body: { household_id: household.id, connection_id: connectionId },
+    });
+    if (error) {
+      toast.error(`Brokerage refresh failed: ${error.message}. Using last synced holdings.`);
+      return;
+    }
+    const synced = (data as any)?.holdings_synced;
+    if (typeof synced === 'number') toast.success(`Refreshed ${synced} holding(s) from your brokerage`);
+  };
+
   const syncBroker = async () => {
     if (!household?.id) return;
     setBusy(true);
     try {
+      await refreshFromSnapTrade();
       const { data, error } = await sb
         .from('investment_holdings')
         .select('symbol, quantity, cost_basis, updated_at')
