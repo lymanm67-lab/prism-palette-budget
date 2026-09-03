@@ -29,6 +29,7 @@ export const FREED_CASH_STATUSES = [
   { value: 'confirmed', label: 'Confirmed by vendor' },
   { value: 'verified', label: 'Verified on statement' },
   { value: 'reversed', label: 'Reversed / reactivated' },
+  { value: 'historical', label: 'Historical (already cancelled)' },
 ] as const;
 
 export const VERIFICATION_METHODS = [
