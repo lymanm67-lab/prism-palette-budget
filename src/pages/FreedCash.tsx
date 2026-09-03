@@ -4,10 +4,14 @@ import { FreedCashSourceList } from '@/components/freed-cash/FreedCashSourceList
 import { VerificationQueue } from '@/components/freed-cash/VerificationQueue';
 import { RenewalWatch } from '@/components/freed-cash/RenewalWatch';
 import { SubscriptionGate } from '@/components/freed-cash/SubscriptionGate';
+import { RedirectLedger } from '@/components/freed-cash/RedirectLedger';
+import { SweepWaterfall } from '@/components/freed-cash/SweepWaterfall';
+import { MonthlyFreedCashReview } from '@/components/freed-cash/MonthlyFreedCashReview';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { summarizeFreedCash, useFreedCashSources } from '@/hooks/use-freed-cash';
+import { summarizeFreedCash, useFreedCashSources, useFreedCashRedirects } from '@/hooks/use-freed-cash';
+
 
 export default function FreedCash() {
   const { data: sources, isLoading } = useFreedCashSources();
