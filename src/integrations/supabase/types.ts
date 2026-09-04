@@ -1946,6 +1946,7 @@ export type Database = {
           account_id: string | null
           apr_source: string | null
           balance: number
+          balance_as_of: string | null
           business_name: string | null
           business_split_pct: number
           created_at: string
@@ -1962,6 +1963,7 @@ export type Database = {
           minimum_payment: number
           name: string
           original_payoff_date: string | null
+          payment_account_id: string | null
           plan_id: string
           pslf_payments_made: number | null
           pslf_payments_required: number | null
@@ -1973,6 +1975,7 @@ export type Database = {
           account_id?: string | null
           apr_source?: string | null
           balance?: number
+          balance_as_of?: string | null
           business_name?: string | null
           business_split_pct?: number
           created_at?: string
@@ -1989,6 +1992,7 @@ export type Database = {
           minimum_payment?: number
           name: string
           original_payoff_date?: string | null
+          payment_account_id?: string | null
           plan_id: string
           pslf_payments_made?: number | null
           pslf_payments_required?: number | null
@@ -2000,6 +2004,7 @@ export type Database = {
           account_id?: string | null
           apr_source?: string | null
           balance?: number
+          balance_as_of?: string | null
           business_name?: string | null
           business_split_pct?: number
           created_at?: string
@@ -2016,6 +2021,7 @@ export type Database = {
           minimum_payment?: number
           name?: string
           original_payoff_date?: string | null
+          payment_account_id?: string | null
           plan_id?: string
           pslf_payments_made?: number | null
           pslf_payments_required?: number | null
@@ -2027,6 +2033,13 @@ export type Database = {
           {
             foreignKeyName: "debt_items_account_id_fkey"
             columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "debt_items_payment_account_id_fkey"
+            columns: ["payment_account_id"]
             isOneToOne: false
             referencedRelation: "accounts"
             referencedColumns: ["id"]
