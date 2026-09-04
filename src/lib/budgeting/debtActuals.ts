@@ -47,7 +47,7 @@ const MATCHERS: { test: RegExp; keys: RegExp[] }[] = [
   { test: /discover/i, keys: [/discover/i] },
 ];
 
-function keysFor(name: string): RegExp[] {
+export function keysFor(name: string): RegExp[] {
   const hit = MATCHERS.filter((m) => m.test.test(name || ''));
   if (hit.length) return hit.flatMap((h) => h.keys);
   const token = (name || '').split(/[\s—–-]+/)[0];
