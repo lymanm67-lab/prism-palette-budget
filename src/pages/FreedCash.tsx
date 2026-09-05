@@ -15,6 +15,7 @@ import { SavingsTiming } from '@/components/freed-cash/SavingsTiming';
 import { UtilitySavings } from '@/components/freed-cash/UtilitySavings';
 import { LifetimeSavings } from '@/components/freed-cash/LifetimeSavings';
 import { RedirectEffectiveness } from '@/components/freed-cash/RedirectEffectiveness';
+import { ForwardLook } from '@/components/freed-cash/ForwardLook';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -60,8 +61,9 @@ const GROUPS = [
   {
     id: 'results',
     label: '4. Results',
-    hint: 'The long view: what you have saved so far and the full printable report.',
+    hint: 'The long view: what is coming, what could slip away, and the full printable report.',
     tabs: [
+      { value: 'forward', label: 'Forward look' },
       { value: 'lifetime', label: 'Lifetime' },
       { value: 'history', label: 'History' },
       { value: 'report', label: 'Report' },
@@ -137,6 +139,9 @@ export default function FreedCash() {
 
             <TabsContent value="sources">
               <FreedCashSourceList sources={all} />
+            </TabsContent>
+            <TabsContent value="forward">
+              <ForwardLook sources={list} redirects={redirects ?? []} />
             </TabsContent>
             <TabsContent value="lifetime">
               <LifetimeSavings sources={all} />
