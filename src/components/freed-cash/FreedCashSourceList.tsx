@@ -94,6 +94,10 @@ export function FreedCashSourceList({ sources }: { sources: FreedCashSource[] })
       classification: draft.classification || 'optional',
       is_temporary: !!draft.is_temporary,
       resume_date: draft.is_temporary ? draft.resume_date || null : null,
+      confidence: draft.confidence || 'estimated',
+      durability: draft.durability || 'permanent',
+      expires_on: draft.expires_on || null,
+
       notes: draft.notes || null,
     });
     setOpen(false);
