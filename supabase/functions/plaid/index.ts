@@ -316,7 +316,7 @@ Deno.serve(async (req) => {
           .filter((t: any) => plaidToDbAccount.has(t.account_id))
           .filter((t: any) => {
             const acctId = plaidToDbAccount.get(t.account_id)!;
-            const k = relinkKey(acctId, t.date, -t.amount, t.merchant_name || t.name || null);
+            const k = relinkKey(acctId, t.date, -t.amount);
             const remaining = priorKeys.get(k) || 0;
             if (remaining > 0) { priorKeys.set(k, remaining - 1); return false; }
             return true;
@@ -574,7 +574,7 @@ Deno.serve(async (req) => {
               .filter((t: any) => plaidToDbAccount.has(t.account_id))
               .filter((t: any) => {
                 const acctId = plaidToDbAccount.get(t.account_id)!;
-                const k = relinkKey(acctId, t.date, -t.amount, t.merchant_name || t.name || null);
+                const k = relinkKey(acctId, t.date, -t.amount);
                 const remaining = priorKeys.get(k) || 0;
                 if (remaining > 0) { priorKeys.set(k, remaining - 1); return false; }
                 return true;
