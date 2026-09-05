@@ -254,12 +254,16 @@ export function RedirectLedger({ sources, redirects }: Props) {
                     )}
                   </div>
                   <p className="mt-0.5 text-xs text-muted-foreground">
-                    {source ? `From ${source.name}` : 'From pooled freed cash'} · starts {r.start_date}
+                    {source ? `From ${source.name}` : 'From pooled freed cash'} · starts {r.start_date} ·
+                    moved {money(executedAmount(r))}/mo
+                    {executedAmount(r) < Number(r.monthly_amount)
+                      ? ` · ${money(Number(r.monthly_amount) - executedAmount(r))}/mo short`
+                      : ''}
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-sm font-semibold">{money(Number(r.monthly_amount))}/mo</span>
-                  {!r.confirmed_moved && (
+                  {executedAmount(r) < Number(r.monthly_amount) && (
                     <Button
                       size="sm"
                       variant="outline"
@@ -268,13 +272,16 @@ export function RedirectLedger({ sources, redirects }: Props) {
                           id: r.id,
                           confirmed_moved: true,
                           status: 'active',
+                          executed_monthly: Number(r.monthly_amount),
                           last_confirmed_on: new Date().toISOString().slice(0, 10),
+                          last_executed_on: new Date().toISOString().slice(0, 10),
                         })
                       }
                     >
                       Mark moved
                     </Button>
                   )}
+
                   <Button size="sm" variant="ghost" onClick={() => openEdit(r)}>
                     Edit
                   </Button>
