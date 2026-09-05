@@ -78,7 +78,11 @@ export interface FreedCashSource {
   next_renewal_date: string | null;
   renewal_amount: number | null;
   reactivation_risk: string;
+  confidence: string;
+  durability: string;
+  expires_on: string | null;
 }
+
 
 export type FreedCashInput = Omit<FreedCashSource, 'id' | 'household_id' | 'verified_at'>;
 
