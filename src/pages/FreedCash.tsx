@@ -53,23 +53,34 @@ export default function FreedCash() {
         <>
           <FreedCashSummary totals={totals} sources={list} />
 
-          <Tabs defaultValue="sources" className="space-y-4">
+          <div className="space-y-2">
+            <div className="flex flex-wrap gap-2">
+              {GROUPS.map((g) => (
+                <Button
+                  key={g.id}
+                  variant={g.id === groupId ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => {
+                    setGroupId(g.id);
+                    setTab(g.tabs[0].value);
+                  }}
+                >
+                  {g.label}
+                </Button>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground">{group.hint}</p>
+          </div>
+
+          <Tabs value={tab} onValueChange={setTab} className="space-y-4">
             <TabsList className="flex w-full flex-wrap">
-              <TabsTrigger value="sources">Sources</TabsTrigger>
-              <TabsTrigger value="timing">Timing</TabsTrigger>
-              <TabsTrigger value="verify">Verify</TabsTrigger>
-              <TabsTrigger value="renewals">Renewals</TabsTrigger>
-              <TabsTrigger value="gate">Subscription Gate</TabsTrigger>
-              <TabsTrigger value="redirects">Redirects</TabsTrigger>
-              <TabsTrigger value="sweep">Sweep</TabsTrigger>
-              <TabsTrigger value="review">Monthly review</TabsTrigger>
-              <TabsTrigger value="utilities">Utility savings</TabsTrigger>
-              <TabsTrigger value="keep">Keep Score</TabsTrigger>
-              <TabsTrigger value="lifetime">Lifetime</TabsTrigger>
-              <TabsTrigger value="history">History</TabsTrigger>
-              <TabsTrigger value="vendors">Vendors</TabsTrigger>
-              <TabsTrigger value="report">Report</TabsTrigger>
+              {group.tabs.map((t) => (
+                <TabsTrigger key={t.value} value={t.value}>
+                  {t.label}
+                </TabsTrigger>
+              ))}
             </TabsList>
+
 
             <TabsContent value="sources">
               <FreedCashSourceList sources={all} />
