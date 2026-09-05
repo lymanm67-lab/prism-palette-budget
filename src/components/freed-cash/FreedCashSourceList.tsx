@@ -17,14 +17,19 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import {
+  CONFIDENCE_LEVELS,
+  DURABILITY_LEVELS,
   FREED_CASH_FREQUENCIES,
   FREED_CASH_SOURCE_TYPES,
   FREED_CASH_STATUSES,
+  confidenceLabel,
+  durabilityLabel,
   monthlySavings,
   useDeleteFreedCashSource,
   useSaveFreedCashSource,
   type FreedCashSource,
 } from '@/hooks/use-freed-cash';
+
 
 const fmt = (n: number) =>
   n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 });
