@@ -16,6 +16,8 @@ import { UtilitySavings } from '@/components/freed-cash/UtilitySavings';
 import { LifetimeSavings } from '@/components/freed-cash/LifetimeSavings';
 import { RedirectEffectiveness } from '@/components/freed-cash/RedirectEffectiveness';
 import { ForwardLook } from '@/components/freed-cash/ForwardLook';
+import { CohortReport } from '@/components/freed-cash/CohortReport';
+
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
