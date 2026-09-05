@@ -51,7 +51,14 @@ export function FreedCashSummary({ totals, sources, redirects = [] }: Props) {
       hint: 'All-time, from each effective date',
       tip: 'A running total of every dollar actually saved since the first effective date. Not a monthly figure.',
     },
+    {
+      label: 'Freed Cash Conversion Rate',
+      value: `${conv.conversionRate.toFixed(0)}%`,
+      hint: `${fmt(conv.executedMonthly)}/mo actually moved`,
+      tip: 'The share of realized savings that became measurable financial progress — money actually transferred or contributed. Separate from the Savings Capture Rate, which only measures assignment.',
+    },
   ];
+
 
   const forward = [
     {
