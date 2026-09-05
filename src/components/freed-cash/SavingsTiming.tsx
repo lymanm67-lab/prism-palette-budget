@@ -161,6 +161,8 @@ export function SavingsTiming({ sources, redirects }: Props) {
           </CardContent>
         </Card>
 
+        <SavingsBreakdown sources={sources} fromKey={fromKey} toKey={toKey} />
+
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Monthly savings history</CardTitle>
