@@ -70,6 +70,9 @@ const EMPTY_FILTERS: FilterState = { dateFrom: '', dateTo: '', amountMin: '', am
 
 type TxnViewFilter = 'all' | 'personal' | 'business' | 'income' | 'expenses' | 'transfers' | 'duplicates' | 'uncategorized' | 'needs_review' | 'trash';
 
+// Duplicate key intentionally ignores merchant text and import source: the same
+// charge often arrives with different merchant spellings from the bank feed vs a
+// CSV import, so matching on account + date + amount catches those copies too.
 const getDuplicateKey = (transaction: {
   date: string;
   amount: number;
@@ -78,13 +81,8 @@ const getDuplicateKey = (transaction: {
   provider_transaction_id?: string | null;
   notes?: string | null;
 }) => {
-  const merchant = (transaction.merchant || '').toLowerCase().trim().replace(/\s+/g, ' ');
   const accountId = transaction.account_id || 'no-account';
-  const source = transaction.provider_transaction_id
-    ? `provider:${transaction.provider_transaction_id}`
-    : `manual:${(transaction.notes || '').toLowerCase().trim().replace(/\s+/g, ' ')}`;
-
-  return `${transaction.date}|${Math.round(transaction.amount * 100)}|${merchant}|${accountId}|${source}`;
+  return `${transaction.date}|${Math.round(transaction.amount * 100)}|${accountId}`;
 };
 
 const Transactions = () => {
