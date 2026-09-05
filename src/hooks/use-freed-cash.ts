@@ -362,7 +362,11 @@ export interface FreedCashRedirect {
   status: string;
   confirmed_moved: boolean;
   last_confirmed_on: string | null;
+  /** How much of the assigned monthly amount was actually transferred. */
+  executed_monthly: number;
+  last_executed_on: string | null;
   notes: string | null;
+
 }
 
 export interface FreedCashSettings {
