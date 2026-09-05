@@ -354,9 +354,10 @@ export function yearEndReport(
 
 /* ------------------------------------------------------------ report periods */
 
-export type PeriodPreset = 'ytd' | 'last3' | 'last6' | 'last12' | 'custom';
+export type PeriodPreset = 'current' | 'ytd' | 'last3' | 'last6' | 'last12' | 'custom';
 
 export const PERIOD_PRESETS: { value: PeriodPreset; label: string }[] = [
+  { value: 'current', label: 'Current month' },
   { value: 'ytd', label: 'Year to date' },
   { value: 'last3', label: 'Last 3 months' },
   { value: 'last6', label: 'Last 6 months' },
@@ -366,6 +367,7 @@ export const PERIOD_PRESETS: { value: PeriodPreset; label: string }[] = [
 
 export function presetRange(preset: PeriodPreset, now = new Date()): { fromKey: string; toKey: string } {
   const toKey = monthKey(now);
+  if (preset === 'current') return { fromKey: toKey, toKey };
   if (preset === 'ytd') return { fromKey: `${now.getUTCFullYear()}-01`, toKey };
   const back = preset === 'last3' ? 2 : preset === 'last6' ? 5 : 11;
   const d = monthStart(toKey);
