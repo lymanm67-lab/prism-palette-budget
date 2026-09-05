@@ -85,7 +85,14 @@ export function FreedCashSummary({ totals, sources, redirects = [] }: Props) {
       hint: 'Requested or awaiting proof — not counted yet',
       tip: 'Claimed savings that are not yet confirmed or verified. Excluded from realized savings and the run rate.',
     },
+    {
+      label: 'Redirect Execution Gap',
+      value: `${fmt(conv.executionGap)}/mo`,
+      hint: `${fmt(conv.unallocatedMonthly)}/mo still unallocated`,
+      tip: 'Freed cash assigned to a goal but not actually transferred yet. An assigned redirect is not progress until the money moves.',
+    },
   ];
+
 
   return (
     <TooltipProvider delayDuration={0}>
