@@ -3,8 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Info } from 'lucide-react';
-import type { FreedCashSource, FreedCashTotals } from '@/hooks/use-freed-cash';
+import type { FreedCashRedirect, FreedCashSource, FreedCashTotals } from '@/hooks/use-freed-cash';
 import { computeTimingMetrics, monthKey } from '@/lib/freed-cash/timing';
+import { conversionMetrics } from '@/lib/freed-cash/conversion';
 
 const fmt = (n: number) =>
   n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 });
@@ -12,14 +13,18 @@ const fmt = (n: number) =>
 interface Props {
   totals: FreedCashTotals;
   sources: FreedCashSource[];
+  redirects?: FreedCashRedirect[];
 }
 
-export function FreedCashSummary({ totals, sources }: Props) {
+export function FreedCashSummary({ totals, sources, redirects = [] }: Props) {
   const timing = useMemo(() => {
     const now = new Date();
     const key = monthKey(now);
     return computeTimingMetrics(sources, `${now.getUTCFullYear()}-01`, key, now);
   }, [sources]);
+
+  const conv = useMemo(() => conversionMetrics(sources, redirects), [sources, redirects]);
+
 
   const historical = [
     {
