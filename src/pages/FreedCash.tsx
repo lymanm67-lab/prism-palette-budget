@@ -200,7 +200,7 @@ export default function FreedCash() {
               <FreedCashSourceList sources={all} />
             </TabsContent>
             <TabsContent value="forward">
-              <ForwardLook sources={list} redirects={redirects ?? []} />
+              <ForwardLook sources={list} redirects={scopedRedirects} />
             </TabsContent>
             <TabsContent value="cohorts">
               <CohortReport sources={list} />
@@ -210,7 +210,7 @@ export default function FreedCash() {
               <LifetimeSavings sources={all} />
             </TabsContent>
             <TabsContent value="timing">
-              <SavingsTiming sources={list} redirects={redirects ?? []} />
+              <SavingsTiming sources={list} redirects={scopedRedirects} />
             </TabsContent>
             <TabsContent value="verify">
               <VerificationQueue sources={list} />
@@ -222,32 +222,32 @@ export default function FreedCash() {
               <SubscriptionGate sources={list} />
             </TabsContent>
             <TabsContent value="redirects">
-              <RedirectLedger sources={list} redirects={redirects ?? []} />
+              <RedirectLedger sources={list} redirects={scopedRedirects} />
             </TabsContent>
             <TabsContent value="conversion">
-              <RedirectEffectiveness sources={list} redirects={redirects ?? []} />
+              <RedirectEffectiveness sources={list} redirects={scopedRedirects} />
             </TabsContent>
             <TabsContent value="sweep">
 
-              <SweepWaterfall sources={list} redirects={redirects ?? []} />
+              <SweepWaterfall sources={list} redirects={scopedRedirects} />
             </TabsContent>
             <TabsContent value="review">
-              <MonthlyFreedCashReview sources={list} redirects={redirects ?? []} />
+              <MonthlyFreedCashReview sources={list} redirects={scopedRedirects} />
             </TabsContent>
             <TabsContent value="utilities">
-              <UtilitySavings sources={list} redirects={redirects ?? []} />
+              <UtilitySavings sources={list} redirects={scopedRedirects} />
             </TabsContent>
             <TabsContent value="keep">
               <KeepScoreBoard sources={list} />
             </TabsContent>
             <TabsContent value="history">
-              <FreedCashTimeline sources={list} redirects={redirects ?? []} />
+              <FreedCashTimeline sources={list} redirects={scopedRedirects} />
             </TabsContent>
             <TabsContent value="vendors">
               <VendorHistory sources={list} />
             </TabsContent>
             <TabsContent value="report">
-              <FreedCashImpactReport sources={list} redirects={redirects ?? []} />
+              <FreedCashImpactReport sources={list} redirects={scopedRedirects} />
             </TabsContent>
 
 
