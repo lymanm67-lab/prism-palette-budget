@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Info } from 'lucide-react';
 import { FreedCashRedirect, FreedCashSource, destinationLabel } from '@/hooks/use-freed-cash';
+import { SavingsBreakdown } from './SavingsBreakdown';
 import {
   PERIOD_PRESETS,
   PeriodPreset,
