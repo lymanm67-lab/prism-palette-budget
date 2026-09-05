@@ -30,6 +30,32 @@ export function FreedCashImpactReport({ sources, redirects }: Props) {
   const capacity = useMemo(() => redirectCapacity(sources, redirects), [sources, redirects]);
   const trend = useMemo(() => creepTrend(reviews ?? []), [reviews]);
 
+  const perSource = useMemo(
+    () =>
+      sources
+        .map((s) => ({
+          ...s,
+          before: toMonthly(Number(s.original_amount), s.billing_frequency),
+          after:
+            toMonthly(Number(s.new_amount), s.billing_frequency) +
+            toMonthly(Number(s.added_fees), s.billing_frequency),
+          saved: monthlySavings(s),
+        }))
+        .sort((a, b) => b.saved - a.saved),
+    [sources],
+  );
+
+  const redirectRows = useMemo(() => {
+    const names = new Map(sources.map((s) => [s.id, s.name]));
+    return redirects
+      .filter((r) => r.status !== 'cancelled')
+      .map((r) => ({
+        ...r,
+        sourceName: (r.source_id && names.get(r.source_id)) || 'Pooled freed cash',
+      }))
+      .sort((a, b) => Number(b.monthly_amount) - Number(a.monthly_amount));
+  }, [sources, redirects]);
+
   const [returnPct, setReturnPct] = useState(7);
   const projections = useMemo(
     () => opportunityCost(capacity.verifiedMonthly, returnPct),
