@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Info } from 'lucide-react';
 import { FreedCashRedirect, FreedCashSource, destinationLabel } from '@/hooks/use-freed-cash';
+import { SavingsBreakdown } from './SavingsBreakdown';
 import {
   PERIOD_PRESETS,
   PeriodPreset,
@@ -160,6 +161,8 @@ export function SavingsTiming({ sources, redirects }: Props) {
             />
           </CardContent>
         </Card>
+
+        <SavingsBreakdown sources={sources} fromKey={fromKey} toKey={toKey} />
 
         <Card>
           <CardHeader className="pb-3">
