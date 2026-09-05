@@ -159,7 +159,7 @@ export function RedirectLedger({ sources, redirects }: Props) {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label>Monthly amount</Label>
+                    <Label>Monthly amount assigned</Label>
                     <Input
                       type="number"
                       step="0.01"
@@ -168,6 +168,19 @@ export function RedirectLedger({ sources, redirects }: Props) {
                     />
                   </div>
                   <div className="space-y-1.5">
+                    <Label>Actually moved each month</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={draft.executed_monthly ?? 0}
+                      onChange={(e) => setDraft((d) => ({ ...d, executed_monthly: Number(e.target.value) }))}
+                    />
+                    <p className="text-[11px] text-muted-foreground">
+                      Leave at 0 until the transfer or contribution actually happens.
+                    </p>
+                  </div>
+                  <div className="space-y-1.5">
+
                     <Label>Start date</Label>
                     <Input
                       type="date"
