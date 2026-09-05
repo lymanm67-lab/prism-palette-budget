@@ -34,6 +34,7 @@ import CsvImportDialog from '@/components/CsvImportDialog';
 import CategoryCombobox from '@/components/CategoryCombobox';
 import PageOverview from '@/components/PageOverview';
 import { useDuplicateDetection } from '@/hooks/use-duplicate-detection';
+import { isDupeGuardExempt } from '@/lib/refresh-dupe-guard';
 import MerchantIcon from '@/components/MerchantIcon';
 import { EmptyState } from '@/components/EmptyState';
 import { SkeletonTable } from '@/components/SkeletonCard';
@@ -70,6 +71,9 @@ const EMPTY_FILTERS: FilterState = { dateFrom: '', dateTo: '', amountMin: '', am
 
 type TxnViewFilter = 'all' | 'personal' | 'business' | 'income' | 'expenses' | 'transfers' | 'duplicates' | 'uncategorized' | 'needs_review' | 'trash';
 
+// Duplicate key intentionally ignores merchant text and import source: the same
+// charge often arrives with different merchant spellings from the bank feed vs a
+// CSV import, so matching on account + date + amount catches those copies too.
 const getDuplicateKey = (transaction: {
   date: string;
   amount: number;
@@ -78,13 +82,8 @@ const getDuplicateKey = (transaction: {
   provider_transaction_id?: string | null;
   notes?: string | null;
 }) => {
-  const merchant = (transaction.merchant || '').toLowerCase().trim().replace(/\s+/g, ' ');
   const accountId = transaction.account_id || 'no-account';
-  const source = transaction.provider_transaction_id
-    ? `provider:${transaction.provider_transaction_id}`
-    : `manual:${(transaction.notes || '').toLowerCase().trim().replace(/\s+/g, ' ')}`;
-
-  return `${transaction.date}|${Math.round(transaction.amount * 100)}|${merchant}|${accountId}|${source}`;
+  return `${transaction.date}|${Math.round(transaction.amount * 100)}|${accountId}`;
 };
 
 const Transactions = () => {
@@ -267,13 +266,15 @@ const Transactions = () => {
     setTagSearch('');
   };
 
-  // Compute duplicate transaction IDs (same date+amount+merchant+account+source, more than 1 match)
-  // Excludes transactions tagged with 'not_duplicate'
+  // Compute duplicate transaction IDs (same account + date + amount, more than 1 match).
+  // Excludes rows tagged 'not_duplicate' and merchants that legitimately post
+  // several identical same-day charges (Lovable AI credit top-ups).
   const duplicateIds = useMemo(() => {
     if (!transactions) return new Set<string>();
     const groups = new Map<string, string[]>();
     for (const t of transactions) {
       if ((t.tags || []).includes('not_duplicate')) continue;
+      if (isDupeGuardExempt(t.merchant)) continue;
       const key = getDuplicateKey(t);
       if (!groups.has(key)) groups.set(key, []);
       groups.get(key)!.push(t.id);
