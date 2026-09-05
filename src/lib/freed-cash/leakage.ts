@@ -105,6 +105,7 @@ export type LeakSeverity = 'high' | 'medium' | 'low';
 
 export interface LeakRow {
   id: string;
+  sourceId: string;
   name: string;
   vendor: string | null;
   monthly: number;
@@ -146,7 +147,7 @@ export function leakageReport(
       .reduce((sum, r) => sum + Number(r.executed_monthly || 0), 0);
 
     const push = (severity: LeakSeverity, reason: string, action: string) =>
-      rows.push({ id: `${s.id}-${reason}`, name: s.name, vendor: s.vendor, monthly, severity, reason, action });
+      rows.push({ id: `${s.id}-${reason}`, sourceId: s.id, name: s.name, vendor: s.vendor, monthly, severity, reason, action });
 
     if (daysToEnd !== null && daysToEnd <= 60) {
       push(
@@ -190,7 +191,7 @@ export function leakageReport(
 
   const atRisk = new Map<string, number>();
   for (const r of rows) {
-    if (r.severity === 'high') atRisk.set(r.id.split('-')[0], r.monthly);
+    if (r.severity === 'high') atRisk.set(r.sourceId, r.monthly);
   }
 
   return {
