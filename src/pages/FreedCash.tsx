@@ -11,6 +11,7 @@ import { FreedCashTimeline } from '@/components/freed-cash/FreedCashTimeline';
 import { VendorHistory } from '@/components/freed-cash/VendorHistory';
 import { KeepScoreBoard } from '@/components/freed-cash/KeepScoreBoard';
 import { FreedCashImpactReport } from '@/components/freed-cash/FreedCashImpactReport';
+import { SavingsTiming } from '@/components/freed-cash/SavingsTiming';
 import { UtilitySavings } from '@/components/freed-cash/UtilitySavings';
 import { LifetimeSavings } from '@/components/freed-cash/LifetimeSavings';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -50,11 +51,12 @@ export default function FreedCash() {
         </div>
       ) : (
         <>
-          <FreedCashSummary totals={totals} />
+          <FreedCashSummary totals={totals} sources={list} />
 
           <Tabs defaultValue="sources" className="space-y-4">
             <TabsList className="flex w-full flex-wrap">
               <TabsTrigger value="sources">Sources</TabsTrigger>
+              <TabsTrigger value="timing">Timing</TabsTrigger>
               <TabsTrigger value="verify">Verify</TabsTrigger>
               <TabsTrigger value="renewals">Renewals</TabsTrigger>
               <TabsTrigger value="gate">Subscription Gate</TabsTrigger>
@@ -74,6 +76,9 @@ export default function FreedCash() {
             </TabsContent>
             <TabsContent value="lifetime">
               <LifetimeSavings sources={all} />
+            </TabsContent>
+            <TabsContent value="timing">
+              <SavingsTiming sources={list} redirects={redirects ?? []} />
             </TabsContent>
             <TabsContent value="verify">
               <VerificationQueue sources={list} />
