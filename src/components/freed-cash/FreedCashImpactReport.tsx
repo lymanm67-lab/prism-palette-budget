@@ -7,7 +7,10 @@ import { beforeAfter, creepTrend, opportunityCost } from '@/lib/freed-cash/analy
 import {
   FreedCashRedirect,
   FreedCashSource,
+  destinationLabel,
+  monthlySavings,
   redirectCapacity,
+  toMonthly,
   useFreedCashReviews,
 } from '@/hooks/use-freed-cash';
 
