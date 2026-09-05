@@ -46,6 +46,30 @@ export const REACTIVATION_RISKS = [
   { value: 'high', label: 'High' },
 ] as const;
 
+/** How trustworthy a savings figure is. Estimated < Verified < Reconciled. */
+export const CONFIDENCE_LEVELS = [
+  { value: 'estimated', label: 'Estimated', hint: 'Projected or expected savings' },
+  { value: 'verified', label: 'Verified', hint: 'Cancellation or reduction confirmed' },
+  { value: 'reconciled', label: 'Reconciled', hint: 'Checked against actual bills or transactions' },
+] as const;
+
+/** How durable the savings are expected to be. */
+export const DURABILITY_LEVELS = [
+  { value: 'permanent', label: 'Permanent' },
+  { value: 'long_term', label: 'Long-term' },
+  { value: 'temporary', label: 'Temporary' },
+  { value: 'uncertain', label: 'Uncertain' },
+] as const;
+
+export function confidenceLabel(v: string) {
+  return CONFIDENCE_LEVELS.find((c) => c.value === v)?.label ?? v;
+}
+
+export function durabilityLabel(v: string) {
+  return DURABILITY_LEVELS.find((d) => d.value === v)?.label ?? v;
+}
+
+
 export const GATE_DECISIONS = [
   { value: 'pending', label: 'Pending review' },
   { value: 'approved', label: 'Approved' },
