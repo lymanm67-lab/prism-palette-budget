@@ -140,6 +140,10 @@ export function FreedCashSourceList({ sources }: { sources: FreedCashSource[] })
                 </Badge>
                 {s.classification === 'essential' && <Badge variant="outline">Essential</Badge>}
                 {s.is_temporary && <Badge variant="outline">Temporary</Badge>}
+                <Badge variant="outline">{confidenceLabel(s.confidence || 'estimated')}</Badge>
+                <Badge variant="outline">{durabilityLabel(s.durability || 'permanent')}</Badge>
+                {s.expires_on && <Badge variant="outline">Expires {s.expires_on}</Badge>}
+
               </div>
               <p className="mt-1 text-xs text-muted-foreground">
                 {fmt(Number(s.original_amount))} → {fmt(Number(s.new_amount))}
