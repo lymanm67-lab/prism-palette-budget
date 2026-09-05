@@ -23,7 +23,21 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { summarizeFreedCash, useFreedCashSources, useFreedCashRedirects } from '@/hooks/use-freed-cash';
+import { summarizeFreedCash, useFreedCashSources, useFreedCashRedirects, useGateRequests } from '@/hooks/use-freed-cash';
+import { NetRecurringPanel } from '@/components/freed-cash/NetRecurringPanel';
+import {
+  filterGateRequests,
+  filterRedirects,
+  filterSources,
+  type EntityScope,
+} from '@/lib/freed-cash/netRecurring';
+
+const SCOPES: { value: EntityScope; label: string }[] = [
+  { value: 'all', label: 'Everything' },
+  { value: 'personal', label: 'Personal' },
+  { value: 'business', label: 'Business' },
+];
+
 
 const GROUPS = [
   {
@@ -78,17 +92,31 @@ const GROUPS = [
 export default function FreedCash() {
   const [groupId, setGroupId] = useState<string>('find');
   const [tab, setTab] = useState<string>('sources');
+  const [scope, setScope] = useState<EntityScope>('all');
   const group = GROUPS.find((g) => g.id === groupId) ?? GROUPS[0];
 
   const { data: sources, isLoading } = useFreedCashSources();
   const { data: redirects } = useFreedCashRedirects();
+  const { data: gateRequests } = useGateRequests();
 
 
   useEffect(() => {
     document.title = 'Freed Cash Engine | PrismMoney';
   }, []);
 
-  const all = sources ?? [];
+  const rawSources = sources ?? [];
+  const rawRedirects = redirects ?? [];
+  const rawGates = gateRequests ?? [];
+
+  // Personal and business money are kept strictly apart: business savings must
+  // never count toward household cash, and vice versa.
+  const all = useMemo(() => filterSources(rawSources, scope), [rawSources, scope]);
+  const scopedRedirects = useMemo(
+    () => filterRedirects(rawRedirects, rawSources, scope),
+    [rawRedirects, rawSources, scope],
+  );
+  const scopedGates = useMemo(() => filterGateRequests(rawGates, scope), [rawGates, scope]);
+
   // Historical (already-cancelled) items only count toward lifetime savings.
   const list = useMemo(() => all.filter((s) => s.status !== 'historical'), [all]);
   const totals = useMemo(() => summarizeFreedCash(list), [list]);
@@ -110,7 +138,21 @@ export default function FreedCash() {
         </div>
       ) : (
         <>
-          <FreedCashSummary totals={totals} sources={list} redirects={redirects ?? []} />
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs text-muted-foreground">Showing:</span>
+            {SCOPES.map((s) => (
+              <Button
+                key={s.value}
+                variant={s.value === scope ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setScope(s.value)}
+              >
+                {s.label}
+              </Button>
+            ))}
+          </div>
+
+          <FreedCashSummary totals={totals} sources={list} redirects={scopedRedirects} />
 
           <div className="space-y-2">
             <div className="flex flex-wrap gap-2">
@@ -131,6 +173,19 @@ export default function FreedCash() {
             <p className="text-xs text-muted-foreground">{group.hint}</p>
           </div>
 
+          {groupId === 'results' && (
+            <NetRecurringPanel
+              sources={list}
+              redirects={scopedRedirects}
+              gateRequests={scopedGates}
+              allSources={rawSources.filter((s) => s.status !== 'historical')}
+              allRedirects={rawRedirects}
+              allGateRequests={rawGates}
+              scope={scope}
+            />
+          )}
+
+
           <Tabs value={tab} onValueChange={setTab} className="space-y-4">
             <TabsList className="flex w-full flex-wrap">
               {group.tabs.map((t) => (
@@ -145,7 +200,7 @@ export default function FreedCash() {
               <FreedCashSourceList sources={all} />
             </TabsContent>
             <TabsContent value="forward">
-              <ForwardLook sources={list} redirects={redirects ?? []} />
+              <ForwardLook sources={list} redirects={scopedRedirects} />
             </TabsContent>
             <TabsContent value="cohorts">
               <CohortReport sources={list} />
@@ -155,7 +210,7 @@ export default function FreedCash() {
               <LifetimeSavings sources={all} />
             </TabsContent>
             <TabsContent value="timing">
-              <SavingsTiming sources={list} redirects={redirects ?? []} />
+              <SavingsTiming sources={list} redirects={scopedRedirects} />
             </TabsContent>
             <TabsContent value="verify">
               <VerificationQueue sources={list} />
@@ -167,32 +222,32 @@ export default function FreedCash() {
               <SubscriptionGate sources={list} />
             </TabsContent>
             <TabsContent value="redirects">
-              <RedirectLedger sources={list} redirects={redirects ?? []} />
+              <RedirectLedger sources={list} redirects={scopedRedirects} />
             </TabsContent>
             <TabsContent value="conversion">
-              <RedirectEffectiveness sources={list} redirects={redirects ?? []} />
+              <RedirectEffectiveness sources={list} redirects={scopedRedirects} />
             </TabsContent>
             <TabsContent value="sweep">
 
-              <SweepWaterfall sources={list} redirects={redirects ?? []} />
+              <SweepWaterfall sources={list} redirects={scopedRedirects} />
             </TabsContent>
             <TabsContent value="review">
-              <MonthlyFreedCashReview sources={list} redirects={redirects ?? []} />
+              <MonthlyFreedCashReview sources={list} redirects={scopedRedirects} />
             </TabsContent>
             <TabsContent value="utilities">
-              <UtilitySavings sources={list} redirects={redirects ?? []} />
+              <UtilitySavings sources={list} redirects={scopedRedirects} />
             </TabsContent>
             <TabsContent value="keep">
               <KeepScoreBoard sources={list} />
             </TabsContent>
             <TabsContent value="history">
-              <FreedCashTimeline sources={list} redirects={redirects ?? []} />
+              <FreedCashTimeline sources={list} redirects={scopedRedirects} />
             </TabsContent>
             <TabsContent value="vendors">
               <VendorHistory sources={list} />
             </TabsContent>
             <TabsContent value="report">
-              <FreedCashImpactReport sources={list} redirects={redirects ?? []} />
+              <FreedCashImpactReport sources={list} redirects={scopedRedirects} />
             </TabsContent>
 
 
