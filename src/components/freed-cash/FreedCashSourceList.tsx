@@ -329,6 +329,56 @@ export function FreedCashSourceList({ sources }: { sources: FreedCashSource[] })
               </div>
             </div>
 
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-1.5">
+                <Label>Confidence</Label>
+                <Select
+                  value={draft.confidence ?? 'estimated'}
+                  onValueChange={(v) => set('confidence', v)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CONFIDENCE_LEVELS.map((c) => (
+                      <SelectItem key={c.value} value={c.value}>
+                        {c.label} — {c.hint}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-1.5">
+                <Label>Durability</Label>
+                <Select value={draft.durability ?? 'permanent'} onValueChange={(v) => set('durability', v)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DURABILITY_LEVELS.map((d) => (
+                      <SelectItem key={d.value} value={d.value}>
+                        {d.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid gap-1.5">
+              <Label htmlFor="fc-expires">Savings end date (optional)</Label>
+              <Input
+                id="fc-expires"
+                type="date"
+                value={draft.expires_on ?? ''}
+                onChange={(e) => set('expires_on', e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                For promotional rates and temporary discounts. After this date the savings stop counting
+                toward the run rate, but everything already realized is preserved.
+              </p>
+            </div>
+
             <div className="flex items-center justify-between rounded-md border p-3">
               <div>
                 <Label htmlFor="fc-temp">Temporary pause</Label>
@@ -352,6 +402,7 @@ export function FreedCashSourceList({ sources }: { sources: FreedCashSource[] })
                 />
               </div>
             )}
+
 
             <div className="grid gap-1.5">
               <Label htmlFor="fc-notes">Notes</Label>
