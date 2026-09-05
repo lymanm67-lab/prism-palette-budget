@@ -64,11 +64,13 @@ const GROUPS = [
     hint: 'The long view: what is coming, what could slip away, and the full printable report.',
     tabs: [
       { value: 'forward', label: 'Forward look' },
+      { value: 'cohorts', label: 'Cohorts' },
       { value: 'lifetime', label: 'Lifetime' },
       { value: 'history', label: 'History' },
       { value: 'report', label: 'Report' },
     ],
   },
+
 ] as const;
 
 export default function FreedCash() {
