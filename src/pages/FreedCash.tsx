@@ -145,6 +145,10 @@ export default function FreedCash() {
             <TabsContent value="forward">
               <ForwardLook sources={list} redirects={redirects ?? []} />
             </TabsContent>
+            <TabsContent value="cohorts">
+              <CohortReport sources={list} />
+            </TabsContent>
+
             <TabsContent value="lifetime">
               <LifetimeSavings sources={all} />
             </TabsContent>
