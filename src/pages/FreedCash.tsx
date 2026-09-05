@@ -14,6 +14,8 @@ import { FreedCashImpactReport } from '@/components/freed-cash/FreedCashImpactRe
 import { SavingsTiming } from '@/components/freed-cash/SavingsTiming';
 import { UtilitySavings } from '@/components/freed-cash/UtilitySavings';
 import { LifetimeSavings } from '@/components/freed-cash/LifetimeSavings';
+import { RedirectEffectiveness } from '@/components/freed-cash/RedirectEffectiveness';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
