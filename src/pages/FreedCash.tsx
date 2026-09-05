@@ -16,6 +16,8 @@ import { UtilitySavings } from '@/components/freed-cash/UtilitySavings';
 import { LifetimeSavings } from '@/components/freed-cash/LifetimeSavings';
 import { RedirectEffectiveness } from '@/components/freed-cash/RedirectEffectiveness';
 import { ForwardLook } from '@/components/freed-cash/ForwardLook';
+import { CohortReport } from '@/components/freed-cash/CohortReport';
+
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -64,11 +66,13 @@ const GROUPS = [
     hint: 'The long view: what is coming, what could slip away, and the full printable report.',
     tabs: [
       { value: 'forward', label: 'Forward look' },
+      { value: 'cohorts', label: 'Cohorts' },
       { value: 'lifetime', label: 'Lifetime' },
       { value: 'history', label: 'History' },
       { value: 'report', label: 'Report' },
     ],
   },
+
 ] as const;
 
 export default function FreedCash() {
@@ -143,6 +147,10 @@ export default function FreedCash() {
             <TabsContent value="forward">
               <ForwardLook sources={list} redirects={redirects ?? []} />
             </TabsContent>
+            <TabsContent value="cohorts">
+              <CohortReport sources={list} />
+            </TabsContent>
+
             <TabsContent value="lifetime">
               <LifetimeSavings sources={all} />
             </TabsContent>
