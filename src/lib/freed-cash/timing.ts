@@ -71,13 +71,18 @@ export function savingsStartDate(s: FreedCashSource): Date | null {
  * savings before this date are preserved.
  */
 export function savingsEndDate(s: FreedCashSource): Date | null {
+  const candidates: Date[] = [];
   if (s.status === 'reversed') {
     const d = s.statement_checked_date || s.verified_at || s.effective_date;
-    return d ? new Date(`${d.slice(0, 10)}T00:00:00Z`) : null;
+    if (d) candidates.push(new Date(`${d.slice(0, 10)}T00:00:00Z`));
   }
-  if (s.is_temporary && s.resume_date) return new Date(`${s.resume_date.slice(0, 10)}T00:00:00Z`);
-  return null;
+  if (s.is_temporary && s.resume_date) candidates.push(new Date(`${s.resume_date.slice(0, 10)}T00:00:00Z`));
+  // Promotional rates / temporary discounts stop counting after their expiration date.
+  if (s.expires_on) candidates.push(new Date(`${s.expires_on.slice(0, 10)}T00:00:00Z`));
+  if (candidates.length === 0) return null;
+  return new Date(Math.min(...candidates.map((d) => d.getTime())));
 }
+
 
 function counts(s: FreedCashSource): boolean {
   return COUNTED.has(s.status);
