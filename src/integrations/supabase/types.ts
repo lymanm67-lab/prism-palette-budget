@@ -4087,9 +4087,11 @@ export type Database = {
           deleted_at: string | null
           destination_label: string | null
           destination_type: string
+          executed_monthly: number
           household_id: string
           id: string
           last_confirmed_on: string | null
+          last_executed_on: string | null
           monthly_amount: number
           notes: string | null
           source_id: string | null
@@ -4103,9 +4105,11 @@ export type Database = {
           deleted_at?: string | null
           destination_label?: string | null
           destination_type?: string
+          executed_monthly?: number
           household_id: string
           id?: string
           last_confirmed_on?: string | null
+          last_executed_on?: string | null
           monthly_amount?: number
           notes?: string | null
           source_id?: string | null
@@ -4119,9 +4123,11 @@ export type Database = {
           deleted_at?: string | null
           destination_label?: string | null
           destination_type?: string
+          executed_monthly?: number
           household_id?: string
           id?: string
           last_confirmed_on?: string | null
+          last_executed_on?: string | null
           monthly_amount?: number
           notes?: string | null
           source_id?: string | null
@@ -4223,10 +4229,13 @@ export type Database = {
           billing_frequency: string
           category: string | null
           classification: string
+          confidence: string
           created_at: string
           deleted_at: string | null
+          durability: string
           effective_date: string
           entity_scope: string
+          expires_on: string | null
           household_id: string
           id: string
           is_temporary: boolean
@@ -4252,10 +4261,13 @@ export type Database = {
           billing_frequency?: string
           category?: string | null
           classification?: string
+          confidence?: string
           created_at?: string
           deleted_at?: string | null
+          durability?: string
           effective_date?: string
           entity_scope?: string
+          expires_on?: string | null
           household_id: string
           id?: string
           is_temporary?: boolean
@@ -4281,10 +4293,13 @@ export type Database = {
           billing_frequency?: string
           category?: string | null
           classification?: string
+          confidence?: string
           created_at?: string
           deleted_at?: string | null
+          durability?: string
           effective_date?: string
           entity_scope?: string
+          expires_on?: string | null
           household_id?: string
           id?: string
           is_temporary?: boolean

@@ -17,14 +17,19 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import {
+  CONFIDENCE_LEVELS,
+  DURABILITY_LEVELS,
   FREED_CASH_FREQUENCIES,
   FREED_CASH_SOURCE_TYPES,
   FREED_CASH_STATUSES,
+  confidenceLabel,
+  durabilityLabel,
   monthlySavings,
   useDeleteFreedCashSource,
   useSaveFreedCashSource,
   type FreedCashSource,
 } from '@/hooks/use-freed-cash';
+
 
 const fmt = (n: number) =>
   n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 });
@@ -46,8 +51,12 @@ const emptyDraft: Draft = {
   classification: 'optional',
   is_temporary: false,
   resume_date: null,
+  confidence: 'estimated',
+  durability: 'permanent',
+  expires_on: null,
   notes: '',
 };
+
 
 const statusTone: Record<string, string> = {
   verified: 'bg-primary/15 text-primary',
@@ -90,6 +99,10 @@ export function FreedCashSourceList({ sources }: { sources: FreedCashSource[] })
       classification: draft.classification || 'optional',
       is_temporary: !!draft.is_temporary,
       resume_date: draft.is_temporary ? draft.resume_date || null : null,
+      confidence: draft.confidence || 'estimated',
+      durability: draft.durability || 'permanent',
+      expires_on: draft.expires_on || null,
+
       notes: draft.notes || null,
     });
     setOpen(false);
@@ -132,6 +145,10 @@ export function FreedCashSourceList({ sources }: { sources: FreedCashSource[] })
                 </Badge>
                 {s.classification === 'essential' && <Badge variant="outline">Essential</Badge>}
                 {s.is_temporary && <Badge variant="outline">Temporary</Badge>}
+                <Badge variant="outline">{confidenceLabel(s.confidence || 'estimated')}</Badge>
+                <Badge variant="outline">{durabilityLabel(s.durability || 'permanent')}</Badge>
+                {s.expires_on && <Badge variant="outline">Expires {s.expires_on}</Badge>}
+
               </div>
               <p className="mt-1 text-xs text-muted-foreground">
                 {fmt(Number(s.original_amount))} → {fmt(Number(s.new_amount))}
@@ -317,6 +334,56 @@ export function FreedCashSourceList({ sources }: { sources: FreedCashSource[] })
               </div>
             </div>
 
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-1.5">
+                <Label>Confidence</Label>
+                <Select
+                  value={draft.confidence ?? 'estimated'}
+                  onValueChange={(v) => set('confidence', v)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CONFIDENCE_LEVELS.map((c) => (
+                      <SelectItem key={c.value} value={c.value}>
+                        {c.label} — {c.hint}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-1.5">
+                <Label>Durability</Label>
+                <Select value={draft.durability ?? 'permanent'} onValueChange={(v) => set('durability', v)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DURABILITY_LEVELS.map((d) => (
+                      <SelectItem key={d.value} value={d.value}>
+                        {d.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid gap-1.5">
+              <Label htmlFor="fc-expires">Savings end date (optional)</Label>
+              <Input
+                id="fc-expires"
+                type="date"
+                value={draft.expires_on ?? ''}
+                onChange={(e) => set('expires_on', e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                For promotional rates and temporary discounts. After this date the savings stop counting
+                toward the run rate, but everything already realized is preserved.
+              </p>
+            </div>
+
             <div className="flex items-center justify-between rounded-md border p-3">
               <div>
                 <Label htmlFor="fc-temp">Temporary pause</Label>
@@ -340,6 +407,7 @@ export function FreedCashSourceList({ sources }: { sources: FreedCashSource[] })
                 />
               </div>
             )}
+
 
             <div className="grid gap-1.5">
               <Label htmlFor="fc-notes">Notes</Label>

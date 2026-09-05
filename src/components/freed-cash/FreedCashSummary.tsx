@@ -3,8 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Info } from 'lucide-react';
-import type { FreedCashSource, FreedCashTotals } from '@/hooks/use-freed-cash';
+import type { FreedCashRedirect, FreedCashSource, FreedCashTotals } from '@/hooks/use-freed-cash';
 import { computeTimingMetrics, monthKey } from '@/lib/freed-cash/timing';
+import { conversionMetrics } from '@/lib/freed-cash/conversion';
 
 const fmt = (n: number) =>
   n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 });
@@ -12,14 +13,18 @@ const fmt = (n: number) =>
 interface Props {
   totals: FreedCashTotals;
   sources: FreedCashSource[];
+  redirects?: FreedCashRedirect[];
 }
 
-export function FreedCashSummary({ totals, sources }: Props) {
+export function FreedCashSummary({ totals, sources, redirects = [] }: Props) {
   const timing = useMemo(() => {
     const now = new Date();
     const key = monthKey(now);
     return computeTimingMetrics(sources, `${now.getUTCFullYear()}-01`, key, now);
   }, [sources]);
+
+  const conv = useMemo(() => conversionMetrics(sources, redirects), [sources, redirects]);
+
 
   const historical = [
     {
@@ -46,7 +51,14 @@ export function FreedCashSummary({ totals, sources }: Props) {
       hint: 'All-time, from each effective date',
       tip: 'A running total of every dollar actually saved since the first effective date. Not a monthly figure.',
     },
+    {
+      label: 'Freed Cash Conversion Rate',
+      value: `${conv.conversionRate.toFixed(0)}%`,
+      hint: `${fmt(conv.executedMonthly)}/mo actually moved`,
+      tip: 'The share of realized savings that became measurable financial progress — money actually transferred or contributed. Separate from the Savings Capture Rate, which only measures assignment.',
+    },
   ];
+
 
   const forward = [
     {
@@ -73,7 +85,14 @@ export function FreedCashSummary({ totals, sources }: Props) {
       hint: 'Requested or awaiting proof — not counted yet',
       tip: 'Claimed savings that are not yet confirmed or verified. Excluded from realized savings and the run rate.',
     },
+    {
+      label: 'Redirect Execution Gap',
+      value: `${fmt(conv.executionGap)}/mo`,
+      hint: `${fmt(conv.unallocatedMonthly)}/mo still unallocated`,
+      tip: 'Freed cash assigned to a goal but not actually transferred yet. An assigned redirect is not progress until the money moves.',
+    },
   ];
+
 
   return (
     <TooltipProvider delayDuration={0}>

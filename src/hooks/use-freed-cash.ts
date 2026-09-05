@@ -46,6 +46,30 @@ export const REACTIVATION_RISKS = [
   { value: 'high', label: 'High' },
 ] as const;
 
+/** How trustworthy a savings figure is. Estimated < Verified < Reconciled. */
+export const CONFIDENCE_LEVELS = [
+  { value: 'estimated', label: 'Estimated', hint: 'Projected or expected savings' },
+  { value: 'verified', label: 'Verified', hint: 'Cancellation or reduction confirmed' },
+  { value: 'reconciled', label: 'Reconciled', hint: 'Checked against actual bills or transactions' },
+] as const;
+
+/** How durable the savings are expected to be. */
+export const DURABILITY_LEVELS = [
+  { value: 'permanent', label: 'Permanent' },
+  { value: 'long_term', label: 'Long-term' },
+  { value: 'temporary', label: 'Temporary' },
+  { value: 'uncertain', label: 'Uncertain' },
+] as const;
+
+export function confidenceLabel(v: string) {
+  return CONFIDENCE_LEVELS.find((c) => c.value === v)?.label ?? v;
+}
+
+export function durabilityLabel(v: string) {
+  return DURABILITY_LEVELS.find((d) => d.value === v)?.label ?? v;
+}
+
+
 export const GATE_DECISIONS = [
   { value: 'pending', label: 'Pending review' },
   { value: 'approved', label: 'Approved' },
@@ -78,7 +102,11 @@ export interface FreedCashSource {
   next_renewal_date: string | null;
   renewal_amount: number | null;
   reactivation_risk: string;
+  confidence: string;
+  durability: string;
+  expires_on: string | null;
 }
+
 
 export type FreedCashInput = Omit<FreedCashSource, 'id' | 'household_id' | 'verified_at'>;
 
@@ -334,7 +362,11 @@ export interface FreedCashRedirect {
   status: string;
   confirmed_moved: boolean;
   last_confirmed_on: string | null;
+  /** How much of the assigned monthly amount was actually transferred. */
+  executed_monthly: number;
+  last_executed_on: string | null;
   notes: string | null;
+
 }
 
 export interface FreedCashSettings {

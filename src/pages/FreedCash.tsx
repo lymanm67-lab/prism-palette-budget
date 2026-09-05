@@ -14,6 +14,8 @@ import { FreedCashImpactReport } from '@/components/freed-cash/FreedCashImpactRe
 import { SavingsTiming } from '@/components/freed-cash/SavingsTiming';
 import { UtilitySavings } from '@/components/freed-cash/UtilitySavings';
 import { LifetimeSavings } from '@/components/freed-cash/LifetimeSavings';
+import { RedirectEffectiveness } from '@/components/freed-cash/RedirectEffectiveness';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -46,13 +48,15 @@ const GROUPS = [
   {
     id: 'redirect',
     label: '3. Put it to work',
-    hint: 'Give every freed dollar a job and move it automatically.',
+    hint: 'Give every freed dollar a job, move it, and check the money actually landed.',
     tabs: [
       { value: 'redirects', label: 'Redirects' },
+      { value: 'conversion', label: 'Conversion' },
       { value: 'sweep', label: 'Sweep' },
       { value: 'review', label: 'Monthly review' },
     ],
   },
+
   {
     id: 'results',
     label: '4. Results',
@@ -100,7 +104,7 @@ export default function FreedCash() {
         </div>
       ) : (
         <>
-          <FreedCashSummary totals={totals} sources={list} />
+          <FreedCashSummary totals={totals} sources={list} redirects={redirects ?? []} />
 
           <div className="space-y-2">
             <div className="flex flex-wrap gap-2">
@@ -152,7 +156,11 @@ export default function FreedCash() {
             <TabsContent value="redirects">
               <RedirectLedger sources={list} redirects={redirects ?? []} />
             </TabsContent>
+            <TabsContent value="conversion">
+              <RedirectEffectiveness sources={list} redirects={redirects ?? []} />
+            </TabsContent>
             <TabsContent value="sweep">
+
               <SweepWaterfall sources={list} redirects={redirects ?? []} />
             </TabsContent>
             <TabsContent value="review">

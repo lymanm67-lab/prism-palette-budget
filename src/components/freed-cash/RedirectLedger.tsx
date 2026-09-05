@@ -26,6 +26,8 @@ import {
   useDeleteRedirect,
   useSaveRedirect,
 } from '@/hooks/use-freed-cash';
+import { executedAmount } from '@/lib/freed-cash/conversion';
+
 
 const money = (n: number) =>
   n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 });
@@ -38,8 +40,10 @@ const emptyRedirect = (): Partial<FreedCashRedirect> => ({
   start_date: new Date().toISOString().slice(0, 10),
   status: 'planned',
   confirmed_moved: false,
+  executed_monthly: 0,
   notes: '',
 });
+
 
 interface Props {
   sources: FreedCashSource[];
@@ -69,10 +73,12 @@ export function RedirectLedger({ sources, redirects }: Props) {
     await save.mutateAsync({
       ...draft,
       monthly_amount: Number(draft.monthly_amount) || 0,
+      executed_monthly: Number(draft.executed_monthly) || 0,
       source_id: draft.source_id || null,
     });
     setOpen(false);
   };
+
 
   return (
     <div className="space-y-4">
@@ -155,7 +161,7 @@ export function RedirectLedger({ sources, redirects }: Props) {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label>Monthly amount</Label>
+                    <Label>Monthly amount assigned</Label>
                     <Input
                       type="number"
                       step="0.01"
@@ -164,6 +170,19 @@ export function RedirectLedger({ sources, redirects }: Props) {
                     />
                   </div>
                   <div className="space-y-1.5">
+                    <Label>Actually moved each month</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={draft.executed_monthly ?? 0}
+                      onChange={(e) => setDraft((d) => ({ ...d, executed_monthly: Number(e.target.value) }))}
+                    />
+                    <p className="text-[11px] text-muted-foreground">
+                      Leave at 0 until the transfer or contribution actually happens.
+                    </p>
+                  </div>
+                  <div className="space-y-1.5">
+
                     <Label>Start date</Label>
                     <Input
                       type="date"
@@ -237,12 +256,16 @@ export function RedirectLedger({ sources, redirects }: Props) {
                     )}
                   </div>
                   <p className="mt-0.5 text-xs text-muted-foreground">
-                    {source ? `From ${source.name}` : 'From pooled freed cash'} · starts {r.start_date}
+                    {source ? `From ${source.name}` : 'From pooled freed cash'} · starts {r.start_date} ·
+                    moved {money(executedAmount(r))}/mo
+                    {executedAmount(r) < Number(r.monthly_amount)
+                      ? ` · ${money(Number(r.monthly_amount) - executedAmount(r))}/mo short`
+                      : ''}
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-sm font-semibold">{money(Number(r.monthly_amount))}/mo</span>
-                  {!r.confirmed_moved && (
+                  {executedAmount(r) < Number(r.monthly_amount) && (
                     <Button
                       size="sm"
                       variant="outline"
@@ -251,13 +274,16 @@ export function RedirectLedger({ sources, redirects }: Props) {
                           id: r.id,
                           confirmed_moved: true,
                           status: 'active',
+                          executed_monthly: Number(r.monthly_amount),
                           last_confirmed_on: new Date().toISOString().slice(0, 10),
+                          last_executed_on: new Date().toISOString().slice(0, 10),
                         })
                       }
                     >
                       Mark moved
                     </Button>
                   )}
+
                   <Button size="sm" variant="ghost" onClick={() => openEdit(r)}>
                     Edit
                   </Button>
