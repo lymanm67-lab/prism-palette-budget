@@ -38,8 +38,10 @@ const emptyRedirect = (): Partial<FreedCashRedirect> => ({
   start_date: new Date().toISOString().slice(0, 10),
   status: 'planned',
   confirmed_moved: false,
+  executed_monthly: 0,
   notes: '',
 });
+
 
 interface Props {
   sources: FreedCashSource[];
