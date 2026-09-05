@@ -17,10 +17,59 @@ import { LifetimeSavings } from '@/components/freed-cash/LifetimeSavings';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
 import { summarizeFreedCash, useFreedCashSources, useFreedCashRedirects } from '@/hooks/use-freed-cash';
 
+const GROUPS = [
+  {
+    id: 'find',
+    label: '1. Find & log',
+    hint: 'Log what changed, decide on new subscriptions, and watch for renewals before they hit.',
+    tabs: [
+      { value: 'sources', label: 'Sources' },
+      { value: 'gate', label: 'Subscription Gate' },
+      { value: 'renewals', label: 'Renewals' },
+      { value: 'vendors', label: 'Vendors' },
+    ],
+  },
+  {
+    id: 'confirm',
+    label: '2. Confirm savings',
+    hint: 'Prove each saving on a statement, then see how it builds month by month.',
+    tabs: [
+      { value: 'verify', label: 'Verify' },
+      { value: 'timing', label: 'Timing' },
+      { value: 'utilities', label: 'Utility savings' },
+      { value: 'keep', label: 'Keep Score' },
+    ],
+  },
+  {
+    id: 'redirect',
+    label: '3. Put it to work',
+    hint: 'Give every freed dollar a job and move it automatically.',
+    tabs: [
+      { value: 'redirects', label: 'Redirects' },
+      { value: 'sweep', label: 'Sweep' },
+      { value: 'review', label: 'Monthly review' },
+    ],
+  },
+  {
+    id: 'results',
+    label: '4. Results',
+    hint: 'The long view: what you have saved so far and the full printable report.',
+    tabs: [
+      { value: 'lifetime', label: 'Lifetime' },
+      { value: 'history', label: 'History' },
+      { value: 'report', label: 'Report' },
+    ],
+  },
+] as const;
 
 export default function FreedCash() {
+  const [groupId, setGroupId] = useState<string>('find');
+  const [tab, setTab] = useState<string>('sources');
+  const group = GROUPS.find((g) => g.id === groupId) ?? GROUPS[0];
+
   const { data: sources, isLoading } = useFreedCashSources();
   const { data: redirects } = useFreedCashRedirects();
 
