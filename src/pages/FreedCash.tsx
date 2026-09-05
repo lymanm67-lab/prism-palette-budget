@@ -46,13 +46,15 @@ const GROUPS = [
   {
     id: 'redirect',
     label: '3. Put it to work',
-    hint: 'Give every freed dollar a job and move it automatically.',
+    hint: 'Give every freed dollar a job, move it, and check the money actually landed.',
     tabs: [
       { value: 'redirects', label: 'Redirects' },
+      { value: 'conversion', label: 'Conversion' },
       { value: 'sweep', label: 'Sweep' },
       { value: 'review', label: 'Monthly review' },
     ],
   },
+
   {
     id: 'results',
     label: '4. Results',
