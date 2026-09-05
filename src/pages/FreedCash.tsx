@@ -23,7 +23,21 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { summarizeFreedCash, useFreedCashSources, useFreedCashRedirects } from '@/hooks/use-freed-cash';
+import { summarizeFreedCash, useFreedCashSources, useFreedCashRedirects, useGateRequests } from '@/hooks/use-freed-cash';
+import { NetRecurringPanel } from '@/components/freed-cash/NetRecurringPanel';
+import {
+  filterGateRequests,
+  filterRedirects,
+  filterSources,
+  type EntityScope,
+} from '@/lib/freed-cash/netRecurring';
+
+const SCOPES: { value: EntityScope; label: string }[] = [
+  { value: 'all', label: 'Everything' },
+  { value: 'personal', label: 'Personal' },
+  { value: 'business', label: 'Business' },
+];
+
 
 const GROUPS = [
   {
