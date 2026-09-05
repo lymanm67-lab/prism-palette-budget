@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { FreedCashSummary } from '@/components/freed-cash/FreedCashSummary';
 import { FreedCashSourceList } from '@/components/freed-cash/FreedCashSourceList';
 import { VerificationQueue } from '@/components/freed-cash/VerificationQueue';
@@ -17,10 +17,59 @@ import { LifetimeSavings } from '@/components/freed-cash/LifetimeSavings';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
 import { summarizeFreedCash, useFreedCashSources, useFreedCashRedirects } from '@/hooks/use-freed-cash';
 
+const GROUPS = [
+  {
+    id: 'find',
+    label: '1. Find & log',
+    hint: 'Log what changed, decide on new subscriptions, and watch for renewals before they hit.',
+    tabs: [
+      { value: 'sources', label: 'Sources' },
+      { value: 'gate', label: 'Subscription Gate' },
+      { value: 'renewals', label: 'Renewals' },
+      { value: 'vendors', label: 'Vendors' },
+    ],
+  },
+  {
+    id: 'confirm',
+    label: '2. Confirm savings',
+    hint: 'Prove each saving on a statement, then see how it builds month by month.',
+    tabs: [
+      { value: 'verify', label: 'Verify' },
+      { value: 'timing', label: 'Timing' },
+      { value: 'utilities', label: 'Utility savings' },
+      { value: 'keep', label: 'Keep Score' },
+    ],
+  },
+  {
+    id: 'redirect',
+    label: '3. Put it to work',
+    hint: 'Give every freed dollar a job and move it automatically.',
+    tabs: [
+      { value: 'redirects', label: 'Redirects' },
+      { value: 'sweep', label: 'Sweep' },
+      { value: 'review', label: 'Monthly review' },
+    ],
+  },
+  {
+    id: 'results',
+    label: '4. Results',
+    hint: 'The long view: what you have saved so far and the full printable report.',
+    tabs: [
+      { value: 'lifetime', label: 'Lifetime' },
+      { value: 'history', label: 'History' },
+      { value: 'report', label: 'Report' },
+    ],
+  },
+] as const;
 
 export default function FreedCash() {
+  const [groupId, setGroupId] = useState<string>('find');
+  const [tab, setTab] = useState<string>('sources');
+  const group = GROUPS.find((g) => g.id === groupId) ?? GROUPS[0];
+
   const { data: sources, isLoading } = useFreedCashSources();
   const { data: redirects } = useFreedCashRedirects();
 
@@ -53,23 +102,34 @@ export default function FreedCash() {
         <>
           <FreedCashSummary totals={totals} sources={list} />
 
-          <Tabs defaultValue="sources" className="space-y-4">
+          <div className="space-y-2">
+            <div className="flex flex-wrap gap-2">
+              {GROUPS.map((g) => (
+                <Button
+                  key={g.id}
+                  variant={g.id === groupId ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => {
+                    setGroupId(g.id);
+                    setTab(g.tabs[0].value);
+                  }}
+                >
+                  {g.label}
+                </Button>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground">{group.hint}</p>
+          </div>
+
+          <Tabs value={tab} onValueChange={setTab} className="space-y-4">
             <TabsList className="flex w-full flex-wrap">
-              <TabsTrigger value="sources">Sources</TabsTrigger>
-              <TabsTrigger value="timing">Timing</TabsTrigger>
-              <TabsTrigger value="verify">Verify</TabsTrigger>
-              <TabsTrigger value="renewals">Renewals</TabsTrigger>
-              <TabsTrigger value="gate">Subscription Gate</TabsTrigger>
-              <TabsTrigger value="redirects">Redirects</TabsTrigger>
-              <TabsTrigger value="sweep">Sweep</TabsTrigger>
-              <TabsTrigger value="review">Monthly review</TabsTrigger>
-              <TabsTrigger value="utilities">Utility savings</TabsTrigger>
-              <TabsTrigger value="keep">Keep Score</TabsTrigger>
-              <TabsTrigger value="lifetime">Lifetime</TabsTrigger>
-              <TabsTrigger value="history">History</TabsTrigger>
-              <TabsTrigger value="vendors">Vendors</TabsTrigger>
-              <TabsTrigger value="report">Report</TabsTrigger>
+              {group.tabs.map((t) => (
+                <TabsTrigger key={t.value} value={t.value}>
+                  {t.label}
+                </TabsTrigger>
+              ))}
             </TabsList>
+
 
             <TabsContent value="sources">
               <FreedCashSourceList sources={all} />
