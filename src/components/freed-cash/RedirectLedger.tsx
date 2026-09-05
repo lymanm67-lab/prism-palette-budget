@@ -71,10 +71,12 @@ export function RedirectLedger({ sources, redirects }: Props) {
     await save.mutateAsync({
       ...draft,
       monthly_amount: Number(draft.monthly_amount) || 0,
+      executed_monthly: Number(draft.executed_monthly) || 0,
       source_id: draft.source_id || null,
     });
     setOpen(false);
   };
+
 
   return (
     <div className="space-y-4">
