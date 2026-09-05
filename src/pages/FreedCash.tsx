@@ -104,7 +104,7 @@ export default function FreedCash() {
         </div>
       ) : (
         <>
-          <FreedCashSummary totals={totals} sources={list} />
+          <FreedCashSummary totals={totals} sources={list} redirects={redirects ?? []} />
 
           <div className="space-y-2">
             <div className="flex flex-wrap gap-2">
