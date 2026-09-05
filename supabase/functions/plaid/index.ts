@@ -291,7 +291,9 @@ Deno.serve(async (req) => {
           .in('provider_transaction_id', providerIds);
         const existingIds = new Set((existing || []).map((e: any) => e.provider_transaction_id));
 
-        // Layer 2: Relink dedup — per-account, bank-sourced rows only.
+        // Layer 2: Relink dedup — per-account, against ALL prior rows in range
+        // (bank-synced AND manual/CSV imports), matched on date + amount only so
+        // differing merchant spellings across sources still dedupe.
         const dbAccountIds = Array.from(plaidToDbAccount.values());
         const { data: priorBankTxns } = await serviceSupabase
           .from('transactions')
@@ -300,13 +302,12 @@ Deno.serve(async (req) => {
           .in('account_id', dbAccountIds)
           .gte('date', startDate)
           .lte('date', endDate)
-          .not('provider_transaction_id', 'is', null)
           .is('deleted_at', null);
-        const relinkKey = (acctId: string, d: string, a: number, m: string | null) =>
-          `${acctId}|${d}|${a.toFixed(2)}|${(m || '').trim().toLowerCase()}`;
+        const relinkKey = (acctId: string, d: string, a: number) =>
+          `${acctId}|${d}|${a.toFixed(2)}`;
         const priorKeys = new Map<string, number>();
         for (const r of priorBankTxns || []) {
-          const k = relinkKey(r.account_id, r.date, Number(r.amount), r.merchant);
+          const k = relinkKey(r.account_id, r.date, Number(r.amount));
           priorKeys.set(k, (priorKeys.get(k) || 0) + 1);
         }
 
