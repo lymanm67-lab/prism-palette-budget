@@ -156,7 +156,11 @@ export default function FreedCash() {
             <TabsContent value="redirects">
               <RedirectLedger sources={list} redirects={redirects ?? []} />
             </TabsContent>
+            <TabsContent value="conversion">
+              <RedirectEffectiveness sources={list} redirects={redirects ?? []} />
+            </TabsContent>
             <TabsContent value="sweep">
+
               <SweepWaterfall sources={list} redirects={redirects ?? []} />
             </TabsContent>
             <TabsContent value="review">
