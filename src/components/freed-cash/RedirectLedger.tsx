@@ -26,6 +26,8 @@ import {
   useDeleteRedirect,
   useSaveRedirect,
 } from '@/hooks/use-freed-cash';
+import { executedAmount } from '@/lib/freed-cash/conversion';
+
 
 const money = (n: number) =>
   n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 });
