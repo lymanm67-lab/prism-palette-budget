@@ -46,8 +46,12 @@ const emptyDraft: Draft = {
   classification: 'optional',
   is_temporary: false,
   resume_date: null,
+  confidence: 'estimated',
+  durability: 'permanent',
+  expires_on: null,
   notes: '',
 };
+
 
 const statusTone: Record<string, string> = {
   verified: 'bg-primary/15 text-primary',
