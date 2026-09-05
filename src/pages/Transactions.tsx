@@ -265,13 +265,15 @@ const Transactions = () => {
     setTagSearch('');
   };
 
-  // Compute duplicate transaction IDs (same date+amount+merchant+account+source, more than 1 match)
-  // Excludes transactions tagged with 'not_duplicate'
+  // Compute duplicate transaction IDs (same account + date + amount, more than 1 match).
+  // Excludes rows tagged 'not_duplicate' and merchants that legitimately post
+  // several identical same-day charges (Lovable AI credit top-ups).
   const duplicateIds = useMemo(() => {
     if (!transactions) return new Set<string>();
     const groups = new Map<string, string[]>();
     for (const t of transactions) {
       if ((t.tags || []).includes('not_duplicate')) continue;
+      if (isDupeGuardExempt(t.merchant)) continue;
       const key = getDuplicateKey(t);
       if (!groups.has(key)) groups.set(key, []);
       groups.get(key)!.push(t.id);
