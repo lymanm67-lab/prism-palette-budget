@@ -64,6 +64,79 @@ export function FreedCashImpactReport({ sources, redirects }: Props) {
 
       <Card>
         <CardHeader className="pb-3">
+          <CardTitle className="text-base">Before and after by expense</CardTitle>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Every cancellation, reduction and negotiation, with what it cost before and now.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {perSource.length === 0 && (
+            <p className="py-6 text-center text-sm text-muted-foreground">No savings recorded yet.</p>
+          )}
+          {perSource.map((s) => (
+            <div
+              key={s.id}
+              className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border/60 bg-card/40 p-3"
+            >
+              <div className="min-w-[10rem]">
+                <p className="text-sm font-medium">{s.name}</p>
+                <p className="text-xs text-muted-foreground">
+                  {s.vendor ? `${s.vendor} · ` : ''}
+                  {s.source_type.replace(/_/g, ' ')} · {s.status}
+                </p>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Before {money2(s.before)}/mo → after {money2(s.after)}/mo
+              </p>
+              <p className="text-sm font-semibold">
+                {money2(s.saved)}/mo · {money2(s.saved * 12)}/yr
+              </p>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Where the freed money went</CardTitle>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Redirected {money2(capacity.assignedMonthly)}/mo of the verified {money2(capacity.verifiedMonthly)}/mo.
+            Still needs a job: {money2(capacity.unassignedMonthly)}/mo.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {redirectRows.length === 0 && (
+            <p className="py-6 text-center text-sm text-muted-foreground">
+              No freed cash has been given a job yet.
+            </p>
+          )}
+          {redirectRows.map((r) => (
+            <div
+              key={r.id}
+              className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border/60 bg-card/40 p-3"
+            >
+              <div className="min-w-[10rem]">
+                <p className="text-sm font-medium">
+                  {r.destination_label || destinationLabel(r.destination_type)}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  From {r.sourceName} · since {r.start_date}
+                </p>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {r.status}
+                {r.confirmed_moved ? ' · money confirmed moved' : ' · not confirmed yet'}
+              </p>
+              <p className="text-sm font-semibold">
+                {money2(Number(r.monthly_amount))}/mo · {money2(Number(r.monthly_amount) * 12)}/yr
+              </p>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-3">
           <CardTitle className="text-base">Opportunity cost of not redirecting</CardTitle>
           <p className="mt-1 text-xs text-muted-foreground">
             If your verified {money2(capacity.verifiedMonthly)}/mo is invested instead of absorbed back
