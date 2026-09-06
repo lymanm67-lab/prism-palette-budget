@@ -429,11 +429,11 @@ const FiftyPercentPlan = () => {
                 </p>
               </div>
               {(() => {
-                const july = plan.find(p => p.label === 'Jul 27') ?? plan[plan.length - 1];
-                const julyTarget = july?.target ?? net * 0.5;
-                const julyFixed = july?.fixed ?? fixedNow;
-                const room = julyTarget - julyFixed;
-                const whenLabel = july?.label ? format(new Date(`${july.key}-01T00:00:00`), 'MMMM yyyy') : 'July 2027';
+                const end = plan[plan.length - 1];
+                const endTarget = end?.target ?? net * 0.5;
+                const endFixed = end?.fixed ?? fixedNow;
+                const room = endTarget - endFixed;
+                const whenLabel = end?.label ? format(new Date(`${end.key}-01T00:00:00`), 'MMMM yyyy') : 'the end of the plan year';
                 return (
                   <div>
                     <p className="text-xs text-muted-foreground">
@@ -443,7 +443,7 @@ const FiftyPercentPlan = () => {
                       {room >= 0 ? formatCurrency(room) : `−${formatCurrency(Math.abs(room))}`}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {formatCurrency(julyTarget)} target ceiling − {formatCurrency(julyFixed)} fixed bills ={' '}
+                      {formatCurrency(endTarget)} target ceiling − {formatCurrency(endFixed)} fixed bills ={' '}
                       {room >= 0
                         ? 'how much you can spend on everyday items and still be living on half your pay.'
                         : 'your remaining fixed bills alone are still above half your pay, so more bills (or their amounts) have to come down before everyday spending fits.'}
