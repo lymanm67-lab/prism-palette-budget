@@ -283,7 +283,7 @@ const FiftyPercentPlan = () => {
           { label: 'Fixed bills & subscriptions', value: fixedNow },
           { label: 'Everyday spending (3-mo avg)', value: variableNow },
           { label: 'Running total', value: fixedNow + variableNow },
-          { label: 'Target (50%)', value: target },
+          { label: 'Target (50%)', value: net * 0.5 },
         ].map((s, i) => (
           <motion.div key={s.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
             <Card className="glass-card">
