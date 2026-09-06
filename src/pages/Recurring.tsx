@@ -44,7 +44,7 @@ const Recurring = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [editTarget, setEditTarget] = useState<any | null>(null);
-  const [editForm, setEditForm] = useState({ merchant: '', amount: '', frequency: 'monthly', account_id: '', category_id: '', next_due_date: '', type: 'expense' as 'income' | 'expense', autopay_enabled: false, reminder_days: 3, biller_url: '', business_split_pct: 0, business_category_id: '' });
+  const [editForm, setEditForm] = useState({ merchant: '', amount: '', frequency: 'monthly', account_id: '', category_id: '', next_due_date: '', type: 'expense' as 'income' | 'expense', autopay_enabled: false, reminder_days: 3, biller_url: '', business_split_pct: 0, business_category_id: '', end_date: '', pause_from: '', pause_count: 1 });
 
   const isBusiness = (r: any) => {
     const group = r.categories?.category_groups;
