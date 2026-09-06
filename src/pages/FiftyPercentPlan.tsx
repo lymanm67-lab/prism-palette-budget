@@ -188,9 +188,17 @@ const FiftyPercentPlan = () => {
   return (
     <div className="space-y-6">
       <PageOverview
-        pageKey="fifty-percent-plan"
         title="Live on 50% of net pay"
-        description="A rolling 12-month plan that tracks what you actually spend against half your take-home pay. Groceries are reimbursed by your wife and medical comes out of the HSA, so neither counts here."
+        description="A rolling 12-month plan that tracks what you actually spend against half your take-home pay."
+        icon={Target}
+        iconColor="text-prism-amber"
+        ttsScript="This page tracks your goal of living on half your take-home pay. It compares your real spending, month by month, against your fifty percent target, and shows which bills fall off over the next year. Groceries are left out because your wife reimburses them, and medical is left out because it comes from the HSA."
+        features={[
+          'Target set at half your monthly net pay',
+          'Rolling 12-month projection as bills and loans end',
+          'Your actual spending each month versus the target',
+          'Groceries excluded (reimbursed) and medical excluded (paid from HSA)',
+        ]}
       />
 
       <div className="flex flex-wrap items-end gap-4">
