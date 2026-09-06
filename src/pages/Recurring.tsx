@@ -332,6 +332,12 @@ const Recurring = () => {
                             <Building2 className="h-2.5 w-2.5" /> Split {Math.round(Number(r.business_split_pct))}% biz
                           </Badge>
                         )}
+                        {((r as any).pause_months || []).length > 0 && (
+                          <Badge variant="outline" className="text-[10px] px-1 py-0 border-amber-500/40 text-amber-600 dark:text-amber-400">
+                            Paused {((r as any).pause_months as string[]).slice().sort().map(m => format(parseISO(`${m}-01`), 'MMM')).join(', ')}
+                          </Badge>
+                        )}
+
                         <span className="hidden sm:inline">{r.accounts && (r.accounts as any).name}</span>
                       </div>
                     </div>
