@@ -155,14 +155,18 @@ const Subscriptions = () => {
   );
   const committedMonthly = totalMonthly + billsMonthly;
 
-  /* Net pay breakdown — always uses everything active, personal-side only, so the
-     leftover number reflects what really leaves the paycheck. */
+  /* Net pay breakdown — everything active comes out of the paycheck, including
+     business recurring bills (reimbursed quarterly from consulting fees). */
   const payScoped = useMemo(
-    () => (subscriptions || []).filter(s => !s.is_cancelled && (isSplit(s) || !isBusiness(s))),
+    () => (subscriptions || []).filter(s => !s.is_cancelled),
     [subscriptions],
   );
   const paySubs = useMemo(() => payScoped.filter(s => !isNonSubscription(s)).reduce((sum, s) => sum + monthlyOf(s), 0), [payScoped]);
   const payBills = useMemo(() => payScoped.filter(s => isNonSubscription(s)).reduce((sum, s) => sum + monthlyOf(s), 0), [payScoped]);
+  const payBusinessReimbursable = useMemo(
+    () => payScoped.filter(s => isBusiness(s) && !isSplit(s)).reduce((sum, s) => sum + monthlyOf(s), 0),
+    [payScoped],
+  );
   const payCommitted = paySubs + payBills;
   const netPayNum = Number(netPay) || 0;
   const leftOver = netPayNum - payCommitted;
