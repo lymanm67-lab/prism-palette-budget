@@ -1,0 +1,2 @@
+ALTER TABLE public.subscriptions ADD COLUMN IF NOT EXISTS is_transfer boolean NOT NULL DEFAULT false;
+ALTER TABLE public.recurring_transactions ADD COLUMN IF NOT EXISTS is_transfer boolean NOT NULL DEFAULT false;

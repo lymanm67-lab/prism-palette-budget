@@ -169,16 +169,29 @@ const Subscriptions = () => {
   const committedMonthly = totalMonthly + billsMonthly;
 
   /* Net pay breakdown — everything active comes out of the paycheck, including
-     business recurring bills (reimbursed quarterly from consulting fees). */
+     business recurring bills (reimbursed quarterly from consulting fees).
+     Credit-builder savings accounts are flagged as transfers: the money leaves
+     net pay but comes back to you, so it counts as saving, not spending. */
   const payScoped = useMemo(
-    () => (subscriptions || []).filter(s => !s.is_cancelled),
+    () => (subscriptions || []).filter(s => !s.is_cancelled && (s as any).is_transfer !== true),
     [subscriptions],
   );
   const paySubs = useMemo(() => payScoped.filter(s => !isNonSubscription(s)).reduce((sum, s) => sum + monthlyOf(s), 0), [payScoped]);
   const activeRecurringBills = useMemo(
-    () => (recurringTransactions || []).filter(bill => bill.is_active !== false && Number(bill.amount || 0) < 0),
+    () => (recurringTransactions || []).filter(
+      bill => bill.is_active !== false && Number(bill.amount || 0) < 0 && (bill as any).is_transfer !== true,
+    ),
     [recurringTransactions],
   );
+  const savingsTransfers = useMemo(() => {
+    const subs = (subscriptions || [])
+      .filter(s => !s.is_cancelled && (s as any).is_transfer === true)
+      .reduce((sum, s) => sum + monthlyOf(s), 0);
+    const bills = (recurringTransactions || [])
+      .filter(b => b.is_active !== false && Number(b.amount || 0) < 0 && (b as any).is_transfer === true)
+      .reduce((sum, b) => sum + monthlyRecurring(b), 0);
+    return subs + bills;
+  }, [subscriptions, recurringTransactions]);
   const payBills = useMemo(
     () => activeRecurringBills.reduce((sum, bill) => sum + monthlyRecurring(bill), 0),
     [activeRecurringBills],
@@ -193,6 +206,7 @@ const Subscriptions = () => {
     return bizBills + bizSubs;
   }, [activeRecurringBills, payScoped]);
   const payCommitted = paySubs + payBills;
+
   const netPayNum = Number(netPay) || 0;
   const leftOver = netPayNum - payCommitted;
   const usedPct = netPayNum > 0 ? Math.min(100, Math.round((payCommitted / netPayNum) * 100)) : 0;
@@ -581,6 +595,10 @@ const Subscriptions = () => {
               {payBusinessReimbursable > 0 && (
                 <> That includes <span className="font-semibold text-foreground">{formatCurrency(payBusinessReimbursable)}/mo</span> of business-only bills and subscriptions, which are paid from net pay and reimbursed quarterly from consulting fees.</>
               )}
+              {savingsTransfers > 0 && (
+                <> Credit-builder savings accounts ({formatCurrency(savingsTransfers)}/mo) are treated as money moved to savings, not spending, so they are left out of this total.</>
+              )}
+
             </p>
           </CardContent>
         </Card>
