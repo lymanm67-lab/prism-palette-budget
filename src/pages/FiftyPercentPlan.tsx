@@ -17,6 +17,8 @@ import {
 } from 'recharts';
 import { CheckCircle2, AlertTriangle, Target, TrendingDown, HeartPulse, ShoppingCart } from 'lucide-react';
 import PageOverview from '@/components/PageOverview';
+import { cn } from '@/lib/utils';
+
 
 /* Groceries are reimbursed by spouse and medical is paid from the HSA — neither is
    out-of-pocket spending from net pay, so both are excluded from the plan. */
@@ -95,6 +97,18 @@ function useShortTermDebts() {
 
 const normName = (s: string) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 
+/* Business-only items are paid from net pay then reimbursed quarterly from consulting
+   fees, so by default they don't count against the personal 50% target. Split items
+   (partly personal) still count. */
+const isBusinessOnly = (row: any) => {
+  const pct = Number(row?.business_split_pct || 0);
+  if (pct >= 100) return true;
+  if (pct > 0) return false;
+  const group = row?.categories?.category_groups;
+  return group?.budget_type === 'business' || !!group?.business_profile_id;
+};
+
+
 const FiftyPercentPlan = () => {
   const { formatCurrency } = useCurrency();
   const { data: subscriptions } = useSubscriptions();
@@ -104,6 +118,17 @@ const FiftyPercentPlan = () => {
 
   const [netPay, setNetPay] = useState<string>(() => localStorage.getItem('prism-net-pay-monthly') || '4250.02');
   const net = Number(netPay) || 0;
+
+  /* Business-only bills are reimbursed quarterly from consulting fees, so by default
+     they are left out of the personal 50% target. */
+  const [excludeBusiness, setExcludeBusiness] = useState<boolean>(
+    () => localStorage.getItem('prism-plan-exclude-business') !== 'false',
+  );
+  const toggleExcludeBusiness = (v: boolean) => {
+    setExcludeBusiness(v);
+    localStorage.setItem('prism-plan-exclude-business', String(v));
+  };
+
 
   /* Plan year: the 12-month window the user wants to measure against. Defaults to
      Oct 2026 – Sep 2027 per the current goal. */
@@ -167,13 +192,14 @@ const FiftyPercentPlan = () => {
   const excludedThisMonth = (thisMonth?.groceries || 0) + (thisMonth?.medical || 0);
 
   /* ---------- fixed commitments and when they end ---------- */
-  const commitments = useMemo(() => {
+  const allCommitments = useMemo(() => {
     const subs = (subscriptions || [])
       .filter((s: any) => !s.is_cancelled)
       .map((s: any) => ({
         id: `s-${s.id}`,
         name: s.merchant || 'Subscription',
         monthly: monthlyOfSub(s),
+        businessOnly: isBusinessOnly(s),
         endDate: s.end_date ? new Date(`${String(s.end_date).slice(0, 10)}T00:00:00`) : null,
         pauseMonths: (s.pause_months || []) as string[],
       }));
@@ -183,6 +209,7 @@ const FiftyPercentPlan = () => {
         id: `r-${b.id}`,
         name: b.merchant || b.categories?.name || 'Recurring bill',
         monthly: monthlyOfBill(b),
+        businessOnly: isBusinessOnly(b),
         endDate: b.end_date ? new Date(`${String(b.end_date).slice(0, 10)}T00:00:00`) : null,
         pauseMonths: (b.pause_months || []) as string[],
       }));
@@ -202,6 +229,7 @@ const FiftyPercentPlan = () => {
         id: `d-${d.id}`,
         name: d.name || 'Debt payment',
         monthly: Number(d.minimum_payment || 0),
+        businessOnly: false,
         endDate: d.target_payoff_date ? new Date(`${String(d.target_payoff_date).slice(0, 10)}T00:00:00`) : null,
         pauseMonths: [] as string[],
       }))
@@ -213,6 +241,16 @@ const FiftyPercentPlan = () => {
       );
     return [...subs, ...bills, ...debts].filter(c => c.monthly > 0);
   }, [subscriptions, recurring, shortDebts]);
+
+  const commitments = useMemo(
+    () => (excludeBusiness ? allCommitments.filter(c => !c.businessOnly) : allCommitments),
+    [allCommitments, excludeBusiness],
+  );
+  const businessReimbursed = useMemo(
+    () => allCommitments.filter(c => c.businessOnly).reduce((s, c) => s + c.monthly, 0),
+    [allCommitments],
+  );
+
 
   const monthKey = (d: Date) => format(d, 'yyyy-MM');
   const fixedForMonth = (d: Date) =>
@@ -356,7 +394,25 @@ const FiftyPercentPlan = () => {
         <Badge variant="outline" className="gap-1"><Target className="h-3 w-3" /> Target {formatCurrency(net * 0.5)} / month</Badge>
         <Badge variant="outline" className="gap-1"><ShoppingCart className="h-3 w-3" /> Groceries excluded (reimbursed)</Badge>
         <Badge variant="outline" className="gap-1"><HeartPulse className="h-3 w-3" /> Medical excluded (HSA)</Badge>
+        <button
+          type="button"
+          onClick={() => toggleExcludeBusiness(!excludeBusiness)}
+          className={cn(
+            'rounded-full border px-3 py-1 text-xs transition-colors',
+            excludeBusiness
+              ? 'border-prism-teal/40 bg-prism-teal/10 text-prism-teal'
+              : 'border-border text-muted-foreground hover:text-foreground',
+          )}
+        >
+          {excludeBusiness ? 'Business bills excluded' : 'Business bills counted'} ({formatCurrency(businessReimbursed)}/mo)
+        </button>
       </div>
+      <p className="text-xs text-muted-foreground">
+        Business-only bills and subscriptions ({formatCurrency(businessReimbursed)}/mo) are paid from net pay and reimbursed
+        quarterly from consulting fees, so they are left out of the personal 50% target. Tap the badge to count them anyway.
+        Items split between personal and business still count in full.
+      </p>
+
 
       <div className="grid gap-4 md:grid-cols-4">
         {[
