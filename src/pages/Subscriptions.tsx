@@ -472,6 +472,61 @@ const Subscriptions = () => {
         </motion.div>
       </div>
 
+      {/* What comes out of net pay */}
+      <motion.div variants={item}>
+        <Card className="prism-card-shine border-border/50">
+          <CardHeader className="pb-2">
+            <CardTitle className="font-display text-base flex flex-col sm:flex-row sm:items-center gap-2">
+              <span>What comes out of net pay</span>
+              <div className="flex items-center gap-2 sm:ml-auto">
+                <Label htmlFor="netpay" className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Monthly net pay</Label>
+                <Input
+                  id="netpay"
+                  type="number"
+                  step="0.01"
+                  value={netPay}
+                  onChange={(e) => { setNetPay(e.target.value); localStorage.setItem('prism-net-pay-monthly', e.target.value); }}
+                  className="h-8 w-28 text-sm"
+                />
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="rounded-xl border border-border/30 p-3">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Recurring bills</p>
+                <p className="font-display text-lg font-bold text-prism-orange">{formatCurrency(payBills)}</p>
+              </div>
+              <div className="rounded-xl border border-border/30 p-3">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Subscriptions</p>
+                <p className="font-display text-lg font-bold text-prism-violet">{formatCurrency(paySubs)}</p>
+              </div>
+              <div className="rounded-xl border border-border/30 p-3">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Total committed</p>
+                <p className="font-display text-lg font-bold text-prism-rose">{formatCurrency(payCommitted)}</p>
+              </div>
+              <div className="rounded-xl border border-border/30 p-3">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Left over</p>
+                <p className={cn('font-display text-lg font-bold', leftOver >= 0 ? 'text-prism-teal' : 'text-destructive')}>
+                  {formatCurrency(leftOver)}
+                </p>
+              </div>
+            </div>
+            <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+              <div
+                className={cn('h-full rounded-full', leftOver >= 0 ? 'bg-prism-teal' : 'bg-destructive')}
+                style={{ width: `${usedPct}%` }}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {usedPct}% of {formatCurrency(netPayNum)} net pay is already committed to recurring bills and subscriptions.
+              Business-only items are left out of this breakdown; split items are included.
+            </p>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+
       {/* Explanation */}
       <motion.div variants={item} className="rounded-lg border border-border/50 bg-muted/30 px-4 py-3">
         <p className="text-xs text-muted-foreground">
