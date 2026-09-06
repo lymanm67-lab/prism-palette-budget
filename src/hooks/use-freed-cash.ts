@@ -775,3 +775,144 @@ export function summarizeLifetime(sources: FreedCashSource[], now = new Date()):
     rows,
   };
 }
+
+/* ------------------------------------------------------------------ */
+/* Statement reconciliation                                            */
+/* ------------------------------------------------------------------ */
+
+export interface FreedCashStatement {
+  id: string;
+  household_id: string;
+  source_id: string;
+  period_month: string;
+  statement_date: string | null;
+  expected_amount: number;
+  actual_amount: number;
+  evidence: string | null;
+  notes: string | null;
+}
+
+export type FreedCashStatementInput = Omit<FreedCashStatement, 'id' | 'household_id'>;
+
+/** Tolerance for calling a statement line a match: greater of $1 or 2%. */
+export function statementTolerance(expected: number) {
+  return Math.max(1, Math.abs(expected) * 0.02);
+}
+
+export function statementMatches(s: Pick<FreedCashStatement, 'expected_amount' | 'actual_amount'>) {
+  return Math.abs(Number(s.actual_amount) - Number(s.expected_amount)) <= statementTolerance(Number(s.expected_amount));
+}
+
+/**
+ * Confidence implied by the statement evidence on file:
+ * no matching statement -> estimated, one -> verified, two or more -> reconciled.
+ */
+export function impliedConfidence(statements: FreedCashStatement[]): string {
+  const matched = statements.filter(statementMatches).length;
+  if (matched >= 2) return 'reconciled';
+  if (matched === 1) return 'verified';
+  return 'estimated';
+}
+
+export function useFreedCashStatements() {
+  const { household } = useHousehold();
+  return useQuery({
+    queryKey: ['freed-cash-statements', household?.id],
+    enabled: !!household?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('freed_cash_statements')
+        .select('*')
+        .eq('household_id', household!.id)
+        .is('deleted_at', null)
+        .order('period_month', { ascending: false });
+      if (error) throw error;
+      return (data || []) as unknown as FreedCashStatement[];
+    },
+  });
+}
+
+/**
+ * Saves a real bill/statement line and immediately re-grades the savings row it
+ * belongs to, so confidence always reflects the evidence on file.
+ */
+export function useSaveFreedCashStatement() {
+  const { household } = useHousehold();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: Partial<FreedCashStatementInput> & { id?: string; source_id: string }) => {
+      if (!household?.id) throw new Error('No household');
+      const payload = { ...input, household_id: household.id };
+      if (input.id) {
+        const { error } = await supabase
+          .from('freed_cash_statements')
+          .update(payload as never)
+          .eq('id', input.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('freed_cash_statements').insert(payload as never);
+        if (error) throw error;
+      }
+
+      // Re-grade the source from every statement now on file.
+      const { data: rows, error: readErr } = await supabase
+        .from('freed_cash_statements')
+        .select('*')
+        .eq('source_id', input.source_id)
+        .is('deleted_at', null);
+      if (readErr) throw readErr;
+
+      const statements = (rows || []) as unknown as FreedCashStatement[];
+      const confidence = impliedConfidence(statements);
+      const update: Record<string, unknown> = { confidence };
+      if (confidence !== 'estimated') {
+        update.status = 'verified';
+        update.verified_at = new Date().toISOString();
+        update.verification_method = 'bank_statement';
+        const latest = statements
+          .filter(statementMatches)
+          .map((s) => s.statement_date || s.period_month)
+          .sort()
+          .reverse()[0];
+        if (latest) update.statement_checked_date = latest;
+      }
+      const { error: upErr } = await supabase
+        .from('freed_cash_sources')
+        .update(update as never)
+        .eq('id', input.source_id);
+      if (upErr) throw upErr;
+
+      return confidence;
+    },
+    onSuccess: (confidence) => {
+      qc.invalidateQueries({ queryKey: ['freed-cash-statements'] });
+      qc.invalidateQueries({ queryKey: ['freed-cash-sources'] });
+      toast.success(
+        confidence === 'reconciled'
+          ? 'Saved — this saving is now Reconciled'
+          : confidence === 'verified'
+            ? 'Saved — this saving is now Verified'
+            : 'Saved — amounts do not match yet',
+      );
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+}
+
+export function useDeleteFreedCashStatement() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('freed_cash_statements')
+        .update({ deleted_at: new Date().toISOString() } as never)
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['freed-cash-statements'] });
+      toast.success('Removed');
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+}
