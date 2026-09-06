@@ -194,7 +194,7 @@ const FiftyPercentPlan = () => {
   /* ---------- fixed commitments and when they end ---------- */
   const allCommitments = useMemo(() => {
     const subs = (subscriptions || [])
-      .filter((s: any) => !s.is_cancelled)
+      .filter((s: any) => !s.is_cancelled && s.is_transfer !== true)
       .map((s: any) => ({
         id: `s-${s.id}`,
         name: s.merchant || 'Subscription',
@@ -204,7 +204,8 @@ const FiftyPercentPlan = () => {
         pauseMonths: (s.pause_months || []) as string[],
       }));
     const bills = (recurring || [])
-      .filter((b: any) => b.is_active !== false && Number(b.amount || 0) < 0)
+      .filter((b: any) => b.is_active !== false && Number(b.amount || 0) < 0 && b.is_transfer !== true)
+
       .map((b: any) => ({
         id: `r-${b.id}`,
         name: b.merchant || b.categories?.name || 'Recurring bill',
