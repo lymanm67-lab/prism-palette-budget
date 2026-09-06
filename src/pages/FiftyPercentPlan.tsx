@@ -179,13 +179,14 @@ const FiftyPercentPlan = () => {
   const excludedThisMonth = (thisMonth?.groceries || 0) + (thisMonth?.medical || 0);
 
   /* ---------- fixed commitments and when they end ---------- */
-  const commitments = useMemo(() => {
+  const allCommitments = useMemo(() => {
     const subs = (subscriptions || [])
       .filter((s: any) => !s.is_cancelled)
       .map((s: any) => ({
         id: `s-${s.id}`,
         name: s.merchant || 'Subscription',
         monthly: monthlyOfSub(s),
+        businessOnly: isBusinessOnly(s),
         endDate: s.end_date ? new Date(`${String(s.end_date).slice(0, 10)}T00:00:00`) : null,
         pauseMonths: (s.pause_months || []) as string[],
       }));
@@ -195,6 +196,7 @@ const FiftyPercentPlan = () => {
         id: `r-${b.id}`,
         name: b.merchant || b.categories?.name || 'Recurring bill',
         monthly: monthlyOfBill(b),
+        businessOnly: isBusinessOnly(b),
         endDate: b.end_date ? new Date(`${String(b.end_date).slice(0, 10)}T00:00:00`) : null,
         pauseMonths: (b.pause_months || []) as string[],
       }));
@@ -214,6 +216,7 @@ const FiftyPercentPlan = () => {
         id: `d-${d.id}`,
         name: d.name || 'Debt payment',
         monthly: Number(d.minimum_payment || 0),
+        businessOnly: false,
         endDate: d.target_payoff_date ? new Date(`${String(d.target_payoff_date).slice(0, 10)}T00:00:00`) : null,
         pauseMonths: [] as string[],
       }))
@@ -225,6 +228,16 @@ const FiftyPercentPlan = () => {
       );
     return [...subs, ...bills, ...debts].filter(c => c.monthly > 0);
   }, [subscriptions, recurring, shortDebts]);
+
+  const commitments = useMemo(
+    () => (excludeBusiness ? allCommitments.filter(c => !c.businessOnly) : allCommitments),
+    [allCommitments, excludeBusiness],
+  );
+  const businessReimbursed = useMemo(
+    () => allCommitments.filter(c => c.businessOnly).reduce((s, c) => s + c.monthly, 0),
+    [allCommitments],
+  );
+
 
   const monthKey = (d: Date) => format(d, 'yyyy-MM');
   const fixedForMonth = (d: Date) =>
