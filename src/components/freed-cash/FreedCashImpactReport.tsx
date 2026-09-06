@@ -223,7 +223,12 @@ export function FreedCashImpactReport({ sources, redirects }: Props) {
       },
       {
         title: 'Long-term value of the freed cash',
-        columns: ['Horizon', 'Contributed', 'Value', 'Growth'],
+        columns: [
+          { label: 'Horizon' },
+          { label: 'Contributed', align: 'right' as const },
+          { label: 'Value', align: 'right' as const },
+          { label: 'Growth', align: 'right' as const },
+        ],
         rows: projections.map((p) => [`${p.years} yr`, money(p.contributed), money(p.value), money(p.growth)]),
       },
     ],
