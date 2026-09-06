@@ -452,6 +452,16 @@ const FiftyPercentPlan = () => {
           </div>
 
           <div className="mt-4 overflow-x-auto">
+            <div className="mb-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+              <span><span className="font-medium text-foreground">Month:</span> projected month.</span>
+              <span><span className="font-medium text-foreground">Fixed:</span> bills, subscriptions and debt payments leaving net pay.</span>
+              <span><span className="font-medium text-foreground">Everyday:</span> average of what you actually spent on non-fixed items (groceries & medical excluded).</span>
+              <span><span className="font-medium text-foreground">Total:</span> fixed + everyday spending.</span>
+              <span><span className="font-medium text-foreground">50% target:</span> half of net pay; rises briefly during the raise window, then reverts.</span>
+              <span><span className="font-medium text-foreground">vs target:</span> how much total spending is under (−) or over (+) the target.</span>
+              <span><span className="font-medium text-foreground">To retirement:</span> the raise amount redirected to retirement after the 3-month window.</span>
+              <span><span className="font-medium text-foreground">What ends:</span> payments scheduled to end that month.</span>
+            </div>
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b text-left text-xs uppercase text-muted-foreground">
