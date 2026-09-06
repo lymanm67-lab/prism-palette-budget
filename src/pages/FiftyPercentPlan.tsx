@@ -105,6 +105,11 @@ const FiftyPercentPlan = () => {
   const [netPay, setNetPay] = useState<string>(() => localStorage.getItem('prism-net-pay-monthly') || '4250.02');
   const net = Number(netPay) || 0;
 
+  /* Plan year: the 12-month window the user wants to measure against. Defaults to
+     Oct 2026 – Sep 2027 per the current goal. */
+  const [planStart, setPlanStart] = useState<string>(() => localStorage.getItem('prism-plan-start') || '2026-10');
+  const planStartDate = useMemo(() => startOfMonth(new Date(`${planStart}-01T00:00:00`)), [planStart]);
+
   /* Raise assumptions: 3% raise in July 2027, live on 50% of new pay for 3 months,
      then redirect the raise amount to retirement so the spend target reverts to old 50%. */
   const [raiseMonth, setRaiseMonth] = useState<string>(() => localStorage.getItem('prism-raise-month') || '2027-07');
@@ -115,10 +120,9 @@ const FiftyPercentPlan = () => {
   const redirectMonths = Math.max(0, Number(raiseRedirectMonths) || 0);
 
   const raiseMonthIndex = useMemo(() => {
-    const today = startOfMonth(new Date());
     const raise = startOfMonth(new Date(`${raiseMonth}-01T00:00:00`));
-    return Math.max(0, (raise.getFullYear() - today.getFullYear()) * 12 + (raise.getMonth() - today.getMonth()));
-  }, [raiseMonth]);
+    return Math.max(0, (raise.getFullYear() - planStartDate.getFullYear()) * 12 + (raise.getMonth() - planStartDate.getMonth()));
+  }, [raiseMonth, planStartDate]);
 
   const effectiveNet = (monthIndex: number) => (monthIndex >= raiseMonthIndex ? net + raiseAmount : net);
   const effectiveTarget = (monthIndex: number) => {
@@ -226,9 +230,10 @@ const FiftyPercentPlan = () => {
       target: number; net: number; raiseToRetirement: number; ends: string[];
     }[] = [];
     for (let i = 0; i < 12; i++) {
-      const d = startOfMonth(addMonths(new Date(), i));
+      const d = startOfMonth(addMonths(planStartDate, i));
+      const prev = startOfMonth(addMonths(planStartDate, i - 1));
       const active = commitments.filter(c => !c.endDate || c.endDate >= d);
-      const ended = commitments.filter(c => c.endDate && c.endDate < d && c.endDate >= startOfMonth(addMonths(new Date(), i - 1)));
+      const ended = commitments.filter(c => c.endDate && c.endDate < d && c.endDate >= prev);
       const fixed = active.reduce((s, c) => s + (c.pauseMonths.includes(monthKey(d)) ? 0 : c.monthly), 0);
       const t = effectiveTarget(i);
       const n = effectiveNet(i);
@@ -246,7 +251,7 @@ const FiftyPercentPlan = () => {
       });
     }
     return rows;
-  }, [commitments, variableNow, raiseMonthIndex, redirectMonths, raiseAmount]);
+  }, [commitments, variableNow, raiseMonthIndex, redirectMonths, raiseAmount, planStartDate]);
 
   const firstHit = plan.find(p => p.total <= p.target);
   const endMonth = plan[plan.length - 1];
@@ -254,11 +259,12 @@ const FiftyPercentPlan = () => {
   const usedPct = net > 0 ? Math.round(((fixedNow + variableNow) / net) * 100) : 0;
 
   const dropOffs = useMemo(() => {
+    const horizon = addMonths(planStartDate, 12);
     return commitments
-      .filter(c => c.endDate && c.endDate <= addMonths(new Date(), 12))
+      .filter(c => c.endDate && c.endDate <= horizon)
       .sort((a, b) => (a.endDate!.getTime() - b.endDate!.getTime()))
       .map(c => ({ ...c, when: format(c.endDate!, 'MMM yyyy') }));
-  }, [commitments]);
+  }, [commitments, planStartDate]);
 
   const chartData = plan.map(p => ({
     label: p.label,
@@ -277,13 +283,13 @@ const FiftyPercentPlan = () => {
     <div className="space-y-6">
       <PageOverview
         title="Live on 50% of net pay"
-        description="A rolling 12-month plan that tracks what you actually spend against half your take-home pay."
+        description="A 12-month plan that tracks what you actually spend against half your take-home pay."
         icon={Target}
         iconColor="text-prism-amber"
-        ttsScript="This page tracks your goal of living on half your take-home pay. It compares your real spending, month by month, against your fifty percent target, and shows which bills fall off over the next year. Groceries are left out because your wife reimburses them, and medical is left out because it comes from the HSA."
+        ttsScript="This page tracks your goal of living on half your take-home pay. It compares your real spending, month by month, against your fifty percent target, and shows which bills fall off over the plan year. Groceries are left out because your wife reimburses them, and medical is left out because it comes from the HSA."
         features={[
           'Target set at half your monthly net pay',
-          'Rolling 12-month projection as bills and loans end',
+          '12-month projection as bills and loans end',
           'Your actual spending each month versus the target',
           'Groceries excluded (reimbursed) and medical excluded (paid from HSA)',
         ]}
@@ -298,6 +304,18 @@ const FiftyPercentPlan = () => {
             onChange={e => {
               setNetPay(e.target.value);
               localStorage.setItem('prism-net-pay-monthly', e.target.value);
+            }}
+          />
+        </div>
+        <div className="w-36">
+          <Label htmlFor="planStart" className="text-xs text-muted-foreground">Plan starts</Label>
+          <Input
+            id="planStart"
+            type="month"
+            value={planStart}
+            onChange={e => {
+              setPlanStart(e.target.value);
+              localStorage.setItem('prism-plan-start', e.target.value);
             }}
           />
         </div>
@@ -411,11 +429,11 @@ const FiftyPercentPlan = () => {
                 </p>
               </div>
               {(() => {
-                const july = plan.find(p => p.label === 'Jul 27') ?? plan[plan.length - 1];
-                const julyTarget = july?.target ?? net * 0.5;
-                const julyFixed = july?.fixed ?? fixedNow;
-                const room = julyTarget - julyFixed;
-                const whenLabel = july?.label ? format(new Date(`${july.key}-01T00:00:00`), 'MMMM yyyy') : 'July 2027';
+                const end = plan[plan.length - 1];
+                const endTarget = end?.target ?? net * 0.5;
+                const endFixed = end?.fixed ?? fixedNow;
+                const room = endTarget - endFixed;
+                const whenLabel = end?.label ? format(new Date(`${end.key}-01T00:00:00`), 'MMMM yyyy') : 'the end of the plan year';
                 return (
                   <div>
                     <p className="text-xs text-muted-foreground">
@@ -425,7 +443,7 @@ const FiftyPercentPlan = () => {
                       {room >= 0 ? formatCurrency(room) : `−${formatCurrency(Math.abs(room))}`}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {formatCurrency(julyTarget)} target ceiling − {formatCurrency(julyFixed)} fixed bills ={' '}
+                      {formatCurrency(endTarget)} target ceiling − {formatCurrency(endFixed)} fixed bills ={' '}
                       {room >= 0
                         ? 'how much you can spend on everyday items and still be living on half your pay.'
                         : 'your remaining fixed bills alone are still above half your pay, so more bills (or their amounts) have to come down before everyday spending fits.'}
