@@ -93,7 +93,9 @@ const Subscriptions = () => {
   const [editSub, setEditSub] = useState<any>(null);
   const [selectedSubId, setSelectedSubId] = useState<string | null>(null);
   const [reallocationSub, setReallocationSub] = useState<any>(null);
-  const [viewMode, setViewMode] = useState<'personal' | 'business'>('personal');
+  const [viewMode, setViewMode] = useState<'all' | 'personal' | 'business'>('all');
+  const [kindMode, setKindMode] = useState<'all' | 'subscriptions' | 'bills'>('all');
+  const [netPay, setNetPay] = useState<string>(() => localStorage.getItem('prism-net-pay-monthly') || '4250.02');
 
   const NON_SUB_KEYWORDS = ['rent', 'mortgage', 'insurance', 'utilit', 'electric', 'gas', 'water', 'sewer', 'trash', 'debt', 'loan', 'transfer', 'payment'];
 
@@ -115,27 +117,56 @@ const Subscriptions = () => {
     return pct > 0 && pct < 100;
   };
 
-  const filteredSubs = useMemo(() => {
-    return (subscriptions || []).filter(s => {
-      if (isSplit(s)) return true; // splits appear in both Personal and Business views
-      return viewMode === 'business' ? isBusiness(s) : !isBusiness(s);
-    });
-  }, [subscriptions, viewMode]);
+  const monthlyOf = (s: any) => {
+    const a = Number(s.average_amount || 0);
+    if (s.frequency === 'weekly') return a * 4.33;
+    if (s.frequency === 'biweekly') return a * 2.17;
+    if (s.frequency === 'quarterly') return a / 3;
+    if (s.frequency === 'yearly') return a / 12;
+    return a;
+  };
+
+  const matchesScope = (s: any) => {
+    if (viewMode === 'all') return true;
+    if (isSplit(s)) return true; // splits appear in both Personal and Business views
+    return viewMode === 'business' ? isBusiness(s) : !isBusiness(s);
+  };
+  const matchesKind = (s: any) => {
+    if (kindMode === 'all') return true;
+    return kindMode === 'bills' ? isNonSubscription(s) : !isNonSubscription(s);
+  };
+
+  const filteredSubs = useMemo(
+    () => (subscriptions || []).filter(s => matchesScope(s) && matchesKind(s)),
+    [subscriptions, viewMode, kindMode],
+  );
 
   const activeSubs = useMemo(() => filteredSubs.filter(s => !s.is_cancelled), [filteredSubs]);
   const cancelledSubs = useMemo(() => filteredSubs.filter(s => s.is_cancelled), [filteredSubs]);
   const selectedSub = useMemo(() => activeSubs.find(s => s.id === selectedSubId), [activeSubs, selectedSubId]);
 
-  const totalMonthly = useMemo(() => {
-    return activeSubs.filter(s => !isNonSubscription(s)).reduce((sum, s) => {
-      if (s.frequency === 'monthly') return sum + s.average_amount;
-      if (s.frequency === 'weekly') return sum + s.average_amount * 4.33;
-      if (s.frequency === 'biweekly') return sum + s.average_amount * 2.17;
-      if (s.frequency === 'quarterly') return sum + s.average_amount / 3;
-      if (s.frequency === 'yearly') return sum + s.average_amount / 12;
-      return sum;
-    }, 0);
-  }, [activeSubs]);
+  const totalMonthly = useMemo(
+    () => activeSubs.filter(s => !isNonSubscription(s)).reduce((sum, s) => sum + monthlyOf(s), 0),
+    [activeSubs],
+  );
+  const billsMonthly = useMemo(
+    () => activeSubs.filter(s => isNonSubscription(s)).reduce((sum, s) => sum + monthlyOf(s), 0),
+    [activeSubs],
+  );
+  const committedMonthly = totalMonthly + billsMonthly;
+
+  /* Net pay breakdown — always uses everything active, personal-side only, so the
+     leftover number reflects what really leaves the paycheck. */
+  const payScoped = useMemo(
+    () => (subscriptions || []).filter(s => !s.is_cancelled && (isSplit(s) || !isBusiness(s))),
+    [subscriptions],
+  );
+  const paySubs = useMemo(() => payScoped.filter(s => !isNonSubscription(s)).reduce((sum, s) => sum + monthlyOf(s), 0), [payScoped]);
+  const payBills = useMemo(() => payScoped.filter(s => isNonSubscription(s)).reduce((sum, s) => sum + monthlyOf(s), 0), [payScoped]);
+  const payCommitted = paySubs + payBills;
+  const netPayNum = Number(netPay) || 0;
+  const leftOver = netPayNum - payCommitted;
+  const usedPct = netPayNum > 0 ? Math.min(100, Math.round((payCommitted / netPayNum) * 100)) : 0;
 
   const totalYearly = totalMonthly * 12;
   const subPercent = totalExpenses > 0 ? Math.round((totalMonthly / totalExpenses) * 100) : 0;
