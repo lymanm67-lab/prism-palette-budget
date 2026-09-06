@@ -120,9 +120,9 @@ const FiftyPercentPlan = () => {
       key: k,
       label: format(new Date(`${k}-01T00:00:00`), 'MMM yy'),
       ...buckets[k],
-      target,
+      target: net * 0.5,
     }));
-  }, [history, target]);
+  }, [history, net]);
 
   const closedMonths = monthRows.slice(0, 11).filter(m => m.spend > 0);
   const avgSpend = closedMonths.length
