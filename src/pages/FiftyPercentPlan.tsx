@@ -75,7 +75,28 @@ const FiftyPercentPlan = () => {
 
   const [netPay, setNetPay] = useState<string>(() => localStorage.getItem('prism-net-pay-monthly') || '4250.02');
   const net = Number(netPay) || 0;
-  const target = net * 0.5;
+
+  /* Raise assumptions: 3% raise in July 2027, live on 50% of new pay for 3 months,
+     then redirect the raise amount to retirement so the spend target reverts to old 50%. */
+  const [raiseMonth, setRaiseMonth] = useState<string>(() => localStorage.getItem('prism-raise-month') || '2027-07');
+  const [raisePct, setRaisePct] = useState<string>(() => localStorage.getItem('prism-raise-pct') || '3');
+  const [raiseRedirectMonths, setRaiseRedirectMonths] = useState<string>(() => localStorage.getItem('prism-raise-redirect-months') || '3');
+  const raiseRate = Number(raisePct) / 100;
+  const raiseAmount = net * raiseRate;
+  const redirectMonths = Math.max(0, Number(raiseRedirectMonths) || 0);
+
+  const raiseMonthIndex = useMemo(() => {
+    const today = startOfMonth(new Date());
+    const raise = startOfMonth(new Date(`${raiseMonth}-01T00:00:00`));
+    return Math.max(0, (raise.getFullYear() - today.getFullYear()) * 12 + (raise.getMonth() - today.getMonth()));
+  }, [raiseMonth]);
+
+  const effectiveNet = (monthIndex: number) => (monthIndex >= raiseMonthIndex ? net + raiseAmount : net);
+  const effectiveTarget = (monthIndex: number) => {
+    if (monthIndex < raiseMonthIndex) return net * 0.5;
+    if (monthIndex < raiseMonthIndex + redirectMonths) return effectiveNet(monthIndex) * 0.5;
+    return net * 0.5; // raise redirected to retirement, spend target stays at old 50%
+  };
 
   /* ---------- monthly actual out-of-pocket spending ---------- */
   const monthRows = useMemo(() => {
@@ -99,9 +120,9 @@ const FiftyPercentPlan = () => {
       key: k,
       label: format(new Date(`${k}-01T00:00:00`), 'MMM yy'),
       ...buckets[k],
-      target,
+      target: net * 0.5,
     }));
-  }, [history, target]);
+  }, [history, net]);
 
   const closedMonths = monthRows.slice(0, 11).filter(m => m.spend > 0);
   const avgSpend = closedMonths.length
@@ -140,29 +161,34 @@ const FiftyPercentPlan = () => {
   const plan = useMemo(() => {
     const rows: {
       key: string; label: string; fixed: number; variable: number; total: number;
-      target: number; ends: string[];
+      target: number; net: number; raiseToRetirement: number; ends: string[];
     }[] = [];
     for (let i = 0; i < 12; i++) {
       const d = startOfMonth(addMonths(new Date(), i));
       const active = commitments.filter(c => !c.endDate || c.endDate >= d);
       const ended = commitments.filter(c => c.endDate && c.endDate < d && c.endDate >= startOfMonth(addMonths(new Date(), i - 1)));
       const fixed = active.reduce((s, c) => s + c.monthly, 0);
+      const t = effectiveTarget(i);
+      const n = effectiveNet(i);
+      const redirecting = i >= raiseMonthIndex + redirectMonths;
       rows.push({
         key: format(d, 'yyyy-MM'),
         label: format(d, 'MMM yy'),
         fixed,
         variable: variableNow,
         total: fixed + variableNow,
-        target,
+        target: t,
+        net: n,
+        raiseToRetirement: redirecting ? raiseAmount : 0,
         ends: ended.map(c => c.name),
       });
     }
     return rows;
-  }, [commitments, variableNow, target]);
+  }, [commitments, variableNow, raiseMonthIndex, redirectMonths, raiseAmount]);
 
-  const firstHit = plan.find(p => p.total <= target);
+  const firstHit = plan.find(p => p.total <= p.target);
   const endMonth = plan[plan.length - 1];
-  const gapAtEnd = (endMonth?.total || 0) - target;
+  const gapAtEnd = (endMonth?.total || 0) - (endMonth?.target || net * 0.5);
   const usedPct = net > 0 ? Math.round(((fixedNow + variableNow) / net) * 100) : 0;
 
   const dropOffs = useMemo(() => {
@@ -213,7 +239,41 @@ const FiftyPercentPlan = () => {
             }}
           />
         </div>
-        <Badge variant="outline" className="gap-1"><Target className="h-3 w-3" /> Target {formatCurrency(target)} / month</Badge>
+        <div className="w-36">
+          <Label htmlFor="raiseMonth" className="text-xs text-muted-foreground">Raise month</Label>
+          <Input
+            id="raiseMonth"
+            type="month"
+            value={raiseMonth}
+            onChange={e => {
+              setRaiseMonth(e.target.value);
+              localStorage.setItem('prism-raise-month', e.target.value);
+            }}
+          />
+        </div>
+        <div className="w-28">
+          <Label htmlFor="raisePct" className="text-xs text-muted-foreground">Raise %</Label>
+          <Input
+            id="raisePct"
+            value={raisePct}
+            onChange={e => {
+              setRaisePct(e.target.value);
+              localStorage.setItem('prism-raise-pct', e.target.value);
+            }}
+          />
+        </div>
+        <div className="w-36">
+          <Label htmlFor="redirectMonths" className="text-xs text-muted-foreground">Redirect after N mo</Label>
+          <Input
+            id="redirectMonths"
+            value={raiseRedirectMonths}
+            onChange={e => {
+              setRaiseRedirectMonths(e.target.value);
+              localStorage.setItem('prism-raise-redirect-months', e.target.value);
+            }}
+          />
+        </div>
+        <Badge variant="outline" className="gap-1"><Target className="h-3 w-3" /> Target {formatCurrency(net * 0.5)} / month</Badge>
         <Badge variant="outline" className="gap-1"><ShoppingCart className="h-3 w-3" /> Groceries excluded (reimbursed)</Badge>
         <Badge variant="outline" className="gap-1"><HeartPulse className="h-3 w-3" /> Medical excluded (HSA)</Badge>
       </div>
@@ -223,7 +283,7 @@ const FiftyPercentPlan = () => {
           { label: 'Fixed bills & subscriptions', value: fixedNow },
           { label: 'Everyday spending (3-mo avg)', value: variableNow },
           { label: 'Running total', value: fixedNow + variableNow },
-          { label: 'Target (50%)', value: target },
+          { label: 'Target (50%)', value: net * 0.5 },
         ].map((s, i) => (
           <motion.div key={s.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
             <Card className="glass-card">
@@ -244,8 +304,8 @@ const FiftyPercentPlan = () => {
           <Progress value={Math.min(100, usedPct)} className="h-3" />
           <p className="text-sm text-muted-foreground">
             You are living on <span className="font-semibold text-foreground">{usedPct}%</span> of your {formatCurrency(net)} net pay.
-            {' '}Half your pay is {formatCurrency(target)}, so you need to free up{' '}
-            <span className="font-semibold text-foreground">{formatCurrency(Math.max(0, fixedNow + variableNow - target))}</span> a month.
+            {' '}Half your pay is {formatCurrency(net * 0.5)}, so you need to free up{' '}
+            <span className="font-semibold text-foreground">{formatCurrency(Math.max(0, fixedNow + variableNow - net * 0.5))}</span> a month.
           </p>
           {excludedThisMonth > 0 && (
             <p className="text-xs text-muted-foreground">
@@ -260,7 +320,12 @@ const FiftyPercentPlan = () => {
                   <CheckCircle2 className="mt-0.5 h-4 w-4 text-prism-lime" />
                   <span>
                     On this plan you reach 50% in <span className="font-semibold">{firstHit.label}</span>, with{' '}
-                    {formatCurrency(target - firstHit.total)} of room to spare.
+                    {formatCurrency(firstHit.target - firstHit.total)} of room to spare.
+                    {firstHit.net > net && (
+                      <span className="block text-xs text-muted-foreground mt-1">
+                        That month uses your {raisePct}% raise target of {formatCurrency(firstHit.target)}; after {redirectMonths} months the raise redirects to retirement and the target returns to {formatCurrency(net * 0.5)}.
+                      </span>
+                    )}
                   </span>
                 </>
               ) : (
@@ -283,18 +348,24 @@ const FiftyPercentPlan = () => {
                   {formatCurrency(net)} net pay − {formatCurrency(fixedNow)} fixed bills = cash you have left right now for everyday spending.
                 </p>
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Room inside 50% target after July 2027</p>
-                <p className="text-xl font-semibold">
-                  {formatCurrency(Math.max(0, target - (plan.find(p => p.label === 'Jul 27')?.fixed ?? fixedNow)))}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {formatCurrency(target)} target ceiling − {formatCurrency(plan.find(p => p.label === 'Jul 27')?.fixed ?? fixedNow)} fixed bills = how much you can spend on everyday items and still be living on half your pay.
-                </p>
-              </div>
+              {(() => {
+                const july = plan.find(p => p.label === 'Jul 27');
+                const julyTarget = july?.target ?? net * 0.5;
+                const julyFixed = july?.fixed ?? fixedNow;
+                return (
+                  <div>
+                    <p className="text-xs text-muted-foreground">Room inside 50% target after July 2027</p>
+                    <p className="text-xl font-semibold">{formatCurrency(Math.max(0, julyTarget - julyFixed))}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {formatCurrency(julyTarget)} target ceiling − {formatCurrency(julyFixed)} fixed bills = how much you can spend on everyday items and still be living on half your pay.
+                    </p>
+                  </div>
+                );
+              })()}
             </div>
             <p className="text-xs text-muted-foreground">
               <span className="font-medium">Why the two numbers differ:</span> today's number is actual leftover cash after fixed bills. The future number is a budget limit — how much everyday spending fits inside the 50% target once fixed bills drop. Both go up as bills end; the future one is smaller because it counts the target ceiling, not total pay.
+              {' '}In {format(new Date(`${raiseMonth}-01T00:00:00`), 'MMMM yyyy')} your pay rises {raisePct}%; for {redirectMonths} month(s) the 50% target uses the new higher net pay, then the raise amount ({formatCurrency(raiseAmount)}) is redirected to retirement and the target returns to {formatCurrency(net * 0.5)}.
             </p>
           </div>
         </CardContent>
@@ -326,7 +397,9 @@ const FiftyPercentPlan = () => {
                   <th className="py-2 text-right">Fixed</th>
                   <th className="py-2 text-right">Everyday</th>
                   <th className="py-2 text-right">Total</th>
+                  <th className="py-2 text-right">50% target</th>
                   <th className="py-2 text-right">vs target</th>
+                  <th className="py-2 text-right">To retirement</th>
                   <th className="py-2">What ends</th>
                 </tr>
               </thead>
@@ -339,9 +412,11 @@ const FiftyPercentPlan = () => {
                       <td className="py-2 text-right">{formatCurrency(p.fixed)}</td>
                       <td className="py-2 text-right">{formatCurrency(p.variable)}</td>
                       <td className="py-2 text-right font-medium">{formatCurrency(p.total)}</td>
+                      <td className="py-2 text-right text-muted-foreground">{formatCurrency(p.target)}</td>
                       <td className={`py-2 text-right ${diff <= 0 ? 'text-prism-lime' : 'text-prism-rose'}`}>
                         {diff <= 0 ? `-${formatCurrency(Math.abs(diff))}` : `+${formatCurrency(diff)}`}
                       </td>
+                      <td className="py-2 text-right text-muted-foreground">{p.raiseToRetirement > 0 ? formatCurrency(p.raiseToRetirement) : '—'}</td>
                       <td className="py-2 text-xs text-muted-foreground">{p.ends.join(', ') || '—'}</td>
                     </tr>
                   );
