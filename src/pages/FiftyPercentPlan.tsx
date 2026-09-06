@@ -179,8 +179,23 @@ const FiftyPercentPlan = () => {
         monthly: monthlyOfBill(b),
         endDate: b.end_date ? new Date(`${String(b.end_date).slice(0, 10)}T00:00:00`) : null,
       }));
-    return [...subs, ...bills].filter(c => c.monthly > 0);
-  }, [subscriptions, recurring]);
+    const existing = [...subs, ...bills].map(c => normName(c.name));
+    const horizon = addMonths(new Date(), 12);
+    const debts = (shortDebts || [])
+      .map((d: any) => ({
+        id: `d-${d.id}`,
+        name: d.name || 'Debt payment',
+        monthly: Number(d.minimum_payment || 0),
+        endDate: d.target_payoff_date ? new Date(`${String(d.target_payoff_date).slice(0, 10)}T00:00:00`) : null,
+      }))
+      .filter(d =>
+        d.monthly > 0 &&
+        d.endDate &&
+        d.endDate <= horizon &&
+        !existing.some(n => n.includes(normName(d.name)) || normName(d.name).includes(n)),
+      );
+    return [...subs, ...bills, ...debts].filter(c => c.monthly > 0);
+  }, [subscriptions, recurring, shortDebts]);
 
   const fixedNow = commitments.reduce((s, c) => s + c.monthly, 0);
   const variableNow = Math.max(0, recentAvg - fixedNow);
