@@ -135,7 +135,7 @@ export function FreedCashSummary({ totals, sources, redirects = [] }: Props) {
 
 function StatCard({ label, value, hint, tip }: { label: string; value: string; hint: string; tip?: string }) {
   return (
-    <Card>
+    <Card className="min-w-[11rem] flex-1">
       <CardHeader className="pb-2">
         <CardTitle className="flex items-start gap-1 text-xs font-medium text-muted-foreground">
           {label}
