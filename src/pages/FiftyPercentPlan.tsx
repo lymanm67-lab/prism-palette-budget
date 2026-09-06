@@ -95,6 +95,18 @@ function useShortTermDebts() {
 
 const normName = (s: string) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 
+/* Business-only items are paid from net pay then reimbursed quarterly from consulting
+   fees, so by default they don't count against the personal 50% target. Split items
+   (partly personal) still count. */
+const isBusinessOnly = (row: any) => {
+  const pct = Number(row?.business_split_pct || 0);
+  if (pct >= 100) return true;
+  if (pct > 0) return false;
+  const group = row?.categories?.category_groups;
+  return group?.budget_type === 'business' || !!group?.business_profile_id;
+};
+
+
 const FiftyPercentPlan = () => {
   const { formatCurrency } = useCurrency();
   const { data: subscriptions } = useSubscriptions();
