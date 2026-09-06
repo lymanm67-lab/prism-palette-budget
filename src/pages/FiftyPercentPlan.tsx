@@ -411,7 +411,9 @@ const FiftyPercentPlan = () => {
       <p className="text-xs text-muted-foreground">
         Business-only bills and subscriptions ({formatCurrency(businessReimbursed)}/mo) are paid from net pay and reimbursed
         quarterly from consulting fees, so they are left out of the personal 50% target. Tap the badge to count them anyway.
-        Items split between personal and business still count in full.
+        Items split between personal and business still count in full. Credit-builder savings accounts (Self, Kikoff) are
+        treated as transfers to savings rather than spending, so they are not counted here either.
+
       </p>
 
 
