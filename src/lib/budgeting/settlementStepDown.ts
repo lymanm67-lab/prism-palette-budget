@@ -189,10 +189,11 @@ export function buildSettlementPlan(currentMonth: string): SettlementPlan {
       { month: '2026-09', label: '−$256.00', detail: 'Regular payment → $632.00', kind: 'reduction' },
       { month: '2026-10', label: '−$49.00', detail: 'Regular payment → $583.00', kind: 'reduction' },
       { month: '2026-11', label: 'Hold', detail: 'Regular payment stays $583.00', kind: 'baseline' },
+      { month: '2026-12', label: 'Final payment', detail: 'Last BetrLink payment Dec 10, 2026 — $583.00/month frees up in January', kind: 'reduction' },
       { month: '2027-01', label: '−$583.00', detail: 'Regular payments reach $0 · +$390.00 PSLF begins', kind: 'obligation' },
-      { month: '2027-02', label: 'Fee $371.48', detail: 'Due Feb 4, 2027', kind: 'fee' },
-      { month: '2027-03', label: 'Fee $555.15', detail: 'Due Mar 4, 2027', kind: 'fee' },
-      { month: '2027-04', label: 'Fee $355.28', detail: 'Final known fee, due Apr 6, 2027 → Settlement complete', kind: 'complete' },
+      { month: '2027-02', label: 'Fee $371.48', detail: 'Upstart / LVNFund fee due Feb 4, 2027', kind: 'fee' },
+      { month: '2027-03', label: 'Fee $555.15', detail: 'Upstart / LVNFund fee due Mar 4, 2027', kind: 'fee' },
+      { month: '2027-04', label: 'Fee $355.28', detail: 'Final Upstart / LVNFund fee, due Apr 6, 2027 → Settlement complete', kind: 'complete' },
     ],
   };
 }
