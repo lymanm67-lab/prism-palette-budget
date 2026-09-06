@@ -186,9 +186,9 @@ const FiftyPercentPlan = () => {
     return rows;
   }, [commitments, variableNow, raiseMonthIndex, redirectMonths, raiseAmount]);
 
-  const firstHit = plan.find(p => p.total <= target);
+  const firstHit = plan.find(p => p.total <= p.target);
   const endMonth = plan[plan.length - 1];
-  const gapAtEnd = (endMonth?.total || 0) - target;
+  const gapAtEnd = (endMonth?.total || 0) - (endMonth?.target || net * 0.5);
   const usedPct = net > 0 ? Math.round(((fixedNow + variableNow) / net) * 100) : 0;
 
   const dropOffs = useMemo(() => {
