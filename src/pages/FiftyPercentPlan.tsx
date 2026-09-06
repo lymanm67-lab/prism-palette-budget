@@ -304,8 +304,8 @@ const FiftyPercentPlan = () => {
           <Progress value={Math.min(100, usedPct)} className="h-3" />
           <p className="text-sm text-muted-foreground">
             You are living on <span className="font-semibold text-foreground">{usedPct}%</span> of your {formatCurrency(net)} net pay.
-            {' '}Half your pay is {formatCurrency(target)}, so you need to free up{' '}
-            <span className="font-semibold text-foreground">{formatCurrency(Math.max(0, fixedNow + variableNow - target))}</span> a month.
+            {' '}Half your pay is {formatCurrency(net * 0.5)}, so you need to free up{' '}
+            <span className="font-semibold text-foreground">{formatCurrency(Math.max(0, fixedNow + variableNow - net * 0.5))}</span> a month.
           </p>
           {excludedThisMonth > 0 && (
             <p className="text-xs text-muted-foreground">
@@ -320,7 +320,12 @@ const FiftyPercentPlan = () => {
                   <CheckCircle2 className="mt-0.5 h-4 w-4 text-prism-lime" />
                   <span>
                     On this plan you reach 50% in <span className="font-semibold">{firstHit.label}</span>, with{' '}
-                    {formatCurrency(target - firstHit.total)} of room to spare.
+                    {formatCurrency(firstHit.target - firstHit.total)} of room to spare.
+                    {firstHit.net > net && (
+                      <span className="block text-xs text-muted-foreground mt-1">
+                        That month uses your {raisePct}% raise target of {formatCurrency(firstHit.target)}; after {redirectMonths} months the raise redirects to retirement and the target returns to {formatCurrency(net * 0.5)}.
+                      </span>
+                    )}
                   </span>
                 </>
               ) : (
