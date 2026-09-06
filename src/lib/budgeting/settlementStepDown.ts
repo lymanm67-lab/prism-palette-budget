@@ -29,9 +29,10 @@ export const SETTLEMENT_BASELINE = 888;
 export const SETTLEMENT_STEP_DOWNS: StepDown[] = [
   { month: '2026-09', reduction: 256, note: 'First scheduled reduction' },
   { month: '2026-10', reduction: 49, note: 'Second scheduled reduction' },
-  { month: '2027-01', reduction: 583, note: 'Regular payments reach $0' },
+  { month: '2027-01', reduction: 583, note: 'Final BetrLink payment Dec 10, 2026 — regular payments reach $0' },
 ];
 
+/** Upstart / LVNFund settlement fees. */
 export const SETTLEMENT_FEES: SettlementFee[] = [
   { date: '2027-02-04', amount: 371.48 },
   { date: '2027-03-04', amount: 555.15 },
