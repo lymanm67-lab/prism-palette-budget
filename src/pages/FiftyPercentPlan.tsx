@@ -402,15 +402,24 @@ const FiftyPercentPlan = () => {
                 </p>
               </div>
               {(() => {
-                const july = plan.find(p => p.label === 'Jul 27');
+                const july = plan.find(p => p.label === 'Jul 27') ?? plan[plan.length - 1];
                 const julyTarget = july?.target ?? net * 0.5;
                 const julyFixed = july?.fixed ?? fixedNow;
+                const room = julyTarget - julyFixed;
+                const whenLabel = july?.label ? format(new Date(`${july.key}-01T00:00:00`), 'MMMM yyyy') : 'July 2027';
                 return (
                   <div>
-                    <p className="text-xs text-muted-foreground">Room inside 50% target after July 2027</p>
-                    <p className="text-xl font-semibold">{formatCurrency(Math.max(0, julyTarget - julyFixed))}</p>
                     <p className="text-xs text-muted-foreground">
-                      {formatCurrency(julyTarget)} target ceiling − {formatCurrency(julyFixed)} fixed bills = how much you can spend on everyday items and still be living on half your pay.
+                      {room >= 0 ? `Room inside 50% target in ${whenLabel}` : `Over the 50% target in ${whenLabel}`}
+                    </p>
+                    <p className={`text-xl font-semibold ${room >= 0 ? '' : 'text-destructive'}`}>
+                      {room >= 0 ? formatCurrency(room) : `−${formatCurrency(Math.abs(room))}`}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {formatCurrency(julyTarget)} target ceiling − {formatCurrency(julyFixed)} fixed bills ={' '}
+                      {room >= 0
+                        ? 'how much you can spend on everyday items and still be living on half your pay.'
+                        : 'your remaining fixed bills alone are still above half your pay, so more bills (or their amounts) have to come down before everyday spending fits.'}
                     </p>
                   </div>
                 );
