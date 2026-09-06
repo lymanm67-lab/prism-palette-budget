@@ -204,21 +204,31 @@ export function FreedCashImpactReport({ sources, redirects }: Props) {
           title: 'Where the freed money goes',
           legendHeader: 'Destination',
           totalLabel: 'Freed / mo',
-          slices: destinationSlices.map((s) => ({ label: s.label ?? s.name, value: s.value })),
+          slices: destinationSlices.map((s) => ({ label: s.name, value: s.value })),
           footerNote: `Assigned ${money2(capacity.assignedMonthly)}/mo of ${money2(capacity.verifiedMonthly)}/mo confirmed.`,
         }
       : undefined,
     tables: [
       {
         title: 'Biggest wins',
-        columns: ['Expense', 'Before', 'After', 'Freed / mo'],
+        columns: [
+          { label: 'Expense' },
+          { label: 'Before', align: 'right' as const },
+          { label: 'After', align: 'right' as const },
+          { label: 'Freed / mo', align: 'right' as const },
+        ],
         rows: perSource
           .slice(0, 8)
           .map((s) => [s.name, money2(s.before), money2(s.after), money2(s.saved)]),
       },
       {
         title: 'Long-term value of the freed cash',
-        columns: ['Horizon', 'Contributed', 'Value', 'Growth'],
+        columns: [
+          { label: 'Horizon' },
+          { label: 'Contributed', align: 'right' as const },
+          { label: 'Value', align: 'right' as const },
+          { label: 'Growth', align: 'right' as const },
+        ],
         rows: projections.map((p) => [`${p.years} yr`, money(p.contributed), money(p.value), money(p.growth)]),
       },
     ],
