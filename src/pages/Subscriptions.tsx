@@ -181,12 +181,15 @@ const Subscriptions = () => {
     () => activeRecurringBills.reduce((sum, bill) => sum + monthlyRecurring(bill), 0),
     [activeRecurringBills],
   );
-  const payBusinessReimbursable = useMemo(
-    () => activeRecurringBills
+  const payBusinessReimbursable = useMemo(() => {
+    const bizBills = activeRecurringBills
       .filter(bill => isBusiness(bill) && !isSplit(bill))
-      .reduce((sum, bill) => sum + monthlyRecurring(bill), 0),
-    [activeRecurringBills],
-  );
+      .reduce((sum, bill) => sum + monthlyRecurring(bill), 0);
+    const bizSubs = payScoped
+      .filter(s => isBusiness(s) && !isSplit(s))
+      .reduce((sum, s) => sum + monthlyOf(s), 0);
+    return bizBills + bizSubs;
+  }, [activeRecurringBills, payScoped]);
   const payCommitted = paySubs + payBills;
   const netPayNum = Number(netPay) || 0;
   const leftOver = netPayNum - payCommitted;
