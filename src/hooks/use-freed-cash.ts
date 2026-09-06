@@ -916,3 +916,78 @@ export function useDeleteFreedCashStatement() {
     onError: (e: Error) => toast.error(e.message),
   });
 }
+
+/* ------------------------------------------------------------------ */
+/* Frozen monthly snapshots                                            */
+/* ------------------------------------------------------------------ */
+
+export interface FreedCashMonthSnapshot {
+  id: string;
+  household_id: string;
+  entity_scope: string;
+  period_month: string;
+  realized_monthly: number;
+  run_rate: number;
+  created_monthly: number;
+  executed_monthly: number;
+  unallocated_monthly: number;
+  source_count: number;
+  locked: boolean;
+  notes: string | null;
+}
+
+export function useFreedCashSnapshots() {
+  const { household } = useHousehold();
+  return useQuery({
+    queryKey: ['freed-cash-snapshots', household?.id],
+    enabled: !!household?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('freed_cash_month_snapshots')
+        .select('*')
+        .eq('household_id', household!.id)
+        .order('period_month', { ascending: false });
+      if (error) throw error;
+      return (data || []) as unknown as FreedCashMonthSnapshot[];
+    },
+  });
+}
+
+/** Freeze one or more finished months so their figures never change again. */
+export function useFreezeFreedCashMonths() {
+  const { household } = useHousehold();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (rows: Record<string, unknown>[]) => {
+      if (!household?.id) throw new Error('No household');
+      if (rows.length === 0) return 0;
+      const payload = rows.map((r) => ({ ...r, household_id: household.id }));
+      const { error } = await supabase
+        .from('freed_cash_month_snapshots')
+        .upsert(payload as never, { onConflict: 'household_id,entity_scope,period_month' });
+      if (error) throw error;
+      return rows.length;
+    },
+    onSuccess: (n) => {
+      qc.invalidateQueries({ queryKey: ['freed-cash-snapshots'] });
+      if (n) toast.success(`${n} ${n === 1 ? 'month' : 'months'} locked`);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+}
+
+/** Reopen a locked month (rare — only when a month was frozen by mistake). */
+export function useUnfreezeFreedCashMonth() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('freed_cash_month_snapshots').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['freed-cash-snapshots'] });
+      toast.success('Month reopened');
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+}

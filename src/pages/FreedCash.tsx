@@ -18,6 +18,7 @@ import { LifetimeSavings } from '@/components/freed-cash/LifetimeSavings';
 import { RedirectEffectiveness } from '@/components/freed-cash/RedirectEffectiveness';
 import { ForwardLook } from '@/components/freed-cash/ForwardLook';
 import { CohortReport } from '@/components/freed-cash/CohortReport';
+import { PeriodReports } from '@/components/freed-cash/PeriodReports';
 
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -81,6 +82,7 @@ const GROUPS = [
     hint: 'The long view: what is coming, what could slip away, and the full printable report.',
     tabs: [
       { value: 'forward', label: 'Forward look' },
+      { value: 'periods', label: 'Year reports' },
       { value: 'cohorts', label: 'Cohorts' },
       { value: 'lifetime', label: 'Lifetime' },
       { value: 'history', label: 'History' },
@@ -202,6 +204,9 @@ export default function FreedCash() {
             </TabsContent>
             <TabsContent value="forward">
               <ForwardLook sources={list} redirects={scopedRedirects} />
+            </TabsContent>
+            <TabsContent value="periods">
+              <PeriodReports sources={list} redirects={scopedRedirects} scope={scope} />
             </TabsContent>
             <TabsContent value="cohorts">
               <CohortReport sources={list} />
