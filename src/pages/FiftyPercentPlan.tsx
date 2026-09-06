@@ -397,7 +397,9 @@ const FiftyPercentPlan = () => {
                   <th className="py-2 text-right">Fixed</th>
                   <th className="py-2 text-right">Everyday</th>
                   <th className="py-2 text-right">Total</th>
+                  <th className="py-2 text-right">50% target</th>
                   <th className="py-2 text-right">vs target</th>
+                  <th className="py-2 text-right">To retirement</th>
                   <th className="py-2">What ends</th>
                 </tr>
               </thead>
@@ -410,9 +412,11 @@ const FiftyPercentPlan = () => {
                       <td className="py-2 text-right">{formatCurrency(p.fixed)}</td>
                       <td className="py-2 text-right">{formatCurrency(p.variable)}</td>
                       <td className="py-2 text-right font-medium">{formatCurrency(p.total)}</td>
+                      <td className="py-2 text-right text-muted-foreground">{formatCurrency(p.target)}</td>
                       <td className={`py-2 text-right ${diff <= 0 ? 'text-prism-lime' : 'text-prism-rose'}`}>
                         {diff <= 0 ? `-${formatCurrency(Math.abs(diff))}` : `+${formatCurrency(diff)}`}
                       </td>
+                      <td className="py-2 text-right text-muted-foreground">{p.raiseToRetirement > 0 ? formatCurrency(p.raiseToRetirement) : '—'}</td>
                       <td className="py-2 text-xs text-muted-foreground">{p.ends.join(', ') || '—'}</td>
                     </tr>
                   );
