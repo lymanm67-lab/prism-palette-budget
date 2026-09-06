@@ -10213,6 +10213,7 @@ export type Database = {
           merchant: string | null
           next_due_date: string
           notes: string | null
+          pause_months: string[] | null
           reminder_days: number
           start_date: string
           updated_at: string
@@ -10236,6 +10237,7 @@ export type Database = {
           merchant?: string | null
           next_due_date: string
           notes?: string | null
+          pause_months?: string[] | null
           reminder_days?: number
           start_date: string
           updated_at?: string
@@ -10259,6 +10261,7 @@ export type Database = {
           merchant?: string | null
           next_due_date?: string
           notes?: string | null
+          pause_months?: string[] | null
           reminder_days?: number
           start_date?: string
           updated_at?: string
