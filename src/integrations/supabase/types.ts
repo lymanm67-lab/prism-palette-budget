@@ -4322,6 +4322,59 @@ export type Database = {
         }
         Relationships: []
       }
+      freed_cash_statements: {
+        Row: {
+          actual_amount: number
+          created_at: string
+          deleted_at: string | null
+          evidence: string | null
+          expected_amount: number
+          household_id: string
+          id: string
+          notes: string | null
+          period_month: string
+          source_id: string
+          statement_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          actual_amount?: number
+          created_at?: string
+          deleted_at?: string | null
+          evidence?: string | null
+          expected_amount?: number
+          household_id: string
+          id?: string
+          notes?: string | null
+          period_month: string
+          source_id: string
+          statement_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          actual_amount?: number
+          created_at?: string
+          deleted_at?: string | null
+          evidence?: string | null
+          expected_amount?: number
+          household_id?: string
+          id?: string
+          notes?: string | null
+          period_month?: string
+          source_id?: string
+          statement_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "freed_cash_statements_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "freed_cash_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       freed_cash_utility_bills: {
         Row: {
           actual_cost: number

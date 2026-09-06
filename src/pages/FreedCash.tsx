@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { FreedCashSummary } from '@/components/freed-cash/FreedCashSummary';
 import { FreedCashSourceList } from '@/components/freed-cash/FreedCashSourceList';
 import { VerificationQueue } from '@/components/freed-cash/VerificationQueue';
@@ -212,7 +213,18 @@ export default function FreedCash() {
             <TabsContent value="timing">
               <SavingsTiming sources={list} redirects={scopedRedirects} />
             </TabsContent>
-            <TabsContent value="verify">
+            <TabsContent value="verify" className="space-y-4">
+              <Card>
+                <CardContent className="flex flex-wrap items-center justify-between gap-3 py-4">
+                  <p className="text-sm text-muted-foreground">
+                    Have the real bill in front of you? Enter the amount actually charged and each saving is
+                    graded Verified or Reconciled automatically.
+                  </p>
+                  <Button asChild size="sm">
+                    <Link to="/planning/freed-cash/reconcile">Reconcile savings</Link>
+                  </Button>
+                </CardContent>
+              </Card>
               <VerificationQueue sources={list} />
             </TabsContent>
             <TabsContent value="renewals">
