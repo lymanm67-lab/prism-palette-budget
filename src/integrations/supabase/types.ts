@@ -4080,6 +4080,57 @@ export type Database = {
         }
         Relationships: []
       }
+      freed_cash_month_snapshots: {
+        Row: {
+          created_at: string
+          created_monthly: number
+          entity_scope: string
+          executed_monthly: number
+          household_id: string
+          id: string
+          locked: boolean
+          notes: string | null
+          period_month: string
+          realized_monthly: number
+          run_rate: number
+          source_count: number
+          unallocated_monthly: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_monthly?: number
+          entity_scope?: string
+          executed_monthly?: number
+          household_id: string
+          id?: string
+          locked?: boolean
+          notes?: string | null
+          period_month: string
+          realized_monthly?: number
+          run_rate?: number
+          source_count?: number
+          unallocated_monthly?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_monthly?: number
+          entity_scope?: string
+          executed_monthly?: number
+          household_id?: string
+          id?: string
+          locked?: boolean
+          notes?: string | null
+          period_month?: string
+          realized_monthly?: number
+          run_rate?: number
+          source_count?: number
+          unallocated_monthly?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       freed_cash_redirects: {
         Row: {
           confirmed_moved: boolean
