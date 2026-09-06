@@ -181,12 +181,15 @@ const Subscriptions = () => {
     () => activeRecurringBills.reduce((sum, bill) => sum + monthlyRecurring(bill), 0),
     [activeRecurringBills],
   );
-  const payBusinessReimbursable = useMemo(
-    () => activeRecurringBills
+  const payBusinessReimbursable = useMemo(() => {
+    const bizBills = activeRecurringBills
       .filter(bill => isBusiness(bill) && !isSplit(bill))
-      .reduce((sum, bill) => sum + monthlyRecurring(bill), 0),
-    [activeRecurringBills],
-  );
+      .reduce((sum, bill) => sum + monthlyRecurring(bill), 0);
+    const bizSubs = payScoped
+      .filter(s => isBusiness(s) && !isSplit(s))
+      .reduce((sum, s) => sum + monthlyOf(s), 0);
+    return bizBills + bizSubs;
+  }, [activeRecurringBills, payScoped]);
   const payCommitted = paySubs + payBills;
   const netPayNum = Number(netPay) || 0;
   const leftOver = netPayNum - payCommitted;
@@ -545,7 +548,7 @@ const Subscriptions = () => {
             <p className="text-xs text-muted-foreground">
               {usedPct}% of {formatCurrency(netPayNum)} net pay is already committed to recurring bills and subscriptions.
               {payBusinessReimbursable > 0 && (
-                <> That includes <span className="font-semibold text-foreground">{formatCurrency(payBusinessReimbursable)}/mo</span> of business-only bills, which are paid from net pay and reimbursed quarterly from consulting fees.</>
+                <> That includes <span className="font-semibold text-foreground">{formatCurrency(payBusinessReimbursable)}/mo</span> of business-only bills and subscriptions, which are paid from net pay and reimbursed quarterly from consulting fees.</>
               )}
             </p>
           </CardContent>
