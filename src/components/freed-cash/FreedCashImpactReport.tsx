@@ -365,14 +365,45 @@ export function FreedCashImpactReport({ sources, redirects }: Props) {
 
   const jump = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
+  const printReport = () => {
+    document.body.classList.add('fc-report-print-only');
+    const cleanup = () => {
+      document.body.classList.remove('fc-report-print-only');
+      window.removeEventListener('afterprint', cleanup);
+    };
+    window.addEventListener('afterprint', cleanup);
+    window.print();
+    setTimeout(cleanup, 1500);
+  };
+
   return (
     <div
+      id="fc-report-root"
       className={cn(
         'space-y-4 print:space-y-3',
         printPreview && 'mx-auto max-w-[8.5in] rounded-xl border border-border/60 p-4 sm:p-6',
       )}
       style={inkSaver ? { filter: 'grayscale(1)' } : undefined}
     >
+      <style>{`
+        @media print {
+          body.fc-report-print-only * { visibility: hidden !important; }
+          body.fc-report-print-only #fc-report-root,
+          body.fc-report-print-only #fc-report-root * { visibility: visible !important; }
+          body.fc-report-print-only #fc-report-root {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            max-width: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border: 0 !important;
+          }
+          body.fc-report-print-only #fc-report-root .print\\:hidden { display: none !important; }
+        }
+      `}</style>
+
       {/* ------------------------------------------------------------- toolbar */}
       <Card className="print:hidden">
         <CardContent className="flex flex-wrap items-center gap-2 p-3">
