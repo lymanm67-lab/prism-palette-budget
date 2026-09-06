@@ -35,6 +35,8 @@ import { CleanupSavingsDashboard } from '@/components/subscriptions/CleanupSavin
 import { SavingsReallocationDialog } from '@/components/subscriptions/SavingsReallocationDialog';
 import { StillChargedAlerts } from '@/components/subscriptions/StillChargedAlerts';
 import { useCheckCanceledCharges } from '@/hooks/use-subscription-alerts';
+import { MonthlyLeftoverTable, type CommitmentItem } from '@/components/subscriptions/MonthlyLeftoverTable';
+
 
 const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.06 } } };
 const item = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } };
@@ -194,6 +196,35 @@ const Subscriptions = () => {
   const netPayNum = Number(netPay) || 0;
   const leftOver = netPayNum - payCommitted;
   const usedPct = netPayNum > 0 ? Math.min(100, Math.round((payCommitted / netPayNum) * 100)) : 0;
+
+  /* Month-by-month commitment items (bills + subscriptions, personal + business) */
+  const toDate = (v: any) => (v ? new Date(`${String(v).slice(0, 10)}T00:00:00`) : null);
+  const scopeOf = (s: any): 'personal' | 'business' | 'split' =>
+    isSplit(s) ? 'split' : isBusiness(s) ? 'business' : 'personal';
+  const monthlyItems = useMemo<CommitmentItem[]>(() => {
+    const subs = payScoped.map((s: any) => ({
+      id: `s-${s.id}`,
+      name: s.merchant || 'Subscription',
+      monthly: monthlyOf(s),
+      kind: 'subscription' as const,
+      scope: scopeOf(s),
+      start: toDate(s.first_charge_date || s.created_at),
+      end: toDate(s.end_date),
+      pauseMonths: (s.pause_months || []) as string[],
+    }));
+    const bills = activeRecurringBills.map((b: any) => ({
+      id: `r-${b.id}`,
+      name: b.merchant || b.categories?.name || 'Recurring bill',
+      monthly: monthlyRecurring(b),
+      kind: 'bill' as const,
+      scope: scopeOf(b),
+      start: toDate(b.start_date),
+      end: toDate(b.end_date),
+      pauseMonths: (b.pause_months || []) as string[],
+    }));
+    return [...bills, ...subs].filter(i => i.monthly > 0);
+  }, [payScoped, activeRecurringBills]);
+
 
   const totalYearly = totalMonthly * 12;
   const subPercent = totalExpenses > 0 ? Math.round((totalMonthly / totalExpenses) * 100) : 0;
@@ -554,6 +585,13 @@ const Subscriptions = () => {
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* Month-by-month breakdown */}
+      <motion.div variants={item}>
+        <MonthlyLeftoverTable items={monthlyItems} netPay={netPayNum} />
+      </motion.div>
+
+
 
 
       {/* Explanation */}
