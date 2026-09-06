@@ -204,7 +204,7 @@ export function FreedCashImpactReport({ sources, redirects }: Props) {
           title: 'Where the freed money goes',
           legendHeader: 'Destination',
           totalLabel: 'Freed / mo',
-          slices: destinationSlices.map((s) => ({ label: s.label ?? s.name, value: s.value })),
+          slices: destinationSlices.map((s) => ({ label: s.name, value: s.value })),
           footerNote: `Assigned ${money2(capacity.assignedMonthly)}/mo of ${money2(capacity.verifiedMonthly)}/mo confirmed.`,
         }
       : undefined,
