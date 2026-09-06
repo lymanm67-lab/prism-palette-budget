@@ -1145,6 +1145,25 @@ function Stat({
   );
 }
 
+function BriefRow({
+  label,
+  value,
+  alert = false,
+  stacked = false,
+}: {
+  label: string;
+  value: string;
+  alert?: boolean;
+  stacked?: boolean;
+}) {
+  return (
+    <div className={cn(stacked ? 'min-w-0' : 'flex items-center justify-between gap-3 border-b border-border/50 pb-2 last:border-0 last:pb-0')}>
+      <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">{label}</p>
+      <p className={cn('font-semibold tabular-nums', stacked && 'mt-1 text-sm', alert && 'text-prism-amber')}>{value}</p>
+    </div>
+  );
+}
+
 function Empty({ text }: { text: string }) {
   return (
     <div className="flex h-full min-h-24 items-center justify-center text-sm text-muted-foreground">{text}</div>
