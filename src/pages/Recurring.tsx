@@ -292,9 +292,17 @@ const Recurring = () => {
               <ArrowDownLeft className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-500" />
             </div>
             <div className="min-w-0">
-              <p className="text-[11px] sm:text-xs text-muted-foreground">Recurring Income</p>
+              <p className="text-[11px] sm:text-xs text-muted-foreground">Income This Month</p>
               <p className="text-base sm:text-lg font-bold truncate">{formatAmount(totalIncome)}</p>
+              {periodicIncomeThisMonth > 0 ? (
+                <p className="text-[10px] sm:text-[11px] text-muted-foreground truncate">Includes {formatAmount(periodicIncomeThisMonth)} paid this month</p>
+              ) : periodicIncomeUpcoming.length > 0 ? (
+                <p className="text-[10px] sm:text-[11px] text-muted-foreground truncate">
+                  Next {periodicIncomeUpcoming[0].merchant} {formatAmount(periodicIncomeUpcoming[0].amount)} on {format(new Date(periodicIncomeUpcoming[0].date + 'T00:00:00'), 'MMM d')}
+                </p>
+              ) : null}
             </div>
+
           </CardContent>
         </Card>
         <Card>
