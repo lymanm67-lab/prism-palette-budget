@@ -348,18 +348,24 @@ const FiftyPercentPlan = () => {
                   {formatCurrency(net)} net pay − {formatCurrency(fixedNow)} fixed bills = cash you have left right now for everyday spending.
                 </p>
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Room inside 50% target after July 2027</p>
-                <p className="text-xl font-semibold">
-                  {formatCurrency(Math.max(0, target - (plan.find(p => p.label === 'Jul 27')?.fixed ?? fixedNow)))}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {formatCurrency(target)} target ceiling − {formatCurrency(plan.find(p => p.label === 'Jul 27')?.fixed ?? fixedNow)} fixed bills = how much you can spend on everyday items and still be living on half your pay.
-                </p>
-              </div>
+              {(() => {
+                const july = plan.find(p => p.label === 'Jul 27');
+                const julyTarget = july?.target ?? net * 0.5;
+                const julyFixed = july?.fixed ?? fixedNow;
+                return (
+                  <div>
+                    <p className="text-xs text-muted-foreground">Room inside 50% target after July 2027</p>
+                    <p className="text-xl font-semibold">{formatCurrency(Math.max(0, julyTarget - julyFixed))}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {formatCurrency(julyTarget)} target ceiling − {formatCurrency(julyFixed)} fixed bills = how much you can spend on everyday items and still be living on half your pay.
+                    </p>
+                  </div>
+                );
+              })()}
             </div>
             <p className="text-xs text-muted-foreground">
               <span className="font-medium">Why the two numbers differ:</span> today's number is actual leftover cash after fixed bills. The future number is a budget limit — how much everyday spending fits inside the 50% target once fixed bills drop. Both go up as bills end; the future one is smaller because it counts the target ceiling, not total pay.
+              {' '}In {format(new Date(`${raiseMonth}-01T00:00:00`), 'MMMM yyyy')} your pay rises {raisePct}%; for {redirectMonths} month(s) the 50% target uses the new higher net pay, then the raise amount ({formatCurrency(raiseAmount)}) is redirected to retirement and the target returns to {formatCurrency(net * 0.5)}.
             </p>
           </div>
         </CardContent>
