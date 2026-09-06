@@ -240,29 +240,53 @@ Deno.serve(async (req) => {
         savings: 'savings',
       };
 
-      // Insert accounts (include Plaid's account_id so per-account txn mapping works)
-      const accountInserts = (accountsData.accounts || []).map((acc: any) => ({
-        household_id,
-        name: acc.name || acc.official_name || 'Unknown Account',
-        institution: institution?.name || null,
-        account_type: subtypeMap[acc.subtype] || typeMap[acc.type] || 'other',
-        balance: acc.balances?.current || 0,
-        currency: acc.balances?.iso_currency_code || 'USD',
-        provider_account_id: acc.account_id,
-        last_synced_at: new Date().toISOString(),
-      }));
+      // Match existing accounts first so re-linking the same institution reuses the
+      // existing rows instead of creating duplicates (which duplicated every charge).
+      const { data: existingAccts } = await serviceSupabase
+        .from('accounts')
+        .select('id, name, institution, provider_account_id')
+        .eq('household_id', household_id)
+        .is('deleted_at', null);
 
-      // Build Plaid account_id → DB account id map from inserted rows
       const plaidToDbAccount = new Map<string, string>();
-      if (accountInserts.length > 0) {
-        const { data: insertedAccts } = await serviceSupabase
-          .from('accounts')
-          .insert(accountInserts)
-          .select('id, provider_account_id');
-        for (const a of insertedAccts || []) {
-          if (a.provider_account_id) plaidToDbAccount.set(a.provider_account_id, a.id);
+      for (const acc of accountsData.accounts || []) {
+        const displayName = acc.name || acc.official_name || 'Unknown Account';
+        const inst = institution?.name || null;
+        const existing =
+          (existingAccts || []).find((a: any) => a.provider_account_id === acc.account_id) ||
+          (existingAccts || []).find(
+            (a: any) =>
+              (a.institution || null) === inst &&
+              (a.name || '').toLowerCase() === displayName.toLowerCase(),
+          );
+
+        const payload = {
+          household_id,
+          name: displayName,
+          institution: inst,
+          account_type: subtypeMap[acc.subtype] || typeMap[acc.type] || 'other',
+          balance: acc.balances?.current || 0,
+          currency: acc.balances?.iso_currency_code || 'USD',
+          provider_account_id: acc.account_id,
+          last_synced_at: new Date().toISOString(),
+        };
+
+        if (existing) {
+          await serviceSupabase.from('accounts').update(payload).eq('id', existing.id);
+          plaidToDbAccount.set(acc.account_id, existing.id);
+        } else {
+          const { data: created } = await serviceSupabase
+            .from('accounts')
+            .insert(payload)
+            .select('id')
+            .single();
+          if (created?.id) {
+            plaidToDbAccount.set(acc.account_id, created.id);
+            (existingAccts || []).push({ ...payload, id: created.id } as any);
+          }
         }
       }
+
 
       // Fetch transactions (last 30 days for initial import)
       const endDate = new Date().toISOString().split('T')[0];
@@ -455,7 +479,8 @@ Deno.serve(async (req) => {
           const { data: dbHouseholdAccounts } = await serviceSupabase
             .from('accounts')
             .select('id, name, institution, provider_account_id')
-            .eq('household_id', household_id);
+            .eq('household_id', household_id)
+            .is('deleted_at', null);
 
           for (const acc of plaidAccounts) {
             const displayName = acc.name || acc.official_name || '';
@@ -464,20 +489,22 @@ Deno.serve(async (req) => {
               (a: any) => a.provider_account_id === acc.account_id
             );
             if (!match) {
+              // Re-point by (institution, name) even when the stored provider id is stale,
+              // otherwise a re-link creates a duplicate account and duplicate charges.
               match = (dbHouseholdAccounts || []).find(
                 (a: any) =>
-                  !a.provider_account_id &&
                   a.institution === item.institution_name &&
                   (a.name || '').toLowerCase() === displayName.toLowerCase()
               );
             }
+
 
             if (match) {
               const patch: Record<string, unknown> = {
                 balance: acc.balances?.current || 0,
                 last_synced_at: new Date().toISOString(),
               };
-              if (!match.provider_account_id) patch.provider_account_id = acc.account_id;
+              if (match.provider_account_id !== acc.account_id) patch.provider_account_id = acc.account_id;
               const { error: updateErr } = await serviceSupabase
                 .from('accounts')
                 .update(patch)
