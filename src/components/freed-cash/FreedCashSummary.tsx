@@ -99,7 +99,7 @@ export function FreedCashSummary({ totals, sources, redirects = [] }: Props) {
       <div className="space-y-4">
         <section className="space-y-2">
           <h2 className="text-sm font-semibold text-muted-foreground">Historical savings (already happened)</h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="flex flex-nowrap gap-4 overflow-x-auto pb-2">
             {historical.map((s) => (
               <StatCard key={s.label} {...s} />
             ))}
@@ -108,7 +108,7 @@ export function FreedCashSummary({ totals, sources, redirects = [] }: Props) {
 
         <section className="space-y-2">
           <h2 className="text-sm font-semibold text-muted-foreground">Forward-looking savings (estimates)</h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="flex flex-nowrap gap-4 overflow-x-auto pb-2">
             {forward.map((s) => (
               <StatCard key={s.label} {...s} />
             ))}
