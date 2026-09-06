@@ -41,6 +41,7 @@ export function HSAPlanner({ plan }: { plan: InvestmentPlan | null }) {
       </CardHeader>
       <CardContent className="space-y-4">
         <p className="text-xs text-muted-foreground">Invested HSAs grow tax-free for qualified medical expenses and can be used like a retirement account after 65 (taxable for non-medical).</p>
+        <p className="text-xs text-muted-foreground">Your contribution is ${(plan?.hsa_monthly_contribution ?? 0).toFixed(2)}/mo. Your employer adds $2,000 a year as two $1,000 deposits (January and June), shown here as ${(plan?.hsa_employer_contribution ?? 0).toFixed(2)}/mo for projection purposes.</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div><Label>Years</Label><Input type="number" value={years} onChange={e => setYears(Number(e.target.value))} /></div>
           <div><Label>Annual medical draw ($)</Label><Input type="number" value={drawdown} onChange={e => setDrawdown(Number(e.target.value))} /></div>
