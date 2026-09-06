@@ -585,10 +585,38 @@ const Recurring = () => {
                 />
               </div>
             </div>
-            <div className="space-y-2">
-              <Label>Next Due Date</Label>
-              <Input type="date" value={editForm.next_due_date} onChange={e => setEditForm(f => ({ ...f, next_due_date: e.target.value }))} />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Next Due Date</Label>
+                <Input type="date" value={editForm.next_due_date} onChange={e => setEditForm(f => ({ ...f, next_due_date: e.target.value }))} />
+              </div>
+              <div className="space-y-2">
+                <Label>Last payment date (optional)</Label>
+                <Input type="date" value={editForm.end_date} onChange={e => setEditForm(f => ({ ...f, end_date: e.target.value }))} />
+              </div>
             </div>
+            <div className="space-y-3 rounded-lg border border-border/40 bg-muted/20 p-3">
+              <Label className="text-sm">Pause this payment</Label>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Paused from</Label>
+                  <Input type="month" value={editForm.pause_from} onChange={e => setEditForm(f => ({ ...f, pause_from: e.target.value }))} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">How many months</Label>
+                  <Input type="number" min={1} max={36} value={editForm.pause_count} onChange={e => setEditForm(f => ({ ...f, pause_count: Math.max(1, Math.min(36, parseInt(e.target.value) || 1)) }))} />
+                </div>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                {editForm.pause_from
+                  ? `Skipped for ${editForm.pause_count} month${editForm.pause_count > 1 ? 's' : ''} starting ${editForm.pause_from}, then it resumes. Paused months count as $0 in your plans and leftover totals.`
+                  : 'Leave blank if this payment is not paused. Paused months count as $0 in your plans and leftover totals.'}
+              </p>
+              {editForm.pause_from && (
+                <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setEditForm(f => ({ ...f, pause_from: '', pause_count: 1 }))}>Clear pause</Button>
+              )}
+            </div>
+
             {editForm.type === 'expense' && (
               <div className="space-y-3 rounded-lg border border-border/40 bg-muted/20 p-3">
                 <div className="flex items-center justify-between gap-3">
