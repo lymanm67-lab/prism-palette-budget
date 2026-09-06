@@ -117,6 +117,17 @@ const FiftyPercentPlan = () => {
   const [netPay, setNetPay] = useState<string>(() => localStorage.getItem('prism-net-pay-monthly') || '4250.02');
   const net = Number(netPay) || 0;
 
+  /* Business-only bills are reimbursed quarterly from consulting fees, so by default
+     they are left out of the personal 50% target. */
+  const [excludeBusiness, setExcludeBusiness] = useState<boolean>(
+    () => localStorage.getItem('prism-plan-exclude-business') !== 'false',
+  );
+  const toggleExcludeBusiness = (v: boolean) => {
+    setExcludeBusiness(v);
+    localStorage.setItem('prism-plan-exclude-business', String(v));
+  };
+
+
   /* Plan year: the 12-month window the user wants to measure against. Defaults to
      Oct 2026 – Sep 2027 per the current goal. */
   const [planStart, setPlanStart] = useState<string>(() => localStorage.getItem('prism-plan-start') || '2026-10');
