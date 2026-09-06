@@ -7,11 +7,16 @@ import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import {
   AlertTriangle,
+  Activity,
   ArrowRight,
+  ArrowUpRight,
   BarChart3,
+  CalendarDays,
   CheckCircle2,
+  CircleDollarSign,
   Droplet,
   FileText,
+  Gauge,
   History,
   Printer,
   Table as TableIcon,
@@ -94,6 +99,7 @@ export function FreedCashImpactReport({ sources, redirects }: Props) {
   const [returnPct, setReturnPct] = useState(7);
   const [horizon, setHorizon] = useState<1 | 3 | 5>(5);
   const [ledgerYear, setLedgerYear] = useState<'all' | string>('all');
+  const [activeMetric, setActiveMetric] = useState<'realized' | 'runRate' | 'capture' | 'gap'>('runRate');
 
   /* ----------------------------------------------------------------- data */
   const ba = useMemo(() => beforeAfter(sources), [sources]);
@@ -376,11 +382,52 @@ export function FreedCashImpactReport({ sources, redirects }: Props) {
     setTimeout(cleanup, 1500);
   };
 
+  const summaryMetrics = [
+    {
+      id: 'realized' as const,
+      label: 'Realized this year',
+      value: money2(timing.ytdRealized),
+      detail: `${money2(timing.cumulativeRealized)} saved all-time`,
+      progress: Math.min(100, (timing.ytdRealized / Math.max(timing.avoidedAnnual, 1)) * 100),
+      icon: CircleDollarSign,
+      tone: 'green' as Tone,
+    },
+    {
+      id: 'runRate' as const,
+      label: 'Current monthly run rate',
+      value: `${money2(timing.runRate)}/mo`,
+      detail: `${money2(timing.avoidedAnnual)} avoided over the next 12 months`,
+      progress: Math.min(100, (timing.runRate / Math.max(ba.beforeMonthly, 1)) * 100),
+      icon: Activity,
+      tone: 'blue' as Tone,
+    },
+    {
+      id: 'capture' as const,
+      label: 'Confirmed on statements',
+      value: `${ba.verifiedShare.toFixed(0)}%`,
+      detail: `${money2(capacity.verifiedMonthly)}/mo is safe to redirect`,
+      progress: Math.min(100, ba.verifiedShare),
+      icon: Gauge,
+      tone: 'green' as Tone,
+    },
+    {
+      id: 'gap' as const,
+      label: 'Execution gap',
+      value: `${money2(conv.executionGap)}/mo`,
+      detail: `${money2(capacity.unassignedMonthly)}/mo still needs a job`,
+      progress: Math.min(100, (conv.executionGap / Math.max(capacity.verifiedMonthly, 1)) * 100),
+      icon: AlertTriangle,
+      tone: conv.executionGap > 0.5 ? 'amber' as Tone : 'green' as Tone,
+    },
+  ];
+  const selectedMetric = summaryMetrics.find((metric) => metric.id === activeMetric) ?? summaryMetrics[0];
+  const SelectedMetricIcon = selectedMetric.icon;
+
   return (
     <div
       id="fc-report-root"
       className={cn(
-        'space-y-4 print:space-y-3',
+        'fc-report space-y-6 rounded-lg border border-border/70 bg-background p-4 text-foreground shadow-xl sm:p-6 print:space-y-3',
         printPreview && 'mx-auto max-w-[8.5in] rounded-xl border border-border/60 p-4 sm:p-6',
       )}
       style={inkSaver ? { filter: 'grayscale(1)' } : undefined}
@@ -405,8 +452,28 @@ export function FreedCashImpactReport({ sources, redirects }: Props) {
       `}</style>
 
       {/* ------------------------------------------------------------- toolbar */}
-      <Card className="print:hidden">
-        <CardContent className="flex flex-wrap items-center gap-2 p-3">
+      <header className="flex flex-col gap-5 border-b border-border/70 pb-6 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <div className="mb-2 flex items-center gap-2">
+            <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-prism-lime shadow-[0_0_12px_hsl(var(--prism-lime)/0.6)] motion-reduce:animate-none" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Savings engine active</span>
+          </div>
+          <h2 className="font-display text-3xl font-normal tracking-normal sm:text-4xl">
+            Freed Cash <span className="font-bold text-prism-lime">Impact Report</span>
+          </h2>
+          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">A live audit of savings created, confirmed, protected, and put to work.</p>
+        </div>
+        <div className="flex items-center gap-3 sm:text-right">
+          <CalendarDays className="h-4 w-4 text-prism-lime" />
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">Reporting period</p>
+            <p className="text-sm font-semibold">Year to date · {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</p>
+          </div>
+        </div>
+      </header>
+
+      <Card className="sticky top-2 z-20 border-border/80 bg-card/90 print:hidden">
+        <CardContent className="flex flex-wrap items-center gap-2 p-2.5">
           <div className="mr-auto flex flex-wrap gap-1.5">
             {SECTIONS.map((s) => (
               <Button key={s.id} variant="ghost" size="sm" className="h-7 gap-1.5 px-2 text-xs" onClick={() => jump(s.id)}>
@@ -436,51 +503,87 @@ export function FreedCashImpactReport({ sources, redirects }: Props) {
           </Button>
         </CardContent>
       </Card>
-      <p className="hidden text-xs text-muted-foreground print:hidden sm:block">
-        {inkSaver
-          ? 'Ink saver: the report prints in black and white to save colour ink.'
-          : 'Colour mode: charts and highlights print in full colour. Switch on ink saver for a black-and-white copy.'}
-      </p>
-
       {/* ----------------------------------------------------------- narrative */}
       <section id="fc-narrative" className="scroll-mt-20">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">The story in plain English</CardTitle>
-            <p className="mt-1 text-xs text-muted-foreground">
-              A written summary of what your freed cash has done, and what still needs attention.
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {narrative.map((line, i) => (
-              <p key={i} className="text-sm leading-relaxed text-muted-foreground">
-                {line}
-              </p>
-            ))}
-          </CardContent>
-        </Card>
+        <div className="grid overflow-hidden rounded-lg border border-border/70 bg-card lg:grid-cols-[1.55fr_0.75fr]">
+          <div className="p-5 sm:p-7">
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-prism-lime">Executive brief</p>
+            <h3 className="mt-2 font-display text-xl font-semibold tracking-normal">The story in plain English</h3>
+            <div className="mt-5 space-y-3 border-l-2 border-prism-lime/50 pl-4">
+              {narrative.map((line, i) => (
+                <p key={i} className={cn('leading-relaxed', i === 0 ? 'text-base font-medium text-foreground' : 'text-sm text-muted-foreground')}>
+                  {line}
+                </p>
+              ))}
+            </div>
+          </div>
+          <div className="border-t border-border/70 bg-secondary/45 p-5 lg:border-l lg:border-t-0 sm:p-7">
+            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">Current position</p>
+            <p className="mt-3 font-display text-3xl font-bold tabular-nums text-prism-lime">{money2(ba.savedMonthly)}<span className="text-base font-medium text-muted-foreground"> / month</span></p>
+            <p className="mt-1 text-sm text-muted-foreground">Recurring spending permanently removed</p>
+            <div className="mt-6 space-y-3">
+              <BriefRow label="Annual impact" value={money2(ba.savedAnnual)} />
+              <BriefRow label="Reduction" value={`${ba.reductionPct.toFixed(1)}%`} />
+              <BriefRow label="Needs a job" value={money2(capacity.unassignedMonthly)} alert={capacity.unassignedMonthly > 0.5} />
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* ------------------------------------------------------------- summary */}
       <section id="fc-summary" className="scroll-mt-20 space-y-4">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Freed Cash summary</CardTitle>
-            <p className="mt-1 text-xs text-muted-foreground">
-              The headline numbers as of {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.
-            </p>
-          </CardHeader>
-          <CardContent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <Stat tone="green" label="Freed every month" value={money2(ba.savedMonthly)} sub={`${money2(ba.savedAnnual)} a year`} />
-            <Stat tone="blue" label="Confirmed on a bill" value={`${ba.verifiedShare.toFixed(0)}%`} sub={`${money2(capacity.verifiedMonthly)}/mo confirmed`} />
-            <Stat tone="amber" label="Assigned but not moved" value={money2(conv.executionGap)} sub="A plan, not progress yet" />
-            <Stat tone={capacity.unassignedMonthly > 0.5 ? 'red' : 'green'} label="Still needs a job" value={money2(capacity.unassignedMonthly)} sub="Most likely to drift back" />
-            <Stat label="Before" value={`${money2(ba.beforeMonthly)}/mo`} sub="Old recurring cost" />
-            <Stat label="After (incl. fees)" value={`${money2(ba.afterMonthly)}/mo`} sub={`${ba.reductionPct.toFixed(1)}% lower`} />
-            <Stat label="Realized this year" value={money2(timing.ytdRealized)} sub={`All-time ${money2(timing.cumulativeRealized)}`} />
-            <Stat label="Run rate" value={`${money2(timing.runRate)}/mo`} sub={`${money2(timing.avoidedAnnual)} avoided over 12 mo`} />
-          </CardContent>
-        </Card>
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-prism-lime">Performance monitor</p>
+            <h3 className="mt-1 font-display text-xl font-semibold tracking-normal">Freed Cash summary</h3>
+          </div>
+          <p className="hidden text-xs text-muted-foreground sm:block">Select a metric to inspect it</p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {summaryMetrics.map((metric) => (
+            <button
+              key={metric.id}
+              type="button"
+              onClick={() => setActiveMetric(metric.id)}
+              className={cn(
+                'group min-h-40 rounded-lg border bg-card/70 p-5 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-prism-lime/50 hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                activeMetric === metric.id ? 'border-prism-lime/60 shadow-[0_0_24px_hsl(var(--prism-lime)/0.10)]' : 'border-border/70',
+              )}
+              aria-pressed={activeMetric === metric.id}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground">{metric.label}</p>
+                <span className="rounded-md bg-prism-lime/10 p-2 text-prism-lime"><metric.icon className="h-4 w-4" /></span>
+              </div>
+              <p className="mt-5 font-display text-2xl font-semibold tabular-nums tracking-normal">{metric.value}</p>
+              <div className="mt-4 h-1 overflow-hidden rounded-full bg-secondary">
+                <div className="h-full rounded-full bg-prism-lime transition-[width] duration-500 motion-reduce:transition-none" style={{ width: `${metric.progress}%` }} />
+              </div>
+              <p className="mt-2 text-xs text-muted-foreground">{metric.detail}</p>
+            </button>
+          ))}
+        </div>
+        <div className="grid overflow-hidden rounded-lg border border-border/70 bg-card lg:grid-cols-[1.7fr_1fr]">
+          <div className="p-5 sm:p-6">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <span className="rounded-md bg-prism-lime/10 p-2 text-prism-lime"><SelectedMetricIcon className="h-5 w-5" /></span>
+                <div><p className="text-xs text-muted-foreground">Selected signal</p><p className="font-semibold">{selectedMetric.label}</p></div>
+              </div>
+              <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
+            </div>
+            <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+              <BriefRow label="Before" value={`${money2(ba.beforeMonthly)}/mo`} stacked />
+              <BriefRow label="After" value={`${money2(ba.afterMonthly)}/mo`} stacked />
+              <BriefRow label="Assigned" value={`${money2(capacity.assignedMonthly)}/mo`} stacked />
+              <BriefRow label="Moved" value={`${money2(conv.executedMonthly)}/mo`} stacked />
+            </div>
+          </div>
+          <div className="border-t border-border/70 bg-secondary/40 p-5 lg:border-l lg:border-t-0 sm:p-6">
+            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">Signal interpretation</p>
+            <p className="mt-3 text-sm leading-relaxed text-foreground">{selectedMetric.detail}. {activeMetric === 'gap' ? 'Close this gap to turn planning into measurable progress.' : 'This figure updates as savings are confirmed and redirects are completed.'}</p>
+          </div>
+        </div>
       </section>
 
 
@@ -1038,6 +1141,25 @@ function Stat({
       <p className="text-xs text-muted-foreground">{label}</p>
       <p className="text-lg font-semibold">{value}</p>
       {sub && <p className="mt-0.5 text-[11px] text-muted-foreground">{sub}</p>}
+    </div>
+  );
+}
+
+function BriefRow({
+  label,
+  value,
+  alert = false,
+  stacked = false,
+}: {
+  label: string;
+  value: string;
+  alert?: boolean;
+  stacked?: boolean;
+}) {
+  return (
+    <div className={cn(stacked ? 'min-w-0' : 'flex items-center justify-between gap-3 border-b border-border/50 pb-2 last:border-0 last:pb-0')}>
+      <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">{label}</p>
+      <p className={cn('font-semibold tabular-nums', stacked && 'mt-1 text-sm', alert && 'text-prism-amber')}>{value}</p>
     </div>
   );
 }

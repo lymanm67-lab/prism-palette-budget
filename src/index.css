@@ -1,5 +1,33 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
+@font-face {
+  font-family: 'Manrope Report';
+  src: url('./assets/fonts/manrope-regular.ttf') format('truetype');
+  font-weight: 400 600;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Manrope Report';
+  src: url('./assets/fonts/manrope-bold.ttf') format('truetype');
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Sora Report';
+  src: url('./assets/fonts/sora-regular.ttf') format('truetype');
+  font-weight: 400 600;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Sora Report';
+  src: url('./assets/fonts/sora-bold.ttf') format('truetype');
+  font-weight: 700;
+  font-display: swap;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -151,6 +179,54 @@
 }
 
 @layer utilities {
+  .fc-report {
+    --background: 158 56% 7%;
+    --foreground: 129 54% 90%;
+    --card: 155 42% 12%;
+    --card-foreground: 129 54% 90%;
+    --popover: 155 42% 12%;
+    --popover-foreground: 129 54% 90%;
+    --primary: 153 40% 52%;
+    --primary-foreground: 158 56% 7%;
+    --secondary: 155 42% 18%;
+    --secondary-foreground: 129 54% 90%;
+    --muted: 155 35% 16%;
+    --muted-foreground: 132 25% 70%;
+    --accent: 153 40% 52%;
+    --accent-foreground: 158 56% 7%;
+    --border: 153 30% 26%;
+    --input: 153 30% 26%;
+    --ring: 153 40% 52%;
+    --prism-lime: 153 40% 52%;
+    --prism-teal: 153 40% 52%;
+    --chart-1: 153 40% 52%;
+    --chart-2: 129 54% 70%;
+    --chart-3: 174 45% 45%;
+    --chart-4: 43 74% 55%;
+    --chart-5: 27 87% 61%;
+    font-family: 'Manrope Report', system-ui, sans-serif;
+  }
+
+  .fc-report .font-display,
+  .fc-report h1,
+  .fc-report h2,
+  .fc-report h3,
+  .fc-report h4,
+  .fc-report h5,
+  .fc-report h6 {
+    font-family: 'Sora Report', system-ui, sans-serif;
+  }
+
+  .fc-report .recharts-cartesian-axis-tick-value,
+  .fc-report .recharts-legend-item-text {
+    fill: hsl(var(--muted-foreground)) !important;
+    color: hsl(var(--muted-foreground)) !important;
+  }
+
+  .fc-report .recharts-tooltip-wrapper {
+    color: hsl(var(--card-foreground));
+  }
+
   .prism-gradient {
     background: linear-gradient(135deg, hsl(var(--prism-navy)), hsl(var(--prism-teal)));
   }
