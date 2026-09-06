@@ -100,6 +100,7 @@ const FiftyPercentPlan = () => {
   const { data: subscriptions } = useSubscriptions();
   const { data: recurring } = useRecurringTransactions();
   const { data: history } = useSpendingHistory(12);
+  const { data: shortDebts } = useShortTermDebts();
 
   const [netPay, setNetPay] = useState<string>(() => localStorage.getItem('prism-net-pay-monthly') || '4250.02');
   const net = Number(netPay) || 0;
