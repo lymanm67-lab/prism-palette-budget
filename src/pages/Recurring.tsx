@@ -118,6 +118,7 @@ const Recurring = () => {
 
   const openEdit = (r: any) => {
     setEditTarget(r);
+    const pauses = ((r.pause_months || []) as string[]).slice().sort();
     setEditForm({
       merchant: r.merchant || '',
       amount: String(Math.abs(Number(r.amount))),
@@ -131,12 +132,24 @@ const Recurring = () => {
       biller_url: r.biller_url || '',
       business_split_pct: Number(r.business_split_pct || 0),
       business_category_id: r.business_category_id || '',
+      end_date: r.end_date ? String(r.end_date).slice(0, 10) : '',
+      pause_from: pauses[0] || '',
+      pause_count: pauses.length || 1,
     });
   };
 
   const handleEdit = () => {
     if (!editTarget) return;
     const amt = Math.abs(parseFloat(editForm.amount));
+    let pauseMonths: string[] = [];
+    if (editForm.pause_from) {
+      const [y, m] = editForm.pause_from.split('-').map(Number);
+      const count = Math.max(1, Math.min(36, Number(editForm.pause_count) || 1));
+      for (let i = 0; i < count; i++) {
+        const d = new Date(y, (m - 1) + i, 1);
+        pauseMonths.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+      }
+    }
     updateRecurring.mutate({
       id: editTarget.id,
       merchant: editForm.merchant,
@@ -150,10 +163,13 @@ const Recurring = () => {
       biller_url: editForm.biller_url || null,
       business_split_pct: editForm.business_split_pct,
       business_category_id: editForm.business_category_id || null,
-    }, {
+      end_date: editForm.end_date || null,
+      pause_months: pauseMonths,
+    } as any, {
       onSuccess: () => { setEditTarget(null); toast.success('Updated!'); },
     });
   };
+
 
   const toggleAutopay = (r: any) => {
     updateRecurring.mutate({ id: r.id, autopay_enabled: !r.autopay_enabled }, {
