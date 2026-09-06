@@ -75,7 +75,28 @@ const FiftyPercentPlan = () => {
 
   const [netPay, setNetPay] = useState<string>(() => localStorage.getItem('prism-net-pay-monthly') || '4250.02');
   const net = Number(netPay) || 0;
-  const target = net * 0.5;
+
+  /* Raise assumptions: 3% raise in July 2027, live on 50% of new pay for 3 months,
+     then redirect the raise amount to retirement so the spend target reverts to old 50%. */
+  const [raiseMonth, setRaiseMonth] = useState<string>(() => localStorage.getItem('prism-raise-month') || '2027-07');
+  const [raisePct, setRaisePct] = useState<string>(() => localStorage.getItem('prism-raise-pct') || '3');
+  const [raiseRedirectMonths, setRaiseRedirectMonths] = useState<string>(() => localStorage.getItem('prism-raise-redirect-months') || '3');
+  const raiseRate = Number(raisePct) / 100;
+  const raiseAmount = net * raiseRate;
+  const redirectMonths = Math.max(0, Number(raiseRedirectMonths) || 0);
+
+  const raiseMonthIndex = useMemo(() => {
+    const today = startOfMonth(new Date());
+    const raise = startOfMonth(new Date(`${raiseMonth}-01T00:00:00`));
+    return Math.max(0, (raise.getFullYear() - today.getFullYear()) * 12 + (raise.getMonth() - today.getMonth()));
+  }, [raiseMonth]);
+
+  const effectiveNet = (monthIndex: number) => (monthIndex >= raiseMonthIndex ? net + raiseAmount : net);
+  const effectiveTarget = (monthIndex: number) => {
+    if (monthIndex < raiseMonthIndex) return net * 0.5;
+    if (monthIndex < raiseMonthIndex + redirectMonths) return effectiveNet(monthIndex) * 0.5;
+    return net * 0.5; // raise redirected to retirement, spend target stays at old 50%
+  };
 
   /* ---------- monthly actual out-of-pocket spending ---------- */
   const monthRows = useMemo(() => {
