@@ -79,10 +79,36 @@ const Recurring = () => {
     business_category_id: '',
   });
 
-  const totalIncome = useMemo(() => {
-    if (!recurring) return 0;
-    return recurring.filter(r => Number(r.amount) > 0).reduce((s, r) => s + Number(r.amount), 0);
-  }, [recurring]);
+  // Income this month: monthly/weekly/biweekly income always counts; quarterly and
+  // yearly income (e.g. quarterly consulting fees) only counts in the month it's paid.
+  const incomeRows = useMemo(() => (recurring || []).filter(r => Number(r.amount) > 0), [recurring]);
+
+  const thisMonthKey = format(new Date(), 'yyyy-MM');
+
+  const { totalIncome, periodicIncomeThisMonth, periodicIncomeUpcoming } = useMemo(() => {
+    let monthly = 0;
+    let periodicNow = 0;
+    const upcoming: { merchant: string; amount: number; date: string }[] = [];
+    for (const r of incomeRows) {
+      const amt = Number(r.amount);
+      const freq = r.frequency || 'monthly';
+      if (freq === 'quarterly' || freq === 'yearly') {
+        const due = r.next_due_date ? String(r.next_due_date).slice(0, 7) : null;
+        if (due === thisMonthKey) {
+          periodicNow += amt;
+          monthly += amt;
+        } else if (r.next_due_date) {
+          upcoming.push({ merchant: r.merchant, amount: amt, date: String(r.next_due_date) });
+        }
+        continue;
+      }
+      if (freq === 'weekly') monthly += amt * 4.33;
+      else if (freq === 'biweekly') monthly += amt * 2.167;
+      else monthly += amt;
+    }
+    return { totalIncome: monthly, periodicIncomeThisMonth: periodicNow, periodicIncomeUpcoming: upcoming };
+  }, [incomeRows, thisMonthKey]);
+
 
   const totalExpenses = useMemo(() => {
     if (!recurring) return 0;
@@ -266,9 +292,17 @@ const Recurring = () => {
               <ArrowDownLeft className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-500" />
             </div>
             <div className="min-w-0">
-              <p className="text-[11px] sm:text-xs text-muted-foreground">Recurring Income</p>
+              <p className="text-[11px] sm:text-xs text-muted-foreground">Income This Month</p>
               <p className="text-base sm:text-lg font-bold truncate">{formatAmount(totalIncome)}</p>
+              {periodicIncomeThisMonth > 0 ? (
+                <p className="text-[10px] sm:text-[11px] text-muted-foreground truncate">Includes {formatAmount(periodicIncomeThisMonth)} paid this month</p>
+              ) : periodicIncomeUpcoming.length > 0 ? (
+                <p className="text-[10px] sm:text-[11px] text-muted-foreground truncate">
+                  Next {periodicIncomeUpcoming[0].merchant} {formatAmount(periodicIncomeUpcoming[0].amount)} on {format(new Date(periodicIncomeUpcoming[0].date + 'T00:00:00'), 'MMM d')}
+                </p>
+              ) : null}
             </div>
+
           </CardContent>
         </Card>
         <Card>
