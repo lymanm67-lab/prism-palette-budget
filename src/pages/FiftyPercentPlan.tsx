@@ -259,11 +259,12 @@ const FiftyPercentPlan = () => {
   const usedPct = net > 0 ? Math.round(((fixedNow + variableNow) / net) * 100) : 0;
 
   const dropOffs = useMemo(() => {
+    const horizon = addMonths(planStartDate, 12);
     return commitments
-      .filter(c => c.endDate && c.endDate <= addMonths(new Date(), 12))
+      .filter(c => c.endDate && c.endDate <= horizon)
       .sort((a, b) => (a.endDate!.getTime() - b.endDate!.getTime()))
       .map(c => ({ ...c, when: format(c.endDate!, 'MMM yyyy') }));
-  }, [commitments]);
+  }, [commitments, planStartDate]);
 
   const chartData = plan.map(p => ({
     label: p.label,
