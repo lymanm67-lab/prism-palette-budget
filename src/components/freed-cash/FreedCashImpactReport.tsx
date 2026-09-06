@@ -65,8 +65,8 @@ const CHART_COLORS = [
 ];
 
 const SECTIONS = [
+  { id: 'fc-narrative', label: 'The story', icon: FileText },
   { id: 'fc-summary', label: 'Summary', icon: BarChart3 },
-  { id: 'fc-narrative', label: 'Narrative', icon: FileText },
   { id: 'fc-charts', label: 'Charts', icon: BarChart3 },
   { id: 'fc-tables', label: 'Tables', icon: TableIcon },
   { id: 'fc-scenarios', label: 'Scenarios', icon: Target },
