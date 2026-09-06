@@ -11,7 +11,9 @@ import {
   durabilityLabel,
 } from '@/hooks/use-freed-cash';
 import { keepScenarios, winRanking } from '@/lib/freed-cash/wins';
-import { formatCurrency } from '@/lib/utils-currency';
+
+const formatCurrency = (n: number) =>
+  n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
 
 interface Props {
   sources: FreedCashSource[];
