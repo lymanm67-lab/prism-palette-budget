@@ -308,6 +308,18 @@ const FiftyPercentPlan = () => {
           />
         </div>
         <div className="w-36">
+          <Label htmlFor="planStart" className="text-xs text-muted-foreground">Plan starts</Label>
+          <Input
+            id="planStart"
+            type="month"
+            value={planStart}
+            onChange={e => {
+              setPlanStart(e.target.value);
+              localStorage.setItem('prism-plan-start', e.target.value);
+            }}
+          />
+        </div>
+        <div className="w-36">
           <Label htmlFor="raiseMonth" className="text-xs text-muted-foreground">Raise month</Label>
           <Input
             id="raiseMonth"
