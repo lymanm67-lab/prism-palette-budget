@@ -44,7 +44,7 @@ const Recurring = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [editTarget, setEditTarget] = useState<any | null>(null);
-  const [editForm, setEditForm] = useState({ merchant: '', amount: '', frequency: 'monthly', account_id: '', category_id: '', next_due_date: '', type: 'expense' as 'income' | 'expense', autopay_enabled: false, reminder_days: 3, biller_url: '', business_split_pct: 0, business_category_id: '' });
+  const [editForm, setEditForm] = useState({ merchant: '', amount: '', frequency: 'monthly', account_id: '', category_id: '', next_due_date: '', type: 'expense' as 'income' | 'expense', autopay_enabled: false, reminder_days: 3, biller_url: '', business_split_pct: 0, business_category_id: '', end_date: '', pause_from: '', pause_count: 1 });
 
   const isBusiness = (r: any) => {
     const group = r.categories?.category_groups;
@@ -118,6 +118,7 @@ const Recurring = () => {
 
   const openEdit = (r: any) => {
     setEditTarget(r);
+    const pauses = ((r.pause_months || []) as string[]).slice().sort();
     setEditForm({
       merchant: r.merchant || '',
       amount: String(Math.abs(Number(r.amount))),
@@ -131,12 +132,24 @@ const Recurring = () => {
       biller_url: r.biller_url || '',
       business_split_pct: Number(r.business_split_pct || 0),
       business_category_id: r.business_category_id || '',
+      end_date: r.end_date ? String(r.end_date).slice(0, 10) : '',
+      pause_from: pauses[0] || '',
+      pause_count: pauses.length || 1,
     });
   };
 
   const handleEdit = () => {
     if (!editTarget) return;
     const amt = Math.abs(parseFloat(editForm.amount));
+    let pauseMonths: string[] = [];
+    if (editForm.pause_from) {
+      const [y, m] = editForm.pause_from.split('-').map(Number);
+      const count = Math.max(1, Math.min(36, Number(editForm.pause_count) || 1));
+      for (let i = 0; i < count; i++) {
+        const d = new Date(y, (m - 1) + i, 1);
+        pauseMonths.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+      }
+    }
     updateRecurring.mutate({
       id: editTarget.id,
       merchant: editForm.merchant,
@@ -150,10 +163,13 @@ const Recurring = () => {
       biller_url: editForm.biller_url || null,
       business_split_pct: editForm.business_split_pct,
       business_category_id: editForm.business_category_id || null,
-    }, {
+      end_date: editForm.end_date || null,
+      pause_months: pauseMonths,
+    } as any, {
       onSuccess: () => { setEditTarget(null); toast.success('Updated!'); },
     });
   };
+
 
   const toggleAutopay = (r: any) => {
     updateRecurring.mutate({ id: r.id, autopay_enabled: !r.autopay_enabled }, {
@@ -316,6 +332,12 @@ const Recurring = () => {
                             <Building2 className="h-2.5 w-2.5" /> Split {Math.round(Number(r.business_split_pct))}% biz
                           </Badge>
                         )}
+                        {((r as any).pause_months || []).length > 0 && (
+                          <Badge variant="outline" className="text-[10px] px-1 py-0 border-amber-500/40 text-amber-600 dark:text-amber-400">
+                            Paused {((r as any).pause_months as string[]).slice().sort().map(m => format(parseISO(`${m}-01`), 'MMM')).join(', ')}
+                          </Badge>
+                        )}
+
                         <span className="hidden sm:inline">{r.accounts && (r.accounts as any).name}</span>
                       </div>
                     </div>
@@ -569,10 +591,38 @@ const Recurring = () => {
                 />
               </div>
             </div>
-            <div className="space-y-2">
-              <Label>Next Due Date</Label>
-              <Input type="date" value={editForm.next_due_date} onChange={e => setEditForm(f => ({ ...f, next_due_date: e.target.value }))} />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Next Due Date</Label>
+                <Input type="date" value={editForm.next_due_date} onChange={e => setEditForm(f => ({ ...f, next_due_date: e.target.value }))} />
+              </div>
+              <div className="space-y-2">
+                <Label>Last payment date (optional)</Label>
+                <Input type="date" value={editForm.end_date} onChange={e => setEditForm(f => ({ ...f, end_date: e.target.value }))} />
+              </div>
             </div>
+            <div className="space-y-3 rounded-lg border border-border/40 bg-muted/20 p-3">
+              <Label className="text-sm">Pause this payment</Label>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Paused from</Label>
+                  <Input type="month" value={editForm.pause_from} onChange={e => setEditForm(f => ({ ...f, pause_from: e.target.value }))} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">How many months</Label>
+                  <Input type="number" min={1} max={36} value={editForm.pause_count} onChange={e => setEditForm(f => ({ ...f, pause_count: Math.max(1, Math.min(36, parseInt(e.target.value) || 1)) }))} />
+                </div>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                {editForm.pause_from
+                  ? `Skipped for ${editForm.pause_count} month${editForm.pause_count > 1 ? 's' : ''} starting ${editForm.pause_from}, then it resumes. Paused months count as $0 in your plans and leftover totals.`
+                  : 'Leave blank if this payment is not paused. Paused months count as $0 in your plans and leftover totals.'}
+              </p>
+              {editForm.pause_from && (
+                <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setEditForm(f => ({ ...f, pause_from: '', pause_count: 1 }))}>Clear pause</Button>
+              )}
+            </div>
+
             {editForm.type === 'expense' && (
               <div className="space-y-3 rounded-lg border border-border/40 bg-muted/20 p-3">
                 <div className="flex items-center justify-between gap-3">
