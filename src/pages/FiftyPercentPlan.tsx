@@ -161,25 +161,30 @@ const FiftyPercentPlan = () => {
   const plan = useMemo(() => {
     const rows: {
       key: string; label: string; fixed: number; variable: number; total: number;
-      target: number; ends: string[];
+      target: number; net: number; raiseToRetirement: number; ends: string[];
     }[] = [];
     for (let i = 0; i < 12; i++) {
       const d = startOfMonth(addMonths(new Date(), i));
       const active = commitments.filter(c => !c.endDate || c.endDate >= d);
       const ended = commitments.filter(c => c.endDate && c.endDate < d && c.endDate >= startOfMonth(addMonths(new Date(), i - 1)));
       const fixed = active.reduce((s, c) => s + c.monthly, 0);
+      const t = effectiveTarget(i);
+      const n = effectiveNet(i);
+      const redirecting = i >= raiseMonthIndex + redirectMonths;
       rows.push({
         key: format(d, 'yyyy-MM'),
         label: format(d, 'MMM yy'),
         fixed,
         variable: variableNow,
         total: fixed + variableNow,
-        target,
+        target: t,
+        net: n,
+        raiseToRetirement: redirecting ? raiseAmount : 0,
         ends: ended.map(c => c.name),
       });
     }
     return rows;
-  }, [commitments, variableNow, target]);
+  }, [commitments, variableNow, raiseMonthIndex, redirectMonths, raiseAmount]);
 
   const firstHit = plan.find(p => p.total <= target);
   const endMonth = plan[plan.length - 1];
