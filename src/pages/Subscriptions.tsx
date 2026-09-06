@@ -93,7 +93,9 @@ const Subscriptions = () => {
   const [editSub, setEditSub] = useState<any>(null);
   const [selectedSubId, setSelectedSubId] = useState<string | null>(null);
   const [reallocationSub, setReallocationSub] = useState<any>(null);
-  const [viewMode, setViewMode] = useState<'personal' | 'business'>('personal');
+  const [viewMode, setViewMode] = useState<'all' | 'personal' | 'business'>('all');
+  const [kindMode, setKindMode] = useState<'all' | 'subscriptions' | 'bills'>('all');
+  const [netPay, setNetPay] = useState<string>(() => localStorage.getItem('prism-net-pay-monthly') || '4250.02');
 
   const NON_SUB_KEYWORDS = ['rent', 'mortgage', 'insurance', 'utilit', 'electric', 'gas', 'water', 'sewer', 'trash', 'debt', 'loan', 'transfer', 'payment'];
 
@@ -115,27 +117,56 @@ const Subscriptions = () => {
     return pct > 0 && pct < 100;
   };
 
-  const filteredSubs = useMemo(() => {
-    return (subscriptions || []).filter(s => {
-      if (isSplit(s)) return true; // splits appear in both Personal and Business views
-      return viewMode === 'business' ? isBusiness(s) : !isBusiness(s);
-    });
-  }, [subscriptions, viewMode]);
+  const monthlyOf = (s: any) => {
+    const a = Number(s.average_amount || 0);
+    if (s.frequency === 'weekly') return a * 4.33;
+    if (s.frequency === 'biweekly') return a * 2.17;
+    if (s.frequency === 'quarterly') return a / 3;
+    if (s.frequency === 'yearly') return a / 12;
+    return a;
+  };
+
+  const matchesScope = (s: any) => {
+    if (viewMode === 'all') return true;
+    if (isSplit(s)) return true; // splits appear in both Personal and Business views
+    return viewMode === 'business' ? isBusiness(s) : !isBusiness(s);
+  };
+  const matchesKind = (s: any) => {
+    if (kindMode === 'all') return true;
+    return kindMode === 'bills' ? isNonSubscription(s) : !isNonSubscription(s);
+  };
+
+  const filteredSubs = useMemo(
+    () => (subscriptions || []).filter(s => matchesScope(s) && matchesKind(s)),
+    [subscriptions, viewMode, kindMode],
+  );
 
   const activeSubs = useMemo(() => filteredSubs.filter(s => !s.is_cancelled), [filteredSubs]);
   const cancelledSubs = useMemo(() => filteredSubs.filter(s => s.is_cancelled), [filteredSubs]);
   const selectedSub = useMemo(() => activeSubs.find(s => s.id === selectedSubId), [activeSubs, selectedSubId]);
 
-  const totalMonthly = useMemo(() => {
-    return activeSubs.filter(s => !isNonSubscription(s)).reduce((sum, s) => {
-      if (s.frequency === 'monthly') return sum + s.average_amount;
-      if (s.frequency === 'weekly') return sum + s.average_amount * 4.33;
-      if (s.frequency === 'biweekly') return sum + s.average_amount * 2.17;
-      if (s.frequency === 'quarterly') return sum + s.average_amount / 3;
-      if (s.frequency === 'yearly') return sum + s.average_amount / 12;
-      return sum;
-    }, 0);
-  }, [activeSubs]);
+  const totalMonthly = useMemo(
+    () => activeSubs.filter(s => !isNonSubscription(s)).reduce((sum, s) => sum + monthlyOf(s), 0),
+    [activeSubs],
+  );
+  const billsMonthly = useMemo(
+    () => activeSubs.filter(s => isNonSubscription(s)).reduce((sum, s) => sum + monthlyOf(s), 0),
+    [activeSubs],
+  );
+  const committedMonthly = totalMonthly + billsMonthly;
+
+  /* Net pay breakdown — always uses everything active, personal-side only, so the
+     leftover number reflects what really leaves the paycheck. */
+  const payScoped = useMemo(
+    () => (subscriptions || []).filter(s => !s.is_cancelled && (isSplit(s) || !isBusiness(s))),
+    [subscriptions],
+  );
+  const paySubs = useMemo(() => payScoped.filter(s => !isNonSubscription(s)).reduce((sum, s) => sum + monthlyOf(s), 0), [payScoped]);
+  const payBills = useMemo(() => payScoped.filter(s => isNonSubscription(s)).reduce((sum, s) => sum + monthlyOf(s), 0), [payScoped]);
+  const payCommitted = paySubs + payBills;
+  const netPayNum = Number(netPay) || 0;
+  const leftOver = netPayNum - payCommitted;
+  const usedPct = netPayNum > 0 ? Math.min(100, Math.round((payCommitted / netPayNum) * 100)) : 0;
 
   const totalYearly = totalMonthly * 12;
   const subPercent = totalExpenses > 0 ? Math.round((totalMonthly / totalExpenses) * 100) : 0;
@@ -243,26 +274,44 @@ const Subscriptions = () => {
 
           {/* Mode toggle + actions — compact row */}
           <div className="flex items-center gap-2 flex-wrap">
-            {/* Personal / Business toggle */}
+            {/* All / Personal / Business toggle */}
             <div className="flex items-center rounded-lg border border-border bg-muted/30 p-0.5">
-              <button
-                onClick={() => setViewMode('personal')}
-                className={cn(
-                  'flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-all',
-                  viewMode === 'personal' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
-                )}
-              >
-                <User className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Personal</span>
-              </button>
-              <button
-                onClick={() => setViewMode('business')}
-                className={cn(
-                  'flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-all',
-                  viewMode === 'business' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
-                )}
-              >
-                <Building2 className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Business</span>
-              </button>
+              {([
+                { key: 'all', label: 'All', Icon: PieChart },
+                { key: 'personal', label: 'Personal', Icon: User },
+                { key: 'business', label: 'Business', Icon: Building2 },
+              ] as const).map(({ key, label, Icon }) => (
+                <button
+                  key={key}
+                  onClick={() => setViewMode(key)}
+                  className={cn(
+                    'flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-all',
+                    viewMode === key ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  <Icon className="h-3.5 w-3.5" /> <span className="hidden sm:inline">{label}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Everything / Subscriptions / Recurring bills toggle */}
+            <div className="flex items-center rounded-lg border border-border bg-muted/30 p-0.5">
+              {([
+                { key: 'all', label: 'Everything' },
+                { key: 'subscriptions', label: 'Subscriptions' },
+                { key: 'bills', label: 'Recurring bills' },
+              ] as const).map(({ key, label }) => (
+                <button
+                  key={key}
+                  onClick={() => setKindMode(key)}
+                  className={cn(
+                    'rounded-md px-2.5 py-1 text-xs font-medium transition-all',
+                    kindMode === key ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
             </div>
 
             {/* Icon action buttons with tooltips */}
@@ -422,6 +471,61 @@ const Subscriptions = () => {
           </Card>
         </motion.div>
       </div>
+
+      {/* What comes out of net pay */}
+      <motion.div variants={item}>
+        <Card className="prism-card-shine border-border/50">
+          <CardHeader className="pb-2">
+            <CardTitle className="font-display text-base flex flex-col sm:flex-row sm:items-center gap-2">
+              <span>What comes out of net pay</span>
+              <div className="flex items-center gap-2 sm:ml-auto">
+                <Label htmlFor="netpay" className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Monthly net pay</Label>
+                <Input
+                  id="netpay"
+                  type="number"
+                  step="0.01"
+                  value={netPay}
+                  onChange={(e) => { setNetPay(e.target.value); localStorage.setItem('prism-net-pay-monthly', e.target.value); }}
+                  className="h-8 w-28 text-sm"
+                />
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="rounded-xl border border-border/30 p-3">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Recurring bills</p>
+                <p className="font-display text-lg font-bold text-prism-orange">{formatCurrency(payBills)}</p>
+              </div>
+              <div className="rounded-xl border border-border/30 p-3">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Subscriptions</p>
+                <p className="font-display text-lg font-bold text-prism-violet">{formatCurrency(paySubs)}</p>
+              </div>
+              <div className="rounded-xl border border-border/30 p-3">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Total committed</p>
+                <p className="font-display text-lg font-bold text-prism-rose">{formatCurrency(payCommitted)}</p>
+              </div>
+              <div className="rounded-xl border border-border/30 p-3">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Left over</p>
+                <p className={cn('font-display text-lg font-bold', leftOver >= 0 ? 'text-prism-teal' : 'text-destructive')}>
+                  {formatCurrency(leftOver)}
+                </p>
+              </div>
+            </div>
+            <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+              <div
+                className={cn('h-full rounded-full', leftOver >= 0 ? 'bg-prism-teal' : 'bg-destructive')}
+                style={{ width: `${usedPct}%` }}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {usedPct}% of {formatCurrency(netPayNum)} net pay is already committed to recurring bills and subscriptions.
+              Business-only items are left out of this breakdown; split items are included.
+            </p>
+          </CardContent>
+        </Card>
+      </motion.div>
+
 
       {/* Explanation */}
       <motion.div variants={item} className="rounded-lg border border-border/50 bg-muted/30 px-4 py-3">
