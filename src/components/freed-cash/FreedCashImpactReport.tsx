@@ -442,6 +442,25 @@ export function FreedCashImpactReport({ sources, redirects }: Props) {
           : 'Colour mode: charts and highlights print in full colour. Switch on ink saver for a black-and-white copy.'}
       </p>
 
+      {/* ----------------------------------------------------------- narrative */}
+      <section id="fc-narrative" className="scroll-mt-20">
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">The story in plain English</CardTitle>
+            <p className="mt-1 text-xs text-muted-foreground">
+              A written summary of what your freed cash has done, and what still needs attention.
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {narrative.map((line, i) => (
+              <p key={i} className="text-sm leading-relaxed text-muted-foreground">
+                {line}
+              </p>
+            ))}
+          </CardContent>
+        </Card>
+      </section>
+
       {/* ------------------------------------------------------------- summary */}
       <section id="fc-summary" className="scroll-mt-20 space-y-4">
         <Card>
@@ -464,24 +483,6 @@ export function FreedCashImpactReport({ sources, redirects }: Props) {
         </Card>
       </section>
 
-      {/* ----------------------------------------------------------- narrative */}
-      <section id="fc-narrative" className="scroll-mt-20">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">The story in plain English</CardTitle>
-            <p className="mt-1 text-xs text-muted-foreground">
-              A written summary of what your freed cash has done, and what still needs attention.
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {narrative.map((line, i) => (
-              <p key={i} className="text-sm leading-relaxed text-muted-foreground">
-                {line}
-              </p>
-            ))}
-          </CardContent>
-        </Card>
-      </section>
 
       {/* -------------------------------------------------------------- charts */}
       <section id="fc-charts" className="scroll-mt-20 space-y-4">
