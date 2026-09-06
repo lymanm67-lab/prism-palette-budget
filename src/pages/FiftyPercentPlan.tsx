@@ -239,7 +239,41 @@ const FiftyPercentPlan = () => {
             }}
           />
         </div>
-        <Badge variant="outline" className="gap-1"><Target className="h-3 w-3" /> Target {formatCurrency(target)} / month</Badge>
+        <div className="w-36">
+          <Label htmlFor="raiseMonth" className="text-xs text-muted-foreground">Raise month</Label>
+          <Input
+            id="raiseMonth"
+            type="month"
+            value={raiseMonth}
+            onChange={e => {
+              setRaiseMonth(e.target.value);
+              localStorage.setItem('prism-raise-month', e.target.value);
+            }}
+          />
+        </div>
+        <div className="w-28">
+          <Label htmlFor="raisePct" className="text-xs text-muted-foreground">Raise %</Label>
+          <Input
+            id="raisePct"
+            value={raisePct}
+            onChange={e => {
+              setRaisePct(e.target.value);
+              localStorage.setItem('prism-raise-pct', e.target.value);
+            }}
+          />
+        </div>
+        <div className="w-36">
+          <Label htmlFor="redirectMonths" className="text-xs text-muted-foreground">Redirect after N mo</Label>
+          <Input
+            id="redirectMonths"
+            value={raiseRedirectMonths}
+            onChange={e => {
+              setRaiseRedirectMonths(e.target.value);
+              localStorage.setItem('prism-raise-redirect-months', e.target.value);
+            }}
+          />
+        </div>
+        <Badge variant="outline" className="gap-1"><Target className="h-3 w-3" /> Target {formatCurrency(net * 0.5)} / month</Badge>
         <Badge variant="outline" className="gap-1"><ShoppingCart className="h-3 w-3" /> Groceries excluded (reimbursed)</Badge>
         <Badge variant="outline" className="gap-1"><HeartPulse className="h-3 w-3" /> Medical excluded (HSA)</Badge>
       </div>
