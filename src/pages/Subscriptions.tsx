@@ -595,6 +595,10 @@ const Subscriptions = () => {
               {payBusinessReimbursable > 0 && (
                 <> That includes <span className="font-semibold text-foreground">{formatCurrency(payBusinessReimbursable)}/mo</span> of business-only bills and subscriptions, which are paid from net pay and reimbursed quarterly from consulting fees.</>
               )}
+              {savingsTransfers > 0 && (
+                <> Credit-builder savings accounts ({formatCurrency(savingsTransfers)}/mo) are treated as money moved to savings, not spending, so they are left out of this total.</>
+              )}
+
             </p>
           </CardContent>
         </Card>
