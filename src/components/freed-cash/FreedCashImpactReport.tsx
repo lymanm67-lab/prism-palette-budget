@@ -211,7 +211,12 @@ export function FreedCashImpactReport({ sources, redirects }: Props) {
     tables: [
       {
         title: 'Biggest wins',
-        columns: ['Expense', 'Before', 'After', 'Freed / mo'],
+        columns: [
+          { label: 'Expense' },
+          { label: 'Before', align: 'right' as const },
+          { label: 'After', align: 'right' as const },
+          { label: 'Freed / mo', align: 'right' as const },
+        ],
         rows: perSource
           .slice(0, 8)
           .map((s) => [s.name, money2(s.before), money2(s.after), money2(s.saved)]),
