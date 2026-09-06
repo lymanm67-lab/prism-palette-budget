@@ -274,26 +274,44 @@ const Subscriptions = () => {
 
           {/* Mode toggle + actions — compact row */}
           <div className="flex items-center gap-2 flex-wrap">
-            {/* Personal / Business toggle */}
+            {/* All / Personal / Business toggle */}
             <div className="flex items-center rounded-lg border border-border bg-muted/30 p-0.5">
-              <button
-                onClick={() => setViewMode('personal')}
-                className={cn(
-                  'flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-all',
-                  viewMode === 'personal' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
-                )}
-              >
-                <User className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Personal</span>
-              </button>
-              <button
-                onClick={() => setViewMode('business')}
-                className={cn(
-                  'flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-all',
-                  viewMode === 'business' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
-                )}
-              >
-                <Building2 className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Business</span>
-              </button>
+              {([
+                { key: 'all', label: 'All', Icon: PieChart },
+                { key: 'personal', label: 'Personal', Icon: User },
+                { key: 'business', label: 'Business', Icon: Building2 },
+              ] as const).map(({ key, label, Icon }) => (
+                <button
+                  key={key}
+                  onClick={() => setViewMode(key)}
+                  className={cn(
+                    'flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-all',
+                    viewMode === key ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  <Icon className="h-3.5 w-3.5" /> <span className="hidden sm:inline">{label}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Everything / Subscriptions / Recurring bills toggle */}
+            <div className="flex items-center rounded-lg border border-border bg-muted/30 p-0.5">
+              {([
+                { key: 'all', label: 'Everything' },
+                { key: 'subscriptions', label: 'Subscriptions' },
+                { key: 'bills', label: 'Recurring bills' },
+              ] as const).map(({ key, label }) => (
+                <button
+                  key={key}
+                  onClick={() => setKindMode(key)}
+                  className={cn(
+                    'rounded-md px-2.5 py-1 text-xs font-medium transition-all',
+                    kindMode === key ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
             </div>
 
             {/* Icon action buttons with tooltips */}
