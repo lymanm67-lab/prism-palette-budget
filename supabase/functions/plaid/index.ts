@@ -479,7 +479,8 @@ Deno.serve(async (req) => {
           const { data: dbHouseholdAccounts } = await serviceSupabase
             .from('accounts')
             .select('id, name, institution, provider_account_id')
-            .eq('household_id', household_id);
+            .eq('household_id', household_id)
+            .is('deleted_at', null);
 
           for (const acc of plaidAccounts) {
             const displayName = acc.name || acc.official_name || '';
@@ -503,7 +504,7 @@ Deno.serve(async (req) => {
                 balance: acc.balances?.current || 0,
                 last_synced_at: new Date().toISOString(),
               };
-              if (!match.provider_account_id) patch.provider_account_id = acc.account_id;
+              if (match.provider_account_id !== acc.account_id) patch.provider_account_id = acc.account_id;
               const { error: updateErr } = await serviceSupabase
                 .from('accounts')
                 .update(patch)
