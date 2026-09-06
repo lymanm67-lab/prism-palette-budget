@@ -79,10 +79,36 @@ const Recurring = () => {
     business_category_id: '',
   });
 
-  const totalIncome = useMemo(() => {
-    if (!recurring) return 0;
-    return recurring.filter(r => Number(r.amount) > 0).reduce((s, r) => s + Number(r.amount), 0);
-  }, [recurring]);
+  // Income this month: monthly/weekly/biweekly income always counts; quarterly and
+  // yearly income (e.g. quarterly consulting fees) only counts in the month it's paid.
+  const incomeRows = useMemo(() => (recurring || []).filter(r => Number(r.amount) > 0), [recurring]);
+
+  const thisMonthKey = format(new Date(), 'yyyy-MM');
+
+  const { totalIncome, periodicIncomeThisMonth, periodicIncomeUpcoming } = useMemo(() => {
+    let monthly = 0;
+    let periodicNow = 0;
+    const upcoming: { merchant: string; amount: number; date: string }[] = [];
+    for (const r of incomeRows) {
+      const amt = Number(r.amount);
+      const freq = r.frequency || 'monthly';
+      if (freq === 'quarterly' || freq === 'yearly') {
+        const due = r.next_due_date ? String(r.next_due_date).slice(0, 7) : null;
+        if (due === thisMonthKey) {
+          periodicNow += amt;
+          monthly += amt;
+        } else if (r.next_due_date) {
+          upcoming.push({ merchant: r.merchant, amount: amt, date: String(r.next_due_date) });
+        }
+        continue;
+      }
+      if (freq === 'weekly') monthly += amt * 4.33;
+      else if (freq === 'biweekly') monthly += amt * 2.167;
+      else monthly += amt;
+    }
+    return { totalIncome: monthly, periodicIncomeThisMonth: periodicNow, periodicIncomeUpcoming: upcoming };
+  }, [incomeRows, thisMonthKey]);
+
 
   const totalExpenses = useMemo(() => {
     if (!recurring) return 0;
