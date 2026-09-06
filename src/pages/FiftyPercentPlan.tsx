@@ -17,6 +17,8 @@ import {
 } from 'recharts';
 import { CheckCircle2, AlertTriangle, Target, TrendingDown, HeartPulse, ShoppingCart } from 'lucide-react';
 import PageOverview from '@/components/PageOverview';
+import { cn } from '@/lib/utils';
+
 
 /* Groceries are reimbursed by spouse and medical is paid from the HSA — neither is
    out-of-pocket spending from net pay, so both are excluded from the plan. */
