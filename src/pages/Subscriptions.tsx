@@ -15,6 +15,7 @@ import {
   useSubscriptions, useDetectSubscriptions, useUpdateSubscription,
   useDeleteSubscription, useSubscriptionInsights, useScoreCancellationDifficulty,
 } from '@/hooks/use-subscriptions';
+import { useRecurringTransactions } from '@/hooks/use-recurring';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrency } from '@/hooks/use-currency';
@@ -73,6 +74,7 @@ const DONUT_COLORS = ['hsl(var(--prism-violet))', 'hsl(var(--prism-teal) / 0.2)'
 
 const Subscriptions = () => {
   const { data: subscriptions, isLoading } = useSubscriptions();
+  const { data: recurringTransactions } = useRecurringTransactions();
   const { data: totalExpenses = 0 } = useMonthlyExpenses();
   const detectSubs = useDetectSubscriptions();
   const updateSub = useUpdateSubscription();
@@ -126,6 +128,15 @@ const Subscriptions = () => {
     return a;
   };
 
+  const monthlyRecurring = (bill: any) => {
+    const amount = Math.abs(Number(bill.amount || 0));
+    if (bill.frequency === 'weekly') return amount * 4.33;
+    if (bill.frequency === 'biweekly') return amount * 2.17;
+    if (bill.frequency === 'quarterly') return amount / 3;
+    if (bill.frequency === 'yearly' || bill.frequency === 'annual') return amount / 12;
+    return amount;
+  };
+
   const matchesScope = (s: any) => {
     if (viewMode === 'all') return true;
     if (isSplit(s)) return true; // splits appear in both Personal and Business views
@@ -162,10 +173,19 @@ const Subscriptions = () => {
     [subscriptions],
   );
   const paySubs = useMemo(() => payScoped.filter(s => !isNonSubscription(s)).reduce((sum, s) => sum + monthlyOf(s), 0), [payScoped]);
-  const payBills = useMemo(() => payScoped.filter(s => isNonSubscription(s)).reduce((sum, s) => sum + monthlyOf(s), 0), [payScoped]);
+  const activeRecurringBills = useMemo(
+    () => (recurringTransactions || []).filter(bill => bill.is_active !== false && Number(bill.amount || 0) < 0),
+    [recurringTransactions],
+  );
+  const payBills = useMemo(
+    () => activeRecurringBills.reduce((sum, bill) => sum + monthlyRecurring(bill), 0),
+    [activeRecurringBills],
+  );
   const payBusinessReimbursable = useMemo(
-    () => payScoped.filter(s => isBusiness(s) && !isSplit(s)).reduce((sum, s) => sum + monthlyOf(s), 0),
-    [payScoped],
+    () => activeRecurringBills
+      .filter(bill => isBusiness(bill) && !isSplit(bill))
+      .reduce((sum, bill) => sum + monthlyRecurring(bill), 0),
+    [activeRecurringBills],
   );
   const payCommitted = paySubs + payBills;
   const netPayNum = Number(netPay) || 0;
