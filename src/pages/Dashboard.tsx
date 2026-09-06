@@ -15,6 +15,8 @@ import CombinedLegacyScoreCard from '@/components/legacy/CombinedLegacyScoreCard
 
 import SpendingAnomalyAlert from '@/components/SpendingAnomalyAlert';
 import { SafeToSpendHero } from '@/components/SafeToSpendHero';
+import { CashLeftOverCard } from '@/components/CashLeftOverCard';
+
 import { StsEquationView } from '@/components/StsEquationView';
 import { SavingsImpactCounter } from '@/components/SavingsImpactCounter';
 import { CashFlowForecastChart } from '@/components/CashFlowForecastChart';
