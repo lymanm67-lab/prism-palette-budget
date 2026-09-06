@@ -171,6 +171,7 @@ const FiftyPercentPlan = () => {
         name: s.merchant || 'Subscription',
         monthly: monthlyOfSub(s),
         endDate: s.end_date ? new Date(`${String(s.end_date).slice(0, 10)}T00:00:00`) : null,
+        pauseMonths: (s.pause_months || []) as string[],
       }));
     const bills = (recurring || [])
       .filter((b: any) => b.is_active !== false && Number(b.amount || 0) < 0)
@@ -179,6 +180,7 @@ const FiftyPercentPlan = () => {
         name: b.merchant || b.categories?.name || 'Recurring bill',
         monthly: monthlyOfBill(b),
         endDate: b.end_date ? new Date(`${String(b.end_date).slice(0, 10)}T00:00:00`) : null,
+        pauseMonths: (b.pause_months || []) as string[],
       }));
     const existing = [...subs, ...bills];
     const horizon = addMonths(new Date(), 12);
@@ -197,6 +199,7 @@ const FiftyPercentPlan = () => {
         name: d.name || 'Debt payment',
         monthly: Number(d.minimum_payment || 0),
         endDate: d.target_payoff_date ? new Date(`${String(d.target_payoff_date).slice(0, 10)}T00:00:00`) : null,
+        pauseMonths: [] as string[],
       }))
       .filter(d =>
         d.monthly > 0 &&
@@ -207,7 +210,13 @@ const FiftyPercentPlan = () => {
     return [...subs, ...bills, ...debts].filter(c => c.monthly > 0);
   }, [subscriptions, recurring, shortDebts]);
 
-  const fixedNow = commitments.reduce((s, c) => s + c.monthly, 0);
+  const monthKey = (d: Date) => format(d, 'yyyy-MM');
+  const fixedForMonth = (d: Date) =>
+    commitments
+      .filter(c => !c.endDate || c.endDate >= d)
+      .reduce((s, c) => s + (c.pauseMonths.includes(monthKey(d)) ? 0 : c.monthly), 0);
+
+  const fixedNow = fixedForMonth(startOfMonth(new Date()));
   const variableNow = Math.max(0, recentAvg - fixedNow);
 
   /* ---------- 12-month forward plan ---------- */
@@ -220,7 +229,7 @@ const FiftyPercentPlan = () => {
       const d = startOfMonth(addMonths(new Date(), i));
       const active = commitments.filter(c => !c.endDate || c.endDate >= d);
       const ended = commitments.filter(c => c.endDate && c.endDate < d && c.endDate >= startOfMonth(addMonths(new Date(), i - 1)));
-      const fixed = active.reduce((s, c) => s + c.monthly, 0);
+      const fixed = active.reduce((s, c) => s + (c.pauseMonths.includes(monthKey(d)) ? 0 : c.monthly), 0);
       const t = effectiveTarget(i);
       const n = effectiveNet(i);
       const redirecting = i >= raiseMonthIndex + redirectMonths;
