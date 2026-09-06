@@ -230,9 +230,10 @@ const FiftyPercentPlan = () => {
       target: number; net: number; raiseToRetirement: number; ends: string[];
     }[] = [];
     for (let i = 0; i < 12; i++) {
-      const d = startOfMonth(addMonths(new Date(), i));
+      const d = startOfMonth(addMonths(planStartDate, i));
+      const prev = startOfMonth(addMonths(planStartDate, i - 1));
       const active = commitments.filter(c => !c.endDate || c.endDate >= d);
-      const ended = commitments.filter(c => c.endDate && c.endDate < d && c.endDate >= startOfMonth(addMonths(new Date(), i - 1)));
+      const ended = commitments.filter(c => c.endDate && c.endDate < d && c.endDate >= prev);
       const fixed = active.reduce((s, c) => s + (c.pauseMonths.includes(monthKey(d)) ? 0 : c.monthly), 0);
       const t = effectiveTarget(i);
       const n = effectiveNet(i);
@@ -250,7 +251,7 @@ const FiftyPercentPlan = () => {
       });
     }
     return rows;
-  }, [commitments, variableNow, raiseMonthIndex, redirectMonths, raiseAmount]);
+  }, [commitments, variableNow, raiseMonthIndex, redirectMonths, raiseAmount, planStartDate]);
 
   const firstHit = plan.find(p => p.total <= p.target);
   const endMonth = plan[plan.length - 1];
