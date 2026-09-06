@@ -431,7 +431,7 @@ export function FreedCashImpactReport({ sources, redirects }: Props) {
             <FileText className="h-3.5 w-3.5" /> {printPreview ? 'Preview on' : 'Preview page'}
           </Button>
           <PrintInfographicButton buildSpec={buildSpec} label="Infographic" size="sm" filename="freed-cash-impact" />
-          <Button size="sm" className="h-8 gap-1.5" onClick={() => window.print()}>
+          <Button size="sm" className="h-8 gap-1.5" onClick={printReport}>
             <Printer className="h-3.5 w-3.5" /> Print
           </Button>
         </CardContent>
