@@ -180,8 +180,17 @@ const FiftyPercentPlan = () => {
         monthly: monthlyOfBill(b),
         endDate: b.end_date ? new Date(`${String(b.end_date).slice(0, 10)}T00:00:00`) : null,
       }));
-    const existing = [...subs, ...bills].map(c => normName(c.name));
+    const existing = [...subs, ...bills];
     const horizon = addMonths(new Date(), 12);
+    const isDuplicate = (name: string, monthly: number) =>
+      existing.some(c => {
+        const a = normName(c.name);
+        const b = normName(name);
+        const nameMatch = a.includes(b) || b.includes(a);
+        const amountMatch = Math.abs(c.monthly - monthly) < 1;
+        // a debt already paid through a recurring bill/subscription: same name or same amount
+        return nameMatch || amountMatch;
+      });
     const debts = (shortDebts || [])
       .map((d: any) => ({
         id: `d-${d.id}`,
@@ -193,7 +202,7 @@ const FiftyPercentPlan = () => {
         d.monthly > 0 &&
         d.endDate &&
         d.endDate <= horizon &&
-        !existing.some(n => n.includes(normName(d.name)) || normName(d.name).includes(n)),
+        !isDuplicate(d.name, d.monthly),
       );
     return [...subs, ...bills, ...debts].filter(c => c.monthly > 0);
   }, [subscriptions, recurring, shortDebts]);
