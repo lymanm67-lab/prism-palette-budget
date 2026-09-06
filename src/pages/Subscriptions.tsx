@@ -586,6 +586,13 @@ const Subscriptions = () => {
         </Card>
       </motion.div>
 
+      {/* Month-by-month breakdown */}
+      <motion.div variants={item}>
+        <MonthlyLeftoverTable items={monthlyItems} netPay={netPayNum} />
+      </motion.div>
+
+
+
 
       {/* Explanation */}
       <motion.div variants={item} className="rounded-lg border border-border/50 bg-muted/30 px-4 py-3">
