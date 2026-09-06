@@ -18,6 +18,7 @@ import { LifetimeSavings } from '@/components/freed-cash/LifetimeSavings';
 import { RedirectEffectiveness } from '@/components/freed-cash/RedirectEffectiveness';
 import { ForwardLook } from '@/components/freed-cash/ForwardLook';
 import { CohortReport } from '@/components/freed-cash/CohortReport';
+import { TopWins } from '@/components/freed-cash/TopWins';
 import { PeriodReports } from '@/components/freed-cash/PeriodReports';
 
 
@@ -84,6 +85,7 @@ const GROUPS = [
       { value: 'forward', label: 'Forward look' },
       { value: 'periods', label: 'Year reports' },
       { value: 'cohorts', label: 'Cohorts' },
+      { value: 'wins', label: 'Top wins' },
       { value: 'lifetime', label: 'Lifetime' },
       { value: 'history', label: 'History' },
       { value: 'report', label: 'Report' },
@@ -207,6 +209,9 @@ export default function FreedCash() {
             </TabsContent>
             <TabsContent value="periods">
               <PeriodReports sources={list} redirects={scopedRedirects} scope={scope} />
+            </TabsContent>
+            <TabsContent value="wins">
+              <TopWins sources={list} redirects={scopedRedirects} />
             </TabsContent>
             <TabsContent value="cohorts">
               <CohortReport sources={list} />
