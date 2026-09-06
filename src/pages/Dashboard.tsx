@@ -15,6 +15,8 @@ import CombinedLegacyScoreCard from '@/components/legacy/CombinedLegacyScoreCard
 
 import SpendingAnomalyAlert from '@/components/SpendingAnomalyAlert';
 import { SafeToSpendHero } from '@/components/SafeToSpendHero';
+import { CashLeftOverCard } from '@/components/CashLeftOverCard';
+
 import { StsEquationView } from '@/components/StsEquationView';
 import { SavingsImpactCounter } from '@/components/SavingsImpactCounter';
 import { CashFlowForecastChart } from '@/components/CashFlowForecastChart';
@@ -317,6 +319,12 @@ Your Safe-to-Spend updates in real time as you add transactions, pay bills, and 
           viewMode={mode} 
         />
       </motion.div>
+
+      {/* ========== Cash left over after bills & subscriptions ========== */}
+      <motion.div variants={item}>
+        <CashLeftOverCard />
+      </motion.div>
+
 
       {/* ========== Smart Allocation (new paycheck → bucket plan) ========== */}
       <motion.div variants={item}>
