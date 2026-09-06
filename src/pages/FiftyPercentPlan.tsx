@@ -67,11 +67,40 @@ function useSpendingHistory(months = 12) {
   });
 }
 
+/* Debts that are paid off within the next year but are not mirrored as a recurring bill
+   (e.g. a small collection account) still leave net pay until their payoff date. */
+function useShortTermDebts() {
+  const { household } = useHousehold();
+  return useQuery({
+    queryKey: ['fifty-plan-short-debts', household?.id],
+    enabled: !!household,
+    queryFn: async () => {
+      const { data: plans, error: pe } = await supabase
+        .from('debt_plans')
+        .select('id')
+        .eq('household_id', household!.id);
+      if (pe) throw pe;
+      const ids = (plans || []).map((p: any) => p.id);
+      if (!ids.length) return [] as any[];
+      const { data, error } = await supabase
+        .from('debt_items')
+        .select('id, name, minimum_payment, target_payoff_date')
+        .in('plan_id', ids)
+        .not('target_payoff_date', 'is', null);
+      if (error) throw error;
+      return (data || []) as any[];
+    },
+  });
+}
+
+const normName = (s: string) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
 const FiftyPercentPlan = () => {
   const { formatCurrency } = useCurrency();
   const { data: subscriptions } = useSubscriptions();
   const { data: recurring } = useRecurringTransactions();
   const { data: history } = useSpendingHistory(12);
+  const { data: shortDebts } = useShortTermDebts();
 
   const [netPay, setNetPay] = useState<string>(() => localStorage.getItem('prism-net-pay-monthly') || '4250.02');
   const net = Number(netPay) || 0;
@@ -151,8 +180,23 @@ const FiftyPercentPlan = () => {
         monthly: monthlyOfBill(b),
         endDate: b.end_date ? new Date(`${String(b.end_date).slice(0, 10)}T00:00:00`) : null,
       }));
-    return [...subs, ...bills].filter(c => c.monthly > 0);
-  }, [subscriptions, recurring]);
+    const existing = [...subs, ...bills].map(c => normName(c.name));
+    const horizon = addMonths(new Date(), 12);
+    const debts = (shortDebts || [])
+      .map((d: any) => ({
+        id: `d-${d.id}`,
+        name: d.name || 'Debt payment',
+        monthly: Number(d.minimum_payment || 0),
+        endDate: d.target_payoff_date ? new Date(`${String(d.target_payoff_date).slice(0, 10)}T00:00:00`) : null,
+      }))
+      .filter(d =>
+        d.monthly > 0 &&
+        d.endDate &&
+        d.endDate <= horizon &&
+        !existing.some(n => n.includes(normName(d.name)) || normName(d.name).includes(n)),
+      );
+    return [...subs, ...bills, ...debts].filter(c => c.monthly > 0);
+  }, [subscriptions, recurring, shortDebts]);
 
   const fixedNow = commitments.reduce((s, c) => s + c.monthly, 0);
   const variableNow = Math.max(0, recentAvg - fixedNow);
