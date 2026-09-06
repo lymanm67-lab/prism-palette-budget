@@ -105,6 +105,11 @@ const FiftyPercentPlan = () => {
   const [netPay, setNetPay] = useState<string>(() => localStorage.getItem('prism-net-pay-monthly') || '4250.02');
   const net = Number(netPay) || 0;
 
+  /* Plan year: the 12-month window the user wants to measure against. Defaults to
+     Oct 2026 – Sep 2027 per the current goal. */
+  const [planStart, setPlanStart] = useState<string>(() => localStorage.getItem('prism-plan-start') || '2026-10');
+  const planStartDate = useMemo(() => startOfMonth(new Date(`${planStart}-01T00:00:00`)), [planStart]);
+
   /* Raise assumptions: 3% raise in July 2027, live on 50% of new pay for 3 months,
      then redirect the raise amount to retirement so the spend target reverts to old 50%. */
   const [raiseMonth, setRaiseMonth] = useState<string>(() => localStorage.getItem('prism-raise-month') || '2027-07');
@@ -115,10 +120,9 @@ const FiftyPercentPlan = () => {
   const redirectMonths = Math.max(0, Number(raiseRedirectMonths) || 0);
 
   const raiseMonthIndex = useMemo(() => {
-    const today = startOfMonth(new Date());
     const raise = startOfMonth(new Date(`${raiseMonth}-01T00:00:00`));
-    return Math.max(0, (raise.getFullYear() - today.getFullYear()) * 12 + (raise.getMonth() - today.getMonth()));
-  }, [raiseMonth]);
+    return Math.max(0, (raise.getFullYear() - planStartDate.getFullYear()) * 12 + (raise.getMonth() - planStartDate.getMonth()));
+  }, [raiseMonth, planStartDate]);
 
   const effectiveNet = (monthIndex: number) => (monthIndex >= raiseMonthIndex ? net + raiseAmount : net);
   const effectiveTarget = (monthIndex: number) => {
