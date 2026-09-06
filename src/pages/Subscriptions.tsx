@@ -524,7 +524,9 @@ const Subscriptions = () => {
             </div>
             <p className="text-xs text-muted-foreground">
               {usedPct}% of {formatCurrency(netPayNum)} net pay is already committed to recurring bills and subscriptions.
-              Business-only items are left out of this breakdown; split items are included.
+              {payBusinessReimbursable > 0 && (
+                <> That includes <span className="font-semibold text-foreground">{formatCurrency(payBusinessReimbursable)}/mo</span> of business-only bills, which are paid from net pay and reimbursed quarterly from consulting fees.</>
+              )}
             </p>
           </CardContent>
         </Card>
