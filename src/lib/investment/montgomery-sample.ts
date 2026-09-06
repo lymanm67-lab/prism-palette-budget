@@ -31,7 +31,7 @@ export async function loadMontgomerySample(householdId: string) {
     ss_invest_pct: 100,
     hsa_balance: 0,
     hsa_monthly_contribution: 366.67,
-    hsa_employer_contribution: 83.33,
+    hsa_employer_contribution: 166.67,
     hsa_invested: true,
     hsa_return_pct: 8,
     use_future_dollars: true,
