@@ -392,7 +392,25 @@ const FiftyPercentPlan = () => {
         <Badge variant="outline" className="gap-1"><Target className="h-3 w-3" /> Target {formatCurrency(net * 0.5)} / month</Badge>
         <Badge variant="outline" className="gap-1"><ShoppingCart className="h-3 w-3" /> Groceries excluded (reimbursed)</Badge>
         <Badge variant="outline" className="gap-1"><HeartPulse className="h-3 w-3" /> Medical excluded (HSA)</Badge>
+        <button
+          type="button"
+          onClick={() => toggleExcludeBusiness(!excludeBusiness)}
+          className={cn(
+            'rounded-full border px-3 py-1 text-xs transition-colors',
+            excludeBusiness
+              ? 'border-prism-teal/40 bg-prism-teal/10 text-prism-teal'
+              : 'border-border text-muted-foreground hover:text-foreground',
+          )}
+        >
+          {excludeBusiness ? 'Business bills excluded' : 'Business bills counted'} ({formatCurrency(businessReimbursed)}/mo)
+        </button>
       </div>
+      <p className="text-xs text-muted-foreground">
+        Business-only bills and subscriptions ({formatCurrency(businessReimbursed)}/mo) are paid from net pay and reimbursed
+        quarterly from consulting fees, so they are left out of the personal 50% target. Tap the badge to count them anyway.
+        Items split between personal and business still count in full.
+      </p>
+
 
       <div className="grid gap-4 md:grid-cols-4">
         {[
