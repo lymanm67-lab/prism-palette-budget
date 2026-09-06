@@ -1,8 +1,22 @@
 import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
+import {
+  AlertTriangle,
+  ArrowRight,
+  BarChart3,
+  CheckCircle2,
+  Droplet,
+  FileText,
+  History,
+  Printer,
+  Table as TableIcon,
+  Target,
+} from 'lucide-react';
 import {
   Area,
   AreaChart,
@@ -22,6 +36,8 @@ import {
 import { beforeAfter, creepTrend, opportunityCost, vendorRollup } from '@/lib/freed-cash/analytics';
 import { buildMonthlyHistory, computeTimingMetrics, monthKey } from '@/lib/freed-cash/timing';
 import { conversionMetrics } from '@/lib/freed-cash/conversion';
+import { leakageReport } from '@/lib/freed-cash/leakage';
+import { keepScenarios } from '@/lib/freed-cash/wins';
 import PrintInfographicButton from '@/components/reports/PrintInfographicButton';
 import type { InfographicSpec } from '@/lib/reports/infographic';
 import {
@@ -48,18 +64,45 @@ const CHART_COLORS = [
   'hsl(var(--muted-foreground))',
 ];
 
-interface Props {
-  sources: FreedCashSource[];
-  redirects: FreedCashRedirect[];
-}
+const SECTIONS = [
+  { id: 'fc-summary', label: 'Summary', icon: BarChart3 },
+  { id: 'fc-narrative', label: 'Narrative', icon: FileText },
+  { id: 'fc-charts', label: 'Charts', icon: BarChart3 },
+  { id: 'fc-tables', label: 'Tables', icon: TableIcon },
+  { id: 'fc-scenarios', label: 'Scenarios', icon: Target },
+  { id: 'fc-next', label: 'Next steps', icon: CheckCircle2 },
+  { id: 'fc-pitfalls', label: 'Pitfalls', icon: AlertTriangle },
+  { id: 'fc-ledger', label: 'History ledger', icon: History },
+];
+
+type Tone = 'green' | 'blue' | 'amber' | 'red' | 'neutral';
+
+const TONE_CLASS: Record<Tone, string> = {
+  green: 'border-emerald-500/40 bg-emerald-500/10',
+  blue: 'border-sky-500/40 bg-sky-500/10',
+  amber: 'border-amber-500/40 bg-amber-500/10',
+  red: 'border-rose-500/40 bg-rose-500/10',
+  neutral: 'border-border/60 bg-card/40',
+};
 
 export function FreedCashImpactReport({ sources, redirects }: Props) {
   const { data: reviews } = useFreedCashReviews();
+
+  /* ------------------------------------------------------------ view state */
+  const [inkSaver, setInkSaver] = useState(false);
+  const [printPreview, setPrintPreview] = useState(false);
+  const [returnPct, setReturnPct] = useState(7);
+  const [horizon, setHorizon] = useState<1 | 3 | 5>(5);
+  const [ledgerYear, setLedgerYear] = useState<'all' | string>('all');
+
+  /* ----------------------------------------------------------------- data */
   const ba = useMemo(() => beforeAfter(sources), [sources]);
   const capacity = useMemo(() => redirectCapacity(sources, redirects), [sources, redirects]);
   const trend = useMemo(() => creepTrend(reviews ?? []), [reviews]);
   const conv = useMemo(() => conversionMetrics(sources, redirects), [sources, redirects]);
   const vendors = useMemo(() => vendorRollup(sources).slice(0, 8), [sources]);
+  const leaks = useMemo(() => leakageReport(sources, redirects), [sources, redirects]);
+  const scenarios = useMemo(() => keepScenarios(redirects), [redirects]);
 
   const timing = useMemo(() => {
     const now = new Date();
@@ -71,6 +114,22 @@ export function FreedCashImpactReport({ sources, redirects }: Props) {
     const from = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 11, 1));
     return buildMonthlyHistory(sources, monthKey(from), monthKey(now));
   }, [sources]);
+
+  const fullLedger = useMemo(() => {
+    const now = new Date();
+    const from = new Date(Date.UTC(now.getUTCFullYear() - 4, 0, 1));
+    return buildMonthlyHistory(sources, monthKey(from), monthKey(now)).slice().reverse();
+  }, [sources]);
+
+  const ledgerYears = useMemo(
+    () => [...new Set(fullLedger.map((r) => r.month.slice(0, 4)))].sort().reverse(),
+    [fullLedger],
+  );
+
+  const ledgerRows = useMemo(
+    () => (ledgerYear === 'all' ? fullLedger : fullLedger.filter((r) => r.month.startsWith(ledgerYear))),
+    [fullLedger, ledgerYear],
+  );
 
   const perSource = useMemo(
     () =>
@@ -117,15 +176,26 @@ export function FreedCashImpactReport({ sources, redirects }: Props) {
       perSource
         .filter((s) => s.saved > 0)
         .slice(0, 8)
-        .map((s) => ({ name: s.name.length > 18 ? `${s.name.slice(0, 17)}…` : s.name, before: s.before, after: s.after, saved: s.saved })),
+        .map((s) => ({
+          name: s.name.length > 18 ? `${s.name.slice(0, 17)}…` : s.name,
+          before: s.before,
+          after: s.after,
+          saved: s.saved,
+        })),
     [perSource],
   );
 
-  const [returnPct, setReturnPct] = useState(7);
   const projections = useMemo(
     () => opportunityCost(capacity.verifiedMonthly, returnPct),
     [capacity.verifiedMonthly, returnPct],
   );
+
+  const scenarioPick = (r: (typeof scenarios.rows)[number]) =>
+    horizon === 1 ? r.year1 : horizon === 3 ? r.year3 : r.year5;
+  const scenarioExecuted = (r: (typeof scenarios.rows)[number]) =>
+    horizon === 1 ? r.executedYear1 : horizon === 3 ? r.executedYear3 : r.executedYear5;
+  const scenarioTotal =
+    horizon === 1 ? scenarios.totalYear1 : horizon === 3 ? scenarios.totalYear3 : scenarios.totalYear5;
 
   /* ------------------------------------------------------------- narrative */
   const narrative = useMemo(() => {
@@ -180,6 +250,42 @@ export function FreedCashImpactReport({ sources, redirects }: Props) {
     }
     return lines;
   }, [ba, perSource, capacity, conv, timing, projections, returnPct]);
+
+  /* ------------------------------------------------------------ next steps */
+  const nextSteps = useMemo(() => {
+    const steps: { text: string; why: string; amount?: number }[] = [];
+    if (capacity.unassignedMonthly > 0.5)
+      steps.push({
+        text: 'Give every freed dollar a job',
+        why: 'Unassigned freed cash is still spendable, so it disappears into everyday spending.',
+        amount: capacity.unassignedMonthly,
+      });
+    if (conv.executionGap > 0.5)
+      steps.push({
+        text: 'Actually move the money you already assigned',
+        why: 'A plan only counts once the transfer happens — then mark the redirect as moved.',
+        amount: conv.executionGap,
+      });
+    const unverified = ba.savedMonthly - capacity.verifiedMonthly;
+    if (unverified > 0.5)
+      steps.push({
+        text: 'Confirm the rest of your savings on a real bill',
+        why: 'Unconfirmed savings may never have taken effect. Use the Reconcile page.',
+        amount: unverified,
+      });
+    if (leaks.highCount > 0)
+      steps.push({
+        text: `Fix ${leaks.highCount} high-risk saving${leaks.highCount === 1 ? '' : 's'}`,
+        why: 'These are ending soon, likely to come back, or have no job — see Pitfalls below.',
+        amount: leaks.atRiskMonthly,
+      });
+    if (steps.length === 0)
+      steps.push({
+        text: 'Keep it clean: re-check statements once a quarter',
+        why: 'Everything is confirmed, assigned and moving. The only job left is protecting it.',
+      });
+    return steps;
+  }, [capacity, conv, ba, leaks]);
 
   /* ----------------------------------------------------------- infographic */
   const buildSpec = (): InfographicSpec => ({
@@ -257,323 +363,208 @@ export function FreedCashImpactReport({ sources, redirects }: Props) {
     zoom: 0.9,
   });
 
+  const jump = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
   return (
-    <div className="space-y-4 print:space-y-3">
-      <Card>
-        <CardHeader className="flex flex-row items-start justify-between gap-2 pb-3">
-          <div>
+    <div
+      className={cn(
+        'space-y-4 print:space-y-3',
+        printPreview && 'mx-auto max-w-[8.5in] rounded-xl border border-border/60 p-4 sm:p-6',
+      )}
+      style={inkSaver ? { filter: 'grayscale(1)' } : undefined}
+    >
+      {/* ------------------------------------------------------------- toolbar */}
+      <Card className="print:hidden">
+        <CardContent className="flex flex-wrap items-center gap-2 p-3">
+          <div className="mr-auto flex flex-wrap gap-1.5">
+            {SECTIONS.map((s) => (
+              <Button key={s.id} variant="ghost" size="sm" className="h-7 gap-1.5 px-2 text-xs" onClick={() => jump(s.id)}>
+                <s.icon className="h-3.5 w-3.5" /> {s.label}
+              </Button>
+            ))}
+          </div>
+          <Button
+            variant={inkSaver ? 'default' : 'outline'}
+            size="sm"
+            className="h-8 gap-1.5"
+            onClick={() => setInkSaver((v) => !v)}
+          >
+            <Droplet className="h-3.5 w-3.5" /> {inkSaver ? 'Ink saver on' : 'Ink saver'}
+          </Button>
+          <Button
+            variant={printPreview ? 'default' : 'outline'}
+            size="sm"
+            className="h-8 gap-1.5"
+            onClick={() => setPrintPreview((v) => !v)}
+          >
+            <FileText className="h-3.5 w-3.5" /> {printPreview ? 'Preview on' : 'Preview page'}
+          </Button>
+          <PrintInfographicButton buildSpec={buildSpec} label="Infographic" size="sm" filename="freed-cash-impact" />
+          <Button size="sm" className="h-8 gap-1.5" onClick={() => window.print()}>
+            <Printer className="h-3.5 w-3.5" /> Print
+          </Button>
+        </CardContent>
+      </Card>
+      <p className="hidden text-xs text-muted-foreground print:hidden sm:block">
+        {inkSaver
+          ? 'Ink saver: the report prints in black and white to save colour ink.'
+          : 'Colour mode: charts and highlights print in full colour. Switch on ink saver for a black-and-white copy.'}
+      </p>
+
+      {/* ------------------------------------------------------------- summary */}
+      <section id="fc-summary" className="scroll-mt-20 space-y-4">
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Freed Cash summary</CardTitle>
+            <p className="mt-1 text-xs text-muted-foreground">
+              The headline numbers as of {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.
+            </p>
+          </CardHeader>
+          <CardContent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <Stat tone="green" label="Freed every month" value={money2(ba.savedMonthly)} sub={`${money2(ba.savedAnnual)} a year`} />
+            <Stat tone="blue" label="Confirmed on a bill" value={`${ba.verifiedShare.toFixed(0)}%`} sub={`${money2(capacity.verifiedMonthly)}/mo confirmed`} />
+            <Stat tone="amber" label="Assigned but not moved" value={money2(conv.executionGap)} sub="A plan, not progress yet" />
+            <Stat tone={capacity.unassignedMonthly > 0.5 ? 'red' : 'green'} label="Still needs a job" value={money2(capacity.unassignedMonthly)} sub="Most likely to drift back" />
+            <Stat label="Before" value={`${money2(ba.beforeMonthly)}/mo`} sub="Old recurring cost" />
+            <Stat label="After (incl. fees)" value={`${money2(ba.afterMonthly)}/mo`} sub={`${ba.reductionPct.toFixed(1)}% lower`} />
+            <Stat label="Realized this year" value={money2(timing.ytdRealized)} sub={`All-time ${money2(timing.cumulativeRealized)}`} />
+            <Stat label="Run rate" value={`${money2(timing.runRate)}/mo`} sub={`${money2(timing.avoidedAnnual)} avoided over 12 mo`} />
+          </CardContent>
+        </Card>
+      </section>
+
+      {/* ----------------------------------------------------------- narrative */}
+      <section id="fc-narrative" className="scroll-mt-20">
+        <Card>
+          <CardHeader className="pb-3">
             <CardTitle className="text-base">The story in plain English</CardTitle>
             <p className="mt-1 text-xs text-muted-foreground">
               A written summary of what your freed cash has done, and what still needs attention.
             </p>
-          </div>
-          <div className="flex gap-2 print:hidden">
-            <PrintInfographicButton buildSpec={buildSpec} label="Infographic" size="sm" filename="freed-cash-impact" />
-            <Button variant="outline" size="sm" onClick={() => window.print()}>
-              Print report
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {narrative.map((line, i) => (
-            <p key={i} className="text-sm leading-relaxed text-muted-foreground">
-              {line}
-            </p>
-          ))}
-        </CardContent>
-      </Card>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {narrative.map((line, i) => (
+              <p key={i} className="text-sm leading-relaxed text-muted-foreground">
+                {line}
+              </p>
+            ))}
+          </CardContent>
+        </Card>
+      </section>
 
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">Before and after</CardTitle>
-          <p className="mt-1 text-xs text-muted-foreground">
-            What these recurring expenses used to cost versus what they cost now.
-          </p>
-        </CardHeader>
-        <CardContent className="grid gap-3 sm:grid-cols-4">
-          <Stat label="Before" value={`${money2(ba.beforeMonthly)}/mo`} />
-          <Stat label="After (incl. fees)" value={`${money2(ba.afterMonthly)}/mo`} />
-          <Stat label="Freed" value={`${money2(ba.savedMonthly)}/mo`} />
-          <Stat label="Annual impact" value={money2(ba.savedAnnual)} />
-          <Stat label="Cost reduction" value={`${ba.reductionPct.toFixed(1)}%`} />
-          <Stat label="Verified share" value={`${ba.verifiedShare.toFixed(1)}%`} />
-          <Stat label="Redirected" value={`${money2(capacity.assignedMonthly)}/mo`} />
-          <Stat label="Still needs a job" value={`${money2(capacity.unassignedMonthly)}/mo`} />
-        </CardContent>
-      </Card>
+      {/* -------------------------------------------------------------- charts */}
+      <section id="fc-charts" className="scroll-mt-20 space-y-4">
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Savings over the last 12 months</CardTitle>
+              <p className="mt-1 text-xs text-muted-foreground">
+                The shaded area is what actually hit the budget each month; the line is your running total.
+              </p>
+            </CardHeader>
+            <CardContent className="h-72">
+              {history.length === 0 ? (
+                <Empty text="No monthly history yet." />
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={history} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
+                    <XAxis dataKey="label" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
+                    <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => money(Number(v))} />
+                    <ReTooltip formatter={(v: number, n) => [money2(Number(v)), String(n)]} />
+                    <Legend wrapperStyle={{ fontSize: 11 }} />
+                    <Area
+                      type="monotone"
+                      dataKey="realizedThisMonth"
+                      name="Realized this month"
+                      stroke={CHART_COLORS[0]}
+                      fill={CHART_COLORS[0]}
+                      fillOpacity={0.25}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="cumulativeRealized"
+                      name="Running total"
+                      stroke={CHART_COLORS[3]}
+                      strokeWidth={2}
+                      dot={false}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              )}
+            </CardContent>
+          </Card>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Where the freed money goes</CardTitle>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Each slice is a monthly amount assigned to a goal. Grey means it has no job yet.
+              </p>
+            </CardHeader>
+            <CardContent className="h-72">
+              {destinationSlices.length === 0 ? (
+                <Empty text="No freed cash has been given a job yet." />
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={destinationSlices} dataKey="value" nameKey="name" innerRadius={55} outerRadius={95}>
+                      {destinationSlices.map((s, i) => (
+                        <Cell
+                          key={s.name}
+                          fill={
+                            s.name === 'Still needs a job'
+                              ? 'hsl(var(--muted-foreground))'
+                              : CHART_COLORS[i % CHART_COLORS.length]
+                          }
+                        />
+                      ))}
+                    </Pie>
+                    <ReTooltip formatter={(v: number, n) => [`${money2(Number(v))}/mo`, String(n)]} />
+                    <Legend wrapperStyle={{ fontSize: 11 }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Savings over the last 12 months</CardTitle>
+            <CardTitle className="text-base">Biggest wins, before versus after</CardTitle>
             <p className="mt-1 text-xs text-muted-foreground">
-              Bars are what actually hit the budget each month; the line is your running total.
+              Your top expenses side by side: what they cost before, what they cost now, and what you freed.
             </p>
           </CardHeader>
-          <CardContent className="h-72">
-            {history.length === 0 ? (
-              <Empty text="No monthly history yet." />
+          <CardContent className="h-80">
+            {topSavers.length === 0 ? (
+              <Empty text="No savings recorded yet." />
             ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={history} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
+                <BarChart data={topSavers} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
-                  <XAxis dataKey="label" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
+                  <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} angle={-15} textAnchor="end" height={50} />
                   <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => money(Number(v))} />
                   <ReTooltip formatter={(v: number, n) => [money2(Number(v)), String(n)]} />
                   <Legend wrapperStyle={{ fontSize: 11 }} />
-                  <Area
-                    type="monotone"
-                    dataKey="realizedThisMonth"
-                    name="Realized this month"
-                    stroke={CHART_COLORS[0]}
-                    fill={CHART_COLORS[0]}
-                    fillOpacity={0.25}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="cumulativeRealized"
-                    name="Running total"
-                    stroke={CHART_COLORS[3]}
-                    strokeWidth={2}
-                    dot={false}
-                  />
-                </AreaChart>
+                  <Bar dataKey="before" name="Before" fill="hsl(var(--muted-foreground))" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="after" name="After" fill={CHART_COLORS[2]} radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="saved" name="Freed" fill={CHART_COLORS[0]} radius={[3, 3, 0, 0]} />
+                </BarChart>
               </ResponsiveContainer>
             )}
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Where the freed money goes</CardTitle>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Each slice is a monthly amount assigned to a goal. Grey means it has no job yet.
-            </p>
-          </CardHeader>
-          <CardContent className="h-72">
-            {destinationSlices.length === 0 ? (
-              <Empty text="No freed cash has been given a job yet." />
-            ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={destinationSlices} dataKey="value" nameKey="name" innerRadius={55} outerRadius={95}>
-                    {destinationSlices.map((s, i) => (
-                      <Cell
-                        key={s.name}
-                        fill={
-                          s.name === 'Still needs a job'
-                            ? 'hsl(var(--muted-foreground))'
-                            : CHART_COLORS[i % CHART_COLORS.length]
-                        }
-                      />
-                    ))}
-                  </Pie>
-                  <ReTooltip formatter={(v: number, n) => [`${money2(Number(v))}/mo`, String(n)]} />
-                  <Legend wrapperStyle={{ fontSize: 11 }} />
-                </PieChart>
-              </ResponsiveContainer>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">Biggest wins, before versus after</CardTitle>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Your top expenses, side by side: what they cost before and what they cost now.
-          </p>
-        </CardHeader>
-        <CardContent className="h-80">
-          {topSavers.length === 0 ? (
-            <Empty text="No savings recorded yet." />
-          ) : (
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={topSavers} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
-                <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} angle={-15} textAnchor="end" height={50} />
-                <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => money(Number(v))} />
-                <ReTooltip formatter={(v: number, n) => [money2(Number(v)), String(n)]} />
-                <Legend wrapperStyle={{ fontSize: 11 }} />
-                <Bar dataKey="before" name="Before" fill="hsl(var(--muted-foreground))" radius={[3, 3, 0, 0]} />
-                <Bar dataKey="after" name="After" fill={CHART_COLORS[2]} radius={[3, 3, 0, 0]} />
-                <Bar dataKey="saved" name="Freed" fill={CHART_COLORS[0]} radius={[3, 3, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">Before and after by expense</CardTitle>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Every cancellation, reduction and negotiation, with what it cost before and now.
-          </p>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {perSource.length === 0 && (
-            <p className="py-6 text-center text-sm text-muted-foreground">No savings recorded yet.</p>
-          )}
-          {perSource.map((s) => (
-            <div
-              key={s.id}
-              className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border/60 bg-card/40 p-3"
-            >
-              <div className="min-w-[10rem]">
-                <p className="text-sm font-medium">{s.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {s.vendor ? `${s.vendor} · ` : ''}
-                  {s.source_type.replace(/_/g, ' ')} · {s.status}
-                </p>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Before {money2(s.before)}/mo → after {money2(s.after)}/mo
+        {trend.length > 0 && (
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Capture trend</CardTitle>
+              <p className="mt-1 text-xs text-muted-foreground">
+                From your saved monthly reviews — is freed cash getting a job, or drifting back into spending?
               </p>
-              <p className="text-sm font-semibold">
-                {money2(s.saved)}/mo · {money2(s.saved * 12)}/yr
-              </p>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
-      {vendors.length > 0 && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">By vendor</CardTitle>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Which companies your savings came from, and where savings came back.
-            </p>
-          </CardHeader>
-          <CardContent className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border/60 text-left text-xs text-muted-foreground">
-                  <th className="py-2 pr-3 font-medium">Vendor</th>
-                  <th className="py-2 pr-3 font-medium">Changes</th>
-                  <th className="py-2 pr-3 font-medium">Confirmed / mo</th>
-                  <th className="py-2 pr-3 font-medium">Pending / mo</th>
-                  <th className="py-2 pr-3 font-medium">Came back / mo</th>
-                  <th className="py-2 font-medium">Confirmed / yr</th>
-                </tr>
-              </thead>
-              <tbody>
-                {vendors.map((v) => (
-                  <tr key={v.vendor} className="border-b border-border/40 last:border-0">
-                    <td className="py-2 pr-3 font-medium">{v.vendor}</td>
-                    <td className="py-2 pr-3 text-muted-foreground">{v.count}</td>
-                    <td className="py-2 pr-3">{money2(v.verifiedMonthly)}</td>
-                    <td className="py-2 pr-3 text-muted-foreground">{money2(v.pipelineMonthly)}</td>
-                    <td className="py-2 pr-3 text-muted-foreground">{money2(v.reversedMonthly)}</td>
-                    <td className="py-2 font-semibold">{money2(v.annualVerified)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </CardContent>
-        </Card>
-      )}
-
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">Where the freed money went</CardTitle>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Redirected {money2(capacity.assignedMonthly)}/mo of the verified {money2(capacity.verifiedMonthly)}/mo.
-            Still needs a job: {money2(capacity.unassignedMonthly)}/mo.
-          </p>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {redirectRows.length === 0 && (
-            <p className="py-6 text-center text-sm text-muted-foreground">
-              No freed cash has been given a job yet.
-            </p>
-          )}
-          {redirectRows.map((r) => (
-            <div
-              key={r.id}
-              className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border/60 bg-card/40 p-3"
-            >
-              <div className="min-w-[10rem]">
-                <p className="text-sm font-medium">
-                  {r.destination_label || destinationLabel(r.destination_type)}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  From {r.sourceName} · since {r.start_date}
-                </p>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {r.status}
-                {r.confirmed_moved ? ' · money confirmed moved' : ' · not confirmed yet'}
-              </p>
-              <p className="text-sm font-semibold">
-                {money2(Number(r.monthly_amount))}/mo · {money2(Number(r.monthly_amount) * 12)}/yr
-              </p>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">Opportunity cost of not redirecting</CardTitle>
-          <p className="mt-1 text-xs text-muted-foreground">
-            If your verified {money2(capacity.verifiedMonthly)}/mo is invested instead of absorbed back
-            into spending.
-          </p>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="w-40 print:hidden">
-            <Label>Assumed annual return %</Label>
-            <Input
-              type="number"
-              step="0.5"
-              value={returnPct}
-              onChange={(e) => setReturnPct(Number(e.target.value) || 0)}
-            />
-          </div>
-          <div className="grid gap-2 sm:grid-cols-5">
-            {projections.map((p) => (
-              <div key={p.years} className="rounded-lg border border-border/60 bg-card/40 p-3">
-                <p className="text-xs text-muted-foreground">{p.years} yr</p>
-                <p className="text-lg font-semibold">{money(p.value)}</p>
-                <p className="text-xs text-muted-foreground">
-                  {money(p.contributed)} in · {money(p.growth)} growth
-                </p>
-              </div>
-            ))}
-          </div>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={projections} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
-                <XAxis dataKey="years" tickFormatter={(v) => `${v} yr`} tick={{ fontSize: 10 }} />
-                <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => money(Number(v))} />
-                <ReTooltip formatter={(v: number, n) => [money(Number(v)), String(n)]} />
-                <Legend wrapperStyle={{ fontSize: 11 }} />
-                <Bar dataKey="contributed" name="Money you put in" stackId="a" fill={CHART_COLORS[2]} />
-                <Bar dataKey="growth" name="Growth" stackId="a" fill={CHART_COLORS[0]} radius={[3, 3, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">Capture trend</CardTitle>
-          <p className="mt-1 text-xs text-muted-foreground">
-            From your saved monthly reviews — is freed cash getting a job, or drifting back into spending?
-          </p>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {trend.length === 0 && (
-            <p className="py-6 text-center text-sm text-muted-foreground">
-              Log a monthly review to start the trend.
-            </p>
-          )}
-          {trend.length > 0 && (
-            <div className="h-64">
+            </CardHeader>
+            <CardContent className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={trend} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
@@ -599,37 +590,428 @@ export function FreedCashImpactReport({ sources, redirects }: Props) {
                   />
                 </AreaChart>
               </ResponsiveContainer>
-            </div>
-          )}
-          {trend.map((t) => (
-            <div
-              key={t.month}
-              className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border/60 bg-card/40 p-3"
-            >
-              <p className="text-sm font-medium">{t.month}</p>
-              <p className="text-xs text-muted-foreground">
-                Verified {money2(t.verifiedMonthly)} · redirected {money2(t.redirectedMonthly)} · capture{' '}
-                {t.captureRate.toFixed(1)}%
+            </CardContent>
+          </Card>
+        )}
+      </section>
+
+      {/* -------------------------------------------------------------- tables */}
+      <section id="fc-tables" className="scroll-mt-20 space-y-4">
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Every saving, before and after</CardTitle>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Each cancellation, reduction and negotiation with what it cost before and now.
+            </p>
+          </CardHeader>
+          <CardContent className="overflow-x-auto">
+            {perSource.length === 0 ? (
+              <p className="py-6 text-center text-sm text-muted-foreground">No savings recorded yet.</p>
+            ) : (
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border/60 text-left text-xs text-muted-foreground">
+                    <th className="py-2 pr-3 font-medium">Expense</th>
+                    <th className="py-2 pr-3 font-medium">Type</th>
+                    <th className="py-2 pr-3 text-right font-medium">Before</th>
+                    <th className="py-2 pr-3 text-right font-medium">After</th>
+                    <th className="py-2 pr-3 text-right font-medium">Freed / mo</th>
+                    <th className="py-2 text-right font-medium">Freed / yr</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {perSource.map((s) => (
+                    <tr key={s.id} className="border-b border-border/40 last:border-0">
+                      <td className="py-2 pr-3 font-medium">
+                        {s.name}
+                        {s.vendor ? <span className="block text-xs text-muted-foreground">{s.vendor}</span> : null}
+                      </td>
+                      <td className="py-2 pr-3 text-xs text-muted-foreground">
+                        {s.source_type.replace(/_/g, ' ')} · {s.status}
+                      </td>
+                      <td className="py-2 pr-3 text-right text-muted-foreground">{money2(s.before)}</td>
+                      <td className="py-2 pr-3 text-right">{money2(s.after)}</td>
+                      <td className="py-2 pr-3 text-right font-semibold">{money2(s.saved)}</td>
+                      <td className="py-2 text-right">{money2(s.saved * 12)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </CardContent>
+        </Card>
+
+        {vendors.length > 0 && (
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">By vendor</CardTitle>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Which companies your savings came from, and where savings came back.
               </p>
+            </CardHeader>
+            <CardContent className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border/60 text-left text-xs text-muted-foreground">
+                    <th className="py-2 pr-3 font-medium">Vendor</th>
+                    <th className="py-2 pr-3 font-medium">Changes</th>
+                    <th className="py-2 pr-3 text-right font-medium">Confirmed / mo</th>
+                    <th className="py-2 pr-3 text-right font-medium">Pending / mo</th>
+                    <th className="py-2 pr-3 text-right font-medium">Came back / mo</th>
+                    <th className="py-2 text-right font-medium">Confirmed / yr</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {vendors.map((v) => (
+                    <tr key={v.vendor} className="border-b border-border/40 last:border-0">
+                      <td className="py-2 pr-3 font-medium">{v.vendor}</td>
+                      <td className="py-2 pr-3 text-muted-foreground">{v.count}</td>
+                      <td className="py-2 pr-3 text-right">{money2(v.verifiedMonthly)}</td>
+                      <td className="py-2 pr-3 text-right text-muted-foreground">{money2(v.pipelineMonthly)}</td>
+                      <td className="py-2 pr-3 text-right text-muted-foreground">{money2(v.reversedMonthly)}</td>
+                      <td className="py-2 text-right font-semibold">{money2(v.annualVerified)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </CardContent>
+          </Card>
+        )}
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Where the freed money went</CardTitle>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Redirected {money2(capacity.assignedMonthly)}/mo of the confirmed {money2(capacity.verifiedMonthly)}/mo.
+              Still needs a job: {money2(capacity.unassignedMonthly)}/mo.
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {redirectRows.length === 0 && (
+              <p className="py-6 text-center text-sm text-muted-foreground">
+                No freed cash has been given a job yet.
+              </p>
+            )}
+            {redirectRows.map((r) => (
+              <div
+                key={r.id}
+                className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border/60 bg-card/40 p-3"
+              >
+                <div className="min-w-[10rem]">
+                  <p className="text-sm font-medium">
+                    {r.destination_label || destinationLabel(r.destination_type)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    From {r.sourceName} · since {r.start_date}
+                  </p>
+                </div>
+                <Badge variant={r.confirmed_moved ? 'default' : 'outline'} className="text-[11px]">
+                  {r.confirmed_moved ? 'Money moved' : 'Not moved yet'}
+                </Badge>
+                <p className="text-sm font-semibold">
+                  {money2(Number(r.monthly_amount))}/mo · {money2(Number(r.monthly_amount) * 12)}/yr
+                </p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </section>
+
+      {/* ----------------------------------------------------------- scenarios */}
+      <section id="fc-scenarios" className="scroll-mt-20 space-y-4">
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">What happens if you keep these savings</CardTitle>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Each goal, if the money keeps flowing. Pick a horizon to see the outcome.
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex flex-wrap items-center gap-2 print:hidden">
+              {([1, 3, 5] as const).map((h) => (
+                <Button
+                  key={h}
+                  size="sm"
+                  variant={horizon === h ? 'default' : 'outline'}
+                  className="h-7 px-3 text-xs"
+                  onClick={() => setHorizon(h)}
+                >
+                  {h === 1 ? '12 months' : `${h} years`}
+                </Button>
+              ))}
+              <span className="text-xs text-muted-foreground">
+                Showing {horizon === 1 ? '12-month' : `${horizon}-year`} outcomes
+              </span>
             </div>
-          ))}
-        </CardContent>
-      </Card>
+
+            {scenarios.rows.length === 0 ? (
+              <Empty text="Assign freed cash to a goal to see scenarios." />
+            ) : (
+              <>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <Stat tone="green" label="If you keep it all" value={money(scenarioTotal)} sub={`${money2(scenarios.totalMonthly)}/mo assigned`} />
+                  <Stat tone="amber" label="Based on money actually moved" value={money(horizon === 1 ? scenarios.rows.reduce((t, r) => t + r.executedYear1, 0) : horizon === 3 ? scenarios.rows.reduce((t, r) => t + r.executedYear3, 0) : scenarios.executedYear5)} sub={`${money2(scenarios.executedMonthly)}/mo moving`} />
+                  <Stat tone="red" label="Cost of not moving it (5 yr)" value={money(scenarios.gapYear5)} sub="The gap between plan and action" />
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-border/60 text-left text-xs text-muted-foreground">
+                        <th className="py-2 pr-3 font-medium">Goal</th>
+                        <th className="py-2 pr-3 text-right font-medium">Per month</th>
+                        <th className="py-2 pr-3 text-right font-medium">Growth used</th>
+                        <th className="py-2 pr-3 text-right font-medium">{horizon === 1 ? '12 months' : `${horizon} years`}</th>
+                        <th className="py-2 text-right font-medium">If only what moved</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {scenarios.rows.map((r) => (
+                        <tr key={r.destination} className="border-b border-border/40 last:border-0">
+                          <td className="py-2 pr-3 font-medium">{r.label}</td>
+                          <td className="py-2 pr-3 text-right">{money2(r.monthly)}</td>
+                          <td className="py-2 pr-3 text-right text-muted-foreground">{(r.growthRate * 100).toFixed(1)}%</td>
+                          <td className="py-2 pr-3 text-right font-semibold">{money(scenarioPick(r))}</td>
+                          <td className="py-2 text-right text-muted-foreground">{money(scenarioExecuted(r))}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Opportunity cost of not redirecting</CardTitle>
+            <p className="mt-1 text-xs text-muted-foreground">
+              If your confirmed {money2(capacity.verifiedMonthly)}/mo is invested instead of absorbed back into spending.
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="w-40 print:hidden">
+              <Label>Assumed annual return %</Label>
+              <Input
+                type="number"
+                step="0.5"
+                value={returnPct}
+                onChange={(e) => setReturnPct(Number(e.target.value) || 0)}
+              />
+            </div>
+            <div className="grid gap-2 sm:grid-cols-5">
+              {projections.map((p) => (
+                <div key={p.years} className="rounded-lg border border-border/60 bg-card/40 p-3">
+                  <p className="text-xs text-muted-foreground">{p.years} yr</p>
+                  <p className="text-lg font-semibold">{money(p.value)}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {money(p.contributed)} in · {money(p.growth)} growth
+                  </p>
+                </div>
+              ))}
+            </div>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={projections} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
+                  <XAxis dataKey="years" tickFormatter={(v) => `${v} yr`} tick={{ fontSize: 10 }} />
+                  <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => money(Number(v))} />
+                  <ReTooltip formatter={(v: number, n) => [money(Number(v)), String(n)]} />
+                  <Legend wrapperStyle={{ fontSize: 11 }} />
+                  <Bar dataKey="contributed" name="Money in" stackId="a" fill="hsl(var(--muted-foreground))" />
+                  <Bar dataKey="growth" name="Growth" stackId="a" fill={CHART_COLORS[0]} radius={[3, 3, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+
+      {/* ---------------------------------------------------------- next steps */}
+      <section id="fc-next" className="scroll-mt-20">
+        <Card className="border-primary/30">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Next steps</CardTitle>
+            <p className="mt-1 text-xs text-muted-foreground">The highest-value moves right now, in order.</p>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {nextSteps.map((s, i) => (
+              <div key={i} className="flex items-start gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3">
+                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-semibold text-primary">
+                  {i + 1}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium">{s.text}</p>
+                  <p className="text-xs text-muted-foreground">{s.why}</p>
+                </div>
+                {s.amount !== undefined && (
+                  <p className="whitespace-nowrap text-sm font-semibold">{money2(s.amount)}/mo</p>
+                )}
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </section>
+
+      {/* ------------------------------------------------------------ pitfalls */}
+      <section id="fc-pitfalls" className="scroll-mt-20">
+        <Card className="border-amber-500/30">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <AlertTriangle className="h-4 w-4 text-amber-500" /> Pitfalls to avoid
+            </CardTitle>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {money2(leaks.atRiskMonthly)}/mo is at risk and {money2(leaks.driftMonthly)}/mo drifts back by default if
+              nothing changes.
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {leaks.rows.length === 0 && (
+              <p className="py-6 text-center text-sm text-muted-foreground">
+                Nothing at risk right now — every saving is confirmed, assigned and moving.
+              </p>
+            )}
+            {leaks.rows.slice(0, 12).map((r) => (
+              <div
+                key={r.id}
+                className={cn(
+                  'flex flex-wrap items-center gap-2 rounded-lg border p-3',
+                  r.severity === 'high'
+                    ? 'border-rose-500/40 bg-rose-500/5'
+                    : r.severity === 'medium'
+                      ? 'border-amber-500/40 bg-amber-500/5'
+                      : 'border-border/60 bg-card/40',
+                )}
+              >
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    'text-[10px] uppercase',
+                    r.severity === 'high' && 'border-rose-500/50 text-rose-500',
+                    r.severity === 'medium' && 'border-amber-500/50 text-amber-500',
+                  )}
+                >
+                  {r.severity}
+                </Badge>
+                <div className="min-w-[12rem] flex-1">
+                  <p className="text-sm font-medium">
+                    {r.name} — {r.reason}
+                  </p>
+                  <p className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <ArrowRight className="h-3 w-3" /> {r.action}
+                  </p>
+                </div>
+                <p className="text-sm font-semibold">{money2(r.monthly)}/mo</p>
+              </div>
+            ))}
+            {leaks.rows.length > 12 && (
+              <p className="text-xs text-muted-foreground">
+                Showing the 12 most urgent of {leaks.rows.length}. The Forward look tab has the rest.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      </section>
+
+      {/* -------------------------------------------------------------- ledger */}
+      <section id="fc-ledger" className="scroll-mt-20">
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <History className="h-4 w-4" /> History saving ledger
+            </CardTitle>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Month by month, newest first: what was created, what was actually saved, and the running total.
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex flex-wrap gap-1.5 print:hidden">
+              <Button
+                size="sm"
+                variant={ledgerYear === 'all' ? 'default' : 'outline'}
+                className="h-7 px-3 text-xs"
+                onClick={() => setLedgerYear('all')}
+              >
+                All time
+              </Button>
+              {ledgerYears.map((y) => (
+                <Button
+                  key={y}
+                  size="sm"
+                  variant={ledgerYear === y ? 'default' : 'outline'}
+                  className="h-7 px-3 text-xs"
+                  onClick={() => setLedgerYear(y)}
+                >
+                  {y}
+                </Button>
+              ))}
+            </div>
+            <div className="overflow-x-auto">
+              {ledgerRows.length === 0 ? (
+                <Empty text="No ledger entries yet." />
+              ) : (
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-border/60 text-left text-xs text-muted-foreground">
+                      <th className="py-2 pr-3 font-medium">Month</th>
+                      <th className="py-2 pr-3 text-right font-medium">New savings created</th>
+                      <th className="py-2 pr-3 text-right font-medium">Cancels / reductions</th>
+                      <th className="py-2 pr-3 text-right font-medium">Saved that month</th>
+                      <th className="py-2 pr-3 text-right font-medium">Run rate at month end</th>
+                      <th className="py-2 text-right font-medium">Running total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {ledgerRows.map((r) => (
+                      <tr key={r.month} className="border-b border-border/40 last:border-0">
+                        <td className="py-2 pr-3 font-medium">{r.label}</td>
+                        <td className="py-2 pr-3 text-right">{money2(r.createdMonthly)}</td>
+                        <td className="py-2 pr-3 text-right text-muted-foreground">
+                          {r.newCancellations} / {r.newReductions}
+                        </td>
+                        <td className="py-2 pr-3 text-right font-semibold">{money2(r.realizedThisMonth)}</td>
+                        <td className="py-2 pr-3 text-right">{money2(r.runRateAtEnd)}</td>
+                        <td className="py-2 text-right">{money2(r.cumulativeRealized)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </section>
     </div>
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+interface Props {
+  sources: FreedCashSource[];
+  redirects: FreedCashRedirect[];
+}
+
+function Stat({
+  label,
+  value,
+  sub,
+  tone = 'neutral',
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+  tone?: Tone;
+}) {
   return (
-    <div className="rounded-lg border border-border/60 bg-card/40 p-3">
+    <div className={cn('rounded-lg border p-3', TONE_CLASS[tone])}>
       <p className="text-xs text-muted-foreground">{label}</p>
       <p className="text-lg font-semibold">{value}</p>
+      {sub && <p className="mt-0.5 text-[11px] text-muted-foreground">{sub}</p>}
     </div>
   );
 }
 
 function Empty({ text }: { text: string }) {
   return (
-    <div className="flex h-full items-center justify-center text-sm text-muted-foreground">{text}</div>
+    <div className="flex h-full min-h-24 items-center justify-center text-sm text-muted-foreground">{text}</div>
   );
 }
