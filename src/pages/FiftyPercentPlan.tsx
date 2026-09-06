@@ -67,6 +67,34 @@ function useSpendingHistory(months = 12) {
   });
 }
 
+/* Debts that are paid off within the next year but are not mirrored as a recurring bill
+   (e.g. a small collection account) still leave net pay until their payoff date. */
+function useShortTermDebts() {
+  const { household } = useHousehold();
+  return useQuery({
+    queryKey: ['fifty-plan-short-debts', household?.id],
+    enabled: !!household,
+    queryFn: async () => {
+      const { data: plans, error: pe } = await supabase
+        .from('debt_plans')
+        .select('id')
+        .eq('household_id', household!.id);
+      if (pe) throw pe;
+      const ids = (plans || []).map((p: any) => p.id);
+      if (!ids.length) return [] as any[];
+      const { data, error } = await supabase
+        .from('debt_items')
+        .select('id, name, minimum_payment, target_payoff_date')
+        .in('plan_id', ids)
+        .not('target_payoff_date', 'is', null);
+      if (error) throw error;
+      return (data || []) as any[];
+    },
+  });
+}
+
+const normName = (s: string) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
 const FiftyPercentPlan = () => {
   const { formatCurrency } = useCurrency();
   const { data: subscriptions } = useSubscriptions();
