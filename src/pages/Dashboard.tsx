@@ -318,6 +318,12 @@ Your Safe-to-Spend updates in real time as you add transactions, pay bills, and 
         />
       </motion.div>
 
+      {/* ========== Cash left over after bills & subscriptions ========== */}
+      <motion.div variants={item}>
+        <CashLeftOverCard />
+      </motion.div>
+
+
       {/* ========== Smart Allocation (new paycheck → bucket plan) ========== */}
       <motion.div variants={item}>
         <SmartAllocationCard />
