@@ -10208,6 +10208,7 @@ export type Database = {
           household_id: string
           id: string
           is_active: boolean
+          is_transfer: boolean
           last_paid_date: string | null
           match_text: string | null
           merchant: string | null
@@ -10232,6 +10233,7 @@ export type Database = {
           household_id: string
           id?: string
           is_active?: boolean
+          is_transfer?: boolean
           last_paid_date?: string | null
           match_text?: string | null
           merchant?: string | null
@@ -10256,6 +10258,7 @@ export type Database = {
           household_id?: string
           id?: string
           is_active?: boolean
+          is_transfer?: boolean
           last_paid_date?: string | null
           match_text?: string | null
           merchant?: string | null
@@ -11211,6 +11214,7 @@ export type Database = {
           id: string
           is_active: boolean
           is_cancelled: boolean
+          is_transfer: boolean
           last_charge_date: string | null
           merchant: string
           next_expected_date: string | null
@@ -11239,6 +11243,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           is_cancelled?: boolean
+          is_transfer?: boolean
           last_charge_date?: string | null
           merchant: string
           next_expected_date?: string | null
@@ -11267,6 +11272,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           is_cancelled?: boolean
+          is_transfer?: boolean
           last_charge_date?: string | null
           merchant?: string
           next_expected_date?: string | null
