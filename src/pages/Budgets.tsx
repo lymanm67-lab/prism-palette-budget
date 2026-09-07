@@ -50,6 +50,7 @@ import AssignAutoBalance from '@/components/budget/AssignAutoBalance';
 
 import ZeroBasedPlanBoard from '@/components/budget/ZeroBasedPlanBoard';
 import CapitalEventsPanel from '@/components/budget/CapitalEventsPanel';
+import AssignRemainingDialog from '@/components/budget/AssignRemainingDialog';
 import { Coins } from 'lucide-react';
 
 const getMonth = (offset: number) => {
