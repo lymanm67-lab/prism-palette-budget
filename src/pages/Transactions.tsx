@@ -1508,14 +1508,14 @@ const Transactions = () => {
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button size="sm" variant="destructive" className="gap-1.5 shrink-0">
-                <Trash2 className="h-3.5 w-3.5" /> Delete all duplicates
+                <Trash2 className="h-3.5 w-3.5" /> Delete extra copies
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Delete all {duplicateCount} duplicate transactions?</AlertDialogTitle>
+                <AlertDialogTitle>Delete {duplicateExtraCount} extra {duplicateExtraCount === 1 ? 'copy' : 'copies'}?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This will permanently remove all {duplicateCount} flagged duplicate transactions. This action cannot be undone. Make sure you've reviewed them first.
+                  This keeps the first transaction in each group and moves the {duplicateExtraCount} extra {duplicateExtraCount === 1 ? 'copy' : 'copies'} to the trash. Make sure you've reviewed them first.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -1523,16 +1523,16 @@ const Transactions = () => {
                 <AlertDialogAction
                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                   onClick={async () => {
-                    const ids = Array.from(duplicateIds);
+                    const ids = Array.from(duplicateExtraIds);
                     await softDelete(ids);
                     setSelected(new Set());
-                    toast.success(`Moved ${ids.length} duplicates to trash`, {
+                    toast.success(`Moved ${ids.length} extra copies to trash`, {
                       action: { label: 'Undo', onClick: async () => { await restoreTransactions(ids); toast.success(`Restored ${ids.length} transactions`); } },
                       duration: 10000,
                     });
                   }}
                 >
-                  Delete {duplicateCount} duplicates
+                  Delete {duplicateExtraCount} extra {duplicateExtraCount === 1 ? 'copy' : 'copies'}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
