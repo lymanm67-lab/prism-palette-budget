@@ -2162,6 +2162,15 @@ const Budgets = () => {
             {ownerContribution > 0 && budgetType !== 'all' && (
               <p className="text-[10px] text-sky-600 dark:text-sky-400 mt-0.5">{budgetType === 'business' ? '+' : '−'}{formatCurrency(ownerContribution)} owner contribution</p>
             )}
+            <div className="mt-2">
+              <AssignRemainingDialog
+                amount={unallocated}
+                scopeLabel={assignScopeLabel}
+                candidates={assignCandidates}
+                onAssign={handleAssignRemaining}
+              />
+            </div>
+
           </CardContent>
         </Card>
         <Card className={cn("border-l-4", totalExpenseRemaining >= 0 ? "border-l-emerald-500" : "border-l-rose-500")}>
