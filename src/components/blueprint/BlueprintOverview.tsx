@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Compass } from 'lucide-react';
 import { money, StatCard, SectionNote, AsOfStamp } from './shared';
+import { LYMAN_NET_MONTHLY, kateriNetMonthly } from '@/hooks/use-money-blueprint';
 import { useWealthOSData } from '@/hooks/use-wealth-os';
 import { useSafeToSpend } from '@/hooks/use-safe-to-spend';
 import {
