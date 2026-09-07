@@ -2518,6 +2518,16 @@ const Budgets = () => {
               <p className="text-sm text-muted-foreground mt-1">
                 {unallocated === 0 ? '✅ Every dollar assigned' : unallocated > 0 ? 'Left to assign' : 'Over-allocated'}
               </p>
+              <p className="mt-0.5 text-xs text-muted-foreground">{assignScopeLabel} scope</p>
+              <div className="mt-3 flex justify-center">
+                <AssignRemainingDialog
+                  amount={unallocated}
+                  scopeLabel={assignScopeLabel}
+                  candidates={assignCandidates}
+                  onAssign={handleAssignRemaining}
+                />
+              </div>
+
             </CardContent>
           </Card>
 
