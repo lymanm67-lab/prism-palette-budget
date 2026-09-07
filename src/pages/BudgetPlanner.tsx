@@ -463,6 +463,18 @@ export default function BudgetPlanner() {
         </CardContent>
       </Card>
 
+      {showYearGrid && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">{year} at a glance — every month editable</CardTitle>
+            <SectionNote>Click any amount to change what you plan to spend that month.</SectionNote>
+          </CardHeader>
+          <CardContent>
+            <BudgetYearGrid year={year} />
+          </CardContent>
+        </Card>
+      )}
+
       <BaselineLockManager />
 
 
