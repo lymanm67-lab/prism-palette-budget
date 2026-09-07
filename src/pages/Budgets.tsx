@@ -733,7 +733,7 @@ const Budgets = () => {
     ...b,
     spent: payrollCatIdsSet.has(b.category_id) ? b.planned_amount : (effectiveSpentByCategory[b.category_id] || 0),
     received: receivedByCategory[b.category_id] || 0,
-  })).filter(b => filteredCategoryIds.has(b.category_id));
+  })).filter(b => filteredCategoryIds.has(b.category_id) && !fundingTransferCategoryIds.has(b.category_id));
 
   // Group budgets by expense type
   const categoryNameById = useMemo(() => {
