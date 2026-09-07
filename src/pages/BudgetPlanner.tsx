@@ -334,6 +334,13 @@ export default function BudgetPlanner() {
               <Button variant="outline" size="sm" onClick={() => setImportOpen(true)}>
                 <FileSpreadsheet className="h-4 w-4 mr-1" /> Import CSV
               </Button>
+              <Button
+                variant={showYearGrid ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setShowYearGrid((v) => !v)}
+              >
+                <CalendarRange className="h-4 w-4 mr-1" /> {showYearGrid ? 'Hide' : 'Edit'} whole year
+              </Button>
             </div>
           </div>
           <SectionNote>
