@@ -136,6 +136,9 @@ export default function BudgetPlanner() {
       const row = map.get(b.category_id) ?? make(b.category_id);
       if (!row) continue;
       row.planned += Number(b.planned_amount) || 0;
+      if (b.actual_override !== null && b.actual_override !== undefined) {
+        row.actualOverride = (row.actualOverride ?? 0) + (Number(b.actual_override) || 0);
+      }
       row.budgetId = row.budgetId ?? b.id;
       map.set(b.category_id, row);
     }
