@@ -83,7 +83,10 @@ const getDuplicateKey = (transaction: {
   notes?: string | null;
 }) => {
   const accountId = transaction.account_id || 'no-account';
-  return `${transaction.date}|${Math.round(transaction.amount * 100)}|${accountId}`;
+  // Merchant must stay part of the key — two unrelated charges of the same amount on the
+  // same day (e.g. two $12.99 purchases) are NOT duplicates.
+  const merchant = String(transaction.merchant || '').toLowerCase().trim().replace(/\s+/g, ' ');
+  return `${transaction.date}|${Math.round(transaction.amount * 100)}|${accountId}|${merchant}`;
 };
 
 const Transactions = () => {
