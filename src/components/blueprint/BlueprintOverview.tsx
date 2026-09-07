@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Compass } from 'lucide-react';
 import { money, StatCard, SectionNote, AsOfStamp } from './shared';
+import { LYMAN_NET_MONTHLY, kateriNetMonthly } from '@/hooks/use-money-blueprint';
 import { useWealthOSData } from '@/hooks/use-wealth-os';
 import { useSafeToSpend } from '@/hooks/use-safe-to-spend';
 import {
@@ -67,7 +68,12 @@ export function BlueprintOverview({
         </CardHeader>
         <CardContent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard label="Net worth" value={money(wealth?.netWorth ?? 0)} sub="Assets − liabilities" level="current" onClick={() => onDrill('networth')} />
-          <StatCard label="Household take-home / mo" value={money(netMonthly)} level="current" />
+          <StatCard
+            label="Household take-home / mo"
+            value={money(netMonthly)}
+            sub={`Lyman ${money(LYMAN_NET_MONTHLY)} · Kateri ${money(kateriNetMonthly())}`}
+            level="current"
+          />
           <StatCard label="Safe to spend" value={money(sts)} sub="After bills & buffer" />
           <StatCard label="Total debt" value={money(wealth?.totalLiabilities ?? 0)} onClick={() => onDrill('debt')} level="current" />
           <StatCard label="Retirement accounts" value={money(b?.retirement ?? 0)} onClick={() => onDrill('contributions')} level="current" />
