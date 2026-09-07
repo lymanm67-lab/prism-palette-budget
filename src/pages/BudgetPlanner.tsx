@@ -35,6 +35,7 @@ export default function BudgetPlanner() {
   const [monthIdx, setMonthIdx] = useState(now.getMonth());
   const [importOpen, setImportOpen] = useState(false);
   const [addCategoryId, setAddCategoryId] = useState('');
+  const [showYearGrid, setShowYearGrid] = useState(false);
 
   const month = monthKey(year, monthIdx);
   const prevMonth = monthIdx === 0 ? monthKey(year - 1, 11) : monthKey(year, monthIdx - 1);
