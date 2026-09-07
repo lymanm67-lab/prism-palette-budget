@@ -67,7 +67,12 @@ export function BlueprintOverview({
         </CardHeader>
         <CardContent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard label="Net worth" value={money(wealth?.netWorth ?? 0)} sub="Assets − liabilities" level="current" onClick={() => onDrill('networth')} />
-          <StatCard label="Household take-home / mo" value={money(netMonthly)} level="current" />
+          <StatCard
+            label="Household take-home / mo"
+            value={money(netMonthly)}
+            sub={`Lyman ${money(LYMAN_NET_MONTHLY)} · Kateri ${money(kateriNetMonthly())}`}
+            level="current"
+          />
           <StatCard label="Safe to spend" value={money(sts)} sub="After bills & buffer" />
           <StatCard label="Total debt" value={money(wealth?.totalLiabilities ?? 0)} onClick={() => onDrill('debt')} level="current" />
           <StatCard label="Retirement accounts" value={money(b?.retirement ?? 0)} onClick={() => onDrill('contributions')} level="current" />
