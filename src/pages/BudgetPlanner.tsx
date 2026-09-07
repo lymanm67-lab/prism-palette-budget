@@ -371,10 +371,16 @@ export default function BudgetPlanner() {
                         </td>
                       </tr>
                       {groupRows.map((r) => {
-                        const remaining = r.planned - r.actual;
+                        const actual = effectiveActual(r);
+                        const remaining = r.planned - actual;
                         return (
                           <tr key={r.categoryId} className="border-t border-border/50">
-                            <td className="p-2">{r.name}</td>
+                            <td className="p-2">
+                              <InlineEditCell value={r.rawName} onSave={(v) => renameCategory(r, v)} />
+                              {/business/i.test(r.groupName) && (
+                                <span className="ml-1 text-[10px] text-muted-foreground">(Business)</span>
+                              )}
+                            </td>
                             <td className="p-2 text-right">
                               <InlineEditCell
                                 value={String(r.planned)}
@@ -384,7 +390,27 @@ export default function BudgetPlanner() {
                                 onSave={(v) => savePlanned(r, v)}
                               />
                             </td>
-                            <td className="p-2 text-right tabular-nums text-muted-foreground">{money(r.actual)}</td>
+                            <td className="p-2 text-right">
+                              <div className="flex items-center justify-end gap-1">
+                                <InlineEditCell
+                                  value={String(actual)}
+                                  type="number"
+                                  className="text-right"
+                                  formatter={(v) => money(Number(v))}
+                                  onSave={(v) => saveActual(r, v)}
+                                />
+                                {r.actualOverride !== null && (
+                                  <button
+                                    type="button"
+                                    onClick={() => clearActualOverride(r)}
+                                    title={`Yours — bank total was ${money(r.actual)}. Click to use the bank total again.`}
+                                    className="rounded bg-prism-amber/20 px-1 text-[9px] font-bold uppercase text-prism-amber"
+                                  >
+                                    Yours
+                                  </button>
+                                )}
+                              </div>
+                            </td>
                             <td className={`p-2 text-right tabular-nums ${remaining < 0 ? 'text-destructive' : ''}`}>
                               {money(remaining)}
                             </td>
