@@ -309,6 +309,7 @@ const Transactions = () => {
   };
 
   const duplicateCount = duplicateIds.size;
+  const duplicateExtraCount = duplicateExtraIds.size;
   const needsReviewCount = useMemo(() => (transactions || []).filter(t => (t as any).needs_review).length, [transactions]);
 
   const activeFilterCount = Object.values(filters).filter(Boolean).length;
