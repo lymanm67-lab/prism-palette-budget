@@ -493,6 +493,24 @@ const Budgets = () => {
     return new Set((categories as any[]).filter(c => c.money_purpose === 'business').map(c => c.id));
   }, [categories]);
 
+  // Owner Contribution to Business (and any other business-purpose line that lives in a
+  // PERSONAL group) is a funding transfer, not spending: the money it moves is already
+  // counted inside the business expense lines it pays for. Counting it again inflated the
+  // Business and Personal+Business expense totals, so keep it out of the budget rows.
+  // The funding need is still derived separately as `ownerContribution` below.
+  const fundingTransferCategoryIds = useMemo(() => {
+    if (!categories || !categoryGroups) return new Set<string>();
+    const personalGroupIds = new Set(
+      (categoryGroups as any[]).filter((g: any) => (g.budget_type || 'personal') === 'personal').map((g: any) => g.id)
+    );
+    return new Set(
+      (categories as any[])
+        .filter(c => businessPurposeCategoryIds.has(c.id) && personalGroupIds.has(c.group_id))
+        .map(c => c.id)
+    );
+  }, [categories, categoryGroups, businessPurposeCategoryIds]);
+
+
   // Filter categories by budget type AND selected business
   const filteredCategoryIds = useMemo(() => {
     if (!categories || !categoryGroups) return new Set<string>();
@@ -715,7 +733,7 @@ const Budgets = () => {
     ...b,
     spent: payrollCatIdsSet.has(b.category_id) ? b.planned_amount : (effectiveSpentByCategory[b.category_id] || 0),
     received: receivedByCategory[b.category_id] || 0,
-  })).filter(b => filteredCategoryIds.has(b.category_id));
+  })).filter(b => filteredCategoryIds.has(b.category_id) && !fundingTransferCategoryIds.has(b.category_id));
 
   // Group budgets by expense type
   const categoryNameById = useMemo(() => {
