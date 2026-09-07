@@ -299,7 +299,24 @@ const Subscriptions = () => {
     } catch { toast.error('Failed to add subscription'); }
   };
   const openEdit = (sub: any) => {
-    setEditSub({ id: sub.id, merchant: sub.merchant || '', average_amount: String(sub.average_amount || ''), frequency: sub.frequency || 'monthly', notes: sub.notes || '', category_id: sub.category_id || '', business_split_pct: Number(sub.business_split_pct || 0), business_category_id: sub.business_category_id || '' });
+    const pm = (sub.pause_months || []) as string[];
+    setEditSub({
+      id: sub.id, merchant: sub.merchant || '', average_amount: String(sub.average_amount || ''),
+      frequency: sub.frequency || 'monthly', notes: sub.notes || '', category_id: sub.category_id || '',
+      business_split_pct: Number(sub.business_split_pct || 0), business_category_id: sub.business_category_id || '',
+      end_date: sub.end_date ? String(sub.end_date).slice(0, 10) : '',
+      pauseStart: pm.length ? [...pm].sort()[0] : '',
+      pauseCount: pm.length ? String(pm.length) : '1',
+    });
+  };
+  // Turn a start month (YYYY-MM) + a number of months into the list of paused months.
+  const buildPauseMonths = (start: string, count: number): string[] => {
+    if (!start || !/^\d{4}-\d{2}$/.test(start) || count < 1) return [];
+    const [y, m] = start.split('-').map(Number);
+    return Array.from({ length: count }, (_, i) => {
+      const d = new Date(y, m - 1 + i, 1);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    });
   };
   const handleEditSubscription = async () => {
     if (!editSub) return;
@@ -309,7 +326,9 @@ const Subscriptions = () => {
         frequency: editSub.frequency, notes: editSub.notes || null, category_id: editSub.category_id || null,
         business_split_pct: editSub.business_split_pct,
         business_category_id: editSub.business_category_id || null,
-      });
+        end_date: editSub.end_date || null,
+        pause_months: buildPauseMonths(editSub.pauseStart, parseInt(editSub.pauseCount || '0', 10)),
+      } as any);
       toast.success('Subscription updated'); setEditSub(null);
     } catch { toast.error('Failed to update subscription'); }
   };
@@ -929,6 +948,18 @@ const Subscriptions = () => {
               </div>
               <div><Label>Category</Label><CategoryCombobox value={editSub.category_id} onValueChange={v => setEditSub((p: any) => ({ ...p, category_id: v }))} placeholder="Select category" /></div>
               <div><Label>Notes</Label><Input placeholder="Optional notes" value={editSub.notes} onChange={e => setEditSub((p: any) => ({ ...p, notes: e.target.value }))} /></div>
+
+              <div className="space-y-2 rounded-lg border p-3">
+                <Label className="text-xs">Last charge date (leave blank if it keeps going)</Label>
+                <Input type="date" value={editSub.end_date} onChange={e => setEditSub((p: any) => ({ ...p, end_date: e.target.value }))} />
+                <Label className="text-xs">Pause this payment</Label>
+                <div className="flex gap-2">
+                  <Input type="month" value={editSub.pauseStart} onChange={e => setEditSub((p: any) => ({ ...p, pauseStart: e.target.value }))} />
+                  <Input type="number" min={1} max={24} className="w-24" value={editSub.pauseCount} onChange={e => setEditSub((p: any) => ({ ...p, pauseCount: e.target.value }))} />
+                </div>
+                <p className="text-xs text-muted-foreground">Start month and how many months it's paused. Clear the month to un-pause.</p>
+              </div>
+
 
               <div className="space-y-2 rounded-lg border p-3">
                 <Label className="text-xs uppercase tracking-wide text-muted-foreground">Personal / Business</Label>

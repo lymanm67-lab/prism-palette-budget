@@ -11212,6 +11212,8 @@ export type Database = {
           cancellation_status: string
           category_id: string | null
           created_at: string
+          end_date: string | null
+          first_charge_date: string | null
           frequency: string
           household_id: string
           id: string
@@ -11223,6 +11225,7 @@ export type Database = {
           next_expected_date: string | null
           normalized_merchant: string | null
           notes: string | null
+          pause_months: string[]
           savings_reallocated_to: string | null
           updated_at: string
           usage_status: string
@@ -11241,6 +11244,8 @@ export type Database = {
           cancellation_status?: string
           category_id?: string | null
           created_at?: string
+          end_date?: string | null
+          first_charge_date?: string | null
           frequency?: string
           household_id: string
           id?: string
@@ -11252,6 +11257,7 @@ export type Database = {
           next_expected_date?: string | null
           normalized_merchant?: string | null
           notes?: string | null
+          pause_months?: string[]
           savings_reallocated_to?: string | null
           updated_at?: string
           usage_status?: string
@@ -11270,6 +11276,8 @@ export type Database = {
           cancellation_status?: string
           category_id?: string | null
           created_at?: string
+          end_date?: string | null
+          first_charge_date?: string | null
           frequency?: string
           household_id?: string
           id?: string
@@ -11281,6 +11289,7 @@ export type Database = {
           next_expected_date?: string | null
           normalized_merchant?: string | null
           notes?: string | null
+          pause_months?: string[]
           savings_reallocated_to?: string | null
           updated_at?: string
           usage_status?: string

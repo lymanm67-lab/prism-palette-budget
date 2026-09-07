@@ -83,7 +83,10 @@ const getDuplicateKey = (transaction: {
   notes?: string | null;
 }) => {
   const accountId = transaction.account_id || 'no-account';
-  return `${transaction.date}|${Math.round(transaction.amount * 100)}|${accountId}`;
+  // Merchant must stay part of the key — two unrelated charges of the same amount on the
+  // same day (e.g. two $12.99 purchases) are NOT duplicates.
+  const merchant = String(transaction.merchant || '').toLowerCase().trim().replace(/\s+/g, ' ');
+  return `${transaction.date}|${Math.round(transaction.amount * 100)}|${accountId}|${merchant}`;
 };
 
 const Transactions = () => {
@@ -266,11 +269,14 @@ const Transactions = () => {
     setTagSearch('');
   };
 
-  // Compute duplicate transaction IDs (same account + date + amount, more than 1 match).
+  // Compute duplicate transaction IDs (same account + date + amount + merchant, >1 match).
   // Excludes rows tagged 'not_duplicate' and merchants that legitimately post
   // several identical same-day charges (Lovable AI credit top-ups).
-  const duplicateIds = useMemo(() => {
-    if (!transactions) return new Set<string>();
+  // duplicateIds = every row in a duplicate group (shown/highlighted).
+  // duplicateExtraIds = the extra copies only, keeping the first row of each group — this
+  // is what bulk delete acts on so the original spending record is never wiped.
+  const { duplicateIds, duplicateExtraIds } = useMemo(() => {
+    if (!transactions) return { duplicateIds: new Set<string>(), duplicateExtraIds: new Set<string>() };
     const groups = new Map<string, string[]>();
     for (const t of transactions) {
       if ((t.tags || []).includes('not_duplicate')) continue;
@@ -280,11 +286,16 @@ const Transactions = () => {
       groups.get(key)!.push(t.id);
     }
     const dupeSet = new Set<string>();
+    const extraSet = new Set<string>();
     for (const ids of groups.values()) {
-      if (ids.length > 1) ids.forEach(id => dupeSet.add(id));
+      if (ids.length > 1) {
+        ids.forEach(id => dupeSet.add(id));
+        ids.slice(1).forEach(id => extraSet.add(id));
+      }
     }
-    return dupeSet;
+    return { duplicateIds: dupeSet, duplicateExtraIds: extraSet };
   }, [transactions]);
+
 
   const dismissDuplicate = async (id: string) => {
     const txn = transactions?.find(t => t.id === id);
@@ -298,6 +309,7 @@ const Transactions = () => {
   };
 
   const duplicateCount = duplicateIds.size;
+  const duplicateExtraCount = duplicateExtraIds.size;
   const needsReviewCount = useMemo(() => (transactions || []).filter(t => (t as any).needs_review).length, [transactions]);
 
   const activeFilterCount = Object.values(filters).filter(Boolean).length;
@@ -1497,14 +1509,14 @@ const Transactions = () => {
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button size="sm" variant="destructive" className="gap-1.5 shrink-0">
-                <Trash2 className="h-3.5 w-3.5" /> Delete all duplicates
+                <Trash2 className="h-3.5 w-3.5" /> Delete extra copies
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Delete all {duplicateCount} duplicate transactions?</AlertDialogTitle>
+                <AlertDialogTitle>Delete {duplicateExtraCount} extra {duplicateExtraCount === 1 ? 'copy' : 'copies'}?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This will permanently remove all {duplicateCount} flagged duplicate transactions. This action cannot be undone. Make sure you've reviewed them first.
+                  This keeps the first transaction in each group and moves the {duplicateExtraCount} extra {duplicateExtraCount === 1 ? 'copy' : 'copies'} to the trash. Make sure you've reviewed them first.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -1512,16 +1524,16 @@ const Transactions = () => {
                 <AlertDialogAction
                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                   onClick={async () => {
-                    const ids = Array.from(duplicateIds);
+                    const ids = Array.from(duplicateExtraIds);
                     await softDelete(ids);
                     setSelected(new Set());
-                    toast.success(`Moved ${ids.length} duplicates to trash`, {
+                    toast.success(`Moved ${ids.length} extra copies to trash`, {
                       action: { label: 'Undo', onClick: async () => { await restoreTransactions(ids); toast.success(`Restored ${ids.length} transactions`); } },
                       duration: 10000,
                     });
                   }}
                 >
-                  Delete {duplicateCount} duplicates
+                  Delete {duplicateExtraCount} extra {duplicateExtraCount === 1 ? 'copy' : 'copies'}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
