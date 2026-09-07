@@ -1585,7 +1585,7 @@ const Budgets = () => {
         </div>
 
         {/* Summary Cards Row */}
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-5 gap-3">
           <Card className="border-l-4 border-l-emerald-500">
             <CardContent className="p-3">
               <p className="text-[10px] font-medium text-muted-foreground uppercase">Income</p>
