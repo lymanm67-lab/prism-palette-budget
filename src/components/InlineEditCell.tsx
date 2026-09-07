@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { forwardRef, useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Check, X } from 'lucide-react';
+import { Pencil } from 'lucide-react';
 
 interface InlineEditCellProps {
   value: string;
@@ -10,16 +11,18 @@ interface InlineEditCellProps {
   className?: string;
   formatter?: (value: string) => string;
   placeholder?: string;
+  showEditIcon?: boolean;
 }
 
-export default function InlineEditCell({
+const InlineEditCell = forwardRef<HTMLSpanElement, InlineEditCellProps>(function InlineEditCell({
   value,
   onSave,
   type = 'text',
   className,
   formatter,
   placeholder = 'Click to edit',
-}: InlineEditCellProps) {
+  showEditIcon = false,
+}, ref) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
   const [saving, setSaving] = useState(false);
@@ -69,7 +72,7 @@ export default function InlineEditCell({
 
   if (isEditing) {
     return (
-      <div className="flex items-center gap-1">
+      <span ref={ref} className="flex items-center gap-1">
         <Input
           ref={inputRef}
           type={type}
@@ -85,23 +88,34 @@ export default function InlineEditCell({
             className
           )}
         />
-      </div>
+      </span>
     );
   }
 
   const displayValue = formatter ? formatter(value) : value;
 
   return (
-    <button
+    <span ref={ref} className="inline-flex items-center gap-1">
+    <Button
+      type="button"
+      variant="ghost"
+      size="sm"
+      title="Edit"
+      aria-label={`Edit ${displayValue || placeholder}`}
       onClick={() => setIsEditing(true)}
       className={cn(
-        'text-left px-1 py-0.5 -mx-1 rounded hover:bg-muted/50 transition-colors cursor-pointer',
-        'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1',
+        'h-auto min-h-7 justify-start gap-1 px-1 py-0.5 -mx-1 text-left font-inherit',
         !value && 'text-muted-foreground italic',
         className
       )}
     >
       {displayValue || placeholder}
-    </button>
+      {showEditIcon && <Pencil className="h-3 w-3 shrink-0 text-muted-foreground" aria-hidden="true" />}
+    </Button>
+    </span>
   );
-}
+});
+
+InlineEditCell.displayName = 'InlineEditCell';
+
+export default InlineEditCell;
