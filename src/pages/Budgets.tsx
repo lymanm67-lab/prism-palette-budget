@@ -50,6 +50,7 @@ import AssignAutoBalance from '@/components/budget/AssignAutoBalance';
 
 import ZeroBasedPlanBoard from '@/components/budget/ZeroBasedPlanBoard';
 import CapitalEventsPanel from '@/components/budget/CapitalEventsPanel';
+import AssignRemainingDialog from '@/components/budget/AssignRemainingDialog';
 import { Coins } from 'lucide-react';
 
 const getMonth = (offset: number) => {
@@ -940,6 +941,38 @@ const Budgets = () => {
   // Unbudgeted that have spending
   const unbudgetedWithSpending = unbudgetedCategories.filter(c => (spentByCategory[c.id] || 0) > 0 || (receivedByCategory[c.id] || 0) > 0);
 
+  // Zero-based assignment: every dollar needs a job. Candidates are the expense
+  // categories in the CURRENT scope only, so Personal and Business each balance
+  // independently and a business dollar never zeroes out a personal one.
+  const assignScopeLabel = budgetType === 'business' ? 'Business' : budgetType === 'personal' ? 'Personal' : 'Personal + Business';
+
+  const assignCandidates = useMemo(() => {
+    const skip = new Set<ExpenseType>(['income', 'payroll_deduction']);
+    const list: { id: string; name: string; planned: number }[] = [];
+    const seen = new Set<string>();
+    for (const b of budgetItems) {
+      const type = categoryExpenseType.get(b.category_id) || 'flexible';
+      if (skip.has(type) || seen.has(b.category_id)) continue;
+      seen.add(b.category_id);
+      list.push({ id: b.category_id, name: categoryNameById.get(b.category_id) || 'Category', planned: b.planned_amount });
+    }
+    for (const c of unbudgetedCategories) {
+      const type = categoryExpenseType.get(c.id) || 'flexible';
+      if (skip.has(type) || seen.has(c.id)) continue;
+      seen.add(c.id);
+      list.push({ id: c.id, name: c.name || 'Category', planned: 0 });
+    }
+    return list;
+  }, [budgetItems, unbudgetedCategories, categoryExpenseType, categoryNameById]);
+
+  const handleAssignRemaining = useCallback(
+    async (categoryId: string, newPlanned: number) => {
+      await upsertBudget.mutateAsync({ category_id: categoryId, month, planned_amount: newPlanned });
+    },
+    [upsertBudget, month],
+  );
+
+
   // Forecast data
   const forecast = useMemo(() => {
     const [y, m] = month.split('-').map(Number);
@@ -1575,6 +1608,15 @@ const Budgets = () => {
               {ownerContribution > 0 && budgetType !== 'all' && (
                 <p className="text-[10px] text-sky-600 dark:text-sky-400 mt-0.5">{budgetType === 'business' ? '+' : '−'}{formatCurrency(ownerContribution)} owner contribution</p>
               )}
+              <div className="mt-2">
+                <AssignRemainingDialog
+                  amount={unallocated}
+                  scopeLabel={assignScopeLabel}
+                  candidates={assignCandidates}
+                  onAssign={handleAssignRemaining}
+                />
+              </div>
+
             </CardContent>
           </Card>
           <Card className={cn("border-l-4", totalExpenseRemaining >= 0 ? "border-l-emerald-500" : "border-l-rose-500")}>
@@ -2120,6 +2162,15 @@ const Budgets = () => {
             {ownerContribution > 0 && budgetType !== 'all' && (
               <p className="text-[10px] text-sky-600 dark:text-sky-400 mt-0.5">{budgetType === 'business' ? '+' : '−'}{formatCurrency(ownerContribution)} owner contribution</p>
             )}
+            <div className="mt-2">
+              <AssignRemainingDialog
+                amount={unallocated}
+                scopeLabel={assignScopeLabel}
+                candidates={assignCandidates}
+                onAssign={handleAssignRemaining}
+              />
+            </div>
+
           </CardContent>
         </Card>
         <Card className={cn("border-l-4", totalExpenseRemaining >= 0 ? "border-l-emerald-500" : "border-l-rose-500")}>
@@ -2467,6 +2518,16 @@ const Budgets = () => {
               <p className="text-sm text-muted-foreground mt-1">
                 {unallocated === 0 ? '✅ Every dollar assigned' : unallocated > 0 ? 'Left to assign' : 'Over-allocated'}
               </p>
+              <p className="mt-0.5 text-xs text-muted-foreground">{assignScopeLabel} scope</p>
+              <div className="mt-3 flex justify-center">
+                <AssignRemainingDialog
+                  amount={unallocated}
+                  scopeLabel={assignScopeLabel}
+                  candidates={assignCandidates}
+                  onAssign={handleAssignRemaining}
+                />
+              </div>
+
             </CardContent>
           </Card>
 
