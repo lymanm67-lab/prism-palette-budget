@@ -385,7 +385,7 @@ export default function BudgetPlanner() {
                         return (
                           <tr key={r.categoryId} className="border-t border-border/50">
                             <td className="p-2">
-                              <InlineEditCell value={r.rawName} onSave={(v) => renameCategory(r, v)} />
+                              <InlineEditCell value={r.rawName} onSave={(v) => renameCategory(r, v)} showEditIcon />
                               {/business/i.test(r.groupName) && (
                                 <span className="ml-1 text-[10px] text-muted-foreground">(Business)</span>
                               )}
@@ -397,6 +397,7 @@ export default function BudgetPlanner() {
                                 className="text-right"
                                 formatter={(v) => money(Number(v))}
                                 onSave={(v) => savePlanned(r, v)}
+                                 showEditIcon
                               />
                             </td>
                             <td className="p-2 text-right">
@@ -407,6 +408,7 @@ export default function BudgetPlanner() {
                                   className="text-right"
                                   formatter={(v) => money(Number(v))}
                                   onSave={(v) => saveActual(r, v)}
+                                   showEditIcon
                                 />
                                 {r.actualOverride !== null && (
                                   <button
