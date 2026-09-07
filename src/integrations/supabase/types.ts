@@ -674,6 +674,7 @@ export type Database = {
       }
       budgets: {
         Row: {
+          actual_override: number | null
           category_id: string
           created_at: string
           household_id: string
@@ -685,6 +686,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          actual_override?: number | null
           category_id: string
           created_at?: string
           household_id: string
@@ -696,6 +698,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          actual_override?: number | null
           category_id?: string
           created_at?: string
           household_id?: string
