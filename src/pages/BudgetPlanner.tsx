@@ -110,8 +110,8 @@ export default function BudgetPlanner() {
   const rows = useMemo(() => {
     if (!data) return [] as any[];
     type Row = {
-      categoryId: string; budgetId: string | null; name: string; groupName: string;
-      planned: number; actual: number;
+      categoryId: string; budgetId: string | null; name: string; rawName: string; groupName: string;
+      planned: number; actual: number; actualOverride: number | null;
     };
     const map = new Map<string, Row>();
     const catById = new Map<string, any>(data.categories.map((c: any) => [c.id, c]));
