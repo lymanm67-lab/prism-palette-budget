@@ -144,14 +144,25 @@ export default function BudgetPlanner() {
       row.budgetId = row.budgetId ?? b.id;
       map.set(b.category_id, row);
     }
+    /**
+     * Split lines (e.g. "BetrLink Debt — Business 37%") carry the whole bill on
+     * one category, so only that share belongs to this line's actual.
+     */
+    const shareOf = (name: string) => {
+      const m = /(\d+(?:\.\d+)?)\s*%/.exec(name || '');
+      if (!m) return 1;
+      const pct = Number(m[1]);
+      return Number.isFinite(pct) && pct > 0 && pct <= 100 ? pct / 100 : 1;
+    };
     for (const t of data.transactions) {
       const amt = Number(t.amount) || 0;
       if (amt >= 0 || !t.category_id) continue;
       const row = map.get(t.category_id) ?? make(t.category_id);
       if (!row) continue;
-      row.actual += Math.abs(amt);
+      row.actual += Math.abs(amt) * shareOf(row.rawName);
       map.set(t.category_id, row);
     }
+
     return Array.from(map.values()).sort(
       (a, b) => a.groupName.localeCompare(b.groupName) || b.planned - a.planned,
     );
