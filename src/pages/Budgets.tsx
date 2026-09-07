@@ -1585,7 +1585,7 @@ const Budgets = () => {
         </div>
 
         {/* Summary Cards Row */}
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-5 gap-3">
           <Card className="border-l-4 border-l-emerald-500">
             <CardContent className="p-3">
               <p className="text-[10px] font-medium text-muted-foreground uppercase">Income</p>
@@ -1598,6 +1598,13 @@ const Budgets = () => {
               <p className="text-[10px] font-medium text-muted-foreground uppercase">Expenses</p>
               <p className="text-lg font-bold tabular-nums">{formatCurrency(totalExpenseBudget)}</p>
               <p className="text-xs text-muted-foreground">{formatCurrency(totalExpenseActual)} spent</p>
+            </CardContent>
+          </Card>
+          <Card className={cn("border-l-4", (totalIncomeActual - totalExpenseActual) >= 0 ? "border-l-emerald-500" : "border-l-rose-500")}>
+            <CardContent className="p-3">
+              <p className="text-[10px] font-medium text-muted-foreground uppercase">Left over</p>
+              <p className={cn("text-lg font-bold tabular-nums", (totalIncomeActual - totalExpenseActual) < 0 ? "text-rose-600" : "text-emerald-600")}>{formatCurrency(totalIncomeActual - totalExpenseActual)}</p>
+              <p className="text-xs text-muted-foreground">received − spent</p>
             </CardContent>
           </Card>
           <Card className={cn("border-l-4", unallocated >= 0 ? "border-l-emerald-500" : "border-l-amber-500")}>
@@ -2134,7 +2141,7 @@ const Budgets = () => {
       </Card>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3">
         <Card className="border-l-4 border-l-emerald-500">
           <CardContent className="p-3 sm:p-4">
             <p className="text-[11px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">Income</p>
@@ -2152,6 +2159,16 @@ const Budgets = () => {
             <p className="text-[11px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">Expenses</p>
             <p className="text-lg sm:text-xl font-bold font-display tabular-nums mt-1">{formatCurrency(totalExpenseBudget)}</p>
             <p className="text-xs text-muted-foreground mt-0.5">{formatCurrency(totalExpenseActual)} spent</p>
+          </CardContent>
+        </Card>
+        <Card className={cn("border-l-4", (totalIncomeActual - totalExpenseActual) >= 0 ? "border-l-emerald-500" : "border-l-rose-500")}>
+          <CardContent className="p-3 sm:p-4">
+            <p className="text-[11px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">Left over</p>
+            <p className={cn("text-lg sm:text-xl font-bold font-display tabular-nums mt-1", (totalIncomeActual - totalExpenseActual) < 0 ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400")}>
+              {formatCurrency(totalIncomeActual - totalExpenseActual)}
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">received − spent this month</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5 tabular-nums">planned: {formatCurrency(totalIncomeBudget - totalExpenseBudget)}</p>
           </CardContent>
         </Card>
         <Card className={cn("border-l-4", unallocated >= 0 ? "border-l-emerald-500" : "border-l-amber-500")}>
