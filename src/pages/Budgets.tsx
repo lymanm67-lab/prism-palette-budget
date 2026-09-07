@@ -940,6 +940,38 @@ const Budgets = () => {
   // Unbudgeted that have spending
   const unbudgetedWithSpending = unbudgetedCategories.filter(c => (spentByCategory[c.id] || 0) > 0 || (receivedByCategory[c.id] || 0) > 0);
 
+  // Zero-based assignment: every dollar needs a job. Candidates are the expense
+  // categories in the CURRENT scope only, so Personal and Business each balance
+  // independently and a business dollar never zeroes out a personal one.
+  const assignScopeLabel = budgetType === 'business' ? 'Business' : budgetType === 'personal' ? 'Personal' : 'Personal + Business';
+
+  const assignCandidates = useMemo(() => {
+    const skip = new Set<ExpenseType>(['income', 'payroll_deduction']);
+    const list: { id: string; name: string; planned: number }[] = [];
+    const seen = new Set<string>();
+    for (const b of budgetItems) {
+      const type = categoryExpenseType.get(b.category_id) || 'flexible';
+      if (skip.has(type) || seen.has(b.category_id)) continue;
+      seen.add(b.category_id);
+      list.push({ id: b.category_id, name: categoryNameById.get(b.category_id) || 'Category', planned: b.planned_amount });
+    }
+    for (const c of unbudgetedCategories) {
+      const type = categoryExpenseType.get(c.id) || 'flexible';
+      if (skip.has(type) || seen.has(c.id)) continue;
+      seen.add(c.id);
+      list.push({ id: c.id, name: c.name || 'Category', planned: 0 });
+    }
+    return list;
+  }, [budgetItems, unbudgetedCategories, categoryExpenseType, categoryNameById]);
+
+  const handleAssignRemaining = useCallback(
+    async (categoryId: string, newPlanned: number) => {
+      await upsertBudget.mutateAsync({ category_id: categoryId, month, planned_amount: newPlanned });
+    },
+    [upsertBudget, month],
+  );
+
+
   // Forecast data
   const forecast = useMemo(() => {
     const [y, m] = month.split('-').map(Number);
