@@ -123,9 +123,11 @@ export default function BudgetPlanner() {
         categoryId,
         budgetId: null,
         name: /business/i.test(groupName) ? `${cat?.name ?? 'Category'} (Business)` : (cat?.name ?? 'Category'),
+        rawName: cat?.name ?? 'Category',
         groupName,
         planned: 0,
         actual: 0,
+        actualOverride: null,
       };
     };
 
