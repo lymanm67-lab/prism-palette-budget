@@ -155,10 +155,58 @@ export default function BudgetPlanner() {
     );
   }, [data]);
 
+  /** An override wins over the imported transaction total for that line. */
+  const effectiveActual = (r: any) => (r.actualOverride === null ? r.actual : r.actualOverride);
+
   const totals = useMemo(() => ({
     planned: rows.reduce((s, r) => s + r.planned, 0),
-    actual: rows.reduce((s, r) => s + r.actual, 0),
+    actual: rows.reduce((s, r) => s + effectiveActual(r), 0),
   }), [rows]);
+
+  const saveActual = async (row: any, raw: string) => {
+    const cleaned = String(raw).replace(/[^0-9.]/g, '');
+    const amount = cleaned === '' ? null : Number(cleaned);
+    if (amount !== null && (!Number.isFinite(amount) || amount < 0)) {
+      toast({ title: 'Enter a valid amount', variant: 'destructive' });
+      throw new Error('invalid');
+    }
+    const { error } = row.budgetId
+      ? await supabase.from('budgets').update({ actual_override: amount }).eq('id', row.budgetId)
+      : await supabase.from('budgets').insert({
+        household_id: household!.id,
+        category_id: row.categoryId,
+        month,
+        planned_amount: row.planned || 0,
+        actual_override: amount,
+      });
+    if (error) {
+      toast({ title: 'Could not save actual', description: error.message, variant: 'destructive' });
+      throw error;
+    }
+    await refresh();
+  };
+
+  const clearActualOverride = async (row: any) => {
+    if (!row.budgetId) return;
+    const { error } = await supabase.from('budgets').update({ actual_override: null }).eq('id', row.budgetId);
+    if (error) return toast({ title: 'Could not reset', description: error.message, variant: 'destructive' });
+    await refresh();
+  };
+
+  const renameCategory = async (row: any, raw: string) => {
+    const name = String(raw).trim();
+    if (!name) {
+      toast({ title: 'Name cannot be empty', variant: 'destructive' });
+      throw new Error('invalid');
+    }
+    if (name === row.rawName) return;
+    const { error } = await supabase.from('categories').update({ name }).eq('id', row.categoryId);
+    if (error) {
+      toast({ title: 'Could not rename', description: error.message, variant: 'destructive' });
+      throw error;
+    }
+    qc.invalidateQueries();
+  };
 
   const savePlanned = async (row: any, raw: string) => {
     const amount = Number(String(raw).replace(/[^0-9.]/g, ''));
