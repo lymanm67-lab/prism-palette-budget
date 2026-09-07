@@ -67,7 +67,7 @@ export default function BudgetPlanner() {
           .order('name'),
         supabase
           .from('budgets')
-          .select('id, category_id, planned_amount, categories(name, color, category_groups(name))')
+          .select('id, category_id, planned_amount, actual_override, categories(name, color, category_groups(name))')
           .eq('household_id', household!.id)
           .eq('month', monthStart),
         supabase
