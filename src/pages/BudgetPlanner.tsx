@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Wallet, Copy, FileSpreadsheet, Trash2, Plus } from 'lucide-react';
+import { Loader2, Wallet, Copy, FileSpreadsheet, Trash2, Plus, CalendarRange } from 'lucide-react';
 import InlineEditCell from '@/components/InlineEditCell';
 import { toast } from '@/hooks/use-toast';
 import { useBlueprintAssumptions, useSaveBlueprintAssumptions } from '@/hooks/use-blueprint-assumptions';
@@ -16,6 +16,7 @@ import { money, SectionNote } from '@/components/blueprint/shared';
 import BlueprintImpactPanel from '@/components/budget/BlueprintImpactPanel';
 import BudgetCsvImportDialog from '@/components/budget/BudgetCsvImportDialog';
 import BaselineLockManager from '@/components/budget/BaselineLockManager';
+import BudgetYearGrid from '@/components/budget/BudgetYearGrid';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -34,6 +35,7 @@ export default function BudgetPlanner() {
   const [monthIdx, setMonthIdx] = useState(now.getMonth());
   const [importOpen, setImportOpen] = useState(false);
   const [addCategoryId, setAddCategoryId] = useState('');
+  const [showYearGrid, setShowYearGrid] = useState(false);
 
   const month = monthKey(year, monthIdx);
   const prevMonth = monthIdx === 0 ? monthKey(year - 1, 11) : monthKey(year, monthIdx - 1);
@@ -67,7 +69,7 @@ export default function BudgetPlanner() {
           .order('name'),
         supabase
           .from('budgets')
-          .select('id, category_id, planned_amount, categories(name, color, category_groups(name))')
+          .select('id, category_id, planned_amount, actual_override, categories(name, color, category_groups(name))')
           .eq('household_id', household!.id)
           .eq('month', monthStart),
         supabase
@@ -110,8 +112,8 @@ export default function BudgetPlanner() {
   const rows = useMemo(() => {
     if (!data) return [] as any[];
     type Row = {
-      categoryId: string; budgetId: string | null; name: string; groupName: string;
-      planned: number; actual: number;
+      categoryId: string; budgetId: string | null; name: string; rawName: string; groupName: string;
+      planned: number; actual: number; actualOverride: number | null;
     };
     const map = new Map<string, Row>();
     const catById = new Map<string, any>(data.categories.map((c: any) => [c.id, c]));
@@ -123,9 +125,11 @@ export default function BudgetPlanner() {
         categoryId,
         budgetId: null,
         name: /business/i.test(groupName) ? `${cat?.name ?? 'Category'} (Business)` : (cat?.name ?? 'Category'),
+        rawName: cat?.name ?? 'Category',
         groupName,
         planned: 0,
         actual: 0,
+        actualOverride: null,
       };
     };
 
@@ -134,6 +138,9 @@ export default function BudgetPlanner() {
       const row = map.get(b.category_id) ?? make(b.category_id);
       if (!row) continue;
       row.planned += Number(b.planned_amount) || 0;
+      if (b.actual_override !== null && b.actual_override !== undefined) {
+        row.actualOverride = (row.actualOverride ?? 0) + (Number(b.actual_override) || 0);
+      }
       row.budgetId = row.budgetId ?? b.id;
       map.set(b.category_id, row);
     }
@@ -150,10 +157,58 @@ export default function BudgetPlanner() {
     );
   }, [data]);
 
+  /** An override wins over the imported transaction total for that line. */
+  const effectiveActual = (r: any) => (r.actualOverride === null ? r.actual : r.actualOverride);
+
   const totals = useMemo(() => ({
     planned: rows.reduce((s, r) => s + r.planned, 0),
-    actual: rows.reduce((s, r) => s + r.actual, 0),
+    actual: rows.reduce((s, r) => s + effectiveActual(r), 0),
   }), [rows]);
+
+  const saveActual = async (row: any, raw: string) => {
+    const cleaned = String(raw).replace(/[^0-9.]/g, '');
+    const amount = cleaned === '' ? null : Number(cleaned);
+    if (amount !== null && (!Number.isFinite(amount) || amount < 0)) {
+      toast({ title: 'Enter a valid amount', variant: 'destructive' });
+      throw new Error('invalid');
+    }
+    const { error } = row.budgetId
+      ? await supabase.from('budgets').update({ actual_override: amount }).eq('id', row.budgetId)
+      : await supabase.from('budgets').insert({
+        household_id: household!.id,
+        category_id: row.categoryId,
+        month,
+        planned_amount: row.planned || 0,
+        actual_override: amount,
+      });
+    if (error) {
+      toast({ title: 'Could not save actual', description: error.message, variant: 'destructive' });
+      throw error;
+    }
+    await refresh();
+  };
+
+  const clearActualOverride = async (row: any) => {
+    if (!row.budgetId) return;
+    const { error } = await supabase.from('budgets').update({ actual_override: null }).eq('id', row.budgetId);
+    if (error) return toast({ title: 'Could not reset', description: error.message, variant: 'destructive' });
+    await refresh();
+  };
+
+  const renameCategory = async (row: any, raw: string) => {
+    const name = String(raw).trim();
+    if (!name) {
+      toast({ title: 'Name cannot be empty', variant: 'destructive' });
+      throw new Error('invalid');
+    }
+    if (name === row.rawName) return;
+    const { error } = await supabase.from('categories').update({ name }).eq('id', row.categoryId);
+    if (error) {
+      toast({ title: 'Could not rename', description: error.message, variant: 'destructive' });
+      throw error;
+    }
+    qc.invalidateQueries();
+  };
 
   const savePlanned = async (row: any, raw: string) => {
     const amount = Number(String(raw).replace(/[^0-9.]/g, ''));
@@ -279,6 +334,13 @@ export default function BudgetPlanner() {
               <Button variant="outline" size="sm" onClick={() => setImportOpen(true)}>
                 <FileSpreadsheet className="h-4 w-4 mr-1" /> Import CSV
               </Button>
+              <Button
+                variant={showYearGrid ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setShowYearGrid((v) => !v)}
+              >
+                <CalendarRange className="h-4 w-4 mr-1" /> {showYearGrid ? 'Hide' : 'Edit'} whole year
+              </Button>
             </div>
           </div>
           <SectionNote>
@@ -318,10 +380,16 @@ export default function BudgetPlanner() {
                         </td>
                       </tr>
                       {groupRows.map((r) => {
-                        const remaining = r.planned - r.actual;
+                        const actual = effectiveActual(r);
+                        const remaining = r.planned - actual;
                         return (
                           <tr key={r.categoryId} className="border-t border-border/50">
-                            <td className="p-2">{r.name}</td>
+                            <td className="p-2">
+                              <InlineEditCell value={r.rawName} onSave={(v) => renameCategory(r, v)} />
+                              {/business/i.test(r.groupName) && (
+                                <span className="ml-1 text-[10px] text-muted-foreground">(Business)</span>
+                              )}
+                            </td>
                             <td className="p-2 text-right">
                               <InlineEditCell
                                 value={String(r.planned)}
@@ -331,7 +399,27 @@ export default function BudgetPlanner() {
                                 onSave={(v) => savePlanned(r, v)}
                               />
                             </td>
-                            <td className="p-2 text-right tabular-nums text-muted-foreground">{money(r.actual)}</td>
+                            <td className="p-2 text-right">
+                              <div className="flex items-center justify-end gap-1">
+                                <InlineEditCell
+                                  value={String(actual)}
+                                  type="number"
+                                  className="text-right"
+                                  formatter={(v) => money(Number(v))}
+                                  onSave={(v) => saveActual(r, v)}
+                                />
+                                {r.actualOverride !== null && (
+                                  <button
+                                    type="button"
+                                    onClick={() => clearActualOverride(r)}
+                                    title={`Yours — bank total was ${money(r.actual)}. Click to use the bank total again.`}
+                                    className="rounded bg-prism-amber/20 px-1 text-[9px] font-bold uppercase text-prism-amber"
+                                  >
+                                    Yours
+                                  </button>
+                                )}
+                              </div>
+                            </td>
                             <td className={`p-2 text-right tabular-nums ${remaining < 0 ? 'text-destructive' : ''}`}>
                               {money(remaining)}
                             </td>
@@ -374,6 +462,18 @@ export default function BudgetPlanner() {
           </div>
         </CardContent>
       </Card>
+
+      {showYearGrid && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">{year} at a glance — every month editable</CardTitle>
+            <SectionNote>Click any amount to change what you plan to spend that month.</SectionNote>
+          </CardHeader>
+          <CardContent>
+            <BudgetYearGrid year={year} />
+          </CardContent>
+        </Card>
+      )}
 
       <BaselineLockManager />
 
