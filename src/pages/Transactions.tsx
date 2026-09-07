@@ -269,11 +269,14 @@ const Transactions = () => {
     setTagSearch('');
   };
 
-  // Compute duplicate transaction IDs (same account + date + amount, more than 1 match).
+  // Compute duplicate transaction IDs (same account + date + amount + merchant, >1 match).
   // Excludes rows tagged 'not_duplicate' and merchants that legitimately post
   // several identical same-day charges (Lovable AI credit top-ups).
-  const duplicateIds = useMemo(() => {
-    if (!transactions) return new Set<string>();
+  // duplicateIds = every row in a duplicate group (shown/highlighted).
+  // duplicateExtraIds = the extra copies only, keeping the first row of each group — this
+  // is what bulk delete acts on so the original spending record is never wiped.
+  const { duplicateIds, duplicateExtraIds } = useMemo(() => {
+    if (!transactions) return { duplicateIds: new Set<string>(), duplicateExtraIds: new Set<string>() };
     const groups = new Map<string, string[]>();
     for (const t of transactions) {
       if ((t.tags || []).includes('not_duplicate')) continue;
@@ -283,11 +286,16 @@ const Transactions = () => {
       groups.get(key)!.push(t.id);
     }
     const dupeSet = new Set<string>();
+    const extraSet = new Set<string>();
     for (const ids of groups.values()) {
-      if (ids.length > 1) ids.forEach(id => dupeSet.add(id));
+      if (ids.length > 1) {
+        ids.forEach(id => dupeSet.add(id));
+        ids.slice(1).forEach(id => extraSet.add(id));
+      }
     }
-    return dupeSet;
+    return { duplicateIds: dupeSet, duplicateExtraIds: extraSet };
   }, [transactions]);
+
 
   const dismissDuplicate = async (id: string) => {
     const txn = transactions?.find(t => t.id === id);
