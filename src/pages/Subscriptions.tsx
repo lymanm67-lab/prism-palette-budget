@@ -950,6 +950,18 @@ const Subscriptions = () => {
               <div><Label>Notes</Label><Input placeholder="Optional notes" value={editSub.notes} onChange={e => setEditSub((p: any) => ({ ...p, notes: e.target.value }))} /></div>
 
               <div className="space-y-2 rounded-lg border p-3">
+                <Label className="text-xs">Last charge date (leave blank if it keeps going)</Label>
+                <Input type="date" value={editSub.end_date} onChange={e => setEditSub((p: any) => ({ ...p, end_date: e.target.value }))} />
+                <Label className="text-xs">Pause this payment</Label>
+                <div className="flex gap-2">
+                  <Input type="month" value={editSub.pauseStart} onChange={e => setEditSub((p: any) => ({ ...p, pauseStart: e.target.value }))} />
+                  <Input type="number" min={1} max={24} className="w-24" value={editSub.pauseCount} onChange={e => setEditSub((p: any) => ({ ...p, pauseCount: e.target.value }))} />
+                </div>
+                <p className="text-xs text-muted-foreground">Start month and how many months it's paused. Clear the month to un-pause.</p>
+              </div>
+
+
+              <div className="space-y-2 rounded-lg border p-3">
                 <Label className="text-xs uppercase tracking-wide text-muted-foreground">Personal / Business</Label>
                 <div className="flex rounded-md border overflow-hidden">
                   <button type="button" onClick={() => setEditSub((p: any) => ({ ...p, business_split_pct: 0, business_category_id: '' }))} className={cn('flex-1 px-3 py-1.5 text-xs font-medium transition-colors flex items-center justify-center gap-1', editSub.business_split_pct === 0 ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}><User className="h-3 w-3" /> Personal</button>
