@@ -1600,6 +1600,13 @@ const Budgets = () => {
               <p className="text-xs text-muted-foreground">{formatCurrency(totalExpenseActual)} spent</p>
             </CardContent>
           </Card>
+          <Card className={cn("border-l-4", (totalIncomeActual - totalExpenseActual) >= 0 ? "border-l-emerald-500" : "border-l-rose-500")}>
+            <CardContent className="p-3">
+              <p className="text-[10px] font-medium text-muted-foreground uppercase">Left over</p>
+              <p className={cn("text-lg font-bold tabular-nums", (totalIncomeActual - totalExpenseActual) < 0 ? "text-rose-600" : "text-emerald-600")}>{formatCurrency(totalIncomeActual - totalExpenseActual)}</p>
+              <p className="text-xs text-muted-foreground">received − spent</p>
+            </CardContent>
+          </Card>
           <Card className={cn("border-l-4", unallocated >= 0 ? "border-l-emerald-500" : "border-l-amber-500")}>
             <CardContent className="p-3">
               <p className="text-[10px] font-medium text-muted-foreground uppercase">Unallocated</p>
