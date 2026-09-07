@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Wallet, Copy, FileSpreadsheet, Trash2, Plus } from 'lucide-react';
+import { Loader2, Wallet, Copy, FileSpreadsheet, Trash2, Plus, CalendarRange } from 'lucide-react';
 import InlineEditCell from '@/components/InlineEditCell';
 import { toast } from '@/hooks/use-toast';
 import { useBlueprintAssumptions, useSaveBlueprintAssumptions } from '@/hooks/use-blueprint-assumptions';
