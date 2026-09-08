@@ -39,6 +39,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { EmptyState } from '@/components/EmptyState';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useMonthlyCommitments } from '@/hooks/use-monthly-commitments';
+import { useSafeToSpend } from '@/hooks/use-safe-to-spend';
 import NetWorthSummaryCard from '@/components/NetWorthSummaryCard';
 import { clusterDuplicates, softDeleteDuplicates } from '@/lib/duplicate-detector';
 import { ScoreBreakdownTooltip } from '@/components/cleanup/ScoreBreakdownTooltip';
@@ -139,6 +140,7 @@ const Budgets = () => {
   const { household } = useHousehold();
   const [monthOffset, setMonthOffset] = useState(0);
   const [budgetType, setBudgetType] = useState<'personal' | 'business' | 'all'>('personal');
+  const safeToSpend = useSafeToSpend(budgetType === 'all' ? 'combined' : budgetType);
   const [selectedBusiness, setSelectedBusiness] = useState<string>('all');
   const month = getMonth(monthOffset);
   const { data: budgets, isLoading: budgetsLoading } = useBudgets(month);
@@ -2185,7 +2187,7 @@ const Budgets = () => {
         </Card>
         <Card className={cn("border-l-4", (totalIncomeBudget - totalExpenseBudget) >= 0 ? "border-l-emerald-500" : "border-l-rose-500")}>
           <CardContent className="p-3 sm:p-4">
-            <p className="text-[11px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">Left over</p>
+            <p className="text-[11px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">Planned surplus</p>
             <p className={cn("text-lg sm:text-xl font-bold font-display tabular-nums mt-1", (totalIncomeBudget - totalExpenseBudget) < 0 ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400")}>
               {formatCurrency(totalIncomeBudget - totalExpenseBudget)}
             </p>
@@ -2198,6 +2200,12 @@ const Budgets = () => {
             )}
             <p className="text-[10px] text-muted-foreground mt-1 tabular-nums">typical month: {formatCurrency(typicalLeftOver)}</p>
             <p className="text-[10px] text-muted-foreground/80 leading-snug">Typical month = net pay minus every ongoing bill and subscription.</p>
+            <p className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400 mt-1 tabular-nums">
+              safe to spend: {formatCurrency(safeToSpend.monthly)}
+            </p>
+            <p className="text-[10px] text-muted-foreground/80 leading-snug">
+              Planned surplus − savings − investing − {safeToSpend.bufferPercent}% buffer = safe to spend. Matches the Dashboard when both show the same view ({budgetType === 'all' ? 'Combined' : budgetType === 'business' ? 'Business' : 'Personal'}).
+            </p>
           </CardContent>
         </Card>
         <Card className={cn("border-l-4", unallocated >= 0 ? "border-l-emerald-500" : "border-l-amber-500")}>
