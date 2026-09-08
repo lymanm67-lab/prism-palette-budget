@@ -54,6 +54,7 @@ import AssignAutoBalance from '@/components/budget/AssignAutoBalance';
 import ZeroBasedPlanBoard from '@/components/budget/ZeroBasedPlanBoard';
 import CapitalEventsPanel from '@/components/budget/CapitalEventsPanel';
 import AssignRemainingDialog from '@/components/budget/AssignRemainingDialog';
+import BudgetSummaryTiles from '@/components/budget/BudgetSummaryTiles';
 import { Coins } from 'lucide-react';
 
 const getMonth = (offset: number) => {
@@ -2270,99 +2271,28 @@ const Budgets = () => {
       </Card>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
-        <Card className="border-l-4 border-l-emerald-500">
-          <CardContent className="p-3 sm:p-4">
-            <p className="text-[11px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">Income</p>
-            <p className="text-lg sm:text-xl font-bold font-display tabular-nums mt-1">{formatCurrency(totalIncomeBudget)}</p>
-            <p className="text-[10px] text-muted-foreground mt-0.5">net budgeted</p>
-            {payrollDeductionBudget > 0 && (
-              <p className="text-[10px] text-muted-foreground mt-0.5 tabular-nums">{formatCurrency(grossIncomeBudget)} gross − {formatCurrency(payrollDeductionBudget)} deductions</p>
-            )}
-            <p className="text-[10px] text-muted-foreground mt-0.5">{formatCurrency(totalIncomeActual)} received</p>
-
-          </CardContent>
-        </Card>
-        <Card className="border-l-4 border-l-primary">
-          <CardContent className="p-3 sm:p-4">
-            <p className="text-[11px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">Expenses</p>
-            <p className="text-lg sm:text-xl font-bold font-display tabular-nums mt-1">{formatCurrency(totalExpenseBudget)}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">{formatCurrency(totalExpenseActual)} spent</p>
-          </CardContent>
-        </Card>
-        <Card className={cn("border-l-4", (totalIncomeBudget - totalExpenseBudget) >= 0 ? "border-l-emerald-500" : "border-l-rose-500")}>
-          <CardContent className="p-3 sm:p-4">
-            <p className="text-[11px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">Planned surplus</p>
-            <p className={cn("text-lg sm:text-xl font-bold font-display tabular-nums mt-1", (totalIncomeBudget - totalExpenseBudget) < 0 ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400")}>
-              {formatCurrency(totalIncomeBudget - totalExpenseBudget)}
-            </p>
-            <p className="text-xs text-muted-foreground mt-0.5 tabular-nums">{formatCurrency(totalIncomeBudget)} income − {formatCurrency(totalExpenseBudget)} expenses</p>
-            <p className="text-[10px] text-muted-foreground mt-1 tabular-nums">
-              so far: {formatCurrency(totalIncomeActual)} received − {formatCurrency(totalExpenseActual)} spent = {formatCurrency(totalIncomeActual - totalExpenseActual)}
-            </p>
-            {totalIncomeActual === 0 && totalExpenseActual > 0 && (
-              <p className="text-[10px] text-amber-600 dark:text-amber-400 leading-snug">No income has landed yet this month, so the "so far" figure looks negative.</p>
-            )}
-            <p className="text-[10px] text-muted-foreground mt-1 tabular-nums">typical month: {formatCurrency(typicalLeftOver)}</p>
-            <p className="text-[10px] text-muted-foreground/80 leading-snug">Typical month = net pay minus every ongoing bill and subscription.</p>
-            <p className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400 mt-1 tabular-nums">
-              safe to spend: {formatCurrency(safeToSpend.monthly)}
-            </p>
-            <p className="text-[10px] text-muted-foreground/80 leading-snug">
-              Planned surplus − savings − investing − {safeToSpend.bufferPercent}% buffer = safe to spend. Matches the Dashboard when both show the same view ({budgetType === 'all' ? 'Combined' : budgetType === 'business' ? 'Business' : 'Personal'}).
-            </p>
-          </CardContent>
-        </Card>
-        <Card className={cn("border-l-4", unallocated >= 0 ? "border-l-emerald-500" : "border-l-amber-500")}>
-          <CardContent className="p-3 sm:p-4">
-            <p className="text-[11px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">Unallocated</p>
-            <p className={cn("text-lg sm:text-xl font-bold font-display tabular-nums mt-1", unallocated < 0 ? "text-amber-600 dark:text-amber-400" : unallocated === 0 ? "text-emerald-600 dark:text-emerald-400" : "text-foreground")}>{formatCurrency(Math.abs(unallocated))}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">{unallocated < 0 ? 'over-allocated' : unallocated === 0 ? 'fully allocated ✓' : 'to assign'}</p>
-            {ownerContribution > 0 && budgetType !== 'all' && (
-              <p className="text-[10px] text-sky-600 dark:text-sky-400 mt-0.5">{budgetType === 'business' ? '+' : '−'}{formatCurrency(ownerContribution)} owner contribution</p>
-            )}
-            <div className="mt-2">
-              <AssignRemainingDialog
-                amount={unallocated}
-                scopeLabel={assignScopeLabel}
-                candidates={assignCandidates}
-                onAssign={handleAssignRemaining}
-              />
-            </div>
-
-          </CardContent>
-        </Card>
-        <Card className={cn("border-l-4", totalExpenseRemaining >= 0 ? "border-l-emerald-500" : "border-l-rose-500")}>
-          <CardContent className="p-3 sm:p-4">
-            <p className="text-[11px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">Under / Over</p>
-            <p className={cn("text-lg sm:text-xl font-bold font-display tabular-nums mt-1", totalExpenseRemaining < 0 ? "text-rose-600 dark:text-rose-400" : "text-foreground")}>{formatCurrency(Math.abs(totalExpenseRemaining))}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">{totalExpenseRemaining < 0 ? 'over budget' : 'under budget'}</p>
-          </CardContent>
-        </Card>
-        <Card className="border-l-4 border-l-sky-500">
-          <CardContent className="p-3 sm:p-4">
-            <p className="text-[11px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">Expected Income</p>
-            <p className="text-lg sm:text-xl font-bold font-display tabular-nums mt-1">
-              {nextIncome ? formatCurrency(nextIncome.amount) : formatCurrency(totalIncomeBudget)}
-            </p>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {nextIncome
-                ? `due ${new Date(nextIncome.next_due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
-                : 'budgeted income'}
-            </p>
-            {daysToNextIncome !== null && (
-              <p className="text-[10px] text-muted-foreground mt-1">
-                {daysToNextIncome === 0 ? 'today' : `${daysToNextIncome} day${daysToNextIncome === 1 ? '' : 's'} away`}
-              </p>
-            )}
-            {totalIncomeActual === 0 && totalIncomeBudget > 0 && (
-              <p className="text-[10px] text-amber-600 dark:text-amber-400 leading-snug mt-1">
-                No paycheck has landed yet — this is why Left over looks negative right now.
-              </p>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+      <BudgetSummaryTiles
+        totalIncomeBudget={totalIncomeBudget}
+        totalIncomeActual={totalIncomeActual}
+        totalExpenseBudget={totalExpenseBudget}
+        totalExpenseActual={totalExpenseActual}
+        plannedSurplus={totalIncomeBudget - totalExpenseBudget}
+        actualSurplus={totalIncomeActual - totalExpenseActual}
+        safeToSpendMonthly={safeToSpend.monthly}
+        safeToSpendBuffer={safeToSpend.bufferPercent}
+        unallocated={unallocated}
+        ownerContribution={ownerContribution}
+        budgetType={budgetType}
+        totalExpenseRemaining={totalExpenseRemaining}
+        nextIncome={nextIncome}
+        daysToNextIncome={daysToNextIncome}
+        payrollDeductionBudget={payrollDeductionBudget}
+        grossIncomeBudget={grossIncomeBudget}
+        typicalLeftOver={typicalLeftOver}
+        assignScopeLabel={assignScopeLabel}
+        assignCandidates={assignCandidates}
+        onAssign={handleAssignRemaining}
+      />
 
       {/* STEP 1 — INCOME: what actually came in, before anything is assigned */}
       {(viewTab === 'income' || isPrinting) && (
