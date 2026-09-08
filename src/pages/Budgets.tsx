@@ -1406,6 +1406,18 @@ const Budgets = () => {
             {bizSharePctBadge}
             {b.rollover && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium shrink-0">↻</span>}
             {rolloverAmt > 0 && <span className="text-[10px] text-emerald-600 dark:text-emerald-400 shrink-0">+{formatCurrency(rolloverAmt)}</span>}
+            {isWealth && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium shrink-0 cursor-default whitespace-nowrap">
+                    {formatCurrency(savedYtd)} YTD
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Total moved into this pot since January — it carries forward instead of resetting each month.</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
           </div>
           <div className="w-[200px]">
             <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
@@ -1413,10 +1425,12 @@ const Budgets = () => {
             </div>
           </div>
           <span className="w-[90px] text-right text-sm tabular-nums">{formatCurrency(effectiveBudget)}</span>
-          <span className="w-[90px] text-right text-sm tabular-nums text-muted-foreground">{formatCurrency(actual)}</span>
-          <span className={cn('w-[90px] text-right text-sm font-medium tabular-nums', overBudget ? (isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400') : isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground')}>
-            {overBudget ? '+' : ''}{formatCurrency(Math.abs(remaining))}
-            <span className="text-[10px] ml-0.5 opacity-80">{overBudget ? (isIncome ? 'extra' : 'over') : isIncome ? 'to go' : 'under'}</span>
+          <span className={cn('w-[90px] text-right text-sm tabular-nums', isWealth && actual > 0 ? 'text-emerald-600 dark:text-emerald-400 font-medium' : 'text-muted-foreground')}>
+            {isWealth && actual > 0 ? '+' : ''}{formatCurrency(actual)}
+          </span>
+          <span className={cn('w-[90px] text-right text-sm font-medium tabular-nums', remainingClass)}>
+            {overBudget || savedExtra ? '+' : ''}{formatCurrency(Math.abs(remaining))}
+            <span className="text-[10px] ml-0.5 opacity-80">{remainingLabel}</span>
 
           </span>
 
