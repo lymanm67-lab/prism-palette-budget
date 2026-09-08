@@ -1,3 +1,3 @@
 # Roadmap
-- [ ] Net worth tile shows 166k but true net worth ~$1.3M — find what dashboard omits
-- [x] Budget used 104% — keep honest number, link tile to over-budget view
+- [x] Net worth tile showed 166k — now uses Household Wealth math (~$1.3M)
+- [x] Budget used 104% — kept honest number; tile links to over-budget view when over
