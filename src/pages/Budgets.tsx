@@ -137,7 +137,6 @@ const BUDGET_STEPS: { key: BudgetStep; label: string; icon: typeof Wallet; hint:
 const Budgets = () => {
   const { formatCurrency } = useCurrency();
   const { leftOver: typicalLeftOver } = useMonthlyCommitments();
-  const safeToSpend = useSafeToSpend(budgetType === 'all' ? 'combined' : budgetType);
   const { household } = useHousehold();
   const [monthOffset, setMonthOffset] = useState(0);
   const [budgetType, setBudgetType] = useState<'personal' | 'business' | 'all'>('personal');
