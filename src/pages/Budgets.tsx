@@ -2047,6 +2047,11 @@ const Budgets = () => {
                       {hideZeroAmounts ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
                       {hideZeroAmounts ? 'Show $0 budgets' : 'Hide $0 budgets'}
                     </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setOverOnly(o => !o)} className="gap-2">
+                      <AlertTriangle className="h-4 w-4" />
+                      {overOnly ? 'Show all lines' : 'Show only over budget'}
+                    </DropdownMenuItem>
+
                     {hiddenBudgetIds.size > 0 && (
                       <DropdownMenuItem onClick={() => setHiddenBudgetIds(new Set())} className="gap-2">
                         <Eye className="h-4 w-4" />
