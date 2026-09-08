@@ -20,6 +20,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useBudgets, useCategories, useCategoryGroups, useTransactions, useUpsertBudget, useDeleteBudget, useCreateCategory } from '@/hooks/use-finance-data';
+import { useRecurringTransactions } from '@/hooks/use-recurring';
 import CategoryCombobox from '@/components/CategoryCombobox';
 import { useBusinessProfiles } from '@/hooks/use-business-data';
 import { useSmartBudget } from '@/hooks/use-financial-intelligence';
@@ -170,6 +171,7 @@ const Budgets = () => {
   const deleteBudget = useDeleteBudget();
   const createCategory = useCreateCategory();
   const { data: businessProfiles } = useBusinessProfiles();
+  const { data: recurring } = useRecurringTransactions();
 
   // Auto-seed payroll deduction budgets from most recent month that has them
   const seededMonths = useRef<Set<string>>(new Set());
@@ -933,6 +935,18 @@ const Budgets = () => {
       ? (netIncomeBudget - ownerContribution) - netExpenseBudget
       : netIncomeBudget - netExpenseBudget;
 
+  // Next expected income from active recurring deposits (paychecks, etc.)
+  const nextIncome = useMemo(() => {
+    if (!recurring) return null;
+    const incomeItems = (recurring as any[])
+      .filter(r => r.amount > 0 && !r.is_transfer && r.is_active !== false)
+      .sort((a, b) => new Date(a.next_due_date).getTime() - new Date(b.next_due_date).getTime());
+    return incomeItems[0] || null;
+  }, [recurring]);
+
+  const daysToNextIncome = nextIncome
+    ? Math.max(0, Math.ceil((new Date(nextIncome.next_due_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))
+    : null;
 
 
 
@@ -2143,7 +2157,7 @@ const Budgets = () => {
       </Card>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
         <Card className="border-l-4 border-l-emerald-500">
           <CardContent className="p-3 sm:p-4">
             <p className="text-[11px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">Income</p>
@@ -2204,6 +2218,29 @@ const Budgets = () => {
             <p className="text-[11px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">Under / Over</p>
             <p className={cn("text-lg sm:text-xl font-bold font-display tabular-nums mt-1", totalExpenseRemaining < 0 ? "text-rose-600 dark:text-rose-400" : "text-foreground")}>{formatCurrency(Math.abs(totalExpenseRemaining))}</p>
             <p className="text-xs text-muted-foreground mt-0.5">{totalExpenseRemaining < 0 ? 'over budget' : 'under budget'}</p>
+          </CardContent>
+        </Card>
+        <Card className="border-l-4 border-l-sky-500">
+          <CardContent className="p-3 sm:p-4">
+            <p className="text-[11px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">Expected Income</p>
+            <p className="text-lg sm:text-xl font-bold font-display tabular-nums mt-1">
+              {nextIncome ? formatCurrency(nextIncome.amount) : formatCurrency(totalIncomeBudget)}
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {nextIncome
+                ? `due ${new Date(nextIncome.next_due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+                : 'budgeted income'}
+            </p>
+            {daysToNextIncome !== null && (
+              <p className="text-[10px] text-muted-foreground mt-1">
+                {daysToNextIncome === 0 ? 'today' : `${daysToNextIncome} day${daysToNextIncome === 1 ? '' : 's'} away`}
+              </p>
+            )}
+            {totalIncomeActual === 0 && totalIncomeBudget > 0 && (
+              <p className="text-[10px] text-amber-600 dark:text-amber-400 leading-snug mt-1">
+                No paycheck has landed yet — this is why Left over looks negative right now.
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>
