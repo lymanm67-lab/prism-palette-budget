@@ -2169,6 +2169,8 @@ const Budgets = () => {
             </p>
             <p className="text-xs text-muted-foreground mt-0.5">received − spent this month</p>
             <p className="text-[10px] text-muted-foreground mt-0.5 tabular-nums">planned: {formatCurrency(totalIncomeBudget - totalExpenseBudget)}</p>
+            <p className="text-[10px] text-muted-foreground mt-1 tabular-nums">typical month: {formatCurrency(typicalLeftOver)}</p>
+            <p className="text-[10px] text-muted-foreground/80 leading-snug">Typical month = net pay minus every ongoing bill and subscription, so it stays the same all month while the number above builds up day by day.</p>
           </CardContent>
         </Card>
         <Card className={cn("border-l-4", unallocated >= 0 ? "border-l-emerald-500" : "border-l-amber-500")}>
