@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Wallet } from 'lucide-react';
 import { useSafeToSpend, type StsScope } from '@/hooks/use-safe-to-spend';
-import { formatCurrency } from '@/lib/utils';
+import { useCurrency } from '@/hooks/use-currency';
 
 interface SafeToSpendNoteProps {
   /** Which money this page is about. */
