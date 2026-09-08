@@ -176,7 +176,7 @@ function monthsToDebtFree(debts: DebtInput[], plans: PlanInput[]) {
 
 export function KeyIndicatorsStrip({ scope, monthlyExpenses, budgetedSpend, netWorth }: { scope: StsScope; monthlyExpenses: number; budgetedSpend?: number; netWorth: number }) {
   const navigate = useNavigate();
-  const { formatCurrency, formatCompact } = useCurrency();
+  const { currency, locale, formatCurrency, formatCompact } = useCurrency();
   const sts = useSafeToSpend(scope);
   const { data: debts } = useHouseholdDebts();
   const { data: plans } = useDebtPlans();
