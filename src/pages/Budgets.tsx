@@ -935,14 +935,20 @@ const Budgets = () => {
       ? (netIncomeBudget - ownerContribution) - netExpenseBudget
       : netIncomeBudget - netExpenseBudget;
 
-  // Next expected income from active recurring deposits (paychecks, etc.)
+  // Next expected income from active recurring deposits (paychecks, etc.),
+  // scoped to the current Personal/Business view
   const nextIncome = useMemo(() => {
     if (!recurring) return null;
     const incomeItems = (recurring as any[])
       .filter(r => r.amount > 0 && !r.is_transfer && r.is_active !== false)
+      .filter(r => {
+        if (budgetType === 'all') return true;
+        const rType = r.categories?.category_groups?.budget_type || 'personal';
+        return rType === budgetType;
+      })
       .sort((a, b) => new Date(a.next_due_date).getTime() - new Date(b.next_due_date).getTime());
     return incomeItems[0] || null;
-  }, [recurring]);
+  }, [recurring, budgetType]);
 
   const daysToNextIncome = nextIncome
     ? Math.max(0, Math.ceil((new Date(nextIncome.next_due_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))
