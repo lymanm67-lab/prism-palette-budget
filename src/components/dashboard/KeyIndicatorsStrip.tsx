@@ -240,7 +240,7 @@ export function KeyIndicatorsStrip({ scope, monthlyExpenses, netWorth }: { scope
         icon: PieChart,
         tone: budgetUsedPct > 100 ? 'rose' : budgetUsedPct > 85 ? 'amber' : 'teal',
         progress: Math.min(budgetUsedPct, 100),
-        to: '/budgets',
+        to: budgetUsedPct > 100 ? '/budgets?over=1' : '/budgets',
       },
       {
         key: 'debt',

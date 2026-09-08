@@ -26,6 +26,7 @@ import { SmartAllocationCard } from '@/components/dashboard/SmartAllocationCard'
 import { KeyIndicatorsStrip } from '@/components/dashboard/KeyIndicatorsStrip';
 import { DebtPayoffSummaryCard } from '@/components/dashboard/DebtPayoffSummaryCard';
 import { DashboardSection } from '@/components/dashboard/DashboardSection';
+import { useWealthOSData } from '@/hooks/use-wealth-os';
 
 
 import AppDevPoolCard from '@/components/dashboard/AppDevPoolCard';
