@@ -295,12 +295,10 @@ export default function BudgetSummaryTiles({
                   </p>
                 </div>
               </div>
-              <p className="text-[10px] text-muted-foreground mt-1 truncate pl-[calc(1.25rem+0.5rem)]">
+              <p className="text-[10px] text-muted-foreground mt-1 truncate">
                 {tile.sub}
               </p>
-              {tile.extra && (
-                <div className="pl-[calc(1.25rem+0.5rem)]">{tile.extra}</div>
-              )}
+              {tile.extra && <div className="mt-1">{tile.extra}</div>}
             </CardContent>
           </Card>
         );
