@@ -41,7 +41,7 @@ import { useMoMIndicators } from '@/hooks/use-mom-indicators';
 import { useSubscriptions } from '@/hooks/use-subscriptions';
 import { useSafeToSpend } from '@/hooks/use-safe-to-spend';
 import {
-  TrendingUp, Wallet, CreditCard, ArrowUpRight, Loader2,
+  TrendingUp, Wallet, CreditCard, ArrowUpRight, Loader2, Target,
   Sparkles, ChevronRight, Building2, PiggyBank, User, LayoutGrid, Settings2, FileBarChart,
   Shield, Receipt, DollarSign
 } from 'lucide-react';
