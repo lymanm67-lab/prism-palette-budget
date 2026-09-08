@@ -156,6 +156,21 @@ const Dashboard = () => {
       .reduce((s, t) => s + Math.abs(t.amount), 0);
   }, [filteredTransactions, monthStart]);
 
+  // Spending that the expense plan actually covers — mirrors the Budgets page so the
+  // "Budget used" tile can't disagree with it. Excludes savings/credit-building money
+  // (Build Wealth is money moved, not consumed) and anything without a money purpose
+  // (income reversals, refunds, unclassified lines are not part of the expense plan).
+  const budgetedSpend = useMemo(() => {
+    const prefix = monthStart.substring(0, 7);
+    const expensePurposes = new Set(['live', 'enjoy', 'eliminate_debt', 'business', 'payroll_deduction', 'employer_contribution']);
+    const purposeById = new Map<string, string | null>(((categories as any[]) || []).map(c => [c.id as string, (c.money_purpose ?? null) as string | null]));
+    return filteredTransactions
+      .filter(t => t.date.startsWith(prefix) && t.amount < 0 && !(t as any).is_transfer)
+      .filter(t => t.category_id && expensePurposes.has(String(purposeById.get(t.category_id) ?? '')))
+      .reduce((s, t) => s + Math.abs(t.amount), 0);
+  }, [filteredTransactions, monthStart, categories]);
+
+
   const totalSubscriptionCost = useMemo(() => {
     return (subscriptions || [])
       .filter((s: any) => s.is_active && !s.is_cancelled)
@@ -333,7 +348,7 @@ Your Safe-to-Spend updates in real time as you add transactions, pay bills, and 
 
       {/* ========== KEY INDICATORS STRIP ========== */}
       <motion.div variants={item}>
-        <KeyIndicatorsStrip scope={mode} monthlyExpenses={monthlyExpenses} netWorth={netWorth} />
+        <KeyIndicatorsStrip scope={mode} monthlyExpenses={monthlyExpenses} budgetedSpend={budgetedSpend} netWorth={netWorth} />
       </motion.div>
 
       {/* ========== MONEY NOW ========== */}
