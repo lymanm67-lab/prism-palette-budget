@@ -171,6 +171,7 @@ const Budgets = () => {
   const deleteBudget = useDeleteBudget();
   const createCategory = useCreateCategory();
   const { data: businessProfiles } = useBusinessProfiles();
+  const { data: recurring } = useRecurringTransactions();
 
   // Auto-seed payroll deduction budgets from most recent month that has them
   const seededMonths = useRef<Set<string>>(new Set());
