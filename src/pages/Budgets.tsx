@@ -304,6 +304,8 @@ const Budgets = () => {
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const [showUnbudgeted, setShowUnbudgeted] = useState(false);
   const [hideZeroAmounts, setHideZeroAmounts] = useState(false);
+  const [overOnly, setOverOnly] = useState(false);
+
   const [hiddenBudgetIds, setHiddenBudgetIds] = useState<Set<string>>(new Set());
   const [selectedBudgetIds, setSelectedBudgetIds] = useState<Set<string>>(new Set());
 
