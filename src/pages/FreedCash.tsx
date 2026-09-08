@@ -137,6 +137,11 @@ export default function FreedCash() {
         </p>
       </header>
 
+      <SafeToSpendNote
+        scope={scope === 'business' ? 'business' : scope === 'personal' ? 'personal' : 'combined'}
+        pageNumberMeans="The totals here are freed-up monthly cash waiting to be redirected."
+      />
+
       {isLoading ? (
         <div className="space-y-4">
           <Skeleton className="h-28 w-full" />
