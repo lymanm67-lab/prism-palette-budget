@@ -285,7 +285,7 @@ export function KeyIndicatorsStrip({ scope, monthlyExpenses, budgetedSpend, netW
       {
         key: 'networth',
         label: 'Net worth',
-        value: formatCompact(netWorth),
+        value: formatCurrency(netWorth).replace(/\.\d{2}$/, ''),
         status: 'Assets minus what you owe',
         icon: TrendingUp,
         tone: netWorth >= 0 ? 'teal' : 'rose',
