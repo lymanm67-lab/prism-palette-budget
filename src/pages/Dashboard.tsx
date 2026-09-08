@@ -73,6 +73,7 @@ const Dashboard = () => {
   const { data: subscriptions } = useSubscriptions();
   const momIndicators = useMoMIndicators();
   const safeToSpend = useSafeToSpend();
+  const { data: wealthOs } = useWealthOSData();
   const navigate = useNavigate();
 
   const [mode, setMode] = useState<DashboardMode>(() => {
@@ -135,8 +136,10 @@ const Dashboard = () => {
     return Array.from(map.values()).sort((a, b) => b.value - a.value);
   }, [spendingData, filteredTransactions, mode, monthStart]);
 
-  const totalAssets = (accounts || []).filter(a => a.balance > 0).reduce((s, a) => s + a.balance, 0);
-  const totalLiabilities = Math.abs((accounts || []).filter(a => a.balance < 0).reduce((s, a) => s + a.balance, 0));
+  // Net worth matches Household Wealth: all asset accounts (bank, investment,
+  // retirement, property) minus loan/credit balances and tracked debts.
+  const totalAssets = wealthOs?.totalAssets ?? (accounts || []).filter(a => a.balance > 0).reduce((s, a) => s + a.balance, 0);
+  const totalLiabilities = wealthOs?.totalLiabilities ?? Math.abs((accounts || []).filter(a => a.balance < 0).reduce((s, a) => s + a.balance, 0));
   const netWorth = totalAssets - totalLiabilities;
 
   const monthlyIncome = useMemo(() => {
