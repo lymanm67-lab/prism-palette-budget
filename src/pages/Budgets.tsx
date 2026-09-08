@@ -1378,12 +1378,19 @@ const Budgets = () => {
             <div className={cn('h-full rounded-full transition-all duration-500', overBudget && !isIncome ? 'bg-rose-500' : BAR_COLORS[type])} style={{ width: `${pct}%` }} />
           </div>
           <div className="flex justify-between text-xs text-muted-foreground">
-            <span>{formatCurrency(effectiveBudget)} budget</span>
-            <span>{formatCurrency(actual)} actual</span>
-            <span className={cn('font-medium', overBudget ? (isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400') : isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground')}>
-              {formatCurrency(Math.abs(remaining))}{overBudget ? (isIncome ? ' extra' : ' over') : ' left'}
+            <span>{formatCurrency(effectiveBudget)} {isWealth ? 'to move' : 'budget'}</span>
+            <span className={cn(isWealth && actual > 0 && 'text-emerald-600 dark:text-emerald-400 font-medium')}>
+              {isWealth ? '+' : ''}{formatCurrency(actual)} {isWealth ? 'saved' : 'actual'}
+            </span>
+            <span className={cn('font-medium', remainingClass)}>
+              {formatCurrency(Math.abs(remaining))} {remainingLabel}
             </span>
           </div>
+          {isWealth && (
+            <p className="mt-1 text-[10px] text-emerald-600 dark:text-emerald-400">
+              {formatCurrency(savedYtd)} saved year to date
+            </p>
+          )}
         </div>
 
 
