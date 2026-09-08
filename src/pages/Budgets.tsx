@@ -389,6 +389,41 @@ const Budgets = () => {
     return catMap;
   }, [categories, categoryGroups]);
 
+  // Build Wealth lines are savings vehicles, not consumption. Pull year-to-date
+  // amounts moved into them so each line reads like a pot with a running balance.
+  const wealthCategoryIds = useMemo(
+    () => ((categories as any[]) || []).filter(c => c.money_purpose === 'build_wealth').map(c => c.id as string),
+    [categories],
+  );
+  const { data: wealthYtdRows } = useQuery({
+    queryKey: ['budgets-wealth-ytd', household?.id, month.substring(0, 7), wealthCategoryIds.length],
+    enabled: !!household && wealthCategoryIds.length > 0,
+    queryFn: async () => {
+      const year = Number(month.substring(0, 4));
+      const mo = Number(month.substring(5, 7));
+      const end = new Date(Date.UTC(year, mo, 0)).toISOString().slice(0, 10);
+      const { data, error } = await supabase
+        .from('transactions')
+        .select('category_id, amount')
+        .eq('household_id', household!.id)
+        .in('category_id', wealthCategoryIds)
+        .gte('date', `${year}-01-01`)
+        .lte('date', end)
+        .is('deleted_at', null)
+        .limit(5000);
+      if (error) throw error;
+      return (data || []) as any[];
+    },
+  });
+  const wealthYtdByCategory = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const t of wealthYtdRows || []) {
+      if (!t.category_id) continue;
+      m.set(t.category_id, (m.get(t.category_id) || 0) + Math.abs(Number(t.amount) || 0));
+    }
+    return m;
+  }, [wealthYtdRows]);
+
   // Spending & income by category for the month (respects transaction_splits)
   const { spentByCategory, receivedByCategory } = useMemo(() => {
     if (!transactions) return { spentByCategory: {} as Record<string, number>, receivedByCategory: {} as Record<string, number> };
