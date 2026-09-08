@@ -322,6 +322,13 @@ const FiftyPercentPlan = () => {
         ]}
       />
 
+      <SafeToSpendNote
+        scope="personal"
+        pageNumberMeans="The figures here are monthly targets and leftover cash before savings and investing."
+      />
+
+
+
       <div className="flex flex-wrap items-end gap-4">
         <div className="w-48">
           <Label htmlFor="netpay" className="text-xs text-muted-foreground">Monthly net pay</Label>
