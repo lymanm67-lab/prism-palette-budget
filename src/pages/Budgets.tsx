@@ -821,7 +821,7 @@ const Budgets = () => {
   const groupBudgetsByExpenseType = useCallback((items: BudgetRow[]) => {
     const groups: Record<ExpenseType, BudgetRow[]> = { income: [], payroll_deduction: [], fixed: [], flexible: [], non_monthly: [], debt: [], wealth: [] };
     for (const b of items) {
-      if (hideZeroAmounts && b.planned_amount === 0) continue;
+      if (hideZeroAmounts && b.planned_amount === 0 && !b.isUnbudgeted) continue;
       if (hiddenBudgetIds.has(b.id)) continue;
       const type = categoryExpenseType.get(b.category_id) || 'flexible';
       groups[type].push(b);
