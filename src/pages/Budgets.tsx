@@ -37,6 +37,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuLabel } from '@/components/ui/dropdown-menu';
 import { EmptyState } from '@/components/EmptyState';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useMonthlyCommitments } from '@/hooks/use-monthly-commitments';
 import NetWorthSummaryCard from '@/components/NetWorthSummaryCard';
 import { clusterDuplicates, softDeleteDuplicates } from '@/lib/duplicate-detector';
 import { ScoreBreakdownTooltip } from '@/components/cleanup/ScoreBreakdownTooltip';
@@ -133,6 +134,7 @@ const BUDGET_STEPS: { key: BudgetStep; label: string; icon: typeof Wallet; hint:
 
 const Budgets = () => {
   const { formatCurrency } = useCurrency();
+  const { leftOver: typicalLeftOver } = useMonthlyCommitments();
   const { household } = useHousehold();
   const [monthOffset, setMonthOffset] = useState(0);
   const [budgetType, setBudgetType] = useState<'personal' | 'business' | 'all'>('personal');
@@ -2169,6 +2171,8 @@ const Budgets = () => {
             </p>
             <p className="text-xs text-muted-foreground mt-0.5">received − spent this month</p>
             <p className="text-[10px] text-muted-foreground mt-0.5 tabular-nums">planned: {formatCurrency(totalIncomeBudget - totalExpenseBudget)}</p>
+            <p className="text-[10px] text-muted-foreground mt-1 tabular-nums">typical month: {formatCurrency(typicalLeftOver)}</p>
+            <p className="text-[10px] text-muted-foreground/80 leading-snug">Typical month = net pay minus every ongoing bill and subscription, so it stays the same all month while the number above builds up day by day.</p>
           </CardContent>
         </Card>
         <Card className={cn("border-l-4", unallocated >= 0 ? "border-l-emerald-500" : "border-l-amber-500")}>

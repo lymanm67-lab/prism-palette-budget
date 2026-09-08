@@ -11,6 +11,7 @@ import { useHousehold } from '@/contexts/HouseholdContext';
 import { useCurrency } from '@/hooks/use-currency';
 import { useSubscriptions } from '@/hooks/use-subscriptions';
 import { useRecurringTransactions } from '@/hooks/use-recurring';
+import { useMonthlyCommitments } from '@/hooks/use-monthly-commitments';
 import { addMonths, endOfMonth, format, startOfMonth, subMonths } from 'date-fns';
 import {
   ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, Legend,
@@ -116,8 +117,7 @@ const FiftyPercentPlan = () => {
   const { data: history } = useSpendingHistory(12);
   const { data: shortDebts } = useShortTermDebts();
 
-  const [netPay, setNetPay] = useState<string>(() => localStorage.getItem('prism-net-pay-monthly') || '4250.02');
-  const net = Number(netPay) || 0;
+  const { netPay: net, netPayInput: netPay, setNetPay, commitments: sharedCommitments } = useMonthlyCommitments();
 
   /* Business-only bills are reimbursed quarterly from consulting fees, so by default
      they are left out of the personal 50% target. */
@@ -193,28 +193,16 @@ const FiftyPercentPlan = () => {
 
   /* ---------- fixed commitments and when they end ---------- */
   const allCommitments = useMemo(() => {
-    const subs = (subscriptions || [])
-      .filter((s: any) => !s.is_cancelled && s.is_transfer !== true)
-      .map((s: any) => ({
-        id: `s-${s.id}`,
-        name: s.merchant || 'Subscription',
-        monthly: monthlyOfSub(s),
-        businessOnly: isBusinessOnly(s),
-        endDate: s.end_date ? new Date(`${String(s.end_date).slice(0, 10)}T00:00:00`) : null,
-        pauseMonths: (s.pause_months || []) as string[],
+    const existing = sharedCommitments
+      .filter(c => !c.isSavingsTransfer)
+      .map(c => ({
+        id: c.id,
+        name: c.name,
+        monthly: c.monthly,
+        businessOnly: c.businessOnly,
+        endDate: c.endDate,
+        pauseMonths: c.pauseMonths,
       }));
-    const bills = (recurring || [])
-      .filter((b: any) => b.is_active !== false && Number(b.amount || 0) < 0 && b.is_transfer !== true)
-
-      .map((b: any) => ({
-        id: `r-${b.id}`,
-        name: b.merchant || b.categories?.name || 'Recurring bill',
-        monthly: monthlyOfBill(b),
-        businessOnly: isBusinessOnly(b),
-        endDate: b.end_date ? new Date(`${String(b.end_date).slice(0, 10)}T00:00:00`) : null,
-        pauseMonths: (b.pause_months || []) as string[],
-      }));
-    const existing = [...subs, ...bills];
     const horizon = addMonths(new Date(), 12);
     const isDuplicate = (name: string, monthly: number) =>
       existing.some(c => {
@@ -240,8 +228,8 @@ const FiftyPercentPlan = () => {
         d.endDate <= horizon &&
         !isDuplicate(d.name, d.monthly),
       );
-    return [...subs, ...bills, ...debts].filter(c => c.monthly > 0);
-  }, [subscriptions, recurring, shortDebts]);
+    return [...existing, ...debts].filter(c => c.monthly > 0);
+  }, [sharedCommitments, shortDebts]);
 
   const commitments = useMemo(
     () => (excludeBusiness ? allCommitments.filter(c => !c.businessOnly) : allCommitments),
