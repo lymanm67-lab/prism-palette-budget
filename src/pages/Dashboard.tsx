@@ -146,7 +146,10 @@ const Dashboard = () => {
 
   const monthlyExpenses = useMemo(() => {
     const prefix = monthStart.substring(0, 7);
-    return filteredTransactions.filter(t => t.date.startsWith(prefix) && t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0);
+    // Transfers move money between your own accounts — never spending.
+    return filteredTransactions
+      .filter(t => t.date.startsWith(prefix) && t.amount < 0 && !(t as any).is_transfer)
+      .reduce((s, t) => s + Math.abs(t.amount), 0);
   }, [filteredTransactions, monthStart]);
 
   const totalSubscriptionCost = useMemo(() => {
