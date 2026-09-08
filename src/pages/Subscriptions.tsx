@@ -99,7 +99,18 @@ const Subscriptions = () => {
   const [reallocationSub, setReallocationSub] = useState<any>(null);
   const [viewMode, setViewMode] = useState<'all' | 'personal' | 'business'>('all');
   const [kindMode, setKindMode] = useState<'all' | 'subscriptions' | 'bills'>('all');
-  const [netPay, setNetPay] = useState<string>(() => localStorage.getItem('prism-net-pay-monthly') || '4250.02');
+  const {
+    netPay: netPayNum,
+    netPayInput: netPay,
+    setNetPay,
+    committedMonthly: payCommitted,
+    subscriptionsMonthly: paySubs,
+    billsMonthly: payBills,
+    savingsTransfers,
+    businessReimbursable: payBusinessReimbursable,
+    leftOver,
+    usedPct,
+  } = useMonthlyCommitments();
 
   const NON_SUB_KEYWORDS = ['rent', 'mortgage', 'insurance', 'utilit', 'electric', 'gas', 'water', 'sewer', 'trash', 'debt', 'loan', 'transfer', 'payment'];
 
