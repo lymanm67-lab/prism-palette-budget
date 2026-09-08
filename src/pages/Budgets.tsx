@@ -1359,8 +1359,9 @@ const Budgets = () => {
           <span className="w-[90px] text-right text-sm tabular-nums">{formatCurrency(effectiveBudget)}</span>
           <span className="w-[90px] text-right text-sm tabular-nums text-muted-foreground">{formatCurrency(actual)}</span>
           <span className={cn('w-[90px] text-right text-sm font-medium tabular-nums', overBudget ? (isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400') : isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground')}>
-            {formatCurrency(Math.abs(remaining))}
-            {overBudget && <span className="text-[10px] ml-0.5">{isIncome ? 'extra' : 'over'}</span>}
+            {overBudget ? '+' : ''}{formatCurrency(Math.abs(remaining))}
+            <span className="text-[10px] ml-0.5 opacity-80">{overBudget ? (isIncome ? 'extra' : 'over') : isIncome ? 'to go' : 'under'}</span>
+
           </span>
 
           <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
