@@ -1474,16 +1474,21 @@ const Budgets = () => {
     const isOpen = overOnly ? true : (openSections[key] ?? true);
     const isIncome = type === 'income';
     const isPayroll = type === 'payroll_deduction';
+    const isWealthSection = type === 'wealth';
     // "Show only over budget" keeps expense lines that spent more than planned,
-    // and income lines where less money landed than planned.
-    const items = overOnly
+    // and income lines where less money landed than planned. Savings pots are
+    // money kept, so extra saved is never "over budget".
+    const items = overOnly && !isWealthSection
       ? allItems.filter(b =>
           isIncome
             ? b.planned_amount - b.received > 0.005
             : b.spent - b.planned_amount > 0.005
         )
       : allItems;
-    if (overOnly && items.length === 0) return null;
+    if (overOnly && (isWealthSection || items.length === 0)) return null;
+    const sectionSavedYtd = isWealthSection
+      ? allItems.reduce((s, b) => s + (wealthYtdByCategory.get(b.category_id) || 0), 0)
+      : 0;
 
     const pct = totals.budget > 0 ? Math.min((totals.actual / totals.budget) * 100, 100) : 0;
 
