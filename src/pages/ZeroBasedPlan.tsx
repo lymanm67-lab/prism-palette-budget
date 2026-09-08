@@ -8,6 +8,7 @@ import BusinessLedgerPanel from '@/components/budget/BusinessLedgerPanel';
 import MoneyRedirectsPanel from '@/components/budget/MoneyRedirectsPanel';
 import ZeroBasedForecastPanel from '@/components/budget/ZeroBasedForecastPanel';
 import PrintInfographicButton from '@/components/reports/PrintInfographicButton';
+import { SafeToSpendNote } from '@/components/SafeToSpendNote';
 import { useBufferMonths, useBufferOneTime, useBufferSettings, useMoneyRedirects } from '@/hooks/use-zero-based';
 import { useHouseholdDebts } from '@/hooks/use-household-debts';
 import { rollBuffer } from '@/lib/budgeting/bufferLedger';
