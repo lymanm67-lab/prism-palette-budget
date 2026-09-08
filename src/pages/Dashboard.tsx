@@ -23,6 +23,10 @@ import { CashFlowForecastChart } from '@/components/CashFlowForecastChart';
 import { PendingPurchasesList } from '@/components/guardrails/PendingPurchasesList';
 import AppDevCutoffCard from '@/components/dashboard/AppDevCutoffCard';
 import { SmartAllocationCard } from '@/components/dashboard/SmartAllocationCard';
+import { KeyIndicatorsStrip } from '@/components/dashboard/KeyIndicatorsStrip';
+import { DebtPayoffSummaryCard } from '@/components/dashboard/DebtPayoffSummaryCard';
+import { DashboardSection } from '@/components/dashboard/DashboardSection';
+
 
 import AppDevPoolCard from '@/components/dashboard/AppDevPoolCard';
 import { ProgressTracker } from '@/components/ProgressTracker';
