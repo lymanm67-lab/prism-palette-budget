@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { SafeToSpendNote } from '@/components/SafeToSpendNote';
 import { FreedCashSummary } from '@/components/freed-cash/FreedCashSummary';
 import { FreedCashSourceList } from '@/components/freed-cash/FreedCashSourceList';
 import { VerificationQueue } from '@/components/freed-cash/VerificationQueue';
