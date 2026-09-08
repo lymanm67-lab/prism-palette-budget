@@ -193,11 +193,12 @@ export function KeyIndicatorsStrip({ scope, monthlyExpenses, netWorth }: { scope
     const debtList = (debts || []) as any[];
     const totalDebt = debtList.reduce((s, d) => s + Number(d.balance || 0), 0);
     const minPayments = debtList.reduce((s, d) => s + Number(d.minimum_payment || 0), 0);
-    const planExtra = Number((plans || [])[0]?.extra_payment || 0);
-    const months = monthsToDebtFree(debtList as any, planExtra);
+    const totalExtra = ((plans || []) as any[]).reduce((s, p) => s + Number(p.extra_payment || 0), 0)
+      + debtList.reduce((s, d) => s + Number(d.extra_payment || 0), 0);
+    const months = monthsToDebtFree(debtList as any, (plans || []) as any[]);
     const payoffLabel = months == null
       ? 'Add payments to project'
-      : months === 0 ? 'Debt free' : `${Math.floor(months / 12)}y ${months % 12}m — payments redirect as each debt clears`;
+      : months === 0 ? 'Debt free' : `${Math.floor(months / 12)}y ${months % 12}m with ${formatCurrency(totalExtra)}/mo extra, redirected as each clears`;
     const payoffDate = months && months > 0
       ? new Date(new Date().setMonth(new Date().getMonth() + months)).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
       : '—';
