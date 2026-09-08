@@ -116,8 +116,7 @@ const FiftyPercentPlan = () => {
   const { data: history } = useSpendingHistory(12);
   const { data: shortDebts } = useShortTermDebts();
 
-  const [netPay, setNetPay] = useState<string>(() => localStorage.getItem('prism-net-pay-monthly') || '4250.02');
-  const net = Number(netPay) || 0;
+  const { netPay: net, netPayInput: netPay, setNetPay, commitments: sharedCommitments } = useMonthlyCommitments();
 
   /* Business-only bills are reimbursed quarterly from consulting fees, so by default
      they are left out of the personal 50% target. */
