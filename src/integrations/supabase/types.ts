@@ -4085,52 +4085,67 @@ export type Database = {
       }
       freed_cash_month_snapshots: {
         Row: {
+          conversion_rate: number
           created_at: string
           created_monthly: number
           entity_scope: string
+          estimated_monthly: number
           executed_monthly: number
           household_id: string
           id: string
           locked: boolean
           notes: string | null
           period_month: string
+          pipeline_monthly: number
           realized_monthly: number
+          reconciled_monthly: number
           run_rate: number
           source_count: number
           unallocated_monthly: number
           updated_at: string
+          verified_monthly: number
         }
         Insert: {
+          conversion_rate?: number
           created_at?: string
           created_monthly?: number
           entity_scope?: string
+          estimated_monthly?: number
           executed_monthly?: number
           household_id: string
           id?: string
           locked?: boolean
           notes?: string | null
           period_month: string
+          pipeline_monthly?: number
           realized_monthly?: number
+          reconciled_monthly?: number
           run_rate?: number
           source_count?: number
           unallocated_monthly?: number
           updated_at?: string
+          verified_monthly?: number
         }
         Update: {
+          conversion_rate?: number
           created_at?: string
           created_monthly?: number
           entity_scope?: string
+          estimated_monthly?: number
           executed_monthly?: number
           household_id?: string
           id?: string
           locked?: boolean
           notes?: string | null
           period_month?: string
+          pipeline_monthly?: number
           realized_monthly?: number
+          reconciled_monthly?: number
           run_rate?: number
           source_count?: number
           unallocated_monthly?: number
           updated_at?: string
+          verified_monthly?: number
         }
         Relationships: []
       }
@@ -4280,6 +4295,7 @@ export type Database = {
       freed_cash_sources: {
         Row: {
           added_fees: number
+          billing_day: number | null
           billing_frequency: string
           category: string | null
           classification: string
@@ -4295,6 +4311,7 @@ export type Database = {
           is_temporary: boolean
           name: string
           new_amount: number
+          next_avoided_payment_date: string | null
           next_renewal_date: string | null
           notes: string | null
           original_amount: number
@@ -4312,6 +4329,7 @@ export type Database = {
         }
         Insert: {
           added_fees?: number
+          billing_day?: number | null
           billing_frequency?: string
           category?: string | null
           classification?: string
@@ -4327,6 +4345,7 @@ export type Database = {
           is_temporary?: boolean
           name: string
           new_amount?: number
+          next_avoided_payment_date?: string | null
           next_renewal_date?: string | null
           notes?: string | null
           original_amount?: number
@@ -4344,6 +4363,7 @@ export type Database = {
         }
         Update: {
           added_fees?: number
+          billing_day?: number | null
           billing_frequency?: string
           category?: string | null
           classification?: string
@@ -4359,6 +4379,7 @@ export type Database = {
           is_temporary?: boolean
           name?: string
           new_amount?: number
+          next_avoided_payment_date?: string | null
           next_renewal_date?: string | null
           notes?: string | null
           original_amount?: number
