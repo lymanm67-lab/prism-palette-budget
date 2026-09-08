@@ -32,40 +32,95 @@ const toneClasses: Record<Indicator['tone'], { text: string; bg: string; bar: st
   violet: { text: 'text-prism-violet', bg: 'bg-prism-violet/10', bar: 'bg-prism-violet' },
 };
 
-/** Rough snowball projection: months until every debt is cleared. */
-function monthsToDebtFree(debts: { balance: number; minimum_payment: number; interest_rate: number; extra_payment: number }[], planExtra: number) {
-  let remaining = debts
-    .filter(d => Number(d.balance) > 0)
-    .map(d => ({
-      balance: Number(d.balance),
-      min: Math.max(Number(d.minimum_payment) || 0, 0),
-      rate: (Number(d.interest_rate) || 0) / 100 / 12,
-      extra: Number(d.extra_payment) || 0,
-    }))
-    .sort((a, b) => a.balance - b.balance);
-  if (!remaining.length) return 0;
-  if (remaining.every(d => d.min + d.extra + planExtra <= 0)) return null;
+/**
+ * Month-by-month payoff projection with redirects.
+ *
+ * Rules:
+ *  - Each debt pays its own minimum (+ its own extra) every month.
+ *  - When a debt clears (or is forgiven), its whole monthly payment is freed and
+ *    redirected to the next debt in the target order: vacation loans first,
+ *    then the SBA loan, then everything else smallest balance first.
+ *  - Forgiveness-track debts (student loans) are never accelerated; they drop
+ *    off on their forgiveness date and free up their payment then.
+ */
+function monthsToDebtFree(
+  debts: { name?: string; balance: number; minimum_payment: number; interest_rate: number; extra_payment: number; forgiveness_eligible?: boolean; forgiveness_date?: string | null }[],
+  planExtra: number,
+) {
+  const now = new Date();
+  const priority = (name: string) => {
+    const n = (name || '').toLowerCase();
+    if (n.includes('vacation')) return 1;
+    if (n.includes('sba')) return 2;
+    return 0;
+  };
 
+  const items = debts
+    .filter(d => Number(d.balance) > 0)
+    .map(d => {
+      const fd = d.forgiveness_date ? new Date(d.forgiveness_date) : null;
+      const forgivenessMonth = fd
+        ? (fd.getFullYear() - now.getFullYear()) * 12 + (fd.getMonth() - now.getMonth())
+        : null;
+      return {
+        balance: Number(d.balance),
+        min: Math.max(Number(d.minimum_payment) || 0, 0),
+        rate: (Number(d.interest_rate) || 0) / 100 / 12,
+        extra: Number(d.extra_payment) || 0,
+        forgiveness: !!d.forgiveness_eligible,
+        forgivenessMonth,
+        priority: priority(d.name || ''),
+      };
+    })
+    .sort((a, b) => a.priority - b.priority || a.balance - b.balance);
+
+  if (!items.length) return 0;
+
+  let redirected = planExtra;
   let months = 0;
-  while (remaining.length && months < 600) {
+
+  while (months < 600) {
+    const active = items.filter(d => d.balance > 0.5);
+    if (!active.length) break;
     months += 1;
-    let snowball = planExtra;
-    for (const d of remaining) {
+
+    // Forgiveness first — the payment stops and joins the redirect pool.
+    for (const d of active) {
+      if (d.forgiveness && d.forgivenessMonth != null && months >= d.forgivenessMonth) {
+        d.balance = 0;
+        redirected += d.min + d.extra;
+      }
+    }
+
+    for (const d of items) {
+      if (d.balance <= 0.5) continue;
       d.balance += d.balance * d.rate;
-      const pay = d.min + d.extra;
-      d.balance -= pay;
+      d.balance -= d.min + d.extra;
+      if (d.balance <= 0.5) {
+        d.balance = 0;
+        redirected += d.min + d.extra;
+      }
     }
-    // apply the shared extra to the smallest balance first
-    for (const d of remaining) {
-      if (snowball <= 0) break;
-      const applied = Math.min(snowball, Math.max(d.balance, 0));
+
+    // Redirect freed cash into the next target in order.
+    let pool = redirected;
+    for (const d of items) {
+      if (pool <= 0) break;
+      if (d.balance <= 0.5 || d.forgiveness) continue;
+      const applied = Math.min(pool, d.balance);
       d.balance -= applied;
-      snowball -= applied;
+      pool -= applied;
+      if (d.balance <= 0.5) {
+        d.balance = 0;
+        redirected += d.min + d.extra;
+      }
     }
-    remaining = remaining.filter(d => d.balance > 0.5);
+
+    if (items.every(d => d.balance <= 0.5)) break;
   }
   return months >= 600 ? null : months;
 }
+
 
 export function KeyIndicatorsStrip({ scope, monthlyExpenses, netWorth }: { scope: StsScope; monthlyExpenses: number; netWorth: number }) {
   const navigate = useNavigate();
