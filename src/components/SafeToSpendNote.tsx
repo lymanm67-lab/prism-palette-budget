@@ -16,6 +16,7 @@ interface SafeToSpendNoteProps {
  */
 export function SafeToSpendNote({ scope = 'combined', pageNumberMeans }: SafeToSpendNoteProps) {
   const sts = useSafeToSpend(scope);
+  const { formatCurrency } = useCurrency();
   const viewLabel = scope === 'business' ? 'Business' : scope === 'personal' ? 'Personal' : 'Combined';
 
   return (
