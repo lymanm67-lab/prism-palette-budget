@@ -389,6 +389,41 @@ const Budgets = () => {
     return catMap;
   }, [categories, categoryGroups]);
 
+  // Build Wealth lines are savings vehicles, not consumption. Pull year-to-date
+  // amounts moved into them so each line reads like a pot with a running balance.
+  const wealthCategoryIds = useMemo(
+    () => ((categories as any[]) || []).filter(c => c.money_purpose === 'build_wealth').map(c => c.id as string),
+    [categories],
+  );
+  const { data: wealthYtdRows } = useQuery({
+    queryKey: ['budgets-wealth-ytd', household?.id, month.substring(0, 7), wealthCategoryIds.length],
+    enabled: !!household && wealthCategoryIds.length > 0,
+    queryFn: async () => {
+      const year = Number(month.substring(0, 4));
+      const mo = Number(month.substring(5, 7));
+      const end = new Date(Date.UTC(year, mo, 0)).toISOString().slice(0, 10);
+      const { data, error } = await supabase
+        .from('transactions')
+        .select('category_id, amount')
+        .eq('household_id', household!.id)
+        .in('category_id', wealthCategoryIds)
+        .gte('date', `${year}-01-01`)
+        .lte('date', end)
+        .is('deleted_at', null)
+        .limit(5000);
+      if (error) throw error;
+      return (data || []) as any[];
+    },
+  });
+  const wealthYtdByCategory = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const t of wealthYtdRows || []) {
+      if (!t.category_id) continue;
+      m.set(t.category_id, (m.get(t.category_id) || 0) + Math.abs(Number(t.amount) || 0));
+    }
+    return m;
+  }, [wealthYtdRows]);
+
   // Spending & income by category for the month (respects transaction_splits)
   const { spentByCategory, receivedByCategory } = useMemo(() => {
     if (!transactions) return { spentByCategory: {} as Record<string, number>, receivedByCategory: {} as Record<string, number> };
@@ -1210,6 +1245,8 @@ const Budgets = () => {
 
   const renderBudgetRow = (b: BudgetRow, type: ExpenseType) => {
     const isIncome = type === 'income';
+    // Build Wealth lines are money kept, so they are never "overspending".
+    const isWealth = type === 'wealth';
     // b.spent already reflects business-offset adjustment (see effectiveSpentByCategory)
     const actual = isIncome ? b.received : b.spent;
     const bizOffset = businessOffsets.get(b.category_id);
@@ -1219,7 +1256,18 @@ const Budgets = () => {
     const isCreditLine = b.planned_amount < 0; // reimbursement / credit lines are not overspend
     const remaining = effectiveBudget - actual;
     const pct = effectiveBudget > 0 ? Math.min((actual / effectiveBudget) * 100, 100) : 0;
-    const overBudget = !isCreditLine && remaining < -0.005;
+    const overBudget = !isCreditLine && !isWealth && remaining < -0.005;
+    const savedYtd = isWealth ? (wealthYtdByCategory.get(b.category_id) || 0) : 0;
+    // Wealth lines: extra saved is a win (green), shortfall is "still to move".
+    const savedExtra = isWealth && remaining < -0.005;
+    const remainingLabel = isWealth
+      ? (savedExtra ? 'extra saved' : 'still to move')
+      : overBudget ? (isIncome ? 'extra' : 'over') : isIncome ? 'to go' : 'under';
+    const remainingClass = isWealth
+      ? (savedExtra ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400')
+      : overBudget
+        ? (isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400')
+        : isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground';
 
     const isPersonalRow = personalCategoryIds.has(b.category_id);
 
@@ -1330,12 +1378,19 @@ const Budgets = () => {
             <div className={cn('h-full rounded-full transition-all duration-500', overBudget && !isIncome ? 'bg-rose-500' : BAR_COLORS[type])} style={{ width: `${pct}%` }} />
           </div>
           <div className="flex justify-between text-xs text-muted-foreground">
-            <span>{formatCurrency(effectiveBudget)} budget</span>
-            <span>{formatCurrency(actual)} actual</span>
-            <span className={cn('font-medium', overBudget ? (isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400') : isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground')}>
-              {formatCurrency(Math.abs(remaining))}{overBudget ? (isIncome ? ' extra' : ' over') : ' left'}
+            <span>{formatCurrency(effectiveBudget)} {isWealth ? 'to move' : 'budget'}</span>
+            <span className={cn(isWealth && actual > 0 && 'text-emerald-600 dark:text-emerald-400 font-medium')}>
+              {isWealth ? '+' : ''}{formatCurrency(actual)} {isWealth ? 'saved' : 'actual'}
+            </span>
+            <span className={cn('font-medium', remainingClass)}>
+              {formatCurrency(Math.abs(remaining))} {remainingLabel}
             </span>
           </div>
+          {isWealth && (
+            <p className="mt-1 text-[10px] text-emerald-600 dark:text-emerald-400">
+              {formatCurrency(savedYtd)} saved year to date
+            </p>
+          )}
         </div>
 
 
@@ -1351,6 +1406,18 @@ const Budgets = () => {
             {bizSharePctBadge}
             {b.rollover && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium shrink-0">↻</span>}
             {rolloverAmt > 0 && <span className="text-[10px] text-emerald-600 dark:text-emerald-400 shrink-0">+{formatCurrency(rolloverAmt)}</span>}
+            {isWealth && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium shrink-0 cursor-default whitespace-nowrap">
+                    {formatCurrency(savedYtd)} YTD
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Total moved into this pot since January — it carries forward instead of resetting each month.</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
           </div>
           <div className="w-[200px]">
             <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
@@ -1358,10 +1425,12 @@ const Budgets = () => {
             </div>
           </div>
           <span className="w-[90px] text-right text-sm tabular-nums">{formatCurrency(effectiveBudget)}</span>
-          <span className="w-[90px] text-right text-sm tabular-nums text-muted-foreground">{formatCurrency(actual)}</span>
-          <span className={cn('w-[90px] text-right text-sm font-medium tabular-nums', overBudget ? (isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400') : isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground')}>
-            {overBudget ? '+' : ''}{formatCurrency(Math.abs(remaining))}
-            <span className="text-[10px] ml-0.5 opacity-80">{overBudget ? (isIncome ? 'extra' : 'over') : isIncome ? 'to go' : 'under'}</span>
+          <span className={cn('w-[90px] text-right text-sm tabular-nums', isWealth && actual > 0 ? 'text-emerald-600 dark:text-emerald-400 font-medium' : 'text-muted-foreground')}>
+            {isWealth && actual > 0 ? '+' : ''}{formatCurrency(actual)}
+          </span>
+          <span className={cn('w-[90px] text-right text-sm font-medium tabular-nums', remainingClass)}>
+            {overBudget || savedExtra ? '+' : ''}{formatCurrency(Math.abs(remaining))}
+            <span className="text-[10px] ml-0.5 opacity-80">{remainingLabel}</span>
 
           </span>
 
@@ -1405,16 +1474,21 @@ const Budgets = () => {
     const isOpen = overOnly ? true : (openSections[key] ?? true);
     const isIncome = type === 'income';
     const isPayroll = type === 'payroll_deduction';
+    const isWealthSection = type === 'wealth';
     // "Show only over budget" keeps expense lines that spent more than planned,
-    // and income lines where less money landed than planned.
-    const items = overOnly
+    // and income lines where less money landed than planned. Savings pots are
+    // money kept, so extra saved is never "over budget".
+    const items = overOnly && !isWealthSection
       ? allItems.filter(b =>
           isIncome
             ? b.planned_amount - b.received > 0.005
             : b.spent - b.planned_amount > 0.005
         )
       : allItems;
-    if (overOnly && items.length === 0) return null;
+    if (overOnly && (isWealthSection || items.length === 0)) return null;
+    const sectionSavedYtd = isWealthSection
+      ? allItems.reduce((s, b) => s + (wealthYtdByCategory.get(b.category_id) || 0), 0)
+      : 0;
 
     const pct = totals.budget > 0 ? Math.min((totals.actual / totals.budget) * 100, 100) : 0;
 
@@ -1481,10 +1555,20 @@ const Budgets = () => {
                   {Math.round((totals.budget / grossIncomeBudget) * 100)}% of gross
                 </span>
               )}
+              {isWealthSection && (
+                <span className="inline-flex items-center text-[10px] px-2 py-0.5 rounded-full font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
+                  {formatCurrency(sectionSavedYtd)} saved YTD
+                </span>
+              )}
             </span>
             <span className="text-right text-xs sm:text-sm font-semibold tabular-nums sm:w-[90px]">{formatCurrency(totals.budget)}</span>
-            <span className="hidden sm:inline-block w-[90px] text-right text-sm tabular-nums text-muted-foreground">{formatCurrency(totals.actual)}</span>
-            <span className={cn('text-right text-xs sm:text-sm font-semibold tabular-nums sm:w-[90px]', totals.remaining < 0 ? (isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400') : isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground')}>
+            <span className={cn('hidden sm:inline-block w-[90px] text-right text-sm tabular-nums', isWealthSection && totals.actual > 0 ? 'text-emerald-600 dark:text-emerald-400 font-medium' : 'text-muted-foreground')}>
+              {isWealthSection && totals.actual > 0 ? '+' : ''}{formatCurrency(totals.actual)}
+            </span>
+            <span className={cn('text-right text-xs sm:text-sm font-semibold tabular-nums sm:w-[90px]',
+              isWealthSection
+                ? (totals.remaining < 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400')
+                : totals.remaining < 0 ? (isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400') : isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground')}>
               {formatCurrency(Math.abs(totals.remaining))}
             </span>
 
