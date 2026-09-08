@@ -348,7 +348,7 @@ Your Safe-to-Spend updates in real time as you add transactions, pay bills, and 
 
       {/* ========== KEY INDICATORS STRIP ========== */}
       <motion.div variants={item}>
-        <KeyIndicatorsStrip scope={mode} monthlyExpenses={monthlyExpenses} netWorth={netWorth} />
+        <KeyIndicatorsStrip scope={mode} monthlyExpenses={monthlyExpenses} budgetedSpend={budgetedSpend} netWorth={netWorth} />
       </motion.div>
 
       {/* ========== MONEY NOW ========== */}

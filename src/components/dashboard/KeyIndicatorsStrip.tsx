@@ -174,7 +174,7 @@ function monthsToDebtFree(debts: DebtInput[], plans: PlanInput[]) {
 
 
 
-export function KeyIndicatorsStrip({ scope, monthlyExpenses, netWorth }: { scope: StsScope; monthlyExpenses: number; netWorth: number }) {
+export function KeyIndicatorsStrip({ scope, monthlyExpenses, budgetedSpend, netWorth }: { scope: StsScope; monthlyExpenses: number; budgetedSpend?: number; netWorth: number }) {
   const navigate = useNavigate();
   const { formatCurrency, formatCompact } = useCurrency();
   const sts = useSafeToSpend(scope);
@@ -187,7 +187,10 @@ export function KeyIndicatorsStrip({ scope, monthlyExpenses, netWorth }: { scope
   const indicators = useMemo<Indicator[]>(() => {
     // ── Budget ──
     const plannedSurplus = sts.budgetIncome - sts.budgetExpenses;
-    const budgetUsedPct = sts.budgetExpenses > 0 ? Math.min((monthlyExpenses / sts.budgetExpenses) * 100, 999) : 0;
+    // Compare like with like: only spending the expense plan covers (budgetedSpend)
+    // counts against the plan, so this tile agrees with the Budgets page.
+    const planSpend = budgetedSpend ?? monthlyExpenses;
+    const budgetUsedPct = sts.budgetExpenses > 0 ? Math.min((planSpend / sts.budgetExpenses) * 100, 999) : 0;
 
     // ── Debt ──
     const debtList = (debts || []) as any[];
@@ -236,7 +239,7 @@ export function KeyIndicatorsStrip({ scope, monthlyExpenses, netWorth }: { scope
         key: 'budget-used',
         label: 'Budget used',
         value: sts.budgetExpenses > 0 ? `${Math.round(budgetUsedPct)}%` : 'Not set',
-        status: sts.budgetExpenses > 0 ? `${formatCurrency(monthlyExpenses)} of ${formatCurrency(sts.budgetExpenses)}` : 'Set budgets to track this',
+        status: sts.budgetExpenses > 0 ? `${formatCurrency(planSpend)} of ${formatCurrency(sts.budgetExpenses)}` : 'Set budgets to track this',
         icon: PieChart,
         tone: budgetUsedPct > 100 ? 'rose' : budgetUsedPct > 85 ? 'amber' : 'teal',
         progress: Math.min(budgetUsedPct, 100),
@@ -299,7 +302,7 @@ export function KeyIndicatorsStrip({ scope, monthlyExpenses, netWorth }: { scope
         to: '/capital/credit-health',
       },
     ] as Indicator[];
-  }, [sts, monthlyExpenses, netWorth, debts, plans, goals, freedSources, creditAccounts, scope, formatCurrency, formatCompact]);
+  }, [sts, monthlyExpenses, budgetedSpend, netWorth, debts, plans, goals, freedSources, creditAccounts, scope, formatCurrency, formatCompact]);
 
   if (sts.isLoading) {
     return (
