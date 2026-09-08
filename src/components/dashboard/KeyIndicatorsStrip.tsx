@@ -285,7 +285,7 @@ export function KeyIndicatorsStrip({ scope, monthlyExpenses, budgetedSpend, netW
       {
         key: 'networth',
         label: 'Net worth',
-        value: formatCompact(netWorth),
+        value: new Intl.NumberFormat(locale, { style: 'currency', currency, maximumFractionDigits: 0 }).format(netWorth),
         status: 'Assets minus what you owe',
         icon: TrendingUp,
         tone: netWorth >= 0 ? 'teal' : 'rose',
