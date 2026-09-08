@@ -32,23 +32,43 @@ const toneClasses: Record<Indicator['tone'], { text: string; bg: string; bar: st
   violet: { text: 'text-prism-violet', bg: 'bg-prism-violet/10', bar: 'bg-prism-violet' },
 };
 
+interface PlanInput { id: string; name?: string; strategy?: string | null; extra_payment?: number | null }
+interface DebtInput {
+  plan_id?: string | null; name?: string; balance: number; minimum_payment: number; interest_rate: number;
+  extra_payment?: number | null; sort_order?: number | null;
+  forgiveness_eligible?: boolean; forgiveness_date?: string | null;
+}
+
 /**
- * Month-by-month payoff projection with redirects.
+ * Month-by-month payoff projection driven by the payoff plans.
  *
  * Rules:
- *  - Each debt pays its own minimum (+ its own extra) every month.
- *  - When a debt clears (or is forgiven), its whole monthly payment is freed and
- *    redirected to the next debt in the target order: vacation loans first,
- *    then the SBA loan, then everything else smallest balance first.
- *  - Forgiveness-track debts (student loans) are never accelerated; they drop
- *    off on their forgiveness date and free up their payment then.
+ *  - Every debt pays its minimum plus its own extra payment each month.
+ *  - Each plan's extra payment is thrown at that plan's current target debt,
+ *    ordered by the plan's own sort order, then its strategy (avalanche =
+ *    highest rate first, snowball = smallest balance first).
+ *  - A plan whose name says "starts <Month Year>" holds its extra until then.
+ *  - When a debt clears, its whole payment is redirected to the next target:
+ *    its own plan first, then vacation loans, then the SBA loan, then the rest.
+ *  - Forgiveness-track debts are never accelerated; they drop off on their
+ *    forgiveness date and free up their payment then.
  */
-function monthsToDebtFree(
-  debts: { name?: string; balance: number; minimum_payment: number; interest_rate: number; extra_payment: number; forgiveness_eligible?: boolean; forgiveness_date?: string | null }[],
-  planExtra: number,
-) {
+function monthsToDebtFree(debts: DebtInput[], plans: PlanInput[]) {
   const now = new Date();
-  const priority = (name: string) => {
+  const monthsFrom = (d: Date) => (d.getFullYear() - now.getFullYear()) * 12 + (d.getMonth() - now.getMonth());
+
+  const planMap = new Map<string, { extra: number; startMonth: number; strategy: string }>();
+  for (const p of plans || []) {
+    const m = /starts\s+([A-Za-z]+)\s+(\d{4})/i.exec(p.name || '');
+    const start = m ? monthsFrom(new Date(`${m[1]} 1, ${m[2]}`)) : 0;
+    planMap.set(p.id, {
+      extra: Number(p.extra_payment) || 0,
+      startMonth: Number.isFinite(start) ? Math.max(start, 0) : 0,
+      strategy: (p.strategy || 'snowball').toLowerCase(),
+    });
+  }
+
+  const fallbackPriority = (name: string) => {
     const n = (name || '').toLowerCase();
     if (n.includes('vacation')) return 1;
     if (n.includes('sba')) return 2;
@@ -59,39 +79,49 @@ function monthsToDebtFree(
     .filter(d => Number(d.balance) > 0)
     .map(d => {
       const fd = d.forgiveness_date ? new Date(d.forgiveness_date) : null;
-      const forgivenessMonth = fd
-        ? (fd.getFullYear() - now.getFullYear()) * 12 + (fd.getMonth() - now.getMonth())
-        : null;
       return {
+        planId: d.plan_id || '',
         balance: Number(d.balance),
         min: Math.max(Number(d.minimum_payment) || 0, 0),
         rate: (Number(d.interest_rate) || 0) / 100 / 12,
         extra: Number(d.extra_payment) || 0,
+        sort: Number(d.sort_order) || 0,
         forgiveness: !!d.forgiveness_eligible,
-        forgivenessMonth,
-        priority: priority(d.name || ''),
+        forgivenessMonth: fd ? monthsFrom(fd) : null,
+        priority: fallbackPriority(d.name || ''),
+        aprPct: Number(d.interest_rate) || 0,
       };
-    })
-    .sort((a, b) => a.priority - b.priority || a.balance - b.balance);
-
+    });
   if (!items.length) return 0;
 
-  let redirected = planExtra;
+  // Order inside each plan by sort order, then by the plan's strategy.
+  const planOrder = (planId: string) => {
+    const strategy = planMap.get(planId)?.strategy || 'snowball';
+    return items
+      .filter(d => d.planId === planId && !d.forgiveness)
+      .sort((a, b) =>
+        a.sort - b.sort ||
+        (strategy === 'avalanche' ? b.aprPct - a.aprPct : a.balance - b.balance));
+  };
+  // Global redirect chain for cash freed after a plan is finished.
+  const chain = () => items.filter(d => !d.forgiveness).sort((a, b) => a.priority - b.priority || a.balance - b.balance);
+
+  let redirected = 0;
   let months = 0;
 
   while (months < 600) {
-    const active = items.filter(d => d.balance > 0.5);
-    if (!active.length) break;
+    if (items.every(d => d.balance <= 0.5)) break;
     months += 1;
 
-    // Forgiveness first — the payment stops and joins the redirect pool.
-    for (const d of active) {
-      if (d.forgiveness && d.forgivenessMonth != null && months >= d.forgivenessMonth) {
+    // Forgiveness — the payment stops and joins the redirect pool.
+    for (const d of items) {
+      if (d.balance > 0.5 && d.forgiveness && d.forgivenessMonth != null && months >= d.forgivenessMonth) {
         d.balance = 0;
         redirected += d.min + d.extra;
       }
     }
 
+    // Interest, then each debt's own payment.
     for (const d of items) {
       if (d.balance <= 0.5) continue;
       d.balance += d.balance * d.rate;
@@ -102,24 +132,46 @@ function monthsToDebtFree(
       }
     }
 
-    // Redirect freed cash into the next target in order.
-    let pool = redirected;
-    for (const d of items) {
-      if (pool <= 0) break;
-      if (d.balance <= 0.5 || d.forgiveness) continue;
-      const applied = Math.min(pool, d.balance);
-      d.balance -= applied;
-      pool -= applied;
-      if (d.balance <= 0.5) {
-        d.balance = 0;
-        redirected += d.min + d.extra;
+    // Plan extra payments, then everything freed so far.
+    const pools: { amount: number; targets: typeof items }[] = [];
+    for (const [planId, p] of planMap) {
+      if (p.extra > 0 && months >= p.startMonth) pools.push({ amount: p.extra, targets: planOrder(planId) });
+    }
+    if (redirected > 0) pools.push({ amount: redirected, targets: chain() });
+
+    for (const pool of pools) {
+      let left = pool.amount;
+      const targets = pool.targets.length ? pool.targets : chain();
+      for (const d of targets) {
+        if (left <= 0) break;
+        if (d.balance <= 0.5) continue;
+        const applied = Math.min(left, d.balance);
+        d.balance -= applied;
+        left -= applied;
+        if (d.balance <= 0.5) {
+          d.balance = 0;
+          redirected += d.min + d.extra;
+        }
+      }
+      // Unused plan extra spills into the global chain.
+      if (left > 0 && pool.targets.length) {
+        for (const d of chain()) {
+          if (left <= 0) break;
+          if (d.balance <= 0.5) continue;
+          const applied = Math.min(left, d.balance);
+          d.balance -= applied;
+          left -= applied;
+          if (d.balance <= 0.5) {
+            d.balance = 0;
+            redirected += d.min + d.extra;
+          }
+        }
       }
     }
-
-    if (items.every(d => d.balance <= 0.5)) break;
   }
   return months >= 600 ? null : months;
 }
+
 
 
 export function KeyIndicatorsStrip({ scope, monthlyExpenses, netWorth }: { scope: StsScope; monthlyExpenses: number; netWorth: number }) {
