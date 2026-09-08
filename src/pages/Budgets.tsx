@@ -140,6 +140,7 @@ const Budgets = () => {
   const { household } = useHousehold();
   const [monthOffset, setMonthOffset] = useState(0);
   const [budgetType, setBudgetType] = useState<'personal' | 'business' | 'all'>('personal');
+  const safeToSpend = useSafeToSpend(budgetType === 'all' ? 'combined' : budgetType);
   const [selectedBusiness, setSelectedBusiness] = useState<string>('all');
   const month = getMonth(monthOffset);
   const { data: budgets, isLoading: budgetsLoading } = useBudgets(month);
