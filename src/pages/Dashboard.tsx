@@ -563,6 +563,8 @@ Your Safe-to-Spend updates in real time as you add transactions, pay bills, and 
       )}
 
       <TravelFundCard />
+      </DashboardSection>
+
 
       <BusinessProfileManager open={manageOpen} onOpenChange={setManageOpen} />
       <WeeklyRecap open={recapOpen} onOpenChange={setRecapOpen} />
