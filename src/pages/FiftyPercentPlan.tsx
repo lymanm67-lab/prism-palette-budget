@@ -192,28 +192,16 @@ const FiftyPercentPlan = () => {
 
   /* ---------- fixed commitments and when they end ---------- */
   const allCommitments = useMemo(() => {
-    const subs = (subscriptions || [])
-      .filter((s: any) => !s.is_cancelled && s.is_transfer !== true)
-      .map((s: any) => ({
-        id: `s-${s.id}`,
-        name: s.merchant || 'Subscription',
-        monthly: monthlyOfSub(s),
-        businessOnly: isBusinessOnly(s),
-        endDate: s.end_date ? new Date(`${String(s.end_date).slice(0, 10)}T00:00:00`) : null,
-        pauseMonths: (s.pause_months || []) as string[],
+    const existing = sharedCommitments
+      .filter(c => !c.isSavingsTransfer)
+      .map(c => ({
+        id: c.id,
+        name: c.name,
+        monthly: c.monthly,
+        businessOnly: c.businessOnly,
+        endDate: c.endDate,
+        pauseMonths: c.pauseMonths,
       }));
-    const bills = (recurring || [])
-      .filter((b: any) => b.is_active !== false && Number(b.amount || 0) < 0 && b.is_transfer !== true)
-
-      .map((b: any) => ({
-        id: `r-${b.id}`,
-        name: b.merchant || b.categories?.name || 'Recurring bill',
-        monthly: monthlyOfBill(b),
-        businessOnly: isBusinessOnly(b),
-        endDate: b.end_date ? new Date(`${String(b.end_date).slice(0, 10)}T00:00:00`) : null,
-        pauseMonths: (b.pause_months || []) as string[],
-      }));
-    const existing = [...subs, ...bills];
     const horizon = addMonths(new Date(), 12);
     const isDuplicate = (name: string, monthly: number) =>
       existing.some(c => {
