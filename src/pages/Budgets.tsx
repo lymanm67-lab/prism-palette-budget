@@ -118,6 +118,8 @@ interface BudgetRow {
   spent: number;
   received: number;
   categories: { name: string; color: string } | null;
+  /** Money landed in this category this month but no planned line exists yet. */
+  isUnbudgeted?: boolean;
 }
 
 /**
@@ -775,11 +777,39 @@ const Budgets = () => {
   }, [spentByCategory, businessOffsets, bizActualsFromOffsets, splitActualCategoryIds, nameSplitPlan]);
 
 
-  const budgetItems: BudgetRow[] = (budgets || []).map(b => ({
+  const plannedBudgetItems: BudgetRow[] = (budgets || []).map(b => ({
     ...b,
     spent: payrollCatIdsSet.has(b.category_id) ? b.planned_amount : (effectiveSpentByCategory[b.category_id] || 0),
     received: receivedByCategory[b.category_id] || 0,
   })).filter(b => filteredCategoryIds.has(b.category_id) && !fundingTransferCategoryIds.has(b.category_id));
+
+  // Money that landed in an income category with no planned line for the month
+  // (e.g. a one-off deposit) still needs to show up as extra income instead of
+  // silently disappearing from the Income section.
+  const unbudgetedIncomeItems: BudgetRow[] = useMemo(() => {
+    const budgeted = new Set(plannedBudgetItems.map(b => b.category_id));
+    const rows: BudgetRow[] = [];
+    for (const [catId, amount] of Object.entries(receivedByCategory)) {
+      if (!amount || amount <= 0) continue;
+      if (budgeted.has(catId)) continue;
+      if (!filteredCategoryIds.has(catId) || fundingTransferCategoryIds.has(catId)) continue;
+      if (categoryExpenseType.get(catId) !== 'income') continue;
+      const cat = (categories as any[] | undefined)?.find(c => c.id === catId);
+      rows.push({
+        id: `unbudgeted-${catId}`,
+        category_id: catId,
+        planned_amount: 0,
+        rollover: false,
+        spent: 0,
+        received: amount,
+        categories: cat ? { name: cat.name, color: cat.color } : null,
+        isUnbudgeted: true,
+      });
+    }
+    return rows;
+  }, [plannedBudgetItems, receivedByCategory, filteredCategoryIds, fundingTransferCategoryIds, categoryExpenseType, categories]);
+
+  const budgetItems: BudgetRow[] = [...plannedBudgetItems, ...unbudgetedIncomeItems];
 
   // Group budgets by expense type
   const categoryNameById = useMemo(() => {
@@ -791,7 +821,7 @@ const Budgets = () => {
   const groupBudgetsByExpenseType = useCallback((items: BudgetRow[]) => {
     const groups: Record<ExpenseType, BudgetRow[]> = { income: [], payroll_deduction: [], fixed: [], flexible: [], non_monthly: [], debt: [], wealth: [] };
     for (const b of items) {
-      if (hideZeroAmounts && b.planned_amount === 0) continue;
+      if (hideZeroAmounts && b.planned_amount === 0 && !b.isUnbudgeted) continue;
       if (hiddenBudgetIds.has(b.id)) continue;
       const type = categoryExpenseType.get(b.category_id) || 'flexible';
       groups[type].push(b);
