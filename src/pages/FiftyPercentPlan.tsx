@@ -11,6 +11,7 @@ import { useHousehold } from '@/contexts/HouseholdContext';
 import { useCurrency } from '@/hooks/use-currency';
 import { useSubscriptions } from '@/hooks/use-subscriptions';
 import { useRecurringTransactions } from '@/hooks/use-recurring';
+import { useMonthlyCommitments } from '@/hooks/use-monthly-commitments';
 import { addMonths, endOfMonth, format, startOfMonth, subMonths } from 'date-fns';
 import {
   ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, Legend,
