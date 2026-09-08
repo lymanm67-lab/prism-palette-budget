@@ -304,6 +304,8 @@ const Budgets = () => {
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const [showUnbudgeted, setShowUnbudgeted] = useState(false);
   const [hideZeroAmounts, setHideZeroAmounts] = useState(false);
+  const [overOnly, setOverOnly] = useState(false);
+
   const [hiddenBudgetIds, setHiddenBudgetIds] = useState<Set<string>>(new Set());
   const [selectedBudgetIds, setSelectedBudgetIds] = useState<Set<string>>(new Set());
 
@@ -1357,8 +1359,9 @@ const Budgets = () => {
           <span className="w-[90px] text-right text-sm tabular-nums">{formatCurrency(effectiveBudget)}</span>
           <span className="w-[90px] text-right text-sm tabular-nums text-muted-foreground">{formatCurrency(actual)}</span>
           <span className={cn('w-[90px] text-right text-sm font-medium tabular-nums', overBudget ? (isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400') : isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground')}>
-            {formatCurrency(Math.abs(remaining))}
-            {overBudget && <span className="text-[10px] ml-0.5">{isIncome ? 'extra' : 'over'}</span>}
+            {overBudget ? '+' : ''}{formatCurrency(Math.abs(remaining))}
+            <span className="text-[10px] ml-0.5 opacity-80">{overBudget ? (isIncome ? 'extra' : 'over') : isIncome ? 'to go' : 'under'}</span>
+
           </span>
 
           <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -1395,13 +1398,25 @@ const Budgets = () => {
   };
 
   // Render a section (accordion) — optionally pass custom totals for per-business rendering
-  const renderSection = (type: ExpenseType, items: BudgetRow[], customTotals?: { budget: number; actual: number; remaining: number }, sectionKey?: string, labelOverride?: string) => {
+  const renderSection = (type: ExpenseType, allItems: BudgetRow[], customTotals?: { budget: number; actual: number; remaining: number }, sectionKey?: string, labelOverride?: string) => {
     const totals = customTotals || sectionTotals[type];
     const key = sectionKey || type;
-    const isOpen = openSections[key] ?? true;
+    const isOpen = overOnly ? true : (openSections[key] ?? true);
     const isIncome = type === 'income';
     const isPayroll = type === 'payroll_deduction';
+    // "Show only over budget" keeps expense lines that spent more than planned,
+    // and income lines where less money landed than planned.
+    const items = overOnly
+      ? allItems.filter(b =>
+          isIncome
+            ? b.planned_amount - b.received > 0.005
+            : b.spent - b.planned_amount > 0.005
+        )
+      : allItems;
+    if (overOnly && items.length === 0) return null;
+
     const pct = totals.budget > 0 ? Math.min((totals.actual / totals.budget) * 100, 100) : 0;
+
 
     // Compute percentage of net income for benchmark badge
     const netIncome = totalIncomeBudget;
@@ -2045,6 +2060,11 @@ const Budgets = () => {
                       {hideZeroAmounts ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
                       {hideZeroAmounts ? 'Show $0 budgets' : 'Hide $0 budgets'}
                     </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setOverOnly(o => !o)} className="gap-2">
+                      <AlertTriangle className="h-4 w-4" />
+                      {overOnly ? 'Show all lines' : 'Show only over budget'}
+                    </DropdownMenuItem>
+
                     {hiddenBudgetIds.size > 0 && (
                       <DropdownMenuItem onClick={() => setHiddenBudgetIds(new Set())} className="gap-2">
                         <Eye className="h-4 w-4" />
