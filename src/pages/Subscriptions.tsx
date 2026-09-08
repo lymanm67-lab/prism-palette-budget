@@ -16,6 +16,7 @@ import {
   useDeleteSubscription, useSubscriptionInsights, useScoreCancellationDifficulty,
 } from '@/hooks/use-subscriptions';
 import { useRecurringTransactions } from '@/hooks/use-recurring';
+import { useMonthlyCommitments } from '@/hooks/use-monthly-commitments';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrency } from '@/hooks/use-currency';
