@@ -179,48 +179,18 @@ const Subscriptions = () => {
   );
   const committedMonthly = totalMonthly + billsMonthly;
 
-  /* Net pay breakdown — everything active comes out of the paycheck, including
-     business recurring bills (reimbursed quarterly from consulting fees).
-     Credit-builder savings accounts are flagged as transfers: the money leaves
-     net pay but comes back to you, so it counts as saving, not spending. */
+  /* Net pay breakdown comes from the shared monthly-commitments calculation
+     (see useMonthlyCommitments) so every page agrees on committed / left over. */
   const payScoped = useMemo(
     () => (subscriptions || []).filter(s => !s.is_cancelled && (s as any).is_transfer !== true),
     [subscriptions],
   );
-  const paySubs = useMemo(() => payScoped.filter(s => !isNonSubscription(s)).reduce((sum, s) => sum + monthlyOf(s), 0), [payScoped]);
   const activeRecurringBills = useMemo(
     () => (recurringTransactions || []).filter(
       bill => bill.is_active !== false && Number(bill.amount || 0) < 0 && (bill as any).is_transfer !== true,
     ),
     [recurringTransactions],
   );
-  const savingsTransfers = useMemo(() => {
-    const subs = (subscriptions || [])
-      .filter(s => !s.is_cancelled && (s as any).is_transfer === true)
-      .reduce((sum, s) => sum + monthlyOf(s), 0);
-    const bills = (recurringTransactions || [])
-      .filter(b => b.is_active !== false && Number(b.amount || 0) < 0 && (b as any).is_transfer === true)
-      .reduce((sum, b) => sum + monthlyRecurring(b), 0);
-    return subs + bills;
-  }, [subscriptions, recurringTransactions]);
-  const payBills = useMemo(
-    () => activeRecurringBills.reduce((sum, bill) => sum + monthlyRecurring(bill), 0),
-    [activeRecurringBills],
-  );
-  const payBusinessReimbursable = useMemo(() => {
-    const bizBills = activeRecurringBills
-      .filter(bill => isBusiness(bill) && !isSplit(bill))
-      .reduce((sum, bill) => sum + monthlyRecurring(bill), 0);
-    const bizSubs = payScoped
-      .filter(s => isBusiness(s) && !isSplit(s))
-      .reduce((sum, s) => sum + monthlyOf(s), 0);
-    return bizBills + bizSubs;
-  }, [activeRecurringBills, payScoped]);
-  const payCommitted = paySubs + payBills;
-
-  const netPayNum = Number(netPay) || 0;
-  const leftOver = netPayNum - payCommitted;
-  const usedPct = netPayNum > 0 ? Math.min(100, Math.round((payCommitted / netPayNum) * 100)) : 0;
 
   /* Month-by-month commitment items (bills + subscriptions, personal + business) */
   const toDate = (v: any) => (v ? new Date(`${String(v).slice(0, 10)}T00:00:00`) : null);
