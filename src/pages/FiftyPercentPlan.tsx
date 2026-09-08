@@ -472,7 +472,7 @@ const FiftyPercentPlan = () => {
                 <p className="text-xs text-muted-foreground">Cash left over today</p>
                 <p className="text-xl font-semibold">{formatCurrency(Math.max(0, net - fixedNow))}</p>
                 <p className="text-xs text-muted-foreground">
-                  {formatCurrency(net)} net pay − {formatCurrency(fixedNow)} fixed bills = cash you have left right now for everyday spending.
+                  {formatCurrency(net)} net pay − {formatCurrency(fixedNow)} fixed bills = cash you have left right now before savings and investing come out.
                 </p>
               </div>
               {(() => {
