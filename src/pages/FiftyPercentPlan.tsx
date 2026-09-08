@@ -227,8 +227,8 @@ const FiftyPercentPlan = () => {
         d.endDate <= horizon &&
         !isDuplicate(d.name, d.monthly),
       );
-    return [...subs, ...bills, ...debts].filter(c => c.monthly > 0);
-  }, [subscriptions, recurring, shortDebts]);
+    return [...existing, ...debts].filter(c => c.monthly > 0);
+  }, [sharedCommitments, shortDebts]);
 
   const commitments = useMemo(
     () => (excludeBusiness ? allCommitments.filter(c => !c.businessOnly) : allCommitments),
