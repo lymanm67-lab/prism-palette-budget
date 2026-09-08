@@ -118,6 +118,8 @@ interface BudgetRow {
   spent: number;
   received: number;
   categories: { name: string; color: string } | null;
+  /** Money landed in this category this month but no planned line exists yet. */
+  isUnbudgeted?: boolean;
 }
 
 /**
