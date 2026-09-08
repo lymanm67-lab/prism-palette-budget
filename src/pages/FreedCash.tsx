@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { SafeToSpendNote } from '@/components/SafeToSpendNote';
 import { FreedCashSummary } from '@/components/freed-cash/FreedCashSummary';
 import { FreedCashSourceList } from '@/components/freed-cash/FreedCashSourceList';
 import { VerificationQueue } from '@/components/freed-cash/VerificationQueue';
@@ -135,6 +136,11 @@ export default function FreedCash() {
           ends. Every freed dollar needs a new job — it is not automatic discretionary spending.
         </p>
       </header>
+
+      <SafeToSpendNote
+        scope={scope === 'business' ? 'business' : scope === 'personal' ? 'personal' : 'combined'}
+        pageNumberMeans="The totals here are freed-up monthly cash waiting to be redirected."
+      />
 
       {isLoading ? (
         <div className="space-y-4">

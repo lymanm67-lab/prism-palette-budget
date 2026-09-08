@@ -9,6 +9,7 @@ import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { useCurrency } from '@/hooks/use-currency';
+import { SafeToSpendNote } from '@/components/SafeToSpendNote';
 import { useSubscriptions } from '@/hooks/use-subscriptions';
 import { useRecurringTransactions } from '@/hooks/use-recurring';
 import { useMonthlyCommitments } from '@/hooks/use-monthly-commitments';
@@ -322,6 +323,13 @@ const FiftyPercentPlan = () => {
         ]}
       />
 
+      <SafeToSpendNote
+        scope="personal"
+        pageNumberMeans="The figures here are monthly targets and leftover cash before savings and investing."
+      />
+
+
+
       <div className="flex flex-wrap items-end gap-4">
         <div className="w-48">
           <Label htmlFor="netpay" className="text-xs text-muted-foreground">Monthly net pay</Label>
@@ -472,7 +480,7 @@ const FiftyPercentPlan = () => {
                 <p className="text-xs text-muted-foreground">Cash left over today</p>
                 <p className="text-xl font-semibold">{formatCurrency(Math.max(0, net - fixedNow))}</p>
                 <p className="text-xs text-muted-foreground">
-                  {formatCurrency(net)} net pay − {formatCurrency(fixedNow)} fixed bills = cash you have left right now for everyday spending.
+                  {formatCurrency(net)} net pay − {formatCurrency(fixedNow)} fixed bills = cash you have left right now before savings and investing come out.
                 </p>
               </div>
               {(() => {

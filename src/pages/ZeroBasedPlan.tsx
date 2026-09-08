@@ -8,6 +8,7 @@ import BusinessLedgerPanel from '@/components/budget/BusinessLedgerPanel';
 import MoneyRedirectsPanel from '@/components/budget/MoneyRedirectsPanel';
 import ZeroBasedForecastPanel from '@/components/budget/ZeroBasedForecastPanel';
 import PrintInfographicButton from '@/components/reports/PrintInfographicButton';
+import { SafeToSpendNote } from '@/components/SafeToSpendNote';
 import { useBufferMonths, useBufferOneTime, useBufferSettings, useMoneyRedirects } from '@/hooks/use-zero-based';
 import { useHouseholdDebts } from '@/hooks/use-household-debts';
 import { rollBuffer } from '@/lib/budgeting/bufferLedger';
@@ -68,6 +69,10 @@ export default function ZeroBasedPlan() {
           Itemized Live and Enjoy lines, real debt payments, buffer thresholds, the business ledger, freed-cash redirects and the long-range forecast.
         </p>
       </header>
+
+      <SafeToSpendNote
+        pageNumberMeans="The amounts on this page are plan targets and buffer balances for the whole month."
+      />
 
       <ZeroBasedPlanBoard />
 
