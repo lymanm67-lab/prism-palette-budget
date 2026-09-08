@@ -320,142 +320,139 @@ Your Safe-to-Spend updates in real time as you add transactions, pay bills, and 
         />
       </motion.div>
 
-      {/* ========== Cash left over after bills & subscriptions ========== */}
+      {/* ========== KEY INDICATORS STRIP ========== */}
       <motion.div variants={item}>
-        <CashLeftOverCard />
+        <KeyIndicatorsStrip scope={mode} monthlyExpenses={monthlyExpenses} netWorth={netWorth} />
       </motion.div>
 
+      {/* ========== MONEY NOW ========== */}
+      <DashboardSection
+        id="money-now"
+        title="Money now"
+        subtitle="Cash left over, paycheck plan and spending alerts"
+        icon={<Wallet className="h-4 w-4 text-prism-teal" />}
+        defaultOpen
+      >
+        <motion.div variants={item}><CashLeftOverCard /></motion.div>
+        <motion.div variants={item}><SmartAllocationCard /></motion.div>
+        <motion.div variants={item}><StsEquationView scope={mode} /></motion.div>
+        <motion.div variants={item}><SpendingAnomalyAlert /></motion.div>
+        <motion.div variants={item}><PendingPurchasesList /></motion.div>
+      </DashboardSection>
 
-      {/* ========== Smart Allocation (new paycheck → bucket plan) ========== */}
-      <motion.div variants={item}>
-        <SmartAllocationCard />
-      </motion.div>
-
-      {/* ========== STS Equation View ========== */}
-      <motion.div variants={item}>
-        <StsEquationView scope={mode} />
-      </motion.div>
-
-
-      {/* ========== 90-Day Progress Tracker ========== */}
-      <motion.div variants={item}>
-        <ProgressTracker />
-      </motion.div>
-
-      {/* ========== Savings Impact Counter ========== */}
-      <motion.div variants={item}>
-        <SavingsImpactCounter />
-      </motion.div>
-
-      {/* Spending Anomaly Alert */}
-      <motion.div variants={item}>
-        <SpendingAnomalyAlert />
-      </motion.div>
-
-      {/* Pending Cooling-Off Purchases */}
-      <motion.div variants={item}>
-        <PendingPurchasesList />
-      </motion.div>
-
-      {/* App-Dev Cutoff */}
-      <motion.div variants={item}>
-        <AppDevCutoffCard />
-      </motion.div>
-
-      {/* Shared App-Dev Pool (across all founder apps) */}
-      <motion.div variants={item}>
-        <AppDevPoolCard />
-      </motion.div>
-
-      {/* Getting Started Widget */}
-      <motion.div variants={item}>
-        <GettingStartedWidget />
-      </motion.div>
-
-      {/* Quick Stats: Net Worth, Available Cash, Bills, Subscriptions */}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {[
-          { label: 'Net Worth', value: netWorth, icon: TrendingUp, gradient: 'from-prism-navy to-prism-teal', mom: momIndicators?.income },
-          { label: 'Available Cash', value: safeToSpend.totalAvailableCash, icon: Wallet, gradient: 'from-prism-teal to-prism-lime', mom: null },
-          { label: 'Monthly Expenses', value: monthlyExpenses, icon: CreditCard, gradient: 'from-prism-orange to-prism-rose', mom: null },
-          { label: 'Subscriptions', value: totalSubscriptionCost, icon: Receipt, gradient: 'from-prism-violet to-prism-sky', mom: null },
-        ].map((stat, i) => (
-          <motion.div key={stat.label} variants={item} whileHover={{ scale: 1.02, y: -2 }} transition={{ type: 'spring', stiffness: 400 }}>
-            <Card className="prism-card-shine border-border/50 hover-lift cursor-pointer" onClick={() => navigate(stat.label === 'Net Worth' ? '/net-worth' : stat.label === 'Subscriptions' ? '/subscriptions' : stat.label === 'Monthly Expenses' ? '/spending-trends' : '/accounts')}>
-              <CardContent className="flex items-center gap-3 p-4">
-                <motion.div
-                  className={`h-10 w-10 shrink-0 rounded-xl bg-gradient-to-br ${stat.gradient} flex items-center justify-center`}
-                  whileHover={{ rotate: [0, -10, 10, 0] }}
-                  transition={{ duration: 0.4 }}
-                >
-                  <stat.icon className="h-5 w-5 text-white" />
-                </motion.div>
-                <div>
-                  <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{stat.label}</p>
-                  <div className="flex items-center gap-1.5">
-                    <p className="font-display text-lg font-bold">{formatCurrency(stat.value)}</p>
-                    {stat.mom && (
-                      <MoMIndicator percentageChange={stat.mom.percentageChange} direction={stat.mom.direction} />
-                    )}
+      {/* ========== PLAN & BUDGET ========== */}
+      <DashboardSection
+        id="plan-budget"
+        title="Plan & budget"
+        subtitle="Progress, forecast, cash flow and month-to-date stats"
+        icon={<Target className="h-4 w-4 text-prism-sky" />}
+      >
+        {/* Quick Stats: Net Worth, Available Cash, Bills, Subscriptions */}
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            { label: 'Net Worth', value: netWorth, icon: TrendingUp, gradient: 'from-prism-navy to-prism-teal', mom: momIndicators?.income },
+            { label: 'Available Cash', value: safeToSpend.totalAvailableCash, icon: Wallet, gradient: 'from-prism-teal to-prism-lime', mom: null },
+            { label: 'Monthly Expenses', value: monthlyExpenses, icon: CreditCard, gradient: 'from-prism-orange to-prism-rose', mom: null },
+            { label: 'Subscriptions', value: totalSubscriptionCost, icon: Receipt, gradient: 'from-prism-violet to-prism-sky', mom: null },
+          ].map((stat) => (
+            <motion.div key={stat.label} variants={item} whileHover={{ scale: 1.02, y: -2 }} transition={{ type: 'spring', stiffness: 400 }}>
+              <Card className="prism-card-shine border-border/50 hover-lift cursor-pointer" onClick={() => navigate(stat.label === 'Net Worth' ? '/net-worth' : stat.label === 'Subscriptions' ? '/subscriptions' : stat.label === 'Monthly Expenses' ? '/spending-trends' : '/accounts')}>
+                <CardContent className="flex items-center gap-3 p-4">
+                  <motion.div
+                    className={`h-10 w-10 shrink-0 rounded-xl bg-gradient-to-br ${stat.gradient} flex items-center justify-center`}
+                    whileHover={{ rotate: [0, -10, 10, 0] }}
+                    transition={{ duration: 0.4 }}
+                  >
+                    <stat.icon className="h-5 w-5 text-white" />
+                  </motion.div>
+                  <div>
+                    <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{stat.label}</p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="font-display text-lg font-bold">{formatCurrency(stat.value)}</p>
+                      {stat.mom && (
+                        <MoMIndicator percentageChange={stat.mom.percentageChange} direction={stat.mom.direction} />
+                      )}
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Weekly Recap */}
-      <motion.div variants={item}>
-        <Card className="prism-card-shine border-primary/20 cursor-pointer hover-lift" onClick={() => setRecapOpen(true)}>
-          <CardContent className="flex items-center gap-4 p-5">
-            <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shrink-0">
-              <Sparkles className="h-6 w-6 text-primary-foreground" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-display text-base font-bold">Your Weekly Recap</h3>
-              <p className="text-sm text-muted-foreground mt-0.5">See how your net worth and spending changed this week →</p>
-            </div>
-            <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Split view for Combined mode */}
-      {mode === 'combined' && (
-        <div className="grid gap-6 lg:grid-cols-2">
-          <AllModePanel title="Personal" icon={<User className="h-3.5 w-3.5 text-white" />} gradient="from-prism-violet to-prism-sky"
-            transactions={transactions?.filter(t => !t.category_id || personalCatIds.has(t.category_id)) || []}
-            formatCurrency={formatCurrency} monthPrefix={monthStart.substring(0, 7)} navigate={navigate} />
-          <AllModePanel title="Business" icon={<Building2 className="h-3.5 w-3.5 text-white" />} gradient="from-prism-teal to-prism-lime"
-            transactions={transactions?.filter(t => t.category_id && businessCatIds.has(t.category_id)) || []}
-            formatCurrency={formatCurrency} monthPrefix={monthStart.substring(0, 7)} navigate={navigate} />
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
         </div>
-      )}
 
-      {/* 30-Day Cash Forecast */}
-      <motion.div variants={item}>
-        <CashFlowForecastChart />
-      </motion.div>
+        <motion.div variants={item}><ProgressTracker /></motion.div>
+        <motion.div variants={item}><SavingsImpactCounter /></motion.div>
+        <motion.div variants={item}><CashFlowForecastChart /></motion.div>
 
-      {/* Financial Health Score */}
-      <motion.div variants={item}>
-        <FinancialHealthScore monthlyIncome={monthlyIncome} monthlyExpenses={monthlyExpenses} totalAssets={totalAssets} totalLiabilities={totalLiabilities} />
-      </motion.div>
+        {/* Split view for Combined mode */}
+        {mode === 'combined' && (
+          <div className="grid gap-6 lg:grid-cols-2">
+            <AllModePanel title="Personal" icon={<User className="h-3.5 w-3.5 text-white" />} gradient="from-prism-violet to-prism-sky"
+              transactions={transactions?.filter(t => !t.category_id || personalCatIds.has(t.category_id)) || []}
+              formatCurrency={formatCurrency} monthPrefix={monthStart.substring(0, 7)} navigate={navigate} />
+            <AllModePanel title="Business" icon={<Building2 className="h-3.5 w-3.5 text-white" />} gradient="from-prism-teal to-prism-lime"
+              transactions={transactions?.filter(t => t.category_id && businessCatIds.has(t.category_id)) || []}
+              formatCurrency={formatCurrency} monthPrefix={monthStart.substring(0, 7)} navigate={navigate} />
+          </div>
+        )}
 
-      {/* Combined legacy score (wealth + health) */}
-      <motion.div variants={item}><CombinedLegacyScoreCard compact /></motion.div>
+        {/* Charts */}
+        <DashboardCharts monthlyCashflow={monthlyCashflow} spendingData={filteredSpending} formatCurrency={formatCurrency} formatCompact={formatCompact} />
 
-      {/* Health consistency + morning ritual */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        <motion.div variants={item}><ConsistencyTrackerCard compact /></motion.div>
-        <motion.div variants={item}><MorningKickstartCard compact /></motion.div>
-      </div>
+        {/* Weekly Recap */}
+        <motion.div variants={item}>
+          <Card className="prism-card-shine border-primary/20 cursor-pointer hover-lift" onClick={() => setRecapOpen(true)}>
+            <CardContent className="flex items-center gap-4 p-5">
+              <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shrink-0">
+                <Sparkles className="h-6 w-6 text-primary-foreground" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-display text-base font-bold">Your Weekly Recap</h3>
+                <p className="text-sm text-muted-foreground mt-0.5">See how your net worth and spending changed this week →</p>
+              </div>
+              <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
+            </CardContent>
+          </Card>
+        </motion.div>
+      </DashboardSection>
 
+      {/* ========== DEBT & CREDIT ========== */}
+      <DashboardSection
+        id="debt-credit"
+        title="Debt & credit"
+        subtitle="Payoff order, balances and freed-up cash"
+        icon={<CreditCard className="h-4 w-4 text-prism-rose" />}
+      >
+        <motion.div variants={item}><DebtPayoffSummaryCard /></motion.div>
+      </DashboardSection>
 
+      {/* ========== WEALTH & LEGACY ========== */}
+      <DashboardSection
+        id="wealth-legacy"
+        title="Wealth & legacy"
+        subtitle="Health score, goals, accounts and long-term picture"
+        icon={<TrendingUp className="h-4 w-4 text-prism-violet" />}
+      >
+        {/* Financial Health Score */}
+        <motion.div variants={item}>
+          <FinancialHealthScore monthlyIncome={monthlyIncome} monthlyExpenses={monthlyExpenses} totalAssets={totalAssets} totalLiabilities={totalLiabilities} />
+        </motion.div>
 
-      {/* Charts */}
-      <DashboardCharts monthlyCashflow={monthlyCashflow} spendingData={filteredSpending} formatCurrency={formatCurrency} formatCompact={formatCompact} />
+        {/* Combined legacy score (wealth + health) */}
+        <motion.div variants={item}><CombinedLegacyScoreCard compact /></motion.div>
+
+        {/* Health consistency + morning ritual */}
+        <div className="grid gap-6 lg:grid-cols-2">
+          <motion.div variants={item}><ConsistencyTrackerCard compact /></motion.div>
+          <motion.div variants={item}><MorningKickstartCard compact /></motion.div>
+        </div>
+
+        {/* App-Dev budget guardrails */}
+        <motion.div variants={item}><AppDevCutoffCard /></motion.div>
+        <motion.div variants={item}><AppDevPoolCard /></motion.div>
+
+        {/* Getting Started Widget */}
+        <motion.div variants={item}><GettingStartedWidget /></motion.div>
 
       {/* Goals + AI Insights */}
       <div className="grid gap-6 lg:grid-cols-2">
@@ -464,6 +461,7 @@ Your Safe-to-Spend updates in real time as you add transactions, pay bills, and 
           <AiSpendingInsights transactions={filteredTransactions} accounts={accounts || []} monthlyIncome={monthlyIncome} monthlyExpenses={monthlyExpenses} />
         </motion.div>
       </div>
+
 
       {/* Recent Transactions */}
       {filteredTransactions.length > 0 && (
