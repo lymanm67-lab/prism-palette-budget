@@ -37,6 +37,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuLabel } from '@/components/ui/dropdown-menu';
 import { EmptyState } from '@/components/EmptyState';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useMonthlyCommitments } from '@/hooks/use-monthly-commitments';
 import NetWorthSummaryCard from '@/components/NetWorthSummaryCard';
 import { clusterDuplicates, softDeleteDuplicates } from '@/lib/duplicate-detector';
 import { ScoreBreakdownTooltip } from '@/components/cleanup/ScoreBreakdownTooltip';
