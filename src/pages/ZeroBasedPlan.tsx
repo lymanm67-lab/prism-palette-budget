@@ -69,6 +69,10 @@ export default function ZeroBasedPlan() {
         </p>
       </header>
 
+      <SafeToSpendNote
+        pageNumberMeans="The amounts on this page are plan targets and buffer balances for the whole month."
+      />
+
       <ZeroBasedPlanBoard />
 
       <Tabs defaultValue="buffer">
