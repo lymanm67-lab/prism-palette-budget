@@ -352,6 +352,7 @@ const Budgets = () => {
     const s = searchParams.get('scan');
     if (s === 'bill') { setBillScanOpen(true); searchParams.delete('scan'); setSearchParams(searchParams, { replace: true }); }
     else if (s === 'paystub') { setPaystubOpen(true); searchParams.delete('scan'); setSearchParams(searchParams, { replace: true }); }
+    if (searchParams.get('over') === '1') { setOverOnly(true); searchParams.delete('over'); setSearchParams(searchParams, { replace: true }); }
   }, [searchParams, setSearchParams]);
   const toggleSection = (key: string) => setOpenSections(s => ({ ...s, [key]: !s[key] }));
 
