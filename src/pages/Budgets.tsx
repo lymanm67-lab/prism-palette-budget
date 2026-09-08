@@ -1555,10 +1555,20 @@ const Budgets = () => {
                   {Math.round((totals.budget / grossIncomeBudget) * 100)}% of gross
                 </span>
               )}
+              {isWealthSection && (
+                <span className="inline-flex items-center text-[10px] px-2 py-0.5 rounded-full font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
+                  {formatCurrency(sectionSavedYtd)} saved YTD
+                </span>
+              )}
             </span>
             <span className="text-right text-xs sm:text-sm font-semibold tabular-nums sm:w-[90px]">{formatCurrency(totals.budget)}</span>
-            <span className="hidden sm:inline-block w-[90px] text-right text-sm tabular-nums text-muted-foreground">{formatCurrency(totals.actual)}</span>
-            <span className={cn('text-right text-xs sm:text-sm font-semibold tabular-nums sm:w-[90px]', totals.remaining < 0 ? (isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400') : isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground')}>
+            <span className={cn('hidden sm:inline-block w-[90px] text-right text-sm tabular-nums', isWealthSection && totals.actual > 0 ? 'text-emerald-600 dark:text-emerald-400 font-medium' : 'text-muted-foreground')}>
+              {isWealthSection && totals.actual > 0 ? '+' : ''}{formatCurrency(totals.actual)}
+            </span>
+            <span className={cn('text-right text-xs sm:text-sm font-semibold tabular-nums sm:w-[90px]',
+              isWealthSection
+                ? (totals.remaining < 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400')
+                : totals.remaining < 0 ? (isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400') : isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground')}>
               {formatCurrency(Math.abs(totals.remaining))}
             </span>
 
