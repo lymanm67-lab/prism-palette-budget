@@ -1256,7 +1256,18 @@ const Budgets = () => {
     const isCreditLine = b.planned_amount < 0; // reimbursement / credit lines are not overspend
     const remaining = effectiveBudget - actual;
     const pct = effectiveBudget > 0 ? Math.min((actual / effectiveBudget) * 100, 100) : 0;
-    const overBudget = !isCreditLine && remaining < -0.005;
+    const overBudget = !isCreditLine && !isWealth && remaining < -0.005;
+    const savedYtd = isWealth ? (wealthYtdByCategory.get(b.category_id) || 0) : 0;
+    // Wealth lines: extra saved is a win (green), shortfall is "still to move".
+    const savedExtra = isWealth && remaining < -0.005;
+    const remainingLabel = isWealth
+      ? (savedExtra ? 'extra saved' : 'still to move')
+      : overBudget ? (isIncome ? 'extra' : 'over') : isIncome ? 'to go' : 'under';
+    const remainingClass = isWealth
+      ? (savedExtra ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400')
+      : overBudget
+        ? (isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400')
+        : isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground';
 
     const isPersonalRow = personalCategoryIds.has(b.category_id);
 
