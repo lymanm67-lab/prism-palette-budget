@@ -1401,18 +1401,20 @@ const Budgets = () => {
   const renderSection = (type: ExpenseType, allItems: BudgetRow[], customTotals?: { budget: number; actual: number; remaining: number }, sectionKey?: string, labelOverride?: string) => {
     const totals = customTotals || sectionTotals[type];
     const key = sectionKey || type;
-    const isOpen = openSections[key] ?? true;
+    const isOpen = overOnly ? true : (openSections[key] ?? true);
     const isIncome = type === 'income';
     const isPayroll = type === 'payroll_deduction';
-    // "Show only over budget" keeps lines where actual exceeds the plan
-    // (or, for income, where less landed than planned).
+    // "Show only over budget" keeps expense lines that spent more than planned,
+    // and income lines where less money landed than planned.
     const items = overOnly
-      ? allItems.filter(b => {
-          const actual = isIncome ? b.received : b.spent;
-          return actual - b.planned_amount > 0.005;
-        })
+      ? allItems.filter(b =>
+          isIncome
+            ? b.planned_amount - b.received > 0.005
+            : b.spent - b.planned_amount > 0.005
+        )
       : allItems;
     if (overOnly && items.length === 0) return null;
+
     const pct = totals.budget > 0 ? Math.min((totals.actual / totals.budget) * 100, 100) : 0;
 
 
