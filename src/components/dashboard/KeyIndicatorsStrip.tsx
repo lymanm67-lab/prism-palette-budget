@@ -145,7 +145,7 @@ export function KeyIndicatorsStrip({ scope, monthlyExpenses, netWorth }: { scope
     const months = monthsToDebtFree(debtList as any, planExtra);
     const payoffLabel = months == null
       ? 'Add payments to project'
-      : months === 0 ? 'Debt free' : `${Math.floor(months / 12)}y ${months % 12}m to go`;
+      : months === 0 ? 'Debt free' : `${Math.floor(months / 12)}y ${months % 12}m — payments redirect as each debt clears`;
     const payoffDate = months && months > 0
       ? new Date(new Date().setMonth(new Date().getMonth() + months)).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
       : '—';
