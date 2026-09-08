@@ -78,6 +78,9 @@ export function SafeToSpendHero({ viewMode = 'combined' }: SafeToSpendHeroProps)
                 ? 'What your business can spend without affecting cash reserves'
                 : 'This is what you can spend without disrupting your financial stability'}
             </p>
+            <p className="text-[11px] text-muted-foreground/70 mt-1.5 max-w-md mx-auto">
+              Planned surplus − savings − investing − {sts.bufferPercent}% buffer = safe to spend. This is the spending number to trust — Budgets shows the same figure when both pages use the {viewLabels[viewMode]} view.
+            </p>
           </div>
 
           {/* Income-based context bar */}
