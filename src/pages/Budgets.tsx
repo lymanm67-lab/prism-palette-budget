@@ -2163,16 +2163,21 @@ const Budgets = () => {
             <p className="text-xs text-muted-foreground mt-0.5">{formatCurrency(totalExpenseActual)} spent</p>
           </CardContent>
         </Card>
-        <Card className={cn("border-l-4", (totalIncomeActual - totalExpenseActual) >= 0 ? "border-l-emerald-500" : "border-l-rose-500")}>
+        <Card className={cn("border-l-4", (totalIncomeBudget - totalExpenseBudget) >= 0 ? "border-l-emerald-500" : "border-l-rose-500")}>
           <CardContent className="p-3 sm:p-4">
             <p className="text-[11px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">Left over</p>
-            <p className={cn("text-lg sm:text-xl font-bold font-display tabular-nums mt-1", (totalIncomeActual - totalExpenseActual) < 0 ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400")}>
-              {formatCurrency(totalIncomeActual - totalExpenseActual)}
+            <p className={cn("text-lg sm:text-xl font-bold font-display tabular-nums mt-1", (totalIncomeBudget - totalExpenseBudget) < 0 ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400")}>
+              {formatCurrency(totalIncomeBudget - totalExpenseBudget)}
             </p>
-            <p className="text-xs text-muted-foreground mt-0.5">received − spent this month</p>
-            <p className="text-[10px] text-muted-foreground mt-0.5 tabular-nums">planned: {formatCurrency(totalIncomeBudget - totalExpenseBudget)}</p>
+            <p className="text-xs text-muted-foreground mt-0.5 tabular-nums">{formatCurrency(totalIncomeBudget)} income − {formatCurrency(totalExpenseBudget)} expenses</p>
+            <p className="text-[10px] text-muted-foreground mt-1 tabular-nums">
+              so far: {formatCurrency(totalIncomeActual)} received − {formatCurrency(totalExpenseActual)} spent = {formatCurrency(totalIncomeActual - totalExpenseActual)}
+            </p>
+            {totalIncomeActual === 0 && totalExpenseActual > 0 && (
+              <p className="text-[10px] text-amber-600 dark:text-amber-400 leading-snug">No income has landed yet this month, so the "so far" figure looks negative.</p>
+            )}
             <p className="text-[10px] text-muted-foreground mt-1 tabular-nums">typical month: {formatCurrency(typicalLeftOver)}</p>
-            <p className="text-[10px] text-muted-foreground/80 leading-snug">Typical month = net pay minus every ongoing bill and subscription, so it stays the same all month while the number above builds up day by day.</p>
+            <p className="text-[10px] text-muted-foreground/80 leading-snug">Typical month = net pay minus every ongoing bill and subscription.</p>
           </CardContent>
         </Card>
         <Card className={cn("border-l-4", unallocated >= 0 ? "border-l-emerald-500" : "border-l-amber-500")}>
