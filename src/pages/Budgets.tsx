@@ -1398,13 +1398,23 @@ const Budgets = () => {
   };
 
   // Render a section (accordion) — optionally pass custom totals for per-business rendering
-  const renderSection = (type: ExpenseType, items: BudgetRow[], customTotals?: { budget: number; actual: number; remaining: number }, sectionKey?: string, labelOverride?: string) => {
+  const renderSection = (type: ExpenseType, allItems: BudgetRow[], customTotals?: { budget: number; actual: number; remaining: number }, sectionKey?: string, labelOverride?: string) => {
     const totals = customTotals || sectionTotals[type];
     const key = sectionKey || type;
     const isOpen = openSections[key] ?? true;
     const isIncome = type === 'income';
     const isPayroll = type === 'payroll_deduction';
+    // "Show only over budget" keeps lines where actual exceeds the plan
+    // (or, for income, where less landed than planned).
+    const items = overOnly
+      ? allItems.filter(b => {
+          const actual = isIncome ? b.received : b.spent;
+          return actual - b.planned_amount > 0.005;
+        })
+      : allItems;
+    if (overOnly && items.length === 0) return null;
     const pct = totals.budget > 0 ? Math.min((totals.actual / totals.budget) * 100, 100) : 0;
+
 
     // Compute percentage of net income for benchmark badge
     const netIncome = totalIncomeBudget;
