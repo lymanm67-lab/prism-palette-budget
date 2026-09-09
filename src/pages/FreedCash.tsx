@@ -192,7 +192,51 @@ export default function FreedCash() {
             ))}
           </div>
 
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs text-muted-foreground">Confidence:</span>
+            {CONFIDENCE_VIEWS.map((c) => (
+              <Button
+                key={c.value}
+                variant={c.value === confidence ? 'default' : 'outline'}
+                size="sm"
+                title={c.hint}
+                onClick={() => setConfidence(c.value)}
+              >
+                {c.label}
+              </Button>
+            ))}
+          </div>
+          {confidence !== 'all' && (
+            <p className="text-xs text-muted-foreground">
+              {CONFIDENCE_VIEWS.find((c) => c.value === confidence)?.hint}. Every number on this page is filtered
+              to that confidence level.
+            </p>
+          )}
+
+          <FreedCashSnapshotHeadline metrics={metrics} />
+
+          <SavingsRealityBands metrics={metrics} />
+
+          {overlaps.length > 0 && (
+            <Card className="border-amber-500/40 bg-amber-500/5">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Possible double-counted savings</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-1 text-xs text-muted-foreground">
+                {overlaps.map((o) => (
+                  <p key={o.key}>
+                    <span className="font-medium text-foreground">{o.label}</span>: {o.sourceNames.join(' + ')} claim
+                    ${o.claimedMonthly.toFixed(2)}/mo, but the original payment eliminated was only $
+                    {o.largestOriginal.toFixed(2)}/mo. Corrected figure: ${o.largestOriginal.toFixed(2)}/mo (overlap $
+                    {o.overlap.toFixed(2)}).
+                  </p>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+
           <FreedCashSummary totals={totals} sources={list} redirects={scopedRedirects} />
+
 
           <div className="space-y-2">
             <div className="flex flex-wrap gap-2">
