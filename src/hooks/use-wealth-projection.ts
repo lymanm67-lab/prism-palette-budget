@@ -24,9 +24,10 @@ import {
 import { defaultRefundYears, evaluateRefundPool, RefundYear } from '@/lib/wealth/taxRefundPool';
 import { crossModuleConflicts, runFlowChecks, validateMagnitude } from '@/lib/wealth/checks';
 
-const CFG_KEY = 'prism.wealthProjection.assumptions.v2';
-const TL_KEY = 'prism.wealthProjection.timeline.v2';
-const REFUND_KEY = 'prism.wealthProjection.refunds.v2';
+const CFG_KEY = 'prism.wealthProjection.assumptions.v3';
+const TL_KEY = 'prism.wealthProjection.timeline.v3';
+const REFUND_KEY = 'prism.wealthProjection.refunds.v3';
+
 
 function load<T>(key: string, fallback: T): T {
   try {
