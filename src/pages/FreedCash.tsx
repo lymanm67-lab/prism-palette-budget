@@ -22,6 +22,12 @@ import { CohortReport } from '@/components/freed-cash/CohortReport';
 import { TopWins } from '@/components/freed-cash/TopWins';
 import { PeriodReports } from '@/components/freed-cash/PeriodReports';
 import { RealizedByMonth } from '@/components/freed-cash/RealizedByMonth';
+import { FreedCashSnapshotHeadline } from '@/components/freed-cash/FreedCashSnapshotHeadline';
+import { SavingsRealityBands } from '@/components/freed-cash/SavingsRealityBands';
+import { SourceRealizedTable } from '@/components/freed-cash/SourceRealizedTable';
+import { RunRateTimelineView } from '@/components/freed-cash/RunRateTimelineView';
+import { NeverCutCard } from '@/components/freed-cash/NeverCutCard';
+import { WealthPotentialCalculator } from '@/components/freed-cash/WealthPotentialCalculator';
 
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -36,12 +42,20 @@ import {
   filterSources,
   type EntityScope,
 } from '@/lib/freed-cash/netRecurring';
+import {
+  CONFIDENCE_VIEWS,
+  filterByConfidence,
+  overlapWarnings,
+  realityMetrics,
+  type ConfidenceView,
+} from '@/lib/freed-cash/reality';
 
 const SCOPES: { value: EntityScope; label: string }[] = [
   { value: 'all', label: 'Everything' },
   { value: 'personal', label: 'Personal' },
   { value: 'business', label: 'Business' },
 ];
+
 
 
 const GROUPS = [
