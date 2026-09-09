@@ -22,6 +22,12 @@ import { CohortReport } from '@/components/freed-cash/CohortReport';
 import { TopWins } from '@/components/freed-cash/TopWins';
 import { PeriodReports } from '@/components/freed-cash/PeriodReports';
 import { RealizedByMonth } from '@/components/freed-cash/RealizedByMonth';
+import { FreedCashSnapshotHeadline } from '@/components/freed-cash/FreedCashSnapshotHeadline';
+import { SavingsRealityBands } from '@/components/freed-cash/SavingsRealityBands';
+import { SourceRealizedTable } from '@/components/freed-cash/SourceRealizedTable';
+import { RunRateTimelineView } from '@/components/freed-cash/RunRateTimelineView';
+import { NeverCutCard } from '@/components/freed-cash/NeverCutCard';
+import { WealthPotentialCalculator } from '@/components/freed-cash/WealthPotentialCalculator';
 
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -36,12 +42,20 @@ import {
   filterSources,
   type EntityScope,
 } from '@/lib/freed-cash/netRecurring';
+import {
+  CONFIDENCE_VIEWS,
+  filterByConfidence,
+  overlapWarnings,
+  realityMetrics,
+  type ConfidenceView,
+} from '@/lib/freed-cash/reality';
 
 const SCOPES: { value: EntityScope; label: string }[] = [
   { value: 'all', label: 'Everything' },
   { value: 'personal', label: 'Personal' },
   { value: 'business', label: 'Business' },
 ];
+
 
 
 const GROUPS = [
@@ -63,10 +77,12 @@ const GROUPS = [
     tabs: [
       { value: 'verify', label: 'Verify' },
       { value: 'realized', label: 'Realized by month' },
+      { value: 'bysource', label: 'By source' },
       { value: 'timing', label: 'Timing' },
       { value: 'utilities', label: 'Utility savings' },
       { value: 'keep', label: 'Keep Score' },
     ],
+
   },
   {
     id: 'redirect',
@@ -86,6 +102,9 @@ const GROUPS = [
     hint: 'The long view: what is coming, what could slip away, and the full printable report.',
     tabs: [
       { value: 'forward', label: 'Forward look' },
+      { value: 'runrate', label: 'Future run rate' },
+      { value: 'nevercut', label: 'What if I never cut?' },
+      { value: 'wealth', label: 'Wealth potential' },
       { value: 'periods', label: 'Year reports' },
       { value: 'cohorts', label: 'Cohorts' },
       { value: 'wins', label: 'Top wins' },
@@ -93,6 +112,7 @@ const GROUPS = [
       { value: 'history', label: 'History' },
       { value: 'report', label: 'Report' },
     ],
+
   },
 
 ] as const;
@@ -101,6 +121,8 @@ export default function FreedCash() {
   const [groupId, setGroupId] = useState<string>('find');
   const [tab, setTab] = useState<string>('sources');
   const [scope, setScope] = useState<EntityScope>('all');
+  const [confidence, setConfidence] = useState<ConfidenceView>('all');
+
   const group = GROUPS.find((g) => g.id === groupId) ?? GROUPS[0];
 
   const { data: sources, isLoading } = useFreedCashSources();
@@ -118,7 +140,9 @@ export default function FreedCash() {
 
   // Personal and business money are kept strictly apart: business savings must
   // never count toward household cash, and vice versa.
-  const all = useMemo(() => filterSources(rawSources, scope), [rawSources, scope]);
+  const scoped = useMemo(() => filterSources(rawSources, scope), [rawSources, scope]);
+  // Confidence view: only Verified and Reconciled savings are fully confirmed.
+  const all = useMemo(() => filterByConfidence(scoped, confidence), [scoped, confidence]);
   const scopedRedirects = useMemo(
     () => filterRedirects(rawRedirects, rawSources, scope),
     [rawRedirects, rawSources, scope],
@@ -128,6 +152,9 @@ export default function FreedCash() {
   // Historical (already-cancelled) items only count toward lifetime savings.
   const list = useMemo(() => all.filter((s) => s.status !== 'historical'), [all]);
   const totals = useMemo(() => summarizeFreedCash(list), [list]);
+  const metrics = useMemo(() => realityMetrics(all, scopedRedirects, new Date()), [all, scopedRedirects]);
+  const overlaps = useMemo(() => overlapWarnings(all), [all]);
+
 
   return (
     <div className="container max-w-6xl space-y-6 py-6">
@@ -165,7 +192,51 @@ export default function FreedCash() {
             ))}
           </div>
 
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs text-muted-foreground">Confidence:</span>
+            {CONFIDENCE_VIEWS.map((c) => (
+              <Button
+                key={c.value}
+                variant={c.value === confidence ? 'default' : 'outline'}
+                size="sm"
+                title={c.hint}
+                onClick={() => setConfidence(c.value)}
+              >
+                {c.label}
+              </Button>
+            ))}
+          </div>
+          {confidence !== 'all' && (
+            <p className="text-xs text-muted-foreground">
+              {CONFIDENCE_VIEWS.find((c) => c.value === confidence)?.hint}. Every number on this page is filtered
+              to that confidence level.
+            </p>
+          )}
+
+          <FreedCashSnapshotHeadline metrics={metrics} />
+
+          <SavingsRealityBands metrics={metrics} />
+
+          {overlaps.length > 0 && (
+            <Card className="border-amber-500/40 bg-amber-500/5">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Possible double-counted savings</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-1 text-xs text-muted-foreground">
+                {overlaps.map((o) => (
+                  <p key={o.key}>
+                    <span className="font-medium text-foreground">{o.label}</span>: {o.sourceNames.join(' + ')} claim
+                    ${o.claimedMonthly.toFixed(2)}/mo, but the original payment eliminated was only $
+                    {o.largestOriginal.toFixed(2)}/mo. Corrected figure: ${o.largestOriginal.toFixed(2)}/mo (overlap $
+                    {o.overlap.toFixed(2)}).
+                  </p>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+
           <FreedCashSummary totals={totals} sources={list} redirects={scopedRedirects} />
+
 
           <div className="space-y-2">
             <div className="flex flex-wrap gap-2">
@@ -231,6 +302,21 @@ export default function FreedCash() {
             <TabsContent value="realized">
               <RealizedByMonth sources={all} redirects={scopedRedirects} />
             </TabsContent>
+            <TabsContent value="bysource">
+              <SourceRealizedTable sources={all} redirects={scopedRedirects} />
+            </TabsContent>
+            <TabsContent value="runrate">
+              <RunRateTimelineView sources={list} />
+            </TabsContent>
+            <TabsContent value="nevercut">
+              <NeverCutCard sources={all} />
+            </TabsContent>
+            <TabsContent value="wealth">
+              <WealthPotentialCalculator
+                defaultMonthly={metrics.redirectedMonthly || metrics.runRate}
+              />
+            </TabsContent>
+
             <TabsContent value="timing">
               <SavingsTiming sources={list} redirects={scopedRedirects} />
             </TabsContent>

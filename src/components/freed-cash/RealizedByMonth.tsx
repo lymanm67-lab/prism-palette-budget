@@ -26,6 +26,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import type { FreedCashRedirect, FreedCashSource } from '@/hooks/use-freed-cash';
 import { earliestMonth, monthKey } from '@/lib/freed-cash/timing';
 import { realizedByMonth, realizedYears } from '@/lib/freed-cash/reality';
+import { SavingsStoryCard } from './SavingsStoryCard';
+
 
 const money = (n: number) =>
   n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
@@ -216,6 +218,14 @@ export function RealizedByMonth({ sources, redirects }: Props) {
           )}
         </CardContent>
       </Card>
+
+      <SavingsStoryCard
+        year={year === 'all' ? now.getUTCFullYear() : Number(year)}
+        realizedInYear={totalRealized}
+        runRate={endRunRate}
+        pipeline={rows.length ? rows[rows.length - 1].pipeline : 0}
+      />
     </div>
   );
 }
+
