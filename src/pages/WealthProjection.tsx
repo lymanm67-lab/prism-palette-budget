@@ -25,7 +25,7 @@ import { ContributionVsGrowth, SourceOfFundsCards } from '@/components/wealth/So
 import { YearlyFundingLedger } from '@/components/wealth/YearlyFundingLedger';
 import { FlowChecksPanel } from '@/components/wealth/FlowChecksPanel';
 import { useWealthProjection } from '@/hooks/use-wealth-projection';
-import { CONFIDENCE_LABELS, money, money2 } from '@/lib/wealth/sourceOfFunds';
+import { CONFIDENCE_LABELS, money, money2, monthLabel } from '@/lib/wealth/sourceOfFunds';
 import { REFUND_DESTINATION_LABELS } from '@/lib/wealth/taxRefundPool';
 
 export default function WealthProjection() {
