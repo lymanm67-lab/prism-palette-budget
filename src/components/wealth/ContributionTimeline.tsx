@@ -25,13 +25,16 @@ export function ContributionTimeline({ milestones, firstMonth }: Props) {
       <CardContent className="space-y-2">
         {firstMonth && (
           <div className="rounded-lg border border-primary/30 bg-primary/5 p-3">
-            <p className="text-xs text-muted-foreground">Going in this month</p>
+            <p className="text-xs text-muted-foreground">
+              Starting point — {monthLabel(firstMonth.month)}
+            </p>
             <p className="text-xl font-bold">{money2(firstMonth.investedTotal)}</p>
             <p className="text-[11px] text-muted-foreground">
               Core {money2(firstMonth.coreTotal)} + net freed cash {money2(firstMonth.netInvestableFreedCash)}
             </p>
           </div>
         )}
+
 
         {milestones.map((m) => {
           const r = m.row!;
