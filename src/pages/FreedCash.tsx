@@ -302,6 +302,21 @@ export default function FreedCash() {
             <TabsContent value="realized">
               <RealizedByMonth sources={all} redirects={scopedRedirects} />
             </TabsContent>
+            <TabsContent value="bysource">
+              <SourceRealizedTable sources={all} redirects={scopedRedirects} />
+            </TabsContent>
+            <TabsContent value="runrate">
+              <RunRateTimelineView sources={list} />
+            </TabsContent>
+            <TabsContent value="nevercut">
+              <NeverCutCard sources={all} />
+            </TabsContent>
+            <TabsContent value="wealth">
+              <WealthPotentialCalculator
+                defaultMonthly={metrics.redirectedMonthly || metrics.runRate}
+              />
+            </TabsContent>
+
             <TabsContent value="timing">
               <SavingsTiming sources={list} redirects={scopedRedirects} />
             </TabsContent>
