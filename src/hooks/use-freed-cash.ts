@@ -335,14 +335,20 @@ export function useDeleteGateRequest() {
  * ------------------------------------------------------------------------ */
 
 export const REDIRECT_DESTINATIONS = [
-  { value: 'emergency_fund', label: 'Emergency fund (SoFi)' },
-  { value: 'debt_payoff', label: 'Debt payoff (snowball)' },
-  { value: 'investing', label: 'Investing / Build Wealth' },
   { value: 'buffer', label: 'Buffer' },
+  { value: 'emergency_fund', label: 'Emergency savings (SoFi)' },
+  { value: 'debt_payoff', label: 'Debt reduction (snowball)' },
+  { value: 'retirement', label: 'Retirement' },
+  { value: 'hsa', label: 'HSA' },
+  { value: 'investing', label: 'Investments / Build Wealth' },
+  { value: 'sinking_fund', label: 'Sinking fund' },
   { value: 'travel', label: 'Travel fund' },
   { value: 'business_reserve', label: 'Business capital reserve' },
+  { value: 'guilt_free', label: 'Guilt-free spending' },
   { value: 'goal', label: 'Specific goal' },
+  { value: 'other', label: 'Other' },
 ] as const;
+
 
 export const REDIRECT_STATUSES = [
   { value: 'planned', label: 'Planned' },
