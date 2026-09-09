@@ -75,6 +75,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { to: '/planning/fifty-percent', icon: Target, label: 'Live on 50% Plan', color: 'text-prism-amber' },
       { to: '/planning/reserves', icon: ShieldCheck, label: 'Emergency Fund & Liquidity', color: 'text-prism-teal' },
       { to: '/planning/freed-cash', icon: Scissors, label: 'Freed Cash Engine', color: 'text-prism-amber' },
+      { to: '/planning/wealth-projection', icon: TrendingUp, label: 'Wealth Projection', color: 'text-prism-teal' },
     ],
   },
   {
