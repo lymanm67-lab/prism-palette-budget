@@ -25,7 +25,7 @@ import { ContributionVsGrowth, SourceOfFundsCards } from '@/components/wealth/So
 import { YearlyFundingLedger } from '@/components/wealth/YearlyFundingLedger';
 import { FlowChecksPanel } from '@/components/wealth/FlowChecksPanel';
 import { useWealthProjection } from '@/hooks/use-wealth-projection';
-import { CONFIDENCE_LABELS, money, money2 } from '@/lib/wealth/sourceOfFunds';
+import { CONFIDENCE_LABELS, money, money2, monthLabel } from '@/lib/wealth/sourceOfFunds';
 import { REFUND_DESTINATION_LABELS } from '@/lib/wealth/taxRefundPool';
 
 export default function WealthProjection() {
@@ -65,12 +65,13 @@ export default function WealthProjection() {
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <Stat
-          label="Going in this month"
+          label={`Going in ${firstMonth ? monthLabel(firstMonth.month) : 'first month'}`}
           value={money2(firstMonth?.investedTotal ?? 0)}
-          hint={`Core ${money2(firstMonth?.coreTotal ?? 0)} + net freed cash ${money2(
+          hint={`First month of the plan · core ${money2(firstMonth?.coreTotal ?? 0)} + net freed cash ${money2(
             firstMonth?.netInvestableFreedCash ?? 0,
           )}`}
         />
+
         <Stat
           label="Starting balance"
           value={money(p.result.startingAssets)}
