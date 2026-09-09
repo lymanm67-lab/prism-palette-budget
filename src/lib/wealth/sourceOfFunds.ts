@@ -340,7 +340,13 @@ export interface FlowResult {
   months: MonthRow[];
   years: YearRow[];
   startingAssets: number;
+  /** Balance as measured on the "as of" date, before bridge growth. */
+  startingAssetsAsOf: number;
+  /** Months of growth applied between the "as of" date and the plan start month. */
+  bridgeMonths: number;
+  bridgeGrowth: number;
   startingByBucket: Record<Bucket, number>;
+
   contributions: number;
   growth: number;
   ending: number;
