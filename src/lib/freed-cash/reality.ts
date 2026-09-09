@@ -552,4 +552,87 @@ export function leakageView(
   };
 }
 
+/* ------------------------------------------------- realized savings by month */
+
+export interface RealizedMonthRow {
+  month: string;
+  label: string;
+  created: number;
+  realized: number;
+  cumulativeRealized: number;
+  runRate: number;
+  pipeline: number;
+  redirected: number;
+  unallocated: number;
+  estimated: boolean;
+  sources: { name: string; amount: number; effectiveDate: string; estimated: boolean }[];
+}
+
+/**
+ * Month-by-month realized savings driven purely by each source's cancellation or
+ * payoff (effective) date — never by run rate x months elapsed.
+ */
+export function realizedByMonth(
+  sources: FreedCashSource[],
+  redirects: FreedCashRedirect[],
+  fromKey: string,
+  toKey: string,
+  now = new Date(),
+): RealizedMonthRow[] {
+  const live = redirects.filter((r) => LIVE_REDIRECT.has(r.status));
+  let cumulative = 0;
+
+  return monthRange(fromKey, toKey).map((key) => {
+    const end = monthEnd(key);
+    let realized = 0;
+    let estimated = false;
+    const rows: RealizedMonthRow['sources'] = [];
+
+    for (const s of sources) {
+      const r = realizedInMonthDetailed(s, key, now);
+      if (r.amount <= 0) continue;
+      realized += r.amount;
+      if (r.estimated) estimated = true;
+      rows.push({ name: s.name, amount: round2(r.amount), effectiveDate: s.effective_date, estimated: r.estimated });
+    }
+
+    const created = round2(
+      sources
+        .filter((s) => COUNTED.has(s.status) && s.effective_date?.slice(0, 7) === key)
+        .reduce((sum, s) => sum + netMonthly(s), 0),
+    );
+    const runRate = round2(runRateAtMonthEnd(sources, key));
+    const redirected = round2(
+      live
+        .filter((r) => !r.start_date || new Date(`${r.start_date}T00:00:00Z`) <= end)
+        .reduce((sum, r) => sum + executedAmount(r), 0),
+    );
+
+    cumulative += realized;
+
+    return {
+      month: key,
+      label: monthLabel(key),
+      created,
+      realized: round2(realized),
+      cumulativeRealized: round2(cumulative),
+      runRate,
+      pipeline: pipelineAfterMonth(sources, key),
+      redirected,
+      unallocated: round2(Math.max(0, realized - redirected)),
+      estimated,
+      sources: rows.sort((a, b) => b.amount - a.amount),
+    };
+  });
+}
+
+/** Years that have any realized or created savings, newest first. */
+export function realizedYears(sources: FreedCashSource[], now = new Date()): number[] {
+  const years = new Set<number>([now.getUTCFullYear()]);
+  for (const s of sources) {
+    if (s.effective_date) years.add(Number(s.effective_date.slice(0, 4)));
+  }
+  return [...years].filter((y) => y > 1990).sort((a, b) => b - a);
+}
+
 export { monthLabel, monthStart };
