@@ -687,6 +687,10 @@ function runFlowInternal(
     months: rows,
     years,
     startingAssets,
+    startingAssetsAsOf,
+    bridgeMonths,
+    bridgeGrowth,
+
     startingByBucket,
     contributions,
     growth: growthTotal,
