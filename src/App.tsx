@@ -125,6 +125,7 @@ const ZeroBasedPlan = lazy(() => import("./pages/ZeroBasedPlan"));
 const FiftyPercentPlan = lazy(() => import("./pages/FiftyPercentPlan"));
 const Reserves = lazy(() => import("./pages/Reserves"));
 const FreedCash = lazy(() => import("./pages/FreedCash"));
+const WealthProjection = lazy(() => import("./pages/WealthProjection"));
 const FreedCashReconcile = lazy(() => import("./pages/FreedCashReconcile"));
 const RetirementHub = lazy(() => import("@/pages/RetirementHub"));
 const HealthDashboard = lazy(() => import("@/pages/health/HealthDashboard"));
@@ -306,6 +307,7 @@ const App = () => (
               <Route path="/planning/fifty-percent" element={<Suspense fallback={<PageLoader />}><FiftyPercentPlan /></Suspense>} />
               <Route path="/planning/zero-based" element={<Suspense fallback={<PageLoader />}><ZeroBasedPlan /></Suspense>} />
               <Route path="/planning/reserves" element={<Suspense fallback={<PageLoader />}><Reserves /></Suspense>} />
+              <Route path="/planning/wealth-projection" element={<Suspense fallback={<PageLoader />}><WealthProjection /></Suspense>} />
               <Route path="/planning/freed-cash" element={<Suspense fallback={<PageLoader />}><FreedCash /></Suspense>} />
               <Route path="/planning/freed-cash/reconcile" element={<Suspense fallback={<PageLoader />}><FreedCashReconcile /></Suspense>} />
               <Route path="/investments/portfolio" element={<Suspense fallback={<PageLoader />}><InvestmentPortfolio /></Suspense>} />
