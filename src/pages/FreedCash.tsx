@@ -21,6 +21,7 @@ import { ForwardLook } from '@/components/freed-cash/ForwardLook';
 import { CohortReport } from '@/components/freed-cash/CohortReport';
 import { TopWins } from '@/components/freed-cash/TopWins';
 import { PeriodReports } from '@/components/freed-cash/PeriodReports';
+import { RealizedByMonth } from '@/components/freed-cash/RealizedByMonth';
 
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -61,6 +62,7 @@ const GROUPS = [
     hint: 'Prove each saving on a statement, then see how it builds month by month.',
     tabs: [
       { value: 'verify', label: 'Verify' },
+      { value: 'realized', label: 'Realized by month' },
       { value: 'timing', label: 'Timing' },
       { value: 'utilities', label: 'Utility savings' },
       { value: 'keep', label: 'Keep Score' },
@@ -225,6 +227,9 @@ export default function FreedCash() {
 
             <TabsContent value="lifetime">
               <LifetimeSavings sources={all} />
+            </TabsContent>
+            <TabsContent value="realized">
+              <RealizedByMonth sources={all} redirects={scopedRedirects} />
             </TabsContent>
             <TabsContent value="timing">
               <SavingsTiming sources={list} redirects={scopedRedirects} />
