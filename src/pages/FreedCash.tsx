@@ -77,10 +77,12 @@ const GROUPS = [
     tabs: [
       { value: 'verify', label: 'Verify' },
       { value: 'realized', label: 'Realized by month' },
+      { value: 'bysource', label: 'By source' },
       { value: 'timing', label: 'Timing' },
       { value: 'utilities', label: 'Utility savings' },
       { value: 'keep', label: 'Keep Score' },
     ],
+
   },
   {
     id: 'redirect',
@@ -100,6 +102,9 @@ const GROUPS = [
     hint: 'The long view: what is coming, what could slip away, and the full printable report.',
     tabs: [
       { value: 'forward', label: 'Forward look' },
+      { value: 'runrate', label: 'Future run rate' },
+      { value: 'nevercut', label: 'What if I never cut?' },
+      { value: 'wealth', label: 'Wealth potential' },
       { value: 'periods', label: 'Year reports' },
       { value: 'cohorts', label: 'Cohorts' },
       { value: 'wins', label: 'Top wins' },
@@ -107,6 +112,7 @@ const GROUPS = [
       { value: 'history', label: 'History' },
       { value: 'report', label: 'Report' },
     ],
+
   },
 
 ] as const;
