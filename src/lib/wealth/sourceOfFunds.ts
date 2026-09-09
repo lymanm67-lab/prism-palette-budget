@@ -214,14 +214,15 @@ export const DEFAULT_ASSUMPTIONS: WealthAssumptions = {
   bufferTarget: 7000,
   bufferStartingBalance: 0,
   starting: {
-    retirement: 181_504.70,
+    retirement: 181_993.40,
     hsa: 0,
     taxable: 2_608.91,
     source: 'Investment accounts (retirement + self-directed)',
-    lastUpdated: '2026-09-01',
+    lastUpdated: '2026-09-08',
     status: 'confirmed',
     manualOverride: false,
   },
+
 };
 
 /* --------------------------------- helpers --------------------------------- */
