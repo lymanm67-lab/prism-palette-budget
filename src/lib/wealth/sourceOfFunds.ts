@@ -340,7 +340,13 @@ export interface FlowResult {
   months: MonthRow[];
   years: YearRow[];
   startingAssets: number;
+  /** Balance as measured on the "as of" date, before bridge growth. */
+  startingAssetsAsOf: number;
+  /** Months of growth applied between the "as of" date and the plan start month. */
+  bridgeMonths: number;
+  bridgeGrowth: number;
   startingByBucket: Record<Bucket, number>;
+
   contributions: number;
   growth: number;
   ending: number;
@@ -384,20 +390,34 @@ function runFlowInternal(
   months: number,
 ): FlowResult {
   const rate = monthlyRateFrom(returnPct);
-  const startingByBucket: Record<Bucket, number> = {
+  const startIdx = monthIndex(a.startMonth);
+  /* Bridge growth: the balance was measured on `lastUpdated`, so grow it forward
+     to the plan's start month at the same return assumption. */
+  const asOfMonth = (a.starting.lastUpdated || a.startMonth).slice(0, 7);
+  const bridgeMonths = Math.max(0, startIdx - monthIndex(asOfMonth));
+  const bridgeFactor = Math.pow(1 + rate, bridgeMonths);
+  const startingRawByBucket: Record<Bucket, number> = {
     retirement: a.starting.retirement,
     hsa: a.includeHsa ? a.starting.hsa : 0,
     taxable: a.starting.taxable,
   };
+  const startingByBucket: Record<Bucket, number> = {
+    retirement: startingRawByBucket.retirement * bridgeFactor,
+    hsa: startingRawByBucket.hsa * bridgeFactor,
+    taxable: startingRawByBucket.taxable * bridgeFactor,
+  };
   const balances: Record<Bucket, number> = { ...startingByBucket };
   const startingAssets = balances.retirement + balances.hsa + balances.taxable;
-  const startIdx = monthIndex(a.startMonth);
+  const startingAssetsAsOf =
+    startingRawByBucket.retirement + startingRawByBucket.hsa + startingRawByBucket.taxable;
+  const bridgeGrowth = startingAssets - startingAssetsAsOf;
 
   let bufferBalance = a.bufferStartingBalance;
   let contributions = 0;
   let growthTotal = 0;
   const byCategory = emptyCategories();
   byCategory.starting_assets = startingAssets;
+
   const bySourceTotals = new Map<string, number>();
   const eventsFired: Record<string, { firstMonth: string | null; total: number }> = {};
 
@@ -667,6 +687,10 @@ function runFlowInternal(
     months: rows,
     years,
     startingAssets,
+    startingAssetsAsOf,
+    bridgeMonths,
+    bridgeGrowth,
+
     startingByBucket,
     contributions,
     growth: growthTotal,
