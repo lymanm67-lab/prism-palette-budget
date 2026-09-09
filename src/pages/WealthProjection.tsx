@@ -73,12 +73,19 @@ export default function WealthProjection() {
         />
 
         <Stat
-          label="Starting balance"
+          label={`Starting balance ${firstMonth ? `at ${monthLabel(firstMonth.month)}` : ''}`}
           value={money(p.result.startingAssets)}
-          hint={`${p.assumptions.starting.source} · updated ${p.assumptions.starting.lastUpdated} · ${
-            CONFIDENCE_LABELS[p.assumptions.starting.status]
-          }`}
+          hint={
+            p.result.bridgeMonths > 0
+              ? `${money(p.result.startingAssetsAsOf)} as of ${p.assumptions.starting.lastUpdated} + ${money(
+                  p.result.bridgeGrowth,
+                )} growth over ${p.result.bridgeMonths} months at ${p.returnPct}%`
+              : `${p.assumptions.starting.source} · updated ${p.assumptions.starting.lastUpdated} · ${
+                  CONFIDENCE_LABELS[p.assumptions.starting.status]
+                }`
+          }
         />
+
         <Stat
           label={`Combined invested assets in ${p.horizon} years`}
           value={money(p.result.ending)}
