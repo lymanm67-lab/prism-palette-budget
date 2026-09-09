@@ -121,6 +121,8 @@ export default function FreedCash() {
   const [groupId, setGroupId] = useState<string>('find');
   const [tab, setTab] = useState<string>('sources');
   const [scope, setScope] = useState<EntityScope>('all');
+  const [confidence, setConfidence] = useState<ConfidenceView>('all');
+
   const group = GROUPS.find((g) => g.id === groupId) ?? GROUPS[0];
 
   const { data: sources, isLoading } = useFreedCashSources();
@@ -138,7 +140,9 @@ export default function FreedCash() {
 
   // Personal and business money are kept strictly apart: business savings must
   // never count toward household cash, and vice versa.
-  const all = useMemo(() => filterSources(rawSources, scope), [rawSources, scope]);
+  const scoped = useMemo(() => filterSources(rawSources, scope), [rawSources, scope]);
+  // Confidence view: only Verified and Reconciled savings are fully confirmed.
+  const all = useMemo(() => filterByConfidence(scoped, confidence), [scoped, confidence]);
   const scopedRedirects = useMemo(
     () => filterRedirects(rawRedirects, rawSources, scope),
     [rawRedirects, rawSources, scope],
@@ -148,6 +152,9 @@ export default function FreedCash() {
   // Historical (already-cancelled) items only count toward lifetime savings.
   const list = useMemo(() => all.filter((s) => s.status !== 'historical'), [all]);
   const totals = useMemo(() => summarizeFreedCash(list), [list]);
+  const metrics = useMemo(() => realityMetrics(all, scopedRedirects, new Date()), [all, scopedRedirects]);
+  const overlaps = useMemo(() => overlapWarnings(all), [all]);
+
 
   return (
     <div className="container max-w-6xl space-y-6 py-6">
