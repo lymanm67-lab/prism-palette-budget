@@ -637,19 +637,30 @@ const Transactions = () => {
     // Fetch AI suggestion if no category assigned
     if (!txn.category_id && household) {
       setAiSuggestionLoading(true);
+      setAiSuggestion(null);
       try {
         const { data, error } = await supabase.functions.invoke('suggest-category', {
           body: { merchant: txn.merchant, amount: txn.amount, date: txn.date, household_id: household.id },
         });
-        if (!error && data?.suggestion) {
+        if (error) {
+          // AI is optional here — never surface as a fatal error
+          const status = (error as any)?.context?.status;
+          if (status === 402) {
+            toast.info('AI credits are used up, so category suggestions are paused.');
+          } else if (status === 429) {
+            toast.info('AI is busy right now — try again in a moment.');
+          }
+          console.warn('AI suggestion unavailable:', status ?? error.message);
+        } else if (data?.suggestion) {
           setAiSuggestion(data.suggestion);
         }
       } catch (e) {
-        console.error('AI suggestion error:', e);
+        console.warn('AI suggestion error:', e);
       } finally {
         setAiSuggestionLoading(false);
       }
     }
+
   };
 
   const handleUploadEditReceipt = async (file: File) => {
