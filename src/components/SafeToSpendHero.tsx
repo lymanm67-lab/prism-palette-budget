@@ -158,10 +158,14 @@ export function SafeToSpendHero({ viewMode = 'combined' }: SafeToSpendHeroProps)
           )}
 
           <div className="grid grid-cols-3 gap-3 sm:gap-6">
-            <TimeframePill icon={<DollarSign className="h-4 w-4" />} label="Daily" amount={formatCurrency(sts.daily)} gradient="from-prism-teal to-prism-lime" />
-            <TimeframePill icon={<Calendar className="h-4 w-4" />} label="Weekly" amount={formatCurrency(sts.weekly)} gradient="from-prism-sky to-prism-teal" />
-            <TimeframePill icon={<CalendarDays className="h-4 w-4" />} label="Monthly" amount={formatCurrency(sts.monthly)} gradient="from-prism-violet to-prism-sky" />
+            <TimeframePill icon={<DollarSign className="h-4 w-4" />} label="Daily" amount={formatCurrency(sts.daily)} gradient="from-prism-teal to-prism-lime" spent={spent.today} limit={sts.daily} spentLabel="today" formatCurrency={formatCurrency} />
+            <TimeframePill icon={<Calendar className="h-4 w-4" />} label="Weekly" amount={formatCurrency(sts.weekly)} gradient="from-prism-sky to-prism-teal" spent={spent.week} limit={sts.weekly} spentLabel="this week" formatCurrency={formatCurrency} />
+            <TimeframePill icon={<CalendarDays className="h-4 w-4" />} label="Monthly" amount={formatCurrency(sts.monthly)} gradient="from-prism-violet to-prism-sky" spent={spent.month} limit={sts.monthly} spentLabel="this month" formatCurrency={formatCurrency} />
           </div>
+          <p className="text-[10px] text-muted-foreground/70 mt-2 text-center">
+            "Spent" counts only day-to-day spending — bills, savings, transfers, groceries and medical are left out.
+          </p>
+
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5 pt-5 border-t border-border/30">
             <MiniStat label="Available Cash" value={formatCurrency(sts.totalAvailableCash)} />
