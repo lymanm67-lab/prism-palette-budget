@@ -123,14 +123,28 @@ serve(async (req) => {
     });
 
     if (!aiResponse.ok) {
+      const gatewayBody = await aiResponse.json().catch(() => null);
+      const gatewayMessage = typeof gatewayBody?.message === "string"
+        ? gatewayBody.message
+        : typeof gatewayBody?.error === "string"
+          ? gatewayBody.error
+          : "AI category suggestions are unavailable.";
+
       if (aiResponse.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit exceeded" }), {
+        return new Response(JSON.stringify({ error: gatewayMessage }), {
           status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      if (aiResponse.status === 402) {
-        return new Response(JSON.stringify({ error: "AI credits exhausted" }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      if (aiResponse.status === 402 || aiResponse.status === 403) {
+        // Suggestions are optional. Return a successful fallback so the editor
+        // remains usable while preserving the gateway's message for the UI.
+        return new Response(JSON.stringify({
+          suggestion: null,
+          aiUnavailable: true,
+          status: aiResponse.status,
+          message: gatewayMessage,
+        }), {
+          status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       return new Response(JSON.stringify({ suggestion: null }), {
