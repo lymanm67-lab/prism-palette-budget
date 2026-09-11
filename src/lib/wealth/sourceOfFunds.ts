@@ -414,6 +414,13 @@ function runFlowInternal(
   const bridgeGrowth = startingAssets - startingAssetsAsOf;
 
   let bufferBalance = a.bufferStartingBalance;
+  // Buffer deposits dated before the plan's first month have already happened by
+  // the time the projection starts, so they count toward the opening balance.
+  for (const inj of input.injections) {
+    if (monthIndex(inj.month) >= startIdx) continue;
+    const room = Math.max(0, a.bufferTarget - bufferBalance);
+    bufferBalance += Math.min(room, inj.amount);
+  }
   let contributions = 0;
   let growthTotal = 0;
   const byCategory = emptyCategories();
