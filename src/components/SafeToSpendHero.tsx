@@ -179,7 +179,12 @@ export function SafeToSpendHero({ viewMode = 'combined' }: SafeToSpendHeroProps)
   );
 }
 
-function TimeframePill({ icon, label, amount, gradient }: { icon: React.ReactNode; label: string; amount: string; gradient: string }) {
+function TimeframePill({ icon, label, amount, gradient, spent, limit, spentLabel, formatCurrency }: {
+  icon: React.ReactNode; label: string; amount: string; gradient: string;
+  spent: number; limit: number; spentLabel: string; formatCurrency: (n: number) => string;
+}) {
+  const left = limit - spent;
+  const over = left < 0;
   return (
     <div className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-card/80 border border-border/30">
       <div className={`h-8 w-8 rounded-lg bg-gradient-to-br ${gradient} flex items-center justify-center text-white`}>
@@ -187,6 +192,14 @@ function TimeframePill({ icon, label, amount, gradient }: { icon: React.ReactNod
       </div>
       <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">{label}</span>
       <span className="font-display text-lg sm:text-xl font-bold">{amount}</span>
+      <div className="w-full mt-0.5 pt-1.5 border-t border-border/30 text-center">
+        <p className="text-[10px] text-muted-foreground">
+          Spent {spentLabel}: <span className="font-semibold text-foreground">{formatCurrency(spent)}</span>
+        </p>
+        <p className={`text-[10px] font-semibold ${over ? 'text-prism-rose' : 'text-prism-teal'}`}>
+          {over ? `${formatCurrency(Math.abs(left))} over` : `${formatCurrency(left)} left`}
+        </p>
+      </div>
     </div>
   );
 }
