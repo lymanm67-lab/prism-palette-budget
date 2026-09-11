@@ -30,6 +30,39 @@ interface SafeToSpendHeroProps {
 export function SafeToSpendHero({ viewMode = 'combined' }: SafeToSpendHeroProps) {
   const sts = useSafeToSpend(viewMode as StsScope);
   const { formatCurrency } = useCurrency();
+  const { data: transactions } = useTransactions();
+
+  // Day-to-day spending already made against the allowance (bills, savings,
+  // transfers, groceries and medical are excluded — see spending rules).
+  const spent = useMemo(() => {
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
+    const monthPrefix = todayStr.slice(0, 7);
+    const dow = now.getDay();
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - (dow === 0 ? 6 : dow - 1));
+    const mondayStr = monday.toISOString().split('T')[0];
+
+    let today = 0, week = 0, month = 0;
+    for (const t of (transactions || []) as any[]) {
+      if (t.amount >= 0 || t.is_transfer) continue;
+      const group = t.categories?.category_groups;
+      if (group?.expense_type !== 'flexible') continue;
+      const isBiz = group?.budget_type === 'business';
+      if (viewMode === 'personal' && isBiz) continue;
+      if (viewMode === 'business' && !isBiz) continue;
+      if (t.categories?.money_purpose === 'build_wealth') continue;
+      const name = (t.categories?.name || '').toLowerCase();
+      if (name.includes('grocer') || name.includes('medical') || name.includes('health')) continue;
+      if (!t.date?.startsWith(monthPrefix)) continue;
+      const amt = Math.abs(t.amount);
+      month += amt;
+      if (t.date >= mondayStr) week += amt;
+      if (t.date === todayStr) today += amt;
+    }
+    return { today, week, month };
+  }, [transactions, viewMode]);
+
 
   if (sts.isLoading) {
     return (
