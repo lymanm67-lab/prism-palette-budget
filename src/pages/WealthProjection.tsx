@@ -112,7 +112,7 @@ export default function WealthProjection() {
           <Link to="/planning/investments">Investment plan</Link>
         </Button>
         <Button size="sm" variant="ghost" asChild>
-          <Link to="/reserves">Emergency fund &amp; buffer</Link>
+          <Link to="/planning/reserves">Emergency fund &amp; buffer</Link>
         </Button>
       </div>
 

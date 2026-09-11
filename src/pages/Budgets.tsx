@@ -1369,7 +1369,7 @@ const Budgets = () => {
       <div key={b.id} className={cn("group py-2.5 px-3 hover:bg-muted/30 rounded-lg transition-colors", selectedBudgetIds.has(b.id) && "bg-primary/5")}>
         {/* Mobile: stacked layout */}
         <div className="flex items-center gap-2 sm:hidden">
-          <Checkbox checked={selectedBudgetIds.has(b.id)} onCheckedChange={() => toggleBudgetSelection(b.id)} className="shrink-0" />
+          <Checkbox checked={selectedBudgetIds.has(b.id)} onCheckedChange={() => toggleBudgetSelection(b.id)} disabled={b.isUnbudgeted} className="shrink-0" />
           <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: b.categories?.color || 'hsl(var(--primary))' }} />
           <span className="flex-1 text-sm font-medium truncate">{b.categories?.name || 'Unknown'}</span>
           {personalSplitBadge}
@@ -1395,14 +1395,16 @@ const Budgets = () => {
             </TooltipTrigger>
             <TooltipContent><p>Edit budget</p></TooltipContent>
           </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => setDeleteTarget({ id: b.id, name: b.categories?.name || 'Budget' })}>
-                <Trash2 className="h-3 w-3" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent><p>Delete budget</p></TooltipContent>
-          </Tooltip>
+          {!b.isUnbudgeted && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => setDeleteTarget({ id: b.id, name: b.categories?.name || 'Budget' })}>
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent><p>Delete budget</p></TooltipContent>
+            </Tooltip>
+          )}
         </div>
         <div className="sm:hidden mt-1.5 ml-5">
           <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden mb-1.5">
@@ -1427,7 +1429,7 @@ const Budgets = () => {
 
         {/* Desktop: table row layout */}
         <div className="hidden sm:flex items-center gap-3">
-          <Checkbox checked={selectedBudgetIds.has(b.id)} onCheckedChange={() => toggleBudgetSelection(b.id)} className="shrink-0" />
+          <Checkbox checked={selectedBudgetIds.has(b.id)} onCheckedChange={() => toggleBudgetSelection(b.id)} disabled={b.isUnbudgeted} className="shrink-0" />
           <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: b.categories?.color || 'hsl(var(--primary))' }} />
           <div className="flex-1 min-w-0 flex items-center gap-1.5">
             <span className="text-sm font-medium truncate">{b.categories?.name || 'Unknown'}</span>
@@ -1484,14 +1486,16 @@ const Budgets = () => {
               </TooltipTrigger>
               <TooltipContent><p>Edit budget</p></TooltipContent>
             </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => setDeleteTarget({ id: b.id, name: b.categories?.name || 'Budget' })}>
-                  <Trash2 className="h-3 w-3" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent><p>Delete budget</p></TooltipContent>
-            </Tooltip>
+            {!b.isUnbudgeted && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => setDeleteTarget({ id: b.id, name: b.categories?.name || 'Budget' })}>
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent><p>Delete budget</p></TooltipContent>
+              </Tooltip>
+            )}
           </div>
         </div>
       </div>
