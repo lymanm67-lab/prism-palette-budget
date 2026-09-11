@@ -1,7 +1,9 @@
+import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useSafeToSpend, type StsScope } from '@/hooks/use-safe-to-spend';
+import { useTransactions } from '@/hooks/use-finance-data';
 import { useCurrency } from '@/hooks/use-currency';
 import { MODE_CONFIG } from '@/hooks/use-financial-mode';
 import { Shield, Zap, Leaf, DollarSign, Calendar, CalendarDays, TrendingUp, Info } from 'lucide-react';
