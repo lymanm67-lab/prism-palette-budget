@@ -651,6 +651,9 @@ const Transactions = () => {
             toast.info('AI is busy right now — try again in a moment.');
           }
           console.warn('AI suggestion unavailable:', status ?? error.message);
+        } else if (data?.aiUnavailable) {
+          toast.info(data.message || 'AI credits are used up, so category suggestions are paused.');
+          console.warn('AI suggestion unavailable:', data.status ?? 'blocked');
         } else if (data?.suggestion) {
           setAiSuggestion(data.suggestion);
         }
