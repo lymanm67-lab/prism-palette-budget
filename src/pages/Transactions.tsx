@@ -574,7 +574,21 @@ const Transactions = () => {
       const { data, error } = await supabase.functions.invoke('auto-categorize', {
         body: { transaction_ids: targetIds, household_id: household.id },
       });
-      if (error) throw error;
+      if (error) {
+        // Non-2xx responses (e.g. 402 no AI credits) come back as an error with the body in context
+        let msg = error.message || 'Auto-categorize failed';
+        const resp = (error as any)?.context;
+        if (resp && typeof resp.json === 'function') {
+          try {
+            const body = await resp.json();
+            if (body?.error) msg = body.error;
+          } catch { /* keep default message */ }
+        }
+        if (resp?.status === 402) msg = 'AI credits are used up, so AI categorizing is paused. Rule-based categorizing still works.';
+        qc.invalidateQueries({ queryKey: ['transactions'] });
+        toast.error(msg);
+        return;
+      }
       if (data?.error) {
         toast.error(data.error);
         return;
