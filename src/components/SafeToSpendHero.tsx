@@ -1,7 +1,9 @@
+import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useSafeToSpend, type StsScope } from '@/hooks/use-safe-to-spend';
+import { useTransactions } from '@/hooks/use-finance-data';
 import { useCurrency } from '@/hooks/use-currency';
 import { MODE_CONFIG } from '@/hooks/use-financial-mode';
 import { Shield, Zap, Leaf, DollarSign, Calendar, CalendarDays, TrendingUp, Info } from 'lucide-react';
@@ -28,6 +30,39 @@ interface SafeToSpendHeroProps {
 export function SafeToSpendHero({ viewMode = 'combined' }: SafeToSpendHeroProps) {
   const sts = useSafeToSpend(viewMode as StsScope);
   const { formatCurrency } = useCurrency();
+  const { data: transactions } = useTransactions();
+
+  // Day-to-day spending already made against the allowance (bills, savings,
+  // transfers, groceries and medical are excluded — see spending rules).
+  const spent = useMemo(() => {
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
+    const monthPrefix = todayStr.slice(0, 7);
+    const dow = now.getDay();
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - (dow === 0 ? 6 : dow - 1));
+    const mondayStr = monday.toISOString().split('T')[0];
+
+    let today = 0, week = 0, month = 0;
+    for (const t of (transactions || []) as any[]) {
+      if (t.amount >= 0 || t.is_transfer) continue;
+      const group = t.categories?.category_groups;
+      if (group?.expense_type !== 'flexible') continue;
+      const isBiz = group?.budget_type === 'business';
+      if (viewMode === 'personal' && isBiz) continue;
+      if (viewMode === 'business' && !isBiz) continue;
+      if (t.categories?.money_purpose === 'build_wealth') continue;
+      const name = (t.categories?.name || '').toLowerCase();
+      if (name.includes('grocer') || name.includes('medical') || name.includes('health')) continue;
+      if (!t.date?.startsWith(monthPrefix)) continue;
+      const amt = Math.abs(t.amount);
+      month += amt;
+      if (t.date >= mondayStr) week += amt;
+      if (t.date === todayStr) today += amt;
+    }
+    return { today, week, month };
+  }, [transactions, viewMode]);
+
 
   if (sts.isLoading) {
     return (
@@ -123,10 +158,14 @@ export function SafeToSpendHero({ viewMode = 'combined' }: SafeToSpendHeroProps)
           )}
 
           <div className="grid grid-cols-3 gap-3 sm:gap-6">
-            <TimeframePill icon={<DollarSign className="h-4 w-4" />} label="Daily" amount={formatCurrency(sts.daily)} gradient="from-prism-teal to-prism-lime" />
-            <TimeframePill icon={<Calendar className="h-4 w-4" />} label="Weekly" amount={formatCurrency(sts.weekly)} gradient="from-prism-sky to-prism-teal" />
-            <TimeframePill icon={<CalendarDays className="h-4 w-4" />} label="Monthly" amount={formatCurrency(sts.monthly)} gradient="from-prism-violet to-prism-sky" />
+            <TimeframePill icon={<DollarSign className="h-4 w-4" />} label="Daily" amount={formatCurrency(sts.daily)} gradient="from-prism-teal to-prism-lime" spent={spent.today} limit={sts.daily} spentLabel="today" formatCurrency={formatCurrency} />
+            <TimeframePill icon={<Calendar className="h-4 w-4" />} label="Weekly" amount={formatCurrency(sts.weekly)} gradient="from-prism-sky to-prism-teal" spent={spent.week} limit={sts.weekly} spentLabel="this week" formatCurrency={formatCurrency} />
+            <TimeframePill icon={<CalendarDays className="h-4 w-4" />} label="Monthly" amount={formatCurrency(sts.monthly)} gradient="from-prism-violet to-prism-sky" spent={spent.month} limit={sts.monthly} spentLabel="this month" formatCurrency={formatCurrency} />
           </div>
+          <p className="text-[10px] text-muted-foreground/70 mt-2 text-center">
+            "Spent" counts only day-to-day spending — bills, savings, transfers, groceries and medical are left out.
+          </p>
+
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5 pt-5 border-t border-border/30">
             <MiniStat label="Available Cash" value={formatCurrency(sts.totalAvailableCash)} />
@@ -140,7 +179,12 @@ export function SafeToSpendHero({ viewMode = 'combined' }: SafeToSpendHeroProps)
   );
 }
 
-function TimeframePill({ icon, label, amount, gradient }: { icon: React.ReactNode; label: string; amount: string; gradient: string }) {
+function TimeframePill({ icon, label, amount, gradient, spent, limit, spentLabel, formatCurrency }: {
+  icon: React.ReactNode; label: string; amount: string; gradient: string;
+  spent: number; limit: number; spentLabel: string; formatCurrency: (n: number) => string;
+}) {
+  const left = limit - spent;
+  const over = left < 0;
   return (
     <div className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-card/80 border border-border/30">
       <div className={`h-8 w-8 rounded-lg bg-gradient-to-br ${gradient} flex items-center justify-center text-white`}>
@@ -148,6 +192,14 @@ function TimeframePill({ icon, label, amount, gradient }: { icon: React.ReactNod
       </div>
       <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">{label}</span>
       <span className="font-display text-lg sm:text-xl font-bold">{amount}</span>
+      <div className="w-full mt-0.5 pt-1.5 border-t border-border/30 text-center">
+        <p className="text-[10px] text-muted-foreground">
+          Spent {spentLabel}: <span className="font-semibold text-foreground">{formatCurrency(spent)}</span>
+        </p>
+        <p className={`text-[10px] font-semibold ${over ? 'text-prism-rose' : 'text-prism-teal'}`}>
+          {over ? `${formatCurrency(Math.abs(left))} over` : `${formatCurrency(left)} left`}
+        </p>
+      </div>
     </div>
   );
 }

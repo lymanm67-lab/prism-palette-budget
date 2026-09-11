@@ -279,7 +279,7 @@ export function useTransactions() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('transactions')
-        .select('*, categories(name, color), accounts(name, balance)')
+        .select('*, categories(name, color, money_purpose, group_id, category_groups(budget_type, expense_type)), accounts(name, balance)')
         .eq('household_id', household!.id)
         .is('deleted_at', null)
         .order('date', { ascending: false })
