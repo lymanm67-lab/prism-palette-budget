@@ -8,6 +8,18 @@ export default function TradePlanner() {
       title="Trade Planner"
       phase="Phase 3"
       purpose="Turn an estimate into a decision: your own entry, stop and target, with the share count and dollar risk worked out for you."
+      howTo={[
+        'Confirm your trading capital and risk per trade on the trading settings page before you plan anything.',
+        'Set your stop first — the price that proves the idea wrong. Everything else is built from it.',
+        'Set your entry, then your target. If the reward is less than twice the risk, think twice.',
+        'Check the share count and dollar risk the planner works out for you. That dollar figure is what you are truly risking.',
+        'Write one line on why you are taking it and one line on what would prove it wrong.',
+        'Save the plan, then open it in Paper Trading to practise it.',
+      ]}
+      howToTips={[
+        'If a plan would push your total open risk past your portfolio limit, it is blocked on purpose.',
+        'Planned numbers are yours; scanner numbers are estimates. Never mix the two.',
+      ]}
       willInclude={[
         'Planned entry, planned stop and planned target that you set — not the scanner estimate.',
         'Share count from your risk per trade, plus the exact dollar risk and reward-to-risk of the plan.',

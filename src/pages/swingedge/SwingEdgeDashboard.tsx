@@ -13,6 +13,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertTriangle, ArrowRight, CheckCircle2, Info, ShieldCheck, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import SwingEdgeHeader from '@/components/swingedge/SwingEdgeHeader';
+import HowToUse from '@/components/swingedge/HowToUse';
 import { useSwingEdgeDashboard, useTradingSettings, useTradingTitle } from '@/hooks/use-swingedge';
 import type { MarketCondition, TrendState } from '@/lib/swingedge/types';
 
@@ -248,6 +249,26 @@ export default function SwingEdgeDashboard() {
           </div>
         </CardContent>
       </Card>
+
+      <HowToUse
+        title="How to use SwingEdge, step by step"
+        description="This is the routine the whole section is built around. Each screen also has its own instructions."
+        steps={[
+          'Start here on the dashboard and read the market condition. A weak market means fewer trades, smaller size, or none at all.',
+          'Open Watchlists and build a short list of names you actually follow.',
+          'Run the Market Scanner against that list. Keep only the QUALIFIES and WATCH rows.',
+          'Open the best one or two in the Stock Analyzer and read the trend, setup and the price that would prove the idea wrong.',
+          'Use the Trade Planner to set your own entry, stop and target. It works out your share count and dollar risk.',
+          'Open the plan in Paper Trading and manage it to the exit — no real money, no orders.',
+          'Write up what happened in the Trade Journal, then review the month in Performance Review.',
+          'Fill any gaps in your understanding in the Trading Academy, and set your trading capital and risk limits in Trading Settings.',
+        ]}
+        tips={[
+          'Never look at a setup without also looking at its risk. Every screen shows both.',
+          'Scanner numbers are estimates. Only the Trade Planner produces numbers you should act on.',
+          'Trading capital is kept separate from your retirement, HSA, emergency fund and long-term investments.',
+        ]}
+      />
 
       <p className="text-xs text-muted-foreground">
         SwingEdge Analyzer is educational software for planning and paper trading only. It places no orders,

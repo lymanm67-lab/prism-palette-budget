@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, CheckCircle2, Lock } from 'lucide-react';
+import HowToUse from '@/components/swingedge/HowToUse';
 
 interface Props {
   title: string;
@@ -10,6 +11,8 @@ interface Props {
   purpose: string;
   willInclude: string[];
   gate: string[];
+  howTo?: string[];
+  howToTips?: string[];
 }
 
 /**
@@ -17,7 +20,7 @@ interface Props {
  * phase has not been reached explain exactly what they will do and what must be
  * proven before they are called finished.
  */
-export default function PhasePlaceholder({ title, phase, purpose, willInclude, gate }: Props) {
+export default function PhasePlaceholder({ title, phase, purpose, willInclude, gate, howTo, howToTips }: Props) {
   return (
     <div className="space-y-6">
       <div className="space-y-2">
@@ -30,6 +33,14 @@ export default function PhasePlaceholder({ title, phase, purpose, willInclude, g
         </div>
         <p className="text-sm text-muted-foreground">{purpose}</p>
       </div>
+
+      {howTo && howTo.length > 0 ? (
+        <HowToUse
+          steps={howTo}
+          tips={howToTips}
+          description="This is how the screen will work once it is switched on, so you can learn the routine now."
+        />
+      ) : null}
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
