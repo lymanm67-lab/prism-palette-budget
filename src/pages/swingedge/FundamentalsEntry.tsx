@@ -36,6 +36,8 @@ interface FieldDef {
   label: string;
   help: string;
   kind: FieldKind;
+  /** Not part of any score. Shown as "optional" instead of "blank". */
+  optional?: boolean;
 }
 
 interface GroupDef {
@@ -43,6 +45,44 @@ interface GroupDef {
   description: string;
   fields: FieldDef[];
 }
+
+/** Index each well-known fund follows. The data plan does not supply this, so
+ * the app fills it from its own reference list instead of showing a blank. */
+const FUND_BENCHMARKS: Record<string, string> = {
+  SPY: 'S&P 500', VOO: 'S&P 500', IVV: 'S&P 500', SPLG: 'S&P 500',
+  RSP: 'S&P 500 Equal Weight', SPMO: 'S&P 500 Momentum',
+  QQQ: 'Nasdaq-100', QQQM: 'Nasdaq-100',
+  DIA: 'Dow Jones Industrial Average', IWM: 'Russell 2000',
+  IWF: 'Russell 1000 Growth', IWD: 'Russell 1000 Value',
+  VTI: 'CRSP US Total Market', VTV: 'CRSP US Large Cap Value', VUG: 'CRSP US Large Cap Growth',
+  MTUM: 'MSCI USA Momentum', QUAL: 'MSCI USA Quality',
+  IJH: 'S&P MidCap 400', MDY: 'S&P MidCap 400', IJR: 'S&P SmallCap 600',
+  SCHD: 'Dow Jones US Dividend 100', DGRO: 'Morningstar US Dividend Growth',
+  VYM: 'FTSE High Dividend Yield', VIG: 'S&P US Dividend Growers',
+  XLK: 'Technology Select Sector', VGT: 'MSCI US Investable Market Information Technology',
+  FTEC: 'MSCI US Investable Market Information Technology',
+  XLF: 'Financial Select Sector', XLE: 'Energy Select Sector', XLV: 'Health Care Select Sector',
+  XLI: 'Industrial Select Sector', XLY: 'Consumer Discretionary Select Sector',
+  XLP: 'Consumer Staples Select Sector', XLU: 'Utilities Select Sector',
+  XLB: 'Materials Select Sector', XLRE: 'Real Estate Select Sector',
+  XLC: 'Communication Services Select Sector',
+  SMH: 'MVIS US Listed Semiconductor 25', SOXX: 'ICE Semiconductor',
+  IGV: 'S&P North American Expanded Technology Software',
+  XBI: 'S&P Biotechnology Select Industry', IBB: 'ICE Biotechnology',
+  KRE: 'S&P Regional Banks Select Industry', XOP: 'S&P Oil & Gas Exploration Select Industry',
+  ITA: 'S&P Aerospace & Defense Select Industry', XAR: 'S&P Aerospace & Defense Select Industry',
+  EFA: 'MSCI EAFE', IEFA: 'MSCI EAFE IMI', EEM: 'MSCI Emerging Markets',
+  VEA: 'FTSE Developed All Cap ex US', VWO: 'FTSE Emerging Markets All Cap',
+  VXUS: 'FTSE Global All Cap ex US',
+  AGG: 'Bloomberg US Aggregate Bond', BND: 'Bloomberg US Aggregate Float Adjusted',
+  TLT: 'ICE US Treasury 20+ Year', IEF: 'ICE US Treasury 7-10 Year', SHY: 'ICE US Treasury 1-3 Year',
+  LQD: 'Markit iBoxx USD Liquid Investment Grade', HYG: 'Markit iBoxx USD Liquid High Yield',
+  TIP: 'Bloomberg US Treasury Inflation Protected Securities',
+  GLD: 'Spot gold price', IAU: 'Spot gold price', SLV: 'Spot silver price',
+  VNQ: 'MSCI US Investable Market Real Estate 25/50', SCHH: 'Dow Jones Equity All REIT Capped',
+  QTUM: 'BlueStar Quantum Computing', ARKK: 'Actively managed, no index',
+};
+
 
 /** Fund figures. Liquidity, trading cost and volatility live at the top because
  * those three are the ones the data plan most often leaves blank. */
@@ -63,8 +103,9 @@ const ETF_GROUPS: GroupDef[] = [
       { key: 'netAssets', label: 'Fund size (net assets)', help: 'Total money in the fund, in dollars.', kind: 'money' },
       { key: 'expenseRatio', label: 'Running cost', help: 'Yearly fee as a percent, e.g. 0.09.', kind: 'percent' },
       { key: 'fundAgeYears', label: 'Fund age', help: 'Years since the fund launched.', kind: 'number' },
-      { key: 'trackingErrorPct', label: 'Tracking difference', help: 'How far the fund drifts from its index, in percent.', kind: 'percent' },
-      { key: 'benchmark', label: 'Index it follows', help: 'Name of the index, e.g. S&P 500.', kind: 'text' },
+      { key: 'trackingErrorPct', label: 'Tracking difference', help: 'On the fund fact sheet, often called tracking difference or tracking error. Optional — a plain index fund is assumed when it is left empty.', kind: 'percent', optional: true },
+      { key: 'benchmark', label: 'Index it follows', help: 'Name of the index, e.g. S&P 500. Well-known funds are filled in for you.', kind: 'text', optional: true },
+
     ],
   },
   {
@@ -244,17 +285,24 @@ export default function FundamentalsEntry() {
     // The analyzer measures fund liquidity, spread and volatility from price
     // history when the data plan omits them, so those count as "app has it".
     if (analysis.data?.etfInputs) Object.assign(base, analysis.data.etfInputs);
+    // Index name comes from the app's own fund reference list when the data
+    // plan leaves it out.
+    if (assetType === 'ETF' && base.benchmark == null && symbol && FUND_BENCHMARKS[symbol]) {
+      base.benchmark = FUND_BENCHMARKS[symbol];
+    }
     return base;
-  }, [bundle, analysis.data?.etfInputs]);
+  }, [bundle, analysis.data?.etfInputs, assetType, symbol]);
 
   const blanks = useMemo(
     () =>
       groups
         .flatMap((g) => g.fields)
+        .filter((f) => !f.optional)
         .filter((f) => providerValues[f.key] === null || providerValues[f.key] === undefined)
         .filter((f) => values[f.key] === undefined || values[f.key] === ''),
     [groups, providerValues, values],
   );
+
 
   const load = () => {
     const next = symbolInput.trim().toUpperCase();
@@ -486,11 +534,16 @@ export default function FundamentalsEntry() {
                           <Badge variant="outline" className="border-prism-lime/50 text-[10px] text-prism-lime">
                             app has {provided}
                           </Badge>
+                        ) : field.optional ? (
+                          <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                            optional
+                          </Badge>
                         ) : (
                           <Badge variant="outline" className="border-prism-amber/50 text-[10px] text-prism-amber">
                             blank
                           </Badge>
                         )}
+
                       </div>
                       <Input
                         id={`f-${field.key}`}
