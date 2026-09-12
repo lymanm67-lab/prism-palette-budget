@@ -1,33 +1,237 @@
-import PhasePlaceholder from '@/components/swingedge/PhasePlaceholder';
+import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { AlertTriangle, Info, Plus, RefreshCw, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
+import SwingEdgeHeader from '@/components/swingedge/SwingEdgeHeader';
+import HowToUse from '@/components/swingedge/HowToUse';
+import ScoredSymbolTable from '@/components/swingedge/ScoredSymbolTable';
 import { useTradingTitle } from '@/hooks/use-swingedge';
+import { useScoredSymbols, useWatchlists } from '@/hooks/use-swingedge-lists';
+import { cacheStatus } from '@/lib/swingedge/cache';
 
 export default function Watchlists() {
   useTradingTitle('Watchlists');
+  const {
+    lists,
+    itemsFor,
+    isLoading,
+    createList,
+    deleteList,
+    addSymbol,
+    removeSymbol,
+    isWorking,
+  } = useWatchlists();
+
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [newListName, setNewListName] = useState('');
+  const [newSymbol, setNewSymbol] = useState('');
+
+  const currentId = activeId && lists.some((l) => l.id === activeId) ? activeId : lists[0]?.id ?? null;
+  const currentList = lists.find((l) => l.id === currentId) ?? null;
+  const items = useMemo(() => (currentId ? itemsFor(currentId) : []), [currentId, itemsFor]);
+  const symbols = useMemo(() => items.map((i) => i.symbol), [items]);
+
+  const { rows, notice, isLoading: scoring, isFetching, refetch, mode, fetchedAt } =
+    useScoredSymbols(symbols);
+
+  const handleCreateList = async () => {
+    if (!newListName.trim()) return;
+    try {
+      await createList({ name: newListName });
+      setNewListName('');
+      toast.success('List created');
+    } catch {
+      toast.error('Could not create that list');
+    }
+  };
+
+  const handleAddSymbol = async () => {
+    const symbol = newSymbol.trim().toUpperCase();
+    if (!symbol || !currentId) return;
+    if (symbols.includes(symbol)) {
+      toast.info(`${symbol} is already on this list`);
+      return;
+    }
+    try {
+      await addSymbol({ watchlistId: currentId, symbol });
+      setNewSymbol('');
+      toast.success(`${symbol} added`);
+    } catch {
+      toast.error('Could not add that symbol');
+    }
+  };
+
+  const handleRemoveSymbol = async (symbol: string) => {
+    const item = items.find((i) => i.symbol === symbol);
+    if (!item) return;
+    try {
+      await removeSymbol(item.id);
+      toast.success(`${symbol} removed`);
+    } catch {
+      toast.error('Could not remove that symbol');
+    }
+  };
+
   return (
-    <PhasePlaceholder
-      title="Watchlists"
-      phase="Phase 2"
-      purpose="Keep short lists of names you actually follow, so scanning stays cheap and focused."
-      howTo={[
-        'Create a list with a purpose in its name, for example "Pullbacks I am waiting on" or "Core ETFs".',
-        'Add symbols one at a time with the search box. Keep each list short — ten to twenty names is plenty.',
-        'Write a note on each symbol saying what you are waiting for, such as "wait for a pullback to the 50-day".',
-        'Use the list as your scan list in the Market Scanner instead of scanning everything.',
-        'Remove names you have stopped following, so your lists reflect what you actually watch.',
-      ]}
-      howToTips={[
-        'Shorter lists cost less data allowance and give you fewer, better decisions.',
-        'Your lists are private to your household.',
-      ]}
-      willInclude={[
-        'Create, rename and delete your own lists; add or remove symbols with a search box.',
-        'Each list can be used directly as a scan list.',
-        'A note field per symbol for why it is on the list and what you are waiting for.',
-      ]}
-      gate={[
-        'Lists are private to your household.',
-        'Adding a symbol never triggers a burst of price requests.',
-      ]}
-    />
+    <div className="space-y-6">
+      <SwingEdgeHeader
+        title="Watchlists"
+        subtitle="A short list of names you actually follow, priced and scored."
+        mode={mode}
+        cacheState={cacheStatus(fetchedAt, '1day')}
+        fetchedAt={fetchedAt}
+        right={
+          <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching}>
+            <RefreshCw className={isFetching ? 'mr-2 h-4 w-4 animate-spin' : 'mr-2 h-4 w-4'} />
+            Refresh
+          </Button>
+        }
+      />
+
+      {mode === 'DEMO' ? (
+        <Alert className="border-prism-amber/40">
+          <Info className="h-4 w-4" />
+          <AlertTitle>Demo data</AlertTitle>
+          <AlertDescription>
+            Prices and scores below come from clearly labelled sample data. Connect live market data in
+            Trading Settings when you are ready.
+          </AlertDescription>
+        </Alert>
+      ) : null}
+
+      {notice ? (
+        <Alert className="border-prism-sky/40">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Using cached data</AlertTitle>
+          <AlertDescription>{notice}</AlertDescription>
+        </Alert>
+      ) : null}
+
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Your lists</CardTitle>
+          <CardDescription>
+            Give each list a purpose — for example "Core ETFs", "Earnings watch" or "Broke out this week".
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex flex-wrap gap-2">
+            <Input
+              value={newListName}
+              onChange={(e) => setNewListName(e.target.value)}
+              placeholder="New list name"
+              className="max-w-xs"
+              onKeyDown={(e) => e.key === 'Enter' && handleCreateList()}
+            />
+            <Button onClick={handleCreateList} disabled={isWorking || !newListName.trim()}>
+              <Plus className="mr-2 h-4 w-4" />
+              Create list
+            </Button>
+          </div>
+
+          {isLoading ? (
+            <p className="text-sm text-muted-foreground">Loading your lists…</p>
+          ) : lists.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No lists yet. Create one above, then add a handful of symbols you follow.
+            </p>
+          ) : (
+            <Tabs value={currentId ?? undefined} onValueChange={setActiveId}>
+              <TabsList className="flex h-auto flex-wrap justify-start">
+                {lists.map((l) => (
+                  <TabsTrigger key={l.id} value={l.id} className="gap-2">
+                    {l.name}
+                    <Badge variant="secondary" className="px-1.5 py-0 text-[10px]">
+                      {itemsFor(l.id).length}
+                    </Badge>
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+
+              {lists.map((l) => (
+                <TabsContent key={l.id} value={l.id} className="mt-4 space-y-4">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Input
+                      value={newSymbol}
+                      onChange={(e) => setNewSymbol(e.target.value)}
+                      placeholder="Add symbol, e.g. AAPL"
+                      className="max-w-[200px] uppercase"
+                      onKeyDown={(e) => e.key === 'Enter' && handleAddSymbol()}
+                    />
+                    <Button
+                      variant="outline"
+                      onClick={handleAddSymbol}
+                      disabled={isWorking || !newSymbol.trim()}
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      Add
+                    </Button>
+                    <Button asChild variant="outline">
+                      <Link to="/swingedge/scanner">Scan this list</Link>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="text-muted-foreground"
+                      disabled={isWorking}
+                      onClick={async () => {
+                        try {
+                          await deleteList(l.id);
+                          toast.success('List deleted');
+                        } catch {
+                          toast.error('Could not delete that list');
+                        }
+                      }}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete list
+                    </Button>
+                  </div>
+
+                  <ScoredSymbolTable
+                    rows={rows}
+                    isLoading={scoring}
+                    onRemove={handleRemoveSymbol}
+                    emptyMessage="No symbols on this list yet. Add a few above."
+                  />
+                </TabsContent>
+              ))}
+            </Tabs>
+          )}
+        </CardContent>
+      </Card>
+
+      {currentList && symbols.length > 12 ? (
+        <Alert className="border-prism-amber/40">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Long list</AlertTitle>
+          <AlertDescription>
+            {currentList.name} has {symbols.length} symbols. Longer lists use more of your market data
+            allowance each time they refresh, and are harder to follow properly. Around 10 to 25 names
+            works well.
+          </AlertDescription>
+        </Alert>
+      ) : null}
+
+      <HowToUse
+        steps={[
+          'Create a list with a clear purpose rather than one long catch-all list.',
+          'Add symbols you would genuinely be willing to trade — around 10 to 25 per list.',
+          'Read the score and verdict columns: QUALIFIES and WATCH are the only rows worth opening.',
+          'Click a symbol to open it in the Stock Analyzer for the full read.',
+          'Remove names you have stopped following. A stale list wastes your market data allowance.',
+        ]}
+        tips={[
+          'The estimated entry, stop and target are for comparison only. Your real numbers come from the Trade Planner.',
+          'Hover a score to see exactly which parts of the checklist earned the points.',
+          'Lists are private to your household.',
+        ]}
+      />
+    </div>
   );
 }
