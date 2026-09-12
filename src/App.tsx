@@ -133,6 +133,7 @@ const HealthDashboard = lazy(() => import("@/pages/health/HealthDashboard"));
 const ContentEditor = lazy(() => import("@/pages/admin/ContentEditor"));
 const SwingEdgeDashboard = lazy(() => import("./pages/swingedge/SwingEdgeDashboard"));
 const SwingEdgeScanner = lazy(() => import("./pages/swingedge/MarketScanner"));
+const SwingEdgeLiveData = lazy(() => import("./pages/swingedge/LiveData"));
 const SwingEdgeAnalyzer = lazy(() => import("./pages/swingedge/StockAnalyzer"));
 const SwingEdgeWatchlists = lazy(() => import("./pages/swingedge/Watchlists"));
 const SwingEdgePlanner = lazy(() => import("./pages/swingedge/TradePlanner"));
