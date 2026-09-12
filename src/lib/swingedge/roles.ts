@@ -44,21 +44,21 @@ export const PORTFOLIO_ROLES: {
     tone: 'text-prism-lime border-prism-lime/40',
   },
   {
-    value: 'INCOME',
-    label: 'Income',
-    job: 'Held mainly for dividends or steady payouts, not quick moves.',
-    tone: 'text-prism-amber border-prism-amber/40',
-  },
-  {
-    value: 'DEFENSIVE',
-    label: 'Defensive',
-    job: 'Holds up better when the market weakens. Ballast, not offence.',
+    value: 'GUARDRAIL',
+    label: 'Guardrail',
+    job: 'Steady, lower-risk holding that protects the account when the market weakens.',
     tone: 'text-muted-foreground border-border',
   },
   {
-    value: 'SPECULATIVE',
-    label: 'Speculative',
-    job: 'Higher risk, smaller size, treated as an experiment.',
+    value: 'CONVICTION',
+    label: 'Conviction',
+    job: 'A high-confidence idea you are willing to size up and hold through noise.',
+    tone: 'text-prism-amber border-prism-amber/40',
+  },
+  {
+    value: 'CATALYST',
+    label: 'Catalyst',
+    job: 'A trade driven by a specific upcoming event. Smaller size, defined timeline.',
     tone: 'text-prism-rose border-prism-rose/40',
   },
   {
