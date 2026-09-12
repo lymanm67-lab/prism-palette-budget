@@ -25,6 +25,9 @@ interface AiResponse {
   } | null;
   agreement?: string;
   comparison?: string;
+  confidence?: string;
+  confidence_reason?: string;
+  if_wrong?: string;
   risks?: string[];
   checks?: string[];
   note?: string;
@@ -58,6 +61,12 @@ const AGREEMENT_LABEL: Record<string, string> = {
   agree: 'Agrees with the app',
   differ: 'Reads it differently',
   no_trade: 'No trade here',
+};
+
+const CONFIDENCE_TONE: Record<string, string> = {
+  high: 'bg-emerald-500/15 text-emerald-500 border-emerald-500/30',
+  moderate: 'bg-amber-500/15 text-amber-500 border-amber-500/30',
+  low: 'bg-rose-500/15 text-rose-500 border-rose-500/30',
 };
 
 export default function AiLevelsAssistant({
@@ -100,6 +109,7 @@ export default function AiLevelsAssistant({
 
   const ai = result?.ai_levels ?? null;
   const agreement = (result?.agreement ?? '').toLowerCase();
+  const confidence = (result?.confidence ?? '').toLowerCase();
 
   return (
     <Card className={className}>
@@ -172,11 +182,18 @@ export default function AiLevelsAssistant({
 
         {result && (
           <div className="space-y-4">
-            {agreement && (
-              <Badge variant="outline" className={AGREEMENT_TONE[agreement] ?? ''}>
-                {AGREEMENT_LABEL[agreement] ?? agreement}
-              </Badge>
-            )}
+            <div className="flex flex-wrap items-center gap-2">
+              {agreement && (
+                <Badge variant="outline" className={AGREEMENT_TONE[agreement] ?? ''}>
+                  {AGREEMENT_LABEL[agreement] ?? agreement}
+                </Badge>
+              )}
+              {confidence && CONFIDENCE_TONE[confidence] && (
+                <Badge variant="outline" className={CONFIDENCE_TONE[confidence]}>
+                  Confidence in the data: {confidence}
+                </Badge>
+              )}
+            </div>
 
             {result.rules_explanation && (
               <div>
@@ -222,6 +239,28 @@ export default function AiLevelsAssistant({
                   Which read to act on
                 </p>
                 <p className="text-sm text-muted-foreground">{result.comparison}</p>
+              </div>
+            )}
+
+            {result.confidence_reason && (
+              <div>
+                <p className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  Why this confidence level
+                </p>
+                <p className="text-sm text-muted-foreground">{result.confidence_reason}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Confidence describes how complete the data behind the read is — never the odds of the trade
+                  working.
+                </p>
+              </div>
+            )}
+
+            {result.if_wrong && (
+              <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
+                <p className="mb-1 text-xs font-medium uppercase tracking-wide text-amber-500">
+                  If this read is wrong
+                </p>
+                <p className="text-sm text-muted-foreground">{result.if_wrong}</p>
               </div>
             )}
 

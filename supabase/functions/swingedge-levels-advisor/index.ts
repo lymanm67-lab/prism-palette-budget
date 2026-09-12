@@ -60,13 +60,17 @@ Do BOTH jobs:
 
 Then compare the two reads honestly and say which you'd act on and why. If nothing here is tradeable, say "no trade" and explain what to wait for.
 
+Then rate your own confidence in the recommendation and say what to do if you're wrong:
+- "confidence" is about how complete and reliable the measured context is — NEVER about the odds of the trade working. "high" only when the context has price, trend, ATR/volatility, support/resistance and recent data; "moderate" when one or two of those are missing or stale; "low" when the context is thin and the read leans on assumptions. One sentence explaining why, in "confidence_reason".
+- "if_wrong": the concrete action to take if the recommendation proves wrong — e.g. "the stop at X is the answer: exit, no averaging down" or "if price closes below the stop level before entry, the setup is invalid — stand down". Always actionable, always risk-first.
+
 Rules:
 - Never invent prices, earnings dates, fundamentals or indicator values that are not in the context.
 - Reward:risk under 2 should be called out as a reason to pass.
 - Instructional tone, plain English, no hype, no guarantees.
 
 Respond with JSON only:
-{"rules_explanation":"","ai_levels":{"entry":null,"stop":null,"target":null,"reward_risk":null,"basis":""},"agreement":"agree|differ|no_trade","comparison":"","risks":[""],"checks":[""],"note":""}`;
+{"rules_explanation":"","ai_levels":{"entry":null,"stop":null,"target":null,"reward_risk":null,"basis":""},"agreement":"agree|differ|no_trade","comparison":"","confidence":"high|moderate|low","confidence_reason":"","if_wrong":"","risks":[""],"checks":[""],"note":""}`;
 
   try {
     const res = await fetch('https://ai.gateway.lovable.dev/v1/responses', {
