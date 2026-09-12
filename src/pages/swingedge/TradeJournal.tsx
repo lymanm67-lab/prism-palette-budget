@@ -19,6 +19,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import SwingEdgeHeader from '@/components/swingedge/SwingEdgeHeader';
 import HowToUse from '@/components/swingedge/HowToUse';
+import AiLevelsAssistant from '@/components/swingedge/AiLevelsAssistant';
 import { useTradingSettings, useTradingTitle } from '@/hooks/use-swingedge';
 import { useTradeJournal, type PaperTrade } from '@/hooks/use-swingedge-lists';
 import { MISTAKE_TAGS, rMultiple } from '@/lib/swingedge/performance';
@@ -447,6 +448,7 @@ export default function TradeJournal() {
           'Your journal is private to your household.',
         ]}
       />
+    <AiLevelsAssistant page="Trade Journal" />
     </div>
   );
 }

@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import SwingEdgeHeader from '@/components/swingedge/SwingEdgeHeader';
 import HowToUse from '@/components/swingedge/HowToUse';
+import AiLevelsAssistant from '@/components/swingedge/AiLevelsAssistant';
 import CollapsibleSection from '@/components/swingedge/CollapsibleSection';
 import { GapRiskCard, StopRuleCard } from '@/components/swingedge/RiskFirstCard';
 import { useTradingSettings, useTradingTitle } from '@/hooks/use-swingedge';
@@ -487,6 +488,7 @@ export default function PaperTrading() {
           'Moving a stop further away is the most common way practice accounts lose money. It is logged permanently.',
         ]}
       />
+    <AiLevelsAssistant page="Paper Trading" />
     </div>
   );
 }
