@@ -777,11 +777,21 @@ const Budgets = () => {
   }, [spentByCategory, businessOffsets, bizActualsFromOffsets, splitActualCategoryIds, nameSplitPlan]);
 
 
-  const plannedBudgetItems: BudgetRow[] = (budgets || []).map(b => ({
-    ...b,
-    spent: payrollCatIdsSet.has(b.category_id) ? b.planned_amount : (effectiveSpentByCategory[b.category_id] || 0),
-    received: receivedByCategory[b.category_id] || 0,
-  })).filter(b => filteredCategoryIds.has(b.category_id) && !fundingTransferCategoryIds.has(b.category_id));
+  const plannedBudgetItems: BudgetRow[] = (budgets || []).map(b => {
+    const received = receivedByCategory[b.category_id] || 0;
+    const rawSpent = payrollCatIdsSet.has(b.category_id) ? b.planned_amount : (effectiveSpentByCategory[b.category_id] || 0);
+    // Money coming back into an expense category (reimbursements, refunds, credit
+    // lines like "Grocery Reimbursement") is netted against that line's spending so
+    // the actual column reflects it instead of showing nothing.
+    const isIncomeLine = categoryExpenseType.get(b.category_id) === 'income';
+    const isPayroll = payrollCatIdsSet.has(b.category_id);
+    return {
+      ...b,
+      spent: isIncomeLine || isPayroll ? rawSpent : rawSpent - received,
+      received,
+    };
+  }).filter(b => filteredCategoryIds.has(b.category_id) && !fundingTransferCategoryIds.has(b.category_id));
+
 
   // Money that landed in an income category with no planned line for the month
   // (e.g. a one-off deposit) still needs to show up as extra income instead of
