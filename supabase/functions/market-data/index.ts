@@ -1,6 +1,8 @@
 // Market data proxy (Alpha Vantage). Keeps the API key server-side.
-// Actions: quote (price + validated security type), holdings (ETF underlying holdings), search.
+// Actions: quote (price + validated security type), holdings (ETF underlying holdings),
+// search, fundamentals (company / fund figures for SwingEdge, cached).
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
+import { getFundamentals, type Depth } from './fundamentals.ts';
 
 const BASE = 'https://www.alphavantage.co/query';
 
