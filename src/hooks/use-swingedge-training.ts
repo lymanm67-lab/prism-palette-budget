@@ -11,7 +11,16 @@ import { useHousehold } from '@/contexts/HouseholdContext';
 import { useTradingSettings } from '@/hooks/use-swingedge';
 import { usePaperTradeManagement } from '@/hooks/use-swingedge-stops';
 import { useTradeJournal } from '@/hooks/use-swingedge-lists';
-import { assessBreaker, tallyFromTrades, weekStartOf } from '@/lib/swingedge/circuitBreaker';
+import {
+  assessBreaker,
+  consecutiveLosingTrades,
+  losingTradesIn,
+  oneRFrom,
+  tallyFromTrades,
+  weekStartOf,
+  type BreakerKey,
+} from '@/lib/swingedge/circuitBreaker';
+
 import {
   TRAINING_WEEKS,
   assessGraduation,
