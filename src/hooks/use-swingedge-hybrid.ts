@@ -131,7 +131,14 @@ export function useHybridAnalysis(symbol: string | null, assetTypeHint?: 'STOCK'
       // Hand entry is the fallback, never the first stop.
       const manualProvider = new ManualFundamentals(householdId);
       const [alphaBundle, manualBundle] = await Promise.all([
-        mode === 'DEMO' ? Promise.resolve(null) : new AlphaVantageFundamentals().getBundle(sym, assetType),
+        mode === 'DEMO'
+          ? Promise.resolve(null)
+          : // Stocks need the statements as well, otherwise cash flow and balance
+            // sheet are always missing and every company reads as low confidence.
+            new AlphaVantageFundamentals({ depth: assetType === 'STOCK' ? 'full' : 'basic' }).getBundle(
+              sym,
+              assetType,
+            ),
         manualProvider.getBundle(sym, assetType),
       ]);
       let providerBundle =
