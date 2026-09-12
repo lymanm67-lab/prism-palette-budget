@@ -9,7 +9,18 @@ import { loadCandles, useTradingSettings } from '@/hooks/use-swingedge';
 import { atr, last, setupState, snapshot, type IndicatorSnapshot, type SetupState } from '@/lib/swingedge/indicators';
 import { candleBasis, entryZone } from '@/lib/swingedge/signalLifecycle';
 import { revalidateSignal } from '@/lib/swingedge/revalidation';
+import {
+  classifyOutcome,
+  compareLoss,
+  liquidityTier,
+  scoreExecutionQuality,
+  scoreSignalQuality,
+  simulateFill,
+  stopExitReference,
+  type LiquidityTier,
+} from '@/lib/swingedge/execution';
 import type { Candle } from '@/lib/swingedge/types';
+
 
 const num = (v: unknown): number => Number(v ?? 0);
 const round2 = (n: number) => Math.round(n * 100) / 100;
