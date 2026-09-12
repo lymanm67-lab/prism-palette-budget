@@ -113,7 +113,7 @@ export function useHybridAnalysis(symbol: string | null, assetTypeHint?: 'STOCK'
       ]);
       const { bundle, conflictingMetrics } = mergeBundles(providerBundle, manualBundle);
 
-      const sectorText = bundle.profile?.sector ?? (directory.data?.sector as string | null) ?? null;
+      const sectorText = bundle.profile?.sector ?? null;
       const profile = profileFor(sectorText, bundle.profile?.industry ?? null);
       const sectorSymbol = assetType === 'ETF' ? MARKET_BENCHMARK : SECTOR_BENCHMARKS[profile.key];
 
