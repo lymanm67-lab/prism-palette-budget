@@ -389,6 +389,7 @@ export function useHybridAnalysis(symbol: string | null, assetTypeHint?: 'STOCK'
         risk,
         fundamental,
         etf,
+        etfInputs,
         qualityScore,
         hybrid,
         bundle,
