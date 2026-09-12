@@ -22,6 +22,21 @@ export interface TradingSettings {
   risk_per_trade_pct: number;
   max_portfolio_risk_pct: number;
   advanced_mode: boolean;
+  // Heat, sector and correlation limits. All configurable, none universal.
+  max_sector_capital_exposure_pct: number;
+  max_sector_heat_pct: number;
+  correlation_lookback_days: number;
+  correlation_moderate: number;
+  correlation_high: number;
+  correlation_very_high: number;
+  max_correlated_risk_pct: number;
+  commission_per_trade: number;
+  signal_max_age_days: number;
+  breaker_consecutive_losses: number;
+  breaker_daily_loss_limit: number;
+  breaker_weekly_loss_limit: number;
+  training_min_paper_trades: number;
+  training_mode_enabled: boolean;
 }
 
 const DEFAULT_SETTINGS: TradingSettings = {
@@ -33,6 +48,20 @@ const DEFAULT_SETTINGS: TradingSettings = {
   risk_per_trade_pct: 1,
   max_portfolio_risk_pct: 5,
   advanced_mode: false,
+  max_sector_capital_exposure_pct: 25,
+  max_sector_heat_pct: 2.5,
+  correlation_lookback_days: 60,
+  correlation_moderate: 0.4,
+  correlation_high: 0.6,
+  correlation_very_high: 0.8,
+  max_correlated_risk_pct: 2.5,
+  commission_per_trade: 0,
+  signal_max_age_days: 3,
+  breaker_consecutive_losses: 3,
+  breaker_daily_loss_limit: 0,
+  breaker_weekly_loss_limit: 0,
+  training_min_paper_trades: 20,
+  training_mode_enabled: false,
 };
 
 /** Settings, provider status and the risk envelope for the household. */
