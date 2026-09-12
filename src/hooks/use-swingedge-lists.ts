@@ -389,7 +389,7 @@ export function useAcademyProgress() {
           completed_at: input.completed ? new Date().toISOString() : null,
           quiz_score: input.quizScore ?? null,
         },
-        { onConflict: 'household_id,user_id,lesson_key' },
+        { onConflict: 'user_id,lesson_key' },
       );
       if (error) throw error;
     },
