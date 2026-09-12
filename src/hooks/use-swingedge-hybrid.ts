@@ -99,7 +99,9 @@ export function useHybridAnalysis(symbol: string | null, assetTypeHint?: 'STOCK'
       ]);
 
       const assetType: 'STOCK' | 'ETF' =
-        assetTypeHint ?? ((directory.data?.asset_type as string | undefined) === 'ETF' ? 'ETF' : 'STOCK');
+        assetTypeHint ??
+        ((directory.data?.asset_type as string | undefined)?.toUpperCase() === 'ETF' ? 'ETF' : 'STOCK');
+
 
       // Confirmed signals only ever use completed candles.
       const basis = candleBasis(priceResult.candles, '1day');
