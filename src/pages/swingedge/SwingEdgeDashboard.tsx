@@ -15,6 +15,7 @@ import SwingEdgeHeader from '@/components/swingedge/SwingEdgeHeader';
 import HowToUse from '@/components/swingedge/HowToUse';
 import WatchlistDashboardCard from '@/components/swingedge/WatchlistDashboardCard';
 import CollapsibleSection from '@/components/swingedge/CollapsibleSection';
+import TradeWorkflow from '@/components/swingedge/TradeWorkflow';
 
 import { useSwingEdgeDashboard, useTradingSettings, useTradingTitle } from '@/hooks/use-swingedge';
 import type { MarketCondition, TrendState } from '@/lib/swingedge/types';
