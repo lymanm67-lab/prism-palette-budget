@@ -46,6 +46,8 @@ export interface SymbolScore {
   resistance: number | null;
   levels: EstimatedLevels | null;
   components: ScoreComponent[];
+  /** Named parts inside Setup Quality, including the candlestick contribution. */
+  setupParts: ScoreComponent[];
   reasons: string[];
   risks: string[];
   /** True when there simply are not enough candles to judge anything. */
@@ -70,6 +72,7 @@ const EMPTY = (symbol: string): SymbolScore => ({
   resistance: null,
   levels: null,
   components: [],
+  setupParts: [],
   reasons: [],
   risks: ['Not enough price history to judge this symbol yet.'],
   insufficientData: true,
@@ -281,6 +284,7 @@ export function scoreSymbol(symbol: string, candles: Candle[], alignment?: Align
     resistance: resistance === null ? null : round2(resistance),
     levels,
     components,
+    setupParts,
     reasons,
     risks,
     insufficientData: false,
