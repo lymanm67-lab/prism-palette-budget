@@ -18,6 +18,9 @@ import CollapsibleSection from '@/components/swingedge/CollapsibleSection';
 import TradeWorkflow from '@/components/swingedge/TradeWorkflow';
 import PortfolioRolesCard from '@/components/swingedge/PortfolioRolesCard';
 import PortfolioHeatCard from '@/components/swingedge/PortfolioHeatCard';
+import DailyChecklistCard from '@/components/swingedge/DailyChecklistCard';
+import CircuitBreakerCard from '@/components/swingedge/CircuitBreakerCard';
+
 
 import { useSwingEdgeDashboard, useTradingSettings, useTradingTitle } from '@/hooks/use-swingedge';
 import type { MarketCondition, TrendState } from '@/lib/swingedge/types';
