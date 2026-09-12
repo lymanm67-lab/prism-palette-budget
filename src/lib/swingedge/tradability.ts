@@ -204,11 +204,7 @@ export function assessTradability(input: TradabilityInput): TradabilityResult {
     spread,
     dataQuality,
     reasons,
-    summary:
-      verdict === 'TRADABLE'
-        ? 'Tradable on liquidity grounds.'
-        : verdict === 'THIN'
-          ? 'Thin. Workable, but expect worse fills than planned.'
-          : 'Avoid. Liquidity or price makes a controlled exit unreliable.',
+    summary: summaryFor(verdict),
+
   };
 }
