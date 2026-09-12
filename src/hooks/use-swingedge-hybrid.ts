@@ -22,6 +22,7 @@ import { candleBasis, entryZone, priceOutsideZone, validUntil } from '@/lib/swin
 import { analyzeCandles, type CandleAnalysis } from '@/lib/swingedge/candleEngine';
 import { MARKET_BENCHMARK, SECTOR_BENCHMARKS, profileFor } from '@/lib/swingedge/sectors';
 import {
+  AlphaVantageFundamentals,
   ManualFundamentals,
   TwelveDataFundamentals,
   mergeBundles,
