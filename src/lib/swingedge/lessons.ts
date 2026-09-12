@@ -582,7 +582,213 @@ export const LESSONS: Lesson[] = [
       why: 'A data gap is not bad news about the company, so it lowers confidence rather than the score.',
     },
   },
+  {
+    key: 'candle-anatomy',
+    module: 'Reading candlesticks in context',
+    title: 'Candle anatomy: body, wicks and where it closed',
+    minutes: 5,
+    summary: 'Measure a candle before you name it. The body, the wicks and the closing location tell the story.',
+    body: [
+      'One candle holds four prices: where it opened, the highest it traded, the lowest it traded, and where it closed. The block between open and close is the body. The thin lines above and below are the wicks — prices that were reached and then given back.',
+      'Two measurements do most of the work. The body as a share of the whole range tells you how decisive the day was: a wide body means one side controlled it, a tiny body means neither did. Where the close sits inside the range tells you who had the last word.',
+      'Size matters relative to normal, not in dollars. A $2 range is huge for a $20 stock and nothing for a $700 one, so the app compares each range with the stock\'s own recent average and its ATR. A day at two ATRs is an expansion candle, and expansion candles are exactly where chasing happens.',
+      'Nothing here is a pattern yet. This is measurement, and it is the part most people skip.',
+    ],
+    example: {
+      title: 'Measuring one day',
+      lines: [
+        'Open 10.00, high 11.00, low 9.00, close 10.80.',
+        'Range 2.00, body 0.80 — so the body is 40% of the range.',
+        'Lower wick 1.00, upper wick 0.20, and the close sits 90% of the way up the range.',
+        'Read: sellers pushed it down a dollar and lost the day.',
+      ],
+    },
+    keyPoints: [
+      'Body share shows conviction; close location shows who won the day.',
+      'Judge candle size against the stock\'s own normal range, not in dollars.',
+      'Measurement comes before naming the pattern.',
+    ],
+    blindSpot: 'One day of prices says nothing about the next day. Anatomy explains what happened, not what follows.',
+    appliesTo: { label: 'Stock Analyzer', to: '/swingedge/analyzer' },
+    quiz: {
+      question: 'A candle closes in the top 10% of its range with a long lower wick. What does that describe?',
+      options: ['Sellers took control', 'Price was pushed down and recovered by the close', 'Nothing happened'],
+      answerIndex: 1,
+      why: 'The low was reached and then rejected, and the close near the high shows buyers finished in charge of the day.',
+    },
+  },
+  {
+    key: 'engulfing-patterns',
+    module: 'Reading candlesticks in context',
+    title: 'Engulfing patterns and what they really show',
+    minutes: 5,
+    summary: 'A bullish engulfing is one day completely undoing the previous day. Where it happens decides its worth.',
+    body: [
+      'A bullish engulfing needs a down day followed by an up day whose body completely covers it: the open at or below the previous close, the close above the previous open. A bearish engulfing is the mirror image. The app allows a small tolerance for prices that are near enough equal, because exact matches are rare.',
+      'What the shape says is simple: everything yesterday achieved was reversed, in one session. That is genuinely informative — but only about the balance of buyers and sellers over two days.',
+      'This is where beginners go wrong. The same engulfing candle is a serious piece of evidence after a pullback into support inside an uptrend, and close to meaningless in the middle of a directionless range on light volume. The shape is identical; the context is not.',
+      'The engulfing candle also hands you a natural invalidation reference — the low of the pattern. That is an input to your stop decision, not automatically your stop.',
+    ],
+    example: {
+      title: 'Same pattern, two very different readings',
+      lines: [
+        'Uptrend, pullback to support at the rising 20-day average, volume 2.2x average — confirmation score in the 80s.',
+        'Sideways chop, no level nearby, volume 0.4x average — confirmation score in the 40s.',
+        'Identical candle shape. One is evidence, the other is noise.',
+      ],
+    },
+    keyPoints: [
+      'Engulfing = one session fully reversing the last one.',
+      'Location, trend and volume decide whether it matters.',
+      'The pattern low is an invalidation reference, not a stop.',
+    ],
+    blindSpot: 'Plenty of textbook engulfing candles simply fail. That is why the pattern gets a small share of Setup Quality, not a veto.',
+    appliesTo: { label: 'Stock Analyzer', to: '/swingedge/analyzer' },
+    quiz: {
+      question: 'What makes a bullish engulfing more meaningful?',
+      options: ['A bigger body alone', 'Forming at support in an uptrend on rising volume', 'Appearing on a Friday'],
+      answerIndex: 1,
+      why: 'Context — trend, location and participation — is what separates evidence from noise.',
+    },
+  },
+  {
+    key: 'hammer-and-shooting-star',
+    module: 'Reading candlesticks in context',
+    title: 'Hammers, shooting stars and wick rejection',
+    minutes: 5,
+    summary: 'Long wicks are rejected prices. Which direction was rejected, and at what level, is the whole message.',
+    body: [
+      'A hammer has a small body near the top of its range and a lower wick at least about twice the body, with little wick above. Price was driven down and refused to stay there. A shooting star is the same shape upside down: buyers pushed up and could not hold it.',
+      'A long wick only means something at a level. A long lower wick right at support is a rejection worth noting. The same wick in mid-range is just intraday churn. That is why the app scores location out of 25 points, the same weight as the pattern shape itself.',
+      'Hammers and shooting stars need a later close to confirm them, and the app labels them WAITING FOR CONFIRMATION until that happens. Confirmation means a close beyond the pattern — not a feeling that it looks right.',
+      'If price instead closes below the hammer\'s low before confirming, the pattern is recorded as FAILED, with the date and the reason. Keeping failures visible is how you learn what these shapes are actually worth.',
+    ],
+    example: {
+      title: 'A hammer that earned its confirmation',
+      lines: [
+        'Day 1: hammer at support, lower wick three times the body. Status: waiting.',
+        'Day 2: closes above the hammer high. Status: confirmed, earliest honest entry is the following session.',
+        'Alternative: day 2 closes below the hammer low. Status: failed, and the reason is recorded.',
+      ],
+    },
+    keyPoints: [
+      'A long wick is a rejected price, nothing more.',
+      'Rejection at a level counts; rejection in open space does not.',
+      'These shapes stay unconfirmed until a later close agrees.',
+    ],
+    blindSpot: 'A confirmed hammer can still lose. Confirmation improves the evidence, it does not remove the risk.',
+    appliesTo: { label: 'Stock Analyzer', to: '/swingedge/analyzer' },
+    quiz: {
+      question: 'A hammer forms mid-range, away from support, on light volume. How should you treat it?',
+      options: ['Buy it, a hammer is bullish', 'As low significance', 'As a short signal'],
+      answerIndex: 1,
+      why: 'Without a level or participation behind it, the rejection has little meaning.',
+    },
+  },
+  {
+    key: 'doji-inside-outside',
+    module: 'Reading candlesticks in context',
+    title: 'Doji, inside bars and outside bars',
+    minutes: 5,
+    summary: 'Indecision candles are questions, not answers. Wait for the break, and note which way it goes.',
+    body: [
+      'A doji closes almost exactly where it opened: buyers and sellers finished level. It is not a reversal signal by itself, whatever a pattern list tells you. It is a pause, and a pause matters most when it happens at a level after a strong move.',
+      'An inside bar sits entirely inside the previous day\'s range. The previous day becomes the mother bar, and its high and low are the lines that matter. The app deliberately refuses to call an inside bar bullish or bearish — direction only exists once one of those lines is closed through.',
+      'An outside bar does the opposite: it trades above the previous high and below the previous low. Direction comes from where it closed. Closing strongly in the upper part of that wide range is a genuine show of demand; closing mid-range is just volatility.',
+      'All three shapes share one rule: the level they create is more useful than the name they carry.',
+    ],
+    example: {
+      title: 'An inside bar resolved',
+      lines: [
+        'Mother bar: high 52.00, low 48.00.',
+        'Inside day: 49.50 to 51.00 — no direction yet.',
+        'Next day closes 52.40, above the mother bar high: now it is an inside bar breakout, with 48.00 as the invalidation reference.',
+      ],
+    },
+    keyPoints: [
+      'A doji is a pause, not a reversal.',
+      'An inside bar has no direction until the mother bar breaks.',
+      'An outside bar is judged by where it closed inside its wide range.',
+    ],
+    blindSpot: 'Quiet ranges can break either way, and false breaks of a mother bar are common.',
+    appliesTo: { label: 'Market Scanner', to: '/swingedge/scanner' },
+    quiz: {
+      question: 'What direction does an inside bar imply on its own?',
+      options: ['Bullish', 'Bearish', 'None until the mother bar range breaks'],
+      answerIndex: 2,
+      why: 'An inside bar is compression. Direction only appears when the mother bar high or low is closed through.',
+    },
+  },
+  {
+    key: 'false-breakouts-and-volume',
+    module: 'Reading candlesticks in context',
+    title: 'False breakouts, strong closes and volume',
+    minutes: 6,
+    summary: 'Breaking a level intraday is not the same as holding it. Volume and the close tell you which happened.',
+    body: [
+      'A real breakout closes above resistance with a solid body, near the high of the day, on volume above its recent average. That combination is a strong bullish close, and it is the shape you want when a level gives way.',
+      'A failed breakout looks different: price trades above the level, leaves a long upper wick, and closes back below it. Sometimes the close holds barely above the level but the body is tiny and volume was light. The app calls this POSSIBLE FALSE BREAKOUT, lists the evidence, and reduces the setup contribution instead of quietly ignoring it.',
+      'Volume is participation, not permission. Rising volume behind a candle means more traders acted on it, which makes the evidence sturdier. Light volume does not invalidate a candle — it just means fewer people agreed, so the app lowers the score rather than throwing the pattern away.',
+      'One more trap: the candle that finally breaks out is often an expansion candle, two ATRs wide. That is precisely when chasing feels most justified. If price has already left the sensible entry area, the honest answer is WAIT and recalculate, not buy at any price.',
+    ],
+    example: {
+      title: 'Two breakout attempts at $50.30',
+      lines: [
+        'Attempt one: high 53.50, close 50.05, volume 0.6x average — POSSIBLE FALSE BREAKOUT.',
+        'Attempt two: close 51.40 near the high, body 60% of range, volume 1.8x — strong bullish close.',
+        'Same level, opposite evidence.',
+      ],
+    },
+    keyPoints: [
+      'The close decides a breakout, not the intraday high.',
+      'A long upper wick plus weak volume is failure evidence.',
+      'Once price leaves the entry area, recalculate instead of chasing.',
+    ],
+    blindSpot: 'Some false breakouts snap back and run anyway. Being right for the wrong reason still teaches the wrong lesson.',
+    appliesTo: { label: 'Trade Planner', to: '/swingedge/planner' },
+    quiz: {
+      question: 'Price trades above resistance then closes below it on light volume. What is that?',
+      options: ['A confirmed breakout', 'Evidence of a possible false breakout', 'An inside bar'],
+      answerIndex: 1,
+      why: 'The level was tested and not held, and volume did not confirm the attempt.',
+    },
+  },
+  {
+    key: 'context-over-pattern-names',
+    module: 'Reading candlesticks in context',
+    title: 'Why context matters more than pattern names',
+    minutes: 5,
+    summary: 'The order is trend, location, candle, confirmation, invalidation, risk — never "see a hammer, buy".',
+    body: [
+      'Pattern names are a vocabulary, not a strategy. The engine scores every detected pattern out of 100 across six things: how cleanly the shape formed, where it formed, whether the trend agrees, whether volume confirmed, whether momentum agrees, and whether the wider market agrees. Location and shape carry equal weight for a reason.',
+      'That score is not a probability of profit and it is never a signal by itself. It contributes at most 7 points inside Setup Quality, which is one part of the technical score, which is one of three layers in the combined signal. A perfect candle cannot rescue a bad reward-to-risk, a broken trend, an unjustified stop or a portfolio-risk breach.',
+      'Judge patterns by context, not by name. The app can compare the same pattern at support against the same pattern away from support in your own results, and that comparison teaches more than any pattern list.',
+      'The working order is: identify the trend, locate support and resistance, read what the candle is communicating, confirm volume and momentum, define invalidation, validate the risk, then wait for the correct entry.',
+    ],
+    example: {
+      title: 'The same name, two verdicts',
+      lines: [
+        'Bullish engulfing, confirmation score 95, but reward-to-risk of 1.1 to 1 — the result is still STOP or WAIT.',
+        'Bullish engulfing, confirmation score 78, sound stop, reward-to-risk 2.4 to 1 — now it supports a plan.',
+        'The candle never decided it. The risk did.',
+      ],
+    },
+    keyPoints: [
+      'Candlesticks are evidence, not predictions.',
+      'Candle evidence lives inside Setup Quality, capped and never double-counted.',
+      'No pattern overrides trend, stop quality, reward-to-risk or risk limits.',
+    ],
+    blindSpot: 'Even a well-scored candle in perfect context loses regularly. Position size is what keeps that survivable.',
+    appliesTo: { label: 'Performance', to: '/swingedge/performance' },
+    quiz: {
+      question: 'A candle scores 95 for confirmation but reward-to-risk is 1.1 to 1. What should the signal be?',
+      options: ['GO — the candle is excellent', 'WAIT or STOP — the risk rule is broken', 'REVIEW then GO'],
+      answerIndex: 1,
+      why: 'Candlestick evidence can never override a broken risk rule.',
+    },
+  },
 ];
+
 
 
 export function lessonsByModule(): { module: string; lessons: Lesson[] }[] {
