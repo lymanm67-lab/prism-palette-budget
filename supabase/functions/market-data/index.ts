@@ -28,15 +28,26 @@ function json(body: Json, status = 200) {
   });
 }
 
+class RateLimitError extends Error {}
+
+function looksRateLimited(message: string): boolean {
+  const m = message.toLowerCase();
+  return m.includes('rate limit') || m.includes('requests per day') || m.includes('more sparingly') || m.includes('premium');
+}
+
 async function av(params: Record<string, string>, apiKey: string): Promise<Json> {
   const url = new URL(BASE);
   Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
   url.searchParams.set('apikey', apiKey);
   const res = await fetch(url.toString());
+  if (res.status === 429) throw new RateLimitError('Market data provider limit reached — try again later.');
   if (!res.ok) throw new Error(`Alpha Vantage ${res.status}`);
   const body = (await res.json()) as Json;
-  if (typeof body['Note'] === 'string') throw new Error('Alpha Vantage rate limit reached — try again in a minute.');
-  if (typeof body['Information'] === 'string') throw new Error(String(body['Information']));
+  if (typeof body['Note'] === 'string') throw new RateLimitError('Market data provider limit reached — try again in a minute.');
+  if (typeof body['Information'] === 'string') {
+    const info = String(body['Information']);
+    throw looksRateLimited(info) ? new RateLimitError('Daily market data limit reached — figures will refresh tomorrow.') : new Error(info);
+  }
   if (typeof body['Error Message'] === 'string') throw new Error(String(body['Error Message']));
   return body;
 }
@@ -190,6 +201,25 @@ Deno.serve(async (req) => {
       asOf: new Date().toISOString(),
     });
   } catch (err) {
-    return json({ error: err instanceof Error ? err.message : 'Market data lookup failed' }, 502);
+    const message = err instanceof Error ? err.message : 'Market data lookup failed';
+    // Provider limits are expected on the free plan: degrade instead of failing
+    // the request, so the page keeps rendering with the data it already has.
+    if (err instanceof RateLimitError || looksRateLimited(message)) {
+      return json({
+        symbol: (body.symbol ?? '').toUpperCase() || null,
+        price: null,
+        name: null,
+        securityType: 'unverified',
+        verified: false,
+        sector: null,
+        industry: null,
+        dividendYield: null,
+        expenseRatio: null,
+        rateLimited: true,
+        notice: message,
+        asOf: new Date().toISOString(),
+      });
+    }
+    return json({ error: message }, 502);
   }
 });
