@@ -153,6 +153,12 @@ function WeekCard({ weekNumber }: { weekNumber: number }) {
       <div className="space-y-4 pt-1">
         <Progress value={pct} className="h-1.5" />
         <p className="text-sm text-muted-foreground">{week.intent}</p>
+        {curriculumFor(weekNumber)?.outcome ? (
+          <p className="text-sm">
+            <span className="font-medium">By Friday: </span>
+            {curriculumFor(weekNumber)?.outcome}
+          </p>
+        ) : null}
 
         <div>
           <p className="mb-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
