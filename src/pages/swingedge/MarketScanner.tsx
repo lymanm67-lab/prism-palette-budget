@@ -343,7 +343,7 @@ export default function MarketScanner() {
       <AiLevelsAssistant
         page="Market Scanner"
         symbol={nextCandidate?.symbol ?? null}
-        price={nextCandidate?.snapshot?.price ?? null}
+        price={nextCandidate?.price ?? null}
         rules={
           nextCandidate?.levels
             ? {
