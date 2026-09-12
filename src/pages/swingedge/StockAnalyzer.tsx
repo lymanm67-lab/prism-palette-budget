@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import CandlePatternCard from '@/components/swingedge/CandlePatternCard';
 import CollapsibleSection from '@/components/swingedge/CollapsibleSection';
 import HowToUse from '@/components/swingedge/HowToUse';
+import AiLevelsAssistant from '@/components/swingedge/AiLevelsAssistant';
 import HybridSignalCard from '@/components/swingedge/HybridSignalCard';
 import ManualFundamentalsForm from '@/components/swingedge/ManualFundamentalsForm';
 import QualityScoreCard from '@/components/swingedge/QualityScoreCard';
