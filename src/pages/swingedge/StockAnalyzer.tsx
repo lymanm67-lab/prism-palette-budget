@@ -151,7 +151,14 @@ export default function StockAnalyzer() {
             <RiskQualityCard risk={analysis.risk} />
           </div>
 
+          <div className="grid gap-4 lg:grid-cols-3">
+            <MarketRegimeCard regime={analysis.regime} />
+            <RelativeStrengthCard rs={analysis.relativeStrength} />
+            <TradabilityCard t={analysis.tradability} />
+          </div>
+
           <CandlePatternCard analysis={analysis.candles} advanced={settings.advanced_mode} />
+
 
           {levels && (
             <Card className="border-border/60 bg-card/60 backdrop-blur">
