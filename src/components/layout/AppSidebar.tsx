@@ -101,6 +101,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { to: '/swingedge/scanner', icon: Search, label: 'Market Scanner', color: 'text-prism-amber' },
       { to: '/swingedge/live', icon: Activity, label: 'Live Data', color: 'text-prism-lime' },
       { to: '/swingedge/analyzer', icon: LineChart, label: 'Stock Analyzer', color: 'text-prism-sky' },
+      { to: '/swingedge/fundamentals', icon: FileText, label: 'Company & Fund Figures', color: 'text-prism-amber' },
       { to: '/swingedge/watchlists', icon: Layers, label: 'Watchlists', color: 'text-prism-indigo' },
       { to: '/swingedge/planner', icon: ClipboardCheck, label: 'Trade Planner', color: 'text-prism-lime' },
       { to: '/swingedge/paper-trading', icon: Activity, label: 'Paper Trading', color: 'text-prism-violet' },
