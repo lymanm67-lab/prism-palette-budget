@@ -110,12 +110,23 @@ export function useHybridAnalysis(symbol: string | null, assetTypeHint?: 'STOCK'
       const basis = candleBasis(priceResult.candles, '1day');
       const usable = basis.completed.length >= 60 ? basis.completed : priceResult.candles;
 
+      // Figures priority: Alpha Vantage (saved copy first, then live), then the
+      // price provider if it ever gains the capability, then hand-entered values.
+      // Hand entry is the fallback, never the first stop.
       const manualProvider = new ManualFundamentals(householdId);
-      const providerFundamentals = new TwelveDataFundamentals(TWELVE_DATA_CAPABILITIES);
-      const [providerBundle, manualBundle] = await Promise.all([
-        providerFundamentals.getBundle(sym, assetType),
+      const [alphaBundle, manualBundle] = await Promise.all([
+        mode === 'demo'
+          ? Promise.resolve(null)
+          : new AlphaVantageFundamentals().getBundle(sym, assetType),
         manualProvider.getBundle(sym, assetType),
       ]);
+      let providerBundle =
+        alphaBundle && alphaBundle.mode !== 'UNAVAILABLE'
+          ? alphaBundle
+          : await new TwelveDataFundamentals(TWELVE_DATA_CAPABILITIES).getBundle(sym, assetType);
+      if (providerBundle.mode === 'UNAVAILABLE' && alphaBundle) {
+        providerBundle = alphaBundle; // keep the clearer Alpha Vantage explanation
+      }
       const { bundle, conflictingMetrics } = mergeBundles(providerBundle, manualBundle);
 
       const sectorText = bundle.profile?.sector ?? null;
