@@ -600,11 +600,41 @@ export function useFundamentalOverrides(symbol: string | null) {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['se-fundamental-overrides'] });
+      qc.invalidateQueries({ queryKey: ['se-fundamental-override-list'] });
       qc.invalidateQueries({ queryKey: ['se-hybrid'] });
+      qc.invalidateQueries({ queryKey: ['se-scored-symbols'] });
     },
   });
 
   const values = useMemo(() => (query.data?.metrics ?? {}) as Record<string, number | null>, [query.data]);
 
-  return { row: query.data ?? null, values, isLoading: query.isLoading, save: save.mutateAsync, remove: remove.mutateAsync, isSaving: save.isPending };
+  return {
+    row: query.data ?? null,
+    values,
+    isLoading: query.isLoading,
+    save: save.mutateAsync,
+    remove: remove.mutateAsync,
+    isSaving: save.isPending,
+    isRemoving: remove.isPending,
+  };
+}
+
+/** Every symbol that already has hand-entered figures saved. */
+export function useFundamentalOverrideList() {
+  const { household } = useHousehold();
+  const householdId = household?.id ?? null;
+
+  return useQuery({
+    queryKey: ['se-fundamental-override-list', householdId],
+    enabled: !!householdId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('se_fundamental_overrides')
+        .select('symbol, asset_type, as_of, note, updated_at, metrics, etf_metrics')
+        .eq('household_id', householdId!)
+        .order('symbol');
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
 }
