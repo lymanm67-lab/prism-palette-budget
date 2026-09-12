@@ -1,3 +1,4 @@
+import NextStepsCard from '@/components/swingedge/NextStepsCard';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { ArrowRight, CheckCircle2, Circle, Download, GraduationCap } from 'lucide-react';
@@ -21,7 +22,6 @@ import { usePaperTradeManagement } from '@/hooks/use-swingedge-stops';
 import { useGraduation, useTrainingProgress } from '@/hooks/use-swingedge-training';
 import { TRAINING_WEEKS, downloadCsv, toCsv, weekCompletion } from '@/lib/swingedge/training';
 import { curriculumFor } from '@/lib/swingedge/curriculum';
-import NextStepsCard from '@/components/swingedge/NextStepsCard';
 
 const COUNTERS: { key: keyof CounterState; label: string }[] = [
   { key: 'lessons_completed', label: 'Lessons finished' },

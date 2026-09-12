@@ -1,3 +1,4 @@
+import NextStepsCard from '@/components/swingedge/NextStepsCard';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,7 +29,6 @@ import {
   type ManagedTrade,
 } from '@/hooks/use-swingedge-stops';
 import {
-import NextStepsCard from '@/components/swingedge/NextStepsCard';
   BREAKEVEN_TRIGGERS,
   EARNINGS_UNKNOWN_TEXT,
   STOP_MOVE_REASONS,

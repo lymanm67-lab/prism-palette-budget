@@ -1,3 +1,4 @@
+import NextStepsCard from '@/components/swingedge/NextStepsCard';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -20,7 +21,6 @@ import { cn } from '@/lib/utils';
 import { lastUpdatedLabel } from '@/lib/swingedge/cache';
 import { useConnectionTest, useTradingSettings, useTradingTitle } from '@/hooks/use-swingedge';
 import type { ConnectionStatus, DataMode } from '@/lib/swingedge/types';
-import NextStepsCard from '@/components/swingedge/NextStepsCard';
 
 const money = (n: number) =>
   n.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 });

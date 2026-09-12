@@ -1,3 +1,4 @@
+import NextStepsCard from '@/components/swingedge/NextStepsCard';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,7 +31,6 @@ import HowToUse from '@/components/swingedge/HowToUse';
 import { useTradingSettings, useTradingTitle } from '@/hooks/use-swingedge';
 import { useAcademyProgress } from '@/hooks/use-swingedge-lists';
 import { lessonsByModule, type Lesson } from '@/lib/swingedge/lessons';
-import NextStepsCard from '@/components/swingedge/NextStepsCard';
 
 function LessonCard({
   lesson,

@@ -1,3 +1,4 @@
+import NextStepsCard from '@/components/swingedge/NextStepsCard';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -31,7 +32,6 @@ import { usePortfolioHeat } from '@/hooks/use-swingedge-heat';
 import { VERDICT_LABEL, type Verdict } from '@/lib/swingedge/types';
 import type { SetupState } from '@/lib/swingedge/indicators';
 import {
-import NextStepsCard from '@/components/swingedge/NextStepsCard';
   ATR_MULTIPLES,
   BUFFER_CHOICES,
   CORE_EXAMPLE,
@@ -1102,7 +1102,7 @@ export default function TradePlanner() {
           <NextStepsCard
         summary="You have a plan with share size and dollar risk. Nothing is decided until you take it into a practice trade and record it."
         steps={[
-          { label: 'Open the trade on paper at your planned entry', to: '/swingedge/paper', cta: 'Open Paper Trading' },
+          { label: 'Open the trade on paper at your planned entry', to: '/swingedge/paper-trading', cta: 'Open Paper Trading' },
           { label: 'Park it on a watchlist if entry is not there yet', to: '/swingedge/watchlists', cta: 'Open Watchlists' },
           { label: 'Journal it as soon as it closes', to: '/swingedge/journal', cta: 'Open Journal' },
         ]}

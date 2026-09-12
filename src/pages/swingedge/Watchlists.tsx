@@ -1,3 +1,4 @@
+import NextStepsCard from '@/components/swingedge/NextStepsCard';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,7 +20,6 @@ import { useSymbolRoles } from '@/hooks/use-swingedge-roles';
 import { RoleBadge, StatusBadge } from '@/components/swingedge/SymbolRoleControls';
 import { PORTFOLIO_ROLES, TRADING_STATUSES, statusMeta } from '@/lib/swingedge/roles';
 import {
-import NextStepsCard from '@/components/swingedge/NextStepsCard';
   Select,
   SelectContent,
   SelectItem,
