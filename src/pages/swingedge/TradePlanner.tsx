@@ -1092,7 +1092,7 @@ export default function TradePlanner() {
           priorHigh: levels.data?.priorHigh ?? null,
           breakoutLevel: levels.data?.breakoutLevel ?? null,
           shares: risk.shares,
-          dollarRisk: risk.maxPlannedLoss,
+          dollarRisk: risk.plannedLoss,
           problems: risk.problems,
           tradingCapital: settings.trading_capital,
           riskPerTradePct: settings.risk_per_trade_pct,
