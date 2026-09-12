@@ -534,11 +534,16 @@ export default function FundamentalsEntry() {
                           <Badge variant="outline" className="border-prism-lime/50 text-[10px] text-prism-lime">
                             app has {provided}
                           </Badge>
+                        ) : field.optional ? (
+                          <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                            optional
+                          </Badge>
                         ) : (
                           <Badge variant="outline" className="border-prism-amber/50 text-[10px] text-prism-amber">
                             blank
                           </Badge>
                         )}
+
                       </div>
                       <Input
                         id={`f-${field.key}`}
