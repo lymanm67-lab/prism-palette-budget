@@ -11753,6 +11753,91 @@ export type Database = {
           },
         ]
       }
+      se_symbol_roles: {
+        Row: {
+          created_at: string
+          household_id: string
+          id: string
+          notes: string | null
+          portfolio_role: string
+          status_changed_at: string
+          symbol: string
+          trading_status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          household_id: string
+          id?: string
+          notes?: string | null
+          portfolio_role?: string
+          status_changed_at?: string
+          symbol: string
+          trading_status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          household_id?: string
+          id?: string
+          notes?: string | null
+          portfolio_role?: string
+          status_changed_at?: string
+          symbol?: string
+          trading_status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "se_symbol_roles_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      se_symbol_status_history: {
+        Row: {
+          created_at: string
+          from_status: string | null
+          household_id: string
+          id: string
+          portfolio_role: string | null
+          reason: string | null
+          symbol: string
+          to_status: string
+        }
+        Insert: {
+          created_at?: string
+          from_status?: string | null
+          household_id: string
+          id?: string
+          portfolio_role?: string | null
+          reason?: string | null
+          symbol: string
+          to_status: string
+        }
+        Update: {
+          created_at?: string
+          from_status?: string | null
+          household_id?: string
+          id?: string
+          portfolio_role?: string | null
+          reason?: string | null
+          symbol?: string
+          to_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "se_symbol_status_history_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       se_trade_plans: {
         Row: {
           atr_multiple: number | null

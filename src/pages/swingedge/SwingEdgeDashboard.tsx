@@ -16,6 +16,7 @@ import HowToUse from '@/components/swingedge/HowToUse';
 import WatchlistDashboardCard from '@/components/swingedge/WatchlistDashboardCard';
 import CollapsibleSection from '@/components/swingedge/CollapsibleSection';
 import TradeWorkflow from '@/components/swingedge/TradeWorkflow';
+import PortfolioRolesCard from '@/components/swingedge/PortfolioRolesCard';
 
 import { useSwingEdgeDashboard, useTradingSettings, useTradingTitle } from '@/hooks/use-swingedge';
 import type { MarketCondition, TrendState } from '@/lib/swingedge/types';
@@ -224,6 +225,8 @@ export default function SwingEdgeDashboard() {
       <TradeWorkflow />
 
       {/* Watchlist (self-collapsing) */}
+      <PortfolioRolesCard />
+
       <WatchlistDashboardCard />
 
       {/* The loop */}

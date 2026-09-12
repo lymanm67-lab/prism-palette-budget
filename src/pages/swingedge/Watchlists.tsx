@@ -14,6 +14,16 @@ import ScoredSymbolTable from '@/components/swingedge/ScoredSymbolTable';
 import { useTradingTitle } from '@/hooks/use-swingedge';
 import { useScoredSymbols, useWatchlists } from '@/hooks/use-swingedge-lists';
 import { cacheStatus } from '@/lib/swingedge/cache';
+import { useSymbolRoles } from '@/hooks/use-swingedge-roles';
+import { RoleBadge, StatusBadge } from '@/components/swingedge/SymbolRoleControls';
+import { PORTFOLIO_ROLES, TRADING_STATUSES, statusMeta } from '@/lib/swingedge/roles';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export default function Watchlists() {
   useTradingTitle('Watchlists');
@@ -31,6 +41,9 @@ export default function Watchlists() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [newListName, setNewListName] = useState('');
   const [newSymbol, setNewSymbol] = useState('');
+  const [roleFilter, setRoleFilter] = useState('ALL');
+  const [statusFilter, setStatusFilter] = useState('ALL');
+  const { roles, roleFor, history } = useSymbolRoles();
 
   const currentId = activeId && lists.some((l) => l.id === activeId) ? activeId : lists[0]?.id ?? null;
   const currentList = lists.find((l) => l.id === currentId) ?? null;
@@ -39,6 +52,19 @@ export default function Watchlists() {
 
   const { rows, notice, isLoading: scoring, isFetching, refetch, mode, fetchedAt } =
     useScoredSymbols(symbols);
+
+  const filteredRows = useMemo(
+    () =>
+      rows.filter((r) => {
+        const meta = roleFor(r.symbol);
+        const role = meta?.portfolio_role ?? 'UNASSIGNED';
+        const status = meta?.trading_status ?? 'SCAN_UNIVERSE';
+        if (roleFilter !== 'ALL' && role !== roleFilter) return false;
+        if (statusFilter !== 'ALL' && status !== statusFilter) return false;
+        return true;
+      }),
+    [rows, roleFilter, statusFilter, roles],
+  );
 
   const handleCreateList = async () => {
     if (!newListName.trim()) return;
@@ -193,8 +219,50 @@ export default function Watchlists() {
                     </Button>
                   </div>
 
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Select value={roleFilter} onValueChange={setRoleFilter}>
+                      <SelectTrigger className="h-8 w-[170px] text-xs" aria-label="Filter by portfolio role">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ALL" className="text-xs">All portfolio roles</SelectItem>
+                        {PORTFOLIO_ROLES.map((r) => (
+                          <SelectItem key={r.value} value={r.value} className="text-xs">
+                            {r.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger className="h-8 w-[180px] text-xs" aria-label="Filter by trading status">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ALL" className="text-xs">All trading statuses</SelectItem>
+                        {TRADING_STATUSES.map((st) => (
+                          <SelectItem key={st.value} value={st.value} className="text-xs">
+                            {st.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {roleFilter !== 'ALL' || statusFilter !== 'ALL' ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setRoleFilter('ALL');
+                          setStatusFilter('ALL');
+                        }}
+                      >
+                        Clear filters
+                      </Button>
+                    ) : null}
+                  </div>
+
                   <ScoredSymbolTable
-                    rows={rows}
+                    dual
+                    rows={filteredRows}
                     isLoading={scoring}
                     onRemove={handleRemoveSymbol}
                     emptyMessage="No symbols on this list yet. Add a few above."
@@ -218,12 +286,40 @@ export default function Watchlists() {
         </Alert>
       ) : null}
 
+      {history.length ? (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Recent status moves</CardTitle>
+            <CardDescription>
+              A name's portfolio role stays put. Its trading status moves as the setup develops.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {history.slice(0, 12).map((h) => (
+              <div key={h.id} className="flex flex-wrap items-center gap-2 text-sm">
+                <span className="font-semibold">{h.symbol}</span>
+                <RoleBadge role={roleFor(h.symbol)?.portfolio_role ?? 'UNASSIGNED'} />
+                <span className="text-muted-foreground">
+                  {h.from_status ? statusMeta(h.from_status).label : 'New'} →
+                </span>
+                <StatusBadge status={h.to_status} />
+                <span className="text-xs text-muted-foreground">
+                  {new Date(h.created_at).toLocaleDateString()}
+                  {h.reason ? ` · ${h.reason}` : ''}
+                </span>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      ) : null}
+
       <HowToUse
         steps={[
           'Create a list with a clear purpose rather than one long catch-all list.',
           'Add symbols you would genuinely be willing to trade — around 10 to 25 per list.',
           'Read the score and verdict columns: QUALIFIES and WATCH are the only rows worth opening.',
           'Click a symbol to open it in the Stock Analyzer for the full read.',
+          'Give each name a portfolio role — the job it plays — then let its trading status move as the setup develops.',
           'Remove names you have stopped following. A stale list wastes your market data allowance.',
         ]}
         tips={[

@@ -16,6 +16,9 @@ import { cn } from '@/lib/utils';
 import { VERDICT_MEANING, VERDICT_TONE, scoreTone } from '@/lib/swingedge/score';
 import { VERDICT_LABEL, type TrendState } from '@/lib/swingedge/types';
 import type { ScoredSymbol } from '@/hooks/use-swingedge-lists';
+import { useSymbolRoles } from '@/hooks/use-swingedge-roles';
+import { RoleSelect, StatusSelect } from '@/components/swingedge/SymbolRoleControls';
+import { statusMeta, suggestStatus, type PortfolioRole, type TradingStatus } from '@/lib/swingedge/roles';
 
 const TREND_TONE: Record<TrendState, string> = {
   UP: 'text-prism-lime',
@@ -33,6 +36,8 @@ interface Props {
   removingSymbol?: string | null;
   emptyMessage?: string;
   showEstimates?: boolean;
+  /** Show the dual watchlist columns: portfolio role and trading status. */
+  dual?: boolean;
 }
 
 export default function ScoredSymbolTable({
@@ -42,7 +47,10 @@ export default function ScoredSymbolTable({
   removingSymbol,
   emptyMessage = 'No symbols yet.',
   showEstimates = true,
+  dual = false,
 }: Props) {
+  const { roleFor, setRole, setStatus, isWorking } = useSymbolRoles();
+
   if (isLoading) {
     return (
       <div className="space-y-2">
@@ -71,6 +79,8 @@ export default function ScoredSymbolTable({
             <TableHead>Verdict</TableHead>
             <TableHead>Trend</TableHead>
             <TableHead>Setup</TableHead>
+            {dual ? <TableHead>Portfolio role</TableHead> : null}
+            {dual ? <TableHead>Trading status</TableHead> : null}
             {showEstimates ? <TableHead className="text-right">Est. entry / stop / target</TableHead> : null}
             <TableHead className="w-16" />
           </TableRow>
@@ -135,6 +145,64 @@ export default function ScoredSymbolTable({
               <TableCell className="text-muted-foreground">
                 {r.setup === 'NONE' ? 'None' : r.setup === 'BREAKOUT' ? 'Breakout' : 'Pullback'}
               </TableCell>
+              {dual ? (
+                <TableCell>
+                  <RoleSelect
+                    value={(roleFor(r.symbol)?.portfolio_role ?? 'UNASSIGNED') as PortfolioRole}
+                    disabled={isWorking}
+                    onChange={(portfolio_role) => setRole({ symbol: r.symbol, portfolio_role })}
+                  />
+                </TableCell>
+              ) : null}
+              {dual ? (
+                <TableCell>
+                  {(() => {
+                    const current = (roleFor(r.symbol)?.trading_status ?? 'SCAN_UNIVERSE') as TradingStatus;
+                    const suggestion = suggestStatus({
+                      symbol: r.symbol,
+                      current,
+                      verdict: r.verdict,
+                      setup: r.setup,
+                    });
+                    return (
+                      <div className="space-y-1">
+                        <StatusSelect
+                          value={current}
+                          disabled={isWorking}
+                          onChange={(trading_status) =>
+                            setStatus({ symbol: r.symbol, trading_status, reason: 'Set by hand' })
+                          }
+                        />
+                        {suggestion ? (
+                          <Tooltip delayDuration={0}>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 px-1 text-[11px] text-muted-foreground"
+                                disabled={isWorking}
+                                onClick={() =>
+                                  setStatus({
+                                    symbol: r.symbol,
+                                    trading_status: suggestion.to,
+                                    reason: suggestion.reason,
+                                  })
+                                }
+                              >
+                                {suggestion.direction === 'promote' ? 'Move to' : 'Drop to'}{' '}
+                                {statusMeta(suggestion.to).label}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-xs text-xs">
+                              {suggestion.reason} Nothing changes until you click.
+                            </TooltipContent>
+                          </Tooltip>
+                        ) : null}
+                      </div>
+                    );
+                  })()}
+                </TableCell>
+              ) : null}
               {showEstimates ? (
                 <TableCell className="text-right text-xs tabular-nums text-muted-foreground">
                   {r.levels
