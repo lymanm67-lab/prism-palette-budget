@@ -209,7 +209,35 @@ export function useHybridAnalysis(symbol: string | null, assetTypeHint?: 'STOCK'
       let fundamental: FundamentalScoreResult | null = null;
       let etf: EtfQualityResult | null = null;
       if (assetType === 'ETF') {
-        etf = scoreEtfQuality(bundle.etf ?? {}, {
+        // Liquidity, trading cost and volatility are measurable from the price
+        // history we already hold, so a fund is never marked "no data" for them
+        // just because the fund-data plan omits them. Provider figures always win.
+        const provided = bundle.etf ?? {};
+        const closes = usable.map((c) => c.close).filter((n) => n > 0);
+        const returns: number[] = [];
+        for (let i = 1; i < closes.length; i += 1) returns.push(closes[i] / closes[i - 1] - 1);
+        const window = returns.slice(-60);
+        let measuredVolPct: number | null = null;
+        if (window.length >= 20) {
+          const mean = window.reduce((s, r) => s + r, 0) / window.length;
+          const variance = window.reduce((s, r) => s + (r - mean) ** 2, 0) / (window.length - 1);
+          measuredVolPct = Math.round(Math.sqrt(variance) * Math.sqrt(252) * 1000) / 10;
+        }
+        const measuredDollarVolume = tradability.avgDollarVolume;
+        const measuredSpreadPct =
+          tradability.spread.spreadPct !== null ? tradability.spread.spreadPct : null;
+        const usedMeasured =
+          (provided.avgDollarVolume == null && measuredDollarVolume !== null) ||
+          (provided.spreadPct == null && measuredSpreadPct !== null) ||
+          (provided.annualVolatilityPct == null && measuredVolPct !== null);
+
+        etf = scoreEtfQuality({
+          ...provided,
+          avgDollarVolume: provided.avgDollarVolume ?? measuredDollarVolume,
+          spreadPct: provided.spreadPct ?? measuredSpreadPct,
+          annualVolatilityPct: provided.annualVolatilityPct ?? measuredVolPct,
+          derivedFromPriceHistory: usedMeasured,
+        }, {
           provider: providerQuality,
           freshnessDays,
           conflictingMetrics,
