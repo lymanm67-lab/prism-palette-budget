@@ -11,7 +11,18 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertTriangle, ArrowRight, CheckCircle2, Circle, Clock } from 'lucide-react';
+import {
+  AlertTriangle,
+  ArrowRight,
+  CheckCircle2,
+  Circle,
+  Clock,
+  Pause,
+  Play,
+  Square,
+  Volume2,
+} from 'lucide-react';
+import { useTTS } from '@/hooks/use-tts';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import SwingEdgeHeader from '@/components/swingedge/SwingEdgeHeader';
