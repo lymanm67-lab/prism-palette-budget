@@ -401,6 +401,18 @@ export function usePaperTradeManagement() {
         exit_reason: t.exit_reason,
         realized_pl: t.realized_pl === null ? null : num(t.realized_pl),
         notes: t.notes,
+        planned_stop: t.planned_stop === null ? null : num(t.planned_stop),
+        revalidated_at: t.revalidated_at,
+        simulated_fill: t.simulated_fill === null ? null : num(t.simulated_fill),
+        slippage: t.slippage === null ? null : num(t.slippage),
+        gap_difference: t.gap_difference === null ? null : num(t.gap_difference),
+        planned_loss: t.planned_loss === null ? null : num(t.planned_loss),
+        actual_simulated_loss:
+          t.actual_simulated_loss === null ? null : num(t.actual_simulated_loss),
+        execution_score: t.execution_score === null ? null : Number(t.execution_score),
+        signal_quality: t.signal_quality,
+        outcome_class: t.outcome_class,
+
       }));
     },
   });
