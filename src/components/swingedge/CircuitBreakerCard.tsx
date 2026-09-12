@@ -83,7 +83,7 @@ export default function CircuitBreakerCard() {
               {money(tally.dailyLoss)}
               <span className="text-xs font-normal text-muted-foreground">
                 {' '}
-                of {money(limits.dailyLossLimit)}
+                {limits.dailyLossLimit > 0 ? `of ${money(limits.dailyLossLimit)}` : '· no limit set'}
               </span>
             </p>
             <Progress value={pct(tally.dailyLoss, limits.dailyLossLimit)} className="mt-2 h-1.5" />
@@ -94,7 +94,7 @@ export default function CircuitBreakerCard() {
               {money(tally.weeklyLoss)}
               <span className="text-xs font-normal text-muted-foreground">
                 {' '}
-                of {money(limits.weeklyLossLimit)}
+                {limits.weeklyLossLimit > 0 ? `of ${money(limits.weeklyLossLimit)}` : '· no limit set'}
               </span>
             </p>
             <Progress value={pct(tally.weeklyLoss, limits.weeklyLossLimit)} className="mt-2 h-1.5" />
