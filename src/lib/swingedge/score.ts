@@ -91,6 +91,15 @@ export interface AlignmentContext {
    * points INSIDE Setup Quality — never a separate score on top of the 100.
    */
   candleConfirmation?: CandleConfirmation | null;
+  /**
+   * Market regime and relative strength readings, expressed as a 0-1 bias. They
+   * shade this same 15-point alignment component — they never add a new score
+   * category and never move the Hybrid weights.
+   */
+  regimeBias?: number | null;
+  regimeLabel?: string | null;
+  relativeStrengthBias?: number | null;
+  relativeStrengthLabel?: string | null;
 }
 
 
