@@ -400,17 +400,27 @@ export interface StopQualityResult {
   warnings: string[];
   tooTight: boolean;
   tooWide: boolean;
+  /** True when the stop reads as a defensible technical invalidation level. */
+  justified: boolean;
+  /** Why the stop failed validation — shown before any override is offered. */
+  failureReasons: string[];
 }
 
 /**
  * Educational assessment of stop placement. This is not a probability of
  * success — it only judges the stop against structure and volatility.
+ *
+ * The stop does NOT have to match the suggested price. It has to represent a
+ * reasonable invalidation level for the setup: below or close under the
+ * structural level, and far enough from entry to survive normal movement.
  */
 export function assessStop(input: StopQualityInputs): StopQualityResult {
   const { entry, stop, atrValue, structureLevel, rewardRisk, setup } = input;
   const reasons: string[] = [];
   const warnings: string[] = [];
+  const failureReasons: string[] = [];
   const perShare = riskPerShare(entry, stop);
+  const levelName = setup === 'BREAKOUT' ? 'breakout level' : 'recent swing low';
 
   if (perShare === null) {
     return {
@@ -420,16 +430,37 @@ export function assessStop(input: StopQualityInputs): StopQualityResult {
       warnings: ['INVALID STOP — a long trade needs its stop below the entry.'],
       tooTight: false,
       tooWide: false,
+      justified: false,
+      failureReasons: ['The stop sits at or above the entry, so it cannot protect a long trade.'],
     };
   }
 
   const atrDistance = isNum(atrValue) && atrValue > 0 ? round2(perShare / atrValue) : null;
   const belowStructure = isNum(structureLevel) ? stop < structureLevel : null;
+  // Tolerance: a stop just above the level is still defensible if it is within a
+  // quarter of an ATR (or 0.5% of price when ATR is unavailable) of that level.
+  const tolerance =
+    isNum(atrValue) && atrValue > 0 ? round2(atrValue * 0.25) : round2(entry * 0.005);
+  const aboveStructureBy =
+    isNum(structureLevel) && stop >= structureLevel ? round2(stop - structureLevel) : 0;
+  const nearStructure = belowStructure === false && aboveStructureBy <= tolerance;
 
   if (belowStructure === true) reasons.push('The stop sits below the structural level that defines the setup.');
-  if (belowStructure === false)
+  if (nearStructure)
+    reasons.push(
+      `The stop sits within $${tolerance.toFixed(2)} of the ${levelName}, close enough to read as the same invalidation level.`,
+    );
+  if (belowStructure === false && !nearStructure) {
     warnings.push(
-      `Current stop sits above the ${setup === 'BREAKOUT' ? 'breakout level' : 'recent swing low'}, so the thesis could still be intact when you are stopped out.`,
+      `Current stop sits $${aboveStructureBy.toFixed(2)} above the ${levelName}, so the thesis could still be intact when you are stopped out.`,
+    );
+    failureReasons.push(
+      `The stop is not tied to a technical level — it sits above the ${levelName} that defines this setup.`,
+    );
+  }
+  if (belowStructure === null)
+    warnings.push(
+      'No structural level was loaded for this symbol, so the stop is judged on volatility alone.',
     );
   if (atrDistance !== null && atrDistance >= 1)
     reasons.push(`The stop is ${atrDistance} ATR from the entry, outside normal daily movement.`);
@@ -438,7 +469,10 @@ export function assessStop(input: StopQualityInputs): StopQualityResult {
   if (atrDistance !== null && atrDistance < 0.75) {
     tooTight = true;
     warnings.push(
-      `STOP MAY BE TOO TIGHT — the stop is only ${atrDistance} ATR below entry${belowStructure === false ? ' and sits above the recent swing low' : ''}.`,
+      `STOP MAY BE TOO TIGHT — the stop is only ${atrDistance} ATR below entry${belowStructure === false ? ` and sits above the ${levelName}` : ''}.`,
+    );
+    failureReasons.push(
+      `At ${atrDistance} ATR from entry, ordinary daily movement is likely to hit this stop before the idea fails.`,
     );
   }
 
@@ -446,19 +480,38 @@ export function assessStop(input: StopQualityInputs): StopQualityResult {
   if (isNum(rewardRisk) && rewardRisk < 1.5) {
     tooWide = true;
     warnings.push(`STOP MAY BE TOO WIDE — the selected stop lowers the trade's reward-to-risk to ${rewardRisk}:1.`);
+    failureReasons.push(`The stop distance leaves reward-to-risk at only ${rewardRisk}:1.`);
   }
   if (atrDistance !== null && atrDistance > 3) {
     tooWide = true;
     warnings.push(`The stop is ${atrDistance} ATR away, which is a wide risk for a swing trade.`);
+    failureReasons.push(`At ${atrDistance} ATR the stop is far wider than this stock's normal movement requires.`);
   }
 
+  const respectsStructure = belowStructure === true || nearStructure;
+  const noTechnicalBasis =
+    tooTight && belowStructure === false && !nearStructure && atrDistance !== null && atrDistance < 0.5;
+
   let quality: StopQuality;
-  if (belowStructure === true && !tooTight && !tooWide) quality = 'STRONG';
-  else if (!tooTight && !tooWide) quality = 'ACCEPTABLE';
-  else if (tooTight && belowStructure === false) quality = 'QUESTIONABLE';
+  if (noTechnicalBasis) quality = 'INVALID';
+  else if (belowStructure === true && !tooTight && !tooWide) quality = 'STRONG';
+  else if (belowStructure === null && !tooTight && !tooWide) quality = 'ACCEPTABLE';
+  else if (respectsStructure && !tooTight && !tooWide) quality = 'ACCEPTABLE';
   else quality = 'QUESTIONABLE';
 
-  return { quality, atrDistance, reasons, warnings, tooTight, tooWide };
+  if (quality === 'ACCEPTABLE' && !failureReasons.length)
+    reasons.push('The stop is a workable invalidation level, though not the cleanest available.');
+
+  return {
+    quality,
+    atrDistance,
+    reasons,
+    warnings,
+    tooTight,
+    tooWide,
+    justified: quality === 'STRONG' || quality === 'ACCEPTABLE',
+    failureReasons,
+  };
 }
 
 /** The sentence behind the "Why is the stop here?" button. */
@@ -726,6 +779,12 @@ export interface QualificationInputs {
   entryConfirmed: boolean;
   overrideRewardRisk?: boolean;
   advancedMode?: boolean;
+  /** Reasons the stop failed validation, from assessStop. */
+  stopFailureReasons?: string[];
+  /** Advanced Mode only: the user chose to override a failing stop. */
+  overrideStopQuality?: boolean;
+  /** Written justification required for a stop override. */
+  stopOverrideJustification?: string;
 }
 
 export interface QualificationCheck {
@@ -741,14 +800,41 @@ export interface QualificationResult {
   checks: QualificationCheck[];
   blocking: string[];
   skipTradeReason: string | null;
+  /** True when a failing stop was overridden — logged with the plan and journal. */
+  stopOverrideApplied: boolean;
+  /** Set when an override was attempted but the requirements were not met. */
+  stopOverrideRefusal: string | null;
 }
+
+/** The shortest justification accepted for a stop override. */
+export const STOP_OVERRIDE_MIN_CHARS = 40;
+
+export const STOP_OVERRIDE_BEGINNER_TEXT =
+  'Overrides are not available in Beginner Mode. A questionable or invalid stop has to be revised, not argued with.';
 
 /**
  * A trade only reads QUALIFIES when every required element exists. Rejecting a
  * candidate is a valid outcome, so SKIP TRADE is a first-class result.
+ *
+ * Stop quality gates the verdict: QUESTIONABLE reads NOT READY, INVALID reads
+ * DOES NOT QUALIFY. Advanced Mode can override either, but only with a written
+ * justification, and the override is recorded.
  */
 export function qualifyTrade(input: QualificationInputs): QualificationResult {
   const { risk, portfolio } = input;
+  const stopJustified = input.stopQuality === 'STRONG' || input.stopQuality === 'ACCEPTABLE';
+  const justification = (input.stopOverrideJustification ?? '').trim();
+  const overrideRequested = !!input.overrideStopQuality && !stopJustified;
+  const overrideAllowed = !!input.advancedMode;
+  const stopOverrideAccepted =
+    overrideRequested && overrideAllowed && justification.length >= STOP_OVERRIDE_MIN_CHARS;
+  const stopOverrideRefusal = !overrideRequested
+    ? null
+    : !overrideAllowed
+      ? STOP_OVERRIDE_BEGINNER_TEXT
+      : justification.length < STOP_OVERRIDE_MIN_CHARS
+        ? `Write at least ${STOP_OVERRIDE_MIN_CHARS} characters explaining why this stop is still a valid invalidation level.`
+        : null;
   const checks: QualificationCheck[] = [
     {
       key: 'setup',
@@ -779,14 +865,15 @@ export function qualifyTrade(input: QualificationInputs): QualificationResult {
     },
     {
       key: 'stop-valid',
-      label: 'Stop technically valid',
-      ok: input.stopQuality === 'STRONG' || input.stopQuality === 'ACCEPTABLE',
-      detail:
-        input.stopQuality === 'INVALID'
-          ? 'The stop is not usable for a long trade.'
-          : input.stopQuality === 'QUESTIONABLE'
-            ? 'Stop quality is questionable against structure or volatility.'
-            : `Stop quality reads ${input.stopQuality}.`,
+      label: 'Stop technically justified',
+      ok: stopJustified || stopOverrideAccepted,
+      detail: stopJustified
+        ? `Stop quality reads ${input.stopQuality}.`
+        : stopOverrideAccepted
+          ? `Stop quality reads ${input.stopQuality} — overridden in Advanced Mode with a written justification.`
+          : input.stopQuality === 'INVALID'
+            ? 'The stop is not a usable invalidation level for this setup.'
+            : 'Stop quality is questionable against structure or volatility. Review or revise the stop.',
     },
     {
       key: 'risk-per-share',
@@ -847,6 +934,7 @@ export function qualifyTrade(input: QualificationInputs): QualificationResult {
   ];
 
   const failed = checks.filter((c) => !c.ok);
+  const stopReasonText = (input.stopFailureReasons ?? []).join(' ');
   const blocking = failed.map((c) => c.detail);
 
   let verdict: Verdict;
@@ -856,8 +944,17 @@ export function qualifyTrade(input: QualificationInputs): QualificationResult {
   if (!failed.length) {
     verdict = input.entryConfirmed ? 'QUALIFIES' : 'WATCH';
     headline = input.entryConfirmed
-      ? 'Every required element is in place.'
+      ? stopOverrideAccepted
+        ? 'Every required element is in place, with the stop accepted under an Advanced Mode override.'
+        : 'Every required element is in place.'
       : 'Setup is developing but entry confirmation has not occurred.';
+  } else if (input.stopQuality === 'INVALID' && !stopOverrideAccepted) {
+    verdict = 'DOES_NOT_QUALIFY';
+    headline = 'The stop is not a technically justified invalidation level.';
+    skip = `SKIP TRADE — ${stopReasonText || 'the stop has no technical basis for this setup.'}`;
+  } else if (input.stopQuality === 'QUESTIONABLE' && !stopOverrideAccepted) {
+    verdict = 'NOT_READY';
+    headline = `Review the stop before this trade can qualify. ${stopReasonText}`.trim();
   } else if (risk.rewardRiskStatus === 'BELOW_RULE' && !(input.overrideRewardRisk && input.advancedMode)) {
     verdict = 'DOES_NOT_QUALIFY';
     headline = 'Reward-to-risk is below your minimum rule.';
@@ -874,7 +971,15 @@ export function qualifyTrade(input: QualificationInputs): QualificationResult {
     headline = `${failed.length} required ${failed.length === 1 ? 'element is' : 'elements are'} still missing.`;
   }
 
-  return { verdict, headline, checks, blocking, skipTradeReason: skip };
+  return {
+    verdict,
+    headline,
+    checks,
+    blocking,
+    skipTradeReason: skip,
+    stopOverrideApplied: stopOverrideAccepted,
+    stopOverrideRefusal,
+  };
 }
 
 /* --------------------------------------------------- rule-following score */
@@ -888,6 +993,8 @@ export interface RuleFollowingInput {
   rewardRiskRuleFollowed: boolean;
   portfolioRuleFollowed: boolean;
   journalCompleted: boolean;
+  /** False when a questionable or invalid stop was overridden. */
+  stopQualityRuleFollowed?: boolean;
 }
 
 export interface RuleFollowingResult {
@@ -902,6 +1009,7 @@ export function ruleFollowingScore(input: RuleFollowingInput): RuleFollowingResu
     { label: 'Valid setup', ok: input.validSetup },
     { label: 'Correct position size', ok: input.correctPositionSize },
     { label: 'Stop defined before entry', ok: input.stopBeforeEntry },
+    { label: 'Stop technically justified, not overridden', ok: input.stopQualityRuleFollowed !== false },
     { label: 'Stop not widened', ok: input.stopNotWidened },
     { label: 'Target defined', ok: input.targetDefined },
     { label: 'Reward-to-risk rule followed', ok: input.rewardRiskRuleFollowed },

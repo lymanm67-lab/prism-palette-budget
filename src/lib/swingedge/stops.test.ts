@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  assessStop,
   assessStopChange,
   atrStop,
   checkPortfolioRisk,
@@ -10,6 +11,8 @@ import {
   riskPerShare,
   runRiskSequence,
   structureStop,
+  STOP_OVERRIDE_BEGINNER_TEXT,
+  qualifyTrade,
   trailingSuggestions,
 } from './stops';
 
@@ -100,5 +103,70 @@ describe('stop methods', () => {
     expect(p.maxTotalOpenRisk).toBe(250);
     expect(p.projectedTotal).toBe(270);
     expect(p.exceeded).toBe(true);
+  });
+});
+
+describe('stop quality gates qualification', () => {
+  const base = (stop: number, advancedMode = false, over?: { on: boolean; text: string }) => {
+    const entry = 50;
+    const target = 56;
+    const quality = assessStop({
+      entry,
+      stop,
+      atrValue: 2,
+      structureLevel: 48.5,
+      rewardRisk: riskPerShare(entry, stop) ? (target - entry) / riskPerShare(entry, stop)! : null,
+      setup: 'PULLBACK',
+    });
+    const risk = runRiskSequence({
+      entry,
+      stop,
+      target,
+      tradingCapital: 5000,
+      riskPerTradePct: 1,
+      minRewardRisk: 2,
+    });
+    return qualifyTrade({
+      setup: 'PULLBACK',
+      entryDefined: true,
+      invalidation: 'A close below the swing low breaks the structure.',
+      stopDefined: true,
+      stopQuality: quality.quality,
+      risk,
+      portfolio: checkPortfolioRisk({ openRisk: 0, newTradeRisk: risk.plannedLoss, tradingCapital: 5000, maxPortfolioRiskPct: 6 }),
+      targetDefined: true,
+      minRewardRisk: 2,
+      earningsReviewed: true,
+      earningsAvailable: false,
+      entryConfirmed: true,
+      advancedMode,
+      stopFailureReasons: quality.failureReasons,
+      overrideStopQuality: over?.on,
+      stopOverrideJustification: over?.text,
+    });
+  };
+
+  it('a stop above structure and inside daily noise does not qualify', () => {
+    const r = base(49.9);
+    expect(r.verdict).not.toBe('QUALIFIES');
+    expect(r.stopOverrideApplied).toBe(false);
+  });
+
+  it('beginner mode cannot override a failing stop', () => {
+    const r = base(49.9, false, { on: true, text: 'x'.repeat(80) });
+    expect(r.stopOverrideApplied).toBe(false);
+    expect(r.stopOverrideRefusal).toBe(STOP_OVERRIDE_BEGINNER_TEXT);
+  });
+
+  it('advanced mode needs a written justification', () => {
+    const short = base(49.9, true, { on: true, text: 'too short' });
+    expect(short.stopOverrideApplied).toBe(false);
+    expect(short.stopOverrideRefusal).toBeTruthy();
+  });
+
+  it('a clean structural stop qualifies without an override', () => {
+    const r = base(48.2);
+    expect(r.stopOverrideApplied).toBe(false);
+    expect(r.headline).not.toMatch(/review the stop/i);
   });
 });
