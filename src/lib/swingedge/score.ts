@@ -156,23 +156,64 @@ export function scoreSymbol(symbol: string, candles: Candle[], alignment?: Align
   }
   components.push({ key: 'momentum', label: 'Momentum', points: Math.min(20, momentumPoints), max: 20, detail: momentumDetail });
 
-  // 3. Setup quality — 25 points.
-  const setupPoints = setup === 'BREAKOUT' ? 25 : setup === 'PULLBACK' ? 20 : 5;
+  // 3. Setup quality — 25 points, split into three named parts so candlestick
+  // evidence is a subcomponent rather than points layered on top of 100:
+  //   structure 10 + candlestick confirmation 7 + breakout/pullback validation 8.
+  const structurePoints = setup === 'NONE' ? 2 : 10;
+  const validationPoints = setup === 'BREAKOUT' ? 8 : setup === 'PULLBACK' ? 6 : 1;
+  const candleConf = alignment?.candleConfirmation ?? null;
+  const candlePoints = candleConf ? candleConf.setupPoints : 3;
+  const setupPoints = structurePoints + validationPoints + candlePoints;
+  const setupParts: ScoreComponent[] = [
+    {
+      key: 'setup-structure',
+      label: 'Structure',
+      points: structurePoints,
+      max: 10,
+      detail:
+        setup === 'NONE'
+          ? 'No recognisable breakout or pullback right now, so an entry price would be arbitrary.'
+          : setup === 'BREAKOUT'
+            ? 'Price has cleared its recent high with participation.'
+            : 'An uptrend has eased back near its 20-day average.',
+    },
+    {
+      key: 'setup-candle',
+      label: 'Candlestick confirmation',
+      points: candlePoints,
+      max: 7,
+      detail: candleConf
+        ? candleConf.setupDetail
+        : 'Candlestick evidence was not supplied for this read, so it is scored neutrally.',
+    },
+    {
+      key: 'setup-validation',
+      label: 'Breakout / pullback validation',
+      points: validationPoints,
+      max: 8,
+      detail:
+        setup === 'BREAKOUT'
+          ? 'The breakout is confirmed by a close above the prior range on volume.'
+          : setup === 'PULLBACK'
+            ? 'The pullback is still inside normal depth for the trend.'
+            : 'There is nothing to validate without a defined setup.',
+    },
+  ];
   components.push({
     key: 'setup',
     label: 'Setup quality',
     points: setupPoints,
     max: 25,
-    detail:
-      setup === 'BREAKOUT'
-        ? 'Price has cleared its recent high with participation.'
-        : setup === 'PULLBACK'
-          ? 'An uptrend has eased back near its 20-day average.'
-          : 'No recognisable breakout or pullback right now.',
+    detail: setupParts.map((p) => `${p.label} ${p.points}/${p.max}`).join(' · '),
   });
   if (setup === 'BREAKOUT') reasons.push('Price broke above its recent range.');
   if (setup === 'PULLBACK') reasons.push('Uptrend has pulled back to a normal buying area.');
   if (setup === 'NONE') risks.push('There is no defined setup, so an entry price would be arbitrary.');
+  if (candleConf?.best && candleConf.setupPoints >= 4) {
+    reasons.push(`${candleConf.best.pattern.name} ${candleConf.best.location} backs the setup.`);
+  }
+  candleConf?.warnings.forEach((w) => risks.push(w));
+
 
   // 4. Volume — 15 points.
   let volumePoints = 0;
