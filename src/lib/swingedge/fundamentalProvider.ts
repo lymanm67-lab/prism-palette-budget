@@ -134,6 +134,80 @@ export class TwelveDataFundamentals implements FundamentalDataProvider {
   }
 }
 
+/**
+ * Alpha Vantage is the primary source for company and fund figures. The key
+ * stays server-side inside the existing market-data function, which reads a
+ * shared saved copy first and only then spends a live request. A daily-limit hit
+ * falls back to the saved copy instead of failing.
+ */
+export class AlphaVantageFundamentals implements FundamentalDataProvider {
+  kind: FundamentalProviderKind = 'ALPHA_VANTAGE';
+
+  constructor(private options: { depth?: 'basic' | 'full'; force?: boolean } = {}) {}
+
+  supports(capability: FundamentalCapability): boolean {
+    return capability !== 'earningsCalendar';
+  }
+
+  async getBundle(symbol: string, assetType: 'STOCK' | 'ETF'): Promise<FundamentalBundle> {
+    try {
+      const { data, error } = await supabase.functions.invoke('market-data', {
+        body: {
+          action: 'fundamentals',
+          symbol: symbol.toUpperCase(),
+          assetType,
+          depth: this.options.depth ?? 'basic',
+          force: this.options.force ?? false,
+        },
+      });
+      if (error) throw error;
+      const payload = (data ?? {}) as {
+        error?: string;
+        assetType?: 'STOCK' | 'ETF';
+        profile?: CompanyProfile | null;
+        metrics?: FundamentalMetrics;
+        etf?: EtfMetrics | null;
+        as_of?: string | null;
+        periods?: number;
+        cached?: boolean;
+        stale?: boolean;
+        note?: string | null;
+      };
+      if (payload.error) return emptyBundle(symbol, assetType, payload.error);
+      const metrics = payload.metrics ?? {};
+      const resolvedType = payload.assetType ?? assetType;
+      const etf = resolvedType === 'ETF' ? (payload.etf ?? {}) : null;
+      const hasAny =
+        Object.values(metrics).some((v) => v !== null && v !== undefined) ||
+        (etf && Object.keys(etf).length > 0);
+      if (!hasAny) {
+        return emptyBundle(symbol, resolvedType, payload.note ?? FUNDAMENTAL_UNAVAILABLE_TEXT);
+      }
+      return {
+        symbol: symbol.toUpperCase(),
+        assetType: resolvedType,
+        profile: payload.profile ?? null,
+        metrics,
+        etf,
+        mode: payload.cached ? 'CACHED' : 'LIVE',
+        sources: ['ALPHA_VANTAGE'],
+        asOf: payload.as_of ?? null,
+        periodsAvailable: payload.periods ?? 1,
+        unavailableReason: payload.note ?? null,
+        missingCapabilities: [],
+      };
+    } catch (err) {
+      return emptyBundle(
+        symbol,
+        assetType,
+        err instanceof Error
+          ? `Company figures could not be fetched (${err.message}). You can enter them by hand.`
+          : FUNDAMENTAL_UNAVAILABLE_TEXT,
+      );
+    }
+  }
+}
+
 /** Hand-entered figures, stored per household and clearly labelled as manual. */
 export class ManualFundamentals implements FundamentalDataProvider {
   kind: FundamentalProviderKind = 'MANUAL_DATA';
