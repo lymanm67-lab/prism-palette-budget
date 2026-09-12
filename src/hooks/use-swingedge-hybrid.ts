@@ -117,7 +117,7 @@ export function useHybridAnalysis(symbol: string | null, assetTypeHint?: 'STOCK'
           .maybeSingle(),
       ]);
 
-      const assetType: 'STOCK' | 'ETF' =
+      let assetType: 'STOCK' | 'ETF' =
         assetTypeHint ??
         ((directory.data?.asset_type as string | undefined)?.toUpperCase() === 'ETF' ? 'ETF' : 'STOCK');
 
@@ -131,9 +131,7 @@ export function useHybridAnalysis(symbol: string | null, assetTypeHint?: 'STOCK'
       // Hand entry is the fallback, never the first stop.
       const manualProvider = new ManualFundamentals(householdId);
       const [alphaBundle, manualBundle] = await Promise.all([
-        mode === 'DEMO'
-          ? Promise.resolve(null)
-          : new AlphaVantageFundamentals().getBundle(sym, assetType),
+        mode === 'DEMO' ? Promise.resolve(null) : new AlphaVantageFundamentals().getBundle(sym, assetType),
         manualProvider.getBundle(sym, assetType),
       ]);
       let providerBundle =
@@ -144,6 +142,24 @@ export function useHybridAnalysis(symbol: string | null, assetTypeHint?: 'STOCK'
         providerBundle = alphaBundle; // keep the clearer Alpha Vantage explanation
       }
       const { bundle, conflictingMetrics } = mergeBundles(providerBundle, manualBundle);
+
+      // The data provider is the authority on what a symbol is. If the directory
+      // said STOCK but the provider reports a fund, treat it as a fund from here
+      // on so every ETF is scored the same way, and correct the directory.
+      if (!assetTypeHint && providerBundle.assetType === 'ETF' && assetType !== 'ETF') {
+        assetType = 'ETF';
+        void supabase
+          .from('se_market_symbols')
+          .upsert(
+            {
+              symbol: sym,
+              name: bundle.profile?.name ?? directory.data?.name ?? sym,
+              asset_type: 'ETF',
+            },
+            { onConflict: 'symbol' },
+          )
+          .then(() => undefined);
+      }
 
       const sectorText = bundle.profile?.sector ?? null;
       const profile = profileFor(sectorText, bundle.profile?.industry ?? null);
