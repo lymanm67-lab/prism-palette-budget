@@ -33,8 +33,13 @@ export interface TradingSettings {
   commission_per_trade: number;
   signal_max_age_days: number;
   breaker_consecutive_losses: number;
+  /** Loss ceilings held as R multiples; dollars are derived from the balance. */
+  breaker_daily_loss_r: number;
+  breaker_weekly_loss_r: number;
+  /** Legacy fixed-dollar ceilings, kept as a fallback only. */
   breaker_daily_loss_limit: number;
   breaker_weekly_loss_limit: number;
+
   training_min_paper_trades: number;
   training_mode_enabled: boolean;
 }
@@ -58,8 +63,11 @@ const DEFAULT_SETTINGS: TradingSettings = {
   commission_per_trade: 0,
   signal_max_age_days: 3,
   breaker_consecutive_losses: 3,
+  breaker_daily_loss_r: 2,
+  breaker_weekly_loss_r: 5,
   breaker_daily_loss_limit: 0,
   breaker_weekly_loss_limit: 0,
+
   training_min_paper_trades: 20,
   training_mode_enabled: false,
 };
@@ -124,6 +132,9 @@ export function useTradingSettings() {
           'breaker_weekly_loss_limit',
           DEFAULT_SETTINGS.breaker_weekly_loss_limit,
         ),
+        breaker_daily_loss_r: num('breaker_daily_loss_r', DEFAULT_SETTINGS.breaker_daily_loss_r),
+        breaker_weekly_loss_r: num('breaker_weekly_loss_r', DEFAULT_SETTINGS.breaker_weekly_loss_r),
+
         training_min_paper_trades: num(
           'training_min_paper_trades',
           DEFAULT_SETTINGS.training_min_paper_trades,

@@ -11,7 +11,16 @@ import { useHousehold } from '@/contexts/HouseholdContext';
 import { useTradingSettings } from '@/hooks/use-swingedge';
 import { usePaperTradeManagement } from '@/hooks/use-swingedge-stops';
 import { useTradeJournal } from '@/hooks/use-swingedge-lists';
-import { assessBreaker, tallyFromTrades, weekStartOf } from '@/lib/swingedge/circuitBreaker';
+import {
+  assessBreaker,
+  consecutiveLosingTrades,
+  losingTradesIn,
+  oneRFrom,
+  tallyFromTrades,
+  weekStartOf,
+  type BreakerKey,
+} from '@/lib/swingedge/circuitBreaker';
+
 import {
   TRAINING_WEEKS,
   assessGraduation,
@@ -39,7 +48,7 @@ export function useCircuitBreaker() {
   const householdId = household?.id;
   const qc = useQueryClient();
   const { settings } = useTradingSettings();
-  const { trades } = usePaperTradeManagement();
+  const { trades, openRisk } = usePaperTradeManagement();
 
   const stateQuery = useQuery({
     queryKey: ['se-breaker-state', householdId],
@@ -51,7 +60,7 @@ export function useCircuitBreaker() {
         .eq('household_id', householdId!)
         .maybeSingle();
       if (error) throw error;
-      return data;
+      return data as Record<string, unknown> | null;
     },
   });
 
@@ -59,48 +68,96 @@ export function useCircuitBreaker() {
   const weekStart = weekStartOf(day);
   const tally = useMemo(() => tallyFromTrades(trades, day, weekStart), [trades, day, weekStart]);
 
-  // A review only clears the pause that was live when it was written. Once a new
-  // loss lands, the tally moves on and the breaker can trip again.
-  const reviewedAt = stateQuery.data?.review_completed_at ?? null;
-  const reviewCovers = useMemo(() => {
-    if (!reviewedAt) return false;
-    const reviewedDay = reviewedAt.slice(0, 10);
-    const lossesSince = trades.filter(
-      (t) => t.status === 'CLOSED' && (t.realized_pl ?? 0) < 0 && (t.exit_date ?? '') > reviewedDay,
-    );
-    return lossesSince.length === 0;
-  }, [reviewedAt, trades]);
+  // 1R is the maximum planned risk on one trade, recalculated from whatever the
+  // trading account holds now. Every dollar ceiling below follows from it.
+  const oneR = oneRFrom(settings.trading_capital, settings.risk_per_trade_pct);
+  const heatPct =
+    settings.trading_capital > 0 ? round2((openRisk / settings.trading_capital) * 100) : 0;
 
-  const assessment = useMemo(
-    () =>
-      assessBreaker({
-        tally,
-        limits: {
-          consecutiveLosses: settings.breaker_consecutive_losses,
-          dailyLossLimit: settings.breaker_daily_loss_limit,
-          weeklyLossLimit: settings.breaker_weekly_loss_limit,
-        },
-        reviewCompleted: reviewCovers,
-      }),
-    [tally, settings, reviewCovers],
+  const row = stateQuery.data ?? null;
+  const asDay = (v: unknown) => (typeof v === 'string' ? v.slice(0, 10) : null);
+  const dailyReviewAt = asDay(row?.daily_review_at);
+  const weeklyReviewAt = asDay(row?.weekly_review_at);
+  const consecutiveReviewAt =
+    typeof row?.consecutive_review_at === 'string' ? (row.consecutive_review_at as string) : null;
+  const legacyReviewAt = asDay(row?.review_completed_at);
+
+  // Each review clears only its own breaker, and only for the period it covers.
+  const reviews = useMemo(() => {
+    const consecutiveDay = consecutiveReviewAt?.slice(0, 10) ?? legacyReviewAt;
+    const lossesSinceConsecutive = consecutiveDay
+      ? trades.filter(
+          (t) =>
+            t.status === 'CLOSED' &&
+            (t.realized_pl ?? 0) < 0 &&
+            (t.exit_date ?? '') > consecutiveDay,
+        ).length
+      : 0;
+    return {
+      daily: (dailyReviewAt ?? legacyReviewAt) === day,
+      weekly: (weeklyReviewAt ?? legacyReviewAt ?? '') >= weekStart,
+      consecutive: !!consecutiveDay && lossesSinceConsecutive === 0,
+    };
+  }, [dailyReviewAt, weeklyReviewAt, consecutiveReviewAt, legacyReviewAt, day, weekStart, trades]);
+
+  const limits = useMemo(
+    () => ({
+      consecutiveLosses: settings.breaker_consecutive_losses,
+      dailyLossR: settings.breaker_daily_loss_r,
+      weeklyLossR: settings.breaker_weekly_loss_r,
+      dailyLossLimit: settings.breaker_daily_loss_limit,
+      weeklyLossLimit: settings.breaker_weekly_loss_limit,
+      maxPortfolioHeatPct: settings.max_portfolio_risk_pct,
+      accountBalance: settings.trading_capital,
+      oneR,
+    }),
+    [settings, oneR],
   );
 
-  const completeReview = useMutation({
-    mutationFn: async (notes: string) => {
+  const assessment = useMemo(
+    () => assessBreaker({ tally: { ...tally, portfolioHeatPct: heatPct }, limits, reviews }),
+    [tally, limits, reviews, heatPct],
+  );
+
+  // The trades behind each figure, so a pause can show what it is about.
+  const contributing = useMemo(
+    () => ({
+      daily: losingTradesIn(trades, day, day),
+      weekly: losingTradesIn(trades, weekStart, day),
+      consecutive: consecutiveLosingTrades(trades),
+    }),
+    [trades, day, weekStart],
+  );
+
+  const writeReview = useMutation({
+    mutationFn: async (input: {
+      breaker: BreakerKey;
+      notes: string;
+      answers?: Record<string, string>;
+    }) => {
       if (!householdId) throw new Error('No household');
-      const { error } = await supabase.from('se_circuit_breaker_state').upsert(
-        {
-          household_id: householdId,
-          state: assessment.state,
-          consecutive_losses: tally.consecutiveLosses,
-          daily_loss: tally.dailyLoss,
-          weekly_loss: tally.weeklyLoss,
-          reason: notes,
-          triggered_at: assessment.tripped ? new Date().toISOString() : null,
-          review_completed_at: new Date().toISOString(),
-        },
-        { onConflict: 'household_id' },
-      );
+      const now = new Date().toISOString();
+      const patch = {
+        household_id: householdId,
+        state: assessment.state,
+        consecutive_losses: tally.consecutiveLosses,
+        daily_loss: tally.dailyLoss,
+        weekly_loss: tally.weeklyLoss,
+        reason: input.notes,
+        triggered_at: assessment.tripped ? now : null,
+        review_completed_at: now,
+        daily_review_at: input.breaker === 'DAILY' ? now : (dailyReviewAt ? (row?.daily_review_at as string) : null),
+        weekly_review_at: input.breaker === 'WEEKLY' ? now : (weeklyReviewAt ? (row?.weekly_review_at as string) : null),
+        consecutive_review_at: input.breaker === 'CONSECUTIVE' ? now : consecutiveReviewAt,
+        consecutive_review_answers:
+          input.breaker === 'CONSECUTIVE'
+            ? (input.answers ?? null)
+            : ((row?.consecutive_review_answers as Record<string, string> | null) ?? null),
+      };
+      const { error } = await supabase
+        .from('se_circuit_breaker_state')
+        .upsert(patch, { onConflict: 'household_id' });
+
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['se-breaker-state'] }),
@@ -109,18 +166,34 @@ export function useCircuitBreaker() {
   return {
     assessment,
     tally,
+    oneR,
+    heatPct,
     limits: {
-      consecutiveLosses: settings.breaker_consecutive_losses,
-      dailyLossLimit: settings.breaker_daily_loss_limit,
-      weeklyLossLimit: settings.breaker_weekly_loss_limit,
+      consecutiveLosses: limits.consecutiveLosses,
+      dailyLossR: limits.dailyLossR,
+      weeklyLossR: limits.weeklyLossR,
+      dailyLossLimit: assessment.breakers.daily.limit,
+      weeklyLossLimit: assessment.breakers.weekly.limit,
+      maxPortfolioHeatPct: limits.maxPortfolioHeatPct,
     },
-    lastReview: stateQuery.data?.reason ?? null,
-    reviewedAt,
+    contributing,
+    lastReview: (row?.reason as string) ?? null,
+    lastAnswers: (row?.consecutive_review_answers as Record<string, string> | null) ?? null,
+    reviewedAt: (row?.review_completed_at as string) ?? null,
     isLoading: stateQuery.isLoading,
-    completeReview: completeReview.mutateAsync,
-    isSaving: completeReview.isPending,
+    /** Writes the review for one breaker. Legacy callers pass a plain string. */
+    completeReview: (
+      input: string | { breaker: BreakerKey; notes: string; answers?: Record<string, string> },
+    ) =>
+      writeReview.mutateAsync(
+        typeof input === 'string'
+          ? { breaker: assessment.reviewsRequired[0] ?? 'CONSECUTIVE', notes: input }
+          : input,
+      ),
+    isSaving: writeReview.isPending,
   };
 }
+
 
 /* --------------------------------------------------------- daily checklist */
 

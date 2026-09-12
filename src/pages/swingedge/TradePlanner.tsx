@@ -24,6 +24,8 @@ import CollapsibleSection from '@/components/swingedge/CollapsibleSection';
 import RiskFirstCard, { GapRiskCard, StopRuleCard } from '@/components/swingedge/RiskFirstCard';
 import { useTradingSettings, useTradingTitle } from '@/hooks/use-swingedge';
 import { usePaperTradeManagement, useSymbolLevels, useTradePlans } from '@/hooks/use-swingedge-stops';
+import { useCircuitBreaker } from '@/hooks/use-swingedge-training';
+
 import { usePortfolioHeat } from '@/hooks/use-swingedge-heat';
 import { VERDICT_LABEL, type Verdict } from '@/lib/swingedge/types';
 import type { SetupState } from '@/lib/swingedge/indicators';
@@ -97,6 +99,10 @@ export default function TradePlanner() {
   const { settings, save: saveSettings } = useTradingSettings();
   const { plans, savePlan, deletePlan, openPaperTrade, isSaving } = useTradePlans();
   const { openRisk } = usePaperTradeManagement();
+  // Breakers are independent of the plan itself: a plan can be sound while the
+  // day or the week is paused, so the block sits on execution, not on planning.
+  const breaker = useCircuitBreaker();
+
 
   const [symbol, setSymbol] = useState((params.get('symbol') ?? '').toUpperCase());
   const levels = useSymbolLevels(symbol);
@@ -995,10 +1001,18 @@ export default function TradePlanner() {
                         <Button
                           size="sm"
                           variant="outline"
-                          disabled={isSaving}
+                          disabled={isSaving || !breaker.assessment.canOpenNewTrade}
                           onClick={async () => {
+                            if (!breaker.assessment.canOpenNewTrade) {
+                              toast.error(
+                                `${breaker.assessment.headline} — finish the review on the Training page before opening another paper trade.`,
+                                { duration: 9000 },
+                              );
+                              return;
+                            }
                             try {
                               await openPaperTrade(p);
+
                               toast.success('Paper trade opened with the plan locked in');
                             } catch (err) {
                               toast.error(

@@ -11387,8 +11387,11 @@ export type Database = {
       se_circuit_breaker_state: {
         Row: {
           consecutive_losses: number
+          consecutive_review_answers: Json | null
+          consecutive_review_at: string | null
           created_at: string
           daily_loss: number
+          daily_review_at: string | null
           household_id: string
           id: string
           reason: string | null
@@ -11397,11 +11400,15 @@ export type Database = {
           triggered_at: string | null
           updated_at: string
           weekly_loss: number
+          weekly_review_at: string | null
         }
         Insert: {
           consecutive_losses?: number
+          consecutive_review_answers?: Json | null
+          consecutive_review_at?: string | null
           created_at?: string
           daily_loss?: number
+          daily_review_at?: string | null
           household_id: string
           id?: string
           reason?: string | null
@@ -11410,11 +11417,15 @@ export type Database = {
           triggered_at?: string | null
           updated_at?: string
           weekly_loss?: number
+          weekly_review_at?: string | null
         }
         Update: {
           consecutive_losses?: number
+          consecutive_review_answers?: Json | null
+          consecutive_review_at?: string | null
           created_at?: string
           daily_loss?: number
+          daily_review_at?: string | null
           household_id?: string
           id?: string
           reason?: string | null
@@ -11423,6 +11434,7 @@ export type Database = {
           triggered_at?: string | null
           updated_at?: string
           weekly_loss?: number
+          weekly_review_at?: string | null
         }
         Relationships: []
       }
@@ -12697,7 +12709,9 @@ export type Database = {
           api_provider: string
           breaker_consecutive_losses: number
           breaker_daily_loss_limit: number
+          breaker_daily_loss_r: number
           breaker_weekly_loss_limit: number
+          breaker_weekly_loss_r: number
           commission_per_trade: number
           correlation_high: number
           correlation_lookback_days: number
@@ -12725,7 +12739,9 @@ export type Database = {
           api_provider?: string
           breaker_consecutive_losses?: number
           breaker_daily_loss_limit?: number
+          breaker_daily_loss_r?: number
           breaker_weekly_loss_limit?: number
+          breaker_weekly_loss_r?: number
           commission_per_trade?: number
           correlation_high?: number
           correlation_lookback_days?: number
@@ -12753,7 +12769,9 @@ export type Database = {
           api_provider?: string
           breaker_consecutive_losses?: number
           breaker_daily_loss_limit?: number
+          breaker_daily_loss_r?: number
           breaker_weekly_loss_limit?: number
+          breaker_weekly_loss_r?: number
           commission_per_trade?: number
           correlation_high?: number
           correlation_lookback_days?: number
