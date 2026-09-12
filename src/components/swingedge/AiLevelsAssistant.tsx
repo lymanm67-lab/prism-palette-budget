@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { Bot, Loader2, Sparkles } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Bot, Loader2, Pause, Play, Sparkles, Square, Volume2 } from 'lucide-react';
+import { useTTS } from '@/hooks/use-tts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -90,6 +91,7 @@ export default function AiLevelsAssistant({
       setError('Enter a symbol first.');
       return;
     }
+    window.speechSynthesis?.cancel();
     setLoading(true);
     setError(null);
     setResult(null);
@@ -110,6 +112,36 @@ export default function AiLevelsAssistant({
   const ai = result?.ai_levels ?? null;
   const agreement = (result?.agreement ?? '').toLowerCase();
   const confidence = (result?.confidence ?? '').toLowerCase();
+
+  const { speak, pause, resume, stop, isSpeaking, isPaused } = useTTS();
+
+  useEffect(() => stop, [stop]);
+
+  const narration = () => {
+    if (!result) return '';
+    const parts: string[] = [];
+    parts.push(`Assistant read for ${active || 'this symbol'} on the ${page}.`);
+    if (agreement) parts.push(`${AGREEMENT_LABEL[agreement] ?? agreement}.`);
+    if (confidence) parts.push(`Confidence in the data: ${confidence}.`);
+    if (result.rules_explanation) parts.push(`What the app's levels mean. ${result.rules_explanation}`);
+    if (ai) {
+      parts.push(
+        `The assistant's own read. Entry ${money(ai.entry)}, stop ${money(ai.stop)}, target ${money(ai.target)}` +
+          (ai.reward_risk && Number.isFinite(ai.reward_risk)
+            ? `, reward to risk ${Number(ai.reward_risk).toFixed(1)} to 1.`
+            : '.'),
+      );
+      if (ai.basis) parts.push(ai.basis);
+    }
+    if (result.comparison) parts.push(`Which read to act on. ${result.comparison}`);
+    if (result.confidence_reason) parts.push(`Why this confidence level. ${result.confidence_reason}`);
+    if (result.if_wrong) parts.push(`If this read is wrong. ${result.if_wrong}`);
+    if (result.risks?.length) parts.push(`What could go wrong. ${result.risks.filter(Boolean).join('. ')}.`);
+    if (result.checks?.length) parts.push(`Check before you act. ${result.checks.filter(Boolean).join('. ')}.`);
+    parts.push('This is study material for paper trading, not financial advice.');
+    return parts.join(' ');
+  };
+
 
   return (
     <Card className={className}>
@@ -192,6 +224,26 @@ export default function AiLevelsAssistant({
                 <Badge variant="outline" className={CONFIDENCE_TONE[confidence]}>
                   Confidence in the data: {confidence}
                 </Badge>
+              )}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              {!isSpeaking ? (
+                <Button variant="outline" size="sm" onClick={() => speak(narration())}>
+                  <Volume2 className="mr-2 h-4 w-4" />
+                  Listen to this read
+                </Button>
+              ) : (
+                <>
+                  <Button variant="outline" size="sm" onClick={isPaused ? resume : pause}>
+                    {isPaused ? <Play className="mr-2 h-4 w-4" /> : <Pause className="mr-2 h-4 w-4" />}
+                    {isPaused ? 'Resume' : 'Pause'}
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={stop}>
+                    <Square className="mr-2 h-4 w-4" />
+                    Stop
+                  </Button>
+                </>
               )}
             </div>
 
