@@ -11384,6 +11384,90 @@ export type Database = {
           },
         ]
       }
+      se_circuit_breaker_state: {
+        Row: {
+          consecutive_losses: number
+          created_at: string
+          daily_loss: number
+          household_id: string
+          id: string
+          reason: string | null
+          review_completed_at: string | null
+          state: string
+          triggered_at: string | null
+          updated_at: string
+          weekly_loss: number
+        }
+        Insert: {
+          consecutive_losses?: number
+          created_at?: string
+          daily_loss?: number
+          household_id: string
+          id?: string
+          reason?: string | null
+          review_completed_at?: string | null
+          state?: string
+          triggered_at?: string | null
+          updated_at?: string
+          weekly_loss?: number
+        }
+        Update: {
+          consecutive_losses?: number
+          created_at?: string
+          daily_loss?: number
+          household_id?: string
+          id?: string
+          reason?: string | null
+          review_completed_at?: string | null
+          state?: string
+          triggered_at?: string | null
+          updated_at?: string
+          weekly_loss?: number
+        }
+        Relationships: []
+      }
+      se_daily_checklists: {
+        Row: {
+          checklist_date: string
+          created_at: string
+          earnings_checked: boolean
+          heat_room_checked: boolean
+          household_id: string
+          id: string
+          market_condition_checked: boolean
+          notes: string | null
+          size_calculated: boolean
+          stop_defined: boolean
+          updated_at: string
+        }
+        Insert: {
+          checklist_date?: string
+          created_at?: string
+          earnings_checked?: boolean
+          heat_room_checked?: boolean
+          household_id: string
+          id?: string
+          market_condition_checked?: boolean
+          notes?: string | null
+          size_calculated?: boolean
+          stop_defined?: boolean
+          updated_at?: string
+        }
+        Update: {
+          checklist_date?: string
+          created_at?: string
+          earnings_checked?: boolean
+          heat_room_checked?: boolean
+          household_id?: string
+          id?: string
+          market_condition_checked?: boolean
+          notes?: string | null
+          size_calculated?: boolean
+          stop_defined?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       se_etf_quality_scores: {
         Row: {
           advanced_product: boolean
@@ -11636,6 +11720,54 @@ export type Database = {
           used_generic_model?: boolean
           valid_until?: string | null
           valuation_class?: string | null
+        }
+        Relationships: []
+      }
+      se_heat_history: {
+        Row: {
+          captured_at: string
+          created_at: string
+          heat_pct: number
+          household_id: string
+          id: string
+          invested_capital: number
+          locked_profit: number
+          max_heat_dollars: number
+          open_positions: number
+          open_risk: number
+          original_risk: number
+          sector_breakdown: Json
+          trading_capital: number
+        }
+        Insert: {
+          captured_at?: string
+          created_at?: string
+          heat_pct?: number
+          household_id: string
+          id?: string
+          invested_capital?: number
+          locked_profit?: number
+          max_heat_dollars?: number
+          open_positions?: number
+          open_risk?: number
+          original_risk?: number
+          sector_breakdown?: Json
+          trading_capital?: number
+        }
+        Update: {
+          captured_at?: string
+          created_at?: string
+          heat_pct?: number
+          household_id?: string
+          id?: string
+          invested_capital?: number
+          locked_profit?: number
+          max_heat_dollars?: number
+          open_positions?: number
+          open_risk?: number
+          original_risk?: number
+          sector_breakdown?: Json
+          trading_capital?: number
         }
         Relationships: []
       }
@@ -11980,14 +12112,18 @@ export type Database = {
       }
       se_paper_trades: {
         Row: {
+          actual_simulated_loss: number | null
           breakeven_trigger: string | null
           created_at: string
+          current_price: number | null
           earnings_ack: boolean
           entry_date: string
           entry_price: number
+          execution_score: number | null
           exit_date: string | null
           exit_price: number | null
           exit_reason: string | null
+          gap_difference: number | null
           household_id: string
           id: string
           initial_dollar_risk: number | null
@@ -11997,10 +12133,18 @@ export type Database = {
           original_shares: number | null
           original_stop: number | null
           original_target: number | null
+          outcome_class: string | null
+          planned_loss: number | null
+          planned_stop: number | null
           realized_pl: number | null
+          revalidated_at: string | null
           rules_followed: boolean | null
+          sector: string | null
           setup_type: string | null
           shares: number
+          signal_quality: string | null
+          simulated_fill: number | null
+          slippage: number | null
           status: string
           stop_price: number
           stop_strategy: string | null
@@ -12011,14 +12155,18 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          actual_simulated_loss?: number | null
           breakeven_trigger?: string | null
           created_at?: string
+          current_price?: number | null
           earnings_ack?: boolean
           entry_date?: string
           entry_price: number
+          execution_score?: number | null
           exit_date?: string | null
           exit_price?: number | null
           exit_reason?: string | null
+          gap_difference?: number | null
           household_id: string
           id?: string
           initial_dollar_risk?: number | null
@@ -12028,10 +12176,18 @@ export type Database = {
           original_shares?: number | null
           original_stop?: number | null
           original_target?: number | null
+          outcome_class?: string | null
+          planned_loss?: number | null
+          planned_stop?: number | null
           realized_pl?: number | null
+          revalidated_at?: string | null
           rules_followed?: boolean | null
+          sector?: string | null
           setup_type?: string | null
           shares: number
+          signal_quality?: string | null
+          simulated_fill?: number | null
+          slippage?: number | null
           status?: string
           stop_price: number
           stop_strategy?: string | null
@@ -12042,14 +12198,18 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          actual_simulated_loss?: number | null
           breakeven_trigger?: string | null
           created_at?: string
+          current_price?: number | null
           earnings_ack?: boolean
           entry_date?: string
           entry_price?: number
+          execution_score?: number | null
           exit_date?: string | null
           exit_price?: number | null
           exit_reason?: string | null
+          gap_difference?: number | null
           household_id?: string
           id?: string
           initial_dollar_risk?: number | null
@@ -12059,10 +12219,18 @@ export type Database = {
           original_shares?: number | null
           original_stop?: number | null
           original_target?: number | null
+          outcome_class?: string | null
+          planned_loss?: number | null
+          planned_stop?: number | null
           realized_pl?: number | null
+          revalidated_at?: string | null
           rules_followed?: boolean | null
+          sector?: string | null
           setup_type?: string | null
           shares?: number
+          signal_quality?: string | null
+          simulated_fill?: number | null
+          slippage?: number | null
           status?: string
           stop_price?: number
           stop_strategy?: string | null
@@ -12125,6 +12293,75 @@ export type Database = {
           severity?: string
           symbol?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      se_signal_revalidations: {
+        Row: {
+          correlation_risk: string | null
+          created_at: string
+          current_price: number | null
+          household_id: string
+          hybrid_score: number | null
+          id: string
+          market_regime: string | null
+          new_entry_high: number | null
+          new_entry_low: number | null
+          new_signal: string
+          portfolio_heat_pct: number | null
+          previous_entry_high: number | null
+          previous_entry_low: number | null
+          previous_signal: string | null
+          reason: string
+          relative_strength: string | null
+          risk_score: number | null
+          symbol: string
+          technical_score: number | null
+          triggers: Json
+        }
+        Insert: {
+          correlation_risk?: string | null
+          created_at?: string
+          current_price?: number | null
+          household_id: string
+          hybrid_score?: number | null
+          id?: string
+          market_regime?: string | null
+          new_entry_high?: number | null
+          new_entry_low?: number | null
+          new_signal: string
+          portfolio_heat_pct?: number | null
+          previous_entry_high?: number | null
+          previous_entry_low?: number | null
+          previous_signal?: string | null
+          reason: string
+          relative_strength?: string | null
+          risk_score?: number | null
+          symbol: string
+          technical_score?: number | null
+          triggers?: Json
+        }
+        Update: {
+          correlation_risk?: string | null
+          created_at?: string
+          current_price?: number | null
+          household_id?: string
+          hybrid_score?: number | null
+          id?: string
+          market_regime?: string | null
+          new_entry_high?: number | null
+          new_entry_low?: number | null
+          new_signal?: string
+          portfolio_heat_pct?: number | null
+          previous_entry_high?: number | null
+          previous_entry_low?: number | null
+          previous_signal?: string | null
+          reason?: string
+          relative_strength?: string | null
+          risk_score?: number | null
+          symbol?: string
+          technical_score?: number | null
+          triggers?: Json
         }
         Relationships: []
       }
@@ -12383,19 +12620,102 @@ export type Database = {
           },
         ]
       }
+      se_trade_snapshots: {
+        Row: {
+          candle_context: Json
+          captured_at: string
+          correlation_band: string | null
+          created_at: string
+          evidence: Json
+          household_id: string
+          hybrid_score: number | null
+          id: string
+          market_regime: string | null
+          paper_trade_id: string | null
+          portfolio_heat_pct: number | null
+          quality_score: number | null
+          rationale: string | null
+          relative_strength: string | null
+          risk_score: number | null
+          sector_heat_pct: number | null
+          signal_state: string | null
+          stop_justification: string | null
+          symbol: string
+          technical_score: number | null
+        }
+        Insert: {
+          candle_context?: Json
+          captured_at?: string
+          correlation_band?: string | null
+          created_at?: string
+          evidence?: Json
+          household_id: string
+          hybrid_score?: number | null
+          id?: string
+          market_regime?: string | null
+          paper_trade_id?: string | null
+          portfolio_heat_pct?: number | null
+          quality_score?: number | null
+          rationale?: string | null
+          relative_strength?: string | null
+          risk_score?: number | null
+          sector_heat_pct?: number | null
+          signal_state?: string | null
+          stop_justification?: string | null
+          symbol: string
+          technical_score?: number | null
+        }
+        Update: {
+          candle_context?: Json
+          captured_at?: string
+          correlation_band?: string | null
+          created_at?: string
+          evidence?: Json
+          household_id?: string
+          hybrid_score?: number | null
+          id?: string
+          market_regime?: string | null
+          paper_trade_id?: string | null
+          portfolio_heat_pct?: number | null
+          quality_score?: number | null
+          rationale?: string | null
+          relative_strength?: string | null
+          risk_score?: number | null
+          sector_heat_pct?: number | null
+          signal_state?: string | null
+          stop_justification?: string | null
+          symbol?: string
+          technical_score?: number | null
+        }
+        Relationships: []
+      }
       se_trading_settings: {
         Row: {
           advanced_mode: boolean
           api_daily_limit: number
           api_minute_limit: number
           api_provider: string
+          breaker_consecutive_losses: number
+          breaker_daily_loss_limit: number
+          breaker_weekly_loss_limit: number
+          commission_per_trade: number
+          correlation_high: number
+          correlation_lookback_days: number
+          correlation_moderate: number
+          correlation_very_high: number
           created_at: string
           data_mode: string
           household_id: string
           id: string
+          max_correlated_risk_pct: number
           max_portfolio_risk_pct: number
+          max_sector_capital_exposure_pct: number
+          max_sector_heat_pct: number
           risk_per_trade_pct: number
+          signal_max_age_days: number
           trading_capital: number
+          training_min_paper_trades: number
+          training_mode_enabled: boolean
           updated_at: string
         }
         Insert: {
@@ -12403,13 +12723,27 @@ export type Database = {
           api_daily_limit?: number
           api_minute_limit?: number
           api_provider?: string
+          breaker_consecutive_losses?: number
+          breaker_daily_loss_limit?: number
+          breaker_weekly_loss_limit?: number
+          commission_per_trade?: number
+          correlation_high?: number
+          correlation_lookback_days?: number
+          correlation_moderate?: number
+          correlation_very_high?: number
           created_at?: string
           data_mode?: string
           household_id: string
           id?: string
+          max_correlated_risk_pct?: number
           max_portfolio_risk_pct?: number
+          max_sector_capital_exposure_pct?: number
+          max_sector_heat_pct?: number
           risk_per_trade_pct?: number
+          signal_max_age_days?: number
           trading_capital?: number
+          training_min_paper_trades?: number
+          training_mode_enabled?: boolean
           updated_at?: string
         }
         Update: {
@@ -12417,13 +12751,27 @@ export type Database = {
           api_daily_limit?: number
           api_minute_limit?: number
           api_provider?: string
+          breaker_consecutive_losses?: number
+          breaker_daily_loss_limit?: number
+          breaker_weekly_loss_limit?: number
+          commission_per_trade?: number
+          correlation_high?: number
+          correlation_lookback_days?: number
+          correlation_moderate?: number
+          correlation_very_high?: number
           created_at?: string
           data_mode?: string
           household_id?: string
           id?: string
+          max_correlated_risk_pct?: number
           max_portfolio_risk_pct?: number
+          max_sector_capital_exposure_pct?: number
+          max_sector_heat_pct?: number
           risk_per_trade_pct?: number
+          signal_max_age_days?: number
           trading_capital?: number
+          training_min_paper_trades?: number
+          training_mode_enabled?: boolean
           updated_at?: string
         }
         Relationships: [
@@ -12435,6 +12783,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      se_training_progress: {
+        Row: {
+          candidates_built: number
+          charts_analyzed: number
+          completed_at: string | null
+          created_at: string
+          household_id: string
+          id: string
+          lessons_completed: number
+          notes: string | null
+          paper_trades_taken: number
+          setups_analyzed: number
+          updated_at: string
+          week_number: number
+        }
+        Insert: {
+          candidates_built?: number
+          charts_analyzed?: number
+          completed_at?: string | null
+          created_at?: string
+          household_id: string
+          id?: string
+          lessons_completed?: number
+          notes?: string | null
+          paper_trades_taken?: number
+          setups_analyzed?: number
+          updated_at?: string
+          week_number: number
+        }
+        Update: {
+          candidates_built?: number
+          charts_analyzed?: number
+          completed_at?: string | null
+          created_at?: string
+          household_id?: string
+          id?: string
+          lessons_completed?: number
+          notes?: string | null
+          paper_trades_taken?: number
+          setups_analyzed?: number
+          updated_at?: string
+          week_number?: number
+        }
+        Relationships: []
       }
       se_watchlist_items: {
         Row: {
@@ -12518,6 +12911,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      se_weekly_reviews: {
+        Row: {
+          best_skip_reason: string | null
+          best_skip_symbol: string | null
+          created_at: string
+          execution_score: number
+          household_id: string
+          id: string
+          lesson_to_revisit: string | null
+          notes: string | null
+          rule_following_pct: number
+          trades_taken: number
+          updated_at: string
+          week_start: string
+        }
+        Insert: {
+          best_skip_reason?: string | null
+          best_skip_symbol?: string | null
+          created_at?: string
+          execution_score?: number
+          household_id: string
+          id?: string
+          lesson_to_revisit?: string | null
+          notes?: string | null
+          rule_following_pct?: number
+          trades_taken?: number
+          updated_at?: string
+          week_start: string
+        }
+        Update: {
+          best_skip_reason?: string | null
+          best_skip_symbol?: string | null
+          created_at?: string
+          execution_score?: number
+          household_id?: string
+          id?: string
+          lesson_to_revisit?: string | null
+          notes?: string | null
+          rule_following_pct?: number
+          trades_taken?: number
+          updated_at?: string
+          week_start?: string
+        }
+        Relationships: []
       }
       site_content: {
         Row: {
