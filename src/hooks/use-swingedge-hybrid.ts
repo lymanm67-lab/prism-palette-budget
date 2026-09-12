@@ -259,11 +259,14 @@ export function useHybridAnalysis(symbol: string | null, assetTypeHint?: 'STOCK'
           (provided.spreadPct == null && measuredSpreadPct !== null) ||
           (provided.annualVolatilityPct == null && measuredVolPct !== null);
 
-        etf = scoreEtfQuality({
+        etfInputs = {
           ...provided,
           avgDollarVolume: provided.avgDollarVolume ?? measuredDollarVolume,
           spreadPct: provided.spreadPct ?? measuredSpreadPct,
           annualVolatilityPct: provided.annualVolatilityPct ?? measuredVolPct,
+        };
+        etf = scoreEtfQuality({
+          ...etfInputs,
           derivedFromPriceHistory: usedMeasured,
         }, {
           provider: providerQuality,
