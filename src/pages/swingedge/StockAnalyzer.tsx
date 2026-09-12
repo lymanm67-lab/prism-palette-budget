@@ -26,7 +26,8 @@ export default function StockAnalyzer() {
   const [input, setInput] = useState(initial);
   const [symbol, setSymbol] = useState(initial || null);
 
-  const { analysis, isLoading, isFetching, save, isSaving } = useHybridAnalysis(symbol);
+  const { analysis, isLoading, isFetching, save, isSaving, refreshFigures, isRefreshingFigures } =
+    useHybridAnalysis(symbol);
   const { data: history } = useHybridSignalHistory(symbol ?? undefined);
   const { settings } = useTradingSettings();
 
