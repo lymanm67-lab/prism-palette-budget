@@ -1,7 +1,6 @@
-import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import { ArrowRight, CheckCircle2, Circle, Download, GraduationCap, Trash2 } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Circle, Download, GraduationCap } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -9,22 +8,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
-import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import SwingEdgeHeader from '@/components/swingedge/SwingEdgeHeader';
 import HowToUse from '@/components/swingedge/HowToUse';
 import CollapsibleSection from '@/components/swingedge/CollapsibleSection';
 import CircuitBreakerCard from '@/components/swingedge/CircuitBreakerCard';
 import DailyChecklistCard from '@/components/swingedge/DailyChecklistCard';
+import WeeklyReviewSection from '@/components/swingedge/WeeklyReviewSection';
 import { useTradingSettings, useTradingTitle } from '@/hooks/use-swingedge';
 import { usePaperTradeManagement } from '@/hooks/use-swingedge-stops';
-import {
-  useGraduation,
-  useTrainingProgress,
-  useWeeklyReviews,
-} from '@/hooks/use-swingedge-training';
+import { useGraduation, useTrainingProgress } from '@/hooks/use-swingedge-training';
 import { TRAINING_WEEKS, downloadCsv, toCsv, weekCompletion } from '@/lib/swingedge/training';
-import { weekStartOf } from '@/lib/swingedge/circuitBreaker';
+import { curriculumFor } from '@/lib/swingedge/curriculum';
 
 const COUNTERS: { key: keyof CounterState; label: string }[] = [
   { key: 'lessons_completed', label: 'Lessons finished' },
