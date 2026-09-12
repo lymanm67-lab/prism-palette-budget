@@ -117,7 +117,7 @@ export function useHybridAnalysis(symbol: string | null, assetTypeHint?: 'STOCK'
           .maybeSingle(),
       ]);
 
-      const assetType: 'STOCK' | 'ETF' =
+      let assetType: 'STOCK' | 'ETF' =
         assetTypeHint ??
         ((directory.data?.asset_type as string | undefined)?.toUpperCase() === 'ETF' ? 'ETF' : 'STOCK');
 
