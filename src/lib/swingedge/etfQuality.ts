@@ -133,7 +133,9 @@ export function scoreEtfQuality(
           max: weights.tradability,
           points: tier(metrics.spreadPct, [0.05, 0.15, 0.4], weights.tradability, false),
           available: true,
-          detail: `The typical gap between buy and sell price is about ${metrics.spreadPct}% of price.`,
+          detail: metrics.derivedFromPriceHistory
+            ? `Estimated trading cost is about ${metrics.spreadPct}% of price, worked out from the recent daily range. This is not a live bid and ask.`
+            : `The typical gap between buy and sell price is about ${metrics.spreadPct}% of price.`,
         }
       : missing('tradability', 'Tradability', 'Bid and ask spread is not in the current data plan.'),
   );
