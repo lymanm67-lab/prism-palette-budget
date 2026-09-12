@@ -17,6 +17,12 @@ export interface EtfMetrics {
   largestSectorWeightPct?: number | null;
   /** Annualised volatility in percent. */
   annualVolatilityPct?: number | null;
+  /**
+   * True when liquidity, spread or volatility were measured from price history
+   * rather than supplied by the fund data provider. Wording changes so a
+   * measured figure is never presented as an official one.
+   */
+  derivedFromPriceHistory?: boolean | null;
   trackingErrorPct?: number | null;
   fundAgeYears?: number | null;
   leveraged?: boolean | null;
@@ -112,7 +118,9 @@ export function scoreEtfQuality(
           max: weights.liquidity,
           points: tier(metrics.avgDollarVolume, [2_000_000, 20_000_000, 100_000_000], weights.liquidity),
           available: true,
-          detail: `About ${money(metrics.avgDollarVolume)} changes hands on an average day.`,
+          detail: `About ${money(metrics.avgDollarVolume)} changes hands on an average day${
+            metrics.derivedFromPriceHistory ? ', measured from recent price history' : ''
+          }.`,
         }
       : missing('liquidity', 'Liquidity', 'Average traded value is unavailable.'),
   );
@@ -125,7 +133,9 @@ export function scoreEtfQuality(
           max: weights.tradability,
           points: tier(metrics.spreadPct, [0.05, 0.15, 0.4], weights.tradability, false),
           available: true,
-          detail: `The typical gap between buy and sell price is about ${metrics.spreadPct}% of price.`,
+          detail: metrics.derivedFromPriceHistory
+            ? `Estimated trading cost is about ${metrics.spreadPct}% of price, worked out from the recent daily range. This is not a live bid and ask.`
+            : `The typical gap between buy and sell price is about ${metrics.spreadPct}% of price.`,
         }
       : missing('tradability', 'Tradability', 'Bid and ask spread is not in the current data plan.'),
   );
@@ -195,7 +205,9 @@ export function scoreEtfQuality(
           max: weights.volatility,
           points: tier(metrics.annualVolatilityPct, [15, 25, 40], weights.volatility, false),
           available: true,
-          detail: `Yearly price swing is running near ${metrics.annualVolatilityPct}%.`,
+          detail: `Yearly price swing is running near ${metrics.annualVolatilityPct}%${
+            metrics.derivedFromPriceHistory ? ', measured from daily closes' : ''
+          }.`,
         }
       : missing('volatility', 'Volatility', 'Volatility figure is unavailable.'),
   );
