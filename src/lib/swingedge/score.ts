@@ -73,11 +73,23 @@ const EMPTY = (symbol: string): SymbolScore => ({
   insufficientData: true,
 });
 
+/** Optional context so the chart can be judged against its sector and market. */
+export interface AlignmentContext {
+  assetType?: 'STOCK' | 'ETF';
+  /** Trend of the broad market benchmark, normally SPY. */
+  marketTrend?: TrendState | null;
+  /** Trend of the sector benchmark for a stock, or of the fund's benchmark. */
+  sectorTrend?: TrendState | null;
+  sectorSymbol?: string | null;
+}
+
 /**
- * Scores one symbol out of 100 across trend, momentum, momentum confirmation,
- * setup and volume. Every component carries the sentence that explains it.
+ * Scores one symbol out of 100 across trend, momentum, setup, volume and
+ * alignment with its sector and the wider market. Reward against risk is
+ * deliberately NOT part of this score — that belongs to the risk layer, so the
+ * chart read and the trade maths stay separable.
  */
-export function scoreSymbol(symbol: string, candles: Candle[]): SymbolScore {
+export function scoreSymbol(symbol: string, candles: Candle[], alignment?: AlignmentContext): SymbolScore {
   const sym = symbol.toUpperCase();
   if (!candles || candles.length < MIN_CANDLES) return EMPTY(sym);
 
@@ -97,13 +109,13 @@ export function scoreSymbol(symbol: string, candles: Candle[]): SymbolScore {
   const reasons: string[] = [];
   const risks: string[] = [];
 
-  // 1. Trend — 30 points.
-  const trendPoints = trend === 'UP' ? 30 : trend === 'SIDEWAYS' ? 12 : 0;
+  // 1. Trend — 25 points.
+  const trendPoints = trend === 'UP' ? 25 : trend === 'SIDEWAYS' ? 10 : 0;
   components.push({
     key: 'trend',
     label: 'Trend',
     points: trendPoints,
-    max: 30,
+    max: 25,
     detail:
       trend === 'UP'
         ? 'The 20-day average is above the 50-day average and price is holding above it.'
@@ -115,52 +127,42 @@ export function scoreSymbol(symbol: string, candles: Candle[]): SymbolScore {
   if (trend === 'DOWN') risks.push('The trend is down. Long swing trades fight the tide here.');
   if (trend === 'SIDEWAYS') risks.push('No clear trend, so moves are more likely to stall.');
 
-  // 2. Momentum — 20 points.
+  // 2. Momentum — 20 points: the reading itself plus whether it has turned up.
   let momentumPoints = 0;
   let momentumDetail = '';
   if (rsiValue === null) {
     momentumDetail = 'Not enough data for a momentum reading.';
   } else if (rsiValue >= 50 && rsiValue <= 70) {
-    momentumPoints = 20;
+    momentumPoints = 13;
     momentumDetail = `Momentum is healthy without being stretched (RSI ${round2(rsiValue)}).`;
     reasons.push('Momentum is firm but not overheated.');
   } else if (rsiValue > 70) {
-    momentumPoints = 8;
+    momentumPoints = 5;
     momentumDetail = `Momentum is stretched (RSI ${round2(rsiValue)}), so a pause is common.`;
     risks.push('Momentum is stretched, which raises the chance of buying right before a pullback.');
   } else if (rsiValue >= 40) {
-    momentumPoints = 10;
+    momentumPoints = 7;
     momentumDetail = `Momentum is soft but not broken (RSI ${round2(rsiValue)}).`;
   } else {
-    momentumPoints = 0;
     momentumDetail = `Momentum is weak (RSI ${round2(rsiValue)}).`;
     risks.push('Momentum is weak, so buyers are not in control.');
   }
-  components.push({ key: 'momentum', label: 'Momentum', points: momentumPoints, max: 20, detail: momentumDetail });
+  if (hist !== null && hist > 0) {
+    momentumPoints += 7;
+    momentumDetail += ' Shorter-term momentum is running ahead of longer-term momentum.';
+  } else if (hist !== null) {
+    momentumDetail += ' Shorter-term momentum is still behind longer-term momentum.';
+    risks.push('Momentum has not turned back up yet.');
+  }
+  components.push({ key: 'momentum', label: 'Momentum', points: Math.min(20, momentumPoints), max: 20, detail: momentumDetail });
 
-  // 3. Momentum confirmation — 15 points.
-  const confirmPoints = hist !== null && hist > 0 ? 15 : 0;
-  components.push({
-    key: 'confirmation',
-    label: 'Momentum confirmation',
-    points: confirmPoints,
-    max: 15,
-    detail:
-      hist === null
-        ? 'Not enough data to confirm momentum.'
-        : hist > 0
-          ? 'Shorter-term momentum is running ahead of longer-term momentum.'
-          : 'Shorter-term momentum is still behind longer-term momentum.',
-  });
-  if (confirmPoints === 0 && hist !== null) risks.push('Momentum has not turned back up yet.');
-
-  // 4. Setup — 20 points.
-  const setupPoints = setup === 'BREAKOUT' ? 20 : setup === 'PULLBACK' ? 16 : 4;
+  // 3. Setup quality — 25 points.
+  const setupPoints = setup === 'BREAKOUT' ? 25 : setup === 'PULLBACK' ? 20 : 5;
   components.push({
     key: 'setup',
-    label: 'Setup',
+    label: 'Setup quality',
     points: setupPoints,
-    max: 20,
+    max: 25,
     detail:
       setup === 'BREAKOUT'
         ? 'Price has cleared its recent high with participation.'
@@ -172,7 +174,7 @@ export function scoreSymbol(symbol: string, candles: Candle[]): SymbolScore {
   if (setup === 'PULLBACK') reasons.push('Uptrend has pulled back to a normal buying area.');
   if (setup === 'NONE') risks.push('There is no defined setup, so an entry price would be arbitrary.');
 
-  // 5. Volume — 15 points.
+  // 4. Volume — 15 points.
   let volumePoints = 0;
   let volumeDetail = 'No volume reading available.';
   if (rvol !== null) {
@@ -193,7 +195,14 @@ export function scoreSymbol(symbol: string, candles: Candle[]): SymbolScore {
   }
   components.push({ key: 'volume', label: 'Volume', points: volumePoints, max: 15, detail: volumeDetail });
 
+  // 5. Market and sector alignment — 15 points.
+  const align = alignmentComponent(alignment);
+  components.push(align.component);
+  align.reasons.forEach((r) => reasons.push(r));
+  align.risks.forEach((r) => risks.push(r));
+
   const score = components.reduce((sum, c) => sum + c.points, 0);
+
   const levels = estimateLevels(price, atrValue, support);
 
   if (e20 !== null && s50 !== null && price !== undefined) {
@@ -228,6 +237,82 @@ export function scoreSymbol(symbol: string, candles: Candle[]): SymbolScore {
     insufficientData: false,
   };
 }
+
+/**
+ * Alignment is worth 15 points. A stock is judged against its sector and the
+ * sector against the market; a fund is judged against its own benchmark. When
+ * the benchmark data is missing the component is scored neutrally and says so,
+ * because a data gap is not evidence against the symbol.
+ */
+function alignmentComponent(alignment?: AlignmentContext): {
+  component: ScoreComponent;
+  reasons: string[];
+  risks: string[];
+} {
+  const reasons: string[] = [];
+  const risks: string[] = [];
+  const isEtf = alignment?.assetType === 'ETF';
+  const market = alignment?.marketTrend ?? null;
+  const sector = alignment?.sectorTrend ?? null;
+
+  if (!alignment || (market === null && sector === null)) {
+    return {
+      component: {
+        key: 'alignment',
+        label: 'Market and sector alignment',
+        points: 7,
+        max: 15,
+        detail: 'Benchmark data was not available, so this component is scored neutrally rather than against the symbol.',
+      },
+      reasons,
+      risks: ['Sector and market comparison was unavailable for this read.'],
+    };
+  }
+
+  if (isEtf) {
+    const benchmark = sector ?? market;
+    const points = benchmark === 'UP' ? 15 : benchmark === 'SIDEWAYS' ? 7 : 0;
+    if (benchmark === 'UP') reasons.push('The benchmark this fund tracks is also trending up.');
+    if (benchmark === 'DOWN') risks.push('The benchmark behind this fund is trending down.');
+    return {
+      component: {
+        key: 'alignment',
+        label: 'Benchmark alignment',
+        points,
+        max: 15,
+        detail:
+          benchmark === 'UP'
+            ? 'The fund is moving with a benchmark that is trending up.'
+            : benchmark === 'DOWN'
+              ? 'The benchmark behind the fund is trending down, so the fund is fighting its own index.'
+              : 'The benchmark behind the fund has no clear direction.',
+      },
+      reasons,
+      risks,
+    };
+  }
+
+  const sectorPoints = sector === 'UP' ? 8 : sector === 'SIDEWAYS' ? 4 : sector === 'DOWN' ? 0 : 4;
+  const marketPoints = market === 'UP' ? 7 : market === 'SIDEWAYS' ? 3 : market === 'DOWN' ? 0 : 3;
+  const sectorLabel = alignment.sectorSymbol ? `its sector (${alignment.sectorSymbol})` : 'its sector';
+  if (sector === 'UP') reasons.push(`The symbol has ${sectorLabel} moving with it.`);
+  if (sector === 'DOWN') risks.push(`${sectorLabel.charAt(0).toUpperCase()}${sectorLabel.slice(1)} is trending down, so the move has less support.`);
+  if (market === 'DOWN') risks.push('The wider market is trending down, which lowers the odds of follow-through.');
+
+  return {
+    component: {
+      key: 'alignment',
+      label: 'Market and sector alignment',
+      points: sectorPoints + marketPoints,
+      max: 15,
+      detail: `${sectorLabel.charAt(0).toUpperCase()}${sectorLabel.slice(1)} is ${(sector ?? 'unknown').toLowerCase()} and the wider market is ${(market ?? 'unknown').toLowerCase()}.`,
+    },
+    reasons,
+    risks,
+  };
+}
+
+
 
 /**
  * Four statuses so a good chart that has not set up yet reads as WATCH instead

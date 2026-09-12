@@ -11384,6 +11384,402 @@ export type Database = {
           },
         ]
       }
+      se_etf_quality_scores: {
+        Row: {
+          advanced_product: boolean
+          advanced_reasons: string[]
+          as_of: string | null
+          available_points: number
+          benchmark: string | null
+          categories: Json
+          confidence: string
+          coverage: number
+          created_at: string
+          data_mode: string
+          data_sources: string[]
+          earned_points: number
+          evidence: Json
+          household_id: string
+          id: string
+          methodology_version: string
+          score: number | null
+          symbol: string
+          updated_at: string
+          valid_until: string | null
+        }
+        Insert: {
+          advanced_product?: boolean
+          advanced_reasons?: string[]
+          as_of?: string | null
+          available_points?: number
+          benchmark?: string | null
+          categories?: Json
+          confidence?: string
+          coverage?: number
+          created_at?: string
+          data_mode?: string
+          data_sources?: string[]
+          earned_points?: number
+          evidence?: Json
+          household_id: string
+          id?: string
+          methodology_version?: string
+          score?: number | null
+          symbol: string
+          updated_at?: string
+          valid_until?: string | null
+        }
+        Update: {
+          advanced_product?: boolean
+          advanced_reasons?: string[]
+          as_of?: string | null
+          available_points?: number
+          benchmark?: string | null
+          categories?: Json
+          confidence?: string
+          coverage?: number
+          created_at?: string
+          data_mode?: string
+          data_sources?: string[]
+          earned_points?: number
+          evidence?: Json
+          household_id?: string
+          id?: string
+          methodology_version?: string
+          score?: number | null
+          symbol?: string
+          updated_at?: string
+          valid_until?: string | null
+        }
+        Relationships: []
+      }
+      se_fundamental_cache: {
+        Row: {
+          as_of: string | null
+          asset_type: string
+          company_name: string | null
+          created_at: string
+          data_mode: string
+          etf_metrics: Json | null
+          fetched_at: string
+          id: string
+          industry: string | null
+          metrics: Json
+          periods_available: number
+          provider: string
+          sector: string | null
+          symbol: string
+          updated_at: string
+          valid_until: string | null
+        }
+        Insert: {
+          as_of?: string | null
+          asset_type?: string
+          company_name?: string | null
+          created_at?: string
+          data_mode?: string
+          etf_metrics?: Json | null
+          fetched_at?: string
+          id?: string
+          industry?: string | null
+          metrics?: Json
+          periods_available?: number
+          provider?: string
+          sector?: string | null
+          symbol: string
+          updated_at?: string
+          valid_until?: string | null
+        }
+        Update: {
+          as_of?: string | null
+          asset_type?: string
+          company_name?: string | null
+          created_at?: string
+          data_mode?: string
+          etf_metrics?: Json | null
+          fetched_at?: string
+          id?: string
+          industry?: string | null
+          metrics?: Json
+          periods_available?: number
+          provider?: string
+          sector?: string | null
+          symbol?: string
+          updated_at?: string
+          valid_until?: string | null
+        }
+        Relationships: []
+      }
+      se_fundamental_overrides: {
+        Row: {
+          as_of: string | null
+          asset_type: string
+          company_name: string | null
+          created_at: string
+          etf_metrics: Json | null
+          household_id: string
+          id: string
+          industry: string | null
+          metrics: Json
+          note: string | null
+          periods_available: number
+          sector: string | null
+          superseded: boolean
+          symbol: string
+          updated_at: string
+        }
+        Insert: {
+          as_of?: string | null
+          asset_type?: string
+          company_name?: string | null
+          created_at?: string
+          etf_metrics?: Json | null
+          household_id: string
+          id?: string
+          industry?: string | null
+          metrics?: Json
+          note?: string | null
+          periods_available?: number
+          sector?: string | null
+          superseded?: boolean
+          symbol: string
+          updated_at?: string
+        }
+        Update: {
+          as_of?: string | null
+          asset_type?: string
+          company_name?: string | null
+          created_at?: string
+          etf_metrics?: Json | null
+          household_id?: string
+          id?: string
+          industry?: string | null
+          metrics?: Json
+          note?: string | null
+          periods_available?: number
+          sector?: string | null
+          superseded?: boolean
+          symbol?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      se_fundamental_scores: {
+        Row: {
+          as_of: string | null
+          available_points: number
+          categories: Json
+          confidence: string
+          coverage: number
+          created_at: string
+          data_mode: string
+          data_sources: string[]
+          earned_points: number
+          evidence: Json
+          fundamental_trend: string | null
+          household_id: string
+          id: string
+          methodology_version: string
+          red_flags: Json
+          score: number | null
+          sector_profile: string | null
+          symbol: string
+          updated_at: string
+          used_generic_model: boolean
+          valid_until: string | null
+          valuation_class: string | null
+        }
+        Insert: {
+          as_of?: string | null
+          available_points?: number
+          categories?: Json
+          confidence?: string
+          coverage?: number
+          created_at?: string
+          data_mode?: string
+          data_sources?: string[]
+          earned_points?: number
+          evidence?: Json
+          fundamental_trend?: string | null
+          household_id: string
+          id?: string
+          methodology_version?: string
+          red_flags?: Json
+          score?: number | null
+          sector_profile?: string | null
+          symbol: string
+          updated_at?: string
+          used_generic_model?: boolean
+          valid_until?: string | null
+          valuation_class?: string | null
+        }
+        Update: {
+          as_of?: string | null
+          available_points?: number
+          categories?: Json
+          confidence?: string
+          coverage?: number
+          created_at?: string
+          data_mode?: string
+          data_sources?: string[]
+          earned_points?: number
+          evidence?: Json
+          fundamental_trend?: string | null
+          household_id?: string
+          id?: string
+          methodology_version?: string
+          red_flags?: Json
+          score?: number | null
+          sector_profile?: string | null
+          symbol?: string
+          updated_at?: string
+          used_generic_model?: boolean
+          valid_until?: string | null
+          valuation_class?: string | null
+        }
+        Relationships: []
+      }
+      se_hybrid_scores: {
+        Row: {
+          asset_type: string
+          band: string | null
+          blocking: string[]
+          candle_basis: string
+          checks: Json
+          confidence: string
+          created_at: string
+          data_sources: string[]
+          developing: boolean
+          evidence: Json
+          household_id: string
+          hybrid_score: number | null
+          id: string
+          last_completed_candle_at: string | null
+          methodology_version: string
+          quality_coverage: number | null
+          quality_score: number | null
+          reasons: string[]
+          risk_score: number | null
+          signal: string
+          symbol: string
+          technical_score: number | null
+          thresholds: Json
+          updated_at: string
+          valid_until: string | null
+          weights: Json
+          what_would_change_it: string[]
+        }
+        Insert: {
+          asset_type?: string
+          band?: string | null
+          blocking?: string[]
+          candle_basis?: string
+          checks?: Json
+          confidence?: string
+          created_at?: string
+          data_sources?: string[]
+          developing?: boolean
+          evidence?: Json
+          household_id: string
+          hybrid_score?: number | null
+          id?: string
+          last_completed_candle_at?: string | null
+          methodology_version?: string
+          quality_coverage?: number | null
+          quality_score?: number | null
+          reasons?: string[]
+          risk_score?: number | null
+          signal: string
+          symbol: string
+          technical_score?: number | null
+          thresholds?: Json
+          updated_at?: string
+          valid_until?: string | null
+          weights?: Json
+          what_would_change_it?: string[]
+        }
+        Update: {
+          asset_type?: string
+          band?: string | null
+          blocking?: string[]
+          candle_basis?: string
+          checks?: Json
+          confidence?: string
+          created_at?: string
+          data_sources?: string[]
+          developing?: boolean
+          evidence?: Json
+          household_id?: string
+          hybrid_score?: number | null
+          id?: string
+          last_completed_candle_at?: string | null
+          methodology_version?: string
+          quality_coverage?: number | null
+          quality_score?: number | null
+          reasons?: string[]
+          risk_score?: number | null
+          signal?: string
+          symbol?: string
+          technical_score?: number | null
+          thresholds?: Json
+          updated_at?: string
+          valid_until?: string | null
+          weights?: Json
+          what_would_change_it?: string[]
+        }
+        Relationships: []
+      }
+      se_hybrid_signal_history: {
+        Row: {
+          confidence: string | null
+          created_at: string
+          developing: boolean
+          from_signal: string | null
+          household_id: string
+          hybrid_score: number | null
+          id: string
+          methodology_version: string
+          quality_score: number | null
+          reason: string | null
+          risk_score: number | null
+          symbol: string
+          technical_score: number | null
+          to_signal: string
+        }
+        Insert: {
+          confidence?: string | null
+          created_at?: string
+          developing?: boolean
+          from_signal?: string | null
+          household_id: string
+          hybrid_score?: number | null
+          id?: string
+          methodology_version?: string
+          quality_score?: number | null
+          reason?: string | null
+          risk_score?: number | null
+          symbol: string
+          technical_score?: number | null
+          to_signal: string
+        }
+        Update: {
+          confidence?: string | null
+          created_at?: string
+          developing?: boolean
+          from_signal?: string | null
+          household_id?: string
+          hybrid_score?: number | null
+          id?: string
+          methodology_version?: string
+          quality_score?: number | null
+          reason?: string | null
+          risk_score?: number | null
+          symbol?: string
+          technical_score?: number | null
+          to_signal?: string
+        }
+        Relationships: []
+      }
       se_journal_entries: {
         Row: {
           created_at: string
@@ -11692,6 +12088,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      se_signal_conflicts: {
+        Row: {
+          conflict_key: string
+          created_at: string
+          explanation: string
+          household_id: string
+          id: string
+          label: string
+          resolved_at: string | null
+          severity: string
+          symbol: string
+          updated_at: string
+        }
+        Insert: {
+          conflict_key: string
+          created_at?: string
+          explanation: string
+          household_id: string
+          id?: string
+          label: string
+          resolved_at?: string | null
+          severity?: string
+          symbol: string
+          updated_at?: string
+        }
+        Update: {
+          conflict_key?: string
+          created_at?: string
+          explanation?: string
+          household_id?: string
+          id?: string
+          label?: string
+          resolved_at?: string | null
+          severity?: string
+          symbol?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       se_stop_modifications: {
         Row: {
