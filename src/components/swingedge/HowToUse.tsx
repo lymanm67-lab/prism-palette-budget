@@ -1,5 +1,5 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Lightbulb } from 'lucide-react';
+import CollapsibleSection from '@/components/swingedge/CollapsibleSection';
 
 interface Props {
   /** Numbered walkthrough: do this, then this. */
@@ -8,25 +8,33 @@ interface Props {
   tips?: string[];
   title?: string;
   description?: string;
+  /** Stable collapse id; defaults to the title. */
+  id?: string;
+  defaultOpen?: boolean;
 }
 
 /**
  * Plain-language "how to use this screen" panel shared by every SwingEdge page,
  * so the instructions live next to the tool instead of in a separate manual.
+ * Collapses to a single header row so it never eats the page.
  */
 export default function HowToUse({
   steps,
   tips,
   title = 'How to use this screen',
   description = 'Follow these steps in order the first few times.',
+  id,
+  defaultOpen = false,
 }: Props) {
   return (
-    <Card className="border-prism-teal/30">
-      <CardHeader>
-        <CardTitle className="text-base">{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <CollapsibleSection
+      id={id ?? `how-to-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
+      title={title}
+      description={description}
+      defaultOpen={defaultOpen}
+      className="border-prism-teal/30"
+    >
+      <div className="space-y-4 pt-1">
         <ol className="space-y-2 text-sm">
           {steps.map((step, i) => (
             <li key={step} className="flex gap-3">
@@ -48,7 +56,7 @@ export default function HowToUse({
             ))}
           </div>
         ) : null}
-      </CardContent>
-    </Card>
+      </div>
+    </CollapsibleSection>
   );
 }

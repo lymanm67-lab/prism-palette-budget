@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, CheckCircle2, Lock } from 'lucide-react';
 import HowToUse from '@/components/swingedge/HowToUse';
+import CollapsibleSection from '@/components/swingedge/CollapsibleSection';
 
 interface Props {
   title: string;
@@ -18,11 +19,12 @@ interface Props {
 /**
  * Every SwingEdge page is reachable from the first release. Pages whose build
  * phase has not been reached explain exactly what they will do and what must be
- * proven before they are called finished.
+ * proven before they are called finished. Sections collapse so the page stays short.
  */
 export default function PhasePlaceholder({ title, phase, purpose, willInclude, gate, howTo, howToTips }: Props) {
+  const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="space-y-2">
         <div className="flex flex-wrap items-center gap-2">
           <h1 className="text-2xl font-bold tracking-tight md:text-3xl">{title}</h1>
@@ -42,41 +44,35 @@ export default function PhasePlaceholder({ title, phase, purpose, willInclude, g
         />
       ) : null}
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">What this screen will do</CardTitle>
-            <CardDescription>Scope is fixed so it cannot quietly grow.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2 text-sm">
-              {willInclude.map((item) => (
-                <li key={item} className="flex gap-2">
-                  <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-prism-teal" />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
+      <CollapsibleSection
+        id={`${slug}-will-do`}
+        title="What this screen will do"
+        description="Scope is fixed so it cannot quietly grow."
+      >
+        <ul className="space-y-2 pt-1 text-sm">
+          {willInclude.map((item) => (
+            <li key={item} className="flex gap-2">
+              <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-prism-teal" />
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      </CollapsibleSection>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">How it proves it works</CardTitle>
-            <CardDescription>These checks must pass before this phase is called done.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2 text-sm">
-              {gate.map((item) => (
-                <li key={item} className="flex gap-2">
-                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-prism-lime" />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      </div>
+      <CollapsibleSection
+        id={`${slug}-gate`}
+        title="How it proves it works"
+        description="These checks must pass before this phase is called done."
+      >
+        <ul className="space-y-2 pt-1 text-sm">
+          {gate.map((item) => (
+            <li key={item} className="flex gap-2">
+              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-prism-lime" />
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      </CollapsibleSection>
 
       <Card>
         <CardContent className="flex flex-col gap-3 py-5 sm:flex-row sm:items-center sm:justify-between">
