@@ -1,3 +1,4 @@
+import NextStepsCard from '@/components/swingedge/NextStepsCard';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -438,6 +439,14 @@ export default function SwingEdgeSettings() {
           ) : null}
         </CardContent>
       </Card>
-    </div>
+          <NextStepsCard
+        summary="Your limits and data connection are set. Everything downstream uses these numbers."
+        steps={[
+          { label: 'Confirm your limits on the training dashboard', to: '/swingedge/training', cta: 'Open Training' },
+          { label: 'Run a scan with the new settings', to: '/swingedge/scanner', cta: 'Open Scanner' },
+          { label: 'Size a trade against your risk per trade', to: '/swingedge/planner', cta: 'Open Trade Planner' },
+        ]}
+      />
+</div>
   );
 }

@@ -1,3 +1,4 @@
+import NextStepsCard from '@/components/swingedge/NextStepsCard';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { ArrowRight, CheckCircle2, Circle, Download, GraduationCap } from 'lucide-react';
@@ -306,6 +307,14 @@ export default function TrainingMode() {
       </div>
 
       <WeeklyReviewSection />
-    </div>
+          <NextStepsCard
+        summary="Training is the routine, not the trading. Each day ends back in the workflow."
+        steps={[
+          { label: 'Run today\u2019s scan and qualify candidates', to: '/swingedge/scanner', cta: 'Open Scanner' },
+          { label: 'Plan the one setup worth planning', to: '/swingedge/planner', cta: 'Open Trade Planner' },
+          { label: 'Journal every closed trade before the review', to: '/swingedge/journal', cta: 'Open Journal' },
+        ]}
+      />
+</div>
   );
 }

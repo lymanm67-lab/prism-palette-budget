@@ -1,3 +1,4 @@
+import NextStepsCard from '@/components/swingedge/NextStepsCard';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -281,6 +282,14 @@ export default function TradingAcademy() {
           'Your progress is saved to your account.',
         ]}
       />
-    </div>
+          <NextStepsCard
+        summary="Lessons earn readiness points. The ideas only stick once you use them on a live chart."
+        steps={[
+          { label: 'Work the six-week routine day by day', to: '/swingedge/training', cta: 'Open Training' },
+          { label: 'Find a name to practise the idea on', to: '/swingedge/scanner', cta: 'Open Scanner' },
+          { label: 'See the setup measured on a real chart', to: '/swingedge/analyzer', cta: 'Open Analyzer' },
+        ]}
+      />
+</div>
   );
 }

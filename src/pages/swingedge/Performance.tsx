@@ -1,3 +1,4 @@
+import NextStepsCard from '@/components/swingedge/NextStepsCard';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -293,6 +294,14 @@ export default function Performance() {
           'Every figure here comes from simulated trades only.',
         ]}
       />
-    </div>
+          <NextStepsCard
+        summary="You have read the record. Pick one habit to work on, then get back to the routine."
+        steps={[
+          { label: 'Write the weekly review while it is fresh', to: '/swingedge/training', cta: 'Open Training' },
+          { label: 'Go back to the lesson behind your top mistake', to: '/swingedge/academy', cta: 'Open Academy' },
+          { label: 'Start the next cycle with a fresh scan', to: '/swingedge/scanner', cta: 'Open Scanner' },
+        ]}
+      />
+</div>
   );
 }
