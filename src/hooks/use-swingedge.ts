@@ -63,8 +63,11 @@ const DEFAULT_SETTINGS: TradingSettings = {
   commission_per_trade: 0,
   signal_max_age_days: 3,
   breaker_consecutive_losses: 3,
+  breaker_daily_loss_r: 2,
+  breaker_weekly_loss_r: 5,
   breaker_daily_loss_limit: 0,
   breaker_weekly_loss_limit: 0,
+
   training_min_paper_trades: 20,
   training_mode_enabled: false,
 };
