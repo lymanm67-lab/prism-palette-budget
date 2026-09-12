@@ -91,6 +91,15 @@ export interface AlignmentContext {
    * points INSIDE Setup Quality — never a separate score on top of the 100.
    */
   candleConfirmation?: CandleConfirmation | null;
+  /**
+   * Market regime and relative strength readings, expressed as a 0-1 bias. They
+   * shade this same 15-point alignment component — they never add a new score
+   * category and never move the Hybrid weights.
+   */
+  regimeBias?: number | null;
+  regimeLabel?: string | null;
+  relativeStrengthBias?: number | null;
+  relativeStrengthLabel?: string | null;
 }
 
 
@@ -298,6 +307,56 @@ export function scoreSymbol(symbol: string, candles: Candle[], alignment?: Align
  * because a data gap is not evidence against the symbol.
  */
 function alignmentComponent(alignment?: AlignmentContext): {
+  component: ScoreComponent;
+  reasons: string[];
+  risks: string[];
+} {
+  const base = baseAlignmentComponent(alignment);
+  const regimeBias = alignment?.regimeBias;
+  const rsBias = alignment?.relativeStrengthBias;
+  const biases = [regimeBias, rsBias].filter(
+    (b): b is number => typeof b === 'number' && Number.isFinite(b),
+  );
+  if (!biases.length) return base;
+
+  // Blend, keeping the same 15-point maximum. Regime and relative strength shade
+  // this component; they never become a separate score.
+  const avgBias = biases.reduce((s, b) => s + b, 0) / biases.length;
+  const blended = Math.round(base.component.points * 0.6 + 15 * avgBias * 0.4);
+  const points = Math.max(0, Math.min(15, blended));
+
+  const extras: string[] = [];
+  if (alignment?.regimeLabel) extras.push(`market regime is ${alignment.regimeLabel.toLowerCase()}`);
+  if (alignment?.relativeStrengthLabel) {
+    extras.push(`the symbol is ${alignment.relativeStrengthLabel.toLowerCase()} its benchmark`);
+  }
+
+  const reasons = [...base.reasons];
+  const risks = [...base.risks];
+  if (typeof regimeBias === 'number' && regimeBias <= 0.25 && alignment?.regimeLabel) {
+    risks.push(`The market regime reads ${alignment.regimeLabel.toLowerCase()}, which works against a long.`);
+  }
+  if (typeof rsBias === 'number' && rsBias >= 0.75 && alignment?.relativeStrengthLabel) {
+    reasons.push(`This name is ${alignment.relativeStrengthLabel.toLowerCase()} its benchmark.`);
+  }
+  if (typeof rsBias === 'number' && rsBias <= 0.25 && alignment?.relativeStrengthLabel) {
+    risks.push(`This name is ${alignment.relativeStrengthLabel.toLowerCase()} its benchmark.`);
+  }
+
+  return {
+    component: {
+      ...base.component,
+      points,
+      detail: extras.length
+        ? `${base.component.detail} Also ${extras.join(' and ')}.`
+        : base.component.detail,
+    },
+    reasons,
+    risks,
+  };
+}
+
+function baseAlignmentComponent(alignment?: AlignmentContext): {
   component: ScoreComponent;
   reasons: string[];
   risks: string[];

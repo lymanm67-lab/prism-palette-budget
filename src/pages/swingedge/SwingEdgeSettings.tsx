@@ -48,6 +48,12 @@ export default function SwingEdgeSettings() {
   const [capital, setCapital] = useState(String(settings.trading_capital));
   const [riskPct, setRiskPct] = useState(String(settings.risk_per_trade_pct));
   const [portfolioPct, setPortfolioPct] = useState(String(settings.max_portfolio_risk_pct));
+  const [sectorCapital, setSectorCapital] = useState(
+    String(settings.max_sector_capital_exposure_pct),
+  );
+  const [sectorHeat, setSectorHeat] = useState(String(settings.max_sector_heat_pct));
+  const [correlatedRisk, setCorrelatedRisk] = useState(String(settings.max_correlated_risk_pct));
+  const [lookback, setLookback] = useState(String(settings.correlation_lookback_days));
   const [minuteLimit, setMinuteLimit] = useState(String(settings.api_minute_limit));
   const [dailyLimit, setDailyLimit] = useState(String(settings.api_daily_limit));
 
@@ -55,12 +61,20 @@ export default function SwingEdgeSettings() {
     setCapital(String(settings.trading_capital));
     setRiskPct(String(settings.risk_per_trade_pct));
     setPortfolioPct(String(settings.max_portfolio_risk_pct));
+    setSectorCapital(String(settings.max_sector_capital_exposure_pct));
+    setSectorHeat(String(settings.max_sector_heat_pct));
+    setCorrelatedRisk(String(settings.max_correlated_risk_pct));
+    setLookback(String(settings.correlation_lookback_days));
     setMinuteLimit(String(settings.api_minute_limit));
     setDailyLimit(String(settings.api_daily_limit));
   }, [
     settings.trading_capital,
     settings.risk_per_trade_pct,
     settings.max_portfolio_risk_pct,
+    settings.max_sector_capital_exposure_pct,
+    settings.max_sector_heat_pct,
+    settings.max_correlated_risk_pct,
+    settings.correlation_lookback_days,
     settings.api_minute_limit,
     settings.api_daily_limit,
   ]);
@@ -88,11 +102,31 @@ export default function SwingEdgeSettings() {
     const c = Number(capital);
     const r = Number(riskPct);
     const p = Number(portfolioPct);
+    const sc = Number(sectorCapital);
+    const sh = Number(sectorHeat);
+    const cr = Number(correlatedRisk);
+    const lb = Number(lookback);
     if (!(c > 0) || !(r > 0) || !(p > 0)) {
       toast.error('Trading capital and both risk percentages must be greater than zero.');
       return;
     }
-    await save({ trading_capital: c, risk_per_trade_pct: r, max_portfolio_risk_pct: p });
+    if (!(sc > 0) || !(sh > 0) || !(cr > 0)) {
+      toast.error('Sector and correlated-group limits must be greater than zero.');
+      return;
+    }
+    if (!(lb >= 20)) {
+      toast.error('Correlation lookback needs at least 20 days to mean anything.');
+      return;
+    }
+    await save({
+      trading_capital: c,
+      risk_per_trade_pct: r,
+      max_portfolio_risk_pct: p,
+      max_sector_capital_exposure_pct: sc,
+      max_sector_heat_pct: sh,
+      max_correlated_risk_pct: cr,
+      correlation_lookback_days: lb,
+    });
     toast.success('Risk settings saved.');
   };
 
@@ -258,6 +292,59 @@ export default function SwingEdgeSettings() {
               <Input id="portpct" type="number" min="0.5" step="0.5" value={portfolioPct} onChange={(e) => setPortfolioPct(e.target.value)} />
             </div>
           </div>
+
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="sectorcap">Max sector money exposure (%)</Label>
+              <Input
+                id="sectorcap"
+                type="number"
+                min="1"
+                step="1"
+                value={sectorCapital}
+                onChange={(e) => setSectorCapital(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="sectorheat">Max sector risk (%)</Label>
+              <Input
+                id="sectorheat"
+                type="number"
+                min="0.1"
+                step="0.1"
+                value={sectorHeat}
+                onChange={(e) => setSectorHeat(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="corrrisk">Max correlated group risk (%)</Label>
+              <Input
+                id="corrrisk"
+                type="number"
+                min="0.1"
+                step="0.1"
+                value={correlatedRisk}
+                onChange={(e) => setCorrelatedRisk(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="corrlookback">Correlation lookback (days)</Label>
+              <Input
+                id="corrlookback"
+                type="number"
+                min="20"
+                step="5"
+                value={lookback}
+                onChange={(e) => setLookback(e.target.value)}
+              />
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Money exposure is how much of the account sits in one sector. Sector risk is how much of
+            the account could be lost there. These are separate on purpose, and none of these numbers
+            is right for everyone.
+          </p>
+
 
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[

@@ -24,6 +24,7 @@ import CollapsibleSection from '@/components/swingedge/CollapsibleSection';
 import RiskFirstCard, { GapRiskCard, StopRuleCard } from '@/components/swingedge/RiskFirstCard';
 import { useTradingSettings, useTradingTitle } from '@/hooks/use-swingedge';
 import { usePaperTradeManagement, useSymbolLevels, useTradePlans } from '@/hooks/use-swingedge-stops';
+import { usePortfolioHeat } from '@/hooks/use-swingedge-heat';
 import { VERDICT_LABEL, type Verdict } from '@/lib/swingedge/types';
 import type { SetupState } from '@/lib/swingedge/indicators';
 import {
@@ -211,6 +212,22 @@ export default function TradePlanner() {
     [settings.trading_capital, settings.max_portfolio_risk_pct, openRisk, risk.plannedLoss],
   );
 
+  // Portfolio heat, sector exposure and sector heat gates.
+  const { summary: heat, checkTrade } = usePortfolioHeat();
+  const heatGate = useMemo(
+    () =>
+      checkTrade({
+        symbol: symbol.toUpperCase(),
+        sector: null,
+        shares: risk.shares,
+        entry: entryNum,
+        stop: stopNum,
+      }),
+    [checkTrade, symbol, risk.shares, entryNum, stopNum],
+  );
+
+
+
   const qualification = useMemo(
     () =>
       qualifyTrade({
@@ -284,6 +301,10 @@ export default function TradePlanner() {
     }
     if (qualification.stopOverrideRefusal) {
       toast.error(qualification.stopOverrideRefusal);
+      return;
+    }
+    if (!heatGate.allowed) {
+      toast.error(heatGate.reasons[0]);
       return;
     }
     try {
@@ -899,6 +920,37 @@ export default function TradePlanner() {
               {portfolio.message ? <p className="font-semibold text-destructive">{portfolio.message}</p> : null}
             </CardContent>
           </Card>
+
+          <Card className={cn(!heatGate.allowed && 'border-destructive')}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Portfolio heat and sector limits</CardTitle>
+              <CardDescription>
+                {money(heat.openRisk)} at risk now of {money(heat.maxHeatDollars)} allowed —{' '}
+                {money(heat.riskAvailable)} still available
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              <p>
+                This trade adds {money(heatGate.addedRisk)} of risk and ties up{' '}
+                {money(heatGate.addedCapital)}, taking heat to {heatGate.projectedHeatPct.toFixed(2)}%
+                of your account.
+              </p>
+              {heatGate.reasons.map((r) => (
+                <p
+                  key={r}
+                  className={cn(!heatGate.allowed && 'font-semibold text-destructive')}
+                >
+                  {r}
+                </p>
+              ))}
+              <p className="text-xs text-muted-foreground">
+                Heat counts money at risk, not money invested. Sector money exposure and sector risk
+                are checked separately.
+              </p>
+            </CardContent>
+          </Card>
+
+
 
           <GapRiskCard earningsNote={EARNINGS_UNKNOWN_TEXT} />
 
