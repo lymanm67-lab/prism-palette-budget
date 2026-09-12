@@ -93,13 +93,15 @@ export function useHybridAnalysis(symbol: string | null, assetTypeHint?: 'STOCK'
         loadCandles(sym, '1day', mode, 260),
         supabase
           .from('se_market_symbols')
-          .select('symbol, name, asset_type, sector')
+          .select('symbol, name, asset_type')
           .eq('symbol', sym)
           .maybeSingle(),
       ]);
 
       const assetType: 'STOCK' | 'ETF' =
-        assetTypeHint ?? ((directory.data?.asset_type as string | undefined) === 'ETF' ? 'ETF' : 'STOCK');
+        assetTypeHint ??
+        ((directory.data?.asset_type as string | undefined)?.toUpperCase() === 'ETF' ? 'ETF' : 'STOCK');
+
 
       // Confirmed signals only ever use completed candles.
       const basis = candleBasis(priceResult.candles, '1day');
@@ -113,7 +115,7 @@ export function useHybridAnalysis(symbol: string | null, assetTypeHint?: 'STOCK'
       ]);
       const { bundle, conflictingMetrics } = mergeBundles(providerBundle, manualBundle);
 
-      const sectorText = bundle.profile?.sector ?? (directory.data?.sector as string | null) ?? null;
+      const sectorText = bundle.profile?.sector ?? null;
       const profile = profileFor(sectorText, bundle.profile?.industry ?? null);
       const sectorSymbol = assetType === 'ETF' ? MARKET_BENCHMARK : SECTOR_BENCHMARKS[profile.key];
 
@@ -173,9 +175,9 @@ export function useHybridAnalysis(symbol: string | null, assetTypeHint?: 'STOCK'
         ? assessStop({
             entry: levels.estimatedEntry,
             stop: levels.estimatedStop,
-            target: levels.estimatedTarget,
             atrValue: technical.atr,
-            support: technical.support,
+            structureLevel: technical.support,
+            rewardRisk: position?.rewardRisk ?? levels.projectedRewardRisk,
             setup: technical.setup,
           })
         : null;
@@ -283,7 +285,9 @@ export function useHybridAnalysis(symbol: string | null, assetTypeHint?: 'STOCK'
         .eq('symbol', analysis.symbol)
         .maybeSingle();
 
-      const row = {
+      // Cast at the boundary: these nested shapes are plain JSON at rest.
+      const row: Record<string, unknown> = {
+
         household_id: householdId,
         symbol: analysis.symbol,
         asset_type: analysis.assetType,
@@ -315,7 +319,11 @@ export function useHybridAnalysis(symbol: string | null, assetTypeHint?: 'STOCK'
         methodology_version: HYBRID_METHODOLOGY_VERSION,
       };
 
-      const { error } = await supabase.from('se_hybrid_scores').upsert(row, { onConflict: 'household_id,symbol' });
+      const { error } = await supabase
+        .from('se_hybrid_scores')
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .upsert(row as any, { onConflict: 'household_id,symbol' });
+
       if (error) throw error;
 
       if (existing?.signal !== analysis.hybrid.signal) {
