@@ -354,26 +354,22 @@ export function useGraduation() {
     () =>
       performanceStats(
         closed.map((t) => ({
-          id: t.id,
           symbol: t.symbol,
-          status: t.status,
-          setup_type: t.setup_type,
-          entry_price: t.entry_price,
-          entry_date: t.entry_date,
-          stop_price: t.stop_price,
-          target_price: t.target_price,
+          entryPrice: t.entry_price,
+          stopPrice: t.stop_price,
+          targetPrice: t.target_price ?? t.entry_price,
           shares: t.shares,
-          initial_dollar_risk: t.initial_dollar_risk,
-          exit_price: t.exit_price,
-          exit_date: t.exit_date,
-          exit_reason: t.exit_reason,
-          realized_pl: t.realized_pl,
-          rules_followed: null,
-          notes: t.notes,
+          exitPrice: t.exit_price ?? t.entry_price,
+          entryDate: t.entry_date,
+          exitDate: t.exit_date ?? t.entry_date,
+          realizedPl: t.realized_pl ?? 0,
+          rulesFollowed: null,
+          exitReason: t.exit_reason,
         })),
       ),
     [closed],
   );
+
 
   const journaledIds = useMemo(
     () => new Set((entries ?? []).map((e) => e.paper_trade_id).filter(Boolean)),
