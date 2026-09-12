@@ -103,7 +103,7 @@ export function candleIsValid(c: Candle | undefined | null): boolean {
   const nums = [c.open, c.high, c.low, c.close];
   if (nums.some((n) => typeof n !== 'number' || !Number.isFinite(n) || n <= 0)) return false;
   if (typeof c.volume !== 'number' || !Number.isFinite(c.volume) || c.volume < 0) return false;
-  if (!c.date) return false;
+  if (!c.datetime) return false;
   if (c.high < c.low) return false;
   if (c.high < c.open || c.high < c.close) return false;
   if (c.low > c.open || c.low > c.close) return false;
@@ -187,7 +187,7 @@ export function anatomySeries(candles: Candle[], cfg: CandleConfig = DEFAULT_CAN
 
     const base = {
       index: i,
-      date: c.date,
+      date: c.datetime,
       open: c.open,
       high: c.high,
       low: c.low,
@@ -251,7 +251,7 @@ export function toWeekly(candles: Candle[]): Candle[] {
   const flush = () => {
     if (!bucket.length) return;
     out.push({
-      date: bucket[0].date,
+      datetime: bucket[0].datetime,
       open: bucket[0].open,
       high: Math.max(...bucket.map((c) => c.high)),
       low: Math.min(...bucket.map((c) => c.low)),
@@ -262,7 +262,7 @@ export function toWeekly(candles: Candle[]): Candle[] {
   };
   for (const c of candles) {
     if (!candleIsValid(c)) continue;
-    const key = weekKey(c.date);
+    const key = weekKey(c.datetime);
     if (currentKey !== null && key !== currentKey) flush();
     currentKey = key;
     bucket.push(c);

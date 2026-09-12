@@ -21,7 +21,7 @@ interface Bar {
 
 const build = (bars: Bar[], startIndex = 0): Candle[] =>
   bars.map((b, i) => ({
-    date: day(startIndex + i),
+    datetime: day(startIndex + i),
     open: b.o,
     high: b.h,
     low: b.l,
