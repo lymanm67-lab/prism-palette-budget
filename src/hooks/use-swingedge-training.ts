@@ -19,7 +19,7 @@ import {
   type ChecklistState,
   type WeekProgress,
 } from '@/lib/swingedge/training';
-import { computeStats } from '@/lib/swingedge/performance';
+import { performanceStats } from '@/lib/swingedge/performance';
 
 const today = () => new Date().toISOString().slice(0, 10);
 const round2 = (n: number) => Math.round(n * 100) / 100;
@@ -352,7 +352,7 @@ export function useGraduation() {
 
   const stats = useMemo(
     () =>
-      computeStats(
+      performanceStats(
         closed.map((t) => ({
           id: t.id,
           symbol: t.symbol,
