@@ -13,6 +13,7 @@ import SwingEdgeHeader from '@/components/swingedge/SwingEdgeHeader';
 import HowToUse from '@/components/swingedge/HowToUse';
 import CollapsibleSection from '@/components/swingedge/CollapsibleSection';
 import CircuitBreakerCard from '@/components/swingedge/CircuitBreakerCard';
+import ReadinessPointsCard from '@/components/swingedge/ReadinessPointsCard';
 import DailyChecklistCard from '@/components/swingedge/DailyChecklistCard';
 import WeeklyReviewSection from '@/components/swingedge/WeeklyReviewSection';
 import { useTradingSettings, useTradingTitle } from '@/hooks/use-swingedge';
@@ -289,6 +290,7 @@ export default function TrainingMode() {
         <CircuitBreakerCard />
       </div>
 
+      <ReadinessPointsCard />
       <GraduationPanel />
 
       <div className="space-y-3">

@@ -10,7 +10,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { useTradingSettings } from '@/hooks/use-swingedge';
 import { usePaperTradeManagement } from '@/hooks/use-swingedge-stops';
-import { useTradeJournal } from '@/hooks/use-swingedge-lists';
+import { useAcademyProgress, useTradeJournal } from '@/hooks/use-swingedge-lists';
+import { assessReadinessPoints } from '@/lib/swingedge/readinessPoints';
 import {
   assessBreaker,
   consecutiveLosingTrades,
@@ -471,4 +472,42 @@ export function useGraduation() {
   }, [closed, modifications, reviews.length, journaledIds, stats.averageR, settings.training_min_paper_trades]);
 
   return { result, closedCount: closed.length, stats };
+}
+
+/* --------------------------------------------------- readiness points */
+
+/** Points earned for preparation and discipline. Nothing here rewards profit. */
+export function useReadinessPoints() {
+  const { completedCount, totalLessons, quizzesPassed } = useAcademyProgress();
+  const { byWeek } = useTrainingProgress();
+  const { reviews } = useWeeklyReviews();
+  const { trades } = usePaperTradeManagement();
+  const { entries } = useTradeJournal();
+
+  const closed = useMemo(() => trades.filter((t) => t.status === 'CLOSED'), [trades]);
+  const journaledTrades = useMemo(() => {
+    const ids = new Set((entries ?? []).map((e) => e.paper_trade_id).filter(Boolean));
+    return closed.filter((t) => ids.has(t.id)).length;
+  }, [closed, entries]);
+
+  const weeksCompleted = useMemo(
+    () => Array.from(byWeek.values()).filter((w) => !!w.completed_at).length,
+    [byWeek],
+  );
+
+  const result = useMemo(
+    () =>
+      assessReadinessPoints({
+        lessonsCompleted: completedCount,
+        totalLessons,
+        quizzesPassed,
+        trainingWeeksCompleted: weeksCompleted,
+        closedPaperTrades: closed.length,
+        journaledTrades,
+        weeklyReviews: reviews.length,
+      }),
+    [completedCount, totalLessons, quizzesPassed, weeksCompleted, closed.length, journaledTrades, reviews.length],
+  );
+
+  return result;
 }

@@ -18,6 +18,7 @@ import CollapsibleSection from '@/components/swingedge/CollapsibleSection';
 import TradeWorkflow from '@/components/swingedge/TradeWorkflow';
 import PortfolioRolesCard from '@/components/swingedge/PortfolioRolesCard';
 import PortfolioHeatCard from '@/components/swingedge/PortfolioHeatCard';
+import ReadinessPointsCard from '@/components/swingedge/ReadinessPointsCard';
 import DailyChecklistCard from '@/components/swingedge/DailyChecklistCard';
 import CircuitBreakerCard from '@/components/swingedge/CircuitBreakerCard';
 
@@ -233,6 +234,7 @@ export default function SwingEdgeDashboard() {
 
       {/* Daily discipline: five questions, and the pause after a losing run */}
       <div className="grid gap-4 lg:grid-cols-2">
+        <ReadinessPointsCard compact />
         <DailyChecklistCard />
         <CircuitBreakerCard />
       </div>

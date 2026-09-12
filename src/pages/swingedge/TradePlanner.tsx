@@ -24,7 +24,7 @@ import CollapsibleSection from '@/components/swingedge/CollapsibleSection';
 import RiskFirstCard, { GapRiskCard, StopRuleCard } from '@/components/swingedge/RiskFirstCard';
 import { useTradingSettings, useTradingTitle } from '@/hooks/use-swingedge';
 import { usePaperTradeManagement, useSymbolLevels, useTradePlans } from '@/hooks/use-swingedge-stops';
-import { useCircuitBreaker } from '@/hooks/use-swingedge-training';
+import { useCircuitBreaker, useReadinessPoints } from '@/hooks/use-swingedge-training';
 
 import { usePortfolioHeat } from '@/hooks/use-swingedge-heat';
 import { VERDICT_LABEL, type Verdict } from '@/lib/swingedge/types';
@@ -102,6 +102,7 @@ export default function TradePlanner() {
   // Breakers are independent of the plan itself: a plan can be sound while the
   // day or the week is paused, so the block sits on execution, not on planning.
   const breaker = useCircuitBreaker();
+  const points = useReadinessPoints();
 
 
   const [symbol, setSymbol] = useState((params.get('symbol') ?? '').toUpperCase());
@@ -1001,8 +1002,15 @@ export default function TradePlanner() {
                         <Button
                           size="sm"
                           variant="outline"
-                          disabled={isSaving || !breaker.assessment.canOpenNewTrade}
+                          disabled={isSaving || !breaker.assessment.canOpenNewTrade || !points.canPaperTrade}
                           onClick={async () => {
+                            if (!points.canPaperTrade) {
+                              toast.error(
+                                `You have ${points.total} readiness points. ${points.pointsToPaperTrade} more are needed before your first paper trade — finish Academy lessons to earn them.`,
+                                { duration: 9000 },
+                              );
+                              return;
+                            }
                             if (!breaker.assessment.canOpenNewTrade) {
                               toast.error(
                                 `${breaker.assessment.headline} — finish the review on the Training page before opening another paper trade.`,
