@@ -226,6 +226,26 @@ export default function AiLevelsAssistant({
               )}
             </div>
 
+            <div className="flex flex-wrap items-center gap-2">
+              {!isSpeaking ? (
+                <Button variant="outline" size="sm" onClick={() => speak(narration())}>
+                  <Volume2 className="mr-2 h-4 w-4" />
+                  Listen to this read
+                </Button>
+              ) : (
+                <>
+                  <Button variant="outline" size="sm" onClick={isPaused ? resume : pause}>
+                    {isPaused ? <Play className="mr-2 h-4 w-4" /> : <Pause className="mr-2 h-4 w-4" />}
+                    {isPaused ? 'Resume' : 'Pause'}
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={stop}>
+                    <Square className="mr-2 h-4 w-4" />
+                    Stop
+                  </Button>
+                </>
+              )}
+            </div>
+
             {result.rules_explanation && (
               <div>
                 <p className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
