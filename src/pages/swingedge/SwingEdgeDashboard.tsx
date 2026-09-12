@@ -220,6 +220,9 @@ export default function SwingEdgeDashboard() {
         </p>
       </CollapsibleSection>
 
+      {/* Guided trade workflow + live-trade readiness */}
+      <TradeWorkflow />
+
       {/* Watchlist (self-collapsing) */}
       <WatchlistDashboardCard />
 
