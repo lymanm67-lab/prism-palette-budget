@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -189,10 +191,29 @@ export default function FundamentalsEntry() {
   const bundle = analysis.data?.bundle ?? null;
   const detectedType = analysis.data?.assetType ?? null;
 
-  // Follow the provider on what the symbol actually is.
+  // Known fund/ETF directory wins over the provider, which often mislabels funds
+  // as companies when the data plan is rate limited.
+  const directory = useQuery({
+    queryKey: ['se-market-symbol-type', symbol],
+    enabled: !!symbol,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('se_market_symbols')
+        .select('asset_type')
+        .eq('symbol', symbol)
+        .maybeSingle();
+      const raw = (data?.asset_type ?? '').toString().toUpperCase();
+      return raw === 'ETF' ? 'ETF' : raw === 'STOCK' ? 'STOCK' : null;
+    },
+  });
+
+  const directoryType = directory.data ?? null;
+
+  // Follow the directory first, then the provider.
   useEffect(() => {
-    if (detectedType && detectedType !== assetType) setAssetType(detectedType);
-  }, [detectedType, assetType]);
+    const next = directoryType ?? detectedType;
+    if (next && next !== assetType) setAssetType(next);
+  }, [directoryType, detectedType, assetType]);
 
   // Load whatever is already saved for this symbol.
   useEffect(() => {
@@ -211,7 +232,8 @@ export default function FundamentalsEntry() {
     setCompanyName((row?.company_name as string | null) ?? '');
     setSector((row?.sector as string | null) ?? '');
     setIndustry((row?.industry as string | null) ?? '');
-    if (row?.asset_type) setAssetType(row.asset_type === 'ETF' ? 'ETF' : 'STOCK');
+    if (row?.asset_type)
+      setAssetType(String(row.asset_type).toUpperCase() === 'ETF' ? 'ETF' : 'STOCK');
   }, [override.row, symbol]);
 
   const groups = assetType === 'ETF' ? ETF_GROUPS : STOCK_GROUPS;
