@@ -25,6 +25,9 @@ interface AiResponse {
   } | null;
   agreement?: string;
   comparison?: string;
+  confidence?: string;
+  confidence_reason?: string;
+  if_wrong?: string;
   risks?: string[];
   checks?: string[];
   note?: string;
