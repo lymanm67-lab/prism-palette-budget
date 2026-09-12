@@ -91,6 +91,7 @@ export default function AiLevelsAssistant({
       setError('Enter a symbol first.');
       return;
     }
+    window.speechSynthesis?.cancel();
     setLoading(true);
     setError(null);
     setResult(null);
