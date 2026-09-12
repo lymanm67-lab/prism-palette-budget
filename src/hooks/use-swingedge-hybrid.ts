@@ -116,7 +116,7 @@ export function useHybridAnalysis(symbol: string | null, assetTypeHint?: 'STOCK'
       // Hand entry is the fallback, never the first stop.
       const manualProvider = new ManualFundamentals(householdId);
       const [alphaBundle, manualBundle] = await Promise.all([
-        mode === 'demo'
+        mode === 'DEMO'
           ? Promise.resolve(null)
           : new AlphaVantageFundamentals().getBundle(sym, assetType),
         manualProvider.getBundle(sym, assetType),
