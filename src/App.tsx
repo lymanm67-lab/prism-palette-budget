@@ -336,6 +336,7 @@ const App = () => (
               <Route path="/swingedge/scanner" element={<Suspense fallback={<PageLoader />}><SwingEdgeScanner /></Suspense>} />
               <Route path="/swingedge/live" element={<Suspense fallback={<PageLoader />}><SwingEdgeLiveData /></Suspense>} />
               <Route path="/swingedge/analyzer" element={<Suspense fallback={<PageLoader />}><SwingEdgeAnalyzer /></Suspense>} />
+              <Route path="/swingedge/fundamentals" element={<Suspense fallback={<PageLoader />}><SwingEdgeFundamentals /></Suspense>} />
               <Route path="/swingedge/watchlists" element={<Suspense fallback={<PageLoader />}><SwingEdgeWatchlists /></Suspense>} />
               <Route path="/swingedge/planner" element={<Suspense fallback={<PageLoader />}><SwingEdgePlanner /></Suspense>} />
               <Route path="/swingedge/paper-trading" element={<Suspense fallback={<PageLoader />}><SwingEdgePaperTrading /></Suspense>} />
