@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Loader2, Play, RefreshCw, Search } from 'lucide-react';
+import { ArrowRight, Loader2, Play, RefreshCw, Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -78,6 +78,9 @@ export default function MarketScanner() {
   }, [rows]);
 
   const batches = Math.max(1, Math.ceil(selected.length / 4));
+
+  const nextCandidate =
+    shown.find((r) => r.verdict === 'QUALIFIES') ?? shown.find((r) => r.verdict === 'WATCH');
 
   return (
     <div className="space-y-6 p-4 md:p-6">
@@ -260,6 +263,82 @@ export default function MarketScanner() {
         Every entry, stop, target and reward-to-risk shown here is an estimate from the chart, shown
         in italics. Planned numbers are the ones you set yourself in the Trade Planner.
       </p>
+
+      {running.length > 0 && rows.length > 0 && (
+        <Card className="border-primary/20">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">What to do next</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            {counts.QUALIFIES > 0 ? (
+              <p className="text-muted-foreground">
+                {counts.QUALIFIES} name{counts.QUALIFIES === 1 ? '' : 's'} qualif
+                {counts.QUALIFIES === 1 ? 'ies' : 'y'} right now. Open the best one or two in the
+                Stock Analyzer to confirm the setup yourself, then write your own entry, stop and
+                target in the Trade Planner. Never take the scan's numbers as-is.
+              </p>
+            ) : counts.WATCH > 0 ? (
+              <p className="text-muted-foreground">
+                Nothing qualifies yet, but {counts.WATCH} setup
+                {counts.WATCH === 1 ? ' is' : 's are'} forming. Open them in the Stock Analyzer to
+                see what needs to happen, then re-scan tomorrow instead of forcing a trade today.
+              </p>
+            ) : (
+              <p className="text-muted-foreground">
+                Nothing qualified in this list. That is a valid result — a good day to study the
+                Academy or review past trades rather than hunt for a weaker setup.
+              </p>
+            )}
+            <ol className="space-y-2">
+              <li className="flex items-center gap-2">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                  1
+                </span>
+                <span className="flex-1 text-muted-foreground">
+                  Confirm the setup and trend yourself
+                </span>
+                <Button asChild size="sm" variant="outline">
+                  <Link
+                    to={
+                      nextCandidate
+                        ? `/swingedge/analyzer?symbol=${nextCandidate.symbol}`
+                        : '/swingedge/analyzer'
+                    }
+                  >
+                    Open Analyzer <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                  </Link>
+                </Button>
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                  2
+                </span>
+                <span className="flex-1 text-muted-foreground">
+                  Write your own entry, stop and target — this gives you share size and dollar risk
+                </span>
+                <Button asChild size="sm" variant="outline">
+                  <Link to="/swingedge/planner">
+                    Open Trade Planner <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                  </Link>
+                </Button>
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                  3
+                </span>
+                <span className="flex-1 text-muted-foreground">
+                  Take it on paper, then journal what happened
+                </span>
+                <Button asChild size="sm" variant="outline">
+                  <Link to="/swingedge/journal">
+                    Open Journal <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                  </Link>
+                </Button>
+              </li>
+            </ol>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
