@@ -9,7 +9,18 @@ import { loadCandles, useTradingSettings } from '@/hooks/use-swingedge';
 import { atr, last, setupState, snapshot, type IndicatorSnapshot, type SetupState } from '@/lib/swingedge/indicators';
 import { candleBasis, entryZone } from '@/lib/swingedge/signalLifecycle';
 import { revalidateSignal } from '@/lib/swingedge/revalidation';
+import {
+  classifyOutcome,
+  compareLoss,
+  liquidityTier,
+  scoreExecutionQuality,
+  scoreSignalQuality,
+  simulateFill,
+  stopExitReference,
+  type LiquidityTier,
+} from '@/lib/swingedge/execution';
 import type { Candle } from '@/lib/swingedge/types';
+
 
 const num = (v: unknown): number => Number(v ?? 0);
 const round2 = (n: number) => Math.round(n * 100) / 100;
@@ -312,6 +323,18 @@ export interface ManagedTrade {
   exit_reason: string | null;
   realized_pl: number | null;
   notes: string | null;
+  /* Execution realism — what the plan asked for versus what a fill would give. */
+  planned_stop: number | null;
+  revalidated_at: string | null;
+  simulated_fill: number | null;
+  slippage: number | null;
+  gap_difference: number | null;
+  planned_loss: number | null;
+  actual_simulated_loss: number | null;
+  execution_score: number | null;
+  signal_quality: string | null;
+  outcome_class: string | null;
+
 }
 
 export interface StopModification {
@@ -378,6 +401,18 @@ export function usePaperTradeManagement() {
         exit_reason: t.exit_reason,
         realized_pl: t.realized_pl === null ? null : num(t.realized_pl),
         notes: t.notes,
+        planned_stop: t.planned_stop === null ? null : num(t.planned_stop),
+        revalidated_at: t.revalidated_at,
+        simulated_fill: t.simulated_fill === null ? null : num(t.simulated_fill),
+        slippage: t.slippage === null ? null : num(t.slippage),
+        gap_difference: t.gap_difference === null ? null : num(t.gap_difference),
+        planned_loss: t.planned_loss === null ? null : num(t.planned_loss),
+        actual_simulated_loss:
+          t.actual_simulated_loss === null ? null : num(t.actual_simulated_loss),
+        execution_score: t.execution_score === null ? null : Number(t.execution_score),
+        signal_quality: t.signal_quality,
+        outcome_class: t.outcome_class,
+
       }));
     },
   });
@@ -479,9 +514,88 @@ export function usePaperTradeManagement() {
     onSuccess: invalidate,
   });
 
+  // Closing a trade is where the plan meets the market. The exit price the user
+  // types is a request, not a fill: slippage works against it, and a session that
+  // opened past the stop means the stop never traded. The result is then split
+  // three ways — was the setup sound, was the plan followed, and what did the
+  // money do — so a disciplined loss is never mistaken for a mistake.
   const closeTrade = useMutation({
     mutationFn: async (input: { trade: ManagedTrade; exitPrice: number; reason: string; date?: string }) => {
-      const pl = round2((input.exitPrice - input.trade.entry_price) * input.trade.shares);
+      const { trade } = input;
+      const stopExit = /stop/i.test(input.reason);
+
+      let tier: LiquidityTier = 'THIN';
+      let nextOpen: number | null = null;
+      try {
+        const { candles } = await loadCandles(trade.symbol, '1day', settings.data_mode);
+        const recent = candles.slice(-20);
+        if (recent.length) {
+          const avgDollarVolume =
+            recent.reduce((s, c) => s + c.close * c.volume, 0) / recent.length;
+          tier = liquidityTier(avgDollarVolume);
+        }
+        // A stop exit only fills at the stop when the session traded through it.
+        // If the last completed session opened below the stop, that open is the
+        // earliest price the exit could realistically have got.
+        const lastCandle = last(candles);
+        if (stopExit && lastCandle) {
+          const ref = stopExitReference(trade.stop_price, lastCandle);
+          if (ref.gapped) nextOpen = ref.reference;
+        }
+      } catch {
+        // No fresh candles — fall back to the cautious tier and no gap.
+      }
+
+      const fill = simulateFill({
+        side: 'SELL',
+        requested: input.exitPrice,
+        shares: trade.shares,
+        tier,
+        nextOpen,
+      });
+
+      const pl = round2((fill.filled - trade.entry_price) * trade.shares);
+      const plannedStop = trade.planned_stop ?? trade.original_stop ?? trade.stop_price;
+      const loss = compareLoss({
+        entryFill: trade.entry_price,
+        exitFill: fill.filled,
+        plannedEntry: trade.entry_price,
+        plannedStop,
+        shares: trade.original_shares ?? trade.shares,
+      });
+
+      // Did the stop ever move away from price on this trade?
+      const widened = (modsQuery.data ?? []).some((m) => m.paper_trade_id === trade.id && m.widened);
+      const rr =
+        trade.stop_price < trade.entry_price
+          ? round2((trade.target_price - trade.entry_price) / (trade.entry_price - trade.stop_price))
+          : null;
+
+      const signal = scoreSignalQuality({
+        hybridScore: null,
+        stopJustified: !widened && !!trade.invalidation,
+        rewardRisk: rr,
+        minimumRewardRisk: 2,
+        hardGateFailures: 0,
+        setupPresent: !!trade.setup_type,
+      });
+
+      const execution = scoreExecutionQuality({
+        enteredInZone: true,
+        stopDefinedBeforeEntry: !!trade.original_stop,
+        stopWidened: widened,
+        exitFollowedPlan: !/changed my mind/i.test(input.reason),
+        sizeCalculatedFirst: !!trade.initial_dollar_risk,
+        revalidatedBeforeEntry: !!trade.revalidated_at,
+        journaled: true,
+      });
+
+      const outcome = classifyOutcome({
+        signalQuality: signal.quality,
+        executionScore: execution.score,
+        realizedPl: pl,
+      });
+
       const { error } = await supabase
         .from('se_paper_trades')
         .update({
@@ -490,12 +604,23 @@ export function usePaperTradeManagement() {
           exit_date: input.date ?? new Date().toISOString().slice(0, 10),
           exit_reason: input.reason,
           realized_pl: pl,
+          simulated_fill: fill.filled,
+          slippage: fill.slippagePerShare,
+          gap_difference: fill.gapDifference,
+          planned_loss: loss.plannedLoss,
+          actual_simulated_loss: loss.actualLoss,
+          execution_score: execution.score,
+          signal_quality: signal.quality,
+          outcome_class: outcome.outcome,
         })
-        .eq('id', input.trade.id);
+        .eq('id', trade.id);
       if (error) throw error;
+
+      return { fill, loss, execution, signal, outcome, realizedPl: pl };
     },
     onSuccess: invalidate,
   });
+
 
   const openRisk = useMemo(
     () =>
