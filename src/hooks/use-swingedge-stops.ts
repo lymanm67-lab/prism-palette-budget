@@ -228,7 +228,6 @@ export function useTradePlans() {
       await supabase.from('se_signal_revalidations').insert({
         household_id: householdId,
         symbol: plan.symbol,
-        symbol: plan.symbol,
         previous_signal: 'GO',
         new_signal: verdict.effectiveSignal,
         previous_entry_low: zone.low,
