@@ -6,13 +6,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import CandlePatternCard from '@/components/swingedge/CandlePatternCard';
 import CollapsibleSection from '@/components/swingedge/CollapsibleSection';
 import HowToUse from '@/components/swingedge/HowToUse';
 import HybridSignalCard from '@/components/swingedge/HybridSignalCard';
 import ManualFundamentalsForm from '@/components/swingedge/ManualFundamentalsForm';
 import QualityScoreCard from '@/components/swingedge/QualityScoreCard';
 import { RiskQualityCard, TechnicalCard } from '@/components/swingedge/TechnicalRiskCards';
-import { useTradingTitle } from '@/hooks/use-swingedge';
+import { useTradingSettings, useTradingTitle } from '@/hooks/use-swingedge';
 import { useHybridAnalysis, useHybridSignalHistory } from '@/hooks/use-swingedge-hybrid';
 
 const money = (n: number | null) =>
@@ -27,6 +28,7 @@ export default function StockAnalyzer() {
 
   const { analysis, isLoading, isFetching, save, isSaving } = useHybridAnalysis(symbol);
   const { data: history } = useHybridSignalHistory(symbol ?? undefined);
+  const { settings } = useTradingSettings();
 
   const run = () => {
     const next = input.trim().toUpperCase();
@@ -86,6 +88,7 @@ export default function StockAnalyzer() {
         steps={[
           'Type a symbol and read the combined signal first, then the three cards behind it.',
           'GO means every layer clears your minimums. WAIT means nothing is wrong yet. REVIEW needs a judgement call from you. STOP means a rule is broken.',
+          'Open a candlestick pattern to read where it formed, whether volume agreed, and why it might not matter.',
           'Check the data confidence line. A score built on half the figures is not the same as a complete one.',
           'If figures are missing, type them in yourself lower down the page — they will be labelled as yours.',
           'When you are happy, send the idea to the Trade Planner and set your own entry, stop and target there.',
@@ -146,6 +149,8 @@ export default function StockAnalyzer() {
             <TechnicalCard score={analysis.technical} />
             <RiskQualityCard risk={analysis.risk} />
           </div>
+
+          <CandlePatternCard analysis={analysis.candles} advanced={settings.advanced_mode} />
 
           {levels && (
             <Card className="border-border/60 bg-card/60 backdrop-blur">

@@ -19,6 +19,7 @@ import { combineConfidence, type DataConfidence } from '@/lib/swingedge/confiden
 import { detectConflicts } from '@/lib/swingedge/conflicts';
 import { computeHybridSignal, HYBRID_METHODOLOGY_VERSION, type HybridResult } from '@/lib/swingedge/hybrid';
 import { candleBasis, entryZone, priceOutsideZone, validUntil } from '@/lib/swingedge/signalLifecycle';
+import { analyzeCandles, type CandleAnalysis } from '@/lib/swingedge/candleEngine';
 import { MARKET_BENCHMARK, SECTOR_BENCHMARKS, profileFor } from '@/lib/swingedge/sectors';
 import {
   ManualFundamentals,
@@ -54,6 +55,8 @@ export interface HybridAnalysis {
   entryZone: { low: number; high: number } | null
   source: 'demo' | 'cache' | 'live';
   notice: string | null;
+  /** Candlestick read for the daily timeframe. Feeds Setup Quality only. */
+  candles: CandleAnalysis;
   sectorSymbol: string;
   marketTrendSymbol: string;
   dataSources: string[];
@@ -124,11 +127,22 @@ export function useHybridAnalysis(symbol: string | null, assetTypeHint?: 'STOCK'
         sectorSymbol === MARKET_BENCHMARK ? Promise.resolve(null) : benchmarkTrend(sectorSymbol, mode),
       ]);
 
+      // Candlestick evidence, scored in context. It contributes at most 7 points
+      // inside Setup Quality and can never promote a signal on its own.
+      const candleAnalysis = analyzeCandles(priceResult.candles, {
+        completedCount: basis.completed.length,
+        majorOnly: !settings.advanced_mode,
+        marketTrend,
+        sectorTrend: sectorTrend ?? marketTrend,
+        minScore: settings.advanced_mode ? 40 : undefined,
+      });
+
       const alignment: AlignmentContext = {
         assetType,
         marketTrend,
         sectorTrend: sectorTrend ?? marketTrend,
         sectorSymbol,
+        candleConfirmation: candleAnalysis.confirmation,
       };
       const technical = scoreSymbol(sym, usable, alignment);
 
@@ -266,6 +280,7 @@ export function useHybridAnalysis(symbol: string | null, assetTypeHint?: 'STOCK'
         lastCompletedCandleAt: basis.lastCompletedAt,
         validUntil: until,
         entryZone: zone,
+        candles: candleAnalysis,
         source: priceResult.source,
         notice: priceResult.notice,
         sectorSymbol,
