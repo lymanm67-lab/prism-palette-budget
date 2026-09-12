@@ -79,6 +79,9 @@ export default function MarketScanner() {
 
   const batches = Math.max(1, Math.ceil(selected.length / 4));
 
+  const nextCandidate =
+    shown.find((r) => r.verdict === 'QUALIFIES') ?? shown.find((r) => r.verdict === 'WATCH');
+
   return (
     <div className="space-y-6 p-4 md:p-6">
       <header className="space-y-1">
