@@ -228,6 +228,14 @@ export default function SwingEdgeDashboard() {
       {/* Risk actually on the table right now */}
       <PortfolioHeatCard />
 
+      {/* Daily discipline: five questions, and the pause after a losing run */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <DailyChecklistCard />
+        <CircuitBreakerCard />
+      </div>
+
+
+
 
       {/* Watchlist (self-collapsing) */}
       <PortfolioRolesCard />
