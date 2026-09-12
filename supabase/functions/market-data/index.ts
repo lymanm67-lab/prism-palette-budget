@@ -28,15 +28,26 @@ function json(body: Json, status = 200) {
   });
 }
 
+class RateLimitError extends Error {}
+
+function looksRateLimited(message: string): boolean {
+  const m = message.toLowerCase();
+  return m.includes('rate limit') || m.includes('requests per day') || m.includes('more sparingly') || m.includes('premium');
+}
+
 async function av(params: Record<string, string>, apiKey: string): Promise<Json> {
   const url = new URL(BASE);
   Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
   url.searchParams.set('apikey', apiKey);
   const res = await fetch(url.toString());
+  if (res.status === 429) throw new RateLimitError('Market data provider limit reached — try again later.');
   if (!res.ok) throw new Error(`Alpha Vantage ${res.status}`);
   const body = (await res.json()) as Json;
-  if (typeof body['Note'] === 'string') throw new Error('Alpha Vantage rate limit reached — try again in a minute.');
-  if (typeof body['Information'] === 'string') throw new Error(String(body['Information']));
+  if (typeof body['Note'] === 'string') throw new RateLimitError('Market data provider limit reached — try again in a minute.');
+  if (typeof body['Information'] === 'string') {
+    const info = String(body['Information']);
+    throw looksRateLimited(info) ? new RateLimitError('Daily market data limit reached — figures will refresh tomorrow.') : new Error(info);
+  }
   if (typeof body['Error Message'] === 'string') throw new Error(String(body['Error Message']));
   return body;
 }
