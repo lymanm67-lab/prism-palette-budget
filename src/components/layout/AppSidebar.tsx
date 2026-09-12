@@ -95,6 +95,23 @@ export const NAV_SECTIONS: NavSection[] = [
     ],
   },
   {
+    label: 'Trading (SwingEdge)',
+    items: [
+      { to: '/swingedge', icon: Gauge, label: 'Trading Dashboard', color: 'text-prism-teal' },
+      { to: '/swingedge/scanner', icon: Search, label: 'Market Scanner', color: 'text-prism-amber' },
+      { to: '/swingedge/analyzer', icon: LineChart, label: 'Stock Analyzer', color: 'text-prism-sky' },
+      { to: '/swingedge/watchlists', icon: Layers, label: 'Watchlists', color: 'text-prism-indigo' },
+      { to: '/swingedge/planner', icon: ClipboardCheck, label: 'Trade Planner', color: 'text-prism-lime' },
+      { to: '/swingedge/paper-trading', icon: Activity, label: 'Paper Trading', color: 'text-prism-violet' },
+      { to: '/swingedge/backtester', icon: Clock, label: 'Historical Testing', color: 'text-prism-orange' },
+      { to: '/swingedge/journal', icon: FileText, label: 'Trade Journal', color: 'text-prism-amber' },
+      { to: '/swingedge/performance', icon: BarChart3, label: 'Performance Review', color: 'text-prism-teal' },
+      { to: '/swingedge/academy', icon: BookOpen, label: 'Trading Academy', color: 'text-prism-lime' },
+      { to: '/swingedge/settings', icon: Settings, label: 'Trading Settings', color: 'text-prism-sky' },
+    ],
+  },
+
+  {
     label: 'Health & Longevity',
     items: [
       { to: '/health', icon: HeartPulse, label: 'Health Dashboard', color: 'text-prism-rose', essential: true },

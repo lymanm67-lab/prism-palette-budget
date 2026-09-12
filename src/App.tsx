@@ -131,6 +131,18 @@ const FreedCashReconcile = lazy(() => import("./pages/FreedCashReconcile"));
 const RetirementHub = lazy(() => import("@/pages/RetirementHub"));
 const HealthDashboard = lazy(() => import("@/pages/health/HealthDashboard"));
 const ContentEditor = lazy(() => import("@/pages/admin/ContentEditor"));
+const SwingEdgeDashboard = lazy(() => import("./pages/swingedge/SwingEdgeDashboard"));
+const SwingEdgeScanner = lazy(() => import("./pages/swingedge/MarketScanner"));
+const SwingEdgeAnalyzer = lazy(() => import("./pages/swingedge/StockAnalyzer"));
+const SwingEdgeWatchlists = lazy(() => import("./pages/swingedge/Watchlists"));
+const SwingEdgePlanner = lazy(() => import("./pages/swingedge/TradePlanner"));
+const SwingEdgePaperTrading = lazy(() => import("./pages/swingedge/PaperTrading"));
+const SwingEdgeBacktester = lazy(() => import("./pages/swingedge/Backtester"));
+const SwingEdgeJournal = lazy(() => import("./pages/swingedge/TradeJournal"));
+const SwingEdgePerformance = lazy(() => import("./pages/swingedge/Performance"));
+const SwingEdgeAcademy = lazy(() => import("./pages/swingedge/TradingAcademy"));
+const SwingEdgeSettings = lazy(() => import("./pages/swingedge/SwingEdgeSettings"));
+
 
 
 const queryClient = new QueryClient();
@@ -315,6 +327,18 @@ const App = () => (
               <Route path="/investments/portfolio" element={<Suspense fallback={<PageLoader />}><InvestmentPortfolio /></Suspense>} />
               <Route path="/health" element={<Suspense fallback={<PageLoader />}><HealthDashboard /></Suspense>} />
               <Route path="/admin/content-editor" element={<Suspense fallback={<PageLoader />}><ContentEditor /></Suspense>} />
+              <Route path="/swingedge" element={<Suspense fallback={<PageLoader />}><SwingEdgeDashboard /></Suspense>} />
+              <Route path="/swingedge/scanner" element={<Suspense fallback={<PageLoader />}><SwingEdgeScanner /></Suspense>} />
+              <Route path="/swingedge/analyzer" element={<Suspense fallback={<PageLoader />}><SwingEdgeAnalyzer /></Suspense>} />
+              <Route path="/swingedge/watchlists" element={<Suspense fallback={<PageLoader />}><SwingEdgeWatchlists /></Suspense>} />
+              <Route path="/swingedge/planner" element={<Suspense fallback={<PageLoader />}><SwingEdgePlanner /></Suspense>} />
+              <Route path="/swingedge/paper-trading" element={<Suspense fallback={<PageLoader />}><SwingEdgePaperTrading /></Suspense>} />
+              <Route path="/swingedge/backtester" element={<Suspense fallback={<PageLoader />}><SwingEdgeBacktester /></Suspense>} />
+              <Route path="/swingedge/journal" element={<Suspense fallback={<PageLoader />}><SwingEdgeJournal /></Suspense>} />
+              <Route path="/swingedge/performance" element={<Suspense fallback={<PageLoader />}><SwingEdgePerformance /></Suspense>} />
+              <Route path="/swingedge/academy" element={<Suspense fallback={<PageLoader />}><SwingEdgeAcademy /></Suspense>} />
+              <Route path="/swingedge/settings" element={<Suspense fallback={<PageLoader />}><SwingEdgeSettings /></Suspense>} />
+
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
