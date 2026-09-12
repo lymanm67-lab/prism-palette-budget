@@ -379,7 +379,30 @@ export function useHybridAnalysis(symbol: string | null, assetTypeHint?: 'STOCK'
     if (query.data) await persist.mutateAsync(query.data);
   }, [persist, query.data]);
 
-  return { ...query, analysis: query.data ?? null, save, isSaving: persist.isPending, advancedMode: settings.advanced_mode };
+  /**
+   * Fetch the business figures again. "full" also pulls the statements, which
+   * costs three extra provider requests, so it stays a deliberate choice.
+   */
+  const refreshFigures = useMutation({
+    mutationFn: async (depth: 'basic' | 'full' = 'basic') => {
+      if (!symbol) throw new Error('No symbol');
+      const assetType = query.data?.assetType ?? assetTypeHint ?? 'STOCK';
+      return new AlphaVantageFundamentals({ depth, force: true }).getBundle(symbol, assetType);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['se-hybrid'] });
+    },
+  });
+
+  return {
+    ...query,
+    analysis: query.data ?? null,
+    save,
+    isSaving: persist.isPending,
+    advancedMode: settings.advanced_mode,
+    refreshFigures: refreshFigures.mutateAsync,
+    isRefreshingFigures: refreshFigures.isPending,
+  };
 }
 
 /** Recent signal changes for one symbol or the whole household. */
