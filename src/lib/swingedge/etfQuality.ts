@@ -205,7 +205,9 @@ export function scoreEtfQuality(
           max: weights.volatility,
           points: tier(metrics.annualVolatilityPct, [15, 25, 40], weights.volatility, false),
           available: true,
-          detail: `Yearly price swing is running near ${metrics.annualVolatilityPct}%.`,
+          detail: `Yearly price swing is running near ${metrics.annualVolatilityPct}%${
+            metrics.derivedFromPriceHistory ? ', measured from daily closes' : ''
+          }.`,
         }
       : missing('volatility', 'Volatility', 'Volatility figure is unavailable.'),
   );
