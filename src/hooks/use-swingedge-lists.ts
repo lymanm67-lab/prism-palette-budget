@@ -396,7 +396,10 @@ export function useAcademyProgress() {
       );
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['se-academy-progress'] }),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ['se-academy-progress'] });
+      await query.refetch();
+    },
   });
 
   const rows = query.data ?? [];
