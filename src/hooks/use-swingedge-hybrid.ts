@@ -283,7 +283,9 @@ export function useHybridAnalysis(symbol: string | null, assetTypeHint?: 'STOCK'
         .eq('symbol', analysis.symbol)
         .maybeSingle();
 
-      const row = {
+      // Cast at the boundary: these nested shapes are plain JSON at rest.
+      const row: Record<string, unknown> = {
+
         household_id: householdId,
         symbol: analysis.symbol,
         asset_type: analysis.assetType,
