@@ -24,6 +24,7 @@ export const ACADEMY_MODULES = [
   'Setups',
   'Risk and sizing',
   'Managing and reviewing',
+  'Stop-loss mastery',
 ] as const;
 
 export const LESSONS: Lesson[] = [
