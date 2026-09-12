@@ -13,6 +13,11 @@ import HybridSignalCard from '@/components/swingedge/HybridSignalCard';
 import ManualFundamentalsForm from '@/components/swingedge/ManualFundamentalsForm';
 import QualityScoreCard from '@/components/swingedge/QualityScoreCard';
 import { RiskQualityCard, TechnicalCard } from '@/components/swingedge/TechnicalRiskCards';
+import {
+  MarketRegimeCard,
+  RelativeStrengthCard,
+  TradabilityCard,
+} from '@/components/swingedge/ContextCards';
 import { useTradingSettings, useTradingTitle } from '@/hooks/use-swingedge';
 import { useHybridAnalysis, useHybridSignalHistory } from '@/hooks/use-swingedge-hybrid';
 
