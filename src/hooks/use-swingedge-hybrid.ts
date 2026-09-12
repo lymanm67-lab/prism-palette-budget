@@ -317,7 +317,11 @@ export function useHybridAnalysis(symbol: string | null, assetTypeHint?: 'STOCK'
         methodology_version: HYBRID_METHODOLOGY_VERSION,
       };
 
-      const { error } = await supabase.from('se_hybrid_scores').upsert([row], { onConflict: 'household_id,symbol' });
+      const { error } = await supabase
+        .from('se_hybrid_scores')
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .upsert(row as any, { onConflict: 'household_id,symbol' });
+
       if (error) throw error;
 
       if (existing?.signal !== analysis.hybrid.signal) {
