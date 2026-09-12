@@ -191,14 +191,21 @@ function WeekCard({ weekNumber }: { weekNumber: number }) {
           {week.doneWhen}
         </p>
 
-        <Button
-          size="sm"
-          variant={done ? 'outline' : 'default'}
-          disabled={isSaving}
-          onClick={() => saveWeek({ week: weekNumber, progress: {}, completed: !done })}
-        >
-          {done ? 'Reopen this week' : 'Mark this week done'}
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild size="sm">
+            <Link to={`/swingedge/training/week/${weekNumber}`}>
+              Open week {weekNumber} day by day <ArrowRight className="ml-1 h-3.5 w-3.5" />
+            </Link>
+          </Button>
+          <Button
+            size="sm"
+            variant={done ? 'outline' : 'secondary'}
+            disabled={isSaving}
+            onClick={() => saveWeek({ week: weekNumber, progress: {}, completed: !done })}
+          >
+            {done ? 'Reopen this week' : 'Mark this week done'}
+          </Button>
+        </div>
       </div>
     </CollapsibleSection>
   );
