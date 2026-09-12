@@ -241,8 +241,11 @@ export default function FundamentalsEntry() {
   const providerValues = useMemo(() => {
     const base: Record<string, unknown> = { ...(bundle?.metrics ?? {}) };
     if (bundle?.etf) Object.assign(base, bundle.etf);
+    // The analyzer measures fund liquidity, spread and volatility from price
+    // history when the data plan omits them, so those count as "app has it".
+    if (analysis.data?.etfInputs) Object.assign(base, analysis.data.etfInputs);
     return base;
-  }, [bundle]);
+  }, [bundle, analysis.data?.etfInputs]);
 
   const blanks = useMemo(
     () =>

@@ -50,6 +50,10 @@ export interface HybridAnalysis {
   risk: RiskScoreResult;
   fundamental: FundamentalScoreResult | null;
   etf: EtfQualityResult | null
+  /** The exact fund metrics the score ran on — provider figures with the
+   *  price-history-measured liquidity, spread and volatility already merged
+   *  in. Lets screens tell "the app has this" from a true blank. */
+  etfInputs: Record<string, unknown> | null
   qualityScore: number | null;
   hybrid: HybridResult;
   bundle: FundamentalBundle;
@@ -231,6 +235,7 @@ export function useHybridAnalysis(symbol: string | null, assetTypeHint?: 'STOCK'
 
       let fundamental: FundamentalScoreResult | null = null;
       let etf: EtfQualityResult | null = null;
+      let etfInputs: Record<string, unknown> | null = null;
       if (assetType === 'ETF') {
         // Liquidity, trading cost and volatility are measurable from the price
         // history we already hold, so a fund is never marked "no data" for them
@@ -254,11 +259,15 @@ export function useHybridAnalysis(symbol: string | null, assetTypeHint?: 'STOCK'
           (provided.spreadPct == null && measuredSpreadPct !== null) ||
           (provided.annualVolatilityPct == null && measuredVolPct !== null);
 
-        etf = scoreEtfQuality({
+        const mergedEtfMetrics = {
           ...provided,
           avgDollarVolume: provided.avgDollarVolume ?? measuredDollarVolume,
           spreadPct: provided.spreadPct ?? measuredSpreadPct,
           annualVolatilityPct: provided.annualVolatilityPct ?? measuredVolPct,
+        };
+        etfInputs = mergedEtfMetrics as Record<string, unknown>;
+        etf = scoreEtfQuality({
+          ...mergedEtfMetrics,
           derivedFromPriceHistory: usedMeasured,
         }, {
           provider: providerQuality,
@@ -381,6 +390,7 @@ export function useHybridAnalysis(symbol: string | null, assetTypeHint?: 'STOCK'
         risk,
         fundamental,
         etf,
+        etfInputs,
         qualityScore,
         hybrid,
         bundle,
