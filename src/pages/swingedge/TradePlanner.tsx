@@ -995,10 +995,18 @@ export default function TradePlanner() {
                         <Button
                           size="sm"
                           variant="outline"
-                          disabled={isSaving}
+                          disabled={isSaving || !breaker.assessment.canOpenNewTrade}
                           onClick={async () => {
+                            if (!breaker.assessment.canOpenNewTrade) {
+                              toast.error(
+                                `${breaker.assessment.headline} — finish the review on the Training page before opening another paper trade.`,
+                                { duration: 9000 },
+                              );
+                              return;
+                            }
                             try {
                               await openPaperTrade(p);
+
                               toast.success('Paper trade opened with the plan locked in');
                             } catch (err) {
                               toast.error(
