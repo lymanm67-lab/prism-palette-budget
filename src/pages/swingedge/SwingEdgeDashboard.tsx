@@ -219,14 +219,8 @@ export default function SwingEdgeDashboard() {
         </p>
       </CollapsibleSection>
 
-      {/* Watchlist */}
-      <CollapsibleSection
-        id="dash-watchlist"
-        title="Your watchlist"
-        description="Your symbols with live scores and verdicts."
-      >
-        <WatchlistDashboardCard />
-      </CollapsibleSection>
+      {/* Watchlist (self-collapsing) */}
+      <WatchlistDashboardCard />
 
       {/* The loop */}
       <CollapsibleSection
