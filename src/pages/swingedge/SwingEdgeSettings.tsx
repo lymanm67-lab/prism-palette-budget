@@ -102,11 +102,31 @@ export default function SwingEdgeSettings() {
     const c = Number(capital);
     const r = Number(riskPct);
     const p = Number(portfolioPct);
+    const sc = Number(sectorCapital);
+    const sh = Number(sectorHeat);
+    const cr = Number(correlatedRisk);
+    const lb = Number(lookback);
     if (!(c > 0) || !(r > 0) || !(p > 0)) {
       toast.error('Trading capital and both risk percentages must be greater than zero.');
       return;
     }
-    await save({ trading_capital: c, risk_per_trade_pct: r, max_portfolio_risk_pct: p });
+    if (!(sc > 0) || !(sh > 0) || !(cr > 0)) {
+      toast.error('Sector and correlated-group limits must be greater than zero.');
+      return;
+    }
+    if (!(lb >= 20)) {
+      toast.error('Correlation lookback needs at least 20 days to mean anything.');
+      return;
+    }
+    await save({
+      trading_capital: c,
+      risk_per_trade_pct: r,
+      max_portfolio_risk_pct: p,
+      max_sector_capital_exposure_pct: sc,
+      max_sector_heat_pct: sh,
+      max_correlated_risk_pct: cr,
+      correlation_lookback_days: lb,
+    });
     toast.success('Risk settings saved.');
   };
 
