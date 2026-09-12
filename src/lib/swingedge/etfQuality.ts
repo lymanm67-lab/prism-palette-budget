@@ -118,7 +118,9 @@ export function scoreEtfQuality(
           max: weights.liquidity,
           points: tier(metrics.avgDollarVolume, [2_000_000, 20_000_000, 100_000_000], weights.liquidity),
           available: true,
-          detail: `About ${money(metrics.avgDollarVolume)} changes hands on an average day.`,
+          detail: `About ${money(metrics.avgDollarVolume)} changes hands on an average day${
+            metrics.derivedFromPriceHistory ? ', measured from recent price history' : ''
+          }.`,
         }
       : missing('liquidity', 'Liquidity', 'Average traded value is unavailable.'),
   );
