@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import CandlePatternCard from '@/components/swingedge/CandlePatternCard';
 import CollapsibleSection from '@/components/swingedge/CollapsibleSection';
 import HowToUse from '@/components/swingedge/HowToUse';
+import AiLevelsAssistant from '@/components/swingedge/AiLevelsAssistant';
 import HybridSignalCard from '@/components/swingedge/HybridSignalCard';
 import ManualFundamentalsForm from '@/components/swingedge/ManualFundamentalsForm';
 import QualityScoreCard from '@/components/swingedge/QualityScoreCard';
@@ -264,6 +265,48 @@ export default function StockAnalyzer() {
           </CollapsibleSection>
         </div>
       )}
+
+      <AiLevelsAssistant
+        page="Stock Analyzer"
+        symbol={symbol}
+        price={analysis?.technical.price ?? null}
+        rules={
+          levels
+            ? {
+                entry: levels.estimatedEntry,
+                stop: levels.estimatedStop,
+                target: levels.estimatedTarget,
+                rewardRisk: levels.projectedRewardRisk,
+              }
+            : null
+        }
+        context={
+          analysis
+            ? {
+                assetType: analysis.assetType,
+                hybridSignal: analysis.hybrid,
+                qualityScore: analysis.qualityScore,
+                technicalScore: analysis.technical.score,
+                verdict: analysis.technical.verdict,
+                trend: analysis.technical.trend,
+                setup: analysis.technical.setup,
+                atr: analysis.technical.atr,
+                support: analysis.technical.support,
+                resistance: analysis.technical.resistance,
+                rsi: analysis.technical.rsi,
+                entryZone: analysis.entryZone,
+                riskScore: analysis.risk,
+                candleAssessments: analysis.candles?.assessments?.slice(0, 3) ?? null,
+                candleConfirmation: analysis.candles?.confirmation ?? null,
+                regime: analysis.regime,
+                relativeStrength: analysis.relativeStrength,
+                tradability: analysis.tradability,
+                confidence: analysis.confidence,
+                developing: analysis.developing,
+              }
+            : null
+        }
+      />
     </div>
   );
 }

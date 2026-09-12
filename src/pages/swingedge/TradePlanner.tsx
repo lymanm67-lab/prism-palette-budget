@@ -20,6 +20,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import SwingEdgeHeader from '@/components/swingedge/SwingEdgeHeader';
 import HowToUse from '@/components/swingedge/HowToUse';
+import AiLevelsAssistant from '@/components/swingedge/AiLevelsAssistant';
 import CollapsibleSection from '@/components/swingedge/CollapsibleSection';
 import RiskFirstCard, { GapRiskCard, StopRuleCard } from '@/components/swingedge/RiskFirstCard';
 import { useTradingSettings, useTradingTitle } from '@/hooks/use-swingedge';
@@ -1067,6 +1068,35 @@ export default function TradePlanner() {
           'If a plan would push your total open risk past your portfolio limit, it is blocked on purpose.',
           'Planned numbers are yours; scanner numbers are estimates. Never mix the two.',
         ]}
+      />
+
+      <AiLevelsAssistant
+        page="Trade Planner"
+        symbol={symbol || null}
+        price={levels.data?.snapshot?.price ?? null}
+        rules={{
+          entry: entryNum || null,
+          stop: stopNum || null,
+          target: targetNum || null,
+          rewardRisk: risk.rewardRisk || null,
+        }}
+        context={{
+          setup,
+          suggestedStop,
+          structureInvalidation: structure.invalidationLevel,
+          atr: atrValue,
+          atrMultiple,
+          bufferPct,
+          swingLow: levels.data?.swingLow ?? null,
+          pullbackLow: levels.data?.pullbackLow ?? null,
+          priorHigh: levels.data?.priorHigh ?? null,
+          breakoutLevel: levels.data?.breakoutLevel ?? null,
+          shares: risk.shares,
+          dollarRisk: risk.plannedLoss,
+          problems: risk.problems,
+          tradingCapital: settings.trading_capital,
+          riskPerTradePct: settings.risk_per_trade_pct,
+        }}
       />
     </div>
   );

@@ -10,6 +10,7 @@ import { AlertTriangle, Info, Plus, RefreshCw, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import SwingEdgeHeader from '@/components/swingedge/SwingEdgeHeader';
 import HowToUse from '@/components/swingedge/HowToUse';
+import AiLevelsAssistant from '@/components/swingedge/AiLevelsAssistant';
 import ScoredSymbolTable from '@/components/swingedge/ScoredSymbolTable';
 import { useTradingTitle } from '@/hooks/use-swingedge';
 import { useScoredSymbols, useWatchlists } from '@/hooks/use-swingedge-lists';
@@ -328,6 +329,7 @@ export default function Watchlists() {
           'Lists are private to your household.',
         ]}
       />
+    <AiLevelsAssistant page="Watchlists" />
     </div>
   );
 }

@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import HowToUse from '@/components/swingedge/HowToUse';
+import AiLevelsAssistant from '@/components/swingedge/AiLevelsAssistant';
 import { useTradingSettings, useTradingTitle, useCuratedUniverse } from '@/hooks/use-swingedge';
 import { useScoredSymbols, useWatchlists } from '@/hooks/use-swingedge-lists';
 import { VERDICT_MEANING, VERDICT_TONE } from '@/lib/swingedge/score';
@@ -339,6 +340,41 @@ export default function MarketScanner() {
           </CardContent>
         </Card>
       )}
+
+      <AiLevelsAssistant
+        page="Market Scanner"
+        symbol={nextCandidate?.symbol ?? null}
+        price={nextCandidate?.price ?? null}
+        rules={
+          nextCandidate?.levels
+            ? {
+                entry: nextCandidate.levels.estimatedEntry,
+                stop: nextCandidate.levels.estimatedStop,
+                target: nextCandidate.levels.estimatedTarget,
+                rewardRisk: nextCandidate.levels.projectedRewardRisk,
+              }
+            : null
+        }
+        context={
+          nextCandidate
+            ? {
+                verdict: nextCandidate.verdict,
+                score: nextCandidate.score,
+                setup: nextCandidate.setup,
+                changePercent: nextCandidate.changePercent,
+                trend: nextCandidate.trend,
+                rsi: nextCandidate.rsi,
+                atr: nextCandidate.atr,
+                support: nextCandidate.support,
+                resistance: nextCandidate.resistance,
+                relativeVolume: nextCandidate.relativeVolume,
+                reasons: nextCandidate.reasons,
+                risks: nextCandidate.risks,
+                levelsAreEstimates: true,
+              }
+            : null
+        }
+      />
     </div>
   );
 }
