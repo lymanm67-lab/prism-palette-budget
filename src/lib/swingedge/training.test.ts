@@ -1,7 +1,7 @@
 // Stage 4 & 5 acceptance tests — circuit breakers and the training programme.
 
 import { describe, expect, it } from 'vitest';
-import { assessBreaker, tallyFromTrades, weekStartOf } from './circuitBreaker';
+import { assessBreaker, oneRFrom, tallyFromTrades, weekStartOf } from './circuitBreaker';
 import {
   CHECKLIST_ITEMS,
   TRAINING_WEEKS,
@@ -12,7 +12,15 @@ import {
   weekCompletion,
 } from './training';
 
-const LIMITS = { consecutiveLosses: 3, dailyLossLimit: 300, weeklyLossLimit: 600 };
+// Limits live as R multiples. 1R = $100 here, so 3R = $300 daily and 6R = $600 weekly.
+const LIMITS = {
+  consecutiveLosses: 3,
+  oneR: 100,
+  dailyLossR: 3,
+  weeklyLossR: 6,
+  maxPortfolioHeatPct: 5,
+  accountBalance: 10_000,
+};
 
 const graduationBase = {
   closedPaperTrades: 20,
@@ -42,7 +50,7 @@ describe('Stage 4 — circuit breakers', () => {
       tally: { consecutiveLosses: 3, dailyLoss: 0, weeklyLoss: 0 },
       limits: LIMITS,
     });
-    expect(r.state).toBe('PAUSED_CONSECUTIVE_LOSSES');
+    expect(r.state).toBe('REVIEW_REQUIRED');
     expect(r.canOpenNewTrade).toBe(false);
     expect(r.reviewSteps.length).toBeGreaterThan(3);
   });
@@ -89,9 +97,49 @@ describe('Stage 4 — circuit breakers', () => {
   it('G: zeroed limits mean the breaker is off rather than always tripped', () => {
     const r = assessBreaker({
       tally: { consecutiveLosses: 9, dailyLoss: 9000, weeklyLoss: 9000 },
-      limits: { consecutiveLosses: 0, dailyLossLimit: 0, weeklyLossLimit: 0 },
+      limits: { consecutiveLosses: 0, oneR: 100, dailyLossR: 0, weeklyLossR: 0 },
     });
     expect(r.state).toBe('ACTIVE');
+  });
+
+  it('G2: dollar ceilings are derived from the balance, not stored', () => {
+    const limits = {
+      consecutiveLosses: 3,
+      oneR: oneRFrom(5000, 1),
+      dailyLossR: 2,
+      weeklyLossR: 5,
+      maxPortfolioHeatPct: 5,
+      accountBalance: 5000,
+    };
+    const r = assessBreaker({
+      tally: { consecutiveLosses: 0, dailyLoss: 0, weeklyLoss: 0, portfolioHeatPct: 2 },
+      limits,
+    });
+    expect(r.oneR).toBe(50);
+    expect(r.breakers.daily.limit).toBe(100);
+    expect(r.breakers.weekly.limit).toBe(250);
+    expect(r.heat.limit).toBe(250);
+
+    // Double the account and every dollar ceiling doubles with it.
+    const bigger = assessBreaker({
+      tally: { consecutiveLosses: 0, dailyLoss: 0, weeklyLoss: 0 },
+      limits: { ...limits, oneR: oneRFrom(10_000, 1), accountBalance: 10_000 },
+    });
+    expect(bigger.breakers.daily.limit).toBe(200);
+    expect(bigger.breakers.weekly.limit).toBe(500);
+  });
+
+  it('G3: each breaker trips and clears independently', () => {
+    const r = assessBreaker({
+      tally: { consecutiveLosses: 3, dailyLoss: 320, weeklyLoss: 320 },
+      limits: LIMITS,
+      reviews: { daily: true },
+    });
+    expect(r.breakers.daily.tripped).toBe(true);
+    expect(r.breakers.daily.blocking).toBe(false);
+    expect(r.breakers.consecutive.blocking).toBe(true);
+    expect(r.state).toBe('REVIEW_REQUIRED');
+    expect(r.canOpenNewTrade).toBe(false);
   });
 
   it('H: the streak counts back from the newest trade and resets on a win', () => {
