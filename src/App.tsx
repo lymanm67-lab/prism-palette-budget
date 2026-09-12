@@ -341,6 +341,7 @@ const App = () => (
               <Route path="/swingedge/performance" element={<Suspense fallback={<PageLoader />}><SwingEdgePerformance /></Suspense>} />
               <Route path="/swingedge/academy" element={<Suspense fallback={<PageLoader />}><SwingEdgeAcademy /></Suspense>} />
               <Route path="/swingedge/training" element={<Suspense fallback={<PageLoader />}><SwingEdgeTraining /></Suspense>} />
+              <Route path="/swingedge/training/week/:week" element={<Suspense fallback={<PageLoader />}><SwingEdgeTrainingWeek /></Suspense>} />
 
               <Route path="/swingedge/settings" element={<Suspense fallback={<PageLoader />}><SwingEdgeSettings /></Suspense>} />
 
