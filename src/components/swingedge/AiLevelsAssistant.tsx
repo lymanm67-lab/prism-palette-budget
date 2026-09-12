@@ -112,6 +112,36 @@ export default function AiLevelsAssistant({
   const agreement = (result?.agreement ?? '').toLowerCase();
   const confidence = (result?.confidence ?? '').toLowerCase();
 
+  const { speak, pause, resume, stop, isSpeaking, isPaused } = useTTS();
+
+  useEffect(() => stop, [stop]);
+
+  const narration = () => {
+    if (!result) return '';
+    const parts: string[] = [];
+    parts.push(`Assistant read for ${active || 'this symbol'} on the ${page}.`);
+    if (agreement) parts.push(`${AGREEMENT_LABEL[agreement] ?? agreement}.`);
+    if (confidence) parts.push(`Confidence in the data: ${confidence}.`);
+    if (result.rules_explanation) parts.push(`What the app's levels mean. ${result.rules_explanation}`);
+    if (ai) {
+      parts.push(
+        `The assistant's own read. Entry ${money(ai.entry)}, stop ${money(ai.stop)}, target ${money(ai.target)}` +
+          (ai.reward_risk && Number.isFinite(ai.reward_risk)
+            ? `, reward to risk ${Number(ai.reward_risk).toFixed(1)} to 1.`
+            : '.'),
+      );
+      if (ai.basis) parts.push(ai.basis);
+    }
+    if (result.comparison) parts.push(`Which read to act on. ${result.comparison}`);
+    if (result.confidence_reason) parts.push(`Why this confidence level. ${result.confidence_reason}`);
+    if (result.if_wrong) parts.push(`If this read is wrong. ${result.if_wrong}`);
+    if (result.risks?.length) parts.push(`What could go wrong. ${result.risks.filter(Boolean).join('. ')}.`);
+    if (result.checks?.length) parts.push(`Check before you act. ${result.checks.filter(Boolean).join('. ')}.`);
+    parts.push('This is study material for paper trading, not financial advice.');
+    return parts.join(' ');
+  };
+
+
   return (
     <Card className={className}>
       <CardHeader>
