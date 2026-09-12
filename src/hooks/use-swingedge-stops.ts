@@ -118,6 +118,7 @@ export type TradePlanInput = Omit<TradePlanRow, 'id' | 'created_at'> & { id?: st
 export function useTradePlans() {
   const { household } = useHousehold();
   const householdId = household?.id;
+  const { settings } = useTradingSettings();
   const qc = useQueryClient();
 
   const plansQuery = useQuery({
