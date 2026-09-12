@@ -266,6 +266,120 @@ export default function StockAnalyzer() {
         </div>
       )}
 
+      {analysis && symbol && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">What to do next</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              {analysis.hybrid.signal === 'GO'
+                ? `${symbol} passes the gates right now. The next step is not buying — it is planning: turn this reading into written numbers before any money moves.`
+                : analysis.hybrid.signal === 'WAIT'
+                  ? `${symbol} is not a trade yet. Save this reading, put it on a watchlist, and let the scanner tell you when it qualifies.`
+                  : analysis.hybrid.signal === 'REVIEW'
+                    ? `${symbol} needs a closer look before it can qualify. Check the missing or weak pieces above, fill in what the provider could not supply, and re-run.`
+                    : `${symbol} fails the gates today. That's a win for the process — a clear "no" is a completed task. Park it and move on to the next name.`}
+            </p>
+            <ol className="space-y-2 text-sm">
+              {(analysis.hybrid.signal === 'GO'
+                ? [
+                    {
+                      n: 1,
+                      text: 'Plan the trade: entry, stop, target and share size in the Trade Planner.',
+                      to: `/swingedge/planner?symbol=${symbol}`,
+                      cta: 'Open Trade Planner',
+                    },
+                    {
+                      n: 2,
+                      text: 'Take it on paper first — a paper trade, not real money.',
+                      to: '/swingedge/paper',
+                      cta: 'Open Paper Trading',
+                    },
+                    {
+                      n: 3,
+                      text: 'Journal the outcome so your record keeps building.',
+                      to: '/swingedge/journal',
+                      cta: 'Open Journal',
+                    },
+                  ]
+                : analysis.hybrid.signal === 'REVIEW'
+                  ? [
+                      {
+                        n: 1,
+                        text: 'Fill in any missing fund or company figures manually below, then re-run the analysis.',
+                        to: null,
+                        cta: null,
+                      },
+                      {
+                        n: 2,
+                        text: 'If it still reviews badly, park it on a watchlist with a status so you remember why.',
+                        to: '/swingedge/watchlists',
+                        cta: 'Open Watchlists',
+                      },
+                      {
+                        n: 3,
+                        text: 'Move to the next candidate on your scanner list.',
+                        to: '/swingedge/scanner',
+                        cta: 'Back to Scanner',
+                      },
+                    ]
+                  : analysis.hybrid.signal === 'WAIT'
+                    ? [
+                        {
+                          n: 1,
+                          text: 'Save this reading so you can see how the story changes.',
+                          to: null,
+                          cta: null,
+                        },
+                        {
+                          n: 2,
+                          text: 'Put it on a watchlist with the right status — setup forming, pullback watch or breakout watch.',
+                          to: '/swingedge/watchlists',
+                          cta: 'Open Watchlists',
+                        },
+                        {
+                          n: 3,
+                          text: 'Re-run the scanner tomorrow; it will flag when this name qualifies.',
+                          to: '/swingedge/scanner',
+                          cta: 'Back to Scanner',
+                        },
+                      ]
+                    : [
+                        {
+                          n: 1,
+                          text: 'Record the pass: mark it rejected on your watchlist so you stay honest with yourself.',
+                          to: '/swingedge/watchlists',
+                          cta: 'Open Watchlists',
+                        },
+                        {
+                          n: 2,
+                          text: 'Move to the next candidate on your scanner list.',
+                          to: '/swingedge/scanner',
+                          cta: 'Back to Scanner',
+                        },
+                      ]
+              ).map((s) => (
+                <li key={s.n} className="flex items-center gap-3">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-prism-teal/15 text-xs font-semibold text-prism-teal">
+                    {s.n}
+                  </span>
+                  <span className="flex-1">{s.text}</span>
+                  {s.to && s.cta && (
+                    <Button asChild variant="outline" size="sm" className="shrink-0">
+                      <Link to={s.to}>
+                        {s.cta}
+                        <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                      </Link>
+                    </Button>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </CardContent>
+        </Card>
+      )}
+
       <AiLevelsAssistant
         page="Stock Analyzer"
         symbol={symbol}
