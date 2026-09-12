@@ -96,6 +96,10 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       keyframes: {
+        "ticker-scroll": {
+          from: { transform: "translateX(0)" },
+          to: { transform: "translateX(-50%)" },
+        },
         "accordion-down": {
           from: { height: "0" },
           to: { height: "var(--radix-accordion-content-height)" },
