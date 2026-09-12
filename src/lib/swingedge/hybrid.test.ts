@@ -121,7 +121,9 @@ describe('acceptance E — thin data never masquerades as certainty', () => {
         currentRatio: 2.1,
         interestCoverage: 12,
         peRatio: 20,
+        forwardPe: 18,
         sectorPe: 24,
+
       },
       { sector: 'Technology', provider: 'PROVIDER', freshnessDays: 20, periodsAvailable: 4 },
     );
