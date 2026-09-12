@@ -232,7 +232,8 @@ export default function FundamentalsEntry() {
     setCompanyName((row?.company_name as string | null) ?? '');
     setSector((row?.sector as string | null) ?? '');
     setIndustry((row?.industry as string | null) ?? '');
-    if (row?.asset_type) setAssetType(row.asset_type === 'ETF' ? 'ETF' : 'STOCK');
+    if (row?.asset_type)
+      setAssetType(String(row.asset_type).toUpperCase() === 'ETF' ? 'ETF' : 'STOCK');
   }, [override.row, symbol]);
 
   const groups = assetType === 'ETF' ? ETF_GROUPS : STOCK_GROUPS;
