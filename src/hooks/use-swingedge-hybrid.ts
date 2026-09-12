@@ -61,13 +61,24 @@ export interface HybridAnalysis {
   sectorSymbol: string;
   marketTrendSymbol: string;
   dataSources: string[];
+  /** What the market IS doing. Shades alignment inside the Technical Score. */
+  regime: MarketRegimeResult;
+  /** Who has been stronger over the window. Also shades alignment only. */
+  relativeStrength: RelativeStrengthResult;
+  /** Liquidity, price and spread reality. AVOID is a hard gate. */
+  tradability: TradabilityResult;
 }
 
-async function benchmarkTrend(symbol: string, mode: Parameters<typeof loadCandles>[2]) {
-  const { candles } = await loadCandles(symbol, '1day', mode, 120);
+async function benchmarkCandles(symbol: string, mode: Parameters<typeof loadCandles>[2]) {
+  const { candles } = await loadCandles(symbol, '1day', mode, 200);
+  return candles;
+}
+
+function trendOf(candles: Candle[]) {
   if (candles.length < 60) return null;
   return trendState(candles);
 }
+
 
 /** One symbol, end to end. Nothing here calls a provider endpoint off the plan. */
 export function useHybridAnalysis(symbol: string | null, assetTypeHint?: 'STOCK' | 'ETF') {
