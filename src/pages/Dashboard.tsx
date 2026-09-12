@@ -25,6 +25,7 @@ import AppDevCutoffCard from '@/components/dashboard/AppDevCutoffCard';
 import { SmartAllocationCard } from '@/components/dashboard/SmartAllocationCard';
 import { KeyIndicatorsStrip } from '@/components/dashboard/KeyIndicatorsStrip';
 import { DebtPayoffSummaryCard } from '@/components/dashboard/DebtPayoffSummaryCard';
+import { RolloverSummaryCard } from '@/components/dashboard/RolloverSummaryCard';
 import { DashboardSection } from '@/components/dashboard/DashboardSection';
 import { useWealthOSData } from '@/hooks/use-wealth-os';
 
@@ -373,6 +374,8 @@ Your Safe-to-Spend updates in real time as you add transactions, pay bills, and 
         subtitle="Progress, forecast, cash flow and month-to-date stats"
         icon={<Target className="h-4 w-4 text-prism-sky" />}
       >
+        <motion.div variants={item}><RolloverSummaryCard /></motion.div>
+
         {/* Quick Stats: Net Worth, Available Cash, Bills, Subscriptions */}
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[
