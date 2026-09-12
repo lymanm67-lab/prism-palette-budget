@@ -300,14 +300,8 @@ export default function MarketScanner() {
                 <Button asChild size="sm" variant="outline">
                   <Link
                     to={
-                      shown.find((r) => r.verdict === 'QUALIFIES') ??
-                      shown.find((r) => r.verdict === 'WATCH')
-                        ? `/swingedge/analyzer?symbol=${
-                            (
-                              shown.find((r) => r.verdict === 'QUALIFIES') ??
-                              shown.find((r) => r.verdict === 'WATCH')
-                            )?.symbol
-                          }`
+                      nextCandidate
+                        ? `/swingedge/analyzer?symbol=${nextCandidate.symbol}`
                         : '/swingedge/analyzer'
                     }
                   >
