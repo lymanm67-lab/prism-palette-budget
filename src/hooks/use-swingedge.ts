@@ -132,6 +132,9 @@ export function useTradingSettings() {
           'breaker_weekly_loss_limit',
           DEFAULT_SETTINGS.breaker_weekly_loss_limit,
         ),
+        breaker_daily_loss_r: num('breaker_daily_loss_r', DEFAULT_SETTINGS.breaker_daily_loss_r),
+        breaker_weekly_loss_r: num('breaker_weekly_loss_r', DEFAULT_SETTINGS.breaker_weekly_loss_r),
+
         training_min_paper_trades: num(
           'training_min_paper_trades',
           DEFAULT_SETTINGS.training_min_paper_trades,
