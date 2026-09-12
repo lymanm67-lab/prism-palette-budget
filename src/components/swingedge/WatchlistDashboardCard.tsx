@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { RefreshCw } from 'lucide-react';
 import ScoredSymbolTable from '@/components/swingedge/ScoredSymbolTable';
+import CollapsibleSection from '@/components/swingedge/CollapsibleSection';
 import { useScoredSymbols, useWatchlists } from '@/hooks/use-swingedge-lists';
 
 /** Your own watchlist, priced and scored, on the trading dashboard. */
@@ -20,27 +20,23 @@ export default function WatchlistDashboardCard() {
   const { rows, isLoading: scoring, isFetching, refetch } = useScoredSymbols(symbols);
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <div className="flex flex-wrap items-start justify-between gap-2">
-          <div>
-            <CardTitle className="text-base">Your watchlist today</CardTitle>
-            <CardDescription>
-              Only QUALIFIES and WATCH rows are worth opening. Everything else is a pass.
-            </CardDescription>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching || !symbols.length}>
-              <RefreshCw className={isFetching ? 'mr-2 h-4 w-4 animate-spin' : 'mr-2 h-4 w-4'} />
-              Refresh
-            </Button>
-            <Button asChild variant="outline" size="sm">
-              <Link to="/swingedge/watchlists">Manage lists</Link>
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-3">
+    <CollapsibleSection
+      id="dash-watchlist"
+      title="Your watchlist today"
+      description="Only QUALIFIES and WATCH rows are worth opening. Everything else is a pass."
+      headerRight={
+        <span className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+          <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching || !symbols.length}>
+            <RefreshCw className={isFetching ? 'mr-2 h-4 w-4 animate-spin' : 'mr-2 h-4 w-4'} />
+            Refresh
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link to="/swingedge/watchlists">Manage lists</Link>
+          </Button>
+        </span>
+      }
+    >
+      <div className="space-y-3 pt-1">
         {lists.length > 1 ? (
           <div className="flex flex-wrap gap-2">
             {lists.map((l) => (
@@ -76,7 +72,7 @@ export default function WatchlistDashboardCard() {
             emptyMessage="This list has no symbols yet."
           />
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </CollapsibleSection>
   );
 }
