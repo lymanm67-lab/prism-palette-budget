@@ -255,34 +255,66 @@ export function useTradePlans() {
 
       const shares = plan.shares ?? 0;
       const risk = plan.dollar_risk ?? round2((plan.planned_entry - plan.planned_stop) * shares);
-      const { error } = await supabase.from('se_paper_trades').insert({
-        household_id: householdId,
-        trade_plan_id: plan.id,
-        symbol: plan.symbol,
-        setup_type: plan.setup_type,
-        entry_price: plan.planned_entry,
-        stop_price: plan.planned_stop,
-        target_price: plan.planned_target,
-        shares,
-        initial_dollar_risk: risk,
-        original_stop: plan.planned_stop,
-        original_target: plan.planned_target,
-        original_shares: shares,
-        original_risk: risk,
-        invalidation: plan.invalidation,
-        stop_strategy: plan.stop_strategy,
-        earnings_ack: plan.earnings_reviewed,
-        planned_stop: plan.planned_stop,
-        current_price: price,
-        revalidated_at: verdict.checkedAt,
-        status: 'OPEN',
-      });
+      const { data: inserted, error } = await supabase
+        .from('se_paper_trades')
+        .insert({
+          household_id: householdId,
+          trade_plan_id: plan.id,
+          symbol: plan.symbol,
+          setup_type: plan.setup_type,
+          entry_price: plan.planned_entry,
+          stop_price: plan.planned_stop,
+          target_price: plan.planned_target,
+          shares,
+          initial_dollar_risk: risk,
+          original_stop: plan.planned_stop,
+          original_target: plan.planned_target,
+          original_shares: shares,
+          original_risk: risk,
+          invalidation: plan.invalidation,
+          stop_strategy: plan.stop_strategy,
+          earnings_ack: plan.earnings_reviewed,
+          planned_stop: plan.planned_stop,
+          current_price: price,
+          revalidated_at: verdict.checkedAt,
+          status: 'OPEN',
+        })
+        .select('id')
+        .single();
       if (error) throw error;
+
+      // A snapshot of the reasoning at the moment of execution. Written once and
+      // never updated, so a later review reads what was actually known then —
+      // not a version of events tidied up by hindsight.
+      await supabase.from('se_trade_snapshots').insert({
+        household_id: householdId,
+        paper_trade_id: inserted?.id ?? null,
+        symbol: plan.symbol,
+        signal_state: verdict.effectiveSignal,
+        rationale: plan.invalidation ?? null,
+        stop_justification: plan.stop_strategy ?? null,
+        evidence: {
+          planned_entry: plan.planned_entry,
+          planned_stop: plan.planned_stop,
+          planned_target: plan.planned_target,
+          shares,
+          dollar_risk: risk,
+          setup_type: plan.setup_type,
+          entry_zone: { low: zone.low, high: zone.high },
+          price_at_execution: price,
+          atr14: atrValue,
+          revalidation: { headline: verdict.headline, reasons: verdict.reasons, triggers: verdict.triggers },
+          plan_created_at: plan.created_at,
+        },
+        candle_context: { last_completed_candle: basis.lastCompletedAt, interval: '1day' },
+      });
+
       const { error: e2 } = await supabase
         .from('se_trade_plans')
         .update({ status: 'EXECUTED' })
         .eq('id', plan.id);
       if (e2) throw e2;
+
     },
     onSuccess: invalidate,
   });

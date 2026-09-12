@@ -7,7 +7,7 @@ import {
   CreditCard, LineChart, Sparkles, Shield, FileSearch, FileText, Building2,
   DollarSign, Clock, Lock, Scissors, ClipboardCheck, Gauge, ChevronDown,
   Layers, Search, AlertTriangle, Activity, Banknote, Smartphone, User, Briefcase, Globe, BookOpen, Users,
-  ShieldCheck, Plane,
+  ShieldCheck, Plane, GraduationCap,
 
 } from 'lucide-react';
 import prismLogo from '@/assets/prism-money-logo.png';
@@ -106,7 +106,9 @@ export const NAV_SECTIONS: NavSection[] = [
       { to: '/swingedge/backtester', icon: Clock, label: 'Historical Testing', color: 'text-prism-orange' },
       { to: '/swingedge/journal', icon: FileText, label: 'Trade Journal', color: 'text-prism-amber' },
       { to: '/swingedge/performance', icon: BarChart3, label: 'Performance Review', color: 'text-prism-teal' },
+      { to: '/swingedge/training', icon: GraduationCap, label: 'Six-Week Training', color: 'text-prism-violet' },
       { to: '/swingedge/academy', icon: BookOpen, label: 'Trading Academy', color: 'text-prism-lime' },
+
       { to: '/swingedge/settings', icon: Settings, label: 'Trading Settings', color: 'text-prism-sky' },
     ],
   },

@@ -18,6 +18,9 @@ import CollapsibleSection from '@/components/swingedge/CollapsibleSection';
 import TradeWorkflow from '@/components/swingedge/TradeWorkflow';
 import PortfolioRolesCard from '@/components/swingedge/PortfolioRolesCard';
 import PortfolioHeatCard from '@/components/swingedge/PortfolioHeatCard';
+import DailyChecklistCard from '@/components/swingedge/DailyChecklistCard';
+import CircuitBreakerCard from '@/components/swingedge/CircuitBreakerCard';
+
 
 import { useSwingEdgeDashboard, useTradingSettings, useTradingTitle } from '@/hooks/use-swingedge';
 import type { MarketCondition, TrendState } from '@/lib/swingedge/types';
@@ -227,6 +230,14 @@ export default function SwingEdgeDashboard() {
 
       {/* Risk actually on the table right now */}
       <PortfolioHeatCard />
+
+      {/* Daily discipline: five questions, and the pause after a losing run */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <DailyChecklistCard />
+        <CircuitBreakerCard />
+      </div>
+
+
 
 
       {/* Watchlist (self-collapsing) */}
