@@ -285,17 +285,24 @@ export default function FundamentalsEntry() {
     // The analyzer measures fund liquidity, spread and volatility from price
     // history when the data plan omits them, so those count as "app has it".
     if (analysis.data?.etfInputs) Object.assign(base, analysis.data.etfInputs);
+    // Index name comes from the app's own fund reference list when the data
+    // plan leaves it out.
+    if (assetType === 'ETF' && base.benchmark == null && symbol && FUND_BENCHMARKS[symbol]) {
+      base.benchmark = FUND_BENCHMARKS[symbol];
+    }
     return base;
-  }, [bundle, analysis.data?.etfInputs]);
+  }, [bundle, analysis.data?.etfInputs, assetType, symbol]);
 
   const blanks = useMemo(
     () =>
       groups
         .flatMap((g) => g.fields)
+        .filter((f) => !f.optional)
         .filter((f) => providerValues[f.key] === null || providerValues[f.key] === undefined)
         .filter((f) => values[f.key] === undefined || values[f.key] === ''),
     [groups, providerValues, values],
   );
+
 
   const load = () => {
     const next = symbolInput.trim().toUpperCase();
