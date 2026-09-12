@@ -63,6 +63,12 @@ const AGREEMENT_LABEL: Record<string, string> = {
   no_trade: 'No trade here',
 };
 
+const CONFIDENCE_TONE: Record<string, string> = {
+  high: 'bg-emerald-500/15 text-emerald-500 border-emerald-500/30',
+  moderate: 'bg-amber-500/15 text-amber-500 border-amber-500/30',
+  low: 'bg-rose-500/15 text-rose-500 border-rose-500/30',
+};
+
 export default function AiLevelsAssistant({
   symbol,
   page,
@@ -103,6 +109,7 @@ export default function AiLevelsAssistant({
 
   const ai = result?.ai_levels ?? null;
   const agreement = (result?.agreement ?? '').toLowerCase();
+  const confidence = (result?.confidence ?? '').toLowerCase();
 
   return (
     <Card className={className}>
