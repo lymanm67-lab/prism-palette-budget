@@ -23,6 +23,7 @@ import AiLevelsAssistant from '@/components/swingedge/AiLevelsAssistant';
 import { useTradingSettings, useTradingTitle } from '@/hooks/use-swingedge';
 import { useTradeJournal, type PaperTrade } from '@/hooks/use-swingedge-lists';
 import { MISTAKE_TAGS, rMultiple } from '@/lib/swingedge/performance';
+import NextStepsCard from '@/components/swingedge/NextStepsCard';
 
 const money = (n: number) =>
   n.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 });
@@ -449,6 +450,14 @@ export default function TradeJournal() {
         ]}
       />
     <AiLevelsAssistant page="Trade Journal" />
-    </div>
+        <NextStepsCard
+      summary="The entry is written. Journaling is what turns trades into a track record you can act on."
+      steps={[
+        { label: 'See what the record says about your process', to: '/swingedge/performance', cta: 'Open Performance' },
+        { label: 'Check your readiness points and weekly review', to: '/swingedge/training', cta: 'Open Training' },
+        { label: 'Look for the next candidate', to: '/swingedge/scanner', cta: 'Open Scanner' },
+      ]}
+    />
+</div>
   );
 }

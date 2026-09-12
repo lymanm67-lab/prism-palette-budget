@@ -21,6 +21,7 @@ import { usePaperTradeManagement } from '@/hooks/use-swingedge-stops';
 import { useGraduation, useTrainingProgress } from '@/hooks/use-swingedge-training';
 import { TRAINING_WEEKS, downloadCsv, toCsv, weekCompletion } from '@/lib/swingedge/training';
 import { curriculumFor } from '@/lib/swingedge/curriculum';
+import NextStepsCard from '@/components/swingedge/NextStepsCard';
 
 const COUNTERS: { key: keyof CounterState; label: string }[] = [
   { key: 'lessons_completed', label: 'Lessons finished' },
@@ -306,6 +307,14 @@ export default function TrainingMode() {
       </div>
 
       <WeeklyReviewSection />
-    </div>
+          <NextStepsCard
+        summary="Training is the routine, not the trading. Each day ends back in the workflow."
+        steps={[
+          { label: 'Run today\u2019s scan and qualify candidates', to: '/swingedge/scanner', cta: 'Open Scanner' },
+          { label: 'Plan the one setup worth planning', to: '/swingedge/planner', cta: 'Open Trade Planner' },
+          { label: 'Journal every closed trade before the review', to: '/swingedge/journal', cta: 'Open Journal' },
+        ]}
+      />
+</div>
   );
 }

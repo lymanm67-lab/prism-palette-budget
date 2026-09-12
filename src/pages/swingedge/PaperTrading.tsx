@@ -28,6 +28,7 @@ import {
   type ManagedTrade,
 } from '@/hooks/use-swingedge-stops';
 import {
+import NextStepsCard from '@/components/swingedge/NextStepsCard';
   BREAKEVEN_TRIGGERS,
   EARNINGS_UNKNOWN_TEXT,
   STOP_MOVE_REASONS,
@@ -489,6 +490,14 @@ export default function PaperTrading() {
         ]}
       />
     <AiLevelsAssistant page="Paper Trading" />
-    </div>
+        <NextStepsCard
+      summary="Trades opened here are practice only. What matters next is managing them to the exit and writing down what happened."
+      steps={[
+        { label: 'Check your total open risk and portfolio heat', to: '/swingedge/training', cta: 'Open Training' },
+        { label: 'When a trade closes, journal it the same day', to: '/swingedge/journal', cta: 'Open Journal' },
+        { label: 'Look for the next candidate only after journaling', to: '/swingedge/scanner', cta: 'Open Scanner' },
+      ]}
+    />
+</div>
   );
 }

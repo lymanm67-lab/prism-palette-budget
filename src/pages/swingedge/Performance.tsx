@@ -26,6 +26,7 @@ import HowToUse from '@/components/swingedge/HowToUse';
 import { useTradingSettings, useTradingTitle } from '@/hooks/use-swingedge';
 import { useTradeJournal } from '@/hooks/use-swingedge-lists';
 import { rMultiple } from '@/lib/swingedge/performance';
+import NextStepsCard from '@/components/swingedge/NextStepsCard';
 
 const money = (n: number) =>
   n.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 });
@@ -293,6 +294,14 @@ export default function Performance() {
           'Every figure here comes from simulated trades only.',
         ]}
       />
-    </div>
+          <NextStepsCard
+        summary="You have read the record. Pick one habit to work on, then get back to the routine."
+        steps={[
+          { label: 'Write the weekly review while it is fresh', to: '/swingedge/training', cta: 'Open Training' },
+          { label: 'Go back to the lesson behind your top mistake', to: '/swingedge/academy', cta: 'Open Academy' },
+          { label: 'Start the next cycle with a fresh scan', to: '/swingedge/scanner', cta: 'Open Scanner' },
+        ]}
+      />
+</div>
   );
 }

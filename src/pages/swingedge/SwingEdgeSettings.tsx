@@ -20,6 +20,7 @@ import { cn } from '@/lib/utils';
 import { lastUpdatedLabel } from '@/lib/swingedge/cache';
 import { useConnectionTest, useTradingSettings, useTradingTitle } from '@/hooks/use-swingedge';
 import type { ConnectionStatus, DataMode } from '@/lib/swingedge/types';
+import NextStepsCard from '@/components/swingedge/NextStepsCard';
 
 const money = (n: number) =>
   n.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 });
@@ -438,6 +439,14 @@ export default function SwingEdgeSettings() {
           ) : null}
         </CardContent>
       </Card>
-    </div>
+          <NextStepsCard
+        summary="Your limits and data connection are set. Everything downstream uses these numbers."
+        steps={[
+          { label: 'Confirm your limits on the training dashboard', to: '/swingedge/training', cta: 'Open Training' },
+          { label: 'Run a scan with the new settings', to: '/swingedge/scanner', cta: 'Open Scanner' },
+          { label: 'Size a trade against your risk per trade', to: '/swingedge/planner', cta: 'Open Trade Planner' },
+        ]}
+      />
+</div>
   );
 }

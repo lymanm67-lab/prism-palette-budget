@@ -19,6 +19,7 @@ import { useSymbolRoles } from '@/hooks/use-swingedge-roles';
 import { RoleBadge, StatusBadge } from '@/components/swingedge/SymbolRoleControls';
 import { PORTFOLIO_ROLES, TRADING_STATUSES, statusMeta } from '@/lib/swingedge/roles';
 import {
+import NextStepsCard from '@/components/swingedge/NextStepsCard';
   Select,
   SelectContent,
   SelectItem,
@@ -330,6 +331,14 @@ export default function Watchlists() {
         ]}
       />
     <AiLevelsAssistant page="Watchlists" />
-    </div>
+        <NextStepsCard
+      summary="Your list is a shortlist, not a plan. The next step is confirming one name properly."
+      steps={[
+        { label: 'Open your best name for the full read', to: '/swingedge/analyzer', cta: 'Open Analyzer' },
+        { label: 'Write your own entry, stop and target', to: '/swingedge/planner', cta: 'Open Trade Planner' },
+        { label: 'Re-scan for anything your list is missing', to: '/swingedge/scanner', cta: 'Open Scanner' },
+      ]}
+    />
+</div>
   );
 }
