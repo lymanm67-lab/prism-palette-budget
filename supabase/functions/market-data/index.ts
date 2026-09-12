@@ -201,6 +201,25 @@ Deno.serve(async (req) => {
       asOf: new Date().toISOString(),
     });
   } catch (err) {
-    return json({ error: err instanceof Error ? err.message : 'Market data lookup failed' }, 502);
+    const message = err instanceof Error ? err.message : 'Market data lookup failed';
+    // Provider limits are expected on the free plan: degrade instead of failing
+    // the request, so the page keeps rendering with the data it already has.
+    if (err instanceof RateLimitError || looksRateLimited(message)) {
+      return json({
+        symbol: (body.symbol ?? '').toUpperCase() || null,
+        price: null,
+        name: null,
+        securityType: 'unverified',
+        verified: false,
+        sector: null,
+        industry: null,
+        dividendYield: null,
+        expenseRatio: null,
+        rateLimited: true,
+        notice: message,
+        asOf: new Date().toISOString(),
+      });
+    }
+    return json({ error: message }, 502);
   }
 });
