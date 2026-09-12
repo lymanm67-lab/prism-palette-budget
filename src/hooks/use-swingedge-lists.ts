@@ -408,6 +408,7 @@ export function useAcademyProgress() {
   return {
     completedKeys,
     completedCount: completedKeys.size,
+    quizzesPassed: rows.filter((r) => (r.quiz_score ?? 0) >= 80).length,
     totalLessons: LESSONS.length,
     percent: Math.round((completedKeys.size / LESSONS.length) * 100),
     isLoading: query.isLoading,
