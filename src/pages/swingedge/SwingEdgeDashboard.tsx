@@ -14,6 +14,8 @@ import { AlertTriangle, ArrowRight, CheckCircle2, Info, ShieldCheck, XCircle } f
 import { cn } from '@/lib/utils';
 import SwingEdgeHeader from '@/components/swingedge/SwingEdgeHeader';
 import HowToUse from '@/components/swingedge/HowToUse';
+import WatchlistDashboardCard from '@/components/swingedge/WatchlistDashboardCard';
+
 import { useSwingEdgeDashboard, useTradingSettings, useTradingTitle } from '@/hooks/use-swingedge';
 import type { MarketCondition, TrendState } from '@/lib/swingedge/types';
 
@@ -216,7 +218,10 @@ export default function SwingEdgeDashboard() {
         </CardContent>
       </Card>
 
+      <WatchlistDashboardCard />
+
       {/* The loop */}
+
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base">The loop this app teaches</CardTitle>
