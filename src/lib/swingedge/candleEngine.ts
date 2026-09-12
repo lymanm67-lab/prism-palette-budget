@@ -61,7 +61,9 @@ export function analyzeCandles(candles: Candle[], opts: CandleAnalysisOptions = 
   const timeframe = opts.timeframe ?? '1day';
   const quality = checkCandleData(candles);
   const closes = candles.map((c) => c.close);
-  const sr = supportResistance(candles);
+  // Structure is read from candles BEFORE the latest one: a level the newest
+  // candle just poked through is not resistance created by that candle.
+  const sr = candles.length > 5 ? supportResistance(candles.slice(0, -1)) : supportResistance(candles);
   const weekly = candles.length >= 60 ? trendState(toWeekly(candles)) : null;
 
   const context: CandleContext = {
