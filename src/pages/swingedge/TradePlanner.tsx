@@ -303,6 +303,10 @@ export default function TradePlanner() {
       toast.error(qualification.stopOverrideRefusal);
       return;
     }
+    if (!heatGate.allowed) {
+      toast.error(heatGate.reasons[0]);
+      return;
+    }
     try {
       await savePlan({
         symbol: symbol.toUpperCase(),
