@@ -140,11 +140,18 @@ function TradeRow({
       return;
     }
     try {
-      await closeTrade({ trade, exitPrice: p, reason: exitReason });
-      toast.success('Trade closed — write the journal entry next');
+      const result = await closeTrade({ trade, exitPrice: p, reason: exitReason });
+      const gapNote = result.fill.gapped
+        ? ` Price opened past your stop, so the fill used $${result.fill.filled.toFixed(2)} instead of $${p.toFixed(2)}.`
+        : ` Fill simulated at $${result.fill.filled.toFixed(2)} after slippage.`;
+      toast.success(`${result.outcome.label} — ${result.outcome.meaning}`, {
+        description: `${gapNote} Plan following scored ${result.execution.score}/100. Write the journal entry next.`,
+        duration: 12000,
+      });
     } catch {
       toast.error('Could not close that trade');
     }
+
   };
 
   return (
