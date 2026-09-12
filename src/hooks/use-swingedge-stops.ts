@@ -6,7 +6,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { loadCandles, useTradingSettings } from '@/hooks/use-swingedge';
-import { setupState, snapshot, type IndicatorSnapshot, type SetupState } from '@/lib/swingedge/indicators';
+import { atr, last, setupState, snapshot, type IndicatorSnapshot, type SetupState } from '@/lib/swingedge/indicators';
+import { candleBasis, entryZone } from '@/lib/swingedge/signalLifecycle';
+import { revalidateSignal } from '@/lib/swingedge/revalidation';
 import type { Candle } from '@/lib/swingedge/types';
 
 const num = (v: unknown): number => Number(v ?? 0);
