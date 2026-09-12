@@ -26,7 +26,8 @@ export default function StockAnalyzer() {
   const [input, setInput] = useState(initial);
   const [symbol, setSymbol] = useState(initial || null);
 
-  const { analysis, isLoading, isFetching, save, isSaving } = useHybridAnalysis(symbol);
+  const { analysis, isLoading, isFetching, save, isSaving, refreshFigures, isRefreshingFigures } =
+    useHybridAnalysis(symbol);
   const { data: history } = useHybridSignalHistory(symbol ?? undefined);
   const { settings } = useTradingSettings();
 
@@ -184,7 +185,44 @@ export default function StockAnalyzer() {
             </Card>
           )}
 
-          <CollapsibleSection id="analyzer-manual-figures" title="Missing figures" defaultOpen={false}>
+          <Card className="border-border/60 bg-card/60 backdrop-blur">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Company &amp; fund figures</CardTitle>
+              <p className="text-xs text-muted-foreground">
+                Figures come from your market data service and are saved so the same lookup is not paid for twice.
+                Source: {analysis.bundle.sources.join(', ') || 'none yet'}
+                {analysis.bundle.asOf ? ` · as of ${analysis.bundle.asOf}` : ''}.
+                {analysis.bundle.unavailableReason ? ` ${analysis.bundle.unavailableReason}` : ''}
+              </p>
+            </CardHeader>
+            <CardContent className="flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={isRefreshingFigures}
+                onClick={() => refreshFigures('basic')}
+              >
+                Refresh figures
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={isRefreshingFigures || analysis.assetType === 'ETF'}
+                onClick={() => refreshFigures('full')}
+              >
+                Get full statements
+              </Button>
+              <span className="self-center text-xs text-muted-foreground">
+                Full statements add debt, cash flow and multi-year trend, and use more of the daily allowance.
+              </span>
+            </CardContent>
+          </Card>
+
+          <CollapsibleSection
+            id="analyzer-manual-figures"
+            title="Missing figures — enter by hand if needed"
+            defaultOpen={false}
+          >
             <ManualFundamentalsForm
               symbol={analysis.symbol}
               assetType={analysis.assetType}

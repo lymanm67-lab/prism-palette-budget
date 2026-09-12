@@ -1,6 +1,8 @@
 // Market data proxy (Alpha Vantage). Keeps the API key server-side.
-// Actions: quote (price + validated security type), holdings (ETF underlying holdings), search.
+// Actions: quote (price + validated security type), holdings (ETF underlying holdings),
+// search, fundamentals (company / fund figures for SwingEdge, cached).
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
+import { getFundamentals, type Depth } from './fundamentals.ts';
 
 const BASE = 'https://www.alphavantage.co/query';
 
@@ -45,7 +47,14 @@ Deno.serve(async (req) => {
   const apiKey = Deno.env.get('ALPHAVANTAGE_API_KEY');
   if (!apiKey) return json({ error: 'Market data is not configured (missing API key).' }, 500);
 
-  let body: { action?: string; symbol?: string; query?: string };
+  let body: {
+    action?: string;
+    symbol?: string;
+    query?: string;
+    assetType?: string;
+    depth?: string;
+    force?: boolean;
+  };
   try {
     body = await req.json();
   } catch {
@@ -56,6 +65,25 @@ Deno.serve(async (req) => {
   const symbol = (body.symbol ?? '').trim().toUpperCase();
 
   try {
+    if (action === 'fundamentals') {
+      if (!symbol) return json({ error: 'symbol is required' }, 400);
+      const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+      const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+      const hint = (body.assetType ?? '').toUpperCase();
+      const payload = await getFundamentals(
+        {
+          av: (params) => av(params, apiKey),
+          supabaseUrl,
+          serviceKey,
+        },
+        symbol,
+        hint === 'ETF' ? 'ETF' : hint === 'STOCK' ? 'STOCK' : null,
+        (body.depth === 'full' ? 'full' : 'basic') as Depth,
+        body.force === true,
+      );
+      return json(payload as unknown as Json);
+    }
+
     if (action === 'search') {
       const q = (body.query ?? '').trim();
       if (!q) return json({ error: 'query is required' }, 400);

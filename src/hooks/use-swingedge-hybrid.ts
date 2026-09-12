@@ -22,6 +22,7 @@ import { candleBasis, entryZone, priceOutsideZone, validUntil } from '@/lib/swin
 import { analyzeCandles, type CandleAnalysis } from '@/lib/swingedge/candleEngine';
 import { MARKET_BENCHMARK, SECTOR_BENCHMARKS, profileFor } from '@/lib/swingedge/sectors';
 import {
+  AlphaVantageFundamentals,
   ManualFundamentals,
   TwelveDataFundamentals,
   mergeBundles,
@@ -110,12 +111,23 @@ export function useHybridAnalysis(symbol: string | null, assetTypeHint?: 'STOCK'
       const basis = candleBasis(priceResult.candles, '1day');
       const usable = basis.completed.length >= 60 ? basis.completed : priceResult.candles;
 
+      // Figures priority: Alpha Vantage (saved copy first, then live), then the
+      // price provider if it ever gains the capability, then hand-entered values.
+      // Hand entry is the fallback, never the first stop.
       const manualProvider = new ManualFundamentals(householdId);
-      const providerFundamentals = new TwelveDataFundamentals(TWELVE_DATA_CAPABILITIES);
-      const [providerBundle, manualBundle] = await Promise.all([
-        providerFundamentals.getBundle(sym, assetType),
+      const [alphaBundle, manualBundle] = await Promise.all([
+        mode === 'DEMO'
+          ? Promise.resolve(null)
+          : new AlphaVantageFundamentals().getBundle(sym, assetType),
         manualProvider.getBundle(sym, assetType),
       ]);
+      let providerBundle =
+        alphaBundle && alphaBundle.mode !== 'UNAVAILABLE'
+          ? alphaBundle
+          : await new TwelveDataFundamentals(TWELVE_DATA_CAPABILITIES).getBundle(sym, assetType);
+      if (providerBundle.mode === 'UNAVAILABLE' && alphaBundle) {
+        providerBundle = alphaBundle; // keep the clearer Alpha Vantage explanation
+      }
       const { bundle, conflictingMetrics } = mergeBundles(providerBundle, manualBundle);
 
       const sectorText = bundle.profile?.sector ?? null;
@@ -367,7 +379,30 @@ export function useHybridAnalysis(symbol: string | null, assetTypeHint?: 'STOCK'
     if (query.data) await persist.mutateAsync(query.data);
   }, [persist, query.data]);
 
-  return { ...query, analysis: query.data ?? null, save, isSaving: persist.isPending, advancedMode: settings.advanced_mode };
+  /**
+   * Fetch the business figures again. "full" also pulls the statements, which
+   * costs three extra provider requests, so it stays a deliberate choice.
+   */
+  const refreshFigures = useMutation({
+    mutationFn: async (depth: 'basic' | 'full' = 'basic') => {
+      if (!symbol) throw new Error('No symbol');
+      const assetType = query.data?.assetType ?? assetTypeHint ?? 'STOCK';
+      return new AlphaVantageFundamentals({ depth, force: true }).getBundle(symbol, assetType);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['se-hybrid'] });
+    },
+  });
+
+  return {
+    ...query,
+    analysis: query.data ?? null,
+    save,
+    isSaving: persist.isPending,
+    advancedMode: settings.advanced_mode,
+    refreshFigures: refreshFigures.mutateAsync,
+    isRefreshingFigures: refreshFigures.isPending,
+  };
 }
 
 /** Recent signal changes for one symbol or the whole household. */
