@@ -921,6 +921,37 @@ export default function TradePlanner() {
             </CardContent>
           </Card>
 
+          <Card className={cn(!heatGate.allowed && 'border-destructive')}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Portfolio heat and sector limits</CardTitle>
+              <CardDescription>
+                {money(heat.openRisk)} at risk now of {money(heat.maxHeatDollars)} allowed —{' '}
+                {money(heat.riskAvailable)} still available
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              <p>
+                This trade adds {money(heatGate.addedRisk)} of risk and ties up{' '}
+                {money(heatGate.addedCapital)}, taking heat to {heatGate.projectedHeatPct.toFixed(2)}%
+                of your account.
+              </p>
+              {heatGate.reasons.map((r) => (
+                <p
+                  key={r}
+                  className={cn(!heatGate.allowed && 'font-semibold text-destructive')}
+                >
+                  {r}
+                </p>
+              ))}
+              <p className="text-xs text-muted-foreground">
+                Heat counts money at risk, not money invested. Sector money exposure and sector risk
+                are checked separately.
+              </p>
+            </CardContent>
+          </Card>
+
+
+
           <GapRiskCard earningsNote={EARNINGS_UNKNOWN_TEXT} />
 
           <CollapsibleSection id="planner-example" title="The worked example" defaultOpen={false}>
