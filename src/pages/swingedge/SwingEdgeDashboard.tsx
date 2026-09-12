@@ -216,7 +216,10 @@ export default function SwingEdgeDashboard() {
         </CardContent>
       </Card>
 
+      <WatchlistDashboardCard />
+
       {/* The loop */}
+
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base">The loop this app teaches</CardTitle>
