@@ -17,6 +17,12 @@ export interface EtfMetrics {
   largestSectorWeightPct?: number | null;
   /** Annualised volatility in percent. */
   annualVolatilityPct?: number | null;
+  /**
+   * True when liquidity, spread or volatility were measured from price history
+   * rather than supplied by the fund data provider. Wording changes so a
+   * measured figure is never presented as an official one.
+   */
+  derivedFromPriceHistory?: boolean | null;
   trackingErrorPct?: number | null;
   fundAgeYears?: number | null;
   leveraged?: boolean | null;
