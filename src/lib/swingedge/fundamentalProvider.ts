@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import type { EtfMetrics } from './etfQuality';
 import type { FundamentalMetrics } from './fundamentals';
 
-export type FundamentalProviderKind = 'TWELVE_DATA' | 'MANUAL_DATA' | 'NONE';
+export type FundamentalProviderKind = 'ALPHA_VANTAGE' | 'TWELVE_DATA' | 'MANUAL_DATA' | 'NONE';
 
 export type FundamentalCapability =
   | 'companyProfile'
