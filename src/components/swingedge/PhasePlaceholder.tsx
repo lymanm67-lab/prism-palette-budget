@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, CheckCircle2, Lock } from 'lucide-react';
+import HowToUse from '@/components/swingedge/HowToUse';
 
 interface Props {
   title: string;
@@ -10,6 +11,8 @@ interface Props {
   purpose: string;
   willInclude: string[];
   gate: string[];
+  howTo?: string[];
+  howToTips?: string[];
 }
 
 /**
