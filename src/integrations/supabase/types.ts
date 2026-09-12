@@ -11388,50 +11388,92 @@ export type Database = {
         Row: {
           created_at: string
           entry_date: string
+          final_risk: number | null
+          final_stop: number | null
+          followed_stop_rule: boolean | null
+          gap_affected: boolean | null
           household_id: string
           id: string
+          invalidation_thesis: string | null
           lessons: string | null
           mistakes: string | null
+          original_risk: number | null
+          original_stop: number | null
           paper_trade_id: string | null
           rating: number | null
+          result_r: number | null
+          risk_lesson: string | null
           rules_followed: boolean | null
+          stop_moved: boolean | null
+          stop_strategy: string | null
           symbol: string | null
           title: string | null
           updated_at: string
           what_happened: string | null
           what_i_planned: string | null
+          why_stop_moved: string | null
+          why_stop_selected: string | null
+          widened_stop: boolean | null
         }
         Insert: {
           created_at?: string
           entry_date?: string
+          final_risk?: number | null
+          final_stop?: number | null
+          followed_stop_rule?: boolean | null
+          gap_affected?: boolean | null
           household_id: string
           id?: string
+          invalidation_thesis?: string | null
           lessons?: string | null
           mistakes?: string | null
+          original_risk?: number | null
+          original_stop?: number | null
           paper_trade_id?: string | null
           rating?: number | null
+          result_r?: number | null
+          risk_lesson?: string | null
           rules_followed?: boolean | null
+          stop_moved?: boolean | null
+          stop_strategy?: string | null
           symbol?: string | null
           title?: string | null
           updated_at?: string
           what_happened?: string | null
           what_i_planned?: string | null
+          why_stop_moved?: string | null
+          why_stop_selected?: string | null
+          widened_stop?: boolean | null
         }
         Update: {
           created_at?: string
           entry_date?: string
+          final_risk?: number | null
+          final_stop?: number | null
+          followed_stop_rule?: boolean | null
+          gap_affected?: boolean | null
           household_id?: string
           id?: string
+          invalidation_thesis?: string | null
           lessons?: string | null
           mistakes?: string | null
+          original_risk?: number | null
+          original_stop?: number | null
           paper_trade_id?: string | null
           rating?: number | null
+          result_r?: number | null
+          risk_lesson?: string | null
           rules_followed?: boolean | null
+          stop_moved?: boolean | null
+          stop_strategy?: string | null
           symbol?: string | null
           title?: string | null
           updated_at?: string
           what_happened?: string | null
           what_i_planned?: string | null
+          why_stop_moved?: string | null
+          why_stop_selected?: string | null
+          widened_stop?: boolean | null
         }
         Relationships: [
           {
@@ -11542,7 +11584,9 @@ export type Database = {
       }
       se_paper_trades: {
         Row: {
+          breakeven_trigger: string | null
           created_at: string
+          earnings_ack: boolean
           entry_date: string
           entry_price: number
           exit_date: string | null
@@ -11551,20 +11595,29 @@ export type Database = {
           household_id: string
           id: string
           initial_dollar_risk: number | null
+          invalidation: string | null
           notes: string | null
+          original_risk: number | null
+          original_shares: number | null
+          original_stop: number | null
+          original_target: number | null
           realized_pl: number | null
           rules_followed: boolean | null
           setup_type: string | null
           shares: number
           status: string
           stop_price: number
+          stop_strategy: string | null
           symbol: string
           target_price: number
           trade_plan_id: string | null
+          trailing_method: string | null
           updated_at: string
         }
         Insert: {
+          breakeven_trigger?: string | null
           created_at?: string
+          earnings_ack?: boolean
           entry_date?: string
           entry_price: number
           exit_date?: string | null
@@ -11573,20 +11626,29 @@ export type Database = {
           household_id: string
           id?: string
           initial_dollar_risk?: number | null
+          invalidation?: string | null
           notes?: string | null
+          original_risk?: number | null
+          original_shares?: number | null
+          original_stop?: number | null
+          original_target?: number | null
           realized_pl?: number | null
           rules_followed?: boolean | null
           setup_type?: string | null
           shares: number
           status?: string
           stop_price: number
+          stop_strategy?: string | null
           symbol: string
           target_price: number
           trade_plan_id?: string | null
+          trailing_method?: string | null
           updated_at?: string
         }
         Update: {
+          breakeven_trigger?: string | null
           created_at?: string
+          earnings_ack?: boolean
           entry_date?: string
           entry_price?: number
           exit_date?: string | null
@@ -11595,16 +11657,23 @@ export type Database = {
           household_id?: string
           id?: string
           initial_dollar_risk?: number | null
+          invalidation?: string | null
           notes?: string | null
+          original_risk?: number | null
+          original_shares?: number | null
+          original_stop?: number | null
+          original_target?: number | null
           realized_pl?: number | null
           rules_followed?: boolean | null
           setup_type?: string | null
           shares?: number
           status?: string
           stop_price?: number
+          stop_strategy?: string | null
           symbol?: string
           target_price?: number
           trade_plan_id?: string | null
+          trailing_method?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -11624,13 +11693,77 @@ export type Database = {
           },
         ]
       }
-      se_trade_plans: {
+      se_stop_modifications: {
         Row: {
           created_at: string
+          household_id: string
+          id: string
+          method: string | null
+          new_stop: number
+          old_stop: number
+          paper_trade_id: string
+          reason: string
+          risk_after: number | null
+          risk_before: number | null
+          rule_followed: boolean | null
+          widened: boolean
+        }
+        Insert: {
+          created_at?: string
+          household_id: string
+          id?: string
+          method?: string | null
+          new_stop: number
+          old_stop: number
+          paper_trade_id: string
+          reason: string
+          risk_after?: number | null
+          risk_before?: number | null
+          rule_followed?: boolean | null
+          widened?: boolean
+        }
+        Update: {
+          created_at?: string
+          household_id?: string
+          id?: string
+          method?: string | null
+          new_stop?: number
+          old_stop?: number
+          paper_trade_id?: string
+          reason?: string
+          risk_after?: number | null
+          risk_before?: number | null
+          rule_followed?: boolean | null
+          widened?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "se_stop_modifications_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "se_stop_modifications_paper_trade_id_fkey"
+            columns: ["paper_trade_id"]
+            isOneToOne: false
+            referencedRelation: "se_paper_trades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      se_trade_plans: {
+        Row: {
+          atr_multiple: number | null
+          atr_value: number | null
+          created_at: string
           dollar_risk: number | null
+          earnings_reviewed: boolean
           household_id: string
           id: string
           invalidation: string | null
+          override_reason: string | null
           planned_entry: number
           planned_stop: number
           planned_target: number
@@ -11642,18 +11775,28 @@ export type Database = {
           setup_type: string | null
           shares: number | null
           status: string
+          stop_buffer_pct: number | null
+          stop_quality: string | null
+          stop_strategy: string
+          structure_level: number | null
           swingedge_score: number | null
           symbol: string
+          target_method: string | null
           updated_at: string
           verdict: string | null
           why_qualifies: string | null
+          why_stop_here: string | null
         }
         Insert: {
+          atr_multiple?: number | null
+          atr_value?: number | null
           created_at?: string
           dollar_risk?: number | null
+          earnings_reviewed?: boolean
           household_id: string
           id?: string
           invalidation?: string | null
+          override_reason?: string | null
           planned_entry: number
           planned_stop: number
           planned_target: number
@@ -11665,18 +11808,28 @@ export type Database = {
           setup_type?: string | null
           shares?: number | null
           status?: string
+          stop_buffer_pct?: number | null
+          stop_quality?: string | null
+          stop_strategy?: string
+          structure_level?: number | null
           swingedge_score?: number | null
           symbol: string
+          target_method?: string | null
           updated_at?: string
           verdict?: string | null
           why_qualifies?: string | null
+          why_stop_here?: string | null
         }
         Update: {
+          atr_multiple?: number | null
+          atr_value?: number | null
           created_at?: string
           dollar_risk?: number | null
+          earnings_reviewed?: boolean
           household_id?: string
           id?: string
           invalidation?: string | null
+          override_reason?: string | null
           planned_entry?: number
           planned_stop?: number
           planned_target?: number
@@ -11688,11 +11841,17 @@ export type Database = {
           setup_type?: string | null
           shares?: number | null
           status?: string
+          stop_buffer_pct?: number | null
+          stop_quality?: string | null
+          stop_strategy?: string
+          structure_level?: number | null
           swingedge_score?: number | null
           symbol?: string
+          target_method?: string | null
           updated_at?: string
           verdict?: string | null
           why_qualifies?: string | null
+          why_stop_here?: string | null
         }
         Relationships: [
           {
