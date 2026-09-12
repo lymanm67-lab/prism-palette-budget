@@ -339,6 +339,35 @@ export default function MarketScanner() {
           </CardContent>
         </Card>
       )}
+
+      <AiLevelsAssistant
+        page="Market Scanner"
+        symbol={nextCandidate?.symbol ?? null}
+        price={nextCandidate?.snapshot?.price ?? null}
+        rules={
+          nextCandidate?.levels
+            ? {
+                entry: nextCandidate.levels.estimatedEntry,
+                stop: nextCandidate.levels.estimatedStop,
+                target: nextCandidate.levels.estimatedTarget,
+                rewardRisk: nextCandidate.levels.projectedRewardRisk,
+              }
+            : null
+        }
+        context={
+          nextCandidate
+            ? {
+                verdict: nextCandidate.verdict,
+                score: nextCandidate.score,
+                setup: nextCandidate.setup,
+                changePercent: nextCandidate.changePercent,
+                snapshot: nextCandidate.snapshot,
+                reasons: nextCandidate.reasons,
+                levelsAreEstimates: true,
+              }
+            : null
+        }
+      />
     </div>
   );
 }
