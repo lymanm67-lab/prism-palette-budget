@@ -137,7 +137,7 @@ export function useCircuitBreaker() {
     }) => {
       if (!householdId) throw new Error('No household');
       const now = new Date().toISOString();
-      const patch: Record<string, unknown> = {
+      const patch = {
         household_id: householdId,
         state: assessment.state,
         consecutive_losses: tally.consecutiveLosses,
@@ -146,16 +146,18 @@ export function useCircuitBreaker() {
         reason: input.notes,
         triggered_at: assessment.tripped ? now : null,
         review_completed_at: now,
+        daily_review_at: input.breaker === 'DAILY' ? now : (dailyReviewAt ? (row?.daily_review_at as string) : null),
+        weekly_review_at: input.breaker === 'WEEKLY' ? now : (weeklyReviewAt ? (row?.weekly_review_at as string) : null),
+        consecutive_review_at: input.breaker === 'CONSECUTIVE' ? now : consecutiveReviewAt,
+        consecutive_review_answers:
+          input.breaker === 'CONSECUTIVE'
+            ? (input.answers ?? null)
+            : ((row?.consecutive_review_answers as Record<string, string> | null) ?? null),
       };
-      if (input.breaker === 'DAILY') patch.daily_review_at = now;
-      if (input.breaker === 'WEEKLY') patch.weekly_review_at = now;
-      if (input.breaker === 'CONSECUTIVE') {
-        patch.consecutive_review_at = now;
-        patch.consecutive_review_answers = input.answers ?? null;
-      }
       const { error } = await supabase
         .from('se_circuit_breaker_state')
         .upsert(patch, { onConflict: 'household_id' });
+
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['se-breaker-state'] }),
