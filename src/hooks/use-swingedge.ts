@@ -81,6 +81,9 @@ export function useTradingSettings() {
         .maybeSingle();
       if (error) throw error;
       if (!data) return { ...DEFAULT_SETTINGS };
+      const row = data as Record<string, unknown>;
+      const num = (key: string, fallback: number) =>
+        row[key] === null || row[key] === undefined ? fallback : Number(row[key]);
       return {
         id: data.id,
         data_mode: data.data_mode as DataMode,
@@ -91,6 +94,41 @@ export function useTradingSettings() {
         risk_per_trade_pct: Number(data.risk_per_trade_pct),
         max_portfolio_risk_pct: Number(data.max_portfolio_risk_pct),
         advanced_mode: data.advanced_mode,
+        max_sector_capital_exposure_pct: num(
+          'max_sector_capital_exposure_pct',
+          DEFAULT_SETTINGS.max_sector_capital_exposure_pct,
+        ),
+        max_sector_heat_pct: num('max_sector_heat_pct', DEFAULT_SETTINGS.max_sector_heat_pct),
+        correlation_lookback_days: num(
+          'correlation_lookback_days',
+          DEFAULT_SETTINGS.correlation_lookback_days,
+        ),
+        correlation_moderate: num('correlation_moderate', DEFAULT_SETTINGS.correlation_moderate),
+        correlation_high: num('correlation_high', DEFAULT_SETTINGS.correlation_high),
+        correlation_very_high: num('correlation_very_high', DEFAULT_SETTINGS.correlation_very_high),
+        max_correlated_risk_pct: num(
+          'max_correlated_risk_pct',
+          DEFAULT_SETTINGS.max_correlated_risk_pct,
+        ),
+        commission_per_trade: num('commission_per_trade', DEFAULT_SETTINGS.commission_per_trade),
+        signal_max_age_days: num('signal_max_age_days', DEFAULT_SETTINGS.signal_max_age_days),
+        breaker_consecutive_losses: num(
+          'breaker_consecutive_losses',
+          DEFAULT_SETTINGS.breaker_consecutive_losses,
+        ),
+        breaker_daily_loss_limit: num(
+          'breaker_daily_loss_limit',
+          DEFAULT_SETTINGS.breaker_daily_loss_limit,
+        ),
+        breaker_weekly_loss_limit: num(
+          'breaker_weekly_loss_limit',
+          DEFAULT_SETTINGS.breaker_weekly_loss_limit,
+        ),
+        training_min_paper_trades: num(
+          'training_min_paper_trades',
+          DEFAULT_SETTINGS.training_min_paper_trades,
+        ),
+        training_mode_enabled: Boolean(row.training_mode_enabled ?? false),
       };
     },
   });
