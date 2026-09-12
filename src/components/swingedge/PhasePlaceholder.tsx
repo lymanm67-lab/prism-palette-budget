@@ -34,6 +34,14 @@ export default function PhasePlaceholder({ title, phase, purpose, willInclude, g
         <p className="text-sm text-muted-foreground">{purpose}</p>
       </div>
 
+      {howTo && howTo.length > 0 ? (
+        <HowToUse
+          steps={howTo}
+          tips={howToTips}
+          description="This is how the screen will work once it is switched on, so you can learn the routine now."
+        />
+      ) : null}
+
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
