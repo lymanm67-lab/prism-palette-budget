@@ -47,6 +47,9 @@ function LessonCard({
   const correct = picked === lesson.quiz.answerIndex;
   const { speak, pause, resume, stop, isSpeaking, isPaused } = useTTS();
 
+  // Closing the lesson should also stop the voice.
+  useEffect(() => stop, [stop]);
+
   // Read the lesson the way it is laid out: the writing, the worked example,
   // what to remember, then the caveat. The quiz is left out on purpose.
   const narration = [
