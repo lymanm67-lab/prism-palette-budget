@@ -309,7 +309,10 @@ export function useHybridAnalysis(symbol: string | null, assetTypeHint?: 'STOCK'
         riskScore: risk.score,
         confidence,
         qualityCoverage: assetType === 'ETF' ? etf?.coverage : fundamental?.coverage,
-        hardGateFailures: risk.hardGateFailures,
+        // Tradability AVOID is a hard gate, alongside the risk gates.
+        hardGateFailures: tradability.hardGate
+          ? [...risk.hardGateFailures, `Tradability: ${tradability.reasons[0]}`]
+          : risk.hardGateFailures,
         conflicts,
         setupReady: technical.setup !== 'NONE',
         priceOutsideEntryZone: priceOutside,
@@ -341,6 +344,9 @@ export function useHybridAnalysis(symbol: string | null, assetTypeHint?: 'STOCK'
         sectorSymbol,
         marketTrendSymbol: MARKET_BENCHMARK,
         dataSources: [priceResult.source === 'demo' ? 'DEMO_DATA' : 'TWELVE_DATA', ...bundle.sources],
+        regime,
+        relativeStrength,
+        tradability,
       };
     },
   });
