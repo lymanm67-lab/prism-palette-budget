@@ -24,6 +24,7 @@ import CollapsibleSection from '@/components/swingedge/CollapsibleSection';
 import RiskFirstCard, { GapRiskCard, StopRuleCard } from '@/components/swingedge/RiskFirstCard';
 import { useTradingSettings, useTradingTitle } from '@/hooks/use-swingedge';
 import { usePaperTradeManagement, useSymbolLevels, useTradePlans } from '@/hooks/use-swingedge-stops';
+import { usePortfolioHeat } from '@/hooks/use-swingedge-heat';
 import { VERDICT_LABEL, type Verdict } from '@/lib/swingedge/types';
 import type { SetupState } from '@/lib/swingedge/indicators';
 import {
@@ -210,6 +211,22 @@ export default function TradePlanner() {
       }),
     [settings.trading_capital, settings.max_portfolio_risk_pct, openRisk, risk.plannedLoss],
   );
+
+  // Portfolio heat, sector exposure and sector heat gates.
+  const { summary: heat, checkTrade } = usePortfolioHeat();
+  const heatGate = useMemo(
+    () =>
+      checkTrade({
+        symbol: symbol.toUpperCase(),
+        sector: null,
+        shares: risk.shares,
+        entry: entryNum,
+        stop: stopNum,
+      }),
+    [checkTrade, symbol, risk.shares, entryNum, stopNum],
+  );
+
+
 
   const qualification = useMemo(
     () =>
