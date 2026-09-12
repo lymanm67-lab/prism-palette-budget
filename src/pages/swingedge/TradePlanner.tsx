@@ -97,6 +97,10 @@ export default function TradePlanner() {
   const { settings, save: saveSettings } = useTradingSettings();
   const { plans, savePlan, deletePlan, openPaperTrade, isSaving } = useTradePlans();
   const { openRisk } = usePaperTradeManagement();
+  // Breakers are independent of the plan itself: a plan can be sound while the
+  // day or the week is paused, so the block sits on execution, not on planning.
+  const breaker = useCircuitBreaker();
+
 
   const [symbol, setSymbol] = useState((params.get('symbol') ?? '').toUpperCase());
   const levels = useSymbolLevels(symbol);
