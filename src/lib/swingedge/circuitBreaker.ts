@@ -40,6 +40,8 @@ export interface BreakerLimits {
   weeklyLossR?: number;
   /** Maximum portfolio heat, as a percentage of the account. */
   maxPortfolioHeatPct?: number;
+  /** Current account balance, used for the heat ceiling in dollars. */
+  accountBalance?: number;
   /** Legacy fixed-dollar ceilings. Only used when no R multiple is given. */
   dailyLossLimit?: number;
   weeklyLossLimit?: number;
@@ -106,7 +108,7 @@ const REVIEW_STEPS = [
 ];
 
 /**
- * The consecutive-loss review. Three losses are not evidthat the strategy
+ * The consecutive-loss review. Three losses are not evidence that the strategy
  * failed — most of the time they are ordinary variance. These questions separate
  * variance from an execution problem.
  */
@@ -247,7 +249,7 @@ export function assessBreaker(input: {
   const heat = {
     pct: round2(heatPct),
     limitPct: round2(heatLimitPct),
-    limit: round2((oneR > 0 && heatLimitPct > 0 ? (heatLimitPct / 100) * (oneR * 100) : 0) / 1),
+    limit: round2(((limits.accountBalance ?? 0) * heatLimitPct) / 100),
     room: round2(Math.max(0, heatLimitPct - heatPct)),
   };
 
