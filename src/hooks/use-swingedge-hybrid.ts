@@ -552,10 +552,13 @@ export function useFundamentalOverrides(symbol: string | null) {
   const save = useMutation({
     mutationFn: async (input: {
       assetType: 'STOCK' | 'ETF';
+      companyName?: string | null;
       sector?: string | null;
-      metrics: Record<string, number | boolean | null>;
-      etfMetrics?: Record<string, number | boolean | null> | null;
+      industry?: string | null;
+      metrics: Record<string, number | boolean | string | null>;
+      etfMetrics?: Record<string, number | boolean | string | null> | null;
       asOf?: string | null;
+      periodsAvailable?: number | null;
       note?: string | null;
     }) => {
       if (!householdId || !symbol) throw new Error('No household or symbol');
@@ -564,10 +567,13 @@ export function useFundamentalOverrides(symbol: string | null) {
           household_id: householdId,
           symbol: symbol.toUpperCase(),
           asset_type: input.assetType,
+          company_name: input.companyName ?? null,
           sector: input.sector ?? null,
+          industry: input.industry ?? null,
           metrics: input.metrics,
           etf_metrics: input.etfMetrics ?? null,
           as_of: input.asOf ?? null,
+          periods_available: input.periodsAvailable ?? 1,
           note: input.note ?? null,
         },
         { onConflict: 'household_id,symbol' },
@@ -576,7 +582,9 @@ export function useFundamentalOverrides(symbol: string | null) {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['se-fundamental-overrides'] });
+      qc.invalidateQueries({ queryKey: ['se-fundamental-override-list'] });
       qc.invalidateQueries({ queryKey: ['se-hybrid'] });
+      qc.invalidateQueries({ queryKey: ['se-scored-symbols'] });
     },
   });
 
