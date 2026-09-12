@@ -260,6 +260,59 @@ export default function SwingEdgeSettings() {
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="sectorcap">Max sector money exposure (%)</Label>
+              <Input
+                id="sectorcap"
+                type="number"
+                min="1"
+                step="1"
+                value={sectorCapital}
+                onChange={(e) => setSectorCapital(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="sectorheat">Max sector risk (%)</Label>
+              <Input
+                id="sectorheat"
+                type="number"
+                min="0.1"
+                step="0.1"
+                value={sectorHeat}
+                onChange={(e) => setSectorHeat(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="corrrisk">Max correlated group risk (%)</Label>
+              <Input
+                id="corrrisk"
+                type="number"
+                min="0.1"
+                step="0.1"
+                value={correlatedRisk}
+                onChange={(e) => setCorrelatedRisk(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="corrlookback">Correlation lookback (days)</Label>
+              <Input
+                id="corrlookback"
+                type="number"
+                min="20"
+                step="5"
+                value={lookback}
+                onChange={(e) => setLookback(e.target.value)}
+              />
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Money exposure is how much of the account sits in one sector. Sector risk is how much of
+            the account could be lost there. These are separate on purpose, and none of these numbers
+            is right for everyone.
+          </p>
+
+
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[
               { label: 'Max risk per trade', value: money(maxRiskPerTrade) },
               { label: 'Max portfolio risk', value: money(risk.maxPortfolioRisk) },
