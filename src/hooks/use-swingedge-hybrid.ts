@@ -173,9 +173,9 @@ export function useHybridAnalysis(symbol: string | null, assetTypeHint?: 'STOCK'
         ? assessStop({
             entry: levels.estimatedEntry,
             stop: levels.estimatedStop,
-            target: levels.estimatedTarget,
             atrValue: technical.atr,
-            support: technical.support,
+            structureLevel: technical.support,
+            rewardRisk: position?.rewardRisk ?? levels.projectedRewardRisk,
             setup: technical.setup,
           })
         : null;
