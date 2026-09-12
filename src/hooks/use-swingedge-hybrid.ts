@@ -93,7 +93,7 @@ export function useHybridAnalysis(symbol: string | null, assetTypeHint?: 'STOCK'
         loadCandles(sym, '1day', mode, 260),
         supabase
           .from('se_market_symbols')
-          .select('symbol, name, asset_type, sector')
+          .select('symbol, name, asset_type')
           .eq('symbol', sym)
           .maybeSingle(),
       ]);
