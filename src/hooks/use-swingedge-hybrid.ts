@@ -50,6 +50,10 @@ export interface HybridAnalysis {
   risk: RiskScoreResult;
   fundamental: FundamentalScoreResult | null;
   etf: EtfQualityResult | null
+  /** The exact fund metrics the score ran on — provider figures with the
+   *  price-history-measured liquidity, spread and volatility already merged
+   *  in. Lets screens tell "the app has this" from a true blank. */
+  etfInputs: Record<string, unknown> | null
   qualityScore: number | null;
   hybrid: HybridResult;
   bundle: FundamentalBundle;
