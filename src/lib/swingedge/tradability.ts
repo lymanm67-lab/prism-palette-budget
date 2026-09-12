@@ -11,6 +11,17 @@ export type TradabilityVerdict = 'TRADABLE' | 'THIN' | 'AVOID';
 export type SpreadSource = 'ACTUAL' | 'PROXY' | 'UNAVAILABLE';
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
+
+function summaryFor(verdict: TradabilityVerdict): string {
+  switch (verdict) {
+    case 'TRADABLE':
+      return 'Tradable on liquidity grounds.';
+    case 'THIN':
+      return 'Thin. Workable, but expect worse fills than planned.';
+    case 'AVOID':
+      return 'Avoid. Liquidity or price makes a controlled exit unreliable.';
+  }
+}
 const round4 = (n: number) => Math.round(n * 10000) / 10000;
 
 export interface TradabilityConfig {
@@ -204,11 +215,7 @@ export function assessTradability(input: TradabilityInput): TradabilityResult {
     spread,
     dataQuality,
     reasons,
-    summary:
-      verdict === 'TRADABLE'
-        ? 'Tradable on liquidity grounds.'
-        : verdict === 'THIN'
-          ? 'Thin. Workable, but expect worse fills than planned.'
-          : 'Avoid. Liquidity or price makes a controlled exit unreliable.',
+    summary: summaryFor(verdict),
+
   };
 }

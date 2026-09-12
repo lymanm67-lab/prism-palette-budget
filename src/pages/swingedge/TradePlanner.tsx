@@ -1000,8 +1000,13 @@ export default function TradePlanner() {
                             try {
                               await openPaperTrade(p);
                               toast.success('Paper trade opened with the plan locked in');
-                            } catch {
-                              toast.error('Could not open that paper trade');
+                            } catch (err) {
+                              toast.error(
+                                err instanceof Error
+                                  ? err.message
+                                  : 'Could not open that paper trade',
+                                { duration: 9000 },
+                              );
                             }
                           }}
                         >

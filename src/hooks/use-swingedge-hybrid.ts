@@ -21,6 +21,10 @@ import { computeHybridSignal, HYBRID_METHODOLOGY_VERSION, type HybridResult } fr
 import { candleBasis, entryZone, priceOutsideZone, validUntil } from '@/lib/swingedge/signalLifecycle';
 import { analyzeCandles, type CandleAnalysis } from '@/lib/swingedge/candleEngine';
 import { MARKET_BENCHMARK, SECTOR_BENCHMARKS, profileFor } from '@/lib/swingedge/sectors';
+import { classifyRegime, regimeAlignmentBias, REGIME_LABEL, type MarketRegimeResult } from '@/lib/swingedge/marketRegime';
+import { assessRelativeStrength, RS_LABEL, type RelativeStrengthResult } from '@/lib/swingedge/relativeStrength';
+import { assessTradability, type TradabilityResult } from '@/lib/swingedge/tradability';
+import type { Candle } from '@/lib/swingedge/types';
 import {
   AlphaVantageFundamentals,
   ManualFundamentals,
@@ -61,13 +65,24 @@ export interface HybridAnalysis {
   sectorSymbol: string;
   marketTrendSymbol: string;
   dataSources: string[];
+  /** What the market IS doing. Shades alignment inside the Technical Score. */
+  regime: MarketRegimeResult;
+  /** Who has been stronger over the window. Also shades alignment only. */
+  relativeStrength: RelativeStrengthResult;
+  /** Liquidity, price and spread reality. AVOID is a hard gate. */
+  tradability: TradabilityResult;
 }
 
-async function benchmarkTrend(symbol: string, mode: Parameters<typeof loadCandles>[2]) {
-  const { candles } = await loadCandles(symbol, '1day', mode, 120);
+async function benchmarkCandles(symbol: string, mode: Parameters<typeof loadCandles>[2]) {
+  const { candles } = await loadCandles(symbol, '1day', mode, 200);
+  return candles;
+}
+
+function trendOf(candles: Candle[]) {
   if (candles.length < 60) return null;
   return trendState(candles);
 }
+
 
 /** One symbol, end to end. Nothing here calls a provider endpoint off the plan. */
 export function useHybridAnalysis(symbol: string | null, assetTypeHint?: 'STOCK' | 'ETF') {
@@ -134,10 +149,34 @@ export function useHybridAnalysis(symbol: string | null, assetTypeHint?: 'STOCK'
       const profile = profileFor(sectorText, bundle.profile?.industry ?? null);
       const sectorSymbol = assetType === 'ETF' ? MARKET_BENCHMARK : SECTOR_BENCHMARKS[profile.key];
 
-      const [marketTrend, sectorTrend] = await Promise.all([
-        benchmarkTrend(MARKET_BENCHMARK, mode),
-        sectorSymbol === MARKET_BENCHMARK ? Promise.resolve(null) : benchmarkTrend(sectorSymbol, mode),
+      const [marketCandlesRaw, sectorCandlesRaw] = await Promise.all([
+        benchmarkCandles(MARKET_BENCHMARK, mode),
+        sectorSymbol === MARKET_BENCHMARK
+          ? Promise.resolve([] as Candle[])
+          : benchmarkCandles(sectorSymbol, mode),
       ]);
+      const marketCandles = marketCandlesRaw;
+      const sectorCandles = sectorCandlesRaw.length ? sectorCandlesRaw : marketCandlesRaw;
+      const marketTrend = trendOf(marketCandles);
+      const sectorTrend = sectorCandlesRaw.length ? trendOf(sectorCandlesRaw) : null;
+
+      // What the market IS doing, from transparent index checks.
+      const regime = classifyRegime([{ symbol: MARKET_BENCHMARK, candles: marketCandles }]);
+
+      // Who has been stronger over the window. Reporting, never prediction.
+      const relativeStrength = assessRelativeStrength({
+        symbol: sym,
+        assetType,
+        candles: usable,
+        sectorCandles: assetType === 'ETF' ? null : sectorCandles,
+        sectorSymbol: assetType === 'ETF' ? null : sectorSymbol,
+        benchmarkCandles: marketCandles,
+        benchmarkSymbol: MARKET_BENCHMARK,
+        lookback: settings.correlation_lookback_days,
+      });
+
+      // Liquidity and spread reality. AVOID is a hard gate downstream.
+      const tradability = assessTradability({ symbol: sym, candles: usable });
 
       // Candlestick evidence, scored in context. It contributes at most 7 points
       // inside Setup Quality and can never promote a signal on its own.
@@ -155,6 +194,10 @@ export function useHybridAnalysis(symbol: string | null, assetTypeHint?: 'STOCK'
         sectorTrend: sectorTrend ?? marketTrend,
         sectorSymbol,
         candleConfirmation: candleAnalysis.confirmation,
+        regimeBias: regime.insufficientData ? null : regimeAlignmentBias(regime.regime),
+        regimeLabel: regime.insufficientData ? null : REGIME_LABEL[regime.regime],
+        relativeStrengthBias: relativeStrength.overall ? relativeStrength.bias : null,
+        relativeStrengthLabel: relativeStrength.overall ? RS_LABEL[relativeStrength.overall] : null,
       };
       const technical = scoreSymbol(sym, usable, alignment);
 
@@ -266,7 +309,10 @@ export function useHybridAnalysis(symbol: string | null, assetTypeHint?: 'STOCK'
         riskScore: risk.score,
         confidence,
         qualityCoverage: assetType === 'ETF' ? etf?.coverage : fundamental?.coverage,
-        hardGateFailures: risk.hardGateFailures,
+        // Tradability AVOID is a hard gate, alongside the risk gates.
+        hardGateFailures: tradability.hardGate
+          ? [...risk.hardGateFailures, `Tradability: ${tradability.reasons[0]}`]
+          : risk.hardGateFailures,
         conflicts,
         setupReady: technical.setup !== 'NONE',
         priceOutsideEntryZone: priceOutside,
@@ -298,6 +344,9 @@ export function useHybridAnalysis(symbol: string | null, assetTypeHint?: 'STOCK'
         sectorSymbol,
         marketTrendSymbol: MARKET_BENCHMARK,
         dataSources: [priceResult.source === 'demo' ? 'DEMO_DATA' : 'TWELVE_DATA', ...bundle.sources],
+        regime,
+        relativeStrength,
+        tradability,
       };
     },
   });

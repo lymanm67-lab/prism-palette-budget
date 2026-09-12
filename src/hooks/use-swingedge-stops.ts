@@ -6,7 +6,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { loadCandles, useTradingSettings } from '@/hooks/use-swingedge';
-import { setupState, snapshot, type IndicatorSnapshot, type SetupState } from '@/lib/swingedge/indicators';
+import { atr, last, setupState, snapshot, type IndicatorSnapshot, type SetupState } from '@/lib/swingedge/indicators';
+import { candleBasis, entryZone } from '@/lib/swingedge/signalLifecycle';
+import { revalidateSignal } from '@/lib/swingedge/revalidation';
 import type { Candle } from '@/lib/swingedge/types';
 
 const num = (v: unknown): number => Number(v ?? 0);
@@ -116,6 +118,7 @@ export type TradePlanInput = Omit<TradePlanRow, 'id' | 'created_at'> & { id?: st
 export function useTradePlans() {
   const { household } = useHousehold();
   const householdId = household?.id;
+  const { settings } = useTradingSettings();
   const qc = useQueryClient();
 
   const plansQuery = useQuery({
@@ -191,10 +194,54 @@ export function useTradePlans() {
     onSuccess: invalidate,
   });
 
-  /** Opens a paper trade and locks the original plan values on it. */
+  /**
+   * Opens a paper trade and locks the original plan values on it.
+   *
+   * Revalidation is MANDATORY here, not advisory. A plan saved days ago, or one
+   * whose price has walked away from the approved entry zone, is refused and the
+   * reason is recorded. This is the last gate before execution.
+   */
   const openPaperTrade = useMutation({
     mutationFn: async (plan: TradePlanRow) => {
       if (!householdId) throw new Error('No household');
+
+      const fresh = await loadCandles(plan.symbol, '1day', settings.data_mode, 120);
+      const basis = candleBasis(fresh.candles, '1day');
+      const atrValue = fresh.candles.length >= 15 ? last(atr(fresh.candles, 14)) : null;
+      const price = fresh.candles.length ? fresh.candles[fresh.candles.length - 1].close : 0;
+      const zone = entryZone(plan.planned_entry, atrValue);
+
+      const verdict = revalidateSignal(
+        {
+          symbol: plan.symbol,
+          signal: 'GO',
+          entryZone: zone,
+          entry: plan.planned_entry,
+          atrValue,
+          capturedAt: plan.created_at,
+          lastCompletedCandle: basis.lastCompletedAt,
+        },
+        { price, lastCompletedCandle: basis.lastCompletedAt },
+        { maxAgeDays: settings.signal_max_age_days, beforePaperTrade: true },
+      );
+
+      // Record the check either way, so review compares against what was known.
+      await supabase.from('se_signal_revalidations').insert({
+        household_id: householdId,
+        symbol: plan.symbol,
+        previous_signal: 'GO',
+        new_signal: verdict.effectiveSignal,
+        previous_entry_low: zone.low,
+        previous_entry_high: zone.high,
+        current_price: price,
+        reason: verdict.reasons.join(' '),
+        triggers: verdict.triggers,
+      });
+
+      if (!verdict.usable) {
+        throw new Error(`${verdict.headline} ${verdict.reasons.join(' ')}`);
+      }
+
       const shares = plan.shares ?? 0;
       const risk = plan.dollar_risk ?? round2((plan.planned_entry - plan.planned_stop) * shares);
       const { error } = await supabase.from('se_paper_trades').insert({
@@ -214,6 +261,9 @@ export function useTradePlans() {
         invalidation: plan.invalidation,
         stop_strategy: plan.stop_strategy,
         earnings_ack: plan.earnings_reviewed,
+        planned_stop: plan.planned_stop,
+        current_price: price,
+        revalidated_at: verdict.checkedAt,
         status: 'OPEN',
       });
       if (error) throw error;

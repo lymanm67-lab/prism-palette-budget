@@ -13,6 +13,11 @@ import HybridSignalCard from '@/components/swingedge/HybridSignalCard';
 import ManualFundamentalsForm from '@/components/swingedge/ManualFundamentalsForm';
 import QualityScoreCard from '@/components/swingedge/QualityScoreCard';
 import { RiskQualityCard, TechnicalCard } from '@/components/swingedge/TechnicalRiskCards';
+import {
+  MarketRegimeCard,
+  RelativeStrengthCard,
+  TradabilityCard,
+} from '@/components/swingedge/ContextCards';
 import { useTradingSettings, useTradingTitle } from '@/hooks/use-swingedge';
 import { useHybridAnalysis, useHybridSignalHistory } from '@/hooks/use-swingedge-hybrid';
 
@@ -151,7 +156,14 @@ export default function StockAnalyzer() {
             <RiskQualityCard risk={analysis.risk} />
           </div>
 
+          <div className="grid gap-4 lg:grid-cols-3">
+            <MarketRegimeCard regime={analysis.regime} />
+            <RelativeStrengthCard rs={analysis.relativeStrength} />
+            <TradabilityCard t={analysis.tradability} />
+          </div>
+
           <CandlePatternCard analysis={analysis.candles} advanced={settings.advanced_mode} />
+
 
           {levels && (
             <Card className="border-border/60 bg-card/60 backdrop-blur">
