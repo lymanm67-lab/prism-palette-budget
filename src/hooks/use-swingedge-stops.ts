@@ -323,6 +323,18 @@ export interface ManagedTrade {
   exit_reason: string | null;
   realized_pl: number | null;
   notes: string | null;
+  /* Execution realism — what the plan asked for versus what a fill would give. */
+  planned_stop: number | null;
+  revalidated_at: string | null;
+  simulated_fill: number | null;
+  slippage: number | null;
+  gap_difference: number | null;
+  planned_loss: number | null;
+  actual_simulated_loss: number | null;
+  execution_score: number | null;
+  signal_quality: string | null;
+  outcome_class: string | null;
+
 }
 
 export interface StopModification {
