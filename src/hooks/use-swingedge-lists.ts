@@ -364,6 +364,9 @@ export function useAcademyProgress() {
   const query = useQuery({
     queryKey: ['se-academy-progress', householdId],
     enabled: !!householdId,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('se_academy_progress')
