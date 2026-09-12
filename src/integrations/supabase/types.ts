@@ -11218,6 +11218,628 @@ export type Database = {
           },
         ]
       }
+      se_academy_progress: {
+        Row: {
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          household_id: string
+          id: string
+          lesson_key: string
+          quiz_score: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          household_id: string
+          id?: string
+          lesson_key: string
+          quiz_score?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          household_id?: string
+          id?: string
+          lesson_key?: string
+          quiz_score?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "se_academy_progress_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      se_api_provider_status: {
+        Row: {
+          cache_hits: number
+          cache_misses: number
+          connection_status: string
+          created_at: string
+          credits_left_reported: number | null
+          credits_used_reported: number | null
+          day_requests: number
+          day_window_date: string | null
+          failed_requests: number
+          id: string
+          last_error: string | null
+          last_error_at: string | null
+          last_success_at: string | null
+          locked_until: string | null
+          minute_requests: number
+          minute_window_started_at: string | null
+          provider: string
+          rate_limit_events: number
+          supports_earnings: boolean
+          updated_at: string
+        }
+        Insert: {
+          cache_hits?: number
+          cache_misses?: number
+          connection_status?: string
+          created_at?: string
+          credits_left_reported?: number | null
+          credits_used_reported?: number | null
+          day_requests?: number
+          day_window_date?: string | null
+          failed_requests?: number
+          id?: string
+          last_error?: string | null
+          last_error_at?: string | null
+          last_success_at?: string | null
+          locked_until?: string | null
+          minute_requests?: number
+          minute_window_started_at?: string | null
+          provider?: string
+          rate_limit_events?: number
+          supports_earnings?: boolean
+          updated_at?: string
+        }
+        Update: {
+          cache_hits?: number
+          cache_misses?: number
+          connection_status?: string
+          created_at?: string
+          credits_left_reported?: number | null
+          credits_used_reported?: number | null
+          day_requests?: number
+          day_window_date?: string | null
+          failed_requests?: number
+          id?: string
+          last_error?: string | null
+          last_error_at?: string | null
+          last_success_at?: string | null
+          locked_until?: string | null
+          minute_requests?: number
+          minute_window_started_at?: string | null
+          provider?: string
+          rate_limit_events?: number
+          supports_earnings?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      se_backtests: {
+        Row: {
+          created_at: string
+          end_date: string | null
+          household_id: string
+          id: string
+          interval: string
+          name: string
+          results: Json | null
+          settings: Json | null
+          start_date: string | null
+          symbols: string[]
+          trades: Json | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          end_date?: string | null
+          household_id: string
+          id?: string
+          interval?: string
+          name: string
+          results?: Json | null
+          settings?: Json | null
+          start_date?: string | null
+          symbols?: string[]
+          trades?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string | null
+          household_id?: string
+          id?: string
+          interval?: string
+          name?: string
+          results?: Json | null
+          settings?: Json | null
+          start_date?: string | null
+          symbols?: string[]
+          trades?: Json | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "se_backtests_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      se_journal_entries: {
+        Row: {
+          created_at: string
+          entry_date: string
+          household_id: string
+          id: string
+          lessons: string | null
+          mistakes: string | null
+          paper_trade_id: string | null
+          rating: number | null
+          rules_followed: boolean | null
+          symbol: string | null
+          title: string | null
+          updated_at: string
+          what_happened: string | null
+          what_i_planned: string | null
+        }
+        Insert: {
+          created_at?: string
+          entry_date?: string
+          household_id: string
+          id?: string
+          lessons?: string | null
+          mistakes?: string | null
+          paper_trade_id?: string | null
+          rating?: number | null
+          rules_followed?: boolean | null
+          symbol?: string | null
+          title?: string | null
+          updated_at?: string
+          what_happened?: string | null
+          what_i_planned?: string | null
+        }
+        Update: {
+          created_at?: string
+          entry_date?: string
+          household_id?: string
+          id?: string
+          lessons?: string | null
+          mistakes?: string | null
+          paper_trade_id?: string | null
+          rating?: number | null
+          rules_followed?: boolean | null
+          symbol?: string | null
+          title?: string | null
+          updated_at?: string
+          what_happened?: string | null
+          what_i_planned?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "se_journal_entries_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "se_journal_entries_paper_trade_id_fkey"
+            columns: ["paper_trade_id"]
+            isOneToOne: false
+            referencedRelation: "se_paper_trades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      se_market_data_cache: {
+        Row: {
+          close: number
+          created_at: string
+          datetime: string
+          fetched_at: string
+          high: number
+          id: string
+          interval: string
+          is_final: boolean
+          low: number
+          open: number
+          provider: string
+          symbol: string
+          updated_at: string
+          volume: number
+        }
+        Insert: {
+          close: number
+          created_at?: string
+          datetime: string
+          fetched_at?: string
+          high: number
+          id?: string
+          interval: string
+          is_final?: boolean
+          low: number
+          open: number
+          provider?: string
+          symbol: string
+          updated_at?: string
+          volume?: number
+        }
+        Update: {
+          close?: number
+          created_at?: string
+          datetime?: string
+          fetched_at?: string
+          high?: number
+          id?: string
+          interval?: string
+          is_final?: boolean
+          low?: number
+          open?: number
+          provider?: string
+          symbol?: string
+          updated_at?: string
+          volume?: number
+        }
+        Relationships: []
+      }
+      se_market_symbols: {
+        Row: {
+          asset_type: string
+          created_at: string
+          currency: string
+          exchange: string | null
+          id: string
+          in_curated_universe: boolean
+          is_active: boolean
+          name: string | null
+          symbol: string
+          updated_at: string
+        }
+        Insert: {
+          asset_type?: string
+          created_at?: string
+          currency?: string
+          exchange?: string | null
+          id?: string
+          in_curated_universe?: boolean
+          is_active?: boolean
+          name?: string | null
+          symbol: string
+          updated_at?: string
+        }
+        Update: {
+          asset_type?: string
+          created_at?: string
+          currency?: string
+          exchange?: string | null
+          id?: string
+          in_curated_universe?: boolean
+          is_active?: boolean
+          name?: string | null
+          symbol?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      se_paper_trades: {
+        Row: {
+          created_at: string
+          entry_date: string
+          entry_price: number
+          exit_date: string | null
+          exit_price: number | null
+          exit_reason: string | null
+          household_id: string
+          id: string
+          initial_dollar_risk: number | null
+          notes: string | null
+          realized_pl: number | null
+          rules_followed: boolean | null
+          setup_type: string | null
+          shares: number
+          status: string
+          stop_price: number
+          symbol: string
+          target_price: number
+          trade_plan_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          entry_date?: string
+          entry_price: number
+          exit_date?: string | null
+          exit_price?: number | null
+          exit_reason?: string | null
+          household_id: string
+          id?: string
+          initial_dollar_risk?: number | null
+          notes?: string | null
+          realized_pl?: number | null
+          rules_followed?: boolean | null
+          setup_type?: string | null
+          shares: number
+          status?: string
+          stop_price: number
+          symbol: string
+          target_price: number
+          trade_plan_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          entry_date?: string
+          entry_price?: number
+          exit_date?: string | null
+          exit_price?: number | null
+          exit_reason?: string | null
+          household_id?: string
+          id?: string
+          initial_dollar_risk?: number | null
+          notes?: string | null
+          realized_pl?: number | null
+          rules_followed?: boolean | null
+          setup_type?: string | null
+          shares?: number
+          status?: string
+          stop_price?: number
+          symbol?: string
+          target_price?: number
+          trade_plan_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "se_paper_trades_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "se_paper_trades_trade_plan_id_fkey"
+            columns: ["trade_plan_id"]
+            isOneToOne: false
+            referencedRelation: "se_trade_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      se_trade_plans: {
+        Row: {
+          created_at: string
+          dollar_risk: number | null
+          household_id: string
+          id: string
+          invalidation: string | null
+          planned_entry: number
+          planned_stop: number
+          planned_target: number
+          position_value: number | null
+          potential_gain: number | null
+          reward_risk: number | null
+          risk_per_share: number | null
+          score_breakdown: Json | null
+          setup_type: string | null
+          shares: number | null
+          status: string
+          swingedge_score: number | null
+          symbol: string
+          updated_at: string
+          verdict: string | null
+          why_qualifies: string | null
+        }
+        Insert: {
+          created_at?: string
+          dollar_risk?: number | null
+          household_id: string
+          id?: string
+          invalidation?: string | null
+          planned_entry: number
+          planned_stop: number
+          planned_target: number
+          position_value?: number | null
+          potential_gain?: number | null
+          reward_risk?: number | null
+          risk_per_share?: number | null
+          score_breakdown?: Json | null
+          setup_type?: string | null
+          shares?: number | null
+          status?: string
+          swingedge_score?: number | null
+          symbol: string
+          updated_at?: string
+          verdict?: string | null
+          why_qualifies?: string | null
+        }
+        Update: {
+          created_at?: string
+          dollar_risk?: number | null
+          household_id?: string
+          id?: string
+          invalidation?: string | null
+          planned_entry?: number
+          planned_stop?: number
+          planned_target?: number
+          position_value?: number | null
+          potential_gain?: number | null
+          reward_risk?: number | null
+          risk_per_share?: number | null
+          score_breakdown?: Json | null
+          setup_type?: string | null
+          shares?: number | null
+          status?: string
+          swingedge_score?: number | null
+          symbol?: string
+          updated_at?: string
+          verdict?: string | null
+          why_qualifies?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "se_trade_plans_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      se_trading_settings: {
+        Row: {
+          advanced_mode: boolean
+          api_daily_limit: number
+          api_minute_limit: number
+          api_provider: string
+          created_at: string
+          data_mode: string
+          household_id: string
+          id: string
+          max_portfolio_risk_pct: number
+          risk_per_trade_pct: number
+          trading_capital: number
+          updated_at: string
+        }
+        Insert: {
+          advanced_mode?: boolean
+          api_daily_limit?: number
+          api_minute_limit?: number
+          api_provider?: string
+          created_at?: string
+          data_mode?: string
+          household_id: string
+          id?: string
+          max_portfolio_risk_pct?: number
+          risk_per_trade_pct?: number
+          trading_capital?: number
+          updated_at?: string
+        }
+        Update: {
+          advanced_mode?: boolean
+          api_daily_limit?: number
+          api_minute_limit?: number
+          api_provider?: string
+          created_at?: string
+          data_mode?: string
+          household_id?: string
+          id?: string
+          max_portfolio_risk_pct?: number
+          risk_per_trade_pct?: number
+          trading_capital?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "se_trading_settings_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: true
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      se_watchlist_items: {
+        Row: {
+          created_at: string
+          household_id: string
+          id: string
+          notes: string | null
+          symbol: string
+          updated_at: string
+          watchlist_id: string
+        }
+        Insert: {
+          created_at?: string
+          household_id: string
+          id?: string
+          notes?: string | null
+          symbol: string
+          updated_at?: string
+          watchlist_id: string
+        }
+        Update: {
+          created_at?: string
+          household_id?: string
+          id?: string
+          notes?: string | null
+          symbol?: string
+          updated_at?: string
+          watchlist_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "se_watchlist_items_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "se_watchlist_items_watchlist_id_fkey"
+            columns: ["watchlist_id"]
+            isOneToOne: false
+            referencedRelation: "se_watchlists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      se_watchlists: {
+        Row: {
+          created_at: string
+          description: string | null
+          household_id: string
+          id: string
+          is_universe: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          household_id: string
+          id?: string
+          is_universe?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          household_id?: string
+          id?: string
+          is_universe?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "se_watchlists_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       site_content: {
         Row: {
           key: string
