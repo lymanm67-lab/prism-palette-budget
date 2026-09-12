@@ -16,7 +16,7 @@ GO never means "price will rise". It means "this setup currently satisfies my ru
 
 - A high score never overrides a failed hard rule. Hard rules: invalid stop, no defined invalidation, account risk exceeded, portfolio risk exceeded, reward-to-risk below minimum, incomplete setup, insufficient or failed data. A 92 with an invalid stop is STOP.
 - Fundamentals never move a stop price. Stops stay tied to structure, volatility and setup logic. Deteriorating fundamentals can trigger REVIEW, never a different chart stop.
-- Missing data is never scored as zero. It reducoverage and lowers confidence, and the screen says how much data the score is based on.
+- Missing data is never scored as zero. It reduces coverage and lowers confidence, and the screen says how much data the score is based on.
 - Funds are never scored as if they were companies. Separate quality model.
 - No score is ever presented as a probability of profit. No "buy"/"sell" language anywhere.
 
