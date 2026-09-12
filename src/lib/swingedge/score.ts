@@ -81,7 +81,13 @@ export interface AlignmentContext {
   /** Trend of the sector benchmark for a stock, or of the fund's benchmark. */
   sectorTrend?: TrendState | null;
   sectorSymbol?: string | null;
+  /**
+   * Candlestick evidence, already scored in context. It contributes at most 7
+   * points INSIDE Setup Quality — never a separate score on top of the 100.
+   */
+  candleConfirmation?: CandleConfirmation | null;
 }
+
 
 /**
  * Scores one symbol out of 100 across trend, momentum, setup, volume and
