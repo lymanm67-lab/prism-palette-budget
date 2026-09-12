@@ -223,11 +223,18 @@ export default function TradingAcademy() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Accordion type="single" collapsible className="w-full">
+            <Accordion
+              type="single"
+              collapsible
+              className="w-full"
+              defaultValue={
+                targetLesson && m.lessons.some((l) => l.key === targetLesson) ? targetLesson : undefined
+              }
+            >
               {m.lessons.map((lesson) => {
                 const done = completedKeys.has(lesson.key);
                 return (
-                  <AccordionItem key={lesson.key} value={lesson.key}>
+                  <AccordionItem key={lesson.key} value={lesson.key} id={`lesson-${lesson.key}`}>
                     <AccordionTrigger className="text-left">
                       <span className="flex flex-1 flex-wrap items-center gap-2 pr-2">
                         {done ? (
