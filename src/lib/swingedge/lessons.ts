@@ -512,7 +512,76 @@ export const LESSONS: Lesson[] = [
       why: '$75 divided by the $50 risked is 1.5 units of risk.',
     },
   },
+  {
+    key: 'three-layers-one-signal',
+    module: 'Combining signals',
+    title: 'Three layers, one signal',
+    minutes: 5,
+    summary: 'Quality, chart and risk are graded separately, then blended, so you can see which layer let you down.',
+    body: [
+      'A trade idea has three separate questions inside it. Is this a decent business or fund? Is the chart in a buyable condition right now? And does the risk side hold up at your account size? Grading them together hides which one failed.',
+      'SwingEdge scores each on its own and then blends them, weighted towards quality and the chart with risk carrying the smaller share of the number — but risk also holds hard rules that can stop an idea outright no matter how good the rest looks.',
+      'The result is one of four words. GO means every layer clears your minimums. WAIT means nothing is broken, the timing is simply not there. REVIEW means the layers disagree and you have to make the call. STOP means a rule is broken and the idea is off the table.',
+      'None of this is a probability, a forecast, or advice. It is a structured reading of conditions you could check yourself, written down so it is consistent from one symbol to the next.',
+    ],
+    example: {
+      title: 'Where the disagreement shows',
+      lines: [
+        'Quality 78, chart 82, risk 80 with no rules broken — that reads GO.',
+        'Quality 42 with the same chart and risk — that reads REVIEW, because the business is weak.',
+        'Reward against risk of 1.1 to 1 — that reads STOP, whatever the other two say.',
+      ],
+    },
+    keyPoints: [
+      'Each layer is scored and shown separately.',
+      'A hard rule broken outranks a high blended score.',
+      'REVIEW is an instruction to think, not a soft yes.',
+    ],
+    blindSpot: 'A blended score is only as good as the data behind it. Half the figures missing means half the confidence.',
+    appliesTo: { label: 'Stock Analyzer', to: '/swingedge/analyzer' },
+    quiz: {
+      question: 'What does STOP mean?',
+      options: ['The score is a little low', 'A rule is broken outright', 'The market is closed'],
+      answerIndex: 1,
+      why: 'STOP is reserved for broken rules, such as reward against risk falling below your minimum.',
+    },
+  },
+  {
+    key: 'missing-data-and-confidence',
+    module: 'Combining signals',
+    title: 'Missing figures and honest confidence',
+    minutes: 4,
+    summary: 'A gap in the data is not evidence against a symbol, and it should never be filled with a guess.',
+    body: [
+      'When a figure is unavailable, the wrong move is to score it zero — that quietly punishes a company for a data problem. The right move is to leave the category out, tell you how much of the picture was covered, and lower the confidence attached to the result.',
+      'Confidence is separate from the score. A 78 built on complete, recent figures and a 78 built on a third of them are not the same reading, and the app labels them differently.',
+      'Nothing is ever invented. If your data plan does not supply company or fund figures, the score says so and gives you a form to type in what you read from the report yourself. Those values are then marked as yours, with the date you entered.',
+      'Old figures matter too. A report from eighteen months ago is stale for a swing trade, and freshness pulls confidence down even when every field is filled.',
+    ],
+    example: {
+      title: 'Two readings, same number',
+      lines: [
+        'Symbol A: quality 78, all six categories covered, figures two months old — high confidence.',
+        'Symbol B: quality 78, two categories covered, figures a year old — low confidence.',
+        'Same score, different trust. Only A should be treated as a complete reading.',
+      ],
+    },
+    keyPoints: [
+      'Missing categories are excluded, never scored as zero.',
+      'Coverage and freshness set the confidence, not the score.',
+      'Figures you type in are labelled as yours.',
+    ],
+    blindSpot: 'High confidence in a data set says nothing about whether the figures predict the next move.',
+    appliesTo: { label: 'Stock Analyzer', to: '/swingedge/analyzer' },
+    quiz: {
+      question: 'A profitability figure is unavailable. What should happen to the score?',
+      options: ['Score that category zero', 'Leave it out and lower confidence', 'Estimate a likely value'],
+      answerIndex: 1,
+      why: 'A data gap is not bad news about the company, so it lowers confidence rather than the score.',
+    },
+  },
 ];
+
 
 export function lessonsByModule(): { module: string; lessons: Lesson[] }[] {
   return ACADEMY_MODULES.map((module) => ({
