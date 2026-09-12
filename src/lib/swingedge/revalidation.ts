@@ -233,10 +233,12 @@ export function revalidateSignal(
       : 'CURRENT';
 
   let effectiveSignal = stored.signal;
-  if (freshness === 'EXPIRED') {
-    effectiveSignal = 'REVIEW';
-  } else if (priceExtended) {
+  // Price extended is the more useful instruction: wait for a fresh setup rather
+  // than chase. An aged-out signal with price still in the zone needs a re-read.
+  if (priceExtended) {
     effectiveSignal = 'WAIT';
+  } else if (freshness === 'EXPIRED') {
+    effectiveSignal = 'REVIEW';
   } else if (freshness === 'NEEDS_REVIEW' && stored.signal === 'GO') {
     effectiveSignal = 'REVIEW';
   }
