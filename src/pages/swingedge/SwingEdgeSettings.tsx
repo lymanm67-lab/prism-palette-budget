@@ -48,6 +48,12 @@ export default function SwingEdgeSettings() {
   const [capital, setCapital] = useState(String(settings.trading_capital));
   const [riskPct, setRiskPct] = useState(String(settings.risk_per_trade_pct));
   const [portfolioPct, setPortfolioPct] = useState(String(settings.max_portfolio_risk_pct));
+  const [sectorCapital, setSectorCapital] = useState(
+    String(settings.max_sector_capital_exposure_pct),
+  );
+  const [sectorHeat, setSectorHeat] = useState(String(settings.max_sector_heat_pct));
+  const [correlatedRisk, setCorrelatedRisk] = useState(String(settings.max_correlated_risk_pct));
+  const [lookback, setLookback] = useState(String(settings.correlation_lookback_days));
   const [minuteLimit, setMinuteLimit] = useState(String(settings.api_minute_limit));
   const [dailyLimit, setDailyLimit] = useState(String(settings.api_daily_limit));
 
@@ -55,12 +61,20 @@ export default function SwingEdgeSettings() {
     setCapital(String(settings.trading_capital));
     setRiskPct(String(settings.risk_per_trade_pct));
     setPortfolioPct(String(settings.max_portfolio_risk_pct));
+    setSectorCapital(String(settings.max_sector_capital_exposure_pct));
+    setSectorHeat(String(settings.max_sector_heat_pct));
+    setCorrelatedRisk(String(settings.max_correlated_risk_pct));
+    setLookback(String(settings.correlation_lookback_days));
     setMinuteLimit(String(settings.api_minute_limit));
     setDailyLimit(String(settings.api_daily_limit));
   }, [
     settings.trading_capital,
     settings.risk_per_trade_pct,
     settings.max_portfolio_risk_pct,
+    settings.max_sector_capital_exposure_pct,
+    settings.max_sector_heat_pct,
+    settings.max_correlated_risk_pct,
+    settings.correlation_lookback_days,
     settings.api_minute_limit,
     settings.api_daily_limit,
   ]);
