@@ -168,6 +168,16 @@ export default function TradingAcademy() {
 
   const modules = useMemo(() => lessonsByModule(), []);
 
+  // Training week pages link straight to a lesson: /swingedge/academy?lesson=key
+  const [searchParams] = useSearchParams();
+  const targetLesson = searchParams.get('lesson');
+
+  useEffect(() => {
+    if (!targetLesson) return;
+    const el = document.getElementById(`lesson-${targetLesson}`);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [targetLesson]);
+
   const handleToggle = async (lesson: Lesson, quizScore: number) => {
     const nowComplete = !completedKeys.has(lesson.key);
     try {
