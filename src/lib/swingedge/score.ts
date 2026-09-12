@@ -19,7 +19,9 @@ import {
   type SetupState,
 } from './indicators';
 import { estimateLevels, type EstimatedLevels } from './risk';
+import type { CandleConfirmation } from './candleContext';
 import type { Candle, TrendState, Verdict } from './types';
+
 
 export interface ScoreComponent {
   key: string;
