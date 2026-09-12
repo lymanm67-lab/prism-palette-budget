@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { Bot, Loader2, Sparkles } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Bot, Loader2, Pause, Play, Sparkles, Square, Volume2 } from 'lucide-react';
+import { useTTS } from '@/hooks/use-tts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
