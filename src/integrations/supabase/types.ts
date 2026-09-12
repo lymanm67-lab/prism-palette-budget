@@ -1183,7 +1183,10 @@ export type Database = {
           id: string
           money_purpose: Database["public"]["Enums"]["money_purpose"] | null
           name: string
+          rollover_keep_amount: number
+          rollover_rule: string
           sort_order: number
+          sweep_destination: string | null
         }
         Insert: {
           baseline_locked?: boolean
@@ -1195,7 +1198,10 @@ export type Database = {
           id?: string
           money_purpose?: Database["public"]["Enums"]["money_purpose"] | null
           name: string
+          rollover_keep_amount?: number
+          rollover_rule?: string
           sort_order?: number
+          sweep_destination?: string | null
         }
         Update: {
           baseline_locked?: boolean
@@ -1207,7 +1213,10 @@ export type Database = {
           id?: string
           money_purpose?: Database["public"]["Enums"]["money_purpose"] | null
           name?: string
+          rollover_keep_amount?: number
+          rollover_rule?: string
           sort_order?: number
+          sweep_destination?: string | null
         }
         Relationships: [
           {
@@ -1412,6 +1421,72 @@ export type Database = {
           },
           {
             foreignKeyName: "category_groups_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      category_rollover_balances: {
+        Row: {
+          actual_spent: number
+          beginning_rollover: number
+          category_id: string
+          created_at: string
+          ending_balance: number
+          household_id: string
+          id: string
+          month: string
+          planned_amount: number
+          rolled_forward: number
+          rollover_rule: string
+          sweep_destination: string | null
+          swept_amount: number
+          updated_at: string
+        }
+        Insert: {
+          actual_spent?: number
+          beginning_rollover?: number
+          category_id: string
+          created_at?: string
+          ending_balance?: number
+          household_id: string
+          id?: string
+          month: string
+          planned_amount?: number
+          rolled_forward?: number
+          rollover_rule?: string
+          sweep_destination?: string | null
+          swept_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          actual_spent?: number
+          beginning_rollover?: number
+          category_id?: string
+          created_at?: string
+          ending_balance?: number
+          household_id?: string
+          id?: string
+          month?: string
+          planned_amount?: number
+          rolled_forward?: number
+          rollover_rule?: string
+          sweep_destination?: string | null
+          swept_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "category_rollover_balances_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "category_rollover_balances_household_id_fkey"
             columns: ["household_id"]
             isOneToOne: false
             referencedRelation: "households"
@@ -7990,6 +8065,109 @@ export type Database = {
           },
         ]
       }
+      leftover_allocations: {
+        Row: {
+          amount: number
+          created_at: string
+          destination: string
+          destination_label: string | null
+          household_id: string
+          id: string
+          month: string
+          notes: string | null
+          scope: string
+          source: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          destination: string
+          destination_label?: string | null
+          household_id: string
+          id?: string
+          month: string
+          notes?: string | null
+          scope?: string
+          source?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          destination?: string
+          destination_label?: string | null
+          household_id?: string
+          id?: string
+          month?: string
+          notes?: string | null
+          scope?: string
+          source?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leftover_allocations_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leftover_sweep_rules: {
+        Row: {
+          amount: number
+          cap_amount: number | null
+          created_at: string
+          destination: string
+          destination_label: string | null
+          household_id: string
+          id: string
+          is_active: boolean
+          mode: string
+          priority: number
+          scope: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          cap_amount?: number | null
+          created_at?: string
+          destination: string
+          destination_label?: string | null
+          household_id: string
+          id?: string
+          is_active?: boolean
+          mode?: string
+          priority?: number
+          scope?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          cap_amount?: number | null
+          created_at?: string
+          destination?: string
+          destination_label?: string | null
+          household_id?: string
+          id?: string
+          is_active?: boolean
+          mode?: string
+          priority?: number
+          scope?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leftover_sweep_rules_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       legacy_letters: {
         Row: {
           attachment_name: string | null
@@ -9575,6 +9753,71 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      month_end_closes: {
+        Row: {
+          actual_spending: number
+          actual_transfers: number
+          closed_at: string | null
+          created_at: string
+          household_id: string
+          id: string
+          income_received: number
+          leftover_cash: number
+          month: string
+          notes: string | null
+          scope: string
+          status: string
+          total_rolled_forward: number
+          total_swept: number
+          unassigned_cash: number
+          updated_at: string
+        }
+        Insert: {
+          actual_spending?: number
+          actual_transfers?: number
+          closed_at?: string | null
+          created_at?: string
+          household_id: string
+          id?: string
+          income_received?: number
+          leftover_cash?: number
+          month: string
+          notes?: string | null
+          scope?: string
+          status?: string
+          total_rolled_forward?: number
+          total_swept?: number
+          unassigned_cash?: number
+          updated_at?: string
+        }
+        Update: {
+          actual_spending?: number
+          actual_transfers?: number
+          closed_at?: string | null
+          created_at?: string
+          household_id?: string
+          id?: string
+          income_received?: number
+          leftover_cash?: number
+          month?: string
+          notes?: string | null
+          scope?: string
+          status?: string
+          total_rolled_forward?: number
+          total_swept?: number
+          unassigned_cash?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "month_end_closes_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       monthly_financial_reviews: {
         Row: {
