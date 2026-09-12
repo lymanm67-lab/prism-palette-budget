@@ -17,6 +17,7 @@ import WatchlistDashboardCard from '@/components/swingedge/WatchlistDashboardCar
 import CollapsibleSection from '@/components/swingedge/CollapsibleSection';
 import TradeWorkflow from '@/components/swingedge/TradeWorkflow';
 import PortfolioRolesCard from '@/components/swingedge/PortfolioRolesCard';
+import PortfolioHeatCard from '@/components/swingedge/PortfolioHeatCard';
 
 import { useSwingEdgeDashboard, useTradingSettings, useTradingTitle } from '@/hooks/use-swingedge';
 import type { MarketCondition, TrendState } from '@/lib/swingedge/types';
@@ -223,6 +224,10 @@ export default function SwingEdgeDashboard() {
 
       {/* Guided trade workflow + live-trade readiness */}
       <TradeWorkflow />
+
+      {/* Risk actually on the table right now */}
+      <PortfolioHeatCard />
+
 
       {/* Watchlist (self-collapsing) */}
       <PortfolioRolesCard />
