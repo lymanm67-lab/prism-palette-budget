@@ -45,9 +45,44 @@ function LessonCard({
   const [picked, setPicked] = useState<number | null>(null);
   const answered = picked !== null;
   const correct = picked === lesson.quiz.answerIndex;
+  const { speak, pause, resume, stop, isSpeaking, isPaused } = useTTS();
+
+  // Read the lesson the way it is laid out: the writing, the worked example,
+  // what to remember, then the caveat. The quiz is left out on purpose.
+  const narration = [
+    lesson.title,
+    ...lesson.body,
+    lesson.example.title,
+    ...lesson.example.lines,
+    'Worth remembering.',
+    ...lesson.keyPoints,
+    'What this idea ignores.',
+    lesson.blindSpot,
+  ].join('. ');
 
   return (
     <div className="space-y-4 rounded-lg border bg-card/50 p-4">
+      <div className="flex flex-wrap items-center gap-2">
+        {!isSpeaking ? (
+          <Button variant="outline" size="sm" onClick={() => speak(narration)}>
+            <Volume2 className="mr-2 h-4 w-4" />
+            Listen to this lesson
+          </Button>
+        ) : (
+          <>
+            <Button variant="outline" size="sm" onClick={() => (isPaused ? resume() : pause())}>
+              {isPaused ? <Play className="mr-2 h-4 w-4" /> : <Pause className="mr-2 h-4 w-4" />}
+              {isPaused ? 'Resume' : 'Pause'}
+            </Button>
+            <Button variant="ghost" size="sm" onClick={stop}>
+              <Square className="mr-2 h-4 w-4" />
+              Stop
+            </Button>
+            <span className="text-xs text-muted-foreground">Reading aloud…</span>
+          </>
+        )}
+      </div>
+
       <div className="space-y-3 text-sm">
         {lesson.body.map((p) => (
           <p key={p}>{p}</p>
