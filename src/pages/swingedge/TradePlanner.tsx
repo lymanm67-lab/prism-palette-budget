@@ -1068,6 +1068,35 @@ export default function TradePlanner() {
           'Planned numbers are yours; scanner numbers are estimates. Never mix the two.',
         ]}
       />
+
+      <AiLevelsAssistant
+        page="Trade Planner"
+        symbol={symbol || null}
+        price={levels.data?.snapshot?.price ?? null}
+        rules={{
+          entry: entryNum || null,
+          stop: stopNum || null,
+          target: targetNum || null,
+          rewardRisk: risk.rewardRisk || null,
+        }}
+        context={{
+          setup,
+          suggestedStop,
+          structureInvalidation: structure.invalidationLevel,
+          atr: atrValue,
+          atrMultiple,
+          bufferPct,
+          swingLow: levels.data?.swingLow ?? null,
+          pullbackLow: levels.data?.pullbackLow ?? null,
+          priorHigh: levels.data?.priorHigh ?? null,
+          breakoutLevel: levels.data?.breakoutLevel ?? null,
+          shares: risk.shares,
+          dollarRisk: risk.maxPlannedLoss,
+          problems: risk.problems,
+          tradingCapital: settings.trading_capital,
+          riskPerTradePct: settings.risk_per_trade_pct,
+        }}
+      />
     </div>
   );
 }
