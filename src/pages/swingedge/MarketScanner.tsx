@@ -361,8 +361,14 @@ export default function MarketScanner() {
                 score: nextCandidate.score,
                 setup: nextCandidate.setup,
                 changePercent: nextCandidate.changePercent,
-                snapshot: nextCandidate.snapshot,
+                trend: nextCandidate.trend,
+                rsi: nextCandidate.rsi,
+                atr: nextCandidate.atr,
+                support: nextCandidate.support,
+                resistance: nextCandidate.resistance,
+                relativeVolume: nextCandidate.relativeVolume,
                 reasons: nextCandidate.reasons,
+                risks: nextCandidate.risks,
                 levelsAreEstimates: true,
               }
             : null
