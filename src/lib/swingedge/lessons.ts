@@ -24,6 +24,7 @@ export const ACADEMY_MODULES = [
   'Setups',
   'Risk and sizing',
   'Managing and reviewing',
+  'Stop-loss mastery',
 ] as const;
 
 export const LESSONS: Lesson[] = [
@@ -367,6 +368,146 @@ export const LESSONS: Lesson[] = [
       options: ['Total profit', 'Your discipline score', 'Your biggest winner'],
       answerIndex: 1,
       why: 'Discipline is the part you control, so it is the part worth judging.',
+    },
+  },
+  {
+    key: 'stop-decides-size',
+    module: 'Stop-loss mastery',
+    title: 'The stop decides the size',
+    minutes: 5,
+    summary: 'Place the stop where the idea is wrong, then let that distance decide how many shares you buy.',
+    body: [
+      'Most losing habits start the same way: someone decides how many shares they want, then puts the stop wherever that number happens to allow. That is backwards. The chart decides where you are wrong; your account decides how much that mistake is allowed to cost.',
+      'So the order is fixed. Setup, entry, invalidation, stop, risk per share, position size, target, reward-to-risk. Nothing later in that list is allowed to change anything earlier in it.',
+      'A stop is not a wish about how much you want to lose. It is the price at which the reason you bought no longer exists.',
+    ],
+    example: {
+      title: 'The reference trade',
+      lines: [
+        'Account $5,000, risking 1%, so the most you may lose is $50.',
+        'Entry 44.50, invalidation 42.50, so risk per share is $2.00.',
+        '$50 divided by $2.00 is 25 shares, rounded down.',
+        'Target 48.50 gives $4.00 of reward for $2.00 of risk — 2:1.',
+      ],
+    },
+    keyPoints: [
+      'The stop determines position size, never the other way round.',
+      'Shares are always rounded down.',
+      'If the correct stop only allows one share, the trade is too expensive for your account.',
+    ],
+    blindSpot: 'Correct sizing does not make a bad setup good. It only limits the damage.',
+    appliesTo: { label: 'Trade Planner', to: '/swingedge/planner' },
+    quiz: {
+      question: 'Which comes first?',
+      options: ['The share count', 'The stop', 'The target'],
+      answerIndex: 1,
+      why: 'The stop distance is the input to the share count, so it has to be settled first.',
+    },
+  },
+  {
+    key: 'structure-atr-percent',
+    module: 'Stop-loss mastery',
+    title: 'Structure, ATR and percentage stops',
+    minutes: 6,
+    summary: 'Three ways to place a stop, and why structure usually wins.',
+    body: [
+      'A structure stop sits just below the level that holds your thesis together — a swing low, a support shelf, a broken-out level. It is the only method that carries a meaning you can say out loud.',
+      'An ATR stop uses the average daily range, so it adapts to how much the stock actually moves. It is useful as a sanity check: if your structure stop is well inside one ATR, normal noise will take you out.',
+      'A percentage stop is the weakest. It ignores structure and volatility entirely — the same 3% applies to a sleepy utility and to a stock that swings 6% a day. Use it only as a rough backstop.',
+      'A hybrid stop takes the structural level and then checks it against ATR, placing the stop below both so ordinary movement cannot reach it.',
+    ],
+    example: {
+      title: 'Comparing methods on the same trade',
+      lines: [
+        'Entry 44.50, swing low 42.50, ATR $1.20.',
+        'Structure stop with a 0.25% buffer: 42.39.',
+        '1.5 ATR stop: 42.70.',
+        'The structure stop sits wider, so it is the one that respects the chart.',
+      ],
+    },
+    keyPoints: [
+      'Structure gives the stop a reason.',
+      'ATR tells you whether the stop can survive normal noise.',
+      'Percentage stops ignore both structure and volatility.',
+    ],
+    blindSpot: 'Every method still assumes the stock trades continuously. Gaps ignore all three.',
+    appliesTo: { label: 'Trade Planner', to: '/swingedge/planner' },
+    quiz: {
+      question: 'What does ATR add to a structure stop?',
+      options: [
+        'A check on whether ordinary movement would hit it',
+        'A prediction of the next move',
+        'A better entry price',
+      ],
+      answerIndex: 0,
+      why: 'ATR measures typical daily range, so it tells you if your stop sits inside the noise.',
+    },
+  },
+  {
+    key: 'never-widen',
+    module: 'Stop-loss mastery',
+    title: 'Why widening a stop destroys accounts',
+    minutes: 5,
+    summary: 'Moving a stop further away converts a planned small loss into an unplanned large one.',
+    body: [
+      'A widened stop feels like patience. It is not. Your risk was calculated from the original distance, so moving the stop down increases the dollars at risk on a position you already sized — often by half again or more.',
+      'Worse, it breaks the only promise you made to yourself before emotion arrived. The invalidation level was chosen when you were calm. Moving it while you are losing money is exactly the wrong moment to reconsider.',
+      'The disciplined direction is one-way. Stops move up as structure rises, to breakeven once a trade has proved itself, and then to trail behind higher lows. They never move down.',
+    ],
+    example: {
+      title: 'What widening actually costs',
+      lines: [
+        '25 shares, entry 44.50, stop 42.50 — risk $50.',
+        'Price falls to 42.60, you move the stop to 41.50.',
+        'Risk is now $75, half again more than your rule allowed.',
+        'Your 2:1 trade has quietly become a 1.3:1 trade.',
+      ],
+    },
+    keyPoints: [
+      'Widening a stop increases risk after the position is already sized.',
+      'Every stop change is logged here, with the reason.',
+      'Stops move up, to breakeven, then trail. Never down.',
+    ],
+    blindSpot: 'Occasionally the widened stop is rescued by a bounce. That is luck teaching you a bad lesson.',
+    appliesTo: { label: 'Paper Trading', to: '/swingedge/paper' },
+    quiz: {
+      question: 'What happens to your risk when you widen a stop?',
+      options: ['It stays the same', 'It increases', 'It decreases'],
+      answerIndex: 1,
+      why: 'The shares are already bought, so a wider stop means more dollars at risk.',
+    },
+  },
+  {
+    key: 'r-multiples-and-gaps',
+    module: 'Stop-loss mastery',
+    title: 'R-multiples, gaps and earnings',
+    minutes: 5,
+    summary: 'Score results in units of risk, and respect the risk a stop cannot cover.',
+    body: [
+      'An R-multiple expresses a result in units of the risk you accepted. Making $100 on a $50 risk is +2R. This lets you compare a small trade with a large one honestly, and it stops a lucky oversized win from looking like skill.',
+      'A stop is an instruction, not a guarantee. If a stock opens far below your stop, you exit at the open price and the loss is larger than planned. That is gap risk, and position size is your only real defence.',
+      'Earnings dates concentrate that risk. Holding through an earnings report is a separate decision from the swing setup, and should be made deliberately or avoided.',
+    ],
+    example: {
+      title: 'Reading results in R',
+      lines: [
+        'Risk $50. A $100 gain is +2R; a $50 loss is -1R.',
+        'Ten trades: six losses at -1R and four wins at +2R nets +2R.',
+        'That is a 40% win rate that still makes money.',
+      ],
+    },
+    keyPoints: [
+      'R-multiples make trades of different sizes comparable.',
+      'A stop cannot protect you through a gap.',
+      'Earnings timing is a decision, not a detail.',
+    ],
+    blindSpot: 'R says nothing about how long your money was tied up, or how it felt to hold.',
+    appliesTo: { label: 'Performance', to: '/swingedge/performance' },
+    quiz: {
+      question: 'You risked $50 and made $75. What is that in R?',
+      options: ['+0.5R', '+1.5R', '+2R'],
+      answerIndex: 1,
+      why: '$75 divided by the $50 risked is 1.5 units of risk.',
     },
   },
 ];
