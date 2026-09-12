@@ -235,6 +235,7 @@ export function useHybridAnalysis(symbol: string | null, assetTypeHint?: 'STOCK'
 
       let fundamental: FundamentalScoreResult | null = null;
       let etf: EtfQualityResult | null = null;
+      let etfInputs: Record<string, unknown> | null = null;
       if (assetType === 'ETF') {
         // Liquidity, trading cost and volatility are measurable from the price
         // history we already hold, so a fund is never marked "no data" for them
