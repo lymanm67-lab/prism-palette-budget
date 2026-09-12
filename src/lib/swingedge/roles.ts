@@ -8,9 +8,9 @@ import type { Verdict } from './types';
 export type PortfolioRole =
   | 'CORE'
   | 'MOMENTUM'
-  | 'INCOME'
-  | 'DEFENSIVE'
-  | 'SPECULATIVE'
+  | 'GUARDRAIL'
+  | 'CONVICTION'
+  | 'CATALYST'
   | 'UNASSIGNED';
 
 export type TradingStatus =
