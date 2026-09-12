@@ -21,6 +21,10 @@ import { computeHybridSignal, HYBRID_METHODOLOGY_VERSION, type HybridResult } fr
 import { candleBasis, entryZone, priceOutsideZone, validUntil } from '@/lib/swingedge/signalLifecycle';
 import { analyzeCandles, type CandleAnalysis } from '@/lib/swingedge/candleEngine';
 import { MARKET_BENCHMARK, SECTOR_BENCHMARKS, profileFor } from '@/lib/swingedge/sectors';
+import { classifyRegime, regimeAlignmentBias, REGIME_LABEL, type MarketRegimeResult } from '@/lib/swingedge/marketRegime';
+import { assessRelativeStrength, RS_LABEL, type RelativeStrengthResult } from '@/lib/swingedge/relativeStrength';
+import { assessTradability, type TradabilityResult } from '@/lib/swingedge/tradability';
+import type { Candle } from '@/lib/swingedge/types';
 import {
   AlphaVantageFundamentals,
   ManualFundamentals,
