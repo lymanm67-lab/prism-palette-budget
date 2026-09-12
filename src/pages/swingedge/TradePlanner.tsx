@@ -43,6 +43,8 @@ import {
   hybridStop,
   percentStop,
   qualifyTrade,
+  STOP_OVERRIDE_BEGINNER_TEXT,
+  STOP_OVERRIDE_MIN_CHARS,
   runRiskSequence,
   structureStop,
   targetOptions,
@@ -116,6 +118,8 @@ export default function TradePlanner() {
   const [earningsChecked, setEarningsChecked] = useState(false);
   const [override, setOverride] = useState(false);
   const [overrideReason, setOverrideReason] = useState('');
+  const [stopOverride, setStopOverride] = useState(false);
+  const [stopJustification, setStopJustification] = useState('');
 
   // Suggested setup and entry follow the loaded chart until the user types.
   useEffect(() => {
@@ -224,8 +228,11 @@ export default function TradePlanner() {
         entryConfirmed,
         overrideRewardRisk: override,
         advancedMode: settings.advanced_mode,
+        stopFailureReasons: quality.failureReasons,
+        overrideStopQuality: stopOverride,
+        stopOverrideJustification: stopJustification,
       }),
-    [setup, entryNum, invalidation, stopNum, quality.quality, risk, portfolio, targetNum, minRR, earningsChecked, entryConfirmed, override, settings.advanced_mode],
+    [setup, entryNum, invalidation, stopNum, quality.quality, quality.failureReasons, risk, portfolio, targetNum, minRR, earningsChecked, entryConfirmed, override, settings.advanced_mode, stopOverride, stopJustification],
   );
 
   const targets = useMemo(
@@ -271,6 +278,14 @@ export default function TradePlanner() {
       toast.error('Reward-to-risk is below your rule, so this plan does not qualify');
       return;
     }
+    if (quality.quality === 'INVALID' && !qualification.stopOverrideApplied) {
+      toast.error('This stop is not a valid invalidation level. Revise the stop before saving.');
+      return;
+    }
+    if (qualification.stopOverrideRefusal) {
+      toast.error(qualification.stopOverrideRefusal);
+      return;
+    }
     try {
       await savePlan({
         symbol: symbol.toUpperCase(),
@@ -303,7 +318,11 @@ export default function TradePlanner() {
         }),
         target_method: targetMethod,
         earnings_reviewed: earningsChecked,
-        override_reason: override ? overrideReason || 'Advanced Mode override' : null,
+        override_reason: qualification.stopOverrideApplied
+          ? `Stop override (${quality.quality}): ${stopJustification}${override ? ` · Reward-to-risk override: ${overrideReason}` : ''}`
+          : override
+            ? overrideReason || 'Advanced Mode override'
+            : null,
       });
       toast.success('Plan saved');
     } catch {
@@ -556,6 +575,54 @@ export default function TradePlanner() {
                 <AlertDescription>{w}</AlertDescription>
               </Alert>
             ))}
+
+            {!quality.justified ? (
+              <Alert variant={quality.quality === 'INVALID' ? 'destructive' : undefined} className={quality.quality === 'INVALID' ? undefined : 'border-prism-amber/40'}>
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>
+                  {quality.quality === 'INVALID'
+                    ? 'DOES NOT QUALIFY — the stop has no technical basis'
+                    : 'NOT READY — review or revise this stop'}
+                </AlertTitle>
+                <AlertDescription className="space-y-2">
+                  <ul className="list-disc space-y-1 pl-4">
+                    {quality.failureReasons.map((r) => (
+                      <li key={r}>{r}</li>
+                    ))}
+                  </ul>
+                  <p>
+                    Your stop does not have to match the suggestion. It does have to read as a genuine invalidation
+                    level for this setup, given support, swing structure and volatility.
+                  </p>
+                  {settings.advanced_mode ? (
+                    <>
+                      <label className="flex items-center gap-2 text-sm font-medium">
+                        <Checkbox checked={stopOverride} onCheckedChange={(v) => setStopOverride(!!v)} />
+                        Override this stop assessment (Advanced Mode)
+                      </label>
+                      {stopOverride ? (
+                        <>
+                          <Textarea
+                            value={stopJustification}
+                            rows={3}
+                            placeholder="Explain why this stop is still a valid invalidation level for this setup."
+                            onChange={(e) => setStopJustification(e.target.value)}
+                          />
+                          <p className="text-xs">
+                            {stopJustification.trim().length}/{STOP_OVERRIDE_MIN_CHARS} characters.{' '}
+                            {qualification.stopOverrideApplied
+                              ? `Override accepted — risk recalculated to ${money(risk.plannedLoss)} on ${risk.shares} shares, and it is logged with the plan, the journal and your Rule Following Score.`
+                              : (qualification.stopOverrideRefusal ?? '')}
+                          </p>
+                        </>
+                      ) : null}
+                    </>
+                  ) : (
+                    <p className="text-xs font-medium">{STOP_OVERRIDE_BEGINNER_TEXT}</p>
+                  )}
+                </AlertDescription>
+              </Alert>
+            ) : null}
 
             {tighteningStop ? (
               <Alert className="border-prism-amber/40">
