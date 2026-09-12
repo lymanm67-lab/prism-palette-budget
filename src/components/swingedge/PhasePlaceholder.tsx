@@ -20,7 +20,7 @@ interface Props {
  * phase has not been reached explain exactly what they will do and what must be
  * proven before they are called finished.
  */
-export default function PhasePlaceholder({ title, phase, purpose, willInclude, gate }: Props) {
+export default function PhasePlaceholder({ title, phase, purpose, willInclude, gate, howTo, howToTips }: Props) {
   return (
     <div className="space-y-6">
       <div className="space-y-2">
