@@ -239,6 +239,82 @@ export function scoreSymbol(symbol: string, candles: Candle[], alignment?: Align
 }
 
 /**
+ * Alignment is worth 15 points. A stock is judged against its sector and the
+ * sector against the market; a fund is judged against its own benchmark. When
+ * the benchmark data is missing the component is scored neutrally and says so,
+ * because a data gap is not evidence against the symbol.
+ */
+function alignmentComponent(alignment?: AlignmentContext): {
+  component: ScoreComponent;
+  reasons: string[];
+  risks: string[];
+} {
+  const reasons: string[] = [];
+  const risks: string[] = [];
+  const isEtf = alignment?.assetType === 'ETF';
+  const market = alignment?.marketTrend ?? null;
+  const sector = alignment?.sectorTrend ?? null;
+
+  if (!alignment || (market === null && sector === null)) {
+    return {
+      component: {
+        key: 'alignment',
+        label: 'Market and sector alignment',
+        points: 7,
+        max: 15,
+        detail: 'Benchmark data was not available, so this component is scored neutrally rather than against the symbol.',
+      },
+      reasons,
+      risks: ['Sector and market comparison was unavailable for this read.'],
+    };
+  }
+
+  if (isEtf) {
+    const benchmark = sector ?? market;
+    const points = benchmark === 'UP' ? 15 : benchmark === 'SIDEWAYS' ? 7 : 0;
+    if (benchmark === 'UP') reasons.push('The benchmark this fund tracks is also trending up.');
+    if (benchmark === 'DOWN') risks.push('The benchmark behind this fund is trending down.');
+    return {
+      component: {
+        key: 'alignment',
+        label: 'Benchmark alignment',
+        points,
+        max: 15,
+        detail:
+          benchmark === 'UP'
+            ? 'The fund is moving with a benchmark that is trending up.'
+            : benchmark === 'DOWN'
+              ? 'The benchmark behind the fund is trending down, so the fund is fighting its own index.'
+              : 'The benchmark behind the fund has no clear direction.',
+      },
+      reasons,
+      risks,
+    };
+  }
+
+  const sectorPoints = sector === 'UP' ? 8 : sector === 'SIDEWAYS' ? 4 : sector === 'DOWN' ? 0 : 4;
+  const marketPoints = market === 'UP' ? 7 : market === 'SIDEWAYS' ? 3 : market === 'DOWN' ? 0 : 3;
+  const sectorLabel = alignment.sectorSymbol ? `its sector (${alignment.sectorSymbol})` : 'its sector';
+  if (sector === 'UP') reasons.push(`The symbol has ${sectorLabel} moving with it.`);
+  if (sector === 'DOWN') risks.push(`${sectorLabel.charAt(0).toUpperCase()}${sectorLabel.slice(1)} is trending down, so the move has less support.`);
+  if (market === 'DOWN') risks.push('The wider market is trending down, which lowers the odds of follow-through.');
+
+  return {
+    component: {
+      key: 'alignment',
+      label: 'Market and sector alignment',
+      points: sectorPoints + marketPoints,
+      max: 15,
+      detail: `${sectorLabel.charAt(0).toUpperCase()}${sectorLabel.slice(1)} is ${(sector ?? 'unknown').toLowerCase()} and the wider market is ${(market ?? 'unknown').toLowerCase()}.`,
+    },
+    reasons,
+    risks,
+  };
+}
+
+
+
+/**
  * Four statuses so a good chart that has not set up yet reads as WATCH instead
  * of a failure:
  *  QUALIFIES        — up trend, a real setup, and a strong tally.
