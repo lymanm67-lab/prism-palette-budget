@@ -575,7 +575,7 @@ export function usePaperTradeManagement() {
         hybridScore: null,
         stopJustified: !widened && !!trade.invalidation,
         rewardRisk: rr,
-        minimumRewardRisk: settings.min_reward_risk ?? 2,
+        minimumRewardRisk: 2,
         hardGateFailures: 0,
         setupPresent: !!trade.setup_type,
       });
