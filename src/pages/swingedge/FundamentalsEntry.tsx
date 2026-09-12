@@ -103,8 +103,9 @@ const ETF_GROUPS: GroupDef[] = [
       { key: 'netAssets', label: 'Fund size (net assets)', help: 'Total money in the fund, in dollars.', kind: 'money' },
       { key: 'expenseRatio', label: 'Running cost', help: 'Yearly fee as a percent, e.g. 0.09.', kind: 'percent' },
       { key: 'fundAgeYears', label: 'Fund age', help: 'Years since the fund launched.', kind: 'number' },
-      { key: 'trackingErrorPct', label: 'Tracking difference', help: 'How far the fund drifts from its index, in percent.', kind: 'percent' },
-      { key: 'benchmark', label: 'Index it follows', help: 'Name of the index, e.g. S&P 500.', kind: 'text' },
+      { key: 'trackingErrorPct', label: 'Tracking difference', help: 'On the fund fact sheet, often called tracking difference or tracking error. Optional — a plain index fund is assumed when it is left empty.', kind: 'percent', optional: true },
+      { key: 'benchmark', label: 'Index it follows', help: 'Name of the index, e.g. S&P 500. Well-known funds are filled in for you.', kind: 'text', optional: true },
+
     ],
   },
   {
