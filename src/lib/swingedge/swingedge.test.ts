@@ -38,9 +38,10 @@ describe('indicators', () => {
   });
 
   it('weights recent closes more heavily than a plain average', () => {
-    const closes = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
+    const closes = [10, 10, 10, 10, 10, 10, 10, 10, 10, 20];
     expect(last(ema(closes, 5))!).toBeGreaterThan(last(sma(closes, 5))!);
   });
+
 
   it('reads a fully rising series as maximum momentum', () => {
     const closes = [...Array(30)].map((_, i) => 10 + i);
