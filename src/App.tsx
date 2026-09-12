@@ -327,6 +327,18 @@ const App = () => (
               <Route path="/investments/portfolio" element={<Suspense fallback={<PageLoader />}><InvestmentPortfolio /></Suspense>} />
               <Route path="/health" element={<Suspense fallback={<PageLoader />}><HealthDashboard /></Suspense>} />
               <Route path="/admin/content-editor" element={<Suspense fallback={<PageLoader />}><ContentEditor /></Suspense>} />
+              <Route path="/swingedge" element={<Suspense fallback={<PageLoader />}><SwingEdgeDashboard /></Suspense>} />
+              <Route path="/swingedge/scanner" element={<Suspense fallback={<PageLoader />}><SwingEdgeScanner /></Suspense>} />
+              <Route path="/swingedge/analyzer" element={<Suspense fallback={<PageLoader />}><SwingEdgeAnalyzer /></Suspense>} />
+              <Route path="/swingedge/watchlists" element={<Suspense fallback={<PageLoader />}><SwingEdgeWatchlists /></Suspense>} />
+              <Route path="/swingedge/planner" element={<Suspense fallback={<PageLoader />}><SwingEdgePlanner /></Suspense>} />
+              <Route path="/swingedge/paper-trading" element={<Suspense fallback={<PageLoader />}><SwingEdgePaperTrading /></Suspense>} />
+              <Route path="/swingedge/backtester" element={<Suspense fallback={<PageLoader />}><SwingEdgeBacktester /></Suspense>} />
+              <Route path="/swingedge/journal" element={<Suspense fallback={<PageLoader />}><SwingEdgeJournal /></Suspense>} />
+              <Route path="/swingedge/performance" element={<Suspense fallback={<PageLoader />}><SwingEdgePerformance /></Suspense>} />
+              <Route path="/swingedge/academy" element={<Suspense fallback={<PageLoader />}><SwingEdgeAcademy /></Suspense>} />
+              <Route path="/swingedge/settings" element={<Suspense fallback={<PageLoader />}><SwingEdgeSettings /></Suspense>} />
+
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
