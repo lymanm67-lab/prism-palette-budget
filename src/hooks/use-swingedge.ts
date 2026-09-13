@@ -314,17 +314,21 @@ export interface DashboardData {
   notice: string | null;
 }
 
-/** Market overview for SPY / QQQ / DIA / IWM plus the overall condition. */
+/** Market overview for the household's chosen funds plus the overall condition. */
 export function useSwingEdgeDashboard() {
   const { settings } = useTradingSettings();
   const mode = settings.data_mode;
+  const symbols =
+    settings.market_overview_symbols.length > 0
+      ? settings.market_overview_symbols
+      : [...INDEX_SYMBOLS];
 
   const query = useQuery({
-    queryKey: ['se-dashboard', mode],
+    queryKey: ['se-dashboard', mode, symbols.join(',')],
     staleTime: 5 * 60_000,
     queryFn: async (): Promise<DashboardData> => {
       const results = await Promise.all(
-        INDEX_SYMBOLS.map(async (s) => ({ symbol: s, result: await loadCandles(s, '1day', mode) })),
+        symbols.map(async (s) => ({ symbol: s, result: await loadCandles(s, '1day', mode) })),
       );
       const readings = results
         .map(({ symbol, result }) =>
