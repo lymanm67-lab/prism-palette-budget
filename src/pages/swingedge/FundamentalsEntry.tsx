@@ -81,6 +81,15 @@ const FUND_BENCHMARKS: Record<string, string> = {
   GLD: 'Spot gold price', IAU: 'Spot gold price', SLV: 'Spot silver price',
   VNQ: 'MSCI US Investable Market Real Estate 25/50', SCHH: 'Dow Jones Equity All REIT Capped',
   QTUM: 'BlueStar Quantum Computing', ARKK: 'Actively managed, no index',
+  GDX: 'NYSE Arca Gold Miners', XME: 'S&P Metals & Mining Select Industry',
+  ITB: 'Dow Jones US Select Home Construction', JETS: 'US Global Jets',
+  TAN: 'MAC Global Solar Energy', ICLN: 'S&P Global Clean Energy',
+  EWJ: 'MSCI Japan', FXI: 'FTSE China 50', INDA: 'MSCI India IMI 25/50', EWZ: 'MSCI Brazil 25/50',
+  DBC: 'DBIQ Diversified Agriculture Index Excess Return', USO: 'Front-month WTI crude oil futures',
+  UNG: 'Front-month natural gas futures',
+  BIL: 'Bloomberg 1-3 Month US Treasury Bill', SGOV: 'ICE 0-3 Month US Treasury Bill',
+  MOAT: 'Morningstar Wide Moat Focus', COWZ: 'Pacer US Cash Cows 100',
+  IBIT: 'Spot bitcoin price', FBTC: 'Spot bitcoin price', BITO: 'Front-month bitcoin futures',
 };
 
 
