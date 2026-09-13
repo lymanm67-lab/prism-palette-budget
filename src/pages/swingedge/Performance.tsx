@@ -25,6 +25,7 @@ import {
 import { cn } from '@/lib/utils';
 import SwingEdgeHeader from '@/components/swingedge/SwingEdgeHeader';
 import HowToUse from '@/components/swingedge/HowToUse';
+import AiMentorCard from '@/components/swingedge/AiMentorCard';
 import { useTradingSettings, useTradingTitle } from '@/hooks/use-swingedge';
 import { useTradeJournal } from '@/hooks/use-swingedge-lists';
 import { rMultiple } from '@/lib/swingedge/performance';
