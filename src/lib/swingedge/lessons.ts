@@ -27,6 +27,7 @@ export const ACADEMY_MODULES = [
   'Stop-loss mastery',
   'Combining signals',
   'Reading candlesticks in context',
+  'Event risk and the calendar',
 
 
 ] as const;
