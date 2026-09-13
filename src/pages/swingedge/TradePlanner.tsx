@@ -1104,7 +1104,7 @@ export default function TradePlanner() {
             target: targetNum || null,
             rewardRisk: risk.rewardRisk || null,
             shares: risk.shares ?? null,
-            dollarRisk: risk.dollarRisk ?? null,
+            plannedLoss: risk.plannedLoss ?? null,
           },
           portfolioHeat: heat,
           heatGate,

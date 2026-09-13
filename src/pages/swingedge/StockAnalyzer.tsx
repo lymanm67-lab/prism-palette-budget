@@ -570,10 +570,11 @@ export default function StockAnalyzer() {
         symbol={symbol}
         context={{
           price: analysis?.technical.price ?? null,
-          setup: analysis?.setup ?? null,
-          trend: analysis?.trend ?? null,
-          verdict: analysis?.verdict ?? null,
-          score: analysis?.score ?? null,
+          technical: analysis?.technical ?? null,
+          risk: analysis?.risk ?? null,
+          tradability: analysis?.tradability ?? null,
+          quality: analysis?.qualityScore ?? null,
+          regime: analysis?.regime ?? null,
           levels: levels ?? null,
           bias: bias ?? null,
           readiness: readiness ?? null,
