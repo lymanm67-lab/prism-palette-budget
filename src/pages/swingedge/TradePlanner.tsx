@@ -373,6 +373,23 @@ export default function TradePlanner() {
         }
       />
 
+      <HowToUse
+        id="planner-how-to"
+        title="How to use this screen"
+        description="Follow these steps in order the first few times."
+        steps={[
+          'Confirm your trading capital and risk per trade on the trading settings page before you plan anything.',
+          'Work down the ten steps in order. The stop comes from the invalidation level, never from the share count you want.',
+          'Compare the structure stop with the ATR stop. If they disagree, understand why before choosing.',
+          'Check the share count and the dollar risk. That dollar figure is what you are truly risking.',
+          'Save the plan, then open it in Paper Trading to practise it.',
+        ]}
+        tips={[
+          'If a plan would push your total open risk past your portfolio limit, it is blocked on purpose.',
+          'Planned numbers are yours; scanner numbers are estimates. Never mix the two.',
+        ]}
+      />
+
       <StopRuleCard />
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
