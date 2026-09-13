@@ -149,7 +149,34 @@ export default function StockAnalyzer() {
             </Badge>
           </div>
 
-          <HybridSignalCard
+          <Card className="border-border/60 bg-card/60 backdrop-blur">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Price chart — daily candles</CardTitle>
+              <p className="text-xs text-muted-foreground">
+                The chart the signal is reading. Dashed lines mark support, resistance and the estimated entry, stop
+                and target.
+              </p>
+            </CardHeader>
+            <CardContent>
+              {candlesLoading ? (
+                <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" /> Loading the chart…
+                </p>
+              ) : (
+                <CandlestickChart
+                  candles={candleResult?.candles ?? []}
+                  levels={[
+                    { label: 'Support', value: analysis.technical.support, color: 'hsl(var(--prism-teal))' },
+                    { label: 'Resistance', value: analysis.technical.resistance, color: 'hsl(var(--prism-amber))' },
+                    { label: 'Est. entry', value: levels?.estimatedEntry, color: 'hsl(var(--foreground))' },
+                    { label: 'Est. stop', value: levels?.estimatedStop, color: 'hsl(var(--destructive))' },
+                    { label: 'Est. target', value: levels?.estimatedTarget, color: 'hsl(var(--prism-lime))' },
+                  ]}
+                />
+              )}
+            </CardContent>
+          </Card>
+
             result={analysis.hybrid}
             qualityLabel={analysis.assetType === 'ETF' ? 'Fund quality' : 'Company quality'}
             qualityScore={analysis.qualityScore}
