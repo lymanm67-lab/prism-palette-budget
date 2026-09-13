@@ -159,10 +159,36 @@ export default function StockAnalyzer() {
 
           <Card className="border-border/60 bg-card/60 backdrop-blur">
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">Price chart — daily candles</CardTitle>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <CardTitle className="text-base">Price chart — daily candles</CardTitle>
+                {chartDirection && (
+                  <Badge
+                    variant="outline"
+                    className="flex items-center gap-1"
+                    title={chartDirection.detail}
+                  >
+                    {chartDirection.direction === 'UP' ? (
+                      <TrendingUp className="h-3.5 w-3.5 text-prism-lime" />
+                    ) : chartDirection.direction === 'DOWN' ? (
+                      <TrendingDown className="h-3.5 w-3.5 text-destructive" />
+                    ) : (
+                      <Minus className="h-3.5 w-3.5 text-muted-foreground" />
+                    )}
+                    {chartDirection.direction === 'UP'
+                      ? 'Moving up'
+                      : chartDirection.direction === 'DOWN'
+                        ? 'Moving down'
+                        : 'Sideways'}
+                    <span className="text-muted-foreground">
+                      · {chartDirection.confidence === 'HIGH' ? 'high' : chartDirection.confidence === 'MODERATE' ? 'moderate' : 'low'} confidence
+                    </span>
+                  </Badge>
+                )}
+              </div>
               <p className="text-xs text-muted-foreground">
                 The chart the signal is reading. Dashed lines mark support, resistance and the estimated entry, stop
-                and target.
+                and target. The strip under the candles shows which way price was moving in each window — green up,
+                red down, grey sideways.
               </p>
             </CardHeader>
             <CardContent>
@@ -172,6 +198,7 @@ export default function StockAnalyzer() {
                 </p>
               ) : (
                 <CandlestickChart
+                  showDirectionStrip
                   candles={candleResult?.candles ?? []}
                   levels={[
                     { label: 'Support', value: analysis.technical.support, color: 'hsl(var(--prism-teal))' },
