@@ -170,6 +170,61 @@ export default function CandlestickChart({
           );
         })}
 
+        {/* moving average curves */}
+        {maSeries.map((s, si) => {
+          const pts: string[] = [];
+          s.values.forEach((v, i) => {
+            if (typeof v !== 'number' || !Number.isFinite(v)) return;
+            pts.push(`${(padL + i * slot + slot / 2).toFixed(2)},${y(v).toFixed(2)}`);
+          });
+          if (pts.length < 2) return null;
+          return (
+            <polyline
+              key={s.label}
+              points={pts.join(' ')}
+              fill="none"
+              stroke={MA_COLOR[si % MA_COLOR.length]}
+              strokeWidth={1.5}
+              opacity={0.9}
+            >
+              <title>{s.label}</title>
+            </polyline>
+          );
+        })}
+
+        {/* sloping trend lines fitted through recent swing highs / lows */}
+        {trendLines.map((t) => {
+          const x1 = padL + t.startIndex * slot + slot / 2;
+          const x2 = padL + t.endIndex * slot + slot / 2;
+          const label =
+            t.direction === 'RISING' ? 'rising' : t.direction === 'FALLING' ? 'falling' : 'flat';
+          return (
+            <g key={t.kind}>
+              <line
+                x1={x1}
+                x2={x2}
+                y1={y(t.startPrice)}
+                y2={y(t.endPrice)}
+                stroke={TREND_COLOR[t.kind]}
+                strokeWidth={1.5}
+                strokeDasharray="5 4"
+                opacity={0.9}
+              >
+                <title>{`${t.kind === 'RESISTANCE' ? 'Upper' : 'Lower'} trend line, ${label}, through ${t.pivots} swing points`}</title>
+              </line>
+              <text
+                x={x2 - 4}
+                y={y(t.endPrice) + (t.kind === 'RESISTANCE' ? -4 : 10)}
+                fontSize={9}
+                textAnchor="end"
+                fill={TREND_COLOR[t.kind]}
+              >
+                {t.kind === 'RESISTANCE' ? 'Upper' : 'Lower'} trend ({label})
+              </text>
+            </g>
+          );
+        })}
+
         {/* direction strip: one segment per window, up / down / sideways */}
         {strip.map((s, i) => {
           const x = padL + s.startIndex * slot;
