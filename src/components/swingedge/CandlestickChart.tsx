@@ -21,6 +21,8 @@ interface Props {
   visible?: number;
   height?: number;
   levels?: ChartLevel[];
+  /** Show a direction strip (up / down / sideways segments) under the price pane. */
+  showDirectionStrip?: boolean;
 }
 
 /**
@@ -28,17 +30,21 @@ interface Props {
  * horizontal level lines (support, resistance, estimated entry/stop/target).
  * No chart library — candles are simple rects so theme tokens apply.
  */
-export default function CandlestickChart({ candles, visible = 120, height = 320, levels = [] }: Props) {
+export default function CandlestickChart({ candles, visible = 120, height = 320, levels = [], showDirectionStrip = false }: Props) {
   const shown = useMemo(() => candles.slice(-visible), [candles, visible]);
   const [hover, setHover] = useState<number | null>(null);
+
+  const strip = useMemo(
+    () => (showDirectionStrip ? buildDirectionStrip(shown) : []),
+    [shown, showDirectionStrip],
+  );
 
   const W = 800;
   const H = height;
   const volH = Math.round(H * 0.18);
-  const priceH = H - volH - 24; // 24px date strip
-  const padL = 8;
-  const padR = 56; // room for price labels
-  const plotW = W - padL - padR;
+  const stripH = showDirectionStrip ? 14 : 0;
+  const priceH = H - volH - stripH - 24; // 24px date strip
+  const volTop = priceH + stripH;
 
   const { lo, hi, maxVol, activeLevels } = useMemo(() => {
     if (!shown.length) return { lo: 0, hi: 0, maxVol: 0, activeLevels: [] as (ChartLevel & { value: number })[] };
