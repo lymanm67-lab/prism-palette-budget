@@ -99,9 +99,16 @@ export default function CandlestickChart({
       if (l.value < lo) lo = l.value;
       if (l.value > hi) hi = l.value;
     }
+    // keep fitted trend lines inside the pane too
+    for (const t of trendLines) {
+      for (const p of [t.startPrice, t.endPrice]) {
+        if (p < lo) lo = p;
+        if (p > hi) hi = p;
+      }
+    }
     if (hi - lo < 1e-9) hi = lo + 1;
     return { lo, hi, maxVol, activeLevels };
-  }, [shown, levels]);
+  }, [shown, levels, trendLines]);
 
   if (!shown.length) {
     return <p className="p-4 text-sm text-muted-foreground">No price history to chart yet.</p>;
