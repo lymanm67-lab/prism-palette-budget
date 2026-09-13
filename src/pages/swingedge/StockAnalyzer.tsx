@@ -19,6 +19,8 @@ import { scoreTradeReadiness, type ReadinessItemKey } from '@/lib/swingedge/trad
 import DirectionalBiasCard from '@/components/swingedge/DirectionalBiasCard';
 import EventRiskCard from '@/components/swingedge/EventRiskCard';
 import TradeReadinessCard from '@/components/swingedge/TradeReadinessCard';
+import TrackRecordCard from '@/components/swingedge/TrackRecordCard';
+import { useTrackRecord } from '@/hooks/use-swingedge-trackrecord';
 import HowToUse from '@/components/swingedge/HowToUse';
 import AiLevelsAssistant from '@/components/swingedge/AiLevelsAssistant';
 import AiMentorCard from '@/components/swingedge/AiMentorCard';
@@ -347,6 +349,8 @@ export default function StockAnalyzer() {
           {readiness && <TradeReadinessCard readiness={readiness} />}
 
           <CandlePatternCard analysis={analysis.candles} advanced={settings.advanced_mode} />
+
+          <TrackRecordCard record={trackRecord} />
 
 
 
