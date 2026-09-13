@@ -99,7 +99,7 @@ export default function StockAnalyzer() {
 
     const scores: Partial<Record<ReadinessItemKey, number | null>> = {
       setup: t.setup === 'BREAKOUT' || t.setup === 'PULLBACK' ? 1 : 0.35,
-      stop: levels?.estimatedStop ? Math.min(1, analysis.risk.score / 100) : null,
+      stop: analysis.technical.levels?.estimatedStop ? Math.min(1, analysis.risk.score / 100) : null,
       trend: t.trend === 'UP' ? 1 : t.trend === 'SIDEWAYS' ? 0.5 : 0,
       bias: bias
         ? bias.confidence === 'INSUFFICIENT_DATA'
@@ -140,7 +140,7 @@ export default function StockAnalyzer() {
     ];
 
     return scoreTradeReadiness({ scores, details, hardGates });
-  }, [analysis, bias, eventView.result, levels?.estimatedStop]);
+  }, [analysis, bias, eventView.result]);
 
 
   const run = () => {
