@@ -471,6 +471,25 @@ export function runExecutionSequence(input: ExecutionSequenceInput): ExecutionSe
       passed: !input.correlationOverLimit,
       detail: input.correlationReason,
     },
+    {
+      name: 'EVENT_RISK',
+      label: 'Event risk re-checked now',
+      passed: input.eventDecision === undefined || input.eventDecision === null ? false : input.eventDecision === 'GO',
+      detail:
+        input.eventDecision === undefined || input.eventDecision === null
+          ? 'Event risk has not been re-run for this execution, so nothing can be executed yet.'
+          : input.eventReason ?? `Event decision: ${input.eventDecision}.`,
+    },
+    {
+      name: 'EVENT_EXPOSURE',
+      label: 'Event-concentrated exposure',
+      passed: !input.eventConcentrated,
+      detail:
+        input.eventConcentrationReason ??
+        (input.eventConcentrated
+          ? 'Several open positions could respond to the same event.'
+          : 'No single event dominates your open positions.'),
+    },
   ];
 
   const blockers = checks.filter((c) => !c.passed).map((c) => `${c.label}: ${c.detail}`);
