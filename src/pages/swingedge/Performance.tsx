@@ -34,7 +34,43 @@ const money = (n: number) =>
 export default function Performance() {
   useTradingTitle('Performance Review');
   const { settings } = useTradingSettings();
-  const { stats, closedTrades, mistakes, entries, isLoading } = useTradeJournal();
+  const { stats, closedTrades, mistakes, entries, trades, isLoading } = useTradeJournal();
+
+  // Results split by what the calendar looked like at entry. Only closed trades
+  // that actually recorded the information are counted — nothing is inferred.
+  const eventSplits = useMemo(() => {
+    const closed = trades.filter((t) => t.status === 'CLOSED' && t.exit_price !== null);
+    const rOf = (t: (typeof closed)[number]): number | null => {
+      const risk = t.initial_dollar_risk;
+      const pl = t.realized_pl ?? ((t.exit_price as number) - t.entry_price) * t.shares;
+      if (!risk || risk <= 0) return null;
+      return Math.round((pl / risk) * 100) / 100;
+    };
+    const group = (label: string, rows: typeof closed) => {
+      const rs = rows.map(rOf).filter((r): r is number => r !== null);
+      const wins = rs.filter((r) => r > 0).length;
+      return {
+        label,
+        count: rows.length,
+        measured: rs.length,
+        avgR: rs.length ? Math.round((rs.reduce((a, b) => a + b, 0) / rs.length) * 100) / 100 : null,
+        winPct: rs.length ? Math.round((wins / rs.length) * 100) : null,
+      };
+    };
+    const byBand = ['LOW', 'MODERATE', 'HIGH', 'SEVERE']
+      .map((band) => group(`Event risk ${band.toLowerCase()}`, closed.filter((t) => t.event_risk_band === band)))
+      .filter((g) => g.count > 0);
+    const earningsRows = closed.filter((t) => t.earnings_within_hold === true);
+    const noEarningsRows = closed.filter((t) => t.earnings_within_hold === false);
+    const earningsSplit = [
+      earningsRows.length ? group('Held through earnings', earningsRows) : null,
+      noEarningsRows.length ? group('No earnings while held', noEarningsRows) : null,
+    ].filter((g): g is NonNullable<typeof g> => g !== null);
+    const unrecorded = closed.filter(
+      (t) => !t.event_risk_band && t.earnings_within_hold === null,
+    ).length;
+    return { rows: [...byBand, ...earningsSplit], unrecorded, closed: closed.length };
+  }, [trades]);
 
   const tiles = [
     {
