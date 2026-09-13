@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import NextStepsCard from '@/components/swingedge/NextStepsCard';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -9,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
+import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import SwingEdgeHeader from '@/components/swingedge/SwingEdgeHeader';
 import HowToUse from '@/components/swingedge/HowToUse';
@@ -307,6 +309,9 @@ export default function TrainingMode() {
       </div>
 
       <WeeklyReviewSection />
+
+      <TrainingNotesCard />
+
           <NextStepsCard
         summary="Training is the routine, not the trading. Each day ends back in the workflow."
         steps={[
@@ -316,5 +321,54 @@ export default function TrainingMode() {
         ]}
       />
 </div>
+  );
+}
+
+const NOTES_KEY = 'swingedge-training-notes';
+
+function TrainingNotesCard() {
+  const [notes, setNotes] = useState(() => {
+    try {
+      return window.localStorage.getItem(NOTES_KEY) ?? '';
+    } catch {
+      return '';
+    }
+  });
+  const [savedAt, setSavedAt] = useState<number | null>(null);
+
+  useEffect(() => {
+    const t = window.setTimeout(() => {
+      try {
+        window.localStorage.setItem(NOTES_KEY, notes);
+        setSavedAt(Date.now());
+      } catch {
+        /* private mode — notes stay in memory only */
+      }
+    }, 400);
+    return () => window.clearTimeout(t);
+  }, [notes]);
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">My training notes</CardTitle>
+        <CardDescription>
+          Anything you want to remember — what clicked, what to drill, questions for the weekly review.
+          Saves automatically on this device.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        <Textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          rows={6}
+          placeholder="e.g. Doji at support after a pullback — wait for the next candle to confirm before planning anything…"
+          aria-label="Training notes"
+        />
+        <p className="text-[11px] text-muted-foreground" aria-live="polite">
+          {savedAt ? 'Saved' : 'Notes save as you type'}
+        </p>
+      </CardContent>
+    </Card>
   );
 }
