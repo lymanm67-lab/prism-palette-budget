@@ -98,6 +98,7 @@ export const NAV_SECTIONS: NavSection[] = [
     label: 'Trading (SwingEdge)',
     items: [
       { to: '/swingedge', icon: Gauge, label: 'Trading Dashboard', color: 'text-prism-teal' },
+      { to: '/swingedge/recommendations', icon: Sparkles, label: 'Recommendations', color: 'text-prism-amber' },
       { to: '/swingedge/scanner', icon: Search, label: 'Market Scanner', color: 'text-prism-amber' },
       { to: '/swingedge/live', icon: Activity, label: 'Live Data', color: 'text-prism-lime' },
       { to: '/swingedge/analyzer', icon: LineChart, label: 'Stock Analyzer', color: 'text-prism-sky' },
