@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
+import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import SwingEdgeHeader from '@/components/swingedge/SwingEdgeHeader';
 import HowToUse from '@/components/swingedge/HowToUse';
