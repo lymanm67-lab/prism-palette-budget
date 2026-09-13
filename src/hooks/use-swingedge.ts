@@ -42,6 +42,8 @@ export interface TradingSettings {
 
   training_min_paper_trades: number;
   training_mode_enabled: boolean;
+  /** Funds shown in the dashboard Market Overview. Editable per household. */
+  market_overview_symbols: string[];
 }
 
 const DEFAULT_SETTINGS: TradingSettings = {
