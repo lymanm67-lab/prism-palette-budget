@@ -23,7 +23,19 @@ export type RevalidationTrigger =
   | 'CONFIDENCE_FELL'
   | 'SIGNAL_AGED_OUT'
   | 'PRICE_DRIFT_BEYOND_ATR'
-  | 'BEFORE_PAPER_TRADE';
+  | 'BEFORE_PAPER_TRADE'
+  // Event-aware triggers.
+  | 'NEW_EARNINGS_DATE'
+  | 'EARNINGS_DATE_CONFIRMED'
+  | 'EARNINGS_TIMING_CHANGED'
+  | 'NEW_MACRO_EVENT'
+  | 'NEW_VERIFIED_GLOBAL_EVENT'
+  | 'EVENT_SEVERITY_UPGRADED'
+  | 'EVENT_RESOLVED'
+  | 'SECTOR_RISK_CHANGED'
+  | 'DIRECTIONAL_BIAS_CHANGED'
+  | 'ATR_EXPANDED'
+  | 'STOP_CHANGED';
 
 export const TRIGGER_TEXT: Record<RevalidationTrigger, string> = {
   NEW_DAILY_CANDLE: 'A new daily candle has completed since this reading.',
@@ -39,6 +51,17 @@ export const TRIGGER_TEXT: Record<RevalidationTrigger, string> = {
   SIGNAL_AGED_OUT: 'The signal is older than your age limit.',
   PRICE_DRIFT_BEYOND_ATR: 'Price has drifted more than one daily range from the entry.',
   BEFORE_PAPER_TRADE: 'Mandatory check immediately before a paper trade.',
+  NEW_EARNINGS_DATE: 'An earnings date has appeared or moved.',
+  EARNINGS_DATE_CONFIRMED: 'An estimated earnings date has now been confirmed.',
+  EARNINGS_TIMING_CHANGED: 'The time of day of the earnings report has changed.',
+  NEW_MACRO_EVENT: 'A macro release has been added inside the holding window.',
+  NEW_VERIFIED_GLOBAL_EVENT: 'A global or sector event has been verified.',
+  EVENT_SEVERITY_UPGRADED: 'An event became more serious than when this was read.',
+  EVENT_RESOLVED: 'An event has resolved, so the risk picture has changed.',
+  SECTOR_RISK_CHANGED: 'Global sector risk has changed.',
+  DIRECTIONAL_BIAS_CHANGED: 'The historical directional bias has changed materially.',
+  ATR_EXPANDED: 'Normal daily movement has expanded, so the plan needs resizing.',
+  STOP_CHANGED: 'The stop level has changed since this reading.',
 };
 
 export type SignalFreshness = 'CURRENT' | 'NEEDS_REVIEW' | 'EXPIRED';
@@ -59,6 +82,8 @@ export interface StoredSignalState {
   qualityScore?: number | null;
   lastCompletedCandle?: string | null;
   candleConfirmed?: boolean | null;
+  /** Event-aware context, all optional so existing callers keep working. */
+  eventContext?: EventContextSnapshot | null;
 }
 
 export interface CurrentSignalState {
@@ -72,6 +97,32 @@ export interface CurrentSignalState {
   qualityScore?: number | null;
   lastCompletedCandle?: string | null;
   candleConfirmed?: boolean | null;
+  eventContext?: EventContextSnapshot | null;
+  stop?: number | null;
+  atrValue?: number | null;
+}
+
+/**
+ * What the event, bias and volatility picture looked like at a point in time.
+ * Comparing two of these is what makes event-driven revalidation mandatory
+ * rather than optional.
+ */
+export interface EventContextSnapshot {
+  earningsDate?: string | null;
+  earningsCertainty?: 'CONFIRMED' | 'ESTIMATED' | 'UNKNOWN' | null;
+  earningsTiming?: string | null;
+  /** Highest severity among verified live events, e.g. LOW | MODERATE | HIGH | SEVERE. */
+  worstEventSeverity?: string | null;
+  sectorRisk?: string | null;
+  /** Ids of verified live macro events. */
+  macroEventIds?: string[];
+  /** Ids of verified live global or sector events. */
+  globalEventIds?: string[];
+  /** Ids of events that have since resolved. */
+  resolvedEventIds?: string[];
+  biasDirection?: string | null;
+  biasLeadingPct?: number | null;
+  stop?: number | null;
 }
 
 export interface RevalidationOptions {
@@ -221,6 +272,57 @@ export function revalidateSignal(
     }
   }
 
+  // Event-aware comparisons. Each of these makes revalidation mandatory.
+  const before = stored.eventContext ?? null;
+  const after = current.eventContext ?? null;
+  if (before && after) {
+    if ((before.earningsDate ?? null) !== (after.earningsDate ?? null) && after.earningsDate) {
+      add('NEW_EARNINGS_DATE', `Now ${after.earningsDate}.`);
+    }
+    if (before.earningsCertainty === 'ESTIMATED' && after.earningsCertainty === 'CONFIRMED') {
+      add('EARNINGS_DATE_CONFIRMED');
+    }
+    if (before.earningsTiming && after.earningsTiming && before.earningsTiming !== after.earningsTiming) {
+      add('EARNINGS_TIMING_CHANGED', `Now ${after.earningsTiming}.`);
+    }
+    const newMacro = (after.macroEventIds ?? []).filter((id) => !(before.macroEventIds ?? []).includes(id));
+    if (newMacro.length) add('NEW_MACRO_EVENT', `${newMacro.length} new release inside the window.`);
+    const newGlobal = (after.globalEventIds ?? []).filter((id) => !(before.globalEventIds ?? []).includes(id));
+    if (newGlobal.length) add('NEW_VERIFIED_GLOBAL_EVENT', `${newGlobal.length} newly verified event.`);
+    const resolved = (after.resolvedEventIds ?? []).filter((id) => !(before.resolvedEventIds ?? []).includes(id));
+    if (resolved.length) add('EVENT_RESOLVED', `${resolved.length} event has cleared.`);
+    const sevOrder = ['LOW', 'MODERATE', 'HIGH', 'SEVERE'];
+    const sevBefore = sevOrder.indexOf(before.worstEventSeverity ?? '');
+    const sevAfter = sevOrder.indexOf(after.worstEventSeverity ?? '');
+    if (sevBefore >= 0 && sevAfter > sevBefore) {
+      add('EVENT_SEVERITY_UPGRADED', `${before.worstEventSeverity} became ${after.worstEventSeverity}.`);
+    }
+    if (before.sectorRisk && after.sectorRisk && before.sectorRisk !== after.sectorRisk) {
+      add('SECTOR_RISK_CHANGED', `${before.sectorRisk} became ${after.sectorRisk}.`);
+    }
+    const biasFlipped = before.biasDirection && after.biasDirection && before.biasDirection !== after.biasDirection;
+    const biasMoved =
+      typeof before.biasLeadingPct === 'number' &&
+      typeof after.biasLeadingPct === 'number' &&
+      Math.abs(before.biasLeadingPct - after.biasLeadingPct) >= 10;
+    if (biasFlipped || biasMoved) {
+      add('DIRECTIONAL_BIAS_CHANGED', `Now ${after.biasDirection ?? 'unchanged'} at ${after.biasLeadingPct ?? '—'}%.`);
+    }
+    const stopBefore = before.stop ?? null;
+    const stopAfter = after.stop ?? current.stop ?? null;
+    if (stopBefore !== null && stopAfter !== null && Math.abs(stopBefore - stopAfter) > 0.005) {
+      add('STOP_CHANGED', `${stopBefore} became ${stopAfter}.`);
+    }
+  }
+  if (
+    stored.atrValue &&
+    stored.atrValue > 0 &&
+    typeof current.atrValue === 'number' &&
+    current.atrValue / stored.atrValue >= 1.25
+  ) {
+    add('ATR_EXPANDED', `Normal daily range grew from ${stored.atrValue} to ${current.atrValue}.`);
+  }
+
   // Freshness. Anything beyond a plain "about to trade" check needs review.
   const materialTriggers = triggers.filter((t) => t !== 'BEFORE_PAPER_TRADE');
   const expired =
@@ -273,7 +375,9 @@ export type ExecutionCheckName =
   | 'STOP'
   | 'RISK'
   | 'PORTFOLIO_HEAT'
-  | 'CORRELATION';
+  | 'CORRELATION'
+  | 'EVENT_RISK'
+  | 'EVENT_EXPOSURE';
 
 export interface ExecutionCheck {
   name: ExecutionCheckName;
@@ -296,6 +400,15 @@ export interface ExecutionSequenceInput {
   heatReason: string;
   correlationOverLimit: boolean;
   correlationReason: string;
+  /**
+   * Event risk re-run immediately before execution. Optional so existing callers
+   * keep working, but a GO produced before new information existed must not
+   * survive without it.
+   */
+  eventDecision?: 'GO' | 'WAIT' | 'REVIEW' | null;
+  eventReason?: string;
+  eventConcentrated?: boolean;
+  eventConcentrationReason?: string;
 }
 
 export interface ExecutionSequenceResult {
@@ -357,6 +470,25 @@ export function runExecutionSequence(input: ExecutionSequenceInput): ExecutionSe
       label: 'Correlated exposure',
       passed: !input.correlationOverLimit,
       detail: input.correlationReason,
+    },
+    {
+      name: 'EVENT_RISK',
+      label: 'Event risk re-checked now',
+      passed: input.eventDecision === undefined || input.eventDecision === null ? false : input.eventDecision === 'GO',
+      detail:
+        input.eventDecision === undefined || input.eventDecision === null
+          ? 'Event risk has not been re-run for this execution, so nothing can be executed yet.'
+          : input.eventReason ?? `Event decision: ${input.eventDecision}.`,
+    },
+    {
+      name: 'EVENT_EXPOSURE',
+      label: 'Event-concentrated exposure',
+      passed: !input.eventConcentrated,
+      detail:
+        input.eventConcentrationReason ??
+        (input.eventConcentrated
+          ? 'Several open positions could respond to the same event.'
+          : 'No single event dominates your open positions.'),
     },
   ];
 
