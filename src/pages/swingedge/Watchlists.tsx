@@ -70,6 +70,10 @@ export default function Watchlists() {
     [rows, roleFilter, statusFilter, roles],
   );
 
+  // Names sitting inside their estimated entry zone right now. Practice data
+  // never raises an alert.
+  const { hits: buyZoneHits } = useBuyZoneAlerts(rows, mode !== 'demo');
+
   const handleCreateList = async () => {
     if (!newListName.trim()) return;
     try {
