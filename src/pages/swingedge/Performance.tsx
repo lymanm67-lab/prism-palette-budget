@@ -25,6 +25,7 @@ import {
 import { cn } from '@/lib/utils';
 import SwingEdgeHeader from '@/components/swingedge/SwingEdgeHeader';
 import HowToUse from '@/components/swingedge/HowToUse';
+import AiMentorCard from '@/components/swingedge/AiMentorCard';
 import { useTradingSettings, useTradingTitle } from '@/hooks/use-swingedge';
 import { useTradeJournal } from '@/hooks/use-swingedge-lists';
 import { rMultiple } from '@/lib/swingedge/performance';
@@ -392,6 +393,9 @@ export default function Performance() {
           'Every figure here comes from simulated trades only.',
         ]}
       />
+
+      <AiMentorCard scope="REVIEW" page="Performance Review" />
+
           <NextStepsCard
         summary="You have read the record. Pick one habit to work on, then get back to the routine."
         steps={[

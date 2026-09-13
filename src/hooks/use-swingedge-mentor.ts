@@ -7,6 +7,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import type { Json } from '@/integrations/supabase/types';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import {
   assessDiscipline,
@@ -217,10 +218,10 @@ export function useAskMentor() {
           verdict: parsed.verdict ?? null,
           discipline_score: report?.scored ? report.score : null,
           headline: parsed.headline ?? null,
-          rule_breaks: parsed.rule_breaks ?? [],
-          emotional_flags: parsed.emotional_flags ?? [],
-          coaching: parsed.doing_well ?? [],
-          payload: parsed as unknown as Record<string, unknown>,
+          rule_breaks: (parsed.rule_breaks ?? []) as unknown as Json,
+          emotional_flags: (parsed.emotional_flags ?? []) as unknown as Json,
+          coaching: (parsed.doing_well ?? []) as unknown as Json,
+          payload: parsed as unknown as Json,
         });
         if (saveError) console.error('Could not save the mentor verdict:', saveError.message);
         queryClient.invalidateQueries({ queryKey: ['se-mentor-verdicts'] });
