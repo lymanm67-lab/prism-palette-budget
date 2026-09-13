@@ -3,7 +3,7 @@ import type { Candle } from '@/lib/swingedge/types';
 
 const UP = 'hsl(var(--prism-lime))';
 const DOWN = 'hsl(var(--destructive))';
-const WICK = 'hsl(var(--muted-foreground))';
+
 
 export interface ChartLevel {
   label: string;
@@ -159,7 +159,6 @@ export default function CandlestickChart({ candles, visible = 120, height = 320,
             )}, close ${fmt(hovered.close)}, volume ${hovered.volume.toLocaleString()}`
           : `Last session: close ${fmt(last.close)}. Hover a candle for its open, high, low, close and volume.`}
       </p>
-      {WICK /* keep token referenced for future wick styling */}
     </div>
   );
 }
