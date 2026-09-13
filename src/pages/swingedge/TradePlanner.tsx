@@ -470,6 +470,8 @@ export default function TradePlanner() {
         ]}
       />
 
+      <GuardrailBanner guardrails={guardrails} />
+
       <StopRuleCard />
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
@@ -1016,6 +1018,8 @@ export default function TradePlanner() {
         </div>
 
         <div className="space-y-4">
+          <RuleChecklistCard checks={ruleChecks} />
+
           <RiskFirstCard
             entry={entryNum}
             invalidation={structure.invalidationLevel}

@@ -277,8 +277,8 @@ function evaluate(
     case 'NO_WIDEN_STOP': {
       if (ctx.stopWidened === null) return unknown('No original stop recorded to compare against.');
       return ctx.stopWidened
-        ? fail('This stop sits further from price than the one you first set.')
-        : pass('Stop has not been moved further away.');
+        ? fail('This stop sits further from price than the one your stop method suggests.')
+        : pass('Stop is no wider than the one your method suggests.');
     }
     case 'MAX_TRADES_PER_DAY': {
       if (ctx.tradesToday === null) return unknown('Today\u2019s entries not counted yet.');
