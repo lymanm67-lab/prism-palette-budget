@@ -93,6 +93,14 @@ export default function SwingEdgeDashboard() {
         title="Market overview"
         description="The indexes that set the tone for every long swing trade."
       >
+        <div className="mb-3 flex justify-end">
+          <Button asChild variant="ghost" size="sm">
+            <Link to="/swingedge/settings#market-overview-funds">
+              Edit funds
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </Link>
+          </Button>
+        </div>
         {isLoading ? (
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {[0, 1, 2, 3].map((i) => (

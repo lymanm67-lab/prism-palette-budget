@@ -297,7 +297,7 @@ export default function SwingEdgeSettings() {
       </Card>
 
       {/* Market Overview symbols */}
-      <Card>
+      <Card id="market-overview-funds" className="scroll-mt-4">
         <CardHeader className="pb-3">
           <CardTitle className="text-base">Market Overview funds</CardTitle>
           <CardDescription>
