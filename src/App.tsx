@@ -12,6 +12,7 @@ import EditModeToggle from "@/components/editor/EditModeToggle";
 import AppLayout from "@/components/layout/AppLayout";
 import Auth from "@/pages/Auth";
 import LandingPage from "@/pages/LandingPage";
+import SwingEdgePublic from "@/pages/SwingEdgePublic";
 import ResetPassword from "@/pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import Onboarding from "@/pages/Onboarding";
@@ -211,6 +212,7 @@ const App = () => (
           <Routes>
 
             <Route path="/" element={<AuthRoute><LandingPage /></AuthRoute>} />
+            <Route path="/swingedge-trading" element={<SwingEdgePublic />} />
             <Route path="/onboarding" element={<AuthRoute><Onboarding /></AuthRoute>} />
             <Route path="/auth" element={<AuthRoute><Auth /></AuthRoute>} />
             <Route path="/reset-password" element={<ResetPassword />} />

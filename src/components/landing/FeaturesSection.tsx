@@ -4,8 +4,10 @@ import {
   TrendingUp, LineChart, CreditCard, FileText,
   LayoutDashboard, DollarSign, PieChart, Briefcase,
   FileUp, Camera, Milestone, ShieldCheck,
-  Calculator, Plane, Heart, Car, Tag, Receipt,
+  Calculator, Plane, Heart, Car, Tag, Receipt, BrainCircuit, CalendarClock, FlaskConical, ArrowRight,
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 
 const GROUPS = [
   {
@@ -62,7 +64,7 @@ const FeaturesSection = () => (
           <span className="prism-gradient-text">without switching tools</span>
         </h2>
         <p className="mt-3 text-muted-foreground text-sm sm:text-base max-w-2xl mx-auto">
-          From households to side hustles to serious business owners — 18 calculators and a complete financial control system in one platform.
+          From everyday cash flow to trading discipline, retirement and business planning — one complete financial ecosystem.
         </p>
       </motion.div>
 
@@ -85,6 +87,40 @@ const FeaturesSection = () => (
           </motion.div>
         ))}
       </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="mt-8 grid overflow-hidden border border-border bg-card lg:grid-cols-[1.1fr_0.9fr]"
+      >
+        <div className="p-7 sm:p-10">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center bg-primary/10 text-primary"><LineChart className="h-6 w-6" /></div>
+            <div>
+              <p className="text-xs font-bold uppercase text-primary">Key feature</p>
+              <h3 className="font-display text-2xl font-extrabold">SwingEdge™ Trading Discipline</h3>
+            </div>
+          </div>
+          <p className="mt-5 max-w-2xl leading-relaxed text-muted-foreground">Scan, analyze, qualify, plan, practice and review trades with event-risk gates, directional bias, readiness scoring and an AI mentor—inside the same ecosystem as your cash flow, reserves and retirement plan.</p>
+          <Button asChild className="mt-7">
+            <Link to="/swingedge-trading">Explore SwingEdge™ <ArrowRight /></Link>
+          </Button>
+        </div>
+        <div className="grid grid-cols-2 gap-px bg-border">
+          {[
+            { icon: CalendarClock, label: 'Event Risk' },
+            { icon: ShieldCheck, label: 'Readiness Gates' },
+            { icon: BrainCircuit, label: 'AI Mentor' },
+            { icon: FlaskConical, label: 'Risk Lab' },
+          ].map((item) => (
+            <div key={item.label} className="flex min-h-28 flex-col justify-between bg-background p-5">
+              <item.icon className="h-5 w-5 text-accent" />
+              <span className="text-sm font-bold">{item.label}</span>
+            </div>
+          ))}
+        </div>
+      </motion.div>
     </div>
   </section>
 );
