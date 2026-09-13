@@ -787,6 +787,119 @@ export const LESSONS: Lesson[] = [
       why: 'Candlestick evidence can never override a broken risk rule.',
     },
   },
+  {
+    key: 'earnings-windows',
+    module: 'Event risk and the calendar',
+    title: 'Earnings: the one date that breaks stops',
+    minutes: 5,
+    summary: 'A report inside your holding period turns a measured risk into a coin flip your stop cannot protect.',
+    body: [
+      'A stop is an instruction to sell at a price if that price trades. Overnight, price does not trade — it reopens wherever buyers and sellers agree. After an earnings report, that gap can be far below your stop, and your loss is whatever the open gives you.',
+      'That is why the app treats the days before a report as a risk window, not a signal. Two days out is a very high window, five days is high, ten days is moderate. Beyond that the report is not your immediate problem.',
+      'Dates are not all equal either. A confirmed date came from the company. An estimated date is a guess from last year\u2019s pattern and moves often. The app labels which one you are looking at and never presents an estimate as fact.',
+      'After a report, everything you measured beforehand is stale — the range, the swing low your stop sat under, the average daily move. Let it settle for a couple of days and measure again.',
+    ],
+    example: {
+      title: 'The same setup, two calendars',
+      lines: [
+        'Clean pullback, stop 2.10 below entry, planned hold about 10 days, no report due: risk is roughly what you measured.',
+        'Same setup with a confirmed report in 3 days: the report lands inside the hold, so the honest label is WAIT, not GO.',
+        'Take it anyway and the real question is not your stop — it is how big a gap you can absorb.',
+      ],
+    },
+    keyPoints: [
+      'Check for a report before every entry, not after.',
+      'A stop does not work across a gap.',
+      'Confirmed and estimated dates are not the same evidence.',
+      'Re-measure levels after the report, never before.',
+    ],
+    blindSpot: 'Most reports pass quietly. Avoiding them costs you some good trades — that is the price of not being wiped out by the loud ones.',
+    appliesTo: { label: 'Stock Analyzer', to: '/swingedge/analyzer' },
+    quiz: {
+      question: 'Why does an earnings report inside your holding period matter more than a wide stop?',
+      options: [
+        'Reports always move price against you',
+        'Price can reopen well below your stop, so your loss is no longer the one you planned',
+        'Stops stop working during earnings season',
+      ],
+      answerIndex: 1,
+      why: 'Gaps skip your stop price entirely. The planned loss becomes whatever the open prints.',
+    },
+  },
+  {
+    key: 'macro-and-sector-events',
+    module: 'Event risk and the calendar',
+    title: 'Scheduled news, sectors and crowded exposure',
+    minutes: 5,
+    summary: 'Some dates move everything at once, and holding five names in one sector is really one position.',
+    body: [
+      'A handful of releases move the whole market on schedule: the jobs report, inflation figures, central bank decisions. They do not tell you direction. They tell you the range is likely to widen, which is a sizing problem, not a forecast.',
+      'Sectors have their own calendars. Health policy decisions, energy inventories, chip demand updates: one date can reprice every name in the group.',
+      'That is where crowded exposure bites. If four of your open trades sit in the same sector and that sector has one event, you do not have four risks — you have one risk taken four times. The app flags that as event-concentrated exposure.',
+      'The response is boring and effective: fewer positions into the date, smaller size, or simply wait. None of that requires a prediction.',
+    ],
+    example: {
+      title: 'Four trades, one risk',
+      lines: [
+        'Four semiconductor names open, each risking 1% — the account looks like it risks 4%.',
+        'One industry demand update lands. All four move together.',
+        'On a bad print, the four losses arrive on the same morning. That is a 4% day, not four independent 1% trades.',
+      ],
+    },
+    keyPoints: [
+      'Scheduled news widens ranges; it does not pick a direction.',
+      'Sector events reprice a whole group at once.',
+      'Same-sector positions are one risk repeated.',
+      'Fewer or smaller positions beats a forecast.',
+    ],
+    blindSpot: 'Reducing before every busy date will also trim your best runs. The point is survival, not optimisation.',
+    appliesTo: { label: 'Market Scanner', to: '/swingedge/scanner' },
+    quiz: {
+      question: 'You hold four trades in the same sector ahead of one sector event. What is your real exposure?',
+      options: ['Four separate risks', 'Roughly one risk taken four times', 'Less risk, because it is diversified'],
+      answerIndex: 1,
+      why: 'Names in one sector move together on a shared event, so the losses arrive together.',
+    },
+  },
+  {
+    key: 'event-data-quality',
+    module: 'Event risk and the calendar',
+    title: 'When the calendar itself is unreliable',
+    minutes: 4,
+    summary: 'Unverified, stale or unscheduled events change how much weight the read deserves — and never get invented.',
+    body: [
+      'Event data is messier than price data. Dates get moved, aggregators lag, and some events are announced with no warning at all. The app shows you which of those you are dealing with instead of smoothing it over.',
+      'Anything not yet checked against the source is marked as needing verification. Anything last refreshed more than about a week ago is marked stale. Neither is treated as fact.',
+      'Unscheduled events — a surprise announcement, a halt, a policy shock — invalidate a plan written before them. The app asks for a fresh read rather than letting an old GO stand.',
+      'And when there is simply no data, the honest answer is unknown. Unknown is a reason to be careful, not a reason to assume the calendar is clear.',
+    ],
+    example: {
+      title: 'Three calendars, three responses',
+      lines: [
+        'Confirmed date, refreshed today: plan around it normally.',
+        'Estimated date, refreshed two weeks ago: verify before you rely on it.',
+        'No date available at all: treat the calendar as unknown and size as if something could land.',
+      ],
+    },
+    keyPoints: [
+      'Unverified and stale are labelled, not hidden.',
+      'Unknown never becomes "clear".',
+      'An unscheduled event forces a fresh read of the plan.',
+      'Nothing on the calendar is invented to fill a gap.',
+    ],
+    blindSpot: 'Even a perfect calendar misses the events nobody scheduled. Position size is the only defence against those.',
+    appliesTo: { label: 'Trade Planner', to: '/swingedge/planner' },
+    quiz: {
+      question: 'The next report date is unknown. What is the right reading?',
+      options: [
+        'Treat it as no event risk',
+        'Treat the calendar as unknown and be more careful with size',
+        'Skip the stock permanently',
+      ],
+      answerIndex: 1,
+      why: 'Missing information is uncertainty, not safety.',
+    },
+  },
 ];
 
 
