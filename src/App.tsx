@@ -134,6 +134,7 @@ const ContentEditor = lazy(() => import("@/pages/admin/ContentEditor"));
 const SwingEdgeDashboard = lazy(() => import("./pages/swingedge/SwingEdgeDashboard"));
 const SwingEdgeScanner = lazy(() => import("./pages/swingedge/MarketScanner"));
 const SwingEdgeLiveData = lazy(() => import("./pages/swingedge/LiveData"));
+const SwingEdgeRecommendations = lazy(() => import("./pages/swingedge/Recommendations"));
 const SwingEdgeFundamentals = lazy(() => import("./pages/swingedge/FundamentalsEntry"));
 const SwingEdgeAnalyzer = lazy(() => import("./pages/swingedge/StockAnalyzer"));
 const SwingEdgeWatchlists = lazy(() => import("./pages/swingedge/Watchlists"));
@@ -335,6 +336,7 @@ const App = () => (
               <Route path="/swingedge" element={<Suspense fallback={<PageLoader />}><SwingEdgeDashboard /></Suspense>} />
               <Route path="/swingedge/scanner" element={<Suspense fallback={<PageLoader />}><SwingEdgeScanner /></Suspense>} />
               <Route path="/swingedge/live" element={<Suspense fallback={<PageLoader />}><SwingEdgeLiveData /></Suspense>} />
+              <Route path="/swingedge/recommendations" element={<Suspense fallback={<PageLoader />}><SwingEdgeRecommendations /></Suspense>} />
               <Route path="/swingedge/analyzer" element={<Suspense fallback={<PageLoader />}><SwingEdgeAnalyzer /></Suspense>} />
               <Route path="/swingedge/fundamentals" element={<Suspense fallback={<PageLoader />}><SwingEdgeFundamentals /></Suspense>} />
               <Route path="/swingedge/watchlists" element={<Suspense fallback={<PageLoader />}><SwingEdgeWatchlists /></Suspense>} />
