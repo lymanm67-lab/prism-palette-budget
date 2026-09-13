@@ -177,6 +177,17 @@ export default function StockAnalyzer() {
             </CardContent>
           </Card>
 
+          <ReadThisChartCard
+            symbol={analysis.symbol}
+            read={readChart({
+              analysis: analysis.candles,
+              price: analysis.technical.price,
+              estimatedEntry: levels?.estimatedEntry ?? null,
+              estimatedStop: levels?.estimatedStop ?? null,
+              estimatedTarget: levels?.estimatedTarget ?? null,
+            })}
+          />
+
           <HybridSignalCard
             result={analysis.hybrid}
             qualityLabel={analysis.assetType === 'ETF' ? 'Fund quality' : 'Company quality'}
