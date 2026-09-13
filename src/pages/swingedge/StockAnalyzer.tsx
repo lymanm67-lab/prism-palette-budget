@@ -21,6 +21,7 @@ import EventRiskCard from '@/components/swingedge/EventRiskCard';
 import TradeReadinessCard from '@/components/swingedge/TradeReadinessCard';
 import HowToUse from '@/components/swingedge/HowToUse';
 import AiLevelsAssistant from '@/components/swingedge/AiLevelsAssistant';
+import AiMentorCard from '@/components/swingedge/AiMentorCard';
 import HybridSignalCard from '@/components/swingedge/HybridSignalCard';
 import ManualFundamentalsForm from '@/components/swingedge/ManualFundamentalsForm';
 import QualityScoreCard from '@/components/swingedge/QualityScoreCard';
