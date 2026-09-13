@@ -80,7 +80,8 @@ export default function RiskLab() {
     <div className="space-y-6">
       <SwingEdgeHeader
         title="Monte Carlo Risk Lab"
-        description="What your own results imply about drawdowns, losing streaks and position size — before the next trade, not after."
+        subtitle="What your own results imply about drawdowns, losing streaks and position size — before the next trade, not after."
+        mode={settings.data_mode}
       />
 
       <HowToUse
@@ -307,6 +308,7 @@ export default function RiskLab() {
       </p>
 
       <NextStepsCard
+        summary="You have seen how deep the drawdowns get at this position size. Now decide the size you can actually sit through."
         steps={[
           { label: 'Log more closed practice trades to sharpen every number here', to: '/swingedge/paper-trading', cta: 'Open Paper Trading' },
           { label: 'See what the record says about your process', to: '/swingedge/performance', cta: 'Open Performance' },

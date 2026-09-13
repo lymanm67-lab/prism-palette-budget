@@ -110,6 +110,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { to: '/swingedge/paper-trading', icon: Activity, label: 'Paper Trading', color: 'text-prism-violet' },
       { to: '/swingedge/journal', icon: FileText, label: 'Trade Journal', color: 'text-prism-amber' },
       { to: '/swingedge/performance', icon: BarChart3, label: 'Performance Review', color: 'text-prism-teal' },
+      { to: '/swingedge/risk-lab', icon: FlaskConical, label: 'Risk Lab', color: 'text-prism-violet' },
       { to: '/swingedge/backtester', icon: Clock, label: 'Historical Testing', color: 'text-prism-orange' },
       { to: '/swingedge/settings', icon: Settings, label: 'Trading Settings', color: 'text-prism-sky' },
     ],
