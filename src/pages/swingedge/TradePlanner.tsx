@@ -1090,21 +1090,6 @@ export default function TradePlanner() {
         </div>
       </div>
 
-      <HowToUse
-        id="planner-how-to"
-        steps={[
-          'Confirm your trading capital and risk per trade on the trading settings page before you plan anything.',
-          'Work down the ten steps in order. The stop comes from the invalidation level, never from the share count you want.',
-          'Compare the structure stop with the ATR stop. If they disagree, understand why before choosing.',
-          'Check the share count and the dollar risk. That dollar figure is what you are truly risking.',
-          'Save the plan, then open it in Paper Trading to practise it.',
-        ]}
-        tips={[
-          'If a plan would push your total open risk past your portfolio limit, it is blocked on purpose.',
-          'Planned numbers are yours; scanner numbers are estimates. Never mix the two.',
-        ]}
-      />
-
       <AiLevelsAssistant
         page="Trade Planner"
         symbol={symbol || null}
