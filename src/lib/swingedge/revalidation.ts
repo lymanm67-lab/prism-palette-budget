@@ -82,6 +82,8 @@ export interface StoredSignalState {
   qualityScore?: number | null;
   lastCompletedCandle?: string | null;
   candleConfirmed?: boolean | null;
+  /** Event-aware context, all optional so existing callers keep working. */
+  eventContext?: EventContextSnapshot | null;
 }
 
 export interface CurrentSignalState {
@@ -95,6 +97,32 @@ export interface CurrentSignalState {
   qualityScore?: number | null;
   lastCompletedCandle?: string | null;
   candleConfirmed?: boolean | null;
+  eventContext?: EventContextSnapshot | null;
+  stop?: number | null;
+  atrValue?: number | null;
+}
+
+/**
+ * What the event, bias and volatility picture looked like at a point in time.
+ * Comparing two of these is what makes event-driven revalidation mandatory
+ * rather than optional.
+ */
+export interface EventContextSnapshot {
+  earningsDate?: string | null;
+  earningsCertainty?: 'CONFIRMED' | 'ESTIMATED' | 'UNKNOWN' | null;
+  earningsTiming?: string | null;
+  /** Highest severity among verified live events, e.g. LOW | MODERATE | HIGH | SEVERE. */
+  worstEventSeverity?: string | null;
+  sectorRisk?: string | null;
+  /** Ids of verified live macro events. */
+  macroEventIds?: string[];
+  /** Ids of verified live global or sector events. */
+  globalEventIds?: string[];
+  /** Ids of events that have since resolved. */
+  resolvedEventIds?: string[];
+  biasDirection?: string | null;
+  biasLeadingPct?: number | null;
+  stop?: number | null;
 }
 
 export interface RevalidationOptions {
