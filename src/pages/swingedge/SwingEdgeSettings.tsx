@@ -57,6 +57,7 @@ export default function SwingEdgeSettings() {
   const [lookback, setLookback] = useState(String(settings.correlation_lookback_days));
   const [minuteLimit, setMinuteLimit] = useState(String(settings.api_minute_limit));
   const [dailyLimit, setDailyLimit] = useState(String(settings.api_daily_limit));
+  const [overview, setOverview] = useState(settings.market_overview_symbols.join(', '));
 
   useEffect(() => {
     setCapital(String(settings.trading_capital));
