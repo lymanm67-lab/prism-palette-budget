@@ -69,6 +69,7 @@ export default function SwingEdgeSettings() {
     setLookback(String(settings.correlation_lookback_days));
     setMinuteLimit(String(settings.api_minute_limit));
     setDailyLimit(String(settings.api_daily_limit));
+    setOverview(settings.market_overview_symbols.join(', '));
   }, [
     settings.trading_capital,
     settings.risk_per_trade_pct,
