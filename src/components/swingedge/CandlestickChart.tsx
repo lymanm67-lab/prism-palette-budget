@@ -38,7 +38,15 @@ interface Props {
  * horizontal level lines (support, resistance, estimated entry/stop/target).
  * No chart library — candles are simple rects so theme tokens apply.
  */
-export default function CandlestickChart({ candles, visible = 120, height = 320, levels = [], showDirectionStrip = false }: Props) {
+export default function CandlestickChart({
+  candles,
+  visible = 120,
+  height = 320,
+  levels = [],
+  showDirectionStrip = false,
+  showTrendLines = false,
+  showMovingAverages = false,
+}: Props) {
   const shown = useMemo(() => candles.slice(-visible), [candles, visible]);
   const [hover, setHover] = useState<number | null>(null);
 
@@ -46,6 +54,22 @@ export default function CandlestickChart({ candles, visible = 120, height = 320,
     () => (showDirectionStrip ? buildDirectionStrip(shown) : []),
     [shown, showDirectionStrip],
   );
+
+  // Averages are computed on the full history, then trimmed, so the visible
+  // window starts with a value instead of a gap.
+  const maSeries = useMemo(
+    () =>
+      showMovingAverages
+        ? movingAverages(candles).map((s) => ({ ...s, values: s.values.slice(-visible) }))
+        : [],
+    [candles, visible, showMovingAverages],
+  );
+
+  const trendLines = useMemo(
+    () => (showTrendLines ? buildTrendLines(shown) : []),
+    [shown, showTrendLines],
+  );
+
 
   const W = 800;
   const H = height;
