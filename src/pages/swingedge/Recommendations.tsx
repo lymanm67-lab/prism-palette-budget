@@ -22,7 +22,7 @@ import {
 } from '@/hooks/use-swingedge-training';
 import { usePaperTradeManagement, useTradePlans } from '@/hooks/use-swingedge-stops';
 import { useAcademyProgress, useTradeJournal } from '@/hooks/use-swingedge-lists';
-import { weekStartOf } from '@/lib/swingedge/training';
+import { weekStartOf } from '@/lib/swingedge/circuitBreaker';
 
 interface Recommendation {
   /** Lower sorts first. */
@@ -216,8 +216,8 @@ export default function Recommendations() {
             <div>
               <p className="text-xs text-muted-foreground">Live-readiness</p>
               <p className="text-sm font-semibold">
-                {GRADUATION_LABEL[graduation.status] ?? graduation.status} ({graduation.passedCount}/
-                {graduation.checks.length} checks)
+                {GRADUATION_LABEL[graduation.result.status] ?? graduation.result.status} ({graduation.result.passedCount}/
+                {graduation.result.checks.length} checks)
               </p>
             </div>
           </CardContent>
