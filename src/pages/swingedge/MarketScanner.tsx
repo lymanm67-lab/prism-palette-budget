@@ -24,6 +24,8 @@ import HowToUse from '@/components/swingedge/HowToUse';
 import AiLevelsAssistant from '@/components/swingedge/AiLevelsAssistant';
 import { useTradingSettings, useTradingTitle, useCuratedUniverse } from '@/hooks/use-swingedge';
 import { useScoredSymbols, useWatchlists } from '@/hooks/use-swingedge-lists';
+import { useEarningsCalendar, useMacroWindow } from '@/hooks/use-swingedge-events';
+import { assessEventRisk, type EventRiskResult } from '@/lib/swingedge/eventRisk';
 import { VERDICT_MEANING, VERDICT_TONE } from '@/lib/swingedge/score';
 import { VERDICT_LABEL, type Verdict } from '@/lib/swingedge/types';
 
@@ -33,6 +35,27 @@ const money = (n: number | null | undefined) =>
     : n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 
 type Filter = 'ALL' | Verdict;
+
+/** Saved combinations of filters, so a routine scan is one click. */
+type Preset = 'NONE' | 'LOW_EVENT_PULLBACKS';
+
+const PRESET_LABEL: Record<Preset, string> = {
+  NONE: 'No preset — show everything',
+  LOW_EVENT_PULLBACKS: 'Low event risk pullbacks',
+};
+
+const BIAS_TONE: Record<string, string> = {
+  UP: 'text-emerald-500',
+  DOWN: 'text-destructive',
+  SIDEWAYS: 'text-muted-foreground',
+};
+
+const EVENT_TONE: Record<string, string> = {
+  LOW: 'text-emerald-500',
+  MODERATE: 'text-amber-500',
+  HIGH: 'text-orange-500',
+  SEVERE: 'text-destructive',
+};
 
 const VERDICT_RANK: Record<Verdict, number> = {
   QUALIFIES: 0,
@@ -50,6 +73,7 @@ export default function MarketScanner() {
   const [source, setSource] = useState<string>('CURATED');
   const [running, setRunning] = useState<string[]>([]);
   const [filter, setFilter] = useState<Filter>('ALL');
+  const [preset, setPreset] = useState<Preset>('NONE');
 
   const selected = useMemo(() => {
     if (source === 'CURATED') return universe.map((u) => u.symbol);
@@ -58,12 +82,41 @@ export default function MarketScanner() {
 
   const { rows, notice, isFetching, refetch, fetchedAt } = useScoredSymbols(running, 4);
 
+  // Event risk for the scanned names. One calendar call covers the whole list.
+  const earnings = useEarningsCalendar(running);
+  const macroEvents = useMacroWindow(30);
+
+  const eventBySymbol = useMemo(() => {
+    const out: Record<string, EventRiskResult> = {};
+    for (const r of rows) {
+      out[r.symbol] = assessEventRisk({
+        symbol: r.symbol,
+        sector: null,
+        holdingDays: 10,
+        earnings: earnings.bySymbol[r.symbol] ?? null,
+        events: macroEvents,
+        mode: settings.advanced_mode ? 'ADVANCED' : 'BEGINNER',
+      });
+    }
+    return out;
+  }, [rows, earnings.bySymbol, macroEvents, settings.advanced_mode]);
+
   const shown = useMemo(() => {
-    const list = filter === 'ALL' ? rows : rows.filter((r) => r.verdict === filter);
+    let list = filter === 'ALL' ? rows : rows.filter((r) => r.verdict === filter);
+    if (preset === 'LOW_EVENT_PULLBACKS') {
+      list = list.filter((r) => {
+        const ev = eventBySymbol[r.symbol];
+        const lowEvent = !ev || ev.band === 'LOW';
+        const pullback = r.setup === 'PULLBACK';
+        const upBias = !r.bias || r.bias.direction === 'UP';
+        const worthStudying = r.verdict === 'QUALIFIES' || r.verdict === 'WATCH';
+        return lowEvent && pullback && upBias && worthStudying;
+      });
+    }
     return [...list].sort(
       (a, b) => VERDICT_RANK[a.verdict] - VERDICT_RANK[b.verdict] || b.score - a.score,
     );
-  }, [rows, filter]);
+  }, [rows, filter, preset, eventBySymbol]);
 
   const counts = useMemo(() => {
     const base: Record<Verdict, number> = {
@@ -143,6 +196,22 @@ export default function MarketScanner() {
               </span>
             )}
           </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Select value={preset} onValueChange={(v) => setPreset(v as Preset)}>
+              <SelectTrigger className="w-72" aria-label="Result preset">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="NONE">{PRESET_LABEL.NONE}</SelectItem>
+                <SelectItem value="LOW_EVENT_PULLBACKS">{PRESET_LABEL.LOW_EVENT_PULLBACKS}</SelectItem>
+              </SelectContent>
+            </Select>
+            {preset === 'LOW_EVENT_PULLBACKS' && (
+              <span className="text-xs text-muted-foreground">
+                Pullbacks that qualify or are forming, with an upward tendency and a clear calendar.
+              </span>
+            )}
+          </div>
           <p className="text-xs text-muted-foreground">
             {selected.length} symbols · read {4} at a time in {batches} batch
             {batches === 1 ? '' : 'es'} · your allowance is {settings.api_minute_limit} calls a
@@ -188,6 +257,8 @@ export default function MarketScanner() {
                     <TableHead className="text-right">Price</TableHead>
                     <TableHead className="text-right">Day</TableHead>
                     <TableHead>Setup</TableHead>
+                    <TableHead>Bias</TableHead>
+                    <TableHead>Event risk</TableHead>
                     <TableHead className="text-right">Est. entry</TableHead>
                     <TableHead className="text-right">Est. stop</TableHead>
                     <TableHead className="text-right">Est. target</TableHead>
@@ -199,8 +270,12 @@ export default function MarketScanner() {
                 <TableBody>
                   {shown.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={12} className="py-8 text-center text-sm text-muted-foreground">
-                        {isFetching ? 'Scanning…' : 'No rows with this status.'}
+                      <TableCell colSpan={14} className="py-8 text-center text-sm text-muted-foreground">
+                        {isFetching
+                          ? 'Scanning…'
+                          : preset === 'LOW_EVENT_PULLBACKS'
+                            ? 'No names match this preset. That is a valid result.'
+                            : 'No rows with this status.'}
                       </TableCell>
                     </TableRow>
                   )}
@@ -208,6 +283,8 @@ export default function MarketScanner() {
                     const risk = r.levels
                       ? Math.round((r.levels.estimatedEntry - r.levels.estimatedStop) * 100) / 100
                       : null;
+                    const ev = eventBySymbol[r.symbol] ?? null;
+                    const days = ev?.earnings.daysUntil ?? null;
                     return (
                       <TableRow key={r.symbol}>
                         <TableCell className="font-medium">{r.symbol}</TableCell>
@@ -227,6 +304,42 @@ export default function MarketScanner() {
                         </TableCell>
                         <TableCell className="text-xs text-muted-foreground">
                           {r.setup === 'NONE' ? 'No setup' : r.setup} · {r.trend.toLowerCase()}
+                        </TableCell>
+                        <TableCell className="text-xs">
+                          {r.bias && r.bias.confidence !== 'INSUFFICIENT_DATA' ? (
+                            <span
+                              className={BIAS_TONE[r.bias.direction]}
+                              title={`${r.bias.leadingPct}% of ${r.bias.independentEpisodes} similar past episodes, ${r.bias.confidence.toLowerCase()} confidence`}
+                            >
+                              {r.bias.direction === 'UP'
+                                ? 'Up'
+                                : r.bias.direction === 'DOWN'
+                                  ? 'Down'
+                                  : 'Sideways'}{' '}
+                              {r.bias.leadingPct}%
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">Not enough history</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-xs">
+                          {ev ? (
+                            <span
+                              className={EVENT_TONE[ev.band]}
+                              title={ev.lines[0] ?? 'Event risk read from the calendar.'}
+                            >
+                              {ev.band === 'LOW'
+                                ? 'Low'
+                                : ev.band === 'MODERATE'
+                                  ? 'Moderate'
+                                  : ev.band === 'HIGH'
+                                    ? 'High'
+                                    : 'Severe'}
+                              {days !== null ? ` · earnings in ${days}d` : ''}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
                         </TableCell>
                         <TableCell className="text-right italic text-muted-foreground">
                           {money(r.levels?.estimatedEntry)}

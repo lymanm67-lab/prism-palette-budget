@@ -84,6 +84,7 @@ Deno.serve(async (req) => {
   let body: {
     action?: string;
     symbol?: string;
+    symbols?: string[];
     query?: string;
     assetType?: string;
     depth?: string;
@@ -100,7 +101,41 @@ Deno.serve(async (req) => {
 
   try {
     if (action === 'fundamentals') {
-      if (!symbol) return json({ error: 'symbol is required' }, 400);
+    // Earnings for many symbols at once. The provider's calendar is one CSV for
+    // the whole market, so a scan costs a single call instead of one per name.
+    if (action === 'earnings_batch') {
+      const wanted = (body.symbols ?? [])
+        .map((s) => String(s).trim().toUpperCase())
+        .filter((s) => s.length > 0);
+      if (!wanted.length) return json({ error: 'symbols is required' }, 400);
+      const rows = await avCsv({ function: 'EARNINGS_CALENDAR', horizon: '3month' }, apiKey);
+      const head = rows[0]?.map((h) => h.trim().toLowerCase()) ?? [];
+      const symIdx = head.indexOf('symbol');
+      const dateIdx = head.indexOf('reportdate');
+      const want = new Set(wanted);
+      const earliest: Record<string, string> = {};
+      if (symIdx >= 0 && dateIdx >= 0) {
+        for (const r of rows.slice(1)) {
+          const sym = (r[symIdx] ?? '').trim().toUpperCase();
+          if (!want.has(sym)) continue;
+          const date = (r[dateIdx] ?? '').trim();
+          if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
+          if (!earliest[sym] || date < earliest[sym]) earliest[sym] = date;
+        }
+      }
+      return json({
+        fetchedAt: new Date().toISOString(),
+        earnings: wanted.map((sym) => ({
+          symbol: sym,
+          date: earliest[sym] ?? null,
+          certainty: earliest[sym] ? 'ESTIMATED' : 'UNKNOWN',
+          timing: 'TIME_UNKNOWN',
+          source: earliest[sym] ? 'Alpha Vantage earnings calendar' : null,
+        })),
+      } as unknown as Json);
+    }
+
+    if (!symbol) return json({ error: 'symbol is required' }, 400);
       const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
       const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
       const hint = (body.assetType ?? '').toUpperCase();

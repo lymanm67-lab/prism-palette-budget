@@ -1,4 +1,5 @@
 import NextStepsCard from '@/components/swingedge/NextStepsCard';
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -34,7 +35,43 @@ const money = (n: number) =>
 export default function Performance() {
   useTradingTitle('Performance Review');
   const { settings } = useTradingSettings();
-  const { stats, closedTrades, mistakes, entries, isLoading } = useTradeJournal();
+  const { stats, closedTrades, mistakes, entries, trades, isLoading } = useTradeJournal();
+
+  // Results split by what the calendar looked like at entry. Only closed trades
+  // that actually recorded the information are counted — nothing is inferred.
+  const eventSplits = useMemo(() => {
+    const closed = trades.filter((t) => t.status === 'CLOSED' && t.exit_price !== null);
+    const rOf = (t: (typeof closed)[number]): number | null => {
+      const risk = t.initial_dollar_risk;
+      const pl = t.realized_pl ?? ((t.exit_price as number) - t.entry_price) * t.shares;
+      if (!risk || risk <= 0) return null;
+      return Math.round((pl / risk) * 100) / 100;
+    };
+    const group = (label: string, rows: typeof closed) => {
+      const rs = rows.map(rOf).filter((r): r is number => r !== null);
+      const wins = rs.filter((r) => r > 0).length;
+      return {
+        label,
+        count: rows.length,
+        measured: rs.length,
+        avgR: rs.length ? Math.round((rs.reduce((a, b) => a + b, 0) / rs.length) * 100) / 100 : null,
+        winPct: rs.length ? Math.round((wins / rs.length) * 100) : null,
+      };
+    };
+    const byBand = ['LOW', 'MODERATE', 'HIGH', 'SEVERE']
+      .map((band) => group(`Event risk ${band.toLowerCase()}`, closed.filter((t) => t.event_risk_band === band)))
+      .filter((g) => g.count > 0);
+    const earningsRows = closed.filter((t) => t.earnings_within_hold === true);
+    const noEarningsRows = closed.filter((t) => t.earnings_within_hold === false);
+    const earningsSplit = [
+      earningsRows.length ? group('Held through earnings', earningsRows) : null,
+      noEarningsRows.length ? group('No earnings while held', noEarningsRows) : null,
+    ].filter((g): g is NonNullable<typeof g> => g !== null);
+    const unrecorded = closed.filter(
+      (t) => !t.event_risk_band && t.earnings_within_hold === null,
+    ).length;
+    return { rows: [...byBand, ...earningsSplit], unrecorded, closed: closed.length };
+  }, [trades]);
 
   const tiles = [
     {
@@ -178,6 +215,67 @@ export default function Performance() {
                   />
                 </LineChart>
               </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Results around events</CardTitle>
+              <CardDescription>
+                Your closed trades split by how busy the calendar was at entry, and by whether you
+                held through an earnings report. Only trades where you recorded that detail appear.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {eventSplits.rows.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  None of your {eventSplits.closed} closed trades has event details recorded yet. Fill
+                  in the events section of a journal entry and this split appears.
+                </p>
+              ) : (
+                <>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Group</TableHead>
+                        <TableHead className="text-right">Trades</TableHead>
+                        <TableHead className="text-right">Win rate</TableHead>
+                        <TableHead className="text-right">Average R</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {eventSplits.rows.map((g) => (
+                        <TableRow key={g.label}>
+                          <TableCell>{g.label}</TableCell>
+                          <TableCell className="text-right">{g.count}</TableCell>
+                          <TableCell className="text-right">
+                            {g.winPct === null ? '—' : `${g.winPct}%`}
+                          </TableCell>
+                          <TableCell
+                            className={cn(
+                              'text-right tabular-nums',
+                              g.avgR === null
+                                ? ''
+                                : g.avgR >= 0
+                                  ? 'text-prism-lime'
+                                  : 'text-prism-rose',
+                            )}
+                          >
+                            {g.avgR === null ? '—' : `${g.avgR > 0 ? '+' : ''}${g.avgR}R`}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                  <p className="mt-3 text-xs text-muted-foreground">
+                    Groups with only a handful of trades are not evidence of anything yet — treat
+                    fewer than about ten as a hint, not a rule.
+                    {eventSplits.unrecorded > 0
+                      ? ` ${eventSplits.unrecorded} closed ${eventSplits.unrecorded === 1 ? 'trade has' : 'trades have'} no event details recorded.`
+                      : ''}
+                  </p>
+                </>
+              )}
             </CardContent>
           </Card>
 

@@ -7,6 +7,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { useHousehold } from '@/contexts/HouseholdContext';
 import { loadCandles, useTradingSettings } from '@/hooks/use-swingedge';
 import { scoreSymbol, type SymbolScore } from '@/lib/swingedge/score';
+import {
+  directionalBias,
+  type BiasConfidence,
+  type BiasDirection,
+} from '@/lib/swingedge/directionalBias';
+import { conditionsFromNow } from '@/lib/swingedge/historicalMatch';
 import { performanceStats, rankMistakes, type ClosedTrade } from '@/lib/swingedge/performance';
 import { LESSONS } from '@/lib/swingedge/lessons';
 
@@ -123,10 +129,19 @@ export function useWatchlists() {
   };
 }
 
+export interface ScoredSymbolBias {
+  direction: BiasDirection;
+  confidence: BiasConfidence;
+  leadingPct: number;
+  independentEpisodes: number;
+}
+
 export interface ScoredSymbol extends SymbolScore {
   changePercent: number | null;
   source: 'demo' | 'cache' | 'live';
   fetchedAt: string | null;
+  /** Historical tendency for today's conditions. Null when history is too short. */
+  bias: ScoredSymbolBias | null;
 }
 
 /**
@@ -158,12 +173,28 @@ export function useScoredSymbols(symbols: string[], batchSize = 4) {
           const closes = result.candles.map((c) => c.close);
           const prev = closes[closes.length - 2];
           const price = closes[closes.length - 1];
+          // Bias needs a long history behind it; short series stay null rather
+          // than reporting a tendency drawn from a handful of episodes.
+          let bias: ScoredSymbolBias | null = null;
+          if (result.candles.length >= 120) {
+            const read = directionalBias(result.candles, {
+              conditions: conditionsFromNow(result.candles, symbol),
+              trend: scored.trend,
+            });
+            bias = {
+              direction: read.direction,
+              confidence: read.confidence,
+              leadingPct: read.leadingPct,
+              independentEpisodes: read.independentEpisodes,
+            };
+          }
           rows.push({
             ...scored,
             changePercent:
               prev && price ? Math.round(((price - prev) / prev) * 10000) / 100 : null,
             source: result.source,
             fetchedAt: result.fetchedAt,
+            bias,
           });
         }
       }
@@ -199,6 +230,13 @@ export interface PaperTrade {
   realized_pl: number | null;
   rules_followed: boolean | null;
   notes: string | null;
+  event_risk_band: string | null;
+  event_risk_score: number | null;
+  event_decision: string | null;
+  bias_direction: string | null;
+  bias_confidence: string | null;
+  earnings_within_hold: boolean | null;
+  readiness_score: number | null;
 }
 
 export interface JournalEntry {
@@ -213,6 +251,11 @@ export interface JournalEntry {
   lessons: string | null;
   rules_followed: boolean | null;
   rating: number | null;
+  event_risk_band: string | null;
+  event_decision: string | null;
+  bias_direction: string | null;
+  earnings_within_hold: boolean | null;
+  event_note: string | null;
 }
 
 const num = (v: unknown): number => Number(v ?? 0);
@@ -250,6 +293,13 @@ export function useTradeJournal() {
         realized_pl: t.realized_pl === null ? null : num(t.realized_pl),
         rules_followed: t.rules_followed,
         notes: t.notes,
+        event_risk_band: t.event_risk_band,
+        event_risk_score: t.event_risk_score,
+        event_decision: t.event_decision,
+        bias_direction: t.bias_direction,
+        bias_confidence: t.bias_confidence,
+        earnings_within_hold: t.earnings_within_hold,
+        readiness_score: t.readiness_score,
       }));
     },
   });
@@ -289,6 +339,11 @@ export function useTradeJournal() {
         lessons: input.lessons ?? null,
         rules_followed: input.rules_followed ?? null,
         rating: input.rating ?? null,
+        event_risk_band: input.event_risk_band ?? null,
+        event_decision: input.event_decision ?? null,
+        bias_direction: input.bias_direction ?? null,
+        earnings_within_hold: input.earnings_within_hold ?? null,
+        event_note: input.event_note ?? null,
       };
       if (input.id) {
         const { error } = await supabase.from('se_journal_entries').update(row).eq('id', input.id);

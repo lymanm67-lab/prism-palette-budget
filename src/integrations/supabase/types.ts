@@ -11930,6 +11930,7 @@ export type Database = {
           created_at: string
           earnings_within_hold: boolean | null
           entry_date: string
+          event_decision: string | null
           event_note: string | null
           event_risk_band: string | null
           event_risk_score: number | null
@@ -11965,6 +11966,7 @@ export type Database = {
           created_at?: string
           earnings_within_hold?: boolean | null
           entry_date?: string
+          event_decision?: string | null
           event_note?: string | null
           event_risk_band?: string | null
           event_risk_score?: number | null
@@ -12000,6 +12002,7 @@ export type Database = {
           created_at?: string
           earnings_within_hold?: boolean | null
           entry_date?: string
+          event_decision?: string | null
           event_note?: string | null
           event_risk_band?: string | null
           event_risk_score?: number | null
