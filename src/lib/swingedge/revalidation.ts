@@ -375,7 +375,9 @@ export type ExecutionCheckName =
   | 'STOP'
   | 'RISK'
   | 'PORTFOLIO_HEAT'
-  | 'CORRELATION';
+  | 'CORRELATION'
+  | 'EVENT_RISK'
+  | 'EVENT_EXPOSURE';
 
 export interface ExecutionCheck {
   name: ExecutionCheckName;
@@ -398,6 +400,15 @@ export interface ExecutionSequenceInput {
   heatReason: string;
   correlationOverLimit: boolean;
   correlationReason: string;
+  /**
+   * Event risk re-run immediately before execution. Optional so existing callers
+   * keep working, but a GO produced before new information existed must not
+   * survive without it.
+   */
+  eventDecision?: 'GO' | 'WAIT' | 'REVIEW' | null;
+  eventReason?: string;
+  eventConcentrated?: boolean;
+  eventConcentrationReason?: string;
 }
 
 export interface ExecutionSequenceResult {
