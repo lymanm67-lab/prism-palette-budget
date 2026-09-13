@@ -242,6 +242,8 @@ function WeekCard({ weekNumber }: { weekNumber: number }) {
           ))}
         </div>
 
+        <WeekChartCheck weekNumber={weekNumber} />
+
         <p className="rounded-lg border bg-muted/30 p-3 text-sm">
           <span className="font-medium">Move on when: </span>
           {week.doneWhen}
