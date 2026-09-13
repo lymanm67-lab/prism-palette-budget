@@ -131,6 +131,28 @@ export default function CandlestickChart({ candles, visible = 120, height = 320,
           );
         })}
 
+        {/* direction strip: one segment per window, up / down / sideways */}
+        {strip.map((s, i) => {
+          const x = padL + s.startIndex * slot;
+          const w = Math.max(1, (s.endIndex - s.startIndex + 1) * slot);
+          return (
+            <rect
+              key={`d-${i}`}
+              x={x}
+              y={priceH + 3}
+              width={w}
+              height={stripH - 6}
+              fill={STRIP_COLOR[s.direction]}
+              opacity={s.direction === 'SIDEWAYS' ? 0.35 : 0.8}
+              rx={1}
+            >
+              <title>{`${s.startDate.slice(0, 10)} → ${s.endDate.slice(0, 10)}: ${
+                s.direction === 'UP' ? 'moving up' : s.direction === 'DOWN' ? 'moving down' : 'sideways'
+              }`}</title>
+            </rect>
+          );
+        })}
+
         {/* volume pane */}
         {shown.map((c, i) => {
           const x = padL + i * slot + (slot - bodyW) / 2;
@@ -140,7 +162,7 @@ export default function CandlestickChart({ candles, visible = 120, height = 320,
             <rect
               key={`v-${c.datetime}`}
               x={x}
-              y={priceH + (volH - 4) - vh}
+              y={volTop + (volH - 4) - vh}
               width={bodyW}
               height={Math.max(1, vh)}
               fill={color}
