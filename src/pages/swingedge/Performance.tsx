@@ -220,6 +220,67 @@ export default function Performance() {
 
           <Card>
             <CardHeader className="pb-2">
+              <CardTitle className="text-base">Results around events</CardTitle>
+              <CardDescription>
+                Your closed trades split by how busy the calendar was at entry, and by whether you
+                held through an earnings report. Only trades where you recorded that detail appear.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {eventSplits.rows.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  None of your {eventSplits.closed} closed trades has event details recorded yet. Fill
+                  in the events section of a journal entry and this split appears.
+                </p>
+              ) : (
+                <>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Group</TableHead>
+                        <TableHead className="text-right">Trades</TableHead>
+                        <TableHead className="text-right">Win rate</TableHead>
+                        <TableHead className="text-right">Average R</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {eventSplits.rows.map((g) => (
+                        <TableRow key={g.label}>
+                          <TableCell>{g.label}</TableCell>
+                          <TableCell className="text-right">{g.count}</TableCell>
+                          <TableCell className="text-right">
+                            {g.winPct === null ? '—' : `${g.winPct}%`}
+                          </TableCell>
+                          <TableCell
+                            className={cn(
+                              'text-right tabular-nums',
+                              g.avgR === null
+                                ? ''
+                                : g.avgR >= 0
+                                  ? 'text-prism-lime'
+                                  : 'text-prism-rose',
+                            )}
+                          >
+                            {g.avgR === null ? '—' : `${g.avgR > 0 ? '+' : ''}${g.avgR}R`}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                  <p className="mt-3 text-xs text-muted-foreground">
+                    Groups with only a handful of trades are not evidence of anything yet — treat
+                    fewer than about ten as a hint, not a rule.
+                    {eventSplits.unrecorded > 0
+                      ? ` ${eventSplits.unrecorded} closed ${eventSplits.unrecorded === 1 ? 'trade has' : 'trades have'} no event details recorded.`
+                      : ''}
+                  </p>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
               <CardTitle className="text-base">Most common mistakes</CardTitle>
               <CardDescription>
                 Taken from your journal tags. Pick exactly one to work on next month.
