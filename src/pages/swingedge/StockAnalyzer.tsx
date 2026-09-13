@@ -13,6 +13,12 @@ import CandlestickChart from '@/components/swingedge/CandlestickChart';
 import ReadThisChartCard from '@/components/swingedge/ReadThisChartCard';
 import { readChart } from '@/lib/swingedge/chartReading';
 import { currentDirection } from '@/lib/swingedge/directionStrip';
+import { directionalBias } from '@/lib/swingedge/directionalBias';
+import { conditionsFromNow } from '@/lib/swingedge/historicalMatch';
+import { scoreTradeReadiness, type ReadinessItemKey } from '@/lib/swingedge/tradeReadiness';
+import DirectionalBiasCard from '@/components/swingedge/DirectionalBiasCard';
+import EventRiskCard from '@/components/swingedge/EventRiskCard';
+import TradeReadinessCard from '@/components/swingedge/TradeReadinessCard';
 import HowToUse from '@/components/swingedge/HowToUse';
 import AiLevelsAssistant from '@/components/swingedge/AiLevelsAssistant';
 import HybridSignalCard from '@/components/swingedge/HybridSignalCard';
@@ -25,7 +31,20 @@ import {
   TradabilityCard,
 } from '@/components/swingedge/ContextCards';
 import { useTradingSettings, useTradingTitle, loadCandles } from '@/hooks/use-swingedge';
+import { useEventRisk } from '@/hooks/use-swingedge-events';
 import { useHybridAnalysis, useHybridSignalHistory } from '@/hooks/use-swingedge-hybrid';
+
+/** Market regime as a 0-1 backdrop score for readiness. Never a forecast. */
+const REGIME_SCORE: Record<string, number> = {
+  STRONG_BULL: 1,
+  BULL: 0.85,
+  NEUTRAL: 0.5,
+  TRANSITION: 0.45,
+  HIGH_VOLATILITY: 0.35,
+  CAUTIOUS: 0.35,
+  BEAR: 0.1,
+};
+
 
 const money = (n: number | null) =>
   n === null ? '—' : n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
