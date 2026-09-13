@@ -10,6 +10,8 @@ import { toast } from 'sonner';
 import CandlePatternCard from '@/components/swingedge/CandlePatternCard';
 import CollapsibleSection from '@/components/swingedge/CollapsibleSection';
 import CandlestickChart from '@/components/swingedge/CandlestickChart';
+import ReadThisChartCard from '@/components/swingedge/ReadThisChartCard';
+import { readChart } from '@/lib/swingedge/chartReading';
 import HowToUse from '@/components/swingedge/HowToUse';
 import AiLevelsAssistant from '@/components/swingedge/AiLevelsAssistant';
 import HybridSignalCard from '@/components/swingedge/HybridSignalCard';
@@ -176,6 +178,17 @@ export default function StockAnalyzer() {
               )}
             </CardContent>
           </Card>
+
+          <ReadThisChartCard
+            symbol={analysis.symbol}
+            read={readChart({
+              analysis: analysis.candles,
+              price: analysis.technical.price,
+              estimatedEntry: levels?.estimatedEntry ?? null,
+              estimatedStop: levels?.estimatedStop ?? null,
+              estimatedTarget: levels?.estimatedTarget ?? null,
+            })}
+          />
 
           <HybridSignalCard
             result={analysis.hybrid}

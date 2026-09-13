@@ -24,6 +24,10 @@ import { usePaperTradeManagement } from '@/hooks/use-swingedge-stops';
 import { useGraduation, useTrainingProgress } from '@/hooks/use-swingedge-training';
 import { TRAINING_WEEKS, downloadCsv, toCsv, weekCompletion } from '@/lib/swingedge/training';
 import { curriculumFor } from '@/lib/swingedge/curriculum';
+import { analyzeCandles } from '@/lib/swingedge/candleEngine';
+import { demoCandles } from '@/lib/swingedge/demoData';
+import { readChart, questionsForWeek } from '@/lib/swingedge/chartReading';
+import { ChartQuestionItem } from '@/components/swingedge/ReadThisChartCard';
 
 const COUNTERS: { key: keyof CounterState; label: string }[] = [
   { key: 'lessons_completed', label: 'Lessons finished' },
@@ -112,6 +116,48 @@ function GraduationPanel() {
 
 /* --------------------------------------------------------------- one week */
 
+/* --------------------------------------------- chart reading check per week */
+
+const SAMPLE_SYMBOL = 'NVDA';
+
+/** Built once from the sample chart the app ships with, so the drill is identical for everyone. */
+let sampleRead: ReturnType<typeof readChart> | null = null;
+function getSampleRead() {
+  if (!sampleRead) {
+    sampleRead = readChart({
+      analysis: analyzeCandles(demoCandles(SAMPLE_SYMBOL, '1day', 260), { timeframe: '1day' }),
+    });
+  }
+  return sampleRead;
+}
+
+function WeekChartCheck({ weekNumber }: { weekNumber: number }) {
+  const read = getSampleRead();
+  const questions = questionsForWeek(read, weekNumber);
+  if (questions.length === 0) return null;
+  return (
+    <div className="rounded-lg border border-prism-teal/30 bg-prism-teal/5 p-3">
+      <p className="text-xs font-medium uppercase tracking-wide text-prism-teal">
+        Chart reading check — week {weekNumber}
+      </p>
+      <p className="mt-1 text-xs text-muted-foreground">
+        Answered against the sample {SAMPLE_SYMBOL} chart. Say your answer first, then check it — then
+        repeat the same question on a live chart in the Stock Analyzer.
+      </p>
+      <div className="mt-2 space-y-2">
+        {questions.map((q) => (
+          <ChartQuestionItem key={q.question} q={q} />
+        ))}
+      </div>
+      <Button asChild size="sm" variant="ghost" className="mt-2 h-7 px-2 text-xs">
+        <Link to={`/swingedge/analyzer?symbol=${SAMPLE_SYMBOL}`}>
+          Practise on a live chart <ArrowRight className="ml-1 h-3.5 w-3.5" />
+        </Link>
+      </Button>
+    </div>
+  );
+}
+
 function WeekCard({ weekNumber }: { weekNumber: number }) {
   const week = TRAINING_WEEKS[weekNumber - 1];
   const { byWeek, saveWeek, isSaving, currentWeek } = useTrainingProgress();
@@ -195,6 +241,8 @@ function WeekCard({ weekNumber }: { weekNumber: number }) {
             </div>
           ))}
         </div>
+
+        <WeekChartCheck weekNumber={weekNumber} />
 
         <p className="rounded-lg border bg-muted/30 p-3 text-sm">
           <span className="font-medium">Move on when: </span>
