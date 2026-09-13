@@ -24,6 +24,10 @@ import { usePaperTradeManagement } from '@/hooks/use-swingedge-stops';
 import { useGraduation, useTrainingProgress } from '@/hooks/use-swingedge-training';
 import { TRAINING_WEEKS, downloadCsv, toCsv, weekCompletion } from '@/lib/swingedge/training';
 import { curriculumFor } from '@/lib/swingedge/curriculum';
+import { analyzeCandles } from '@/lib/swingedge/candleEngine';
+import { demoCandles } from '@/lib/swingedge/demoData';
+import { readChart, questionsForWeek } from '@/lib/swingedge/chartReading';
+import { ChartQuestionItem } from '@/components/swingedge/ReadThisChartCard';
 
 const COUNTERS: { key: keyof CounterState; label: string }[] = [
   { key: 'lessons_completed', label: 'Lessons finished' },
