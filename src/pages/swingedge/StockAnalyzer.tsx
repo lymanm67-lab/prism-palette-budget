@@ -275,9 +275,10 @@ export default function StockAnalyzer() {
                 )}
               </div>
               <p className="text-xs text-muted-foreground">
-                The chart the signal is reading. Dashed lines mark support, resistance and the estimated entry, stop
-                and target. The strip under the candles shows which way price was moving in each window — green up,
-                red down, grey sideways.
+                The chart the signal is reading. Dashed flat lines mark support, resistance and the estimated entry,
+                stop and target. The two sloping dashed lines are trend lines fitted through recent swing highs and
+                lows, and the smooth curves are the 20 EMA (teal) and 50 SMA (amber). The strip under the candles
+                shows which way price was moving in each window — green up, red down, grey sideways.
               </p>
             </CardHeader>
             <CardContent>
