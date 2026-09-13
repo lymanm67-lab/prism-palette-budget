@@ -263,6 +263,8 @@ describe('signal revalidation', () => {
       'RISK',
       'PORTFOLIO_HEAT',
       'CORRELATION',
+      'EVENT_RISK',
+      'EVENT_EXPOSURE',
     ]);
     expect(seq.mayExecute).toBe(false);
     expect(seq.finalSignal).toBe('REVIEW');
