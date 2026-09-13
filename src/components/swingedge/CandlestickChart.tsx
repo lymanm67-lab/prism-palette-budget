@@ -1,8 +1,12 @@
 import { useMemo, useState } from 'react';
 import type { Candle } from '@/lib/swingedge/types';
+import { buildDirectionStrip, type StripDirection } from '@/lib/swingedge/directionStrip';
 
 const UP = 'hsl(var(--prism-lime))';
 const DOWN = 'hsl(var(--destructive))';
+const SIDEWAYS = 'hsl(var(--muted-foreground))';
+
+const STRIP_COLOR: Record<StripDirection, string> = { UP, DOWN, SIDEWAYS };
 
 
 export interface ChartLevel {
