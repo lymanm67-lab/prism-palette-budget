@@ -392,6 +392,9 @@ export default function Performance() {
           'Every figure here comes from simulated trades only.',
         ]}
       />
+
+      <AiMentorCard scope="REVIEW" page="Performance Review" />
+
           <NextStepsCard
         summary="You have read the record. Pick one habit to work on, then get back to the routine."
         steps={[
