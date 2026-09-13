@@ -335,7 +335,15 @@ export default function StockAnalyzer() {
             <TradabilityCard t={analysis.tradability} />
           </div>
 
+          <div className="grid gap-4 lg:grid-cols-2">
+            {bias && <DirectionalBiasCard bias={bias} />}
+            {eventView.result && <EventRiskCard result={eventView.result} dataNote={eventView.dataNote} />}
+          </div>
+
+          {readiness && <TradeReadinessCard readiness={readiness} />}
+
           <CandlePatternCard analysis={analysis.candles} advanced={settings.advanced_mode} />
+
 
 
           {levels && (
