@@ -114,7 +114,7 @@ function GraduationPanel() {
 
 function WeekCard({ weekNumber }: { weekNumber: number }) {
   const week = TRAINING_WEEKS[weekNumber - 1];
-  const { byWeek, saveWeek, isSaving } = useTrainingProgress();
+  const { byWeek, saveWeek, isSaving, currentWeek } = useTrainingProgress();
   const stored = byWeek.get(weekNumber);
   const progress: CounterState = stored
     ? {
@@ -151,7 +151,7 @@ function WeekCard({ weekNumber }: { weekNumber: number }) {
       id={`training-week-${weekNumber}`}
       title={`Week ${weekNumber} — ${week.title}`}
       description={`${week.focus} · ${pct}% of this week's targets`}
-      defaultOpen={!done && pct < 100}
+      defaultOpen={weekNumber === currentWeek && !done}
       className={done ? 'border-prism-lime/40' : undefined}
     >
       <div className="space-y-4 pt-1">
