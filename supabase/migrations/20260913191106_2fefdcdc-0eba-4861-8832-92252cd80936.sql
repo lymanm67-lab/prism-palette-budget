@@ -1,0 +1,1 @@
+ALTER TABLE public.se_journal_entries ADD COLUMN IF NOT EXISTS event_decision TEXT;

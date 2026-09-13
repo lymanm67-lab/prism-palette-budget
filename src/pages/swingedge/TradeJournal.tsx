@@ -31,6 +31,8 @@ const money = (n: number) =>
 const NO_TRADE = 'none';
 const NO_MISTAKE = 'none';
 
+const UNSET = 'unset';
+
 interface FormState {
   paperTradeId: string;
   symbol: string;
@@ -42,6 +44,11 @@ interface FormState {
   lessons: string;
   rulesFollowed: 'yes' | 'no' | 'unanswered';
   rating: string;
+  eventBand: string;
+  eventDecision: string;
+  biasDirection: string;
+  earningsInHold: 'yes' | 'no' | 'unset';
+  eventNote: string;
 }
 
 const blankForm = (): FormState => ({
@@ -55,6 +62,11 @@ const blankForm = (): FormState => ({
   lessons: '',
   rulesFollowed: 'unanswered',
   rating: '',
+  eventBand: UNSET,
+  eventDecision: UNSET,
+  biasDirection: UNSET,
+  earningsInHold: 'unset',
+  eventNote: '',
 });
 
 function tradeSummary(t: PaperTrade): string {
@@ -112,6 +124,16 @@ export default function TradeJournal() {
       entryDate: t.exit_date ?? t.entry_date,
       rulesFollowed:
         t.rules_followed === null ? f.rulesFollowed : t.rules_followed ? 'yes' : 'no',
+      // Carry over what the trade recorded at the time, so you are not guessing later.
+      eventBand: t.event_risk_band ?? f.eventBand,
+      eventDecision: t.event_decision ?? f.eventDecision,
+      biasDirection: t.bias_direction ?? f.biasDirection,
+      earningsInHold:
+        t.earnings_within_hold === null
+          ? f.earningsInHold
+          : t.earnings_within_hold
+            ? 'yes'
+            : 'no',
     }));
   };
 
@@ -133,6 +155,12 @@ export default function TradeJournal() {
         lessons: form.lessons.trim() || null,
         rules_followed: form.rulesFollowed === 'unanswered' ? null : form.rulesFollowed === 'yes',
         rating: form.rating ? Number(form.rating) : null,
+        event_risk_band: form.eventBand === UNSET ? null : form.eventBand,
+        event_decision: form.eventDecision === UNSET ? null : form.eventDecision,
+        bias_direction: form.biasDirection === UNSET ? null : form.biasDirection,
+        earnings_within_hold:
+          form.earningsInHold === 'unset' ? null : form.earningsInHold === 'yes',
+        event_note: form.eventNote.trim() || null,
       });
       toast.success(editingId ? 'Entry updated' : 'Entry saved');
       reset();
@@ -156,6 +184,12 @@ export default function TradeJournal() {
       lessons: e.lessons ?? '',
       rulesFollowed: e.rules_followed === null ? 'unanswered' : e.rules_followed ? 'yes' : 'no',
       rating: e.rating ? String(e.rating) : '',
+      eventBand: e.event_risk_band ?? UNSET,
+      eventDecision: e.event_decision ?? UNSET,
+      biasDirection: e.bias_direction ?? UNSET,
+      earningsInHold:
+        e.earnings_within_hold === null ? 'unset' : e.earnings_within_hold ? 'yes' : 'no',
+      eventNote: e.event_note ?? '',
     });
   };
 
@@ -335,6 +369,85 @@ export default function TradeJournal() {
             </div>
           </div>
 
+          <div className="rounded-lg border border-border/60 p-3 space-y-3">
+            <p className="text-sm font-medium">Events and tendency at the time</p>
+            <p className="text-xs text-muted-foreground">
+              Recording these lets the Performance Review show whether your results differ around
+              earnings and busy news weeks. Leave anything you did not check as unrecorded.
+            </p>
+            <div className="grid gap-4 md:grid-cols-4">
+              <div className="space-y-1.5">
+                <Label>Event risk level</Label>
+                <Select value={form.eventBand} onValueChange={(v) => set('eventBand', v)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={UNSET}>Not recorded</SelectItem>
+                    <SelectItem value="LOW">Low</SelectItem>
+                    <SelectItem value="MODERATE">Moderate</SelectItem>
+                    <SelectItem value="HIGH">High</SelectItem>
+                    <SelectItem value="SEVERE">Severe</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Event call</Label>
+                <Select value={form.eventDecision} onValueChange={(v) => set('eventDecision', v)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={UNSET}>Not recorded</SelectItem>
+                    <SelectItem value="GO">Clear to take</SelectItem>
+                    <SelectItem value="REVIEW">Needed a review</SelectItem>
+                    <SelectItem value="WAIT">Should have waited</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Tendency</Label>
+                <Select value={form.biasDirection} onValueChange={(v) => set('biasDirection', v)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={UNSET}>Not recorded</SelectItem>
+                    <SelectItem value="UP">Up</SelectItem>
+                    <SelectItem value="SIDEWAYS">Sideways</SelectItem>
+                    <SelectItem value="DOWN">Down</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Earnings while I held it</Label>
+                <Select
+                  value={form.earningsInHold}
+                  onValueChange={(v) => set('earningsInHold', v as FormState['earningsInHold'])}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="unset">Not recorded</SelectItem>
+                    <SelectItem value="yes">Yes</SelectItem>
+                    <SelectItem value="no">No</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="j-event-note">What the event did to the trade</Label>
+              <Textarea
+                id="j-event-note"
+                rows={2}
+                value={form.eventNote}
+                onChange={(e) => set('eventNote', e.target.value)}
+                placeholder="Gapped through my stop the morning after the report."
+              />
+            </div>
+          </div>
+
           <div className="space-y-1.5">
             <Label htmlFor="j-lessons">What I will do differently</Label>
             <Textarea
@@ -397,6 +510,15 @@ export default function TradeJournal() {
                       </Badge>
                     )}
                     {e.rating ? <Badge variant="secondary">Process {e.rating}/5</Badge> : null}
+                    {e.event_risk_band ? (
+                      <Badge variant="outline">Event risk {e.event_risk_band.toLowerCase()}</Badge>
+                    ) : null}
+                    {e.earnings_within_hold ? (
+                      <Badge variant="outline">Held through earnings</Badge>
+                    ) : null}
+                    {e.bias_direction ? (
+                      <Badge variant="outline">Tendency {e.bias_direction.toLowerCase()}</Badge>
+                    ) : null}
                   </div>
                   <div className="flex gap-1">
                     <Button variant="ghost" size="sm" onClick={() => startEdit(e.id)}>

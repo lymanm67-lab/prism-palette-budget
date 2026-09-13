@@ -56,6 +56,64 @@ export function useSymbolEarnings(symbol: string | null) {
   });
 }
 
+/**
+ * Earnings dates for a list of symbols. The provider publishes one calendar for
+ * the whole market, so a scan costs a single call. Demo mode returns unknowns.
+ */
+export function useEarningsCalendar(symbols: string[]) {
+  const { settings } = useTradingSettings();
+  const live = settings.data_mode === 'LIVE';
+  const list = useMemo(
+    () => [...new Set(symbols.map((s) => s.toUpperCase()))].sort(),
+    [symbols],
+  );
+
+  const query = useQuery({
+    queryKey: ['se-earnings-batch', settings.data_mode, list.join(',')],
+    enabled: list.length > 0,
+    staleTime: 12 * 60 * 60_000,
+    queryFn: async (): Promise<Record<string, EarningsRecord>> => {
+      const unknown = Object.fromEntries(list.map((s) => [s, UNKNOWN_EARNINGS(s)]));
+      if (!live) return unknown;
+      const { data, error } = await supabase.functions.invoke('market-data', {
+        body: { action: 'earnings_batch', symbols: list },
+      });
+      if (error) return unknown;
+      const payload = data as { fetchedAt?: string; earnings?: Partial<EarningsRecord>[] };
+      const out = { ...unknown };
+      for (const row of payload?.earnings ?? []) {
+        const sym = String(row.symbol ?? '').toUpperCase();
+        if (!sym || !out[sym]) continue;
+        if (!row.date) continue;
+        out[sym] = {
+          symbol: sym,
+          date: row.date,
+          certainty: row.certainty === 'CONFIRMED' ? 'CONFIRMED' : 'ESTIMATED',
+          timing: row.timing ?? 'TIME_UNKNOWN',
+          source: row.source ?? null,
+          fetchedAt: payload?.fetchedAt ?? null,
+        };
+      }
+      return out;
+    },
+  });
+
+  return {
+    bySymbol: query.data ?? {},
+    isLoading: query.isLoading,
+    available: live,
+  };
+}
+
+/** Macro events covering the next `days`, used by the scanner and the screens. */
+export function useMacroWindow(days = 30) {
+  return useMemo(() => {
+    const now = new Date();
+    const to = new Date(now.getTime() + Math.max(days, 30) * DAY_MS);
+    return derivedMacroEvents(now.toISOString().slice(0, 10), to.toISOString().slice(0, 10));
+  }, [days]);
+}
+
 export interface EventRiskViewInput {
   symbol: string | null;
   sector?: string | null;
