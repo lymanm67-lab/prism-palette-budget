@@ -25,6 +25,13 @@ import AiLevelsAssistant from '@/components/swingedge/AiLevelsAssistant';
 import AiMentorCard from '@/components/swingedge/AiMentorCard';
 import CollapsibleSection from '@/components/swingedge/CollapsibleSection';
 import RiskFirstCard, { GapRiskCard, StopRuleCard } from '@/components/swingedge/RiskFirstCard';
+import GuardrailBanner from '@/components/swingedge/GuardrailBanner';
+import RuleChecklistCard from '@/components/swingedge/RuleChecklistCard';
+import { useTradingRules, useEntriesToday } from '@/hooks/use-swingedge-rulebook';
+import { useDisciplineReport } from '@/hooks/use-swingedge-mentor';
+import { useSymbolEarnings } from '@/hooks/use-swingedge-events';
+import { checkRules, summariseRules, type RuleContext } from '@/lib/swingedge/rulebook';
+import { buildGuardrails } from '@/lib/swingedge/guardrails';
 import { useTradingSettings, useTradingTitle } from '@/hooks/use-swingedge';
 import { usePaperTradeManagement, useSymbolLevels, useTradePlans } from '@/hooks/use-swingedge-stops';
 import { useCircuitBreaker, useReadinessPoints } from '@/hooks/use-swingedge-training';
@@ -236,7 +243,79 @@ export default function TradePlanner() {
     [checkTrade, symbol, risk.shares, entryNum, stopNum],
   );
 
+  // The owner's own rulebook, checked against this plan as it is built, plus the
+  // guardrails that speak up on their own. Nothing here calls an AI model.
+  const { rules } = useTradingRules();
+  const { report: discipline } = useDisciplineReport();
+  const { count: entriesToday } = useEntriesToday();
+  const earnings = useSymbolEarnings(symbol || null);
 
+  const earningsDaysAway = useMemo(() => {
+    const date = earnings.data?.date;
+    if (!date) return null;
+    const days = (new Date(date).getTime() - Date.now()) / 86_400_000;
+    return Number.isFinite(days) ? Math.max(0, days) : null;
+  }, [earnings.data?.date]);
+
+  const ruleContext = useMemo<RuleContext>(
+    () => ({
+      riskPct: risk.plannedLoss > 0 ? risk.percentOfAccount : null,
+      rewardRisk: risk.rewardRisk || null,
+      openHeatPct: Number.isFinite(heatGate.projectedHeatPct) ? heatGate.projectedHeatPct : null,
+      maxHeatPct: settings.max_portfolio_risk_pct ?? null,
+      readinessScore: null,
+      trendAligned: null,
+      earningsDaysAway,
+      eventDecision: null,
+      stopWidened:
+        suggestedStop && suggestedStop > 0 && stopNum > 0 ? stopNum < suggestedStop - 0.005 : null,
+      tradesToday: entriesToday,
+      invalidation,
+      biasDirection: null,
+    }),
+    [
+      risk.plannedLoss,
+      risk.percentOfAccount,
+      risk.rewardRisk,
+      heatGate.projectedHeatPct,
+      settings.max_portfolio_risk_pct,
+      earningsDaysAway,
+      suggestedStop,
+      stopNum,
+      entriesToday,
+      invalidation,
+    ],
+  );
+
+  const ruleChecks = useMemo(() => checkRules(rules, ruleContext), [rules, ruleContext]);
+  const ruleVerdict = useMemo(() => summariseRules(ruleChecks), [ruleChecks]);
+
+  const guardrails = useMemo(
+    () =>
+      buildGuardrails({
+        rules: ruleVerdict,
+        discipline,
+        breakerBlocked: !breaker.assessment.canOpenNewTrade,
+        breakerReason: breaker.assessment.headline ?? null,
+        heatBlocked: !heatGate.allowed,
+        heatReason: heatGate.reasons[0] ?? null,
+        riskPct: risk.plannedLoss > 0 ? risk.percentOfAccount : null,
+        medianRiskPct:
+          discipline?.medianRisk && settings.trading_capital > 0
+            ? (discipline.medianRisk / settings.trading_capital) * 100
+            : null,
+      }),
+    [
+      ruleVerdict,
+      discipline,
+      breaker.assessment,
+      heatGate.allowed,
+      heatGate.reasons,
+      risk.plannedLoss,
+      risk.percentOfAccount,
+      settings.trading_capital,
+    ],
+  );
 
   const qualification = useMemo(
     () =>
@@ -390,6 +469,8 @@ export default function TradePlanner() {
           'Planned numbers are yours; scanner numbers are estimates. Never mix the two.',
         ]}
       />
+
+      <GuardrailBanner guardrails={guardrails} />
 
       <StopRuleCard />
 
@@ -937,6 +1018,8 @@ export default function TradePlanner() {
         </div>
 
         <div className="space-y-4">
+          <RuleChecklistCard checks={ruleChecks} />
+
           <RiskFirstCard
             entry={entryNum}
             invalidation={structure.invalidationLevel}
@@ -1109,6 +1192,12 @@ export default function TradePlanner() {
           portfolioHeat: heat,
           heatGate,
           circuitBreaker: breaker.assessment,
+          myRules: ruleChecks.map((c) => ({
+            rule: c.sentence,
+            status: c.status,
+            detail: c.detail,
+          })),
+          guardrails,
         }}
       />
 
