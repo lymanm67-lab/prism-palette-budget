@@ -76,6 +76,9 @@ export default function StockAnalyzer() {
     [candleResult],
   );
 
+  // What happened the last times this name and this setup were traded.
+  const { record: trackRecord } = useTrackRecord(symbol, analysis?.technical.setup ?? null);
+
   // Historical tendency for the conditions showing right now.
   const bias = useMemo(() => {
     const candles = candleResult?.candles ?? [];
