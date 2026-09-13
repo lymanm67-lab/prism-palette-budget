@@ -73,6 +73,76 @@ export default function StockAnalyzer() {
     [candleResult],
   );
 
+  // Historical tendency for the conditions showing right now.
+  const bias = useMemo(() => {
+    const candles = candleResult?.candles ?? [];
+    if (candles.length < 120) return null;
+    return directionalBias(candles, {
+      conditions: conditionsFromNow(candles, symbol ?? 'this symbol'),
+      trend: analysis?.technical.trend ?? null,
+    });
+  }, [candleResult, symbol, analysis?.technical.trend]);
+
+  const eventView = useEventRisk({
+    symbol,
+    sector: analysis?.bundle.profile?.sector ?? null,
+    holdingDays: 10,
+  });
+
+  // Trade readiness. Planner-only items stay unavailable here rather than
+  // being guessed at, and every hard gate is passed straight through.
+  const readiness = useMemo(() => {
+    if (!analysis) return null;
+    const t = analysis.technical;
+    const rv = t.relativeVolume;
+    const event = eventView.result;
+
+    const scores: Partial<Record<ReadinessItemKey, number | null>> = {
+      setup: t.setup === 'BREAKOUT' || t.setup === 'PULLBACK' ? 1 : 0.35,
+      stop: levels?.estimatedStop ? Math.min(1, analysis.risk.score / 100) : null,
+      trend: t.trend === 'UP' ? 1 : t.trend === 'SIDEWAYS' ? 0.5 : 0,
+      bias: bias
+        ? bias.confidence === 'INSUFFICIENT_DATA'
+          ? null
+          : bias.direction === 'UP'
+            ? Math.min(1, bias.leadingPct / 100)
+            : bias.direction === 'SIDEWAYS'
+              ? 0.4
+              : 0.1
+        : null,
+      rewardRisk: null,
+      quality: analysis.qualityScore === null ? null : analysis.qualityScore / 100,
+      regime: analysis.regime.insufficientData ? null : (REGIME_SCORE[analysis.regime.regime] ?? 0.5),
+      sector: analysis.relativeStrength.insufficientData ? null : analysis.relativeStrength.bias,
+      candles: Math.min(1, analysis.candles.confirmation.setupPoints / 7),
+      volume: rv === null ? null : Math.max(0, Math.min(1, rv / 1.5)),
+      sizing: null,
+      event: event ? Math.max(0, 1 - event.score / 100) : null,
+      revalidation: analysis.developing ? 0.5 : 1,
+      heat: null,
+      correlation: null,
+    };
+
+    const details: Partial<Record<ReadinessItemKey, string>> = {
+      rewardRisk: 'Set in the Trade Planner, so it cannot be judged here.',
+      sizing: 'Set in the Trade Planner, so it cannot be judged here.',
+      heat: 'Measured across your open positions in the Trade Planner.',
+      correlation: 'Measured across your open positions in the Trade Planner.',
+      bias: bias ? `${bias.direction} lean from ${bias.independentEpisodes} separate past episodes.` : 'No matching history.',
+      event: event ? `Event risk ${event.score} of 100 (${event.band}).` : 'No event data available.',
+      revalidation: analysis.developing ? "Today's candle is still forming." : 'Reading uses completed candles.',
+    };
+
+    const hardGates = [
+      ...analysis.risk.hardGateFailures,
+      ...(analysis.tradability.hardGate ? [`Tradability: ${analysis.tradability.reasons[0]}`] : []),
+      ...(event?.hardGates ?? []),
+    ];
+
+    return scoreTradeReadiness({ scores, details, hardGates });
+  }, [analysis, bias, eventView.result, levels?.estimatedStop]);
+
+
   const run = () => {
     const next = input.trim().toUpperCase();
     if (!next) return;
