@@ -289,6 +289,8 @@ export default function StockAnalyzer() {
               ) : (
                 <CandlestickChart
                   showDirectionStrip
+                  showTrendLines
+                  showMovingAverages
                   candles={candleResult?.candles ?? []}
                   levels={[
                     { label: 'Support', value: analysis.technical.support, color: 'hsl(var(--prism-teal))' },
