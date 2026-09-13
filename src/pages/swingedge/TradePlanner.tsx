@@ -1192,6 +1192,12 @@ export default function TradePlanner() {
           portfolioHeat: heat,
           heatGate,
           circuitBreaker: breaker.assessment,
+          myRules: ruleChecks.map((c) => ({
+            rule: c.sentence,
+            status: c.status,
+            detail: c.detail,
+          })),
+          guardrails,
         }}
       />
 
