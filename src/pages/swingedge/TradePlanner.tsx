@@ -243,7 +243,79 @@ export default function TradePlanner() {
     [checkTrade, symbol, risk.shares, entryNum, stopNum],
   );
 
+  // The owner's own rulebook, checked against this plan as it is built, plus the
+  // guardrails that speak up on their own. Nothing here calls an AI model.
+  const { rules } = useTradingRules();
+  const { report: discipline } = useDisciplineReport();
+  const { count: entriesToday } = useEntriesToday();
+  const earnings = useSymbolEarnings(symbol || null);
 
+  const earningsDaysAway = useMemo(() => {
+    const date = earnings.data?.date;
+    if (!date) return null;
+    const days = (new Date(date).getTime() - Date.now()) / 86_400_000;
+    return Number.isFinite(days) ? Math.max(0, days) : null;
+  }, [earnings.data?.date]);
+
+  const ruleContext = useMemo<RuleContext>(
+    () => ({
+      riskPct: risk.plannedLoss > 0 ? risk.percentOfAccount : null,
+      rewardRisk: risk.rewardRisk || null,
+      openHeatPct: Number.isFinite(heatGate.projectedHeatPct) ? heatGate.projectedHeatPct : null,
+      maxHeatPct: settings.max_portfolio_risk_pct ?? null,
+      readinessScore: null,
+      trendAligned: null,
+      earningsDaysAway,
+      eventDecision: null,
+      stopWidened:
+        suggestedStop && suggestedStop > 0 && stopNum > 0 ? stopNum < suggestedStop - 0.005 : null,
+      tradesToday: entriesToday,
+      invalidation,
+      biasDirection: null,
+    }),
+    [
+      risk.plannedLoss,
+      risk.percentOfAccount,
+      risk.rewardRisk,
+      heatGate.projectedHeatPct,
+      settings.max_portfolio_risk_pct,
+      earningsDaysAway,
+      suggestedStop,
+      stopNum,
+      entriesToday,
+      invalidation,
+    ],
+  );
+
+  const ruleChecks = useMemo(() => checkRules(rules, ruleContext), [rules, ruleContext]);
+  const ruleVerdict = useMemo(() => summariseRules(ruleChecks), [ruleChecks]);
+
+  const guardrails = useMemo(
+    () =>
+      buildGuardrails({
+        rules: ruleVerdict,
+        discipline,
+        breakerBlocked: !breaker.assessment.canOpenNewTrade,
+        breakerReason: breaker.assessment.headline ?? null,
+        heatBlocked: !heatGate.allowed,
+        heatReason: heatGate.reasons[0] ?? null,
+        riskPct: risk.plannedLoss > 0 ? risk.percentOfAccount : null,
+        medianRiskPct:
+          discipline?.medianRisk && settings.trading_capital > 0
+            ? (discipline.medianRisk / settings.trading_capital) * 100
+            : null,
+      }),
+    [
+      ruleVerdict,
+      discipline,
+      breaker.assessment,
+      heatGate.allowed,
+      heatGate.reasons,
+      risk.plannedLoss,
+      risk.percentOfAccount,
+      settings.trading_capital,
+    ],
+  );
 
   const qualification = useMemo(
     () =>
